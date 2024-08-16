@@ -9,10 +9,12 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import MapMenu from '$lib/components/MapMenu.svelte';
 	import { type CategoryEntry, backgroundSources } from '$lib/utils/layers';
-	import { categoryEntries } from '$lib/utils/layers';
+	import { layerData } from '$lib/utils/layers';
 	import { onMount } from 'svelte';
+	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
-	let refCategoryEntries: CategoryEntry[] = categoryEntries; // カテゴリごとのレイヤーデータ情報
+	let layerDataEntries: CategoryEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
 	let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
 	let selectedBackgroundId: string = Object.keys(backgroundSources)[0]; // 選択されたベースマップのID
 	let mapInstance: Map | null = null; // Mapインスタンス
@@ -22,7 +24,7 @@
 	const createSourceItems = () => {
 		const sourceItems: { [_: string]: SourceSpecification } = {};
 
-		refCategoryEntries.forEach((categoryEntry) => {
+		layerDataEntries.forEach((categoryEntry) => {
 			categoryEntry.layers.forEach((layerEntry) => {
 				const sourceId = `${categoryEntry.categoryId}_${layerEntry.id}_source`;
 
@@ -45,7 +47,7 @@
 	const createLayerItems = () => {
 		let layerItems: LayerSpecification[] = [];
 
-		refCategoryEntries.filter((categoryEntry) => {
+		layerDataEntries.filter((categoryEntry) => {
 			categoryEntry.layers
 				.filter((layerEntry) => layerEntry.visible)
 				.reverse()
@@ -78,6 +80,7 @@
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
+				terrain: gsiTerrainSource, // 地形ソース
 				...createSourceItems(),
 				...backgroundSources
 			},
@@ -102,7 +105,6 @@
 			center: [136.92300400916308, 35.5509525769706] as [number, number], // starting position [lng, lat]
 			zoom: 14.5,
 			maxZoom: 18,
-			maxPitch: 0,
 			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 		mapInstance = map;
@@ -111,17 +113,24 @@
 		map.addControl(new maplibregl.NavigationControl({}), 'top-right');
 		map.addControl(new maplibregl.GeolocateControl({}), 'top-right');
 		map.addControl(new maplibregl.ScaleControl({}), 'bottom-left');
+		map.addControl(
+			new maplibregl.TerrainControl({
+				source: 'terrain', // 地形ソースを指定
+				exaggeration: 1 // 高さの倍率
+			}),
+			'top-right' // コントロールの位置を指定
+		);
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
-	$: if (refCategoryEntries && selectedBackgroundId && mapInstance) {
+	$: if (layerDataEntries && selectedBackgroundId && mapInstance) {
 		const mapStyle = createMapStyle();
 		mapInstance.setStyle(mapStyle as StyleSpecification);
 	}
 </script>
 
 <div id="map" class="h-full w-full"></div>
-<MapMenu {backgroundIds} bind:selectedBackgroundId bind:refCategoryEntries />
+<MapMenu {backgroundIds} bind:selectedBackgroundId bind:layerDataEntries />
 
 <style>
 </style>

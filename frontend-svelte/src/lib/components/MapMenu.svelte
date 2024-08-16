@@ -7,7 +7,7 @@
 
 	export let backgroundIds: string[] = [];
 	export let selectedBackgroundId: string = '';
-	export let refCategoryEntries: CategoryEntry[] = [];
+	export let layerDataEntries: CategoryEntry[] = [];
 
 	let selectedLayerEntry: LayerEntry | null = null;
 	let selectedCategoryName: string | null = null;
@@ -21,7 +21,7 @@
 </script>
 
 <div
-	class="absolute left-4 top-12 z-10 bg-white p-4 rounded shadow-2xl text-neutral-700 overflow-visible max-h-[calc(100vh-8rem)]"
+	class="absolute left-4 top-12 z-10 max-h-[calc(100vh-8rem)] overflow-visible rounded bg-white p-4 text-neutral-700 shadow-2xl"
 >
 	<div class="flex flex-col gap-5">
 		<div>
@@ -41,17 +41,19 @@
 		</div>
 
 		<div id="prefectures" class="flex flex-col gap-y-1">
-			{#each refCategoryEntries as categoryEntry (categoryEntry.categoryId)}
-				<div class="block text-sm font-semibold leading-6 text-gray-900 mb-0">
+			{#each layerDataEntries as categoryEntry (categoryEntry.categoryId)}
+				<div class="mb-0 block text-sm font-semibold leading-6 text-gray-900">
 					{categoryEntry.categoryName}
 				</div>
 				<div class="layers flex flex-col gap-y-2">
 					{#each categoryEntry.layers as layerEntry (layerEntry.id)}
-						<div class="flex justify-between items-center gap-x-2">
+						<div class="flex items-center justify-between gap-x-2">
 							<div>{layerEntry.name}</div>
 							<div class="justify-end">
 								<div class="flex">
-									<div class="flex items-center justify-center cursor-pointer w-12">
+									<div
+										class="flex w-12 cursor-pointer items-center justify-center"
+									>
 										<u
 											use:tooltip={{
 												content: `${categoryEntry.categoryName}:${layerEntry.name}`,
@@ -68,19 +70,21 @@
 									</div>
 
 									<!-- スイッチの表示 -->
-									<label class="inline-flex items-center cursor-pointer ml-3 my-1">
+									<label
+										class="my-1 ml-3 inline-flex cursor-pointer items-center"
+									>
 										<input
 											type="checkbox"
 											id={layerEntry.name}
 											bind:checked={layerEntry.visible}
 											value={layerEntry}
-											class="sr-only peer"
+											class="peer sr-only"
 										/>
 										<div
-											class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-2 peer-focus:ring-indigo-600 peer-focus:ring-offset-2 peer-checked:bg-indigo-600 transition-colors duration-200 ease-in-out"
+											class="h-6 w-11 rounded-full bg-gray-200 transition-colors duration-200 ease-in-out peer-checked:bg-indigo-600 peer-focus:ring-2 peer-focus:ring-indigo-600 peer-focus:ring-offset-2"
 										></div>
 										<div
-											class="peer-checked:translate-x-6 peer-checked:border-white absolute h-5 w-5 bg-white rounded-full border-2 border-gray-300 transform transition-transform duration-200 ease-in-out"
+											class="absolute h-5 w-5 transform rounded-full border-2 border-gray-300 bg-white transition-transform duration-200 ease-in-out peer-checked:translate-x-6 peer-checked:border-white"
 										></div>
 									</label>
 								</div>
@@ -93,7 +97,7 @@
 									<div class="w-20">透過度:</div>
 									<input
 										type="range"
-										class="w-full my-2"
+										class="my-2 w-full"
 										bind:value={layerEntry.opacity}
 										min="0"
 										max="1"
@@ -106,7 +110,10 @@
 						{#if selectedLayerEntry === layerEntry}
 							<div class="overflow-hidden rounded-lg bg-white shadow">
 								<div class="sm:p-0.5">
-									<InfoPopup categoryName={categoryEntry.categoryName} {layerEntry} />
+									<InfoPopup
+										categoryName={categoryEntry.categoryName}
+										{layerEntry}
+									/>
 								</div>
 							</div>
 						{/if}
