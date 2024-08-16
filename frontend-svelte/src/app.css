@@ -4,4 +4,13 @@
 
 body {
 	margin: 0;
+	overflow: hidden;
+}
+
+.menu-out {
+	rotate: y -70deg;
+	translate: -100px 0;
+	pointer-events: none;
+	visibility: hidden;
+	opacity: 0;
 }

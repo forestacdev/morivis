@@ -7,11 +7,15 @@
 		LayerSpecification
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
+	import Side from '$lib/components/Side.svelte';
 	import MapMenu from '$lib/components/MapMenu.svelte';
+	import BaseMenu from '$lib/components/BaseMenu.svelte';
 	import { type CategoryEntry, backgroundSources } from '$lib/utils/layers';
 	import { layerData } from '$lib/utils/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+	import { isSide } from '$lib/store/store';
+
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
 	let layerDataEntries: CategoryEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
@@ -130,7 +134,15 @@
 </script>
 
 <div id="map" class="h-full w-full"></div>
-<MapMenu {backgroundIds} bind:selectedBackgroundId bind:layerDataEntries />
+<Side />
+<div class="custom-css absolute left-[70px] top-2 h-full max-h-[calc(100vh-8rem)] w-[300px]">
+	<BaseMenu {backgroundIds} bind:selectedBackgroundId />
+	<MapMenu bind:layerDataEntries />
+</div>
 
 <style>
+	.custom-css {
+		perspective: 1000px;
+		transform-style: preserve-3d;
+	}
 </style>
