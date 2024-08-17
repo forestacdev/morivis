@@ -1,6 +1,15 @@
 import type { SourceSpecification } from 'maplibre-gl';
 
-export const backgroundSources: { [_: string]: SourceSpecification } = {
+export type BaseMapEntry = {
+	type: 'raster';
+	tiles: string[];
+	minzoom: number;
+	maxzoom: number;
+	tileSize: number;
+	attribution: string;
+};
+
+export const backgroundSources: { [_: string]: BaseMapEntry } = {
 	全国最新写真: {
 		type: 'raster',
 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'],
@@ -76,12 +85,14 @@ export const backgroundSources: { [_: string]: SourceSpecification } = {
 	},
 	'傾斜区分図（岐阜県森林研究所）': {
 		type: 'raster',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png'],
+		tiles: [
+			'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu_2021Slpoe_2022_07_25_15_54/MapServer/tile/{z}/{y}/{x}'
+		],
 		minzoom: 0,
 		maxzoom: 19,
 		tileSize: 256,
 		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>"
+			"<a href='https://www.forest.rd.pref.gifu.lg.jp/shiyou/CSrittaizu.html' target='_blank'>岐阜県森林研究所</a>"
 	},
 	植生図: {
 		type: 'raster',

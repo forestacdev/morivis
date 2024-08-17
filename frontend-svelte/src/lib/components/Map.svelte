@@ -4,7 +4,8 @@
 		Map,
 		StyleSpecification,
 		SourceSpecification,
-		LayerSpecification
+		LayerSpecification,
+		TerrainSpecification
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Side from '$lib/components/Side.svelte';
@@ -105,6 +106,25 @@
 		return mapStyle;
 	};
 
+	class CustomTerrainControl extends maplibregl.TerrainControl {
+		constructor(options: TerrainSpecification) {
+			super(options);
+		}
+
+		onAdd(map: Map) {
+			const container = super.onAdd(map);
+			this._terrainButton.addEventListener('click', this.customClickHandler);
+			return container;
+		}
+
+		// ３D表示の時に地図を傾ける
+		customClickHandler = () => {
+			this._map.getTerrain()
+				? this._map.easeTo({ pitch: 60 })
+				: this._map.easeTo({ pitch: 0 });
+		};
+	}
+
 	// 初期描画時
 	onMount(() => {
 		const map = new maplibregl.Map({
@@ -122,7 +142,7 @@
 		map.addControl(new maplibregl.GeolocateControl({}), 'top-right');
 		map.addControl(new maplibregl.ScaleControl({}), 'bottom-left');
 		map.addControl(
-			new maplibregl.TerrainControl({
+			new CustomTerrainControl({
 				source: 'terrain', // 地形ソースを指定
 				exaggeration: 1 // 高さの倍率
 			}),
