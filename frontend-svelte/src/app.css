@@ -10,6 +10,7 @@ body {
 .menu-out {
 	rotate: y -70deg;
 	translate: -100px 0;
+	scale: 0.8;
 	pointer-events: none;
 	visibility: hidden;
 	opacity: 0;

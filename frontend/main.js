@@ -1,3 +1,4 @@
+import './main.css';
 //ロード画面長さ
 $('#splash').delay(4000).fadeOut(2000);
 $('#splash_logo').delay(6000).fadeOut(2000);

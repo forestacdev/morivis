@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 import type { Side } from '$lib/types/ui';
 
+import type { UserInfo } from 'firebase/auth';
+
+export const authStore = writable({ loggedIn: false, user: null as UserInfo });
+
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
 

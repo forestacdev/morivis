@@ -8,8 +8,9 @@
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Side from '$lib/components/Side.svelte';
-	import MapMenu from '$lib/components/MapMenu.svelte';
 	import BaseMenu from '$lib/components/BaseMenu.svelte';
+	import RasterMenu from '$lib/components/RasterMenu.svelte';
+	import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import { type CategoryEntry, backgroundSources } from '$lib/utils/layers';
 	import { layerData } from '$lib/utils/layers';
 	import { onMount } from 'svelte';
@@ -137,7 +138,8 @@
 <Side />
 <div class="custom-css absolute left-[70px] top-2 h-full max-h-[calc(100vh-8rem)] w-[300px]">
 	<BaseMenu {backgroundIds} bind:selectedBackgroundId />
-	<MapMenu bind:layerDataEntries />
+	<RasterMenu bind:layerDataEntries />
+	<VectorMenu bind:layerDataEntries />
 </div>
 
 <style>

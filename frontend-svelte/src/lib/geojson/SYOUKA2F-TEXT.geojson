@@ -1,0 +1,33 @@
+{
+"type": "FeatureCollection",
+"name": "消火器、避難器具等2F",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.91793533853766, 35.555436689391804 ] ] } },
+{ "type": "Feature", "properties": { "name": "パッケージ型消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917939583137809, 35.555439214471924 ] ] } },
+{ "type": "Feature", "properties": { "name": "パッケージ型消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917700724604373, 35.555228594391636 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917705415266823, 35.555224939325932 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917681195914611, 35.555274854059085 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917842667730866, 35.555511639286308 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.9179763444603, 35.555372465732056 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.917607855984357, 35.555284783697175 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918686671227306, 35.555742925967287 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.91848568235929, 35.555863654931592 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918183337457492, 35.555761773852694 ] ] } },
+{ "type": "Feature", "properties": { "name": "避難梯子" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918380453128179, 35.555642801753606 ] ] } },
+{ "type": "Feature", "properties": { "name": "パッケージ型消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918322804619578, 35.555696312330689 ] ] } },
+{ "type": "Feature", "properties": { "name": "パッケージ型消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918597306420452, 35.555791333371687 ] ] } },
+{ "type": "Feature", "properties": { "name": "パッケージ型消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918863344594058, 35.555766799735586 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918868830374265, 35.55576603390984 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918603375100361, 35.555792047000068 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918474649242512, 35.555783029916959 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918232478654147, 35.555604180352248 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918116945279564, 35.555683812493356 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918969272163338, 35.554468677106144 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918946602417691, 35.554269354425962 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.918931708624513, 35.554173731820711 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.919910834749459, 35.554038911656455 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.91982475979961, 35.554058104269529 ] ] } },
+{ "type": "Feature", "properties": { "name": "消火器" }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 136.919549729022918, 35.554114522488661 ] ] } }
+]
+}

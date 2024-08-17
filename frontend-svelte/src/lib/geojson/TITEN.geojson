@@ -1,0 +1,480 @@
+{
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "15851ae18aab553001c974fbd5004991",
+        "name": "古城山山頂",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/noimage.jpg",
+        "説明": null,
+        "カテゴリ": null
+      },
+      "geometry": {
+        "coordinates": [
+          136.931792,
+          35.558439
+        ],
+        "type": "Point"
+      },
+      "id": "015b694c9bd40c02ce68e86f5d7661ee"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "85afb35cc973d329bbf228ad4bb12eca",
+        "name": "トイレ",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/toire.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.921287,
+          35.550746
+        ],
+        "type": "Point"
+      },
+      "id": "06333598dcff74a98f7648ab8d1565f2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "0dde4694e615ad2e292fef6242beb7f8",
+        "name": "森のいりぐち",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/morinoiriguti.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.920382,
+          35.553815
+        ],
+        "type": "Point"
+      },
+      "id": "09f445e3f9e5da0efe55fa892dc88aa9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "6f7dada6419acb0a56228d6d21981cd9",
+        "name": "毛鹿洞池",
+        "種類": "池",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/kezikaboraike.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.922681,
+          35.555474
+        ],
+        "type": "Point"
+      },
+      "id": "1c66e1c9d962fadbea85de71b057da88"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "cb00fb012e39ca4a5fefda17b0d9fdbb",
+        "name": "見晴らし岩",
+        "種類": "岩",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/miharasiiwa.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.920721,
+          35.548931
+        ],
+        "type": "Point"
+      },
+      "id": "1c76089d262e263537fd3f32e40eed9d"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "93351ee718c18983b58397978ce796e7",
+        "name": "古城山ふれあいの森管理棟",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/noimage.jpg",
+        "説明": null,
+        "カテゴリ": null
+      },
+      "geometry": {
+        "coordinates": [
+          136.919027,
+          35.548864
+        ],
+        "type": "Point"
+      },
+      "id": "1f11ec5316b70e7b96e0dd8221699a05"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2e821dbf5803717d7069e54723fd1412",
+        "name": "昼飯岩",
+        "種類": "岩",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/hirumesiiwa.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.922616,
+          35.548532
+        ],
+        "type": "Point"
+      },
+      "id": "23184ddf5148f71eda5924f5bd76ae84"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2afabd653acab7b4d26148fcb6a1d861",
+        "name": "屏風岩",
+        "種類": "岩",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/heihuuiwa.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.925213,
+          35.548385
+        ],
+        "type": "Point"
+      },
+      "id": "25f5aeef19f1cef63e56c0231159c2f8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "4a8b2087506240cfb7b0ba49f5fd6a44",
+        "name": "東屋",
+        "種類": "東屋",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/azumaya_kezikabora.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.922851,
+          35.555274
+        ],
+        "type": "Point"
+      },
+      "id": "28c3571a07904a09df2ffa3c17ef94df"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "b1c390f7798f1ad3ac831c94723cf556",
+        "name": "木道",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/mokudou.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.922882,
+          35.551982
+        ],
+        "type": "Point"
+      },
+      "id": "2e4bf0b1546d09ac533b303add014b77"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "72264f4c8866d53d467d00e6839cc706",
+        "name": "鉄塔B",
+        "種類": "鉄塔",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/tettoub.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.92676,
+          35.551672
+        ],
+        "type": "Point"
+      },
+      "id": "3d9645fb0d50ebe2c552b96ad796d272"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "afdac5f155b6490a877ec6439c4dede1",
+        "name": "国有林ゲート",
+        "種類": null,
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/ge-to_kokuyurin.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.92401,
+          35.55462
+        ],
+        "type": "Point"
+      },
+      "id": "471b4f4fb02f09a97521bacf435909fe"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "34a4f683d41617dc0c9f1c94e39af012",
+        "name": "蛇尾滝",
+        "種類": "滝",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/hebiotaki.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.923946,
+          35.552341
+        ],
+        "type": "Point"
+      },
+      "id": "4b1ced09c4f5558f2161d60e30716f11"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "4273f3fc2e0796e55a12c9dcb37e6d29",
+        "name": "大杉",
+        "種類": null,
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/oosugi.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.92288,
+          35.552971
+        ],
+        "type": "Point"
+      },
+      "id": "53eec033c0e5aebeca16cff01c27033b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "1eb3140b076398696348875c677fcf52",
+        "name": "青樹滝",
+        "種類": "滝",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/aozyutaki.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.923228,
+          35.549236
+        ],
+        "type": "Point"
+      },
+      "id": "6783b22202aae5936391e695a5e78bc9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "7387d5004ebe72c20a0e668d94027034",
+        "name": "馬の背岩",
+        "種類": "岩",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/umanoseiwa.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.923477,
+          35.551817
+        ],
+        "type": "Point"
+      },
+      "id": "82510e7b5f692b7e7026fdc8eedc2e77"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2a3ba1e5e6db0cd45d5292693558cb5c",
+        "name": "東屋",
+        "種類": "東屋",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/noimage.jpg",
+        "説明": null,
+        "カテゴリ": null
+      },
+      "geometry": {
+        "coordinates": [
+          136.927052,
+          35.559187
+        ],
+        "type": "Point"
+      },
+      "id": "82790bc5c7218be3ddb16d9e386b5e05"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "0dc7b2cae4fdc6cc16cfd8d5b48d6ade",
+        "name": "鉄塔C",
+        "種類": "鉄塔",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/tettouc.jpg",
+        "説明": null,
+        "カテゴリ": null
+      },
+      "geometry": {
+        "coordinates": [
+          136.928341,
+          35.549691
+        ],
+        "type": "Point"
+      },
+      "id": "9f7a7b0cf3954ed471ed44903ad2f2f1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "f9e336267b44875ad61bcedb2046b9be",
+        "name": "東屋",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/azumaya1.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.920841,
+          35.548827
+        ],
+        "type": "Point"
+      },
+      "id": "ad68403e7d71937a39da407c8a62a2d5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "e5ab118a9d2529a642bdc2e2c0296bc7",
+        "name": "鉄塔A",
+        "種類": "鉄塔",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/noimage.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.921498,
+          35.55464
+        ],
+        "type": "Point"
+      },
+      "id": "b9ac918a52d1677e525132e196a12eba"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "dddb4e8a05a8b7ecdd2d4c7752efb99e",
+        "name": "眺の岩",
+        "種類": "岩",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/nagamenoiwa.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.923906,
+          35.551367
+        ],
+        "type": "Point"
+      },
+      "id": "c5e144f6bf517b54df475a91cbbb31fc"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "5856014f999b72082c338a528d2ca002",
+        "name": "炭焼き小屋",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/sumiyakigoya.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.921202,
+          35.550254
+        ],
+        "type": "Point"
+      },
+      "id": "c6fedd828e684e14d45419a5d795f0eb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "4a848b1dbd5832c2d83422f51d6df884",
+        "name": "チェーンゲート",
+        "種類": null,
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/ge-to_tye-n.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.92001,
+          35.551472
+        ],
+        "type": "Point"
+      },
+      "id": "dc23755ae1bb7fe18ddff0fdd5765432"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ad505188e6cb4073ffa0cff581a69d9d",
+        "name": "車止めゲート",
+        "種類": null,
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/noimage.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.919245,
+          35.550524
+        ],
+        "type": "Point"
+      },
+      "id": "e275d48675957bb253f97b4d407fa1b1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2a5852ecc2865ab294f578598e4f63aa",
+        "name": "山の神",
+        "種類": "",
+        "image": "https://raw.githubusercontent.com/ensyurinGIS/map/main/image/yamanokami.jpg",
+        "説明": null,
+        "カテゴリ": "演習林"
+      },
+      "geometry": {
+        "coordinates": [
+          136.923685,
+          35.55234
+        ],
+        "type": "Point"
+      },
+      "id": "f6a6acc5a023f267c95080de79c677c7"
+    }
+  ],
+  "type": "FeatureCollection"
+}

@@ -1,0 +1,230 @@
+{
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.9177,
+          35.555046
+        ],
+        "type": "Point"
+      },
+      "id": "082b0d3b6b9e662dd1a51858b64da480"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.918887,
+          35.555523
+        ],
+        "type": "Point"
+      },
+      "id": "08513cabfb2470412bdeb124197b3b0c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.918479,
+          35.554853
+        ],
+        "type": "Point"
+      },
+      "id": "08f0b0133386dd10b7db992b47018fb2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.919363,
+          35.556191
+        ],
+        "type": "Point"
+      },
+      "id": "4f80ebc4d46eef370002e25c9a60329e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.919391,
+          35.554611
+        ],
+        "type": "Point"
+      },
+      "id": "54193e7d6a711340716a1a6591a6fb32"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.917726,
+          35.555463
+        ],
+        "type": "Point"
+      },
+      "id": "5c284c28b6af9b60df65f27e175d0b01"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.919067,
+          35.554669
+        ],
+        "type": "Point"
+      },
+      "id": "6417985159b2cb721961107618f47f51"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.917597,
+          35.554163
+        ],
+        "type": "Point"
+      },
+      "id": "7708c2291ecc691c31176d59a5b4a8a4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.918522,
+          35.553612
+        ],
+        "type": "Point"
+      },
+      "id": "7735cbf9444e79f5f08f990e37434eff"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.918665,
+          35.554153
+        ],
+        "type": "Point"
+      },
+      "id": "7fa9ae38eddd0d56f403cc0fc1f21275"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.917974,
+          35.555996
+        ],
+        "type": "Point"
+      },
+      "id": "95512d209608a6a766cefbde2476d331"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.917616,
+          35.555945
+        ],
+        "type": "Point"
+      },
+      "id": "a3b23c9724bd9a0e394cc272a71afea8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.918228,
+          35.556042
+        ],
+        "type": "Point"
+      },
+      "id": "caa54020af7ba1b9360ab59f2b990b07"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.917205,
+          35.555667
+        ],
+        "type": "Point"
+      },
+      "id": "e1494424c0c58c3c144da0cdf241176c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "施設案内塔",
+        "カテゴリ": "看板"
+      },
+      "geometry": {
+        "coordinates": [
+          136.919294,
+          35.5556
+        ],
+        "type": "Point"
+      },
+      "id": "f47b03886bf000d695868e293dbc4eb8"
+    }
+  ],
+  "type": "FeatureCollection"
+}

@@ -41,6 +41,8 @@
 		"@iconify/svelte": "^4.0.2",
 		"@svelte-plugins/tooltips": "^3.0.1",
 		"@sveltejs/adapter-static": "^3.0.4",
+		"firebase": "^10.13.0",
+		"firebaseui": "^6.1.0",
 		"maplibre-gl": "^4.5.2",
 		"maplibre-gl-gsi-terrain": "^1.2.0"
 	}
