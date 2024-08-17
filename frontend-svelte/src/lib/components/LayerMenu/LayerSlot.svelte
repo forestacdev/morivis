@@ -4,6 +4,9 @@
 	import type { LayerEntry } from '$lib/utils/layers';
 	import { showlayerOptionId } from '$lib/store/store';
 
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
 	export let layerEntry: LayerEntry;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
@@ -11,13 +14,25 @@
 			: showlayerOptionId.set(layerEntry.id);
 	};
 
-	$: if (layerEntry) {
-		showlayerOptionId.set('');
-	}
+	// $: if (layerEntry) {
+	// 	showlayerOptionId.set('');
+	// }
+
+	const moveLayerById = (direction: 'up' | 'down') => {
+		const id = layerEntry.id;
+		console.log(id);
+
+		dispatch('moveLayerById', { id, direction });
+	};
 </script>
 
 <div class="relative flex select-none flex-col justify-between gap-x-2">
-	<!-- スイッチの表示 -->
+	<button
+		class="transition-all duration-200 {$showlayerOptionId === layerEntry.id
+			? 'max-h-[100px]'
+			: 'max-h-[0px]'}"
+		on:click={() => moveLayerById('up')}>ss</button
+	>
 	<label
 		class="w-full cursor-pointer items-end rounded-md bg-slate-400 p-2 transition-all duration-150 {layerEntry.visible
 			? 'bg-color-active pb-10'
@@ -61,13 +76,19 @@
 		</div>
 	</label>
 	<div
-		class="absolute right-0 h-[100px] rounded-md bg-white transition-all duration-150 {$showlayerOptionId ===
+		class="absolute right-0 h-[100px] rounded-md bg-white text-black transition-all duration-150 {$showlayerOptionId ===
 		layerEntry.id
 			? 'translate-x-[70px] opacity-100'
 			: 'pointer-events-none scale-50 opacity-0'}"
 	>
-		ssssss
+		ss
 	</div>
+	<button
+		class="transition-all duration-200 {$showlayerOptionId === layerEntry.id
+			? 'max-h-[100px]'
+			: 'max-h-[0px]'}"
+		on:click={() => moveLayerById('down')}>down</button
+	>
 </div>
 
 <style>

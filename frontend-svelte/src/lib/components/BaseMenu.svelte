@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class="bg-color-base absolute left-4 h-full overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
+	class="bg-color-base absolute left-4 flex h-full flex-col overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
 	'base'
 		? ''
 		: 'menu-out'}"

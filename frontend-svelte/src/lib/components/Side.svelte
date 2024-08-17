@@ -16,7 +16,12 @@
 	<button
 		on:click={() => toggleMenu('base')}
 		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"
-		><Icon icon="material-symbols:map-outline" width="30" height="30" /></button
+		><Icon
+			icon="material-symbols:map-outline"
+			width="30"
+			height="30"
+			class="custom-side-button-active"
+		/></button
 	>
 	<button
 		on:click={() => toggleMenu('raster')}

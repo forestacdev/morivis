@@ -1,15 +1,45 @@
 <script lang="ts">
-	import type { CategoryEntry } from '$lib/utils/layers';
 	import Icon from '@iconify/svelte';
 	import InfoPopup from '$lib/components/InfoPopup.svelte';
 	import LayerSlot from '$lib/components/LayerMenu/LayerSlot.svelte';
-	import type { LayerEntry } from '$lib/utils/layers';
+	import type { LayerEntry, CategoryEntry } from '$lib/utils/layers';
 	import { isSide } from '$lib/store/store';
+
+	import { flip } from 'svelte/animate';
 
 	export let layerDataEntries: CategoryEntry[] = [];
 
+	// let layerData: LayerEntry[] = layerDataEntries[0].layers;
+
 	let selectedLayerEntry: LayerEntry | null = null;
 	let selectedCategoryName: string | null = null;
+
+	const moveLayerById = (e: CustomEvent) => {
+		const { id, direction } = e.detail;
+		// idに対応するアイテムのインデックスを取得
+		let index = layerDataEntries[0].layers.findIndex((item) => item.id === id);
+
+		// インデックスが見つからない場合はそのまま配列を返す
+		if (index === -1) return layerDataEntries[0].layers;
+
+		// 上に移動する場合
+		if (direction === 'up' && index > 0) {
+			// 前のアイテムと入れ替え
+			[layerDataEntries[0].layers[index - 1], layerDataEntries[0].layers[index]] = [
+				layerDataEntries[0].layers[index],
+				layerDataEntries[0].layers[index - 1]
+			];
+		}
+
+		// 下に移動する場合
+		if (direction === 'down' && index < layerDataEntries[0].layers.length - 1) {
+			// 次のアイテムと入れ替え
+			[layerDataEntries[0].layers[index + 1], layerDataEntries[0].layers[index]] = [
+				layerDataEntries[0].layers[index],
+				layerDataEntries[0].layers[index + 1]
+			];
+		}
+	};
 </script>
 
 <div
@@ -26,7 +56,9 @@
 				</div>
 				<div class="layers flex flex-col gap-y-2">
 					{#each categoryEntry.layers as layerEntry (layerEntry.id)}
-						<LayerSlot bind:layerEntry />
+						<div animate:flip={{ duration: 200 }}>
+							<LayerSlot bind:layerEntry on:moveLayerById={moveLayerById} />
+						</div>
 					{/each}
 				</div>
 			{/each}
