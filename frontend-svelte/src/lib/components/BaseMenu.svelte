@@ -4,6 +4,7 @@
 
 	export let backgroundIds: string[] = [];
 	export let selectedBackgroundId: string = '';
+    export let backgroundSources: { [_: string]: string } = {};
 	export let layerDataEntries: CategoryEntry[] = [];
 	import { isSide } from '$lib/store/store';
 
@@ -12,7 +13,7 @@
 </script>
 
 <div
-	class="absolute left-4 h-full overflow-visible rounded bg-gray-800 p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
+	class="bg-color-base absolute left-4 h-full overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
 	'base'
 		? ''
 		: 'menu-out'}"
@@ -31,6 +32,8 @@
 				{#each backgroundIds as name (name)}
 					<option value={name}>{name}</option>
 				{/each}
+
+        
 			</select>
 		</div>
 	</div>

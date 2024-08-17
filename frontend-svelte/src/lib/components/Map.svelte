@@ -33,10 +33,13 @@
 			categoryEntry.layers.forEach((layerEntry) => {
 				const sourceId = `${categoryEntry.categoryId}_${layerEntry.id}_source`;
 
-				if (layerEntry.type === 'xyz') {
+				if (layerEntry.type === 'raster') {
 					sourceItems[sourceId] = {
 						type: 'raster',
 						tiles: [layerEntry.path],
+						maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+						minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+						tileSize: 256,
 						attribution: layerEntry.attribution
 					};
 				} else {
@@ -56,17 +59,17 @@
 			categoryEntry.layers
 				.filter((layerEntry) => layerEntry.visible)
 				.reverse()
-				.forEach((layerEntry) => {
+				.forEach((layerEntry, i) => {
 					const layerId = `${categoryEntry.categoryId}_${layerEntry.id}`;
 					const sourceId = `${categoryEntry.categoryId}_${layerEntry.id}_source`;
 
-					if (layerEntry.type === 'xyz') {
+					if (layerEntry.type === 'raster') {
 						layerItems.push({
 							id: layerId,
 							type: 'raster',
 							source: sourceId,
-							minzoom: 8,
-							maxzoom: 18,
+							maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+							minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
 							paint: { 'raster-opacity': layerEntry.opacity }
 						});
 						layerIdNameDict[layerId] = layerEntry.name;
@@ -137,7 +140,7 @@
 <div id="map" class="h-full w-full"></div>
 <Side />
 <div class="custom-css absolute left-[70px] top-2 h-full max-h-[calc(100vh-8rem)] w-[300px]">
-	<BaseMenu {backgroundIds} bind:selectedBackgroundId />
+	<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 	<RasterMenu bind:layerDataEntries />
 	<VectorMenu bind:layerDataEntries />
 </div>

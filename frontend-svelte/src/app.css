@@ -15,3 +15,11 @@ body {
 	visibility: hidden;
 	opacity: 0;
 }
+
+.bg-color-base {
+	background-color: rgba(0, 0, 0, 0.75);
+}
+
+.bg-color-active {
+	background-color: rgb(24, 110, 24);
+}

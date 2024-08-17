@@ -13,7 +13,7 @@
 </script>
 
 <div
-	class="absolute left-4 h-full overflow-visible rounded bg-gray-800 p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
+	class="bg-color-base absolute left-4 h-full overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
 	'vector'
 		? ''
 		: 'menu-out'}"

@@ -7,6 +7,7 @@ export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
+export const showlayerOptionId = writable<string>('');
 
 /** 外部コンポーネントからイベントを発火させるストア */
 // const eventStore = () => {

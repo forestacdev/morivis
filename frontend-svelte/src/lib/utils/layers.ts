@@ -171,7 +171,7 @@ export const backgroundSources: { [_: string]: SourceSpecification } = {
 export type LayerEntry = {
 	id: string;
 	name: string;
-	type: 'xyz' | 'json';
+	type: 'raster' | 'json';
 	path: string;
 	attribution: string;
 	minzoom?: number;
@@ -191,78 +191,33 @@ export type CategoryEntry = {
 
 export const layerData: CategoryEntry[] = [
 	{
-		categoryId: 'over-raster',
-		categoryName: 'ラスター',
+		categoryId: 'gis-raster',
+		categoryName: '国土地理院',
 		layers: [
 			{
-				id: 'gazo4',
+				id: 'seamlessphoto',
 				name: '1987年-1990年',
-				type: 'xyz',
+				type: 'raster',
 				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/gazo4/{z}/{x}/{y}.jpg',
-				attribution: '地理院タイル',
-				visible: false
-			},
-			{
-				id: 'gazo3',
-				name: '1984年-1986年',
-				type: 'xyz',
-				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/gazo3/{z}/{x}/{y}.jpg',
+				path: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
 				attribution: '地理院タイル',
 				visible: false
 			},
 			{
 				id: 'gazo2',
-				name: '1979年-1983年',
-				type: 'xyz',
+				name: '空中写真(1979年頃)',
+				type: 'raster',
 				opacity: 0.7,
 				path: 'https://cyberjapandata.gsi.go.jp/xyz/gazo2/{z}/{x}/{y}.jpg',
 				attribution: '地理院タイル',
 				visible: false
 			},
 			{
-				id: 'gazo1',
-				name: '1974年-1978年',
-				type: 'xyz',
+				id: 'std',
+				name: '標準地図',
+				type: 'raster',
 				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/gazo1/{z}/{x}/{y}.jpg',
-				attribution: '地理院タイル',
-				visible: false
-			},
-			{
-				id: 'ort_old10',
-				name: '1961年-1969年',
-				type: 'xyz',
-				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/ort_old10/{z}/{x}/{y}.png',
-				attribution: '地理院タイル',
-				visible: false
-			},
-			{
-				id: 'ort_USA10',
-				name: '1945年-1950年',
-				type: 'xyz',
-				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/ort_USA10/{z}/{x}/{y}.png',
-				attribution: '地理院タイル',
-				visible: false
-			},
-			{
-				id: 'ort_riku10',
-				name: '1936年-1942年',
-				type: 'xyz',
-				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/ort_riku10/{z}/{x}/{y}.png',
-				attribution: '地理院タイル',
-				visible: false
-			},
-			{
-				id: 'ort_1928',
-				name: '1928年頃',
-				type: 'xyz',
-				opacity: 0.7,
-				path: 'https://cyberjapandata.gsi.go.jp/xyz/ort_1928/{z}/{x}/{y}.png',
+				path: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
 				attribution: '地理院タイル',
 				visible: false
 			}
