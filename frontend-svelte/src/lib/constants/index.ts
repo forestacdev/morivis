@@ -4,3 +4,6 @@ export const BASEMAP_IMAGE_TILE: BasemapImageTile = {
 	X: 3605,
 	Y: 1614
 };
+
+export const GEOJSON_BASE_PATH =
+	'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson';

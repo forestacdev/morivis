@@ -8,30 +8,38 @@
 	const dispatch = createEventDispatcher();
 
 	export let layerEntry: LayerEntry;
+	let selectedStyle: string = layerEntry.style_key;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
 			? showlayerOptionId.set('')
 			: showlayerOptionId.set(layerEntry.id);
 	};
 
-	// $: if (layerEntry) {
-	// 	showlayerOptionId.set('');
-	// }
-
-	const moveLayerById = (direction: 'up' | 'down') => {
+	// レイヤーの移動
+	const moveLayerById = (direction: 'up' | 'down' | 'top' | 'bottom') => {
 		const id = layerEntry.id;
-		console.log(id);
 
 		dispatch('moveLayerById', { id, direction });
 	};
+
+	const serPaintProperty = (key: string, value: string) => {
+		console.log(key, value);
+	};
 </script>
 
-<div class="relative flex select-none flex-col justify-between gap-x-2">
+<div
+	class="relative flex select-none flex-col justify-between gap-x-2 transition-all delay-100 {$showlayerOptionId ===
+	layerEntry.id
+		? 'py-6'
+		: ''}"
+>
 	<button
-		class="transition-all duration-200 {$showlayerOptionId === layerEntry.id
-			? 'max-h-[100px]'
-			: 'max-h-[0px]'}"
-		on:click={() => moveLayerById('up')}>ss</button
+		class="absolute top-0 transition-all delay-100 duration-200 {$showlayerOptionId ===
+		layerEntry.id
+			? ''
+			: 'pointer-events-none h-[0px] opacity-0'}"
+		on:click={() => moveLayerById('up')}
+		><Icon icon="bx:up-arrow" width="24" height="24" class="" /></button
 	>
 	<label
 		class="w-full cursor-pointer items-end rounded-md bg-slate-400 p-2 transition-all duration-150 {layerEntry.visible
@@ -75,20 +83,66 @@
 			</button>
 		</div>
 	</label>
+
 	<div
-		class="absolute right-0 h-[100px] rounded-md bg-white text-black transition-all duration-150 {$showlayerOptionId ===
+		class="relative flex justify-between gap-2 bg-red-300 transition-all delay-100 duration-200 {$showlayerOptionId ===
 		layerEntry.id
-			? 'translate-x-[70px] opacity-100'
-			: 'pointer-events-none scale-50 opacity-0'}"
+			? ''
+			: ''}"
 	>
-		ss
+		<button
+			class="absolute left-0 transition-all delay-100 duration-200 {$showlayerOptionId ===
+			layerEntry.id
+				? ''
+				: 'pointer-events-none opacity-0'}"
+			on:click={() => moveLayerById('down')}
+			><Icon icon="bx:down-arrow" class="absolute" width="24" height="24" /></button
+		>
 	</div>
-	<button
-		class="transition-all duration-200 {$showlayerOptionId === layerEntry.id
-			? 'max-h-[100px]'
-			: 'max-h-[0px]'}"
-		on:click={() => moveLayerById('down')}>down</button
-	>
+</div>
+<div
+	class="absolute h-full w-full -translate-y-full rounded-md bg-white text-black transition-all duration-150 {$showlayerOptionId ===
+	layerEntry.id
+		? 'translate-x-[200px] opacity-100'
+		: 'pointer-events-none scale-50 opacity-0'}"
+>
+	{#if layerEntry.show_label !== undefined}
+		<div class="flex flex-col gap-2">
+			<label class="block">ラベル</label>
+			<input type="checkbox" bind:checked={layerEntry.show_label} />
+		</div>
+	{/if}
+
+	{#if layerEntry.type === 'raster'}
+		<div class="flex flex-col gap-2">
+			<label class="block">透過度</label>
+			<input
+				type="range"
+				class="w-full"
+				on:input={() => console.log('change')}
+				min="0"
+				max="1"
+				step="0.01"
+			/>
+			<label class="block">raster-saturation</label>
+			<input
+				type="range"
+				class="w-full"
+				on:input={(event) => serPaintProperty('raster-saturation', event.target.value)}
+				min="0"
+				max="1"
+				step="0.01"
+			/>
+		</div>
+	{:else if layerEntry.type === 'geojson-polygon'}
+		<div class="flex flex-col gap-2">
+			<select bind:value={layerEntry.style_key}>
+				{#each layerEntry.style.fill as item (item)}
+					<option value={item.name}>{item.name}</option>
+				{/each}
+			</select>
+		</div>
+	{/if}
 </div>
 
 <style>
