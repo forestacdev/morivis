@@ -1,16 +1,19 @@
 <script setup lang="ts">
-	// export let lngLat: [number, number];
+	// export let lngLat: [number, number];	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
-
-	onMount(() => {
-		console.log('lock-on');
-	});
+	const handleButtonClick = (event) => {
+		event.stopPropagation(); // クリックイベントの伝播を止める
+		dispatch('click', event);
+	};
 </script>
 
-<div class="custom-anime relative flex max-w-md flex-col gap-4 p-3">
+<button on:click={handleButtonClick} class="custom-anime relative flex max-w-md flex-col gap-4 p-3">
 	<Icon icon="f7:scope" width="50" height="50" class="custom-anime" />
-</div>
+</button>
 
 <style>
 	.custom-anime {

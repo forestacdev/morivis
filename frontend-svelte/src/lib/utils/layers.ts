@@ -257,6 +257,28 @@ export type CategoryEntry = {
 
 export const layerData: LayerEntry[] = [
 	{
+		id: 'ENSYURIN_pole',
+		name: 'サインポール',
+		type: 'geojson-point',
+		opacity: 0.7,
+		path: `${GEOJSON_BASE_PATH}/ENSYURIN_pole.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		style_key: 'デフォルト',
+		style: {
+			circle: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'circle-color': '#ff0000',
+						'circle-radius': 10,
+						'circle-stroke-width': 1
+					}
+				}
+			]
+		}
+	},
+	{
 		id: 'ENSYURIN_MITI',
 		name: '演習林路網',
 		type: 'geojson-line',
@@ -264,6 +286,7 @@ export const layerData: LayerEntry[] = [
 		path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
+		style_key: 'デフォルト',
 		style: {
 			line: [
 				{
@@ -271,6 +294,27 @@ export const layerData: LayerEntry[] = [
 					paint: {
 						'line-color': '#221f1b',
 						'line-width': 3
+					}
+				}
+			]
+		}
+	},
+	{
+		id: 'ENSYURIN_KAWA',
+		name: '川',
+		type: 'geojson-line',
+		opacity: 0.7,
+		path: `${GEOJSON_BASE_PATH}/KAWA.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		style_key: 'デフォルト',
+		style: {
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-width': 5,
+						'line-color': '#0f7acc'
 					}
 				}
 			]

@@ -1,20 +1,19 @@
 <script setup lang="ts">
-	import type { LayerEntry } from '$lib/utils/layers';
-
-	export let categoryName: string;
-	export let layerEntry: LayerEntry;
+	export let popup: any;
 </script>
 
-<div class="p-3 max-w-md flex flex-col gap-4">
-	<div class="flex flex-col gap-1.5">
-		<h2 class="font-bold text-sm">{categoryName}: {layerEntry.name}</h2>
-	</div>
-	{#if layerEntry.remarks}
-		<div>
-			<p class="text-sm">{layerEntry.remarks}</p>
-		</div>
+<div class="flex max-w-md flex-col gap-4 p-3"></div>
+
+<!-- <div class="bg-color-base flex max-w-md flex-col gap-4 p-3 text-slate-100">
+	{#if feature.feature}
+		{#each Object.keys(feature.feature.properties) as key}
+			<div class="flex gap-2">
+				<span>{key}</span>
+				<span>{feature.feature.properties[key]}</span>
+			</div>
+		{/each}
 	{/if}
-</div>
+</div> -->
 
 <style>
 </style>

@@ -15,12 +15,14 @@
 	import LockOn from '$lib/components/Marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
 	import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
+	import Control from '$lib/components/Control.svelte';
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import { type LayerEntry, backgroundSources } from '$lib/utils/layers';
 	import { layerData } from '$lib/utils/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide } from '$lib/store/store';
+	import { getTilePixelColor } from '$lib/utils/map';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
@@ -31,6 +33,9 @@
 	let layerIdNameDict: { [_: string]: string } = {};
 	let lockOnMarker: Marker | null = null;
 	let selectFeatureList: [];
+
+	let mapBearing = 0;
+
 	let popup;
 
 	let sound;
@@ -202,7 +207,7 @@
 			style: createMapStyle(),
 			center: [136.92300400916308, 35.5509525769706] as [number, number], // starting position [lng, lat]
 			zoom: 14.5,
-			maxZoom: 18,
+			// maxZoom: 18,
 			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 		mapInstance = map;
@@ -219,12 +224,33 @@
 			'top-right' // コントロールの位置を指定
 		);
 
-		mapInstance.on('click', (e) => {
+		mapInstance.on('click', async (e) => {
 			if (mapInstance === null) return;
+
+			const div = document.createElement('div');
+			const lockOnInstance = new LockOn({
+				target: div
+			});
+			lockOnInstance.$on('click', (event) => {
+				removeLockonMarker();
+			});
+			if (lockOnMarker) removeLockonMarker();
+			lockOnMarker = new maplibregl.Marker({ element: div })
+				.setLngLat(e.lngLat)
+
+				.addTo(mapInstance);
+
+			// sound.currentTime = 0; // 効果音を先頭から再生
+			// sound.play(); // 効果音を再生
+
+			mapInstance.panTo(e.lngLat, { duration: 1000 });
 
 			const features = mapInstance.queryRenderedFeatures(e.point);
 
-			if (features.length === 0) return;
+			if (features.length === 0) {
+				selectFeatureList = [];
+				return;
+			}
 
 			for (const feature of features) {
 				if (feature.layer && feature.layer.id && feature.layer.id.includes('cluster')) {
@@ -244,43 +270,25 @@
 				}
 			}
 
-			if (features.length > 1) {
-				selectPopupList = features.map((feature) => {
-					return {
-						name: layerDataEntries.find((entry) => entry.id === feature.layer.id)?.name,
-						layerId: feature.layer.id,
-						feature: feature
-					};
-				});
-
-				return;
-			}
-
-			// レイヤーが属するカテゴリ名を取得
-			const categoryName = features[0]?.layer.id
-				? layerIdNameDict[features[0].layer.id]
-				: undefined;
-
-			console.log(features[0].properties);
-
-			const div = document.createElement('div');
-			new LockOn({
-				target: div
+			selectFeatureList = features.map((feature) => {
+				return {
+					name: layerDataEntries.find((entry) => entry.id === feature.layer.id)?.name,
+					layerId: feature.layer.id,
+					feature: feature
+				};
 			});
 
-			if (lockOnMarker) {
-				lockOnMarker.remove();
-			}
+			// console.log(features[0].properties);
 
-			lockOnMarker = new maplibregl.Marker({ element: div })
-				.setLngLat(e.lngLat)
-				.addTo(mapInstance);
+			// popup = features[0];
+			// selectFeatureList = [];
+		});
 
-			sound.currentTime = 0; // 効果音を先頭から再生
-			sound.play(); // 効果音を再生
-
-			popup = features[0];
-			selectFeatureList = [];
+		mapInstance.on('rotate', (e) => {
+			console.log();
+			// 角度が負の場合、360を足して0〜360度に変換
+			const bearing360 = (Number(e.target.getBearing().toFixed(1)) + 360) % 360;
+			mapBearing = bearing360;
 		});
 	});
 
@@ -290,6 +298,63 @@
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;
 		mapInstance.setStyle(mapStyle as StyleSpecification);
 	}
+
+	// ロックオンマーカーを削除
+	const removeLockonMarker = () => {
+		if (lockOnMarker) lockOnMarker.remove();
+		lockOnMarker = null;
+		selectFeatureList = [];
+	};
+
+	// 標高の取得
+	const getElevation = async () => {
+		console.log(lockOnMarker?.getLngLat());
+		const lngLat = lockOnMarker?.getLngLat();
+		if (!lngLat || !mapInstance) return;
+		const zoom = Math.min(Math.round(mapInstance.getZoom()), 14);
+		const rgba = await getTilePixelColor(
+			lngLat.lng,
+			lngLat.lat,
+			zoom,
+			'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
+		);
+
+		if (!rgba) return;
+
+		// RGB値を取得
+		const r = rgba[0];
+		const g = rgba[1];
+		const b = rgba[2];
+
+		// 高さを計算
+		const rgb = r * 65536.0 + g * 256.0 + b;
+		let h = 0.0;
+		if (rgb < 8388608.0) {
+			h = rgb * 0.01;
+		} else if (rgb > 8388608.0) {
+			h = (rgb - 16777216.0) * 0.01;
+		}
+
+		console.log(h);
+	};
+
+	// マップの回転
+	const setMapBearing = (e) => {
+		const mapBearing = e.detail;
+		console.log(mapBearing);
+		// mapInstance?.setBearing(mapBearing);
+
+		mapInstance?.easeTo({ bearing: mapBearing, duration: 1000 });
+	};
+
+	// マップのズーム
+	const setMapZoom = (e) => {
+		const mapZoom = e.detail;
+		mapInstance?.easeTo({
+			zoom: mapZoom,
+			duration: 1000
+		});
+	};
 </script>
 
 <div id="map" class="h-full w-full"></div>
@@ -298,9 +363,15 @@
 	<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 	<LayerMenu bind:layerDataEntries />
 </div>
-<div class="custom-css absolute right-[70px] top-2 h-full max-h-[calc(100vh-8rem)] w-[300px]">
-	<SelectPopup {selectFeatureList} />
+<div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
+	{#if lockOnMarker}
+		<button on:click={getElevation}>この地点の標高</button>
+	{/if}
+
+	<SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} />
+	<InfoPopup {popup} />
 </div>
+<Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} />
 
 <style>
 	.custom-css {
