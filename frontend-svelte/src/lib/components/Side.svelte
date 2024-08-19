@@ -12,7 +12,7 @@
 	};
 </script>
 
-<div class="absolute left-2 top-2 z-10 flex h-full w-[70px] flex-col gap-2 text-sm">
+<div class="absolute left-2 top-2 z-10 flex w-[70px] flex-col gap-2 text-sm">
 	<button
 		on:click={() => toggleMenu('base')}
 		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"

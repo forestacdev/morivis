@@ -49,9 +49,9 @@
 		: 'menu-out'}"
 >
 	<div class="flex flex-col gap-5">
-		<div class="layers flex flex-col gap-y-2">
+		<div class="flex flex-col gap-y-2">
 			{#each layerDataEntries as layerEntry (layerEntry.id)}
-				<div animate:flip={{ duration: 200 }} class="relative">
+				<div animate:flip={{ duration: 200 }} class="overflow-visible">
 					<LayerSlot bind:layerEntry on:moveLayerById={moveLayerById} />
 				</div>
 			{/each}

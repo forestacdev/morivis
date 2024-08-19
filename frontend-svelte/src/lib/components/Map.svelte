@@ -16,6 +16,7 @@
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
 	import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/Control.svelte';
+	import LayerOptionMenu from './LayerMenu/LayerOptionMenu.svelte';
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import { type LayerEntry, backgroundSources } from '$lib/utils/layers';
 	import { layerData } from '$lib/utils/layers';
@@ -363,6 +364,8 @@
 	<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 	<LayerMenu bind:layerDataEntries />
 </div>
+
+<LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
 	{#if lockOnMarker}
 		<button on:click={getElevation}>この地点の標高</button>
