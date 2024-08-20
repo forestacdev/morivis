@@ -22,7 +22,7 @@
 			<label class="block">透過度</label>
 			<input
 				type="range"
-				class="w-full"
+				class="custom-slider"
 				bind:value={layerOption.opacity}
 				min="0"
 				max="1"
@@ -30,9 +30,23 @@
 			/>
 		</div>
 		{#if layerOption.show_label !== undefined}
-			<div class="flex flex-col gap-2">
+			<div class="flex gap-2">
 				<label class="block">ラベル</label>
-				<input type="checkbox" bind:checked={layerOption.show_label} />
+				<input
+					type="checkbox"
+					class="custom-checkbox"
+					bind:checked={layerOption.show_label}
+				/>
+			</div>
+		{/if}
+		{#if layerOption.show_outline !== undefined}
+			<div class="flex gap-2">
+				<label class="block">アウトライン</label>
+				<input
+					type="checkbox"
+					class="custom-checkbox"
+					bind:checked={layerOption.show_outline}
+				/>
 			</div>
 		{/if}
 
@@ -40,7 +54,7 @@
 			<!-- TODO: -->
 		{:else if layerOption.type === 'geojson-polygon'}
 			<div class="flex flex-col gap-2">
-				<select bind:value={layerOption.style_key}>
+				<select class="custom-select" bind:value={layerOption.style_key}>
 					{#each layerOption.style.fill as item (item)}
 						<option value={item.name}>{item.name}</option>
 					{/each}

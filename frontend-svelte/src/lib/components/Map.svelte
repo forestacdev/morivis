@@ -14,7 +14,7 @@
 	import LayerMenu from '$lib/components/LayerMenu.svelte';
 	import LockOn from '$lib/components/Marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
-	import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
+	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/Control.svelte';
 	import LayerOptionMenu from './LayerMenu/LayerOptionMenu.svelte';
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
@@ -37,9 +37,36 @@
 
 	let mapBearing = 0;
 
-	let popup;
+	let feature;
 
 	let sound;
+
+	const createHighlightSource = () => {
+		const sourceItems: { [_: string]: SourceSpecification } = {};
+		sourceItems['HighlightFeatureId_source'] = {
+			type: 'geojson',
+			data: {
+				type: 'FeatureCollection',
+				features: []
+			}
+		};
+		return sourceItems;
+	};
+
+	const createHighlightLayer = () => {
+		const layerItems: LayerSpecification[] = [];
+		layerItems.push({
+			id: 'HighlightFeatureId',
+			type: 'fill',
+			source: 'HighlightFeatureId_source',
+			paint: {
+				'fill-color': '#ff0000',
+				'fill-opacity': 0.5
+			},
+			filter: ['==', 'id', '']
+		});
+		return layerItems;
+	};
 
 	// sourcesの作成
 	const createSourceItems = () => {
@@ -65,6 +92,7 @@
 				sourceItems[sourceId] = {
 					type: 'geojson',
 					data: layerEntry.path,
+					generateId: true,
 					attribution: layerEntry.attribution
 				};
 			} else {
@@ -111,19 +139,36 @@
 						paint: {
 							'fill-opacity': layerEntry.opacity,
 							...setStyele?.paint
+						},
+						layout: {
+							...(layerEntry.style?.fill?.[0]?.layout ?? {})
 						}
 					});
 					layerIdNameDict[layerId] = layerEntry.name;
+					if (layerEntry.show_outline) {
+						layerItems.push({
+							id: `${layerId}_outline`,
+							type: 'line',
+							source: sourceId,
+							paint: {
+								'line-opacity': layerEntry.opacity,
+								...(layerEntry.style?.line?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.line?.[0]?.layout ?? {})
+							}
+						});
+					}
 					if (layerEntry.show_label) {
 						symbolLayerItems.push({
 							id: `${layerId}_label`,
 							type: 'symbol',
 							source: sourceId,
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							},
 							paint: {
 								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
 							}
 						});
 					}
@@ -135,6 +180,9 @@
 						paint: {
 							'line-opacity': layerEntry.opacity,
 							...(layerEntry.style?.line?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.line?.[0]?.layout ?? {})
 						}
 					});
 					layerIdNameDict[layerId] = layerEntry.name;
@@ -146,6 +194,9 @@
 						paint: {
 							'circle-opacity': layerEntry.opacity,
 							...(layerEntry.style?.circle?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.circle?.[0]?.layout ?? {})
 						}
 					});
 					layerIdNameDict[layerId] = layerEntry.name;
@@ -165,7 +216,8 @@
 			sources: {
 				terrain: gsiTerrainSource, // 地形ソース
 				...createSourceItems(),
-				...backgroundSources
+				...backgroundSources,
+				...createHighlightSource()
 			},
 			layers: [
 				{
@@ -173,7 +225,8 @@
 					source: selectedBackgroundId,
 					type: 'raster'
 				},
-				...createLayerItems()
+				...createLayerItems(),
+				...createHighlightLayer()
 			]
 		};
 
@@ -253,35 +306,17 @@
 				return;
 			}
 
-			for (const feature of features) {
-				if (feature.layer && feature.layer.id && feature.layer.id.includes('cluster')) {
-					// ズームを拡大
-					const currentZoom = mapInstance.getZoom();
-					const newZoom = currentZoom + 1;
-					const zoomOptions = {
-						duration: 500 // アニメーションの時間（ミリ秒）
-					};
-					mapInstance.flyTo({
-						center: e.lngLat,
-						zoom: newZoom,
-						essential: true,
-						...zoomOptions
-					});
-					return; // クラスターの場合はポップアップを表示しない
-				}
-			}
+			// selectFeatureList = features.map((feature) => {
+			// 	return {
+			// 		name: layerDataEntries.find((entry) => entry.id === feature.layer.id)?.name,
+			// 		layerId: feature.layer.id,
+			// 		feature: feature
+			// 	};
+			// });
 
-			selectFeatureList = features.map((feature) => {
-				return {
-					name: layerDataEntries.find((entry) => entry.id === feature.layer.id)?.name,
-					layerId: feature.layer.id,
-					feature: feature
-				};
-			});
+			console.log(features[0].properties);
 
-			// console.log(features[0].properties);
-
-			// popup = features[0];
+			feature = features[0];
 			// selectFeatureList = [];
 		});
 
@@ -305,6 +340,7 @@
 		if (lockOnMarker) lockOnMarker.remove();
 		lockOnMarker = null;
 		selectFeatureList = [];
+		feature = null;
 	};
 
 	// 標高の取得
@@ -342,7 +378,6 @@
 	// マップの回転
 	const setMapBearing = (e) => {
 		const mapBearing = e.detail;
-		console.log(mapBearing);
 		// mapInstance?.setBearing(mapBearing);
 
 		mapInstance?.easeTo({ bearing: mapBearing, duration: 1000 });
@@ -371,8 +406,8 @@
 		<button on:click={getElevation}>この地点の標高</button>
 	{/if}
 
-	<SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} />
-	<InfoPopup {popup} />
+	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
+	<InfoPopup {feature} />
 </div>
 <Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} />
 

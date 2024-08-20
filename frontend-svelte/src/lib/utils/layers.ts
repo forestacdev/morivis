@@ -245,6 +245,7 @@ export type LayerEntry = {
 	style?: LayerStyle;
 	visible: boolean;
 	show_label?: boolean;
+	show_outline?: boolean;
 	legendId?: string; // legends.ts のキーに対応
 	remarks?: string; // 備考
 };
@@ -292,8 +293,12 @@ export const layerData: LayerEntry[] = [
 				{
 					name: 'デフォルト',
 					paint: {
-						'line-color': '#221f1b',
-						'line-width': 3
+						'line-opacity': 0.8,
+						'line-color': '#8e8e7b',
+						'line-width': ['match', ['get', '種類'], ['林道'], 10, 5]
+					},
+					layout: {
+						'line-join': 'bevel'
 					}
 				}
 			]
@@ -324,14 +329,21 @@ export const layerData: LayerEntry[] = [
 		id: 'ENSYURIN_rinhanzu',
 		name: '演習林林班図',
 		type: 'geojson-polygon',
-		opacity: 0.7,
+		opacity: 0.5,
 		path: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
 		show_label: true,
-		style_key: '樹種ごとの色分け',
+		show_outline: true,
+		style_key: '単色',
 		style: {
 			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				},
 				{
 					name: '樹種ごとの色分け',
 					paint: {
@@ -353,8 +365,7 @@ export const layerData: LayerEntry[] = [
 							'その他岩石',
 							'#D98F34', // その他岩石
 							'#000000' // デフォルトの色（該当しない場合）
-						],
-						'fill-outline-color': '#000000'
+						]
 					}
 				},
 				{
@@ -407,7 +418,7 @@ export const layerData: LayerEntry[] = [
 				{
 					name: 'デフォルト',
 					paint: {
-						'line-color': '#000000',
+						'line-color': '#ff0000',
 						'line-width': 1.5
 					}
 				}
@@ -422,7 +433,6 @@ export const layerData: LayerEntry[] = [
 						'text-opacity': 1
 					},
 					layout: {
-						visibility: 'visible',
 						'text-field': [
 							'match',
 							['get', '樹種'],
