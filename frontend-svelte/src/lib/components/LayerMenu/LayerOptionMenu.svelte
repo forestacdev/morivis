@@ -49,16 +49,40 @@
 				/>
 			</div>
 		{/if}
+		{#if layerOption.show_fill !== undefined}
+			<div class="flex gap-2">
+				<label class="block">塗りつぶし</label>
+				<input
+					type="checkbox"
+					class="custom-checkbox"
+					bind:checked={layerOption.show_fill}
+				/>
+			</div>
+		{/if}
 
 		{#if layerOption.type === 'raster'}
 			<!-- TODO: -->
 		{:else if layerOption.type === 'geojson-polygon'}
 			<div class="flex flex-col gap-2">
-				<select class="custom-select" bind:value={layerOption.style_key}>
+				<select
+					class="custom-select {!layerOption.show_fill ? 'opacity-50' : ''}"
+					bind:value={layerOption.style_key}
+					disabled={!layerOption.show_fill}
+				>
 					{#each layerOption.style.fill as item (item)}
 						<option value={item.name}>{item.name}</option>
 					{/each}
 				</select>
+			</div>
+		{/if}
+		{#if layerOption.style_key === '単色'}
+			<div class="flex gap-2">
+				<label class="block">色</label>
+				<input
+					type="color"
+					class="custom-color"
+					bind:value={layerOption.style.fill[0].paint['fill-color']}
+				/>
 			</div>
 		{/if}
 	{/if}

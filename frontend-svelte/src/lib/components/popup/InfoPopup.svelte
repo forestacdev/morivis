@@ -8,6 +8,11 @@
 
 <div class="bg-color-base flex max-w-md flex-col gap-4 p-3 text-slate-100">
 	{#if feature}
+		{#if feature.properties['image']}
+			<div class="flex gap-2">
+				<img src={feature.properties['image']} alt="image" />
+			</div>
+		{/if}
 		{#each Object.keys(feature.properties) as key}
 			<div class="flex gap-2">
 				<span>{key}</span>

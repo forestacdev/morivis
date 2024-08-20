@@ -12,10 +12,10 @@
 	};
 </script>
 
-<div class="absolute left-2 top-2 z-10 flex w-[70px] flex-col gap-2 text-sm">
+<div class="absolute left-2 top-2 z-10 flex flex-col gap-2 text-sm">
 	<button
 		on:click={() => toggleMenu('base')}
-		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"
+		class="bg-color-base grid h-[70px] w-full place-items-center rounded-full p-2"
 		><Icon
 			icon="material-symbols:map-outline"
 			width="30"
@@ -25,18 +25,23 @@
 	>
 	<button
 		on:click={() => toggleMenu('raster')}
-		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"
-		><Icon icon="bx:layer" width="30" height="30" /></button
+		class="bg-color-base grid h-[70px] w-full place-items-center rounded-full p-2"
+		><Icon icon="bx:layer-plus" width="30" height="30" /></button
 	>
 	<button
 		on:click={() => toggleMenu('vector')}
-		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"
-		><Icon icon="bx:layer" width="30" height="30" /></button
+		class="bg-color-base grid h-[70px] w-full place-items-center rounded-full p-2"
+		><Icon icon="bxs:layer-plus" width="30" height="30" /></button
 	>
 	<button
 		on:click={() => toggleMenu('info')}
-		class="bg-color-base grid h-[70px] w-full place-items-center rounded-md p-2"
+		class="bg-color-base grid h-[70px] w-full place-items-center rounded-full p-2"
 		><Icon icon="bx:layer" width="30" height="30" /></button
+	>
+	<button
+		on:click={() => toggleMenu('')}
+		class="bg-color-base grid h-[70px] w-full place-items-center rounded-full p-2"
+		><Icon icon="material-symbols-light:settings-outline" width="30" height="30" /></button
 	>
 </div>
 

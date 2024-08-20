@@ -132,19 +132,28 @@
 					const setStyele = layerEntry.style?.fill?.find(
 						(item) => item.name === layerEntry.style_key
 					);
-					layerItems.push({
+
+					const layer = {
 						id: layerId,
 						type: 'fill',
 						source: sourceId,
-						paint: {
-							'fill-opacity': layerEntry.opacity,
-							...setStyele?.paint
-						},
+						paint: layerEntry.show_fill
+							? {
+									'fill-opacity': layerEntry.opacity,
+									...setStyele?.paint
+								}
+							: {
+									'fill-opacity': layerEntry.opacity,
+									'fill-color': 'transparent'
+								},
 						layout: {
 							...(layerEntry.style?.fill?.[0]?.layout ?? {})
 						}
-					});
+					} as LayerSpecification;
+
+					layerItems.push(layer);
 					layerIdNameDict[layerId] = layerEntry.name;
+
 					if (layerEntry.show_outline) {
 						layerItems.push({
 							id: `${layerId}_outline`,

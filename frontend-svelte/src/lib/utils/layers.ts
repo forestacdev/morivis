@@ -246,6 +246,7 @@ export type LayerEntry = {
 	visible: boolean;
 	show_label?: boolean;
 	show_outline?: boolean;
+	show_fill?: boolean;
 	legendId?: string; // legends.ts のキーに対応
 	remarks?: string; // 備考
 };
@@ -326,6 +327,85 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
+		id: 'TATEMONO',
+		name: '建物',
+		type: 'geojson-polygon',
+		opacity: 0.5,
+		path: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		show_label: true,
+		show_outline: true,
+		show_fill: false,
+		style_key: '単色',
+		style: {
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				}
+			],
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'text-halo-color': '#000000',
+						'text-halo-width': 2,
+						'text-opacity': 1,
+						'text-color': '#ffffff'
+					},
+					layout: {
+						visibility: 'visible',
+						'text-field': ['to-string', ['get', 'name']],
+						'text-size': 14,
+						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+						'text-radial-offset': 0.5,
+						'text-justify': 'auto',
+						'icon-image': [
+							'case',
+							[
+								'match',
+								['get', 'name'],
+								['森林総合教育センター(morinos)'],
+								true,
+								false
+							],
+							'morinosuマーク',
+							['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+							'アカデミーマークアイコン',
+							'dot-11'
+						],
+						'icon-size': [
+							'case',
+							[
+								'match',
+								['get', 'name'],
+								['森林総合教育センター(morinos)'],
+								true,
+								false
+							],
+							0.4,
+							['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+							0.3,
+							1
+						]
+					}
+				}
+			]
+		}
+	},
+	{
 		id: 'ENSYURIN_rinhanzu',
 		name: '演習林林班図',
 		type: 'geojson-polygon',
@@ -335,6 +415,7 @@ export const layerData: LayerEntry[] = [
 		visible: true,
 		show_label: true,
 		show_outline: true,
+		show_fill: true,
 		style_key: '単色',
 		style: {
 			fill: [
