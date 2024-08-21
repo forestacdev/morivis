@@ -312,6 +312,7 @@
 
 			if (features.length === 0) {
 				selectFeatureList = [];
+                feature = null;
 				return;
 			}
 
@@ -323,9 +324,9 @@
 			// 	};
 			// });
 
-			console.log(features[0].properties);
+			console.log(features[0]);
 
-			feature = features[0];
+			feature = features[0] ? features[0] : null;
 			// selectFeatureList = [];
 		});
 
@@ -404,7 +405,9 @@
 
 <div id="map" class="h-full w-full"></div>
 <Side />
-<div class="custom-css absolute left-[70px] top-2 h-full max-h-[calc(100vh-8rem)] w-[300px]">
+<div
+	class="custom-css absolute left-[120px] top-[60px] h-full max-h-[calc(100vh-8rem)] max-w-[300px]"
+>
 	<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 	<LayerMenu bind:layerDataEntries />
 </div>
@@ -418,7 +421,7 @@
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
 	<InfoPopup {feature} />
 </div>
-<Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} />
+<!-- <Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} /> -->
 
 <style>
 	.custom-css {

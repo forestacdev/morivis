@@ -14,9 +14,9 @@
 </script>
 
 <div
-	class="bg-color-base absolute left-4 flex h-full flex-col overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
+	class="bg-color-base absolute left-4 flex h-full w-[400px] flex-col overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
 	'base'
-		? ''
+		? 'menu-in'
 		: 'menu-out'}"
 >
 	<label for="background" class="block text-sm font-semibold leading-6">ベースマップ</label>

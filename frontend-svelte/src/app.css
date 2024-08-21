@@ -155,3 +155,7 @@ body {
 	cursor: pointer;
 	outline: none;
 }
+
+.btn-side {
+	@apply bg-color-base grid h-[50px] w-[50px] rotate-45 place-items-center p-2 text-white;
+}

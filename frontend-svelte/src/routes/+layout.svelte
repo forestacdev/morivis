@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>演習林GIS-森林文化アカデミー</title>
+	<title>演習林WebMap-森林文化アカデミー</title>
 	<link
 		rel="icon"
 		href="https://raw.githubusercontent.com/ensyurinGIS/map/main/sozai/favicon.svg"
@@ -16,7 +16,8 @@
 	/>
 	<meta property="og:title" content="演習林GIS-森林文化アカデミー" />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://ensyuringis.github.io/forest.ac/" />
+	<!-- TODO: url -->
+	<meta property="og:url" content="" />
 	<meta property="og:image" content="./OGPimage.jpg" />
 	<meta property="og:description" content="森林文化アカデミー演習林（33ha）のWebマップ" />
 	<meta name="twitter:card" content="summary" />
