@@ -276,12 +276,18 @@
 	$: createdDemMesh(targetDemData);
 </script>
 
-<div class="absolute bottom-0 right-0">
-	<canvas class=" h-[600px] w-[600px]" bind:this={canvas}></canvas>
-</div>
+<!-- <div class="custom-canvas-back"></div> -->
+<canvas class="" bind:this={canvas}></canvas>
 
 <style>
 	canvas {
 		background-image: radial-gradient(#382c6e, #000000);
+
+		border-radius: 10px 0 0 0;
+		right: 0;
+		bottom: 0;
+		position: absolute;
+		width: 600px;
+		height: 600px;
 	}
 </style>
