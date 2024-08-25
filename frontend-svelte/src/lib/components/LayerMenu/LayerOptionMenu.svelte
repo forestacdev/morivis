@@ -78,16 +78,52 @@
 					{/each}
 				</select>
 			</div>
-		{/if}
-		{#if layerOption.style_key === '単色'}
-			<div class="flex gap-2">
-				<label class="block">色</label>
-				<input
-					type="color"
-					class="custom-color"
-					bind:value={layerOption.style.fill[0].paint['fill-color']}
-				/>
+			{#if layerOption.style_key === '単色'}
+				<div class="flex gap-2">
+					<label class="block">色</label>
+					<input
+						type="color"
+						class="custom-color"
+						bind:value={layerOption.style.fill[0].paint['fill-color']}
+					/>
+				</div>
+			{/if}
+		{:else if layerOption.type === 'geojson-line' || layerOption.type === 'vector-line'}
+			<div class="flex flex-col gap-2">
+				<select class="custom-select" bind:value={layerOption.style_key}>
+					{#each layerOption.style.line as item (item)}
+						<option value={item.name}>{item.name}</option>
+					{/each}
+				</select>
 			</div>
+			{#if layerOption.style_key === '単色'}
+				<div class="flex gap-2">
+					<label class="block">色</label>
+					<input
+						type="color"
+						class="custom-color"
+						bind:value={layerOption.style.line[0].paint['line-color']}
+					/>
+				</div>
+			{/if}
+		{:else if layerOption.type === 'geojson-circle' || layerOption.type === 'vector-circle'}
+			<div class="flex flex-col gap-2">
+				<select class="custom-select" bind:value={layerOption.style_key}>
+					{#each layerOption.style.circle as item (item)}
+						<option value={item.name}>{item.name}</option>
+					{/each}
+				</select>
+			</div>
+			{#if layerOption.style_key === '単色'}
+				<div class="flex gap-2">
+					<label class="block">色</label>
+					<input
+						type="color"
+						class="custom-color"
+						bind:value={layerOption.style.circle[0].paint['circle-color']}
+					/>
+				</div>
+			{/if}
 		{/if}
 	{/if}
 </div>

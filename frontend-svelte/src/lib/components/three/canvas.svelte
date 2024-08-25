@@ -1,33 +1,248 @@
 <script lang="ts">
 	import * as THREE from 'three';
-	import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
+	import { imageToflatArray } from '$lib/utils/image';
+	import Worker from './worker?worker';
 
 	import { onMount } from 'svelte';
 
-	onMount(() => {
-		const sizes = {
-			width: window.innerWidth,
-			height: window.innerHeight
+	export let targetDemData: any;
+	let canvas: HTMLCanvasElement;
+	let scene: THREE.Scene;
+
+	const material2uniforms = {
+		uTime: { value: 0 },
+		uTexture: { value: new THREE.TextureLoader().load('./microtopographic.webp') },
+		uColor: { value: new THREE.Color('rgb(252, 252, 252)') },
+		uColor2: { value: new THREE.Color('rgb(255, 0, 0)') }
+	};
+
+	const material2 = new THREE.ShaderMaterial({
+		uniforms: material2uniforms,
+		// 頂点シェーダー
+		vertexShader: /* glsl */ `
+        varying vec2 vUv;// fragmentShaderに渡すためのvarying変数
+        varying vec3 vPosition;
+        uniform float uTime;
+        varying vec3 vNormal;
+        varying mat4 vModelMatrix;
+
+        layout(location = 0) in vec3 aPos; // 頂点の位置
+
+        void main() {
+            vUv = uv;
+            vPosition = position;
+            vNormal = normal;
+            vModelMatrix = modelMatrix;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+`,
+
+		// フラグメントシェーダー
+		fragmentShader: /* glsl */ `
+            //uniform 変数としてテクスチャのデータを受け取る
+            uniform sampler2D u_texture;
+            // vertexShaderで処理されて渡されるテクスチャ座標
+            varying vec3 vPosition;
+            varying vec3 vNormal;
+            varying vec2 vUv;
+            varying mat4 vModelMatrix;
+            uniform vec3 uColor;
+            uniform vec3 uColor2;
+            uniform float uTime;
+            void main()
+                {
+                float coefficient = 1.2;
+                float power = 1.0;
+                vec3 glowColor = uColor;
+
+                vec3 worldPosition = (vModelMatrix * vec4(vPosition, 1.0)).xyz;
+                vec3 cameraToVertex = normalize(worldPosition - cameraPosition);
+                float intensity = pow(coefficient + dot(cameraToVertex, normalize(vNormal)), power);
+                if(vPosition.y < 1.0){
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                } else {
+                    gl_FragColor = vec4(glowColor, 1.0) * intensity;
+                }
+
+        // 等高線
+        float contourInterval = 10.0; // 等高線の間隔
+        float lineWidth = 1.0; // 等高線の線の幅
+        float edgeWidth = 0.9; // 等高線の境界の幅（スムージング用）
+
+        // 時間に基づいた変動を加えたY位置
+        float yPos = vPosition.y - uTime; // 速度は調整可能
+
+        // 等高線の位置を計算
+        float contourValue = mod(yPos, contourInterval);
+        // 等高線のアルファ値を計算
+        float alpha = smoothstep(lineWidth - edgeWidth, lineWidth, contourValue) - smoothstep(lineWidth, lineWidth + edgeWidth, contourValue);
+
+        // 等高線の色
+        vec3 contourColor = uColor2; // 赤色
+
+        // 地形の色
+        vec3 terrainColor = uColor; // グレー色
+
+        // 等高線か地形かによって色を決定
+        vec3 color = mix(terrainColor, contourColor, alpha);
+
+        vec3 color2 = mix(color, glowColor, 0.5);
+
+        gl_FragColor = vec4(color2, 1.0)  * intensity;
+
+            gl_FragColor = vec4(color, 1.0)  * intensity;
+
+                    }
+        `,
+		transparent: true
+	});
+
+	const createdDemMesh = async (targetDemData) => {
+		if (!targetDemData) return;
+
+		console.log(targetDemData);
+
+		const tileurl = targetDemData.tileurl;
+		const zoomLevel = targetDemData.zoom;
+
+		// 地球の赤道周長 (メートル)
+		const EARTH_CIRCUMFERENCE = 40075016.686; // 約40,075km
+
+		// タイルのズームレベルに応じた1ピクセルあたりの地上距離を計算する関数
+		const distancePerPixel = (zoomLevel) => {
+			return EARTH_CIRCUMFERENCE / Math.pow(2, zoomLevel) / 256;
 		};
 
-		// キャンバスの作成
-		const canvas = document.createElement('canvas');
-		document.body.appendChild(canvas);
+		// 1ピクセルあたりの地上距離
+		const pixelDistance = distancePerPixel(zoomLevel);
+
+		// ズームレベルに応じた scale_factor の計算
+		const scaleFactor = Math.pow(2.0, 17.26 - zoomLevel);
+
+		// const tileurl = 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/14423/6458.png';
+		const tileData = await imageToflatArray(tileurl);
+
+		// タイル画像を取得して、画像をフラットな配列に変換
+
+		// メッシュの固定幅と高さ
+		const fixedWidth = 1000; // 固定したい横幅（例：1000メートル）
+		const fixedHeight = 1000; // 固定したい高さ（例：1000メートル）
+
+		// ピクセル解像度
+		const dx = fixedWidth / 256; // 幅を固定しつつ、ピクセルあたりの解像度を計算
+		const dy = fixedHeight / 256;
+
+		// ラスターの高さと幅を取得
+		const tiffWidth = 256;
+		const tiffHeight = 256;
+
+		// 新しい幅と高さ（余分に1ピクセル追加）
+		const newWidth = tiffWidth + 2;
+		const newHeight = tiffHeight + 2;
+
+		// 新しいDEMデータを作成し、全ての高さを0に初期化
+		const newDemData = new Float32Array(newWidth * newHeight).fill(0);
+
+		// DEMデータを計算してコピー
+		tileData.forEach((_, index) => {
+			if (index % 4 !== 0) return; // RGBAのうちR成分に対してのみ処理を行う
+
+			const pixelIndex = index / 4;
+			const i = Math.floor(pixelIndex / tiffWidth);
+			const j = pixelIndex % tiffWidth;
+
+			// rgbの値を取得
+			const r = tileData[index];
+			const g = tileData[index + 1];
+			const b = tileData[index + 2];
+
+			// 高さを計算し、スケールファクターを適用
+			const rgb = r * 65536.0 + g * 256.0 + b;
+			const h = rgb < 8388608.0 ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
+
+			// newDemDataに余白を考慮して格納
+			newDemData[(i + 1) * newWidth + (j + 1)] = h / scaleFactor;
+		});
+
+		// ラスターの中心座標を取得
+		const [ulx, uly] = [0, 0];
+		const centerX = ulx + (tiffWidth / 2) * dx;
+		const centerY = uly - (tiffHeight / 2) * dy;
+		const center = [centerX, centerY];
+
+		// Geometryの作成
+		const geometry = new THREE.BufferGeometry();
+
+		// ラスターの中心座標を原点にするためのオフセット
+		const xOffset = (newWidth * dx) / 2;
+		const zOffset = (newHeight * dy) / 2;
+
+		// DEMの値の最小値を計算
+		const minValue = newDemData.reduce((min, value) => Math.min(min, value), Infinity);
+
+		// 頂点座標の計算
+		const vertices = Array.from({ length: newWidth * newHeight }, (_, index) => {
+			const i = Math.floor(index / newWidth);
+			const j = index % newWidth;
+			// X座標とZ座標にオフセットを追加して、幅を固定
+			return [j * dx - xOffset, newDemData[index] - minValue, i * dy - zOffset];
+		}).flat();
+
+		// 頂点座標をgeometryにセット
+		const verticesFloat32Array = new Float32Array(vertices);
+		geometry.setAttribute('position', new THREE.BufferAttribute(verticesFloat32Array, 3));
+
+		// インデックスの計算
+		const indices = Array.from({ length: (newHeight - 1) * (newWidth - 1) }, (_, idx) => {
+			const i = Math.floor(idx / (newWidth - 1));
+			const j = idx % (newWidth - 1);
+			const a = i * newWidth + j;
+			const b = a + newWidth;
+			const c = a + 1;
+			const d = b + 1;
+
+			return [a, b, c, b, d, c];
+		}).flat();
+
+		// インデックスをgeometryにセット
+		geometry.setIndex(indices);
+
+		// メッシュの作成とシーンへの追加
+		// const material = new THREE.MeshStandardMaterial({ color: 0x5566aa });
+		const mesh = new THREE.Mesh(geometry, material2);
+		mesh.name = 'dem';
+		geometry.computeVertexNormals(); // 法線の計算
+		if (scene.getObjectByName('dem')) {
+			scene.remove(scene.getObjectByName('dem'));
+		}
+		scene.add(mesh);
+	};
+
+	onMount(async () => {
+		const sizes = {
+			width: canvas.clientWidth,
+			height: canvas.clientHeight
+		};
 
 		// シーンの作成
-		const scene = new THREE.Scene();
+		scene = new THREE.Scene();
 
 		// カメラ
 		const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
 		camera.position.set(-190, 280, -350);
 		scene.add(camera);
 
+		// カメラの設定
+		camera.aspect = sizes.width / sizes.height;
+		camera.updateProjectionMatrix();
+
 		// コントロール
-		const mapControls = new MapControls(camera, canvas);
-		mapControls.enableDamping = true;
-		mapControls.enableZoom = false;
-		mapControls.maxDistance = 1000;
+		const orbitControls = new OrbitControls(camera, canvas);
+		orbitControls.enableDamping = true;
+		orbitControls.enableZoom = false;
+		// orbitControls.maxDistance = 1000;
 
 		const zoomControls = new TrackballControls(camera, canvas);
 		zoomControls.noPan = true;
@@ -43,38 +258,49 @@
 		renderer.setSize(sizes.width, sizes.height);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+		// ヘルパー
+		const axesHelper = new THREE.AxesHelper(1000);
+		scene.add(axesHelper);
+
 		// 画面リサイズ時にキャンバスもリサイズ
 		const onResize = () => {
 			// サイズを取得
-			const width = window.innerWidth;
-			const height = window.innerHeight;
+			const width = canvas.clientWidth;
+			const height = canvas.clientHeight;
 
 			// レンダラーのサイズを調整する
-			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 			renderer.setSize(width, height);
 
 			// カメラのアスペクト比を正す
-			camera.aspect = width / height;
+			camera.aspect = sizes.width / sizes.height;
 			camera.updateProjectionMatrix();
 		};
 		window.addEventListener('resize', onResize);
+
+		// テクスチャ
 
 		// アニメーション
 		const animate = () => {
 			requestAnimationFrame(animate);
 
-			const target = mapControls.target;
-			mapControls.update();
+			const target = orbitControls.target;
+			orbitControls.update();
 			zoomControls.target.set(target.x, target.y, target.z);
 			zoomControls.update();
 			renderer.render(scene, camera);
+			if (material2uniforms) {
+				material2uniforms.uTime.value += 0.3;
+			}
 		};
 		animate();
 	});
+
+	$: createdDemMesh(targetDemData);
 </script>
 
-<div>
-	<canvas bind:this={canvas}></canvas>
+<div class="absolute bottom-0 right-0">
+	<canvas class=" h-[600px] w-[600px]" bind:this={canvas}></canvas>
 </div>
 
 <style>

@@ -14,6 +14,7 @@
 	import LayerMenu from '$lib/components/LayerMenu.svelte';
 	import LockOn from '$lib/components/Marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
+	import ThreeCanvas from '$lib/components/three/canvas.svelte';
 	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/Control.svelte';
 	import LayerOptionMenu from './LayerMenu/LayerOptionMenu.svelte';
@@ -23,7 +24,7 @@
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide } from '$lib/store/store';
-	import { getTilePixelColor } from '$lib/utils/map';
+	import { getTilePixelColor, getTileUrl } from '$lib/utils/map';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
@@ -34,6 +35,7 @@
 	let layerIdNameDict: { [_: string]: string } = {};
 	let lockOnMarker: Marker | null = null;
 	let selectFeatureList: [];
+	let targetDemData: any = null;
 
 	let mapBearing = 0;
 
@@ -491,6 +493,14 @@
 		}
 
 		console.log(h);
+
+		const tileurl = getTileUrl(
+			lngLat.lng,
+			lngLat.lat,
+			zoom,
+			'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
+		);
+		targetDemData = { tileurl, zoom };
 	};
 
 	// マップの回転
@@ -529,6 +539,8 @@
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
 	<InfoPopup {feature} />
 </div>
+
+<ThreeCanvas {targetDemData} />
 
 <!-- <Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} /> -->
 
