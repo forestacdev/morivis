@@ -85,6 +85,18 @@
 					attribution: layerEntry.attribution
 				};
 			} else if (
+				layerEntry.type === 'vector-polygon' ||
+				layerEntry.type === 'vector-line' ||
+				layerEntry.type === 'vector-point'
+			) {
+				sourceItems[sourceId] = {
+					type: 'vector',
+					tiles: [layerEntry.path],
+					maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+					minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+					attribution: layerEntry.attribution
+				};
+			} else if (
 				layerEntry.type === 'geojson-polygon' ||
 				layerEntry.type === 'geojson-line' ||
 				layerEntry.type === 'geojson-point'
@@ -128,6 +140,102 @@
 						}
 					});
 					layerIdNameDict[layerId] = layerEntry.name;
+				} else if (layerEntry.type === 'vector-polygon') {
+					const setStyele = layerEntry.style?.fill?.find(
+						(item) => item.name === layerEntry.style_key
+					);
+
+					const layer = {
+						id: layerId,
+						type: 'fill',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						maxzoom: 24,
+						minzoom: 0,
+						paint: layerEntry.show_fill
+							? {
+									'fill-opacity': layerEntry.opacity,
+									...setStyele?.paint
+								}
+							: {
+									'fill-opacity': layerEntry.opacity,
+									'fill-color': 'transparent'
+								},
+						layout: {
+							...(layerEntry.style?.fill?.[0]?.layout ?? {})
+						}
+					} as LayerSpecification;
+
+					layerItems.push(layer);
+					layerIdNameDict[layerId] = layerEntry.name;
+
+					if (layerEntry.show_outline) {
+						layerItems.push({
+							id: `${layerId}_outline`,
+							type: 'line',
+							source: sourceId,
+							'source-layer': layerEntry.source_layer,
+							paint: {
+								'line-opacity': layerEntry.opacity,
+								...(layerEntry.style?.line?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.line?.[0]?.layout ?? {})
+							}
+						});
+					}
+					if (layerEntry.show_label) {
+						symbolLayerItems.push({
+							id: `${layerId}_label`,
+							type: 'symbol',
+							source: sourceId,
+							'source-layer': layerEntry.source_layer,
+							paint: {
+								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+							}
+						});
+					}
+				} else if (layerEntry.type === 'vector-line') {
+					const setStyele = layerEntry.style?.line?.find(
+						(item) => item.name === layerEntry.style_key
+					);
+
+					const layer = {
+						id: layerId,
+						type: 'line',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						maxzoom: 24,
+						minzoom: 0,
+						paint: {
+							'line-opacity': layerEntry.opacity,
+							...(layerEntry.style?.line?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.line?.[0]?.layout ?? {})
+						}
+					} as LayerSpecification;
+
+					layerItems.push(layer);
+					layerIdNameDict[layerId] = layerEntry.name;
+
+					if (layerEntry.show_label) {
+						symbolLayerItems.push({
+							id: `${layerId}_label`,
+							type: 'symbol',
+							source: sourceId,
+							'source-layer': layerEntry.source_layer,
+							paint: {
+								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+							}
+						});
+					}
 				} else if (layerEntry.type === 'geojson-polygon') {
 					const setStyele = layerEntry.style?.fill?.find(
 						(item) => item.name === layerEntry.style_key
@@ -312,7 +420,7 @@
 
 			if (features.length === 0) {
 				selectFeatureList = [];
-                feature = null;
+				feature = null;
 				return;
 			}
 
@@ -421,6 +529,7 @@
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
 	<InfoPopup {feature} />
 </div>
+
 <!-- <Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} /> -->
 
 <style>

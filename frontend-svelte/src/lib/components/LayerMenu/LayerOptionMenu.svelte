@@ -1,16 +1,14 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
-	import { showlayerOptionId,  isSide  } from '$lib/store/store';
+	import { showlayerOptionId, isSide } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 
-
-
-     isSide.subscribe((value) => {
-        if (value !== 'vector') {
-            showlayerOptionId.set(null);
-        }
-    });
+	isSide.subscribe((value) => {
+		if (value !== 'vector') {
+			showlayerOptionId.set(null);
+		}
+	});
 
 	let layerOption: any;
 	$: layerOption = layerDataEntries.find((layer) => layer.id === $showlayerOptionId);
@@ -68,7 +66,7 @@
 
 		{#if layerOption.type === 'raster'}
 			<!-- TODO: -->
-		{:else if layerOption.type === 'geojson-polygon'}
+		{:else if layerOption.type === 'geojson-polygon' || layerOption.type === 'vector-polygon'}
 			<div class="flex flex-col gap-2">
 				<select
 					class="custom-select {!layerOption.show_fill ? 'opacity-50' : ''}"

@@ -240,8 +240,9 @@ export type LayerEntry = {
 	attribution: string;
 	minzoom?: number;
 	maxzoom?: number;
+	source_layer?: string;
 	opacity: number;
-	style_key?: string;
+	style_key: string;
 	style?: LayerStyle;
 	visible: boolean;
 	show_label?: boolean;
@@ -548,13 +549,14 @@ export const layerData: LayerEntry[] = [
 	},
 
 	{
-		id: 'seamlessphoto',
-		name: '1987年-1990年',
+		id: 'mino_kihonz',
+		name: '美濃市_基本図',
 		type: 'raster',
 		opacity: 0.7,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
-		attribution: '地理院タイル',
+		path: 'https://raw.githubusercontent.com/forestacdev/rastertile-poc/main/tiles/{z}/{x}/{y}.webp',
+		attribution: '美濃市',
 		visible: false,
+		style_key: 'デフォルト',
 		style: {
 			raster: [
 				{
@@ -565,35 +567,293 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
-		id: 'gazo2',
-		name: '空中写真(1979年頃)',
-		type: 'raster',
+		id: 'gsi_test',
+		name: '等高線',
+		type: 'vector-line',
+		source_layer: 'contour',
 		opacity: 0.7,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/gazo2/{z}/{x}/{y}.jpg',
-		attribution: '地理院タイル',
+		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+		attribution: '地理院ベクトル',
+		maxzoom: 24,
+		minzoom: 0,
 		visible: false,
+		style_key: '単色',
 		style: {
-			raster: [
+			line: [
 				{
-					name: 'デフォルト',
-					paint: rasterPaint
+					name: '単色',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 0.5
+					}
 				}
 			]
 		}
 	},
 	{
-		id: 'std',
-		name: '標準地図',
-		type: 'raster',
+		id: 'gifu-mino-geology',
+		name: '地質図',
+		type: 'vector-polygon',
+		source_layer: 'geo_A',
 		opacity: 0.7,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-		attribution: '地理院タイル',
+		path: 'https://raw.githubusercontent.com/forestacdev/vector-tiles-gifu-mino-geology/main/tiles/{z}/{x}/{y}.pbf',
+		attribution: '産総研',
+		maxzoom: 14,
+		minzoom: 0,
 		visible: false,
+		show_fill: true,
+		show_outline: false,
+		show_label: true,
+		style_key: 'デフォルト',
 		style: {
-			raster: [
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				},
 				{
 					name: 'デフォルト',
-					paint: rasterPaint
+					paint: {
+						'fill-color': [
+							'match',
+							['get', 'Symbol'],
+							'a',
+							'rgb(255, 255, 255)',
+							'ts',
+							'rgb(186, 208, 238)',
+							'tl',
+							'rgb(215, 226, 244)',
+							'th',
+							'rgb(231, 238, 229)',
+							'A',
+							'rgb(111, 77, 97)',
+							'Ha',
+							'rgb(160, 178, 79)',
+							'Q',
+							'rgb(234, 102, 69)',
+							'D',
+							'rgb(205, 99, 128)',
+							'Kgr',
+							'rgb(236, 101, 114)',
+							'Au',
+							'rgb(249, 158, 165)',
+							'Al',
+							'rgb(111, 106, 121)',
+							'Kz',
+							'rgb(209, 162, 132)',
+							'Ktu',
+							'rgb(213, 137, 133)',
+							'Ktl',
+							'rgb(249, 160, 156)',
+							'Kou',
+							'rgb(209, 162, 132)',
+							'Kol',
+							'rgb(255, 203, 164)',
+							'Ta',
+							'rgb(179, 167, 185)',
+							'Ya',
+							'rgb(255, 203, 164)',
+							'Nmx',
+							'rgb(200, 174, 155)',
+							'Nmm',
+							'rgb(221, 208, 170)',
+							'Nbf',
+							'rgb(206, 224, 223)',
+							'Ncs',
+							'rgb(255, 234, 137)',
+							'Nss',
+							'rgb(222, 212, 129)',
+							'Nal',
+							'rgb(181, 199, 131)',
+							'Nms',
+							'rgb(184, 208, 241)',
+							'Nsi',
+							'rgb(206, 203, 229)',
+							'Ncl',
+							'rgb(55, 74, 135)',
+							'Nch',
+							'rgb(246, 151, 74)',
+							'Nto',
+							'rgb(55, 94, 135)',
+							'Nls',
+							'rgb(58, 105, 186)',
+							'Nbs',
+							'rgb(53, 91, 70)',
+							'Fmx',
+							'rgb(200, 174, 155)',
+							'Fss',
+							'rgb(222, 212, 129)',
+							'Fch',
+							'rgb(246, 151, 74)',
+							'Flc',
+							'rgb(55, 74, 135)',
+							'Fls',
+							'rgb(58, 105, 186)',
+							'Fbs',
+							'rgb(53, 91, 70)',
+							'Kmx',
+							'rgb(200, 174, 155)',
+							'Ksx',
+							'rgb(176, 161, 150)',
+							'Kss',
+							'rgb(222, 212, 129)',
+							'Kms',
+							'rgb(184, 208, 241)',
+							'Ksi',
+							'rgb(206, 203, 229)',
+							'Kch',
+							'rgb(246, 151, 74)',
+							'Kto',
+							'rgb(55, 94, 135)',
+							'Kls',
+							'rgb(58, 105, 186)',
+							'Kbs',
+							'rgb(53, 91, 70)',
+							'KAcgl',
+							'rgb(185, 131, 63)',
+							'KAss',
+							'rgb(219, 209, 120)',
+							'KAsi',
+							'rgb(206, 203, 229)',
+							'KAch',
+							'rgb(246, 151, 74)',
+							'KAto',
+							'rgb(55, 94, 135)',
+							'KAls',
+							'rgb(58, 105, 186)',
+							'KAbs',
+							'rgb(53, 91, 70)',
+							'Water',
+							'rgb(214, 255, 255)',
+							'rgb(0, 0, 0)' // デフォルトの色（該当しない場合）
+						]
+					}
+				}
+			],
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'text-color': '#000000',
+						'text-halo-color': '#e0e0e0',
+						'text-halo-width': 2,
+						'text-opacity': 1
+					},
+					layout: {
+						'text-field': ['get', 'Symbol'],
+						'text-max-width': 12,
+						'text-size': 12
+					}
+				}
+			]
+		}
+	},
+	{
+		id: 'gifu-nationalforest',
+		name: '岐阜県国有林',
+		type: 'vector-polygon',
+		source_layer: 'A4519_21',
+		opacity: 0.7,
+		path: 'https://raw.githubusercontent.com/forestacdev/vector-tiles-gifu-nationalforest/main/tiles/{z}/{x}/{y}.pbf',
+		attribution: '国土数値情報',
+		maxzoom: 14,
+		minzoom: 0,
+		visible: false,
+		show_fill: true,
+		show_outline: false,
+		show_label: true,
+		style_key: '単色',
+		style: {
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				},
+				{
+					name: 'デフォルト',
+					paint: {
+						'fill-color': [
+							'match',
+							['get', 'A45_015'],
+							['スギ'],
+							'#3a9310',
+							['ヒノキ'],
+							'#4adea5',
+							['アカマツ'],
+							'#DD2B2B',
+							['他Ｌ'],
+							'#ecbd22',
+							['天ヒノキ'],
+							'#34eac2',
+							'#000000'
+						],
+						'fill-outline-color': '#000000'
+					}
+				}
+			],
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					layout: {
+						'text-field': [
+							'case',
+							['match', ['get', 'A45_015'], ['他Ｌ'], true, false],
+							['to-string', ['concat', ['get', 'A45_013'], '\n', '広葉樹']],
+							[
+								'match',
+								['get', 'A45_011'],
+								['3142_林班_イ', '3147_林班_イ', '3147_林班_ロ', '3149_林班_イ'],
+								true,
+								false
+							],
+							['to-string', ['get', 'A45_013']],
+							[
+								'to-string',
+								[
+									'concat',
+									['get', 'A45_013'],
+									'\n',
+									['get', 'A45_015'],
+									' ',
+									['+', ['get', 'A45_017'], 3],
+									'年生'
+								]
+							]
+						],
+						'text-max-width': 12,
+						'text-size': 12,
+						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+						'text-radial-offset': 0.5,
+						'text-justify': 'auto'
+					},
+					paint: {
+						'text-color': '#000000',
+						'text-halo-color': '#FFFFFF',
+						'text-halo-width': 1,
+						'text-opacity': 1
+					}
 				}
 			]
 		}
