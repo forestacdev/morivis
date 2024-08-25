@@ -7,7 +7,7 @@
 
 	import { onMount } from 'svelte';
 
-	export let targetDemData: any;
+	export let targetDemData: string;
 	let canvas: HTMLCanvasElement;
 	let scene: THREE.Scene;
 
@@ -99,40 +99,14 @@
 		transparent: true
 	});
 
-	const createdDemMesh = async (targetDemData) => {
-		if (!targetDemData) return;
-
-		console.log(targetDemData);
-
-		const tileurl = targetDemData.tileurl;
-		const zoomLevel = targetDemData.zoom;
-
-		// 地球の赤道周長 (メートル)
-		const EARTH_CIRCUMFERENCE = 40075016.686; // 約40,075km
-
-		// タイルのズームレベルに応じた1ピクセルあたりの地上距離を計算する関数
-		const distancePerPixel = (zoomLevel) => {
-			return EARTH_CIRCUMFERENCE / Math.pow(2, zoomLevel) / 256;
-		};
-
-		// 1ピクセルあたりの地上距離
-		const pixelDistance = distancePerPixel(zoomLevel);
-
-		// ズームレベルに応じた scale_factor の計算
-		const scaleFactor = Math.pow(2.0, 17.26 - zoomLevel);
-
+	const createdDemMesh = async (tileurl: string) => {
+		if (!tileurl) return;
 		// const tileurl = 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/14423/6458.png';
 		const tileData = await imageToflatArray(tileurl);
 
-		// タイル画像を取得して、画像をフラットな配列に変換
-
-		// メッシュの固定幅と高さ
-		const fixedWidth = 1000; // 固定したい横幅（例：1000メートル）
-		const fixedHeight = 1000; // 固定したい高さ（例：1000メートル）
-
 		// ピクセル解像度
-		const dx = fixedWidth / 256; // 幅を固定しつつ、ピクセルあたりの解像度を計算
-		const dy = fixedHeight / 256;
+		const dx = 10;
+		const dy = 10;
 
 		// ラスターの高さと幅を取得
 		const tiffWidth = 256;
@@ -158,12 +132,12 @@
 			const g = tileData[index + 1];
 			const b = tileData[index + 2];
 
-			// 高さを計算し、スケールファクターを適用
+			// 高さを計算
 			const rgb = r * 65536.0 + g * 256.0 + b;
 			const h = rgb < 8388608.0 ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
 
 			// newDemDataに余白を考慮して格納
-			newDemData[(i + 1) * newWidth + (j + 1)] = h / scaleFactor;
+			newDemData[(i + 1) * newWidth + (j + 1)] = h;
 		});
 
 		// ラスターの中心座標を取得
@@ -182,12 +156,14 @@
 		// DEMの値の最小値を計算
 		const minValue = newDemData.reduce((min, value) => Math.min(min, value), Infinity);
 
+		console.log(minValue);
+
 		// 頂点座標の計算
 		const vertices = Array.from({ length: newWidth * newHeight }, (_, index) => {
 			const i = Math.floor(index / newWidth);
 			const j = index % newWidth;
-			// X座標とZ座標にオフセットを追加して、幅を固定
-			return [j * dx - xOffset, newDemData[index] - minValue, i * dy - zOffset];
+			// X座標とZ座標にオフセットを追加
+			return [j * dx - xOffset, newDemData[index], i * dy - zOffset];
 		}).flat();
 
 		// 頂点座標をgeometryにセット
@@ -210,13 +186,14 @@
 		geometry.setIndex(indices);
 
 		// メッシュの作成とシーンへの追加
-		// const material = new THREE.MeshStandardMaterial({ color: 0x5566aa });
+		const material = new THREE.MeshStandardMaterial({ color: 0x5566aa });
 		const mesh = new THREE.Mesh(geometry, material2);
+		const obj = scene.getObjectByName('dem');
+		if (obj) {
+			scene.remove(obj);
+		}
 		mesh.name = 'dem';
 		geometry.computeVertexNormals(); // 法線の計算
-		if (scene.getObjectByName('dem')) {
-			scene.remove(scene.getObjectByName('dem'));
-		}
 		scene.add(mesh);
 	};
 

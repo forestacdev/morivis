@@ -35,7 +35,7 @@
 	let layerIdNameDict: { [_: string]: string } = {};
 	let lockOnMarker: Marker | null = null;
 	let selectFeatureList: [];
-	let targetDemData: any = null;
+	let targetDemData: string | null = null;
 
 	let mapBearing = 0;
 
@@ -492,15 +492,13 @@
 			h = (rgb - 16777216.0) * 0.01;
 		}
 
-		console.log(h);
-
 		const tileurl = getTileUrl(
 			lngLat.lng,
 			lngLat.lat,
-			zoom,
+			14,
 			'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
 		);
-		targetDemData = { tileurl, zoom };
+		targetDemData = tileurl;
 	};
 
 	// マップの回転
