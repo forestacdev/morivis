@@ -99,9 +99,22 @@
 		transparent: true
 	});
 
+	// const worker = new Worker();
+
+	// // ワーカーにオフスクリーンキャンバスを渡す
+	// worker.postMessage({
+	// 	url: 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/14423/6458.png'
+	// });
+
+	// // ワーカーから結果を受け取る
+	// worker.onmessage = function (event) {
+	// 	const result = new Float32Array(event.data.buffer);
+	// 	console.log('Workerからの結果:', result); // 頂点シェーダーで計算された高さデータ
+	// };
+
 	const createdDemMesh = async (tileurl: string) => {
 		if (!tileurl) return;
-		// const tileurl = 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/14423/6458.png';
+
 		const tileData = await imageToflatArray(tileurl);
 
 		// ピクセル解像度
@@ -132,9 +145,14 @@
 			const g = tileData[index + 1];
 			const b = tileData[index + 2];
 
-			// 高さを計算
-			const rgb = r * 65536.0 + g * 256.0 + b;
-			const h = rgb < 8388608.0 ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
+			// 高さを計算 gsi
+			// const rgb = r * 65536.0 + g * 256.0 + b;
+			// const h = rgb < 8388608.0 ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
+
+            const scale  = 2;
+            // 高さを計算 rgb
+            const h = (-10000 + ((r * 256 * 256 + g * 256 + b) * 0.1) )*scale;
+
 
 			// newDemDataに余白を考慮して格納
 			newDemData[(i + 1) * newWidth + (j + 1)] = h;

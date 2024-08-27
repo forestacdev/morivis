@@ -26,7 +26,7 @@
 	import { isSide } from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl } from '$lib/utils/map';
 
-	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	// const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
 	let layerDataEntries: LayerEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
 	let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
@@ -333,7 +333,11 @@
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
-				terrain: gsiTerrainSource, // 地形ソース
+				terrainSource: {
+                    type: 'raster-dem',
+                    url: 'https://raw.githubusercontent.com/forestacdev/mino-terrain-rgb-poc/main/tiles/{z}/{x}/{y}.png',
+                    tileSize: 256
+                },
 				...createSourceItems(),
 				...backgroundSources,
 				...createHighlightSource()
@@ -346,7 +350,8 @@
 				},
 				...createLayerItems(),
 				...createHighlightLayer()
-			]
+			],
+          
 		};
 
 		return mapStyle;
@@ -391,7 +396,7 @@
 		map.addControl(new maplibregl.ScaleControl({}), 'bottom-left');
 		map.addControl(
 			new CustomTerrainControl({
-				source: 'terrain', // 地形ソースを指定
+				source: 'terrainSource', // 地形ソースを指定
 				exaggeration: 1 // 高さの倍率
 			}),
 			'top-right' // コントロールの位置を指定
