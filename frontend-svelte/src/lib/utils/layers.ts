@@ -11,7 +11,8 @@ import type {
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification
 } from 'maplibre-gl';
-import { GEOJSON_BASE_PATH } from '$lib/constants';
+import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER } from '$lib/constants';
+import { excludeIdsClickLayer } from '$lib/store/store';
 
 export type BaseMapEntry = {
 	type: 'raster';
@@ -248,6 +249,7 @@ export type LayerEntry = {
 	show_label?: boolean;
 	show_outline?: boolean;
 	show_fill?: boolean;
+	id_field?: string; // フィーチャーのIDとして使用するフィールド名
 	legendId?: string; // legends.ts のキーに対応
 	remarks?: string; // 備考
 };
@@ -417,6 +419,7 @@ export const layerData: LayerEntry[] = [
 		show_label: true,
 		show_outline: true,
 		show_fill: true,
+		id_field: '小林班ID',
 		style_key: '単色',
 		style: {
 			fill: [
@@ -591,169 +594,51 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
-		id: 'gifu-mino-geology',
-		name: '地質図',
-		type: 'vector-polygon',
-		source_layer: 'geo_A',
+		id: 'contour',
+		name: '等高線',
+		type: 'vector-line',
+		source_layer: 'contour',
 		opacity: 0.7,
-		path: 'https://raw.githubusercontent.com/forestacdev/vector-tiles-gifu-mino-geology/main/tiles/{z}/{x}/{y}.pbf',
-		attribution: '産総研',
-		maxzoom: 14,
+		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+		attribution: '地理院ベクトル',
+		maxzoom: 24,
 		minzoom: 0,
 		visible: false,
-		show_fill: true,
-		show_outline: false,
-		show_label: true,
-		style_key: 'デフォルト',
+		style_key: '単色',
 		style: {
-			fill: [
+			line: [
 				{
 					name: '単色',
 					paint: {
-						'fill-color': '#ffffff'
-					}
-				},
-				{
-					name: 'デフォルト',
-					paint: {
-						'fill-color': [
-							'match',
-							['get', 'Symbol'],
-							'a',
-							'rgb(255, 255, 255)',
-							'ts',
-							'rgb(186, 208, 238)',
-							'tl',
-							'rgb(215, 226, 244)',
-							'th',
-							'rgb(231, 238, 229)',
-							'A',
-							'rgb(111, 77, 97)',
-							'Ha',
-							'rgb(160, 178, 79)',
-							'Q',
-							'rgb(234, 102, 69)',
-							'D',
-							'rgb(205, 99, 128)',
-							'Kgr',
-							'rgb(236, 101, 114)',
-							'Au',
-							'rgb(249, 158, 165)',
-							'Al',
-							'rgb(111, 106, 121)',
-							'Kz',
-							'rgb(209, 162, 132)',
-							'Ktu',
-							'rgb(213, 137, 133)',
-							'Ktl',
-							'rgb(249, 160, 156)',
-							'Kou',
-							'rgb(209, 162, 132)',
-							'Kol',
-							'rgb(255, 203, 164)',
-							'Ta',
-							'rgb(179, 167, 185)',
-							'Ya',
-							'rgb(255, 203, 164)',
-							'Nmx',
-							'rgb(200, 174, 155)',
-							'Nmm',
-							'rgb(221, 208, 170)',
-							'Nbf',
-							'rgb(206, 224, 223)',
-							'Ncs',
-							'rgb(255, 234, 137)',
-							'Nss',
-							'rgb(222, 212, 129)',
-							'Nal',
-							'rgb(181, 199, 131)',
-							'Nms',
-							'rgb(184, 208, 241)',
-							'Nsi',
-							'rgb(206, 203, 229)',
-							'Ncl',
-							'rgb(55, 74, 135)',
-							'Nch',
-							'rgb(246, 151, 74)',
-							'Nto',
-							'rgb(55, 94, 135)',
-							'Nls',
-							'rgb(58, 105, 186)',
-							'Nbs',
-							'rgb(53, 91, 70)',
-							'Fmx',
-							'rgb(200, 174, 155)',
-							'Fss',
-							'rgb(222, 212, 129)',
-							'Fch',
-							'rgb(246, 151, 74)',
-							'Flc',
-							'rgb(55, 74, 135)',
-							'Fls',
-							'rgb(58, 105, 186)',
-							'Fbs',
-							'rgb(53, 91, 70)',
-							'Kmx',
-							'rgb(200, 174, 155)',
-							'Ksx',
-							'rgb(176, 161, 150)',
-							'Kss',
-							'rgb(222, 212, 129)',
-							'Kms',
-							'rgb(184, 208, 241)',
-							'Ksi',
-							'rgb(206, 203, 229)',
-							'Kch',
-							'rgb(246, 151, 74)',
-							'Kto',
-							'rgb(55, 94, 135)',
-							'Kls',
-							'rgb(58, 105, 186)',
-							'Kbs',
-							'rgb(53, 91, 70)',
-							'KAcgl',
-							'rgb(185, 131, 63)',
-							'KAss',
-							'rgb(219, 209, 120)',
-							'KAsi',
-							'rgb(206, 203, 229)',
-							'KAch',
-							'rgb(246, 151, 74)',
-							'KAto',
-							'rgb(55, 94, 135)',
-							'KAls',
-							'rgb(58, 105, 186)',
-							'KAbs',
-							'rgb(53, 91, 70)',
-							'Water',
-							'rgb(214, 255, 255)',
-							'rgb(0, 0, 0)' // デフォルトの色（該当しない場合）
-						]
-					}
-				}
-			],
-			line: [
-				{
-					name: 'デフォルト',
-					paint: {
 						'line-color': '#ff0000',
-						'line-width': 1.5
+						'line-width': 0.5
 					}
 				}
-			],
-			symbol: [
+			]
+		}
+	},
+	{
+		id: 'elevation',
+		name: '標高点',
+		type: 'vector-point',
+		source_layer: 'elevation',
+		opacity: 0.7,
+		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+		attribution: '地理院ベクトル',
+		maxzoom: 24,
+		minzoom: 0,
+		visible: false,
+		show_fill: false,
+		show_outline: false,
+		show_label: false,
+		style_key: 'デフォルト',
+		style: {
+			circle: [
 				{
-					name: 'デフォルト',
+					name: '単色',
 					paint: {
-						'text-color': '#000000',
-						'text-halo-color': '#e0e0e0',
-						'text-halo-width': 2,
-						'text-opacity': 1
-					},
-					layout: {
-						'text-field': ['get', 'Symbol'],
-						'text-max-width': 12,
-						'text-size': 12
+						'circle-color': '#ffffff',
+						'circle-stroke-color': '#ff0000'
 					}
 				}
 			]
@@ -770,6 +655,7 @@ export const layerData: LayerEntry[] = [
 		maxzoom: 14,
 		minzoom: 0,
 		visible: false,
+		id_field: 'A45_001',
 		show_fill: true,
 		show_outline: false,
 		show_label: true,
@@ -859,3 +745,342 @@ export const layerData: LayerEntry[] = [
 		}
 	}
 ];
+
+// sourcesの作成
+export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
+	const sourceItems: { [_: string]: SourceSpecification } = {};
+
+	layerDataEntries.forEach((layerEntry) => {
+		const sourceId = `${layerEntry.id}_source`;
+
+		if (layerEntry.type === 'raster') {
+			sourceItems[sourceId] = {
+				type: 'raster',
+				tiles: [layerEntry.path],
+				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+				tileSize: 256,
+				attribution: layerEntry.attribution
+			};
+		} else if (
+			layerEntry.type === 'vector-polygon' ||
+			layerEntry.type === 'vector-line' ||
+			layerEntry.type === 'vector-point'
+		) {
+			sourceItems[sourceId] = {
+				type: 'vector',
+				tiles: [layerEntry.path],
+				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+				attribution: layerEntry.attribution
+			};
+		} else if (
+			layerEntry.type === 'geojson-polygon' ||
+			layerEntry.type === 'geojson-line' ||
+			layerEntry.type === 'geojson-point'
+		) {
+			sourceItems[sourceId] = {
+				type: 'geojson',
+				data: layerEntry.path,
+				generateId: true,
+				attribution: layerEntry.attribution
+			};
+		} else {
+			console.warn(`Unknown layer type: ${layerEntry.type}`);
+		}
+	});
+
+	return sourceItems;
+};
+
+// layersの作成
+export const createLayerItems = (layerDataEntries: LayerEntry[]) => {
+	const layerItems: LayerSpecification[] = [];
+	const symbolLayerItems: LayerSpecification[] = [];
+	const excludeIds: string[] = []; // クリックイベントを除外するレイヤーID
+
+	// const layerIdNameDict: { [_: string]: string } = {};
+
+	layerDataEntries
+		.filter((layerEntry) => layerEntry.visible)
+		.reverse()
+		.forEach((layerEntry, i) => {
+			const layerId = `${layerEntry.id}`;
+			const sourceId = `${layerEntry.id}_source`;
+
+			if (layerEntry.type === 'raster') {
+				layerItems.push({
+					id: layerId,
+					type: 'raster',
+					source: sourceId,
+					maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
+					minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+					paint: {
+						'raster-opacity': layerEntry.opacity,
+						...(layerEntry.style?.raster?.[0]?.paint ?? {})
+					}
+				});
+				// layerIdNameDict[layerId] = layerEntry.name;
+			} else if (layerEntry.type === 'vector-polygon') {
+				const setStyele = layerEntry.style?.fill?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: layerEntry.show_fill
+						? {
+								'fill-opacity': layerEntry.opacity,
+								...setStyele?.paint
+							}
+						: {
+								'fill-opacity': layerEntry.opacity,
+								'fill-color': 'transparent'
+							},
+					layout: {
+						...(layerEntry.style?.fill?.[0]?.layout ?? {})
+					}
+				} as LayerSpecification;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+
+				if (layerEntry.show_outline) {
+					layerItems.push({
+						id: `${layerId}_outline`,
+						type: 'line',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						paint: {
+							'line-opacity': layerEntry.opacity,
+							...(layerEntry.style?.line?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.line?.[0]?.layout ?? {})
+						}
+					});
+
+					excludeIds.push(`${layerId}_outline`);
+				}
+				if (layerEntry.show_label) {
+					symbolLayerItems.push({
+						id: `${layerId}_label`,
+						type: 'symbol',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						paint: {
+							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+						}
+					});
+
+					excludeIds.push(`${layerId}_label`);
+				}
+			} else if (layerEntry.type === 'vector-line') {
+				const setStyele = layerEntry.style?.line?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: {
+						'line-opacity': layerEntry.opacity,
+						...(layerEntry.style?.line?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.line?.[0]?.layout ?? {})
+					}
+				} as LayerSpecification;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+
+				if (layerEntry.show_label) {
+					symbolLayerItems.push({
+						id: `${layerId}_label`,
+						type: 'symbol',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						paint: {
+							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+						}
+					});
+
+					excludeIds.push(`${layerId}_label`);
+				}
+			} else if (layerEntry.type === 'vector-point') {
+				const setStyele = layerEntry.style?.circle?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: {
+						'circle-opacity': layerEntry.opacity,
+						...(layerEntry.style?.circle?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.circle?.[0]?.layout ?? {})
+					}
+				} as CircleLayerSpecification;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+
+				if (layerEntry.show_label) {
+					symbolLayerItems.push({
+						id: `${layerId}_label`,
+						type: 'symbol',
+						source: sourceId,
+						'source-layer': layerEntry.source_layer,
+						paint: {
+							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+						}
+					});
+
+					excludeIds.push(`${layerId}_label`);
+				}
+			} else if (layerEntry.type === 'geojson-polygon') {
+				const setStyele = layerEntry.style?.fill?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					paint: layerEntry.show_fill
+						? {
+								'fill-opacity': layerEntry.opacity,
+								...setStyele?.paint
+							}
+						: {
+								'fill-opacity': layerEntry.opacity,
+								'fill-color': 'transparent'
+							},
+					layout: {
+						...(layerEntry.style?.fill?.[0]?.layout ?? {})
+					}
+				} as LayerSpecification;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+
+				if (layerEntry.show_outline) {
+					layerItems.push({
+						id: `${layerId}_outline`,
+						type: 'line',
+						source: sourceId,
+						paint: {
+							'line-opacity': layerEntry.opacity,
+							...(layerEntry.style?.line?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.line?.[0]?.layout ?? {})
+						}
+					});
+					excludeIds.push(`${layerId}_outline`);
+				}
+				if (layerEntry.show_label) {
+					symbolLayerItems.push({
+						id: `${layerId}_label`,
+						type: 'symbol',
+						source: sourceId,
+						paint: {
+							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+						},
+						layout: {
+							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+						}
+					});
+					excludeIds.push(`${layerId}_label`);
+				}
+			} else if (layerEntry.type === 'geojson-line') {
+				layerItems.push({
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					paint: {
+						'line-opacity': layerEntry.opacity,
+						...(layerEntry.style?.line?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.line?.[0]?.layout ?? {})
+					}
+				});
+
+				symbolLayerItems.push({
+					id: `${layerId}_label`,
+					type: 'symbol',
+					source: sourceId,
+					paint: {
+						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+					}
+				});
+				excludeIds.push(`${layerId}_label`);
+
+				// layerIdNameDict[layerId] = layerEntry.name;
+			} else if (layerEntry.type === 'geojson-point') {
+				layerItems.push({
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					paint: {
+						'circle-opacity': layerEntry.opacity,
+						...(layerEntry.style?.circle?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.circle?.[0]?.layout ?? {})
+					}
+				});
+
+				symbolLayerItems.push({
+					id: `${layerId}_label`,
+					type: 'symbol',
+					source: sourceId,
+					paint: {
+						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+					}
+				});
+				excludeIds.push(`${layerId}_label`);
+				// layerIdNameDict[layerId] = layerEntry.name;
+			} else {
+				console.warn(`Unknown layer type: ${layerEntry.type}`);
+			}
+		});
+	excludeIds.push(...EXCLUDE_IDS_CLICK_LAYER);
+	excludeIdsClickLayer.set(excludeIds);
+
+	console.log('excludeIdsClickLayer', excludeIds);
+
+	return [...layerItems, ...symbolLayerItems];
+};

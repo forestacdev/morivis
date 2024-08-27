@@ -5,6 +5,9 @@ import type { UserInfo } from 'firebase/auth';
 
 export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 
+/* クリックイベントを除外するレイヤーID */
+export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
+
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
 export const showlayerOptionId = writable<string>('');
