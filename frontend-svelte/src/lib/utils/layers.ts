@@ -346,7 +346,7 @@ export const layerData: LayerEntry[] = [
 				{
 					name: '単色',
 					paint: {
-						'fill-color': '#ffffff'
+						'fill-color': '#20a2a2'
 					}
 				}
 			],
@@ -374,35 +374,35 @@ export const layerData: LayerEntry[] = [
 						'text-size': 14,
 						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 						'text-radial-offset': 0.5,
-						'text-justify': 'auto',
-						'icon-image': [
-							'case',
-							[
-								'match',
-								['get', 'name'],
-								['森林総合教育センター(morinos)'],
-								true,
-								false
-							],
-							'morinosuマーク',
-							['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-							'アカデミーマークアイコン',
-							'dot-11'
-						],
-						'icon-size': [
-							'case',
-							[
-								'match',
-								['get', 'name'],
-								['森林総合教育センター(morinos)'],
-								true,
-								false
-							],
-							0.4,
-							['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-							0.3,
-							1
-						]
+						'text-justify': 'auto'
+						// 'icon-image': [
+						// 	'case',
+						// 	[
+						// 		'match',
+						// 		['get', 'name'],
+						// 		['森林総合教育センター(morinos)'],
+						// 		true,
+						// 		false
+						// 	],
+						// 	'morinosuマーク',
+						// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+						// 	'アカデミーマークアイコン',
+						// 	'dot-11'
+						// ],
+						// 'icon-size': [
+						// 	'case',
+						// 	[
+						// 		'match',
+						// 		['get', 'name'],
+						// 		['森林総合教育センター(morinos)'],
+						// 		true,
+						// 		false
+						// 	],
+						// 	0.4,
+						// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+						// 	0.3,
+						// 	1
+						// ]
 					}
 				}
 			]
@@ -426,7 +426,7 @@ export const layerData: LayerEntry[] = [
 				{
 					name: '単色',
 					paint: {
-						'fill-color': '#ffffff'
+						'fill-color': '#2a826c'
 					}
 				},
 				{
@@ -567,6 +567,161 @@ export const layerData: LayerEntry[] = [
 					paint: rasterPaint
 				}
 			]
+		}
+	},
+	{
+		id: 'gifu-mino-geology',
+		name: '地質図',
+		type: 'vector-polygon',
+		source_layer: 'geo_A',
+		opacity: 0.7,
+		path: 'https://raw.githubusercontent.com/forestacdev/vector-tiles-gifu-mino-geology/main/tiles/{z}/{x}/{y}.pbf',
+		attribution: '産総研',
+		maxzoom: 14,
+		minzoom: 0,
+		id_field: 'MAJOR_CODE',
+		visible: false,
+		show_fill: true,
+		show_outline: false,
+		show_label: true,
+		style_key: 'デフォルト',
+		style: {
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				},
+				{
+					name: 'デフォルト',
+					paint: {
+						'fill-color': [
+							'match',
+							['get', 'Symbol'],
+							'a',
+							'rgb(255, 255, 255)',
+							'ts',
+							'rgb(186, 208, 238)',
+							'tl',
+							'rgb(215, 226, 244)',
+							'th',
+							'rgb(231, 238, 229)',
+							'A',
+							'rgb(111, 77, 97)',
+							'Ha',
+							'rgb(160, 178, 79)',
+							'Q',
+							'rgb(234, 102, 69)',
+							'D',
+							'rgb(205, 99, 128)',
+							'Kgr',
+							'rgb(236, 101, 114)',
+							'Au',
+							'rgb(249, 158, 165)',
+							'Al',
+							'rgb(111, 106, 121)',
+							'Kz',
+							'rgb(209, 162, 132)',
+							'Ktu',
+							'rgb(213, 137, 133)',
+							'Ktl',
+							'rgb(249, 160, 156)',
+							'Kou',
+							'rgb(209, 162, 132)',
+							'Kol',
+							'rgb(255, 203, 164)',
+							'Ta',
+							'rgb(179, 167, 185)',
+							'Ya',
+							'rgb(255, 203, 164)',
+							'Nmx',
+							'rgb(200, 174, 155)',
+							'Nmm',
+							'rgb(221, 208, 170)',
+							'Nbf',
+							'rgb(206, 224, 223)',
+							'Ncs',
+							'rgb(255, 234, 137)',
+							'Nss',
+							'rgb(222, 212, 129)',
+							'Nal',
+							'rgb(181, 199, 131)',
+							'Nms',
+							'rgb(184, 208, 241)',
+							'Nsi',
+							'rgb(206, 203, 229)',
+							'Ncl',
+							'rgb(55, 74, 135)',
+							'Nch',
+							'rgb(246, 151, 74)',
+							'Nto',
+							'rgb(55, 94, 135)',
+							'Nls',
+							'rgb(58, 105, 186)',
+							'Nbs',
+							'rgb(53, 91, 70)',
+							'Fmx',
+							'rgb(200, 174, 155)',
+							'Fss',
+							'rgb(222, 212, 129)',
+							'Fch',
+							'rgb(246, 151, 74)',
+							'Flc',
+							'rgb(55, 74, 135)',
+							'Fls',
+							'rgb(58, 105, 186)',
+							'Fbs',
+							'rgb(53, 91, 70)',
+							'Kmx',
+							'rgb(200, 174, 155)',
+							'Ksx',
+							'rgb(176, 161, 150)',
+							'Kss',
+							'rgb(222, 212, 129)',
+							'Kms',
+							'rgb(184, 208, 241)',
+							'Ksi',
+							'rgb(206, 203, 229)',
+							'Kch',
+							'rgb(246, 151, 74)',
+							'Kto',
+							'rgb(55, 94, 135)',
+							'Kls',
+							'rgb(58, 105, 186)',
+							'Kbs',
+							'rgb(53, 91, 70)',
+							'KAcgl',
+							'rgb(185, 131, 63)',
+							'KAss',
+							'rgb(219, 209, 120)',
+							'KAsi',
+							'rgb(206, 203, 229)',
+							'KAch',
+							'rgb(246, 151, 74)',
+							'KAto',
+							'rgb(55, 94, 135)',
+							'KAls',
+							'rgb(58, 105, 186)',
+							'KAbs',
+							'rgb(53, 91, 70)',
+							'Water',
+							'rgb(214, 255, 255)',
+							'rgb(0, 0, 0)' // デフォルトの色（該当しない場合）
+						]
+					}
+				}
+			],
+			line: [
+				{
+					name: '単色',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: []
 		}
 	},
 	{
@@ -746,6 +901,166 @@ export const layerData: LayerEntry[] = [
 	}
 ];
 
+const highlightPolygonPaint: FillLayerSpecification['paint'] = {
+	'fill-opacity': 0.4,
+	'fill-pattern': [
+		'step',
+		['zoom'],
+		'pattern-1',
+		1,
+		'pattern-2',
+		2,
+		'pattern-3',
+		3,
+		'pattern-4',
+		4,
+		'pattern-5',
+		5,
+		'pattern-6',
+		6,
+		'pattern-7',
+		7,
+		'pattern-8',
+		8,
+		'pattern-9',
+		9,
+		'pattern-10',
+		10,
+		'pattern-11',
+		11,
+		'pattern-12',
+		12,
+		'pattern-13',
+		13,
+		'pattern-14',
+		14,
+		'pattern-15',
+		15,
+		'pattern-16',
+		16,
+		'pattern-17',
+		17,
+		'pattern-18',
+		18,
+		'pattern-19',
+		19,
+		'pattern-20',
+		20,
+		'pattern-21',
+		21,
+		'pattern-22',
+		22,
+		'pattern-default' // デフォルトのパターン
+	]
+};
+
+export type SelectedHighlightData = {
+	LayerData: LayerEntry;
+	featureId: string;
+};
+
+export const createHighlightLayer = (selectedhighlightData: SelectedHighlightData | null) => {
+	if (!selectedhighlightData) return [];
+
+	const layerEntry = selectedhighlightData.LayerData;
+
+	const layerId = 'HighlightFeatureId';
+	const sourceId = `${layerEntry.id}_source`;
+
+	const layers = [];
+
+	if (layerEntry.type === 'vector-polygon') {
+		layers.push({
+			id: layerId,
+			type: 'fill',
+			source: sourceId,
+			'source-layer': layerEntry.source_layer,
+			paint: {
+				...highlightPolygonPaint
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
+	} else if (layerEntry.type === 'vector-line') {
+		layers.push({
+			id: layerId,
+			type: 'line',
+			source: sourceId,
+			'source-layer': layerEntry.source_layer,
+			paint: {
+				'line-color': 'green',
+				'line-opacity': 0.5
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
+	} else if (layerEntry.type === 'vector-point') {
+		layers.push({
+			id: layerId,
+			type: 'circle',
+			source: sourceId,
+			'source-layer': layerEntry.source_layer,
+			paint: {
+				'circle-opacity': 0.5,
+				'circle-color': 'green'
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as CircleLayerSpecification);
+	} else if (layerEntry.type === 'geojson-polygon') {
+		layers.push({
+			id: layerId,
+			type: 'fill',
+			source: sourceId,
+			paint: {
+				...highlightPolygonPaint
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
+
+		layers.push({
+			id: layerId + '_line',
+			type: 'line',
+			source: sourceId,
+			paint: {
+				'line-color': '#fff',
+				'line-opacity': 0.5,
+				'line-width': 5,
+				'line-blur': 1
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
+	} else if (layerEntry.type === 'geojson-line') {
+		layers.push({
+			id: layerId,
+			type: 'line',
+			source: sourceId,
+			paint: {
+				'line-color': '#ff0000',
+				'line-opacity': 0.5
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
+	} else if (layerEntry.type === 'geojson-point') {
+		layers.push({
+			id: layerId,
+			type: 'circle',
+			source: sourceId,
+			paint: {
+				'circle-opacity': 0.5,
+				'circle-color': '#ff0000'
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+			// filter: ['==', 'id', selectedhighlightData.featureId]
+		} as LayerSpecification);
+	} else {
+		console.warn(`Unknown layer type: ${layerEntry.type}`);
+		return [];
+	}
+
+	// mapInstance?.getLayer(layerId) && mapInstance?.removeLayer(layerId);
+
+	// mapInstance?.addLayer(layer);
+	return layers;
+};
+
 // sourcesの作成
 export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 	const sourceItems: { [_: string]: SourceSpecification } = {};
@@ -772,7 +1087,8 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 				tiles: [layerEntry.path],
 				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
 				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
-				attribution: layerEntry.attribution
+				attribution: layerEntry.attribution,
+				promoteId: layerEntry.id_field
 			};
 		} else if (
 			layerEntry.type === 'geojson-polygon' ||
@@ -794,9 +1110,14 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 };
 
 // layersの作成
-export const createLayerItems = (layerDataEntries: LayerEntry[]) => {
+export const createLayerItems = (
+	layerDataEntries: LayerEntry[],
+	selectedhighlightData: SelectedHighlightData | null
+) => {
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
+	const pointItems: LayerSpecification[] = [];
+	const lineItems: LayerSpecification[] = [];
 	const excludeIds: string[] = []; // クリックイベントを除外するレイヤーID
 
 	// const layerIdNameDict: { [_: string]: string } = {};
@@ -978,12 +1299,12 @@ export const createLayerItems = (layerDataEntries: LayerEntry[]) => {
 								...setStyele?.paint
 							}
 						: {
-								'fill-opacity': layerEntry.opacity,
-								'fill-color': 'transparent'
+								'fill-opacity': layerEntry.opacity
 							},
 					layout: {
 						...(layerEntry.style?.fill?.[0]?.layout ?? {})
 					}
+					// filter: ['==', ['id'], 1]
 				} as LayerSpecification;
 
 				layerItems.push(layer);
@@ -1079,8 +1400,11 @@ export const createLayerItems = (layerDataEntries: LayerEntry[]) => {
 		});
 	excludeIds.push(...EXCLUDE_IDS_CLICK_LAYER);
 	excludeIdsClickLayer.set(excludeIds);
+	const highlightLayers = selectedhighlightData
+		? createHighlightLayer(selectedhighlightData)
+		: [];
 
 	console.log('excludeIdsClickLayer', excludeIds);
 
-	return [...layerItems, ...symbolLayerItems];
+	return [...layerItems, ...highlightLayers, ...symbolLayerItems];
 };

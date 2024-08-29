@@ -23,14 +23,17 @@
 	import {
 		createSourceItems,
 		createLayerItems,
+		createHighlightLayer,
+		backgroundSources,
 		type LayerEntry,
-		backgroundSources
+		type SelectedHighlightData
 	} from '$lib/utils/layers';
 	import { layerData } from '$lib/utils/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl } from '$lib/utils/map';
+	import { webglToPng } from '$lib/utils/image';
 
 	// const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
@@ -43,120 +46,11 @@
 	let selectFeatureList: [];
 	let targetDemData: string | null = null;
 
-	type SelectedHighlightData = {
-		LayerData: LayerEntry;
-		featureId: string;
-	};
-
 	let selectedhighlightData: null | SelectedHighlightData = null;
 
 	let mapBearing = 0;
 
 	let feature;
-
-	const createHighlightLayer = (selectedhighlightData: SelectedHighlightData | null) => {
-		if (!selectedhighlightData) return [];
-
-		const layerEntry = selectedhighlightData.LayerData;
-
-		const layerId = 'HighlightFeatureId';
-		const sourceId = `${layerEntry.id}_source`;
-
-		const layers = [];
-
-		if (layerEntry.type === 'vector-polygon') {
-			layers.push({
-				id: layerId,
-				type: 'fill',
-				source: sourceId,
-				'source-layer': layerEntry.source_layer,
-				paint: {
-					'fill-color': 'green',
-					'fill-opacity': 0.4
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as LayerSpecification);
-		} else if (layerEntry.type === 'vector-line') {
-			layers.push({
-				id: layerId,
-				type: 'line',
-				source: sourceId,
-				'source-layer': layerEntry.source_layer,
-				paint: {
-					'line-color': 'green',
-					'line-opacity': 0.5
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as LayerSpecification);
-		} else if (layerEntry.type === 'vector-point') {
-			layers.push({
-				id: layerId,
-				type: 'circle',
-				source: sourceId,
-				'source-layer': layerEntry.source_layer,
-				paint: {
-					'circle-opacity': 0.5,
-					'circle-color': 'green'
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as CircleLayerSpecification);
-		} else if (layerEntry.type === 'geojson-polygon') {
-			layers.push({
-				id: layerId,
-				type: 'fill',
-				source: sourceId,
-				paint: {
-					'fill-color': 'green',
-					'fill-opacity': 0.5
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as LayerSpecification);
-
-			layers.push({
-				id: layerId + '_line',
-				type: 'line',
-				source: sourceId,
-				paint: {
-					'line-color': '#fff',
-					'line-opacity': 0.5,
-					'line-width': 5,
-					'line-blur': 1
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as LayerSpecification);
-		} else if (layerEntry.type === 'geojson-line') {
-			layers.push({
-				id: layerId,
-				type: 'line',
-				source: sourceId,
-				paint: {
-					'line-color': '#ff0000',
-					'line-opacity': 0.5
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			} as LayerSpecification);
-		} else if (layerEntry.type === 'geojson-point') {
-			layers.push({
-				id: layerId,
-				type: 'circle',
-				source: sourceId,
-				paint: {
-					'circle-opacity': 0.5,
-					'circle-color': '#ff0000'
-				},
-				filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-				// filter: ['==', 'id', selectedhighlightData.featureId]
-			} as LayerSpecification);
-		} else {
-			console.warn(`Unknown layer type: ${layerEntry.type}`);
-			return [];
-		}
-
-		// mapInstance?.getLayer(layerId) && mapInstance?.removeLayer(layerId);
-
-		// mapInstance?.addLayer(layer);
-		return layers;
-	};
 
 	// mapStyleの作成
 	const createMapStyle = () => {
@@ -175,9 +69,7 @@
 					source: selectedBackgroundId,
 					type: 'raster'
 				},
-				...createLayerItems(layerDataEntries),
-
-				...((createHighlightLayer(selectedhighlightData) ?? []) as LayerSpecification[])
+				...createLayerItems(layerDataEntries, selectedhighlightData)
 			]
 		};
 
@@ -204,7 +96,7 @@
 	}
 
 	// 初期描画時
-	onMount(() => {
+	onMount(async () => {
 		const map = new maplibregl.Map({
 			container: 'map',
 			style: createMapStyle(),
@@ -228,8 +120,6 @@
 		);
 
 		mapInstance.on('click', async (e) => {
-			if (mapInstance === null) return;
-
 			const div = document.createElement('div');
 			const lockOnInstance = new LockOn({
 				target: div
@@ -282,9 +172,32 @@
 		});
 
 		// 不足分のアイコンを生成
+		mapInstance.on('styleimagemissing', async (e) => {
+			const id = e.id;
+			const pattern = id;
+			const parts = pattern.split('-');
 
-		// mapInstance.on('styleimagemissing', (e) => {
+			if (parts[0] === 'pattern') {
+				const number = parseInt(parts[1], 10);
+				console.log('pattern');
+				try {
+					const webglImage = await webglToPng(number);
+					const image = await map.loadImage(webglImage);
+					if (!mapInstance.hasImage(id)) {
+						mapInstance.addImage(id, image.data);
+					}
+				} catch (error) {
+					console.error(`Error loading image for category ${id}:`, error);
+				}
+			}
+		});
+
+		// mapInstance.on('styleimagemissing', async (e) => {
 		// 	const id = e.id; // id of the missing image
+
+		// 	const image = await map.loadImage(
+		// 		'https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png'
+		// 	);
 
 		// 	console.log(id);
 
@@ -309,7 +222,7 @@
 		// 		}
 		// 	}
 
-		// 	mapInstance.addImage(id, { width, height: width, data });
+		// 	mapInstance.addImage(id, { width, height: width, image });
 		// });
 	});
 
@@ -422,7 +335,7 @@
 	<InfoPopup {feature} />
 </div>
 
-<ThreeCanvas {targetDemData} />
+<!-- <ThreeCanvas {targetDemData} /> -->
 
 <!-- <Control on:setMapBearing={setMapBearing} on:setMapZoom={setMapZoom} /> -->
 
