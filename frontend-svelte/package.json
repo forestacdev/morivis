@@ -45,6 +45,7 @@
 		"@sveltejs/adapter-static": "^3.0.4",
 		"firebase": "^10.13.0",
 		"firebaseui": "^6.1.0",
+		"gsap": "^3.12.5",
 		"maplibre-gl": "^4.5.2",
 		"maplibre-gl-gsi-terrain": "^1.2.0",
 		"three": "^0.167.1"

@@ -22,8 +22,25 @@ export type BaseMapEntry = {
 	tileSize: number;
 	attribution: string;
 };
-
+const tileUrl = `https://raw.githubusercontent.com/forestacdev/mino-terrain-rgb-poc/main/tiles/{z}/{x}/{y}.png`;
 export const backgroundSources: { [_: string]: BaseMapEntry } = {
+	// origin_tile: {
+	// 	type: 'raster',
+	// 	tiles: [`gsidem://${tileUrl}`],
+	// 	tileSize: 256,
+	// 	minzoom: 1,
+	// 	maxzoom: 14,
+	// 	attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
+	// },
+	オルソ写真: {
+		type: 'raster',
+		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'],
+		minzoom: 0,
+		maxzoom: 19,
+		tileSize: 256,
+		attribution:
+			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>"
+	},
 	全国最新写真: {
 		type: 'raster',
 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'],
@@ -33,6 +50,7 @@ export const backgroundSources: { [_: string]: BaseMapEntry } = {
 		attribution:
 			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>"
 	},
+
 	'空中写真（1979年頃）': {
 		type: 'raster',
 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/gazo2/{z}/{x}/{y}.jpg'],
@@ -262,6 +280,55 @@ export type CategoryEntry = {
 
 export const layerData: LayerEntry[] = [
 	{
+		id: 'TITEN.geojson',
+		name: 'その他ポイント',
+		type: 'geojson-point',
+		opacity: 0.7,
+		path: `${GEOJSON_BASE_PATH}/TITEN.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		style_key: 'デフォルト',
+		style: {
+			circle: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'circle-color': '#ff0000',
+						'circle-radius': 10,
+						'circle-stroke-width': 1
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					layout: {
+						visibility: 'visible',
+						'text-field': ['to-string', ['get', 'name']],
+						'text-size': 14,
+						'text-offset': [0, -1],
+						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+						'text-radial-offset': 0.5,
+						'text-justify': 'auto',
+						'icon-image': ['to-string', ['get', 'image']],
+						'icon-size': [
+							'case',
+							['match', ['get', '種類'], ['鉄塔'], true, false],
+							0.05,
+							1
+						]
+					},
+					paint: {
+						'text-halo-color': '#000000',
+						'text-halo-width': 2,
+						'text-opacity': 1,
+						'text-color': '#99B8FF'
+					}
+				}
+			]
+		}
+	},
+	{
 		id: 'ENSYURIN_pole',
 		name: 'サインポール',
 		type: 'geojson-point',
@@ -287,7 +354,7 @@ export const layerData: LayerEntry[] = [
 		id: 'ENSYURIN_MITI',
 		name: '演習林路網',
 		type: 'geojson-line',
-		opacity: 0.7,
+		opacity: 1,
 		path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
@@ -297,7 +364,6 @@ export const layerData: LayerEntry[] = [
 				{
 					name: 'デフォルト',
 					paint: {
-						'line-opacity': 0.8,
 						'line-color': '#8e8e7b',
 						'line-width': ['match', ['get', '種類'], ['林道'], 10, 5]
 					},
@@ -312,7 +378,7 @@ export const layerData: LayerEntry[] = [
 		id: 'ENSYURIN_KAWA',
 		name: '川',
 		type: 'geojson-line',
-		opacity: 0.7,
+		opacity: 1,
 		path: `${GEOJSON_BASE_PATH}/KAWA.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
@@ -703,23 +769,23 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
-		id: 'gsi_test',
+		id: 'gsi_contour',
 		name: '等高線',
 		type: 'vector-line',
 		source_layer: 'contour',
 		opacity: 0.7,
 		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
 		attribution: '地理院ベクトル',
-		maxzoom: 24,
+		maxzoom: 14,
 		minzoom: 0,
-		visible: false,
+		visible: true,
 		style_key: '単色',
 		style: {
 			line: [
 				{
 					name: '単色',
 					paint: {
-						'line-color': '#ff0000',
+						'line-color': '#aaaaaa',
 						'line-width': 0.5
 					}
 				}
@@ -727,29 +793,54 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
-		id: 'contour',
-		name: '等高線',
+		id: 'gsi_river',
+		name: '川',
 		type: 'vector-line',
-		source_layer: 'contour',
-		opacity: 0.7,
+		source_layer: 'river',
+		opacity: 1,
 		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
 		attribution: '地理院ベクトル',
-		maxzoom: 24,
+		maxzoom: 14,
 		minzoom: 0,
-		visible: false,
+		visible: true,
 		style_key: '単色',
 		style: {
 			line: [
 				{
 					name: '単色',
 					paint: {
-						'line-color': '#ff0000',
+						'line-color': '#00a2ff',
 						'line-width': 0.5
 					}
 				}
 			]
 		}
 	},
+	{
+		id: 'gsi_road',
+		name: '道',
+		type: 'vector-line',
+		source_layer: 'road',
+		opacity: 1,
+		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+		attribution: '地理院ベクトル',
+		maxzoom: 14,
+		minzoom: 0,
+		visible: true,
+		style_key: '単色',
+		style: {
+			line: [
+				{
+					name: '単色',
+					paint: {
+						'line-color': '#ff5e00',
+						'line-width': 3
+					}
+				}
+			]
+		}
+	},
+
 	{
 		id: 'elevation',
 		name: '標高点',
@@ -881,55 +972,62 @@ export const layerData: LayerEntry[] = [
 
 const highlightPolygonPaint: FillLayerSpecification['paint'] = {
 	'fill-opacity': 0.4,
-	'fill-pattern': [
-		'step',
-		['zoom'],
-		'pattern-1',
-		1,
-		'pattern-2',
-		2,
-		'pattern-3',
-		3,
-		'pattern-4',
-		4,
-		'pattern-5',
-		5,
-		'pattern-6',
-		6,
-		'pattern-7',
-		7,
-		'pattern-8',
-		8,
-		'pattern-9',
-		9,
-		'pattern-10',
-		10,
-		'pattern-11',
-		11,
-		'pattern-12',
-		12,
-		'pattern-13',
-		13,
-		'pattern-14',
-		14,
-		'pattern-15',
-		15,
-		'pattern-16',
-		16,
-		'pattern-17',
-		17,
-		'pattern-18',
-		18,
-		'pattern-19',
-		19,
-		'pattern-20',
-		20,
-		'pattern-21',
-		21,
-		'pattern-22',
-		22,
-		'pattern-default' // デフォルトのパターン
-	]
+	'fill-color': '#00d5ff'
+	// 'fill-pattern': [
+	// 	'step',
+	// 	['zoom'],
+	// 	'pattern-1',
+	// 	1,
+	// 	'pattern-2',
+	// 	2,
+	// 	'pattern-3',
+	// 	3,
+	// 	'pattern-4',
+	// 	4,
+	// 	'pattern-5',
+	// 	5,
+	// 	'pattern-6',
+	// 	6,
+	// 	'pattern-7',
+	// 	7,
+	// 	'pattern-8',
+	// 	8,
+	// 	'pattern-9',
+	// 	9,
+	// 	'pattern-10',
+	// 	10,
+	// 	'pattern-11',
+	// 	11,
+	// 	'pattern-12',
+	// 	12,
+	// 	'pattern-13',
+	// 	13,
+	// 	'pattern-14',
+	// 	14,
+	// 	'pattern-15',
+	// 	15,
+	// 	'pattern-16',
+	// 	16,
+	// 	'pattern-17',
+	// 	17,
+	// 	'pattern-18',
+	// 	18,
+	// 	'pattern-19',
+	// 	19,
+	// 	'pattern-20',
+	// 	20,
+	// 	'pattern-21',
+	// 	21,
+	// 	'pattern-22',
+	// 	22,
+	// 	'pattern-default' // デフォルトのパターン
+	// ]
+};
+
+const highlightLinePaint: LineLayerSpecification['paint'] = {
+	'line-color': '#ffffff',
+	'line-opacity': 1,
+	'line-width': 5
 };
 
 export type SelectedHighlightData = {
@@ -958,6 +1056,16 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 		} as LayerSpecification);
+		layers.push({
+			id: layerId + '_line',
+			type: 'line',
+			source: sourceId,
+			'source-layer': layerEntry.source_layer,
+			paint: {
+				...highlightLinePaint
+			},
+			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+		} as LayerSpecification);
 	} else if (layerEntry.type === 'vector-line') {
 		layers.push({
 			id: layerId,
@@ -965,8 +1073,7 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			source: sourceId,
 			'source-layer': layerEntry.source_layer,
 			paint: {
-				'line-color': 'green',
-				'line-opacity': 0.5
+				...highlightLinePaint
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 		} as LayerSpecification);
@@ -998,10 +1105,7 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			type: 'line',
 			source: sourceId,
 			paint: {
-				'line-color': '#fff',
-				'line-opacity': 0.5,
-				'line-width': 5,
-				'line-blur': 1
+				...highlightLinePaint
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 		} as LayerSpecification);

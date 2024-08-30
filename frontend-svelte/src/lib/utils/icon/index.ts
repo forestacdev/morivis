@@ -1,3 +1,5 @@
+import Worker from './worker?worker';
+
 const loadImage = (url: string): Promise<HTMLImageElement> => {
 	return new Promise((resolve, reject) => {
 		const img = new Image();

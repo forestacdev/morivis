@@ -17,9 +17,10 @@ import type {
 	MapGeoJSONFeature,
 	CircleLayerSpecification
 } from 'maplibre-gl';
+import Worker from './worker?worker';
 
 import { webglToPng } from '$lib/utils/image';
-import { imageToIcon } from '$lib/utils/icon';
+import { imageToIcon } from '$lib/utils/icon/index';
 
 const createMapStore = () => {
 	let map: Map | null = null;
@@ -85,6 +86,46 @@ const createMapStore = () => {
 					map.addImage(id, image.data);
 				}
 			}
+		});
+
+		const worker = new Worker();
+		maplibregl.addProtocol('gsidem', async (params, abortController) => {
+			const imageUrl = params.url.replace('gsidem://', '');
+			return new Promise((resolve, reject) => {
+				const handleMessage = (e: MessageEvent) => {
+					if (e.data.id === imageUrl) {
+						if (e.data.buffer.byteLength === 0) {
+							reject({
+								data: new Uint8Array(0)
+							});
+						} else {
+							const arrayBuffer = e.data.buffer;
+							resolve({
+								data: new Uint8Array(arrayBuffer)
+							});
+						}
+						cleanup();
+					}
+				};
+
+				const handleError = (e: ErrorEvent) => {
+					console.error(e);
+					abortController.abort();
+					reject({
+						data: new Uint8Array(0)
+					});
+					cleanup();
+				};
+
+				const cleanup = () => {
+					worker.removeEventListener('message', handleMessage);
+					worker.removeEventListener('error', handleError);
+				};
+
+				worker.addEventListener('message', handleMessage);
+				worker.addEventListener('error', handleError);
+				worker.postMessage({ url: imageUrl });
+			});
 		});
 	};
 

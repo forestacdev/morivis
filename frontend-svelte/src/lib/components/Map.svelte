@@ -15,6 +15,7 @@
 	import LayerMenu from '$lib/components/LayerMenu.svelte';
 	import LockOn from '$lib/components/Marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
+	import ForestPopup from '$lib/components/popup/ForestPppup.svelte';
 	import ThreeCanvas from '$lib/components/three/canvas.svelte';
 	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/Control.svelte';
@@ -232,6 +233,7 @@
 
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
 	<!-- <InfoPopup {feature} /> -->
+	<ForestPopup />
 </div>
 
 <!-- <ThreeCanvas {targetDemData} /> -->
