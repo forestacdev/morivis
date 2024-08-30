@@ -2,7 +2,7 @@
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
-	import { imageToflatArray } from '$lib/utils/image';
+
 	import Worker from './worker?worker';
 
 	import { onMount } from 'svelte';
@@ -145,16 +145,14 @@
 			const g = tileData[index + 1];
 			const b = tileData[index + 2];
 
-             const scale  = 1;
+			const scale = 1;
 
 			// 高さを計算 gsi
 			const rgb = r * 65536.0 + g * 256.0 + b;
 			const h = rgb < 8388608.0 ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
 
-           
-            // 高さを計算 rgb
-            // const h = (-10000 + ((r * 256 * 256 + g * 256 + b) * 0.1) )*scale;
-
+			// 高さを計算 rgb
+			// const h = (-10000 + ((r * 256 * 256 + g * 256 + b) * 0.1) )*scale;
 
 			// newDemDataに余白を考慮して格納
 			newDemData[(i + 1) * newWidth + (j + 1)] = h;

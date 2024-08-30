@@ -374,35 +374,8 @@ export const layerData: LayerEntry[] = [
 						'text-size': 14,
 						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 						'text-radial-offset': 0.5,
-						'text-justify': 'auto'
-						// 'icon-image': [
-						// 	'case',
-						// 	[
-						// 		'match',
-						// 		['get', 'name'],
-						// 		['森林総合教育センター(morinos)'],
-						// 		true,
-						// 		false
-						// 	],
-						// 	'morinosuマーク',
-						// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-						// 	'アカデミーマークアイコン',
-						// 	'dot-11'
-						// ],
-						// 'icon-size': [
-						// 	'case',
-						// 	[
-						// 		'match',
-						// 		['get', 'name'],
-						// 		['森林総合教育センター(morinos)'],
-						// 		true,
-						// 		false
-						// 	],
-						// 	0.4,
-						// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-						// 	0.3,
-						// 	1
-						// ]
+						'text-justify': 'auto',
+						'icon-image': ['to-string', ['get', 'image']]
 					}
 				}
 			]
@@ -502,9 +475,14 @@ export const layerData: LayerEntry[] = [
 			line: [
 				{
 					name: 'デフォルト',
+					layout: {
+						'line-join': 'round',
+						'line-cap': 'round'
+					},
 					paint: {
 						'line-color': '#ff0000',
-						'line-width': 1.5
+						'line-width': 2,
+						'line-dasharray': [2, 2] // この部分で破線のパターンを指定
 					}
 				}
 			],

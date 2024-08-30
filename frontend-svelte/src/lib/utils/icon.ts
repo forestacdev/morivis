@@ -1,75 +1,73 @@
+const loadImage = (url: string): Promise<HTMLImageElement> => {
+	return new Promise((resolve, reject) => {
+		const img = new Image();
+		img.crossOrigin = 'anonymous'; // この行を追加
+		img.onload = () => resolve(img);
+		img.onerror = () => reject(new Error(`Failed to load image from ${url}`));
+		img.src = url;
+	});
+};
+
 // WebGLコンテキストの取得とキャンバス設定
 const canvas = document.createElement('canvas');
-canvas.width = 512;
-canvas.height = 512;
+canvas.width = 60;
+canvas.height = 60;
 
 // シェーダーコード
-const vertexShaderSource = `
+const vertexShaderSource = /* glsl */ `
     attribute vec4 a_position;
     void main() {
         gl_Position = a_position;
     }
 `;
 
-const fragmentShaderSource = `
+const fragmentShaderSource = /* glsl */ `
       #ifdef GL_ES
 precision mediump float;
 #endif
 
-// Copyright (c) Patricio Gonzalez Vivo, 2015 - http://patriciogonzalezvivo.com/
-// I am the sole copyright owner of this Work.
-//
-// You cannot host, display, distribute or share this Work in any form,
-// including physical and digital. You cannot use this Work in any
-// commercial or non-commercial product, website or project. You cannot
-// sell this Work and you cannot mint an NFTs of it.
-// I share this Work for educational purposes, and you can link to it,
-// through an URL, proper attribution and unmodified screenshot, as part
-// of your educational material. If these conditions are too restrictive
-// please contact me and we'll definitely work it out.
-
 uniform vec2 u_resolution;
-uniform float u_time;
-uniform float u_number;
+
+uniform sampler2D u_texture; // 画像テクスチャ
 
 #define PI 3.14159265358979323846
 
-vec2 rotate2D(vec2 _st, float _angle){
-    _st -= 0.5;
-    _st =  mat2(cos(_angle),-sin(_angle),
-                sin(_angle),cos(_angle)) * _st;
-    _st += 0.5;
-    return _st;
-}
 
-vec2 tile(vec2 _st, float _zoom){
-    _st *= _zoom;
-    return fract(_st);
-}
 
-float box(vec2 _st, vec2 _size, float _smoothEdges){
-    _size = vec2(0.5)-_size*0.5;
-    vec2 aa = vec2(_smoothEdges*0.5);
-    vec2 uv = smoothstep(_size,_size+aa,_st);
-    uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st);
-    return uv.x*uv.y;
+// 円形マスク関数
+float circleMask(vec2 _st, vec2 center, float radius) {
+    return 1.0 - smoothstep(radius - 0.01, radius + 0.01, length(_st - center));
 }
 
 void main(void){
-    vec2 st = gl_FragCoord.xy/u_resolution.xy;
-    vec3 color = vec3(0.0);
+    vec2 st = gl_FragCoord.xy / u_resolution.xy;
+    
+    // テクスチャ座標
+    vec2 texCoord = st;
 
-    // Divide the space in 4
-    st = tile(st,u_number - 2.0);
+    // 円形マスクの設定
+    float radius = 0.4;
+    float mask = circleMask(st, vec2(0.5, 0.5), radius);
 
-    // Use a matrix to rotate the space 45 degrees
-    st = rotate2D(st,PI*0.25);
+    // 白い縁の設定
+    float borderThickness = 0.02; // 縁の太さを指定
+    float outerMask = circleMask(st, vec2(0.5, 0.5), radius - borderThickness);
 
-    // Draw a square
-    color = vec3(box(st,vec2(0.7),0.01));
-    // color = vec3(st,0.0);
+    // テクスチャから色をサンプリング
+    vec4 textureColor = texture2D(u_texture, texCoord);
 
-    gl_FragColor = vec4(color,1.0);
+    // 円形マスク適用
+    vec3 color = textureColor.rgb;
+
+    // 縁取り部分を白にする
+    if (mask > 0.0 && outerMask < 1.0) {
+        color = vec3(1.0); // 白い縁
+    }
+
+    // マスクの外側を透明にする
+    float alpha = mask * textureColor.a;
+
+    gl_FragColor = vec4(color, alpha);
 }
 `;
 
@@ -116,7 +114,8 @@ const createProgram = (
 	return program;
 };
 
-export const webglToPng = async (number: number): Promise<string> => {
+export const imageToIcon = async (url: string): Promise<string> => {
+	const image = await loadImage(url);
 	const gl = canvas.getContext('webgl');
 	if (!gl) {
 		console.error('WebGL not supported');
@@ -134,7 +133,6 @@ export const webglToPng = async (number: number): Promise<string> => {
 
 	const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 	const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-	const numberLocation = gl.getUniformLocation(program, 'u_number');
 
 	const positionBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -148,8 +146,20 @@ export const webglToPng = async (number: number): Promise<string> => {
 	gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
 	gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
-	const floatNumber = parseFloat(String(number));
-	gl.uniform1f(numberLocation, floatNumber);
+
+	// テクスチャの作成と読み込み
+	const texture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	// テクスチャのパラメータ設定
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+	gl.generateMipmap(gl.TEXTURE_2D);
 
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 

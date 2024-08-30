@@ -19,6 +19,7 @@ import type {
 } from 'maplibre-gl';
 
 import { webglToPng } from '$lib/utils/image';
+import { imageToIcon } from '$lib/utils/icon';
 
 const createMapStore = () => {
 	let map: Map | null = null;
@@ -59,12 +60,13 @@ const createMapStore = () => {
 		map.on('styleimagemissing', async (e) => {
 			if (!map) return;
 			const id = e.id;
+
 			const pattern = id;
 			const parts = pattern.split('-');
 
 			if (parts[0] === 'pattern') {
 				const number = parseInt(parts[1], 10);
-				console.log('pattern');
+
 				try {
 					const webglImage = await webglToPng(number);
 					const image = await map.loadImage(webglImage);
@@ -73,6 +75,14 @@ const createMapStore = () => {
 					}
 				} catch (error) {
 					console.error(`Error loading image for category ${id}:`, error);
+				}
+			} else {
+				const imageSrc = id;
+				const webglImage = await imageToIcon(imageSrc);
+				// console.log(webglImage);
+				const image = await map.loadImage(webglImage);
+				if (!map.hasImage(id)) {
+					map.addImage(id, image.data);
 				}
 			}
 		});
