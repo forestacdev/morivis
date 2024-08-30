@@ -34,15 +34,16 @@
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
+	import { mapStore } from '$lib/store/map';
 
 	// const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
 	let layerDataEntries: LayerEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
 	let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
 	let selectedBackgroundId: string = Object.keys(backgroundSources)[0]; // 選択されたベースマップのID
-	let mapInstance: Map | null = null; // Mapインスタンス
+	// let mapInstance: Map | null = null; // Mapインスタンス
+	let mapContainer: HTMLDivElement | null = null; // Mapコンテナ
 
-	let lockOnMarker: Marker | null = null;
 	let selectFeatureList: [];
 	let targetDemData: string | null = null;
 
@@ -76,65 +77,33 @@
 		return mapStyle;
 	};
 
-	class CustomTerrainControl extends maplibregl.TerrainControl {
-		constructor(options: TerrainSpecification) {
-			super(options);
-		}
-
-		onAdd(map: Map) {
-			const container = super.onAdd(map);
-			this._terrainButton.addEventListener('click', this.customClickHandler);
-			return container;
-		}
-
-		// ３D表示の時に地図を傾ける
-		customClickHandler = () => {
-			this._map.getTerrain()
-				? this._map.easeTo({ pitch: 60 })
-				: this._map.easeTo({ pitch: 0 });
-		};
-	}
-
 	// 初期描画時
-	onMount(async () => {
-		const map = new maplibregl.Map({
-			container: 'map',
-			style: createMapStyle(),
-			center: [136.92300400916308, 35.5509525769706] as [number, number], // starting position [lng, lat]
-			zoom: 14.5,
-			// maxZoom: 18,
-			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-		});
-		mapInstance = map;
+	onMount(() => {
+		// Mapの初期化
+		if (!mapContainer) return;
+		const mapStyle = createMapStyle();
+		mapStore.init(mapContainer, mapStyle);
 
-		// コントロールの追加
-		map.addControl(new maplibregl.NavigationControl({}), 'top-right');
-		map.addControl(new maplibregl.GeolocateControl({}), 'top-right');
-		map.addControl(new maplibregl.ScaleControl({}), 'bottom-left');
-		map.addControl(
-			new CustomTerrainControl({
-				source: 'terrainSource', // 地形ソースを指定
-				exaggeration: 1 // 高さの倍率
-			}),
-			'top-right' // コントロールの位置を指定
-		);
-
-		mapInstance.on('click', async (e) => {
+		// クリックイベントの購読
+		const onClick = mapStore.onClick(async (e) => {
+			if (!e) return;
 			const div = document.createElement('div');
 			const lockOnInstance = new LockOn({
 				target: div
 			});
 			lockOnInstance.$on('click', (event) => {
-				removeLockonMarker();
+				mapStore.removeLockonMarker();
 			});
-			if (lockOnMarker) removeLockonMarker();
-			lockOnMarker = new maplibregl.Marker({ element: div })
-				.setLngLat(e.lngLat)
-				.addTo(mapInstance);
 
-			mapInstance.panTo(e.lngLat, { duration: 1000 });
+			mapStore.removeLockonMarker();
+			mapStore.addLockonMarker(div, e.lngLat);
 
-			const features = mapInstance.queryRenderedFeatures(e.point).filter((feature) => {
+			mapStore.panTo(e.lngLat, { duration: 1000 });
+
+			let features = mapStore.queryRenderedFeatures(e.point);
+
+			if (!features) return;
+			features = features.filter((feature) => {
 				return !$excludeIdsClickLayer.includes(feature.layer.id);
 			});
 
@@ -151,7 +120,7 @@
 			// NOTE: debug
 			if (import.meta.env.DEV) console.log('click', features);
 
-			console.log(targetLayerData.id_field);
+			// console.log(targetLayerData.id_field);
 
 			if (targetLayerData && targetLayerData.id_field) {
 				selectedhighlightData = {
@@ -164,78 +133,16 @@
 			// selectFeatureList = [];
 		});
 
-		mapInstance.on('rotate', (e) => {
-			console.log();
-			// 角度が負の場合、360を足して0〜360度に変換
-			const bearing360 = (Number(e.target.getBearing().toFixed(1)) + 360) % 360;
-			mapBearing = bearing360;
-		});
-
-		// 不足分のアイコンを生成
-		mapInstance.on('styleimagemissing', async (e) => {
-			const id = e.id;
-			const pattern = id;
-			const parts = pattern.split('-');
-
-			if (parts[0] === 'pattern') {
-				const number = parseInt(parts[1], 10);
-				console.log('pattern');
-				try {
-					const webglImage = await webglToPng(number);
-					const image = await map.loadImage(webglImage);
-					if (!mapInstance.hasImage(id)) {
-						mapInstance.addImage(id, image.data);
-					}
-				} catch (error) {
-					console.error(`Error loading image for category ${id}:`, error);
-				}
-			}
-		});
-
-		// mapInstance.on('styleimagemissing', async (e) => {
-		// 	const id = e.id; // id of the missing image
-
-		// 	const image = await map.loadImage(
-		// 		'https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png'
-		// 	);
-
-		// 	console.log(id);
-
-		// 	// check if this missing icon is one this function can generate
-		// 	const prefix = 'square-rgb-';
-		// 	if (id.indexOf(prefix) !== 0) return;
-
-		// 	// extract the color from the id
-		// 	const rgb = [200, 200, 200];
-
-		// 	const width = 64; // The image will be 64 pixels square
-		// 	const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
-		// 	const data = new Uint8Array(width * width * bytesPerPixel);
-
-		// 	for (let x = 0; x < width; x++) {
-		// 		for (let y = 0; y < width; y++) {
-		// 			const offset = (y * width + x) * bytesPerPixel;
-		// 			data[offset + 0] = rgb[0]; // red
-		// 			data[offset + 1] = rgb[1]; // green
-		// 			data[offset + 2] = rgb[2]; // blue
-		// 			data[offset + 3] = 255; // alpha
-		// 		}
-		// 	}
-
-		// 	mapInstance.addImage(id, { width, height: width, image });
-		// });
+		return () => {
+			onClick(); // コンポーネントのアンマウント時に購読を解除
+		};
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
-	$: if (
-		layerDataEntries &&
-		selectedBackgroundId &&
-		mapInstance &&
-		selectedhighlightData !== undefined
-	) {
+	$: if (layerDataEntries && selectedBackgroundId && selectedhighlightData !== undefined) {
 		const mapStyle = createMapStyle();
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;
-		mapInstance.setStyle(mapStyle as StyleSpecification);
+		mapStore.setStyle(mapStyle as StyleSpecification);
 
 		// NOTE: debug
 		if (import.meta.env.DEV) console.log('mapstyle', mapStyle);
@@ -251,14 +158,6 @@
 	// }
 
 	$: createHighlightLayer(selectedhighlightData);
-
-	// ロックオンマーカーを削除
-	const removeLockonMarker = () => {
-		if (lockOnMarker) lockOnMarker.remove();
-		lockOnMarker = null;
-		selectFeatureList = [];
-		feature = null;
-	};
 
 	// 標高の取得
 	const getElevation = async () => {
@@ -299,24 +198,24 @@
 	};
 
 	// マップの回転
-	const setMapBearing = (e) => {
-		const mapBearing = e.detail;
-		// mapInstance?.setBearing(mapBearing);
+	// const setMapBearing = (e) => {
+	// 	const mapBearing = e.detail;
+	// 	// mapInstance?.setBearing(mapBearing);
 
-		mapInstance?.easeTo({ bearing: mapBearing, duration: 1000 });
-	};
+	// 	mapInstance?.easeTo({ bearing: mapBearing, duration: 1000 });
+	// };
 
-	// マップのズーム
-	const setMapZoom = (e) => {
-		const mapZoom = e.detail;
-		mapInstance?.easeTo({
-			zoom: mapZoom,
-			duration: 1000
-		});
-	};
+	// // マップのズーム
+	// const setMapZoom = (e) => {
+	// 	const mapZoom = e.detail;
+	// 	mapInstance?.easeTo({
+	// 		zoom: mapZoom,
+	// 		duration: 1000
+	// 	});
+	// };
 </script>
 
-<div id="map" class="h-full w-full"></div>
+<div bind:this={mapContainer} class="h-full w-full"></div>
 <Side />
 <div
 	class="custom-css absolute left-[120px] top-[60px] h-full max-h-[calc(100vh-8rem)] max-w-[300px]"
@@ -327,12 +226,12 @@
 
 <LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
-	{#if lockOnMarker}
+	<!-- {#if lockOnMarker}
 		<button on:click={getElevation}>この地点の標高</button>
-	{/if}
+	{/if} -->
 
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
-	<InfoPopup {feature} />
+	<!-- <InfoPopup {feature} /> -->
 </div>
 
 <!-- <ThreeCanvas {targetDemData} /> -->

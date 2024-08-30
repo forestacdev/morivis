@@ -1055,9 +1055,6 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 		return [];
 	}
 
-	// mapInstance?.getLayer(layerId) && mapInstance?.removeLayer(layerId);
-
-	// mapInstance?.addLayer(layer);
 	return layers;
 };
 
