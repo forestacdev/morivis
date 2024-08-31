@@ -11,7 +11,7 @@ import type {
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification
 } from 'maplibre-gl';
-import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER } from '$lib/constants';
+import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER, GIFU_DATA_BASE_PATH } from '$lib/constants';
 import { excludeIdsClickLayer } from '$lib/store/store';
 
 export type BaseMapEntry = {
@@ -841,28 +841,64 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 
+	// {
+	// 	id: 'elevation',
+	// 	name: '標高点',
+	// 	type: 'vector-point',
+	// 	source_layer: 'elevation',
+	// 	opacity: 0.7,
+	// 	path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+	// 	attribution: '地理院ベクトル',
+	// 	maxzoom: 24,
+	// 	minzoom: 0,
+	// 	visible: false,
+	// 	show_fill: false,
+	// 	show_outline: false,
+	// 	show_label: false,
+	// 	style_key: 'デフォルト',
+	// 	style: {
+	// 		circle: [
+	// 			{
+	// 				name: '単色',
+	// 				paint: {
+	// 					'circle-color': '#ffffff',
+	// 					'circle-stroke-color': '#ff0000'
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
 	{
-		id: 'elevation',
-		name: '標高点',
-		type: 'vector-point',
-		source_layer: 'elevation',
+		id: 'gifu-forestarea',
+		name: '岐阜県森林地域',
+		type: 'vector-polygon',
+		source_layer: 'a001210020160207',
 		opacity: 0.7,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
-		attribution: '地理院ベクトル',
-		maxzoom: 24,
+		path: GIFU_DATA_BASE_PATH + '/gml/A13-15_21/tiles/{z}/{x}/{y}.pbf',
+		attribution: '国土数値情報',
+		maxzoom: 14,
 		minzoom: 0,
-		visible: false,
-		show_fill: false,
+		visible: true,
+		id_field: 'A45_001',
+		show_fill: true,
 		show_outline: false,
-		show_label: false,
-		style_key: 'デフォルト',
+		show_label: true,
+		style_key: '単色',
 		style: {
-			circle: [
+			fill: [
 				{
 					name: '単色',
 					paint: {
-						'circle-color': '#ffffff',
-						'circle-stroke-color': '#ff0000'
+						'fill-color': '#0c7300'
+					}
+				}
+			],
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
 					}
 				}
 			]
@@ -874,7 +910,7 @@ export const layerData: LayerEntry[] = [
 		type: 'vector-polygon',
 		source_layer: 'A4519_21',
 		opacity: 0.7,
-		path: 'https://raw.githubusercontent.com/forestacdev/vector-tiles-gifu-nationalforest/main/tiles/{z}/{x}/{y}.pbf',
+		path: GIFU_DATA_BASE_PATH + '/gml/A45-19_21/tiles/{z}/{x}/{y}.pbf',
 		attribution: '国土数値情報',
 		maxzoom: 14,
 		minzoom: 0,

@@ -7,5 +7,7 @@ export const BASEMAP_IMAGE_TILE: BasemapImageTile = {
 
 export const GEOJSON_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson';
+export const GIFU_DATA_BASE_PATH =
+	'https://raw.githubusercontent.com/forestacdev/gifu-dataset/main/data';
 
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
