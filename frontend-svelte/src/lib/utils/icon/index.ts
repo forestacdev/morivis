@@ -10,11 +10,6 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
 	});
 };
 
-// WebGLコンテキストの取得とキャンバス設定
-const canvas = document.createElement('canvas');
-canvas.width = 60;
-canvas.height = 60;
-
 // シェーダーコード
 const vertexShaderSource = /* glsl */ `
     attribute vec4 a_position;
@@ -73,11 +68,6 @@ void main(void){
 }
 `;
 
-const gl = canvas.getContext('webgl');
-if (!gl) {
-	console.error('WebGL not supported');
-}
-
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (
 	gl: WebGLRenderingContext,
@@ -115,21 +105,23 @@ const createProgram = (
 	}
 	return program;
 };
+const canvas = new OffscreenCanvas(64, 64);
+const gl = canvas.getContext('webgl');
 
-export const imageToIcon = async (url: string): Promise<string> => {
+export const imageToIcon = async (url: string): Promise<ImageBitmap> => {
 	const image = await loadImage(url);
-	const gl = canvas.getContext('webgl');
+
 	if (!gl) {
 		console.error('WebGL not supported');
-		return '';
+		return new ImageBitmap();
 	}
 
 	const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	if (!vertexShader || !fragmentShader) return '';
+	if (!vertexShader || !fragmentShader) return new ImageBitmap();
 
 	const program = createProgram(gl, vertexShader, fragmentShader);
-	if (!program) return '';
+	if (!program) return new ImageBitmap();
 
 	gl.useProgram(program);
 
@@ -165,19 +157,5 @@ export const imageToIcon = async (url: string): Promise<string> => {
 
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-	const outputCanvas = document.createElement('canvas');
-	outputCanvas.width = canvas.width;
-	outputCanvas.height = canvas.height;
-	const outputContext = outputCanvas.getContext('2d');
-	if (!outputContext) return '';
-
-	const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-	gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-	const imageData = outputContext.createImageData(canvas.width, canvas.height);
-	imageData.data.set(pixels);
-
-	outputContext.putImageData(imageData, 0, 0);
-
-	return outputCanvas.toDataURL('image/png');
+	return canvas.transferToImageBitmap();
 };

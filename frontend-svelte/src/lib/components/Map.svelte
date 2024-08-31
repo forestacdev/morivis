@@ -37,7 +37,7 @@
 	import { webglToPng } from '$lib/utils/image';
 	import { mapStore } from '$lib/store/map';
 
-	// const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
 	let layerDataEntries: LayerEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
 	let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
@@ -60,6 +60,7 @@
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
+				terrain: gsiTerrainSource, // 地形ソース
 				// ...createHighlightSource(),
 				...createSourceItems(layerDataEntries),
 				...backgroundSources
@@ -69,8 +70,23 @@
 				{
 					id: 'background',
 					source: selectedBackgroundId,
-					type: 'raster'
+					type: 'raster',
+					paint: {
+						'raster-opacity': 0.5
+					}
 				},
+				{
+					id: 'hillshade',
+					source: 'terrain', // 地形ソースを指定
+					type: 'hillshade',
+					paint: {
+						'hillshade-illumination-anchor': 'map', // 陰影の光源は地図の北を基準にする
+						'hillshade-exaggeration': 0.3,
+						'hillshade-shadow-color': '#000000',
+						'hillshade-highlight-color': 'rgba(255, 255, 255, 0.5)'
+					}
+				},
+
 				...createLayerItems(layerDataEntries, selectedhighlightData)
 			]
 		};

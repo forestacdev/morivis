@@ -136,5 +136,7 @@ export const webglToPng = async (number: number): Promise<string> => {
 
 	outputContext.putImageData(imageData, 0, 0);
 
+	// bitmap形式で返す
+
 	return outputCanvas.toDataURL('image/png');
 };
