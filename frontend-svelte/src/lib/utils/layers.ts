@@ -350,51 +350,51 @@ export const layerData: LayerEntry[] = [
 			]
 		}
 	},
-	{
-		id: 'ENSYURIN_MITI',
-		name: '演習林路網',
-		type: 'geojson-line',
-		opacity: 1,
-		path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
-		attribution: '森林文化アカデミー',
-		visible: true,
-		style_key: 'デフォルト',
-		style: {
-			line: [
-				{
-					name: 'デフォルト',
-					paint: {
-						'line-color': '#8e8e7b',
-						'line-width': ['match', ['get', '種類'], ['林道'], 10, 5]
-					},
-					layout: {
-						'line-join': 'bevel'
-					}
-				}
-			]
-		}
-	},
-	{
-		id: 'ENSYURIN_KAWA',
-		name: '川',
-		type: 'geojson-line',
-		opacity: 1,
-		path: `${GEOJSON_BASE_PATH}/KAWA.geojson`,
-		attribution: '森林文化アカデミー',
-		visible: true,
-		style_key: 'デフォルト',
-		style: {
-			line: [
-				{
-					name: 'デフォルト',
-					paint: {
-						'line-width': 5,
-						'line-color': '#0f7acc'
-					}
-				}
-			]
-		}
-	},
+	// {
+	// 	id: 'ENSYURIN_MITI',
+	// 	name: '演習林路網',
+	// 	type: 'geojson-line',
+	// 	opacity: 1,
+	// 	path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
+	// 	attribution: '森林文化アカデミー',
+	// 	visible: true,
+	// 	style_key: 'デフォルト',
+	// 	style: {
+	// 		line: [
+	// 			{
+	// 				name: 'デフォルト',
+	// 				paint: {
+	// 					'line-color': '#8e8e7b',
+	// 					'line-width': ['match', ['get', '種類'], ['林道'], 10, 5]
+	// 				},
+	// 				layout: {
+	// 					'line-join': 'bevel'
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
+	// {
+	// 	id: 'ENSYURIN_KAWA',
+	// 	name: '川',
+	// 	type: 'geojson-line',
+	// 	opacity: 1,
+	// 	path: `${GEOJSON_BASE_PATH}/KAWA.geojson`,
+	// 	attribution: '森林文化アカデミー',
+	// 	visible: true,
+	// 	style_key: 'デフォルト',
+	// 	style: {
+	// 		line: [
+	// 			{
+	// 				name: 'デフォルト',
+	// 				paint: {
+	// 					'line-width': 5,
+	// 					'line-color': '#0f7acc'
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
 	{
 		id: 'TATEMONO',
 		name: '建物',
@@ -768,78 +768,78 @@ export const layerData: LayerEntry[] = [
 			symbol: []
 		}
 	},
-	{
-		id: 'gsi_contour',
-		name: '等高線',
-		type: 'vector-line',
-		source_layer: 'contour',
-		opacity: 0.7,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
-		attribution: '地理院ベクトル',
-		maxzoom: 14,
-		minzoom: 0,
-		visible: true,
-		style_key: '単色',
-		style: {
-			line: [
-				{
-					name: '単色',
-					paint: {
-						'line-color': '#aaaaaa',
-						'line-width': 0.5
-					}
-				}
-			]
-		}
-	},
-	{
-		id: 'gsi_river',
-		name: '川',
-		type: 'vector-line',
-		source_layer: 'river',
-		opacity: 1,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
-		attribution: '地理院ベクトル',
-		maxzoom: 14,
-		minzoom: 0,
-		visible: true,
-		style_key: '単色',
-		style: {
-			line: [
-				{
-					name: '単色',
-					paint: {
-						'line-color': '#00a2ff',
-						'line-width': 0.5
-					}
-				}
-			]
-		}
-	},
-	{
-		id: 'gsi_road',
-		name: '道',
-		type: 'vector-line',
-		source_layer: 'road',
-		opacity: 1,
-		path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
-		attribution: '地理院ベクトル',
-		maxzoom: 14,
-		minzoom: 0,
-		visible: true,
-		style_key: '単色',
-		style: {
-			line: [
-				{
-					name: '単色',
-					paint: {
-						'line-color': '#ff5e00',
-						'line-width': 3
-					}
-				}
-			]
-		}
-	},
+	// {
+	// 	id: 'gsi_contour',
+	// 	name: '等高線',
+	// 	type: 'vector-line',
+	// 	source_layer: 'contour',
+	// 	opacity: 0.7,
+	// 	path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+	// 	attribution: '地理院ベクトル',
+	// 	maxzoom: 14,
+	// 	minzoom: 0,
+	// 	visible: true,
+	// 	style_key: '単色',
+	// 	style: {
+	// 		line: [
+	// 			{
+	// 				name: '単色',
+	// 				paint: {
+	// 					'line-color': '#aaaaaa',
+	// 					'line-width': 0.5
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
+	// {
+	// 	id: 'gsi_river',
+	// 	name: '川',
+	// 	type: 'vector-line',
+	// 	source_layer: 'river',
+	// 	opacity: 1,
+	// 	path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+	// 	attribution: '地理院ベクトル',
+	// 	maxzoom: 14,
+	// 	minzoom: 0,
+	// 	visible: true,
+	// 	style_key: '単色',
+	// 	style: {
+	// 		line: [
+	// 			{
+	// 				name: '単色',
+	// 				paint: {
+	// 					'line-color': '#00a2ff',
+	// 					'line-width': 0.5
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
+	// {
+	// 	id: 'gsi_road',
+	// 	name: '道',
+	// 	type: 'vector-line',
+	// 	source_layer: 'road',
+	// 	opacity: 1,
+	// 	path: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+	// 	attribution: '地理院ベクトル',
+	// 	maxzoom: 14,
+	// 	minzoom: 0,
+	// 	visible: true,
+	// 	style_key: '単色',
+	// 	style: {
+	// 		line: [
+	// 			{
+	// 				name: '単色',
+	// 				paint: {
+	// 					'line-color': '#ff5e00',
+	// 					'line-width': 3
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
 
 	// {
 	// 	id: 'elevation',
@@ -868,42 +868,42 @@ export const layerData: LayerEntry[] = [
 	// 		]
 	// 	}
 	// },
-	{
-		id: 'gifu-forestarea',
-		name: '岐阜県森林地域',
-		type: 'vector-polygon',
-		source_layer: 'a001210020160207',
-		opacity: 0.7,
-		path: GIFU_DATA_BASE_PATH + '/gml/A13-15_21/tiles/{z}/{x}/{y}.pbf',
-		attribution: '国土数値情報',
-		maxzoom: 14,
-		minzoom: 0,
-		visible: true,
-		id_field: 'A45_001',
-		show_fill: true,
-		show_outline: false,
-		show_label: true,
-		style_key: '単色',
-		style: {
-			fill: [
-				{
-					name: '単色',
-					paint: {
-						'fill-color': '#0c7300'
-					}
-				}
-			],
-			line: [
-				{
-					name: 'デフォルト',
-					paint: {
-						'line-color': '#ff0000',
-						'line-width': 1.5
-					}
-				}
-			]
-		}
-	},
+	// {
+	// 	id: 'gifu-forestarea',
+	// 	name: '岐阜県森林地域',
+	// 	type: 'vector-polygon',
+	// 	source_layer: 'a001210020160207',
+	// 	opacity: 0.7,
+	// 	path: GIFU_DATA_BASE_PATH + '/gml/A13-15_21/tiles/{z}/{x}/{y}.pbf',
+	// 	attribution: '国土数値情報',
+	// 	maxzoom: 14,
+	// 	minzoom: 0,
+	// 	visible: true,
+	// 	id_field: 'A45_001',
+	// 	show_fill: true,
+	// 	show_outline: false,
+	// 	show_label: true,
+	// 	style_key: '単色',
+	// 	style: {
+	// 		fill: [
+	// 			{
+	// 				name: '単色',
+	// 				paint: {
+	// 					'fill-color': '#0c7300'
+	// 				}
+	// 			}
+	// 		],
+	// 		line: [
+	// 			{
+	// 				name: 'デフォルト',
+	// 				paint: {
+	// 					'line-color': '#ff0000',
+	// 					'line-width': 1.5
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// },
 	{
 		id: 'gifu-nationalforest',
 		name: '岐阜県国有林',

@@ -33,8 +33,10 @@
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
-	import { getTilePixelColor, getTileUrl } from '$lib/utils/map';
+	import { getTilePixelColor, getTileUrl, getStyleJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
+	import styleJson from '$lib/json/osm_liberty.json';
+
 	import { mapStore } from '$lib/store/map';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
@@ -56,50 +58,33 @@
 
 	// mapStyleの作成
 	const createMapStyle = () => {
-		const mapStyle: StyleSpecification = {
-			version: 8,
-			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-			sources: {
-				terrain: gsiTerrainSource, // 地形ソース
-				// ...createHighlightSource(),
-				...createSourceItems(layerDataEntries),
-				...backgroundSources
-				// ...createHighlightSource()
-			},
-			layers: [
-				{
-					id: 'background',
-					source: selectedBackgroundId,
-					type: 'raster',
-					paint: {
-						'raster-opacity': 0.5
-					}
-				},
-				{
-					id: 'hillshade',
-					source: 'terrain', // 地形ソースを指定
-					type: 'hillshade',
-					paint: {
-						'hillshade-illumination-anchor': 'map', // 陰影の光源は地図の北を基準にする
-						'hillshade-exaggeration': 0.3,
-						'hillshade-shadow-color': '#000000',
-						'hillshade-highlight-color': 'rgba(255, 255, 255, 0.5)'
-					}
-				},
-
-				...createLayerItems(layerDataEntries, selectedhighlightData)
-			]
+		const mapStyleJson = { ...styleJson } as StyleSpecification;
+		if (!mapStyleJson) return;
+		mapStyleJson.sources['mino-dem'] = gsiTerrainSource;
+		mapStyleJson.sources = {
+			...mapStyleJson.sources,
+			...createSourceItems(layerDataEntries)
 		};
+		mapStyleJson.layers = [
+			...mapStyleJson.layers,
+			...createLayerItems(layerDataEntries, selectedhighlightData)
+		];
 
-		return mapStyle;
+		return mapStyleJson;
 	};
 
 	// 初期描画時
 	onMount(() => {
 		// Mapの初期化
 		if (!mapContainer) return;
+
 		const mapStyle = createMapStyle();
-		mapStore.init(mapContainer, mapStyle);
+
+		console.log(mapStyle);
+
+		if (!mapStyle) return;
+
+		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 
 		// クリックイベントの購読
 		const onClick = mapStore.onClick(async (e) => {
@@ -151,13 +136,14 @@
 		});
 
 		return () => {
-			onClick(); // コンポーネントのアンマウント時に購読を解除
+			onClick();
 		};
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
 	$: if (layerDataEntries && selectedBackgroundId && selectedhighlightData !== undefined) {
 		const mapStyle = createMapStyle();
+
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;
 		mapStore.setStyle(mapStyle as StyleSpecification);
 

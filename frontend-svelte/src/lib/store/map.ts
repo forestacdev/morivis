@@ -17,60 +17,14 @@ import type {
 	MapGeoJSONFeature,
 	CircleLayerSpecification
 } from 'maplibre-gl';
+import * as pmtiles from 'pmtiles';
 import Worker from './worker?worker';
 
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 
-async function createRedSquareImageBitmap(size: number = 64): Promise<ImageBitmap> {
-	const fileHeaderSize = 14;
-	const infoHeaderSize = 40;
-	const bytesPerPixel = 3; // 24-bit bitmap (3 bytes per pixel)
-	const paddingPerRow = (4 - ((size * bytesPerPixel) % 4)) % 4;
-	const imageSize = size * (bytesPerPixel + paddingPerRow) * size;
-	const fileSize = fileHeaderSize + infoHeaderSize + imageSize;
-
-	const buffer = new ArrayBuffer(fileSize);
-	const view = new DataView(buffer);
-
-	// Bitmap file header
-	view.setUint16(0, 0x4d42, true); // Signature 'BM'
-	view.setUint32(2, fileSize, true); // File size
-	view.setUint32(6, 0, true); // Reserved
-	view.setUint32(10, fileHeaderSize + infoHeaderSize, true); // Pixel data offset
-
-	// Bitmap info header
-	view.setUint32(14, infoHeaderSize, true); // Header size
-	view.setInt32(18, size, true); // Image width
-	view.setInt32(22, -size, true); // Image height (negative to indicate top-down bitmap)
-	view.setUint16(26, 1, true); // Planes
-	view.setUint16(28, bytesPerPixel * 8, true); // Bits per pixel
-	view.setUint32(30, 0, true); // Compression (none)
-	view.setUint32(34, imageSize, true); // Image size
-	view.setInt32(38, 0, true); // Horizontal resolution (pixels per meter)
-	view.setInt32(42, 0, true); // Vertical resolution (pixels per meter)
-	view.setUint32(46, 0, true); // Colors in color table
-	view.setUint32(50, 0, true); // Important color count
-
-	// Bitmap pixel data (red square)
-	let offset = fileHeaderSize + infoHeaderSize;
-	for (let y = 0; y < size; y++) {
-		for (let x = 0; x < size; x++) {
-			view.setUint8(offset, 0x00); // Blue component
-			view.setUint8(offset + 1, 0x00); // Green component
-			view.setUint8(offset + 2, 0xff); // Red component
-			offset += bytesPerPixel;
-		}
-		offset += paddingPerRow; // Add padding bytes
-	}
-
-	// Convert ArrayBuffer to Blob
-	const blob = new Blob([buffer], { type: 'image/bmp' });
-
-	// Create an ImageBitmap from the Blob
-	const imageBitmap = await createImageBitmap(blob);
-	return imageBitmap;
-}
+const protocol = new pmtiles.Protocol();
+maplibregl.addProtocol('pmtiles', protocol.tile);
 
 const createMapStore = () => {
 	let map: Map | null = null;
@@ -128,12 +82,11 @@ const createMapStore = () => {
 				// 	console.error(`Error loading image for category ${id}:`, error);
 				// }
 			} else {
-				const imageSrc = id;
-				const webglImage = await imageToIcon(imageSrc);
-
-				if (!map.hasImage(id)) {
-					map.addImage(id, webglImage, { pixelRatio: 1 });
-				}
+				// const imageSrc = id;
+				// const webglImage = await imageToIcon(imageSrc);
+				// if (!map.hasImage(id)) {
+				// 	map.addImage(id, webglImage, { pixelRatio: 1 });
+				// }
 			}
 		});
 

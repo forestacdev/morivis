@@ -1,4 +1,13 @@
 import tilebelt from '@mapbox/tilebelt';
+import type {
+	Map,
+	StyleSpecification,
+	SourceSpecification,
+	LayerSpecification,
+	TerrainSpecification,
+	Marker,
+	CircleLayerSpecification
+} from 'maplibre-gl';
 
 type BBOX = [number, number, number, number];
 type RGBA = [number, number, number, number];
@@ -90,7 +99,11 @@ function scaleHeightToZoomLevel(heightValue, zoomLevel) {
 	return heightValue * scaleFactor * pixelDistance;
 }
 
-// 標高データにズームレベルでスケールを適用
-const rawHeight = 500; // ピクセルから得た元の標高データ (例)
-const scaledHeight = scaleHeightToZoomLevel(rawHeight, zoomLevel);
-console.log(`ズームレベル ${zoomLevel} における標高は約 ${scaledHeight} メートルです。`);
+/* style.jsonを取得 */
+export const getStyleJson = async (url: string): Promise<StyleSpecification> => {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch ${url}`);
+	}
+	return await response.json();
+};
