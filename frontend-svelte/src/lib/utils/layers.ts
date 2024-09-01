@@ -511,35 +511,9 @@ export const layerData: LayerEntry[] = [
 						'line-cap': 'round'
 					},
 					paint: {
-						'line-color': '#ff0000',
+						'line-color': '#ffe600',
 						'line-width': 2,
 						'line-dasharray': [2, 2] // この部分で破線のパターンを指定
-					}
-				},
-				{
-					name: '樹種ごとの色分け',
-					paint: {
-						'line-color': [
-							'match',
-							['get', '樹種'],
-							'スギ',
-							'#399210', // スギ
-							'ヒノキ',
-							'#4ADDA5', // ヒノキ
-							'アカマツ',
-							'#DD2B2B', // アカマツ
-							'スラッシュマツ',
-							'#B720BF', // スラッシュマツ
-							'広葉樹',
-							'#EBBC22', // 広葉樹
-							'草地',
-							'#2351E5', // 草地
-							'その他岩石',
-							'#D98F34', // その他岩石
-							'#000000' // デフォルトの色（該当しない場合）
-						],
-						'line-width': 2
-						// 'line-dasharray': [2, 2] // この部分で破線のパターンを指定
 					}
 				}
 			],
@@ -1130,6 +1104,7 @@ export const createLayerItems = (
 			const sourceId = `${layerEntry.id}_source`;
 
 			switch (layerEntry.type) {
+				// ラスターレイヤー
 				case 'raster': {
 					layerItems.push({
 						id: layerId,
@@ -1144,6 +1119,7 @@ export const createLayerItems = (
 					});
 					break;
 				}
+				// ベクトルタイル ポリゴンレイヤー
 				case 'vector-polygon': {
 					const styleKey = layerEntry.style_key;
 					const setStyele = layerEntry.style?.fill?.find(
@@ -1156,17 +1132,12 @@ export const createLayerItems = (
 						'source-layer': layerEntry.source_layer,
 						maxzoom: 24,
 						minzoom: 0,
-						paint: layerEntry.show_fill
-							? {
-									'fill-opacity': layerEntry.opacity,
-									...setStyele?.paint
-								}
-							: {
-									'fill-opacity': layerEntry.opacity,
-									'fill-color': 'transparent'
-								},
+						paint: {
+							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+							...setStyele?.paint
+						},
 						layout: {
-							...(layerEntry.style?.fill?.[0]?.layout ?? {})
+							...(setStyele?.layout ?? {})
 						}
 					} as LayerSpecification;
 
@@ -1176,7 +1147,7 @@ export const createLayerItems = (
 					if (layerEntry.show_outline) {
 						const index = layerEntry.style?.line?.findIndex(
 							(item) => item.name === styleKey
-						);
+						) as number;
 
 						layerItems.push({
 							id: `${layerId}_outline`,
@@ -1185,12 +1156,12 @@ export const createLayerItems = (
 							'source-layer': layerEntry.source_layer,
 							paint: {
 								'line-opacity': layerEntry.opacity,
-								...(index !== undefined
+								...(index !== -1
 									? layerEntry.style?.line?.[index]?.paint
 									: layerEntry.style?.line?.[0]?.paint)
 							},
 							layout: {
-								...(index !== undefined
+								...(index !== -1
 									? layerEntry.style?.line?.[index]?.layout
 									: layerEntry.style?.line?.[0]?.layout)
 							}
@@ -1218,6 +1189,7 @@ export const createLayerItems = (
 					}
 					break;
 				}
+				// ベクトルタイル ラインレイヤー
 				case 'vector-line': {
 					const setStyele = layerEntry.style?.line?.find(
 						(item) => item.name === layerEntry.style_key
@@ -1259,6 +1231,7 @@ export const createLayerItems = (
 					}
 					break;
 				}
+				// ベクトルタイル ポイントレイヤー
 				case 'vector-point': {
 					const setStyele = layerEntry.style?.circle?.find(
 						(item) => item.name === layerEntry.style_key
@@ -1301,6 +1274,8 @@ export const createLayerItems = (
 					}
 					break;
 				}
+
+				// GeoJSON ポリゴンレイヤー
 				case 'geojson-polygon': {
 					const styleKey = layerEntry.style_key;
 					const setStyele = layerEntry.style?.fill?.find(
@@ -1311,16 +1286,12 @@ export const createLayerItems = (
 						id: layerId,
 						type: 'fill',
 						source: sourceId,
-						paint: layerEntry.show_fill
-							? {
-									'fill-opacity': layerEntry.opacity,
-									...setStyele?.paint
-								}
-							: {
-									'fill-opacity': layerEntry.opacity
-								},
+						paint: {
+							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+							...setStyele?.paint
+						},
 						layout: {
-							...(layerEntry.style?.fill?.[0]?.layout ?? {})
+							...(setStyele?.layout ?? {})
 						}
 						// filter: ['==', ['id'], 1]
 					} as LayerSpecification;
@@ -1329,7 +1300,9 @@ export const createLayerItems = (
 					// layerIdNameDict[layerId] = layerEntry.name;
 					const index = layerEntry.style?.line?.findIndex(
 						(item) => item.name === styleKey
-					);
+					) as number;
+
+					console.log(index);
 
 					if (layerEntry.show_outline) {
 						layerItems.push({
@@ -1338,12 +1311,12 @@ export const createLayerItems = (
 							source: sourceId,
 							paint: {
 								'line-opacity': layerEntry.opacity,
-								...(index !== undefined
+								...(index !== -1
 									? layerEntry.style?.line?.[index]?.paint
 									: layerEntry.style?.line?.[0]?.paint)
 							},
 							layout: {
-								...(index !== undefined
+								...(index !== -1
 									? layerEntry.style?.line?.[index]?.layout
 									: layerEntry.style?.line?.[0]?.layout)
 							}
