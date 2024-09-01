@@ -63,10 +63,16 @@
 		mapStyleJson.sources['terrain'] = gsiTerrainSource;
 		mapStyleJson.sources = {
 			...mapStyleJson.sources,
-			...createSourceItems(layerDataEntries)
+			...createSourceItems(layerDataEntries),
+			...backgroundSources
 		};
 		mapStyleJson.layers = [
 			...mapStyleJson.layers,
+			// {
+			// 	id: 'base-map',
+			// 	source: selectedBackgroundId,
+			// 	type: 'raster'
+			// },
 			...createLayerItems(layerDataEntries, selectedhighlightData)
 		];
 

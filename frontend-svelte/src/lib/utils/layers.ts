@@ -9,7 +9,8 @@ import type {
 	FillExtrusionLayerSpecification,
 	RasterLayerSpecification,
 	HillshadeLayerSpecification,
-	BackgroundLayerSpecification
+	BackgroundLayerSpecification,
+	FilterSpecification
 } from 'maplibre-gl';
 import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER, GIFU_DATA_BASE_PATH } from '$lib/constants';
 import { excludeIdsClickLayer } from '$lib/store/store';
@@ -283,6 +284,7 @@ export type LayerEntry = {
 	opacity: number;
 	style_key: string;
 	style?: LayerStyle;
+	filter?: FilterSpecification;
 	visible: boolean;
 	show_label?: boolean;
 	show_outline?: boolean;
@@ -395,20 +397,74 @@ export const layerData: LayerEntry[] = [
 		id: 'TATEMONO',
 		name: '建物',
 		type: 'geojson-polygon',
-		opacity: 0.5,
+		opacity: 1,
 		path: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
 		show_label: true,
-		show_outline: true,
-		show_fill: false,
+		show_outline: false,
+		show_fill: true,
+		style_key: '単色',
+		filter: ['all', ['match', ['get', 'カテゴリ'], ['建物', 'その他'], true, false]],
+		style: {
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#444444'
+					}
+				}
+			],
+			line: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					paint: {
+						'text-halo-color': '#000000',
+						'text-halo-width': 2,
+						'text-opacity': 1,
+						'text-color': '#ffffff'
+					},
+					layout: {
+						visibility: 'visible',
+						'text-field': ['to-string', ['get', 'name']],
+						'text-size': 14,
+						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+						'text-radial-offset': 0.5,
+						'text-justify': 'auto'
+						// 'icon-image': ['to-string', ['get', 'image']]
+					}
+				}
+			]
+		}
+	},
+	{
+		id: 'ZIRIKI',
+		name: '自力建設',
+		type: 'geojson-polygon',
+		opacity: 1,
+		path: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		show_label: true,
+		show_outline: false,
+		show_fill: true,
+		filter: ['all', ['match', ['get', 'カテゴリ'], ['自力建設'], true, false]],
 		style_key: '単色',
 		style: {
 			fill: [
 				{
 					name: '単色',
 					paint: {
-						'fill-color': '#20a2a2'
+						'fill-color': '#8c3d00'
 					}
 				}
 			],
@@ -501,8 +557,7 @@ export const layerData: LayerEntry[] = [
 							3,
 							'#f0e000', // アカマツ
 							'#000000' // デフォルトの色（該当しない場合）
-						],
-						'fill-outline-color': '#000000'
+						]
 					}
 				},
 				{
@@ -514,8 +569,7 @@ export const layerData: LayerEntry[] = [
 							'スギ',
 							'#399210', // スギ
 							'#000000' // デフォルトの色（該当しない場合）
-						],
-						'fill-outline-color': '#000000'
+						]
 					}
 				},
 				{
@@ -842,8 +896,7 @@ export const layerData: LayerEntry[] = [
 							['天ヒノキ'],
 							'#34eac2',
 							'#000000'
-						],
-						'fill-outline-color': '#000000'
+						]
 					}
 				}
 			],
@@ -1328,7 +1381,9 @@ export const createLayerItems = (
 							...(setStyele?.layout ?? {})
 						}
 						// filter: ['==', ['id'], 1]
-					} as LayerSpecification;
+					} as FillLayerSpecification;
+
+					if (layerEntry.filter) layer.filter = layerEntry.filter;
 
 					layerItems.push(layer);
 					// layerIdNameDict[layerId] = layerEntry.name;
@@ -1337,7 +1392,7 @@ export const createLayerItems = (
 					) as number;
 
 					if (layerEntry.show_outline) {
-						layerItems.push({
+						const outlineLayer = {
 							id: `${layerId}_outline`,
 							type: 'line',
 							source: sourceId,
@@ -1352,11 +1407,15 @@ export const createLayerItems = (
 									? layerEntry.style?.line?.[index]?.layout
 									: layerEntry.style?.line?.[0]?.layout)
 							}
-						});
+						} as LineLayerSpecification;
+
+						if (layerEntry.filter) outlineLayer.filter = layerEntry.filter;
+
+						layerItems.push(outlineLayer);
 						excludeIds.push(`${layerId}_outline`);
 					}
 					if (layerEntry.show_label) {
-						symbolLayerItems.push({
+						const symbolLayer = {
 							id: `${layerId}_label`,
 							type: 'symbol',
 							source: sourceId,
@@ -1366,7 +1425,10 @@ export const createLayerItems = (
 							layout: {
 								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
 							}
-						});
+						} as SymbolLayerSpecification;
+
+						if (layerEntry.filter) symbolLayer.filter = layerEntry.filter;
+						symbolLayerItems.push(symbolLayer);
 						excludeIds.push(`${layerId}_label`);
 					}
 					break;
@@ -1386,18 +1448,21 @@ export const createLayerItems = (
 						}
 					});
 
-					symbolLayerItems.push({
-						id: `${layerId}_label`,
-						type: 'symbol',
-						source: sourceId,
-						paint: {
-							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-						}
-					});
-					excludeIds.push(`${layerId}_label`);
+					if (layerEntry.show_label) {
+						symbolLayerItems.push({
+							id: `${layerId}_label`,
+							type: 'symbol',
+							source: sourceId,
+							paint: {
+								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+							}
+						});
+						excludeIds.push(`${layerId}_label`);
+					}
+
 					break;
 				}
 				// GeoJSON ポイントレイヤー
@@ -1415,18 +1480,20 @@ export const createLayerItems = (
 						}
 					});
 
-					symbolLayerItems.push({
-						id: `${layerId}_label`,
-						type: 'symbol',
-						source: sourceId,
-						paint: {
-							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-						}
-					});
-					excludeIds.push(`${layerId}_label`);
+					if (layerEntry.show_label) {
+						symbolLayerItems.push({
+							id: `${layerId}_label`,
+							type: 'symbol',
+							source: sourceId,
+							paint: {
+								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+							},
+							layout: {
+								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+							}
+						});
+						excludeIds.push(`${layerId}_label`);
+					}
 					break;
 				}
 				// GeoJSON ラベルレイヤー
