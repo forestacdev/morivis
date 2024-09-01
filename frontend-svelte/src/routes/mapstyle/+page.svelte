@@ -9,14 +9,6 @@
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer: HTMLDivElement;
 
-	const getStyleJson = async (url: string) => {
-		const response = await fetch(url);
-		if (!response.ok) {
-			throw new Error(`Failed to fetch ${url}`);
-		}
-		return await response.json();
-	};
-
 	onMount(async () => {
 		const style = styleJson;
 

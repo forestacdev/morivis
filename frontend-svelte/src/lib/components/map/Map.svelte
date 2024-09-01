@@ -33,7 +33,7 @@
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
-	import { getTilePixelColor, getTileUrl, getStyleJson } from '$lib/utils/map';
+	import { getTilePixelColor, getTileUrl, getPropDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
 
@@ -121,14 +121,51 @@
 				(entry) => entry.id === features[0].layer.id
 			);
 
+			type FlexibleProp = {
+				[key: string]: string | number;
+			};
+
+			function convertProps(
+				prop1: FlexibleProp,
+				prop2: { [key: string]: string }
+			): FlexibleProp {
+				const result: FlexibleProp = {};
+
+				for (const [key, value] of Object.entries(prop1)) {
+					if (prop2.hasOwnProperty(key)) {
+						result[prop2[key]] = value;
+					} else {
+						result[key] = value; // キーが prop2 に存在しない場合は元のキーを使用
+					}
+				}
+
+				return result;
+			}
+
 			if (targetLayerData) {
 				selectedhighlightData = {
 					LayerData: targetLayerData,
 					featureId: features[0].id
 				};
+
+				if (targetLayerData.prop_dict) {
+					console.log(features[0].properties);
+
+					const dictJson = await getPropDictJson(targetLayerData.prop_dict);
+					console.log(dictJson);
+
+					const convertedProp = convertProps(features[0].properties, dictJson);
+					console.log(convertedProp);
+
+					features[0].properties = convertedProp;
+
+					feature = features[0];
+					return;
+				}
+
+				feature = features[0] ? features[0] : null;
 			}
 
-			feature = features[0] ? features[0] : null;
 			// selectFeatureList = [];
 		});
 

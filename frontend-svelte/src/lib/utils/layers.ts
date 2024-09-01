@@ -288,6 +288,7 @@ export type LayerEntry = {
 	show_outline?: boolean;
 	show_fill?: boolean;
 	id_field?: string; // フィーチャーのIDとして使用するフィールド名
+	prop_dict?: string; // プロパティの辞書ファイルのURL
 	legendId?: string; // legends.ts のキーに対応
 	remarks?: string; // 備考
 };
@@ -361,6 +362,36 @@ export const layerData: LayerEntry[] = [
 		}
 	},
 	{
+		id: 'ENSYURIN_MITI',
+		name: '演習林道',
+		type: 'geojson-line',
+		opacity: 1,
+		path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
+		attribution: '森林文化アカデミー',
+		visible: true,
+		style_key: '単色',
+		style: {
+			line: [
+				{
+					name: 'デフォルト',
+					layout: {
+						'line-cap': 'square',
+						'line-join': 'round'
+					},
+					paint: {
+						'line-color': 'rgba(255, 255, 255, 1)',
+						'line-width': {
+							stops: [
+								[15, 1.5],
+								[17, 4]
+							]
+						}
+					}
+				}
+			]
+		}
+	},
+	{
 		id: 'TATEMONO',
 		name: '建物',
 		type: 'geojson-polygon',
@@ -416,12 +447,12 @@ export const layerData: LayerEntry[] = [
 		id: 'ENSYURIN_rinhanzu',
 		name: '演習林林班図',
 		type: 'geojson-polygon',
-		opacity: 0.5,
+		opacity: 0.4,
 		path: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
-		show_label: true,
-		show_outline: true,
+		show_label: false,
+		show_outline: false,
 		show_fill: true,
 		id_field: '小林班ID',
 		style_key: '樹種ごとの色分け',
@@ -868,7 +899,8 @@ export const layerData: LayerEntry[] = [
 					}
 				}
 			]
-		}
+		},
+		prop_dict: GIFU_DATA_BASE_PATH + '/gml/A45-19_21/prop_dict.json'
 	}
 ];
 
@@ -1134,6 +1166,7 @@ export const createLayerItems = (
 						minzoom: 0,
 						paint: {
 							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+							'fill-outline-color': '#00000000',
 							...setStyele?.paint
 						},
 						layout: {
@@ -1288,6 +1321,7 @@ export const createLayerItems = (
 						source: sourceId,
 						paint: {
 							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+							'fill-outline-color': '#00000000',
 							...setStyele?.paint
 						},
 						layout: {
@@ -1301,8 +1335,6 @@ export const createLayerItems = (
 					const index = layerEntry.style?.line?.findIndex(
 						(item) => item.name === styleKey
 					) as number;
-
-					console.log(index);
 
 					if (layerEntry.show_outline) {
 						layerItems.push({

@@ -100,7 +100,7 @@ function scaleHeightToZoomLevel(heightValue, zoomLevel) {
 }
 
 /* style.jsonを取得 */
-export const getStyleJson = async (url: string): Promise<StyleSpecification> => {
+export const getPropDictJson = async (url: string): Promise<{ [key: string]: string }> => {
 	const response = await fetch(url);
 	if (!response.ok) {
 		throw new Error(`Failed to fetch ${url}`);
