@@ -9,7 +9,7 @@ export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
 
 /** 表示中のサイドメニューの種類 */
-export const isSide = writable<Side>(null);
+export const isSide = writable<Side>('base');
 export const showlayerOptionId = writable<string>('');
 
 /** 外部コンポーネントからイベントを発火させるストア */

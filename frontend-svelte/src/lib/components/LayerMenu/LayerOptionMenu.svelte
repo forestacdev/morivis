@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
 	import { showlayerOptionId, isSide } from '$lib/store/store';
+	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
 	isSide.subscribe((value) => {

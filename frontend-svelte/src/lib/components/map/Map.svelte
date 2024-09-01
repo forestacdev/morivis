@@ -121,12 +121,10 @@
 				(entry) => entry.id === features[0].layer.id
 			);
 
-			// console.log(targetLayerData.id_field);
-
-			if (targetLayerData && targetLayerData.id_field) {
+			if (targetLayerData) {
 				selectedhighlightData = {
 					LayerData: targetLayerData,
-					featureId: features[0].properties[targetLayerData.id_field]
+					featureId: features[0].id
 				};
 			}
 
@@ -224,10 +222,10 @@
 		: ''}"
 ></div>
 <Side />
+<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 <div
 	class="custom-css absolute left-[120px] top-[60px] h-full max-h-[calc(100vh-8rem)] max-w-[300px]"
 >
-	<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
 	<LayerMenu bind:layerDataEntries />
 </div>
 

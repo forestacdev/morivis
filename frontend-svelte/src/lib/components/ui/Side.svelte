@@ -61,7 +61,9 @@
 		background: linear-gradient(90deg, rgba(41, 41, 41, 1) 0%, rgba(255, 255, 255, 0) 100%);
 	} */
 	.btn-side {
-		@apply grid h-[50px] w-[50px] rotate-45 place-items-center rounded-sm bg-black bg-opacity-[0.7] p-2 text-white transition-all duration-200;
+		@apply grid h-[50px] w-[50px] rotate-45 place-items-center rounded-sm bg-[#000000] bg-opacity-[0.5] p-2 text-white transition-all duration-200;
+		-webkit-backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
 	}
 
 	.btn-side:hover {

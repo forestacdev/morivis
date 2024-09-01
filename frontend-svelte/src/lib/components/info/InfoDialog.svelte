@@ -16,16 +16,12 @@
 
 {#if $isSide === 'info'}
 	<div
-		transition:fade={{ delay: 100 }}
-		class="custom-overlay absolute bottom-0 flex h-full w-full justify-center bg-white"
+		transition:fade={{ duration: 100 }}
+		class="absolute bottom-0 flex h-full w-full items-center justify-center"
 	>
-		ここにダイアログが表示される
+		<div class="bg-opacity-8 h-[600px] w-[600px] bg-black">ここにダイアログが表示されるs</div>
 	</div>
 {/if}
 
 <style>
-	.custom-overlay {
-		filter: blur(6px);
-		opacity: 0.8;
-	}
 </style>

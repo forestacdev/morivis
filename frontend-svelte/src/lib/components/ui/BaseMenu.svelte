@@ -2,56 +2,80 @@
 	import type { CategoryEntry } from '$lib/utils/layers';
 	import type { LayerEntry, BaseMapEntry } from '$lib/utils/layers';
 	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
-
+	import { fade, slide } from 'svelte/transition';
 	export let backgroundIds: string[] = [];
 	export let selectedBackgroundId: string = '';
 	export let backgroundSources: { [_: string]: BaseMapEntry } = {};
 	export let layerDataEntries: CategoryEntry[] = [];
 	import { isSide } from '$lib/store/store';
+	import { onMount } from 'svelte';
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	onMount(() => {});
 
 	let selectedLayerEntry: LayerEntry | null = null;
 	let selectedCategoryName: string | null = null;
+
+	let scrollPosition = 0;
+
+	function tweenMe(node: Node) {
+		let tl = gsap.timeline();
+		const duration = 0.5; // アニメーションの長さを0.5秒に設定
+
+		tl.from(node, {
+			duration: duration,
+			opacity: 0,
+			x: '-100%', // 左から右へスライド
+			ease: 'power2.out' // スムーズな動きのためのイージング
+		});
+
+		return {
+			duration: tl.totalDuration() * 1000, // ミリ秒に変換
+			tick: (t: number) => {
+				tl.progress(t);
+			}
+		};
+	}
 </script>
 
-<div
-	class="bg-color-base absolute left-4 flex h-full w-[400px] flex-col overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
-	'base'
-		? 'menu-in'
-		: 'menu-out'}"
->
-	<label for="background" class="block text-sm font-semibold leading-6">ベースマップ</label>
+{#if $isSide === 'base'}
+	<div
+		transition:tweenMe
+		class="bg-color-base absolute h-screen w-full flex-col rounded p-4 text-slate-100 shadow-2xl"
+	>
+		<!-- <div class="block flex-shrink-0 p-4 text-lg font-semibold leading-6">ベースマップ</div> -->
 
-	<div class="custom-scroll flex h-full flex-col gap-4 overflow-auto p-2">
-		{#each backgroundIds as name (name)}
-			<label
-				class="relative block h-[400px] cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
-				name
-					? 'custom-shadow py-[50px]'
-					: 'custom-filter'}"
-				style="background-image: url({backgroundSources[name].tiles[0]
-					.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
-					.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
-					.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())})"
-			>
-				<!-- <img
-					src={}
-					alt={name}
-				/> -->
-				<input
-					type="radio"
-					bind:group={selectedBackgroundId}
-					value={name}
-					class="invisible"
-				/>
-				<span
-					class=" {selectedBackgroundId === name
-						? 'custom-text-shadow-active'
-						: 'custom-text-shadow'}">{name}</span
+		<div
+			class="custom-scroll grid-row-8 ml-[100px] grid h-full grid-cols-4 gap-4 overflow-scroll p-2"
+		>
+			{#each backgroundIds as name (name)}
+				<label
+					class=" relative h-[200px] w-full cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
+					name
+						? 'custom-shadow'
+						: 'custom-filter'}"
+					style="background-image: url({backgroundSources[name].tiles[0]
+						.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
+						.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
+						.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())})"
 				>
-			</label>
-		{/each}
+					<input
+						type="radio"
+						bind:group={selectedBackgroundId}
+						value={name}
+						class="invisible"
+					/>
+					<span
+						class=" {selectedBackgroundId === name
+							? 'custom-text-shadow-active'
+							: 'custom-text-shadow'}">{name}</span
+					>
+				</label>
+			{/each}
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	/* グロー効果 */

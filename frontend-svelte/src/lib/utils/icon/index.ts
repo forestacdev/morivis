@@ -39,8 +39,8 @@ float circleMask(vec2 _st, vec2 center, float radius) {
 void main(void){
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
     
-    // テクスチャ座標
-    vec2 texCoord = st;
+    // テクスチャ座標 yを反転
+    vec2 texCoord = vec2(st.x, 1.0 - st.y);
 
     // 円形マスクの設定
     float radius = 0.4;

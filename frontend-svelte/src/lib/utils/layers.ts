@@ -208,6 +208,26 @@ export const backgroundSources: { [_: string]: BaseMapEntry } = {
 		maxzoom: 19,
 		tileSize: 256,
 		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors"
+	},
+	'Esri World Topo': {
+		type: 'raster',
+		tiles: [
+			'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.png'
+		],
+		minzoom: 0,
+		maxzoom: 19,
+		tileSize: 256,
+		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors"
+	},
+	基本図: {
+		type: 'raster',
+		tiles: [
+			'https://raw.githubusercontent.com/forestacdev/rastertile-poc/main/tiles/{z}/{x}/{y}.webp'
+		],
+		minzoom: 0,
+		maxzoom: 19,
+		tileSize: 256,
+		attribution: '美濃市'
 	}
 };
 
@@ -282,7 +302,7 @@ export const layerData: LayerEntry[] = [
 	{
 		id: 'TITEN.geojson',
 		name: 'その他ポイント',
-		type: 'geojson-point',
+		type: 'geojson-label',
 		opacity: 0.7,
 		path: `${GEOJSON_BASE_PATH}/TITEN.geojson`,
 		attribution: '森林文化アカデミー',
@@ -852,7 +872,7 @@ export const layerData: LayerEntry[] = [
 	}
 ];
 
-const highlightPolygonPaint: FillLayerSpecification['paint'] = {
+const highlightFillPaint: FillLayerSpecification['paint'] = {
 	'fill-opacity': 0.4,
 	'fill-color': '#00d5ff'
 };
@@ -863,11 +883,19 @@ const highlightLinePaint: LineLayerSpecification['paint'] = {
 	'line-width': 5
 };
 
+const highlightCirclePaint: CircleLayerSpecification['paint'] = {
+	'circle-color': '#00d5ff',
+	'circle-radius': 10,
+    'circle-stroke-width': 5,
+    'circle-stroke-color': '#ffffff'
+};
+
 export type SelectedHighlightData = {
 	LayerData: LayerEntry;
 	featureId: string;
 };
 
+/* ハイライトレイヤー */
 export const createHighlightLayer = (selectedhighlightData: SelectedHighlightData | null) => {
 	if (!selectedhighlightData) return [];
 
@@ -885,10 +913,10 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			source: sourceId,
 			'source-layer': layerEntry.source_layer,
 			paint: {
-				...highlightPolygonPaint
+				...highlightFillPaint
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+		} as FillLayerSpecification);
 		layers.push({
 			id: layerId + '_line',
 			type: 'line',
@@ -898,7 +926,7 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 				...highlightLinePaint
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+		} as LineLayerSpecification);
 	} else if (layerEntry.type === 'vector-line') {
 		layers.push({
 			id: layerId,
@@ -908,8 +936,9 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			paint: {
 				...highlightLinePaint
 			},
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+		} as LineLayerSpecification);
 	} else if (layerEntry.type === 'vector-point') {
 		layers.push({
 			id: layerId,
@@ -917,8 +946,7 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			source: sourceId,
 			'source-layer': layerEntry.source_layer,
 			paint: {
-				'circle-opacity': 0.5,
-				'circle-color': 'green'
+				...highlightCirclePaint
 			},
 			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 		} as CircleLayerSpecification);
@@ -928,10 +956,11 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			type: 'fill',
 			source: sourceId,
 			paint: {
-				...highlightPolygonPaint
+				...highlightFillPaint
 			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+			filter: ['==', ['id'], selectedhighlightData.featureId]
+		} as FillLayerSpecification);
 
 		layers.push({
 			id: layerId + '_line',
@@ -940,31 +969,31 @@ export const createHighlightLayer = (selectedhighlightData: SelectedHighlightDat
 			paint: {
 				...highlightLinePaint
 			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+			filter: ['==', ['id'], selectedhighlightData.featureId]
+		} as LineLayerSpecification);
 	} else if (layerEntry.type === 'geojson-line') {
 		layers.push({
 			id: layerId,
 			type: 'line',
 			source: sourceId,
 			paint: {
-				'line-color': '#ff0000',
-				'line-opacity': 0.5
+				...highlightLinePaint
 			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LayerSpecification);
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+			filter: ['==', ['id'], selectedhighlightData.featureId]
+		} as LineLayerSpecification);
 	} else if (layerEntry.type === 'geojson-point') {
 		layers.push({
 			id: layerId,
 			type: 'circle',
 			source: sourceId,
 			paint: {
-				'circle-opacity': 0.5,
-				'circle-color': '#ff0000'
+				...highlightCirclePaint
 			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			// filter: ['==', 'id', selectedhighlightData.featureId]
-		} as LayerSpecification);
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+			filter: ['==', ['id'], selectedhighlightData.featureId]
+		} as CircleLayerSpecification);
 	} else {
 		console.warn(`Unknown layer type: ${layerEntry.type}`);
 		return [];
@@ -992,7 +1021,8 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 		} else if (
 			layerEntry.type === 'vector-polygon' ||
 			layerEntry.type === 'vector-line' ||
-			layerEntry.type === 'vector-point'
+			layerEntry.type === 'vector-point' ||
+			layerEntry.type === 'vector-label'
 		) {
 			sourceItems[sourceId] = {
 				type: 'vector',
@@ -1000,12 +1030,13 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
 				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
 				attribution: layerEntry.attribution,
-				promoteId: layerEntry.id_field
+				promoteId: layerEntry.id_field ?? undefined
 			};
 		} else if (
 			layerEntry.type === 'geojson-polygon' ||
 			layerEntry.type === 'geojson-line' ||
-			layerEntry.type === 'geojson-point'
+			layerEntry.type === 'geojson-point' ||
+			layerEntry.type === 'geojson-label'
 		) {
 			sourceItems[sourceId] = {
 				type: 'geojson',
@@ -1290,6 +1321,34 @@ export const createLayerItems = (
 					},
 					layout: {
 						...(layerEntry.style?.circle?.[0]?.layout ?? {})
+					}
+				});
+
+				symbolLayerItems.push({
+					id: `${layerId}_label`,
+					type: 'symbol',
+					source: sourceId,
+					paint: {
+						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+					}
+				});
+				excludeIds.push(`${layerId}_label`);
+				// layerIdNameDict[layerId] = layerEntry.name;
+			} else if (layerEntry.type === 'geojson-label') {
+				layerItems.push({
+					id: layerId,
+					type: 'symbol',
+					source: sourceId,
+					paint: {
+						'text-opacity': layerEntry.opacity,
+						'icon-opacity': layerEntry.opacity,
+						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
 					}
 				});
 
