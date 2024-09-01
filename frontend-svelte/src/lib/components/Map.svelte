@@ -62,12 +62,12 @@
 		if (!mapStyleJson) return;
 		mapStyleJson.sources['mino-dem'] = gsiTerrainSource;
 		mapStyleJson.sources = {
-			...mapStyleJson.sources
-			// ...createSourceItems(layerDataEntries)
+			...mapStyleJson.sources,
+			...createSourceItems(layerDataEntries)
 		};
 		mapStyleJson.layers = [
-			...mapStyleJson.layers
-			// ...createLayerItems(layerDataEntries, selectedhighlightData)
+			...mapStyleJson.layers,
+			...createLayerItems(layerDataEntries, selectedhighlightData)
 		];
 
 		return mapStyleJson;

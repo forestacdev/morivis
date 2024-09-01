@@ -20,6 +20,8 @@
 	onMount(async () => {
 		const style = styleJson;
 
+		console.log(style);
+
 		style.sources['mino-dem'] = gsiTerrainSource;
 
 		const map = new maplibregl.Map({
@@ -31,10 +33,16 @@
 			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 
-		// map.on('load', () => {
-		// 	// 標高タイルセット
-		// 	map.setTerrain({ source: 'mino-dem', exaggeration: 1.2 });
-		// });
+		map.on('load', () => {
+			// TerrainControlの追加
+			map.addControl(
+				new maplibregl.TerrainControl({
+					source: 'mino-dem', // 地形ソースを指定
+					exaggeration: 1 // 高さの倍率
+				}),
+				'top-right' // コントロールの位置を指定
+			);
+		});
 
 		map.on('click', (e) => {
 			map.queryRenderedFeatures(e.point).forEach((feature) => {
