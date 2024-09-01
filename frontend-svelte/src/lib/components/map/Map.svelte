@@ -60,7 +60,7 @@
 	const createMapStyle = () => {
 		const mapStyleJson = { ...styleJson } as StyleSpecification;
 		if (!mapStyleJson) return;
-		mapStyleJson.sources['mino-dem'] = gsiTerrainSource;
+		mapStyleJson.sources['terrain'] = gsiTerrainSource;
 		mapStyleJson.sources = {
 			...mapStyleJson.sources,
 			...createSourceItems(layerDataEntries)

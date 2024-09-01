@@ -47,6 +47,16 @@ const createMapStore = () => {
 		if (!map) return;
 		set(map);
 
+		map.addControl(new maplibregl.NavigationControl(), 'top-right');
+		// 3D地形コントロール
+		map.addControl(
+			new maplibregl.TerrainControl({
+				source: 'terrain',
+				exaggeration: 1
+			}),
+			'top-right'
+		);
+
 		map.on('click', (e) => {
 			clickEvent.set(e);
 		});

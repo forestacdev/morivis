@@ -22,7 +22,7 @@
 
 		console.log(style);
 
-		style.sources['mino-dem'] = gsiTerrainSource;
+		style.sources['terrain'] = gsiTerrainSource;
 
 		const map = new maplibregl.Map({
 			container: mapContainer,
@@ -37,7 +37,7 @@
 			// TerrainControlの追加
 			map.addControl(
 				new maplibregl.TerrainControl({
-					source: 'mino-dem', // 地形ソースを指定
+					source: 'terrain', // 地形ソースを指定
 					exaggeration: 1 // 高さの倍率
 				}),
 				'top-right' // コントロールの位置を指定

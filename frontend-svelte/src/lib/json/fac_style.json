@@ -17,7 +17,7 @@
 			],
 			"type": "raster"
 		},
-		"mino-dem": {
+		"terrain": {
 			"type": "raster-dem",
 			"tiles": [
 				"https://gsj-seamless.jp/seamless/elev/php/terrainRGB.php?url=https://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png"
@@ -75,9 +75,9 @@
 			}
 		},
 		{
-			"id": "mino-dem",
+			"id": "terrain",
 			"type": "hillshade",
-			"source": "mino-dem",
+			"source": "terrain",
 			"maxzoom": 24,
 			"layout": { "visibility": "visible" },
 			"paint": {
