@@ -35,7 +35,7 @@
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl, getStyleJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
-	import styleJson from '$lib/json/osm_liberty.json';
+	import styleJson from '$lib/json/fac_style.json';
 
 	import { mapStore } from '$lib/store/map';
 
@@ -62,12 +62,12 @@
 		if (!mapStyleJson) return;
 		mapStyleJson.sources['mino-dem'] = gsiTerrainSource;
 		mapStyleJson.sources = {
-			...mapStyleJson.sources,
-			...createSourceItems(layerDataEntries)
+			...mapStyleJson.sources
+			// ...createSourceItems(layerDataEntries)
 		};
 		mapStyleJson.layers = [
-			...mapStyleJson.layers,
-			...createLayerItems(layerDataEntries, selectedhighlightData)
+			...mapStyleJson.layers
+			// ...createLayerItems(layerDataEntries, selectedhighlightData)
 		];
 
 		return mapStyleJson;
@@ -75,7 +75,6 @@
 
 	// 初期描画時
 	onMount(() => {
-		// Mapの初期化
 		if (!mapContainer) return;
 
 		const mapStyle = createMapStyle();
@@ -104,6 +103,9 @@
 
 			let features = mapStore.queryRenderedFeatures(e.point);
 
+			// NOTE: debug
+			if (import.meta.env.DEV) console.log('click', features);
+
 			if (!features) return;
 			features = features.filter((feature) => {
 				return !$excludeIdsClickLayer.includes(feature.layer.id);
@@ -118,9 +120,6 @@
 			const targetLayerData = layerDataEntries.find(
 				(entry) => entry.id === features[0].layer.id
 			);
-
-			// NOTE: debug
-			if (import.meta.env.DEV) console.log('click', features);
 
 			// console.log(targetLayerData.id_field);
 

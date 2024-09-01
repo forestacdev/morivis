@@ -4,10 +4,10 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import * as pmtiles from 'pmtiles';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+	import styleJson from '$lib/json/fac_style.json';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer: HTMLDivElement;
-	let worker: Worker;
 
 	const getStyleJson = async (url: string) => {
 		const response = await fetch(url);
@@ -18,7 +18,7 @@
 	};
 
 	onMount(async () => {
-		const style = await getStyleJson('osm_liberty.json');
+		const style = styleJson;
 
 		style.sources['mino-dem'] = gsiTerrainSource;
 
@@ -31,9 +31,15 @@
 			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 
-		map.on('load', () => {
-			// 標高タイルセット
-			map.setTerrain({ source: 'mino-dem', exaggeration: 1.2 });
+		// map.on('load', () => {
+		// 	// 標高タイルセット
+		// 	map.setTerrain({ source: 'mino-dem', exaggeration: 1.2 });
+		// });
+
+		map.on('click', (e) => {
+			map.queryRenderedFeatures(e.point).forEach((feature) => {
+				console.log(feature.layer);
+			});
 		});
 	});
 </script>
