@@ -1339,6 +1339,7 @@ export const createLayerItems = (
 					}
 					break;
 				}
+				// GeoJSON ラインレイヤー
 				case 'geojson-line': {
 					layerItems.push({
 						id: layerId,
@@ -1367,6 +1368,7 @@ export const createLayerItems = (
 					excludeIds.push(`${layerId}_label`);
 					break;
 				}
+				// GeoJSON ポイントレイヤー
 				case 'geojson-point': {
 					layerItems.push({
 						id: layerId,
@@ -1395,8 +1397,9 @@ export const createLayerItems = (
 					excludeIds.push(`${layerId}_label`);
 					break;
 				}
+				// GeoJSON ラベルレイヤー
 				case 'geojson-label': {
-					layerItems.push({
+					symbolLayerItems.push({
 						id: layerId,
 						type: 'symbol',
 						source: sourceId,
@@ -1410,18 +1413,6 @@ export const createLayerItems = (
 						}
 					});
 
-					symbolLayerItems.push({
-						id: `${layerId}_label`,
-						type: 'symbol',
-						source: sourceId,
-						paint: {
-							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-						}
-					});
-					excludeIds.push(`${layerId}_label`);
 					break;
 				}
 
