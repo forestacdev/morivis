@@ -1,11 +1,11 @@
 /** サイドメニューの種類 */
-export type Side = 'base' | 'raster' | 'vector' | 'info' | null;
+export type Side = 'base' | 'raster' | 'vector' | 'info' | 'settings' | null;
 
 export type BasemapImageTile = {
 	Z: number;
 	X: number;
 	Y: number;
-}
+};
 
 /** イベントトリガーの種類 */
 export type UseEventTriggerType =

@@ -289,16 +289,6 @@ export const layerData: LayerEntry[] = [
 		visible: true,
 		style_key: 'デフォルト',
 		style: {
-			circle: [
-				{
-					name: 'デフォルト',
-					paint: {
-						'circle-color': '#ff0000',
-						'circle-radius': 10,
-						'circle-stroke-width': 1
-					}
-				}
-			],
 			symbol: [
 				{
 					name: 'デフォルト',

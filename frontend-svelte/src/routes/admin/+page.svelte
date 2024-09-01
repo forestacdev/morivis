@@ -3,7 +3,7 @@
 	import { signInWithPopup } from 'firebase/auth';
 	import { auth, provider } from '$lib/firebase';
 	import { authStore } from '$lib/store/store';
-	import Map from '$lib/components/Map.svelte';
+	import Map from '$lib/components/map/Map.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 </script>
 

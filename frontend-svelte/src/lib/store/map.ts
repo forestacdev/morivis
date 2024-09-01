@@ -66,27 +66,31 @@ const createMapStore = () => {
 			if (!map) return;
 			const id = e.id;
 
-			const pattern = id;
-			const parts = pattern.split('-');
+			try {
+				const pattern = id;
+				const parts = pattern.split('-');
 
-			if (parts[0] === 'pattern') {
-				// const number = parseInt(parts[1], 10);
-				// try {
-				// 	const webglImage = await webglToPng(number);
-				// 	const image = await map.loadImage(webglImage);
-				// 	console.log(image);
-				// 	if (!map.hasImage(id)) {
-				// 		map.addImage(id, image.data);
-				// 	}
-				// } catch (error) {
-				// 	console.error(`Error loading image for category ${id}:`, error);
-				// }
-			} else {
-				// const imageSrc = id;
-				// const webglImage = await imageToIcon(imageSrc);
-				// if (!map.hasImage(id)) {
-				// 	map.addImage(id, webglImage, { pixelRatio: 1 });
-				// }
+				if (parts[0] === 'pattern') {
+					// const number = parseInt(parts[1], 10);
+					// try {
+					// 	const webglImage = await webglToPng(number);
+					// 	const image = await map.loadImage(webglImage);
+					// 	console.log(image);
+					// 	if (!map.hasImage(id)) {
+					// 		map.addImage(id, image.data);
+					// 	}
+					// } catch (error) {
+					// 	console.error(`Error loading image for category ${id}:`, error);
+					// }
+				} else {
+					const imageSrc = id;
+					const webglImage = await imageToIcon(imageSrc);
+					if (!map.hasImage(id)) {
+						map.addImage(id, webglImage, { pixelRatio: 1 });
+					}
+				}
+			} catch (error) {
+				console.error(`Error loading image for category ${id}:`, error);
 			}
 		});
 

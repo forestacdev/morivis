@@ -10,16 +10,16 @@
 		CircleLayerSpecification
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import Side from '$lib/components/Side.svelte';
-	import BaseMenu from '$lib/components/BaseMenu.svelte';
-	import LayerMenu from '$lib/components/LayerMenu.svelte';
-	import LockOn from '$lib/components/Marker/LockOn.svelte';
+	import Side from '$lib/components/ui/Side.svelte';
+	import BaseMenu from '$lib/components/ui/BaseMenu.svelte';
+	import LayerMenu from '$lib/components/ui/LayerMenu.svelte';
+	import LockOn from '$lib/components/marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
 	import ForestPopup from '$lib/components/popup/ForestPppup.svelte';
 	import ThreeCanvas from '$lib/components/three/canvas.svelte';
 	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
-	import Control from '$lib/components/Control.svelte';
-	import LayerOptionMenu from './LayerMenu/LayerOptionMenu.svelte';
+	import Control from '$lib/components/ui/Control.svelte';
+	import LayerOptionMenu from '../layerMenu/LayerOptionMenu.svelte';
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import {
 		createSourceItems,
@@ -217,7 +217,12 @@
 	// };
 </script>
 
-<div bind:this={mapContainer} class="h-full w-full"></div>
+<div
+	bind:this={mapContainer}
+	class="h-full w-full transition-all duration-200 {$isSide === 'info'
+		? 'custom-brah scale-[1.05]'
+		: ''}"
+></div>
 <Side />
 <div
 	class="custom-css absolute left-[120px] top-[60px] h-full max-h-[calc(100vh-8rem)] max-w-[300px]"
@@ -233,8 +238,8 @@
 	{/if} -->
 
 	<!-- <SelectPopup {selectFeatureList} on:closePopup={removeLockonMarker} /> -->
-	<!-- <InfoPopup {feature} /> -->
-	<ForestPopup />
+	<InfoPopup {feature} />
+	<!-- <ForestPopup /> -->
 </div>
 
 <!-- <ThreeCanvas {targetDemData} /> -->
@@ -245,5 +250,9 @@
 	.custom-css {
 		perspective: 1000px;
 		transform-style: preserve-3d;
+	}
+
+	.custom-brah {
+		filter: blur(6px);
 	}
 </style>

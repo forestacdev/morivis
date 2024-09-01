@@ -17,7 +17,7 @@ body {
 }
 
 .bg-color-base {
-	background-color: rgb(36, 36, 36);
+	background-color: rgba(36, 36, 36, 0.848);
 }
 
 .bg-color-active {
@@ -154,8 +154,4 @@ body {
 	border-radius: 3px;
 	cursor: pointer;
 	outline: none;
-}
-
-.btn-side {
-	@apply bg-color-base grid h-[50px] w-[50px] rotate-45 place-items-center p-2 text-white;
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+	import { fade } from 'svelte/transition';
+	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
 	import { createEventDispatcher } from 'svelte';
 	import type {
 		Map,
@@ -9,35 +11,21 @@
 		Marker
 	} from 'maplibre-gl';
 
-	const dispatch = createEventDispatcher();
-	const setMapBearing = (e: any) => {
-		const mapBearing = e.target.value;
-		dispatch('setMapBearing', mapBearing);
-	};
-
-	const setMapZoom = (e: any) => {
-		const mapZoom = e.target.value;
-		dispatch('setMapZoom', mapZoom);
-	};
-
 	// export let mapBearing: number;
 </script>
 
-<div class="bg-white　bottom-0 absolute flex h-[20px] w-full justify-center">
-	<input type="range" min="-180" max="180" step="15" value="0" on:input={setMapBearing} />
-	<input type="range" min="7" max="22" step="0.5" value="14" on:input={setMapZoom} />
-</div>
-
-<!-- <div class="bg-color-base flex max-w-md flex-col gap-4 p-3 text-slate-100">
-	{#if feature.feature}
-		{#each Object.keys(feature.feature.properties) as key}
-			<div class="flex gap-2">
-				<span>{key}</span>
-				<span>{feature.feature.properties[key]}</span>
-			</div>
-		{/each}
-	{/if}
-</div> -->
+{#if $isSide === 'info'}
+	<div
+		transition:fade={{ delay: 100 }}
+		class="custom-overlay absolute bottom-0 flex h-full w-full justify-center bg-white"
+	>
+		ここにダイアログが表示される
+	</div>
+{/if}
 
 <style>
+	.custom-overlay {
+		filter: blur(6px);
+		opacity: 0.8;
+	}
 </style>

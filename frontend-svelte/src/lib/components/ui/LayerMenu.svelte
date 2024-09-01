@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import LayerSlot from '$lib/components/LayerMenu/LayerSlot.svelte';
+	import LayerSlot from '$lib/components/layerMenu/LayerSlot.svelte';
 	import type { LayerEntry, CategoryEntry } from '$lib/utils/layers';
 	import { isSide } from '$lib/store/store';
 

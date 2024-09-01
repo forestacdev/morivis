@@ -12,14 +12,23 @@
 </script>
 
 <button on:click={handleButtonClick} class="custom-anime relative flex max-w-md flex-col gap-4 p-3">
-	<Icon icon="f7:scope" width="50" height="50" class="custom-anime" />
+	<!-- <Icon icon="f7:scope" width="50" height="50" class="custom-anime" /> -->
+	<div class="custom-marker">
+		<div class="point"></div>
+	</div>
 </button>
 
 <style>
+	.custom-marker {
+		width: 50px;
+		height: 50px;
+		rotate: 45deg;
+		border-radius: 10px;
+		border: 1px solid #000;
+		animation: pulse 1s infinite;
+	}
 	.custom-anime {
-		animation:
-			rotate 8s infinite linear,
-			in 0.3s both ease-in-out;
+		animation: in 0.3s both ease-in-out;
 	}
 
 	@keyframes rotate {
