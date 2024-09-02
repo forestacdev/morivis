@@ -47,11 +47,11 @@
 		<!-- <div class="block flex-shrink-0 p-4 text-lg font-semibold leading-6">ベースマップ</div> -->
 
 		<div
-			class="custom-scroll grid-row-8 ml-[100px] grid h-full grid-cols-4 gap-4 overflow-scroll p-2"
+			class="custom-scroll grid-row-8 ml-[100px] grid h-full max-w-[900px] grid-cols-3 gap-4 overflow-scroll p-2"
 		>
-			{#each backgroundIds as name (name)}
+			{#each backgroundIds as name, index (name)}
 				<label
-					class=" relative h-[200px] w-full cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
+					class="relative h-[200px] w-[200px] rotate-45 cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
 					name
 						? 'custom-shadow'
 						: 'custom-filter'}"
@@ -65,13 +65,22 @@
 						bind:group={selectedBackgroundId}
 						value={name}
 						class="invisible"
-					/>
+					/>{index}
 					<span
 						class=" {selectedBackgroundId === name
 							? 'custom-text-shadow-active'
 							: 'custom-text-shadow'}">{name}</span
 					>
 				</label>
+				{#if (index + 1) % 5 === 0}
+					<label
+						class="relative h-[200px] w-[200px] cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
+						name
+							? 'custom-shadow'
+							: 'custom-filter'}"
+					>
+					</label>
+				{/if}
 			{/each}
 		</div>
 	</div>
