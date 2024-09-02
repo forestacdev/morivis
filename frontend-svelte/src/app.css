@@ -7,15 +7,6 @@ body {
 	overflow: hidden;
 }
 
-.menu-out {
-	rotate: y -70deg;
-	translate: -100px 0;
-	scale: 0.8;
-	pointer-events: none;
-	visibility: hidden;
-	opacity: 0;
-}
-
 .bg-color-base {
 	background-color: rgba(36, 36, 36, 0.848);
 }

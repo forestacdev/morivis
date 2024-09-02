@@ -57,6 +57,8 @@ const createMapStore = () => {
 			'top-right'
 		);
 
+		map.addControl(new maplibregl.ScaleControl(), 'bottom-right');
+
 		map.on('click', (e) => {
 			clickEvent.set(e);
 		});

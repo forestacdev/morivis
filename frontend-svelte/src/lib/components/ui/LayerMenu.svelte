@@ -1,18 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import gsap from 'gsap';
+	import { onMount } from 'svelte';
 
-	import LayerSlot from '$lib/components/layerMenu/LayerSlot.svelte';
-	import type { LayerEntry, CategoryEntry } from '$lib/utils/layers';
+	import LayerSlot from '$lib/components/ui/layermenu/LayerSlot.svelte';
+	import DataMenu from '$lib/components/ui/DataMenu.svelte';
+	import type { LayerEntry } from '$lib/data/types';
 	import { isSide } from '$lib/store/store';
-
 	import { flip } from 'svelte/animate';
-
+	import { addedLayerIds } from '$lib/store/store';
 	export let layerDataEntries: LayerEntry[] = [];
 
-	// let layerData: LayerEntry[] = layerDataEntries[0].layers;
-
-	let selectedLayerEntry: LayerEntry | null = null;
-	let selectedCategoryName: string | null = null;
+	let rotatingElement: HTMLElement;
 
 	const moveLayerById = (e: CustomEvent) => {
 		const { id, direction } = e.detail;
@@ -40,24 +39,47 @@
 			];
 		}
 	};
+
+	const tweenMe = (node: Node) => {
+		let tl = gsap.timeline();
+		const duration = 0.15; // アニメーションの長さを0.5秒に設定
+
+		tl.from(node, {
+			duration: duration,
+			opacity: 0,
+			x: '-100%', // 左から右へスライド
+			ease: 'power2.out' // スムーズな動きのためのイージング
+		});
+
+		return {
+			duration: tl.totalDuration() * 1000, // ミリ秒に変換
+			tick: (t: number) => {
+				tl.progress(t);
+			}
+		};
+	};
+
+	onMount(() => {});
 </script>
 
-<div
-	class="bg-color-base absolute left-4 h-full overflow-visible rounded p-4 text-slate-100 shadow-2xl transition-all duration-200 {$isSide ===
-	'raster'
-		? ''
-		: 'menu-out'}"
->
-	<div class="flex flex-col gap-5">
-		<div class="flex flex-col gap-y-2">
-			{#each layerDataEntries as layerEntry (layerEntry.id)}
-				<div animate:flip={{ duration: 200 }} class="overflow-visible">
-					<LayerSlot bind:layerEntry on:moveLayerById={moveLayerById} />
-				</div>
-			{/each}
+{#if $isSide === 'layer'}
+	<div
+		transition:tweenMe
+		class="custom-scroll bg-color-base absolute left-0 top-0 flex h-full flex-col overflow-y-auto rounded-sm p-4 pl-[100px] text-slate-100"
+	>
+		<div class="flex gap-4">
+			<div class="flex flex-col gap-y-2">
+				{#each layerDataEntries.filter( (layerEntry) => $addedLayerIds.includes(layerEntry.id) ) as layerEntry, index (layerEntry.id)}
+					<div animate:flip={{ duration: 200 }} class="">
+						<LayerSlot bind:layerEntry {index} on:moveLayerById={moveLayerById} />
+					</div>
+				{/each}
+			</div>
+			<DataMenu bind:layerDataEntries />
+			ssasas
 		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 </style>

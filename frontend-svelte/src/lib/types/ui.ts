@@ -1,5 +1,5 @@
 /** サイドメニューの種類 */
-export type Side = 'base' | 'raster' | 'vector' | 'info' | 'settings' | null;
+export type Side = 'base' | 'layer' | 'vector' | 'info' | 'settings' | null;
 
 export type BasemapImageTile = {
 	Z: number;

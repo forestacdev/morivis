@@ -19,17 +19,16 @@
 	import ThreeCanvas from '$lib/components/three/canvas.svelte';
 	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/ui/Control.svelte';
-	import LayerOptionMenu from '../layerMenu/LayerOptionMenu.svelte';
+	import LayerOptionMenu from '../ui/layermenu/LayerOptionMenu.svelte';
+	import type { LayerEntry } from '$lib/data/types';
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import {
 		createSourceItems,
 		createLayerItems,
 		createHighlightLayer,
-		backgroundSources,
-		type LayerEntry,
 		type SelectedHighlightData
-	} from '$lib/utils/layers';
-	import { layerData } from '$lib/utils/layers';
+	} from '$lib/data/layers';
+	import { layerData } from '$lib/data/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
@@ -42,8 +41,8 @@
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
 	let layerDataEntries: LayerEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
-	let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
-	let selectedBackgroundId: string = Object.keys(backgroundSources)[0]; // 選択されたベースマップのID
+	// let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
+	// let selectedBackgroundId: string = Object.keys(backgroundSources)[0]; // 選択されたベースマップのID
 	// let mapInstance: Map | null = null; // Mapインスタンス
 	let mapContainer: HTMLDivElement | null = null; // Mapコンテナ
 
@@ -63,8 +62,8 @@
 		mapStyleJson.sources['terrain'] = gsiTerrainSource;
 		mapStyleJson.sources = {
 			...mapStyleJson.sources,
-			...createSourceItems(layerDataEntries),
-			...backgroundSources
+			...createSourceItems(layerDataEntries)
+			// ...backgroundSources
 		};
 		mapStyleJson.layers = [
 			...mapStyleJson.layers,
@@ -181,7 +180,7 @@
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
-	$: if (layerDataEntries && selectedBackgroundId && selectedhighlightData !== undefined) {
+	$: if (layerDataEntries && selectedhighlightData !== undefined) {
 		const mapStyle = createMapStyle();
 
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;
@@ -265,12 +264,9 @@
 		: ''}"
 ></div>
 <Side />
-<BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} />
-<div
-	class="custom-css absolute left-[120px] top-[60px] h-full max-h-[calc(100vh-8rem)] max-w-[300px]"
->
-	<LayerMenu bind:layerDataEntries />
-</div>
+<!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
+
+<LayerMenu bind:layerDataEntries />
 
 <LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">

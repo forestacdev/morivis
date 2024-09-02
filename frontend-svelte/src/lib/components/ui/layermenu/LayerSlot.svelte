@@ -1,13 +1,17 @@
 <script lang="ts">
-	import type { CategoryEntry } from '$lib/utils/layers';
+	import type { CategoryEntry } from '$lib/data/layers';
 	import Icon from '@iconify/svelte';
-	import type { LayerEntry } from '$lib/utils/layers';
+	import type { LayerEntry } from '$lib/data/types';
 	import { showlayerOptionId } from '$lib/store/store';
+	import { flip } from 'svelte/animate';
+	import { crossfade } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
 	export let layerEntry: LayerEntry;
+	export let index: number;
 	let selectedStyle: string = layerEntry.style_key;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
@@ -31,6 +35,24 @@
 			showlayerOptionId.set('');
 		}
 	}
+
+	export const [send, receive] = crossfade({
+		duration: (d) => Math.sqrt(d * 200),
+
+		fallback(node, params) {
+			const style = getComputedStyle(node);
+			const transform = style.transform === 'none' ? '' : style.transform;
+
+			return {
+				duration: 600,
+				easing: quintOut,
+				css: (t) => `
+				transform: ${transform} scale(${t});
+				opacity: ${t}
+			`
+			};
+		}
+	});
 </script>
 
 <div
@@ -42,6 +64,8 @@
 	class:py-6={$showlayerOptionId === layerEntry.id}
 	class:slot-active-anime={layerEntry.visible}
 	class:slot-inactive-anime={!layerEntry.visible}
+	in:receive={{ key: layerEntry.id }}
+	out:send={{ key: layerEntry.id }}
 >
 	<button
 		class="absolute top-0 transition-all delay-100 duration-200 {$showlayerOptionId ===
@@ -92,14 +116,13 @@
 </div>
 
 <style>
-	:root {
+	/* :root {
 		--active-width: 200px;
 		--inactive-width: 150px;
 	}
 	.slot-active-anime {
 		animation: slot-active 0.2s forwards;
 		width: var(--inactive-width);
-		/* border-radius: 0.125rem 1.5rem 1.5rem 0.125rem; */
 	}
 	@keyframes slot-active {
 		100% {
@@ -116,5 +139,5 @@
 		100% {
 			width: var(--inactive-width);
 		}
-	}
+	} */
 </style>
