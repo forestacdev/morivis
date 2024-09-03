@@ -234,11 +234,11 @@ import { excludeIdsClickLayer } from '$lib/store/store';
 // };
 
 export const layerData: LayerEntry[] = [
-	...rasterEntries,
-	...polygonEntries,
-	...lineEntries,
+	...labelEntries,
 	...pointEntries,
-	...labelEntries
+	...lineEntries,
+	...polygonEntries,
+	...rasterEntries
 ];
 
 // objects1とobjects2からIDを収集
@@ -432,8 +432,8 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 			sourceItems[sourceId] = {
 				type: 'raster',
 				tiles: [layerEntry.path],
-				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
-				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
+				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
 				tileSize: 256,
 				attribution: layerEntry.attribution
 			};
@@ -446,8 +446,8 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 			sourceItems[sourceId] = {
 				type: 'vector',
 				tiles: [layerEntry.path],
-				maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
-				minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
+				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
 				attribution: layerEntry.attribution,
 				promoteId: layerEntry.id_field ?? undefined
 			};
@@ -498,8 +498,8 @@ export const createLayerItems = (
 						id: layerId,
 						type: 'raster',
 						source: sourceId,
-						maxzoom: layerEntry.maxzoom ? layerEntry.maxzoom : 24,
-						minzoom: layerEntry.minzoom ? layerEntry.minzoom : 0,
+						maxzoom: layerEntry.layer_maxzoom ? layerEntry.layer_maxzoom : 24,
+						minzoom: layerEntry.layer_minzoom ? layerEntry.layer_minzoom : 0,
 						paint: {
 							'raster-opacity': layerEntry.opacity,
 							...(layerEntry.style?.raster?.[0]?.paint ?? {})

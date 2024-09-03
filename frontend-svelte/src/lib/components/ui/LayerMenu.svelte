@@ -65,18 +65,17 @@
 {#if $isSide === 'layer'}
 	<div
 		transition:tweenMe
-		class="custom-scroll bg-color-base absolute left-0 top-0 flex h-full flex-col overflow-y-auto rounded-sm p-4 pl-[100px] text-slate-100"
+		class="bg-color-base absolute left-0 top-0 flex h-full flex-col rounded-sm p-4 pl-[100px] text-slate-100"
 	>
-		<div class="flex gap-4">
-			<div class="flex flex-col gap-y-2">
+		<div class="flex h-full gap-4">
+			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto">
 				{#each layerDataEntries.filter( (layerEntry) => $addedLayerIds.includes(layerEntry.id) ) as layerEntry, index (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">
 						<LayerSlot bind:layerEntry {index} on:moveLayerById={moveLayerById} />
 					</div>
 				{/each}
 			</div>
-			<DataMenu bind:layerDataEntries />
-			ssasas
+			<!-- <DataMenu bind:layerDataEntries /> -->
 		</div>
 	</div>
 {/if}

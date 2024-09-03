@@ -13,13 +13,16 @@
 	onMount(() => {});
 </script>
 
-<div class="flex flex-col gap-y-2">
-	{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
-		<div animate:flip={{ duration: 200 }} class="">
-			ssss
-			<DataSlot bind:layerEntry />
-		</div>
-	{/each}
+<div class="custom-scroll h-full overflow-scroll">
+	<div
+		class="right-[70px]columns-2 gap-4 bg-black bg-opacity-70 p-4 text-white md:columns-3 lg:columns-4"
+	>
+		{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
+			<div animate:flip={{ duration: 200 }} class="">
+				<DataSlot bind:layerEntry />
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>

@@ -15,13 +15,19 @@ import type {
 	MapLibreEvent,
 	QueryRenderedFeaturesOptions,
 	MapGeoJSONFeature,
-	CircleLayerSpecification
+	CircleLayerSpecification,
+	FillLayerSpecification,
+	LineLayerSpecification,
+	SymbolLayerSpecification
 } from 'maplibre-gl';
 import * as pmtiles from 'pmtiles';
 import Worker from './worker?worker';
 
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
+import type { LayerEntry } from '$lib/data/types';
+import { lineEntries } from '../data/vecter/line';
+import { onLog } from 'firebase/app';
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -33,6 +39,7 @@ const createMapStore = () => {
 	const { subscribe, set } = writable<Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
 	const rotateEvent = writable<MapLibreEvent | null>(null);
+	const isLoadingEvent = writable<boolean>(true);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		map = new maplibregl.Map({
@@ -61,6 +68,18 @@ const createMapStore = () => {
 
 		map.on('click', (e) => {
 			clickEvent.set(e);
+		});
+
+		map.on('data', function (e) {
+			//your code here
+			isLoadingEvent.set(true);
+			console.log(e);
+		});
+
+		map.on('idle', function (e) {
+			//your code here
+			isLoadingEvent.set(false);
+			console.log(e);
 		});
 
 		map.on('rotate', (e) => {
@@ -182,6 +201,253 @@ const createMapStore = () => {
 		map.easeTo(options);
 	};
 
+	// プレビューレイヤーを追加するメソッド
+	const addPreviewLayer = (layerEntry: LayerEntry) => {
+		if (!map) return;
+		const sourceId = `preview_source`;
+		const sourceItems: Record<string, SourceSpecification> = {};
+
+		if (layerEntry.type === 'raster') {
+			sourceItems[sourceId] = {
+				type: 'raster',
+				tiles: [layerEntry.path],
+				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
+				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				tileSize: 256,
+				attribution: layerEntry.attribution
+			};
+		} else if (
+			layerEntry.type === 'vector-polygon' ||
+			layerEntry.type === 'vector-line' ||
+			layerEntry.type === 'vector-point' ||
+			layerEntry.type === 'vector-label'
+		) {
+			sourceItems[sourceId] = {
+				type: 'vector',
+				tiles: [layerEntry.path],
+				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
+				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				attribution: layerEntry.attribution,
+				promoteId: layerEntry.id_field ?? undefined
+			};
+		} else if (
+			layerEntry.type === 'geojson-polygon' ||
+			layerEntry.type === 'geojson-line' ||
+			layerEntry.type === 'geojson-point' ||
+			layerEntry.type === 'geojson-label'
+		) {
+			sourceItems[sourceId] = {
+				type: 'geojson',
+				data: layerEntry.path,
+				generateId: true,
+				attribution: layerEntry.attribution
+			};
+		} else {
+			console.warn(`Unknown layer type: ${layerEntry.type}`);
+		}
+		if (map.getLayer('preview_layer')) map.removeLayer('preview_layer');
+		if (map.getSource(sourceId)) map.removeSource(sourceId);
+		map.addSource(sourceId, sourceItems[sourceId]);
+
+		const layerId = `preview_layer`;
+
+		const layerItems: LayerSpecification[] = [];
+
+		switch (layerEntry.type) {
+			// ラスターレイヤー
+			case 'raster': {
+				layerItems.push({
+					id: layerId,
+					type: 'raster',
+					source: sourceId,
+					maxzoom: layerEntry.layer_maxzoom ? layerEntry.layer_maxzoom : 24,
+					minzoom: layerEntry.layer_minzoom ? layerEntry.layer_minzoom : 0,
+					paint: {
+						'raster-opacity': layerEntry.opacity,
+						...(layerEntry.style?.raster?.[0]?.paint ?? {})
+					}
+				});
+				break;
+			}
+			// ベクトルタイル ポリゴンレイヤー
+			case 'vector-polygon': {
+				const styleKey = layerEntry.style_key;
+				const setStyele = layerEntry.style?.fill?.find((item) => item.name === styleKey);
+				const layer = {
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: {
+						'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+						'fill-outline-color': '#00000000',
+						...setStyele?.paint
+					},
+					layout: {
+						...(setStyele?.layout ?? {})
+					}
+				} as LayerSpecification;
+
+				layerItems.push(layer);
+
+				break;
+			}
+			// ベクトルタイル ラインレイヤー
+			case 'vector-line': {
+				const setStyele = layerEntry.style?.line?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: {
+						'line-opacity': layerEntry.opacity,
+						...(layerEntry.style?.line?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.line?.[0]?.layout ?? {})
+					}
+				} as LayerSpecification;
+
+				layerItems.push(layer);
+
+				break;
+			}
+			// ベクトルタイル ポイントレイヤー
+			case 'vector-point': {
+				const setStyele = layerEntry.style?.circle?.find(
+					(item) => item.name === layerEntry.style_key
+				);
+
+				const layer = {
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					'source-layer': layerEntry.source_layer,
+					maxzoom: 24,
+					minzoom: 0,
+					paint: {
+						'circle-opacity': layerEntry.opacity,
+						...(layerEntry.style?.circle?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.circle?.[0]?.layout ?? {})
+					}
+				} as CircleLayerSpecification;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+
+				break;
+			}
+
+			// GeoJSON ポリゴンレイヤー
+			case 'geojson-polygon': {
+				const styleKey = layerEntry.style_key;
+				const setStyele = layerEntry.style?.fill?.find((item) => item.name === styleKey);
+
+				const layer = {
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					paint: {
+						'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
+						'fill-outline-color': '#00000000',
+						...setStyele?.paint
+					},
+					layout: {
+						...(setStyele?.layout ?? {})
+					}
+					// filter: ['==', ['id'], 1]
+				} as FillLayerSpecification;
+
+				if (layerEntry.filter) layer.filter = layerEntry.filter;
+
+				layerItems.push(layer);
+				// layerIdNameDict[layerId] = layerEntry.name;
+				const index = layerEntry.style?.line?.findIndex(
+					(item) => item.name === styleKey
+				) as number;
+
+				break;
+			}
+			// GeoJSON ラインレイヤー
+			case 'geojson-line': {
+				layerItems.push({
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					paint: {
+						'line-opacity': layerEntry.opacity,
+						...(layerEntry.style?.line?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.line?.[0]?.layout ?? {})
+					}
+				});
+
+				break;
+			}
+			// GeoJSON ポイントレイヤー
+			case 'geojson-point': {
+				layerItems.push({
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					paint: {
+						'circle-opacity': layerEntry.opacity,
+						...(layerEntry.style?.circle?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.circle?.[0]?.layout ?? {})
+					}
+				});
+
+				break;
+			}
+			// GeoJSON ラベルレイヤー
+			case 'geojson-label': {
+				layerItems.push({
+					id: layerId,
+					type: 'symbol',
+					source: sourceId,
+					paint: {
+						'text-opacity': layerEntry.opacity,
+						'icon-opacity': layerEntry.opacity,
+						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
+					},
+					layout: {
+						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
+					}
+				});
+
+				break;
+			}
+
+			default:
+				console.warn(`Unknown layer type: ${layerEntry.type}`);
+				break;
+		}
+		if (map.getLayer('preview_background')) map.removeLayer('preview_background');
+		map.addLayer({
+			id: 'preview_background',
+			type: 'background',
+			paint: {
+				'background-color': '#000',
+				'background-opacity': 0.7
+			}
+		});
+
+		map.addLayer(layerItems[0]);
+	};
+
 	return {
 		subscribe,
 		init,
@@ -191,8 +457,10 @@ const createMapStore = () => {
 		queryRenderedFeatures,
 		panTo,
 		easeTo,
+		addPreviewLayer,
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
-		onRotate: rotateEvent.subscribe // 回転イベントの購読用メソッド
+		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
+		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド
 	};
 };
 

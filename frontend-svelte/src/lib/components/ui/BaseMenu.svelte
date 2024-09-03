@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { CategoryEntry } from '$lib/data/layers';
-	import type { LayerEntry, BaseMapEntry } from '$lib/data/layers';
 	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
 	import { fade, slide } from 'svelte/transition';
 	export let backgroundIds: string[] = [];
@@ -72,15 +70,6 @@
 							: 'custom-text-shadow'}">{name}</span
 					>
 				</label>
-				{#if (index + 1) % 5 === 0}
-					<label
-						class="relative h-[200px] w-[200px] cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200 {selectedBackgroundId ===
-						name
-							? 'custom-shadow'
-							: 'custom-filter'}"
-					>
-					</label>
-				{/if}
 			{/each}
 		</div>
 	</div>

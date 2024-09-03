@@ -12,7 +12,9 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Side from '$lib/components/ui/Side.svelte';
 	import BaseMenu from '$lib/components/ui/BaseMenu.svelte';
+	import DataMenu from '$lib/components/ui/DataMenu.svelte';
 	import LayerMenu from '$lib/components/ui/LayerMenu.svelte';
+	import Loading from '$lib/components/ui/Loading.svelte';
 	import LockOn from '$lib/components/marker/LockOn.svelte';
 	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
 	import ForestPopup from '$lib/components/popup/ForestPppup.svelte';
@@ -267,7 +269,7 @@
 <!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
 
 <LayerMenu bind:layerDataEntries />
-
+<DataMenu bind:layerDataEntries />
 <LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
 	<!-- {#if lockOnMarker}
@@ -278,6 +280,8 @@
 	<InfoPopup {feature} />
 	<!-- <ForestPopup /> -->
 </div>
+
+<Loading />
 
 <!-- <ThreeCanvas {targetDemData} /> -->
 
