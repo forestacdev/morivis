@@ -34,7 +34,7 @@
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
-	import { getTilePixelColor, getTileUrl, getPropDictJson } from '$lib/utils/map';
+	import { getTilePixelColor, getTileUrl, getFieldDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
 
@@ -155,10 +155,10 @@
 					featureId: features[0].id
 				};
 
-				if (targetLayerData.prop_dict) {
+				if (targetLayerData.fieldDict) {
 					console.log(features[0].properties);
 
-					const dictJson = await getPropDictJson(targetLayerData.prop_dict);
+					const dictJson = await getFieldDictJson(targetLayerData.fieldDict);
 					console.log(dictJson);
 
 					const convertedProp = convertProps(features[0].properties, dictJson);

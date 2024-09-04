@@ -1,17 +1,19 @@
-import type { LayerEntry } from '$lib/data/types';
+import type { LayerEntry, GeojsonEntry } from '$lib/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$lib/constants';
 
-export const pointEntries: LayerEntry[] = [
+export const geojsonPointEntries: GeojsonEntry<'point'>[] = [
 	{
 		id: 'ENSYURIN_pole',
 		name: 'サインポール',
-		type: 'geojson-point',
+		dataType: 'geojson',
+		geometryType: 'point',
 		opacity: 0.7,
-		path: `${GEOJSON_BASE_PATH}/ENSYURIN_pole.geojson`,
+		url: `${GEOJSON_BASE_PATH}/ENSYURIN_pole.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
 		clickable: true,
-		style_key: 'デフォルト',
+		location: ['森林文化アカデミー'],
+		styleKey: 'デフォルト',
 		style: {
 			circle: [
 				{

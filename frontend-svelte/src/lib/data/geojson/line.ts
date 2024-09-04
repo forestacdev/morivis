@@ -1,16 +1,18 @@
-import type { LayerEntry } from '$lib/data/types';
+import type { GeojsonEntry } from '$lib/data/types';
 import { GEOJSON_BASE_PATH } from '$lib/constants';
 
-export const lineEntries: LayerEntry[] = [
+export const geojsonLineEntries: GeojsonEntry<'line'>[] = [
 	{
 		id: 'ENSYURIN_MITI',
 		name: '演習林道',
-		type: 'geojson-line',
+		dataType: 'geojson',
+		geometryType: 'line',
 		opacity: 1,
-		path: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
+		url: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
 		clickable: true,
+		location: ['森林文化アカデミー'],
 		style_key: '単色',
 		style: {
 			line: [

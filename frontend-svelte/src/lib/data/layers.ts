@@ -1,7 +1,8 @@
-import { labelEntries } from '$lib/data/vecter/label';
-import { lineEntries } from '$lib/data/vecter/line';
-import { pointEntries } from '$lib/data/vecter/point';
-import { polygonEntries } from '$lib/data/vecter/polygon';
+import { vectorPolygonEntries } from '$lib/data/vecter/polygon';
+import { geojsonPolygonEntries } from '$lib/data/geojson/polygon';
+import { geojsonLineEntries } from '$lib/data/geojson/line';
+import { geojsonPointEntries } from '$lib/data/geojson/point';
+import { geojsonLabelEntries } from '$lib/data/geojson/label';
 import { addedLayerIds } from '$lib/store/store';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
 
@@ -22,7 +23,7 @@ import type {
 	FilterSpecification
 } from 'maplibre-gl';
 import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER, GIFU_DATA_BASE_PATH } from '$lib/constants';
-import { excludeIdsClickLayer } from '$lib/store/store';
+import { clickableLayerIds } from '$lib/store/store';
 
 // export type BaseMapEntry = {
 // 	type: 'raster';
@@ -234,10 +235,11 @@ import { excludeIdsClickLayer } from '$lib/store/store';
 // };
 
 export const layerData: LayerEntry[] = [
-	...labelEntries,
-	...pointEntries,
-	...lineEntries,
-	...polygonEntries,
+	...geojsonLabelEntries,
+	...geojsonPointEntries,
+	...geojsonLineEntries,
+	...geojsonPolygonEntries,
+	...vectorPolygonEntries,
 	...rasterEntries
 ];
 
@@ -257,8 +259,6 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 		console.error(error.message); // "Invalid ID: 6"
 	}
 });
-
-export type CombinedIdArray = Array<CustomObject1['id'] | CustomObject2['id']>;
 
 const highlightFillPaint: FillLayerSpecification['paint'] = {
 	'fill-opacity': 0.4,
@@ -291,133 +291,118 @@ export type SelectedHighlightData = {
 };
 
 /* ハイライトレイヤー */
-export const createHighlightLayer = (selectedhighlightData: SelectedHighlightData | null) => {
+export const createHighlightLayer = (
+	selectedhighlightData: SelectedHighlightData | null
+): (FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification)[] => {
 	if (!selectedhighlightData) return [];
 
 	const layerEntry = selectedhighlightData.LayerData;
-
+	if (layerEntry.dataType === 'raster') return [];
 	const layerId = 'HighlightFeatureId';
 	const sourceId = `${layerEntry.id}_source`;
 
 	const layers = [];
 
-	if (layerEntry.type === 'vector-polygon') {
-		layers.push({
-			id: layerId,
-			type: 'fill',
-			source: sourceId,
-			'source-layer': layerEntry.source_layer,
-			paint: {
-				...highlightFillPaint
-			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as FillLayerSpecification);
-		layers.push({
-			id: layerId + '_line',
-			type: 'line',
-			source: sourceId,
-			'source-layer': layerEntry.source_layer,
-			paint: {
-				...highlightLinePaint
-			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LineLayerSpecification);
-	} else if (layerEntry.type === 'vector-line') {
-		layers.push({
-			id: layerId,
-			type: 'line',
-			source: sourceId,
-			'source-layer': layerEntry.source_layer,
-			paint: {
-				...highlightLinePaint
-			},
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as LineLayerSpecification);
-	} else if (layerEntry.type === 'vector-point') {
-		layers.push({
-			id: layerId,
-			type: 'circle',
-			source: sourceId,
-			'source-layer': layerEntry.source_layer,
-			paint: {
-				...highlightCirclePaint
-			},
-			filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		} as CircleLayerSpecification);
-	} else if (layerEntry.type === 'geojson-polygon') {
-		layers.push({
-			id: layerId,
-			type: 'fill',
-			source: sourceId,
-			paint: {
-				...highlightFillPaint
-			},
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			filter: ['==', ['id'], selectedhighlightData.featureId]
-		} as FillLayerSpecification);
+	switch (layerEntry.dataType) {
+		case 'vector': {
+			if (layerEntry.geometryType === 'polygon') {
+				layers.push({
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					'source-layer': layerEntry.sourceLayer,
+					paint: {
+						...highlightFillPaint
+					},
+					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+				} as FillLayerSpecification);
+				layers.push({
+					id: layerId + '_line',
+					type: 'line',
+					source: sourceId,
+					'source-layer': layerEntry.sourceLayer,
+					paint: {
+						...highlightLinePaint
+					},
+					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+				} as LineLayerSpecification);
+			} else if (layerEntry.geometryType === 'line') {
+				layers.push({
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					'source-layer': layerEntry.sourceLayer,
+					paint: {
+						...highlightLinePaint
+					},
+					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+				} as LineLayerSpecification);
+			} else if (layerEntry.geometryType === 'point') {
+				layers.push({
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					'source-layer': layerEntry.sourceLayer,
+					paint: {
+						...highlightCirclePaint
+					},
+					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+				} as CircleLayerSpecification);
+			}
+			break;
+		}
+		case 'geojson': {
+			if (layerEntry.geometryType === 'polygon') {
+				layers.push({
+					id: layerId,
+					type: 'fill',
+					source: sourceId,
+					paint: {
+						...highlightFillPaint
+					},
+					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+					filter: ['==', ['id'], selectedhighlightData.featureId]
+				} as FillLayerSpecification);
 
-		layers.push({
-			id: layerId + '_line',
-			type: 'line',
-			source: sourceId,
-			paint: {
-				...highlightLinePaint
-			},
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			filter: ['==', ['id'], selectedhighlightData.featureId]
-		} as LineLayerSpecification);
-	} else if (layerEntry.type === 'geojson-line') {
-		layers.push({
-			id: layerId,
-			type: 'line',
-			source: sourceId,
-			paint: {
-				...highlightLinePaint
-			},
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			filter: ['==', ['id'], selectedhighlightData.featureId]
-		} as LineLayerSpecification);
-	} else if (layerEntry.type === 'geojson-point') {
-		layers.push({
-			id: layerId,
-			type: 'circle',
-			source: sourceId,
-			paint: {
-				...highlightCirclePaint
-			},
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-			filter: ['==', ['id'], selectedhighlightData.featureId]
-		} as CircleLayerSpecification);
-	} else if (layerEntry.type === 'geojson-label') {
-		// TODO シンボルレイヤーのハイライト処理
-		// const paint = layerEntry.style?.symbol?[layerEntry?.style_key]?.paint
-		// const styleKey = layerEntry.style_key;
-		// const paint = layerEntry.style?.symbol?.find((item) => item.name === styleKey)?.paint ?? {};
-		// const layout =
-		// 	layerEntry.style?.symbol?.find((item) => item.name === styleKey)?.layout ?? {};
-		// if (styleKey) {
-		// 	layers.push({
-		// 		id: layerId,
-		// 		type: 'symbol',
-		// 		source: sourceId,
-		// 		paint: {
-		// 			...paint,
-		// 			...highlightSymbolPaint
-		// 		},
-		// 		// layout: {
-		// 		// 	...layout,
-		// 		// 	'icon-image': undefined
-		// 		// },
-		// 		// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-		// 		filter: ['==', ['id'], selectedhighlightData.featureId]
-		// 	} as SymbolLayerSpecification);
-		// }
-	} else {
-		console.warn(`Unknown layer type: ${layerEntry.type}`);
-		return [];
+				layers.push({
+					id: layerId + '_line',
+					type: 'line',
+					source: sourceId,
+					paint: {
+						...highlightLinePaint
+					},
+					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+					filter: ['==', ['id'], selectedhighlightData.featureId]
+				} as LineLayerSpecification);
+			} else if (layerEntry.geometryType === 'line') {
+				layers.push({
+					id: layerId,
+					type: 'line',
+					source: sourceId,
+					paint: {
+						...highlightLinePaint
+					},
+					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+					filter: ['==', ['id'], selectedhighlightData.featureId]
+				} as LineLayerSpecification);
+			} else if (layerEntry.geometryType === 'point') {
+				layers.push({
+					id: layerId,
+					type: 'circle',
+					source: sourceId,
+					paint: {
+						...highlightCirclePaint
+					},
+					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+					filter: ['==', ['id'], selectedhighlightData.featureId]
+				} as CircleLayerSpecification);
+			}
+			break;
+		}
+		default:
+			break;
 	}
-
 	return layers;
 };
 
@@ -428,43 +413,33 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 	layerDataEntries.forEach((layerEntry) => {
 		const sourceId = `${layerEntry.id}_source`;
 
-		if (layerEntry.type === 'raster') {
+		if (layerEntry.dataType === 'raster') {
 			sourceItems[sourceId] = {
 				type: 'raster',
-				tiles: [layerEntry.path],
-				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
-				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				tiles: [layerEntry.url],
+				maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
+				minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
 				tileSize: 256,
 				attribution: layerEntry.attribution
 			};
-		} else if (
-			layerEntry.type === 'vector-polygon' ||
-			layerEntry.type === 'vector-line' ||
-			layerEntry.type === 'vector-point' ||
-			layerEntry.type === 'vector-label'
-		) {
+		} else if (layerEntry.dataType === 'vector') {
 			sourceItems[sourceId] = {
 				type: 'vector',
-				tiles: [layerEntry.path],
-				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
-				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				tiles: [layerEntry.url],
+				maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
+				minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
 				attribution: layerEntry.attribution,
-				promoteId: layerEntry.id_field ?? undefined
+				promoteId: layerEntry.idField ?? undefined
 			};
-		} else if (
-			layerEntry.type === 'geojson-polygon' ||
-			layerEntry.type === 'geojson-line' ||
-			layerEntry.type === 'geojson-point' ||
-			layerEntry.type === 'geojson-label'
-		) {
+		} else if (layerEntry.dataType === 'geojson') {
 			sourceItems[sourceId] = {
 				type: 'geojson',
-				data: layerEntry.path,
+				data: layerEntry.url,
 				generateId: true,
 				attribution: layerEntry.attribution
 			};
 		} else {
-			console.warn(`Unknown layer type: ${layerEntry.type}`);
+			console.warn(`Unknown layer: ${sourceId}`);
 		}
 	});
 
@@ -480,26 +455,30 @@ export const createLayerItems = (
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
 	const lineItems: LayerSpecification[] = [];
-	const excludeIds: string[] = []; // クリックイベントを除外するレイヤーID
+	const layerIds: string[] = []; // クリックイベントを有効にするレイヤーID
 
 	// const layerIdNameDict: { [_: string]: string } = {};
 
 	layerDataEntries
 		.filter((layerEntry) => layerEntry.visible)
 		.reverse()
-		.forEach((layerEntry, i) => {
+		.forEach((layerEntry) => {
 			const layerId = `${layerEntry.id}`;
 			const sourceId = `${layerEntry.id}_source`;
+			if (layerEntry.clickable) layerIds.push(layerId);
+			const layer = {
+				id: layerId,
+				source: sourceId,
+				maxzoom: layerEntry.layerMaxZoom ?? 24,
+				minzoom: layerEntry.layerMinZoom ?? 0
+			};
 
-			switch (layerEntry.type) {
+			switch (layerEntry.dataType) {
 				// ラスターレイヤー
 				case 'raster': {
 					layerItems.push({
-						id: layerId,
+						...layer,
 						type: 'raster',
-						source: sourceId,
-						maxzoom: layerEntry.layer_maxzoom ? layerEntry.layer_maxzoom : 24,
-						minzoom: layerEntry.layer_minzoom ? layerEntry.layer_minzoom : 0,
 						paint: {
 							'raster-opacity': layerEntry.opacity,
 							...(layerEntry.style?.raster?.[0]?.paint ?? {})
@@ -508,328 +487,140 @@ export const createLayerItems = (
 					break;
 				}
 				// ベクトルタイル ポリゴンレイヤー
-				case 'vector-polygon': {
-					const styleKey = layerEntry.style_key;
-					const setStyele = layerEntry.style?.fill?.find(
-						(item) => item.name === styleKey
-					);
-					const layer = {
-						id: layerId,
-						type: 'fill',
-						source: sourceId,
-						'source-layer': layerEntry.source_layer,
-						maxzoom: 24,
-						minzoom: 0,
-						paint: {
-							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
-							'fill-outline-color': '#00000000',
-							...setStyele?.paint
-						},
-						layout: {
-							...(setStyele?.layout ?? {})
-						}
-					} as LayerSpecification;
+				case 'vector':
+				case 'geojson': {
+					const styleKey = layerEntry.styleKey;
 
-					layerItems.push(layer);
-
-					// アウトラインを追加
-					if (layerEntry.show_outline) {
-						const index = layerEntry.style?.line?.findIndex(
+					if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
+					if (layerEntry.dataType === 'vector') {
+						layer['source-layer'] = layerEntry.sourceLayer;
+					}
+					if (layerEntry.geometryType === 'polygon') {
+						const fillStyele = layerEntry.style?.fill?.find(
 							(item) => item.name === styleKey
-						) as number;
-
-						layerItems.push({
-							id: `${layerId}_outline`,
-							type: 'line',
-							source: sourceId,
-							'source-layer': layerEntry.source_layer,
+						);
+						const fillLayer = {
+							...layer,
+							type: 'fill',
 							paint: {
-								'line-opacity': layerEntry.opacity,
-								...(index !== -1
-									? layerEntry.style?.line?.[index]?.paint
-									: layerEntry.style?.line?.[0]?.paint)
+								'fill-opacity': layerEntry.showFill ? layerEntry.opacity : 0,
+								'fill-outline-color': '#00000000',
+								...(fillStyele?.paint ?? {})
 							},
 							layout: {
-								...(index !== -1
-									? layerEntry.style?.line?.[index]?.layout
-									: layerEntry.style?.line?.[0]?.layout)
+								...(fillStyele?.layout ?? {})
 							}
-						});
+						};
 
-						excludeIds.push(`${layerId}_outline`);
+						layerItems.push(fillLayer as FillLayerSpecification);
+
+						// アウトラインを追加
+						if (layerEntry.showLine) {
+							const styleIndex = layerEntry.style?.line?.findIndex(
+								(item) => item.name === styleKey
+							) as number;
+
+							layerItems.push({
+								...layer,
+								id: `${layerId}_outline`,
+								type: 'line',
+								paint: {
+									'line-opacity': layerEntry.opacity,
+									...(styleIndex !== -1
+										? layerEntry.style?.line?.[styleIndex]?.paint
+										: layerEntry.style?.line?.[0]?.paint)
+								},
+								layout: {
+									...(styleIndex !== -1
+										? layerEntry.style?.line?.[styleIndex]?.layout
+										: layerEntry.style?.line?.[0]?.layout)
+								}
+							});
+						}
+					} else if (layerEntry.geometryType === 'line') {
+						const setStyele = layerEntry.style?.line?.find(
+							(item) => item.name === styleKey
+						);
+						const lineLayer = {
+							...layer,
+							type: 'line',
+							paint: {
+								'line-opacity': layerEntry.opacity,
+								...(setStyele?.paint ?? {})
+							},
+							layout: {
+								...(setStyele?.layout ?? {})
+							}
+						};
+
+						layerItems.push(lineLayer as LineLayerSpecification);
+					} else if (layerEntry.geometryType === 'point') {
+						const setStyele = layerEntry.style?.circle?.find(
+							(item) => item.name === styleKey
+						);
+						const pointLayer = {
+							...layer,
+							type: 'circle',
+							paint: {
+								'circle-opacity': layerEntry.opacity,
+								...(setStyele?.paint ?? {})
+							},
+							layout: {
+								...(setStyele?.layout ?? {})
+							}
+						};
+
+						layerItems.push(pointLayer as CircleLayerSpecification);
+					} else if (layerEntry.geometryType === 'label') {
+						const setStyele = layerEntry.style?.label?.find(
+							(item) => item.name === styleKey
+						);
+						const pointLayer = {
+							...layer,
+							type: 'symbol',
+							paint: {
+								'text-opacity': layerEntry.opacity,
+								'icon-opacity': layerEntry.opacity,
+								...(setStyele?.paint ?? {})
+							},
+							layout: {
+								...(setStyele?.layout ?? {})
+							}
+						};
+
+						layerItems.push(pointLayer as SymbolLayerSpecification);
 					}
 
 					// ラベルを追加
-					if (layerEntry.show_label) {
+					if (layerEntry.showLabel && layerEntry.geometryType !== 'label') {
 						symbolLayerItems.push({
+							...layer,
 							id: `${layerId}_label`,
 							type: 'symbol',
-							source: sourceId,
-							'source-layer': layerEntry.source_layer,
 							paint: {
+								'text-opacity': layerEntry.opacity,
+								'icon-opacity': layerEntry.opacity,
 								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
 							},
 							layout: {
 								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
 							}
 						});
-
-						excludeIds.push(`${layerId}_label`);
 					}
-					break;
-				}
-				// ベクトルタイル ラインレイヤー
-				case 'vector-line': {
-					const setStyele = layerEntry.style?.line?.find(
-						(item) => item.name === layerEntry.style_key
-					);
-
-					const layer = {
-						id: layerId,
-						type: 'line',
-						source: sourceId,
-						'source-layer': layerEntry.source_layer,
-						maxzoom: 24,
-						minzoom: 0,
-						paint: {
-							'line-opacity': layerEntry.opacity,
-							...(layerEntry.style?.line?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.line?.[0]?.layout ?? {})
-						}
-					} as LayerSpecification;
-
-					layerItems.push(layer);
-
-					if (layerEntry.show_label) {
-						symbolLayerItems.push({
-							id: `${layerId}_label`,
-							type: 'symbol',
-							source: sourceId,
-							'source-layer': layerEntry.source_layer,
-							paint: {
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						});
-
-						excludeIds.push(`${layerId}_label`);
-					}
-					break;
-				}
-				// ベクトルタイル ポイントレイヤー
-				case 'vector-point': {
-					const setStyele = layerEntry.style?.circle?.find(
-						(item) => item.name === layerEntry.style_key
-					);
-
-					const layer = {
-						id: layerId,
-						type: 'circle',
-						source: sourceId,
-						'source-layer': layerEntry.source_layer,
-						maxzoom: 24,
-						minzoom: 0,
-						paint: {
-							'circle-opacity': layerEntry.opacity,
-							...(layerEntry.style?.circle?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.circle?.[0]?.layout ?? {})
-						}
-					} as CircleLayerSpecification;
-
-					layerItems.push(layer);
-					// layerIdNameDict[layerId] = layerEntry.name;
-
-					if (layerEntry.show_label) {
-						symbolLayerItems.push({
-							id: `${layerId}_label`,
-							type: 'symbol',
-							source: sourceId,
-							'source-layer': layerEntry.source_layer,
-							paint: {
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						});
-
-						excludeIds.push(`${layerId}_label`);
-					}
-					break;
-				}
-
-				// GeoJSON ポリゴンレイヤー
-				case 'geojson-polygon': {
-					const styleKey = layerEntry.style_key;
-					const setStyele = layerEntry.style?.fill?.find(
-						(item) => item.name === styleKey
-					);
-
-					const layer = {
-						id: layerId,
-						type: 'fill',
-						source: sourceId,
-						paint: {
-							'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
-							'fill-outline-color': '#00000000',
-							...setStyele?.paint
-						},
-						layout: {
-							...(setStyele?.layout ?? {})
-						}
-						// filter: ['==', ['id'], 1]
-					} as FillLayerSpecification;
-
-					if (layerEntry.filter) layer.filter = layerEntry.filter;
-
-					layerItems.push(layer);
-					// layerIdNameDict[layerId] = layerEntry.name;
-					const index = layerEntry.style?.line?.findIndex(
-						(item) => item.name === styleKey
-					) as number;
-
-					if (layerEntry.show_outline) {
-						const outlineLayer = {
-							id: `${layerId}_outline`,
-							type: 'line',
-							source: sourceId,
-							paint: {
-								'line-opacity': layerEntry.opacity,
-								...(index !== -1
-									? layerEntry.style?.line?.[index]?.paint
-									: layerEntry.style?.line?.[0]?.paint)
-							},
-							layout: {
-								...(index !== -1
-									? layerEntry.style?.line?.[index]?.layout
-									: layerEntry.style?.line?.[0]?.layout)
-							}
-						} as LineLayerSpecification;
-
-						if (layerEntry.filter) outlineLayer.filter = layerEntry.filter;
-
-						layerItems.push(outlineLayer);
-						excludeIds.push(`${layerId}_outline`);
-					}
-					if (layerEntry.show_label) {
-						const symbolLayer = {
-							id: `${layerId}_label`,
-							type: 'symbol',
-							source: sourceId,
-							paint: {
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						} as SymbolLayerSpecification;
-
-						if (layerEntry.filter) symbolLayer.filter = layerEntry.filter;
-						symbolLayerItems.push(symbolLayer);
-						excludeIds.push(`${layerId}_label`);
-					}
-					break;
-				}
-				// GeoJSON ラインレイヤー
-				case 'geojson-line': {
-					layerItems.push({
-						id: layerId,
-						type: 'line',
-						source: sourceId,
-						paint: {
-							'line-opacity': layerEntry.opacity,
-							...(layerEntry.style?.line?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.line?.[0]?.layout ?? {})
-						}
-					});
-
-					if (layerEntry.show_label) {
-						symbolLayerItems.push({
-							id: `${layerId}_label`,
-							type: 'symbol',
-							source: sourceId,
-							paint: {
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						});
-						excludeIds.push(`${layerId}_label`);
-					}
-
-					break;
-				}
-				// GeoJSON ポイントレイヤー
-				case 'geojson-point': {
-					layerItems.push({
-						id: layerId,
-						type: 'circle',
-						source: sourceId,
-						paint: {
-							'circle-opacity': layerEntry.opacity,
-							...(layerEntry.style?.circle?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.circle?.[0]?.layout ?? {})
-						}
-					});
-
-					if (layerEntry.show_label) {
-						symbolLayerItems.push({
-							id: `${layerId}_label`,
-							type: 'symbol',
-							source: sourceId,
-							paint: {
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						});
-						excludeIds.push(`${layerId}_label`);
-					}
-					break;
-				}
-				// GeoJSON ラベルレイヤー
-				case 'geojson-label': {
-					symbolLayerItems.push({
-						id: layerId,
-						type: 'symbol',
-						source: sourceId,
-						paint: {
-							'text-opacity': layerEntry.opacity,
-							'icon-opacity': layerEntry.opacity,
-							...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-						},
-						layout: {
-							...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-						}
-					});
 
 					break;
 				}
 
 				default:
-					console.warn(`Unknown layer type: ${layerEntry.type}`);
+					console.warn(`Unknown layer: ${layerEntry}`);
 					break;
 			}
 		});
-	excludeIds.push(...EXCLUDE_IDS_CLICK_LAYER);
-	excludeIdsClickLayer.set(excludeIds);
+
+	clickableLayerIds.set(layerIds);
 	const highlightLayers = selectedhighlightData
 		? createHighlightLayer(selectedhighlightData)
 		: [];
-
-	console.log('excludeIdsClickLayer', excludeIds);
 
 	return [...layerItems, ...highlightLayers, ...symbolLayerItems];
 };

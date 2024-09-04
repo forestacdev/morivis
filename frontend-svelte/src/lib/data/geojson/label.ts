@@ -1,17 +1,19 @@
-import type { LayerEntry } from '$lib/data/types';
+import type { GeojsonEntry } from '$lib/data/types';
 import { GEOJSON_BASE_PATH } from '$lib/constants';
 
-export const labelEntries: LayerEntry[] = [
+export const geojsonLabelEntries: GeojsonEntry<'label'>[] = [
 	{
 		id: 'TITEN.geojson',
 		name: 'その他ポイント',
-		type: 'geojson-label',
+		dataType: 'geojson',
+		geometryType: 'label',
 		opacity: 0.7,
-		path: `${GEOJSON_BASE_PATH}/TITEN.geojson`,
+		url: `${GEOJSON_BASE_PATH}/TITEN.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
 		clickable: true,
-		style_key: 'デフォルト',
+		location: ['森林文化アカデミー'],
+		styleKey: 'デフォルト',
 		style: {
 			symbol: [
 				{
@@ -25,12 +27,7 @@ export const labelEntries: LayerEntry[] = [
 						'text-radial-offset': 0.5,
 						'text-justify': 'auto'
 						// 'icon-image': ['to-string', ['get', 'image']],
-						// 'icon-size': [
-						// 	'case',
-						// 	['match', ['get', '種類'], ['鉄塔'], true, false],
-						// 	0.05,
-						// 	1
-						// ]
+						// 'icon-size':1
 					},
 					paint: {
 						'text-halo-color': '#000000',

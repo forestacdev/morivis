@@ -15,8 +15,7 @@ import type {
 
 type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
 
-// LayerStyle に拡張された LayerSpecification 型を使用
-type LayerStyle = {
+type VectorStyle = {
 	fill?: LayerPaint<FillLayerSpecification['paint'], FillLayerSpecification['layout']>[];
 	line?: LayerPaint<LineLayerSpecification['paint'], LineLayerSpecification['layout']>[];
 	symbol?: LayerPaint<SymbolLayerSpecification['paint'], SymbolLayerSpecification['layout']>[];
@@ -26,6 +25,9 @@ type LayerStyle = {
 		FillExtrusionLayerSpecification['paint'],
 		FillExtrusionLayerSpecification['layout']
 	>[];
+};
+
+type RasterStyle = {
 	raster?: LayerPaint<RasterLayerSpecification['paint'], RasterLayerSpecification['layout']>[];
 	hillshade?: LayerPaint<
 		HillshadeLayerSpecification['paint'],
@@ -37,42 +39,130 @@ type LayerStyle = {
 	>[];
 };
 
-export type rasterEntry = {};
+// 地域ごとの都道府県型
+type Hokkaido = '北海道';
 
-export type vectorEntry = {};
+type Tohoku = '青森県' | '岩手県' | '宮城県' | '秋田県' | '山形県' | '福島県';
 
-export type LayerEntry = {
+type Kanto = '茨城県' | '栃木県' | '群馬県' | '埼玉県' | '千葉県' | '東京都' | '神奈川県';
+
+type Chubu =
+	| '新潟県'
+	| '富山県'
+	| '石川県'
+	| '福井県'
+	| '山梨県'
+	| '長野県'
+	| '岐阜県'
+	| '静岡県'
+	| '愛知県';
+
+type Kinki = '三重県' | '滋賀県' | '京都府' | '大阪府' | '兵庫県' | '奈良県' | '和歌山県';
+
+type Chugoku = '鳥取県' | '島根県' | '岡山県' | '広島県' | '山口県';
+
+type Shikoku = '徳島県' | '香川県' | '愛媛県' | '高知県';
+
+type Kyushu = '福岡県' | '佐賀県' | '長崎県' | '熊本県' | '大分県' | '宮崎県' | '鹿児島県';
+
+type Okinawa = '沖縄県';
+
+type LocationOther = '森林文化アカデミー' | '美濃市' | 'その他';
+// 全都道府県型
+type Region =
+	| Hokkaido
+	| Tohoku
+	| Kanto
+	| Chubu
+	| Kinki
+	| Chugoku
+	| Shikoku
+	| Kyushu
+	| Okinawa
+	| '全国'
+	| '世界'
+	| LocationOther;
+
+export type GeometryType = 'polygon' | 'line' | 'point' | 'label';
+
+export type RasterEntry = {
 	id: string;
 	name: string;
-	type:
-		| 'raster'
-		| 'vector-polygon'
-		| 'vector-line'
-		| 'vector-point'
-		| 'vector-label'
-		| 'geojson-polygon'
-		| 'geojson-line'
-		| 'geojson-point'
-		| 'geojson-label';
-	path: string;
+	dataType: 'raster';
+	url: string;
 	attribution: string;
-	source_minzoom?: number;
-	source_maxzoom?: number;
-	source_layer?: string;
-	layer_minzoom?: number;
-	layer_maxzoom?: number;
+	sourceMinZoom?: number;
+	sourceMaxZoom?: number;
+	layerMinZoom?: number;
+	layerMaxZoom?: number;
 	opacity: number;
-	style_key: string;
-	style?: LayerStyle;
+	styleKey: string;
+	style?: RasterStyle;
+	visible: boolean;
+	clickable?: boolean; // クリック可能かどうか
+	remarks?: string; // 備考
+	location?: Region[];
+	bbox?: [number, number, number, number]; // バウンディングボックス
+	guide_color?: {
+		color: string;
+		label: string;
+	}[];
+};
+
+export type GeojsonEntry<T extends GeometryType> = {
+	id: string;
+	name: string;
+	dataType: 'geojson';
+	geometryType: T;
+	url: string;
+	attribution: string;
+	sourceMinZoom?: number;
+	sourceMaxZoom?: number;
+	layerMinZoom?: number;
+	layerMaxZoom?: number;
+	opacity: number;
+	styleKey: string;
+	style?: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;
-	show_label?: boolean;
-	show_outline?: boolean;
-	show_fill?: boolean;
-	id_field?: string; // フィーチャーのIDとして使用するフィールド名
-	prop_dict?: string; // プロパティの辞書ファイルのURL
+	showLabel?: boolean;
+	showLine?: boolean;
+	showFill?: boolean;
+	fieldDict?: string; // プロパティの辞書ファイルのURL
 	clickable?: boolean; // クリック可能かどうか
 	searchKeys?: string[]; // 検索対象のプロパティ名
 	remarks?: string; // 備考
+	location?: Region[];
 	bbox?: [number, number, number, number]; // バウンディングボックス
 };
+
+export type VectorEntry<T extends GeometryType> = {
+	id: string;
+	name: string;
+	dataType: 'vector';
+	geometryType: T;
+	url: string;
+	attribution: string;
+	sourceMinZoom?: number;
+	sourceMaxZoom?: number;
+	sourceLayer?: string;
+	layerMinZoom?: number;
+	layerMaxZoom?: number;
+	opacity: number;
+	styleKey: string;
+	style?: VectorStyle;
+	filter?: FilterSpecification;
+	visible: boolean;
+	showLabel?: boolean;
+	showLine?: boolean;
+	showFill?: boolean;
+	idField?: string; // フィーチャーのIDとして使用するフィールド名
+	fieldDict?: string; // プロパティの辞書ファイルのURL
+	clickable?: boolean; // クリック可能かどうか
+	searchKeys?: string[]; // 検索対象のプロパティ名
+	remarks?: string; // 備考
+	location?: Region[];
+	bbox?: [number, number, number, number]; // バウンディングボックス
+};
+
+export type LayerEntry = RasterEntry | GeojsonEntry<GeometryType> | VectorEntry<GeometryType>;

@@ -44,10 +44,10 @@
 			/>
 		</button>
 	</div>
-	{#if layerEntry.type === 'raster'}
+	{#if layerEntry.dataType === 'raster'}
 		<label
 			class="absolute h-[200px] w-[100px] cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200"
-			style="background-image: url({layerEntry.path
+			style="background-image: url({layerEntry.url
 				.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
 				.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
 				.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())})"

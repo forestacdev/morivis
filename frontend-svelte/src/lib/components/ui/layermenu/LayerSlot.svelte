@@ -12,7 +12,7 @@
 
 	export let layerEntry: LayerEntry;
 	export let index: number;
-	let selectedStyle: string = layerEntry.style_key;
+	let selectedStyle: string = layerEntry.styleKey;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
 			? showlayerOptionId.set('')

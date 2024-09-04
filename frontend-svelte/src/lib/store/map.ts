@@ -26,8 +26,6 @@ import Worker from './worker?worker';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 import type { LayerEntry } from '$lib/data/types';
-import { lineEntries } from '../data/vecter/line';
-import { onLog } from 'firebase/app';
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -73,13 +71,13 @@ const createMapStore = () => {
 		map.on('data', function (e) {
 			//your code here
 			isLoadingEvent.set(true);
-			console.log(e);
+			// console.log(e);
 		});
 
 		map.on('idle', function (e) {
 			//your code here
 			isLoadingEvent.set(false);
-			console.log(e);
+			// console.log(e);
 		});
 
 		map.on('rotate', (e) => {
@@ -114,11 +112,11 @@ const createMapStore = () => {
 					// 	console.error(`Error loading image for category ${id}:`, error);
 					// }
 				} else {
-					const imageSrc = id;
-					const webglImage = await imageToIcon(imageSrc);
-					if (!map.hasImage(id)) {
-						map.addImage(id, webglImage, { pixelRatio: 1 });
-					}
+					// const imageSrc = id;
+					// const webglImage = await imageToIcon(imageSrc);
+					// if (!map.hasImage(id)) {
+					// 	map.addImage(id, webglImage, { pixelRatio: 1 });
+					// }
 				}
 			} catch (error) {
 				console.error(`Error loading image for category ${id}:`, error);
@@ -207,43 +205,33 @@ const createMapStore = () => {
 		const sourceId = `preview_source`;
 		const sourceItems: Record<string, SourceSpecification> = {};
 
-		if (layerEntry.type === 'raster') {
+		if (layerEntry.dataType === 'raster') {
 			sourceItems[sourceId] = {
 				type: 'raster',
-				tiles: [layerEntry.path],
-				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
-				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				tiles: [layerEntry.url],
+				maxzoom: layerEntry.sourceMaxZoom ?? 24,
+				minzoom: layerEntry.sourceMinZoom ?? 0,
 				tileSize: 256,
 				attribution: layerEntry.attribution
 			};
-		} else if (
-			layerEntry.type === 'vector-polygon' ||
-			layerEntry.type === 'vector-line' ||
-			layerEntry.type === 'vector-point' ||
-			layerEntry.type === 'vector-label'
-		) {
+		} else if (layerEntry.dataType === 'vector') {
 			sourceItems[sourceId] = {
 				type: 'vector',
-				tiles: [layerEntry.path],
-				maxzoom: layerEntry.source_maxzoom ? layerEntry.source_maxzoom : 24,
-				minzoom: layerEntry.source_minzoom ? layerEntry.source_minzoom : 0,
+				tiles: [layerEntry.url],
+				maxzoom: layerEntry.sourceMaxZoom ?? 24,
+				minzoom: layerEntry.sourceMinZoom ?? 0,
 				attribution: layerEntry.attribution,
-				promoteId: layerEntry.id_field ?? undefined
+				promoteId: layerEntry.idField ?? undefined
 			};
-		} else if (
-			layerEntry.type === 'geojson-polygon' ||
-			layerEntry.type === 'geojson-line' ||
-			layerEntry.type === 'geojson-point' ||
-			layerEntry.type === 'geojson-label'
-		) {
+		} else if (layerEntry.dataType === 'geojson') {
 			sourceItems[sourceId] = {
 				type: 'geojson',
-				data: layerEntry.path,
+				data: layerEntry.url,
 				generateId: true,
 				attribution: layerEntry.attribution
 			};
 		} else {
-			console.warn(`Unknown layer type: ${layerEntry.type}`);
+			console.warn(`Unknown layer type: ${layerEntry.dataType}`);
 		}
 		if (map.getLayer('preview_layer')) map.removeLayer('preview_layer');
 		if (map.getSource(sourceId)) map.removeSource(sourceId);
@@ -253,15 +241,19 @@ const createMapStore = () => {
 
 		const layerItems: LayerSpecification[] = [];
 
-		switch (layerEntry.type) {
+		const layer = {
+			id: layerId,
+			source: sourceId,
+			maxzoom: layerEntry.layerMaxZoom ?? 24,
+			minzoom: layerEntry.layerMinZoom ?? 0
+		};
+
+		switch (layerEntry.dataType) {
 			// ラスターレイヤー
 			case 'raster': {
 				layerItems.push({
-					id: layerId,
+					...layer,
 					type: 'raster',
-					source: sourceId,
-					maxzoom: layerEntry.layer_maxzoom ? layerEntry.layer_maxzoom : 24,
-					minzoom: layerEntry.layer_minzoom ? layerEntry.layer_minzoom : 0,
 					paint: {
 						'raster-opacity': layerEntry.opacity,
 						...(layerEntry.style?.raster?.[0]?.paint ?? {})
@@ -270,169 +262,92 @@ const createMapStore = () => {
 				break;
 			}
 			// ベクトルタイル ポリゴンレイヤー
-			case 'vector-polygon': {
-				const styleKey = layerEntry.style_key;
-				const setStyele = layerEntry.style?.fill?.find((item) => item.name === styleKey);
-				const layer = {
-					id: layerId,
-					type: 'fill',
-					source: sourceId,
-					'source-layer': layerEntry.source_layer,
-					maxzoom: 24,
-					minzoom: 0,
-					paint: {
-						'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
-						'fill-outline-color': '#00000000',
-						...setStyele?.paint
-					},
-					layout: {
-						...(setStyele?.layout ?? {})
-					}
-				} as LayerSpecification;
+			// ベクトルタイル ポリゴンレイヤー
+			case 'vector':
+			case 'geojson': {
+				const styleKey = layerEntry.styleKey;
 
-				layerItems.push(layer);
+				if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
+				if (layerEntry.dataType === 'vector') {
+					layer['source-layer'] = layerEntry.sourceLayer;
+				}
+				if (layerEntry.geometryType === 'polygon') {
+					const fillStyele = layerEntry.style?.fill?.find(
+						(item) => item.name === styleKey
+					);
+					const fillLayer = {
+						...layer,
+						type: 'fill',
+						paint: {
+							'fill-opacity': layerEntry.showFill ? layerEntry.opacity : 0,
+							'fill-outline-color': '#00000000',
+							...(fillStyele?.paint ?? {})
+						},
+						layout: {
+							...(fillStyele?.layout ?? {})
+						}
+					};
 
-				break;
-			}
-			// ベクトルタイル ラインレイヤー
-			case 'vector-line': {
-				const setStyele = layerEntry.style?.line?.find(
-					(item) => item.name === layerEntry.style_key
-				);
+					layerItems.push(fillLayer as FillLayerSpecification);
+				} else if (layerEntry.geometryType === 'line') {
+					const setStyele = layerEntry.style?.line?.find(
+						(item) => item.name === styleKey
+					);
+					const lineLayer = {
+						...layer,
+						type: 'line',
+						paint: {
+							'line-opacity': layerEntry.opacity,
+							...(setStyele?.paint ?? {})
+						},
+						layout: {
+							...(setStyele?.layout ?? {})
+						}
+					};
 
-				const layer = {
-					id: layerId,
-					type: 'line',
-					source: sourceId,
-					'source-layer': layerEntry.source_layer,
-					maxzoom: 24,
-					minzoom: 0,
-					paint: {
-						'line-opacity': layerEntry.opacity,
-						...(layerEntry.style?.line?.[0]?.paint ?? {})
-					},
-					layout: {
-						...(layerEntry.style?.line?.[0]?.layout ?? {})
-					}
-				} as LayerSpecification;
+					layerItems.push(lineLayer as LineLayerSpecification);
+				} else if (layerEntry.geometryType === 'point') {
+					const setStyele = layerEntry.style?.circle?.find(
+						(item) => item.name === styleKey
+					);
+					const pointLayer = {
+						...layer,
+						type: 'circle',
+						paint: {
+							'circle-opacity': layerEntry.opacity,
+							...(setStyele?.paint ?? {})
+						},
+						layout: {
+							...(setStyele?.layout ?? {})
+						}
+					};
 
-				layerItems.push(layer);
+					layerItems.push(pointLayer as CircleLayerSpecification);
+				} else if (layerEntry.geometryType === 'label') {
+					const setStyele = layerEntry.style?.label?.find(
+						(item) => item.name === styleKey
+					);
+					const pointLayer = {
+						...layer,
+						type: 'symbol',
+						paint: {
+							'text-opacity': layerEntry.opacity,
+							'icon-opacity': layerEntry.opacity,
+							...(setStyele?.paint ?? {})
+						},
+						layout: {
+							...(setStyele?.layout ?? {})
+						}
+					};
 
-				break;
-			}
-			// ベクトルタイル ポイントレイヤー
-			case 'vector-point': {
-				const setStyele = layerEntry.style?.circle?.find(
-					(item) => item.name === layerEntry.style_key
-				);
-
-				const layer = {
-					id: layerId,
-					type: 'circle',
-					source: sourceId,
-					'source-layer': layerEntry.source_layer,
-					maxzoom: 24,
-					minzoom: 0,
-					paint: {
-						'circle-opacity': layerEntry.opacity,
-						...(layerEntry.style?.circle?.[0]?.paint ?? {})
-					},
-					layout: {
-						...(layerEntry.style?.circle?.[0]?.layout ?? {})
-					}
-				} as CircleLayerSpecification;
-
-				layerItems.push(layer);
-				// layerIdNameDict[layerId] = layerEntry.name;
-
-				break;
-			}
-
-			// GeoJSON ポリゴンレイヤー
-			case 'geojson-polygon': {
-				const styleKey = layerEntry.style_key;
-				const setStyele = layerEntry.style?.fill?.find((item) => item.name === styleKey);
-
-				const layer = {
-					id: layerId,
-					type: 'fill',
-					source: sourceId,
-					paint: {
-						'fill-opacity': layerEntry.show_fill ? layerEntry.opacity : 0,
-						'fill-outline-color': '#00000000',
-						...setStyele?.paint
-					},
-					layout: {
-						...(setStyele?.layout ?? {})
-					}
-					// filter: ['==', ['id'], 1]
-				} as FillLayerSpecification;
-
-				if (layerEntry.filter) layer.filter = layerEntry.filter;
-
-				layerItems.push(layer);
-				// layerIdNameDict[layerId] = layerEntry.name;
-				const index = layerEntry.style?.line?.findIndex(
-					(item) => item.name === styleKey
-				) as number;
-
-				break;
-			}
-			// GeoJSON ラインレイヤー
-			case 'geojson-line': {
-				layerItems.push({
-					id: layerId,
-					type: 'line',
-					source: sourceId,
-					paint: {
-						'line-opacity': layerEntry.opacity,
-						...(layerEntry.style?.line?.[0]?.paint ?? {})
-					},
-					layout: {
-						...(layerEntry.style?.line?.[0]?.layout ?? {})
-					}
-				});
-
-				break;
-			}
-			// GeoJSON ポイントレイヤー
-			case 'geojson-point': {
-				layerItems.push({
-					id: layerId,
-					type: 'circle',
-					source: sourceId,
-					paint: {
-						'circle-opacity': layerEntry.opacity,
-						...(layerEntry.style?.circle?.[0]?.paint ?? {})
-					},
-					layout: {
-						...(layerEntry.style?.circle?.[0]?.layout ?? {})
-					}
-				});
-
-				break;
-			}
-			// GeoJSON ラベルレイヤー
-			case 'geojson-label': {
-				layerItems.push({
-					id: layerId,
-					type: 'symbol',
-					source: sourceId,
-					paint: {
-						'text-opacity': layerEntry.opacity,
-						'icon-opacity': layerEntry.opacity,
-						...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-					},
-					layout: {
-						...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-					}
-				});
+					layerItems.push(pointLayer as SymbolLayerSpecification);
+				}
 
 				break;
 			}
 
 			default:
-				console.warn(`Unknown layer type: ${layerEntry.type}`);
+				console.warn(`Unknown layer: ${layerEntry}`);
 				break;
 		}
 		if (map.getLayer('preview_background')) map.removeLayer('preview_background');

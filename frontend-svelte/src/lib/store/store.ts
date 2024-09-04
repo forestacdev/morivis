@@ -7,6 +7,7 @@ export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
+export const clickableLayerIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
 
 /* リストに追加されてるレイヤーID */
 

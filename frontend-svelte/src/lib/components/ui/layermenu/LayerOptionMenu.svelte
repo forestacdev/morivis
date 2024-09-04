@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { LayerEntry } from '$lib/data/types';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
 	import { showlayerOptionId, isSide } from '$lib/store/store';
@@ -23,6 +24,7 @@
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
 	{#if $showlayerOptionId}
+    {#if layerOption.dataType === 'vector' || layerOption.dataType === 'geojson'}
 		<div class="flex flex-col gap-2">
 			<label class="block">透過度</label>
 			<input
@@ -34,36 +36,37 @@
 				step="0.01"
 			/>
 		</div>
-		{#if layerOption.show_label !== undefined}
+		{#if layerOption.showLabel !== undefined}
 			<div class="flex gap-2">
 				<label class="block">ラベル</label>
 				<input
 					type="checkbox"
 					class="custom-checkbox"
-					bind:checked={layerOption.show_label}
+					bind:checked={layerOption.showLabel}
 				/>
 			</div>
 		{/if}
-		{#if layerOption.show_outline !== undefined}
+		{#if layerOption.showLine !== undefined}
 			<div class="flex gap-2">
 				<label class="block">アウトライン</label>
 				<input
 					type="checkbox"
 					class="custom-checkbox"
-					bind:checked={layerOption.show_outline}
+					bind:checked={layerOption.showLine}
 				/>
 			</div>
 		{/if}
-		{#if layerOption.show_fill !== undefined}
+		{#if layerOption.showFill !== undefined}
 			<div class="flex gap-2">
 				<label class="block">塗りつぶし</label>
 				<input
 					type="checkbox"
 					class="custom-checkbox"
-					bind:checked={layerOption.show_fill}
+					bind:checked={layerOption.showFill}
 				/>
 			</div>
 		{/if}
+        {/if}
 
 		{#if layerOption.type === 'raster'}
 			<!-- TODO: -->
