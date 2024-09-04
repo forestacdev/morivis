@@ -33,10 +33,11 @@
 	import { layerData } from '$lib/data/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
+	import { isSide, excludeIdsClickLayer, addedLayerIds } from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl, getFieldDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
+	import { INT_ADD_LAYER_IDS } from '$lib/constants';
 
 	import { mapStore } from '$lib/store/map';
 
@@ -64,7 +65,9 @@
 		mapStyleJson.sources['terrain'] = gsiTerrainSource;
 		mapStyleJson.sources = {
 			...mapStyleJson.sources,
-			...createSourceItems(layerDataEntries)
+			...createSourceItems(
+				layerDataEntries.filter((entry) => $addedLayerIds.includes(entry.id))
+			)
 			// ...backgroundSources
 		};
 		mapStyleJson.layers = [
@@ -74,7 +77,10 @@
 			// 	source: selectedBackgroundId,
 			// 	type: 'raster'
 			// },
-			...createLayerItems(layerDataEntries, selectedhighlightData)
+			...createLayerItems(
+				layerDataEntries.filter((entry) => $addedLayerIds.includes(entry.id)),
+				selectedhighlightData
+			)
 		];
 
 		return mapStyleJson;

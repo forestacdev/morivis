@@ -248,6 +248,9 @@ const createMapStore = () => {
 			minzoom: layerEntry.layerMinZoom ?? 0
 		};
 
+		const layerColor = '#37ff00';
+		const layerOpacity = 0.7;
+
 		switch (layerEntry.dataType) {
 			// ラスターレイヤー
 			case 'raster': {
@@ -272,19 +275,19 @@ const createMapStore = () => {
 					layer['source-layer'] = layerEntry.sourceLayer;
 				}
 				if (layerEntry.geometryType === 'polygon') {
-					const fillStyele = layerEntry.style?.fill?.find(
+					const setStyele = layerEntry.style?.fill?.find(
 						(item) => item.name === styleKey
 					);
 					const fillLayer = {
 						...layer,
 						type: 'fill',
 						paint: {
-							'fill-opacity': layerEntry.showFill ? layerEntry.opacity : 0,
-							'fill-outline-color': '#00000000',
-							...(fillStyele?.paint ?? {})
+							'fill-opacity': layerOpacity,
+							'fill-outline-color': '#fff',
+							'fill-color': layerColor
 						},
 						layout: {
-							...(fillStyele?.layout ?? {})
+							...(setStyele?.layout ?? {})
 						}
 					};
 
@@ -297,8 +300,8 @@ const createMapStore = () => {
 						...layer,
 						type: 'line',
 						paint: {
-							'line-opacity': layerEntry.opacity,
-							...(setStyele?.paint ?? {})
+							'line-opacity': layerOpacity,
+							'line-color': layerColor
 						},
 						layout: {
 							...(setStyele?.layout ?? {})
@@ -314,8 +317,8 @@ const createMapStore = () => {
 						...layer,
 						type: 'circle',
 						paint: {
-							'circle-opacity': layerEntry.opacity,
-							...(setStyele?.paint ?? {})
+							'circle-opacity': layerOpacity,
+							'circle-color': layerColor
 						},
 						layout: {
 							...(setStyele?.layout ?? {})
@@ -331,9 +334,11 @@ const createMapStore = () => {
 						...layer,
 						type: 'symbol',
 						paint: {
-							'text-opacity': layerEntry.opacity,
-							'icon-opacity': layerEntry.opacity,
-							...(setStyele?.paint ?? {})
+							'text-opacity': 1,
+							'icon-opacity': 1,
+							'text-color': layerColor,
+							'icon-color': layerColor,
+							'text-halo-color': '#fff'
 						},
 						layout: {
 							...(setStyele?.layout ?? {})
