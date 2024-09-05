@@ -2,7 +2,7 @@
 	import type { LayerEntry } from '$lib/data/types';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
-	import { showlayerOptionId, isSide } from '$lib/store/store';
+	import { showlayerOptionId, isSide, addedLayerIds } from '$lib/store/store';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import Geometries from 'three/src/renderers/common/Geometries.js';
@@ -12,6 +12,11 @@
 			showlayerOptionId.set(null);
 		}
 	});
+
+	const removeLayer = () => {
+		addedLayerIds.removeLayer(layerOption.id);
+		showlayerOptionId.set(null);
+	};
 
 	let layerOption: LayerEntry | undefined;
 	$: layerOption = layerDataEntries.find((layer) => layer.id === $showlayerOptionId);
@@ -131,6 +136,9 @@
 		{#if layerOption.dataType === 'raster'}
 			<!-- TODO: -->
 		{/if}
+		<button on:click={removeLayer}>
+			<Icon icon="bx:trash" width="24" height="24" class="custom-anime" />
+		</button>
 	{/if}
 </div>
 

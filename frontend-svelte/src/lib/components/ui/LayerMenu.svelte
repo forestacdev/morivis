@@ -59,6 +59,12 @@
 		};
 	};
 
+	const sortedLayerEntries = (layerDataEntries: LayerEntry, addedIds: string[]) => {
+		return layerDataEntries
+			.filter((layerEntry) => addedIds.includes(layerEntry.id))
+			.sort((a, b) => addedIds.indexOf(a.id) - addedIds.indexOf(b.id));
+	};
+
 	onMount(() => {});
 </script>
 
@@ -69,7 +75,7 @@
 	>
 		<div class="flex h-full gap-4">
 			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto">
-				{#each layerDataEntries.filter( (layerEntry) => $addedLayerIds.includes(layerEntry.id) ) as layerEntry, index (layerEntry.id)}
+				{#each sortedLayerEntries(layerDataEntries, $addedLayerIds) as layerEntry, index (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">
 						<LayerSlot bind:layerEntry {index} on:moveLayerById={moveLayerById} />
 					</div>

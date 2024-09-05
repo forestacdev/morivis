@@ -38,6 +38,7 @@
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
 	import { INT_ADD_LAYER_IDS } from '$lib/constants';
+	import gsap from 'gsap';
 
 	import { mapStore } from '$lib/store/map';
 
@@ -57,6 +58,18 @@
 	let mapBearing = 0;
 
 	let feature;
+
+	// 画面振動
+	const shakeScreen = () => {
+		if (!mapContainer) return;
+		gsap.to('body', {
+			duration: 0.1,
+			y: '+=10',
+			yoyo: true,
+			repeat: 1,
+			ease: 'power1.inOut'
+		});
+	};
 
 	// mapStyleの作成
 	const createMapStyle = () => {
