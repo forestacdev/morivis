@@ -13,33 +13,6 @@
 
 	let rotatingElement: HTMLElement;
 
-	const moveLayerById = (e: CustomEvent) => {
-		const { id, direction } = e.detail;
-		// idに対応するアイテムのインデックスを取得
-		let index = layerDataEntries.findIndex((item) => item.id === id);
-
-		// インデックスが見つからない場合はそのまま配列を返す
-		if (index === -1) return layerDataEntries;
-
-		// 上に移動する場合
-		if (direction === 'up' && index > 0) {
-			// 前のアイテムと入れ替え
-			[layerDataEntries[index - 1], layerDataEntries[index]] = [
-				layerDataEntries[index],
-				layerDataEntries[index - 1]
-			];
-		}
-
-		// 下に移動する場合
-		if (direction === 'down' && index < layerDataEntries.length - 1) {
-			// 次のアイテムと入れ替え
-			[layerDataEntries[index + 1], layerDataEntries[index]] = [
-				layerDataEntries[index],
-				layerDataEntries[index + 1]
-			];
-		}
-	};
-
 	const tweenMe = (node: Node) => {
 		let tl = gsap.timeline();
 		const duration = 0.15; // アニメーションの長さを0.5秒に設定
@@ -59,12 +32,6 @@
 		};
 	};
 
-	const sortedLayerEntries = (layerDataEntries: LayerEntry, addedIds: string[]) => {
-		return layerDataEntries
-			.filter((layerEntry) => addedIds.includes(layerEntry.id))
-			.sort((a, b) => addedIds.indexOf(a.id) - addedIds.indexOf(b.id));
-	};
-
 	onMount(() => {});
 </script>
 
@@ -75,9 +42,11 @@
 	>
 		<div class="flex h-full gap-4">
 			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto">
-				{#each sortedLayerEntries(layerDataEntries, $addedLayerIds) as layerEntry, index (layerEntry.id)}
+				{#each layerDataEntries
+					.filter((layerEntry) => $addedLayerIds.includes(layerEntry.id))
+					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)) as layerEntry, index (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">
-						<LayerSlot bind:layerEntry {index} on:moveLayerById={moveLayerById} />
+						<LayerSlot bind:layerEntry {index} />
 					</div>
 				{/each}
 			</div>

@@ -2,7 +2,7 @@
 	import type { CategoryEntry } from '$lib/data/layers';
 	import Icon from '@iconify/svelte';
 	import type { LayerEntry } from '$lib/data/types';
-	import { showlayerOptionId } from '$lib/store/store';
+	import { showlayerOptionId, addedLayerIds } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { crossfade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -20,10 +20,10 @@
 	};
 
 	// レイヤーの移動
-	const moveLayerById = (direction: 'up' | 'down' | 'top' | 'bottom') => {
+	const moveLayerById = (direction: 'up' | 'down') => {
 		const id = layerEntry.id;
 
-		dispatch('moveLayerById', { id, direction });
+        addedLayerIds.reorderLayer(id, direction);
 	};
 
 	const serPaintProperty = (key: string, value: string) => {
@@ -32,7 +32,7 @@
 
 	$: {
 		if ($showlayerOptionId === layerEntry.id && !layerEntry.visible) {
-			showlayerOptionId.set('');
+			// showlayerOptionId.set('');
 		}
 	}
 

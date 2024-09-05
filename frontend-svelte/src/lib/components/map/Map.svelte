@@ -79,7 +79,9 @@
 		mapStyleJson.sources = {
 			...mapStyleJson.sources,
 			...createSourceItems(
-				layerDataEntries.filter((entry) => $addedLayerIds.includes(entry.id))
+				layerDataEntries
+					.filter((entry) => $addedLayerIds.includes(entry.id))
+					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id))
 			)
 			// ...backgroundSources
 		};
@@ -91,7 +93,9 @@
 			// 	type: 'raster'
 			// },
 			...createLayerItems(
-				layerDataEntries.filter((entry) => $addedLayerIds.includes(entry.id)),
+				layerDataEntries
+					.filter((entry) => $addedLayerIds.includes(entry.id))
+					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
 			)
 		];
@@ -201,7 +205,7 @@
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
-	$: if (layerDataEntries && selectedhighlightData !== undefined) {
+	$: if (layerDataEntries && selectedhighlightData !== undefined && $addedLayerIds) {
 		const mapStyle = createMapStyle();
 
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;

@@ -243,7 +243,7 @@ export const layerData: LayerEntry[] = [
 	...rasterEntries
 ];
 
-// objects1とobjects2からIDを収集
+// IDを収集
 const validIds = [...new Set([...layerData.map((obj) => obj.id)])];
 
 const validateId = (id: string) => {
