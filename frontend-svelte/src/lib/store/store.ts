@@ -19,7 +19,7 @@ const createLayerStore = (initialLayers: string[] = []) => {
 		addLayer: (id: string) =>
 			update((layers) => {
 				if (!layers.includes(id)) {
-					return [...layers, id];
+					return [id, ...layers];
 				}
 				return layers;
 			}),
