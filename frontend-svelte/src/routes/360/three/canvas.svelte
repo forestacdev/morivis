@@ -5,6 +5,9 @@
 	import Icon from '@iconify/svelte';
 	import Worker from './worker?worker';
 	import { createEventDispatcher } from 'svelte';
+	// import { angleData } from './angle';
+	import angleDataJson from '$lib/json/angle.json';
+	import { GUI } from 'lil-gui';
 	//svelteからcreateEventDispatcher関数をインポートする。
 	const dispatch = createEventDispatcher();
 
@@ -22,6 +25,8 @@
 
 	let currentRequestController = null;
 
+	const geometryBearing = { x: 0, y: 0, z: 0 };
+
 	const created360Mesh = async (imageUrl) => {
 		if (!imageUrl) return;
 
@@ -34,10 +39,6 @@
 		if (!mash || !mash.material) return;
 
 		mash.material.map = texture;
-
-		texture.addEventListener('load', () => {
-			console.log('texture loaded');
-		});
 
 		// テクスチャが読み込まれたらレンダリングを開始
 		isRendering = true;
@@ -55,6 +56,7 @@
 		// カメラ
 		const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
 		camera.position.set(0, 0, 0);
+
 		// camera.position.set(-100, 100, -100);
 		scene.add(camera);
 
@@ -142,11 +144,19 @@
 			// カメラのY軸回転角度（ラジアン単位）を取得
 			camera.rotation.order = 'YXZ';
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
-			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
+			degrees = ((degrees + 360) % 360) - 270; // 0〜360度の範囲に調整
 
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 
 			cameraBearing = degrees;
+			const mesh = scene.getObjectByName('360');
+			if (mesh) {
+				// mesh.rotation.y = THREE.MathUtils.degToRad(degrees);
+				mesh.rotation.x = THREE.MathUtils.degToRad(geometryBearing.x);
+				mesh.rotation.y = THREE.MathUtils.degToRad(geometryBearing.y);
+				mesh.rotation.z = THREE.MathUtils.degToRad(geometryBearing.z);
+			}
+
 			// console.log(degrees);
 			renderer.render(scene, camera);
 		};
@@ -158,6 +168,45 @@
 	};
 
 	$: created360Mesh(imageUrl);
+
+	const gui = new GUI();
+
+	gui.add(geometryBearing, 'x', 0, 360).onChange((value) => {
+		// geometryBearing.x = value;
+	});
+
+	gui.add(geometryBearing, 'y', 0, 360).onChange((value) => {
+		// geometryBearing.y = value;
+	});
+
+	gui.add(geometryBearing, 'z', 0, 360).onChange((value) => {
+		// geometryBearing.z = value;
+	});
+
+	async function updateAngle(id: string, angleX: number) {
+		const response = await fetch('/api/updateAngles', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ id, angleX })
+		});
+		const result = await response.json();
+		if (result.success) {
+			console.log('Angle updated successfully', result.updatedData);
+		} else {
+			console.error('Failed to update angle', result.error);
+		}
+	}
+
+	const submit = {
+		updateAngle: () => {
+			updateAngle('1', geometryBearing.x);
+		}
+	};
+
+	// 角度を更新するボタンを追加
+	gui.add(submit, 'updateAngle').name('Update Angle');
 </script>
 
 <!-- <div class="custom-canvas-back"></div> -->
@@ -171,14 +220,14 @@
 					<button
 						on:click={() => nextPoint(point.feaureData)}
 						class="custom-arrow"
-						style="--angle: {point.bearing + 90}deg;"
+						style="--angle: {point.bearing}deg;"
 					>
 						<Icon
 							icon="ic:baseline-double-arrow"
 							width="128"
 							height="128"
 							class=""
-							style="transform: rotate({point.bearing}deg);"
+							style="transform: rotate({point.bearing - 90}deg);"
 						/>
 					</button>
 				{/each}

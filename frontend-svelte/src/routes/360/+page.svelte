@@ -12,11 +12,13 @@
 	import turfBooleanCrosses from '@turf/boolean-crosses';
 	import turfBuffer from '@turf/buffer';
 	import turfNearestPoint from '@turf/nearest-point';
+	import AngleMarker from './AngleMarker.svelte';
 
 	import { page } from '$app/stores';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer: HTMLDivElement;
+	// let markerContainer: HTMLDivElement;
 	let mapInstance: maplibregl.Map | null = null;
 	let imageUrl: string = '';
 	let pointsData = {
@@ -32,8 +34,9 @@
 
 	let cameraBearing = 0;
 
+	let angleMarker = null;
+
 	const setImage = (point) => {
-		console.log(`${IMAGE_URL}${point.properties['Name']}`);
 		imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
 
 		const urlSearchParams = $page.url.searchParams;
@@ -43,7 +46,7 @@
 
 		const targetPoint = point;
 
-		const buffer = turfBuffer(targetPoint, 0.0001, { units: 'kilometers' });
+		const buffer = turfBuffer(targetPoint, 0.001, { units: 'kilometers' });
 
 		const targetLines = lineData.features.filter((line) => {
 			return turfBooleanCrosses(buffer, line);
@@ -51,24 +54,44 @@
 
 		if (!mapInstance) return;
 
-		mapInstance.flyTo({
-			center: targetPoint.geometry.coordinates,
-			zoom: 18,
-			speed: 1.5,
-			curve: 1
+		// mapInstance.flyTo({
+		// 	center: targetPoint.geometry.coordinates,
+		// 	zoom: 18,
+		// 	speed: 1.5,
+		// 	curve: 1
+		// });
+
+		mapInstance.panTo(targetPoint.geometry.coordinates, {
+			duration: 1000,
+			animate: true,
+			zoom: mapInstance.getZoom() > 18 ? mapInstance.getZoom() : 18
 		});
+
+		if (angleMarker) {
+			angleMarker.remove();
+		}
+		const markerContainer = document.createElement('div');
+		new AngleMarker({
+			target: markerContainer,
+			props: {
+				cameraBearing: cameraBearing
+			}
+		});
+
+		// console.log(markerContainer);
+
+		angleMarker = new maplibregl.Marker({
+			element: markerContainer
+		})
+			.setLngLat(targetPoint.geometry.coordinates)
+			.addTo(mapInstance);
 
 		const nextData = [];
 
 		targetLines.forEach((line) => {
 			const crosses = findFarthestVertex(targetPoint, line);
 			const nextPoint = turfNearestPoint(crosses, pointsData);
-			// const targetPoint = pointsData.features.find((point) => {
-			// 	return (
-			// 		point.geometry.coordinates[0] === nextPoint.geometry.coordinates[0] &&
-			// 		point.geometry.coordinates[1] === nextPoint.geometry.coordinates[1]
-			// 	);
-			// });
+
 			const bearing = turfBearing(targetPoint, nextPoint);
 			nextData.push({
 				feaureData: nextPoint,
@@ -82,7 +105,7 @@
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
 
 	// 各ラインの最も遠い頂点を抽出する関数
-	function findFarthestVertex(point, line) {
+	const findFarthestVertex = (point, line) => {
 		let farthestVertex = null;
 		let maxDistance = 0;
 
@@ -96,7 +119,7 @@
 		});
 
 		return farthestVertex;
-	}
+	};
 
 	onMount(async () => {
 		const style = styleJson;
@@ -160,34 +183,28 @@
 			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 
-		// map.on('load', () => {
-		// 	// TerrainControlの追加
-		// 	map.addControl(
-		// 		new maplibregl.TerrainControl({
-		// 			source: 'terrain', // 地形ソースを指定
-		// 			exaggeration: 1 // 高さの倍率
-		// 		}),
-		// 		'top-right' // コントロールの位置を指定
-		// 	);
-		// });
+		mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right');
+		// 3D地形コントロール
+		mapInstance.addControl(
+			new maplibregl.TerrainControl({
+				source: 'terrain',
+				exaggeration: 1
+			}),
+			'top-right'
+		);
 
-		mapInstance.on('click', (e) => {
-			// map.queryRenderedFeatures(e.point).forEach((feature) => {
-			// 	console.log(feature.layer);
-			// });
-		});
+		mapInstance.on('click', (e) => {});
+
+		mapInstance.on('move', () => {});
 
 		mapInstance.on('load', () => {
-			console.log('load');
 			const urlSearchParams = $page.url.searchParams;
 			const id = urlSearchParams.get('imageId') ?? '0';
-			console.log(id);
+
 			if (id) {
 				const targetPoint = pointsData.features.find((point) => {
 					return point.properties['ID'] === id;
 				});
-
-				console.log(targetPoint);
 
 				if (targetPoint) {
 					mapInstance.flyTo({
@@ -206,23 +223,15 @@
 			console.log(e.features[0].properties);
 
 			setImage(e.features[0]);
-
-			// console.log(targetLines);
-
-			// const nearbyPoints = pointsData.features.filter((point) => {
-			// 	const distance = turfDistance(targetPoint, point, { units: 'meters' });
-			// 	return distance <= 12;
-			// });
-
-			// 各点の方位を計算
-			// nearbyPoints.forEach((point) => {
-			// 	const bearing = turfBearing(targetPoint, point);
-			// 	console.log(bearing);
-			// });
-
-			// console.log(nearbyPoints);
 		});
 	});
+
+	$: {
+		if (cameraBearing && angleMarker) {
+			const markerContainer = angleMarker.getElement().firstElementChild;
+			markerContainer.style.transform = `rotateZ(${-cameraBearing}deg)`;
+		}
+	}
 
 	const nextPoint = (e) => {
 		console.log(e.detail);
@@ -237,3 +246,4 @@
 </div>
 
 <div class="absolute left-2 top-2 z-50 z-50">{cameraBearing}</div>
+<!-- <AngleMarker {cameraBearing} /> -->
