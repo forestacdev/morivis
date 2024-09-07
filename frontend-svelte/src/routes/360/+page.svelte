@@ -16,6 +16,10 @@
 
 	import { page } from '$app/stores';
 
+	const LINE_GEOJSON_URL =
+		'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson';
+	// const LINE_GEOJSON_URL = 'http://127.0.0.1:8081/geojson/THETA360_line.geojson';
+
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer: HTMLDivElement;
 	// let markerContainer: HTMLDivElement;
@@ -132,9 +136,9 @@
 				return data;
 			});
 
-		lineData = await fetch(
-			'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
-		)
+		console.log(LINE_GEOJSON_URL);
+
+		lineData = await fetch(LINE_GEOJSON_URL)
 			.then((res) => res.json())
 			.then((data) => {
 				return data;

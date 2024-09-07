@@ -81,6 +81,7 @@
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
 	const created360Mesh = async (feature) => {
+		console.log(feature);
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
 		const id = feature.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
