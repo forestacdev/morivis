@@ -162,14 +162,13 @@
 		scene.add(sphere);
 
 		// ヘルパーグリッド
-		const gridHelper = new THREE.GridHelper(200, 100);
-		scene.add(gridHelper);
+		// const gridHelper = new THREE.GridHelper(200, 100);
+		// scene.add(gridHelper);
+		// gridHelper.position.y = -5;
 
 		// ヘルパー方向
 		const axesHelper = new THREE.AxesHelper(100);
 		scene.add(axesHelper);
-
-		gridHelper.position.y = -5;
 
 		// レンダラー
 		const renderer = new THREE.WebGLRenderer({
