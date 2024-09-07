@@ -8,7 +8,6 @@
 		"maputnik:renderer": "mbgljs"
 	},
 	"sources": {
-		"openmaptiles": { "type": "vector", "url": "pmtiles://./osm.pmtiles" },
 		"natural_earth_shaded_relief": {
 			"maxzoom": 6,
 			"tileSize": 256,
@@ -417,15 +416,6 @@
 			"filter": ["all", ["==", "ftCode", 5203]],
 			"layout": { "line-cap": "square", "visibility": "visible" },
 			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
-		},
-		{
-			"id": "landcover_sand",
-			"type": "fill",
-			"source": "openmaptiles",
-			"source-layer": "landcover",
-			"filter": ["all", ["==", "class", "sand"]],
-			"layout": { "visibility": "visible" },
-			"paint": { "fill-color": "rgba(247, 239, 195, 1)" }
 		},
 		{
 			"id": "gsibv-vectortile-layer-1147",

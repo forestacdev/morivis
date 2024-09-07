@@ -25,7 +25,7 @@
 </script>
 
 <div
-	class="custom-css bg-color-base absolute left-[380px] top-[60px] w-[200px] rounded-sm p-2 text-slate-100 shadow-2xl transition-all duration-200 {$showlayerOptionId
+	class="custom-css bg-color-base absolute left-[270px] w-[200px] rounded-sm p-2 text-slate-100 shadow-2xl transition-all duration-200 {$showlayerOptionId
 		? ''
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >

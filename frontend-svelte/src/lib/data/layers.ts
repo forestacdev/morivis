@@ -572,9 +572,11 @@ export const createLayerItems = (
 
 						layerItems.push(pointLayer as CircleLayerSpecification);
 					} else if (layerEntry.geometryType === 'label') {
-						const setStyele = layerEntry.style?.label?.find(
+						const setStyele = layerEntry.style?.symbol?.find(
 							(item) => item.name === styleKey
 						);
+
+						console.log(setStyele);
 						const pointLayer = {
 							...layer,
 							type: 'symbol',

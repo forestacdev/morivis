@@ -1,0 +1,8450 @@
+export const angleData = [
+	{
+		id: '2d095ab2-c2c6-477e-ba12-daed8b8585be',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '806d8a3d-5293-453e-9582-80004d2d06c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a4548c3b-a0b7-4ede-a138-c5dc6b875933',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7f74c57d-c9ef-42fc-9fb7-a27d06be2f84',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '63fef656-419e-4d3a-9e54-bd3a7a87c682',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f0c9820f-5b58-48ee-99e5-7955e6158884',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bc9bbd19-91ef-4851-8182-3db226e0368d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dcddcc93-94eb-4ef4-86b9-c02c3cf50bd9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd3f205e4-2f37-44e5-a2df-04d5d312ed4d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '18720b37-aea0-46b7-a26e-3f517fab2963',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8eab0199-39e9-43f0-a6ff-b209c86c1190',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '54bbbad1-16d6-41d3-9e02-a69b18a68818',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '195b0c47-9ab8-4ef0-92ec-6dae7c45bf4d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4e9ae76e-1cd1-40d8-842d-c73ea77d31c3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5fbb39cc-da39-4993-aac1-da8fffa277b7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c07bdcc3-4f9f-44b0-b3e8-3062d76c1755',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e48ce9ff-a7af-4303-82e4-907b63ae1f15',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fe8ce83a-1deb-4746-ad57-d065869542db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '92edfca3-f2cf-4712-947a-fd9ce9bd2443',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fb9da0b1-94b7-4d70-8311-a1b3815a6bf8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '784ffbf9-d075-4590-9f4d-88da92332743',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7d6c4174-0c20-43bf-bc33-1d1f8de0c67c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f46fa0c6-29bf-4515-b3a8-625f3caf8915',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c4143759-f84c-4d16-b348-2db5c4586ef8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '68669c1b-3c4b-4648-af9b-2b06bbadb69e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f0446006-4b3c-484d-a60f-89c1a35d440b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ccb8bd2f-23d5-4110-8ccb-7896d1192715',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c5d29148-d5f9-4335-98cc-7ace506b0822',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ceb5e76-be1a-4646-9169-c2621e61d1e1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ebe9aeea-f131-459d-87e2-04d8567d642f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '72f6af4d-d44e-420c-b329-05ede39a7c04',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6cc0ab91-1a88-4215-9871-17ab4561a8c0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '820923e2-c0ca-43fd-b328-23c5524169ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '954c4373-7a88-4b4b-89d4-22aa8ed866c1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e6bdea15-6779-4521-b45e-63045ed19114',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5fd6f5be-c0b1-4bf7-9614-45b124600bad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fafb18e7-fe8a-4dd8-9f29-7cb74f61803f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6b1ccdb8-789d-4ae5-9115-d205b029913b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '99df69ad-ffe5-4b50-98f5-a8c8e904b322',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '52f84182-eeb8-48ea-ab9e-59cc0c7b8f09',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd2c14319-9692-4c9a-bc20-cc115228ddc1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24cb17a8-1535-41d6-b8c8-afe22460a5ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b993ed6d-ff21-4ed6-9e45-b3d43f918951',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a1f6bbd-11ba-4350-a16d-7618f0ed6de1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a27b8577-698c-4239-88db-f9f026c91fbb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f1d27bb-2011-4988-8def-272f2fc27a42',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eb3a85b9-38b7-4d54-aa0d-c478cb98f901',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '642d6c4d-4733-4422-bfe8-2960f12caef7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cf19f20d-94b7-4ae8-91c3-744f8dfa5aba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2b3776ff-7665-4024-907b-72af43004e60',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81dd6481-87d4-46a7-9759-2cdbe8c32dbf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '644a68f5-b574-4cf6-818e-95b7c18e2c02',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bb6cab72-30a0-45cf-a8c2-ca1761381d4e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '266eed65-5752-44fc-95d8-0107a4124bc0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '00cff6a2-caeb-43c3-a967-b5c8cc2f386b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '18ef3957-8def-4643-9762-d56ac06ee276',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '33494c1f-9292-4f10-ae1f-4598ba176230',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8e8da934-5ef1-4c9e-a4dc-742e0b0c68f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff70f739-ecc3-4c95-8560-2cd9f0a7238e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24d7e470-d984-476d-9cf3-e5531b7b413b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '16c58973-2bd5-4965-96e2-e0a98b807a9c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '82d238e7-2645-4664-b8ad-8011e91be5a5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dca135b2-149d-426c-ac4e-1ca528788d14',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5581ce61-2ab5-4501-9b82-c8e7b7bcecc7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9bb88468-a55e-4fb5-8a95-1d4a6b80de39',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b49e3c58-807e-4459-845a-6acec3e01c54',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81d26a76-c4a4-4a41-a4ac-40bae55cd83a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e05a4426-a94c-4675-895d-837440e3f12e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4966444b-f798-4492-88e7-59c9794d3a74',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '785a861c-f536-471b-90db-9fb3fdd5414d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4169e804-e082-46d5-8286-f170c4c6a6b6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1068e5d1-c464-4506-89eb-153a71fa0dc0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b25c999a-4d12-48ea-bdb7-00c6b9eb7e1e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f8399f26-4b05-40db-b0d2-27564bdcd5eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e79d2113-b714-4743-98fa-db97f9efd9d8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cde292ce-d6c5-42bb-88d4-2055c3498818',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '51fc8a9c-4884-484c-ade7-aaf400f4b672',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '75d09c4a-01a4-4ecc-8540-7856a9a87a64',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '443b5e4a-cdd0-416f-ae3e-72b4807146eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c1a0e780-39fb-4b53-86d8-5c7027275f13',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7a0b51c3-20d1-4f83-9ccc-828db3e54b00',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31ae9696-1480-428e-8a95-1e5e39f02d94',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c175fcf3-baf9-4b8a-a5a6-f2cae26a2d70',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9ebe4076-473a-4896-9bb7-6ed2441b7637',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65236f73-de4a-4b11-9d79-1d99fe3bc60e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '494f8ad9-f560-4df8-b684-5eb2a993aaed',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f692e86a-2276-4ea7-bc91-87cd6ef3f93a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e27f0531-fb28-4e32-b389-bf9beda7b936',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e9fa81f3-8e30-4c98-bbee-c43da9bee234',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '089db877-2e33-4f84-b33d-b50fd80be429',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '97e48621-d378-4a21-8705-cb76ca6a5dc8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8ad9125-4f3b-47cf-91d1-018dda7e3345',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9facc575-a168-4054-8259-14c7b17eb50e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a2ca91d8-7d5c-4b43-ac8f-bd85c3f35f4b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6b491c73-0a6b-4ab1-a70f-03aeeb0ab151',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '00c21f02-7750-4f0c-928e-88ca235e9b67',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '464fdb88-ae7c-40e2-a833-7a8aa93eb938',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c68adabc-1bbc-47ba-b17f-a92c9314fdee',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fdbfaac8-9ada-4d5e-ad8f-f19f94de7945',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f877e3c-02d6-4cb0-b432-35a2db82a33b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b98098a0-a39e-47e2-9ca6-ce2c918a80f1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '70603dac-68ec-451c-aa7d-4f7ae3ea60eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '54f1a5ef-52f4-47fc-9143-6f5f47261e1e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cbec785b-641f-4eb2-ade1-79e57b224973',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '827c817d-0923-4613-a769-76d952e396ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '266dc671-314c-4a04-b997-333cf4896954',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e6c26e1f-f9a3-4f3f-9d99-0e846e280a94',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8f6bf36-930c-4825-91ef-c448ae0e39dc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '07e8d184-9438-42cb-a60f-2bbad92682bf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '57a943b7-7c43-435a-9986-855e58befdd0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f6d9aeb-0e31-4d9b-9cd9-d296be901ff3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c3e1acad-e60c-4466-8969-ab3bcd17c88b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1fa63746-5020-4965-bb7e-76f65702efca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eea6f2b6-b4f0-4988-ba59-252f4128d6c2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fbe68c4c-71d7-4a49-ad69-964cb9776db4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c1d1946-f830-40fb-92a4-c07ba33529aa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '127321ca-f0bf-4d7c-aae3-5daf4f2f8b9a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c086e123-d912-4012-9fb9-843be0944551',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '23345942-6797-4005-8427-440be93a2dcf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '521b00fd-916b-4b8f-a201-3494f4e24bc8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0af2b4ad-9a68-4c25-accb-722d369ddbeb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '706fe51b-2ee6-4918-ab11-4311894ff7b8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0640ba69-2e08-46fa-aba7-28434bd39191',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '26e1f54b-a336-49e4-b1bc-9858a750edca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '13314772-fe08-4088-b84f-9c15282ae495',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b0397178-5992-4daf-8f35-2d052b0aa5cf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1241a9d6-d02d-43ab-8ef7-db2659bb36b5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a058fb1d-afae-4725-984e-7934b778356a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de03328d-71af-4365-8764-84d8cc5089f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f9b52d3b-d30e-4182-8c5a-15abbc8ddaed',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '568ad1ef-0e4c-4f03-b004-622f7bf8e006',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0262703d-7834-4cb1-9cfc-8be6243342f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c814cf7a-f863-4ac2-b526-9c38f91e08bf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '427e1816-3562-4b7c-8eca-cb70131701ef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c22abfd-3644-4edd-a1b9-7c32b259fd8e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7f3d289a-1f2c-429e-bef4-c57f730585ef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0afc7f0a-0f3e-4888-9ef0-d300085cfade',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4cd83911-d237-4c24-9ed1-006092ab130b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '16db3bc9-6993-4792-ba52-5b39c93be075',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8a56337d-cd4d-44ab-b528-796f8ea7696e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '79daf39d-f056-4789-a9de-0a307d0d807e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eec3ff06-c48d-4f4b-83a4-4a860b9038f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '05e29ea3-f816-4d65-9bf4-09d743346025',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8cfb95c6-ffa3-415c-961a-01d2186b5f3d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '055e5fdd-41d7-4a6a-b6e4-68651a9cef61',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b326084b-7beb-4a0e-abf6-cbf4ff93d7b5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f4374c5c-1d71-44ba-a3d0-806b09f987a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1c7a4117-5cb8-45d6-95cb-ff3743f11e1b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '139b3d14-371a-41f1-bf72-13005c34146a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eff8984a-a037-44a9-a6d3-b67271dca211',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7466df8e-abf4-4f95-9a7e-2687c83cc113',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '64576b90-1086-48bf-b906-ec2c3e1bda83',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f8c23b76-cc99-4bc8-92de-e0b9c9375a63',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff9bdda5-96a0-4e9b-b9df-d0c128331fc8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1bb2789c-badb-4268-b009-2ea4e5b8faf9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b5cc45cd-42b1-4a9c-b19d-37b2abb7d0f0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cd12638a-9cca-482d-98ae-391beb963efa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ef0c8a1d-58e0-48f8-9d3d-e7b6e67ee0b7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81226ed7-6310-4831-bd7b-636532f7613c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '13da355c-334e-4d93-8345-87353b9afea0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fb367185-f72c-4db1-94b5-64ae54218cff',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8a2df9a4-1d55-4822-a592-5d8c9321ff01',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2deaba17-ae58-40a8-ae7d-4860ffdbe26a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6df1449f-fdcd-4b1b-9ad7-1cf143a3d7ed',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ccf7dfcc-20d0-445f-bfb4-decb932ddf1d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6424ca53-dde9-42ba-97b1-ad1dd30dbac7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5aee96c3-4935-4640-9fe8-5e98f4bbc5b5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '94af7119-caa8-4ce5-af26-b9957589fb4b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '01fe1f15-5bdd-4bad-bdad-60c5de5eda07',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3fbbb9ba-1375-401b-835e-37387f97edca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'adf966f7-68fc-46fd-ba46-7535aba56e22',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '67efccb5-8f40-497b-9b79-044fddda80dc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b4a9a9e2-de86-4d41-a537-3e58489a7191',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e4efc3ac-f20b-409f-8cf6-dab3aeca894d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e97b4a79-0978-4964-84e5-d0ca6ce7c3ad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '461c6238-9b6e-4d2c-9f31-42bcd78603de',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6ce11aeb-6745-49bc-a714-3f7b0a1559f9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7bb2a421-711c-47a1-b7e8-5c8c1c6b4bfe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '135c0d0c-c1bd-4cfa-8d2d-1d616bfed880',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '58b858ee-0a42-4010-9209-f526403d093a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '45e39230-5f77-4846-bfed-c6f4a362ab1f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1303c9e1-2989-4ee5-9299-26b696279400',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fe465e59-3a83-4d25-a01a-f532bd65a5c3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '616dd84d-0025-48cc-b52d-cac7a4a709f8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a30042b7-0ccc-4250-bed1-3d4e1ec4623c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f9b7e69e-7157-4363-8a6a-8a2559e63743',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f9d0c404-369b-4f24-beec-0aa0d485b123',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '496180f0-b156-4aa9-ad0c-d27bbe140d43',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b69e4150-06e5-4d1e-a7e2-254f33f957bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ec9ebeb3-11d9-41d6-aa02-2baa52053d3f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81ebd549-40bc-4c04-b74e-08cface71827',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f762319-22bc-4b89-9bba-97449334362a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '71f48cf3-ac2d-4d82-b28e-e4cda20d7270',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bff7692f-d52a-4b7e-8c24-2b2d1ed6e507',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3388376e-f176-4b35-8b15-4f8540f6da3f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bba56b57-83fa-4d64-8167-93c34d6d8c9e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f79249c3-1aab-45f9-b9dd-47073e325e53',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '57fa2dba-7969-499e-a643-bf842e0eb588',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b7d87fb6-f438-48fa-bc65-b147ac220a1a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c905e285-74b5-4082-bea4-33dd5745d2fe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e0fe4510-f608-4c2e-b0d7-3e03f4770db2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '59b13f27-ab1f-45b1-85b3-0b8319be1784',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24cfb458-cc7c-4e07-82d0-983b70a1d232',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b4535254-6c77-4314-b1d9-305ee4759c3e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8df86ef1-3146-4b3a-bdb3-df139e1e8f8c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '932aa6cc-7d93-4d41-be02-62d3c1c1439d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '88dcee97-eab5-4a11-911f-c179a23ec6c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f05ddc85-486e-4202-aaa3-506cc0abd09c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9194fe8f-b0d3-41e9-8973-323ddfa38bd3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '21c11e67-1420-4604-b83d-acbef8c086c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '931205df-5fdb-43e3-92e4-2abd37476508',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fe110639-84f5-4e7c-959d-449dcdebe987',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '80273d5e-62f3-470b-bea4-3f62172a8b54',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f476affe-ba2d-437d-8a86-30924d2799c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '17c380bf-b136-4633-b553-ff814b6ad735',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8568780f-01a4-4fac-9849-cafc08adb69e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fdd56e3b-43f5-4a42-a47b-28856757a6e3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8ebf798-5d71-4af8-9522-0a36affc9d4a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '30a2a136-ef7c-4eaa-83ee-9a7c1d868c1a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '472756ff-c3c8-42e0-b66c-ece0b95c3690',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8dc89cf0-1c20-446d-855b-c4bd26f9958e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd194c8cc-563c-40f9-a26c-1c5647fab509',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dbc39770-ca89-4fe2-8244-45dae960414b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd6912bbe-9517-461f-b8a4-1a38d8f0f7a9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e92928ec-3225-4c37-97ff-9f7e55f574ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a10afb7e-3035-42c8-983c-d67e79b1dc2d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '82573989-b50c-4134-bf31-236b260ff200',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7667102b-b839-43bc-8c57-631ba3dead76',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cf8f6370-0d97-4f2f-9847-bd046105406e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0a8f8d58-0a78-474a-bb2b-bb2b30063173',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '694193c7-c04c-42cc-a808-a2518360477f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a564eea2-6a66-45ed-862c-16ea7f4f7cae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0bd7732c-d114-4d2a-b03a-577c3c9fef2d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8b7ffc70-25d4-47d8-9603-92d7726da83b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd8ebc819-f558-4bac-b7b6-0aac66a99889',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '42e3e904-cf13-4f4c-8b2d-3c814d6e1800',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '23f0d37b-ba5b-48ce-889f-2dcfc5040879',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ee517e53-1a1b-4f2b-b31d-6c95d2b377b7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c321f14-8758-4964-aa42-f9e7c99fd751',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e2ba912e-a4f6-474f-bfb2-1e766ca84d22',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4f82ab87-e97c-4dfc-aa78-4857ae45608b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7d5560a2-3ac1-489e-a40c-c2a6039e2f2a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ee52673-2a57-489b-91f3-466389349890',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a5212668-5d65-4e52-8159-d63a3db3732f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c57141a6-65a6-4af2-af39-a0b970410f43',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a675c17-b2c2-401a-b539-b2086206f5ab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da658994-fcef-4dbe-9a2b-a5381114945d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b5841a24-ac4f-4919-b4af-9e4146fa1e92',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '89705ef8-9552-4efa-9fb2-14353ef1bf2b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '05e35ec3-1de6-4a2b-8e88-7a063eedd6b4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '327657c4-eeec-4340-af76-31601379ea5f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0adbba9c-1bc2-4724-af47-4b7d7817797f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8db18b71-fb3f-434d-8274-9018ae63b1a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '20f1cb19-cacc-458d-9a09-0f054f7bb572',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6ca30412-a8b3-4063-9253-bc070e799b65',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9c01f6dd-330e-4790-8def-2aa1a8f98e32',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c1c2d16-043d-4426-b8ae-6ed7abe6a5f0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '365fc2ab-6d94-4e3a-b3cc-3682f655f723',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3fb80330-df57-4136-bde0-e58c52694b0d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '53dfc28b-360c-4bd8-9475-c75463fb72c7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ba8a41c5-10f2-4d02-8e6a-3c41dfb76c6c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2c14f116-9e57-48b8-877e-a0e6afa1af3d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '94635419-73c1-41a4-b538-41404ec0f8de',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f9d647ac-b302-4d4d-bba5-09ae63072e09',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2707d75f-a817-432c-ad2f-1898254b96d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '074a24a3-1dc3-4665-a60b-16844dcb631d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '03fc32c8-ce1d-4baf-b9f7-a0bf75368f7f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5fad5b80-2430-46e4-855d-3a6f8cf52a60',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '22b39111-10bc-4225-b921-900c49ff0227',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '10a31dda-7c52-471e-a3ff-7cb98549e323',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '706ca097-5443-44ac-982a-38e62c94b9b4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a92b4801-e484-4b07-9239-5f273a1de51e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '35481545-a12f-4266-b478-098ced1aa55d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1793a433-4548-4c75-9f82-f471e93b00f2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c9ec8a7-8ed4-4a08-b275-9df589605138',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b69cf6a6-2f48-40bd-b4ad-0bcd12dbc4dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '317dfec8-7d0d-401c-b89a-17c0f5cf1aab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c1276f28-9463-43ba-977c-482990cdc03c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb883bc2-4ac9-4789-9bc1-a6b3c2defec1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '33e62202-dc05-4bb0-9c44-67fcc9d7a0ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2083b59c-46fd-44f7-bafe-3fb758d17dfd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8c73d5a3-1327-4d66-85e6-29409ee23e87',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9f73ea95-33d8-4fde-89ba-a4733d147f52',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '94c1cb2a-d7ff-4857-a8bc-4c6a5b5b535d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '446ef0fc-d1d0-45d7-b060-24ab6f01c50c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ba20286d-17d3-474a-a228-2a5b3d58dfc9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bd67aec1-68e1-4378-b343-934c8fd9d710',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7bbbf293-b395-4b87-b724-fec4408714db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bdab5079-224d-48d7-bde6-e4d10164f5a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d114500-bdb8-4663-ab70-6fe98b2732bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'efc34cd3-9c24-4197-a58c-50c918aff8f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b7b3d4cf-c4ff-4978-bafe-7aecfa03b179',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c4ef8c64-8224-4997-b1d8-b6fdf4a0b1c8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fb2cbc26-deb9-4b01-9cf2-34b3f52e6e5b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f426ccfc-48b5-4a73-8454-6a5fa46542a5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '19ff8574-e1c3-4d3e-a16d-cac9bd29aded',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6f828589-123f-4d59-8154-69d8e8668d5d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dbb7545a-b2ec-4c6e-bcd2-4b8988b25c10',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'caf3c783-bb45-4c34-b3f8-32c00ca344a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f5c61239-6413-4819-8494-fea41c08e7a1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '92bc69d3-2d62-43b0-9572-650ff3bc80b3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '087aae56-999d-4a30-9d65-cd819e082cea',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4fd677ea-2f7d-4169-9354-033f54fa586c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6df4c0b2-9db1-4a70-a532-485b4f65bc7d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a242d955-9749-463b-8648-50ce9cb0ccad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1975f69-1e2f-4af8-8378-8f579b709f5e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2da9a6d7-b6c7-4d16-820b-8b19c469824a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ca799b01-f12e-427b-811b-621e202bff57',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '25a95402-c89a-4a93-96c8-e437bab489e1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9e1ef4f9-d7b5-4c71-808e-31c0fa3c7f00',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '669166d1-1074-496d-8fb3-480f9891d533',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d74dc48-0d79-4ed3-886e-4fbcc110069a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cfa203fb-30d0-403e-8c15-5193730b497b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b72fe2a1-f7f1-43da-9ed4-757410bdb6c2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '917fb0bf-bc0f-4f3d-b1ca-198ee49d9b5b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c232da5-3ffe-424b-9d19-4a4cedd6cfb3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb07ca41-65a8-4be9-b18f-e4bbe07572a7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de9611da-d3df-42c8-84d9-a6c7980e3110',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1c4237a9-4e4d-4e91-ad89-99c6dd00871b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fc09be2e-7c0e-497f-8ea0-ea1cb409fe86',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '29744b53-07c0-4421-beb6-5dec80f3472f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '07b28994-daeb-43f2-98fc-f247f8910096',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3be778aa-0a96-4ec6-af1b-e8a485bbd219',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '17aabe00-ae1a-45b2-a097-3bcaffe79727',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2eeef48d-7544-4e68-9318-d322fe459550',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ded9c6e-e798-4d4f-aa09-99f79c5ed896',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7174be35-d269-4cc2-9916-3d590a8d6bf6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '10b2d859-7381-452d-8bbe-cd2eb18008f9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '03c3716f-ea72-4c03-8dc3-a110c5e7f434',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4268001f-1b49-4991-ac65-38f83131274b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '894193c6-1dfc-4b55-b90f-c6cae1de7740',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '679337fd-22a1-4ba2-97d8-1329ebd8a2a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cc7f68db-6d56-43f1-9cae-32346925edc9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1dc40771-453a-4f6e-827a-5148c6ce0709',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd74d78e4-8441-43f4-bea7-e4aa8d0254fe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8c227b3d-b649-4d09-8a65-350bdd6eef62',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a8d7c849-6b45-457c-83d5-98fcaa376017',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd825c44d-7702-4803-8956-4637f36224d5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a4d1e36b-896a-4ac0-8297-444a87db9a2a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b7671365-2de5-4bac-8108-d6d20033e99d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8eec979c-341e-45d5-ade7-d01f8a562d8a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1962c76b-fff7-4cfa-9ceb-e45ed3b9bec0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a121230b-121e-4c8f-8891-862bf463409d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '458b7055-3f1f-4990-b5d1-97a61ada9dac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dc2cfdc3-dd1c-4884-81e5-79a497b900d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f34bf230-05fe-406c-8f73-ca1cbb31ef1d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a5c6a3ee-5c9e-421e-a0c7-09595539adcf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6a427e73-4f4b-4c62-a90e-42df3cb7ab77',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '60e496aa-83ab-4b33-95d8-40ed966a067f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '23c336f1-547e-4545-90a0-879afeb8e6b4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7b9a7c8e-99d2-48b3-98dc-cb085991380f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '855d2309-65d9-4450-96c7-a9678b97e5ad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6a768950-e8b9-4010-99c2-4d3fec970c8b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8432c5e-9d98-4020-a648-dffce4c22506',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea25a2c5-2a9a-4996-93f7-9b3678f48e0b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '27f210e9-d92c-41a7-8457-8db8e31f2aec',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'df250a25-08e1-4387-b8d9-3374c5ca420b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '78182aab-0630-4fce-8984-248dd02fa580',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ba44018-fffb-4100-8388-05958f6ae071',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1d7595fa-cfda-4e44-8ce0-0cff4d474577',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd96bff50-43e0-452a-b9e7-27bd2fce7bb1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '37239315-a051-40f4-af02-3c3c5817c5e4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'efe0f634-4911-4e5e-ae64-991185ef85a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3f274290-615a-41ee-a79f-4dbbe0c3211c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a97b6488-d714-402e-a187-22a364703662',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dd154e89-a94f-410c-b7c4-59d150cb5000',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '320e12c8-bf94-4618-9336-d0d2cd44404a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4fc8744d-f079-4684-899c-cacb4e968f31',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a5e166dd-8ffe-481d-ad2c-08a89ab31b37',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '39587c55-516c-4083-8289-14324d155078',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '670f9e5e-6bad-4a71-90a0-7721ee0070f6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ce356f46-e4d4-4e27-8cbc-dd8a486bacc3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '193f9f44-1c38-403b-ac33-b3e1bf985fd8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '82303ce9-c44f-485c-8a47-f2ee89602ff3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8f379d46-1c3c-454e-a35f-0ba2a4d574c0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '236e48d9-35f6-4301-90a9-6622a0eea679',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '60c76fda-3f94-4486-a4b9-3b336bc43387',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5085a435-966c-4be8-97cf-4ae1528e5814',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd06f0b4c-b988-4052-a5e0-1c39b5c2184a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '364dab4c-2e29-45b4-89a6-5045aebfdb65',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'df6e9628-82de-4780-bd64-f43588856c64',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '644f3ee8-9d12-4ea2-99e2-b25dfb10550d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '67b194b8-8d7a-4b47-a79c-7733997d9352',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '44d5228f-c1f9-4219-996e-09a30657fcac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea3fa92d-44d2-441e-8f7a-cd86cba77edc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a5513b66-9f5a-4ad3-a5f3-23ff7bd06837',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f677ec46-73e3-4b5a-8c26-9e93226637db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9d1bc9b3-928b-42e0-9b60-fa966dd2c0dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f2336eb2-47a1-4a19-a0f3-b0630e46abe0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7638d688-4c60-46dd-82b5-5d7239d43587',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '517b05ee-1499-4591-b526-bcc34708f2ad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4cf4ce3d-f946-4b29-90bd-4cff2ec7d38c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '95f8d47e-6b40-4de2-95f3-131cb66e054d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b3e00b58-88db-46f2-bb5c-8abeb7fb013d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '56f35585-53b4-4bd0-bdb4-1951dddd6490',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2d241ebb-253b-491f-85af-c83e93c40c91',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd033d1c5-ffe3-4c47-a480-e8ac931458f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e1ba8326-93ef-49c8-83a9-219c066e01ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c77ad40e-ef62-4207-93d7-6dd2d239e8a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '945ec9a9-13c9-48c2-8cdd-3bdd2705f776',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd51e0367-40fc-435c-8362-b7df137b4976',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e490d365-e5a6-434b-8321-810725115636',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '02478e04-7660-482e-a4e7-6d2c97abdf83',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de722777-f747-4a24-a937-eadeac7360ae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65eef926-db50-4964-a534-37c8241aa1be',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e15dba5b-eaa6-404b-9998-b8a234843c67',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8e1d21ba-a66c-42f3-8d96-b5064ad6a542',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8dc76222-a100-495c-a918-bbfe44981859',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '21c62e27-ffb1-4230-9923-0d107f3325f9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ed62d31-bbdd-4001-967b-f90068148aef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5e9d584a-38b0-470a-95c5-e065a1ee2c7e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '719e1ae5-59d3-4bf7-a4af-c859d6715fd5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ac9a1dd3-29fe-4a58-b2bd-6097888e52ee',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ad497a45-7c06-45ed-b185-da9aad0c137b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6a8bdc52-a134-485a-8b53-7fd06e47b2e1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b087ba6e-86b3-45d0-b2c4-bb0bf7f6ffb4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e64067a6-d27d-4fe9-98bc-c9eb439f179f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '71c4a3b6-1510-4f11-894a-a6e36ef7a514',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '941a122f-3e22-4347-8fc0-c89fa468e3ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0c8e39b1-9554-4e66-93a2-3e5cfd972fc9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1761792-8f3f-4168-a266-5567b511757c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de89e664-d968-4831-9b49-612c18c3fa98',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f51b59b-a244-4be2-a47b-fee97eb656ac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ec6de53-fb02-405a-a416-8c182336bb03',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b9343c2-b578-4891-9c13-0b00fd4ad4d4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a97f9be5-c46c-441c-9771-e86abe742e6b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d798a6d-9274-4798-9c2f-4f4d4ec0dab7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e9674cfb-dede-43e4-b01b-1bacd0437dc6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6465d252-a339-4796-bd58-a844e63624c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '26df64a9-0e67-4dfa-a278-6f4575b710ee',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '26d2a316-286a-4c8e-b427-63d802cc1645',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f2c53bf0-6e5c-47e9-92d6-6c365a97df34',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4beaf9ec-b02d-4966-9e4c-a561946da0d7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9866463a-57f2-47bf-b11f-2e5065f6f1a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '727a4b43-9b11-4fa2-9b31-037d1ad91401',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b53f3879-6aaa-46f4-9dfb-66db3e2aeb9a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0ba9a2dc-ff82-4706-afce-6d26e0c63412',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b217d1ab-256c-4568-b932-6bbfd78ff9b4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e933fbf0-eb98-4003-b310-8b7d24d30e64',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4039a946-26d4-4548-b807-2c9ac30b634f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3149a51f-6247-423f-9f80-a2a936cf9c6c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b19d4ea-15cf-4aa4-9498-33effa7566fc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '463b95cf-6228-4328-91fa-ae73a41fd7c9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '749b900e-6d84-4b39-9c7a-4c1ed8b03ade',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '094e7771-463c-43ee-8041-27c10784117f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '519c8fa6-b59c-476e-bd0c-f3505df0db2a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd1a4fbe7-3892-4a3c-93d7-69b634c31059',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0ee40bb3-c511-4921-93b1-6f8116e30a80',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '18ba8de7-559b-448b-afbc-43b1f772a032',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '08a0bdf0-92b7-404e-824b-4c095014d3d4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '85be33d8-dce9-4908-ae28-9664e356d90f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6e67ba20-70e5-4bc9-b945-defd3d533e02',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '134960b8-d860-4a6e-97d8-d44ab3ead114',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '66facd05-aa77-40a0-81d4-56a3cf98bc3e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd28ca4ff-9069-49ef-9f82-35c5c36a1645',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1b1dc46-32c7-4d59-8507-d574aad93da7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '58f64df6-2619-4e54-9c75-3c28928a9ade',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b51031d9-070c-43dd-a18c-86bea63f3294',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cc16a40a-9cf4-4002-8e40-be3c24291b51',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8b0a9e1f-56fd-419b-832e-f870a15f2d09',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3bf3352-baaf-4d6d-abf1-6112283e6c5d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '509ec8eb-af3e-4eea-9ad9-63c09520e0ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cea5569e-3e28-4617-8501-31d0a084c429',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c0e51d0b-0bda-473c-ad2c-e93545f12e99',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8151278-cb6b-4cb9-98d7-a89d2736f6ac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a91ac185-db81-46b7-bb73-82b32d160f8f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f6999525-e1f5-404a-af19-f240cbbf3b0a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ccd28872-8d1b-4cc0-9ef3-64b605433537',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1e62896d-26a7-441e-92e0-188507bbf6fa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a93a22e6-2e1b-48ae-a101-de9b2d1dccdc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd210c5e1-a262-4b91-93d4-6aab83cfbd32',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b2acda1c-1847-481e-825a-e0faaa5d1e54',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '45375db3-cef9-4eb9-bedc-0c58e45b7401',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4a957cdd-aa62-4329-8df1-7bcfb303a4ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e5b4b2c2-85c9-4d81-8b3b-c28ffd720584',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '15b77360-4bc1-4629-b1b4-faa2d98aa503',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '88c082ad-1a8d-4c43-9d9f-0d47b1dafdfe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8da5890-0124-4611-bc7e-82a4f4acdb7c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8e415b6d-4bb4-4483-b82d-4fceaa8d4d3d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bf88a7d0-8d76-49ae-9fad-f1b94a76f586',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1d8d5060-0d6d-4236-af28-04508a87f241',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b95bca6e-e48b-4a74-ae3b-cd2d25930421',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3417255c-3fc0-407c-8c60-090b5ceae742',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8851ee9-3850-4060-b471-e2c5d3d88450',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1fdceb48-0ea2-4a2e-9420-186cce851c6c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '424d4c7a-6ffb-406c-a684-e1c8a7c6996f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '84ec1edc-7833-4b58-9650-7526bd28480d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ac92678-2fd6-4d96-84e9-f54014077120',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fba8f184-81cc-44b7-b15e-ba35e10ebd77',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81ab1448-5193-4915-872a-d1ed701e46f7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ca7fcfbb-24c4-4d89-8e59-58b92bb0d8ac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '12920ffc-cc51-42d9-a557-db6e40fb88fc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a5c37d0f-c02e-42b1-a929-212ed237f22a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ddacbaca-efd6-4d88-8d57-57be12b1020b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9ff704c0-4583-45a0-bc66-6c8da9fc8d1e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '476085c8-ed40-48eb-8d40-47a054736110',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5f79e85e-2470-49c2-813b-6485bc3399c3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b87fa39b-f6a8-4c34-b731-d9b790c43473',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fa1212a6-9370-4bd6-a982-0fd6fd0b1006',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '78a4ffdc-9007-4c4c-800b-7bbabc0999ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a341dec-229c-4afe-94ef-cf3f3b4b3a5a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9349c037-143e-4240-9b2f-c4ef747fe8ef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dbcbbebe-6d03-4a55-ad19-9ca7cf47417c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '19ae547c-4e29-44da-8868-b4fc838e4839',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9fa9957f-d302-4d81-bb82-db15dce6e2ff',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6ca2b11b-2e53-4c54-9204-a99e961a3929',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4cbdc906-c0a4-44f7-ab00-4785d777b5ff',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a71f4e63-9e0f-46b2-8426-1f69920d6326',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd7d33f9e-e9fa-440c-a8e1-b785c421877f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e967e87-673e-4f24-a454-89cedb3e333c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c89657d-27f5-4a9b-a9bf-638d4e09dc71',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b6ee4aff-0ccd-4765-b758-d170bc8ba161',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f11c10a4-adff-4521-8e87-319c60b0643d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '32981b18-835f-42ef-b964-5cdcf87b4532',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8149051c-97f8-44e4-a2d2-aae5a3f9c710',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e350ed05-21d1-47d0-8b72-168b96204748',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a021e503-b7b0-4750-8898-98157960490d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c845efc-a7e6-42cb-a94e-e5a0f9dba7b1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ac0608c-a91f-40de-aac4-3512f2b784a1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b9f6b0c-1479-409a-8980-d01aa8a339da',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0f16ce6c-6669-4c64-a19b-ab45653d42e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'adb94e3c-8d9d-4886-b4e7-697d0790837d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd39b8810-8ad8-49e4-b9c5-af7e730d3f95',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '691efdc4-f708-4236-9c98-cfb01c23b585',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1fa9aab0-a50b-4c33-9c26-ef0b2b1338b1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '801d501e-e8b0-4a11-b7d6-c3a0313d7025',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea66ea9b-15de-4bf4-acba-47f20931776b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4968807f-2e15-4e4e-b467-2f1251c6e18e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2a653b44-f364-48c3-9973-b859600e5fab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ab50241e-9a34-49fc-89e5-195981460155',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bb37637e-63cb-4110-b17d-eaefc19b44f2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c948ab91-a332-49db-a19b-069a442261e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dcabcb1b-6e32-4f2e-b912-2cb65cc71bd6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '95179f3c-f494-4b41-b06f-382e0f1f392c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1c1760ca-4b99-43f4-8863-b54e0406c7c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '448f5f27-4a71-4403-9cb3-020bc600e841',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b10ea466-d8a4-4963-91fa-91b775287eef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '300bdcfb-34e5-4138-89c4-2a35826ccb95',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65fced3c-43c5-4c48-b21c-1bfbfcf274b0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd5551e25-17b0-41d4-8448-90b6a018f27e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'def021e9-dd7b-4135-9807-9f87014862bd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ad54b9bd-ed72-484c-a412-06ecd74b9b8b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '64da752b-3aa5-4ac6-9661-381ecd331958',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c194f42e-7172-4a51-bf7c-3d6f7038e66b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5e9ba957-4a3f-4e39-b998-d12ad75b80df',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5846bcba-ae9e-4d72-a07b-880da64ed856',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'aaa1bb1f-0b12-40dd-8ac3-02e808a124fa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '98c848c4-a820-410f-857d-ed32a2f0cbbe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4e89f410-240e-4c52-bd25-6e2cde156904',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f89db03c-45ad-4487-aa0a-077d332fbc3c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4ecd8357-b544-47b6-ba5d-02778164f7c1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8fd5ac3a-f31d-4ee0-becf-0c45fba523c0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd9ccb49e-b01b-4203-ab6f-5212680d5c1f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '80f6ddd2-ebf1-4a81-afc0-440bd72b3ea6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2835f9e9-14ba-45c4-87d4-2c8e8ce8a2cb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '30f72353-a57a-44b1-9855-f7f71c3e5946',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '51950dc5-d1a6-48a4-aab9-ee6f31bede24',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '47ad1f1c-3d30-409b-bf10-dca85548627c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8642a6c-c45a-48cd-a939-b6506d325bbd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ce1da565-79e2-4fe2-9655-797defb45c07',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '39d50ab3-2272-4278-a43e-e6b06424cfc4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3cf00d95-8fdb-4be0-a23d-e8b6e3a5a996',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ca4e5d5-0f35-4450-a913-d51f17be5dbf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '06722496-3521-4674-bb52-fc37324c2657',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb10b8d3-63a4-49da-abaf-44ffe4a55006',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff47fef4-a73f-4c97-b591-58341087c8ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f12f1612-cb80-4fb8-a126-3e74d3d75edb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c7e6ce9e-b969-424c-9897-e69d4e53cb69',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ea20ec5-ac62-46a3-95c7-fec11787dd3e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9ee3649f-d170-4d77-8e35-b90ce6b96316',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fe926695-3085-49ff-be8a-ccb844a4856b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '49581320-ee5e-499a-97a2-484f44126322',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '53684558-cf1a-4f49-96ba-43b463ae4d03',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b20efd0-10be-4a6a-b3f4-ab938ea97103',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '72cd96f6-7272-4b7f-bc9a-ffa96dd4b863',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8fcd5bfa-413f-4ba0-9f22-a7f7d60795ac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c6c81ae5-d2c2-4ad7-9612-bb67161e5a07',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '60d96844-6883-407a-9ad9-36921374ce73',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2d7faa3f-1cef-4cd3-8fa7-7d9d62800885',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b8fda886-166d-4709-93e3-80b4c3dbef1e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '54a89291-95d3-4d2a-94f0-7fbd5c2e45eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '040c4c38-3793-447e-8925-4565b866d6b0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b6ff807a-b8bc-46bc-b954-c53b9504090a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1cd7f488-6785-4466-8225-bc1cc50a670a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2393e56c-1bde-40b4-9a8e-d065f217cc39',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e71f4590-b5c1-4008-9c48-d504d4bb6cde',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '42a3f7cd-4dbc-4145-8888-59f06a65e0e8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '967cfaa6-638b-45dc-89f6-f611ba2831c9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a9b0e099-d983-4b54-82ec-17bc99adaec8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e2e9999-9dd2-454a-ad82-f95ccaf7b3ae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '220c4ff2-0036-434b-b44e-21831a61b087',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5434a8df-7f6f-4781-abb2-a221b37f3ef3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '033502e7-8d0a-4664-8840-ea65d8ee0d5b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '766c867b-515d-4857-bdca-7a4c1e919109',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '41b095c3-2aaf-4981-b17e-4a8af9986a54',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '259ba94e-229f-4840-926a-7f61a6a0e80d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e695e7ac-f7ce-4561-b6b5-e39d9be2ca06',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '47f2a7ef-d8d2-4016-a87a-488c0d6a19e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '910aea77-e369-42e4-b9f6-1bf364c1c2b2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bafecf6a-1ef9-4b9e-b863-a33b299e4ca3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bef71fad-ae91-497d-9969-95597424551a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7deca03d-bf24-4dcd-a916-d0adefc4f8ab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8e111a4-26e4-4708-bc1c-9a8e2d5ca334',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a522db07-460e-4fe5-a8a8-46be19ad25f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '74445a2b-1ec2-4ee1-85e8-f7e796a436ab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eb35b15d-df5b-4b47-86c5-7928794d280d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6522c347-9ddf-43c1-8a0c-e803531dc626',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd0f4478e-72eb-4038-ab2b-7e4c11d194d6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8bdc348-f894-4be1-b369-041fdf782e19',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e479e06c-2008-484a-b4a7-e26ee3ce170c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '85e5f0c6-b4c1-4880-a338-167f31a62dd2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0169db12-7b9f-4837-be47-92a4b1ca022c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd134b448-477c-486e-a37a-7e3568d89a9e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd595e049-58ca-40db-ac05-2ca68410b58b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd135211f-6225-485d-b07b-02d43e4f92ce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a79214de-8015-4a88-9687-6067b44d0454',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7e39156b-8340-4ccc-ac8f-db79f431167a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b9def3bb-babb-47a4-8a21-23b1c6671928',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e35abee1-5e40-42ce-bb44-ba62aeb9aab3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e687ee38-5263-47dc-91e8-50fdb9ec6ccd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2836193e-7ee1-42ff-87df-78a938821d98',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '223b753b-72ed-423b-a4c2-b69b6c7f2552',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ac782da0-e31e-475d-8045-1ca5b3d99eb3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7a722d03-9277-4ab3-a9f0-96cb416e61a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '326d0d41-9848-4628-9dab-5ea2b7823f1b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a0ce5f4e-f0e2-4461-a0e9-29833bb65f5c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4d73daff-75bb-42b8-be1a-e081561719d4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1cc3942-f584-419c-a2e9-d55496c370df',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1d09b7bd-e3d3-43f9-b8ef-fe0f26287879',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4c705ddb-cde8-4453-b066-9d078feb6365',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '78a98b0e-c44d-4cba-ac8b-7427287f1565',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a9ddf7f-73b4-48d1-bc0b-ac3eab562da2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '85d9257e-07c3-43a5-9b3e-0488404e1815',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31222481-5997-4f1e-9120-b417336352a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fe8a04b3-c467-4d28-8166-42de1b8ba3a9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'edc8e738-9733-42d5-9213-5fb93e913ff7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd2382ee0-2975-4bf9-8820-bd742c1d9d99',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0689098e-f506-4966-8956-30534c424335',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '594595a0-cec9-4d15-9411-e5f122e51f4f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c2b1266f-8789-4ed6-8458-77291d4b9bab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31512da1-7d0d-4bda-8a96-a5ca2aa240cd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8cb91acf-fc4c-44c0-89c6-99929170135c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ce3a25b4-2707-442f-a4ab-00cf788c06a7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea8f2bae-2a4a-4c40-8984-a19874608a13',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6e06943c-dde7-4cd0-bb91-9d999a394dac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1136a825-2a6b-4ad8-820f-322ca7ee15fc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b20c67e1-db2e-471b-bbcc-e30aeaa6ccdc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da8976f0-526f-4628-b1e2-a3fcc869ec47',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7fa12fa9-8ea7-4a5e-bd59-e2429cb8ffc9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f9144b1d-7b78-461e-a060-c468a55d88cf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '53b0f7da-5877-4411-9ff1-15dd78b23b3a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e5435b9d-37a0-487c-b2bd-b6d1ff3dc958',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '975fcd65-7f28-42d8-80c3-98852827d13e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8940989-07c6-4d41-bc07-c3e4ff6ccd3f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1475c4fb-5988-4d8e-9722-5efeb59cdbec',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f036380d-5938-4aa7-8d4e-227cafe1a46f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1c1d76af-ab6c-4f9a-ab5f-adc54f17edb4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b46b9b2-f339-45c8-9388-cbd5c63b0634',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ed4f8a25-33f9-4fbf-b885-e2f88b9ac632',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ef2965bc-be4c-4b60-acbb-e7c8082a1c30',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '683b9e01-0c7d-4c18-aead-afba5ed9be41',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31968008-d7df-4065-9c7e-7725ba971c94',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7336a149-de77-471f-b21b-2f0239022886',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ff11ab1-4c28-43b0-b886-29a7e1548b8d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '99fd4c96-10e6-49af-95fd-6f973f72681b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '06d7caca-9189-469f-9c7f-f37f39fa8f51',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a3927682-951f-4a44-8e61-d2eab672d59d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ace8972d-1d68-4216-a4e2-ba673f6d5587',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1edd1b86-95f0-45cc-91f7-f1fa2d8380d0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '01271345-58bd-473f-b23b-be9d27c43932',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a087c253-319c-42a9-8e23-70383a0d3bf8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '67b25f87-61fd-40ee-a613-980ce7fb78f0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ac8c9f39-29d1-4a1a-8ee5-b698fb61fbac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24b39b48-0725-4048-b5bb-1911800c5865',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e4dc65a2-3b81-46bc-8dd2-9ec7797a3895',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '63e5a4a1-0e19-4312-b449-c2706e65315b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dc16d298-7da1-4357-95de-64c68178d65b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd7acd25b-4b46-4fad-9863-41c70f62c9cc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '61ac4a60-ffc2-458a-9641-c4bee7dffbcb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '12ed5b78-44b8-4021-9beb-6f6b6beb4bc3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da2803b7-828e-4302-9ed0-e0e235c28f0f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '856ef524-c08b-4fae-969e-e39528bd133a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '51f6faa5-800f-44e0-ad4b-61888aa3c122',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '622a48cf-a1c2-4b09-94e5-ef1e14ca558f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1a73bf99-9eb2-4b6d-a5c3-228e618239e2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8a668232-6c14-4d7b-90b1-0c834b1629b3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '91cfba49-43e4-4c49-b859-a84b4c283cd2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e51ef9f0-b844-4795-8376-bab6e57b477a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '12c3feed-d255-4aa9-bd9b-b305ed4248e1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '231e4f7d-1aae-47f2-9d82-7e8a873a3df4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '44a67a24-a31d-43b4-b5a0-c9d98f291965',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c4bd0c8a-6e96-4e37-9db8-b1fe65b51d2c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b36f09c7-5648-42ec-86a5-a62de7bea673',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '715dba68-9788-4f8c-8a9f-bdeb56c96bb1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bda6aa3f-c55a-4fab-8b01-90a3fa497fb5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '64a8ca70-c167-453b-bb42-43774422538b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f1a0215a-ddca-4bc0-af7c-77cc7fc3a9b8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '78471a59-4c3b-4a24-add0-dd2207e43952',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fa7bcc77-090c-4ac6-9044-c704f45d3fc4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '583798e3-aed0-4591-9696-7019284c3789',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cbfa771c-efc0-4dac-bd95-dd44645da9a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a0fa708b-29d6-408b-b05d-d2cc836eb01d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9ac9a748-ea80-438e-8519-cfd395cf451d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9ee50019-6791-419d-95a2-8bcdd99e8d3d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '71eed1ac-15b7-4ec2-95de-e7ad1e454bfd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd88ec09a-fc64-4397-9c1f-1ceb9550c6f8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'faa6dfa7-0ece-4627-9cef-28bbae6b2a4f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '01361d02-745c-4e9a-a047-8730dc82a5be',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2050c1d9-7ba2-4e28-9aef-482a71e44f42',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3d3799f0-c7b9-4c26-9352-7cd92136f4eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c70b3407-8d39-4b04-b82d-517819cfd6e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c4b6997e-2e51-430c-8d3b-c3d0f21b3235',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fc829010-9584-4ae6-974c-82504709cccd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '41bcdc24-11f5-43a3-ba4a-0a8284e06376',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '588f0755-6068-40d2-b895-39f3aae93a88',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '70a6a957-bc0c-4c11-9819-4425fadb9791',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ca98519-82b3-4ed1-87f2-4f10ca551a16',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c5c5fcaf-59a9-4ff6-bffb-7065ebca3148',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '97586e39-037f-4fc8-ab00-77c0162c6ccb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '195f040b-77f0-439e-8048-f6f0cdf39036',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd0a13f8d-4abc-449f-b531-f1b65d7ed240',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fac1230b-390a-43fa-893b-780b07b79ed5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c6f0f40f-d8a9-466d-a4c3-9c961debf457',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fb12c993-7ccb-403d-b688-265253e0b36a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '62deb07b-42d0-419a-8789-00136ea65f9c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b4f1d2b9-b789-4681-8277-e56e1ced0a8f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1942ca48-022f-4dc2-8387-3ce45c6ab5e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c3baa3f8-b39c-49de-a7b3-e140796477e7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1f8b12b6-4345-4a9d-b9ff-7220aecfeea3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b68270a6-0838-4452-b80c-df9571b999af',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1298a00-f0a9-499f-a3f3-5fc7b7eb81da',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b3850a2b-81bd-412e-a0ca-7d0c5f46472e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a9f5b418-ac6b-4991-bf30-aa9199844b97',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ae51f92-3bbc-4633-944a-ba0b0a92fda3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b4254232-91b6-475b-a62b-ec4826beefca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f2e782ef-1e48-4869-9ca5-84c9ef90a83f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e89486c7-2b5c-4818-ba19-8c6e1f440e16',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd09f0e9a-e4f8-4b94-b52e-36315da41f61',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fc0c6d77-2e00-416d-b0ae-b0fc5bdeb152',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '068f7e8f-5f93-492f-b56a-3df3f34699b6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '962bc41e-8c73-4e48-bcb2-ef9017989360',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c82c4026-97bd-4d8a-8046-e12b6105ee01',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7d5dd334-7289-4558-b6d9-a06000266ca9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd0c36669-654f-47c0-8328-1ba59e355ddc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '51d0b70f-c129-49f5-af5b-235a8361e485',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '63f7ddea-2d54-4f29-85c5-559e5f666271',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '43b155b2-c61d-45bc-9bc3-ea4abcbf02a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5dfc44b6-151e-495b-bf7b-9f4a9e46c3e4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '563cef06-c793-4536-8ec6-2e115b47fca1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9529b440-0715-41fb-bb72-3c4bdd515447',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '712bef4b-4914-4865-9c00-ae0694e51a0c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0dd45b56-d274-45b6-9645-7ef09649d82d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a0a2b1ad-79e6-4f48-853d-a7d238f8910e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f411cb6d-0047-4947-bfc7-ccc9b67b40a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8f996a2a-bfce-4890-8319-98d0f575e181',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a380b961-ada7-446a-9ac3-4a6c50575f37',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '032d41c6-b547-4e36-9be5-ebe73afd6c08',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3fee900b-4aed-49b8-aabb-a2c7bbc1a682',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ce82837f-c800-417b-a9d3-0a7dc8a54a58',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'db5b590b-610e-4cee-ad40-30c237c69162',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '99379a26-5e4f-4aa8-9091-e4b9bb2321bf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c6aff4d5-cb14-4972-a278-51148ac01b3c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f4ee80ef-1e60-4d9b-8ffb-8132bab84f60',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1eff1d82-5293-4d7f-bf64-b92c9190c214',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0aaa6e9f-d526-441f-8c84-d782c21ef7b5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '69f80a6e-a01e-49e8-b876-337ebef78b4d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c445d9ef-460b-4a15-b519-d1480e76e5fd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e4cce027-b9d5-4715-9455-c583fadb2c63',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd4329668-d86e-4bac-9d8e-413bc20c2b37',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '34f20d32-b315-421c-88dc-3072b836dfe3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0c9b4b83-8a1c-4938-91d3-23c94cdb9487',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '06e4e24c-60d0-417e-b2ff-7f703836d0ac',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8b28fd1d-ac25-485a-b570-e1273dd451d8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c03314ec-8e70-4b44-a459-17a9fff7d5ee',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '973446b0-b2ee-46d7-9619-75f8c3d8b87e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'db6310f4-be11-4b24-a72a-5d0519a8b4bd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '85918fec-a579-4f06-9847-9f18a7db7775',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cbbd571b-a81d-4989-a5ed-54580847d302',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '405c9f14-1ae5-415f-936b-ff063c47b518',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7b0105c4-0009-4037-9616-55e933c66a7b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'db5b5cdb-b71b-4a1a-8b44-8ce1869516dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '76232003-917d-4ca0-9f22-a11a7a90121e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '294fa545-49bb-41ff-b26f-d30717588771',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e726ff05-2df8-48e7-8ceb-e24ab2d053ab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '356378ec-da9b-41ab-bd5f-cf64a07265d0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '55a34cc2-3172-4d25-8dbe-85b9c0886d96',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '93e8a299-8d20-4309-ae8a-08de47d82225',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6ddc822d-13d1-4d2c-81ef-7d40c692a96e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '10362f0a-24ef-445d-85df-89dd4bbef96b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0cff9dd4-2732-4a5c-ab8f-d73239959f21',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd392268c-9dfa-4bad-bd1c-dc5fd7dc66bf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1f9567ed-cf5f-45d6-8436-ddb6d4df01fe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b41b2e99-c591-42a0-a6fe-8d5a1a3997c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8a133f62-f50c-491e-a4f2-8236e1b843d3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '727d3d36-bfe2-4e06-9ce9-c10cea33ab67',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cf138767-03b4-4850-a59c-48b79fdc1e9e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '09598874-1f95-45a7-b5cb-58b4a4a2e977',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f248dc8-ef52-4b1a-bccf-60c6fd2c2d56',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'df54d410-c813-40a9-a92b-0f648c889502',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ebf45388-b5ea-42db-8a97-e066f113fa64',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0aa24c92-ac2e-4c93-9654-9f04152ca2d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '598a3219-5b81-4de7-8966-6717ea360883',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '01f39cd6-73ed-4682-b897-95ef88ca6fe1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '92540fda-4a4b-4a2d-aefa-833a5003975c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2b374b5f-db9e-4c62-a814-e8c3bf802a0b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da8766c4-9ba2-4802-8a01-4ae9ce8cd2d3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e5c249ba-eb05-47b1-ab82-2618c3be256c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24efbcaf-8c1f-41e4-865a-6c28f33a01d3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '871c4279-3526-4344-8a61-404ac2555490',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '488af31c-5114-485c-94c8-5ea98eca3b82',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4a8299a5-6aab-43a4-b5bc-94cf225128aa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '624f0ab9-4212-446f-9dad-ae52ca16de6e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd3ec7a23-6aa1-4156-b430-7bfa0de3648d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f4607ee2-3261-4205-bad0-1a25887c0b71',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f99e35d3-48f7-4cfe-b322-2a91dbe8b0f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2aecb14b-f79a-4db0-9e68-9e414cd2470a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3a5ad8b-bc49-496a-9568-459423936e6e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '404deb90-80e9-41ce-856c-0555abad1956',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9deb4cf3-26fa-4f4d-9386-3d06a7a11c8a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b6392cb0-f41e-413e-9e31-8db26983c6c2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7b7e482f-b2db-4019-971e-092a6cb81068',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f8dd09a1-64c2-4188-b94c-32371da0a415',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6131c81d-91ff-412b-baec-8db09d924095',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '19957077-2d7b-4547-a16c-26ec6860b2bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f08cacef-a65d-440a-aa9d-5f9ca7ec382f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '28e34c1a-a0c3-462a-adb9-31fc629eb43b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a697322e-0504-4fd7-960c-2a62c9912ace',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '79905f23-17a7-4014-a9c2-2b2891c9f539',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ecef742-ad5b-41dd-a3a0-22b72e92640d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bdcc3a3b-8810-48f9-b474-697ff2a4f840',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '15449e18-6813-4d5c-b3c5-f891d460f2da',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7015f3db-75e6-497f-8207-41e0e314bdb3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ab40743-c5fc-4d21-b884-dcc9d5fbd1ed',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ba02941-19ae-4a27-b5e1-ebdb53118d63',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e9aefd75-d134-43aa-a9be-b0e45c9500fa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eb2eaba6-87b7-46bb-9b91-de7dd61f42a3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '490d89b8-88f8-4c79-94c2-b65f64e38be0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ae69474f-f078-4316-8dae-088668b5b58d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cc8d2f40-3316-40e0-ab18-a0ece7b31635',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '790a4448-bc92-4bf4-8924-cfd8cd6fd59a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9646e4cd-b143-442f-8448-8b61b093d2d3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ee31e23-5e40-4a77-a63c-fcf8431f092e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a9ef9d47-9616-4982-9fc2-65520c2cf31b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8045a611-dbb0-4d9d-af87-57eeb3e18e00',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '985daecb-9aba-4375-8171-1de7324cbf3f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2c770943-a210-4562-83df-0970055c2191',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '40e284e9-ad5b-4fd4-9946-5976f9e8d28b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '160b0e27-fdd1-4634-84a6-d8f0d4d85db8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '454524a9-a7ca-487f-90ea-b843398ddbba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c442cfc6-efce-4d2d-bf61-33ea041e0131',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f70e4db3-d3e7-4fc2-9803-bab72bf227ec',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3eda3dfe-cd97-4999-9d32-8a95b6800f3b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6ecad57f-6553-4d86-9397-899b66334ce3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2af5a053-3c57-4f09-b7f6-fc821685b83d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '02ec175d-e0d2-466c-8966-62f639dfceb2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '95e79626-e8c9-4926-80b6-5278d6d99b55',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3eb6481b-4b12-4fb1-a1ad-5e8c51535636',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b3cfe487-e614-4780-8aaa-60315e29a8da',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '064e98b6-d554-45cc-ae93-55161a2c4ec9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2c270ffa-0b58-474e-923b-7fc9454e85bd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eaade75f-5546-4bdc-a9a6-b6d045629b6f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '03a875aa-66bb-4662-843b-ca4c1e0d56f1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '570572c3-6ce8-43ae-9c21-7b3a8a50d09e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'abfd0b5e-7755-40a1-be63-9999d4bf9902',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e19ed42a-285a-4b21-8f69-ce8c726878a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd2702623-c013-4fcc-8422-f93acf9b03dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '086daa65-ce28-4d21-9229-561d5ee1f209',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '250067b0-8ba7-40ad-848c-97116efe1611',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '96148705-da01-4cd7-8f74-b0f758104a9e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'add4c811-60b6-4efc-b518-dea10d230419',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '479137ed-bac4-4d0e-ad5c-5b4dee9add7d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '01ae8d6d-815c-4b47-92f5-2a59606008f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '16fef51d-6254-4a9a-ac89-6129240bbd8d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c8ffb6ca-4939-4a92-8332-827d859f3218',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e7cdba12-1f38-4cf7-adb7-04c0869ccd10',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '90bea81b-96ec-46cf-a2c3-5f17b2080d11',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '25384263-ba3d-449b-99eb-bf1267721af1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4ceac926-7c78-44af-841c-b5eeb300a10c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '079e080a-b68b-4091-8d42-d547a4831123',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd9d07f77-b496-4332-8ea7-8f46e86cc60e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eea058b4-250e-45ef-987c-2f5c52a9b27c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '97d910bb-d8a9-4069-b672-01efda751675',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea70e8fd-d0ea-4540-ba5b-4a6914ed48e7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '900bfa65-5a78-4a72-acbe-972d52265c88',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b65c35b0-1c4d-45eb-af69-7f8dd532addb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '89cf4c5b-5def-4519-af5c-0edc8f0dc718',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0957ddd1-c390-46c4-9c62-700a0f0a2594',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '581f103b-d48a-44fa-bc20-c2ca56edfad2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '19f651ba-f22c-4b23-985f-fd3a613d0f45',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '75d13f51-2991-4073-8be1-1984b8ff8ffa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '46538cfb-2674-49a6-a7ef-d19e75bbce68',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0936f9d4-44a5-4023-bfd2-baabef3058b4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb769bd5-4972-45bb-97c1-989bedd259f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e564e77f-e329-4442-8ad0-f9551df4327a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9d58b5be-8cf8-4169-8192-fc69ed4b111a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ba44a2c4-7d17-4dac-bd4b-616e836cbf38',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f357a9ef-1bb4-4a28-a8df-50f59933f049',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5d8c8566-a9ee-4023-9e0c-cb5ecf0f6955',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1678d4a3-4f2c-45ba-88e7-bdc2243a0c73',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e7898d33-7209-4faf-9798-3bc4f056e648',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1d4de285-7442-42c7-bfaa-75fa448490b2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea7d9e53-a78d-40d0-a9b2-cef68498ca83',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '52b33d61-e205-4adf-9378-6ed1371ca164',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '64d00d9a-1c24-45f0-8a93-40bd14a3a111',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fc3c4cd9-c4db-4943-beea-4e6e76e7b1b7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d7601b4-0854-41a9-97fe-415c507c8895',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0dcc47f3-00ca-4ef0-9288-624aa91655cd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '13084852-6d40-44db-a7f2-d5a664b0499a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7f76b592-4b04-45b3-a948-75ff5c5684ff',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd6bfca4d-6a23-42c1-b870-76e36788ac17',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0caae85e-22d3-4855-9ee4-a7843d1ad3a8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b3c97ccc-1d3c-410d-8e9f-3a2c1861e5c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd849782a-52b5-4790-b764-e2da3bf1d1db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c24891f1-1a4a-4f69-8497-4a61e1dde0dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '37e33026-02f2-4291-9471-0be244492b30',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '28d2c83f-9aba-41c8-85e4-5abe6c55a17d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3fd52295-9e73-474b-a00d-562e2185be65',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de57865b-6555-4767-a507-59d0be717da6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '440d1594-91d6-4bd4-8ff0-0f9131b3b689',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e250192d-4adf-4cf0-92a7-0c4f74554058',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd9842ef8-5215-4383-9f0d-a41cc4c901c2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '73039ff0-0b29-4935-958b-ab24f8f15575',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1b04f135-abe6-4ca4-b1ba-747d01375428',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fd2f949a-e2b9-4aae-9178-ae7ef971710c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '59d88a82-0325-48fe-8866-35110448d632',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '09d099c6-5a2b-4be2-a11e-81e95f427811',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '326d8ce8-8235-4058-b61d-5a34b3cd6ddb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd3e7e2b7-a928-4db8-bdab-fcaee3d6f11c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a632d569-06e4-4fc1-8b5d-030e6a078090',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7ac02166-ba9a-4db5-b6fd-0ca3658ab68e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '91f325d3-8f3c-4944-8c71-a6c03e1172b9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5bdb47c1-8ee0-4929-b3e4-82ef8761c0e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1fafdf37-dcfa-4a83-a4a3-5b36cbde5950',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e3e39c8a-0dd9-4c78-904b-c500ec33e66e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e5c37e4-1475-4235-bea9-73c51f70fdfd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b17acd8-c770-41c2-968c-8f14614683bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e3fd14ea-b1af-4b98-89ce-303adacd9297',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ac6970eb-3c1c-4622-8268-b51786696700',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0fffc947-5b57-4166-8b50-0640cee93698',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31c3415f-f53f-400a-9a4f-c09f3be88838',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fdc0a9e6-c5b4-47f2-995e-49c4bf097e65',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '95b29f80-cad2-4bcc-a2c9-40091e2154c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6492acb3-b9b9-41bb-bee4-a027ef89acdf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ec36de4e-c36e-4a8d-8a0b-01fa1de04e15',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8718c06a-c2b8-48a2-b4bc-078f5c8a7adb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7c0d3cb7-4b9b-45e4-8889-6a6d92ec46db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1eed5111-9456-4508-8c8f-d58613a851c3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1c3d4fb2-00fe-4b44-9a44-11de47fbd620',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c1d3e71-1b1b-4210-a37a-11ce6770a32b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6d041cdb-7116-49d0-94cd-86af6eb3551c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0da0c6d3-b8b3-45bf-8995-ff81e60584ba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '62d9361d-5a31-4400-9f7a-dba0e3d96999',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2ac67b62-4e68-4518-afa9-43db5759575f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ec92c206-e93f-4d46-a6fa-433b814a46e3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'beaacaf9-5b07-431c-855b-35b6750e8a7b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ce635c73-de94-4cc5-819c-a2309b99d979',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9e14059d-6e21-46a4-9b5c-fb8a519695d9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c1821505-60da-4729-a48b-f2d57e9184c8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e05a0215-0025-4c34-9576-7fd1add32e78',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '66ad565f-3706-43fc-a992-f0c3c4afe8e2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e13e652b-74e7-49f7-83b4-6529bf209e0c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '17dcb546-a93e-4d1b-abfe-d3d3dab1898a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cbedb471-5d14-4efb-881b-57e839913302',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '36119856-baba-42a1-a6e7-9421bb12fe7d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4d710085-c3e9-4fc8-a3a5-a33b814dc342',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '248f4eb5-0b95-4a62-91d2-651aae0507c0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '552910d4-2ac8-401b-b75f-2d2226a23281',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6c02d004-3b86-4ab8-807f-528b4cad2966',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '27961c34-d642-4568-9637-b7d28cc2fdc4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2a4a6362-daae-4ccf-ad2c-6c10ab96c749',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd344be2c-1ab9-4c32-9495-e89f92253b6b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c9ca04c-3102-4849-a2ac-817675643440',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '409c928d-5dc2-44f2-b6ce-6813f443852a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f0d9a181-dd63-46a0-9efb-709d1f540727',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c47ea933-7680-4f85-8881-09e2e6c935b6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'aa88708a-7623-4bb2-9807-bb2667dd4838',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd95d7167-97ed-42e1-bd17-265697a85cf4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5475123a-4688-4516-9a72-1f8cf0cd6d90',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c6392bf8-be5d-4cd8-b77c-94cd23934a7e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0da8e4ee-1147-4142-b3af-d4f6ff8884ae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a2a22118-c554-46b5-b12b-6e02c6ec60c7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '88a4ccdd-ec23-4b79-81cf-621acdbd3ad2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'aa2bbf5a-2485-4912-a053-af9aedda62df',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f21606f7-0079-4656-a32b-89a91b0d9b94',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea7c5f14-b812-4a92-bcbb-a38c54194c1a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dd102186-5c5c-4a83-8ddf-00620baa4c9b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '77dbcf3a-01e9-4c27-adf5-085759ff211f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '98136e5b-bd0a-4646-a637-e3b6f713b2e6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e367a09f-02ef-4313-a581-73cf61671e27',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1114ce7d-edf3-486e-b8c0-e1f5bc53f83d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dcafa112-7cfd-4c88-bc74-9702042131cd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '32003666-c74a-4055-b80a-89ae01551511',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1bf23852-c1e4-49c8-a452-a7f892dce048',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4ad84cd1-0d99-4f77-84ff-4d866fbbf995',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'db112114-e2b9-440a-a052-df6c3957c8e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '58fe7c62-a785-4d02-87a7-517cda89ae6b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7a6bfaf2-4cb3-4122-ba5c-555d1c55d109',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8dfcf3eb-f10f-44c6-be20-ecb2267b9e2a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9c7a29f0-3d6f-403e-98d3-2cbf14a9aeb5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6864ad80-dbfd-4e20-b5c8-0ee0b5ecdd6a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd186d50e-e703-4473-924c-89165e8fa613',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '36865d32-6f56-422b-8950-1663a396f6ef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '772fed6e-5fec-4ed9-b2d9-2e08132db144',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'edcfb9a5-5d21-4d93-883a-d4214cb4b5f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e233f6c9-bcdb-4794-915d-2ed83b54ab89',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd37894a2-2891-44f2-8316-dd2780e1c963',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '22095270-fe96-4e39-ba9a-93419c7158a7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '05a79888-459a-42cb-ab52-062611670bbe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b13c6e6c-a24d-40c1-9ebd-cfb15c489a18',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9e6559ae-eae4-4970-81ae-f6cb875b6152',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ffbc46a4-c9a6-4bad-b507-a093e64c70f9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '312239f5-2dcc-47e1-b179-cab8e8de49a6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0a3d4cee-1403-4294-bbb3-1c0e308b9ef6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '80d47a3d-bfb8-4485-afb2-d43ec208324e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e827e651-ca3a-43b7-b96d-78ed947ce2a5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9c00ac00-79ea-4fe0-9600-3b3db5e5beb3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '21c392c4-703e-484d-b7d5-6c3f9a100df6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cf79be0b-79ae-4dba-bdfa-f64df3660b1c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a4c6d82-ef56-48ee-9617-41b013ce4156',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9c54b945-8869-4263-96aa-3496f0efa2a5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '574aadc2-cedf-4459-8c02-40ed033d2d9b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bf2875fd-7f89-4649-9233-d045eced8c74',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '36710822-b529-4bd0-b484-a74c779a21a7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b829673b-655e-4904-a292-8671195ad0e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '985e23d4-6714-4e32-a87f-ffc51c6ad20e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3750530-cc75-4ccf-ab52-02927e7ae23a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3b817fc0-68b2-4d4e-9672-a742ab59634d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9186108b-2ae9-48e5-b6ca-33be70f86b6e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7876dc42-fc9a-487d-a422-455fd9a06395',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5416d3a3-48c2-44be-b3ea-34f23c466bea',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b5de7082-e92f-4da4-ad87-d96696b6201d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dfd89ab7-2149-4943-ac5f-006865c0a70c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b99fd132-ea80-4022-a78e-c8fba46e02de',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0a5e6996-755e-4ba9-8f29-07dc74c9e8e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff62cd40-dec9-46f4-97b7-1addf333d5e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0ea00b0e-cc23-4929-8fa2-ae8b3b382f98',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ace23b2-0302-413a-a3df-93bb6d241f06',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8fc553b0-3615-41db-a66a-7c43e60f37bd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6be2f0d7-ce2d-456f-adf6-efb5f07b79e7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bc2ca797-c824-4e56-8c0d-970e5157c91f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3a6afc01-e883-46fb-848a-7d5d6dfa8f2e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a2359f57-2380-48ab-a42f-224ad3d3f342',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cd62f21b-12ca-4327-a055-c152fb94f6cf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1e8d9247-d495-457c-847f-9dcec39bb48f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '09122e6d-9667-4ba1-a9b7-2af5329b31c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ae83907-2493-44da-8d4b-4f6759215c7a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9887ef09-fbb7-4e00-a6c6-ef4bfd5d95d4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'be7556b7-ffd9-4d48-bcac-815ce309e087',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '76963b5b-e9fd-4b97-ac2a-5d3a73ab141b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '412a3ee7-4923-4c09-8401-aa4af7384d63',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7f6fd20d-700d-4e59-ba88-3028f324e570',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8e5f6dc9-240c-4716-9a01-52f08337990d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6319af2a-058b-46eb-a80c-fa63be0817f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '312e87cd-36f0-4355-8f00-4e0f07d99381',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff9cce5d-7330-40f2-8987-3b3937f9c5c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4be51075-7b71-446e-8507-b0f2f779b24e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7108245b-9cba-4eab-a248-95014d0ec3f4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bbec76b7-d04c-4f21-80f8-d08ef1a34e16',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dc44b3c8-f3e5-47e0-900b-f2ea4b4bf6e2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da62b7ba-d3e0-4ba1-9070-357ff449a1e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ee4b6fae-1782-48ae-8452-f786392a6dbd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8c129a4e-aa45-4f55-a5b3-15965306e8d8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2b227179-667b-4cdc-88a1-33e62f95d861',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ae0e309e-2681-4547-9a8b-af877fbca3a4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'afac4c9a-dc69-42f6-884b-c9ec09474a3a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '315fcfdb-621a-4080-804b-3b162b32a846',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6377cfaf-a318-4a03-8290-50698407294c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8449a526-efee-4ff3-8469-aeb9d29385e9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6466187f-9f85-44ff-9af2-6c16f80d821d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '130419eb-ece7-43f3-9cd5-2b27c6dff44e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ead2685-c45e-4f68-b778-b3e12ec9de67',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c065dd74-53a9-4d38-9663-eea0014b5279',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7c7270be-4dc4-44cf-a1ab-b968be9690cb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ca790cc3-7933-43cd-b1ce-d35543113afe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '085dd680-2e33-43c5-88fb-630e5d1d114c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7f98e697-cd4b-4560-bce3-f749528741c4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3bc2075-a2d2-4156-b7a7-fc1e70723453',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6e48b15d-e4a6-4e94-a0ac-1ab7568dcc07',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8048e6d5-7db7-44b3-8629-536d3135f982',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '58f7a229-ca31-4b78-898f-91d200bdb2f0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2156d5ba-e23b-4b6f-989e-0bea69a5e8bf',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c07658b2-d564-4518-9440-ca7abf59f9b3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b2ac6351-8eb0-4889-8c50-3b596f0e7d5a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bdf48149-5364-4ae6-ba34-d6c5fe4546f5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'aadf9e11-9d16-427b-984a-b913762913fd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '730e925a-a009-42cd-9616-cadea21bc9e0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f7405dac-3ae2-4753-b24b-04847f9916c6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd39c18aa-df98-42ac-b525-f5682bcac076',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e03f1069-e1d6-4aa9-b719-1e7bf8b167d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '031844db-aba2-4d45-8335-5d2198cfb63d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ee336479-6d71-49e2-afbe-7294a79eba8b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '888951c8-de04-47b2-ba28-d35a69a560e6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '96ef3591-6146-46b1-a856-021320c1ba0a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'bc5d00b1-c8db-4351-ae7c-d9feeb6809e3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ed00d2b-dfbf-4fc3-a8cb-190ace6b6ab5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7e524fee-a436-4391-9661-81af7cc4ed80',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65313b3e-e484-4ad4-98bb-cc78f0a47d99',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '424fd014-1be7-4199-89b7-2020ed0e3fc6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '623ce13c-e497-4729-bb13-aa3a1ae676d3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '96155043-5669-4d00-aff7-2f3936853123',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '728e9459-896b-4024-b261-738632bd795c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '39ca4fab-3670-4b56-9bf9-e625d13c65d8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea1875e8-2725-4857-8889-07034bb7ba36',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7aff8d49-8dd4-4ea3-a5ea-269d9b1dab46',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ea250fe7-499e-45cb-88ce-4ea2ea113d5c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c1329cdc-0206-41fa-a33d-cb68b7c5acfc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f8e83ff4-aad9-4cb4-8705-29588b331dce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '22bbc751-547c-4d67-ba57-a73c47255a54',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e2c81025-ce17-416d-bc6b-a6deb462fe0b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a0d45386-200b-49bc-a7f8-61d6162ae671',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '45d88fd5-117a-4da2-aa3a-c29fb8a87245',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e0d7b0c0-b21c-4809-af9e-2bcf161bd0e6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ac8ce9c2-fac2-49c7-a22a-e414464cce4f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '026e4fa7-037c-4706-aef3-9154dd24116f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '57843219-294b-4b07-999b-04efd218c60a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ca43997d-83ee-4ebf-aaa7-b9d90d9da820',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '986ccf7d-3633-4260-a505-c5952024d833',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '549a1928-7d28-4cc1-a733-bda34ed3f12f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0dd20d70-c15a-4d44-b2a4-02dc60715c73',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '396c43f0-6483-434a-9c85-0c18b7c86936',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'afdac192-efe0-46b2-b132-d536428590f9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6fd3623e-d278-4813-916d-d972f573976d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1fb8b935-f66d-4567-8727-3b898657991e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65277fbc-d690-4c78-9b32-7bb34a2aaf2a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2d7a2457-887f-4912-83cd-17091bde93a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b57acf57-1e47-4f22-87bb-30cb180b5fcb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'db1a36c5-7f72-4eea-a13a-6bbc441e5f40',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ed714c7f-2f30-4467-b5c6-e39bc34149d6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c2f09a85-d670-4e56-aafe-712d2c9cc22d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ed8c88e6-d6b8-470e-920d-f585d8103f88',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '427903f5-cdec-44d8-8377-a8079d60c3a8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5e41f0a9-fa0b-485a-bcac-fa4b1a5e4290',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '52be2af9-3eb2-460f-bdd5-13eb3f2b0536',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7fbea04d-4068-4899-aebc-5fcdc862256c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd641a9c4-15f4-4ae3-a422-ccd9fad7c7ba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b96afcb8-ce99-4412-883c-91666e6f2b26',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd3160fbf-1820-45f0-9d1f-d0c2aca53bbd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2b4d9d07-b2e9-44dd-88bb-7bb7752a279c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '533f439c-ae42-4ff3-b115-176c7923a784',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f760447c-9285-421f-a9c6-92024a068025',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'acbd7b3a-9acd-460c-8f1a-ad3880fc33dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '219be8c4-23d7-4d75-82c8-3c6efc6df215',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1cf1359b-18c2-4725-b2dc-ac95dea73575',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '29a0e438-0b1a-4c4f-b23e-58ce9bbc6a08',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3aa222a2-5532-4ee9-8cd6-98b6c23909d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9b86ef7f-d281-48e8-a143-1fbece8f511a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd4c17d71-8ded-48ab-8e66-7523304076f1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c32fd361-3eb2-45c3-93dd-42345e8b740e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0b105b3a-b595-401f-a099-37d2f6a0d55b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e232ad28-ede7-4303-b61e-7b6079342be1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'de61350b-5e51-454a-bb64-52f823789319',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c9c6397f-c01e-46b2-b3a0-2d8beab26db4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5a9e20b3-7eea-4d51-9298-cd6eeae0915a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6f17824d-a575-4355-8d47-1a92fdb98258',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5ba6ab59-2e7c-4a0f-8505-18466a82ac59',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8bc0bd92-a136-46bf-b96a-e966c027f242',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3b8a9e8-acc0-4dda-a617-1a8f81672827',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f4c2ecd3-27da-4ff3-88e5-eba3aa6ceaad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5c2dd7b4-9981-4d85-968c-49dcf977d1c8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dcb26172-633b-4d39-8c55-ce553d678aab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9d649fdc-12cf-4801-8956-5bd8776f9b77',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f713b505-1e45-4be6-a072-3d0a991219f6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eca3fb09-df9d-4641-8cd9-619102dcd502',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '32dd1e06-eb6b-4584-9865-f43175771c8e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '21ddaa75-45d4-4efb-9942-7b0249d0d5f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f0edd2b8-f291-40a1-bbe1-67b9fa4e8952',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '21a43646-aa64-4fa2-9ff6-66b0adba7b5a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1363508e-6c3c-45dc-9cce-c088de2507c7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f50838b1-341c-4bb8-96b3-078d65716a99',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7188bf6c-88e1-4ea2-a3ee-e8a2482f03c8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '53fed3f0-99ea-450a-8b70-618cd708620e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ff4df0ec-e461-4b29-ba62-d66bf54be88a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1ab6040d-ee41-40ff-a272-bb3397435c11',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '97b2c2ac-4cfc-493a-ac00-e44243de3f3a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '70c0df91-6e6b-4560-98e9-7da0293a679e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '99c8a287-27ed-4cf3-b0c9-55decdeb40d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e98e418-445d-42c0-b430-a0ff5a188bc2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '95931023-ed0c-47b4-8f3b-680c2251688a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2ce06809-7059-4af4-80d0-85967e08a5bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8f62b936-b075-49fe-af9f-79b828c6bee1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '90705712-862e-4dc7-92c8-61a5ddf73cd8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0ff2a312-79ff-4082-9943-99c8913cdae4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '56ce3b39-e86c-4929-a9d6-767c8b47f8f3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a0b53652-57dc-4415-9184-42728bfe6508',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '80074aee-6a81-494b-9385-472bb8497e11',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '328bd75d-358a-4745-aeeb-4fb693971225',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '85cda45a-a1d9-4f25-abdd-6ced2099cc42',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '73428c56-a67e-4f0f-9d4c-220fb78faf98',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '70906ab0-fa5f-4d15-89c6-f73c714ac748',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0c7cbaf8-9054-443d-bcfe-741a50a81b96',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '153e9b3c-b46f-4933-8714-b6bb0e641536',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '18e20bef-6ade-4529-aac6-42f783b61bd1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8b9367bf-9d05-4607-921c-dc95870bf801',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb6b28cc-63b5-4763-bfac-157c75c57645',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '91a8af96-2a7b-4100-843a-955cfea4c74c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c1efde1f-315e-4702-87b5-1e48fb207a71',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7901450f-321f-4bca-b0e3-5cc7d4b193db',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '82edeebc-6546-442e-a6a8-0411ba5da833',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0b036bf8-bdf7-43ac-bbc8-65d2d55f3e73',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ef17d55b-ee82-4eda-beb3-0d83a985bd11',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c227b194-0115-411b-8c3b-e1dc61d44562',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b3767913-c829-4a4f-a3cd-0e0c6f928c31',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e5ed916a-b32c-47f5-91c1-76f45fed6180',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '93ddd9f9-778c-48c3-a4a4-75d172222bba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '37a9b608-cef0-4554-ba0f-bea8f0dc1952',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2108d930-8917-48b0-82d0-4c1e53a248b0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cf471659-5ad9-4607-8ef4-973372b5085f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd1b05d03-61dc-4a8e-915b-ed879d046912',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f569f6b0-6093-40a9-9e78-d7a45c862597',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '891a6217-c721-4c0d-9535-46c269088859',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ba550bf-e3fa-4f2c-bc56-d4a8a044f226',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5e4a1e5a-a2b8-451d-bfcd-4ce6d304e910',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c77d51e8-8795-4efa-be99-8111c305eeb2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e0f3b90-0936-4f8c-8a1e-1e63f4aef801',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9fb550b2-ce1e-42b2-89ff-1794de249e5f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8ae3bfc8-b925-4079-9f24-e16d86608e0f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '37d67b73-6362-4b35-a1fc-44eade90bf1d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '57f27a9b-4e80-4b7c-9fe2-52dae29700b8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fa605bb2-539f-4de6-8d64-0f907e828e5f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '56a8290e-d207-43c5-bff9-9d54f51138c4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ef4688dd-14d2-48aa-8fa5-ccd1b03a0f78',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a508df73-4317-412e-ada9-7a5d2f008fa0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ebc6b219-6504-4970-8ade-c1f5669ce2ca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c308e107-102a-4684-886e-417b953e14c4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0a3aa48b-f8e1-49e8-8d9f-b464d968c836',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f4f0fb84-39ff-467d-b1e9-576c5095af9a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f89aa7e4-8b3f-432d-8949-35a25ccdc6bd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fd30e166-f9a6-4ad4-933f-a801aa69c365',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8603044c-0c11-4626-a0b8-9798503d6bf3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '25a0fd2b-47e5-4f00-9d92-ebeb1ce428d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c2f25b03-462f-4768-9e3c-22d023a23fe8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '18908620-1d6c-4c56-832c-62c89cc4f08a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0bdaa71b-bdaa-47d4-a83a-2c604be3bf97',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '94ca22ee-35df-4bf3-8318-b19261b525d5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f2bb7a38-14d9-4f7b-ab77-e6c8f98a962f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a6f1f96d-3dca-4364-bc01-54f0bea42c53',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8d882d8c-a8b7-4534-8a1a-1a8df96c05b5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6bdc4d1f-38de-45ef-af89-db77d153207b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '560f7876-dfdf-4147-ae40-e172c6ee2a5c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '82fa6a9f-a1df-4633-94aa-ac8434f94e53',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f480eada-b80e-4091-808a-ba5291f63b40',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '31144530-ee3d-499f-b4a6-4a22cd1dfb06',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3fdd6db-e3fe-4995-8466-1a0c255e4cf1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9e53c1e5-259b-4f90-a70d-ebace09a0871',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c900c15b-d884-42f7-a899-6ac4f0d9b9aa',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dba84e3f-df21-4eed-8100-072e6babb05b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b2c117aa-16cc-4cac-baca-fcf4b04300b0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd5fedab7-9935-449b-b22a-592229e1810b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'faef51dc-a11f-44e1-b320-e3c16c57b8a2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6491efb2-b26f-4092-8bb7-600c056b5e87',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '065786e3-514d-4595-8f52-9d7b771450fc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7095fa3a-5d82-4f97-855d-caed3323245d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0da9703a-34c5-4070-9a9c-98833e36c175',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '93c5ce67-1cfe-4e5c-a392-8a70401450f1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6d0cc597-b3ba-48fb-b6e7-b351b6fb53b3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '49bda40e-2cb1-4979-853b-bc1a7429cafe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '570e9dab-5239-48a9-8c94-0109712348f7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '94d32d9d-942f-4b72-aa97-f547f095c935',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e04d1db8-ad94-4f67-8da1-0fac4420fc02',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f040638c-69b8-4b8c-acbf-36feb3c8b78e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '40fb911c-eaa2-4840-b93e-e9891b773c48',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3ab5824d-1091-47ba-be27-b0c6c3514c17',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2517fedb-b79e-465a-8753-7f692aa731d9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0094c207-ce8f-4e95-b89a-594159762e34',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '38ab41e1-5ff7-4c03-ae7a-999ecce87c6c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0a8c9a37-280f-42cf-8736-78d96d4edc32',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c9602571-d542-4fcc-bdf1-5cfbfd887d40',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ffbcbfc0-2c7f-46c1-9ca7-fa10f28d810c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cb26def4-08a0-4a01-95ed-1c417a0647cc',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8c685e65-e453-4dca-917b-9b5d9d9bbc24',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2b0928cb-e49f-430c-9c03-ab9a45958664',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'afda7ee9-9ce5-47ec-a117-ffee0ba99450',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'dbfcc025-9d2d-4789-b6bd-b2e25ccbbdd6',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3039f8f4-79fd-4838-9776-540cd54b9bd1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '44ee8f29-cea4-4909-a6ba-f9937a3aadca',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4b777e6c-10b2-4d78-ac05-1fa0c16005f2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'af0df66c-2eb3-4e99-9af8-cdb2a9a36183',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '71b697ad-dc5c-4744-b45d-2f76b5ef8c84',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '52e126d2-e92c-4c55-bb5d-88bb6521234d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '09bcf575-af67-42dd-a416-b1fc2cd45f05',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a6fa53ae-7db8-4ec7-8fd8-dd97614e7e86',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd2e9a15e-5169-49a7-a1da-1be09b39129f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5021b1d7-9f31-455a-b94f-1c2daadb38bb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'c97bfd63-a4a8-4a76-a29e-3c48d6898b60',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9466d213-2ec6-4a0c-b257-264b7c5b2797',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '53a62974-f116-49a2-88d3-efcfe96fc4ab',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '87784aaf-5662-48f9-9771-a3371486e28b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '738a8817-f881-459b-a16c-47cf01a7f612',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '52ff2d70-9eb4-4d1b-bd25-f3a061172e9e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '732a5441-b579-45d8-bb47-ce6cb9204142',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '548f3fca-5f47-475d-8e17-df862c021869',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3c49904f-d56d-43eb-aed5-a046d04c1d72',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7e6b97e5-8f16-4bc4-a845-b81530026699',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f1bdd3a8-16fd-4069-a006-4a37968be2a0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6c4cf0b4-5059-4592-aec7-11e860f5bf85',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '46f5624e-9841-4749-86e2-85193657857e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a1fa3281-c7dc-4453-8417-5e18c30ef06b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '06cd3fb7-8ce3-4efa-89b6-1c9d7a651978',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e4f94ef3-6d3c-45ea-b3f1-ab854e55da44',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f62ea0a7-b0d8-4c1b-bbbf-d1190a640637',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fac81733-4380-41d7-9410-61a991769f5f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '964963f0-d617-441d-8c8c-4bc9f58cc38d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0c479c09-d52a-4eeb-bbbb-d2c39ff04bd1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '32c361b4-e67a-4a37-aa4a-b32aea31279c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e269d548-00fd-41ac-8b4e-a38656b52262',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '39e8583f-e24d-4fcd-ac90-16d5213012d2',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '13b671e4-cb8c-44ac-bcb9-bc12fc2d97ba',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '209e827d-b657-4a90-9196-b9f2454ee484',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b4f0d2f0-8a28-4942-b344-647a0b3d8ef0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '797b18b2-db96-4410-9ce3-f57844fba029',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8f9bdb58-6a6a-4be4-938e-29866dff2ab8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '24689de3-06d3-44e4-a64e-69b2e14377c1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '521aa3d7-3871-44f0-aa8e-4eb3ff143cae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd109c653-fe9b-4313-96c9-53309d3d3fa0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8689cc21-082f-4586-b70d-91d041c75348',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7733e3c3-c2f0-484a-ab9d-565b112b14e1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cca83fed-9f35-40b7-9481-6c1f2d40350a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '42cf6d97-4e69-4cb1-9f54-3d4f2c4ffb48',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0e8f41bc-3670-4084-a702-c1b7a74ef8e4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3e0cb013-d3db-45c2-a1a7-1b5088c7b2a4',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4096a3d2-e64d-4d70-b5af-1be812ec6db1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a77c94b7-59dd-439b-b533-da692a05c496',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '647f9c34-dbb8-47bc-ad92-a31ed7648688',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cae92209-9810-4c7d-a1ca-b62f2c66508d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ca6c5a7b-249f-4486-953d-bfed218fd0df',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'cc3a5f84-16d8-4486-b2d1-b3b11f5f3c93',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0886930d-5806-4c8a-8dba-a325ba79904c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d7cb416-cbdb-4e5d-8eb9-abf16f22c29e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f3091844-c9bf-4018-a791-37441fdeb4dd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9a16c3a5-7f2a-435f-b403-cdd5ed6fb094',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '404ed5e0-e003-49cf-abe4-95f16ede434c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '96622d93-ea10-4d9f-8596-0960c78dea6f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5bb02ad8-fc89-4dcb-994e-cc73939957ef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '03b6adf5-2b99-4537-b29a-05cacdecebce',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2a027938-9ad5-4ac6-8193-03c73558cdc8',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0135c15a-b396-4717-85c8-fc3335c8f8df',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e8847b7b-2831-4db7-9574-55727f5a7aa7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '485815b0-9d07-4199-9980-27e44efa470d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '28c3186f-5308-4ee5-ae23-708af9a54054',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '16e3e9b5-63f8-43c0-9a30-414982aabcb5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b229735b-eebc-4ca0-a05d-d03898945a06',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '37ebed5b-2c90-4cf8-8d3c-d90d06b2eac7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'b13be940-4086-4e67-be73-ad8d9284a773',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7312de97-5ec0-4334-b344-514d8b8b4ea0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '684248d7-5f5c-4ba5-ae3e-c959aeb1b149',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '613d8aec-b59b-450c-977b-c9f4a02174ad',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'a331bf7f-a069-4064-853d-747fa9e8b90d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '81b0ca7b-de78-4b8e-9b20-6e27e74b0f39',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2590e02e-1d6a-49b5-a613-f274083a8ffe',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '28c9d170-19ce-48af-95a6-0f5743c3c865',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '19ec34f2-7fc6-41a3-b591-7348af18b5c5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '606c4136-f171-4635-8a3c-50af1ee236ae',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '081d0301-7bb6-4319-8b7c-44fdd128c085',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2e08194d-077f-4a22-9e1e-447941e4aa2f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5a3bf5a4-16b9-408a-84c9-57867e488296',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f70cf0c7-37fe-4194-835d-eb0e06c6ee7b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '63dc25ea-86af-4ae9-9eb7-0787aec7bf74',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fa637666-2dee-4e8b-bb70-6fccc316941d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9f642f15-825c-4ad3-a6f5-4965b25e1469',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'f7550f0c-3c2c-4bc1-9e8a-52719f8f076f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3dd075e9-d1ca-4323-88dd-259738a8cae5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0bec715c-685e-4250-90d8-ae40c987c010',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '8a207fca-bd8d-4f56-b26a-ce0b270b4371',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e10acd49-dd03-4fb4-acef-10435b24a64e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e6df18b4-5166-4c77-9d66-06316208d449',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '233852b2-f212-40d2-ba60-9339b92902a3',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '987baf1c-6b57-46e9-ba9a-d9d7f4c41ea0',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '91464f1d-45dc-4751-9ed6-d5eff8912f66',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0234a5bf-1c24-40a7-883a-fc429fa08eef',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd457d19c-169f-48a8-a0c8-e66b8615be4f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2468432f-2739-4043-9e94-6c5fef6af28e',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '43f2dbc9-2db3-4cdc-8c3e-7ce1cb4bf010',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '89089f0d-3d63-48e2-8e5c-77029069ccea',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2f2a9e8b-c465-43de-9cb5-a6abf447012b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '27b8300c-db8e-4e2b-bbea-f773ead10e46',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'da1159fb-7014-4242-a12c-1fb8da74321f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4848631b-2d8a-418a-b144-ae5c28b3305b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'edc0a62a-c02b-439e-aef2-bf0a169e4fe5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e01930f4-2845-42a5-bc5e-b97683589e8b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd8c5ffa2-e8f5-4d2d-9e87-c7dbd667a160',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '5d98df17-fb2f-4be4-a236-f0a11ac9dffb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'ef90d3ac-d02d-43d7-ae76-22ef77ce984b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'd06e9149-d9ab-4134-9178-8f853234a866',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '6de4190b-a079-4716-b445-da495500d147',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '9af60c8c-6af8-4fd1-b2f9-05ad21d87115',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7fca20bb-fee8-4c98-a6ef-c5f38bf47027',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '263f050a-2644-4e5c-ba20-0fd381ead593',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '65594ba6-5a04-40f3-9432-d6124e5ffa5c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '86d310e1-28db-4afe-aaa9-7dba936cf548',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'e54edefa-3fbf-4830-95b1-e094529b6914',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '30649240-e8b2-4f08-ba7d-6de368172d76',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '1a5066e4-5eaf-43cc-8892-d79d42c3bb29',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7c77deb5-726d-4089-a183-caa5cf4fd18d',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '4fe64661-d64f-4367-b38c-298e20a1a90f',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '655e6733-6bdf-4c79-bce0-3471608f9e89',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '683152bd-96ec-4184-bb12-127e4fa7c1d5',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '752c7400-0dc2-4f0d-9ce9-c2e39eea103b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0b65ffcb-90fa-4fb6-98a4-f4b1f94c29c9',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2190cfe4-dca9-4ac8-b416-6571a1a8f232',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '68e9566f-4fe8-4c5d-806f-111a39d98649',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'eac96bc6-63b5-498d-89b5-a7ccb7634175',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '0d7b10dc-7a69-43b2-8900-9d1cb91fc13a',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '7c288b1b-5b08-436b-97c1-2c7358c3174c',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'aae4245d-b43b-4e96-8985-9af33fc872fd',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '3b4d216f-e6fc-49c2-a671-8456f091b2eb',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: 'fbefe898-fcc9-4e3c-99b2-a4dd6a9c41d1',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '2a4597a1-5d75-44a2-b82c-44c3032bd48b',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	},
+	{
+		id: '13757280-5fa3-4d28-8bd3-090995f04fa7',
+		angleX: 0,
+		angleY: 0,
+		angleZ: 0
+	}
+];

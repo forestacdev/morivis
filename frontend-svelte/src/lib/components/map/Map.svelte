@@ -109,7 +109,7 @@
 
 		const mapStyle = createMapStyle();
 
-		console.log(mapStyle);
+		if (import.meta.env.DEV) console.log(mapStyle);
 
 		if (!mapStyle) return;
 
@@ -284,7 +284,7 @@
 
 <div
 	bind:this={mapContainer}
-	class="h-full w-full transition-all duration-200 {$isSide === 'info'
+	class="h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
 		? 'custom-brah scale-[1.05]'
 		: ''}"
 ></div>

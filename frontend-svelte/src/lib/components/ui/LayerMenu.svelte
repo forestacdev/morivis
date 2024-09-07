@@ -6,7 +6,7 @@
 	import LayerSlot from '$lib/components/ui/layermenu/LayerSlot.svelte';
 	import DataMenu from '$lib/components/ui/DataMenu.svelte';
 	import type { LayerEntry } from '$lib/data/types';
-	import { isSide } from '$lib/store/store';
+	import { isSide, showDataMenu } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { addedLayerIds } from '$lib/store/store';
 	export let layerDataEntries: LayerEntry[] = [];
@@ -32,6 +32,10 @@
 		};
 	};
 
+	const toggleDataMenu = () => {
+		$showDataMenu = !$showDataMenu;
+	};
+
 	onMount(() => {});
 </script>
 
@@ -40,6 +44,7 @@
 		transition:tweenMe
 		class="bg-color-base absolute left-0 top-0 flex h-full flex-col rounded-sm p-4 pl-[100px] text-slate-100"
 	>
+		<button on:click={toggleDataMenu}>データ追加</button>
 		<div class="flex h-full gap-4">
 			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto">
 				{#each layerDataEntries

@@ -26,6 +26,7 @@ import Worker from './worker?worker';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 import type { LayerEntry } from '$lib/data/types';
+import { isSide } from '$lib//store/store';
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -45,8 +46,15 @@ const createMapStore = () => {
 			style: mapStyle,
 			center: [136.923004009, 35.5509525769706],
 			zoom: 14.5,
+			fadeDuration: 100, // フェードアニメーションの時間
+			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
+			renderWorldCopies: false // 世界地図を繰り返し表示しない
+
+			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
+
+			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
 			// maxZoom: 18,
-			maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
+			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 		});
 
 		if (!map) return;
@@ -198,6 +206,17 @@ const createMapStore = () => {
 		if (!map) return;
 		map.easeTo(options);
 	};
+
+	isSide.subscribe((value) => {
+		console.log(value);
+		if (value !== null && value) {
+			if (!map) return;
+			map.panBy([-200, 0]);
+		} else {
+			if (!map) return;
+			map.panBy([200, 0]);
+		}
+	});
 
 	// プレビューレイヤーを追加するメソッド
 	const addPreviewLayer = (layerEntry: LayerEntry) => {

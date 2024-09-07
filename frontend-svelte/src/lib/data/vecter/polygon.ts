@@ -159,7 +159,6 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 			]
 		}
 	},
-
 	{
 		id: 'gifu-forestarea',
 		name: '岐阜県森林地域',
@@ -170,7 +169,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		url: GIFU_DATA_BASE_PATH + '/gml/A13-15_21/tiles/{z}/{x}/{y}.pbf',
 		attribution: '国土数値情報',
 		sourceMaxZoom: 14,
-		sourceMiZoom: 0,
+		sourceMinZoom: 0,
 		clickable: true,
 		visible: true,
 		idField: 'A45_001',
@@ -286,6 +285,107 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 								]
 							]
 						],
+						'text-max-width': 12,
+						'text-size': 12,
+						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+						'text-radial-offset': 0.5,
+						'text-justify': 'auto'
+					},
+					paint: {
+						'text-color': '#000000',
+						'text-halo-color': '#FFFFFF',
+						'text-halo-width': 1,
+						'text-opacity': 1
+					}
+				}
+			]
+		}
+	},
+	{
+		id: 'tree_species_hyogo',
+		name: '樹種ポリゴン',
+		dataType: 'vector',
+		geometryType: 'polygon',
+		sourceLayer: 'tree_species_hyogo',
+		opacity: 0.7,
+		url: 'https://rinya-hyogo.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf',
+
+		attribution: '国土数値情報',
+		sourceMaxZoom: 18,
+		sourceMinZoom: 8,
+		visible: true,
+		clickable: true,
+		idField: 'ID',
+		showFill: true,
+		showLine: false,
+		showLabel: false,
+		location: ['栃木県'],
+		styleKey: '樹種',
+		style: {
+			fill: [
+				{
+					name: '単色',
+					paint: {
+						'fill-color': '#ffffff'
+					}
+				},
+				{
+					name: '樹種',
+					paint: {
+						'fill-color': [
+							'match',
+							['get', '解析樹種ID'],
+							'01',
+							'#00cc66',
+							'02',
+							'#99ff66',
+							'03',
+							'#cc0000',
+							'04',
+							'#ff9966',
+							'05',
+							'#ffcc99',
+							'06',
+							'#cc6600',
+							'07',
+							'#cc00cc',
+							'08',
+							'#ffff99',
+							'09',
+							'#ff9933',
+							'10',
+							'#cc9900',
+							'11',
+							'#ffff00',
+							'12',
+							'#8000ff',
+							'96',
+							'#8db3e2',
+							'97',
+							'#ccff99',
+							'98',
+							'#ff80ff',
+							'99',
+							'#bfbfbf',
+							'#bfbfbf' // デフォルトの色
+						]
+					}
+				}
+			],
+			line: [
+				{
+					name: '単色',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 1.5
+					}
+				}
+			],
+			symbol: [
+				{
+					name: 'デフォルト',
+					layout: {
+						'text-field': ['to-string', ['get', '樹種']],
 						'text-max-width': 12,
 						'text-size': 12,
 						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],

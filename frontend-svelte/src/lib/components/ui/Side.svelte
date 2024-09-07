@@ -23,8 +23,8 @@
 <div
 	class="custom-side pointer-events-none absolute left-[0px] top-[80px] z-10 flex h-full flex-col gap-[20px] p-[6px] text-sm"
 >
-	<button on:click={() => toggleMenu('base')} class="btn-side"
-		><Icon icon="material-symbols:map-outline" width="30" height="30" class="" /></button
+	<button on:click={() => toggleMenu('search')} class="btn-side"
+		><Icon icon="lets-icons:search" width="30" height="30" class="" /></button
 	>
 	<button on:click={() => toggleMenu('layer')} class="btn-side"
 		><Icon icon="bx:layer-plus" width="30" height="30" class="" /></button

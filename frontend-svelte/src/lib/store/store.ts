@@ -53,6 +53,7 @@ export const addedLayerIds = createLayerStore(INT_ADD_LAYER_IDS);
 
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
+export const showDataMenu = writable<boolean>(false);
 export const showlayerOptionId = writable<string>('');
 
 /** 外部コンポーネントからイベントを発火させるストア */
