@@ -13,8 +13,8 @@
 
 	import { onMount } from 'svelte';
 	import bearing from '@turf/bearing';
-
-	export let imageUrl: string;
+	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
+	export let feature: any;
 	export let nextPointData = [];
 	let canvas: HTMLCanvasElement;
 	let scene: THREE.Scene;
@@ -25,9 +25,74 @@
 
 	let currentRequestController = null;
 
-	const geometryBearing = { x: 0, y: 0, z: 0 };
+	let geometryBearing = { x: 0, y: 0, z: 0 };
 
-	const created360Mesh = async (imageUrl) => {
+	const gui = new GUI();
+
+	const controllerX = gui
+		.add(geometryBearing, 'x', 0, 360)
+		.listen()
+		.onChange((value) => {
+			// geometryBearing.x = value;
+		});
+
+	const controllerY = gui
+		.add(geometryBearing, 'y', 0, 360)
+		.listen()
+		.onChange((value) => {
+			// geometryBearing.y = value;
+		});
+
+	const controllerZ = gui
+		.add(geometryBearing, 'z', 0, 360)
+		.listen()
+		.onChange((value) => {
+			// geometryBearing.z = value;
+		});
+
+	async function updateAngle(id: string, geometryBearing: { x: number; y: number; z: number }) {
+		// const test = await fetch('/360', {
+		// 	method: 'GET'
+		// });
+
+		// console.log(test);
+		const response = await fetch('/360', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ id, geometryBearing })
+		});
+		const result = await response.json();
+		if (result.success) {
+			console.log('Angle updated successfully', result.updatedData);
+		} else {
+			console.error('Failed to update angle', result.error);
+		}
+	}
+
+	const submit = {
+		updateAngle: () => {
+			updateAngle(feature.properties['ID'], geometryBearing);
+		}
+	};
+
+	// 角度を更新するボタンを追加
+	gui.add(submit, 'updateAngle').name('Update Angle');
+
+	const created360Mesh = async (feature) => {
+		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
+		const id = feature.properties['ID'];
+		const angleData = angleDataJson.find((angle) => angle.id === id);
+		geometryBearing.x = angleData.angleX;
+		geometryBearing.y = angleData.angleY;
+		geometryBearing.z = angleData.angleZ;
+
+		// GUI側のコントロールの値を更新
+		controllerX.setValue(geometryBearing.x);
+		controllerY.setValue(geometryBearing.y);
+		controllerZ.setValue(geometryBearing.z);
+
 		if (!imageUrl) return;
 
 		// 画像を読み込み
@@ -146,6 +211,8 @@
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = ((degrees + 360) % 360) - 270; // 0〜360度の範囲に調整
 
+			if (!controlDiv) return;
+
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 
 			cameraBearing = degrees;
@@ -167,46 +234,7 @@
 		dispatch('nextPoint', pointData);
 	};
 
-	$: created360Mesh(imageUrl);
-
-	const gui = new GUI();
-
-	gui.add(geometryBearing, 'x', 0, 360).onChange((value) => {
-		// geometryBearing.x = value;
-	});
-
-	gui.add(geometryBearing, 'y', 0, 360).onChange((value) => {
-		// geometryBearing.y = value;
-	});
-
-	gui.add(geometryBearing, 'z', 0, 360).onChange((value) => {
-		// geometryBearing.z = value;
-	});
-
-	async function updateAngle(id: string, angleX: number) {
-		const response = await fetch('/api/updateAngles', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ id, angleX })
-		});
-		const result = await response.json();
-		if (result.success) {
-			console.log('Angle updated successfully', result.updatedData);
-		} else {
-			console.error('Failed to update angle', result.error);
-		}
-	}
-
-	const submit = {
-		updateAngle: () => {
-			updateAngle('1', geometryBearing.x);
-		}
-	};
-
-	// 角度を更新するボタンを追加
-	gui.add(submit, 'updateAngle').name('Update Angle');
+	$: created360Mesh(feature);
 </script>
 
 <!-- <div class="custom-canvas-back"></div> -->

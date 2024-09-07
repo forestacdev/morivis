@@ -20,7 +20,7 @@
 	let mapContainer: HTMLDivElement;
 	// let markerContainer: HTMLDivElement;
 	let mapInstance: maplibregl.Map | null = null;
-	let imageUrl: string = '';
+	let feature: any;
 	let pointsData = {
 		type: 'FeatureCollection',
 		features: []
@@ -36,8 +36,8 @@
 
 	let angleMarker = null;
 
-	const setImage = (point) => {
-		imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
+	const setPoint = (point) => {
+		feature = point;
 
 		const urlSearchParams = $page.url.searchParams;
 		urlSearchParams.set('imageId', point.properties['ID']);
@@ -81,7 +81,9 @@
 		// console.log(markerContainer);
 
 		angleMarker = new maplibregl.Marker({
-			element: markerContainer
+			element: markerContainer,
+			pitchAlignment: 'map',
+			rotationAlignment: 'map'
 		})
 			.setLngLat(targetPoint.geometry.coordinates)
 			.addTo(mapInstance);
@@ -101,8 +103,6 @@
 
 		nextPointData = nextData;
 	};
-
-	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
 
 	// 各ラインの最も遠い頂点を抽出する関数
 	const findFarthestVertex = (point, line) => {
@@ -215,14 +215,14 @@
 					});
 				}
 
-				setImage(targetPoint);
+				setPoint(targetPoint);
 			}
 		});
 
 		mapInstance.on('click', '360', (e) => {
 			console.log(e.features[0].properties);
 
-			setImage(e.features[0]);
+			setPoint(e.features[0]);
 		});
 	});
 
@@ -234,15 +234,14 @@
 	}
 
 	const nextPoint = (e) => {
-		console.log(e.detail);
-		setImage(e.detail);
+		setPoint(e.detail);
 	};
 </script>
 
 <div class="relative flex h-full w-full">
 	<div bind:this={mapContainer} class="h-full w-full"></div>
 
-	<ThreeCanvas {imageUrl} {nextPointData} on:nextPoint={nextPoint} bind:cameraBearing />
+	<ThreeCanvas {feature} {nextPointData} on:nextPoint={nextPoint} bind:cameraBearing />
 </div>
 
 <div class="absolute left-2 top-2 z-50 z-50">{cameraBearing}</div>

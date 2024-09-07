@@ -1,13 +1,18 @@
+import { test } from '@playwright/test';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { id, angleX } = await request.json();
+		const { id, geometryBearing } = await request.json();
+
+		const angleX = geometryBearing.x;
+		const angleY = geometryBearing.y;
+		const angleZ = geometryBearing.z;
 
 		// JSONファイルのパスを指定
-		const filePath = path.join(process.cwd(), 'src', 'data', 'angles.json');
+		const filePath = path.join(process.cwd(), 'src', 'lib', 'json', 'angle.json');
 
 		// ファイルを読み込む
 		const fileContent = await fs.readFile(filePath, 'utf-8');
@@ -15,8 +20,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// データを更新
 		jsonData = jsonData.map((item) => {
+			console.log(item.id, id);
 			if (item.id === id) {
-				return { ...item, angleX };
+				return { ...item, angleX, angleY, angleZ };
 			}
 			return item;
 		});
@@ -34,4 +40,11 @@ export const POST: RequestHandler = async ({ request }) => {
 			headers: { 'Content-Type': 'application/json' }
 		});
 	}
+};
+
+export const GET: RequestHandler = async ({ request }) => {
+	// test テキストを返す
+	return new Response('test', {
+		headers: { 'Content-Type': 'text/plain' }
+	});
 };
