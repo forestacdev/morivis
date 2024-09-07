@@ -20,7 +20,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// データを更新
 		jsonData = jsonData.map((item) => {
-			console.log(item.id, id);
 			if (item.id === id) {
 				return { ...item, angleX, angleY, angleZ };
 			}
