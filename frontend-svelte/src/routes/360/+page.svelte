@@ -82,8 +82,6 @@
 			}
 		});
 
-		// console.log(markerContainer);
-
 		angleMarker = new maplibregl.Marker({
 			element: markerContainer,
 			pitchAlignment: 'map',
@@ -155,16 +153,56 @@
 			data: lineData
 		};
 
+		const layerColor = 'rgb(15, 255, 195)';
+
+		style.layers.push({
+			id: 'background2', // マスクレイヤー
+			type: 'background',
+			paint: {
+				'background-color': '#000', // レイヤーの色を設定
+				'background-opacity': 0.5 // 不透明度を設定
+			}
+		});
+
 		style.layers.push({
 			id: '360',
 			type: 'circle',
 			source: '360',
+			minzoom: 9.5,
+			maxzoom: 23,
 			paint: {
-				'circle-radius': 10,
-				'circle-color': '#ff0000',
-				'circle-opacity': 0.7,
-				'circle-stroke-width': 2,
-				'circle-stroke-color': '#ffffff'
+				'circle-color': layerColor,
+				'circle-radius': 18,
+				'circle-blur': 2.5,
+				'circle-opacity': 0.6
+			}
+		});
+
+		style.layers.push({
+			id: '360-2',
+			type: 'circle',
+			source: '360',
+			minzoom: 9.5,
+			maxzoom: 23,
+			paint: {
+				'circle-color': layerColor,
+				'circle-radius': 9,
+				'circle-blur': 1.5,
+				'circle-opacity': 0.8
+			}
+		});
+
+		style.layers.push({
+			id: '360-3',
+			type: 'circle',
+			source: '360',
+			minzoom: 9.5,
+			maxzoom: 23,
+			paint: {
+				'circle-color': layerColor,
+				'circle-radius': 1,
+				'circle-blur': 0,
+				'circle-opacity': 1
 			}
 		});
 
@@ -173,8 +211,10 @@
 			type: 'line',
 			source: '360_line',
 			paint: {
-				'line-color': '#ff0000',
-				'line-width': 2
+				'line-color': layerColor,
+				'line-width': 3,
+				'line-opacity': 0.8,
+				'line-blur': 0.5
 			}
 		});
 
