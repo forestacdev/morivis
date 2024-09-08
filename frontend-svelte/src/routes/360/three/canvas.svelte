@@ -15,7 +15,10 @@
 	import { onMount } from 'svelte';
 	import bearing from '@turf/bearing';
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
-	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
+	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
+	const IMAGE_URL =
+		'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
+	// main/images/R0010026/face_1.jpg
 	export let feature: any;
 	export let nextPointData = [];
 	let canvas: HTMLCanvasElement;
@@ -29,7 +32,7 @@
 
 	let currentRequestController = null;
 
-	let geometryBearing = { x: 0, y: 0, z: 0 };
+	let geometryBearing = { x: 10, y: 10, z: 10 };
 
 	const gui = new GUI();
 
@@ -81,30 +84,49 @@
 		}
 	};
 
-	// テクスチャを読み込む
-	const textureLoader = new THREE.TextureLoader();
-	const texture = textureLoader.load('src/lib/sozai/mapicon.png');
-
 	// 角度を更新するボタンを追加
 	gui.add(submit, 'updateAngle').name('Update Angle');
+
+	const baseurl = 'src/lib/data/R0010026/' as string;
+
+	const textureCube = new THREE.CubeTextureLoader().load([
+		`${baseurl}face_1.jpg`,
+		`${baseurl}face_2.jpg`,
+		`${baseurl}face_3.jpg`,
+		`${baseurl}face_4.jpg`,
+		`${baseurl}face_5.jpg`,
+		`${baseurl}face_6.jpg`
+	]);
+
+	// textureCube.mapping = THREE.CubeRefractionMapping;
 
 	// カスタムシェーダーマテリアルを作成
 	const shaderMaterial = new THREE.ShaderMaterial({
 		uniforms: {
-			uTexture: { value: texture }
+			cubeTexture: { value: textureCube }
 		},
 		vertexShader: `
-    varying vec2 vUv;
+    varying vec3 vWorldPosition;
+    
     void main() {
-      vUv = uv;
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vWorldPosition = worldPosition.xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
 		fragmentShader: `
-    uniform sampler2D uTexture;
-    varying vec2 vUv;
+    uniform samplerCube cubeTexture;
+    varying vec3 vWorldPosition;
+    
     void main() {
-      gl_FragColor = texture2D(uTexture, vUv);
+      vec3 worldNormal = normalize(vWorldPosition);
+      vec3 eyeToSurfaceDir = normalize(vWorldPosition - cameraPosition);
+      vec3 direction = reflect(eyeToSurfaceDir, worldNormal);
+       // Y座標を反転
+      direction.y *= -1.0;
+    // z座標を反転
+        direction.z *= -1.0;
+      gl_FragColor = textureCube(cubeTexture, direction);
     }
   `
 	});
@@ -114,16 +136,25 @@
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
 		const id = feature.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
+		const url = imageUrl.replace('.JPG', '/');
 
 		if (!imageUrl) return;
+		const textureCube = new THREE.CubeTextureLoader();
 
-		// 画像を読み込み
-		const texture = await new THREE.TextureLoader().load(
-			imageUrl.replace('.JPG', '.webp'),
+		textureCube.load(
+			[
+				`${url}face_1.jpg`,
+				`${url}face_2.jpg`,
+				`${url}face_3.jpg`,
+				`${url}face_4.jpg`,
+				`${url}face_5.jpg`,
+				`${url}face_6.jpg`
+			],
 			(texture) => {
-				shaderMaterial.uniforms.uTexture.value = texture;
-				shaderMaterial.needsUpdate = true;
-				console.log('テクスチャが読み込まれました');
+				texture.mapping = THREE.CubeReflectionMapping;
+				shaderMaterial.uniforms.cubeTexture.value = texture;
+
+				// shaderMaterial.needsUpdate = true;
 
 				geometryBearing.x = angleData.angleX;
 				geometryBearing.y = angleData.angleY;
@@ -133,17 +164,12 @@
 				controllerX.setValue(geometryBearing.x);
 				controllerY.setValue(geometryBearing.y);
 				controllerZ.setValue(geometryBearing.z);
+
 				isloading = false;
-				// ここで必要な処理を実行
 			},
 			undefined,
 			(error) => console.error('テクスチャの読み込みに失敗しました', error)
 		);
-
-		// shaderMaterial.uniforms.uTexture.value = texture;
-
-		// // テクスチャが読み込まれたらレンダリングを開始
-		// isRendering = true;
 	};
 
 	onMount(async () => {
@@ -161,6 +187,8 @@
 
 		// camera.position.set(-100, 100, -100);
 		scene.add(camera);
+
+		// scene.background = texture;
 
 		// カメラの設定
 		camera.aspect = sizes.width / sizes.height;
@@ -181,15 +209,12 @@
 		orbitControls.enablePan = false;
 		orbitControls.panSpeed = -1;
 
-		const geometry = new THREE.SphereGeometry(50, 60, 40);
+		const geometry = new THREE.BoxGeometry(100, 100, 100);
 		geometry.scale(-1, 1, 1);
+		const cube = new THREE.Mesh(geometry, shaderMaterial);
+		cube.name = '360';
 
-		// 球体(形状)にマテリアル(質感)を貼り付けて物体を作成
-		const sphere = new THREE.Mesh(geometry, shaderMaterial);
-		sphere.name = '360';
-
-		// シーンに追加
-		scene.add(sphere);
+		scene.add(cube);
 
 		// ヘルパーグリッド
 		const gridHelper = new THREE.GridHelper(200, 100);
