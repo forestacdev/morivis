@@ -41,6 +41,7 @@
 	let angleMarker = null;
 
 	const setPoint = (point) => {
+		console.log(point);
 		feature = point;
 
 		const urlSearchParams = $page.url.searchParams;
@@ -50,7 +51,7 @@
 
 		const targetPoint = point;
 
-		const buffer = turfBuffer(targetPoint, 0.001, { units: 'kilometers' });
+		const buffer = turfBuffer(point, 0.001, { units: 'kilometers' });
 
 		const targetLines = lineData.features.filter((line) => {
 			return turfBooleanCrosses(buffer, line);
@@ -65,7 +66,7 @@
 		// 	curve: 1
 		// });
 
-		mapInstance.panTo(targetPoint.geometry.coordinates, {
+		mapInstance.panTo(point.geometry.coordinates, {
 			duration: 1000,
 			animate: true,
 			zoom: mapInstance.getZoom() > 18 ? mapInstance.getZoom() : 18
@@ -87,16 +88,16 @@
 			pitchAlignment: 'map',
 			rotationAlignment: 'map'
 		})
-			.setLngLat(targetPoint.geometry.coordinates)
+			.setLngLat(point.geometry.coordinates)
 			.addTo(mapInstance);
 
 		const nextData = [];
 
 		targetLines.forEach((line) => {
-			const crosses = findFarthestVertex(targetPoint, line);
+			const crosses = findFarthestVertex(point, line);
 			const nextPoint = turfNearestPoint(crosses, pointsData);
 
-			const bearing = turfBearing(targetPoint, nextPoint);
+			const bearing = turfBearing(point, nextPoint);
 			nextData.push({
 				feaureData: nextPoint,
 				bearing: bearing
@@ -282,7 +283,7 @@
 	};
 </script>
 
-<div class="relative flex h-full w-full">
+<div class="relative flex h-full w-full flex-col md:flex-row">
 	<div bind:this={mapContainer} class="h-full w-full"></div>
 
 	<ThreeCanvas {feature} {nextPointData} on:nextPoint={nextPoint} bind:cameraBearing />

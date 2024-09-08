@@ -8,17 +8,21 @@
 	// import { angleData } from './angle';
 	import angleDataJson from '$lib/json/angle.json';
 	import { GUI } from 'lil-gui';
+	import gsap from 'gsap';
 	//svelteからcreateEventDispatcher関数をインポートする。
 	const dispatch = createEventDispatcher();
 
 	import { onMount } from 'svelte';
 	import bearing from '@turf/bearing';
-	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
+	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
+	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 	export let feature: any;
 	export let nextPointData = [];
 	let canvas: HTMLCanvasElement;
 	let scene: THREE.Scene;
+	let camera: THREE.PerspectiveCamera;
 	let isRendering = true;
+	let isloading = true;
 	let controlDiv: HTMLDivElement;
 	let isRotatingClockwise = true;
 	export let cameraBearing;
@@ -77,37 +81,69 @@
 		}
 	};
 
+	// テクスチャを読み込む
+	const textureLoader = new THREE.TextureLoader();
+	const texture = textureLoader.load('src/lib/sozai/mapicon.png');
+
 	// 角度を更新するボタンを追加
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
+	// カスタムシェーダーマテリアルを作成
+	const shaderMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			uTexture: { value: texture }
+		},
+		vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+		fragmentShader: `
+    uniform sampler2D uTexture;
+    varying vec2 vUv;
+    void main() {
+      gl_FragColor = texture2D(uTexture, vUv);
+    }
+  `
+	});
+
 	const created360Mesh = async (feature) => {
-		console.log(feature);
+		isloading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
 		const id = feature.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
-		geometryBearing.x = angleData.angleX;
-		geometryBearing.y = angleData.angleY;
-		geometryBearing.z = angleData.angleZ;
-
-		// GUI側のコントロールの値を更新
-		controllerX.setValue(geometryBearing.x);
-		controllerY.setValue(geometryBearing.y);
-		controllerZ.setValue(geometryBearing.z);
 
 		if (!imageUrl) return;
 
 		// 画像を読み込み
-		const texture = await new THREE.TextureLoader().load(imageUrl);
-		texture.colorSpace = THREE.SRGBColorSpace;
+		const texture = await new THREE.TextureLoader().load(
+			imageUrl.replace('.JPG', '.webp'),
+			(texture) => {
+				shaderMaterial.uniforms.uTexture.value = texture;
+				shaderMaterial.needsUpdate = true;
+				console.log('テクスチャが読み込まれました');
 
-		const mash = scene.getObjectByName('360');
+				geometryBearing.x = angleData.angleX;
+				geometryBearing.y = angleData.angleY;
+				geometryBearing.z = angleData.angleZ;
 
-		if (!mash || !mash.material) return;
+				// GUI側のコントロールの値を更新
+				controllerX.setValue(geometryBearing.x);
+				controllerY.setValue(geometryBearing.y);
+				controllerZ.setValue(geometryBearing.z);
+				isloading = false;
+				// ここで必要な処理を実行
+			},
+			undefined,
+			(error) => console.error('テクスチャの読み込みに失敗しました', error)
+		);
 
-		mash.material.map = texture;
+		// shaderMaterial.uniforms.uTexture.value = texture;
 
-		// テクスチャが読み込まれたらレンダリングを開始
-		isRendering = true;
+		// // テクスチャが読み込まれたらレンダリングを開始
+		// isRendering = true;
 	};
 
 	onMount(async () => {
@@ -120,7 +156,7 @@
 		scene = new THREE.Scene();
 
 		// カメラ
-		const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
+		camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
 		camera.position.set(0, 0, 0);
 
 		// camera.position.set(-100, 100, -100);
@@ -148,14 +184,8 @@
 		const geometry = new THREE.SphereGeometry(50, 60, 40);
 		geometry.scale(-1, 1, 1);
 
-		// マテリアルの作成
-		const material = new THREE.MeshBasicMaterial({
-			// 画像をテクスチャとして指定
-			map: new THREE.TextureLoader().load('')
-		});
-
 		// 球体(形状)にマテリアル(質感)を貼り付けて物体を作成
-		const sphere = new THREE.Mesh(geometry, material);
+		const sphere = new THREE.Mesh(geometry, shaderMaterial);
 		sphere.name = '360';
 
 		// シーンに追加
@@ -230,8 +260,10 @@
 		animate();
 	});
 
-	const nextPoint = (pointData) => {
-		dispatch('nextPoint', pointData);
+	const nextPoint = (point) => {
+		const radians = THREE.MathUtils.degToRad(point.bearing);
+
+		dispatch('nextPoint', point.feaureData);
 	};
 
 	$: created360Mesh(feature);
@@ -239,29 +271,35 @@
 
 <!-- <div class="custom-canvas-back"></div> -->
 <div class="relative h-full w-full">
-	<div
-		class="custom-3d pointer-events-none absolute bottom-[10px] grid w-full place-items-center"
-	>
-		<div class="custom-control-warp">
-			<div bind:this={controlDiv} class="custom-control">
-				{#each nextPointData as point, index}
-					<button
-						on:click={() => nextPoint(point.feaureData)}
-						class="custom-arrow"
-						style="--angle: {point.bearing}deg;"
-					>
-						<Icon
-							icon="ic:baseline-double-arrow"
-							width="128"
-							height="128"
-							class=""
-							style="transform: rotate({point.bearing - 90}deg);"
-						/>
-					</button>
-				{/each}
+	{#if isloading}
+		<div class="custom-loading">
+			<div class="custom-spinner"></div>
+		</div>
+	{:else}
+		<div
+			class="custom-3d pointer-events-none absolute bottom-[10px] grid w-full place-items-center"
+		>
+			<div class="custom-control-warp">
+				<div bind:this={controlDiv} class="custom-control">
+					{#each nextPointData as point, index}
+						<button
+							on:click={() => nextPoint(point)}
+							class="custom-arrow"
+							style="--angle: {point.bearing}deg;"
+						>
+							<Icon
+								icon="ic:baseline-double-arrow"
+								width="128"
+								height="128"
+								class=""
+								style="transform: rotate({point.bearing - 90}deg);"
+							/>
+						</button>
+					{/each}
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 	<canvas class="h-full w-full" bind:this={canvas}></canvas>
 </div>
 
@@ -287,7 +325,6 @@
 		pointer-events: none;
 	}
 
-	/* ポップアップの中のボタン */
 	.custom-arrow {
 		pointer-events: auto;
 		border-radius: 50%;
@@ -304,5 +341,35 @@
 		animation: fly forwards 0.25s;
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		color: #fff;
+	}
+
+	.custom-loading {
+		z-index: 9999;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.custom-spinner {
+		width: 100px;
+		height: 100px;
+		border: 10px solid #333;
+		border-radius: 50%;
+		border-top-color: #fff;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 </style>
