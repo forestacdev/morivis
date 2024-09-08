@@ -27,12 +27,12 @@
 	let isRendering = true;
 	let isloading = true;
 	let controlDiv: HTMLDivElement;
-	let isRotatingClockwise = true;
+
 	export let cameraBearing;
 
 	let currentRequestController = null;
 
-	let geometryBearing = { x: 10, y: 10, z: 10 };
+	let geometryBearing = { x: 0, y: 0, z: 0 };
 
 	const gui = new GUI();
 
@@ -87,49 +87,7 @@
 	// 角度を更新するボタンを追加
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
-	const baseurl = 'src/lib/data/R0010026/' as string;
-
-	const textureCube = new THREE.CubeTextureLoader().load([
-		`${baseurl}face_1.jpg`,
-		`${baseurl}face_2.jpg`,
-		`${baseurl}face_3.jpg`,
-		`${baseurl}face_4.jpg`,
-		`${baseurl}face_5.jpg`,
-		`${baseurl}face_6.jpg`
-	]);
-
-	// textureCube.mapping = THREE.CubeRefractionMapping;
-
-	// カスタムシェーダーマテリアルを作成
-	const shaderMaterial = new THREE.ShaderMaterial({
-		uniforms: {
-			cubeTexture: { value: textureCube }
-		},
-		vertexShader: `
-    varying vec3 vWorldPosition;
-    
-    void main() {
-      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-      vWorldPosition = worldPosition.xyz;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-		fragmentShader: `
-    uniform samplerCube cubeTexture;
-    varying vec3 vWorldPosition;
-    
-    void main() {
-      vec3 worldNormal = normalize(vWorldPosition);
-      vec3 eyeToSurfaceDir = normalize(vWorldPosition - cameraPosition);
-      vec3 direction = reflect(eyeToSurfaceDir, worldNormal);
-       // Y座標を反転
-      direction.y *= -1.0;
-    // z座標を反転
-        direction.z *= -1.0;
-      gl_FragColor = textureCube(cubeTexture, direction);
-    }
-  `
-	});
+	const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
 	const created360Mesh = async (feature) => {
 		isloading = true;
@@ -145,16 +103,18 @@
 			[
 				`${url}face_1.jpg`,
 				`${url}face_2.jpg`,
-				`${url}face_3.jpg`,
 				`${url}face_4.jpg`,
+				`${url}face_3.jpg`,
 				`${url}face_5.jpg`,
 				`${url}face_6.jpg`
 			],
 			(texture) => {
+				texture.colorSpace = THREE.SRGBColorSpace;
 				texture.mapping = THREE.CubeReflectionMapping;
-				shaderMaterial.uniforms.cubeTexture.value = texture;
-
+				texture.flipY = true;
 				// shaderMaterial.needsUpdate = true;
+
+				material.envMap = texture;
 
 				geometryBearing.x = angleData.angleX;
 				geometryBearing.y = angleData.angleY;
@@ -184,11 +144,8 @@
 		// カメラ
 		camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
 		camera.position.set(0, 0, 0);
-
 		// camera.position.set(-100, 100, -100);
 		scene.add(camera);
-
-		// scene.background = texture;
 
 		// カメラの設定
 		camera.aspect = sizes.width / sizes.height;
@@ -196,7 +153,7 @@
 
 		// パソコン閲覧時マウスドラッグで視点操作する
 		const orbitControls = new OrbitControls(camera, canvas);
-		orbitControls.target.set(camera.position.x + 0.15, camera.position.y, camera.position.z);
+		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
 		// 視点操作のイージングをONにする
 		orbitControls.enableDamping = true;
 		// 視点操作のイージングの値
@@ -205,21 +162,31 @@
 		orbitControls.rotateSpeed = 0.5;
 		// ズーム禁止
 		orbitControls.enableZoom = false;
+		// orbitControls.maxZoom = 1;
 		// パン操作禁止
 		orbitControls.enablePan = false;
 		orbitControls.panSpeed = -1;
 
-		const geometry = new THREE.BoxGeometry(100, 100, 100);
+		const geometry = new THREE.SphereGeometry(1, 64, 64);
 		geometry.scale(-1, 1, 1);
-		const cube = new THREE.Mesh(geometry, shaderMaterial);
+		const cube = new THREE.Mesh(geometry, material);
 		cube.name = '360';
 
 		scene.add(cube);
 
+		cube.rotateX(THREE.MathUtils.degToRad(90));
 		// ヘルパーグリッド
 		const gridHelper = new THREE.GridHelper(200, 100);
 		scene.add(gridHelper);
 		gridHelper.position.y = -5;
+
+		const radius = 10;
+		const sectors = 16;
+		const rings = 80;
+		const divisions = 64;
+
+		const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+		scene.add(helper);
 
 		// ヘルパー方向
 		const axesHelper = new THREE.AxesHelper(100);
@@ -257,18 +224,21 @@
 			if (!isRendering) return;
 			const target = orbitControls.target;
 			orbitControls.update();
-			// zoomControls.target.set(target.x, target.y, target.z);
-			// zoomControls.update();
-			// const cameraRotationY = camera.rotation.y * (180 / Math.PI);
-			// controlDiv.style.transform = `rotateZ(${cameraRotationY}deg)`;
-			// カメラのY軸回転角度（ラジアン単位）を取得
+
 			camera.rotation.order = 'YXZ';
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = ((degrees + 360) % 360) - 270; // 0〜360度の範囲に調整
 
+			let degreesX = THREE.MathUtils.radToDeg(camera.rotation.x);
+			degreesX = ((degreesX + 360) % 360) - 270; // 0〜360度の範囲に調整
+
 			if (!controlDiv) return;
 
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
+			// controlDiv親要素のを取得
+			const parent = controlDiv.parentElement;
+
+			parent.style.transform = `rotateX(${degreesX - 30}deg)`;
 
 			cameraBearing = degrees;
 			const mesh = scene.getObjectByName('360');
@@ -279,15 +249,12 @@
 				mesh.rotation.z = THREE.MathUtils.degToRad(geometryBearing.z);
 			}
 
-			// console.log(degrees);
 			renderer.render(scene, camera);
 		};
 		animate();
 	});
 
 	const nextPoint = (point) => {
-		const radians = THREE.MathUtils.degToRad(point.bearing);
-
 		dispatch('nextPoint', point.feaureData);
 	};
 
