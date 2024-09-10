@@ -35,27 +35,9 @@
 	let geometryBearing = { x: 0, y: 0, z: 0 };
 
 	const gui = new GUI();
-
-	const controllerX = gui
-		.add(geometryBearing, 'x', 0, 360)
-		.listen()
-		.onChange((value) => {
-			// geometryBearing.x = value;
-		});
-
-	const controllerY = gui
-		.add(geometryBearing, 'y', 0, 360)
-		.listen()
-		.onChange((value) => {
-			// geometryBearing.y = value;
-		});
-
-	const controllerZ = gui
-		.add(geometryBearing, 'z', 0, 360)
-		.listen()
-		.onChange((value) => {
-			// geometryBearing.z = value;
-		});
+	const controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
+	const controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
+	const controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
 
 	async function updateAngle(id: string, geometryBearing: { x: number; y: number; z: number }) {
 		// const test = await fetch('/360', {
@@ -87,8 +69,6 @@
 	// 角度を更新するボタンを追加
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
-	const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
 	const created360Mesh = async (feature) => {
 		isloading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
@@ -103,18 +83,16 @@
 			[
 				`${url}face_1.jpg`,
 				`${url}face_2.jpg`,
-				`${url}face_4.jpg`,
-				`${url}face_3.jpg`,
+				`${url}face_3.jpg`, // 球体の場合は逆になる
+				`${url}face_4.jpg`, // 球体の場合は逆になる
 				`${url}face_5.jpg`,
 				`${url}face_6.jpg`
 			],
 			(texture) => {
 				texture.colorSpace = THREE.SRGBColorSpace;
-				texture.mapping = THREE.CubeReflectionMapping;
-				texture.flipY = true;
+				// texture.mapping = THREE.CubeReflectionMapping;
+				// texture.flipY = true;
 				// shaderMaterial.needsUpdate = true;
-
-				material.envMap = texture;
 
 				geometryBearing.x = angleData.angleX;
 				geometryBearing.y = angleData.angleY;
@@ -126,6 +104,14 @@
 				controllerZ.setValue(geometryBearing.z);
 
 				isloading = false;
+
+				scene.background = texture;
+
+				// 回転を設定
+				// const rotationMatrix = new THREE.Matrix3().setFromMatrix4(
+				// 	new THREE.Matrix4().makeRotationY(angleData)
+				// );
+				// material.userData.uniforms.envMapRotation.value.copy(rotationMatrix);
 			},
 			undefined,
 			(error) => console.error('テクスチャの読み込みに失敗しました', error)
@@ -161,23 +147,15 @@
 		// 視点変更の速さ
 		orbitControls.rotateSpeed = 0.5;
 		// ズーム禁止
-		orbitControls.enableZoom = false;
+		// orbitControls.enableZoom = false;
 		// orbitControls.maxZoom = 1;
 		// パン操作禁止
 		orbitControls.enablePan = false;
 		orbitControls.panSpeed = -1;
 
-		const geometry = new THREE.SphereGeometry(1, 64, 64);
-		geometry.scale(-1, 1, 1);
-		const cube = new THREE.Mesh(geometry, material);
-		cube.name = '360';
-
-		scene.add(cube);
-
-		cube.rotateX(THREE.MathUtils.degToRad(90));
 		// ヘルパーグリッド
 		const gridHelper = new THREE.GridHelper(200, 100);
-		scene.add(gridHelper);
+		// scene.add(gridHelper);
 		gridHelper.position.y = -5;
 
 		const radius = 10;
@@ -227,7 +205,7 @@
 
 			camera.rotation.order = 'YXZ';
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
-			degrees = ((degrees + 360) % 360) - 270; // 0〜360度の範囲に調整
+			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
 
 			let degreesX = THREE.MathUtils.radToDeg(camera.rotation.x);
 			degreesX = ((degreesX + 360) % 360) - 270; // 0〜360度の範囲に調整
@@ -241,13 +219,16 @@
 			parent.style.transform = `rotateX(${degreesX - 30}deg)`;
 
 			cameraBearing = degrees;
-			const mesh = scene.getObjectByName('360');
-			if (mesh) {
-				// mesh.rotation.y = THREE.MathUtils.degToRad(degrees);
-				mesh.rotation.x = THREE.MathUtils.degToRad(geometryBearing.x);
-				mesh.rotation.y = THREE.MathUtils.degToRad(geometryBearing.y);
-				mesh.rotation.z = THREE.MathUtils.degToRad(geometryBearing.z);
-			}
+
+			// scene.environmentRotation.set(0, THREE.MathUtils.degToRad(geometryBearing.y), 0);
+
+			scene.backgroundRotation.set(
+				THREE.MathUtils.degToRad(geometryBearing.x),
+				THREE.MathUtils.degToRad(geometryBearing.y),
+				THREE.MathUtils.degToRad(geometryBearing.z)
+			);
+
+			// テクスチャを回転させる
 
 			renderer.render(scene, camera);
 		};
@@ -327,12 +308,11 @@
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		--x: calc(cos(calc(var(--angle) - 90deg)) * 100px);
-		--y: calc(sin(calc(var(--angle) - 90deg)) * 100px);
+		--x: calc(cos(calc(var(--angle) - 90deg)) * 150px);
+		--y: calc(sin(calc(var(--angle) - 90deg)) * 150px);
 		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);
-		animation: fly forwards 0.25s;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		color: #fff;
+		filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
 	}
 
 	.custom-loading {
