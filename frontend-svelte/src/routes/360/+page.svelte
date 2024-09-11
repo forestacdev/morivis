@@ -21,6 +21,7 @@
 	// const LINE_GEOJSON_URL = 'http://127.0.0.1:8081/geojson/THETA360_line.geojson';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	let isView: '360' | 'map' = '360';
 	let mapContainer: HTMLDivElement;
 	// let markerContainer: HTMLDivElement;
 	let mapInstance: maplibregl.Map | null = null;
@@ -41,8 +42,8 @@
 	let angleMarker = null;
 
 	const setPoint = (point) => {
-		console.log(point);
-		feature = point;
+		if(!point) return;
+        feature = point;
 
 		const urlSearchParams = $page.url.searchParams;
 		urlSearchParams.set('imageId', point.properties['ID']);
@@ -281,13 +282,24 @@
 	const nextPoint = (e) => {
 		setPoint(e.detail);
 	};
+
+	const changeView = () => {
+		isView = isView === '360' ? 'map' : '360';
+	};
 </script>
 
 <div class="relative flex h-full w-full flex-col md:flex-row">
-	<div bind:this={mapContainer} class="h-full w-full"></div>
+	<div
+		bind:this={mapContainer}
+		class=" absolute {isView === '360'
+			? 'left-4 top-4 z-50 h-[350px] w-[350px] overflow-hidden rounded-lg shadow-md'
+			: 'h-full w-full'}"
+	></div>
 
-	<ThreeCanvas {feature} {nextPointData} on:nextPoint={nextPoint} bind:cameraBearing />
+	<ThreeCanvas {isView} {feature} {nextPointData} on:nextPoint={nextPoint} bind:cameraBearing />
 </div>
 
-<div class="absolute left-2 top-2 z-50 z-50">{cameraBearing}</div>
+<button class="z-5 absolute bottom-4 left-4 rounded-md bg-white p-2" on:click={changeView}
+	>切り換え</button
+>
 <!-- <AngleMarker {cameraBearing} /> -->

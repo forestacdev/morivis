@@ -21,9 +21,11 @@
 	// main/images/R0010026/face_1.jpg
 	export let feature: any;
 	export let nextPointData = [];
+	export let isView: '360' | 'map';
 	let canvas: HTMLCanvasElement;
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
+	let renderer: THREE.WebGLRenderer;
 	let isRendering = true;
 	let isloading = true;
 	let controlDiv: HTMLDivElement;
@@ -70,6 +72,7 @@
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
 	const created360Mesh = async (feature) => {
+        if(!feature) return;
 		isloading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
 		const id = feature.properties['ID'];
@@ -118,6 +121,22 @@
 		);
 	};
 
+	// 画面リサイズ時にキャンバスもリサイズ
+	const onResize = (value?: number) => {
+		console;
+		// サイズを取得
+		const width = value ?? window.innerWidth;
+		const height = value ?? window.innerHeight;
+
+		// レンダラーのサイズを調整する
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.setSize(width, height);
+
+		// カメラのアスペクト比を正す
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+	};
+
 	onMount(async () => {
 		const sizes = {
 			width: canvas.clientWidth,
@@ -154,44 +173,30 @@
 		orbitControls.panSpeed = -1;
 
 		// ヘルパーグリッド
-		const gridHelper = new THREE.GridHelper(200, 100);
-		// scene.add(gridHelper);
-		gridHelper.position.y = -5;
+		// const gridHelper = new THREE.GridHelper(200, 100);
+		// // scene.add(gridHelper);
+		// gridHelper.position.y = -5;
 
-		const radius = 10;
-		const sectors = 16;
-		const rings = 80;
-		const divisions = 64;
+		// const radius = 10;
+		// const sectors = 16;
+		// const rings = 80;
+		// const divisions = 64;
 
-		const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
-		scene.add(helper);
+		// const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+		// scene.add(helper);
 
-		// ヘルパー方向
-		const axesHelper = new THREE.AxesHelper(100);
-		scene.add(axesHelper);
+		// // ヘルパー方向
+		// const axesHelper = new THREE.AxesHelper(100);
+		// scene.add(axesHelper);
 
 		// レンダラー
-		const renderer = new THREE.WebGLRenderer({
+		renderer = new THREE.WebGLRenderer({
 			canvas: canvas,
 			alpha: true
 		});
-		renderer.setSize(sizes.width, sizes.height);
+		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-		// 画面リサイズ時にキャンバスもリサイズ
-		const onResize = () => {
-			// サイズを取得
-			const width = canvas.clientWidth;
-			const height = canvas.clientHeight;
-
-			// レンダラーのサイズを調整する
-			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-			renderer.setSize(width, height);
-
-			// カメラのアスペクト比を正す
-			camera.aspect = sizes.width / sizes.height;
-			camera.updateProjectionMatrix();
-		};
 		window.addEventListener('resize', onResize);
 
 		// テクスチャ
@@ -200,7 +205,7 @@
 		const animate = () => {
 			requestAnimationFrame(animate);
 			if (!isRendering) return;
-			const target = orbitControls.target;
+
 			orbitControls.update();
 
 			camera.rotation.order = 'YXZ';
@@ -214,21 +219,14 @@
 
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 			// controlDiv親要素のを取得
-			const parent = controlDiv.parentElement;
-
-			parent.style.transform = `rotateX(${degreesX - 30}deg)`;
-
 			cameraBearing = degrees;
 
-			// scene.environmentRotation.set(0, THREE.MathUtils.degToRad(geometryBearing.y), 0);
-
+			// テクスチャを回転させる
 			scene.backgroundRotation.set(
 				THREE.MathUtils.degToRad(geometryBearing.x),
 				THREE.MathUtils.degToRad(geometryBearing.y),
 				THREE.MathUtils.degToRad(geometryBearing.z)
 			);
-
-			// テクスチャを回転させる
 
 			renderer.render(scene, camera);
 		};
@@ -240,17 +238,30 @@
 	};
 
 	$: created360Mesh(feature);
+
+	$: {
+		if (isView && renderer) {
+			isView === '360' ? onResize() : onResize(350);
+		}
+	}
 </script>
 
 <!-- <div class="custom-canvas-back"></div> -->
-<div class="relative h-full w-full">
+<div
+	class="absolute overflow-hidden {isView === '360'
+		? 'h-full w-full'
+		: 'left-4 top-4 z-50 h-[350px] w-[350px] rounded-lg p-0 shadow-md'}"
+>
 	{#if isloading}
 		<div class="custom-loading">
 			<div class="custom-spinner"></div>
 		</div>
 	{:else}
 		<div
-			class="custom-3d pointer-events-none absolute bottom-[10px] grid w-full place-items-center"
+			class="custom-3d pointer-events-none absolute bottom-0 grid w-full p-0 place-items-center{isView ===
+			'360'
+				? ' h-[400px]'
+				: ' h-full'}"
 		>
 			<div class="custom-control-warp">
 				<div bind:this={controlDiv} class="custom-control">
@@ -258,12 +269,14 @@
 						<button
 							on:click={() => nextPoint(point)}
 							class="custom-arrow"
-							style="--angle: {point.bearing}deg;"
+							style="--angle: {point.bearing}deg;　--distance: {isView === '360'
+								? '128'
+								: '64'}px;"
 						>
 							<Icon
 								icon="ic:baseline-double-arrow"
-								width="128"
-								height="128"
+								width={isView === '360' ? 128 : 64}
+								height={isView === '360' ? 128 : 64}
 								class=""
 								style="transform: rotate({point.bearing - 90}deg);"
 							/>
@@ -278,13 +291,15 @@
 
 <style>
 	canvas {
-		background-image: radial-gradient(#382c6e, #000000);
+		background-image: radial-gradient(#000000, #000000);
+		padding: 0;
 	}
 
 	.custom-3d {
 		pointer-events: none;
 		transform-style: preserve-3d;
 		perspective: 1000px;
+		/* background-color: #000000; */
 	}
 
 	.custom-control-warp {
@@ -300,23 +315,22 @@
 
 	.custom-arrow {
 		pointer-events: auto;
-		border-radius: 50%;
 		display: grid;
 		place-items: center;
-		padding: 5px;
+
 		pointer-events: all;
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		--x: calc(cos(calc(var(--angle) - 90deg)) * 150px);
-		--y: calc(sin(calc(var(--angle) - 90deg)) * 150px);
+		--x: calc(cos(calc(var(--angle) - 90deg)) * var(--distance));
+		--y: calc(sin(calc(var(--angle) - 90deg)) * var(--distance));
 		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);
 		color: #fff;
 		filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
 	}
 
 	.custom-loading {
-		z-index: 9999;
+		z-index: 1;
 		width: 100%;
 		height: 100%;
 		position: absolute;
