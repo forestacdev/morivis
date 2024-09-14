@@ -26,7 +26,11 @@ import Worker from './worker?worker';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 import type { LayerEntry } from '$lib/data/types';
+import { layerData } from '$lib/data/layers';
 import { isSide } from '$lib//store/store';
+import { getGeojson } from '$lib/utils/geojson';
+import { getLocationBbox } from '$lib/data/locationBbox';
+import turfBbox from '@turf/bbox';
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -205,6 +209,30 @@ const createMapStore = () => {
 	const easeTo = (options: AnimationOptions) => {
 		if (!map) return;
 		map.easeTo(options);
+	};
+
+	const focusLayer = async (layerId: string) => {
+		if (!map) return;
+		const targetLayer = layerData.find((layer: LayerEntry) => layer.id === layerId);
+		if (!targetLayer) return;
+		if (targetLayer.dataType === 'geojson') {
+			try {
+				const geojson = await getGeojson(targetLayer.url);
+				const bbox = turfBbox(geojson) as [number, number, number, number];
+				console.log(bbox);
+				map.fitBounds(bbox);
+			} catch (error) {
+				console.error(error);
+				alert('Failed to fetch GeoJSON');
+			}
+		} else if (targetLayer.location) {
+			console.log(targetLayer.location);
+			const bbox = getLocationBbox(targetLayer.location[0]);
+
+			if (bbox) {
+				map.fitBounds(bbox);
+			}
+		}
 	};
 
 	// isSide.subscribe((value) => {
@@ -397,6 +425,7 @@ const createMapStore = () => {
 		panTo,
 		easeTo,
 		addPreviewLayer,
+		focusLayer,
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド

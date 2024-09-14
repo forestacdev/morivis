@@ -13,6 +13,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'ortho_photo',
 		name: 'オルソ写真',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
 		attribution:
@@ -33,6 +34,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'latest_photo',
 		name: '全国最新写真',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
 		attribution:
@@ -53,6 +55,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'aerial_photo_1979',
 		name: '空中写真（1979年頃）',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/gazo2/{z}/{x}/{y}.jpg',
 		attribution:
@@ -73,6 +76,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'std_map',
 		name: '地理院標準地図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
 		attribution:
@@ -93,6 +97,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'pale_map',
 		name: '地理院淡色地図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',
 		attribution:
@@ -113,6 +118,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'blank_map',
 		name: '地理院白地図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png',
 		attribution:
@@ -133,6 +139,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'relief_map',
 		name: '色別標高図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
 		attribution:
@@ -153,6 +160,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'hillshade_map',
 		name: '陰影起伏図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png',
 		attribution:
@@ -173,6 +181,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'slope_map_bw',
 		name: '傾斜量図白黒',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png',
 		attribution:
@@ -193,6 +202,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'gifu_slope_map',
 		name: '傾斜区分図（岐阜県森林研究所）',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu_2021Slpoe_2022_07_25_15_54/MapServer/tile/{z}/{y}/{x}',
 		attribution:
@@ -213,6 +223,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'vege_map',
 		name: '植生図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://map.ecoris.info/tiles/vege67hill/{z}/{x}/{y}.png',
 		attribution:
@@ -233,6 +244,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'seamless_geological_map',
 		name: 'シームレス地質図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://gbank.gsj.jp/seamless/v2/api/1.2.1/tiles/{z}/{y}/{x}.png',
 		attribution:
@@ -253,6 +265,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'active_fault_map',
 		name: '活断層図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/afm/{z}/{x}/{y}.png',
 		attribution:
@@ -273,6 +286,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'gifu_cs_map',
 		name: 'CS立体図（岐阜県）',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu2021CS_Mosic/MapServer/tile/{z}/{y}/{x}',
 		attribution:
@@ -293,6 +307,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'gifu_shared_space',
 		name: '岐阜県共有空間データ',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://mapdata.qchizu.xyz/gifu_pref_00/{z}/{x}/{y}.png',
 		attribution:
@@ -313,6 +328,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'sekishoku_map',
 		name: '赤色立体図10mメッシュ',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/sekishoku/{z}/{x}/{y}.png',
 		attribution: "<a href='https://www.rrim.jp/' target='_blank'>アジア航測株式会社</a>",
@@ -332,6 +348,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'osm_map',
 		name: 'Open Street Map',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 		attribution: "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors",
@@ -351,6 +368,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'esri_world_street',
 		name: 'Esri World Street',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png',
 		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
@@ -370,6 +388,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'esri_world_imagery',
 		name: 'Esri World Imagery',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
 		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
@@ -389,6 +408,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'esri_world_topo',
 		name: 'Esri World Topo',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.png',
 		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
@@ -408,6 +428,7 @@ export const rasterEntries: RasterEntry[] = [
 		id: 'mino_kihonz',
 		name: '美濃市_基本図',
 		dataType: 'raster',
+		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://raw.githubusercontent.com/forestacdev/rastertile-poc/main/tiles/{z}/{x}/{y}.webp',
 		attribution: '美濃市',

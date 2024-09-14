@@ -163,6 +163,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		showFill: true,
 		clickable: true,
 		styleKey: '単色',
+		location: ['森林文化アカデミー'],
 		filter: ['all', ['match', ['get', 'カテゴリ'], ['建物', 'その他'], true, false]],
 		style: {
 			fill: [
@@ -212,6 +213,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		opacity: 1,
 		url: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
 		attribution: '森林文化アカデミー',
+		location: ['森林文化アカデミー'],
 		visible: true,
 		clickable: true,
 		showLabel: true,

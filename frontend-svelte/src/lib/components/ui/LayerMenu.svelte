@@ -11,6 +11,7 @@
 	import { flip } from 'svelte/animate';
 	import { addedLayerIds } from '$lib/store/store';
 	export let layerDataEntries: LayerEntry[] = [];
+	export let clickedLayerId: string;
 
 	let rotatingElement: HTMLElement;
 
@@ -24,13 +25,6 @@
 			x: '-100%', // 左から右へスライド
 			ease: 'power2.out' // スムーズな動きのためのイージング
 		});
-		// tl.to(node, {
-		// 	duration: duration,
-		// 	rotation: 30, // 30度回転
-		// 	transformOrigin: '0% 100%', // 左下を軸に回転
-		// 	ease: 'power2.out' // アニメーションのイージング
-		// 	// ここで、移動中の途中で回転が入る
-		// }); // 最初
 
 		return {
 			duration: tl.totalDuration() * 1000, // ミリ秒に変換
@@ -50,26 +44,43 @@
 {#if $isSide === 'layer'}
 	<div
 		transition:tweenMe
-		class="custom bg-color-base absolute left-0 top-0 flex h-full flex-col rounded-sm bg-cover bg-no-repeat p-4 pl-[100px] text-slate-100"
+		class="left-0 top-0 flex h-full flex-col rounded-sm bg-[#69A158] p-4 pb-[150px] pl-[100px] pt-[50px] text-slate-100"
 	>
 		<button on:click={toggleDataMenu}>データ追加</button>
 		<div class="flex h-full gap-4">
 			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto">
 				{#each layerDataEntries
 					.filter((layerEntry) => $addedLayerIds.includes(layerEntry.id))
+					.filter((layerEntry) => layerEntry.dataType === 'vector' || layerEntry.dataType === 'geojson')
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)) as layerEntry, index (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">
-						<LayerSlot bind:layerEntry {index} />
+						<LayerSlot bind:layerEntry {clickedLayerId} {index} />
+					</div>
+				{/each}
+				<div class="mt-4">背景地図データ</div>
+				{#each layerDataEntries
+					.filter((layerEntry) => $addedLayerIds.includes(layerEntry.id))
+					.filter((layerEntry) => layerEntry.dataType === 'raster' && !layerEntry.isOverVector)
+					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)) as layerEntry, index (layerEntry.id)}
+					<div animate:flip={{ duration: 200 }} class="">
+						<LayerSlot bind:layerEntry {clickedLayerId} {index} />
 					</div>
 				{/each}
 			</div>
 			<!-- <DataMenu bind:layerDataEntries /> -->
 		</div>
+		<div class="custom-text">LAYER</div>
 	</div>
 {/if}
 
 <style>
-	.custom {
-		/* transform: skewX(-5deg); */
+	.custom-text {
+		position: absolute;
+		transform: rotate(20deg);
+		bottom: 10px;
+		left: 10px;
+		font-size: 4.5rem;
+		font-weight: 700;
+		color: #000;
 	}
 </style>

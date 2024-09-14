@@ -33,7 +33,12 @@
 	import { layerData } from '$lib/data/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import { isSide, excludeIdsClickLayer, addedLayerIds } from '$lib/store/store';
+	import {
+		isSide,
+		excludeIdsClickLayer,
+		addedLayerIds,
+		clickableLayerIds
+	} from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl, getFieldDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
@@ -58,6 +63,7 @@
 	let mapBearing = 0;
 
 	let feature;
+	let clickedLayerId: string;
 
 	// 画面振動
 	const shakeScreen = () => {
@@ -131,15 +137,17 @@
 
 			mapStore.panTo(e.lngLat, { duration: 1000 });
 
-			let features = mapStore.queryRenderedFeatures(e.point);
+			let features = mapStore.queryRenderedFeatures(e.point, {
+				layers: $clickableLayerIds
+			});
 
 			// NOTE: debug
 			if (import.meta.env.DEV) console.log('click', features);
 
 			if (!features) return;
-			features = features.filter((feature) => {
-				return !$excludeIdsClickLayer.includes(feature.layer.id);
-			});
+			// features = features.filter((feature) => {
+			// 	return !$excludeIdsClickLayer.includes(feature.layer.id);
+			// });
 
 			if (features.length === 0) {
 				selectFeatureList = [];
@@ -194,6 +202,7 @@
 				}
 
 				feature = features[0] ? features[0] : null;
+				clickedLayerId = targetLayerData.id;
 			}
 
 			// selectFeatureList = [];
@@ -282,16 +291,16 @@
 	// };
 </script>
 
+<Side />
+<!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
+
+<LayerMenu bind:layerDataEntries {clickedLayerId} />
 <div
 	bind:this={mapContainer}
 	class="h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
 		? 'custom-brah scale-[1.05]'
 		: ''}"
 ></div>
-<Side />
-<!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
-
-<LayerMenu bind:layerDataEntries />
 <DataMenu bind:layerDataEntries />
 <LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">

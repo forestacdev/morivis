@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import type { Side } from '$lib/types/ui';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
 import type { UserInfo } from 'firebase/auth';
+import { layerData } from '$lib/data/layers';
 
 export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 
@@ -11,15 +12,35 @@ export const clickableLayerIds = writable<string[]>([]); /* クリックイベ�
 
 /* リストに追加されてるレイヤーID */
 
+const sortedLayers = (Layers: string[]) => {
+	const raster = [];
+	const vector = [];
+
+	Layers.forEach((layerId) => {
+		// typeを調べる
+		const layer = layerData.find((entry) => entry.id === layerId);
+
+		if (layer?.dataType === 'raster' && !layer.isOverVector) {
+			raster.push(layerId);
+		} else {
+			vector.push(layerId);
+		}
+	});
+
+	return [...vector, ...raster];
+};
+
 const createLayerStore = (initialLayers: string[] = []) => {
-	const { subscribe, set, update } = writable<string[]>(initialLayers);
+	const newLayers = sortedLayers(initialLayers);
+
+	const { subscribe, set, update } = writable<string[]>(newLayers);
 
 	return {
 		subscribe,
 		addLayer: (id: string) =>
 			update((layers) => {
 				if (!layers.includes(id)) {
-					return [id, ...layers];
+					return sortedLayers([id, ...layers]);
 				}
 				return layers;
 			}),
@@ -43,7 +64,7 @@ const createLayerStore = (initialLayers: string[] = []) => {
 						newLayers[index]
 					];
 				}
-				return newLayers;
+				return sortedLayers(newLayers);
 			}),
 		reset: () => set([]) // 全てのIDをリセットする関数
 	};
@@ -52,7 +73,8 @@ const createLayerStore = (initialLayers: string[] = []) => {
 export const addedLayerIds = createLayerStore(INT_ADD_LAYER_IDS);
 
 /** 表示中のサイドメニューの種類 */
-export const isSide = writable<Side>(null);
+// export const isSide = writable<Side>(null);
+export const isSide = writable<Side>('layer');
 export const showDataMenu = writable<boolean>(false);
 export const showlayerOptionId = writable<string>('');
 

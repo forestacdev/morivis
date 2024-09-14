@@ -3,7 +3,7 @@
 	import { isSide } from '$lib/store/store';
 	import type { Side } from '$lib/types/ui';
 	import Icon from '@iconify/svelte';
-	import Logo from '$lib/components/Logo.svelte';
+
 	import gsap from 'gsap';
 
 	const toggleMenu = (key: Side) => {
@@ -19,7 +19,6 @@
 	});
 </script>
 
-<Logo />
 <div
 	class="custom-side pointer-events-none absolute left-[0px] top-[80px] z-10 flex h-full flex-col gap-[20px] p-[6px] text-sm"
 >
@@ -29,9 +28,7 @@
 	<button on:click={() => toggleMenu('layer')} class="btn-side"
 		><Icon icon="bx:layer-plus" width="30" height="30" class="" /></button
 	>
-	<button on:click={() => toggleMenu('vector')} class="btn-side"
-		><Icon icon="bxs:layer-plus" width="30" height="30" class="" /></button
-	>
+
 	<button on:click={() => toggleMenu('settings')} class="btn-side btn-side"
 		><Icon
 			icon="material-symbols-light:settings-outline"

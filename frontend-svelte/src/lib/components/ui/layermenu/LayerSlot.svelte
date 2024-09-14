@@ -1,33 +1,24 @@
 <script lang="ts">
-	import type { CategoryEntry } from '$lib/data/layers';
 	import Icon from '@iconify/svelte';
 	import type { LayerEntry } from '$lib/data/types';
 	import { showlayerOptionId, addedLayerIds } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { crossfade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
 
 	import { createEventDispatcher } from 'svelte';
+	import { rasterEntries } from '$lib/data/raster';
 	const dispatch = createEventDispatcher();
 
 	export let layerEntry: LayerEntry;
 	export let index: number;
+	export let clickedLayerId: string;
 	let selectedStyle: string = layerEntry.styleKey;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
 			? showlayerOptionId.set('')
 			: showlayerOptionId.set(layerEntry.id);
-	};
-
-	// レイヤーの移動
-	const moveLayerById = (direction: 'up' | 'down') => {
-		const id = layerEntry.id;
-
-		addedLayerIds.reorderLayer(id, direction);
-	};
-
-	const serPaintProperty = (key: string, value: string) => {
-		console.log(key, value);
 	};
 
 	$: {
@@ -53,93 +44,84 @@
 			};
 		}
 	});
+	// $: console.log(feature);
 </script>
 
-<div
-	class="relative flex w-[220px] select-none flex-col justify-between gap-x-2 rounded-sm transition-all {$showlayerOptionId ===
-	layerEntry.id
-		? '!rounded-sm py-6 delay-100'
-		: ''}"
-	class:bg-color-active={$showlayerOptionId === layerEntry.id || layerEntry.visible}
-	class:py-6={$showlayerOptionId === layerEntry.id}
-	class:slot-active-anime={layerEntry.visible}
-	class:slot-inactive-anime={!layerEntry.visible}
+<button
+	id={layerEntry.id}
+	class="custom-bg items-centergap-x-2 relative flex w-[220px] select-none flex-col justify-center rounded-sm transition-all"
 	in:receive={{ key: layerEntry.id }}
 	out:send={{ key: layerEntry.id }}
+	on:click={showLayerOption}
 >
-	<button
-		class="absolute top-0 transition-all delay-100 duration-200 {$showlayerOptionId ===
+	<div
+		class="absolute grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full text-[#012a2d] {$showlayerOptionId ===
 		layerEntry.id
-			? ''
-			: 'pointer-events-none opacity-0'}"
-		on:click={() => moveLayerById('up')}
-		><Icon icon="bx:up-arrow" width="24" height="24" class="" /></button
+			? 'bg-[#2cabaf]'
+			: 'bg-[#256830]'}"
 	>
-
-	<div class="relative flex justify-between">
-		<button
-			on:click={showLayerOption}
-			id={layerEntry.id}
-			class="w-full cursor-pointer items-end p-2 text-left transition-all duration-150"
-		>
-			<span class="">{layerEntry.name}</span>
-			<!-- <input
-				class=""
-				type="radio"
-				bind:group={$showlayerOptionId}
-				id={layerEntry.id}
-				value={layerEntry.id}
-			/> -->
-		</button>
-		<button
-			class="absolute right-1 top-2 flex w-12 cursor-pointer items-center justify-center {layerEntry.visible
-				? ''
-				: 'pointer-events-none overflow-hidden border-transparent py-0 opacity-0'}"
-			on:click={showLayerOption}
-		>
-			<Icon
-				class="transition-all duration-150 {$showlayerOptionId === layerEntry.id
-					? 'rotate-90'
-					: ''}"
-				icon="weui:setting-outlined"
-				width="24"
-				height="24"
+		{#if layerEntry.geometryType === 'point'}
+			<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
+		{:else if layerEntry.geometryType === 'line'}
+			<Icon icon="tabler:line" class="pointer-events-none" width={40} />
+		{:else if layerEntry.geometryType === 'polygon'}
+			<Icon icon="ph:polygon" class="pointer-events-none" width={40} />
+		{:else if layerEntry.geometryType === 'raster'}
+			<img
+				class="pointer-events-none block h-full w-full object-cover"
+				alt={layerEntry.name}
+				src={layerEntry.url
+					.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
+					.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
+					.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())}
 			/>
-		</button>
+		{/if}
 	</div>
-	<button
-		class="absolute bottom-7 transition-all delay-100 duration-200 {$showlayerOptionId ===
-		layerEntry.id
-			? ''
-			: 'pointer-events-none opacity-0'}"
-		on:click={() => moveLayerById('down')}
-		><Icon icon="bx:down-arrow" class="absolute" width="24" height="24" /></button
-	>
-</div>
+
+	<div class="z-10 ml-[50px] w-full py-4">
+		<div class="w-full cursor-pointer items-end text-left transition-all duration-150">
+			<span class="flex items-center gap-2">{layerEntry.name}</span>
+		</div>
+		<div class="flex items-center gap-2 text-xs">
+			<Icon icon="gg:pin" /><span>{layerEntry.location ?? '不明'}</span>
+		</div>
+	</div>
+	<div class="absolute bottom-0 ml-[50px] flex items-center gap-2 text-sm">
+		<span>OP</span>
+		<div class=" z-10 h-[10px] w-[100px] border-[1px]" style="transform: skewX(-20deg)">
+			<div class="h-full bg-[#64df00]" style="width: {layerEntry.opacity * 100}%;"></div>
+		</div>
+		<span>{layerEntry.opacity}</span>
+	</div>
+</button>
 
 <style>
-	/* :root {
-		--active-width: 200px;
-		--inactive-width: 150px;
-	}
-	.slot-active-anime {
-		animation: slot-active 0.2s forwards;
-		width: var(--inactive-width);
-	}
-	@keyframes slot-active {
-		100% {
-			width: var(--active-width);
-		}
+	/* .custom-circle {
+		position: absolute;
+		width: 70px;
+		height: 70px;
+		right: 10px;
+		bottom: 10px;
+		background: #ffffff;
+	} */
+	.custom-button {
+		/* transform: skewX(-10deg); */
 	}
 
-	.slot-inactive-anime {
-		width: var(--active-width);
-		animation: slot-inactive 0.2s forwards;
+	.custom-bg {
+		background: rgb(0, 0, 0);
+		background: linear-gradient(270deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
 	}
 
-	@keyframes slot-inactive {
-		100% {
-			width: var(--inactive-width);
-		}
+	/* .custom-button::before {
+		content: 'っs';
+		position: absolute;
+
+		width: 100%;
+		height: 100%;
+		right: 10px;
+		bottom: 10px;
+		background: #000;
+		z-index: 0;
 	} */
 </style>

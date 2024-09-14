@@ -83,18 +83,20 @@ type Region =
 	| '世界'
 	| LocationOther;
 
-export type GeometryType = 'polygon' | 'line' | 'point' | 'label';
+export type GeometryType = 'polygon' | 'line' | 'point' | 'label' | 'raster';
 
 export type RasterEntry = {
 	id: string;
 	name: string;
 	dataType: 'raster';
+	geometryType: 'raster';
 	url: string;
 	attribution: string;
 	sourceMinZoom?: number;
 	sourceMaxZoom?: number;
 	layerMinZoom?: number;
 	layerMaxZoom?: number;
+	isOverVector?: boolean;
 	opacity: number;
 	styleKey: string;
 	style?: RasterStyle;
