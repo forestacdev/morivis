@@ -11,4 +11,4 @@ export const GIFU_DATA_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/gifu-dataset/main/data';
 
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
-export const INT_ADD_LAYER_IDS = ['ENSYURIN_rinhanzu', 'TATEMONO'];
+export const INT_ADD_LAYER_IDS = ['ENSYURIN_MITI', 'ENSYURIN_rinhanzu', 'TATEMONO', 'ZIRIKI'];

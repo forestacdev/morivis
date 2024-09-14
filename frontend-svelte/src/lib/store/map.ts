@@ -207,16 +207,16 @@ const createMapStore = () => {
 		map.easeTo(options);
 	};
 
-	isSide.subscribe((value) => {
-		console.log(value);
-		if (value !== null && value) {
-			if (!map) return;
-			map.panBy([-200, 0]);
-		} else {
-			if (!map) return;
-			map.panBy([200, 0]);
-		}
-	});
+	// isSide.subscribe((value) => {
+	// 	console.log(value);
+	// 	if (value !== null && value) {
+	// 		if (!map) return;
+	// 		map.panBy([-200, 0]);
+	// 	} else {
+	// 		if (!map) return;
+	// 		map.panBy([200, 0]);
+	// 	}
+	// });
 
 	// プレビューレイヤーを追加するメソッド
 	const addPreviewLayer = (layerEntry: LayerEntry) => {

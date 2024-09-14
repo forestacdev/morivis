@@ -18,6 +18,7 @@
 			duration: duration,
 			opacity: 0,
 			x: '100%', // 左から右へスライド
+
 			ease: 'power2.out' // スムーズな動きのためのイージング
 		});
 

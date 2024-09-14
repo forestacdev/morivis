@@ -23,7 +23,7 @@
 	const moveLayerById = (direction: 'up' | 'down') => {
 		const id = layerEntry.id;
 
-        addedLayerIds.reorderLayer(id, direction);
+		addedLayerIds.reorderLayer(id, direction);
 	};
 
 	const serPaintProperty = (key: string, value: string) => {
@@ -56,7 +56,7 @@
 </script>
 
 <div
-	class="relative flex select-none flex-col justify-between gap-x-2 rounded-sm border-[1px] border-slate-50 transition-all {$showlayerOptionId ===
+	class="relative flex w-[220px] select-none flex-col justify-between gap-x-2 rounded-sm transition-all {$showlayerOptionId ===
 	layerEntry.id
 		? '!rounded-sm py-6 delay-100'
 		: ''}"
@@ -77,18 +77,20 @@
 	>
 
 	<div class="relative flex justify-between">
-		<label class="w-full cursor-pointer items-end p-2 transition-all duration-150">
+		<button
+			on:click={showLayerOption}
+			id={layerEntry.id}
+			class="w-full cursor-pointer items-end p-2 text-left transition-all duration-150"
+		>
 			<span class="">{layerEntry.name}</span>
-			<input
-				class="invisible"
-				type="checkbox"
-				id={layerEntry.name}
-				bind:checked={layerEntry.visible}
-				value={layerEntry}
-			/>
-
-			<!-- 透過度の設定 -->
-		</label>
+			<!-- <input
+				class=""
+				type="radio"
+				bind:group={$showlayerOptionId}
+				id={layerEntry.id}
+				value={layerEntry.id}
+			/> -->
+		</button>
 		<button
 			class="absolute right-1 top-2 flex w-12 cursor-pointer items-center justify-center {layerEntry.visible
 				? ''

@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
+	import SvgTest from '$lib/svg/アカデミー施設/森のコテージ.svg';
 
 	import LayerSlot from '$lib/components/ui/layermenu/LayerSlot.svelte';
 	import DataMenu from '$lib/components/ui/DataMenu.svelte';
@@ -23,6 +24,13 @@
 			x: '-100%', // 左から右へスライド
 			ease: 'power2.out' // スムーズな動きのためのイージング
 		});
+		// tl.to(node, {
+		// 	duration: duration,
+		// 	rotation: 30, // 30度回転
+		// 	transformOrigin: '0% 100%', // 左下を軸に回転
+		// 	ease: 'power2.out' // アニメーションのイージング
+		// 	// ここで、移動中の途中で回転が入る
+		// }); // 最初
 
 		return {
 			duration: tl.totalDuration() * 1000, // ミリ秒に変換
@@ -42,7 +50,7 @@
 {#if $isSide === 'layer'}
 	<div
 		transition:tweenMe
-		class="bg-color-base absolute left-0 top-0 flex h-full flex-col rounded-sm p-4 pl-[100px] text-slate-100"
+		class="custom bg-color-base absolute left-0 top-0 flex h-full flex-col rounded-sm bg-cover bg-no-repeat p-4 pl-[100px] text-slate-100"
 	>
 		<button on:click={toggleDataMenu}>データ追加</button>
 		<div class="flex h-full gap-4">
@@ -61,4 +69,7 @@
 {/if}
 
 <style>
+	.custom {
+		/* transform: skewX(-5deg); */
+	}
 </style>
