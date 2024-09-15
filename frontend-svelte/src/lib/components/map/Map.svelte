@@ -302,13 +302,15 @@
 <!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
 
 <LayerMenu bind:layerDataEntries {clickedLayerId} />
-<div
-	bind:this={mapContainer}
-	class="h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
-		? 'custom-brah scale-[1.05]'
-		: ''}"
-></div>
-<DataMenu bind:layerDataEntries />
+<div class="relative h-full w-full">
+	<div
+		bind:this={mapContainer}
+		class="absolute h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
+			? 'custom-brah scale-[1.05]'
+			: ''}"
+	></div>
+	<DataMenu bind:layerDataEntries />
+</div>
 <LayerOptionMenu bind:layerDataEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
 	<!-- {#if lockOnMarker}

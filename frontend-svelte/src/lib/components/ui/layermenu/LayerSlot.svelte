@@ -49,26 +49,28 @@
 
 <button
 	id={layerEntry.id}
-	class="custom-bg items-centergap-x-2 relative flex w-[220px] select-none flex-col justify-center rounded-sm transition-all"
+	class=" items-centergap-x-2 relative flex w-[220px] select-none flex-col justify-center rounded-sm transition-all"
 	in:receive={{ key: layerEntry.id }}
 	out:send={{ key: layerEntry.id }}
 	on:click={showLayerOption}
 >
 	<div
-		class="absolute grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full text-[#012a2d] {$showlayerOptionId ===
+		class="absolute z-10 grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full text-[#012a2d] {$showlayerOptionId ===
 		layerEntry.id
-			? 'bg-[#2cabaf]'
-			: 'bg-[#256830]'}"
+			? ''
+			: ''}"
+		style="background-image: radial-gradient(#f2f2f2 50%, transparent 56%),
+			conic-gradient(#f0ab56 0% {layerEntry.opacity * 75}%, transparent {layerEntry.opacity * 75}% 100%);"
 	>
 		{#if layerEntry.geometryType === 'point'}
 			<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
 		{:else if layerEntry.geometryType === 'line'}
-			<Icon icon="tabler:line" class="pointer-events-none" width={40} />
+			<Icon icon="tabler:line" class="pointer-events-none" width={30} />
 		{:else if layerEntry.geometryType === 'polygon'}
-			<Icon icon="ph:polygon" class="pointer-events-none" width={40} />
+			<Icon icon="ph:polygon" class="pointer-events-none" width={30} />
 		{:else if layerEntry.geometryType === 'raster'}
 			<img
-				class="pointer-events-none block h-full w-full object-cover"
+				class="pointer-events-none block h-[60%] w-[60%] rounded-full object-cover"
 				alt={layerEntry.name}
 				src={layerEntry.url
 					.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
@@ -77,8 +79,14 @@
 			/>
 		{/if}
 	</div>
-
-	<div class="z-10 ml-[50px] w-full py-4">
+	<div
+		class="custom-bg absolute bottom-[10px] z-0 h-[70%] w-full bg-black"
+		style="transform: skewX(10deg);"
+	></div>
+	<span class="absolute left-0 top-0 rounded-md bg-slate-400 text-xs"
+		>{layerEntry.opacity.toFixed(2)}</span
+	>
+	<div class="z-10 ml-[70px] w-full py-4">
 		<div class="w-full cursor-pointer items-end text-left transition-all duration-150">
 			<span class="flex items-center gap-2">{layerEntry.name}</span>
 		</div>
@@ -86,24 +94,9 @@
 			<Icon icon="gg:pin" /><span>{layerEntry.location ?? '不明'}</span>
 		</div>
 	</div>
-	<div class="absolute bottom-0 ml-[50px] flex items-center gap-2 text-sm">
-		<span>OP</span>
-		<div class=" z-10 h-[10px] w-[100px] border-[1px]" style="transform: skewX(-20deg)">
-			<div class="h-full bg-[#64df00]" style="width: {layerEntry.opacity * 100}%;"></div>
-		</div>
-		<span>{layerEntry.opacity}</span>
-	</div>
 </button>
 
 <style>
-	/* .custom-circle {
-		position: absolute;
-		width: 70px;
-		height: 70px;
-		right: 10px;
-		bottom: 10px;
-		background: #ffffff;
-	} */
 	.custom-button {
 		/* transform: skewX(-10deg); */
 	}

@@ -34,7 +34,11 @@
 </script>
 
 {#if $showDataMenu}
-	<div transition:tweenMe class="custom-scroll h-full w-1/2 overflow-scroll">
+	sssss
+	<div
+		transition:tweenMe
+		class="custom-scroll absolute z-10 h-full w-full overflow-scroll bg-black"
+	>
 		データを選択
 		<div class="right-[70px] grid-cols-3 gap-4 bg-black bg-opacity-70 p-4 text-white">
 			{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
