@@ -37,7 +37,8 @@
 		isSide,
 		excludeIdsClickLayer,
 		addedLayerIds,
-		clickableLayerIds
+		clickableLayerIds,
+		showDataMenu
 	} from '$lib/store/store';
 	import { getTilePixelColor, getTileUrl, getFieldDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
@@ -303,12 +304,14 @@
 
 <LayerMenu bind:layerDataEntries {clickedLayerId} />
 <div class="relative h-full w-full">
-	<div
-		bind:this={mapContainer}
-		class="absolute h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
-			? 'custom-brah scale-[1.05]'
-			: ''}"
-	></div>
+	<div class="absolute z-0 h-full w-full bg-black">
+		<div
+			bind:this={mapContainer}
+			class="h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
+				? 'custom-brah scale-[1.05]'
+				: ''}"
+		></div>
+	</div>
 	<DataMenu bind:layerDataEntries />
 </div>
 <LayerOptionMenu bind:layerDataEntries />

@@ -4,7 +4,7 @@
 	import Logo from '$lib/components/Logo.svelte';
 </script>
 
-<div class="app relative flex h-screen">
+<div class="app relative flex h-screen w-screen">
 	<Map />
 	<InfoDialog />
 	<Logo />

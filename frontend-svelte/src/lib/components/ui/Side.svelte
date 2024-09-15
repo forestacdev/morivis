@@ -7,6 +7,7 @@
 	import gsap from 'gsap';
 
 	const toggleMenu = (key: Side) => {
+		console.log('key:', key);
 		if (key === $isSide) {
 			isSide.set(null);
 		} else {
@@ -20,7 +21,7 @@
 </script>
 
 <div
-	class="custom-side pointer-events-none absolute left-[0px] top-[80px] z-10 flex h-full flex-col gap-[20px] p-[6px] text-sm"
+	class="custom-side pointer-events-none absolute left-[0px] top-[80px] z-50 flex h-full flex-col gap-[20px] p-[6px] text-sm"
 >
 	<button on:click={() => toggleMenu('search')} class="btn-side"
 		><Icon icon="lets-icons:search" width="30" height="30" class="" /></button

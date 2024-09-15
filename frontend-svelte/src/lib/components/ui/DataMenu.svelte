@@ -34,10 +34,9 @@
 </script>
 
 {#if $showDataMenu}
-	sssss
 	<div
 		transition:tweenMe
-		class="custom-scroll absolute z-10 h-full w-full overflow-scroll bg-black"
+		class="custom-scroll bg-red absolute z-10 h-full w-full overflow-y-scroll"
 	>
 		データを選択
 		<div class="right-[70px] grid-cols-3 gap-4 bg-black bg-opacity-70 p-4 text-white">

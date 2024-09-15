@@ -6,6 +6,7 @@
 	import { crossfade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
+	import { mapStore } from '$lib/store/map';
 
 	import { createEventDispatcher } from 'svelte';
 	import { rasterEntries } from '$lib/data/raster';
@@ -44,12 +45,22 @@
 			};
 		}
 	});
-	// $: console.log(feature);
+
+	// NOTE
+	// const focusLayer = (event: Event) => {
+	// 	event.stopPropagation();
+	// 	if (!layerEntry) return;
+
+	// 	mapStore.focusLayer(layerEntry.id);
+	// };
 </script>
 
 <button
 	id={layerEntry.id}
-	class=" items-centergap-x-2 relative flex w-[220px] select-none flex-col justify-center rounded-sm transition-all"
+	class="items-centergap-x-2 relative mr-[40px] flex w-[220px] select-none flex-col justify-center rounded-sm transition-all {$showlayerOptionId ===
+	layerEntry.id
+		? 'translate-x-[15px]'
+		: ''}"
 	in:receive={{ key: layerEntry.id }}
 	out:send={{ key: layerEntry.id }}
 	on:click={showLayerOption}
@@ -60,7 +71,7 @@
 			? ''
 			: ''}"
 		style="background-image: radial-gradient(#f2f2f2 50%, transparent 56%),
-			conic-gradient(#f0ab56 0% {layerEntry.opacity * 75}%, transparent {layerEntry.opacity * 75}% 100%);"
+			conic-gradient(#f0ab56 0% {layerEntry.opacity * 100}%, #7d7d7d {layerEntry.opacity * 100}% 100%);"
 	>
 		{#if layerEntry.geometryType === 'point'}
 			<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
@@ -81,9 +92,9 @@
 	</div>
 	<div
 		class="custom-bg absolute bottom-[10px] z-0 h-[70%] w-full bg-black"
-		style="transform: skewX(10deg);"
+		style="transform: skewX(-10deg);"
 	></div>
-	<span class="absolute left-0 top-0 rounded-md bg-slate-400 text-xs"
+	<span class="absolute bottom-[4px] left-[5px] z-10 rounded-md bg-slate-400 text-xs"
 		>{layerEntry.opacity.toFixed(2)}</span
 	>
 	<div class="z-10 ml-[70px] w-full py-4">
@@ -91,7 +102,7 @@
 			<span class="flex items-center gap-2">{layerEntry.name}</span>
 		</div>
 		<div class="flex items-center gap-2 text-xs">
-			<Icon icon="gg:pin" /><span>{layerEntry.location ?? '不明'}</span>
+			<Icon icon="gg:pin" /><span class="">{layerEntry.location ?? '---'}</span>
 		</div>
 	</div>
 </button>
