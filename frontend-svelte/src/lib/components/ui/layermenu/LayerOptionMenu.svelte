@@ -6,7 +6,7 @@
 	import { mapStore } from '$lib/store/map';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import Geometries from 'three/src/renderers/common/Geometries.js';
+	import { split } from 'postcss/lib/list';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -38,10 +38,14 @@
 
 		mapStore.focusLayer(layerOption.id);
 	};
+
+	const setColor = (e: any) => {
+		console.log(e);
+	};
 </script>
 
 <div
-	class="custom-css bg-color-base absolute left-[370px] flex w-[200px] rounded-sm p-2 text-slate-100 shadow-2xl transition-all duration-200 {$showlayerOptionId
+	class="custom-css bg-color-base absolute left-[370px] flex h-full w-[200px] flex-col rounded-sm p-2 text-slate-100 shadow-2xl transition-all duration-200 {$showlayerOptionId
 		? ''
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
@@ -171,6 +175,26 @@
 			<button on:click={focusLayer}>
 				<Icon icon="hugeicons:target-03" width="24" height="24" class="custom-anime" />
 			</button>
+		</div>
+		<div class="custom-scroll h-full overflow-y-auto">
+			{#if layerOption.geometryType === 'polygon'}
+				{#if layerOption.style?.fill?.find((item) => item.name === layerOption.styleKey).paint['fill-color'][0] === 'match'}
+					{#each layerOption.style?.fill
+						?.find((item) => item.name === layerOption.styleKey)
+						.paint['fill-color'].slice(2, -1) as item, index (index)}
+						<div class="flex w-full items-center">
+							{#if index % 2 === 0}
+								<div class="w-full text-sm">{item}</div>
+							{:else}
+								<div
+									class="h-[10px] w-full"
+									style="background-color: {item};"
+								></div>
+							{/if}
+						</div>
+					{/each}
+				{/if}
+			{/if}
 		</div>
 	{/if}
 </div>

@@ -314,7 +314,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		sourceMinZoom: 8,
 		visible: true,
 		clickable: true,
-		idField: '樹種ID',
+		idField: '面積_ha',
 		showFill: true,
 		showLine: false,
 		showLabel: false,

@@ -426,6 +426,7 @@ const createMapStore = () => {
 		easeTo,
 		addPreviewLayer,
 		focusLayer,
+		getTerrain: () => map?.getTerrain(),
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド

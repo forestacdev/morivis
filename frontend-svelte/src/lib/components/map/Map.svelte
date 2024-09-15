@@ -106,6 +106,13 @@
 			)
 		];
 
+		if (mapStore.getTerrain()) {
+			mapStyleJson.terrain = {
+				source: 'terrain',
+				exaggeration: 1
+			};
+		}
+
 		return mapStyleJson;
 	};
 
