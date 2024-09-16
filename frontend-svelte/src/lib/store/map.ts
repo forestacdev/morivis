@@ -87,8 +87,8 @@ maplibregl.addProtocol('tiles', async (params, abortController): any => {
 	}
 });
 const worker = new Worker();
-maplibregl.addProtocol('gsidem', async (params, abortController) => {
-	const imageUrl = params.url.replace('gsidem://', '');
+maplibregl.addProtocol('customgsidem', async (params, abortController) => {
+	const imageUrl = params.url.replace('customgsidem://', '');
 	return new Promise((resolve, reject) => {
 		const handleMessage = (e: MessageEvent) => {
 			if (e.data.id === imageUrl) {

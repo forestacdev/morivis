@@ -3,7 +3,7 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 	import Icon from '@iconify/svelte';
-	import Worker from './worker?worker';
+
 	import { createEventDispatcher } from 'svelte';
 	// import { angleData } from './angle';
 	import angleDataJson from '$lib/json/angle.json';
@@ -72,7 +72,7 @@
 	gui.add(submit, 'updateAngle').name('Update Angle');
 
 	const created360Mesh = async (feature) => {
-        if(!feature) return;
+		if (!feature) return;
 		isloading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
 		const id = feature.properties['ID'];

@@ -3,8 +3,6 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
-	import Worker from './worker?worker';
-
 	import { onMount } from 'svelte';
 
 	export let targetDemData: string;
@@ -98,19 +96,6 @@
         `,
 		transparent: true
 	});
-
-	// const worker = new Worker();
-
-	// // ワーカーにオフスクリーンキャンバスを渡す
-	// worker.postMessage({
-	// 	url: 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/14423/6458.png'
-	// });
-
-	// // ワーカーから結果を受け取る
-	// worker.onmessage = function (event) {
-	// 	const result = new Float32Array(event.data.buffer);
-	// 	console.log('Workerからの結果:', result); // 頂点シェーダーで計算された高さデータ
-	// };
 
 	const createdDemMesh = async (tileurl: string) => {
 		if (!tileurl) return;

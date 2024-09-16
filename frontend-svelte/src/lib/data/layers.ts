@@ -303,8 +303,6 @@ export const createLayerItems = (
 				case 'geojson': {
 					const styleKey = layerEntry.styleKey;
 
-					console.log(styleKey);
-
 					if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
 					if (layerEntry.dataType === 'vector') {
 						layer['source-layer'] = layerEntry.sourceLayer;
@@ -368,8 +366,6 @@ export const createLayerItems = (
 							}
 						};
 
-						console.log(lineLayer);
-
 						layerItems.push(lineLayer as LineLayerSpecification);
 					} else if (layerEntry.geometryType === 'point') {
 						const setStyele = layerEntry.style?.circle?.find(
@@ -392,8 +388,6 @@ export const createLayerItems = (
 						const setStyele = layerEntry.style?.symbol?.find(
 							(item) => item.name === styleKey
 						);
-
-						console.log(setStyele);
 						const pointLayer = {
 							...layer,
 							type: 'symbol',

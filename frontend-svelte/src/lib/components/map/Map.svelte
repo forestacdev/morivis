@@ -85,7 +85,8 @@
 		if (!mapStyleJson) return;
 		mapStyleJson.sources['terrain'] = gsiTerrainSource;
 		mapStyleJson.sources = {
-			...mapStyleJson.sources,
+			// ...mapStyleJson.sources,
+			terrain: gsiTerrainSource,
 			...createSourceItems(
 				layerDataEntries
 					.filter((entry) => $addedLayerIds.includes(entry.id))
@@ -97,13 +98,27 @@
 			}
 		};
 		mapStyleJson.layers = [
-			...mapStyleJson.layers,
+			// ...mapStyleJson.layers,
 			...createLayerItems(
 				layerDataEntries
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
 			),
+			// {
+			// 	id: 'terrain',
+			// 	type: 'hillshade',
+			// 	source: 'terrain',
+			// 	maxzoom: 24,
+			// 	layout: { visibility: 'visible' },
+			// 	paint: {
+			// 		'hillshade-highlight-color': 'rgb(0, 107, 55)',
+			// 		'hillshade-accent-color': 'rgba(47, 144, 166, 1)',
+			// 		'hillshade-shadow-color': 'rgba(0,0,0,1)',
+			// 		'hillshade-illumination-anchor': 'map',
+			// 		'hillshade-exaggeration': 0.6
+			// 	}
+			// },
 			{
 				id: 'tile_layer',
 				type: 'line',

@@ -39,23 +39,39 @@ const fsSource = `#version 300 es
         return h;
     }
 
+    // 高さに基づいて色を決定する関数
+    vec3 heightToColor(float height) {
+        float interval = 500.0; // 500mごとに色を変える
+        float normalizedHeight = mod(height, interval) / interval;
+        
+        // 色のグラデーションを定義
+        vec3 color1 = vec3(0.2, 0.8, 0.2); // 緑
+        vec3 color2 = vec3(0.8, 0.7, 0.2); // 黄土色
+        vec3 color3 = vec3(0.6, 0.3, 0.1); // 茶色
+        vec3 color4 = vec3(0.8, 0.8, 0.8); // 灰色
+        
+        if (normalizedHeight < 0.25) {
+            return mix(color1, color2, normalizedHeight * 4.0);
+        } else if (normalizedHeight < 0.5) {
+            return mix(color2, color3, (normalizedHeight - 0.25) * 4.0);
+        } else if (normalizedHeight < 0.75) {
+            return mix(color3, color4, (normalizedHeight - 0.5) * 4.0);
+        } else {
+            return mix(color4, color1, (normalizedHeight - 0.75) * 4.0);
+        }
+    }
+
     void main() {
         vec2 uv = vTexCoord;
         vec4 color = texture(heightMap, uv);
 
-        float height = convertToHeight(color)
+       float height = convertToHeight(color);
 
-        3000.0; // 高さの最大値
+    // 高さに基づいて色を決定
+    vec3 terrainColor = heightToColor(height);
 
-        // 補完
-        float h = height / 3000.0;
-
-        // 色
-        vec3 color = vec3(h, h, h);
-
-        // フラグメントカラー
-
-        fragColor = vec4(color, 1.0); // フラグメントカラー
+    // フラグメントカラー
+    fragColor = vec4(terrainColor, 1.0);
 
     }
 `;
