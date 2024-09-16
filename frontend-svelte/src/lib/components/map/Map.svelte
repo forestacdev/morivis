@@ -90,17 +90,46 @@
 				layerDataEntries
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id))
-			)
+			),
+			tile_source: {
+				type: 'vector',
+				tiles: ['tiles://{z}/{x}/{y}.pbf']
+			}
 		};
 		mapStyleJson.layers = [
 			...mapStyleJson.layers,
-
 			...createLayerItems(
 				layerDataEntries
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
-			)
+			),
+			{
+				id: 'tile_layer',
+				type: 'line',
+				source: 'tile_source',
+				'source-layer': 'geojsonLayer',
+				paint: {
+					'line-color': '#ffffff',
+					'line-opacity': 0.5
+				}
+			},
+			{
+				id: 'tile_layer_symbol',
+				type: 'symbol',
+				source: 'tile_source',
+				'source-layer': 'geojsonLayer',
+				layout: {
+					'text-field': ['get', 'name'],
+					'text-size': 20,
+					'text-allow-overlap': true
+				},
+				paint: {
+					'text-color': '#ffffff',
+					'text-halo-color': '#000000',
+					'text-halo-width': 1
+				}
+			}
 		];
 
 		if (mapStore.getTerrain()) {

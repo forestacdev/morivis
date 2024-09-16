@@ -166,7 +166,6 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		searchKeys: ['name'],
 		styleKey: '単色',
 		location: ['森林文化アカデミー'],
-		filter: ['all', ['match', ['get', 'カテゴリ'], ['建物', 'その他'], true, false]],
 		style: {
 			fill: [
 				{
@@ -213,7 +212,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		dataType: 'geojson',
 		geometryType: 'polygon',
 		opacity: 1,
-		url: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
+		url: `${GEOJSON_BASE_PATH}/ZIRIKI.geojson`,
 		attribution: '森林文化アカデミー',
 		location: ['森林文化アカデミー'],
 		visible: true,
@@ -222,7 +221,6 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		showLabel: true,
 		showLine: false,
 		showFill: true,
-		filter: ['all', ['match', ['get', 'カテゴリ'], ['自力建設'], true, false]],
 		styleKey: '単色',
 		style: {
 			fill: [

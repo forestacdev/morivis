@@ -45,6 +45,7 @@
 		"@svelte-plugins/tooltips": "^3.0.1",
 		"@sveltejs/adapter-static": "^3.0.4",
 		"@turf/bbox": "^7.1.0",
+		"@turf/bbox-polygon": "^7.1.0",
 		"@turf/bearing": "^7.1.0",
 		"@turf/boolean-crosses": "^7.1.0",
 		"@turf/boolean-point-on-line": "^7.1.0",
@@ -54,12 +55,14 @@
 		"firebase": "^10.13.0",
 		"firebaseui": "^6.1.0",
 		"fuse.js": "^7.0.0",
+		"geojson-vt": "^4.0.2",
 		"gsap": "^3.12.5",
 		"lil-gui": "^0.19.2",
 		"lodash.debounce": "^4.0.8",
 		"maplibre-gl": "^4.5.2",
 		"maplibre-gl-gsi-terrain": "^1.2.0",
 		"pmtiles": "^3.0.7",
-		"three": "^0.167.1"
+		"three": "^0.167.1",
+		"vt-pbf": "^3.1.3"
 	}
 }

@@ -1,8 +1,8 @@
 import type { BasemapImageTile } from '$lib/types/ui';
 export const BASEMAP_IMAGE_TILE: BasemapImageTile = {
-	Z: 12,
-	X: 3605,
-	Y: 1614
+	Z: 15,
+	X: 28846,
+	Y: 12917
 };
 
 export const GEOJSON_BASE_PATH =

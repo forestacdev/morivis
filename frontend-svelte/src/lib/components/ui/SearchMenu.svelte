@@ -11,6 +11,8 @@
 	import { flip } from 'svelte/animate';
 	import { addedLayerIds } from '$lib/store/store';
 	import { getGeojson } from '$lib/utils/geojson';
+	import tilebelt from '@mapbox/tilebelt';
+	import turfBboxPolygon from '@turf/bbox-polygon';
 	// export let layerDataEntries: LayerEntry[] = [];
 	// export let clickedLayerId: string;
 
@@ -50,6 +52,7 @@
 
 	const focusFeature = (feature: any) => {
 		mapStore.focusFeature(feature);
+		mapStore.addSearchFeature(feature);
 	};
 
 	const searchFeature = async (searchWord: string) => {
@@ -72,17 +75,43 @@
 			const fuse = new Fuse(featuresData.features, fuseOptions);
 
 			const matchingFeatures = fuse.search(searchWord).map((result) => result.item);
+
 			return {
 				name: layerEntry.name,
 				features: matchingFeatures
 			};
 		});
 
-		results = await Promise.all(promises);
+		const resultsData = await Promise.all(promises);
 
-		console.log(results);
+		const tilePattern = /^\d+\/\d+\/\d+$/;
+		const match = searchWord.match(tilePattern);
+		if (match) {
+			let numbers = searchWord.split('/');
+
+			// 分割した値を別々の変数に格納する
+			const z = Number(numbers[0]); // '89'
+			const x = Number(numbers[1]); // '8989'
+			const y = Number(numbers[2]); // '8980'
+
+			const tile = tilebelt.tileToBBOX([x, y, z]);
+			const feature = turfBboxPolygon(tile);
+			feature.properties = {
+				name: searchWord
+			};
+			console.log(feature);
+
+			resultsData.push({
+				name: 'タイル座標',
+				features: [feature]
+			});
+		}
+
+		// console.log(results);
 
 		// resultsには全ての処理結果が含まれます
+
+		results = resultsData;
 	};
 
 	const searchFeatureDebounced = debounce(searchFeature, 500);

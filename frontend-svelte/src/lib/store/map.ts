@@ -21,7 +21,7 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 import * as pmtiles from 'pmtiles';
-import Worker from './worker?worker';
+import Worker from '$lib/store/worker?worker';
 import debounce from 'lodash.debounce';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
@@ -31,9 +31,100 @@ import { isSide } from '$lib//store/store';
 import { getGeojson } from '$lib/utils/geojson';
 import { getLocationBbox } from '$lib/data/locationBbox';
 import turfBbox from '@turf/bbox';
+import turfBboxPolygon, { bboxPolygon } from '@turf/bbox-polygon';
+import geojsonvt from 'geojson-vt';
+import vtpbf from 'vt-pbf';
+import tilebelt from '@mapbox/tilebelt';
+
+// import { page } from '$app/stores';
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
+
+maplibregl.addProtocol('tiles', async (params, abortController): any => {
+	const regex = new RegExp(`tiles:\/\/(\\d+)\/(\\d+)\/(\\d+)`);
+	const match = params.url.match(regex);
+
+	if (!match) return;
+	const z: number = parseInt(match[1], 10);
+	const x: number = parseInt(match[2], 10);
+	const y: number = parseInt(match[3], 10);
+
+	const childrenTiles = tilebelt.getChildren([x, y, z]);
+
+	const geojson = {
+		type: 'FeatureCollection',
+		features: childrenTiles.map((tile: number[]) => {
+			const bbox = tilebelt.tileToBBOX(tile);
+			const feature = bboxPolygon(bbox);
+			feature.properties = {
+				name: `${tile[2]}/${tile[0]}/${tile[1]}`
+			};
+			return feature;
+		})
+	};
+
+	const tileIndex = geojsonvt(geojson, {
+		maxZoom: 24,
+		tolerance: 3,
+		extent: 4096,
+		buffer: 64
+	});
+
+	const tile = tileIndex.getTile(z, x, y);
+
+	if (tile) {
+		const pbf = vtpbf.fromGeojsonVt(
+			{ geojsonLayer: tile },
+			{
+				version: 2
+			}
+		);
+
+		return { data: pbf };
+	} else {
+		return { data: new ArrayBuffer(0) };
+	}
+});
+const worker = new Worker();
+maplibregl.addProtocol('gsidem', async (params, abortController) => {
+	const imageUrl = params.url.replace('gsidem://', '');
+	return new Promise((resolve, reject) => {
+		const handleMessage = (e: MessageEvent) => {
+			if (e.data.id === imageUrl) {
+				if (e.data.buffer.byteLength === 0) {
+					reject({
+						data: new Uint8Array(0)
+					});
+				} else {
+					const arrayBuffer = e.data.buffer;
+					resolve({
+						data: new Uint8Array(arrayBuffer)
+					});
+				}
+				cleanup();
+			}
+		};
+
+		const handleError = (e: ErrorEvent) => {
+			console.error(e);
+			abortController.abort();
+			reject({
+				data: new Uint8Array(0)
+			});
+			cleanup();
+		};
+
+		const cleanup = () => {
+			worker.removeEventListener('message', handleMessage);
+			worker.removeEventListener('error', handleError);
+		};
+
+		worker.addEventListener('message', handleMessage);
+		worker.addEventListener('error', handleError);
+		worker.postMessage({ url: imageUrl });
+	});
+});
 
 const createMapStore = () => {
 	let map: Map | null = null;
@@ -55,7 +146,6 @@ const createMapStore = () => {
 			renderWorldCopies: false // 世界地図を繰り返し表示しない
 
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
-
 			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
@@ -64,17 +154,17 @@ const createMapStore = () => {
 		if (!map) return;
 		set(map);
 
-		map.addControl(new maplibregl.NavigationControl(), 'top-right');
+		map.addControl(new maplibregl.ScaleControl(), 'bottom-right');
+
+		map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 		// 3D地形コントロール
 		map.addControl(
 			new maplibregl.TerrainControl({
 				source: 'terrain',
 				exaggeration: 1
 			}),
-			'top-right'
+			'bottom-right'
 		);
-
-		map.addControl(new maplibregl.ScaleControl(), 'bottom-right');
 
 		map.on('click', (e) => {
 			clickEvent.set(e);
@@ -253,6 +343,71 @@ const createMapStore = () => {
 	// 		map.panBy([200, 0]);
 	// 	}
 	// });
+
+	const addSearchFeature = (feature: MapGeoJSONFeature) => {
+		if (!map) return;
+		const sourceId = `search_source`;
+		const sourceItems: Record<string, SourceSpecification> = {};
+		sourceItems[sourceId] = {
+			type: 'geojson',
+			data: {
+				type: 'FeatureCollection',
+				features: [feature]
+			}
+		};
+		if (map.getSource(sourceId)) map.removeSource(sourceId);
+		map.addSource(sourceId, sourceItems[sourceId]);
+
+		const layerId = `search_layer`;
+
+		const layerItems: LayerSpecification[] = [];
+
+		const baseLayer = {
+			id: layerId,
+			source: sourceId
+		};
+
+		const type = feature.geometry.type;
+
+		switch (type) {
+			case 'Point':
+				layerItems.push({
+					...baseLayer,
+					type: 'circle',
+					paint: {
+						'circle-radius': 10,
+						'circle-color': '#ff0000'
+					}
+				});
+				break;
+			case 'LineString':
+			case 'MultiLineString':
+				layerItems.push({
+					...baseLayer,
+					type: 'line',
+					paint: {
+						'line-width': 5,
+						'line-color': '#ff0000'
+					}
+				});
+				break;
+			case 'Polygon':
+			case 'MultiPolygon':
+				layerItems.push({
+					...baseLayer,
+					type: 'fill',
+					paint: {
+						'fill-color': '#ff0000',
+						'fill-opacity': 0.5
+					}
+				});
+				break;
+			default:
+				break;
+		}
+
+		map.addLayer(layerItems[0]);
+	};
 
 	// プレビューレイヤーを追加するメソッド
 	const addPreviewLayer = (layerEntry: LayerEntry) => {
@@ -435,6 +590,7 @@ const createMapStore = () => {
 		panTo,
 		easeTo,
 		addPreviewLayer,
+		addSearchFeature,
 		focusLayer,
 		focusFeature,
 		getTerrain: () => map?.getTerrain(),

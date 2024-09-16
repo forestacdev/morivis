@@ -17,67 +17,47 @@ const vsSource = `#version 300 es
     }
 `;
 
-// gsi
-// const fsSource = `#version 300 es
-//     precision mediump float;
-//     uniform sampler2D heightMap;
-//     in vec2 vTexCoord;
-//     out vec4 fragColor;
-
-//     void main() {
-//         vec2 uv = vTexCoord;
-//         vec4 color = texture(heightMap, uv);
-
-//         float r = color.r * 255.0;
-//         float g = color.g * 255.0;
-//         float b = color.b * 255.0;
-
-//         if (r == 128.0) {
-//             fragColor = vec4(1.0 / 255.0, 134.0 / 255.0, 160.0 / 255.0, 1.0);
-//         } else {
-//             float rgb = r * 65536.0 + g * 256.0 + b;
-//             float height = (rgb < 8388608.0) ? rgb * 0.01 : (rgb - 16777216.0) * 0.01;
-
-//             height = (height + 10000.0) * 10.0;
-
-//             float tB = mod(height, 256.0);
-//             float tG = mod(floor(height / 256.0), 256.0);
-//             float tR = floor(height / 65536.0);
-
-//             fragColor = vec4(tR / 255.0, tG / 255.0, tB / 255.0, 1.0);
-//         }
-//     }
-// `;
-
 const fsSource = `#version 300 es
     precision mediump float;
     uniform sampler2D heightMap;
     in vec2 vTexCoord;
     out vec4 fragColor;
 
-  void main() {
-     vec2 uv = vTexCoord;
-    vec4 color = texture(heightMap, uv);
+       // 高さ変換関数
+    float convertToHeight(vec4 color) {
+        float r = color.r * 255.0;
+        float g = color.g * 255.0;
+        float b = color.b * 255.0;
 
-    float r = color.r * 255.0;
-    float g = color.g * 255.0;
-    float b = color.b * 255.0;
+        float rgb = (r * 65536.0) + (g * 256.0) + b;
+        float h = 0.0;
+        if (rgb < 8388608.0) {
+            h = rgb * 0.01;
+        } else if (rgb > 8388608.0) {
+            h = (rgb - 16777216.0) * 0.01;
+        }
+        return h;
+    }
 
-    // 標高の計算
-    float elevation = -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
+    void main() {
+        vec2 uv = vTexCoord;
+        vec4 color = texture(heightMap, uv);
 
-    // 標高の範囲を設定（この値は調整可能です）
-    float minElevation = 0.0; // 最低標高
-    float maxElevation = 300.0;  // 最高標高
+        float height = convertToHeight(color)
 
-    // 標高を0〜1の範囲に正規化
-    float normalizedElevation = clamp((elevation - minElevation) / (maxElevation - minElevation), 0.0, 1.0);
+        3000.0; // 高さの最大値
 
-    // 赤から黒へのグラデーション
-    vec3 outputColor = vec3(1.0 - normalizedElevation, 0.0, 0.0);
+        // 補完
+        float h = height / 3000.0;
 
-    fragColor = vec4(outputColor, 1.0);
-}
+        // 色
+        vec3 color = vec3(h, h, h);
+
+        // フラグメントカラー
+
+        fragColor = vec4(color, 1.0); // フラグメントカラー
+
+    }
 `;
 
 let gl: WebGL2RenderingContext | null = null;
