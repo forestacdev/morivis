@@ -55,6 +55,7 @@
 		"firebaseui": "^6.1.0",
 		"gsap": "^3.12.5",
 		"lil-gui": "^0.19.2",
+		"lodash.debounce": "^4.0.8",
 		"maplibre-gl": "^4.5.2",
 		"maplibre-gl-gsi-terrain": "^1.2.0",
 		"pmtiles": "^3.0.7",

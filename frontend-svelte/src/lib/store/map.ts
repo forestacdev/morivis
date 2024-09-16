@@ -22,7 +22,7 @@ import type {
 } from 'maplibre-gl';
 import * as pmtiles from 'pmtiles';
 import Worker from './worker?worker';
-
+import debounce from 'lodash.debounce';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 import type { LayerEntry } from '$lib/data/types';
@@ -177,10 +177,12 @@ const createMapStore = () => {
 	};
 
 	// マップスタイルを設定するメソッド
-	const setStyle = (style: StyleSpecification) => {
+	const setStyle = debounce((style: StyleSpecification) => {
+		// NOTE: debug
+		if (import.meta.env.DEV) console.log('mapstyle', style);
 		if (!map) return;
 		map.setStyle(style);
-	};
+	}, 100);
 
 	// クリックマーカーを追加するメソッド
 	const addLockonMarker = (element: HTMLElement, lngLat: LngLat) => {

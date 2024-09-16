@@ -22,6 +22,7 @@
 	import Control from '$lib/components/ui/Control.svelte';
 	import LayerOptionMenu from '../ui/layermenu/LayerOptionMenu.svelte';
 	import type { LayerEntry } from '$lib/data/types';
+
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import {
 		createSourceItems,
@@ -225,9 +226,6 @@
 
 		// mapInstance.getTerrain() ? (mapStyle.terrain = gsiTerrainSource) : null;
 		mapStore.setStyle(mapStyle as StyleSpecification);
-
-		// NOTE: debug
-		if (import.meta.env.DEV) console.log('mapstyle', mapStyle);
 	}
 
 	// $: if (mapInstance && selectedhighlightData) {
