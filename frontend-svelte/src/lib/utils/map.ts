@@ -6,7 +6,8 @@ import type {
 	LayerSpecification,
 	TerrainSpecification,
 	Marker,
-	CircleLayerSpecification
+	CircleLayerSpecification,
+	LngLat
 } from 'maplibre-gl';
 
 type BBOX = [number, number, number, number];
@@ -68,6 +69,43 @@ export const getTilePixelColor = async (
 
 	return [r, g, b, a];
 	// 省略
+};
+
+// 標高の取得
+export const getElevation = async (lngLat: LngLat, zoom: number) => {
+	const zoomLevel = Math.min(Math.round(zoom), 14);
+	const rgba = await getTilePixelColor(
+		lngLat.lng,
+		lngLat.lat,
+		zoomLevel,
+		'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
+	);
+
+	if (!rgba) return;
+
+	// RGB値を取得
+	const r = rgba[0];
+	const g = rgba[1];
+	const b = rgba[2];
+
+	// 高さを計算
+	const rgb = r * 65536.0 + g * 256.0 + b;
+	let h = 0.0;
+	if (rgb < 8388608.0) {
+		h = rgb * 0.01;
+	} else if (rgb > 8388608.0) {
+		h = (rgb - 16777216.0) * 0.01;
+	}
+
+	return h;
+
+	// const tileurl = getTileUrl(
+	// 	lngLat.lng,
+	// 	lngLat.lat,
+	// 	14,
+	// 	'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
+	// );
+	// targetDemData = tileurl;
 };
 
 // 地球の赤道周長 (メートル)

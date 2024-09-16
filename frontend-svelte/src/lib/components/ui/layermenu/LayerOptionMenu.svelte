@@ -63,18 +63,18 @@
 				<label class="block">表示</label>
 				<input type="checkbox" class="custom-checkbox" bind:checked={layerOption.visible} />
 			</div>
+			<div class="flex flex-col gap-2">
+				<label class="block">透過度</label>
+				<input
+					type="range"
+					class="custom-slider"
+					bind:value={layerOption.opacity}
+					min="0"
+					max="1"
+					step="0.01"
+				/>
+			</div>
 			{#if layerOption.dataType === 'vector' || layerOption.dataType === 'geojson'}
-				<div class="flex flex-col gap-2">
-					<label class="block">透過度</label>
-					<input
-						type="range"
-						class="custom-slider"
-						bind:value={layerOption.opacity}
-						min="0"
-						max="1"
-						step="0.01"
-					/>
-				</div>
 				{#if layerOption.showLabel !== undefined}
 					<div class="flex gap-2">
 						<label class="block">ラベル</label>

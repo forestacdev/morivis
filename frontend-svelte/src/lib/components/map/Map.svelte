@@ -11,7 +11,6 @@
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Side from '$lib/components/ui/Side.svelte';
-	import BaseMenu from '$lib/components/ui/BaseMenu.svelte';
 	import DataMenu from '$lib/components/ui/DataMenu.svelte';
 	import LayerMenu from '$lib/components/ui/LayerMenu.svelte';
 	import Loading from '$lib/components/ui/Loading.svelte';
@@ -90,15 +89,10 @@
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id))
 			)
-			// ...backgroundSources
 		};
 		mapStyleJson.layers = [
 			...mapStyleJson.layers,
-			// {
-			// 	id: 'base-map',
-			// 	source: selectedBackgroundId,
-			// 	type: 'raster'
-			// },
+
 			...createLayerItems(
 				layerDataEntries
 					.filter((entry) => $addedLayerIds.includes(entry.id))
@@ -134,7 +128,10 @@
 			if (!e) return;
 			const div = document.createElement('div');
 			const lockOnInstance = new LockOn({
-				target: div
+				target: div,
+				props: {
+					lngLat: e.lngLat
+				}
 			});
 			lockOnInstance.$on('click', (event) => {
 				mapStore.removeLockonMarker();
@@ -142,8 +139,6 @@
 
 			mapStore.removeLockonMarker();
 			mapStore.addLockonMarker(div, e.lngLat);
-
-			mapStore.panTo(e.lngLat, { duration: 1000 });
 
 			let features = mapStore.queryRenderedFeatures(e.point, {
 				layers: $clickableLayerIds
@@ -195,13 +190,9 @@
 				};
 
 				if (targetLayerData.fieldDict) {
-					console.log(features[0].properties);
-
 					const dictJson = await getFieldDictJson(targetLayerData.fieldDict);
-					console.log(dictJson);
 
 					const convertedProp = convertProps(features[0].properties, dictJson);
-					console.log(convertedProp);
 
 					features[0].properties = convertedProp;
 
@@ -212,8 +203,6 @@
 				feature = features[0] ? features[0] : null;
 				clickedLayerId = targetLayerData.id;
 			}
-
-			// selectFeatureList = [];
 		});
 
 		return () => {
@@ -243,44 +232,6 @@
 
 	$: createHighlightLayer(selectedhighlightData);
 
-	// 標高の取得
-	const getElevation = async () => {
-		console.log(lockOnMarker?.getLngLat());
-		const lngLat = lockOnMarker?.getLngLat();
-		if (!lngLat || !mapInstance) return;
-		const zoom = Math.min(Math.round(mapInstance.getZoom()), 14);
-		const rgba = await getTilePixelColor(
-			lngLat.lng,
-			lngLat.lat,
-			zoom,
-			'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
-		);
-
-		if (!rgba) return;
-
-		// RGB値を取得
-		const r = rgba[0];
-		const g = rgba[1];
-		const b = rgba[2];
-
-		// 高さを計算
-		const rgb = r * 65536.0 + g * 256.0 + b;
-		let h = 0.0;
-		if (rgb < 8388608.0) {
-			h = rgb * 0.01;
-		} else if (rgb > 8388608.0) {
-			h = (rgb - 16777216.0) * 0.01;
-		}
-
-		const tileurl = getTileUrl(
-			lngLat.lng,
-			lngLat.lat,
-			14,
-			'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
-		);
-		targetDemData = tileurl;
-	};
-
 	// マップの回転
 	// const setMapBearing = (e) => {
 	// 	const mapBearing = e.detail;
@@ -300,14 +251,13 @@
 </script>
 
 <Side />
-<!-- <BaseMenu {backgroundIds} bind:selectedBackgroundId {backgroundSources} /> -->
 
 <LayerMenu bind:layerDataEntries {clickedLayerId} />
 <div class="relative h-full w-full">
 	<div class="absolute z-0 h-full w-full bg-black">
 		<div
 			bind:this={mapContainer}
-			class="h-full w-full bg-black transition-all duration-200 {$isSide === 'info'
+			class="bg-bla h-full w-full transition-all duration-200 {$isSide === 'info'
 				? 'custom-brah scale-[1.05]'
 				: ''}"
 		></div>

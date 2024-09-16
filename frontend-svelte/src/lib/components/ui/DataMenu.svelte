@@ -34,17 +34,18 @@
 </script>
 
 {#if $showDataMenu}
-	<div
-		transition:tweenMe
-		class="custom-scroll bg-red absolute z-10 h-full w-full overflow-y-scroll"
-	>
-		データを選択
-		<div class="right-[70px] grid-cols-3 gap-4 bg-black bg-opacity-70 p-4 text-white">
-			{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
-				<div animate:flip={{ duration: 200 }} class="">
-					<DataSlot bind:layerEntry />
-				</div>
-			{/each}
+	<div transition:tweenMe class="bg-red absolute z-20 h-full w-full p-8 pb-20">
+		<div class="flex h-full flex-col bg-[#C27142]">
+			<div class="flex-shrink-0 p-4 text-white">データを選択</div>
+			<div
+				class="custom-scroll grid h-full flex-grow grid-cols-3 gap-4 overflow-y-scroll p-4 text-white"
+			>
+				{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
+					<div animate:flip={{ duration: 200 }} class="">
+						<DataSlot bind:layerEntry />
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 {/if}
