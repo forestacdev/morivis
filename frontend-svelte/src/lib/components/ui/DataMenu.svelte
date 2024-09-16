@@ -38,7 +38,7 @@
 		<div class="flex h-full flex-col bg-[#C27142]">
 			<div class="flex-shrink-0 p-4 text-white">データを選択</div>
 			<div
-				class="custom-scroll grid h-full flex-grow grid-cols-3 gap-4 overflow-y-scroll p-4 text-white"
+				class="custom-scroll grid h-full flex-grow gap-4 overflow-y-scroll p-4 text-white md:grid-cols-2"
 			>
 				{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">

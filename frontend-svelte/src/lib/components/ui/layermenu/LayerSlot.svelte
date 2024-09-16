@@ -84,9 +84,24 @@
 				class="pointer-events-none block h-[60%] w-[60%] rounded-full object-cover"
 				alt={layerEntry.name}
 				src={layerEntry.url
-					.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
-					.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
-					.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())}
+					.replace(
+						'{z}',
+						layerEntry.tileImage
+							? layerEntry.tileImage.z.toString()
+							: BASEMAP_IMAGE_TILE.Z.toString()
+					)
+					.replace(
+						'{x}',
+						layerEntry.tileImage
+							? layerEntry.tileImage.x.toString()
+							: BASEMAP_IMAGE_TILE.X.toString()
+					)
+					.replace(
+						'{y}',
+						layerEntry.tileImage
+							? layerEntry.tileImage.y.toString()
+							: BASEMAP_IMAGE_TILE.Y.toString()
+					)}
 			/>
 		{/if}
 	</div>

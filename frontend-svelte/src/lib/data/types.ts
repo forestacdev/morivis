@@ -109,6 +109,11 @@ export type RasterEntry = {
 		color: string;
 		label: string;
 	}[];
+	tileImage?: {
+		x: number;
+		y: number;
+		z: number;
+	};
 };
 
 export type GeojsonEntry<T extends GeometryType> = {

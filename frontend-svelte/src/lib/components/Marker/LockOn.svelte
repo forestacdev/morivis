@@ -9,19 +9,23 @@
 	import { mapStore } from '$lib/store/map';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-	gsap.registerPlugin(ScrollTrigger);
-
 	const dispatch = createEventDispatcher();
 	export let lngLat: LngLat;
 
 	let displayElevation: number = 0;
 
-	const handleButtonClick = (event) => {
+	const handleButtonClick = (event: Event) => {
 		event.stopPropagation(); // クリックイベントの伝播を止める
 		dispatch('click', event);
 	};
 
+	const scan = (event: Event) => {
+		event.stopPropagation(); // クリックイベントの伝播を止める
+		dispatch('scan', lngLat);
+	};
+
 	onMount(async () => {
+		gsap.registerPlugin(ScrollTrigger);
 		const zoom = mapStore.getZoom();
 		if (!zoom) return;
 		// selectFeatureList = [];
@@ -51,6 +55,12 @@
 	<div class="absolute bottom-[32px] left-[40px]">
 		標高<span class="text-lg">{displayElevation}</span>m
 	</div>
+	<button
+		on:click={scan}
+		class="pointer-events-auto absolute bottom-0 rounded-full bg-zinc-100 p-1"
+	>
+		スキャン
+	</button>
 </button>
 
 <style>

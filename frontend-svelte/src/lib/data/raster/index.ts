@@ -16,8 +16,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -37,8 +37,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -58,8 +58,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/gazo2/{z}/{x}/{y}.jpg',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -79,8 +79,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -100,8 +100,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -121,8 +121,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -142,8 +142,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -163,8 +163,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -184,8 +184,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -200,13 +200,13 @@ export const rasterEntries: RasterEntry[] = [
 	},
 	{
 		id: 'gifu_slope_map',
-		name: '傾斜区分図（岐阜県森林研究所）',
+		name: '傾斜区分図',
 		dataType: 'raster',
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu_2021Slpoe_2022_07_25_15_54/MapServer/tile/{z}/{y}/{x}',
-		attribution:
-			"<a href='https://www.forest.rd.pref.gifu.lg.jp/shiyou/CSrittaizu.html' target='_blank'>岐阜県森林研究所</a>",
+		attribution: '岐阜県森林研究所',
+		location: ['岐阜県'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -226,8 +226,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://map.ecoris.info/tiles/vege67hill/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='https://map.ecoris.info/#contents' target='_blank'>エコリス地図タイル</a>",
+		attribution: 'エコリス地図タイル',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -247,8 +247,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://gbank.gsj.jp/seamless/v2/api/1.2.1/tiles/{z}/{y}/{x}.png',
-		attribution:
-			"<a href='https://gbank.gsj.jp/seamless/index.html?lang=ja&' target='_blank'>産総研地質調査総合センター</a>",
+		attribution: '産総研地質調査総合センター',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -268,8 +268,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/afm/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html' target='_blank'>国土地理院</a>",
+		attribution: '国土地理院',
+		location: ['全国'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -284,13 +284,13 @@ export const rasterEntries: RasterEntry[] = [
 	},
 	{
 		id: 'gifu_cs_map',
-		name: 'CS立体図（岐阜県）',
+		name: 'CS立体図',
 		dataType: 'raster',
 		geometryType: 'raster',
 		opacity: 0.7,
+		location: ['岐阜県'],
 		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu2021CS_Mosic/MapServer/tile/{z}/{y}/{x}',
-		attribution:
-			"<a href='https://www.forest.rd.pref.gifu.lg.jp/shiyou/CSrittaizu.html' target='_blank'>岐阜県森林研究所</a>",
+		attribution: '岐阜県森林研究所',
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -305,33 +305,13 @@ export const rasterEntries: RasterEntry[] = [
 	},
 	{
 		id: 'gifu_shared_space',
-		name: '岐阜県共有空間データ',
+		name: '共有空間データ',
 		dataType: 'raster',
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://mapdata.qchizu.xyz/gifu_pref_00/{z}/{x}/{y}.png',
-		attribution:
-			"<a href='https://info.qchizu.xyz/qchizu/reprint/' target='_blank'>Q地図タイル</a>",
-		visible: true,
-		clickable: false,
-		styleKey: 'デフォルト',
-		style: {
-			raster: [
-				{
-					name: 'デフォルト',
-					paint: rasterPaint
-				}
-			]
-		}
-	},
-	{
-		id: 'sekishoku_map',
-		name: '赤色立体図10mメッシュ',
-		dataType: 'raster',
-		geometryType: 'raster',
-		opacity: 0.7,
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/sekishoku/{z}/{x}/{y}.png',
-		attribution: "<a href='https://www.rrim.jp/' target='_blank'>アジア航測株式会社</a>",
+		attribution: 'Q地図タイル',
+		location: ['岐阜県'],
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -351,7 +331,7 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-		attribution: "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors",
+		attribution: '&copy; OpenStreetMap contributors',
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -371,7 +351,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png',
-		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
+		attribution:
+			'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -391,7 +372,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
-		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
+		attribution:
+			'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -411,7 +393,8 @@ export const rasterEntries: RasterEntry[] = [
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.png',
-		attribution: "&copy; <a href='http://osm.org/copyright'>ESRI</a> contributors",
+		attribution:
+			'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',
@@ -426,12 +409,97 @@ export const rasterEntries: RasterEntry[] = [
 	},
 	{
 		id: 'mino_kihonz',
-		name: '美濃市_基本図',
+		name: '基本図',
 		dataType: 'raster',
 		geometryType: 'raster',
 		opacity: 0.7,
 		url: 'https://raw.githubusercontent.com/forestacdev/rastertile-poc/main/tiles/{z}/{x}/{y}.webp',
 		attribution: '美濃市',
+		location: ['美濃市'],
+		visible: true,
+		clickable: false,
+		styleKey: 'デフォルト',
+		style: {
+			raster: [
+				{
+					name: 'デフォルト',
+					paint: rasterPaint
+				}
+			]
+		}
+	},
+	{
+		id: 'rinya-tochigi-csmap',
+		name: 'CS立体図',
+		dataType: 'raster',
+		geometryType: 'raster',
+		opacity: 0.7,
+		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/csmap/{z}/{x}/{y}.png',
+		attribution: '林野庁',
+		location: ['栃木県'],
+		tileImage: {
+			x: 454,
+			y: 199,
+			z: 9
+		},
+		visible: true,
+		clickable: false,
+		styleKey: 'デフォルト',
+		style: {
+			raster: [
+				{
+					name: 'デフォルト',
+					paint: rasterPaint
+				}
+			]
+		}
+	},
+	{
+		id: 'gsi-rinya',
+		name: '国有林の空中写真',
+		dataType: 'raster',
+		geometryType: 'raster',
+		opacity: 1,
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/rinya/{z}/{x}/{y}.png',
+		sourceMinZoom: 14,
+		sourceMaxZoom: 18,
+		layerMinZoom: 14,
+		attribution: '国土地理院',
+		location: ['全国'],
+		tileImage: {
+			x: 14515,
+			y: 6390,
+			z: 14
+		},
+		visible: true,
+		clickable: false,
+		styleKey: 'デフォルト',
+		style: {
+			raster: [
+				{
+					name: 'デフォルト',
+					paint: rasterPaint
+				}
+			]
+		}
+	},
+	{
+		id: 'gsi-rinya_m',
+		name: '民有林の空中写真',
+		dataType: 'raster',
+		geometryType: 'raster',
+		opacity: 1,
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/rinya_m/{z}/{x}/{y}.png',
+		sourceMinZoom: 14,
+		sourceMaxZoom: 18,
+		layerMinZoom: 14,
+		attribution: '国土地理院',
+		location: ['全国'],
+		tileImage: {
+			x: 14427,
+			y: 6452,
+			z: 14
+		},
 		visible: true,
 		clickable: false,
 		styleKey: 'デフォルト',

@@ -23,7 +23,7 @@
 </script>
 
 <div
-	class="relative flex h-[300px] w-full select-none flex-col justify-between gap-x-2 rounded-sm border-[1px] border-slate-50"
+	class="relative flex h-[300px] w-full select-none flex-col justify-between gap-x-2 rounded-sm border-[1px] bg-white text-black"
 >
 	<div class="relative flex w-full justify-between">
 		<button
@@ -36,23 +36,32 @@
 			class="absolute right-1 top-2 flex w-12 cursor-pointer items-center justify-center"
 			on:click={() => toggleLayer(layerEntry.id)}
 		>
-			<Icon
-				class="transition-all duration-150"
-				icon="weui:setting-outlined"
-				width="24"
-				height="24"
-			/>
+			<Icon class="transition-all duration-150" icon="ei:plus" width="24" height="24" />
 		</button>
 	</div>
 	{#if layerEntry.dataType === 'raster'}
-		<label
+		<div
 			class="absolute h-[200px] w-[100px] cursor-pointer select-none items-center justify-start rounded-md bg-cover bg-center p-2 transition-all duration-200"
 			style="background-image: url({layerEntry.url
-				.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
-				.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
-				.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString())})"
-		>
-		</label>
+				.replace(
+					'{z}',
+					layerEntry.tileImage
+						? layerEntry.tileImage.z.toString()
+						: BASEMAP_IMAGE_TILE.Z.toString()
+				)
+				.replace(
+					'{x}',
+					layerEntry.tileImage
+						? layerEntry.tileImage.x.toString()
+						: BASEMAP_IMAGE_TILE.X.toString()
+				)
+				.replace(
+					'{y}',
+					layerEntry.tileImage
+						? layerEntry.tileImage.y.toString()
+						: BASEMAP_IMAGE_TILE.Y.toString()
+				)})"
+		></div>
 	{/if}
 </div>
 

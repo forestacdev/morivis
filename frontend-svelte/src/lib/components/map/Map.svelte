@@ -134,7 +134,16 @@
 				}
 			});
 			lockOnInstance.$on('click', (event) => {
+				console.log('click', event);
 				mapStore.removeLockonMarker();
+			});
+
+			lockOnInstance.$on('scan', (e) => {
+				console.log('scan', e.detail);
+				// const lngLat = e.detail;
+				// console.log('lngLat', lngLat);
+				// const tileImage = getTileUrl(lngLat.lng, lngLat.lat, mapStore.getZoom());
+				// console.log('tileImage', tileImage);
 			});
 
 			mapStore.removeLockonMarker();
