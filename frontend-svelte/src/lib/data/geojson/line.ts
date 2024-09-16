@@ -11,25 +11,25 @@ export const geojsonLineEntries: GeojsonEntry<'line'>[] = [
 		url: `${GEOJSON_BASE_PATH}/ENSYURIN_MITI.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
-		clickable: true,
+		clickable: false,
 		location: ['森林文化アカデミー'],
-		style_key: '単色',
+		styleKey: '単色',
 		style: {
 			line: [
 				{
-					name: 'デフォルト',
-					layout: {
-						'line-cap': 'square',
-						'line-join': 'round'
-					},
+					name: '単色',
 					paint: {
-						'line-color': 'rgba(255, 255, 255, 1)',
+						'line-color': '#ffffff',
 						'line-width': {
 							stops: [
 								[15, 1.5],
 								[17, 4]
 							]
 						}
+					},
+					layout: {
+						'line-cap': 'square',
+						'line-join': 'round'
 					}
 				}
 			]

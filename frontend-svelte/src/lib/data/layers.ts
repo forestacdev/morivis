@@ -257,7 +257,19 @@ export const createLayerItems = (
 			const layerId = `${layerEntry.id}`;
 			const sourceId = `${layerEntry.id}_source`;
 			if (layerEntry.clickable) layerIds.push(layerId);
-			const layer = {
+
+			type Layer = {
+				id: string;
+				source: string;
+				maxzoom: number;
+				minzoom: number;
+				type?: string;
+				paint?: any;
+				layout?: any;
+				'source-layer'?: string;
+				filter?: FilterSpecification;
+			};
+			const layer: Layer = {
 				id: layerId,
 				source: sourceId,
 				maxzoom: layerEntry.layerMaxZoom ?? 24,
@@ -281,6 +293,8 @@ export const createLayerItems = (
 				case 'vector':
 				case 'geojson': {
 					const styleKey = layerEntry.styleKey;
+
+					console.log(styleKey);
 
 					if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
 					if (layerEntry.dataType === 'vector') {
@@ -332,6 +346,7 @@ export const createLayerItems = (
 						const setStyele = layerEntry.style?.line?.find(
 							(item) => item.name === styleKey
 						);
+
 						const lineLayer = {
 							...layer,
 							type: 'line',
@@ -343,6 +358,8 @@ export const createLayerItems = (
 								...(setStyele?.layout ?? {})
 							}
 						};
+
+						console.log(lineLayer);
 
 						layerItems.push(lineLayer as LineLayerSpecification);
 					} else if (layerEntry.geometryType === 'point') {

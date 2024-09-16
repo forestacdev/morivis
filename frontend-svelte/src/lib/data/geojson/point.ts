@@ -13,11 +13,11 @@ export const geojsonPointEntries: GeojsonEntry<'point'>[] = [
 		visible: true,
 		clickable: true,
 		location: ['森林文化アカデミー'],
-		styleKey: 'デフォルト',
+		styleKey: '単色',
 		style: {
 			circle: [
 				{
-					name: 'デフォルト',
+					name: '単色',
 					paint: {
 						'circle-color': '#ff0000',
 						'circle-radius': 10,
