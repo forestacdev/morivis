@@ -3,7 +3,7 @@ import { GEOJSON_BASE_PATH } from '$lib/constants';
 
 export const geojsonLabelEntries: GeojsonEntry<'label'>[] = [
 	{
-		id: 'TITEN.geojson',
+		id: 'TITEN',
 		name: 'その他ポイント',
 		dataType: 'geojson',
 		geometryType: 'label',
@@ -13,6 +13,7 @@ export const geojsonLabelEntries: GeojsonEntry<'label'>[] = [
 		visible: true,
 		clickable: true,
 		location: ['森林文化アカデミー'],
+		searchKeys: ['name'],
 		styleKey: 'デフォルト',
 		style: {
 			symbol: [

@@ -237,6 +237,12 @@ const createMapStore = () => {
 		}
 	};
 
+	const focusFeature = async (feature: MapGeoJSONFeature) => {
+		if (!map) return;
+		const bbox = turfBbox(feature.geometry) as [number, number, number, number];
+		map.fitBounds(bbox);
+	};
+
 	// isSide.subscribe((value) => {
 	// 	console.log(value);
 	// 	if (value !== null && value) {
@@ -430,6 +436,7 @@ const createMapStore = () => {
 		easeTo,
 		addPreviewLayer,
 		focusLayer,
+		focusFeature,
 		getTerrain: () => map?.getTerrain(),
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド

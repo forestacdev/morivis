@@ -2,10 +2,17 @@
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	export let feature: any;
+	import { showlayerOptionId } from '$lib/store/store';
+
+	showlayerOptionId.subscribe((value) => {
+		if (value) {
+			feature = null;
+		}
+	});
 
 	function tweenMe(node: Node) {
 		let tl = gsap.timeline();
-		const duration = 0.2; // アニメーションの長さを0.5秒に設定
+		const duration = 0; // アニメーションの長さを0.5秒に設定
 
 		tl.from(node, {
 			duration: duration,

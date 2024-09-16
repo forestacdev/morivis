@@ -152,7 +152,7 @@ export type VectorEntry<T extends GeometryType> = {
 	attribution: string;
 	sourceMinZoom?: number;
 	sourceMaxZoom?: number;
-	sourceLayer?: string;
+	sourceLayer: string;
 	layerMinZoom?: number;
 	layerMaxZoom?: number;
 	opacity: number;

@@ -20,7 +20,8 @@
 	import ThreeCanvas from '$lib/components/three/canvas.svelte';
 	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
 	import Control from '$lib/components/ui/Control.svelte';
-	import LayerOptionMenu from '../ui/layermenu/LayerOptionMenu.svelte';
+	import LayerOptionMenu from '$lib/components/ui/layermenu/LayerOptionMenu.svelte';
+	import SearchMenu from '$lib/components/ui/SearchMenu.svelte';
 	import type { LayerEntry } from '$lib/data/types';
 
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
@@ -260,6 +261,7 @@
 <Side />
 
 <LayerMenu bind:layerDataEntries {clickedLayerId} />
+<SearchMenu />
 <div class="relative h-full w-full">
 	<div class="absolute z-0 h-full w-full bg-black">
 		<div

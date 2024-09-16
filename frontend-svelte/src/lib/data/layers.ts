@@ -96,49 +96,58 @@ export const createHighlightLayer = (
 
 	switch (layerEntry.dataType) {
 		case 'vector': {
+			type BaseLayer = {
+				source: string;
+				'source-layer': string;
+				filter?: FilterSpecification;
+			};
+			const baseLayer: BaseLayer = {
+				source: sourceId,
+				'source-layer': layerEntry.sourceLayer
+			};
+
+			if (layerEntry.idField) {
+				baseLayer.filter = [
+					'==',
+					['get', layerEntry.idField],
+					selectedhighlightData.featureId
+				];
+			}
+			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 			if (layerEntry.geometryType === 'polygon') {
 				layers.push({
 					id: layerId,
 					type: 'fill',
-					source: sourceId,
-					'source-layer': layerEntry.sourceLayer,
+					...baseLayer,
 					paint: {
 						...highlightFillPaint
-					},
-					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+					}
 				} as FillLayerSpecification);
 				layers.push({
 					id: layerId + '_line',
 					type: 'line',
-					source: sourceId,
-					'source-layer': layerEntry.sourceLayer,
+
 					paint: {
 						...highlightLinePaint
-					},
-					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+					}
 				} as LineLayerSpecification);
 			} else if (layerEntry.geometryType === 'line') {
 				layers.push({
 					id: layerId,
 					type: 'line',
-					source: sourceId,
-					'source-layer': layerEntry.sourceLayer,
+					...baseLayer,
 					paint: {
 						...highlightLinePaint
-					},
-					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+					}
 				} as LineLayerSpecification);
 			} else if (layerEntry.geometryType === 'point') {
 				layers.push({
 					id: layerId,
 					type: 'circle',
-					source: sourceId,
-					'source-layer': layerEntry.sourceLayer,
+					...baseLayer,
 					paint: {
 						...highlightCirclePaint
-					},
-					filter: ['==', ['get', layerEntry.idField], selectedhighlightData.featureId]
+					}
 				} as CircleLayerSpecification);
 			}
 			break;

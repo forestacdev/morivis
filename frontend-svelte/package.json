@@ -53,6 +53,7 @@
 		"@turf/nearest-point": "^7.1.0",
 		"firebase": "^10.13.0",
 		"firebaseui": "^6.1.0",
+		"fuse.js": "^7.0.0",
 		"gsap": "^3.12.5",
 		"lil-gui": "^0.19.2",
 		"lodash.debounce": "^4.0.8",

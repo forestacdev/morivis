@@ -13,6 +13,7 @@ export const geojsonPointEntries: GeojsonEntry<'point'>[] = [
 		visible: true,
 		clickable: true,
 		location: ['森林文化アカデミー'],
+		searchKeys: ['name'],
 		styleKey: '単色',
 		style: {
 			circle: [
