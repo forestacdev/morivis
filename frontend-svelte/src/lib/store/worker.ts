@@ -61,17 +61,48 @@ const fsSource = `#version 300 es
         }
     }
 
-    void main() {
+    // void main() {
+    //     vec2 uv = vTexCoord;
+    //     vec4 color = texture(heightMap, uv);
+
+    //    float height = convertToHeight(color);
+
+    // // 高さに基づいて色を決定
+    // vec3 terrainColor = heightToColor(height);
+
+    // // フラグメントカラー
+    // fragColor = vec4(terrainColor, 1.0);
+
+    // }
+
+       void main() {
         vec2 uv = vTexCoord;
         vec4 color = texture(heightMap, uv);
 
-       float height = convertToHeight(color);
 
-    // 高さに基づいて色を決定
-    vec3 terrainColor = heightToColor(height);
+    // グレースケール値を計算（輝度）
+    float luminance = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+    
+    // 白が0、黒が1になるように反転
+    float invertedLuminance = 1.0 - luminance;
+    
+    
+    // 最終的な色を設定（RGBはそのまま、アルファ値を調整）
+    fragColor = vec4(vec3(0.1, 0.2,0.2), invertedLuminance);
 
-    // フラグメントカラー
-    fragColor = vec4(terrainColor, 1.0);
+    float alphaThreshold = 0.8; // 閾値
+    float alphaSmoothness = 0.1; // スムージング
+    float alphaMin = 0.0; // 最小アルファ値
+    float alphaMax = 1.0; // 最大アルファ
+
+      // 透明度を調整
+    float alpha = smoothstep(alphaThreshold - alphaSmoothness, alphaThreshold + alphaSmoothness, invertedLuminance);
+    alpha = mix(alphaMin, alphaMax, alpha);
+    
+    // 最終的な色を設定（RGBは固定値、アルファ値を調整）
+    fragColor = vec4(vec3(0.1, 0.2,0.2), alpha);
+
+  
 
     }
 `;

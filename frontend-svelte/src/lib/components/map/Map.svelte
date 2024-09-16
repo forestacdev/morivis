@@ -307,7 +307,7 @@
 <LayerMenu bind:layerDataEntries {clickedLayerId} />
 <SearchMenu />
 <div class="relative h-full w-full">
-	<div class="absolute z-0 h-full w-full bg-black">
+	<div class="absolute z-0 h-full w-full">
 		<div
 			bind:this={mapContainer}
 			class="bg-bla h-full w-full transition-all duration-200 {$isSide === 'info'
