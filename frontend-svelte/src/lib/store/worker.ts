@@ -61,6 +61,7 @@ const fsSource = `#version 300 es
         }
     }
 
+   
     // void main() {
     //     vec2 uv = vTexCoord;
     //     vec4 color = texture(heightMap, uv);
@@ -75,34 +76,68 @@ const fsSource = `#version 300 es
 
     // }
 
-       void main() {
+    // エッジ検出のためのカーネル
+    const mat3 edgeKernel = mat3(
+        -1.0, -1.0, -1.0,
+        -1.0,  4.0, -1.0,
+        -1.0, -1.0, -1.0
+    );
+
+    // 色の量子化
+    vec3 quantizeColor(vec3 color, float levels) {
+        return floor(color * levels) / levels;
+    }
+
+
+    void main() {
         vec2 uv = vTexCoord;
-        vec4 color = texture(heightMap, uv);
+    //     vec4 color = texture(heightMap, uv);
 
 
-    // グレースケール値を計算（輝度）
-    float luminance = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+    // // グレースケール値を計算（輝度）
+    // float luminance = dot(color.rgb, vec3(0.299, 0.587, 0.114));
     
-    // 白が0、黒が1になるように反転
-    float invertedLuminance = 1.0 - luminance;
+    // // 白が0、黒が1になるように反転
+    // float invertedLuminance = 1.0 - luminance;
     
     
-    // 最終的な色を設定（RGBはそのまま、アルファ値を調整）
-    fragColor = vec4(vec3(0.1, 0.2,0.2), invertedLuminance);
 
-    float alphaThreshold = 0.8; // 閾値
-    float alphaSmoothness = 0.1; // スムージング
-    float alphaMin = 0.0; // 最小アルファ値
-    float alphaMax = 1.0; // 最大アルファ
+    // float alphaThreshold = 0.8; // 閾値
+    // float alphaSmoothness = 0.1; // スムージング
+    // float alphaMin = 0.0; // 最小アルファ値
+    // float alphaMax = 1.0; // 最大アルファ
 
-      // 透明度を調整
-    float alpha = smoothstep(alphaThreshold - alphaSmoothness, alphaThreshold + alphaSmoothness, invertedLuminance);
-    alpha = mix(alphaMin, alphaMax, alpha);
+    //   // 透明度を調整
+    // float alpha = smoothstep(alphaThreshold - alphaSmoothness, alphaThreshold + alphaSmoothness, invertedLuminance);
+    // alpha = mix(alphaMin, alphaMax, alpha);
     
-    // 最終的な色を設定（RGBは固定値、アルファ値を調整）
-    fragColor = vec4(vec3(0.1, 0.2,0.2), alpha);
+    // // 最終的な色を設定（RGBは固定値、アルファ値を調整）
+    // fragColor = vec4(vec3(0.1, 0.2,0.2), alpha);
 
-  
+    vec2 texelSize = 1.0 / vec2(256.0);
+    vec3 sampleColor = texture(heightMap, vTexCoord).rgb;
+    
+    // エッジ検出
+    float edge = 0.0;
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            vec2 offset = vec2(float(i), float(j)) * texelSize;
+            vec3 neighborColor = texture(heightMap, vTexCoord + offset).rgb;
+            edge += dot(neighborColor, vec3(edgeKernel[i+1][j+1]));
+        }
+    }
+    
+    // 色の量子化
+    vec3 quantizedColor = quantizeColor(sampleColor, 5.0);
+    
+    // エッジと量子化した色を組み合わせる
+    vec3 finalColor = mix(quantizedColor, vec3(0.0), smoothstep(0.2, 0.8, edge));
+    
+    // 彩度を上げる
+    vec3 grayScale = vec3(dot(finalColor, vec3(0.299, 0.587, 0.114)));
+    finalColor = mix(grayScale, finalColor, 1.5);
+    
+    fragColor = vec4(finalColor, 1.0);
 
     }
 `;
@@ -180,6 +215,7 @@ self.onmessage = async (e) => {
 
 	try {
 		const image = await loadImage(url);
+
 		if (!gl) {
 			initWebGL(canvas);
 		}

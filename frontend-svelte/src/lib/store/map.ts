@@ -21,7 +21,7 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 import * as pmtiles from 'pmtiles';
-import Worker from '$lib/store/worker?worker';
+
 import debounce from 'lodash.debounce';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
@@ -86,7 +86,9 @@ maplibregl.addProtocol('tiles', async (params, abortController): any => {
 		return { data: new ArrayBuffer(0) };
 	}
 });
-const worker = new Worker();
+const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+	type: 'module'
+});
 maplibregl.addProtocol('customgsidem', async (params, abortController) => {
 	const imageUrl = params.url.replace('customgsidem://', '');
 	return new Promise((resolve, reject) => {
@@ -193,35 +195,39 @@ const createMapStore = () => {
 			// });
 		});
 
+		const iconWorker = new Worker(new URL('../utils/icon/worker.ts', import.meta.url), {
+			type: 'module'
+		});
+
+		// メッセージハンドラーを一度だけ定義
+		iconWorker.onmessage = async (e) => {
+			const { imageBitmap, id } = e.data;
+			if (map && !map.hasImage(id)) {
+				map.addImage(id, imageBitmap, { pixelRatio: 1 });
+			}
+		};
+
+		// エラーハンドリングを追加
+		iconWorker.onerror = (error) => {
+			console.error('Worker error:', error);
+		};
+
+		// 処理中の画像IDを追跡
+		const processingImages = new Set();
+
 		map.on('styleimagemissing', async (e) => {
 			if (!map) return;
 			const id = e.id;
 
-			try {
-				const pattern = id;
-				const parts = pattern.split('-');
+			// すでに処理中または追加済みの画像はスキップ
+			if (processingImages.has(id) || map.hasImage(id)) return;
 
-				if (parts[0] === 'pattern') {
-					// const number = parseInt(parts[1], 10);
-					// try {
-					// 	const webglImage = await webglToPng(number);
-					// 	const image = await map.loadImage(webglImage);
-					// 	console.log(image);
-					// 	if (!map.hasImage(id)) {
-					// 		map.addImage(id, image.data);
-					// 	}
-					// } catch (error) {
-					// 	console.error(`Error loading image for category ${id}:`, error);
-					// }
-				} else {
-					// const imageSrc = id;
-					// const webglImage = await imageToIcon(imageSrc);
-					// if (!map.hasImage(id)) {
-					// 	map.addImage(id, webglImage, { pixelRatio: 1 });
-					// }
-				}
+			try {
+				processingImages.add(id);
+				iconWorker.postMessage({ url: id });
 			} catch (error) {
-				console.error(`Error loading image for category ${id}:`, error);
+				console.error(`Error processing image for id ${id}:`, error);
+				processingImages.delete(id);
 			}
 		});
 
