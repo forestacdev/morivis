@@ -10,33 +10,6 @@ const rasterPaint = {
 
 export const rasterEntries: RasterEntry[] = [
 	{
-		id: 'custom-gsi-dem',
-		name: '地理院標高タイル',
-		dataType: 'raster',
-		geometryType: 'raster',
-		// url: 'customgsidem://https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png',
-		// url: 'customgsidem://https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png',
-		// url: 'customgsidem://https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png',
-		url: 'customgsidem://https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-		// sourceMaxZoom: 14,
-		sourceMaxZoom: 17,
-		sourceMinZoom: 1,
-		opacity: 1,
-		attribution: '国土地理院',
-		location: ['全国'],
-		visible: true,
-		clickable: false,
-		styleKey: 'デフォルト',
-		style: {
-			raster: [
-				{
-					name: 'デフォルト',
-					paint: rasterPaint
-				}
-			]
-		}
-	},
-	{
 		id: 'ortho_photo',
 		name: 'オルソ写真',
 		dataType: 'raster',

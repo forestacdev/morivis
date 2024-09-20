@@ -17,11 +17,11 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		showLine: false,
 		showFill: true,
 		location: ['森林文化アカデミー'],
-		styleKey: '樹種ごとの色分け',
+        styleKey: '樹種ごとの色分け',
 		style: {
 			fill: [
 				{
-					name: '単色',
+                    name: '単色',
 					paint: {
 						'fill-color': '#2a826c'
 					}

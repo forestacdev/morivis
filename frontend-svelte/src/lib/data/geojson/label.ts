@@ -26,9 +26,9 @@ export const geojsonLabelEntries: GeojsonEntry<'label'>[] = [
 						'text-offset': [0, -1],
 						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 						'text-radial-offset': 0.5,
-						'text-justify': 'auto',
-						'icon-image': ['to-string', ['get', 'image']],
-						'icon-size': 1
+						'text-justify': 'auto'
+						// 'icon-image': ['to-string', ['get', 'image']],
+						// 'icon-size': 1
 					},
 					paint: {
 						'text-halo-color': '#000000',

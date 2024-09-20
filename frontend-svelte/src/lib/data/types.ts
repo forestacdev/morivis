@@ -1,3 +1,5 @@
+import { demEntries } from './raster/dem';
+import { customTileProtocol } from '$lib/utils/customprotocol/raster';
 import type {
 	SourceSpecification,
 	LayerSpecification,
@@ -116,6 +118,40 @@ export type RasterEntry = {
 	};
 };
 
+export type ProtocolKey = 'customgsidem'| 'customtiles';
+
+export type DemEntry = {
+	id: string;
+	name: string;
+	dataType: 'raster';
+	geometryType: 'dem';
+	url: string;
+	protocolKey: ProtocolKey;
+	attribution: string;
+	sourceMinZoom?: number;
+	sourceMaxZoom?: number;
+	layerMinZoom?: number;
+	layerMaxZoom?: number;
+	isOverVector?: boolean;
+	opacity: number;
+	styleKey: string;
+	style?: RasterStyle;
+	visible: boolean;
+	clickable?: boolean; // クリック可能かどうか
+	remarks?: string; // 備考
+	location?: Region[];
+	bbox?: [number, number, number, number]; // バウンディングボックス
+	guide_color?: {
+		color: string;
+		label: string;
+	}[];
+	tileImage?: {
+		x: number;
+		y: number;
+		z: number;
+	};
+};
+
 export type GeojsonEntry<T extends GeometryType> = {
 	id: string;
 	name: string;
@@ -172,4 +208,8 @@ export type VectorEntry<T extends GeometryType> = {
 	bbox?: [number, number, number, number]; // バウンディングボックス
 };
 
-export type LayerEntry = RasterEntry | GeojsonEntry<GeometryType> | VectorEntry<GeometryType>;
+export type LayerEntry =
+	| RasterEntry
+	| DemEntry
+	| GeojsonEntry<GeometryType>
+	| VectorEntry<GeometryType>;

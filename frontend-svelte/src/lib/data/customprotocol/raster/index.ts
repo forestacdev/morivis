@@ -1,4 +1,4 @@
-// customgsidem.ts
+import type { ProtocolKey } from '$lib/data/types';
 
 export class WorkerProtocol {
 	private worker: Worker;
@@ -31,7 +31,7 @@ export class WorkerProtocol {
 			if (buffer.byteLength === 0) {
 				request.reject(new Error('Empty buffer received'));
 			} else {
-				request.resolve({ data: buffer });
+				request.resolve({ data: new Uint8Array(buffer) });
 			}
 			this.pendingRequests.delete(id);
 		}
@@ -46,12 +46,12 @@ export class WorkerProtocol {
 	};
 }
 
-export function customTileProtocol2() {
+export const customTileProtocol = (protocolName: ProtocolKey) => {
 	const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 	const workerProtocol = new WorkerProtocol(worker);
 
 	return (params: { url: string }, abortController: AbortController) => {
-		const imageUrl = params.url.replace('tiles://', '');
+		const imageUrl = params.url.replace(`${protocolName}://`, '');
 		return workerProtocol.request(imageUrl, abortController);
 	};
-}
+};

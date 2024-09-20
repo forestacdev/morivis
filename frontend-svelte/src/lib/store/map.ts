@@ -30,111 +30,17 @@ import { isSide } from '$lib//store/store';
 import { getGeojson } from '$lib/utils/geojson';
 import { getLocationBbox } from '$lib/data/locationBbox';
 import turfBbox from '@turf/bbox';
+import type { ProtocolKey } from '$lib/data/types';
+import { gsidemProtocol } from '$lib/data/customprotocol/gsidem';
+import { tilesProtocol } from '$lib/data/customprotocol/vector';
 
-import { customTileProtocol } from '$lib/utils/customprotocol/raster';
-import { customTileProtocol2 } from '$lib/utils/customprotocol/vector';
+const protocolName: ProtocolKey = 'customgsidem';
+const gsidem = gsidemProtocol(protocolName);
+maplibregl.addProtocol(protocolName, gsidem);
 
-// import { page } from '$app/stores';
-
-// import { Protocol } from './customgsidem';
-
-const customRaster = customTileProtocol();
-maplibregl.addProtocol('customgsidem', customRaster);
-
-const customVector = customTileProtocol2();
-
-maplibregl.addProtocol('tiles', customVector);
-
-// maplibregl.addProtocol('tiles', async (params, abortController): any => {
-// 	const regex = new RegExp(`tiles:\/\/(\\d+)\/(\\d+)\/(\\d+)`);
-// 	const match = params.url.match(regex);
-
-// 	if (!match) return;
-// 	const z: number = parseInt(match[1], 10);
-// 	const x: number = parseInt(match[2], 10);
-// 	const y: number = parseInt(match[3], 10);
-
-// 	const childrenTiles = tilebelt.getChildren([x, y, z]);
-
-// 	const geojson = {
-// 		type: 'FeatureCollection',
-// 		features: childrenTiles.map((tile: number[]) => {
-// 			const bbox = tilebelt.tileToBBOX(tile);
-// 			const feature = bboxPolygon(bbox);
-// 			feature.properties = {
-// 				name: `${tile[2]}/${tile[0]}/${tile[1]}`
-// 			};
-// 			return feature;
-// 		})
-// 	};
-
-// 	const tileIndex = geojsonvt(geojson, {
-// 		maxZoom: 24,
-// 		tolerance: 3,
-// 		extent: 4096,
-// 		buffer: 64
-// 	});
-
-// 	const tile = tileIndex.getTile(z, x, y);
-
-// 	if (tile) {
-// 		const pbf = vtpbf.fromGeojsonVt(
-// 			{ geojsonLayer: tile },
-// 			{
-// 				version: 2
-// 			}
-// 		);
-
-// 		return { data: pbf };
-// 	} else {
-// 		return { data: new ArrayBuffer(0) };
-// 	}
-// });
-
-// const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-// 	type: 'module'
-// });
-// const pendingRequests = new Map();
-
-// worker.addEventListener('message', (e) => {
-// 	const { id, buffer } = e.data;
-// 	const request = pendingRequests.get(id);
-// 	if (request) {
-// 		if (buffer.byteLength === 0) {
-// 			request.reject(new Error('Empty buffer received'));
-// 		} else {
-// 			request.resolve({ data: new Uint8Array(buffer) });
-// 		}
-// 		pendingRequests.delete(id);
-// 	}
-// });
-
-// // グローバルエラーハンドラー
-// worker.addEventListener('error', (e) => {
-// 	console.error('Worker error:', e);
-// 	// すべての保留中のリクエストを拒否
-// 	pendingRequests.forEach((request) => {
-// 		request.reject(new Error('Worker error occurred'));
-// 	});
-// 	pendingRequests.clear();
-// });
-
-// maplibregl.addProtocol('customgsidem', (params, abortController) => {
-// 	const imageUrl = params.url.replace('customgsidem://', '');
-
-// 	return new Promise((resolve, reject) => {
-// 		const request = { resolve, reject };
-// 		pendingRequests.set(imageUrl, request);
-
-// 		worker.postMessage({ url: imageUrl });
-
-// 		// アボート処理
-// 		abortController.signal.addEventListener('abort', () => {
-// 			pendingRequests.delete(imageUrl);
-// 			reject(new Error('Request aborted'));
-// 		});
-// 	});
-// });
+const protocolName2: ProtocolKey = 'customtiles';
+const customVector = tilesProtocol(protocolName2);
+maplibregl.addProtocol(protocolName2, customVector);
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;

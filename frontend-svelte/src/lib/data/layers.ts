@@ -7,6 +7,7 @@ import { addedLayerIds } from '$lib/store/store';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
 
 import { rasterEntries } from '$lib/data/raster';
+import { demEntries } from '$lib/data/raster/dem';
 import type { LayerEntry } from '$lib/data/types';
 import type {
 	SourceSpecification,
@@ -31,7 +32,8 @@ export const layerData: LayerEntry[] = [
 	...geojsonLineEntries,
 	...geojsonPolygonEntries,
 	...vectorPolygonEntries,
-	...rasterEntries
+	...rasterEntries,
+	...demEntries
 ];
 
 // IDを収集

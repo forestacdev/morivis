@@ -1,4 +1,4 @@
-// customgsidem.ts
+import type { ProtocolKey } from '$lib/data/types';
 
 export class WorkerProtocol {
 	private worker: Worker;
@@ -46,12 +46,12 @@ export class WorkerProtocol {
 	};
 }
 
-export function customTileProtocol() {
+export const gsidemProtocol = (protocolName: ProtocolKey) => {
 	const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 	const workerProtocol = new WorkerProtocol(worker);
 
 	return (params: { url: string }, abortController: AbortController) => {
-		const imageUrl = params.url.replace('customgsidem://', '');
+		const imageUrl = params.url.replace(`${protocolName}://`, '');
 		return workerProtocol.request(imageUrl, abortController);
 	};
-}
+};

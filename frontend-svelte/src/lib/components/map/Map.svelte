@@ -94,7 +94,7 @@
 			),
 			tile_source: {
 				type: 'vector',
-				tiles: ['tiles://{z}/{x}/{y}.pbf']
+				tiles: ['customtiles://{z}/{x}/{y}.pbf']
 			}
 		};
 		mapStyleJson.layers = [
