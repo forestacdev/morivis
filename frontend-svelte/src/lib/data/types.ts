@@ -118,7 +118,7 @@ export type RasterEntry = {
 	};
 };
 
-export type ProtocolKey = 'customgsidem'| 'customtiles';
+export type ProtocolKey = 'customgsidem' | 'customrgbdem' | 'customtiles';
 
 export type DemEntry = {
 	id: string;

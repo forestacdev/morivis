@@ -13,14 +13,7 @@ float convertToHeight(vec4 color) {
     float g = color.g * 255.0;
     float b = color.b * 255.0;
 
-    float rgb = (r * 65536.0) + (g * 256.0) + b;
-    float h = 0.0;
-    if (rgb < 8388608.0) {
-        h = rgb * 0.01;
-    } else if (rgb > 8388608.0) {
-        h = (rgb - 16777216.0) * 0.01;
-    }
-    return h;
+    return -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
 }
 
 // 隣接するピクセルの高さ差を使って法線を計算する関数
@@ -48,10 +41,14 @@ void main() {
     vec2 uv = vTexCoord;
     vec4 color = texture(heightMap, uv);
 
+    if (color.a == 0.0) {
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+
     float height = convertToHeight(color);
 
-   
-   // 高さを0-1の範囲に正規化
+   // 高さを0-1の範囲に正規化（0mから3500mの範囲）
     float normalizedHeight = height / 1000.0;
     normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
 

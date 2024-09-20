@@ -17,7 +17,8 @@ export const INT_ADD_LAYER_IDS = [
 	'ENSYURIN_rinhanzu',
 	'TATEMONO',
 	'ZIRIKI',
-	'custom-gsi-dem',
+	'custom-rgb-dem',
+	// 'custom-gsi-dem',
 	'gsi-rinya_m',
 	'ortho_photo'
 ];

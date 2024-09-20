@@ -32,15 +32,20 @@ import { getLocationBbox } from '$lib/data/locationBbox';
 import turfBbox from '@turf/bbox';
 import type { ProtocolKey } from '$lib/data/types';
 import { gsidemProtocol } from '$lib/data/customprotocol/gsidem';
+import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
 
 const protocolName: ProtocolKey = 'customgsidem';
 const gsidem = gsidemProtocol(protocolName);
 maplibregl.addProtocol(protocolName, gsidem);
 
-const protocolName2: ProtocolKey = 'customtiles';
-const customVector = tilesProtocol(protocolName2);
-maplibregl.addProtocol(protocolName2, customVector);
+const protocolName2: ProtocolKey = 'customrgbdem';
+const rgbdem = rgbdemProtocol(protocolName2);
+maplibregl.addProtocol(protocolName2, rgbdem);
+
+const protocolName3: ProtocolKey = 'customtiles';
+const customVector = tilesProtocol(protocolName3);
+maplibregl.addProtocol(protocolName3, customVector);
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
