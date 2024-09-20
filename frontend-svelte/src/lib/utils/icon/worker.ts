@@ -17,14 +17,14 @@ const vertexShaderSource = /* glsl */ `
 
 const fragmentShaderSource = /* glsl */ `
       #ifdef GL_ES
-precision mediump float;
-#endif
+    precision mediump float;
+    #endif
 
-uniform vec2 u_resolution;
+    uniform vec2 u_resolution;
 
-uniform sampler2D u_texture; // 画像テクスチャ
+    uniform sampler2D u_texture; // 画像テクスチャ
 
-#define PI 3.14159265358979323846
+    #define PI 3.14159265358979323846
 
 
 
@@ -60,8 +60,8 @@ void main(void){
 
     // マスクの外側を透明にする
     float alpha = mask * textureColor.a;
-
     gl_FragColor = vec4(color, alpha);
+    // gl_FragColor = textureColor;
 }
 `;
 
@@ -102,6 +102,7 @@ const createProgram = (
 	}
 	return program;
 };
+
 const canvas = new OffscreenCanvas(64, 64);
 const gl = canvas.getContext('webgl');
 
@@ -147,8 +148,8 @@ self.onmessage = async (e) => {
 		// テクスチャのパラメータ設定
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
