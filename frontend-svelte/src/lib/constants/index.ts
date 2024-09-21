@@ -12,13 +12,13 @@ export const GIFU_DATA_BASE_PATH =
 
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 export const INT_ADD_LAYER_IDS = [
-	'TITEN',
-	'ENSYURIN_MITI',
-	'ENSYURIN_rinhanzu',
-	'TATEMONO',
-	'ZIRIKI',
-	'custom-rgb-dem',
+	// 'TITEN',
+	// 'ENSYURIN_MITI',
+	// 'ENSYURIN_rinhanzu',
+	// 'TATEMONO',
+	// 'ZIRIKI',
+	'custom-rgb-dem'
 	// 'custom-gsi-dem',
-	'gsi-rinya_m',
-	'ortho_photo'
+	// 'gsi-rinya_m',
+	// 'ortho_photo'
 ];

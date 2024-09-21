@@ -39,7 +39,7 @@ import { tilesProtocol } from '$lib/data/customprotocol/vector';
 
 const protocolName2: ProtocolKey = 'customrgbdem';
 const rgbdem = rgbdemProtocol(protocolName2);
-maplibregl.addProtocol(protocolName2, rgbdem);
+maplibregl.addProtocol(protocolName2, rgbdem.request);
 
 const protocolName3: ProtocolKey = 'customtiles';
 const customVector = tilesProtocol(protocolName3);
@@ -463,6 +463,8 @@ const createMapStore = () => {
 
 	const reloadDemTile = () => {
 		if (!map) return;
+
+		rgbdem.cancelAllRequests();
 
 		const aaa = map.getSource('custom-rgb-dem_source') as RasterTileSource;
 

@@ -1,8 +1,8 @@
 import fsSource from './shader/fragment.frag';
 import vsSource from './shader/vertex.vert';
 
-const loadImage = async (src: string): Promise<ImageBitmap> => {
-	const response = await fetch(src);
+const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
+	const response = await fetch(src, { signal: signal });
 	if (!response.ok) {
 		throw new Error('Failed to fetch image');
 	}
@@ -91,6 +91,7 @@ const canvas = new OffscreenCanvas(256, 256);
 self.onmessage = async (e) => {
 	const {
 		url,
+		image,
 		demTypeNumber,
 		slopeModeNumber,
 		shadowModeNumber,
@@ -99,8 +100,6 @@ self.onmessage = async (e) => {
 	} = e.data;
 
 	try {
-		const image = await loadImage(url);
-
 		if (!gl) {
 			initWebGL(canvas);
 		}
@@ -141,7 +140,11 @@ self.onmessage = async (e) => {
 		reader.readAsArrayBuffer(blob);
 	} catch (error) {
 		if (error instanceof Error) {
-			self.postMessage({ id: url, error: error.message });
+			if (error.name === 'AbortError') {
+				self.postMessage({ id: url, error: 'Request aborted' });
+			} else {
+				self.postMessage({ id: url, error: error.message });
+			}
 		}
 	}
 };
