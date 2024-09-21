@@ -11,6 +11,9 @@ uniform int slopeMode;
 uniform int evolutionMode;
 uniform int shadowMode;
 uniform int aspectMode;
+uniform int evolutionColorMap;
+uniform int slopeColorMap;
+uniform int aspectColorMap;
 uniform vec3 lightDirection;
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -184,21 +187,21 @@ void main() {
     float aspectAlpha = 0.5;    // 例: 50%の強さ
 
     if (evolutionMode == 1) {
-        vec4 terrainColor = rainbowSoft(normalizedHeight);
+        vec4 terrainColor =   applyColorMap(evolutionColorMap, normalizedHeight);
         finalColor = mix(finalColor, terrainColor, evolutionAlpha);
     }
 
     if (slopeMode == 1) {
         float slope = calculateSlope(normal);
         float normalizedSlope = clamp(slope / 90.0, 0.0, 1.0);
-        vec4 slopeColor = jet(normalizedSlope);
+        vec4 slopeColor = applyColorMap(slopeColorMap, normalizedSlope);
         finalColor = mix(finalColor, slopeColor, slopeAlpha);
     }
 
     if (aspectMode == 1) {
         float aspect = atan(normal.y, normal.x);
         float normalizedAspect = (aspect + 3.14159265359) / (2.0 * 3.14159265359);
-        vec4 aspectColor = jet(normalizedAspect);
+        vec4 aspectColor = applyColorMap(aspectColorMap, normalizedAspect);
         finalColor = mix(finalColor, aspectColor, aspectAlpha);
     }
     bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1);
@@ -223,7 +226,7 @@ void main() {
     }
 
     if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0) {
-        finalColor = vec4(normalmap, 1.0);
+        finalColor = color;
     }
 
     fragColor = finalColor;

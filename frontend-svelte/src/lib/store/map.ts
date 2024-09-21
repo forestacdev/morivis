@@ -466,9 +466,9 @@ const createMapStore = () => {
 
 		rgbdem.cancelAllRequests();
 
-		const aaa = map.getSource('custom-rgb-dem_source') as RasterTileSource;
+		const demSource = map.getSource('custom-rgb-dem_source') as RasterTileSource;
 
-		aaa.setTiles(aaa.tiles);
+		demSource.setTiles(demSource.tiles);
 	};
 
 	return {

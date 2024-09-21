@@ -1,16 +1,26 @@
 import fsSource from './shader/fragment.frag';
 import vsSource from './shader/vertex.vert';
+import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
+import type { ColorMapTypeKey } from '$lib/data/raster/dem';
 
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let positionBuffer: WebGLBuffer | null = null;
 let heightMapLocation: WebGLUniformLocation | null = null;
 let demTypeLocation: WebGLUniformLocation | null = null;
-let evolutionModeLocation: WebGLUniformLocation | null = null;
-let shadowModeLocation: WebGLUniformLocation | null = null;
-let slopeModeLocation: WebGLUniformLocation | null = null;
-let aspectModeLocation: WebGLUniformLocation | null = null;
-let lightDirectionLocation: WebGLUniformLocation | null = null;
+
+const calculateLightDirection = (azimuth: number, altitude: number) => {
+	// 方位角と高度をラジアンに変換
+	const azimuthRad = (azimuth * Math.PI) / 180;
+	const altitudeRad = (altitude * Math.PI) / 180;
+
+	// 光の方向ベクトルを計算
+	const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+	const y = Math.sin(altitudeRad);
+	const z = -Math.cos(altitudeRad) * Math.cos(azimuthRad); // 北がZ軸の負の方向
+
+	return [x, y, z];
+};
 
 const initWebGL = (canvas: OffscreenCanvas) => {
 	gl = canvas.getContext('webgl2');
@@ -72,26 +82,23 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 
 	heightMapLocation = gl.getUniformLocation(program, 'heightMap');
 	demTypeLocation = gl.getUniformLocation(program, 'demType');
-	evolutionModeLocation = gl.getUniformLocation(program, 'evolutionMode');
-	slopeModeLocation = gl.getUniformLocation(program, 'slopeMode');
-	shadowModeLocation = gl.getUniformLocation(program, 'shadowMode');
-	aspectModeLocation = gl.getUniformLocation(program, 'aspectMode');
-	lightDirectionLocation = gl.getUniformLocation(program, 'lightDirection');
 };
 
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	const {
-		url,
-		image,
-		demTypeNumber,
-		slopeModeNumber,
-		shadowModeNumber,
-		evolutionModeNumber,
-		aspectModeNumber,
-		lightDirection
-	} = e.data;
+	const { url, image, demTypeNumber, uniformsData } = e.data;
+
+	const { evolution, slope, shadow, aspect } = uniformsData;
+	const evolutionModeInt = evolution.visible ? 1 : 0;
+	const slopeModeInt = slope.visible ? 1 : 0;
+	const shadowModeInt = shadow.visible ? 1 : 0;
+	const aspectModeInt = aspect.visible ? 1 : 0;
+	const lightDirection = calculateLightDirection(shadow.azimuth, shadow.altitude);
+
+	const evolutionColorMapInt = COLOR_MAP_TYPE[evolution.colorMap as ColorMapTypeKey];
+	const aspectColorMapInt = COLOR_MAP_TYPE[aspect.colorMap as ColorMapTypeKey];
+	const slopeColorMapInt = COLOR_MAP_TYPE[slope.colorMap as ColorMapTypeKey];
 
 	try {
 		if (!gl) {
@@ -115,13 +122,18 @@ self.onmessage = async (e) => {
 		gl.uniform1i(heightMapLocation, 0);
 		gl.uniform1i(demTypeLocation, demTypeNumber); // demTypeを設定
 
-		gl.uniform1i(evolutionModeLocation, evolutionModeNumber);
-		gl.uniform1i(slopeModeLocation, slopeModeNumber);
-		gl.uniform1i(shadowModeLocation, shadowModeNumber);
-		gl.uniform1i(aspectModeLocation, aspectModeNumber);
+		gl.uniform1i(gl.getUniformLocation(program, 'evolutionMode'), evolutionModeInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'slopeMode'), slopeModeInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'shadowMode'), shadowModeInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'aspectMode'), aspectModeInt);
+
+		// シェーダーにカラーマップを渡す
+		gl.uniform1i(gl.getUniformLocation(program, 'evolutionColorMap'), evolutionColorMapInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'slopeColorMap'), slopeColorMapInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'aspectColorMap'), aspectColorMapInt);
 
 		// シェーダーに光の方向を渡す
-		gl.uniform3fv(lightDirectionLocation, lightDirection);
+		gl.uniform3fv(gl.getUniformLocation(program, 'lightDirection'), lightDirection);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

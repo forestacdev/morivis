@@ -9,6 +9,8 @@
 	import { flip } from 'svelte/animate';
 	import { split } from 'postcss/lib/list';
 	import ColorRamp from './ColorRamp.svelte';
+	import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
+	import type { ColorMapTypeKey } from '$lib/data/raster/dem';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -70,7 +72,7 @@
 				<Icon icon="hugeicons:target-03" width="24" height="24" class="custom-anime" />
 			</button>
 		</div>
-		<div>
+		<div class="h-full">
 			<div class="flex gap-2">
 				<label class="block">表示</label>
 				<input type="checkbox" class="custom-checkbox" bind:checked={layerOption.visible} />
@@ -187,71 +189,85 @@
 						<option value={item.id}>{item.name}</option>
 					{/each}
 				</select>
+				<div class="flex h-full flex-col gap-2 overflow-y-auto">
+					<div class="flex flex-col gap-2">
+						<label class="block">標高図</label>
+						<input
+							type="checkbox"
+							class="custom-checkbox"
+							bind:checked={layerOption.uniformsData.evolution.visible}
+							on:change={reloadDemTile}
+						/>
+						<label class="block">カラーランプ</label>
+						<select
+							class="custom-select"
+							bind:value={layerOption.uniformsData.evolution.colorMap}
+							on:change={reloadDemTile}
+						>
+							{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
+								<option value={name}>
+									{name}
+								</option>
+							{/each}
+						</select>
 
-				<div class="flex gap-2">
-					<label class="block">標高図</label>
-					<input
-						type="checkbox"
-						class="custom-checkbox"
-						bind:checked={layerOption.uniformsData.evolution.visible}
-						on:change={reloadDemTile}
-					/>
-					{#if layerOption.uniformsData.evolution.visible}
-						<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
-					{/if}
-				</div>
-				<div class="flex gap-2">
-					<label class="block">傾斜量</label>
-					<input
-						type="checkbox"
-						class="custom-checkbox"
-						bind:checked={layerOption.uniformsData.slope.visible}
-						on:change={reloadDemTile}
-					/>
-				</div>
-				<div class="flex gap-2">
-					<label class="block">傾斜方向</label>
-					<input
-						type="checkbox"
-						class="custom-checkbox"
-						bind:checked={layerOption.uniformsData.aspect.visible}
-						on:change={reloadDemTile}
-					/>
-				</div>
-				<div class="flex flex-col gap-2">
-					<label class="block">陰影</label>
-					<input
-						type="checkbox"
-						class="custom-checkbox"
-						bind:checked={layerOption.uniformsData.shadow.visible}
-						on:change={reloadDemTile}
-					/>
-					{#if layerOption.uniformsData.shadow.visible}
-						<div class="flex gap-2">
-							<label class="block">方位角</label>
-							<input
-								type="range"
-								class="custom-slider"
-								bind:value={layerOption.uniformsData.shadow.azimuth}
-								min="0"
-								max="360"
-								step="0.01"
-								on:change={reloadDemTile}
-							/>
-						</div>
-						<div class="flex gap-2">
-							<label class="block">高度角</label>
-							<input
-								type="range"
-								class="custom-slider"
-								bind:value={layerOption.uniformsData.shadow.altitude}
-								min="0"
-								max="90"
-								step="0.01"
-								on:change={reloadDemTile}
-							/>
-						</div>
-					{/if}
+						{#if layerOption.uniformsData.evolution.visible}
+							<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
+						{/if}
+					</div>
+					<div class="flex gap-2">
+						<label class="block">傾斜量</label>
+						<input
+							type="checkbox"
+							class="custom-checkbox"
+							bind:checked={layerOption.uniformsData.slope.visible}
+							on:change={reloadDemTile}
+						/>
+					</div>
+					<div class="flex gap-2">
+						<label class="block">傾斜方向</label>
+						<input
+							type="checkbox"
+							class="custom-checkbox"
+							bind:checked={layerOption.uniformsData.aspect.visible}
+							on:change={reloadDemTile}
+						/>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label class="block">陰影</label>
+						<input
+							type="checkbox"
+							class="custom-checkbox"
+							bind:checked={layerOption.uniformsData.shadow.visible}
+							on:change={reloadDemTile}
+						/>
+						{#if layerOption.uniformsData.shadow.visible}
+							<div class="flex gap-2">
+								<label class="block">方位角</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.shadow.azimuth}
+									min="0"
+									max="360"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex gap-2">
+								<label class="block">高度角</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.shadow.altitude}
+									min="0"
+									max="90"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+						{/if}
+					</div>
 				</div>
 			{/if}
 		</div>

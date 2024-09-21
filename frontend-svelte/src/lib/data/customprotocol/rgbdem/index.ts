@@ -44,25 +44,11 @@ export class WorkerProtocol {
 			this.pendingRequests.set(url, { resolve, reject, controller });
 			const demType = demEntry.demType;
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-			const slopeModeNumber = demEntry.uniformsData.slope.visible ? 1 : 0;
-			const shadowModeNumber = demEntry.uniformsData.shadow.visible ? 1 : 0;
-			const evolutionModeNumber = demEntry.uniformsData.evolution.visible ? 1 : 0;
-			const aspectModeNumber = demEntry.uniformsData.aspect.visible ? 1 : 0;
-
-			const lightDirection = calculateLightDirection(
-				demEntry.uniformsData.shadow.azimuth,
-				demEntry.uniformsData.shadow.altitude
-			);
 
 			this.worker.postMessage({
 				image,
 				url,
 				demTypeNumber,
-				slopeModeNumber,
-				shadowModeNumber,
-				evolutionModeNumber,
-				aspectModeNumber,
-				lightDirection,
 				uniformsData: demEntry.uniformsData
 			});
 		});

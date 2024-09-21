@@ -1,5 +1,6 @@
 precision mediump float;
 uniform float u_height;
+uniform int colorMap;
 
 #pragma glslify: jet = require("glsl-colormap/jet")
 #pragma glslify: hsv = require("glsl-colormap/hsv")
@@ -97,7 +98,7 @@ vec4 applyColorMap(int type, float value) {
 
 void main() {
     float y = gl_FragCoord.y / u_height;
-    // vec4 color = applyColormap(y, 1);
-    vec4 color = jet(y);
+
+    vec4 color = applyColorMap(colorMap, y);
     gl_FragColor = color;
 }
