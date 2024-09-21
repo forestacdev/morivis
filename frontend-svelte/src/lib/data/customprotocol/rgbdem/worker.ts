@@ -18,6 +18,7 @@ let demTypeLocation: WebGLUniformLocation | null = null;
 let evolutionModeLocation: WebGLUniformLocation | null = null;
 let shadowModeLocation: WebGLUniformLocation | null = null;
 let slopeModeLocation: WebGLUniformLocation | null = null;
+let aspectModeLocation: WebGLUniformLocation | null = null;
 
 const initWebGL = (canvas: OffscreenCanvas) => {
 	gl = canvas.getContext('webgl2');
@@ -82,12 +83,20 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 	evolutionModeLocation = gl.getUniformLocation(program, 'evolutionMode');
 	slopeModeLocation = gl.getUniformLocation(program, 'slopeMode');
 	shadowModeLocation = gl.getUniformLocation(program, 'shadowMode');
+	aspectModeLocation = gl.getUniformLocation(program, 'aspectMode');
 };
 
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	const { url, demTypeNumber, slopeModeNumber, shadowModeNumber, evolutionModeNumber } = e.data;
+	const {
+		url,
+		demTypeNumber,
+		slopeModeNumber,
+		shadowModeNumber,
+		evolutionModeNumber,
+		aspectModeNumber
+	} = e.data;
 
 	try {
 		const image = await loadImage(url);
@@ -116,6 +125,7 @@ self.onmessage = async (e) => {
 		gl.uniform1i(evolutionModeLocation, evolutionModeNumber);
 		gl.uniform1i(slopeModeLocation, slopeModeNumber);
 		gl.uniform1i(shadowModeLocation, shadowModeNumber);
+		gl.uniform1i(aspectModeLocation, aspectModeNumber);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

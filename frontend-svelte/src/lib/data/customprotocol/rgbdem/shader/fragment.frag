@@ -10,6 +10,7 @@ uniform int demType;
 uniform int slopeMode;
 uniform int evolutionMode;
 uniform int shadowMode;
+uniform int aspectMode;
 in vec2 vTexCoord;
 out vec4 fragColor;
 
@@ -87,9 +88,10 @@ void main() {
     vec4 finalColor = vec4(1.0);
 
     // 各モードの透過度を定義（0.0から1.0の範囲）
-    float evolutionAlpha = 1.0; // 例: 50%の強さ
-    float slopeAlpha = 0.7;     // 例: 70%の強さ
-    float shadowAlpha = 0.6;    // 例: 60%の強さ
+    float evolutionAlpha = 0.5; // 例: 50%の強さ
+    float slopeAlpha = 0.5;     // 例: 70%の強さ
+    float shadowAlpha = 0.5;    // 例: 60%の強さ
+    float aspectAlpha = 0.5;    // 例: 50%の強さ
 
     if (evolutionMode == 1) {
         vec4 terrainColor = rainbowSoft(normalizedHeight);
@@ -103,16 +105,34 @@ void main() {
         finalColor = mix(finalColor, slopeColor, slopeAlpha);
     }
 
+    if (aspectMode == 1) {
+        float aspect = atan(normal.y, normal.x);
+        float normalizedAspect = (aspect + 3.14159265359) / (2.0 * 3.14159265359);
+        vec4 aspectColor = jet(normalizedAspect);
+        finalColor = mix(finalColor, aspectColor, aspectAlpha);
+    }
+    bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1);
+
     if (shadowMode == 1) {
         vec3 lightDir = normalize(vec3(0.5, 0.5, 1.0));
         float diffuse = max(dot(normal, lightDir), 0.0);
-        float ambient = 0.9;
+        float ambient = 0.2;
         float shadowFactor = ambient + (1.0 - ambient) * diffuse;
-        vec4 shadowColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
-        finalColor = mix(finalColor, shadowColor, shadowAlpha);
+        
+        // shadowFactorを基に透明度を計算（明るいほど透明に）
+        float shadowAlpha = 1.0 - shadowFactor;
+        
+        if (otherModesActive) {
+        // 他のモードがアクティブな場合、RGBのみを変更
+        vec3 shadowColor = vec3(0.0);
+        finalColor.rgb = mix(finalColor.rgb, shadowColor, shadowAlpha * shadowAlpha);
+        } else {
+            // 他のモードがオフの場合、アルファ値も含めて完全に透明に
+            finalColor = vec4(0.0, 0.0, 0.0, shadowAlpha);
+        }
     }
 
-    if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0) {
+    if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0) {
         finalColor = vec4(normalmap, 1.0);
     }
 

@@ -124,6 +124,7 @@ type DemVisualMode = {
 	evolution: boolean;
 	slope: boolean;
 	shadow: boolean;
+	aspect: boolean;
 };
 
 export type DemEntry = {

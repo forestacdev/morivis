@@ -23,13 +23,15 @@ export class WorkerProtocol {
 			const slopeModeNumber = demEntry.visualMode.slope ? 1 : 0;
 			const shadowModeNumber = demEntry.visualMode.shadow ? 1 : 0;
 			const evolutionModeNumber = demEntry.visualMode.evolution ? 1 : 0;
+			const aspectModeNumber = demEntry.visualMode.aspect ? 1 : 0;
 
 			this.worker.postMessage({
 				url,
 				demTypeNumber,
 				slopeModeNumber,
 				shadowModeNumber,
-				evolutionModeNumber
+				evolutionModeNumber,
+				aspectModeNumber
 			});
 
 			abortController.signal.addEventListener('abort', () => {

@@ -183,7 +183,8 @@ export const demEntry: DemEntry = {
 	visualMode: {
 		evolution: false,
 		slope: false,
-		shadow: false
+		shadow: false,
+		aspect: false
 	},
 	protocolKey: 'customrgbdem',
 	url: demLayers[0].tiles[0],

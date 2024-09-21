@@ -197,11 +197,20 @@
 					/>
 				</div>
 				<div class="flex gap-2">
-					<label class="block">傾斜</label>
+					<label class="block">傾斜量</label>
 					<input
 						type="checkbox"
 						class="custom-checkbox"
 						bind:checked={layerOption.visualMode.slope}
+						on:change={reloadDemTile}
+					/>
+				</div>
+				<div class="flex gap-2">
+					<label class="block">傾斜方向</label>
+					<input
+						type="checkbox"
+						class="custom-checkbox"
+						bind:checked={layerOption.visualMode.aspect}
 						on:change={reloadDemTile}
 					/>
 				</div>
