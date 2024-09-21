@@ -25,15 +25,15 @@ export class WorkerProtocol {
 	}
 
 	private handleMessage = (e: MessageEvent) => {
-		const { id, buffer } = e.data;
-		const request = this.pendingRequests.get(id);
-		if (request) {
-			if (buffer.byteLength === 0) {
-				request.reject(new Error('Empty buffer received'));
-			} else {
+		const { id, buffer, error } = e.data;
+		if (error) {
+			console.error(`Error processing tile ${id}:`, error);
+		} else {
+			const request = this.pendingRequests.get(id);
+			if (request) {
 				request.resolve({ data: new Uint8Array(buffer) });
+				this.pendingRequests.delete(id);
 			}
-			this.pendingRequests.delete(id);
 		}
 	};
 
@@ -46,10 +46,10 @@ export class WorkerProtocol {
 	};
 }
 
-export const gsidemProtocol = (protocolName: ProtocolKey) => {
-	const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-	const workerProtocol = new WorkerProtocol(worker);
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+const workerProtocol = new WorkerProtocol(worker);
 
+export const gsidemProtocol = (protocolName: ProtocolKey) => {
 	return (params: { url: string }, abortController: AbortController) => {
 		const imageUrl = params.url.replace(`${protocolName}://`, '');
 		return workerProtocol.request(imageUrl, abortController);

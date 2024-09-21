@@ -17,7 +17,9 @@ import type {
 	CircleLayerSpecification,
 	FillLayerSpecification,
 	LineLayerSpecification,
-	SymbolLayerSpecification
+	SymbolLayerSpecification,
+	RasterSourceSpecification,
+	RasterTileSource
 } from 'maplibre-gl';
 import * as pmtiles from 'pmtiles';
 
@@ -34,7 +36,7 @@ import type { ProtocolKey } from '$lib/data/types';
 import { gsidemProtocol } from '$lib/data/customprotocol/gsidem';
 import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
-
+import { demVisualMode } from '$lib/store/store';
 const protocolName: ProtocolKey = 'customgsidem';
 const gsidem = gsidemProtocol(protocolName);
 maplibregl.addProtocol(protocolName, gsidem);
@@ -462,6 +464,18 @@ const createMapStore = () => {
 
 		map.addLayer(layerItems[0]);
 	};
+
+	demVisualMode.subscribe((value) => {
+		if (!map) return;
+		const aaa = map.getSource('custom-rgb-dem_source') as RasterTileSource;
+
+		console.log(aaa.tiles);
+
+		aaa.setTiles(aaa.tiles);
+		// aaa.loadTile(aaa.tiles);
+		// aaa.tiles.
+		// map.triggerRepaint();
+	});
 
 	return {
 		subscribe,

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { LayerEntry } from '$lib/data/types';
+	import { demLayers } from '$lib/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
-	import { showlayerOptionId, isSide, addedLayerIds } from '$lib/store/store';
+	import { showlayerOptionId, isSide, addedLayerIds, demVisualMode } from '$lib/store/store';
 	import { mapStore } from '$lib/store/map';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -174,6 +175,38 @@
 
 			{#if layerOption.dataType === 'raster'}
 				<!-- TODO: -->
+			{/if}
+			{#if layerOption.geometryType === 'dem'}
+				<select class="custom-select" bind:value={layerOption.tileId}>
+					{#each demLayers as item}
+						<option value={item.id}>{item.name}</option>
+					{/each}
+				</select>
+
+				<div class="flex gap-2">
+					<label class="block">標高図</label>
+					<input
+						type="checkbox"
+						class="custom-checkbox"
+						bind:checked={$demVisualMode.evolution}
+					/>
+				</div>
+				<div class="flex gap-2">
+					<label class="block">傾斜</label>
+					<input
+						type="checkbox"
+						class="custom-checkbox"
+						bind:checked={$demVisualMode.slope}
+					/>
+				</div>
+				<div class="flex gap-2">
+					<label class="block">陰影</label>
+					<input
+						type="checkbox"
+						class="custom-checkbox"
+						bind:checked={$demVisualMode.shadow}
+					/>
+				</div>
 			{/if}
 		</div>
 		<div class="custom-scroll h-full overflow-y-auto">

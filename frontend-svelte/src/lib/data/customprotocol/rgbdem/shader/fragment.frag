@@ -1,19 +1,32 @@
 #version 300 es
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
+#endif
 
 uniform sampler2D heightMap;
+uniform int demType;
+uniform int slopeMode;
 in vec2 vTexCoord;
 out vec4 fragColor;
 
 #pragma glslify: rainbowSoft = require("glsl-colormap/rainbow-soft")
+#pragma glslify: bluered = require("glsl-colormap/bluered")
+#pragma glslify: jet = require("glsl-colormap/jet")
 
 // 高さ変換関数
 float convertToHeight(vec4 color) {
-    float r = color.r * 255.0;
+    if (demType == 1) {
+           float r = color.r * 255.0;
     float g = color.g * 255.0;
     float b = color.b * 255.0;
 
     return -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
+        
+    } else if (demType == 2) {
+        return color.r * 1000.0;
+    }
 }
 
 // 隣接するピクセルの高さ差を使って法線を計算する関数
@@ -53,6 +66,12 @@ void main() {
     normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
 
     vec3 normal = calculateNormal(uv);
+    vec3 normalmap = (normal + 1.0) / 2.0;
+
+    if (slopeMode == 0) {
+        fragColor = vec4(normalmap, 1.0);
+        return;
+    }
 
     // 傾斜量を計算
     float slope = calculateSlope(normal);
@@ -61,15 +80,27 @@ void main() {
     float normalizedSlope = slope / 90.0;
     normalizedSlope = clamp(normalizedSlope, 0.0, 1.0);
 
-    // 傾斜量をグレースケールで表現
-    vec4 slopeColor = vec4(vec3(normalizedSlope), 1.0);
+     // 光源の方向を定義（例：上方から少し斜めに当たる光）
+    vec3 lightDir = normalize(vec3(0.5, 0.5, 1.0));
 
-    // カラーマップを適用（高度または傾斜に基づいて）
+    // ランバート反射モデルを使用して陰影を計算
+    float diffuse = max(dot(normal, lightDir), 0.0);
+
+    // 環境光を追加して完全な黒を避ける
+    float ambient = 0.9;
+    float shadowFactor = ambient + (1.0 - ambient) * diffuse;
+
+      // シャドウカラーを計算
+    vec4 shadowColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
+
+
+
+    vec4 slopeColor = jet(normalizedSlope);
     vec4 terrainColor = rainbowSoft(normalizedHeight);
-
-    // フラグメントカラー（傾斜量を表示）
     fragColor = slopeColor;
+
     
     // 高度と傾斜を組み合わせた表示にする場合
-    fragColor = mix(terrainColor, slopeColor, 0.5);
+    // vec4 combinedColor = mix(terrainColor, slopeColor, 0.5);
+    // fragColor = combinedColor
 }

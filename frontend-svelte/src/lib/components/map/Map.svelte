@@ -104,7 +104,7 @@
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
-			),
+			)
 			// {
 			// 	id: 'terrain',
 			// 	type: 'hillshade',

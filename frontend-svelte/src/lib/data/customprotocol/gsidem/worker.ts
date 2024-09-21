@@ -117,6 +117,8 @@ self.onmessage = async (e) => {
 		};
 		reader.readAsArrayBuffer(blob);
 	} catch (error) {
-		self.postMessage({ id: url, buffer: new ArrayBuffer(0) });
+		if (error instanceof Error) {
+			self.postMessage({ id: url, error: error.message });
+		}
 	}
 };

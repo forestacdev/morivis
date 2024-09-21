@@ -46,10 +46,10 @@ export class WorkerProtocol {
 	};
 }
 
-export function tilesProtocol(protocolName: ProtocolKey) {
-	const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-	const workerProtocol = new WorkerProtocol(worker);
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+const workerProtocol = new WorkerProtocol(worker);
 
+export function tilesProtocol(protocolName: ProtocolKey) {
 	return (params: { url: string }, abortController: AbortController) => {
 		const imageUrl = params.url.replace(`${protocolName}://`, '');
 		return workerProtocol.request(imageUrl, abortController);

@@ -1,5 +1,5 @@
-import { demEntries } from './raster/dem';
-import { customTileProtocol } from '$lib/utils/customprotocol/raster';
+import type { DemDataTypeKey } from './raster/dem';
+
 import type {
 	SourceSpecification,
 	LayerSpecification,
@@ -71,7 +71,7 @@ type Okinawa = '沖縄県';
 
 type LocationOther = '森林文化アカデミー' | '美濃市' | 'その他';
 // 全都道府県型
-type Region =
+export type Region =
 	| Hokkaido
 	| Tohoku
 	| Kanto
@@ -122,6 +122,7 @@ export type ProtocolKey = 'customgsidem' | 'customrgbdem' | 'customtiles';
 
 export type DemEntry = {
 	id: string;
+	tileId?: string;
 	name: string;
 	dataType: 'raster';
 	geometryType: 'dem';

@@ -5,6 +5,7 @@ import { geojsonPointEntries } from '$lib/data/geojson/point';
 import { geojsonLabelEntries } from '$lib/data/geojson/label';
 import { addedLayerIds } from '$lib/store/store';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
+import { demLayers } from '$lib/data/raster/dem';
 
 import { rasterEntries } from '$lib/data/raster';
 import { demEntries } from '$lib/data/raster/dem';
@@ -216,14 +217,32 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 		const sourceId = `${layerEntry.id}_source`;
 
 		if (layerEntry.dataType === 'raster') {
-			sourceItems[sourceId] = {
-				type: 'raster',
-				tiles: [layerEntry.url],
-				maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
-				minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
-				tileSize: 256,
-				attribution: layerEntry.attribution
-			};
+			if (layerEntry.geometryType === 'raster') {
+				sourceItems[sourceId] = {
+					type: 'raster',
+					tiles: [layerEntry.url],
+					maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
+					minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
+					tileSize: 256,
+					attribution: layerEntry.attribution,
+					bounds: layerEntry.bbox ?? [-180, -85.051129, 180, 85.051129]
+				};
+			} else if (layerEntry.geometryType === 'dem') {
+				const demData = demLayers.find((layer) => layer.id === layerEntry.tileId);
+				if (!demData) {
+					console.warn(`Unknown: ${layerEntry.tileId}`);
+					return;
+				}
+				sourceItems[sourceId] = {
+					type: 'raster',
+					tiles: [`${layerEntry.protocolKey}://${demData.tiles[0]}`],
+					maxzoom: demData.maxzoom ? demData.maxzoom : 24,
+					minzoom: demData.minzoom ? demData.minzoom : 0,
+					tileSize: 256,
+					attribution: demData.attribution,
+					bounds: demData.bbox ?? [-180, -85.051129, 180, 85.051129]
+				};
+			}
 		} else if (layerEntry.dataType === 'vector') {
 			sourceItems[sourceId] = {
 				type: 'vector',

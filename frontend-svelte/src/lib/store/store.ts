@@ -3,12 +3,25 @@ import type { Side } from '$lib/types/ui';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
 import type { UserInfo } from 'firebase/auth';
 import { layerData } from '$lib/data/layers';
+import type { DemDataTypeKey } from '../data/raster/dem';
 
 export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
 export const clickableLayerIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
+export const demDataType = writable<DemDataTypeKey>('rgb'); /* DEMのデータタイプ */
+
+type DemVisualMode = {
+	evolution: boolean;
+	slope: boolean;
+	shadow: boolean;
+};
+export const demVisualMode = writable<DemVisualMode>({
+	evolution: true,
+	slope: false,
+	shadow: false
+}); /* DEMの表示モード */
 
 /* リストに追加されてるレイヤーID */
 

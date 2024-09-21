@@ -14,6 +14,8 @@ let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let positionBuffer: WebGLBuffer | null = null;
 let heightMapLocation: WebGLUniformLocation | null = null;
+let demTypeLocation: WebGLUniformLocation | null = null;
+let slopeModeLocation: WebGLUniformLocation | null = null;
 
 const initWebGL = (canvas: OffscreenCanvas) => {
 	gl = canvas.getContext('webgl2');
@@ -74,12 +76,16 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	heightMapLocation = gl.getUniformLocation(program, 'heightMap');
+	demTypeLocation = gl.getUniformLocation(program, 'demType');
+	slopeModeLocation = gl.getUniformLocation(program, 'slopeMode');
+	// aspectModeLocation = gl.getUniformLocation(program, 'aspectMode');
+	// hillshadeModeLocation = gl.getUniformLocation(program, 'hillshadeMode');
 };
 
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	const { url } = e.data;
+	const { url, demTypeNumber, demVisualMode } = e.data;
 
 	try {
 		const image = await loadImage(url);
@@ -98,11 +104,14 @@ self.onmessage = async (e) => {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 		gl.useProgram(program);
 		gl.uniform1i(heightMapLocation, 0);
+		gl.uniform1i(demTypeLocation, demTypeNumber); // demTypeを設定
+
+		gl.uniform1i(slopeModeLocation, demVisualMode.slope ? 1 : 0);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -117,6 +126,8 @@ self.onmessage = async (e) => {
 		};
 		reader.readAsArrayBuffer(blob);
 	} catch (error) {
-		self.postMessage({ id: url, buffer: new ArrayBuffer(0) });
+		if (error instanceof Error) {
+			self.postMessage({ id: url, error: error.message });
+		}
 	}
 };
