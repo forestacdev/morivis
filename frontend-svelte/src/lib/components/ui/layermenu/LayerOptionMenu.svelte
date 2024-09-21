@@ -8,6 +8,7 @@
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { split } from 'postcss/lib/list';
+	import ColorRamp from './ColorRamp.svelte';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -192,16 +193,19 @@
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={layerOption.visualMode.evolution}
+						bind:checked={layerOption.uniformsData.evolution.visible}
 						on:change={reloadDemTile}
 					/>
+					{#if layerOption.uniformsData.evolution.visible}
+						<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
+					{/if}
 				</div>
 				<div class="flex gap-2">
 					<label class="block">傾斜量</label>
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={layerOption.visualMode.slope}
+						bind:checked={layerOption.uniformsData.slope.visible}
 						on:change={reloadDemTile}
 					/>
 				</div>
@@ -210,18 +214,44 @@
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={layerOption.visualMode.aspect}
+						bind:checked={layerOption.uniformsData.aspect.visible}
 						on:change={reloadDemTile}
 					/>
 				</div>
-				<div class="flex gap-2">
+				<div class="flex flex-col gap-2">
 					<label class="block">陰影</label>
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={layerOption.visualMode.shadow}
+						bind:checked={layerOption.uniformsData.shadow.visible}
 						on:change={reloadDemTile}
 					/>
+					{#if layerOption.uniformsData.shadow.visible}
+						<div class="flex gap-2">
+							<label class="block">方位角</label>
+							<input
+								type="range"
+								class="custom-slider"
+								bind:value={layerOption.uniformsData.shadow.azimuth}
+								min="0"
+								max="360"
+								step="0.01"
+								on:change={reloadDemTile}
+							/>
+						</div>
+						<div class="flex gap-2">
+							<label class="block">高度角</label>
+							<input
+								type="range"
+								class="custom-slider"
+								bind:value={layerOption.uniformsData.shadow.altitude}
+								min="0"
+								max="90"
+								step="0.01"
+								on:change={reloadDemTile}
+							/>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>

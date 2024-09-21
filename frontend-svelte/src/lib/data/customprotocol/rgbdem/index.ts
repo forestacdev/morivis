@@ -1,5 +1,5 @@
 import type { ProtocolKey } from '$lib/data/types';
-import { DEM_DATA_TYPE } from '$lib/data/raster/dem';
+import { DEM_DATA_TYPE, COLOR_MAP_TYPE } from '$lib/data/raster/dem';
 import type { DemDataTypeKey } from '$lib/data/raster/dem';
 import { demEntry } from '$lib/data/raster/dem';
 
@@ -9,6 +9,19 @@ const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap>
 		throw new Error('Failed to fetch image');
 	}
 	return await createImageBitmap(await response.blob());
+};
+
+const calculateLightDirection = (azimuth: number, altitude: number) => {
+	// 方位角と高度をラジアンに変換
+	const azimuthRad = (azimuth * Math.PI) / 180;
+	const altitudeRad = (altitude * Math.PI) / 180;
+
+	// 光の方向ベクトルを計算
+	const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+	const y = Math.sin(altitudeRad);
+	const z = -Math.cos(altitudeRad) * Math.cos(azimuthRad); // 北がZ軸の負の方向
+
+	return [x, y, z];
 };
 
 export class WorkerProtocol {
@@ -31,10 +44,15 @@ export class WorkerProtocol {
 			this.pendingRequests.set(url, { resolve, reject, controller });
 			const demType = demEntry.demType;
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-			const slopeModeNumber = demEntry.visualMode.slope ? 1 : 0;
-			const shadowModeNumber = demEntry.visualMode.shadow ? 1 : 0;
-			const evolutionModeNumber = demEntry.visualMode.evolution ? 1 : 0;
-			const aspectModeNumber = demEntry.visualMode.aspect ? 1 : 0;
+			const slopeModeNumber = demEntry.uniformsData.slope.visible ? 1 : 0;
+			const shadowModeNumber = demEntry.uniformsData.shadow.visible ? 1 : 0;
+			const evolutionModeNumber = demEntry.uniformsData.evolution.visible ? 1 : 0;
+			const aspectModeNumber = demEntry.uniformsData.aspect.visible ? 1 : 0;
+
+			const lightDirection = calculateLightDirection(
+				demEntry.uniformsData.shadow.azimuth,
+				demEntry.uniformsData.shadow.altitude
+			);
 
 			this.worker.postMessage({
 				image,
@@ -43,16 +61,16 @@ export class WorkerProtocol {
 				slopeModeNumber,
 				shadowModeNumber,
 				evolutionModeNumber,
-				aspectModeNumber
+				aspectModeNumber,
+				lightDirection,
+				uniformsData: demEntry.uniformsData
 			});
 		});
 	}
 
 	// 新しいメソッド: 全てのリクエストをキャンセル
 	cancelAllRequests() {
-		console.log(this.pendingRequests);
 		this.pendingRequests.forEach(({ reject, controller }, url) => {
-			console.log(controller);
 			controller.abort(); // AbortControllerをキャンセル
 			reject(new Error('Request cancelled'));
 		});

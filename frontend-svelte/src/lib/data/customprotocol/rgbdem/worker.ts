@@ -1,15 +1,6 @@
 import fsSource from './shader/fragment.frag';
 import vsSource from './shader/vertex.vert';
 
-const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
-	const response = await fetch(src, { signal: signal });
-	if (!response.ok) {
-		throw new Error('Failed to fetch image');
-	}
-	const blob = await response.blob();
-	return await createImageBitmap(blob);
-};
-
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let positionBuffer: WebGLBuffer | null = null;
@@ -19,6 +10,7 @@ let evolutionModeLocation: WebGLUniformLocation | null = null;
 let shadowModeLocation: WebGLUniformLocation | null = null;
 let slopeModeLocation: WebGLUniformLocation | null = null;
 let aspectModeLocation: WebGLUniformLocation | null = null;
+let lightDirectionLocation: WebGLUniformLocation | null = null;
 
 const initWebGL = (canvas: OffscreenCanvas) => {
 	gl = canvas.getContext('webgl2');
@@ -84,6 +76,7 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 	slopeModeLocation = gl.getUniformLocation(program, 'slopeMode');
 	shadowModeLocation = gl.getUniformLocation(program, 'shadowMode');
 	aspectModeLocation = gl.getUniformLocation(program, 'aspectMode');
+	lightDirectionLocation = gl.getUniformLocation(program, 'lightDirection');
 };
 
 const canvas = new OffscreenCanvas(256, 256);
@@ -96,7 +89,8 @@ self.onmessage = async (e) => {
 		slopeModeNumber,
 		shadowModeNumber,
 		evolutionModeNumber,
-		aspectModeNumber
+		aspectModeNumber,
+		lightDirection
 	} = e.data;
 
 	try {
@@ -125,6 +119,9 @@ self.onmessage = async (e) => {
 		gl.uniform1i(slopeModeLocation, slopeModeNumber);
 		gl.uniform1i(shadowModeLocation, shadowModeNumber);
 		gl.uniform1i(aspectModeLocation, aspectModeNumber);
+
+		// シェーダーに光の方向を渡す
+		gl.uniform3fv(lightDirectionLocation, lightDirection);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

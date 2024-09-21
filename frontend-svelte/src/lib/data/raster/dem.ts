@@ -173,6 +173,56 @@ export const DEM_DATA_TYPE = {
 export type DemDataType = typeof DEM_DATA_TYPE;
 export type DemDataTypeKey = keyof DemDataType;
 
+export const COLOR_MAP_TYPE = {
+	jet: 1,
+	hsv: 2,
+	hot: 3,
+	cool: 4,
+	spring: 5,
+	summer: 6,
+	autumn: 7,
+	winter: 8,
+	bone: 9,
+	copper: 10,
+	greys: 11,
+	yignbu: 12,
+	greens: 13,
+	yiorrd: 14,
+	bluered: 15,
+	rdbu: 16,
+	picnic: 17,
+	rainbow: 18,
+	portland: 19,
+	blackbody: 20,
+	earth: 21,
+	electric: 22,
+	alpha: 23,
+	viridis: 24,
+	inferno: 25,
+	magma: 26,
+	plasma: 27,
+	warm: 28,
+	rainbowSoft: 29,
+	bathymetry: 30,
+	cdom: 31,
+	chlorophyll: 32,
+	density: 33,
+	freesurfaceBlue: 34,
+	freesurfaceRed: 35,
+	oxygen: 36,
+	par: 37,
+	phase: 38,
+	salinity: 39,
+	temperature: 40,
+	turbidity: 41,
+	velocityBlue: 42,
+	velocityGreen: 43,
+	cubehelix: 44
+} as const;
+
+export type ColorMapType = typeof COLOR_MAP_TYPE;
+export type ColorMapTypeKey = keyof ColorMapType;
+
 export const demEntry: DemEntry = {
 	id: 'custom-rgb-dem',
 	tileId: demLayers[0].id,
@@ -185,6 +235,27 @@ export const demEntry: DemEntry = {
 		slope: false,
 		shadow: false,
 		aspect: false
+	},
+	uniformsData: {
+		evolution: {
+			visible: false,
+			max: 1000,
+			min: 0,
+			colorMap: 'jet'
+		},
+		shadow: {
+			visible: true,
+			azimuth: 180,
+			altitude: 45
+		},
+		slope: {
+			visible: false,
+			colorMap: 'jet'
+		},
+		aspect: {
+			visible: false,
+			colorMap: 'jet'
+		}
 	},
 	protocolKey: 'customrgbdem',
 	url: demLayers[0].tiles[0],

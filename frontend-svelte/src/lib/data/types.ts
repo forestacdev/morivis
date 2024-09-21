@@ -131,6 +131,27 @@ export type DemEntry = {
 	id: string;
 	tileId: string;
 	visualMode: DemVisualMode;
+	uniformsData: {
+		evolution: {
+			visible: boolean;
+			max: number;
+			min: number;
+			colorMap: string;
+		};
+		shadow: {
+			visible: boolean;
+			azimuth: number;
+			altitude: number;
+		};
+		aspect: {
+			visible: boolean;
+			colorMap: string;
+		};
+		slope: {
+			visible: boolean;
+			colorMap: string;
+		};
+	};
 	name: string;
 	dataType: 'raster';
 	geometryType: 'dem';
