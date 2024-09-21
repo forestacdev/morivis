@@ -36,7 +36,6 @@ import type { ProtocolKey } from '$lib/data/types';
 
 import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
-import { demVisualMode } from '$lib/store/store';
 
 const protocolName2: ProtocolKey = 'customrgbdem';
 const rgbdem = rgbdemProtocol(protocolName2);
@@ -462,17 +461,13 @@ const createMapStore = () => {
 		map.addLayer(layerItems[0]);
 	};
 
-	demVisualMode.subscribe((value) => {
+	const reloadDemTile = () => {
 		if (!map) return;
+
 		const aaa = map.getSource('custom-rgb-dem_source') as RasterTileSource;
 
-		console.log(aaa.tiles);
-
 		aaa.setTiles(aaa.tiles);
-		// aaa.loadTile(aaa.tiles);
-		// aaa.tiles.
-		// map.triggerRepaint();
-	});
+	};
 
 	return {
 		subscribe,
@@ -489,6 +484,7 @@ const createMapStore = () => {
 		addSearchFeature,
 		focusLayer,
 		focusFeature,
+		reloadDemTile,
 		getTerrain: () => map?.getTerrain(),
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド

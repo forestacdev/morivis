@@ -120,9 +120,16 @@ export type RasterEntry = {
 
 export type ProtocolKey = 'customgsidem' | 'customrgbdem' | 'customtiles';
 
+type DemVisualMode = {
+	evolution: boolean;
+	slope: boolean;
+	shadow: boolean;
+};
+
 export type DemEntry = {
 	id: string;
 	tileId: string;
+	visualMode: DemVisualMode;
 	name: string;
 	dataType: 'raster';
 	geometryType: 'dem';

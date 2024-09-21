@@ -8,6 +8,8 @@ precision mediump float;
 uniform sampler2D heightMap;
 uniform int demType;
 uniform int slopeMode;
+uniform int evolutionMode;
+uniform int shadowMode;
 in vec2 vTexCoord;
 out vec4 fragColor;
 
@@ -78,42 +80,43 @@ void main() {
     float normalizedHeight = height / 1000.0;
     normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
 
+
     vec3 normal = calculateNormal(uv);
     vec3 normalmap = (normal + 1.0) / 2.0;
 
-    if (slopeMode == 0) {
-        fragColor = vec4(normalmap, 1.0);
-        return;
+    vec4 finalColor = vec4(1.0);
+
+    // 各モードの透過度を定義（0.0から1.0の範囲）
+    float evolutionAlpha = 1.0; // 例: 50%の強さ
+    float slopeAlpha = 0.7;     // 例: 70%の強さ
+    float shadowAlpha = 0.6;    // 例: 60%の強さ
+
+    if (evolutionMode == 1) {
+        vec4 terrainColor = rainbowSoft(normalizedHeight);
+        finalColor = mix(finalColor, terrainColor, evolutionAlpha);
     }
 
-    // 傾斜量を計算
-    float slope = calculateSlope(normal);
-    
-    // 傾斜量を0-1の範囲に正規化（0度から90度の範囲を想定）
-    float normalizedSlope = slope / 90.0;
-    normalizedSlope = clamp(normalizedSlope, 0.0, 1.0);
+    if (slopeMode == 1) {
+        float slope = calculateSlope(normal);
+        float normalizedSlope = clamp(slope / 90.0, 0.0, 1.0);
+        vec4 slopeColor = jet(normalizedSlope);
+        finalColor = mix(finalColor, slopeColor, slopeAlpha);
+    }
 
-     // 光源の方向を定義（例：上方から少し斜めに当たる光）
-    vec3 lightDir = normalize(vec3(0.5, 0.5, 1.0));
+    if (shadowMode == 1) {
+        vec3 lightDir = normalize(vec3(0.5, 0.5, 1.0));
+        float diffuse = max(dot(normal, lightDir), 0.0);
+        float ambient = 0.9;
+        float shadowFactor = ambient + (1.0 - ambient) * diffuse;
+        vec4 shadowColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
+        finalColor = mix(finalColor, shadowColor, shadowAlpha);
+    }
 
-    // ランバート反射モデルを使用して陰影を計算
-    float diffuse = max(dot(normal, lightDir), 0.0);
+    if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0) {
+        finalColor = vec4(normalmap, 1.0);
+    }
 
-    // 環境光を追加して完全な黒を避ける
-    float ambient = 0.9;
-    float shadowFactor = ambient + (1.0 - ambient) * diffuse;
-
-      // シャドウカラーを計算
-    vec4 shadowColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
+    fragColor = finalColor;
 
 
-
-    vec4 slopeColor = jet(normalizedSlope);
-    vec4 terrainColor = rainbowSoft(normalizedHeight);
-    fragColor = slopeColor;
-
-    
-    // 高度と傾斜を組み合わせた表示にする場合
-    // vec4 combinedColor = mix(terrainColor, slopeColor, 0.5);
-    // fragColor = combinedColor
 }

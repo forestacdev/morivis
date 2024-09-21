@@ -26,7 +26,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [136.8384501982101256, 35.5104054980035997, 136.9790745399003526, 35.652440556937357],
 		attribution: '国土数値情報',
 		location: ['美濃市'],
-		demType: 'gsi'
+		demType: 'rgb'
 	},
 	{
 		id: 'dem_10b',
@@ -180,6 +180,11 @@ export const demEntry: DemEntry = {
 	dataType: 'raster',
 	geometryType: 'dem',
 	demType: demLayers[0].demType,
+	visualMode: {
+		evolution: false,
+		slope: false,
+		shadow: false
+	},
 	protocolKey: 'customrgbdem',
 	url: demLayers[0].tiles[0],
 	sourceMaxZoom: demLayers[0].maxzoom,

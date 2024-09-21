@@ -3,7 +3,7 @@
 	import { demLayers } from '$lib/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
-	import { showlayerOptionId, isSide, addedLayerIds, demVisualMode } from '$lib/store/store';
+	import { showlayerOptionId, isSide, addedLayerIds } from '$lib/store/store';
 	import { mapStore } from '$lib/store/map';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -42,6 +42,10 @@
 
 	const setColor = (e: any) => {
 		console.log(e);
+	};
+
+	const reloadDemTile = () => {
+		mapStore.reloadDemTile();
 	};
 </script>
 
@@ -188,7 +192,8 @@
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={$demVisualMode.evolution}
+						bind:checked={layerOption.visualMode.evolution}
+						on:change={reloadDemTile}
 					/>
 				</div>
 				<div class="flex gap-2">
@@ -196,7 +201,8 @@
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={$demVisualMode.slope}
+						bind:checked={layerOption.visualMode.slope}
+						on:change={reloadDemTile}
 					/>
 				</div>
 				<div class="flex gap-2">
@@ -204,7 +210,8 @@
 					<input
 						type="checkbox"
 						class="custom-checkbox"
-						bind:checked={$demVisualMode.shadow}
+						bind:checked={layerOption.visualMode.shadow}
+						on:change={reloadDemTile}
 					/>
 				</div>
 			{/if}

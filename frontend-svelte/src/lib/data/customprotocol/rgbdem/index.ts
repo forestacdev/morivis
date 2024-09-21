@@ -1,9 +1,7 @@
 import type { ProtocolKey } from '$lib/data/types';
 import { DEM_DATA_TYPE } from '$lib/data/raster/dem';
 import type { DemDataTypeKey } from '$lib/data/raster/dem';
-import { demVisualMode } from '$lib/store/store';
 import { demEntry } from '$lib/data/raster/dem';
-import { get } from 'svelte/store';
 
 export class WorkerProtocol {
 	private worker: Worker;
@@ -22,7 +20,17 @@ export class WorkerProtocol {
 			this.pendingRequests.set(url, { resolve, reject });
 			const demType = demEntry.demType;
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-			this.worker.postMessage({ url, demTypeNumber, demVisualMode: get(demVisualMode) });
+			const slopeModeNumber = demEntry.visualMode.slope ? 1 : 0;
+			const shadowModeNumber = demEntry.visualMode.shadow ? 1 : 0;
+			const evolutionModeNumber = demEntry.visualMode.evolution ? 1 : 0;
+
+			this.worker.postMessage({
+				url,
+				demTypeNumber,
+				slopeModeNumber,
+				shadowModeNumber,
+				evolutionModeNumber
+			});
 
 			abortController.signal.addEventListener('abort', () => {
 				this.pendingRequests.delete(url);
