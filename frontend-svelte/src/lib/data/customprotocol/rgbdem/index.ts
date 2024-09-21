@@ -1,7 +1,8 @@
 import type { ProtocolKey } from '$lib/data/types';
 import { DEM_DATA_TYPE } from '$lib/data/raster/dem';
 import type { DemDataTypeKey } from '$lib/data/raster/dem';
-import { demDataType, demVisualMode } from '$lib/store/store';
+import { demVisualMode } from '$lib/store/store';
+import { demEntry } from '$lib/data/raster/dem';
 import { get } from 'svelte/store';
 
 export class WorkerProtocol {
@@ -19,7 +20,7 @@ export class WorkerProtocol {
 	request(url: string, abortController: AbortController): Promise<{ data: Uint8Array }> {
 		return new Promise((resolve, reject) => {
 			this.pendingRequests.set(url, { resolve, reject });
-			const demType = get(demDataType);
+			const demType = demEntry.demType;
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 			this.worker.postMessage({ url, demTypeNumber, demVisualMode: get(demVisualMode) });
 

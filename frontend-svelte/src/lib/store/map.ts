@@ -33,13 +33,10 @@ import { getGeojson } from '$lib/utils/geojson';
 import { getLocationBbox } from '$lib/data/locationBbox';
 import turfBbox from '@turf/bbox';
 import type { ProtocolKey } from '$lib/data/types';
-import { gsidemProtocol } from '$lib/data/customprotocol/gsidem';
+
 import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
 import { demVisualMode } from '$lib/store/store';
-const protocolName: ProtocolKey = 'customgsidem';
-const gsidem = gsidemProtocol(protocolName);
-maplibregl.addProtocol(protocolName, gsidem);
 
 const protocolName2: ProtocolKey = 'customrgbdem';
 const rgbdem = rgbdemProtocol(protocolName2);

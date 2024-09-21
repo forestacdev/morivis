@@ -17,15 +17,28 @@ out vec4 fragColor;
 
 // 高さ変換関数
 float convertToHeight(vec4 color) {
-    if (demType == 1) {
-           float r = color.r * 255.0;
+    float r = color.r * 255.0;
     float g = color.g * 255.0;
     float b = color.b * 255.0;
+    // rgb
+    if (demType == 1) {
+  
 
-    return -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
+        return -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
         
     } else if (demType == 2) {
-        return color.r * 1000.0;
+    // gsi
+  
+
+    float rgb = (r * 65536.0) + (g * 256.0) + b;
+    float h = 0.0;
+    if (rgb < 8388608.0) {
+        h = rgb * 0.01;
+    } else if (rgb > 8388608.0) {
+        h = (rgb - 16777216.0) * 0.01;
+    }
+    return h;
+
     }
 }
 

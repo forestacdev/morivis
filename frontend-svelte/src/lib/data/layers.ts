@@ -8,7 +8,7 @@ import { INT_ADD_LAYER_IDS } from '$lib/constants';
 import { demLayers } from '$lib/data/raster/dem';
 
 import { rasterEntries } from '$lib/data/raster';
-import { demEntries } from '$lib/data/raster/dem';
+import { demEntry } from '$lib/data/raster/dem';
 import type { LayerEntry } from '$lib/data/types';
 import type {
 	SourceSpecification,
@@ -34,7 +34,7 @@ export const layerData: LayerEntry[] = [
 	...geojsonPolygonEntries,
 	...vectorPolygonEntries,
 	...rasterEntries,
-	...demEntries
+	demEntry
 ];
 
 // IDを収集
@@ -233,6 +233,15 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 					console.warn(`Unknown: ${layerEntry.tileId}`);
 					return;
 				}
+				demEntry.name = demData.name;
+				demEntry.url = demData.tiles[0];
+				demEntry.sourceMaxZoom = demData.maxzoom;
+				demEntry.sourceMinZoom = demData.minzoom;
+				demEntry.attribution = demData.attribution;
+				demEntry.location = demData.location;
+				demEntry.bbox = demData.bbox ?? [-180, -85.051129, 180, 85.051129];
+				demEntry.tileId = demData.id;
+
 				sourceItems[sourceId] = {
 					type: 'raster',
 					tiles: [`${layerEntry.protocolKey}://${demData.tiles[0]}`],

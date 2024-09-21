@@ -122,10 +122,11 @@ export type ProtocolKey = 'customgsidem' | 'customrgbdem' | 'customtiles';
 
 export type DemEntry = {
 	id: string;
-	tileId?: string;
+	tileId: string;
 	name: string;
 	dataType: 'raster';
 	geometryType: 'dem';
+	demType: DemDataTypeKey;
 	url: string;
 	protocolKey: ProtocolKey;
 	attribution: string;

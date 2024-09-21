@@ -10,7 +10,7 @@ export type DemLayer = {
 	bbox?: [number, number, number, number];
 	attribution: string;
 	location: Region[];
-	dem_type: DemDataTypeKey;
+	demType: DemDataTypeKey;
 };
 
 export const demLayers: DemLayer[] = [
@@ -26,7 +26,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [136.8384501982101256, 35.5104054980035997, 136.9790745399003526, 35.652440556937357],
 		attribution: '国土数値情報',
 		location: ['美濃市'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'dem_10b',
@@ -37,7 +37,7 @@ export const demLayers: DemLayer[] = [
 		maxzoom: 14,
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'dem_5a',
@@ -48,7 +48,7 @@ export const demLayers: DemLayer[] = [
 		maxzoom: 15,
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'dem_5b',
@@ -59,7 +59,7 @@ export const demLayers: DemLayer[] = [
 		maxzoom: 15,
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'dem_5c',
@@ -70,7 +70,7 @@ export const demLayers: DemLayer[] = [
 		maxzoom: 15,
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'astergdemv3',
@@ -82,7 +82,7 @@ export const demLayers: DemLayer[] = [
 
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'japan250',
@@ -93,7 +93,7 @@ export const demLayers: DemLayer[] = [
 		maxzoom: 8,
 		attribution: '国土地理院',
 		location: ['全国'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'tochigi_dem',
@@ -105,7 +105,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [139.326731, 36.199924, 140.291983, 37.155039],
 		attribution: '栃木県',
 		location: ['栃木県'],
-		dem_type: 'rgb'
+		demType: 'rgb'
 	},
 	{
 		id: 'kochi_dem',
@@ -117,7 +117,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [132.479888, 32.702505, 134.31367, 33.882997],
 		attribution: '高知県',
 		location: ['高知県'],
-		dem_type: 'rgb'
+		demType: 'rgb'
 	},
 	{
 		id: 'hyougo_dem',
@@ -129,7 +129,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [134.252809, 34.156129, 135.468591, 35.674667],
 		attribution: '兵庫県',
 		location: ['兵庫県'],
-		dem_type: 'rgb'
+		demType: 'rgb'
 	},
 	{
 		id: 'hyougo_dem',
@@ -141,7 +141,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [134.252809, 34.156129, 135.468591, 35.674667],
 		attribution: '兵庫県',
 		location: ['兵庫県'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	},
 	{
 		id: 'hyougo_dsm',
@@ -153,7 +153,7 @@ export const demLayers: DemLayer[] = [
 		bbox: [134.252809, 34.156129, 135.468591, 35.674667],
 		attribution: '兵庫県',
 		location: ['兵庫県'],
-		dem_type: 'gsi'
+		demType: 'gsi'
 	}
 ];
 
@@ -173,33 +173,30 @@ export const DEM_DATA_TYPE = {
 export type DemDataType = typeof DEM_DATA_TYPE;
 export type DemDataTypeKey = keyof DemDataType;
 
-const demEntries: DemEntry[] = [
-	{
-		id: 'custom-rgb-dem',
-		name: demLayers[0].name,
-		dataType: 'raster',
-		geometryType: 'dem',
-		protocolKey: 'customrgbdem',
-		url: demLayers[0].tiles[0],
-		sourceMaxZoom: demLayers[0].maxzoom,
-		sourceMinZoom: demLayers[0].minzoom,
-		opacity: 1.0,
-		attribution: demLayers[0].attribution,
-		location: demLayers[0].location,
-		bbox: demLayers[0].bbox,
-		visible: true,
-		clickable: false,
-		styleKey: 'デフォルト',
-		tileId: demLayers[0].id,
-		style: {
-			raster: [
-				{
-					name: 'デフォルト',
-					paint: rasterPaint
-				}
-			]
-		}
+export const demEntry: DemEntry = {
+	id: 'custom-rgb-dem',
+	tileId: demLayers[0].id,
+	name: demLayers[0].name,
+	dataType: 'raster',
+	geometryType: 'dem',
+	demType: demLayers[0].demType,
+	protocolKey: 'customrgbdem',
+	url: demLayers[0].tiles[0],
+	sourceMaxZoom: demLayers[0].maxzoom,
+	sourceMinZoom: demLayers[0].minzoom,
+	opacity: 1.0,
+	attribution: demLayers[0].attribution,
+	location: demLayers[0].location,
+	bbox: demLayers[0].bbox,
+	visible: true,
+	clickable: false,
+	styleKey: 'デフォルト',
+	style: {
+		raster: [
+			{
+				name: 'デフォルト',
+				paint: rasterPaint
+			}
+		]
 	}
-];
-
-export { demEntries };
+};
