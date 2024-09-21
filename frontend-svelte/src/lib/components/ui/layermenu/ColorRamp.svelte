@@ -92,7 +92,7 @@
 	}
 </script>
 
-<canvas bind:this={canvas} class="h-[400px] w-[50px]"></canvas>
+<canvas bind:this={canvas} class="h-[20px] w-full"></canvas>
 
 <style>
 </style>

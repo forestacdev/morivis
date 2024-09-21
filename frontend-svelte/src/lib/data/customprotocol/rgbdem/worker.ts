@@ -94,11 +94,17 @@ self.onmessage = async (e) => {
 	const slopeModeInt = slope.visible ? 1 : 0;
 	const shadowModeInt = shadow.visible ? 1 : 0;
 	const aspectModeInt = aspect.visible ? 1 : 0;
-	const lightDirection = calculateLightDirection(shadow.azimuth, shadow.altitude);
+
+	const evolutionOpacity = evolution.opacity;
+	const slopeOpacity = slope.opacity;
+	const shadowOpacity = shadow.opacity;
+	const aspectOpacity = aspect.opacity;
 
 	const evolutionColorMapInt = COLOR_MAP_TYPE[evolution.colorMap as ColorMapTypeKey];
 	const aspectColorMapInt = COLOR_MAP_TYPE[aspect.colorMap as ColorMapTypeKey];
 	const slopeColorMapInt = COLOR_MAP_TYPE[slope.colorMap as ColorMapTypeKey];
+
+	const lightDirection = calculateLightDirection(shadow.azimuth, shadow.altitude);
 
 	try {
 		if (!gl) {
@@ -122,17 +128,24 @@ self.onmessage = async (e) => {
 		gl.uniform1i(heightMapLocation, 0);
 		gl.uniform1i(demTypeLocation, demTypeNumber); // demTypeを設定
 
+		// モード
 		gl.uniform1i(gl.getUniformLocation(program, 'evolutionMode'), evolutionModeInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'slopeMode'), slopeModeInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'shadowMode'), shadowModeInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectMode'), aspectModeInt);
 
-		// シェーダーにカラーマップを渡す
+		// 透過度
+		gl.uniform1f(gl.getUniformLocation(program, 'evolutionAlpha'), evolutionOpacity);
+		gl.uniform1f(gl.getUniformLocation(program, 'slopeAlpha'), slopeOpacity);
+		gl.uniform1f(gl.getUniformLocation(program, 'shadowAlpha'), shadowOpacity);
+		gl.uniform1f(gl.getUniformLocation(program, 'aspectAlpha'), aspectOpacity);
+
+		// カラーマップ
 		gl.uniform1i(gl.getUniformLocation(program, 'evolutionColorMap'), evolutionColorMapInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'slopeColorMap'), slopeColorMapInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectColorMap'), aspectColorMapInt);
 
-		// シェーダーに光の方向を渡す
+		// 光の方向
 		gl.uniform3fv(gl.getUniformLocation(program, 'lightDirection'), lightDirection);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);

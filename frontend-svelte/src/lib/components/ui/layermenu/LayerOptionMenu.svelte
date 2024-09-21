@@ -191,17 +191,74 @@
 				</select>
 				<div class="flex h-full flex-col gap-2 overflow-y-auto">
 					<div class="flex flex-col gap-2">
-						<label class="block">標高図</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.uniformsData.evolution.visible}
-							on:change={reloadDemTile}
-						/>
+						<div class="flex items-center gap-2">
+							<label class="block cursor-pointer" for="evolution">標高図</label>
+							<input
+								id="evolution"
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.uniformsData.evolution.visible}
+								on:change={reloadDemTile}
+							/>
+						</div>
+						{#if layerOption.uniformsData.evolution.visible}
+							<div class="flex flex-col gap-2">
+								<label class="block">透過度</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.evolution.opacity}
+									min="0"
+									max="1"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<label class="block">カラーランプ</label>
+							<select
+								class="custom-select"
+								bind:value={layerOption.uniformsData.evolution.colorMap}
+								on:change={reloadDemTile}
+							>
+								{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
+									<option value={name}>
+										{name}
+									</option>
+								{/each}
+							</select>
+
+							<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
+						{/if}
+					</div>
+					<div class="flex gap-2">
+						<div class="flex items-center gap-2">
+							<label class="block" for="slope">傾斜量</label>
+							<input
+								id="slope"
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.uniformsData.slope.visible}
+								on:change={reloadDemTile}
+							/>
+						</div>
+					</div>
+					{#if layerOption.uniformsData.slope.visible}
+						<div class="flex flex-col gap-2">
+							<label class="block">透過度</label>
+							<input
+								type="range"
+								class="custom-slider"
+								bind:value={layerOption.uniformsData.slope.opacity}
+								min="0"
+								max="1"
+								step="0.01"
+								on:change={reloadDemTile}
+							/>
+						</div>
 						<label class="block">カラーランプ</label>
 						<select
 							class="custom-select"
-							bind:value={layerOption.uniformsData.evolution.colorMap}
+							bind:value={layerOption.uniformsData.slope.colorMap}
 							on:change={reloadDemTile}
 						>
 							{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
@@ -211,37 +268,72 @@
 							{/each}
 						</select>
 
-						{#if layerOption.uniformsData.evolution.visible}
-							<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
-						{/if}
-					</div>
+						<ColorRamp colorMap={layerOption.uniformsData.slope.colorMap} />
+					{/if}
 					<div class="flex gap-2">
-						<label class="block">傾斜量</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.uniformsData.slope.visible}
-							on:change={reloadDemTile}
-						/>
+						<div class="flex items-center gap-2">
+							<label class="block" for="aspect">傾斜方向</label>
+							<input
+								id="aspect"
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.uniformsData.aspect.visible}
+								on:change={reloadDemTile}
+							/>
+						</div>
 					</div>
-					<div class="flex gap-2">
-						<label class="block">傾斜方向</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.uniformsData.aspect.visible}
+					{#if layerOption.uniformsData.aspect.visible}
+						<div class="flex flex-col gap-2">
+							<label class="block">透過度</label>
+							<input
+								type="range"
+								class="custom-slider"
+								bind:value={layerOption.uniformsData.aspect.opacity}
+								min="0"
+								max="1"
+								step="0.01"
+								on:change={reloadDemTile}
+							/>
+						</div>
+						<label class="block">カラーランプ</label>
+						<select
+							class="custom-select"
+							bind:value={layerOption.uniformsData.aspect.colorMap}
 							on:change={reloadDemTile}
-						/>
-					</div>
+						>
+							{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
+								<option value={name}>
+									{name}
+								</option>
+							{/each}
+						</select>
+
+						<ColorRamp colorMap={layerOption.uniformsData.aspect.colorMap} />
+					{/if}
 					<div class="flex flex-col gap-2">
-						<label class="block">陰影</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.uniformsData.shadow.visible}
-							on:change={reloadDemTile}
-						/>
+						<div class="flex items-center gap-2">
+							<label class="block" for="shadow">陰影</label>
+							<input
+								id="shadow"
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.uniformsData.shadow.visible}
+								on:change={reloadDemTile}
+							/>
+						</div>
 						{#if layerOption.uniformsData.shadow.visible}
+							<div class="flex flex-col gap-2">
+								<label class="block">透過度</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.shadow.opacity}
+									min="0"
+									max="1"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
 							<div class="flex gap-2">
 								<label class="block">方位角</label>
 								<input

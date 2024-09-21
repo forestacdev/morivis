@@ -14,6 +14,10 @@ uniform int aspectMode;
 uniform int evolutionColorMap;
 uniform int slopeColorMap;
 uniform int aspectColorMap;
+uniform float evolutionAlpha;
+uniform float slopeAlpha;
+uniform float shadowAlpha;
+uniform float aspectAlpha;
 uniform vec3 lightDirection;
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -180,11 +184,6 @@ void main() {
 
     vec4 finalColor = vec4(1.0);
 
-    // 各モードの透過度を定義（0.0から1.0の範囲）
-    float evolutionAlpha = 0.5; // 例: 50%の強さ
-    float slopeAlpha = 0.5;     // 例: 70%の強さ
-    float shadowAlpha = 0.5;    // 例: 60%の強さ
-    float aspectAlpha = 0.5;    // 例: 50%の強さ
 
     if (evolutionMode == 1) {
         vec4 terrainColor =   applyColorMap(evolutionColorMap, normalizedHeight);

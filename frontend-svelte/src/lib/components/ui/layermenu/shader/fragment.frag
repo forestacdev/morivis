@@ -97,8 +97,8 @@ vec4 applyColorMap(int type, float value) {
 
 
 void main() {
-    float y = gl_FragCoord.y / u_height;
+    float x = gl_FragCoord.x / u_height;
 
-    vec4 color = applyColorMap(colorMap, y);
+    vec4 color = applyColorMap(colorMap, x);
     gl_FragColor = color;
 }

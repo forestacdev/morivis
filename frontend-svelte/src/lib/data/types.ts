@@ -134,20 +134,24 @@ export type DemEntry = {
 	uniformsData: {
 		evolution: {
 			visible: boolean;
+			opacity: number;
 			max: number;
 			min: number;
 			colorMap: string;
 		};
 		shadow: {
 			visible: boolean;
+			opacity: number;
 			azimuth: number;
 			altitude: number;
 		};
 		aspect: {
+			opacity: number;
 			visible: boolean;
 			colorMap: string;
 		};
 		slope: {
+			opacity: number;
 			visible: boolean;
 			colorMap: string;
 		};

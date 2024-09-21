@@ -237,24 +237,28 @@ export const demEntry: DemEntry = {
 		aspect: false
 	},
 	uniformsData: {
-		evolution: {
-			visible: false,
-			max: 1000,
-			min: 0,
-			colorMap: 'jet'
-		},
 		shadow: {
 			visible: true,
+			opacity: 0.7,
 			azimuth: 180,
 			altitude: 45
 		},
 		slope: {
 			visible: false,
-			colorMap: 'jet'
+			opacity: 0.7,
+			colorMap: 'salinity'
+		},
+		evolution: {
+			visible: false,
+			opacity: 0.7,
+			max: 1000,
+			min: 0,
+			colorMap: 'earth'
 		},
 		aspect: {
 			visible: false,
-			colorMap: 'jet'
+			opacity: 0.7,
+			colorMap: 'rainbowSoft'
 		}
 	},
 	protocolKey: 'customrgbdem',
