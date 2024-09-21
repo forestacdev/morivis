@@ -11,19 +11,6 @@ const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap>
 	return await createImageBitmap(await response.blob());
 };
 
-const calculateLightDirection = (azimuth: number, altitude: number) => {
-	// 方位角と高度をラジアンに変換
-	const azimuthRad = (azimuth * Math.PI) / 180;
-	const altitudeRad = (altitude * Math.PI) / 180;
-
-	// 光の方向ベクトルを計算
-	const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-	const y = Math.sin(altitudeRad);
-	const z = -Math.cos(altitudeRad) * Math.cos(azimuthRad); // 北がZ軸の負の方向
-
-	return [x, y, z];
-};
-
 export class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<

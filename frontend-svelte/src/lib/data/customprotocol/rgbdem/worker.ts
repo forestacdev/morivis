@@ -145,6 +145,10 @@ self.onmessage = async (e) => {
 		gl.uniform1i(gl.getUniformLocation(program, 'slopeColorMap'), slopeColorMapInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectColorMap'), aspectColorMapInt);
 
+		// 標高値の最大値と最小値
+		gl.uniform1f(gl.getUniformLocation(program, 'maxHeight'), evolution.max);
+		gl.uniform1f(gl.getUniformLocation(program, 'minHeight'), evolution.min);
+
 		// 光の方向
 		gl.uniform3fv(gl.getUniformLocation(program, 'lightDirection'), lightDirection);
 

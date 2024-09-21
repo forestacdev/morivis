@@ -18,6 +18,8 @@ uniform float evolutionAlpha;
 uniform float slopeAlpha;
 uniform float shadowAlpha;
 uniform float aspectAlpha;
+uniform float maxHeight;
+uniform float minHeight;
 uniform vec3 lightDirection;
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -175,7 +177,7 @@ void main() {
     float height = convertToHeight(color);
 
    // 高さを0-1の範囲に正規化（0mから3500mの範囲）
-    float normalizedHeight = height / 1000.0;
+    float normalizedHeight = height / maxHeight;
     normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
 
 

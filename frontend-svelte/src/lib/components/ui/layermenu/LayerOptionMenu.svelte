@@ -226,8 +226,32 @@
 									</option>
 								{/each}
 							</select>
-
 							<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
+
+							<div class="flex flex-col gap-2">
+								<label class="block">最大値</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.evolution.max}
+									min="0"
+									max="4000"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex flex-col gap-2">
+								<label class="block">最小値</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.evolution.min}
+									min="-500"
+									max="4000"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
 						{/if}
 					</div>
 					<div class="flex gap-2">
