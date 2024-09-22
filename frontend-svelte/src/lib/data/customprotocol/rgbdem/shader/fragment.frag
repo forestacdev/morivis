@@ -127,7 +127,7 @@ float convertToHeight(vec4 color) {
   
 
     return -10000.0 + ((r * 256.0 * 256.0 + g * 256.0 + b) * 0.1);
-        
+
     } else if (demType == 2) {
     // gsi
   
@@ -166,20 +166,29 @@ float calculateSlope(vec3 normal) {
 
 // 曲率を計算する関数
 float calculateCurvature(vec2 uv) {
-    vec2 pixelSize = vec2(1.0) / 256.0;
-    float h = convertToHeight(texture(heightMap, uv));
-    float hLeft = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
-    float hRight = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
-    float hUp = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
-    float hDown = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
+   vec2 pixelSize = vec2(1.0) / 256.0;
+float z11 = convertToHeight(texture(heightMap, uv));
+float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
+float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
+float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
+float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
+float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y))); // この行を修正
+float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
     
-    float hx = (hRight - hLeft) / (2.0 * pixelSize.x);
-    float hy = (hUp - hDown) / (2.0 * pixelSize.y);
-    float hxx = (hRight + hLeft - 2.0 * h) / (pixelSize.x * pixelSize.x);
-    float hyy = (hUp + hDown - 2.0 * h) / (pixelSize.y * pixelSize.y);
-    
-    float curvature = -2.0 * (hxx + hyy) * 100.0;
-    return curvature;
+     // 2次微分の計算
+    float dx = ((z21 + z22 + z20) - (z01 + z02 + z00)) / (6.0 * pixelSize.x);
+    float dy = ((z12 + z22 + z02) - (z10 + z20 + z00)) / (6.0 * pixelSize.y);
+    float dxx = (z21 + z01 - 2.0 * z11) / (pixelSize.x * pixelSize.x);
+    float dyy = (z12 + z10 - 2.0 * z11) / (pixelSize.y * pixelSize.y);
+    float dxy = (z22 + z00 - z20 - z02) / (4.0 * pixelSize.x * pixelSize.y);
+
+    // 平均曲率の計算
+    float H = ((1.0 + dx*dx) * dyy - 2.0*dx*dy*dxy + (1.0 + dy*dy) * dxx) 
+              / (2.0 * pow(1.0 + dx*dx + dy*dy, 1.5));
+
+    return H;
 }
 
 void main() {
@@ -201,11 +210,12 @@ void main() {
     vec4 finalColor = vec4(1.0);
 
      // 曲率の計算と視覚化
-      float curvature = calculateCurvature(uv);
-    
-    // 曲率を色に変換（例：-0.5から0.5の範囲を0から1にマッピング）
-    float normalizedCurvature = (curvature + 0.5) / 1.0;
+    float curvature = calculateCurvature(uv);
+
+    // 曲率を色に変換（例：-0.1から0.1の範囲を0から1にマッピング）
+    float normalizedCurvature = (curvature + 0.1) / 0.2;
     normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+
     finalColor = vec4(vec3(normalizedCurvature), 1.0);
     fragColor = finalColor;
     return;
