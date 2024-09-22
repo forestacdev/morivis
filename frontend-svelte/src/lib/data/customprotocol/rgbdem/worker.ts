@@ -137,7 +137,7 @@ self.onmessage = async (e) => {
 		// 透過度
 		gl.uniform1f(gl.getUniformLocation(program, 'evolutionAlpha'), evolutionOpacity);
 		gl.uniform1f(gl.getUniformLocation(program, 'slopeAlpha'), slopeOpacity);
-		gl.uniform1f(gl.getUniformLocation(program, 'shadowAlpha'), shadowOpacity);
+		gl.uniform1f(gl.getUniformLocation(program, 'shadowStrength'), shadowOpacity);
 		gl.uniform1f(gl.getUniformLocation(program, 'aspectAlpha'), aspectOpacity);
 
 		// カラーマップ
