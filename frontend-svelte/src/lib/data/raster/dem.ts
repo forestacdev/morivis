@@ -239,7 +239,7 @@ export const demEntry: DemEntry = {
 	},
 	uniformsData: {
 		shadow: {
-			visible: true,
+			visible: false,
 			opacity: 0.7,
 			azimuth: 180,
 			altitude: 45
@@ -262,12 +262,12 @@ export const demEntry: DemEntry = {
 			colorMap: 'rainbowSoft'
 		},
 		curvature: {
-			visible: false,
+			visible: true,
 			opacity: 0.7,
 			ridgeThreshold: 0.7,
-			valleyThreshold: 0.7,
-			ridgeColor: '#000000',
-			valleyColor: '#FFFFFF'
+			valleyThreshold: 0.3,
+			ridgeColor: '#980707',
+			valleyColor: '#137c83'
 		}
 	},
 	protocolKey: 'customrgbdem',

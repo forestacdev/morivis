@@ -161,8 +161,8 @@ self.onmessage = async (e) => {
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectColorMap'), aspectColorMapInt);
 
 		// カーブの色
-		gl.uniform3fv(gl.getUniformLocation(program, 'ridgeColor'), ridgeColor);
-		gl.uniform3fv(gl.getUniformLocation(program, 'valleyColor'), valleyColor);
+		gl.uniform4fv(gl.getUniformLocation(program, 'ridgeColor'), ridgeColor);
+		gl.uniform4fv(gl.getUniformLocation(program, 'valleyColor'), valleyColor);
 
 		// カーブの閾値
 		gl.uniform1f(gl.getUniformLocation(program, 'ridgeThreshold'), ridgeThreshold);

@@ -23,8 +23,8 @@ uniform float aspectAlpha;
 uniform float curvatureAlpha;
 uniform float shadowStrength;
 
-uniform vec3 ridgeColor;
-uniform vec3 valleyColor;
+uniform vec4 ridgeColor;
+uniform vec4 valleyColor;
 
 uniform float ridgeThreshold;
 uniform float valleyThreshold;
@@ -211,7 +211,6 @@ float calculateSlope(vec3 normal) {
 
 
 void main() {
-    
     vec2 uv = vTexCoord;
     vec4 color = texture(heightMap, uv);
 
@@ -220,79 +219,66 @@ void main() {
         return;
     }
 
-    TerrainData terrainData = calculateTerrainData(uv);
-    vec3 normal = terrainData.normal;
-    vec3 normalmap = (normal + 1.0) / 2.0;
+    vec4 finalColor = vec4(0.0, 0.0,0.0,0.0);
+    bool needNormal = (slopeMode == 1 || aspectMode == 1 || shadowMode == 1);
+    bool needCurvature = (curvatureMode == 1);
 
-    vec4 finalColor = vec4(1.0);
-
+    TerrainData terrainData;
+    if (needNormal || needCurvature) {
+        terrainData = calculateTerrainData(uv);
+    }
 
     if (evolutionMode == 1) {
         float height = convertToHeight(color);
-
-        // 高さを0-1の範囲に正規化
-        float normalizedHeight = height / maxHeight;
-        normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
-        vec4 terrainColor =  applyColorMap(evolutionColorMap, normalizedHeight);
+        float normalizedHeight = clamp(height / maxHeight, 0.0, 1.0);
+        vec4 terrainColor = applyColorMap(evolutionColorMap, normalizedHeight);
         finalColor = mix(finalColor, terrainColor, evolutionAlpha);
     }
 
-    if (slopeMode == 1) {
-        float slope = calculateSlope(normal);
-        float normalizedSlope = clamp(slope / 90.0, 0.0, 1.0);
-        vec4 slopeColor = applyColorMap(slopeColorMap, normalizedSlope);
-        finalColor = mix(finalColor, slopeColor, slopeAlpha);
+    if (needNormal) {
+        vec3 normal = terrainData.normal;
+
+        if (slopeMode == 1) {
+            float slope = calculateSlope(normal);
+            float normalizedSlope = clamp(slope / 90.0, 0.0, 1.0);
+            vec4 slopeColor = applyColorMap(slopeColorMap, normalizedSlope);
+            finalColor = mix(finalColor, slopeColor, slopeAlpha);
+        }
+
+        if (aspectMode == 1) {
+            float aspect = atan(normal.y, normal.x);
+            float normalizedAspect = (aspect + 3.14159265359) / (2.0 * 3.14159265359);
+            vec4 aspectColor = applyColorMap(aspectColorMap, normalizedAspect);
+            finalColor = mix(finalColor, aspectColor, aspectAlpha);
+        }
+
+        if (shadowMode == 1) {
+            float diffuse = max(dot(normal, lightDirection), 0.0);
+            float ambient = 0.3;
+            float shadowFactor = ambient + (1.0 - ambient) * diffuse;
+            float shadowAlpha = (1.0 - shadowFactor) * shadowStrength;
+            vec3 shadowColor = vec3(0.0);
+            finalColor.rgb = mix(finalColor.rgb, shadowColor, shadowAlpha);
+            finalColor.a = finalColor.a * (1.0 - shadowAlpha) + shadowAlpha;
+        }
     }
 
-    if (aspectMode == 1) {
-        float aspect = atan(normal.y, normal.x);
-        float normalizedAspect = (aspect + 3.14159265359) / (2.0 * 3.14159265359);
-        vec4 aspectColor = applyColorMap(aspectColorMap, normalizedAspect);
-        finalColor = mix(finalColor, aspectColor, aspectAlpha);
-    }
-
-      if (curvatureMode == 1) {
+    if (needCurvature) {
         float curvature = terrainData.curvature;
-        float normalizedCurvature = (curvature + 1.0) / 2.0;
-        normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+        float normalizedCurvature = clamp((curvature + 1.0) / 2.0, 0.0, 1.0);
 
         vec4 curvatureColor;
         if (normalizedCurvature >= ridgeThreshold) {
             float intensity = (normalizedCurvature - ridgeThreshold) / (1.0 - ridgeThreshold);
-            curvatureColor = vec4(ridgeColor, intensity);
+            curvatureColor = vec4(ridgeColor.rgb, intensity);
         } else if (normalizedCurvature <= valleyThreshold) {
             float intensity = (valleyThreshold - normalizedCurvature) / valleyThreshold;
-            curvatureColor = vec4(valleyColor, intensity);
+            curvatureColor = vec4(valleyColor.rgb, intensity);
         } else {
             curvatureColor = vec4(0.0, 0.0, 0.0, 0.0);
         }
 
         finalColor = mix(finalColor, curvatureColor, curvatureAlpha);
-    }
-
-    bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1 || curvatureMode == 1);
-
-    if (shadowMode == 1) {
-        float diffuse = max(dot(normal, lightDirection), 0.0);
-        float ambient = 0.3;
-        float shadowFactor = ambient + (1.0 - ambient) * diffuse;
-        
-        // shadowFactorを基に透明度を計算（明るいほど透明に）
-        float shadowAlpha = 1.0 - shadowFactor;
-        
-        // shadowAlphaを考慮して影の強さを調整
-        float adjustedShadowAlpha = shadowAlpha * shadowStrength;
-        
-        vec3 shadowColor = vec3(0.0, 0.0,0.0);
-        if (otherModesActive) {
-            // 他のモードがアクティブな場合、RGBとアルファ値を調整
-          
-            finalColor.rgb = mix(finalColor.rgb, shadowColor, adjustedShadowAlpha);
-            finalColor.a = finalColor.a * (1.0 - adjustedShadowAlpha) + adjustedShadowAlpha;
-        } else {
-            // 他のモードがオフの場合、アルファ値も含めて完全に透明に
-            finalColor = vec4(shadowColor, adjustedShadowAlpha);
-        }
     }
 
     if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0 && curvatureMode == 0) {
