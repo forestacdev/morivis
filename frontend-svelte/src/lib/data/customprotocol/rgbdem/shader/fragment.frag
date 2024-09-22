@@ -223,13 +223,13 @@ void main() {
     float curvature = calculateCurvature(uv);
 
     // 曲率を色に変換（例：-0.1から0.1の範囲を0から1にマッピング）
-    // float normalizedCurvature = (curvature + 0.1) / 0.2;
-    // normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+    float normalizedCurvature = (curvature + 0.1) / 0.2;
+    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
 
-    // finalColor =  cool(normalizedCurvature);
+    finalColor =  cool(normalizedCurvature);
    
     fragColor = finalColor;
-    fragColor = vec4(curvature, curvature, curvature, 1.0);
+
     return;
     
 
