@@ -2,6 +2,7 @@ import type { ProtocolKey } from '$lib/data/types';
 import { DEM_DATA_TYPE, COLOR_MAP_TYPE } from '$lib/data/raster/dem';
 import type { DemDataTypeKey } from '$lib/data/raster/dem';
 import { demEntry } from '$lib/data/raster/dem';
+import chroma from 'chroma-js';
 
 const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
 	const response = await fetch(src, { signal: signal });
@@ -31,12 +32,16 @@ export class WorkerProtocol {
 			this.pendingRequests.set(url, { resolve, reject, controller });
 			const demType = demEntry.demType;
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
+			const ridgeColor = demEntry.uniformsData.curvature.ridgeColor;
+			const valleyColor = demEntry.uniformsData.curvature.valleyColor;
 
 			this.worker.postMessage({
 				image,
 				url,
 				demTypeNumber,
-				uniformsData: demEntry.uniformsData
+				uniformsData: demEntry.uniformsData,
+				ridgeColor: chroma(ridgeColor).gl(),
+				valleyColor: chroma(valleyColor).gl()
 			});
 		});
 	}

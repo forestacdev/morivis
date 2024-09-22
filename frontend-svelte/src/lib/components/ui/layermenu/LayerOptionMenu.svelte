@@ -384,6 +384,74 @@
 							</div>
 						{/if}
 					</div>
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-2">
+							<label class="block" for="curvature">曲率</label>
+							<input
+								id="curvature"
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.uniformsData.curvature.visible}
+								on:change={reloadDemTile}
+							/>
+						</div>
+						{#if layerOption.uniformsData.curvature.visible}
+							<div class="flex flex-col gap-2">
+								<label class="block">透過度</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.curvature.opacity}
+									min="0"
+									max="1"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex gap-2">
+								<label class="block">尾根の強調率</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.curvature.ridgeThreshold}
+									min="0"
+									max="1"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex gap-2">
+								<label class="block">尾根の色</label>
+								<input
+									type="color"
+									class="custom-color"
+									bind:value={layerOption.uniformsData.curvature.ridgeColor}
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex gap-2">
+								<label class="block">谷の強調率</label>
+								<input
+									type="range"
+									class="custom-slider"
+									bind:value={layerOption.uniformsData.curvature.valleyThreshold}
+									min="0"
+									max="1"
+									step="0.01"
+									on:change={reloadDemTile}
+								/>
+							</div>
+							<div class="flex gap-2">
+								<label class="block">谷の色</label>
+								<input
+									type="color"
+									class="custom-color"
+									bind:value={layerOption.uniformsData.curvature.valleyColor}
+									on:change={reloadDemTile}
+								/>
+							</div>
+						{/if}
+					</div>
 				</div>
 			{/if}
 		</div>

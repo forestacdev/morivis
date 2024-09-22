@@ -155,6 +155,14 @@ export type DemEntry = {
 			visible: boolean;
 			colorMap: string;
 		};
+		curvature: {
+			visible: boolean;
+			opacity: number;
+			ridgeThreshold: number;
+			valleyThreshold: number;
+			ridgeColor: string;
+			valleyColor: string;
+		};
 	};
 	name: string;
 	dataType: 'raster';

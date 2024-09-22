@@ -11,13 +11,24 @@ uniform int slopeMode;
 uniform int evolutionMode;
 uniform int shadowMode;
 uniform int aspectMode;
+uniform int curvatureMode;
+
 uniform int evolutionColorMap;
 uniform int slopeColorMap;
 uniform int aspectColorMap;
+
 uniform float evolutionAlpha;
 uniform float slopeAlpha;
 uniform float aspectAlpha;
+uniform float curvatureAlpha;
 uniform float shadowStrength;
+
+uniform vec3 ridgeColor;
+uniform vec3 valleyColor;
+
+uniform float ridgeThreshold;
+uniform float valleyThreshold;
+
 uniform float maxHeight;
 uniform float minHeight;
 uniform vec3 lightDirection;
@@ -175,7 +186,7 @@ float calculateSlope(vec3 normal) {
 
 
 // 曲率を計算する関数
-float calculateCurvature2(vec2 uv) {
+float calculateCurvature_draft(vec2 uv) {
    vec2 pixelSize = vec2(1.0) / 256.0;
 //    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
 float z11 = convertToHeight(texture(heightMap, uv));
@@ -248,46 +259,16 @@ void main() {
     }
 
 
-
-
     vec3 normal = calculateNormal(uv);
     vec3 normalmap = (normal + 1.0) / 2.0;
 
     vec4 finalColor = vec4(1.0);
 
-     // 曲率の計算と視覚化
-    float curvature = calculateCurvature(uv);
-   float normalizedCurvature = (curvature + 1.0) / 2.0; // -1から1の範囲を0から1に正規化
-    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
-
-
-    float ridgeThreshold = 0.7;
-    float valleyThreshold = 0.3;
-    vec4 color2;
-
-    if (normalizedCurvature >= ridgeThreshold) {
-        // 尾根の部分（高い曲率）
-        float intensity = (normalizedCurvature - ridgeThreshold) / (1.0 - ridgeThreshold);
-        color2 = vec4(1.0, 0.0, 0.0, intensity); // 赤色で、強度に応じて透明度を変える
-    } else if (normalizedCurvature <= valleyThreshold) {
-        // 谷の部分（低い曲率）
-        float intensity = (valleyThreshold - normalizedCurvature) / valleyThreshold;
-        color2 = vec4(0.0, 0.0, 1.0, intensity); // 青色で、強度に応じて透明度を変える
-    } else {
-        // 中間の部分は透明
-        color2 = vec4(0.0, 0.0, 0.0, 0.0);
-    }
-
-    fragColor = color2;
-
-    return;
-    
-
 
     if (evolutionMode == 1) {
         float height = convertToHeight(color);
 
-    // 高さを0-1の範囲に正規化
+        // 高さを0-1の範囲に正規化
         float normalizedHeight = height / maxHeight;
         normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
         vec4 terrainColor =  applyColorMap(evolutionColorMap, normalizedHeight);
@@ -307,7 +288,35 @@ void main() {
         vec4 aspectColor = applyColorMap(aspectColorMap, normalizedAspect);
         finalColor = mix(finalColor, aspectColor, aspectAlpha);
     }
-    bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1);
+
+    if (curvatureMode == 1) {
+
+    // 曲率の計算と視覚化
+    float curvature = calculateCurvature(uv);
+    float normalizedCurvature = (curvature + 1.0) / 2.0; // -1から1の範囲を0から1に正規化
+    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+
+
+    vec4 curvatureColor;
+
+        if (normalizedCurvature >= ridgeThreshold) {
+            // 尾根の部分（高い曲率）
+            float intensity = (normalizedCurvature - ridgeThreshold) / (1.0 - ridgeThreshold);
+            curvatureColor = vec4(ridgeColor, intensity); // 赤色で、強度に応じて透明度を変える
+        } else if (normalizedCurvature <= valleyThreshold) {
+            // 谷の部分（低い曲率）
+            float intensity = (valleyThreshold - normalizedCurvature) / valleyThreshold;
+            curvatureColor = vec4(valleyColor, intensity); // 青色で、強度に応じて透明度を変える
+        } else {
+            // 中間の部分は透明
+            curvatureColor = vec4(0.0, 0.0, 0.0, 0.0);
+        }
+
+        finalColor = mix(finalColor, curvatureColor, curvatureAlpha);
+
+    }
+
+    bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1 || curvatureMode == 1);
 
     if (shadowMode == 1) {
         float diffuse = max(dot(normal, lightDirection), 0.0);
@@ -332,7 +341,7 @@ void main() {
         }
     }
 
-    if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0) {
+    if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0 && curvatureMode == 0) {
         finalColor = color;
     }
 

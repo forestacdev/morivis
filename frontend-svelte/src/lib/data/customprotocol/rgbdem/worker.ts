@@ -87,18 +87,23 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	const { url, image, demTypeNumber, uniformsData } = e.data;
+	const { url, image, demTypeNumber, uniformsData, ridgeColor, valleyColor } = e.data;
 
-	const { evolution, slope, shadow, aspect } = uniformsData;
+	const { evolution, slope, shadow, aspect, curvature } = uniformsData;
 	const evolutionModeInt = evolution.visible ? 1 : 0;
 	const slopeModeInt = slope.visible ? 1 : 0;
 	const shadowModeInt = shadow.visible ? 1 : 0;
 	const aspectModeInt = aspect.visible ? 1 : 0;
+	const curvatureModeInt = curvature.visible ? 1 : 0;
 
 	const evolutionOpacity = evolution.opacity;
 	const slopeOpacity = slope.opacity;
 	const shadowOpacity = shadow.opacity;
 	const aspectOpacity = aspect.opacity;
+	const curvatureOpacity = curvature.opacity;
+
+	const ridgeThreshold = curvature.ridgeThreshold;
+	const valleyThreshold = curvature.valleyThreshold;
 
 	const evolutionColorMapInt = COLOR_MAP_TYPE[evolution.colorMap as ColorMapTypeKey];
 	const aspectColorMapInt = COLOR_MAP_TYPE[aspect.colorMap as ColorMapTypeKey];
@@ -141,17 +146,27 @@ self.onmessage = async (e) => {
 		gl.uniform1i(gl.getUniformLocation(program, 'slopeMode'), slopeModeInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'shadowMode'), shadowModeInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectMode'), aspectModeInt);
+		gl.uniform1i(gl.getUniformLocation(program, 'curvatureMode'), curvatureModeInt);
 
 		// 透過度
 		gl.uniform1f(gl.getUniformLocation(program, 'evolutionAlpha'), evolutionOpacity);
 		gl.uniform1f(gl.getUniformLocation(program, 'slopeAlpha'), slopeOpacity);
 		gl.uniform1f(gl.getUniformLocation(program, 'shadowStrength'), shadowOpacity);
 		gl.uniform1f(gl.getUniformLocation(program, 'aspectAlpha'), aspectOpacity);
+		gl.uniform1f(gl.getUniformLocation(program, 'curvatureAlpha'), curvatureOpacity);
 
 		// カラーマップ
 		gl.uniform1i(gl.getUniformLocation(program, 'evolutionColorMap'), evolutionColorMapInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'slopeColorMap'), slopeColorMapInt);
 		gl.uniform1i(gl.getUniformLocation(program, 'aspectColorMap'), aspectColorMapInt);
+
+		// カーブの色
+		gl.uniform3fv(gl.getUniformLocation(program, 'ridgeColor'), ridgeColor);
+		gl.uniform3fv(gl.getUniformLocation(program, 'valleyColor'), valleyColor);
+
+		// カーブの閾値
+		gl.uniform1f(gl.getUniformLocation(program, 'ridgeThreshold'), ridgeThreshold);
+		gl.uniform1f(gl.getUniformLocation(program, 'valleyThreshold'), valleyThreshold);
 
 		// 標高値の最大値と最小値
 		gl.uniform1f(gl.getUniformLocation(program, 'maxHeight'), evolution.max);

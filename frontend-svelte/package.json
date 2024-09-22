@@ -55,6 +55,7 @@
 		"@turf/buffer": "^7.1.0",
 		"@turf/distance": "^7.1.0",
 		"@turf/nearest-point": "^7.1.0",
+		"chroma-js": "^3.1.1",
 		"fuse.js": "^7.0.0",
 		"geojson-vt": "^4.0.2",
 		"glsl-colormap": "^1.0.1",

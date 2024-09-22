@@ -1,4 +1,5 @@
 import type { DemEntry, Region } from '$lib/data/types';
+import * as THREE from 'three';
 
 export type DemLayer = {
 	id: string;
@@ -259,6 +260,14 @@ export const demEntry: DemEntry = {
 			visible: false,
 			opacity: 0.7,
 			colorMap: 'rainbowSoft'
+		},
+		curvature: {
+			visible: false,
+			opacity: 0.7,
+			ridgeThreshold: 0.7,
+			valleyThreshold: 0.7,
+			ridgeColor: '#000000',
+			valleyColor: '#FFFFFF'
 		}
 	},
 	protocolKey: 'customrgbdem',
