@@ -146,13 +146,22 @@ float convertToHeight(vec4 color) {
 // 隣接するピクセルの高さ差を使って法線を計算する関数
 vec3 calculateNormal(vec2 uv) {
     vec2 pixelSize = vec2(1.0) / 256.0;
-    float heightL = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
-    float heightR = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
-    float heightD = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
-    float heightU = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
-    float heightC = convertToHeight(texture(heightMap, uv));
 
-    vec3 normal = vec3(heightL - heightR, heightD - heightU, 1.0);
+    float z11 = convertToHeight(texture(heightMap, uv));
+    float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+    float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
+    float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+    float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
+    float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
+    float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
+    float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
+    float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
+
+    vec3 normal;
+    normal.x = (z00 + z01 + z02) - (z20 + z21 + z22);
+    normal.y = (z00 + z10 + z20) - (z02 + z12 + z22);
+    normal.z = 2.0 * pixelSize.x * 256.0; // スケーリング係数
+
     return normalize(normal);
 }
 
@@ -167,6 +176,7 @@ float calculateSlope(vec3 normal) {
 // 曲率を計算する関数
 float calculateCurvature(vec2 uv) {
    vec2 pixelSize = vec2(1.0) / 256.0;
+//    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
 float z11 = convertToHeight(texture(heightMap, uv));
 float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
 float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
@@ -213,11 +223,13 @@ void main() {
     float curvature = calculateCurvature(uv);
 
     // 曲率を色に変換（例：-0.1から0.1の範囲を0から1にマッピング）
-    float normalizedCurvature = (curvature + 0.1) / 0.2;
-    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+    // float normalizedCurvature = (curvature + 0.1) / 0.2;
+    // normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
 
-    finalColor = vec4(vec3(normalizedCurvature), 1.0);
+    // finalColor =  cool(normalizedCurvature);
+   
     fragColor = finalColor;
+    fragColor = vec4(curvature, curvature, curvature, 1.0);
     return;
     
 
