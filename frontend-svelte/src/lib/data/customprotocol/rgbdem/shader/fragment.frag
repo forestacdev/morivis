@@ -208,27 +208,28 @@ void main() {
     }
     bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1);
 
-if (shadowMode == 1) {
-    float diffuse = max(dot(normal, lightDirection), 0.0);
-    float ambient = 0.3;
-    float shadowFactor = ambient + (1.0 - ambient) * diffuse;
-    
-    // shadowFactorを基に透明度を計算（明るいほど透明に）
-    float shadowAlpha = 1.0 - shadowFactor;
-    
-    // shadowAlphaを考慮して影の強さを調整
-    float adjustedShadowAlpha = shadowAlpha * shadowStrength;
-    
-    if (otherModesActive) {
-        // 他のモードがアクティブな場合、RGBとアルファ値を調整
-        vec3 shadowColor = vec3(0.0);
-        finalColor.rgb = mix(finalColor.rgb, shadowColor, adjustedShadowAlpha);
-        finalColor.a = finalColor.a * (1.0 - adjustedShadowAlpha) + adjustedShadowAlpha;
-    } else {
-        // 他のモードがオフの場合、アルファ値も含めて完全に透明に
-        finalColor = vec4(0.0, 0.0, 0.0, adjustedShadowAlpha);
+    if (shadowMode == 1) {
+        float diffuse = max(dot(normal, lightDirection), 0.0);
+        float ambient = 0.3;
+        float shadowFactor = ambient + (1.0 - ambient) * diffuse;
+        
+        // shadowFactorを基に透明度を計算（明るいほど透明に）
+        float shadowAlpha = 1.0 - shadowFactor;
+        
+        // shadowAlphaを考慮して影の強さを調整
+        float adjustedShadowAlpha = shadowAlpha * shadowStrength;
+        
+        vec3 shadowColor = vec3(0.0, 0.0,0.0);
+        if (otherModesActive) {
+            // 他のモードがアクティブな場合、RGBとアルファ値を調整
+          
+            finalColor.rgb = mix(finalColor.rgb, shadowColor, adjustedShadowAlpha);
+            finalColor.a = finalColor.a * (1.0 - adjustedShadowAlpha) + adjustedShadowAlpha;
+        } else {
+            // 他のモードがオフの場合、アルファ値も含めて完全に透明に
+            finalColor = vec4(shadowColor, adjustedShadowAlpha);
+        }
     }
-}
 
     if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0) {
         finalColor = color;
