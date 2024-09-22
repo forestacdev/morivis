@@ -166,23 +166,19 @@ float calculateSlope(vec3 normal) {
 
 // 曲率を計算する関数
 float calculateCurvature(vec2 uv) {
-    float dx = 1.0 / 256.0;
-    float dy = 1.0 / 256.0;
+    vec2 pixelSize = vec2(1.0) / 256.0;
+    float h = convertToHeight(texture(heightMap, uv));
+    float hLeft = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
+    float hRight = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+    float hUp = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+    float hDown = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
     
-    float h00 = convertToHeight(texture(heightMap, uv));
-    float h10 = convertToHeight(texture(heightMap, uv + vec2(dx, 0.0)));
-    float h01 = convertToHeight(texture(heightMap, uv - vec2(0.0, dy)));
-    float h11 = convertToHeight(texture(heightMap, uv + vec2(dx, dy)));
+    float hx = (hRight - hLeft) / (2.0 * pixelSize.x);
+    float hy = (hUp - hDown) / (2.0 * pixelSize.y);
+    float hxx = (hRight + hLeft - 2.0 * h) / (pixelSize.x * pixelSize.x);
+    float hyy = (hUp + hDown - 2.0 * h) / (pixelSize.y * pixelSize.y);
     
-    float hx = (h10 - h00) / dx;
-    float hy = (h01 - h00) / dy;
-    float hxx = (h10 + h00 - 2.0 * h00) / (dx * dx);
-    float hyy = (h01 + h00 - 2.0 * h00) / (dy * dy);
-    float hxy = (h11 + h00 - h10 - h01) / (dx * dy);
-    
-    float curvature = (hxx * (1.0 + hy * hy) + hyy * (1.0 + hx * hx) - 2.0 * hxy * hx * hy) 
-                      / pow(1.0 + hx * hx + hy * hy, 1.5);
-    
+    float curvature = -2.0 * (hxx + hyy) * 100.0;
     return curvature;
 }
 
@@ -205,9 +201,12 @@ void main() {
     vec4 finalColor = vec4(1.0);
 
      // 曲率の計算と視覚化
-    float curvature = calculateCurvature(uv);
-    vec4 curvatureColor = vec4(curvature, -curvature, 0.0, 1.0);
-    finalColor = mix(finalColor, curvatureColor, 1.0); // 曲率の可視化を50%の強度で適用
+      float curvature = calculateCurvature(uv);
+    
+    // 曲率を色に変換（例：-0.5から0.5の範囲を0から1にマッピング）
+    float normalizedCurvature = (curvature + 0.5) / 1.0;
+    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
+    finalColor = vec4(vec3(normalizedCurvature), 1.0);
     fragColor = finalColor;
     return;
     
