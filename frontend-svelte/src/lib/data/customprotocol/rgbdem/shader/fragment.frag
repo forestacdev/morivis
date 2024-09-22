@@ -128,6 +128,7 @@ vec4 applyColorMap(int type, float value) {
     else return vec4(1.0, 0.0, 0.0, 1.0); // デフォルト値（赤色）
 }
 
+
 // 高さ変換関数
 float convertToHeight(vec4 color) {
     float r = color.r * 255.0;
@@ -154,65 +155,6 @@ float convertToHeight(vec4 color) {
     }
 }
 
-// 隣接するピクセルの高さ差を使って法線を計算する関数
-vec3 calculateNormal(vec2 uv) {
-    vec2 pixelSize = vec2(1.0) / 256.0;
-
-    float z11 = convertToHeight(texture(heightMap, uv));
-    float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
-    float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
-    float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
-    float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
-    float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
-    float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
-    float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
-    float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
-
-    vec3 normal;
-    normal.x = (z00 + z01 + z02) - (z20 + z21 + z22);
-    normal.y = (z00 + z10 + z20) - (z02 + z12 + z22);
-    normal.z = 2.0 * pixelSize.x * 256.0; // スケーリング係数
-
-    return normalize(normal);
-}
-
-// 傾斜量を計算する関数
-float calculateSlope(vec3 normal) {
-    // 法線ベクトルのZ成分から傾斜角を計算
-    float slope = acos(normal.z);
-    // ラジアンから度に変換
-    return degrees(slope);
-}
-
-
-// 曲率を計算する関数
-float calculateCurvature_draft(vec2 uv) {
-   vec2 pixelSize = vec2(1.0) / 256.0;
-//    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
-float z11 = convertToHeight(texture(heightMap, uv));
-float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
-float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
-float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
-float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
-float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
-float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
-float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
-float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
-
-     // 2次微分の計算
-    float dx = ((z21 + z22 + z20) - (z01 + z02 + z00)) / (6.0 * pixelSize.x);
-    float dy = ((z12 + z22 + z02) - (z10 + z20 + z00)) / (6.0 * pixelSize.y);
-    float dxx = (z21 + z01 - 2.0 * z11) / (pixelSize.x * pixelSize.x);
-    float dyy = (z12 + z10 - 2.0 * z11) / (pixelSize.y * pixelSize.y);
-    float dxy = (z22 + z00 - z20 - z02) / (4.0 * pixelSize.x * pixelSize.y);
-
-    // 平均曲率の計算
-    float H = ((1.0 + dx*dx) * dyy - 2.0*dx*dy*dxy + (1.0 + dy*dy) * dxx)
-              / (2.0 * pow(1.0 + dx*dx + dy*dy, 1.5));
-
-    return H;
-}
-
 const mat3 conv_c = mat3(vec3(0,-1, 0),vec3(-1, 4,-1), vec3(0,-1, 0));
 const mat3 conv_sx = mat3(vec3(-1, 0, 1),vec3(-2, 0, 2),vec3(-1, 0, 1));
 const mat3 conv_sy = mat3(vec3(-1,-2,-1),vec3(0, 0, 0),vec3( 1, 2, 1));
@@ -221,11 +163,19 @@ float conv(mat3 a, mat3 b){
   return dot(a[0],b[0]) + dot(a[1],b[1]) + dot(a[2],b[2]);
 }
 
+struct TerrainData {
+    vec3 normal;
+    float curvature;
+};
 
-float calculateCurvature(vec2 uv) {
-   vec2 pixelSize = vec2(1.0) / 256.0;
-   uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
+TerrainData calculateTerrainData(vec2 uv) {
+    vec2 pixelSize = vec2(1.0) / 256.0;
+    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
+
+    TerrainData data;
     mat3 heightMatrix;
+
+    // 高さマップデータの取得
     heightMatrix[0][0] = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, -pixelSize.y)));
     heightMatrix[0][1] = convertToHeight(texture(heightMap, uv + vec2(0.0, -pixelSize.y)));
     heightMatrix[0][2] = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
@@ -236,17 +186,29 @@ float calculateCurvature(vec2 uv) {
     heightMatrix[2][1] = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
     heightMatrix[2][2] = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
 
-    float H = conv(conv_c, heightMatrix);
-    return H;
+    // 法線の計算
+    data.normal.x = (heightMatrix[0][0] + heightMatrix[0][1] + heightMatrix[0][2]) - 
+                    (heightMatrix[2][0] + heightMatrix[2][1] + heightMatrix[2][2]);
+    data.normal.y = (heightMatrix[0][0] + heightMatrix[1][0] + heightMatrix[2][0]) - 
+                    (heightMatrix[0][2] + heightMatrix[1][2] + heightMatrix[2][2]);
+    data.normal.z = 2.0 * pixelSize.x * 256.0; // スケーリング係数
+    data.normal = normalize(data.normal);
+
+    // 曲率の計算
+    data.curvature = conv(conv_c, heightMatrix);
+
+    return data;
 }
 
-    // 非線形変換関数
-float nonlinearGradient(float x) {
-    // ここでは二次関数を使用していますが、他の関数も使用可能です
-    return x * x;
-    // または、より急激な変化を望む場合: return pow(x, 4.0);
-    // よりなだらかな変化を望む場合: return sqrt(x);
+
+// 傾斜量を計算する関数
+float calculateSlope(vec3 normal) {
+    // 法線ベクトルのZ成分から傾斜角を計算
+    float slope = acos(normal.z);
+    // ラジアンから度に変換
+    return degrees(slope);
 }
+
 
 void main() {
     
@@ -258,8 +220,8 @@ void main() {
         return;
     }
 
-
-    vec3 normal = calculateNormal(uv);
+    TerrainData terrainData = calculateTerrainData(uv);
+    vec3 normal = terrainData.normal;
     vec3 normalmap = (normal + 1.0) / 2.0;
 
     vec4 finalColor = vec4(1.0);
@@ -289,31 +251,23 @@ void main() {
         finalColor = mix(finalColor, aspectColor, aspectAlpha);
     }
 
-    if (curvatureMode == 1) {
+      if (curvatureMode == 1) {
+        float curvature = terrainData.curvature;
+        float normalizedCurvature = (curvature + 1.0) / 2.0;
+        normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
 
-    // 曲率の計算と視覚化
-    float curvature = calculateCurvature(uv);
-    float normalizedCurvature = (curvature + 1.0) / 2.0; // -1から1の範囲を0から1に正規化
-    normalizedCurvature = clamp(normalizedCurvature, 0.0, 1.0);
-
-
-    vec4 curvatureColor;
-
+        vec4 curvatureColor;
         if (normalizedCurvature >= ridgeThreshold) {
-            // 尾根の部分（高い曲率）
             float intensity = (normalizedCurvature - ridgeThreshold) / (1.0 - ridgeThreshold);
-            curvatureColor = vec4(ridgeColor, intensity); // 赤色で、強度に応じて透明度を変える
+            curvatureColor = vec4(ridgeColor, intensity);
         } else if (normalizedCurvature <= valleyThreshold) {
-            // 谷の部分（低い曲率）
             float intensity = (valleyThreshold - normalizedCurvature) / valleyThreshold;
-            curvatureColor = vec4(valleyColor, intensity); // 青色で、強度に応じて透明度を変える
+            curvatureColor = vec4(valleyColor, intensity);
         } else {
-            // 中間の部分は透明
             curvatureColor = vec4(0.0, 0.0, 0.0, 0.0);
         }
 
         finalColor = mix(finalColor, curvatureColor, curvatureAlpha);
-
     }
 
     bool otherModesActive = (evolutionMode == 1 || slopeMode == 1 || aspectMode == 1 || curvatureMode == 1);
@@ -346,7 +300,77 @@ void main() {
     }
 
     fragColor = finalColor;
-   
-
-
 }
+
+// 曲率を計算する関数 ドラフト
+// float calculateCurvature_draft(vec2 uv) {
+//    vec2 pixelSize = vec2(1.0) / 256.0;
+// //    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
+// float z11 = convertToHeight(texture(heightMap, uv));
+// float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+// float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
+// float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+// float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
+// float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
+// float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
+// float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
+// float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
+
+//      // 2次微分の計算
+//     float dx = ((z21 + z22 + z20) - (z01 + z02 + z00)) / (6.0 * pixelSize.x);
+//     float dy = ((z12 + z22 + z02) - (z10 + z20 + z00)) / (6.0 * pixelSize.y);
+//     float dxx = (z21 + z01 - 2.0 * z11) / (pixelSize.x * pixelSize.x);
+//     float dyy = (z12 + z10 - 2.0 * z11) / (pixelSize.y * pixelSize.y);
+//     float dxy = (z22 + z00 - z20 - z02) / (4.0 * pixelSize.x * pixelSize.y);
+
+//     // 平均曲率の計算
+//     float H = ((1.0 + dx*dx) * dyy - 2.0*dx*dy*dxy + (1.0 + dy*dy) * dxx)
+//               / (2.0 * pow(1.0 + dx*dx + dy*dy, 1.5));
+
+//     return H;
+// }
+
+
+// 隣接するピクセルの高さ差を使って法線を計算する関数
+// vec3 calculateNormal(vec2 uv) {
+//     vec2 pixelSize = vec2(1.0) / 256.0;
+
+//     float z11 = convertToHeight(texture(heightMap, uv));
+//     float z21 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+//     float z01 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, 0.0)));
+//     float z12 = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+//     float z10 = convertToHeight(texture(heightMap, uv - vec2(0.0, pixelSize.y)));
+//     float z22 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
+//     float z00 = convertToHeight(texture(heightMap, uv - vec2(pixelSize.x, pixelSize.y)));
+//     float z02 = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
+//     float z20 = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
+
+//     vec3 normal;
+//     normal.x = (z00 + z01 + z02) - (z20 + z21 + z22);
+//     normal.y = (z00 + z10 + z20) - (z02 + z12 + z22);
+//     normal.z = 2.0 * pixelSize.x * 256.0; // スケーリング係数
+
+//     return normalize(normal);
+// }
+
+
+
+
+
+// float calculateCurvature(vec2 uv) {
+//    vec2 pixelSize = vec2(1.0) / 256.0;
+//    uv = clamp(uv, vec2(0.0), vec2(1.0) - pixelSize);
+//     mat3 heightMatrix;
+//     heightMatrix[0][0] = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, -pixelSize.y)));
+//     heightMatrix[0][1] = convertToHeight(texture(heightMap, uv + vec2(0.0, -pixelSize.y)));
+//     heightMatrix[0][2] = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, -pixelSize.y)));
+//     heightMatrix[1][0] = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, 0.0)));
+//     heightMatrix[1][1] = convertToHeight(texture(heightMap, uv));
+//     heightMatrix[1][2] = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, 0.0)));
+//     heightMatrix[2][0] = convertToHeight(texture(heightMap, uv + vec2(-pixelSize.x, pixelSize.y)));
+//     heightMatrix[2][1] = convertToHeight(texture(heightMap, uv + vec2(0.0, pixelSize.y)));
+//     heightMatrix[2][2] = convertToHeight(texture(heightMap, uv + vec2(pixelSize.x, pixelSize.y)));
+
+//     float H = conv(conv_c, heightMatrix);
+//     return H;
+// }
