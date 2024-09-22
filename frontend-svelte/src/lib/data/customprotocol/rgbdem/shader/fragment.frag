@@ -164,6 +164,28 @@ float calculateSlope(vec3 normal) {
     return degrees(slope);
 }
 
+// 曲率を計算する関数
+float calculateCurvature(vec2 uv) {
+    float dx = 1.0 / 256.0;
+    float dy = 1.0 / 256.0;
+    
+    float h00 = convertToHeight(texture(heightMap, uv));
+    float h10 = convertToHeight(texture(heightMap, uv + vec2(dx, 0.0)));
+    float h01 = convertToHeight(texture(heightMap, uv - vec2(0.0, dy)));
+    float h11 = convertToHeight(texture(heightMap, uv + vec2(dx, dy)));
+    
+    float hx = (h10 - h00) / dx;
+    float hy = (h01 - h00) / dy;
+    float hxx = (h10 + h00 - 2.0 * h00) / (dx * dx);
+    float hyy = (h01 + h00 - 2.0 * h00) / (dy * dy);
+    float hxy = (h11 + h00 - h10 - h01) / (dx * dy);
+    
+    float curvature = (hxx * (1.0 + hy * hy) + hyy * (1.0 + hx * hx) - 2.0 * hxy * hx * hy) 
+                      / pow(1.0 + hx * hx + hy * hy, 1.5);
+    
+    return curvature;
+}
+
 void main() {
     
     vec2 uv = vTexCoord;
@@ -182,11 +204,19 @@ void main() {
 
     vec4 finalColor = vec4(1.0);
 
+     // 曲率の計算と視覚化
+    float curvature = calculateCurvature(uv);
+    vec4 curvatureColor = vec4(curvature, -curvature, 0.0, 1.0);
+    finalColor = mix(finalColor, curvatureColor, 1.0); // 曲率の可視化を50%の強度で適用
+    fragColor = finalColor;
+    return;
+    
+
 
     if (evolutionMode == 1) {
         float height = convertToHeight(color);
 
-    // 高さを0-1の範囲に正規化（0mから3500mの範囲）
+    // 高さを0-1の範囲に正規化
         float normalizedHeight = height / maxHeight;
         normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
         vec4 terrainColor =  applyColorMap(evolutionColorMap, normalizedHeight);
