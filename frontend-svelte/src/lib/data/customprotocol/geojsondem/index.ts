@@ -1,5 +1,13 @@
 import type { ProtocolKey } from '$lib/data/types';
 
+const loadGeojson = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
+	const response = await fetch(src, { signal: signal });
+	if (!response.ok) {
+		throw new Error('Failed to fetch image');
+	}
+	return await response.json();
+};
+
 export class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<string, { resolve: Function; reject: Function }>;
@@ -12,16 +20,21 @@ export class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	request(url: string, abortController: AbortController): Promise<{ data: Uint8Array }> {
-		return new Promise((resolve, reject) => {
-			this.pendingRequests.set(url, { resolve, reject });
-			this.worker.postMessage({ url });
+	async request(url: string, abortController: AbortController): Promise<{ data: Uint8Array }> {
+		try {
+			const geojson = await loadGeojson(url, abortController.signal);
+			return new Promise((resolve, reject) => {
+				this.pendingRequests.set(url, { resolve, reject });
+				this.worker.postMessage({ geojson, url });
 
-			abortController.signal.addEventListener('abort', () => {
-				this.pendingRequests.delete(url);
-				reject(new Error('Request aborted'));
+				abortController.signal.addEventListener('abort', () => {
+					this.pendingRequests.delete(url);
+					reject(new Error('Request aborted'));
+				});
 			});
-		});
+		} catch (error) {
+			return Promise.reject(error);
+		}
 	}
 
 	private handleMessage = (e: MessageEvent) => {
@@ -49,9 +62,9 @@ export class WorkerProtocol {
 const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 const workerProtocol = new WorkerProtocol(worker);
 
-export function geojsondemProtocol(protocolName: ProtocolKey) {
+export const geojsondemProtocol = (protocolName: ProtocolKey) => {
 	return (params: { url: string }, abortController: AbortController) => {
-		const imageUrl = params.url.replace(`${protocolName}://`, '');
-		return workerProtocol.request(imageUrl, abortController);
+		const geojsonUrl = params.url.replace(`${protocolName}://`, '');
+		return workerProtocol.request(geojsonUrl, abortController);
 	};
-}
+};

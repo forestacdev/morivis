@@ -36,14 +36,19 @@ import type { ProtocolKey } from '$lib/data/types';
 
 import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
+import { geojsondemProtocol } from '$lib/data/customprotocol/geojsondem';
 
-const protocolName2: ProtocolKey = 'customdem';
-const rgbdem = rgbdemProtocol(protocolName2);
-maplibregl.addProtocol(protocolName2, rgbdem.request);
+const protocolName1: ProtocolKey = 'customdem';
+const rgbdem = rgbdemProtocol(protocolName1);
+maplibregl.addProtocol(protocolName1, rgbdem.request);
 
-const protocolName3: ProtocolKey = 'customtiles';
-const customVector = tilesProtocol(protocolName3);
-maplibregl.addProtocol(protocolName3, customVector);
+const protocolName2: ProtocolKey = 'customtiles';
+const customVector = tilesProtocol(protocolName2);
+maplibregl.addProtocol(protocolName2, customVector);
+
+const protocolName3: ProtocolKey = 'customgeojsondem';
+const customGeojsonDem = geojsondemProtocol(protocolName3);
+maplibregl.addProtocol(protocolName3, customGeojsonDem);
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
@@ -59,7 +64,8 @@ const createMapStore = () => {
 			container: mapContainer,
 			style: mapStyle,
 			center: [136.923004009, 35.5509525769706],
-			zoom: 14.5,
+			// zoom: 14.5,
+			zoom: 18.0,
 			fadeDuration: 100, // フェードアニメーションの時間
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
 			renderWorldCopies: false // 世界地図を繰り返し表示しない

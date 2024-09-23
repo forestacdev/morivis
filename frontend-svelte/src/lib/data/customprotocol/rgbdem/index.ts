@@ -27,24 +27,28 @@ export class WorkerProtocol {
 	}
 
 	async request(url: string, controller: AbortController): Promise<{ data: Uint8Array }> {
-		const image = await loadImage(url, controller.signal);
-		return new Promise((resolve, reject) => {
-			this.pendingRequests.set(url, { resolve, reject, controller });
-			const demType = demEntry.demType;
+		try {
+			const image = await loadImage(url, controller.signal);
+			return new Promise((resolve, reject) => {
+				this.pendingRequests.set(url, { resolve, reject, controller });
+				const demType = demEntry.demType;
 
-			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-			const ridgeColor = demEntry.uniformsData.curvature.ridgeColor;
-			const valleyColor = demEntry.uniformsData.curvature.valleyColor;
+				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
+				const ridgeColor = demEntry.uniformsData.curvature.ridgeColor;
+				const valleyColor = demEntry.uniformsData.curvature.valleyColor;
 
-			this.worker.postMessage({
-				image,
-				url,
-				demTypeNumber,
-				uniformsData: demEntry.uniformsData,
-				ridgeColor: chroma(ridgeColor).gl(),
-				valleyColor: chroma(valleyColor).gl()
+				this.worker.postMessage({
+					image,
+					url,
+					demTypeNumber,
+					uniformsData: demEntry.uniformsData,
+					ridgeColor: chroma(ridgeColor).gl(),
+					valleyColor: chroma(valleyColor).gl()
+				});
 			});
-		});
+		} catch (error) {
+			return Promise.reject(error);
+		}
 	}
 
 	// 新しいメソッド: 全てのリクエストをキャンセル

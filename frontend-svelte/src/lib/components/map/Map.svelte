@@ -95,6 +95,15 @@
 			tile_source: {
 				type: 'vector',
 				tiles: ['customtiles://{z}/{x}/{y}.pbf']
+			},
+			customgeojsondem: {
+				type: 'vector',
+				tiles: [
+					'customgeojsondem://https://cyberjapandata.gsi.go.jp/xyz/experimental_dem10b/{z}/{x}/{y}.geojson'
+				],
+
+				maxzoom: 18,
+				minzoom: 18
 			}
 		};
 		mapStyleJson.layers = [
@@ -104,7 +113,33 @@
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
-			)
+			),
+			{
+				id: 'customgeojsondem',
+				type: 'circle',
+				source: 'customgeojsondem',
+				'source-layer': 'geojsonLayer',
+				paint: {
+					'circle-radius': 10,
+					'circle-color': 'red'
+				}
+			},
+			{
+				id: 'customgeojsondemr_symbol',
+				type: 'symbol',
+				source: 'customgeojsondem',
+				'source-layer': 'geojsonLayer',
+				layout: {
+					'text-field': ['get', 'alti'],
+					'text-size': 10,
+					'text-allow-overlap': true
+				},
+				paint: {
+					'text-color': '#ffffff',
+					'text-halo-color': '#000000',
+					'text-halo-width': 1
+				}
+			}
 			// {
 			// 	id: 'terrain',
 			// 	type: 'hillshade',
