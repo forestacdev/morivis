@@ -37,7 +37,7 @@ import type { ProtocolKey } from '$lib/data/types';
 import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
 import { tilesProtocol } from '$lib/data/customprotocol/vector';
 
-const protocolName2: ProtocolKey = 'customrgbdem';
+const protocolName2: ProtocolKey = 'customdem';
 const rgbdem = rgbdemProtocol(protocolName2);
 maplibregl.addProtocol(protocolName2, rgbdem.request);
 

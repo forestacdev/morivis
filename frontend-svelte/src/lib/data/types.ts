@@ -118,7 +118,7 @@ export type RasterEntry = {
 	};
 };
 
-export type ProtocolKey = 'customgsidem' | 'customrgbdem' | 'customtiles';
+export type ProtocolKey = 'customdem' | 'customtiles' | 'customgeojsondem' ;
 
 type DemVisualMode = {
 	evolution: boolean;

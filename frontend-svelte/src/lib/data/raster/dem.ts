@@ -270,7 +270,7 @@ export const demEntry: DemEntry = {
 			valleyColor: '#137c83'
 		}
 	},
-	protocolKey: 'customrgbdem',
+	protocolKey: 'customdem',
 	url: demLayers[0].tiles[0],
 	sourceMaxZoom: demLayers[0].maxzoom,
 	sourceMinZoom: demLayers[0].minzoom,
