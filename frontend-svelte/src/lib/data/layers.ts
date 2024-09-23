@@ -235,6 +235,7 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 				}
 				demEntry.name = demData.name;
 				demEntry.url = demData.tiles[0];
+				demEntry.demType = demData.demType;
 				demEntry.sourceMaxZoom = demData.maxzoom;
 				demEntry.sourceMinZoom = demData.minzoom;
 				demEntry.attribution = demData.attribution;

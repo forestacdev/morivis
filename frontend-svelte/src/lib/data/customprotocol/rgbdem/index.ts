@@ -31,6 +31,7 @@ export class WorkerProtocol {
 		return new Promise((resolve, reject) => {
 			this.pendingRequests.set(url, { resolve, reject, controller });
 			const demType = demEntry.demType;
+
 			const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 			const ridgeColor = demEntry.uniformsData.curvature.ridgeColor;
 			const valleyColor = demEntry.uniformsData.curvature.valleyColor;

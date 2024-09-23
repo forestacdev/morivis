@@ -214,6 +214,7 @@ void main() {
     vec2 uv = vTexCoord;
     vec4 color = texture(heightMap, uv);
 
+
     if (color.a == 0.0) {
         fragColor = vec4(0.0, 0.0, 0.0, 0.0);
         return;
@@ -263,22 +264,22 @@ void main() {
         }
     }
 
-    if (needCurvature) {
+if (needCurvature) {
         float curvature = terrainData.curvature;
         float normalizedCurvature = clamp((curvature + 1.0) / 2.0, 0.0, 1.0);
 
-        vec4 curvatureColor;
+        vec4 curvatureColor = vec4(0.0, 0.0, 0.0, 0.0);  // デフォルトで透明
         if (normalizedCurvature >= ridgeThreshold) {
             float intensity = (normalizedCurvature - ridgeThreshold) / (1.0 - ridgeThreshold);
-            curvatureColor = vec4(ridgeColor.rgb, intensity);
+            curvatureColor = vec4(ridgeColor.rgb, intensity * curvatureAlpha);
         } else if (normalizedCurvature <= valleyThreshold) {
             float intensity = (valleyThreshold - normalizedCurvature) / valleyThreshold;
-            curvatureColor = vec4(valleyColor.rgb, intensity);
-        } else {
-            curvatureColor = vec4(0.0, 0.0, 0.0, 0.0);
+            curvatureColor = vec4(valleyColor.rgb, intensity * curvatureAlpha);
         }
 
-        finalColor = mix(finalColor, curvatureColor, curvatureAlpha);
+        // アルファブレンディング
+        finalColor.rgb = mix(finalColor.rgb, curvatureColor.rgb, curvatureColor.a);
+        finalColor.a = max(finalColor.a, curvatureColor.a);
     }
 
     if (evolutionMode == 0 && slopeMode == 0 && shadowMode == 0 && aspectMode == 0 && curvatureMode == 0) {
