@@ -16,7 +16,11 @@ export class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<
 		string,
-		{ resolve: Function; reject: Function; controller: AbortController }
+		{
+			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			reject: (reason?: any) => void;
+			controller: AbortController;
+		}
 	>;
 
 	constructor(worker: Worker) {
@@ -57,16 +61,21 @@ export class WorkerProtocol {
 			controller.abort(); // AbortControllerをキャンセル
 			reject(new Error('Request cancelled'));
 		});
-		// this.pendingRequests.clear();
+		this.pendingRequests.clear();
 	}
 	private handleMessage = (e: MessageEvent) => {
 		const { id, buffer, error } = e.data;
 		if (error) {
 			console.error(`Error processing tile ${id}:`, error);
+			const request = this.pendingRequests.get(id);
+			if (request) {
+				request.reject(error);
+				this.pendingRequests.delete(id);
+			}
 		} else {
 			const request = this.pendingRequests.get(id);
 			if (request) {
-				request.resolve({ data: new Uint8Array(buffer) });
+				request.resolve({ data: buffer });
 				this.pendingRequests.delete(id);
 			}
 		}

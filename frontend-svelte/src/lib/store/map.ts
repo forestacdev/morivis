@@ -68,7 +68,8 @@ const createMapStore = () => {
 			zoom: 18.0,
 			fadeDuration: 100, // フェードアニメーションの時間
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
-			renderWorldCopies: false // 世界地図を繰り返し表示しない
+			// renderWorldCopies: false // 世界地図を繰り返し表示しない
+			attributionControl: false // 著作権表示を非表示
 
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
@@ -78,6 +79,12 @@ const createMapStore = () => {
 
 		if (!map) return;
 		set(map);
+		map.addControl(
+			new maplibregl.AttributionControl({
+				compact: false
+			}),
+			'bottom-right'
+		);
 
 		map.addControl(new maplibregl.ScaleControl(), 'bottom-right');
 

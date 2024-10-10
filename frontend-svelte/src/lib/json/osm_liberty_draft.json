@@ -7,10 +7,7 @@
 		"openmaptiles:version": "3.x"
 	},
 	"sources": {
-		"openmaptiles": {
-			"type": "vector",
-			"url": "https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key={key}"
-		},
+		"openmaptiles": { "type": "vector", "url": "pmtiles://./osm.pmtiles" },
 		"natural_earth_shaded_relief": {
 			"maxzoom": 6,
 			"tileSize": 256,

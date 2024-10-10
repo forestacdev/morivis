@@ -4,7 +4,10 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import * as pmtiles from 'pmtiles';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import styleJson from '$lib/json/fac_style.json';
+	import styleJson from '$lib/json/osm_liberty_draft.json';
+
+	let protocol = new pmtiles.Protocol();
+	maplibregl.addProtocol('pmtiles', protocol.tile);
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer: HTMLDivElement;

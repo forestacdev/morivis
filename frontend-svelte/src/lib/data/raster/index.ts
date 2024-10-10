@@ -73,6 +73,29 @@ export const rasterEntries: RasterEntry[] = [
 		}
 	},
 	{
+		id: 'aerial_photo_1974_1978',
+		name: '空中写真（1974年～1978年頃）',
+		dataType: 'raster',
+		geometryType: 'raster',
+		opacity: 1,
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/gazo1/{z}/{x}/{y}.jpg',
+		attribution: '国土地理院',
+		sourceMaxZoom: 17,
+		sourceMinZoom: 10,
+		location: ['全国'],
+		visible: true,
+		clickable: false,
+		styleKey: 'デフォルト',
+		style: {
+			raster: [
+				{
+					name: 'デフォルト',
+					paint: rasterPaint
+				}
+			]
+		}
+	},
+	{
 		id: 'std_map',
 		name: '地理院標準地図',
 		dataType: 'raster',

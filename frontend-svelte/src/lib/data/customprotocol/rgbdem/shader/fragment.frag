@@ -155,6 +155,32 @@ float convertToHeight(vec4 color) {
     }
 }
 
+// 高さ変換関数
+// float convertToHeight(vec4 color) {
+//     float rgb = dot(color.rgb * 255.0, vec3(65536.0, 256.0, 1.0));
+//     float h = mix(rgb * 0.01, (rgb - 16777216.0) * 0.01, step(8388608.0, rgb));
+//     return h;
+// }
+
+// float convertToHeight(vec4 color) {
+//     float r = color.r * 255.0;
+//     float g = color.g * 255.0;
+//     float b = color.b * 255.0;
+
+//     if (r == 128.0 && g == 0.0 && b == 0.0) {
+        
+//         return 9999.0; // 無効値の処理
+//     }
+
+//     float rgb = (r * 65536.0) + (g * 256.0) + b;
+//     float h;
+    
+    
+//     h = mix(rgb * 0.01, (rgb - 16777216.0) * 0.01, step(8388608.0, rgb));
+    
+//     return h;
+// }
+
 const mat3 conv_c = mat3(vec3(0,-1, 0),vec3(-1, 4,-1), vec3(0,-1, 0));
 const mat3 conv_sx = mat3(vec3(-1, 0, 1),vec3(-2, 0, 2),vec3(-1, 0, 1));
 const mat3 conv_sy = mat3(vec3(-1,-2,-1),vec3(0, 0, 0),vec3( 1, 2, 1));

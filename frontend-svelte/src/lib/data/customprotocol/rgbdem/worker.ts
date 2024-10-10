@@ -182,11 +182,9 @@ self.onmessage = async (e) => {
 		if (!blob) {
 			throw new Error('Failed to convert canvas to blob');
 		}
-		const reader = new FileReader();
-		reader.onloadend = () => {
-			self.postMessage({ id: url, buffer: reader.result });
-		};
-		reader.readAsArrayBuffer(blob);
+
+		const buffer = await blob.arrayBuffer();
+		self.postMessage({ id: url, buffer });
 	} catch (error) {
 		if (error instanceof Error) {
 			if (error.name === 'AbortError') {
