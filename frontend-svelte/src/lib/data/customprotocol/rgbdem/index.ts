@@ -18,7 +18,7 @@ export class WorkerProtocol {
 		string,
 		{
 			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
-			reject: (reason?: any) => void;
+			reject: (reason?: Error) => void;
 			controller: AbortController;
 		}
 	>;
@@ -57,7 +57,7 @@ export class WorkerProtocol {
 
 	// 新しいメソッド: 全てのリクエストをキャンセル
 	cancelAllRequests() {
-		this.pendingRequests.forEach(({ reject, controller }, url) => {
+		this.pendingRequests.forEach(({ reject, controller }) => {
 			controller.abort(); // AbortControllerをキャンセル
 			reject(new Error('Request cancelled'));
 		});
