@@ -44,6 +44,13 @@ const createLayerStore = (initialLayers: string[] = []) => {
 				}
 				return layers;
 			}),
+		hasLayer: (id: string) => {
+			let layerExists = false;
+			subscribe((layers) => {
+				layerExists = layers.includes(id);
+			})();
+			return layerExists;
+		},
 		removeLayer: (id: string) => update((layers) => layers.filter((layerId) => layerId !== id)),
 		reorderLayer: (id: string, direction: 'up' | 'down') =>
 			update((layers) => {

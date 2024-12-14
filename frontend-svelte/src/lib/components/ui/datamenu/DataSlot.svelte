@@ -14,7 +14,12 @@
 
 	// レイヤーの追加、削除
 	const toggleLayer = (id: string) => {
-		addedLayerIds.addLayer(id);
+        if(addedLayerIds.hasLayer(id)){
+            addedLayerIds.removeLayer(id);
+        }else{
+            addedLayerIds.addLayer(id);
+        }
+		
 	};
 
 	const preview = () => {

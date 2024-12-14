@@ -57,21 +57,19 @@
 
 <button
 	id={layerEntry.id}
-	class="items-centergap-x-2 relative mr-[40px] flex w-[220px] select-none flex-col justify-center rounded-sm transition-all {$showlayerOptionId ===
-	layerEntry.id
-		? 'translate-x-[15px]'
-		: ''}"
+	class="relative mr-[40px] flex w-[220px] select-none flex-col justify-center rounded-sm transition-all"
 	in:receive={{ key: layerEntry.id }}
 	out:send={{ key: layerEntry.id }}
 	on:click={showLayerOption}
 >
 	<div
-		class="absolute z-10 grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full text-[#012a2d] {$showlayerOptionId ===
+		class="absolute z-10 grid h-[45px] w-[45px] place-items-center overflow-hidden rounded-full text-[#012a2d] transition-all {$showlayerOptionId ===
 		layerEntry.id
-			? ''
+			? 'translate-x-[170px]'
 			: ''}"
 		style="background-image: radial-gradient(#f2f2f2 50%, transparent 56%),
-			conic-gradient(#f0ab56 0% {layerEntry.opacity * 100}%, #7d7d7d {layerEntry.opacity * 100}% 100%);"
+			conic-gradient(#00b0e0 0% {layerEntry.opacity * 100}%, transparent {layerEntry.opacity *
+			100}% 100%);"
 	>
 		{#if layerEntry.geometryType === 'point'}
 			<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
@@ -105,14 +103,15 @@
 			/>
 		{/if}
 	</div>
-	<div
-		class="custom-bg absolute bottom-[10px] z-0 h-[70%] w-full bg-black"
-		style="transform: skewX(-10deg);"
-	></div>
-	<span class="absolute bottom-[4px] left-[5px] z-10 rounded-md bg-slate-400 text-xs"
+	<div class="custom-np absolute bottom-[10px] z-0 h-[70%] w-full"></div>
+	<!-- <span class="absolute bottom-[4px] left-[5px] z-10 rounded-md bg-slate-400 text-xs"
 		>{layerEntry.opacity.toFixed(2)}</span
+	> -->
+	<div
+		class="z-10 ml-[70px] w-full py-4 transition-all {$showlayerOptionId === layerEntry.id
+			? '-translate-x-[50px]'
+			: ''}"
 	>
-	<div class="z-10 ml-[70px] w-full py-4">
 		<div class="w-full cursor-pointer items-end text-left transition-all duration-150">
 			<span class="flex items-center gap-2">{layerEntry.name}</span>
 		</div>
@@ -130,6 +129,14 @@
 	.custom-bg {
 		background: rgb(0, 0, 0);
 		background: linear-gradient(270deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+	}
+
+	.custom-np {
+		border-radius: 50px;
+		background: #6ba05d;
+		box-shadow:
+			inset 20px 20px 30px #5b884f,
+			inset -20px -20px 30px #7bb86b;
 	}
 
 	/* .custom-button::before {

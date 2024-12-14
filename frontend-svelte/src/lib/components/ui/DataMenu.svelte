@@ -40,7 +40,7 @@
 			<div
 				class="custom-scroll grid h-full flex-grow gap-4 overflow-y-scroll p-4 text-white md:grid-cols-2"
 			>
-				{#each layerDataEntries.filter((layerEntry) => !$addedLayerIds.includes(layerEntry.id)) as layerEntry (layerEntry.id)}
+				{#each layerDataEntries as layerEntry (layerEntry.id)}
 					<div animate:flip={{ duration: 200 }} class="">
 						<DataSlot bind:layerEntry />
 					</div>
