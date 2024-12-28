@@ -18,7 +18,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		clickable: true,
 		showFill: true,
 		showLine: false,
-		showLabel: true,
+		showSymbol: true,
 		location: ['美濃市'],
 		styleKey: 'デフォルト',
 		style: {
@@ -175,7 +175,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		idField: 'A45_001',
 		showFill: true,
 		showLine: false,
-		showLabel: true,
+		showSymbol: true,
 		location: ['岐阜県'],
 		styleKey: '単色',
 		style: {
@@ -215,7 +215,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		idField: 'A45_001',
 		showFill: true,
 		showLine: false,
-		showLabel: false,
+		showSymbol: false,
 		location: ['岐阜県'],
 		styleKey: '単色',
 		style: {
@@ -317,7 +317,7 @@ export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [
 		idField: '面積_ha',
 		showFill: true,
 		showLine: false,
-		showLabel: false,
+		showSymbol: false,
 		location: ['栃木県'],
 		styleKey: '樹種',
 		style: {

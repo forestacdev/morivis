@@ -440,7 +440,7 @@ export const createLayerItems = (
 					}
 
 					// ラベルを追加
-					if (layerEntry.showLabel && layerEntry.geometryType !== 'label') {
+					if (layerEntry.showSymbol && layerEntry.geometryType !== 'label') {
 						symbolLayerItems.push({
 							...layer,
 							id: `${layerId}_label`,

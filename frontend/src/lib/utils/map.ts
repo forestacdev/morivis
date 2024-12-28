@@ -123,9 +123,6 @@ function distancePerPixel(zoomLevel) {
 // ズームレベルを指定して、1ピクセルあたりの高さスケールを計算
 const zoomLevel = 14; // 任意のズームレベル
 const pixelDistance = distancePerPixel(zoomLevel);
-console.log(
-	`Zoom level ${zoomLevel} の1ピクセルあたりの地上距離は約 ${pixelDistance} メートルです。`
-);
 
 // タイル内の高さデータをスケーリングする
 function scaleHeightToZoomLevel(heightValue, zoomLevel) {

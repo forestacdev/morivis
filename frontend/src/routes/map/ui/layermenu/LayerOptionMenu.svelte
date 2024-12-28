@@ -11,6 +11,7 @@
 	import ColorRamp from './ColorRamp.svelte';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
 	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
+	import { expression } from '@mapbox/mapbox-gl-style-spec';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -43,12 +44,81 @@
 		mapStore.focusLayer(layerOption.id);
 	};
 
-	const setColor = (e: any) => {
-		console.log(e);
-	};
-
 	const reloadDemTile = () => {
 		mapStore.reloadDemTile();
+	};
+
+	// expressionからの色情報を取得する関数
+	const createSpeciesColors = (
+		expressionData: any
+	): {
+		[key: string]: string;
+	} => {
+		console.log('expressionData:', expressionData);
+		const parsed = expression.createExpression(expressionData);
+
+		console.log('Parsed:', parsed);
+		// cases と outputs をマッピング
+		const speciesColors: {
+			[key: string]: string;
+		} = {};
+		Object.entries(parsed.value.expression.cases).forEach(([species, index]) => {
+			const color = parsed.value.expression.outputs[index].value;
+			speciesColors[species] = color;
+		});
+
+		// その他 other
+		speciesColors['other'] = parsed.value.expression.otherwise.value;
+
+		return speciesColors;
+	};
+
+	// 色のexpressionを取得
+	const getColorExpression = (layerOption) => {
+		return layerOption.style?.fill?.find((item) => item.name === layerOption.styleKey)?.paint[
+			'fill-color'
+		];
+	};
+	const getExpressionField = (expressionData) => {
+		const parsed = expression.createExpression(expressionData);
+		return parsed.value.expression.input.args.value;
+	};
+
+	const setColor = (key: string, value: string) => {
+		console.log('layerOption:', layerOption);
+		// speciesColors を更新
+		const speciesColors = createSpeciesColors(getColorExpression(layerOption));
+		speciesColors[key] = value;
+
+		// const field = getExpressionField(getColorExpression(layerOption));
+
+		// console.log('field:', field);
+
+		// 新しい expression を作成
+		const expressionData = ['match', ['get', '樹種']];
+		Object.entries(speciesColors).forEach(([species, color]) => {
+			if (species !== 'other') {
+				expressionData.push(species, color);
+			}
+		});
+		expressionData.push(speciesColors['other'] || 'transparent');
+
+		// layerDataEntries を更新
+		const newlayerDataEntries = JSON.parse(JSON.stringify(layerDataEntries)); // 深いコピー
+		const targetLayer = newlayerDataEntries.find((layer) => layer.id === $showlayerOptionId);
+
+		if (targetLayer) {
+			const targetStyle = targetLayer.style?.fill.find(
+				(item) => item.name === layerOption.styleKey
+			);
+			if (targetStyle) {
+				targetStyle.paint['fill-color'] = expressionData;
+				console.log('Updated Fill Color:', targetStyle.paint['fill-color']);
+			}
+		}
+
+		// 再代入してリアクティブに変更を反映
+		layerDataEntries = newlayerDataEntries;
 	};
 </script>
 
@@ -89,13 +159,13 @@
 				/>
 			</div>
 			{#if layerOption.dataType === 'vector' || layerOption.dataType === 'geojson'}
-				{#if layerOption.showLabel !== undefined}
+				{#if layerOption.showSymbol !== undefined}
 					<div class="flex gap-2">
 						<label class="block">ラベル</label>
 						<input
 							type="checkbox"
 							class="custom-checkbox"
-							bind:checked={layerOption.showLabel}
+							bind:checked={layerOption.showSymbol}
 						/>
 					</div>
 				{/if}
@@ -183,293 +253,23 @@
 			{#if layerOption.dataType === 'raster'}
 				<!-- TODO: -->
 			{/if}
-			{#if layerOption.geometryType === 'dem'}
-				<select class="custom-select" bind:value={layerOption.tileId}>
-					{#each demLayers as item}
-						<option value={item.id}>{item.name}</option>
-					{/each}
-				</select>
-				<div class="flex h-full flex-col gap-2 overflow-y-auto">
-					<div class="flex flex-col gap-2">
-						<div class="flex items-center gap-2">
-							<label class="block cursor-pointer" for="evolution">標高図</label>
-							<input
-								id="evolution"
-								type="checkbox"
-								class="custom-checkbox"
-								bind:checked={layerOption.uniformsData.evolution.visible}
-								on:change={reloadDemTile}
-							/>
-						</div>
-						{#if layerOption.uniformsData.evolution.visible}
-							<div class="flex flex-col gap-2">
-								<label class="block">透過度</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.evolution.opacity}
-									min="0"
-									max="1"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<label class="block">カラーランプ</label>
-							<select
-								class="custom-select"
-								bind:value={layerOption.uniformsData.evolution.colorMap}
-								on:change={reloadDemTile}
-							>
-								{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
-									<option value={name}>
-										{name}
-									</option>
-								{/each}
-							</select>
-							<ColorRamp colorMap={layerOption.uniformsData.evolution.colorMap} />
-
-							<div class="flex flex-col gap-2">
-								<label class="block">最大値</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.evolution.max}
-									min="0"
-									max="4000"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex flex-col gap-2">
-								<label class="block">最小値</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.evolution.min}
-									min="-500"
-									max="4000"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-						{/if}
-					</div>
-					<div class="flex gap-2">
-						<div class="flex items-center gap-2">
-							<label class="block" for="slope">傾斜量</label>
-							<input
-								id="slope"
-								type="checkbox"
-								class="custom-checkbox"
-								bind:checked={layerOption.uniformsData.slope.visible}
-								on:change={reloadDemTile}
-							/>
-						</div>
-					</div>
-					{#if layerOption.uniformsData.slope.visible}
-						<div class="flex flex-col gap-2">
-							<label class="block">透過度</label>
-							<input
-								type="range"
-								class="custom-slider"
-								bind:value={layerOption.uniformsData.slope.opacity}
-								min="0"
-								max="1"
-								step="0.01"
-								on:change={reloadDemTile}
-							/>
-						</div>
-						<label class="block">カラーランプ</label>
-						<select
-							class="custom-select"
-							bind:value={layerOption.uniformsData.slope.colorMap}
-							on:change={reloadDemTile}
-						>
-							{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
-								<option value={name}>
-									{name}
-								</option>
-							{/each}
-						</select>
-
-						<ColorRamp colorMap={layerOption.uniformsData.slope.colorMap} />
-					{/if}
-					<div class="flex gap-2">
-						<div class="flex items-center gap-2">
-							<label class="block" for="aspect">傾斜方向</label>
-							<input
-								id="aspect"
-								type="checkbox"
-								class="custom-checkbox"
-								bind:checked={layerOption.uniformsData.aspect.visible}
-								on:change={reloadDemTile}
-							/>
-						</div>
-					</div>
-					{#if layerOption.uniformsData.aspect.visible}
-						<div class="flex flex-col gap-2">
-							<label class="block">透過度</label>
-							<input
-								type="range"
-								class="custom-slider"
-								bind:value={layerOption.uniformsData.aspect.opacity}
-								min="0"
-								max="1"
-								step="0.01"
-								on:change={reloadDemTile}
-							/>
-						</div>
-						<label class="block">カラーランプ</label>
-						<select
-							class="custom-select"
-							bind:value={layerOption.uniformsData.aspect.colorMap}
-							on:change={reloadDemTile}
-						>
-							{#each Object.entries(COLOR_MAP_TYPE) as [name, value]}
-								<option value={name}>
-									{name}
-								</option>
-							{/each}
-						</select>
-
-						<ColorRamp colorMap={layerOption.uniformsData.aspect.colorMap} />
-					{/if}
-					<div class="flex flex-col gap-2">
-						<div class="flex items-center gap-2">
-							<label class="block" for="shadow">陰影</label>
-							<input
-								id="shadow"
-								type="checkbox"
-								class="custom-checkbox"
-								bind:checked={layerOption.uniformsData.shadow.visible}
-								on:change={reloadDemTile}
-							/>
-						</div>
-						{#if layerOption.uniformsData.shadow.visible}
-							<div class="flex flex-col gap-2">
-								<label class="block">透過度</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.shadow.opacity}
-									min="0"
-									max="1"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">方位角</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.shadow.azimuth}
-									min="0"
-									max="360"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">高度角</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.shadow.altitude}
-									min="0"
-									max="90"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-						{/if}
-					</div>
-					<div class="flex flex-col gap-2">
-						<div class="flex items-center gap-2">
-							<label class="block" for="curvature">曲率</label>
-							<input
-								id="curvature"
-								type="checkbox"
-								class="custom-checkbox"
-								bind:checked={layerOption.uniformsData.curvature.visible}
-								on:change={reloadDemTile}
-							/>
-						</div>
-						{#if layerOption.uniformsData.curvature.visible}
-							<div class="flex flex-col gap-2">
-								<label class="block">透過度</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.curvature.opacity}
-									min="0"
-									max="1"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">尾根の強調率</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.curvature.ridgeThreshold}
-									min="0"
-									max="1"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">尾根の色</label>
-								<input
-									type="color"
-									class="custom-color"
-									bind:value={layerOption.uniformsData.curvature.ridgeColor}
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">谷の強調率</label>
-								<input
-									type="range"
-									class="custom-slider"
-									bind:value={layerOption.uniformsData.curvature.valleyThreshold}
-									min="0"
-									max="1"
-									step="0.01"
-									on:change={reloadDemTile}
-								/>
-							</div>
-							<div class="flex gap-2">
-								<label class="block">谷の色</label>
-								<input
-									type="color"
-									class="custom-color"
-									bind:value={layerOption.uniformsData.curvature.valleyColor}
-									on:change={reloadDemTile}
-								/>
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/if}
 		</div>
 		<div class="custom-scroll h-full overflow-y-auto">
 			{#if layerOption.geometryType === 'polygon'}
-				{#if layerOption.style?.fill?.find((item) => item.name === layerOption.styleKey).paint['fill-color'][0] === 'match'}
-					{#each layerOption.style?.fill
-						?.find((item) => item.name === layerOption.styleKey)
-						.paint['fill-color'].slice(2, -1) as item, index (index)}
+				{#if expression.isExpression(getColorExpression(layerOption))}
+					aaaaa
+					{#each Object.entries(createSpeciesColors(getColorExpression(layerOption))) as [key, value]}
 						<div class="flex w-full items-center">
-							{#if index % 2 === 0}
-								<div class="w-full text-sm">{item}</div>
-							{:else}
-								<div
-									class="h-[10px] w-full"
-									style="background-color: {item};"
-								></div>
-							{/if}
+							<div class="w-full text-sm">{key}</div>
+							<label class="block">色</label>
+							<input
+								type="color"
+								class="custom-color"
+								{value}
+								on:input={(e) => setColor(key, e.target.value)}
+							/>
+
+							<!-- <div class="h-[10px] w-full" style="background-color: {value};"></div> -->
 						</div>
 					{/each}
 				{/if}

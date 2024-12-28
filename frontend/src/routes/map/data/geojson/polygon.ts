@@ -13,7 +13,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		visible: true,
 		clickable: true,
 		searchKeys: ['小林班ID', '樹種', '林齢'],
-		showLabel: false,
+		showSymbol: false,
 		showLine: false,
 		showFill: true,
 		location: ['森林文化アカデミー'],
@@ -46,7 +46,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							'#2351E5', // 草地
 							'その他岩石',
 							'#D98F34', // その他岩石
-							'#000000' // デフォルトの色（該当しない場合）
+							'#00000000' // デフォルトの色（該当しない場合）
 						]
 					}
 				},
@@ -62,7 +62,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							'#0043a7', // ヒノキ
 							3,
 							'#f0e000', // アカマツ
-							'#000000' // デフォルトの色（該当しない場合）
+							'#00000000' // デフォルトの色（該当しない場合）
 						]
 					}
 				},
@@ -159,7 +159,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		url: `${GEOJSON_BASE_PATH}/TATEMONO.geojson`,
 		attribution: '森林文化アカデミー',
 		visible: true,
-		showLabel: true,
+		showSymbol: true,
 		showLine: false,
 		showFill: true,
 		clickable: true,
@@ -218,7 +218,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		visible: true,
 		clickable: true,
 		searchKeys: ['name'],
-		showLabel: true,
+		showSymbol: true,
 		showLine: false,
 		showFill: true,
 		styleKey: '単色',

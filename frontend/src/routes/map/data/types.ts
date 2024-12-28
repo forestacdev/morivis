@@ -118,7 +118,7 @@ export type RasterEntry = {
 	};
 };
 
-export type ProtocolKey = 'customdem' | 'customtiles' | 'customgeojsondem' ;
+export type ProtocolKey = 'customdem' | 'customtiles' | 'customgeojsondem';
 
 type DemVisualMode = {
 	evolution: boolean;
@@ -211,7 +211,7 @@ export type GeojsonEntry<T extends GeometryType> = {
 	style?: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;
-	showLabel?: boolean;
+	showSymbol?: boolean;
 	showLine?: boolean;
 	showFill?: boolean;
 	fieldDict?: string; // プロパティの辞書ファイルのURL
@@ -239,7 +239,7 @@ export type VectorEntry<T extends GeometryType> = {
 	style?: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;
-	showLabel?: boolean;
+	showSymbol?: boolean;
 	showLine?: boolean;
 	showFill?: boolean;
 	idField?: string; // フィーチャーのIDとして使用するフィールド名

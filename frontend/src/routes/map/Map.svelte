@@ -159,11 +159,13 @@
 
 	// 初期描画時
 	onMount(() => {
+		// パース対象の式
+
 		if (!mapContainer) return;
 
 		const mapStyle = createMapStyle();
 
-		if (import.meta.env.DEV) console.log(mapStyle);
+		if (import.meta.env.DEV) console.warn('gebug:mapstyle', mapStyle);
 
 		if (!mapStyle) return;
 
