@@ -46,7 +46,6 @@
 	"dependencies": {
 		"@iconify-icons/icon-park-solid": "^1.2.8",
 		"@iconify/svelte": "^4.0.2",
-		"@mapbox/mapbox-gl-style-spec": "^14.9.1",
 		"@mapbox/tilebelt": "^1.0.2",
 		"@svelte-plugins/tooltips": "^3.0.1",
 		"@sveltejs/adapter-static": "^3.0.4",

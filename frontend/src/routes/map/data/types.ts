@@ -22,6 +22,7 @@ export type SingleColor = {
 export type MatchColors = {
 	categories: { [key: string | number]: string }; // 辞書形式のカテゴリ分け
 	default: string; // デフォルトの色
+	showCategories: string[] | number[]; // 表示するカテゴリ
 };
 
 export type InterpolateColors = {

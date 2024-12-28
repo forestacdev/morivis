@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { LayerEntry, LayerPaint } from '$routes/map/data/types';
-	import type { FillLayerSpecification } from 'maplibre-gl';
+	import { Style, type FillLayerSpecification } from 'maplibre-gl';
 	import { demLayers } from '$routes/map/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
@@ -12,7 +12,10 @@
 	import ColorRamp from './ColorRamp.svelte';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
 	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
-	import { expression } from '@mapbox/mapbox-gl-style-spec';
+	import { isMatchStyle, isSingleStyle, isInterpolateStyle } from '$routes/map/data/expression';
+	import type { InterpolateColors, MatchColors, SingleColor } from '$routes/map/data/types';
+
+	import { onMount } from 'svelte';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -22,6 +25,7 @@
 
 	// let layerOption: LayerEntry | undefined;
 	$: layerOption = layerDataEntries.find((layer) => layer.id === $showlayerOptionId);
+	$: styleKey = layerOption?.styleKey;
 
 	// レイヤーの削除
 	const removeLayer = () => {
@@ -48,6 +52,8 @@
 	const reloadDemTile = () => {
 		mapStore.reloadDemTile();
 	};
+
+	onMount(() => {});
 </script>
 
 <div
@@ -117,7 +123,7 @@
 						/>
 					</div>
 				{/if}
-				{#if layerOption.geometryType === 'polygon'}
+				{#if layerOption.geometryType === 'polygon' && layerOption.style && layerOption.style.fill}
 					<div class="flex flex-col gap-2">
 						<select
 							class="custom-select {!layerOption.showFill ? 'opacity-50' : ''}"
@@ -135,10 +141,40 @@
 							<input
 								type="color"
 								class="custom-color"
-								bind:value={layerOption.style.fill[].paint['fill-color']}
+								bind:value={layerOption.style.fill['単色'].values.color}
 							/>
 						</div>
 					{/if} -->
+					{#if styleKey && isSingleStyle(layerOption.style.fill[styleKey])}
+						<div class="flex gap-2">
+							<label class="block">色</label>
+							<input
+								type="color"
+								class="custom-color"
+								bind:value={layerOption.style.fill[styleKey].values.color}
+							/>
+						</div>
+					{:else if styleKey && isMatchStyle(layerOption.style.fill[styleKey])}
+						{#each Object.entries(layerOption.style.fill[styleKey].values.categories) as [key, value]}
+							<div class="flex w-full items-center">
+								<div class="w-full text-sm">{key}</div>
+								<input
+									type="checkbox"
+									value={key}
+									bind:group={layerOption.style.fill[styleKey].values
+										.showCategories}
+								/>
+
+								<input
+									type="color"
+									class="custom-color"
+									bind:value={layerOption.style.fill[styleKey].values.categories[
+										key
+									]}
+								/>
+							</div>
+						{/each}
+					{:else if styleKey && isInterpolateStyle(layerOption.style.fill[styleKey])}{/if}
 				{:else if layerOption.geometryType === 'line'}
 					<div class="flex flex-col gap-2">
 						<select class="custom-select" bind:value={layerOption.styleKey}>

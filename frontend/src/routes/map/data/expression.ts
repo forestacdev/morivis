@@ -12,10 +12,18 @@ const createMatchExpression = (
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
 	const expression: any[] = ['match', ['get', property]];
 
+	const showCategories = style.showCategories;
+
+	if (showCategories.length === 0) {
+		return '#00000000';
+	}
+
 	Object.entries(style.categories).forEach(([key, color]) => {
-		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
-		const formattedKey = !isNaN(Number(key)) ? Number(key) : key;
-		expression.push(formattedKey, color);
+		if (showCategories.includes(key)) {
+			// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
+			const formattedKey = !isNaN(Number(key)) ? Number(key) : key;
+			expression.push(formattedKey, color);
+		}
 	});
 
 	// デフォルトの色を追加
@@ -31,9 +39,25 @@ const createInterpolateExpression = (
 	style.stops.forEach(([stop, color]) => {
 		expression.push(stop, color);
 	});
-
-	console.log(expression);
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
+};
+
+export const isMatchStyle = (
+	style: any
+): style is { type: 'match'; property: string; values: MatchColors } => {
+	return style.type === 'match';
+};
+
+export const isInterpolateStyle = (
+	style: any
+): style is { type: 'interpolate'; property: string; values: InterpolateColors } => {
+	return style.type === 'interpolate';
+};
+
+export const isSingleStyle = (
+	style: any
+): style is { type: 'single'; property: string; values: SingleColor } => {
+	return style.type === 'single' && 'color' in style.values;
 };
 
 export const createColorExpression = (

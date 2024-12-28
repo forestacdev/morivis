@@ -40,7 +40,16 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							草地: '#2351E5',
 							その他岩石: '#D98F34'
 						},
-						default: '#00000000'
+						default: '#00000000',
+						showCategories: [
+							'スギ',
+							'ヒノキ',
+							'アカマツ',
+							'スラッシュマツ',
+							'広葉樹',
+							'草地',
+							'その他岩石'
+						]
 					}
 				},
 				['林班']: {
@@ -52,17 +61,8 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							2: '#0043a7',
 							3: '#f0e000'
 						},
-						default: '#00000000'
-					}
-				},
-				['スギ林']: {
-					type: 'match',
-					property: '樹種',
-					values: {
-						categories: {
-							スギ: '#399210'
-						},
-						default: '#00000000'
+						default: '#00000000',
+						showCategories: [1, 2] // 初期状態で非表示にするカテゴリ
 					}
 				},
 				['面積ごとの色分け']: {
