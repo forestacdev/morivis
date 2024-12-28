@@ -1,4 +1,4 @@
-import type { VectorEntry } from '$lib/data/types';
+import type { VectorEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$lib/constants';
 
 export const vectorPolygonEntries: VectorEntry<'polygon'>[] = [

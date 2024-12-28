@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { LayerEntry } from '$lib/data/types';
+	import type { LayerEntry } from '$routes/map/data/types';
 	import { showlayerOptionId, addedLayerIds } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { crossfade } from 'svelte/transition';
@@ -9,7 +9,7 @@
 	import { mapStore } from '$lib/store/map';
 
 	import { createEventDispatcher } from 'svelte';
-	import { rasterEntries } from '$lib/data/raster';
+	import { rasterEntries } from '$routes/map/data/raster';
 	const dispatch = createEventDispatcher();
 
 	export let layerEntry: LayerEntry;

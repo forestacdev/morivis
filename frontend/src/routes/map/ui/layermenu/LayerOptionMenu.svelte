@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { LayerEntry } from '$lib/data/types';
-	import { demLayers } from '$lib/data/raster/dem';
+	import type { LayerEntry } from '$routes/map/data/types';
+	import { demLayers } from '$routes/map/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
 	import { showlayerOptionId, isSide, addedLayerIds } from '$lib/store/store';
@@ -9,8 +9,8 @@
 	import { flip } from 'svelte/animate';
 	import { split } from 'postcss/lib/list';
 	import ColorRamp from './ColorRamp.svelte';
-	import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
-	import type { ColorMapTypeKey } from '$lib/data/raster/dem';
+	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
+	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {

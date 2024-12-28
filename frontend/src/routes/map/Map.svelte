@@ -22,7 +22,7 @@
 	import Control from '$routes/map/ui/Control.svelte';
 	import LayerOptionMenu from '$routes/map/ui/layermenu/LayerOptionMenu.svelte';
 	import SearchMenu from '$routes/map/ui/SearchMenu.svelte';
-	import type { LayerEntry } from '$lib/data/types';
+	import type { LayerEntry } from '$routes/map/data/types';
 
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
 	import {
@@ -30,8 +30,8 @@
 		createLayerItems,
 		createHighlightLayer,
 		type SelectedHighlightData
-	} from '$lib/data/layers';
-	import { layerData } from '$lib/data/layers';
+	} from '$routes/map/data/layers';
+	import { layerData } from '$routes/map/data/layers';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import {

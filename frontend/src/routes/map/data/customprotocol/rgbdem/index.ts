@@ -1,7 +1,7 @@
-import type { ProtocolKey } from '$lib/data/types';
-import { DEM_DATA_TYPE, COLOR_MAP_TYPE } from '$lib/data/raster/dem';
-import type { DemDataTypeKey } from '$lib/data/raster/dem';
-import { demEntry } from '$lib/data/raster/dem';
+import type { ProtocolKey } from '$routes/map/data/types';
+import { DEM_DATA_TYPE, COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
+import type { DemDataTypeKey } from '$routes/map/data/raster/dem';
+import { demEntry } from '$routes/map/data/raster/dem';
 import chroma from 'chroma-js';
 
 const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {

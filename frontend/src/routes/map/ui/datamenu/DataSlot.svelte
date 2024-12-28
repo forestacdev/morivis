@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { LayerEntry } from '$lib/data/types';
+	import type { LayerEntry } from '$routes/map/data/types';
 	import { showlayerOptionId } from '$lib/store/store';
 	import { mapStore } from '$lib/store/map';
 	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
@@ -14,12 +14,11 @@
 
 	// レイヤーの追加、削除
 	const toggleLayer = (id: string) => {
-        if(addedLayerIds.hasLayer(id)){
-            addedLayerIds.removeLayer(id);
-        }else{
-            addedLayerIds.addLayer(id);
-        }
-		
+		if (addedLayerIds.hasLayer(id)) {
+			addedLayerIds.removeLayer(id);
+		} else {
+			addedLayerIds.addLayer(id);
+		}
 	};
 
 	const preview = () => {

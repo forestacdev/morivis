@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import fragmentShaderSource from '$routes/map/ui/layermenu/shader/fragment.frag';
 	import vertexShaderSource from '$routes/map/ui/layermenu/shader/vertex.vert';
-	import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
-	import type { ColorMapTypeKey } from '$lib/data/raster/dem';
+	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
+	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
 	let canvas: HTMLCanvasElement | null = null;
 	export let colorMap: string;
 

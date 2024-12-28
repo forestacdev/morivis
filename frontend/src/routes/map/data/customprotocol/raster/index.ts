@@ -1,4 +1,4 @@
-import type { ProtocolKey } from '$lib/data/types';
+import type { ProtocolKey } from '$routes/map/data/types';
 
 export class WorkerProtocol {
 	private worker: Worker;

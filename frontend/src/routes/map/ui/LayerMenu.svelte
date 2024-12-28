@@ -6,7 +6,7 @@
 
 	import LayerSlot from '$routes/map/ui/layermenu/LayerSlot.svelte';
 	import DataMenu from '$routes/map/ui/DataMenu.svelte';
-	import type { LayerEntry } from '$lib/data/types';
+	import type { LayerEntry } from '$routes/map/data/types';
 	import { isSide, showDataMenu } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { addedLayerIds } from '$lib/store/store';

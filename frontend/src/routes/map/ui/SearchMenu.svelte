@@ -5,8 +5,8 @@
 	import SvgTest from '$lib/svg/アカデミー施設/森のコテージ.svg';
 	import debounce from 'lodash.debounce';
 
-	import type { LayerEntry, GeojsonEntry, GeometryType } from '$lib/data/types';
-	import { layerData } from '$lib/data/layers';
+	import type { LayerEntry, GeojsonEntry, GeometryType } from '$routes/map/data/types';
+	import { layerData } from '$routes/map/data/layers';
 	import { isSide, showDataMenu } from '$lib/store/store';
 	import { flip } from 'svelte/animate';
 	import { addedLayerIds } from '$lib/store/store';

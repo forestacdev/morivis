@@ -1,4 +1,4 @@
-import type { GeojsonEntry } from '$lib/data/types';
+import type { GeojsonEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$lib/constants';
 
 export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
@@ -17,11 +17,11 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		showLine: false,
 		showFill: true,
 		location: ['森林文化アカデミー'],
-        styleKey: '樹種ごとの色分け',
+		styleKey: '樹種ごとの色分け',
 		style: {
 			fill: [
 				{
-                    name: '単色',
+					name: '単色',
 					paint: {
 						'fill-color': '#2a826c'
 					}

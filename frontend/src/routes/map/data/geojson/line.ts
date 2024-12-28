@@ -1,4 +1,4 @@
-import type { GeojsonEntry } from '$lib/data/types';
+import type { GeojsonEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH } from '$lib/constants';
 
 export const geojsonLineEntries: GeojsonEntry<'line'>[] = [

@@ -1,4 +1,4 @@
-import type { DemEntry, Region } from '$lib/data/types';
+import type { DemEntry, Region } from '$routes/map/data/types';
 import * as THREE from 'three';
 
 export type DemLayer = {

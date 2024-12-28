@@ -26,16 +26,16 @@ import * as pmtiles from 'pmtiles';
 import debounce from 'lodash.debounce';
 import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
-import type { LayerEntry } from '$lib/data/types';
-import { layerData } from '$lib/data/layers';
+import type { LayerEntry } from '$routes/map/data/types';
+import { layerData } from '$routes/map/data/layers';
 import { isSide } from '$lib//store/store';
 import { getGeojson } from '$lib/utils/geojson';
-import { getLocationBbox } from '$lib/data/locationBbox';
+import { getLocationBbox } from '$routes/map/data/locationBbox';
 import turfBbox from '@turf/bbox';
-import type { ProtocolKey } from '$lib/data/types';
+import type { ProtocolKey } from '$routes/map/data/types';
 
-import { rgbdemProtocol } from '$lib/data/customprotocol/rgbdem';
-import { tilesProtocol } from '$lib/data/customprotocol/vector';
+import { rgbdemProtocol } from '$routes/map/data/customprotocol/rgbdem';
+import { tilesProtocol } from '$routes/map/data/customprotocol/vector';
 
 const protocolName1: ProtocolKey = 'customdem';
 const rgbdem = rgbdemProtocol(protocolName1);

@@ -1,15 +1,15 @@
-import { vectorPolygonEntries } from '$lib/data/vecter/polygon';
-import { geojsonPolygonEntries } from '$lib/data/geojson/polygon';
-import { geojsonLineEntries } from '$lib/data/geojson/line';
-import { geojsonPointEntries } from '$lib/data/geojson/point';
-import { geojsonLabelEntries } from '$lib/data/geojson/label';
+import { vectorPolygonEntries } from '$routes/map/data/vecter/polygon';
+import { geojsonPolygonEntries } from '$routes/map/data/geojson/polygon';
+import { geojsonLineEntries } from '$routes/map/data/geojson/line';
+import { geojsonPointEntries } from '$routes/map/data/geojson/point';
+import { geojsonLabelEntries } from '$routes/map/data/geojson/label';
 import { addedLayerIds } from '$lib/store/store';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
-import { demLayers } from '$lib/data/raster/dem';
+import { demLayers } from '$routes/map/data/raster/dem';
 
-import { rasterEntries } from '$lib/data/raster';
-import { demEntry } from '$lib/data/raster/dem';
-import type { LayerEntry } from '$lib/data/types';
+import { rasterEntries } from '$routes/map/data/raster';
+import { demEntry } from '$routes/map/data/raster/dem';
+import type { LayerEntry } from '$routes/map/data/types';
 import type {
 	SourceSpecification,
 	LayerSpecification,

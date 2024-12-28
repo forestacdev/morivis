@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import type { Side } from '$lib/types/ui';
 import { INT_ADD_LAYER_IDS } from '$lib/constants';
 import type { UserInfo } from 'firebase/auth';
-import { layerData } from '$lib/data/layers';
+import { layerData } from '$routes/map/data/layers';
 
 export const authStore = writable({ loggedIn: false, user: null as UserInfo });
 

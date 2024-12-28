@@ -1,7 +1,7 @@
 import fsSource from './shader/fragment.frag';
 import vsSource from './shader/vertex.vert';
-import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
-import type { ColorMapTypeKey } from '$lib/data/raster/dem';
+import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
+import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
 
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;

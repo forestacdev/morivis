@@ -1,4 +1,4 @@
-import type { RasterEntry } from '$lib/data/types';
+import type { RasterEntry } from '$routes/map/data/types';
 
 const rasterPaint = {
 	'raster-saturation': 0,
