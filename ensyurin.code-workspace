@@ -4,7 +4,7 @@
             "path": "."
         },
         {
-            "path": "frontend-svelte"
+            "path": "frontend-js"
         },
         {
             "path": "frontend"
