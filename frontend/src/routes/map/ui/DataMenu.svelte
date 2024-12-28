@@ -3,7 +3,7 @@
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 
-	import DataSlot from '$lib/components/ui/datamenu/DataSlot.svelte';
+	import DataSlot from '$routes/map/ui/datamenu/DataSlot.svelte';
 	import type { LayerEntry } from '$lib/data/types';
 	import { isSide, showDataMenu } from '$lib/store/store';
 	import { flip } from 'svelte/animate';

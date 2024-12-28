@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import fragmentShaderSource from '$lib/components/ui/layermenu/shader/fragment.frag';
-	import vertexShaderSource from '$lib/components/ui/layermenu/shader/vertex.vert';
+	import fragmentShaderSource from '$routes/map/ui/layermenu/shader/fragment.frag';
+	import vertexShaderSource from '$routes/map/ui/layermenu/shader/vertex.vert';
 	import { COLOR_MAP_TYPE } from '$lib/data/raster/dem';
 	import type { ColorMapTypeKey } from '$lib/data/raster/dem';
 	let canvas: HTMLCanvasElement | null = null;

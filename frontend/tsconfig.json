@@ -10,7 +10,13 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"types": ["vite-plugin-glsl/ext"]
+		"types": ["vite-plugin-glsl/ext"],
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"],
+			"$routes": ["./src/routes/"],
+			"$routes/*": ["./src/routes/*"]
+		}
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	// except $lib which is handled by https://kit.svelte.dev/docs/configuration#files

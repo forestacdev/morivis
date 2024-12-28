@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -13,6 +14,15 @@ const config = {
 		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
 		adapter: adapter()
 	}
+
+	// ↓↓今回追加した内容↓↓
+	// vite: {
+	// 	resolve: {
+	// 		alias: {
+	// 			$routes: path.resolve('./src/routes')
+	// 		}
+	// 	}
+	// }
 };
 
 export default config;

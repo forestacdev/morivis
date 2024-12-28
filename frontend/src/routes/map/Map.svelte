@@ -10,18 +10,18 @@
 		CircleLayerSpecification
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import Side from '$lib/components/ui/Side.svelte';
-	import DataMenu from '$lib/components/ui/DataMenu.svelte';
-	import LayerMenu from '$lib/components/ui/LayerMenu.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import LockOn from '$lib/components/marker/LockOn.svelte';
-	import InfoPopup from '$lib/components/popup/InfoPopup.svelte';
-	import ForestPopup from '$lib/components/popup/ForestPppup.svelte';
-	import ThreeCanvas from '$lib/components/three/canvas.svelte';
-	// import SelectPopup from '$lib/components/popup/SelectPopup.svelte';
-	import Control from '$lib/components/ui/Control.svelte';
-	import LayerOptionMenu from '$lib/components/ui/layermenu/LayerOptionMenu.svelte';
-	import SearchMenu from '$lib/components/ui/SearchMenu.svelte';
+	import Side from '$routes/map/ui/Side.svelte';
+	import DataMenu from '$routes/map/ui/DataMenu.svelte';
+	import LayerMenu from '$routes/map/ui/LayerMenu.svelte';
+	import Loading from '$routes/map/ui/Loading.svelte';
+	import LockOn from '$routes/map/marker/LockOn.svelte';
+	import InfoPopup from '$routes/map/popup/InfoPopup.svelte';
+	import ForestPopup from '$routes/map/popup/ForestPppup.svelte';
+	import ThreeCanvas from '$routes/map/three/canvas.svelte';
+	// import SelectPopup from '$routes/map/popup/SelectPopup.svelte';
+	import Control from '$routes/map/ui/Control.svelte';
+	import LayerOptionMenu from '$routes/map/ui/layermenu/LayerOptionMenu.svelte';
+	import SearchMenu from '$routes/map/ui/SearchMenu.svelte';
 	import type { LayerEntry } from '$lib/data/types';
 
 	// import VectorMenu from '$lib/components/VectorMenu.svelte';
@@ -95,7 +95,7 @@
 			tile_source: {
 				type: 'vector',
 				tiles: ['customtiles://{z}/{x}/{y}.pbf']
-			},
+			}
 		};
 		mapStyleJson.layers = [
 			// ...mapStyleJson.layers,
@@ -104,7 +104,7 @@
 					.filter((entry) => $addedLayerIds.includes(entry.id))
 					.sort((a, b) => $addedLayerIds.indexOf(a.id) - $addedLayerIds.indexOf(b.id)),
 				selectedhighlightData
-			),
+			)
 			// {
 			// 	id: 'terrain',
 			// 	type: 'hillshade',

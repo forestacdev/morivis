@@ -1,13 +1,14 @@
 <script>
-	import Map from '$lib/components/map/Map.svelte';
-	import InfoDialog from '$lib/components/info/InfoDialog.svelte';
-	import Logo from '$lib/components/Logo.svelte';
+	import GoMapButton from './GoMapButton.svelte';
+	const click = () => {
+		window.location.href = '/map';
+	};
 </script>
 
 <div class="app relative flex h-screen w-screen">
-	<Map />
-	<InfoDialog />
-	<Logo />
+	<div class="h-[480px]">
+		<GoMapButton href="/map" />
+	</div>
 </div>
 
 <style>
