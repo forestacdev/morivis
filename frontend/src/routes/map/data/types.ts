@@ -15,18 +15,42 @@ import type {
 	FilterSpecification
 } from 'maplibre-gl';
 
-export type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
+export type SingleColor = {
+	color: string; // 単色
+};
+
+export type MatchColors = {
+	categories: { [key: string | number]: string }; // 辞書形式のカテゴリ分け
+	default: string; // デフォルトの色
+};
+
+export type InterpolateColors = {
+	stops: [number, string][]; // 補間に使うストップ値と色
+};
+
+export type LayerPaint<T, U> = Record<
+	string,
+	{
+		type: 'single' | 'match' | 'interpolate';
+		property: string;
+		values: SingleColor | MatchColors | InterpolateColors;
+		paint?: T;
+		layout?: U;
+	}
+>;
+
+// export type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
 
 type VectorStyle = {
-	fill?: LayerPaint<FillLayerSpecification['paint'], FillLayerSpecification['layout']>[];
-	line?: LayerPaint<LineLayerSpecification['paint'], LineLayerSpecification['layout']>[];
-	symbol?: LayerPaint<SymbolLayerSpecification['paint'], SymbolLayerSpecification['layout']>[];
-	circle?: LayerPaint<CircleLayerSpecification['paint'], CircleLayerSpecification['layout']>[];
-	heatmap?: LayerPaint<HeatmapLayerSpecification['paint'], HeatmapLayerSpecification['layout']>[];
+	fill?: LayerPaint<FillLayerSpecification['paint'], FillLayerSpecification['layout']>;
+	line?: LayerPaint<LineLayerSpecification['paint'], LineLayerSpecification['layout']>;
+	symbol?: LayerPaint<SymbolLayerSpecification['paint'], SymbolLayerSpecification['layout']>;
+	circle?: LayerPaint<CircleLayerSpecification['paint'], CircleLayerSpecification['layout']>;
+	heatmap?: LayerPaint<HeatmapLayerSpecification['paint'], HeatmapLayerSpecification['layout']>;
 	fillExtrusion?: LayerPaint<
 		FillExtrusionLayerSpecification['paint'],
 		FillExtrusionLayerSpecification['layout']
-	>[];
+	>;
 };
 
 type RasterStyle = {

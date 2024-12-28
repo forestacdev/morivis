@@ -20,7 +20,7 @@
 		}
 	});
 
-	let layerOption: LayerEntry | undefined;
+	// let layerOption: LayerEntry | undefined;
 	$: layerOption = layerDataEntries.find((layer) => layer.id === $showlayerOptionId);
 
 	// レイヤーの削除
@@ -47,98 +47,6 @@
 
 	const reloadDemTile = () => {
 		mapStore.reloadDemTile();
-	};
-
-	// expressionからの色情報を取得する関数
-	const createSpeciesColors = (
-		expressionData: any
-	): {
-		[key: string]: string;
-	} => {
-		const parsed = expression.createExpression(expressionData);
-
-		// cases と outputs をマッピング
-		const speciesColors: {
-			[key: string]: string;
-		} = {};
-		Object.entries(parsed.value.expression.cases).forEach(([species, index]) => {
-			const color = parsed.value.expression.outputs[index].value;
-			speciesColors[species] = color;
-		});
-
-		// その他 other
-		speciesColors['other'] = parsed.value.expression.otherwise.value;
-
-		return speciesColors;
-	};
-
-	// 色のexpressionを取得
-	const getColorExpression = (layerOption) => {
-		return layerOption.style?.fill?.find((item) => item.name === layerOption.styleKey)?.paint[
-			'fill-color'
-		];
-	};
-	const getExpressionField = (expressionData) => {
-		const parsed = expression.createExpression(expressionData);
-		return parsed.value.expression.input.args[0].value;
-	};
-
-	const hoge = [
-		'interpolate',
-		['linear'], // 線形補間
-		['get', '面積'], // プロパティ 'density' に基づいて色を変える
-		0,
-		10,
-		1,
-		255
-	];
-
-	const propertySpec = { type: 'number', default: 0 };
-
-	const parsed = expression.createExpression(hoge, propertySpec);
-
-	console.log(parsed);
-
-	const setColor = (key: string, value: string) => {
-		// speciesColors を更新
-		const speciesColors = createSpeciesColors(getColorExpression(layerOption));
-		speciesColors[key] = value;
-
-		const field = getExpressionField(getColorExpression(layerOption));
-
-		// 新しい expression を作成
-		const expressionData = ['match', ['get', field]];
-		Object.entries(speciesColors).forEach(([species, color]) => {
-			if (species !== 'other') {
-				expressionData.push(species, color);
-			}
-		});
-		expressionData.push(speciesColors['other'] || 'transparent');
-
-		// layerDataEntries を更新
-		const newlayerDataEntries = JSON.parse(JSON.stringify(layerDataEntries)); // 深いコピー
-		const targetLayer = newlayerDataEntries.find(
-			(layer: LayerEntry) => layer.id === $showlayerOptionId
-		);
-
-		if (!layerOption) return;
-
-		if (targetLayer) {
-			const targetStyle = targetLayer.style?.fill.find(
-				(
-					item: LayerPaint<
-						FillLayerSpecification['paint'],
-						FillLayerSpecification['layout']
-					>
-				) => item.name === layerOption.styleKey
-			);
-			if (targetStyle) {
-				targetStyle.paint['fill-color'] = expressionData;
-			}
-		}
-
-		// 再代入してリアクティブに変更を反映
-		layerDataEntries = newlayerDataEntries;
 	};
 </script>
 
@@ -216,21 +124,21 @@
 							bind:value={layerOption.styleKey}
 							disabled={!layerOption.showFill}
 						>
-							{#each layerOption.style.fill as item (item)}
-								<option value={item.name}>{item.name}</option>
+							{#each Object.keys(layerOption.style.fill) as item (item)}
+								<option value={item}>{item}</option>
 							{/each}
 						</select>
 					</div>
-					{#if layerOption.styleKey === '単色'}
+					<!-- {#if layerOption.styleKey === '単色'}
 						<div class="flex gap-2">
 							<label class="block">色</label>
 							<input
 								type="color"
 								class="custom-color"
-								bind:value={layerOption.style.fill[0].paint['fill-color']}
+								bind:value={layerOption.style.fill[].paint['fill-color']}
 							/>
 						</div>
-					{/if}
+					{/if} -->
 				{:else if layerOption.geometryType === 'line'}
 					<div class="flex flex-col gap-2">
 						<select class="custom-select" bind:value={layerOption.styleKey}>
@@ -274,7 +182,7 @@
 				<!-- TODO: -->
 			{/if}
 		</div>
-		<div class="custom-scroll h-full overflow-y-auto">
+		<!-- <div class="custom-scroll h-full overflow-y-auto">
 			{#if layerOption.geometryType === 'polygon'}
 				{#if expression.isExpression(getColorExpression(layerOption))}
 					aaaaa
@@ -288,13 +196,11 @@
 								{value}
 								on:input={(e) => setColor(key, e.target.value)}
 							/>
-
-							<!-- <div class="h-[10px] w-full" style="background-color: {value};"></div> -->
 						</div>
 					{/each}
 				{/if}
 			{/if}
-		</div>
+		</div> -->
 	{/if}
 </div>
 

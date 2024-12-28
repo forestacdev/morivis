@@ -7,6 +7,8 @@ import { addedLayerIds } from '$routes/map/store/store';
 import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
 import { demLayers } from '$routes/map/data/raster/dem';
 
+import { createColorExpression } from '$routes/map/data/expression';
+
 import { rasterEntries } from '$routes/map/data/raster';
 import { demEntry } from '$routes/map/data/raster/dem';
 import type { LayerEntry } from '$routes/map/data/types';
@@ -343,19 +345,23 @@ export const createLayerItems = (
 						layer['source-layer'] = layerEntry.sourceLayer;
 					}
 					if (layerEntry.geometryType === 'polygon') {
-						const fillStyele = layerEntry.style?.fill?.find(
-							(item) => item.name === styleKey
-						);
+						if (!layerEntry.style?.fill) {
+							console.warn(`Unknown layer: ${layerEntry}`);
+							return;
+						}
+						const fillStyle = layerEntry.style?.fill[styleKey];
+						const color = createColorExpression(fillStyle);
 						const fillLayer = {
 							...layer,
 							type: 'fill',
 							paint: {
 								'fill-opacity': layerEntry.showFill ? layerEntry.opacity : 0,
 								'fill-outline-color': '#00000000',
-								...(fillStyele?.paint ?? {})
+								'fill-color': color,
+								...(fillStyle?.paint ?? {})
 							},
 							layout: {
-								...(fillStyele?.layout ?? {})
+								...(fillStyle?.layout ?? {})
 							}
 						};
 
