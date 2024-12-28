@@ -2,7 +2,7 @@
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	export let feature: any;
-	import { showlayerOptionId } from '$lib/store/store';
+	import { showlayerOptionId } from '$routes/map/store/store';
 
 	showlayerOptionId.subscribe((value) => {
 		if (value) {

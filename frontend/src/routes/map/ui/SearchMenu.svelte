@@ -7,9 +7,9 @@
 
 	import type { LayerEntry, GeojsonEntry, GeometryType } from '$routes/map/data/types';
 	import { layerData } from '$routes/map/data/layers';
-	import { isSide, showDataMenu } from '$lib/store/store';
+	import { isSide, showDataMenu } from '$routes/map/store/store';
 	import { flip } from 'svelte/animate';
-	import { addedLayerIds } from '$lib/store/store';
+	import { addedLayerIds } from '$routes/map/store/store';
 	import { getGeojson } from '$lib/utils/geojson';
 	import tilebelt from '@mapbox/tilebelt';
 	import turfBboxPolygon from '@turf/bbox-polygon';
@@ -18,7 +18,7 @@
 
 	// Fuse.jsの読み込み
 	import Fuse from 'fuse.js';
-	import { mapStore } from '$lib/store/map';
+	import { mapStore } from '$routes/map/store/map';
 
 	let rotatingElement: HTMLElement;
 	let searchWord: string = '';

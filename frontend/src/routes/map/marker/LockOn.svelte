@@ -6,7 +6,7 @@
 	import gsap from 'gsap';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
-	import { mapStore } from '$lib/store/map';
+	import { mapStore } from '$routes/map/store/map';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 	const dispatch = createEventDispatcher();

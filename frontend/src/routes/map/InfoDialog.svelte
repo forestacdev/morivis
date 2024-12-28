@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { fade } from 'svelte/transition';
-	import { isSide, excludeIdsClickLayer } from '$lib/store/store';
+	import { isSide, excludeIdsClickLayer } from '$routes/map/store/store';
 	import { createEventDispatcher } from 'svelte';
 	import type {
 		Map,

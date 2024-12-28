@@ -5,9 +5,9 @@
 
 	import DataSlot from '$routes/map/ui/datamenu/DataSlot.svelte';
 	import type { LayerEntry } from '$routes/map/data/types';
-	import { isSide, showDataMenu } from '$lib/store/store';
+	import { isSide, showDataMenu } from '$routes/map/store/store';
 	import { flip } from 'svelte/animate';
-	import { addedLayerIds } from '$lib/store/store';
+	import { addedLayerIds } from '$routes/map/store/store';
 	export let layerDataEntries: LayerEntry[] = [];
 
 	const tweenMe = (node: Node) => {

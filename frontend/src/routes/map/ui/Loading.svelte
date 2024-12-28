@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import { fade } from 'svelte/transition';
-	import { isSide } from '$lib/store/store';
-	import { mapStore } from '$lib/store/map';
+	import { isSide } from '$routes/map/store/store';
+	import { mapStore } from '$routes/map/store/map';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 	import type {

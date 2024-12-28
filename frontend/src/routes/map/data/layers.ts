@@ -3,8 +3,8 @@ import { geojsonPolygonEntries } from '$routes/map/data/geojson/polygon';
 import { geojsonLineEntries } from '$routes/map/data/geojson/line';
 import { geojsonPointEntries } from '$routes/map/data/geojson/point';
 import { geojsonLabelEntries } from '$routes/map/data/geojson/label';
-import { addedLayerIds } from '$lib/store/store';
-import { INT_ADD_LAYER_IDS } from '$lib/constants';
+import { addedLayerIds } from '$routes/map/store/store';
+import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
 import { demLayers } from '$routes/map/data/raster/dem';
 
 import { rasterEntries } from '$routes/map/data/raster';
@@ -24,8 +24,12 @@ import type {
 	BackgroundLayerSpecification,
 	FilterSpecification
 } from 'maplibre-gl';
-import { GEOJSON_BASE_PATH, EXCLUDE_IDS_CLICK_LAYER, GIFU_DATA_BASE_PATH } from '$lib/constants';
-import { clickableLayerIds } from '$lib/store/store';
+import {
+	GEOJSON_BASE_PATH,
+	EXCLUDE_IDS_CLICK_LAYER,
+	GIFU_DATA_BASE_PATH
+} from '$routes/map/constants';
+import { clickableLayerIds } from '$routes/map/store/store';
 
 export const layerData: LayerEntry[] = [
 	...geojsonLabelEntries,

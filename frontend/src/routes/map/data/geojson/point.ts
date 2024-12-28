@@ -1,5 +1,5 @@
 import type { LayerEntry, GeojsonEntry } from '$routes/map/data/types';
-import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$lib/constants';
+import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
 
 export const geojsonPointEntries: GeojsonEntry<'point'>[] = [
 	{

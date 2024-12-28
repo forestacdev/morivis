@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { LayerEntry } from '$routes/map/data/types';
-	import { showlayerOptionId, addedLayerIds } from '$lib/store/store';
+	import { showlayerOptionId, addedLayerIds } from '$routes/map/store/store';
 	import { flip } from 'svelte/animate';
 	import { crossfade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
-	import { mapStore } from '$lib/store/map';
+	import { BASEMAP_IMAGE_TILE } from '$routes/map/constants';
+	import { mapStore } from '$routes/map/store/map';
 
 	import { createEventDispatcher } from 'svelte';
 	import { rasterEntries } from '$routes/map/data/raster';

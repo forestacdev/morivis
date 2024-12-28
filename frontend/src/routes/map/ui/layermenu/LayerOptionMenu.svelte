@@ -3,8 +3,8 @@
 	import { demLayers } from '$routes/map/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
-	import { showlayerOptionId, isSide, addedLayerIds } from '$lib/store/store';
-	import { mapStore } from '$lib/store/map';
+	import { showlayerOptionId, isSide, addedLayerIds } from '$routes/map/store/store';
+	import { mapStore } from '$routes/map/store/map';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { split } from 'postcss/lib/list';

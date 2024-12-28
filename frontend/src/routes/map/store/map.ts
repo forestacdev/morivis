@@ -28,7 +28,7 @@ import { webglToPng } from '$lib/utils/image';
 import { imageToIcon } from '$lib/utils/icon/index';
 import type { LayerEntry } from '$routes/map/data/types';
 import { layerData } from '$routes/map/data/layers';
-import { isSide } from '$lib//store/store';
+import { isSide } from '$routes/map/store/store';
 import { getGeojson } from '$lib/utils/geojson';
 import { getLocationBbox } from '$routes/map/data/locationBbox';
 import turfBbox from '@turf/bbox';

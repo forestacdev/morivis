@@ -1,4 +1,4 @@
-import { BASEMAP_IMAGE_TILE } from '$lib/constants';
+import { BASEMAP_IMAGE_TILE } from '$routes/map/constants';
 import { fade, slide } from 'svelte/transition';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';

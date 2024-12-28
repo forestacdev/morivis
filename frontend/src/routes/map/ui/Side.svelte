@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isSide } from '$lib/store/store';
+	import { isSide } from '$routes/map/store/store';
 	import type { Side } from '$lib/types/ui';
 	import Icon from '@iconify/svelte';
 

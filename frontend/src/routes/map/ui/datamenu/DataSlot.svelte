@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { LayerEntry } from '$routes/map/data/types';
-	import { showlayerOptionId } from '$lib/store/store';
-	import { mapStore } from '$lib/store/map';
-	import { BASEMAP_IMAGE_TILE } from '$lib/constants';
+	import { showlayerOptionId } from '$routes/map/store/store';
+	import { mapStore } from '$routes/map/store/map';
+	import { BASEMAP_IMAGE_TILE } from '$routes/map/constants';
 
-	import { addedLayerIds } from '$lib/store/store';
+	import { addedLayerIds } from '$routes/map/store/store';
 
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();

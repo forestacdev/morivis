@@ -40,14 +40,14 @@
 		addedLayerIds,
 		clickableLayerIds,
 		showDataMenu
-	} from '$lib/store/store';
+	} from '$routes/map/store/store';
 	import { getTilePixelColor, getTileUrl, getFieldDictJson } from '$lib/utils/map';
 	import { webglToPng } from '$lib/utils/image';
 	import styleJson from '$lib/json/fac_style.json';
-	import { INT_ADD_LAYER_IDS } from '$lib/constants';
+	import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
 	import gsap from 'gsap';
 
-	import { mapStore } from '$lib/store/map';
+	import { mapStore } from '$routes/map/store/map';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
