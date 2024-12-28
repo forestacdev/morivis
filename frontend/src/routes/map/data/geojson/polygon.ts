@@ -22,12 +22,23 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 			fill: [
 				{
 					name: '単色',
+					color: '#2a826c',
 					paint: {
 						'fill-color': '#2a826c'
 					}
 				},
 				{
 					name: '樹種ごとの色分け',
+                    color: {
+                        'スギ': '#399210',
+                        'ヒノキ': '#4ADDA5',
+                        'アカマツ': '#DD2B2B',
+                        'スラッシュマツ': '#B720BF',
+                        '広葉樹': '#EBBC22',
+                        '草地': '#2351E5',
+                        'その他岩石': '#D98F34',
+                        'その他': '#00000000'
+                    }
 					paint: {
 						'fill-color': [
 							'match',
@@ -74,7 +85,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							['get', '樹種'],
 							'スギ',
 							'#399210', // スギ
-							'#000000' // デフォルトの色（該当しない場合）
+							'#00000000' // デフォルトの色（該当しない場合）
 						]
 					}
 				},

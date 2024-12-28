@@ -15,7 +15,7 @@ import type {
 	FilterSpecification
 } from 'maplibre-gl';
 
-type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
+export type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
 
 type VectorStyle = {
 	fill?: LayerPaint<FillLayerSpecification['paint'], FillLayerSpecification['layout']>[];

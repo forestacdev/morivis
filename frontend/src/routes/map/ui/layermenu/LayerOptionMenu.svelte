@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { LayerEntry } from '$routes/map/data/types';
+	import type { LayerEntry, LayerPaint } from '$routes/map/data/types';
+	import type { FillLayerSpecification } from 'maplibre-gl';
 	import { demLayers } from '$routes/map/data/raster/dem';
 	import Icon from '@iconify/svelte';
 	export let layerDataEntries: LayerEntry[];
@@ -54,10 +55,8 @@
 	): {
 		[key: string]: string;
 	} => {
-		console.log('expressionData:', expressionData);
 		const parsed = expression.createExpression(expressionData);
 
-		console.log('Parsed:', parsed);
 		// cases と outputs をマッピング
 		const speciesColors: {
 			[key: string]: string;
@@ -81,21 +80,34 @@
 	};
 	const getExpressionField = (expressionData) => {
 		const parsed = expression.createExpression(expressionData);
-		return parsed.value.expression.input.args.value;
+		return parsed.value.expression.input.args[0].value;
 	};
 
+	const hoge = [
+		'interpolate',
+		['linear'], // 線形補間
+		['get', '面積'], // プロパティ 'density' に基づいて色を変える
+		0,
+		10,
+		1,
+		255
+	];
+
+	const propertySpec = { type: 'number', default: 0 };
+
+	const parsed = expression.createExpression(hoge, propertySpec);
+
+	console.log(parsed);
+
 	const setColor = (key: string, value: string) => {
-		console.log('layerOption:', layerOption);
 		// speciesColors を更新
 		const speciesColors = createSpeciesColors(getColorExpression(layerOption));
 		speciesColors[key] = value;
 
-		// const field = getExpressionField(getColorExpression(layerOption));
-
-		// console.log('field:', field);
+		const field = getExpressionField(getColorExpression(layerOption));
 
 		// 新しい expression を作成
-		const expressionData = ['match', ['get', '樹種']];
+		const expressionData = ['match', ['get', field]];
 		Object.entries(speciesColors).forEach(([species, color]) => {
 			if (species !== 'other') {
 				expressionData.push(species, color);
@@ -105,15 +117,23 @@
 
 		// layerDataEntries を更新
 		const newlayerDataEntries = JSON.parse(JSON.stringify(layerDataEntries)); // 深いコピー
-		const targetLayer = newlayerDataEntries.find((layer) => layer.id === $showlayerOptionId);
+		const targetLayer = newlayerDataEntries.find(
+			(layer: LayerEntry) => layer.id === $showlayerOptionId
+		);
+
+		if (!layerOption) return;
 
 		if (targetLayer) {
 			const targetStyle = targetLayer.style?.fill.find(
-				(item) => item.name === layerOption.styleKey
+				(
+					item: LayerPaint<
+						FillLayerSpecification['paint'],
+						FillLayerSpecification['layout']
+					>
+				) => item.name === layerOption.styleKey
 			);
 			if (targetStyle) {
 				targetStyle.paint['fill-color'] = expressionData;
-				console.log('Updated Fill Color:', targetStyle.paint['fill-color']);
 			}
 		}
 
