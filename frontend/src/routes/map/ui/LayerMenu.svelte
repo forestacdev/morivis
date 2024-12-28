@@ -49,6 +49,7 @@
 		<button on:click={toggleDataMenu}>データ追加</button>
 		<div class="flex h-full w-full gap-4">
 			<div class="custom-scroll flex flex-col gap-y-2 overflow-y-auto overflow-x-hidden">
+				<div class="mt-4">レイヤーデータ</div>
 				{#each layerDataEntries
 					.filter((layerEntry) => $addedLayerIds.includes(layerEntry.id))
 					.filter((layerEntry) => layerEntry.dataType === 'vector' || layerEntry.dataType === 'geojson')

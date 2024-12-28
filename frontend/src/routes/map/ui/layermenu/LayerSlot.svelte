@@ -65,8 +65,8 @@
 	<div
 		class="absolute z-10 grid h-[45px] w-[45px] place-items-center overflow-hidden rounded-full text-[#012a2d] transition-all {$showlayerOptionId ===
 		layerEntry.id
-			? 'translate-x-[170px]'
-			: ''}"
+			? 'rotate-180'
+			: 'rotate-0'}"
 		style="background-image: radial-gradient(#f2f2f2 50%, transparent 56%),
 			conic-gradient(#00b0e0 0% {layerEntry.opacity * 100}%, transparent {layerEntry.opacity *
 			100}% 100%);"
@@ -107,11 +107,7 @@
 	<!-- <span class="absolute bottom-[4px] left-[5px] z-10 rounded-md bg-slate-400 text-xs"
 		>{layerEntry.opacity.toFixed(2)}</span
 	> -->
-	<div
-		class="z-10 ml-[70px] w-full py-4 transition-all {$showlayerOptionId === layerEntry.id
-			? '-translate-x-[50px]'
-			: ''}"
-	>
+	<div class="z-10 ml-[70px] w-full py-4 transition-all">
 		<div class="w-full cursor-pointer items-end text-left transition-all duration-150">
 			<span class="flex items-center gap-2">{layerEntry.name}</span>
 		</div>
