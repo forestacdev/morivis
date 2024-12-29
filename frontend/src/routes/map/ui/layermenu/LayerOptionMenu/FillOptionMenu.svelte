@@ -26,19 +26,30 @@
 			{#each Object.keys(colorStyle.values.categories) as key (key)}
 				<div class="flex w-full items-center">
 					<!-- NOTE:groupはコンポーネント化でいない https://qiita.com/H40831/items/537a6df3dd30fe7bc91a -->
-					<div class="w-full text-sm">{key}</div>
-					<input
-						type="checkbox"
-						value={key}
-						bind:group={colorStyle.values.showCategories}
-					/>
+					<label class="flex w-full cursor-pointer items-center text-sm"
+						><input
+							type="checkbox"
+							class="custom-checkbox flex-shrink-0"
+							value={key}
+							bind:group={colorStyle.values.showCategories}
+						/><span>{key}</span>
+					</label>
+
 					<ColorPicker bind:value={colorStyle.values.categories[key]} />
 				</div>
 			{/each}
 		{:else if fillStyleKey && isInterpolateStyle(colorStyle)}
-			{#each Object.keys(colorStyle.values.stops) as key (key)}
+			{#each Object.keys(colorStyle.values.categories) as key (key)}
 				<div class="flex w-full items-center">
-					<ColorPicker label={key} bind:value={colorStyle.values.stops[key]} />
+					<label class="flex w-full cursor-pointer items-center text-sm"
+						><input
+							type="checkbox"
+							class="custom-checkbox flex-shrink-0"
+							value={key}
+							bind:group={colorStyle.values.showCategories}
+						/><span>{key}</span>
+					</label>
+					<ColorPicker label={key} bind:value={colorStyle.values.categories[key]} />
 				</div>
 			{/each}
 		{/if}

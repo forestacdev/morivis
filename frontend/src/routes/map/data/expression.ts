@@ -48,16 +48,32 @@ const createInterpolateColorsExpression = (
 		['get', property]
 	];
 
-	Object.entries(style.stops).forEach(([key, color]) => {
-		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
-		const formattedKey = Number(key);
-		if (isNaN(Number(key))) {
-			throw new Error('Invalid key');
+	const showCategories = style.showCategories;
+
+	if (showCategories.length === 0) {
+		return '#00000000';
+	}
+
+	Object.entries(style.categories).forEach(([key, color]) => {
+		if (showCategories.includes(key)) {
+			// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
+			const formattedKey = Number(key);
+			if (isNaN(Number(key))) {
+				throw new Error('Invalid key');
+			}
+			expression.push(formattedKey, color);
 		}
-		expression.push(formattedKey, color);
 	});
 
-	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
+	// `case` 演算子を使用して数値以外を透明色に設定
+	const finalExpression: DataDrivenPropertyValueSpecification<ColorSpecification> = [
+		'case',
+		['==', ['typeof', ['get', property]], 'number'], // 数値判定
+		expression, // 数値の場合は補間式を適用
+		'#00000000' // 数値以外の場合は透明色
+	] as unknown as DataDrivenPropertyValueSpecification<ColorSpecification>; // 型アサーションを適用
+
+	return finalExpression;
 };
 
 export const isMatchStyle = (

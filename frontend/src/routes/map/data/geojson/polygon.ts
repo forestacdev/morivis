@@ -1,7 +1,8 @@
 import type { GeojsonEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
+import exp from 'constants';
 
-export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
+const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 	{
 		id: 'ENSYURIN_rinhanzu',
 		name: '演習林林班図',
@@ -26,52 +27,66 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							default: '#2a826c'
 						}
 					},
-					['樹種ごとの色分け']: (() => {
-						const categories = {
-							スギ: '#399210',
-							ヒノキ: '#4ADDA5',
-							アカマツ: '#DD2B2B',
-							スラッシュマツ: '#B720BF',
-							広葉樹: '#EBBC22',
-							草地: '#2351E5',
-							その他岩石: '#D98F34'
-						};
-
-						return {
-							type: 'match',
-							property: '樹種',
-							values: {
-								categories,
-								default: '#00000000',
-								showCategories: Object.keys(categories) // 動的に生成
-							}
-						};
-					})(),
-					['林班']: (() => {
-						const categories = {
-							1: '#DD2B2B',
-							2: '#0043a7',
-							3: '#f0e000'
-						};
-
-						return {
-							type: 'match',
-							property: '林班',
-							values: {
-								categories,
-								default: '#00000000',
-								showCategories: Object.keys(categories) // 動的に生成
-							}
-						};
-					})(),
+					['樹種ごとの色分け']: {
+						type: 'match',
+						property: '樹種',
+						values: {
+							categories: {
+								スギ: '#399210',
+								ヒノキ: '#4ADDA5',
+								アカマツ: '#DD2B2B',
+								スラッシュマツ: '#B720BF',
+								広葉樹: '#EBBC22',
+								草地: '#2351E5',
+								その他岩石: '#D98F34'
+							},
+							default: '#00000000',
+							showCategories: [
+								'スギ',
+								'ヒノキ',
+								'アカマツ',
+								'スラッシュマツ',
+								'広葉樹',
+								'草地',
+								'その他岩石'
+							]
+						}
+					},
+					['林班']: {
+						type: 'match',
+						property: '林班',
+						values: {
+							categories: {
+								1: '#399210',
+								2: '#4ADDA5',
+								3: '#DD2B2B'
+							},
+							default: '#00000000',
+							showCategories: ['1', '2', '3'] // 動的に生成
+						}
+					},
 					['面積ごとの色分け']: {
 						type: 'interpolate',
 						property: '面積',
 						values: {
-							stops: {
+							categories: {
 								0: '#f8d5cc',
 								1: '#6e40e6'
-							}
+							},
+							default: '#00000000',
+							showCategories: ['0', '1']
+						}
+					},
+					['林齢ごとの色分け']: {
+						type: 'interpolate',
+						property: '林齢',
+						values: {
+							categories: {
+								0: '#f8d5cc',
+								60: '#6e40e6'
+							},
+							default: '#00000000',
+							showCategories: ['0', '60']
 						}
 					}
 				}
@@ -284,3 +299,5 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 	// 	}
 	// }
 ];
+
+export { geojsonPolygonEntries };
