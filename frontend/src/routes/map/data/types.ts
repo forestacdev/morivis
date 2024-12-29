@@ -13,7 +13,8 @@ import type {
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification,
 	FilterSpecification,
-	DataDrivenPropertyValueSpecification
+	DataDrivenPropertyValueSpecification,
+	ColorSpecification
 } from 'maplibre-gl';
 
 export type SingleColor = {
@@ -65,20 +66,27 @@ export type FillLayerOptions<T, U> = {
 };
 
 export type LinePattern = 'solid' | 'dashed';
-export type LineWidth = {
+export type ColerValue = {
+	type: string | 'custom';
+	values: {
+		[key: string]: DataDrivenPropertyValueSpecification<ColorSpecification>;
+		custom: string;
+	};
+};
+
+export type NumericValue = {
 	type: string | 'custom';
 	values: {
 		[key: string]: DataDrivenPropertyValueSpecification<number>;
 		custom: number;
 	};
 };
-
 export type LineLayerOptions<T, U> = {
 	show: boolean;
 	styleKey: string;
 	color: LayerStyleColor;
 	linePattern: LinePattern;
-	lineWidth: LineWidth;
+	lineWidth: LayerStyleNumeric;
 	paint?: T;
 	layout?: U;
 };
@@ -87,6 +95,9 @@ export type CircleLayerOptions<T, U> = {
 	show: boolean;
 	styleKey: string;
 	color: LayerStyleColor;
+	circleRadius: NumericValue;
+	strokeColor: ColerValue;
+	strokeWidth: NumericValue;
 	paint?: T;
 	layout?: U;
 };

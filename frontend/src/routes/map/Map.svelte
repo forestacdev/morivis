@@ -50,8 +50,9 @@
 	import { mapStore } from '$routes/map/store/map';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	let tempLayerEntries: LayerEntry[] = []; // カテゴリごとのレイヤーデータ情報
+	$: layerDataEntries = [...layerData, ...tempLayerEntries]; // カテゴリごとのレイヤーデータ情報
 
-	let layerDataEntries: LayerEntry[] = layerData; // カテゴリごとのレイヤーデータ情報
 	// let backgroundIds: string[] = Object.keys(backgroundSources); // ベースマップのIDの配列
 	// let selectedBackgroundId: string = Object.keys(backgroundSources)[0]; // 選択されたベースマップのID
 	// let mapInstance: Map | null = null; // Mapインスタンス
@@ -319,7 +320,7 @@
 	</div>
 	<DataMenu bind:layerDataEntries />
 </div>
-<LayerOptionMenu bind:layerDataEntries />
+<LayerOptionMenu bind:layerDataEntries bind:tempLayerEntries />
 <div class="custom-css absolute right-[60px] top-2 max-h-[calc(100vh-8rem)] w-[300px]">
 	<!-- {#if lockOnMarker}
 		<button on:click={getElevation}>この地点の標高</button>

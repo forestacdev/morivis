@@ -283,7 +283,27 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 	return sourceItems;
 };
 
-// ラインレイヤーの作成
+// fillレイヤーの作成
+const createFillLayer = (layer, layerId, layerEntry, fillStyle, fillStyleKey) => {
+	const fillColor = fillStyle.color[fillStyleKey] ?? fillStyle.color['デフォルト'];
+	const color = createColorExpression(fillColor);
+
+	return {
+		...layer,
+		type: 'fill',
+		paint: {
+			...(fillStyle.paint ?? {}),
+			'fill-opacity': fillStyle.show ? layerEntry.opacity : 0,
+			'fill-outline-color': '#00000000',
+			'fill-color': color
+		},
+		layout: {
+			...(fillStyle.layout ?? {})
+		}
+	};
+};
+
+// lineレイヤーの作成
 const createLineLayer = (layer, layerId, layerEntry, lineStyle, lineStyleKey) => {
 	const lineColor = lineStyle.color[lineStyleKey] ?? lineStyle.color['デフォルト'];
 	const color = createColorExpression(lineColor);
@@ -294,7 +314,7 @@ const createLineLayer = (layer, layerId, layerEntry, lineStyle, lineStyleKey) =>
 		id: `${layerId}_outline`,
 		type: 'line',
 		paint: {
-			...(lineStyle?.paint ?? {}),
+			...(lineStyle.paint ?? {}),
 			'line-opacity': layerEntry.opacity,
 			'line-color': color,
 			'line-width': lineWidth,
@@ -302,6 +322,52 @@ const createLineLayer = (layer, layerId, layerEntry, lineStyle, lineStyleKey) =>
 		},
 		layout: {
 			...(lineStyle?.layout ?? {})
+		}
+	};
+};
+
+// pointレイヤーの作成
+const createCircleLayer = (layer, layerId, layerEntry, circleStyle, circleStyleKey) => {
+	const circleColor = circleStyle.color[circleStyleKey] ?? circleStyle.color['デフォルト'];
+	const color = createColorExpression(circleColor);
+	const circleRadius = circleStyle.circleRadius.values[circleStyle.circleRadius.type] ?? 5;
+	const circleStrokeColor =
+		circleStyle.strokeColor.values[circleStyle.strokeColor.type] ?? '#ffffff';
+	const circleStrokeWidth = circleStyle.strokeWidth.values[circleStyle.strokeWidth.type] ?? 1;
+	return {
+		...layer,
+		type: 'circle',
+		paint: {
+			...(circleStyle.paint ?? {}),
+			'circle-opacity': layerEntry.opacity,
+			'circle-stroke-opacity': layerEntry.opacity,
+			'circle-color': color,
+			'circle-radius': circleRadius,
+			'circle-stroke-color': circleStrokeColor,
+			'circle-stroke-width': circleStrokeWidth
+		},
+		layout: {
+			...(circleStyle.layout ?? {})
+		}
+	};
+};
+
+// symbolレイヤーの作成
+const createSymbolLayer = (layer, layerId, layerEntry, symbolStyle, symbolStyleKey) => {
+	const symbolColor = symbolStyle.color[symbolStyleKey] ?? symbolStyle.color['デフォルト'];
+	const color = createColorExpression(symbolColor);
+	return {
+		...layer,
+		id: `${layerId}_label`,
+		type: 'symbol',
+		paint: {
+			...(symbolStyle.paint ?? {}),
+			'text-opacity': 1.0,
+			'icon-opacity': 1.0,
+			'text-color': color
+		},
+		layout: {
+			...(symbolStyle.layout ?? {})
 		}
 	};
 };
@@ -383,22 +449,13 @@ export const createLayerItems = (
 					const circleStyleKey = circleStyle?.styleKey;
 					const symbolStyleKey = symbolStyle?.styleKey;
 					if (layerEntry.geometryType === 'polygon' && fillStyle && fillStyleKey) {
-						const fillColor = fillStyle.color[fillStyleKey];
-
-						const color = createColorExpression(fillColor);
-						const fillLayer = {
-							...layer,
-							type: 'fill',
-							paint: {
-								'fill-opacity': fillStyle.show ? layerEntry.opacity : 0,
-								'fill-outline-color': '#00000000',
-								'fill-color': color,
-								...(fillStyle?.paint ?? {})
-							},
-							layout: {
-								...(fillStyle?.layout ?? {})
-							}
-						};
+						const fillLayer = createFillLayer(
+							layer,
+							layerId,
+							layerEntry,
+							fillStyle,
+							fillStyleKey
+						);
 
 						layerItems.push(fillLayer as FillLayerSpecification);
 
@@ -416,24 +473,14 @@ export const createLayerItems = (
 
 						// ラベルを追加
 						if (symbolStyle && symbolStyleKey && symbolStyle.show) {
-							const symbolColor =
-								symbolStyle.color[symbolStyleKey] ??
-								symbolStyle.color['デフォルト'];
-							const color = createColorExpression(symbolColor);
-							symbolLayerItems.push({
-								...layer,
-								id: `${layerId}_label`,
-								type: 'symbol',
-								paint: {
-									'text-opacity': layerEntry.opacity,
-									'icon-opacity': layerEntry.opacity,
-									'text-color': color,
-									...(symbolStyle?.paint ?? {})
-								},
-								layout: {
-									...(symbolStyle?.layout ?? {})
-								}
-							});
+							const symbolLayer = createSymbolLayer(
+								layer,
+								layerId,
+								layerEntry,
+								symbolStyle,
+								symbolStyleKey
+							);
+							symbolLayerItems.push(symbolLayer as SymbolLayerSpecification);
 						}
 					} else if (layerEntry.geometryType === 'line' && lineStyle && lineStyleKey) {
 						const lineLayer = createLineLayer(
@@ -446,21 +493,13 @@ export const createLayerItems = (
 
 						layerItems.push(lineLayer as LineLayerSpecification);
 					} else if (layerEntry.geometryType === 'point') {
-						const setStyele = layerEntry.style?.circle?.find(
-							(item) => item.name === styleKey
+						const pointLayer = createCircleLayer(
+							layer,
+							layerId,
+							layerEntry,
+							circleStyle,
+							circleStyleKey
 						);
-						const pointLayer = {
-							...layer,
-							type: 'circle',
-							paint: {
-								'circle-opacity': layerEntry.opacity,
-								...(setStyele?.paint ?? {})
-							},
-							layout: {
-								...(setStyele?.layout ?? {})
-							}
-						};
-
 						layerItems.push(pointLayer as CircleLayerSpecification);
 					} else if (layerEntry.geometryType === 'label') {
 						const setStyele = layerEntry.style?.symbol?.find(

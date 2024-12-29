@@ -7,63 +7,46 @@
 	>;
 	import { isMatchStyle, isSingleStyle, isInterpolateStyle } from '$routes/map/data/expression';
 	export let fillStyleKey: string | undefined;
+	import CheckBox from '$routes/map/ui/atoms/CheckBox.svelte';
+	import SelectBox from '$routes/map/ui/atoms/SelectBox.svelte';
+	import ColorPicker from '$routes/map/ui/atoms/ColorPicker.svelte';
 </script>
 
-<div class="flex gap-2">
-	<label class="block">塗りつぶし</label>
-	<input type="checkbox" class="custom-checkbox" bind:checked={fillStyle.show} />
-</div>
-{#if fillStyle.show}
-	<div class="flex flex-col gap-2">
-		<select
-			class="custom-select {!fillStyle.show ? 'opacity-50' : ''}"
-			bind:value={fillStyle.styleKey}
-			disabled={!fillStyle.show}
-		>
-			{#each Object.keys(fillStyle.color) as item (item)}
-				<option value={item}>{item}</option>
+<div class="h-full">
+	<CheckBox bind:value={fillStyle.show} label="塗りつぶし" />
+	{#if fillStyle.show}
+		{#if Object.keys(fillStyle.color).length > 1}
+			<SelectBox bind:value={fillStyle.styleKey} options={Object.keys(fillStyle.color)} />
+		{/if}
+		{#if fillStyleKey && isSingleStyle(fillStyle.color[fillStyleKey])}
+			<ColorPicker label="色" bind:value={fillStyle.color[fillStyleKey].values.default} />
+		{:else if fillStyleKey && isMatchStyle(fillStyle.color[fillStyleKey])}
+			{#each Object.entries(fillStyle.color[fillStyleKey].values.categories) as [key, value] (key)}
+				<div class="flex w-full items-center">
+					<!-- NOTE:groupはコンポーネント化でいない https://qiita.com/H40831/items/537a6df3dd30fe7bc91a -->
+					<div class="w-full text-sm">{key}</div>
+					<input
+						type="checkbox"
+						value={key}
+						bind:group={fillStyle.color[fillStyleKey].values.showCategories}
+					/>
+					<ColorPicker
+						bind:value={fillStyle.color[fillStyleKey].values.categories[key]}
+					/>
+				</div>
 			{/each}
-		</select>
-	</div>
-	{#if fillStyleKey && isSingleStyle(fillStyle.color[fillStyleKey])}
-		<div class="flex gap-2">
-			<label class="block">色</label>
-			<input
-				type="color"
-				class="custom-color"
-				bind:value={fillStyle.color[fillStyleKey].values.default}
-			/>
-		</div>
-	{:else if fillStyleKey && isMatchStyle(fillStyle.color[fillStyleKey])}
-		{#each Object.entries(fillStyle.color[fillStyleKey].values.categories) as [key, value]}
-			<div class="flex w-full items-center">
-				<div class="w-full text-sm">{key}</div>
-				<input
-					type="checkbox"
-					value={key}
-					bind:group={fillStyle.color[fillStyleKey].values.showCategories}
-				/>
-
-				<input
-					type="color"
-					class="custom-color"
-					bind:value={fillStyle.color[fillStyleKey].values.categories[key]}
-				/>
-			</div>
-		{/each}
-	{:else if fillStyleKey && isInterpolateStyle(fillStyle.color[fillStyleKey])}
-		{#each Object.entries(fillStyle.color[fillStyleKey].values.stops) as [key, value]}
-			<div class="flex w-full items-center">
-				<div class="w-full text-sm">{key}</div>
-
-				<input
-					type="color"
-					class="custom-color"
-					bind:value={fillStyle.color[fillStyleKey].values.stops[key]}
-				/>
-			</div>
-		{/each}
-	{/if}{/if}
+		{:else if fillStyleKey && isInterpolateStyle(fillStyle.color[fillStyleKey])}
+			{#each Object.entries(fillStyle.color[fillStyleKey].values.stops) as [key, value]}
+				<div class="flex w-full items-center">
+					<ColorPicker
+						label={key}
+						bind:value={fillStyle.color[fillStyleKey].values.stops[key]}
+					/>
+				</div>
+			{/each}
+		{/if}
+	{/if}
+</div>
 
 <style>
 </style>

@@ -284,7 +284,3 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 	// 	}
 	// }
 ];
-
-geojsonPolygonEntries.forEach((entry) => {
-	entry.showStyles = ['fill'];
-});
