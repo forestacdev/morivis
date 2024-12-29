@@ -200,7 +200,7 @@ export type RasterEntry = {
 	id: string;
 	name: string;
 	dataType: 'raster';
-	geometryType: 'raster';
+	rasterType: 'image' | 'dem';
 	url: string;
 	attribution: string;
 	sourceMinZoom?: number;
@@ -340,7 +340,6 @@ export type VectorEntry<T extends GeometryType> = {
 	layerMinZoom?: number;
 	layerMaxZoom?: number;
 	opacity: number;
-	styleKey: string;
 	style: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;

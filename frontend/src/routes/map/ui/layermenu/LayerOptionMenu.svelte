@@ -9,7 +9,6 @@
 	import { mapStore } from '$routes/map/store/map';
 	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { split } from 'postcss/lib/list';
 	import ColorRamp from './ColorRamp.svelte';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
 	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
@@ -113,10 +112,10 @@
 
 {#if $showlayerOptionId}
 	<div
-		class="absolute left-[370px] flex h-screen w-[300px] flex-col gap-2 rounded-sm bg-[#C27142] p-2 text-slate-100 shadow-2xl"
+		class="absolute left-[370px] flex h-[400px] w-[300px] flex-col gap-2 rounded-sm bg-[#C27142] p-2 text-slate-100 shadow-2xl"
 	>
-		<span class=" h-fullflex-shrink-0 text-lg">レイヤーオプション</span>
-		<div class="flex h-full flex-grow flex-col gap-2 overscroll-y-auto">
+		<span class="text-lg">レイヤーオプション</span>
+		<div class="h-full flex-grow overflow-y-auto">
 			{#if $showlayerOptionId && layerOption}
 				<div class="flex gap-2">
 					<button class="" on:click={() => moveLayerById('up')}
@@ -153,7 +152,7 @@
 									/>
 								</div>
 							{/if}
-							<!-- {#if layerOption.style['circle'] !== undefined}
+							{#if layerOption.style['circle'] !== undefined}
 								<CircleOptionMenu
 									bind:circleStyle={layerOption.style['circle']}
 									bind:circleStyleKey
@@ -166,7 +165,7 @@
 									bind:lineStyleKey
 									{layerType}
 								/>
-							{/if} -->
+							{/if}
 							{#if layerOption.style['fill'] !== undefined && fillStyleKey}
 								<FillOptionMenu
 									bind:fillStyle={layerOption.style['fill']}

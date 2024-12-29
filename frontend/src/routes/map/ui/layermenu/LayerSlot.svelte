@@ -15,6 +15,7 @@
 	export let layerEntry: LayerEntry;
 	export let index: number;
 	export let clickedLayerId: string;
+	let show = false;
 	let selectedStyle: string = layerEntry.styleKey;
 	const showLayerOption = () => {
 		$showlayerOptionId === layerEntry.id
@@ -71,13 +72,15 @@
 			conic-gradient(#00b0e0 0% {layerEntry.opacity * 100}%, transparent {layerEntry.opacity *
 			100}% 100%);"
 	>
-		{#if layerEntry.geometryType === 'point'}
-			<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
-		{:else if layerEntry.geometryType === 'line'}
-			<Icon icon="tabler:line" class="pointer-events-none" width={30} />
-		{:else if layerEntry.geometryType === 'polygon'}
-			<Icon icon="ph:polygon" class="pointer-events-none" width={30} />
-		{:else if layerEntry.geometryType === 'raster'}
+		{#if layerEntry.dataType === 'geojson' || layerEntry.dataType === 'vector'}
+			{#if layerEntry.geometryType === 'point'}
+				<Icon icon="carbon:circle-filled" class="pointer-events-none" width={30} />
+			{:else if layerEntry.geometryType === 'line'}
+				<Icon icon="tabler:line" class="pointer-events-none" width={30} />
+			{:else if layerEntry.geometryType === 'polygon'}
+				<Icon icon="ph:polygon" class="pointer-events-none" width={30} />
+			{/if}
+		{:else if layerEntry.dataType === 'raster'}
 			<img
 				class="pointer-events-none block h-[60%] w-[60%] rounded-full object-cover"
 				alt={layerEntry.name}

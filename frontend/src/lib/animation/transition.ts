@@ -3,21 +3,21 @@ import { fade, slide } from 'svelte/transition';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-export const tweenMe = (node: Node, x: gsap.TweenValue = '-100%') => {
-	const tl = gsap.timeline();
-	const duration = 0.5; // アニメーションの長さを0.5秒に設定
+import { elasticOut } from 'svelte/easing';
 
-	tl.from(node, {
-		duration: duration,
-		opacity: 0,
-		x: x, // 左から右へスライド
-		ease: 'power2.out' // スムーズな動きのためのイージング
-	});
-
+export const spin = (node, { duration }) => {
 	return {
-		duration: tl.totalDuration() * 1000, // ミリ秒に変換
-		tick: (t: number) => {
-			tl.progress(t);
+		duration,
+		css: (t) => {
+			const eased = elasticOut(t);
+
+			return `
+					transform: scale(${eased}) rotate(${eased * 1080}deg);
+					color: hsl(
+						${Math.trunc(t * 360)},
+						${Math.min(100, 1000 * (1 - t))}%,
+						${Math.min(50, 500 * (1 - t))}%
+					);`;
 		}
 	};
 };

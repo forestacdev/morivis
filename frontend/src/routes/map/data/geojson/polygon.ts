@@ -102,27 +102,31 @@ const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							default: '#ffe600'
 						}
 					},
-					['樹種ごとの色分け']: (() => {
-						const categories = {
-							スギ: '#399210',
-							ヒノキ: '#4ADDA5',
-							アカマツ: '#DD2B2B',
-							スラッシュマツ: '#B720BF',
-							広葉樹: '#EBBC22',
-							草地: '#2351E5',
-							その他岩石: '#D98F34'
-						};
-
-						return {
-							type: 'match',
-							property: '樹種',
-							values: {
-								categories,
-								default: '#00000000',
-								showCategories: Object.keys(categories) // 動的に生成
-							}
-						};
-					})()
+					['樹種ごとの色分け']: {
+						type: 'match',
+						property: '樹種',
+						values: {
+							categories: {
+								スギ: '#399210',
+								ヒノキ: '#4ADDA5',
+								アカマツ: '#DD2B2B',
+								スラッシュマツ: '#B720BF',
+								広葉樹: '#EBBC22',
+								草地: '#2351E5',
+								その他岩石: '#D98F34'
+							},
+							default: '#00000000',
+							showCategories: [
+								'スギ',
+								'ヒノキ',
+								'アカマツ',
+								'スラッシュマツ',
+								'広葉樹',
+								'草地',
+								'その他岩石'
+							]
+						}
+					}
 				},
 				linePattern: 'dashed',
 				lineWidth: {
