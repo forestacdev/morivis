@@ -333,8 +333,16 @@ export const createLayerItems = (
 				maxzoom: number;
 				minzoom: number;
 				type?: string;
-				paint?: any;
-				layout?: any;
+				paint?:
+					| FillLayerSpecification['paint']
+					| LineLayerSpecification['paint']
+					| CircleLayerSpecification['paint']
+					| SymbolLayerSpecification['paint'];
+				layout?:
+					| FillLayerSpecification['layout']
+					| LineLayerSpecification['layout']
+					| CircleLayerSpecification['layout']
+					| SymbolLayerSpecification['layout'];
 				'source-layer'?: string;
 				filter?: FilterSpecification;
 			};

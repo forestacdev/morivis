@@ -66,9 +66,9 @@ export type FillLayerOptions<T, U> = {
 
 export type LinePattern = 'solid' | 'dashed';
 export type LineWidth = {
-	type: 'default' | 'custom';
+	type: string | 'custom';
 	values: {
-		default: DataDrivenPropertyValueSpecification<number>;
+		[key: string]: DataDrivenPropertyValueSpecification<number>;
 		custom: number;
 	};
 };

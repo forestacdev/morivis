@@ -91,6 +91,18 @@
 		mapStore.reloadDemTile();
 	};
 
+	const copyLayer = () => {
+		if (!layerOption) return;
+		const uuid = crypto.randomUUID();
+		const copy: LayerEntry = {
+			...layerOption,
+			id: uuid
+		};
+
+		layerDataEntries.push(copy);
+		addedLayerIds.addLayer(uuid);
+	};
+
 	onMount(() => {});
 </script>
 
@@ -113,6 +125,7 @@
 			<button on:click={focusLayer}>
 				<Icon icon="hugeicons:target-03" width="24" height="24" class="custom-anime" />
 			</button>
+			<button on:click={copyLayer}> コピーの作成 </button>
 		</div>
 		<div class="h-full">
 			<div class="flex gap-2">

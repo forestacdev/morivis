@@ -42,9 +42,9 @@ export const geojsonLineEntries: GeojsonEntry<'line'>[] = [
 				},
 				linePattern: 'solid',
 				lineWidth: {
-					type: 'default',
+					type: '道の種類ごと',
 					values: {
-						default: ['match', ['get', '種類'], ['林道'], 10, 5],
+						['道の種類ごと']: ['match', ['get', '種類'], ['林道'], 10, 5],
 						custom: 2
 					}
 				},

@@ -85,18 +85,28 @@
 			{/each}
 		</select>
 	</div>
-	<!-- <div class="flex gap-2">
+	<div class="flex gap-2">
 		<label class="block">線の幅</label>
 		<select
 			class="custom-select {!lineStyle.show ? 'opacity-50' : ''}"
-			bind:value={lineStyle.lineWidth}
+			bind:value={lineStyle.lineWidth.type}
 			disabled={!lineStyle.show}
 		>
-			{#each Object.entries(linePatternObj) as [key, value] (key)}
-				<option {value}>{key}</option>
+			{#each Object.entries(lineStyle.lineWidth.values) as [key, value] (key)}
+				<option {key}>{key}</option>
 			{/each}
 		</select>
-	</div> -->
+	</div>
+	{#if lineStyle.lineWidth.type === 'custom'}
+		<input
+			type="range"
+			class="custom-slider"
+			bind:value={lineStyle.lineWidth.values.custom}
+			min="0"
+			max="10"
+			step="0.01"
+		/>
+	{/if}
 {/if}
 
 <style>
