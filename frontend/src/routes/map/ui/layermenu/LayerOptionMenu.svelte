@@ -24,6 +24,8 @@
 	import FillOptionMenu from './LayerOptionMenu/FillOptionMenu.svelte';
 	import LineOptionMenu from './LayerOptionMenu/LineOptionMenu.svelte';
 	import CircleOptionMenu from './LayerOptionMenu/CircleOptionMenu.svelte';
+	import RangeSlider from '$routes/map/ui/atoms/RangeSlider.svelte';
+	import CheckBox from '$routes/map/ui/atoms/CheckBox.svelte';
 
 	import { onMount } from 'svelte';
 
@@ -137,25 +139,8 @@
 					<button on:click={copyLayer}> コピーの作成 </button>
 				</div>
 				<div class="h-full flex-grow overscroll-y-auto">
-					<div class="flex gap-2">
-						<label class="">表示</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.visible}
-						/>
-					</div>
-					<div class="flex flex-col gap-2">
-						<label class="">透過度</label>
-						<input
-							type="range"
-							class="custom-slider"
-							bind:value={layerOption.opacity}
-							min="0"
-							max="1"
-							step="0.01"
-						/>
-					</div>
+					<CheckBox label="表示" bind:value={layerOption.visible} />
+					<RangeSlider label="透過度" bind:value={layerOption.opacity} />
 					{#if layerOption.dataType === 'vector' || layerOption.dataType === 'geojson'}
 						{#if layerOption.style && layerType && layerOption.style[layerType]}
 							{#if layerOption.style['symbol'] !== undefined}

@@ -10,6 +10,7 @@
 	import CheckBox from '$routes/map/ui/atoms/CheckBox.svelte';
 	import SelectBox from '$routes/map/ui/atoms/SelectBox.svelte';
 	import ColorPicker from '$routes/map/ui/atoms/ColorPicker.svelte';
+	import RangeSlider from '$routes/map/ui/atoms/RangeSlider.svelte';
 
 	$: colorStyle = fillStyle.color[fillStyleKey];
 </script>
