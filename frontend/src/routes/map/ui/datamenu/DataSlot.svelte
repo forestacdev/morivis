@@ -22,7 +22,7 @@
 	};
 
 	const preview = () => {
-		mapStore.addPreviewLayer(layerEntry);
+		// mapStore.addPreviewLayer(layerEntry);
 	};
 </script>
 
@@ -31,7 +31,7 @@
 >
 	<div class="relative flex w-full justify-between">
 		<button
-			on:click={preview}
+			on:click={() => toggleLayer(layerEntry.id)}
 			class="w-full cursor-pointer items-end p-2 transition-all duration-150"
 		>
 			<span class="">{layerEntry.name}</span>

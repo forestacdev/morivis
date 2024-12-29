@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { LayerEntry, LayerPaint } from '$routes/map/data/types';
+	import type { LayerEntry, LayerStyleColor } from '$routes/map/data/types';
 	import { Style, type FillLayerSpecification } from 'maplibre-gl';
 	import { demLayers } from '$routes/map/data/raster/dem';
 	import Icon from '@iconify/svelte';
@@ -13,7 +13,15 @@
 	import { COLOR_MAP_TYPE } from '$routes/map/data/raster/dem';
 	import type { ColorMapTypeKey } from '$routes/map/data/raster/dem';
 	import { isMatchStyle, isSingleStyle, isInterpolateStyle } from '$routes/map/data/expression';
-	import type { InterpolateColors, MatchColors, SingleColor } from '$routes/map/data/types';
+	import type {
+		InterpolateColors,
+		MatchColors,
+		SingleColor,
+		GeometryType
+	} from '$routes/map/data/types';
+
+	import FillOptionMenu from './LayerOptionMenu/FillOptionMenu.svelte';
+	import LineOptionMenu from './LayerOptionMenu/LineOptionMenu.svelte';
 
 	import { onMount } from 'svelte';
 
@@ -23,10 +31,40 @@
 		}
 	});
 
-	// let layerOption: LayerEntry | undefined;
-	$: layerOption = layerDataEntries.find((layer) => layer.id === $showlayerOptionId);
-	$: styleKey = layerOption?.styleKey;
+	type StyleKey = 'fill' | 'line' | 'circle' | 'symbol';
 
+	// let layerOption: LayerEntry | undefined;
+	const getStyleKey = (option: LayerEntry, type: StyleKey) => {
+		if (!option || option.dataType === 'raster') return;
+		return option?.style?.[type]?.styleKey;
+	};
+
+	$: layerOption = layerDataEntries.find(
+		(layer) => layer.id === $showlayerOptionId
+	) as LayerEntry;
+
+	$: fillStyleKey = getStyleKey(layerOption, 'fill');
+	$: lineStyleKey = getStyleKey(layerOption, 'line');
+	$: symbolStyleKey = getStyleKey(layerOption, 'symbol');
+	$: layerType = ((): 'fill' | 'line' | 'circle' | 'symbol' | undefined => {
+		if (!layerOption) return;
+		switch (layerOption.geometryType) {
+			case 'polygon':
+				return 'fill';
+			case 'line':
+				return 'line';
+			case 'point':
+				return 'circle';
+			case 'label':
+				return 'symbol';
+			default:
+				return;
+		}
+	})();
+
+	// let categorieskeys = layerOption.style[layerType].color[styleKey].values.categories;
+
+	// console.log('styleColor', styleColor);
 	// レイヤーの削除
 	const removeLayer = () => {
 		if (!layerOption) return;
@@ -93,123 +131,29 @@
 				/>
 			</div>
 			{#if layerOption.dataType === 'vector' || layerOption.dataType === 'geojson'}
-				{#if layerOption.showSymbol !== undefined}
-					<div class="flex gap-2">
-						<label class="block">ラベル</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.showSymbol}
-						/>
-					</div>
-				{/if}
-				{#if layerOption.showLine !== undefined}
-					<div class="flex gap-2">
-						<label class="block">アウトライン</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.showLine}
-						/>
-					</div>
-				{/if}
-				{#if layerOption.showFill !== undefined}
-					<div class="flex gap-2">
-						<label class="block">塗りつぶし</label>
-						<input
-							type="checkbox"
-							class="custom-checkbox"
-							bind:checked={layerOption.showFill}
-						/>
-					</div>
-				{/if}
-				{#if layerOption.geometryType === 'polygon' && layerOption.style && layerOption.style.fill}
-					<div class="flex flex-col gap-2">
-						<select
-							class="custom-select {!layerOption.showFill ? 'opacity-50' : ''}"
-							bind:value={layerOption.styleKey}
-							disabled={!layerOption.showFill}
-						>
-							{#each Object.keys(layerOption.style.fill) as item (item)}
-								<option value={item}>{item}</option>
-							{/each}
-						</select>
-					</div>
-					<!-- {#if layerOption.styleKey === '単色'}
+				{#if layerOption.style && layerType && layerOption.style[layerType]}
+					{#if layerOption.style['symbol'] !== undefined}
 						<div class="flex gap-2">
-							<label class="block">色</label>
+							<label class="block">ラベル</label>
 							<input
-								type="color"
-								class="custom-color"
-								bind:value={layerOption.style.fill['単色'].values.color}
-							/>
-						</div>
-					{/if} -->
-					{#if styleKey && isSingleStyle(layerOption.style.fill[styleKey])}
-						<div class="flex gap-2">
-							<label class="block">色</label>
-							<input
-								type="color"
-								class="custom-color"
-								bind:value={layerOption.style.fill[styleKey].values.color}
-							/>
-						</div>
-					{:else if styleKey && isMatchStyle(layerOption.style.fill[styleKey])}
-						{#each Object.entries(layerOption.style.fill[styleKey].values.categories) as [key, value]}
-							<div class="flex w-full items-center">
-								<div class="w-full text-sm">{key}</div>
-								<input
-									type="checkbox"
-									value={key}
-									bind:group={layerOption.style.fill[styleKey].values
-										.showCategories}
-								/>
-
-								<input
-									type="color"
-									class="custom-color"
-									bind:value={layerOption.style.fill[styleKey].values.categories[
-										key
-									]}
-								/>
-							</div>
-						{/each}
-					{:else if styleKey && isInterpolateStyle(layerOption.style.fill[styleKey])}{/if}
-				{:else if layerOption.geometryType === 'line'}
-					<div class="flex flex-col gap-2">
-						<select class="custom-select" bind:value={layerOption.styleKey}>
-							{#each layerOption.style.line as item (item)}
-								<option value={item.name}>{item.name}</option>
-							{/each}
-						</select>
-					</div>
-					{#if layerOption.styleKey === '単色'}
-						<div class="flex gap-2">
-							<label class="block">色</label>
-							<input
-								type="color"
-								class="custom-color"
-								bind:value={layerOption.style.line[0].paint['line-color']}
+								type="checkbox"
+								class="custom-checkbox"
+								bind:checked={layerOption.style['symbol'].show}
 							/>
 						</div>
 					{/if}
-				{:else if layerOption.geometryType === 'point'}
-					<div class="flex flex-col gap-2">
-						<select class="custom-select" bind:value={layerOption.styleKey}>
-							{#each layerOption.style.circle as item (item)}
-								<option value={item.name}>{item.name}</option>
-							{/each}
-						</select>
-					</div>
-					{#if layerOption.styleKey === '単色'}
-						<div class="flex gap-2">
-							<label class="block">色</label>
-							<input
-								type="color"
-								class="custom-color"
-								bind:value={layerOption.style.circle[0].paint['circle-color']}
-							/>
-						</div>
+					{#if layerOption.style['line'] !== undefined}
+						<LineOptionMenu
+							bind:lineStyle={layerOption.style['line']}
+							bind:lineStyleKey
+							{layerType}
+						/>
+					{/if}
+					{#if layerOption.style['fill'] !== undefined}
+						<FillOptionMenu
+							bind:fillStyle={layerOption.style['fill']}
+							bind:fillStyleKey
+						/>
 					{/if}
 				{/if}
 			{/if}

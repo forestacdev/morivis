@@ -13,26 +13,47 @@ export const geojsonLineEntries: GeojsonEntry<'line'>[] = [
 		visible: true,
 		clickable: false,
 		location: ['森林文化アカデミー'],
-		styleKey: '単色',
 		style: {
-			line: [
-				{
-					name: '単色',
-					paint: {
-						'line-color': '#ffffff',
-						'line-width': {
-							stops: [
-								[15, 1.5],
-								[17, 4]
-							]
+			line: {
+				show: true,
+				styleKey: '単色',
+				color: {
+					['単色']: {
+						type: 'single',
+						property: '',
+						values: {
+							default: '#ff0000'
 						}
 					},
-					layout: {
-						'line-cap': 'square',
-						'line-join': 'round'
+					['道の種類ごとの色分け']: (() => {
+						const categories = {
+							林道: '#00ff00'
+						};
+						return {
+							type: 'match',
+							property: '種類',
+							values: {
+								categories,
+								default: '#00bfff',
+								showCategories: Object.keys(categories) // 動的に生成
+							}
+						};
+					})()
+				},
+				linePattern: 'solid',
+				lineWidth: {
+					type: 'default',
+					values: {
+						default: ['match', ['get', '種類'], ['林道'], 10, 5],
+						custom: 2
 					}
+				},
+				paint: {},
+				layout: {
+					'line-cap': 'square',
+					'line-join': 'round'
 				}
-			]
+			}
 		}
 	}
 ];

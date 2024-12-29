@@ -283,6 +283,29 @@ export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
 	return sourceItems;
 };
 
+// ラインレイヤーの作成
+const createLineLayer = (layer, layerId, layerEntry, lineStyle, lineStyleKey) => {
+	const lineColor = lineStyle.color[lineStyleKey] ?? lineStyle.color['デフォルト'];
+	const color = createColorExpression(lineColor);
+	const lineWidth = lineStyle.lineWidth.values[lineStyle.lineWidth.type] ?? 2;
+
+	return {
+		...layer,
+		id: `${layerId}_outline`,
+		type: 'line',
+		paint: {
+			...(lineStyle?.paint ?? {}),
+			'line-opacity': layerEntry.opacity,
+			'line-color': color,
+			'line-width': lineWidth,
+			...(lineStyle.linePattern === 'dashed' ? { 'line-dasharray': [2, 2] } : {})
+		},
+		layout: {
+			...(lineStyle?.layout ?? {})
+		}
+	};
+};
+
 // layersの作成
 export const createLayerItems = (
 	layerDataEntries: LayerEntry[],
@@ -338,24 +361,28 @@ export const createLayerItems = (
 				// ベクトルタイル ポリゴンレイヤー
 				case 'vector':
 				case 'geojson': {
-					const styleKey = layerEntry.styleKey;
-
 					if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
 					if (layerEntry.dataType === 'vector') {
 						layer['source-layer'] = layerEntry.sourceLayer;
 					}
-					if (layerEntry.geometryType === 'polygon') {
-						if (!layerEntry.style?.fill) {
-							console.warn(`Unknown layer: ${layerEntry}`);
-							return;
-						}
-						const fillStyle = layerEntry.style?.fill[styleKey];
-						const color = createColorExpression(fillStyle);
+					const fillStyle = layerEntry.style?.fill;
+					const lineStyle = layerEntry.style?.line;
+					const circleStyle = layerEntry.style?.circle;
+					const symbolStyle = layerEntry.style?.symbol;
+
+					const fillStyleKey = fillStyle?.styleKey;
+					const lineStyleKey = lineStyle?.styleKey;
+					const circleStyleKey = circleStyle?.styleKey;
+					const symbolStyleKey = symbolStyle?.styleKey;
+					if (layerEntry.geometryType === 'polygon' && fillStyle && fillStyleKey) {
+						const fillColor = fillStyle.color[fillStyleKey];
+
+						const color = createColorExpression(fillColor);
 						const fillLayer = {
 							...layer,
 							type: 'fill',
 							paint: {
-								'fill-opacity': layerEntry.showFill ? layerEntry.opacity : 0,
+								'fill-opacity': fillStyle.show ? layerEntry.opacity : 0,
 								'fill-outline-color': '#00000000',
 								'fill-color': color,
 								...(fillStyle?.paint ?? {})
@@ -368,44 +395,46 @@ export const createLayerItems = (
 						layerItems.push(fillLayer as FillLayerSpecification);
 
 						// アウトラインを追加
-						if (layerEntry.showLine) {
-							const styleIndex = layerEntry.style?.line?.findIndex(
-								(item) => item.name === styleKey
-							) as number;
+						if (lineStyle && lineStyleKey && lineStyle.show) {
+							const lineLayer = createLineLayer(
+								layer,
+								layerId,
+								layerEntry,
+								lineStyle,
+								lineStyleKey
+							);
+							layerItems.push(lineLayer as LineLayerSpecification);
+						}
 
-							layerItems.push({
+						// ラベルを追加
+						if (symbolStyle && symbolStyleKey && symbolStyle.show) {
+							const symbolColor =
+								symbolStyle.color[symbolStyleKey] ??
+								symbolStyle.color['デフォルト'];
+							const color = createColorExpression(symbolColor);
+							symbolLayerItems.push({
 								...layer,
-								id: `${layerId}_outline`,
-								type: 'line',
+								id: `${layerId}_label`,
+								type: 'symbol',
 								paint: {
-									'line-opacity': layerEntry.opacity,
-									...(styleIndex !== -1
-										? layerEntry.style?.line?.[styleIndex]?.paint
-										: layerEntry.style?.line?.[0]?.paint)
+									'text-opacity': layerEntry.opacity,
+									'icon-opacity': layerEntry.opacity,
+									'text-color': color,
+									...(symbolStyle?.paint ?? {})
 								},
 								layout: {
-									...(styleIndex !== -1
-										? layerEntry.style?.line?.[styleIndex]?.layout
-										: layerEntry.style?.line?.[0]?.layout)
+									...(symbolStyle?.layout ?? {})
 								}
 							});
 						}
-					} else if (layerEntry.geometryType === 'line') {
-						const setStyele = layerEntry.style?.line?.find(
-							(item) => item.name === styleKey
+					} else if (layerEntry.geometryType === 'line' && lineStyle && lineStyleKey) {
+						const lineLayer = createLineLayer(
+							layer,
+							layerId,
+							layerEntry,
+							lineStyle,
+							lineStyleKey
 						);
-
-						const lineLayer = {
-							...layer,
-							type: 'line',
-							paint: {
-								'line-opacity': layerEntry.opacity,
-								...(setStyele?.paint ?? {})
-							},
-							layout: {
-								...(setStyele?.layout ?? {})
-							}
-						};
 
 						layerItems.push(lineLayer as LineLayerSpecification);
 					} else if (layerEntry.geometryType === 'point') {

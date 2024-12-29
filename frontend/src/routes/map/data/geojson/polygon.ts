@@ -13,25 +13,21 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 		visible: true,
 		clickable: true,
 		searchKeys: ['小林班ID', '樹種', '林齢'],
-		showSymbol: false,
-		showLine: false,
-		showFill: true,
 		location: ['森林文化アカデミー'],
-		styleKey: '樹種ごとの色分け',
 		style: {
 			fill: {
-				['単色']: {
-					type: 'single',
-					property: '',
-					values: {
-						color: '#2a826c'
-					}
-				},
-				['樹種ごとの色分け']: {
-					type: 'match',
-					property: '樹種',
-					values: {
-						categories: {
+				show: true,
+				styleKey: '樹種ごとの色分け',
+				color: {
+					['単色']: {
+						type: 'single',
+						property: '',
+						values: {
+							default: '#2a826c'
+						}
+					},
+					['樹種ごとの色分け']: (() => {
+						const categories = {
 							スギ: '#399210',
 							ヒノキ: '#4ADDA5',
 							アカマツ: '#DD2B2B',
@@ -39,101 +35,138 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 							広葉樹: '#EBBC22',
 							草地: '#2351E5',
 							その他岩石: '#D98F34'
-						},
-						default: '#00000000',
-						showCategories: [
-							'スギ',
-							'ヒノキ',
-							'アカマツ',
-							'スラッシュマツ',
-							'広葉樹',
-							'草地',
-							'その他岩石'
-						]
-					}
-				},
-				['林班']: {
-					type: 'match',
-					property: '林班',
-					values: {
-						categories: {
+						};
+
+						return {
+							type: 'match',
+							property: '樹種',
+							values: {
+								categories,
+								default: '#00000000',
+								showCategories: Object.keys(categories) // 動的に生成
+							}
+						};
+					})(),
+					['林班']: (() => {
+						const categories = {
 							1: '#DD2B2B',
 							2: '#0043a7',
 							3: '#f0e000'
-						},
-						default: '#00000000',
-						showCategories: [1, 2] // 初期状態で非表示にするカテゴリ
-					}
-				},
-				['面積ごとの色分け']: {
-					type: 'interpolate',
-					property: '面積',
-					values: {
-						stops: [
-							[0, '#f8d5cc'],
-							[1, '#6e40e6']
-						]
+						};
+
+						return {
+							type: 'match',
+							property: '林班',
+							values: {
+								categories,
+								default: '#00000000',
+								showCategories: Object.keys(categories) // 動的に生成
+							}
+						};
+					})(),
+					['面積ごとの色分け']: {
+						type: 'interpolate',
+						property: '面積',
+						values: {
+							stops: {
+								0: '#f8d5cc',
+								1: '#6e40e6'
+							}
+						}
 					}
 				}
 			},
 			line: {
-				['デフォルト']: {
-					type: 'single',
-					property: '',
+				show: true,
+				styleKey: 'デフォルト',
+				color: {
+					['デフォルト']: {
+						type: 'single',
+						property: '',
+						values: {
+							default: '#ffe600'
+						}
+					},
+					['樹種ごとの色分け']: (() => {
+						const categories = {
+							スギ: '#399210',
+							ヒノキ: '#4ADDA5',
+							アカマツ: '#DD2B2B',
+							スラッシュマツ: '#B720BF',
+							広葉樹: '#EBBC22',
+							草地: '#2351E5',
+							その他岩石: '#D98F34'
+						};
+
+						return {
+							type: 'match',
+							property: '樹種',
+							values: {
+								categories,
+								default: '#00000000',
+								showCategories: Object.keys(categories) // 動的に生成
+							}
+						};
+					})()
+				},
+				linePattern: 'dashed',
+				lineWidth: {
+					type: 'default',
 					values: {
-						color: '#ffe600'
-					},
-					layout: {
-						'line-join': 'round',
-						'line-cap': 'round'
-					},
-					paint: {
-						'line-width': 2,
-						'line-dasharray': [2, 2] // この部分で破線のパターンを指定
+						default: 2,
+						custom: 2
 					}
+				},
+				layout: {
+					'line-join': 'round',
+					'line-cap': 'round'
 				}
 			},
 			symbol: {
-				['デフォルト']: {
-					type: 'single',
-					property: '',
-					values: {
-						color: '#000000'
-					},
-					paint: {
-						'text-halo-color': '#e0e0e0',
-						'text-halo-width': 2,
-						'text-opacity': 1
-					},
-					layout: {
-						'text-field': [
-							'match',
-							['get', '樹種'],
-							['広葉樹'],
-							['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
-							['草地'],
-							['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
-							['その他岩石'],
-							['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
-							[
-								'to-string',
-								[
-									'concat',
-									['get', '小林班ID'],
-									'\n',
-									['get', '樹種'],
-									' ',
-									['+', ['get', '林齢'], 3],
-									'年生'
-								]
-							]
-						],
-						'text-max-width': 12,
-						'text-size': 12,
-						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-						'text-radial-offset': 0.5,
-						'text-justify': 'auto'
+				show: true,
+				styleKey: 'デフォルト',
+				color: {
+					['デフォルト']: {
+						type: 'single',
+						property: '',
+						values: {
+							default: '#000000'
+						}
 					}
+				},
+				paint: {
+					'text-halo-color': '#e0e0e0',
+					'text-halo-width': 2,
+					'text-opacity': 1
+				},
+				layout: {
+					'text-field': [
+						'match',
+						['get', '樹種'],
+						['広葉樹'],
+						['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
+						['草地'],
+						['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
+						['その他岩石'],
+						['to-string', ['concat', ['get', '小林班ID'], '\n', ['get', '樹種']]],
+						[
+							'to-string',
+							[
+								'concat',
+								['get', '小林班ID'],
+								'\n',
+								['get', '樹種'],
+								' ',
+								['+', ['get', '林齢'], 3],
+								'年生'
+							]
+						]
+					],
+					'text-max-width': 12,
+					'text-size': 12,
+					'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+					'text-radial-offset': 0.5,
+					'text-justify': 'auto'
 				}
 			}
 		}
@@ -251,3 +284,7 @@ export const geojsonPolygonEntries: GeojsonEntry<'polygon'>[] = [
 	// 	}
 	// }
 ];
+
+geojsonPolygonEntries.forEach((entry) => {
+	entry.showStyles = ['fill'];
+});

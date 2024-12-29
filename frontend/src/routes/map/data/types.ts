@@ -12,55 +12,126 @@ import type {
 	RasterLayerSpecification,
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification,
-	FilterSpecification
+	FilterSpecification,
+	DataDrivenPropertyValueSpecification
 } from 'maplibre-gl';
 
 export type SingleColor = {
-	color: string; // 単色
+	default: string; // 単色
 };
-
 export type MatchColors = {
 	categories: { [key: string | number]: string }; // 辞書形式のカテゴリ分け
 	default: string; // デフォルトの色
 	showCategories: string[] | number[]; // 表示するカテゴリ
 };
-
 export type InterpolateColors = {
-	stops: [number, string][]; // 補間に使うストップ値と色
+	stops: { [key: number]: string }; // 補間に使うストップ値と色
 };
-
-export type LayerPaint<T, U> = Record<
+export type LayerStyleColor = Record<
 	string,
 	{
 		type: 'single' | 'match' | 'interpolate';
 		property: string;
 		values: SingleColor | MatchColors | InterpolateColors;
-		paint?: T;
-		layout?: U;
 	}
 >;
 
-// export type LayerPaint<T, U> = { name: string; paint: T; layout?: U };
+export type SingleNumeric = {
+	default: number; // 単一の数値
+};
+export type MatchNumeric = {
+	categories: { [key: string | number]: number }; // カテゴリと数値のマッピング
+	default: number; // デフォルト値
+	showCategories: string[] | number[]; // 表示するカテゴリ
+};
+export type InterpolateNumeric = {
+	stops: { [key: number]: number }; // 補間用ストップ値と数値のマッピング
+};
+export type LayerStyleNumeric = Record<
+	string,
+	{
+		type: 'single' | 'match' | 'interpolate';
+		property: string;
+		values: SingleNumeric | MatchNumeric | InterpolateNumeric;
+	}
+>;
+
+export type FillLayerOptions<T, U> = {
+	show: boolean;
+	styleKey: string;
+	color: LayerStyleColor;
+	paint?: T;
+	layout?: U;
+};
+
+export type LinePattern = 'solid' | 'dashed';
+export type LineWidth = {
+	type: 'default' | 'custom';
+	values: {
+		default: DataDrivenPropertyValueSpecification<number>;
+		custom: number;
+	};
+};
+
+export type LineLayerOptions<T, U> = {
+	show: boolean;
+	styleKey: string;
+	color: LayerStyleColor;
+	linePattern: LinePattern;
+	lineWidth: LineWidth;
+	paint?: T;
+	layout?: U;
+};
+
+export type CircleLayerOptions<T, U> = {
+	show: boolean;
+	styleKey: string;
+	color: LayerStyleColor;
+	paint?: T;
+	layout?: U;
+};
+
+export type SymbolLayerOptions<T, U> = {
+	show: boolean;
+	styleKey: string;
+	color: LayerStyleColor;
+	paint?: T;
+	layout?: U;
+};
+
+type RasterLayerOptions<T, U> = {
+	paint?: T;
+	layout?: U;
+};
 
 type VectorStyle = {
-	fill?: LayerPaint<FillLayerSpecification['paint'], FillLayerSpecification['layout']>;
-	line?: LayerPaint<LineLayerSpecification['paint'], LineLayerSpecification['layout']>;
-	symbol?: LayerPaint<SymbolLayerSpecification['paint'], SymbolLayerSpecification['layout']>;
-	circle?: LayerPaint<CircleLayerSpecification['paint'], CircleLayerSpecification['layout']>;
-	heatmap?: LayerPaint<HeatmapLayerSpecification['paint'], HeatmapLayerSpecification['layout']>;
-	fillExtrusion?: LayerPaint<
-		FillExtrusionLayerSpecification['paint'],
-		FillExtrusionLayerSpecification['layout']
+	fill?: FillLayerOptions<FillLayerSpecification['paint'], FillLayerSpecification['layout']>;
+	line?: LineLayerOptions<LineLayerSpecification['paint'], LineLayerSpecification['layout']>;
+	circle?: CircleLayerOptions<
+		CircleLayerSpecification['paint'],
+		CircleLayerSpecification['layout']
 	>;
+	symbol?: SymbolLayerOptions<
+		SymbolLayerSpecification['paint'],
+		SymbolLayerSpecification['layout']
+	>;
+	// heatmap?: LayerStyleColor<HeatmapLayerSpecification['paint'], HeatmapLayerSpecification['layout']>;
+	// fillExtrusion?: LayerStyleColor<
+	// 	FillExtrusionLayerSpecification['paint'],
+	// 	FillExtrusionLayerSpecification['layout']
+	// >;
 };
 
 type RasterStyle = {
-	raster?: LayerPaint<RasterLayerSpecification['paint'], RasterLayerSpecification['layout']>[];
-	hillshade?: LayerPaint<
+	raster?: RasterLayerOptions<
+		RasterLayerSpecification['paint'],
+		RasterLayerSpecification['layout']
+	>[];
+	hillshade?: RasterLayerOptions<
 		HillshadeLayerSpecification['paint'],
 		HillshadeLayerSpecification['layout']
 	>[];
-	background?: LayerPaint<
+	background?: RasterLayerOptions<
 		BackgroundLayerSpecification['paint'],
 		BackgroundLayerSpecification['layout']
 	>[];
@@ -126,7 +197,7 @@ export type RasterEntry = {
 	isOverVector?: boolean;
 	opacity: number;
 	styleKey: string;
-	style?: RasterStyle;
+	style: RasterStyle;
 	visible: boolean;
 	clickable?: boolean; // クリック可能かどうか
 	remarks?: string; // 備考
@@ -203,7 +274,7 @@ export type DemEntry = {
 	isOverVector?: boolean;
 	opacity: number;
 	styleKey: string;
-	style?: RasterStyle;
+	style: RasterStyle;
 	visible: boolean;
 	clickable?: boolean; // クリック可能かどうか
 	remarks?: string; // 備考
@@ -232,13 +303,9 @@ export type GeojsonEntry<T extends GeometryType> = {
 	layerMinZoom?: number;
 	layerMaxZoom?: number;
 	opacity: number;
-	styleKey: string;
-	style?: VectorStyle;
+	style: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;
-	showSymbol?: boolean;
-	showLine?: boolean;
-	showFill?: boolean;
 	fieldDict?: string; // プロパティの辞書ファイルのURL
 	clickable?: boolean; // クリック可能かどうか
 	searchKeys?: string[]; // 検索対象のプロパティ名
@@ -261,7 +328,7 @@ export type VectorEntry<T extends GeometryType> = {
 	layerMaxZoom?: number;
 	opacity: number;
 	styleKey: string;
-	style?: VectorStyle;
+	style: VectorStyle;
 	filter?: FilterSpecification;
 	visible: boolean;
 	showSymbol?: boolean;

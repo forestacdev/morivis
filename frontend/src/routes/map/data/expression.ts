@@ -1,12 +1,19 @@
 import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 
-import type { InterpolateColors, MatchColors, SingleColor } from '$routes/map/data/types';
+import type {
+	SingleColor,
+	MatchColors,
+	InterpolateColors,
+	SingleNumeric,
+	MatchNumeric,
+	InterpolateNumeric
+} from '$routes/map/data/types';
 
 const createSingleColorExpression = (style: SingleColor): string => {
-	return style.color;
+	return style.default;
 };
 
-const createMatchExpression = (
+const createMatchColorsExpression = (
 	style: MatchColors,
 	property: string
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
@@ -31,14 +38,21 @@ const createMatchExpression = (
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
-const createInterpolateExpression = (
+const createInterpolateColorsExpression = (
 	style: InterpolateColors,
 	property: string
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
 	const expression = ['interpolate', ['linear'], ['get', property]];
-	style.stops.forEach(([stop, color]) => {
-		expression.push(stop, color);
+
+	Object.entries(style.stops).forEach(([key, color]) => {
+		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
+		const formattedKey = Number(key);
+		if (isNaN(Number(key))) {
+			throw new Error('Invalid key');
+		}
+		expression.push(formattedKey, color);
 	});
+
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
@@ -57,7 +71,7 @@ export const isInterpolateStyle = (
 export const isSingleStyle = (
 	style: any
 ): style is { type: 'single'; property: string; values: SingleColor } => {
-	return style.type === 'single' && 'color' in style.values;
+	return style.type === 'single';
 };
 
 export const createColorExpression = (
@@ -70,9 +84,74 @@ export const createColorExpression = (
 		case 'single':
 			return createSingleColorExpression(style.values);
 		case 'match':
-			return createMatchExpression(style.values, style.property);
+			return createMatchColorsExpression(style.values, style.property);
 		case 'interpolate':
-			return createInterpolateExpression(style.values, style.property);
+			return createInterpolateColorsExpression(style.values, style.property);
+		default:
+			throw new Error('Unsupported style type');
+	}
+};
+
+const createSingleNumericExpression = (style: SingleNumeric): number => {
+	return style.default;
+};
+
+const createMatchNumericExpression = (
+	style: MatchNumeric,
+	property: string
+): DataDrivenPropertyValueSpecification<number> => {
+	const expression: any[] = ['match', ['get', property]];
+
+	const showCategories = style.showCategories;
+
+	if (showCategories.length === 0) {
+		return style.default;
+	}
+
+	Object.entries(style.categories).forEach(([key, value]) => {
+		if (showCategories.includes(key)) {
+			// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
+			const formattedKey = !isNaN(Number(key)) ? Number(key) : key;
+			expression.push(formattedKey, value);
+		}
+	});
+
+	// デフォルトの色を追加
+	expression.push(style.default);
+	return expression as DataDrivenPropertyValueSpecification<number>;
+};
+
+const createInterpolateNumericExpression = (
+	style: InterpolateNumeric,
+	property: string
+): DataDrivenPropertyValueSpecification<number> => {
+	const expression = ['interpolate', ['linear'], ['get', property]];
+
+	Object.entries(style.stops).forEach(([key, value]) => {
+		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
+		const formattedKey = Number(key);
+		if (isNaN(Number(key))) {
+			throw new Error('Invalid key');
+		}
+		expression.push(formattedKey, value);
+	});
+
+	return expression as DataDrivenPropertyValueSpecification<number>;
+};
+
+export const createNumericExpression = (
+	style:
+		| { type: 'single'; property: string; values: SingleNumeric }
+		| { type: 'match'; property: string; values: MatchNumeric }
+		| { type: 'interpolate'; property: string; values: InterpolateNumeric }
+): DataDrivenPropertyValueSpecification<number> => {
+	switch (style.type) {
+		case 'single':
+			return createSingleNumericExpression(style.values);
+		case 'match':
+			return createMatchNumericExpression(style.values, style.property);
+		case 'interpolate':
+			return createInterpolateNumericExpression(style.values, style.property);
 		default:
 			throw new Error('Unsupported style type');
 	}
