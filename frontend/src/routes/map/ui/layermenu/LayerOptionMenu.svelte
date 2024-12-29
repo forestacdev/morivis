@@ -109,33 +109,6 @@
 	onMount(() => {});
 </script>
 
-<div class="flex h-screen max-h-screen w-screen flex-col bg-gray-500">
-	<div class="h-14 flex-shrink-0 bg-red-400">ヘッダー(高さ固定)</div>
-	<div class="flex flex-grow flex-col justify-between overflow-auto bg-blue-400 p-5">
-		メインコンテンツ（可変）
-		<div class="h-full flex-grow overflow-auto bg-orange-400">可変コンテンツ</div>
-		<div class="h-full flex-grow overflow-auto bg-purple-400">
-			可変スクロールコンテンツ
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-			<div class="border-b-2 border-black bg-white p-3">リストカード</div>
-		</div>
-	</div>
-	<div class="h-14 flex-shrink-0 bg-green-400">フッター(高さ固定)</div>
-</div>
 {#if $showlayerOptionId}
 	<div
 		class="absolute left-[370px] flex h-screen w-[300px] flex-col gap-2 rounded-sm bg-[#C27142] p-2 text-slate-100 shadow-2xl"
@@ -209,7 +182,7 @@
 									{layerType}
 								/>
 							{/if} -->
-							{#if layerOption.style['fill'] !== undefined}
+							{#if layerOption.style['fill'] !== undefined && fillStyleKey}
 								<FillOptionMenu
 									bind:fillStyle={layerOption.style['fill']}
 									bind:fillStyleKey

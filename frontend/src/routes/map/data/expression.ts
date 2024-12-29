@@ -42,7 +42,11 @@ const createInterpolateColorsExpression = (
 	style: InterpolateColors,
 	property: string
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	const expression = ['interpolate', ['linear'], ['get', property]];
+	const expression: DataDrivenPropertyValueSpecification<ColorSpecification> = [
+		'interpolate',
+		['linear'],
+		['get', property]
+	];
 
 	Object.entries(style.stops).forEach(([key, color]) => {
 		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ
@@ -73,6 +77,14 @@ export const isSingleStyle = (
 ): style is { type: 'single'; property: string; values: SingleColor } => {
 	return style.type === 'single';
 };
+
+// export const isMatchColors = (values: any): values is MatchColors => {
+// 	return 'categories' in values;
+// };
+
+// export const isInterpolateColors = (values: any): values is InterpolateColors => {
+// 	return 'stops' in values;
+// };
 
 export const createColorExpression = (
 	style:
@@ -125,7 +137,11 @@ const createInterpolateNumericExpression = (
 	style: InterpolateNumeric,
 	property: string
 ): DataDrivenPropertyValueSpecification<number> => {
-	const expression = ['interpolate', ['linear'], ['get', property]];
+	const expression: DataDrivenPropertyValueSpecification<number> = [
+		'interpolate',
+		['linear'],
+		['get', property]
+	];
 
 	Object.entries(style.stops).forEach(([key, value]) => {
 		// 数値に変換可能なら数値型でプッシュ、そうでなければ文字列型でプッシュ

@@ -26,7 +26,7 @@ export type MatchColors = {
 	showCategories: string[] | number[]; // 表示するカテゴリ
 };
 export type InterpolateColors = {
-	stops: { [key: number]: string }; // 補間に使うストップ値と色
+	stops: { [key: string]: string }; // 補間に使うストップ値と色
 };
 export type LayerStyleColor = Record<
 	string,
