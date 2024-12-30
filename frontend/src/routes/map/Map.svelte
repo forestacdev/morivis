@@ -15,9 +15,13 @@
 
 	import { mapStore } from '$map/store/map';
 	import { DEBUG_MODE } from '$map/store/store';
-	import JsonEditor from '$lib/components/JsonEditor.svelte';
+	import JsonEditor from '$map/debug/JsonEditor.svelte';
+	import GuiControl from '$map/debug/GuiControl.svelte';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	let showJsonEditor = $state<{
+		value: boolean;
+	}>({ value: false });
 
 	type LayerEntry = {
 		id: string;
@@ -28,12 +32,10 @@
 	};
 
 	let layerDataEntries = $state<LayerEntry[] | undefined>([]); // レイヤーデータ
-	let mapStyle: StyleSpecification | null;
-
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	// mapStyleの作成
 	const createMapStyle = () => {
-		mapStyle = {
+		const mapStyle = {
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
@@ -70,7 +72,6 @@
 	$effect(() => {
 		// console.log('layerDataEntries', layerDataEntries);
 		$inspect(layerDataEntries);
-		console.log($state.snapshot(layerDataEntries));
 		const mapStyle = createMapStyle();
 		mapStore.setStyle(mapStyle as StyleSpecification);
 	});
@@ -79,9 +80,7 @@
 		console.log('click', e);
 	});
 
-	mapStore.onSetStyle((e) => {
-		mapStyle = createMapStyle();
-	});
+	mapStore.onSetStyle((e) => {});
 
 	// マップの回転
 	// const setMapBearing = (e) => {
@@ -102,7 +101,10 @@
 </script>
 
 {#if $DEBUG_MODE}
-	<JsonEditor {mapStyle} />
+	{#if showJsonEditor.value}
+		<JsonEditor map={mapStore.getMap()} />
+	{/if}
+	<GuiControl map={mapStore.getMap()} {showJsonEditor} />
 {/if}
 
 <div bind:this={mapContainer} class="h-full w-full"></div>

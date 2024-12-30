@@ -39,12 +39,6 @@ const createMapStore = () => {
 	const rotateEvent = writable<MapLibreEvent | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isLoadingEvent = writable<boolean>(true);
-	const mapTriggerRepaint = () => {
-		if (map) {
-			map.triggerRepaint();
-			map.resize();
-		}
-	};
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -79,110 +73,6 @@ const createMapStore = () => {
 		});
 
 		setStyleEvent.set(mapStyle);
-
-		// タイル境界を表示
-		if (get(DEBUG_MODE)) {
-			map.showTileBoundaries = true;
-			map.showCollisionBoxes = true;
-			map.showOverdrawInspector = false;
-			map.showPadding = true;
-			gui = new GUI();
-			gui
-				.add(map, 'showTileBoundaries')
-				.name('タイル境界表示')
-				.onChange(() => mapTriggerRepaint);
-
-			gui
-				.add(map, 'showCollisionBoxes')
-				.name('シンボル境界表示')
-				.onChange(() => mapTriggerRepaint);
-
-			gui
-				.add(map, 'showOverdrawInspector')
-				.name('レンダリング')
-				.onChange(() => mapTriggerRepaint);
-
-			gui
-				.add(map, 'showPadding')
-				.name('境界')
-				.onChange(() => mapTriggerRepaint);
-
-			gui
-				.add(
-					{
-						button: () => {
-							window.open('https://maplibre.org/maplibre-gl-js/docs/API/', '_blank', 'noopener');
-						}
-					},
-					'button'
-				)
-				.name('doc');
-
-			const debug = {
-				mouseX: 0,
-				mouseY: 0,
-				mapZ: 0,
-				bboxLeft: 0,
-				bboxBottom: 0,
-				bboxRight: 0,
-				bboxTop: 0
-			};
-
-			gui.add(debug, 'mouseX', 0).listen().disable();
-			gui.add(debug, 'mouseY', 0).listen().disable();
-			gui.add(debug, 'mapZ', 0).listen().disable();
-			gui.add(debug, 'bboxLeft', 0).listen().disable();
-			gui.add(debug, 'bboxBottom', 0).listen().disable();
-			gui.add(debug, 'bboxRight', 0).listen().disable();
-			gui.add(debug, 'bboxTop', 0).listen().disable();
-
-			gui
-				.add(
-					{
-						setStyle: () => {
-							const style = map.getStyle();
-							setStyle(style);
-						}
-					},
-					'setStyle'
-				)
-				.name('setStyle');
-
-			// ファイルの保存
-
-			// map.on('move', () => {
-			//     debug.innerHTML = `zoom: ${map.getZoom()}<br>center: ${map.getCenter()}`;
-			// });
-
-			map.on('mousemove', (e) => {
-				// 座標を取得
-				const lngLat = e.lngLat;
-				const mercator = maplibregl.MercatorCoordinate.fromLngLat(lngLat);
-				debug.mouseX = mercator.x;
-				debug.mouseY = mercator.y;
-			});
-			map.on('zoom', (e) => {
-				debug.mapZ = map.getZoom();
-			});
-			map.on('moveend', (e) => {
-				const Bounds = map.getBounds();
-				const bbox = [Bounds.getWest(), Bounds.getSouth(), Bounds.getEast(), Bounds.getNorth()];
-
-				debug.bboxLeft = bbox[0];
-				debug.bboxBottom = bbox[1];
-				debug.bboxRight = bbox[2];
-				debug.bboxTop = bbox[3];
-
-				// const mySource = map.getSource('canvas-source') as maplibregl.CanvasSource;
-				// mySource.setCoordinates([
-				//     [bbox[0], bbox[3]],
-				//     [bbox[2], bbox[3]],
-				//     [bbox[2], bbox[1]],
-				//     [bbox[0], bbox[1]],
-				// ]);
-				// console.log(bbox);
-			});
-		}
 
 		if (!map) return;
 		// set(map);
@@ -418,6 +308,7 @@ const createMapStore = () => {
 		addLockonMarker,
 		removeLockonMarker,
 		getLockonMarker: () => lockOnMarker,
+		getMap: () => map,
 		queryRenderedFeatures,
 		getZoom: () => map?.getZoom(),
 		panTo,
