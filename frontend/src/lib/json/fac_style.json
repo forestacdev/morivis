@@ -1,0 +1,7643 @@
+{
+	"version": 8,
+	"name": "fac_style",
+	"metadata": {
+		"gsimaps-vector-url": "https://maps.gsi.go.jp/vector/#14.98/35.962858/139.126849/&ls=vpale&disp=1&d=l",
+		"center": { "lng": 139.12684936238338, "lat": 35.962858375188006 },
+		"zl": 14.980286498897925,
+		"maputnik:renderer": "mbgljs"
+	},
+	"sources": {
+		"natural_earth_shaded_relief": {
+			"maxzoom": 6,
+			"tileSize": 256,
+			"tiles": [
+				"https://klokantech.github.io/naturalearthtiles/tiles/natural_earth_2_shaded_relief.raster/{z}/{x}/{y}.png"
+			],
+			"type": "raster"
+		},
+		"terrain": {
+			"type": "raster-dem",
+			"tiles": [
+				"https://gsj-seamless.jp/seamless/elev/php/terrainRGB.php?url=https://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png"
+			],
+			"minzoom": 0,
+			"maxzoom": 14,
+			"encoding": "mapbox"
+		},
+		"gifu-forest": {
+			"type": "vector",
+			"tiles": [
+				"https://raw.githubusercontent.com/forestacdev/gifu-dataset/main/data/gml/A13-15_21/tiles/{z}/{x}/{y}.pbf"
+			],
+			"minZoom": 0,
+			"maxZoom": 14
+		},
+		"gsibv-vectortile-source-1-4-16": {
+			"type": "vector",
+			"tiles": ["https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf"],
+			"minzoom": 4,
+			"maxzoom": 16,
+			"attribution": "<a href=\"https://maps.gsi.go.jp/vector/\" target=\"_blank\">地理院地図Vector（仮称）</a>"
+		}
+	},
+	"sprite": "https://gsi-cyberjapan.github.io/gsivectortile-mapbox-gl-js/sprite/pale",
+	"glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+	"layers": [
+		{
+			"id": "background-copy",
+			"type": "background",
+			"minzoom": 17,
+			"layout": { "visibility": "none" },
+			"paint": { "background-color": "rgba(166, 166, 166, 1)" }
+		},
+		{
+			"id": "background",
+			"type": "background",
+			"maxzoom": 24,
+			"layout": { "visibility": "visible" },
+			"paint": { "background-color": "rgba(193, 193, 193, 1)" }
+		},
+		{
+			"id": "natural_earth",
+			"type": "raster",
+			"source": "natural_earth_shaded_relief",
+			"maxzoom": 6,
+			"paint": {
+				"raster-opacity": {
+					"base": 1.5,
+					"stops": [
+						[0, 0.6],
+						[6, 0.1]
+					]
+				}
+			}
+		},
+		{
+			"id": "terrain",
+			"type": "hillshade",
+			"source": "terrain",
+			"maxzoom": 24,
+			"layout": { "visibility": "visible" },
+			"paint": {
+				"hillshade-highlight-color": "rgb(0, 107, 55)",
+				"hillshade-accent-color": "rgba(47, 144, 166, 1)",
+				"hillshade-shadow-color": "rgba(2, 68, 121, 1)",
+				"hillshade-illumination-anchor": "map",
+				"hillshade-exaggeration": 1
+			}
+		},
+		{
+			"id": "gifu-forest-a001210020160209",
+			"type": "fill",
+			"source": "gifu-forest",
+			"source-layer": "a001210020160209",
+			"layout": { "visibility": "none" },
+			"paint": { "fill-color": "rgba(21, 88, 33, 1)" }
+		},
+		{
+			"id": "gifu-forest-a001210020160207",
+			"type": "fill",
+			"source": "gifu-forest",
+			"source-layer": "a001210020160207",
+			"layout": { "visibility": "none" },
+			"paint": { "fill-color": "rgba(16, 123, 38, 1)" }
+		},
+		{
+			"id": "gifu-forest-a001210020160210",
+			"type": "fill",
+			"source": "gifu-forest",
+			"source-layer": "a001210020160210",
+			"layout": { "visibility": "none" },
+			"paint": { "fill-color": "rgba(79, 21, 88, 1)" }
+		},
+		{
+			"id": "gifu-forest-a001210020160208",
+			"type": "fill",
+			"source": "gifu-forest",
+			"source-layer": "a001210020160208",
+			"layout": { "visibility": "none" },
+			"paint": { "fill-color": "rgba(193, 45, 48, 1)" }
+		},
+		{
+			"id": "gsibv-river-763",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-884",
+				"title": "人工水路（地下）",
+				"path": "河川-人工水路（地下）",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 8,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 5322]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(190,210,255)",
+				"line-width": {
+					"stops": [
+						[9, 1],
+						[17, 2]
+					]
+				},
+				"line-dasharray": [2, 2]
+			}
+		},
+		{
+			"id": "gsibv-river-764",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-885",
+				"title": "人工水路（地下）",
+				"path": "河川-人工水路（地下）",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5322]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(20,90,255)",
+				"line-width": {
+					"stops": [
+						[9, 1],
+						[17, 2]
+					]
+				},
+				"line-dasharray": [5, 4]
+			}
+		},
+		{
+			"id": "gsibv-river-765",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-879",
+				"title": "枯れ川部",
+				"path": "河川-枯れ川部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 8,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 5302]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(190,210,255)",
+				"line-width": {
+					"stops": [
+						[9, 1],
+						[17, 2]
+					]
+				},
+				"line-dasharray": [2, 2]
+			}
+		},
+		{
+			"id": "gsibv-river-766",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-880",
+				"title": "枯れ川部",
+				"path": "河川-枯れ川部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5302]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(20,90,255)",
+				"line-width": {
+					"stops": [
+						[9, 1],
+						[17, 2]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-river-767",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-881",
+				"title": "枯れ川部",
+				"path": "河川-枯れ川部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 5302]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgb(20,90,255)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-waterarea-768",
+			"type": "fill",
+			"metadata": {
+				"layer-id": "layer-549",
+				"title": "水域",
+				"path": "水域",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "waterarea",
+			"minzoom": 4,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 55000]],
+			"layout": { "visibility": "visible" },
+			"paint": { "fill-color": "rgba(51, 136, 193, 1)" }
+		},
+		{
+			"id": "gsibv-waterarea-769",
+			"type": "fill",
+			"metadata": {
+				"layer-id": "layer-550",
+				"title": "水域",
+				"path": "水域",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "waterarea",
+			"minzoom": 8,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 5000]],
+			"layout": { "visibility": "visible" },
+			"paint": { "fill-color": "rgba(1, 110, 172, 1)" }
+		},
+		{
+			"id": "gsibv-lake-771",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-886",
+				"title": "湖池",
+				"path": "湖池-湖池",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 4,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 55242]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgb(20,90,255)", "line-width": 0.5 }
+		},
+		{
+			"id": "gsibv-laker-774",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-887",
+				"title": "通常部",
+				"path": "湖池-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5231]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgb(20,90,255)", "line-width": 0.5 }
+		},
+		{
+			"id": "gsibv-lake-775",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-888",
+				"title": "通常部",
+				"path": "湖池-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 5231]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgb(20,90,255)", "line-width": 0.5 }
+		},
+		{
+			"id": "gsibv-lake-776",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-889",
+				"title": "岩等に接する部分",
+				"path": "湖池-岩等に接する部分",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5232]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(0,0,0,0)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-lake-777",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-890",
+				"title": "堤防等に接する部分",
+				"path": "湖池-堤防等に接する部分",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5233]],
+			"layout": { "line-cap": "round", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": 1.5,
+				"line-dasharray": [0.2, 4]
+			}
+		},
+		{
+			"id": "gsibv-lake-778",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-890",
+				"title": "堤防等に接する部分",
+				"path": "湖池-堤防等に接する部分",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 5233]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": 1,
+				"line-offset": -1
+			}
+		},
+		{
+			"id": "gsibv-lake-779",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-891",
+				"title": "堤防等に接する部分",
+				"path": "湖池-堤防等に接する部分",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "lake",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 5233]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-river-782",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-878",
+				"title": "堤防等に接する部分",
+				"path": "河川-堤防等に接する部分",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "river",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 5203]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1147",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-725",
+				"title": "通常部",
+				"path": "道路-都道府県道-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-contour-1",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-1",
+				"title": "主曲線通常部",
+				"path": "等高線等深線-等高線-主曲線通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "contour",
+			"minzoom": 0,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "altiFlag", 1]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(48, 48, 48, 1)", "line-width": 0.7 }
+		},
+		{
+			"id": "gsibv-contour-2",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-2",
+				"title": "主曲線通常部",
+				"path": "等高線等深線-等高線-主曲線通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "contour",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "altiFlag", 0]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(0, 0, 0, 1)", "line-width": 1.4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-932",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-731",
+				"title": "通常部（有料）",
+				"path": "道路-市区町村道・その他-通常部（有料）",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 10,
+			"maxzoom": 13,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["!=", "motorway", 1],
+				["==", "tollSect", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-933",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-667",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-934",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-702",
+				"title": "通常部",
+				"path": "道路-都道府県道-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-935",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-710",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-936",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-715",
+				"title": "通常部",
+				"path": "道路-都道府県道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-937",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-720",
+				"title": "通常部",
+				"path": "道路-都道府県道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-938",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-725",
+				"title": "通常部",
+				"path": "道路-都道府県道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-939",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-670",
+				"title": "通常部",
+				"path": "道路-国道-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-940",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-678",
+				"title": "通常部",
+				"path": "道路-国道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-941",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-683",
+				"title": "通常部",
+				"path": "道路-国道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-942",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-688",
+				"title": "通常部",
+				"path": "道路-国道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-943",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-693",
+				"title": "通常部",
+				"path": "道路-国道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-944",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-638",
+				"title": "通常部",
+				"path": "道路-高速道路-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-945",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-646",
+				"title": "通常部",
+				"path": "道路-高速道路-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-946",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-651",
+				"title": "通常部",
+				"path": "道路-高速道路-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-947",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-656",
+				"title": "通常部",
+				"path": "道路-高速道路-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-948",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-661",
+				"title": "通常部",
+				"path": "道路-高速道路-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-949",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-669",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[11, 2],
+						[15, 3],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-950",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-760",
+				"title": "通常部",
+				"path": "道路-庭園路-3m未満・その他・不明-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 6]
+					]
+				},
+				"line-dasharray": [1.5, 0.3]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-951",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-761",
+				"title": "通常部",
+				"path": "道路-庭園路-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 9]
+					]
+				},
+				"line-dasharray": [1.5, 0.3]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-952",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-762",
+				"title": "通常部",
+				"path": "道路-庭園路-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 13]
+					]
+				},
+				"line-dasharray": [1.5, 0.3]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-953",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-763",
+				"title": "通常部",
+				"path": "道路-庭園路-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 17]
+					]
+				},
+				"line-dasharray": [1.5, 0.3]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-954",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-764",
+				"title": "通常部",
+				"path": "道路-庭園路-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 6],
+						[17, 21]
+					]
+				},
+				"line-dasharray": [1.5, 0.3]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-955",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-735",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-3m未満・その他・不明-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-956",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-740",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 14]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-957",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-745",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 22]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-958",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-750",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 25]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-959",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-755",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 10],
+						[17, 36]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-960",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-711",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 14]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-961",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-716",
+				"title": "通常部",
+				"path": "道路-都道府県道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 22]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-962",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-721",
+				"title": "通常部",
+				"path": "道路-都道府県道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 25]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-963",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-726",
+				"title": "通常部",
+				"path": "道路-都道府県道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 10],
+						[17, 36]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-964",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-674",
+				"title": "通常部",
+				"path": "道路-国道-3m未満・その他・不明-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-965",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-679",
+				"title": "通常部",
+				"path": "道路-国道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 14]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-966",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-684",
+				"title": "通常部",
+				"path": "道路-国道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 22]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-967",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-689",
+				"title": "通常部",
+				"path": "道路-国道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 25]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-968",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-694",
+				"title": "通常部",
+				"path": "道路-国道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 10],
+						[17, 36]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-969",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-642",
+				"title": "通常部",
+				"path": "道路-高速道路-3m未満・その他・不明-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(120,220,160,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-970",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-647",
+				"title": "通常部",
+				"path": "道路-高速道路-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 14]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-971",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-652",
+				"title": "通常部",
+				"path": "道路-高速道路-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 22]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-972",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-657",
+				"title": "通常部",
+				"path": "道路-高速道路-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 25]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-973",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-662",
+				"title": "通常部",
+				"path": "道路-高速道路-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 10],
+						[17, 36]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-974",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-669",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(160,160,160,1)",
+				"line-width": {
+					"stops": [
+						[11, 1],
+						[15, 1],
+						[17, 4]
+					]
+				},
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-975",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-701",
+				"title": "徒歩道",
+				"path": "道路-都道府県道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(173,173,173,1)",
+				"line-width": {
+					"stops": [
+						[11, 1],
+						[15, 1],
+						[17, 4]
+					]
+				},
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-976",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-730",
+				"title": "徒歩道",
+				"path": "道路-市区町村道・その他-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["any", ["==", "rdCtg", 2], ["==", "rdCtg", 5], ["==", "rdCtg", 6]],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[11, 1],
+						[15, 1],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-977",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-776",
+				"title": "雪覆い",
+				"path": "道路-雪覆い",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2702], ["==", "ftCode", 2712], ["==", "ftCode", 2722]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(200,200,200,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-978",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-666",
+				"title": "石段",
+				"path": "道路-国道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-979",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-666",
+				"title": "石段",
+				"path": "道路-国道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": 5,
+				"line-dasharray": [1, 0.1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-980",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-698",
+				"title": "石段",
+				"path": "道路-都道府県道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-981",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-698",
+				"title": "石段",
+				"path": "道路-都道府県道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": 5,
+				"line-dasharray": [1, 0.1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-982",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-729",
+				"title": "石段",
+				"path": "道路-市区町村道・その他-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["any", ["==", "rdCtg", 2], ["==", "rdCtg", 5], ["==", "rdCtg", 6]],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-983",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-729",
+				"title": "石段",
+				"path": "道路-市区町村道・その他-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["any", ["==", "rdCtg", 2], ["==", "rdCtg", 5], ["==", "rdCtg", 6]],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": 5,
+				"line-dasharray": [1, 0.1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-984",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-760",
+				"title": "通常部",
+				"path": "道路-庭園路-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 1],
+						[17, 5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-985",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-761",
+				"title": "通常部",
+				"path": "道路-庭園路-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-986",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-762",
+				"title": "通常部",
+				"path": "道路-庭園路-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-987",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-763",
+				"title": "通常部",
+				"path": "道路-庭園路-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 16]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-988",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-764",
+				"title": "通常部",
+				"path": "道路-庭園路-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2711], ["==", "ftCode", 2713], ["==", "ftCode", 2714]],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-989",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-770",
+				"title": "3m未満・その他・不明",
+				"path": "道路-トンネル内の道路-3m未満・その他・不明",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, 1],
+						[17, 2.5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-990",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-770",
+				"title": "3m未満・その他・不明",
+				"path": "道路-トンネル内の道路-3m未満・その他・不明",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, -1],
+						[17, -2.5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-991",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-771",
+				"title": "3m以上5.5m未満",
+				"path": "道路-トンネル内の道路-3m以上5.5m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, 1.5],
+						[17, 7]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-992",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-771",
+				"title": "3m以上5.5m未満",
+				"path": "道路-トンネル内の道路-3m以上5.5m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, -1.5],
+						[17, -7]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-993",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-772",
+				"title": "5.5m以上13m未満",
+				"path": "道路-トンネル内の道路-5.5m以上13m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, 2],
+						[17, 11]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-994",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-772",
+				"title": "5.5m以上13m未満",
+				"path": "道路-トンネル内の道路-5.5m以上13m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, -2],
+						[17, -11]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-995",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-773",
+				"title": "13m以上19.5m未満",
+				"path": "道路-トンネル内の道路-13m以上19.5m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, 2.5],
+						[17, 12.5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-996",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-773",
+				"title": "13m以上19.5m未満",
+				"path": "道路-トンネル内の道路-13m以上19.5m未満",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, -2.5],
+						[17, -12.5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-997",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-774",
+				"title": "19.5m以上",
+				"path": "道路-トンネル内の道路-19.5m以上",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, 5],
+						[17, 18]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-998",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-774",
+				"title": "19.5m以上",
+				"path": "道路-トンネル内の道路-19.5m以上",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [10, 8],
+				"line-width": 0.5,
+				"line-offset": {
+					"stops": [
+						[15, -5],
+						[17, -18]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-999",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-740",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1000",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-745",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1001",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-750",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1002",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-755",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 34]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1003",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-706",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1004",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-711",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1005",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-716",
+				"title": "通常部",
+				"path": "道路-都道府県道-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1006",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-721",
+				"title": "通常部",
+				"path": "道路-都道府県道-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1007",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-726",
+				"title": "通常部",
+				"path": "道路-都道府県道-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 34]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1008",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-674",
+				"title": "通常部",
+				"path": "道路-国道-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1009",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-679",
+				"title": "通常部",
+				"path": "道路-国道-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1010",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-684",
+				"title": "通常部",
+				"path": "道路-国道-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1011",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-689",
+				"title": "通常部",
+				"path": "道路-国道-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1012",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-694",
+				"title": "通常部",
+				"path": "道路-国道-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 34]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1046",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-642",
+				"title": "通常部",
+				"path": "道路-高速道路-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2701],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1047",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-647",
+				"title": "通常部",
+				"path": "道路-高速道路-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1048",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-652",
+				"title": "通常部",
+				"path": "道路-高速道路-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1049",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-657",
+				"title": "通常部",
+				"path": "道路-高速道路-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(220, 185, 120, 1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1050",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-662",
+				"title": "通常部",
+				"path": "道路-高速道路-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 34]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1051",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-742",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 11]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1052",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-747",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 6],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1053",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-752",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 7],
+						[17, 26]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1054",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-757",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-19.5m以上-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 12],
+						[17, 37]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1055",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-713",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m以上5.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 16]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1056",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-718",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-5.5m以上13m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 6],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1057",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-723",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-13m以上19.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 7],
+						[17, 26]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1058",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-728",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-19.5m以上-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 12],
+						[17, 37]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1059",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-676",
+				"title": "橋・高架",
+				"path": "道路-国道-3m未満・その他・不明-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1060",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-681",
+				"title": "橋・高架",
+				"path": "道路-国道-3m以上5.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 16]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1061",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-686",
+				"title": "橋・高架",
+				"path": "道路-国道-5.5m以上13m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 6],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1062",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-691",
+				"title": "橋・高架",
+				"path": "道路-国道-13m以上19.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 7],
+						[17, 26]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1063",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-696",
+				"title": "橋・高架",
+				"path": "道路-国道-19.5m以上-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 12],
+						[17, 37]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1064",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-644",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m未満・その他・不明-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(120,220,160,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1065",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-649",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m以上5.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 5],
+						[17, 16]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1066",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-654",
+				"title": "橋・高架",
+				"path": "道路-高速道路-5.5m以上13m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 6],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1067",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-659",
+				"title": "橋・高架",
+				"path": "道路-高速道路-13m以上19.5m未満-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 7],
+						[17, 26]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1068",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-664",
+				"title": "橋・高架",
+				"path": "道路-高速道路-19.5m以上-橋・高架",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 12],
+						[17, 37]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1069",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-737",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(173,173,173,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1070",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-742",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 8]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1071",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-747",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1072",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-752",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1073",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-757",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 35]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1074",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-708",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1075",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-713",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1076",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-718",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1077",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-723",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1078",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-728",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,255,255,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 35]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1079",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-676",
+				"title": "橋・高架",
+				"path": "道路-国道-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1080",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-681",
+				"title": "橋・高架",
+				"path": "道路-国道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1081",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-686",
+				"title": "橋・高架",
+				"path": "道路-国道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1082",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-691",
+				"title": "橋・高架",
+				"path": "道路-国道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1083",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-696",
+				"title": "橋・高架",
+				"path": "道路-国道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 35]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1104",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-644",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": {
+					"stops": [
+						[15, 1.5],
+						[17, 4]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1105",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-649",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": {
+					"stops": [
+						[15, 2],
+						[17, 12]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1106",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-654",
+				"title": "橋・高架",
+				"path": "道路-高速道路-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[15, 3],
+						[17, 20]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1107",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-659",
+				"title": "橋・高架",
+				"path": "道路-高速道路-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 17,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(199, 93, 0, 1)",
+				"line-width": {
+					"stops": [
+						[15, 4],
+						[17, 24]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1108",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-664",
+				"title": "橋・高架",
+				"path": "道路-高速道路-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 14,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 203, 146, 1)",
+				"line-width": {
+					"stops": [
+						[15, 9],
+						[17, 35]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1109",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-733",
+				"title": "トンネル",
+				"path": "道路-市区町村道・その他-3m未満・その他・不明-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,0.75)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1110",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-734",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1111",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-736",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1112",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-738",
+				"title": "トンネル",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,0.75)", "line-width": 1.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1113",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-739",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 1.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1114",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-741",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 1.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1115",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-743",
+				"title": "トンネル",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1116",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-744",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1117",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-746",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1118",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-748",
+				"title": "トンネル",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,0.75)", "line-width": 2.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1119",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-749",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 2.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1120",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-751",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 2.5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1121",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-753",
+				"title": "トンネル",
+				"path": "道路-市区町村道・その他-19.5m以上-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,0.75)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1122",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-754",
+				"title": "通常部",
+				"path": "道路-市区町村道・その他-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1123",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-756",
+				"title": "橋・高架",
+				"path": "道路-市区町村道・その他-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 13,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(173,173,173,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1124",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-703",
+				"title": "トンネル",
+				"path": "道路-都道府県道-通常部-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rdCtg", 1], ["!=", "motorway", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1125",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-702",
+				"title": "通常部",
+				"path": "道路-都道府県道-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1126",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-702",
+				"title": "通常部",
+				"path": "道路-都道府県道-通常部-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1127",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-704",
+				"title": "トンネル",
+				"path": "道路-都道府県道-3m未満・その他・不明-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1128",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-705",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1129",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-707",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1130",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-709",
+				"title": "トンネル",
+				"path": "道路-都道府県道-3m以上5.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1131",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-710",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1132",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-710",
+				"title": "通常部",
+				"path": "道路-都道府県道-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 1)",
+				"line-width": 2,
+				"line-blur": 0.1
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1133",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-712",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1134",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-712",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1135",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-714",
+				"title": "トンネル",
+				"path": "道路-都道府県道-5.5m以上13m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1136",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-715",
+				"title": "通常部",
+				"path": "道路-都道府県道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1137",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-715",
+				"title": "通常部",
+				"path": "道路-都道府県道-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(239, 239, 239, 1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1138",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-717",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1139",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-717",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(246, 246, 246, 1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1140",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-719",
+				"title": "トンネル",
+				"path": "道路-都道府県道-13m以上19.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1141",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-720",
+				"title": "通常部",
+				"path": "道路-都道府県道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1142",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-720",
+				"title": "通常部",
+				"path": "道路-都道府県道-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(225, 225, 225, 1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1143",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-722",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1144",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-722",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1145",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-724",
+				"title": "トンネル",
+				"path": "道路-都道府県道-19.5m以上-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,0.75)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1146",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-725",
+				"title": "通常部",
+				"path": "道路-都道府県道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1148",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-727",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 7 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1149",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-727",
+				"title": "橋・高架",
+				"path": "道路-都道府県道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1150",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-731",
+				"title": "通常部（有料）",
+				"path": "道路-市区町村道・その他-通常部（有料）",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 10,
+			"maxzoom": 13,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["!=", "motorway", 1],
+				["==", "tollSect", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1151",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-731",
+				"title": "通常部（有料）",
+				"path": "道路-市区町村道・その他-通常部（有料）",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 10,
+			"maxzoom": 13,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["!=", "motorway", 1],
+				["==", "tollSect", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1152",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-732",
+				"title": "トンネル（有料）",
+				"path": "道路-市区町村道・その他-トンネル（有料）",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 10,
+			"maxzoom": 13,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["!=", "rdCtg", 0],
+				["!=", "rdCtg", 1],
+				["!=", "rdCtg", 3],
+				["!=", "motorway", 1],
+				["!=", "motorway", 1],
+				["==", "tollSect", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220,220,220,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1153",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-667",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1154",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-667",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(160,160,160,1)",
+				"line-width": 1,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1155",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-668",
+				"title": "徒歩道",
+				"path": "道路-国道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": 1,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1156",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-699",
+				"title": "徒歩道",
+				"path": "道路-都道府県道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(160,160,160,1)",
+				"line-width": 1,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1157",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-700",
+				"title": "徒歩道",
+				"path": "道路-都道府県道-徒歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2721],
+				["<=", "ftCode", 2724],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(220,220,220,1)",
+				"line-width": 1,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1158",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-665",
+				"title": "石段",
+				"path": "道路-国道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": 2,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1159",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-697",
+				"title": "石段",
+				"path": "道路-都道府県道-石段",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				[">=", "ftCode", 2731],
+				["<=", "ftCode", 2734],
+				["==", "rdCtg", 1],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(220,220,220,1)",
+				"line-width": 2,
+				"line-dasharray": [6, 1]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1160",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-671",
+				"title": "トンネル",
+				"path": "道路-国道-通常部-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "rdCtg", 0], ["!=", "motorway", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1161",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-670",
+				"title": "通常部",
+				"path": "道路-国道-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1162",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-670",
+				"title": "通常部",
+				"path": "道路-国道-通常部-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": 2,
+				"line-blur": 0.5
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1163",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-672",
+				"title": "トンネル",
+				"path": "道路-国道-3m未満・その他・不明-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1164",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-673",
+				"title": "通常部",
+				"path": "道路-国道-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1165",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-675",
+				"title": "橋・高架",
+				"path": "道路-国道-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1166",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-677",
+				"title": "トンネル",
+				"path": "道路-国道-3m以上5.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1167",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-678",
+				"title": "通常部",
+				"path": "道路-国道-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1168",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-678",
+				"title": "通常部",
+				"path": "道路-国道-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1169",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-680",
+				"title": "橋・高架",
+				"path": "道路-国道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1170",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-680",
+				"title": "橋・高架",
+				"path": "道路-国道-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1171",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-682",
+				"title": "トンネル",
+				"path": "道路-国道-5.5m以上13m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1172",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-683",
+				"title": "通常部",
+				"path": "道路-国道-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1173",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-683",
+				"title": "通常部",
+				"path": "道路-国道-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(163, 98, 0, 1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1174",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-685",
+				"title": "橋・高架",
+				"path": "道路-国道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1175",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-685",
+				"title": "橋・高架",
+				"path": "道路-国道-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1176",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-687",
+				"title": "トンネル",
+				"path": "道路-国道-13m以上19.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1177",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-688",
+				"title": "通常部",
+				"path": "道路-国道-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1178",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-688",
+				"title": "通常部",
+				"path": "道路-国道-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1179",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-690",
+				"title": "橋・高架",
+				"path": "道路-国道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1180",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-690",
+				"title": "橋・高架",
+				"path": "道路-国道-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1181",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-692",
+				"title": "トンネル",
+				"path": "道路-国道-19.5m以上-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,0.75)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1182",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-693",
+				"title": "通常部",
+				"path": "道路-国道-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1183",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-693",
+				"title": "通常部",
+				"path": "道路-国道-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(255,220,150,1)",
+				"line-width": 5,
+				"line-blur": 0.1
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1184",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-695",
+				"title": "橋・高架",
+				"path": "道路-国道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 7 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1185",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-695",
+				"title": "橋・高架",
+				"path": "道路-国道-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "rdCtg", 0],
+				["!=", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(255,220,150,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1238",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-638",
+				"title": "通常部",
+				"path": "道路-高速道路-通常部-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1239",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-638",
+				"title": "通常部",
+				"path": "道路-高速道路-通常部-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702], ["==", "ftCode", 2703]],
+				["==", "motorway", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": 2,
+				"line-blur": 0.5
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1240",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-639",
+				"title": "トンネル",
+				"path": "道路-高速道路-通常部-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 8,
+			"maxzoom": 11,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(178, 178, 152, 0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1241",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-640",
+				"title": "トンネル",
+				"path": "道路-高速道路-3m未満・その他・不明-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2704],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(120,220,160,0.75)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1242",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-641",
+				"title": "通常部",
+				"path": "道路-高速道路-3m未満・その他・不明-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(120,220,160,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1243",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-643",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m未満・その他・不明-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["==", "ftCode", 2703],
+				["==", "motorway", 1],
+				["any", ["==", "rnkWidth", 0], [">=", "rnkWidth", 5]]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(120,220,160,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1244",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-645",
+				"title": "トンネル",
+				"path": "道路-高速道路-3m以上5.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(120,220,160,0.75)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1245",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-646",
+				"title": "通常部",
+				"path": "道路-高速道路-3m以上5.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1246",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-646",
+				"title": "通常部",
+				"path": "道路-高速道路-3m以上5.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 1]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(233, 210, 175, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1247",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-648",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1248",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-648",
+				"title": "橋・高架",
+				"path": "道路-高速道路-3m以上5.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 1]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(201, 160, 143, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1249",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-650",
+				"title": "トンネル",
+				"path": "道路-高速道路-5.5m以上13m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(180, 154, 103, 0.75)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1250",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-651",
+				"title": "通常部",
+				"path": "道路-高速道路-5.5m以上13m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1251",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-651",
+				"title": "通常部",
+				"path": "道路-高速道路-5.5m以上13m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 2]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(159, 84, 0, 1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1252",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-653",
+				"title": "橋・高架",
+				"path": "道路-高速道路-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1253",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-653",
+				"title": "橋・高架",
+				"path": "道路-高速道路-5.5m以上13m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 2]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(220, 174, 120, 1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1254",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-655",
+				"title": "トンネル",
+				"path": "道路-高速道路-13m以上19.5m未満-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(215, 177, 97, 0.75)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1255",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-656",
+				"title": "通常部",
+				"path": "道路-高速道路-13m以上19.5m未満-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1256",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-656",
+				"title": "通常部",
+				"path": "道路-高速道路-13m以上19.5m未満-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 3]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(169, 145, 105, 1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1257",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-658",
+				"title": "橋・高架",
+				"path": "道路-高速道路-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1258",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-658",
+				"title": "橋・高架",
+				"path": "道路-高速道路-13m以上19.5m未満-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 3]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(225, 179, 105, 1)", "line-width": 4 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1259",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-660",
+				"title": "トンネル",
+				"path": "道路-高速道路-19.5m以上-トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(238, 173, 27, 0.75)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1260",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-661",
+				"title": "通常部",
+				"path": "道路-高速道路-19.5m以上-通常部",
+				"line-role": "outline",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(160,160,160,1)", "line-width": 6 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1261",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-661",
+				"title": "通常部",
+				"path": "道路-高速道路-19.5m以上-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": [
+				"all",
+				["any", ["==", "ftCode", 2701], ["==", "ftCode", 2702]],
+				["==", "motorway", 1],
+				["==", "rnkWidth", 4]
+			],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(172, 101, 3, 1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1262",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-663",
+				"title": "橋・高架",
+				"path": "道路-高速道路-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "butt",
+				"line-join": "round",
+				"visibility": "none"
+			},
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 7 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1263",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-663",
+				"title": "橋・高架",
+				"path": "道路-高速道路-19.5m以上-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 11,
+			"maxzoom": 14,
+			"filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1], ["==", "rnkWidth", 4]],
+			"layout": {
+				"line-cap": "square",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": { "line-color": "rgba(172, 101, 3, 1)", "line-width": 5 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1279",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-634",
+				"title": "主要な道路",
+				"path": "道路-主要な道路",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 6,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 52701]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(238,202,119)",
+				"line-width": {
+					"stops": [
+						[6, 1],
+						[7, 1.5]
+					]
+				},
+				"line-blur": 1
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1280",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-635",
+				"title": "主要な道路トンネル",
+				"path": "道路-主要な道路トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 6,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 52702]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgb(123,183,124)",
+				"line-width": {
+					"stops": [
+						[6, 1],
+						[7, 1.5]
+					]
+				}
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1281",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-765",
+				"title": "通常部",
+				"path": "道路-庭園路-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 24,
+			"filter": [
+				"any",
+				["==", "ftCode", 2221],
+				["==", "ftCode", 2251],
+				["==", "ftCode", 2224]
+			],
+			"layout": { "line-cap": "square", "visibility": "none" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1282",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-766",
+				"title": "橋・高架",
+				"path": "道路-庭園路-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["any", ["==", "ftCode", 2223]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1283",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-767",
+				"title": "通常部",
+				"path": "道路-徒歩道-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 24,
+			"filter": ["all", ["==", "ftCode", 2721]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(255, 255, 255, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1284",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-768",
+				"title": "雪覆い",
+				"path": "道路-徒歩道-雪覆い",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 2722]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1285",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-769",
+				"title": "橋・高架",
+				"path": "道路-徒歩道-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 2723]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1286",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-775",
+				"title": "通常部",
+				"path": "道路-トンネル内の道路-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["any", ["==", "ftCode", 2401], ["==", "ftCode", 2424]],
+			"layout": { "line-cap": "square", "visibility": "none" },
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-width": 1,
+				"line-dasharray": [10, 8]
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1287",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-758",
+				"title": "通常部",
+				"path": "道路-通常部-通常部",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 24,
+			"filter": [
+				"any",
+				["==", "ftCode", 2201],
+				["==", "ftCode", 2241],
+				["==", "ftCode", 2204],
+				["==", "ftCode", 2244]
+			],
+			"layout": { "line-cap": "square", "visibility": "none" },
+			"paint": { "line-color": "rgba(85, 85, 85, 1)", "line-width": 2 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1288",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-759",
+				"title": "橋・高架",
+				"path": "道路-通常部-橋・高架",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["any", ["==", "ftCode", 2203], ["==", "ftCode", 2243]],
+			"layout": { "line-cap": "square", "visibility": "none" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 3 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1289",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-777",
+				"title": "歩道",
+				"path": "道路-歩道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 2421]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1290",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-778",
+				"title": "側溝",
+				"path": "道路-側溝",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 2431]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1291",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-779",
+				"title": "雨水桝",
+				"path": "道路-雨水桝",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 17,
+			"maxzoom": 18,
+			"filter": ["all", ["==", "ftCode", 2451]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": { "line-color": "rgba(100,100,100,1)", "line-width": 1 }
+		},
+		{
+			"id": "gsibv-vectortile-layer-1295",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-636",
+				"title": "高速自動車道",
+				"path": "道路-高速自動車道",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 6,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 52703]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgba(172, 101, 3, 1)",
+				"line-width": {
+					"stops": [
+						[6, 1.5],
+						[7, 2.5]
+					]
+				},
+				"line-blur": 1
+			}
+		},
+		{
+			"id": "gsibv-vectortile-layer-1296",
+			"type": "line",
+			"metadata": {
+				"layer-id": "layer-637",
+				"title": "高速自動車道トンネル",
+				"path": "道路-高速自動車道トンネル",
+				"added": 1
+			},
+			"source": "gsibv-vectortile-source-1-4-16",
+			"source-layer": "road",
+			"minzoom": 6,
+			"maxzoom": 8,
+			"filter": ["all", ["==", "ftCode", 52704]],
+			"layout": { "line-cap": "square", "visibility": "visible" },
+			"paint": {
+				"line-color": "rgba(179, 159, 111, 1)",
+				"line-width": {
+					"stops": [
+						[6, 1.5],
+						[7, 2.5]
+					]
+				}
+			}
+		}
+	],
+	"id": "osm-liberty"
+}
