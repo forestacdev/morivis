@@ -7,6 +7,51 @@
 	export let max: number = 1;
 	export let step: number = 0.01;
 
+	const data = {
+		colorType: {
+			['樹種']: {
+				type: 'match',
+				label: '樹種ごとの色分け',
+				mapping: {
+					keys: [
+						'スギ',
+						'ヒノキ',
+						'アカマツ',
+						'スラッシュマツ',
+						'広葉樹',
+						'草地',
+						'その他岩石'
+					],
+					values: [
+						'#399210',
+						'#4ADDA5',
+						'#DD2B2B',
+						'#B720BF',
+						'#EBBC22',
+						'#2351E5',
+						'#D98F34'
+					],
+					default: '#00000000',
+					showIndex: [0, 1, 2, 3, 4, 5, 6]
+				}
+			},
+			numericType: {
+				['林齢']: {
+					type: 'interpolate',
+					label: '林齢ごとの数値',
+					values: {
+						mapping: {
+							keys: [0, 30],
+							values: [30, 50]
+						},
+						default: '#00000000',
+						showIndex: [0, 1]
+					}
+				}
+			}
+		}
+	};
+
 	let data = {
 		type: 'match',
 		property: '林齢',
