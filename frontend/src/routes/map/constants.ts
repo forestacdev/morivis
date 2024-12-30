@@ -5,8 +5,6 @@ export const BASEMAP_IMAGE_TILE: BasemapImageTile = {
 	Y: 12917
 };
 
-export const APP_MODE = import.meta.env.DEV ? 'development' : 'production';
-
 export const GEOJSON_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson';
 export const GIFU_DATA_BASE_PATH =

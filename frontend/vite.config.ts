@@ -7,6 +7,7 @@ export default defineConfig({
 	plugins: [sveltekit(), enhancedImages()],
 	resolve: {
 		alias: {
+			$map: path.resolve('./src/routes/map'),
 			$routes: path.resolve('./src/routes')
 		}
 	},

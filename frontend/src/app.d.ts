@@ -10,4 +10,8 @@ declare global {
 	}
 }
 
+// モジュールの型定義を追加
+declare module 'lodash.debounce';
+declare module 'path';
+
 export {};

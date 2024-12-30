@@ -23,6 +23,7 @@
 		"@sveltejs/enhanced-img": "^0.4.4",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"@types/lodash.debounce": "^4.0.9",
 		"autoprefixer": "^10.4.20",
 		"eslint": "^9.7.0",
 		"eslint-config-prettier": "^9.1.0",
@@ -41,7 +42,18 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
+		"@iconify/svelte": "^4.1.0",
+		"@mapbox/tilebelt": "^2.0.2",
 		"@tailwindcss/typography": "^0.5.15",
-		"maplibre-gl": "^4.7.1"
+		"@turf/bbox": "^7.2.0",
+		"@turf/bbox-polygon": "^7.2.0",
+		"@turf/bearing": "^7.2.0",
+		"@turf/boolean-crosses": "^7.2.0",
+		"@turf/boolean-point-on-line": "^7.2.0",
+		"lil-gui": "^0.20.0",
+		"lodash.debounce": "^4.0.8",
+		"maplibre-gl": "^4.7.1",
+		"maplibre-gl-gsi-terrain": "^2.0.1",
+		"pmtiles": "^4.1.0"
 	}
 }
