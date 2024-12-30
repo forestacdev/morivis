@@ -5,10 +5,8 @@ import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
 export const clickableLayerIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
 
-type MapMpde = 'view' | 'edit' | 'debug';
-
-export const MAP_MODE = writable<MapMpde>('view'); /* アプリケーションモード */
-
+export const DEBUG_MODE = writable<boolean>(false); /* デバッグモード */
+export const EDIT_MODE = writable<boolean>(false); /* 編集モード */
 /* リストに追加されてるレイヤーID */
 
 const sortedLayers = (Layers: string[]) => {

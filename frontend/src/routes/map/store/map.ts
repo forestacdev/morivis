@@ -27,7 +27,7 @@ import { GUI } from 'lil-gui';
 import debounce from 'lodash.debounce';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
-import { MAP_MODE } from '$map/store/store';
+import { DEBUG_MODE, EDIT_MODE } from '$map/store/store';
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
@@ -38,15 +38,22 @@ const createMapStore = () => {
 	const clickEvent = writable<MapMouseEvent | null>(null);
 	const rotateEvent = writable<MapLibreEvent | null>(null);
 	const isLoadingEvent = writable<boolean>(true);
+	const mapTriggerRepaint = () => {
+		if (map) {
+			map.triggerRepaint();
+			map.resize();
+		}
+	};
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
 
 		if (params) {
-			if (params.mode === 'debug' || params.mode === 'edit' || params.mode === 'view') {
-				MAP_MODE.set(params.mode);
+			if (params.debug && params.debug === 'true') {
+				DEBUG_MODE.set(true);
 			}
 		}
+
 		map = new maplibregl.Map({
 			container: mapContainer,
 			style: mapStyle ?? 'https://demotiles.maplibre.org/style.json', // style URL
@@ -55,19 +62,124 @@ const createMapStore = () => {
 			fadeDuration: 100, // フェードアニメーションの時間
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
-			attributionControl: false // 著作権表示を非表示
+			attributionControl: false, // 著作権表示を非表示
 
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
+			hash: get(DEBUG_MODE) ? true : false,
+			transformRequest: (url, resourceType) => {
+				// ここでリクエストのカスタマイズ
+
+				console.log(url, resourceType);
+				return { url };
+			}
 		});
 
 		// タイル境界を表示
-		if (get(MAP_MODE) === 'debug') {
-			map._showTileBoundaries = true;
+		if (get(DEBUG_MODE)) {
+			map.showTileBoundaries = true;
+			map.showCollisionBoxes = true;
+			map.showOverdrawInspector = false;
+			map.showPadding = true;
 			gui = new GUI();
-			gui.add(map, '_showTileBoundaries').name('タイル境界表示');
+			gui
+				.add(map, 'showTileBoundaries')
+				.name('タイル境界表示')
+				.onChange(() => mapTriggerRepaint);
+
+			gui
+				.add(map, 'showCollisionBoxes')
+				.name('シンボル境界表示')
+				.onChange(() => mapTriggerRepaint);
+
+			gui
+				.add(map, 'showOverdrawInspector')
+				.name('レンダリング')
+				.onChange(() => mapTriggerRepaint);
+
+			gui
+				.add(map, 'showPadding')
+				.name('境界')
+				.onChange(() => mapTriggerRepaint);
+
+			gui
+				.add(
+					{
+						button: () => {
+							window.open('https://maplibre.org/maplibre-gl-js/docs/API/', '_blank', 'noopener');
+						}
+					},
+					'button'
+				)
+				.name('doc');
+
+			const debug = {
+				mouseX: 0,
+				mouseY: 0,
+				mapZ: 0,
+				bboxLeft: 0,
+				bboxBottom: 0,
+				bboxRight: 0,
+				bboxTop: 0
+			};
+
+			gui.add(debug, 'mouseX', 0).listen().disable();
+			gui.add(debug, 'mouseY', 0).listen().disable();
+			gui.add(debug, 'mapZ', 0).listen().disable();
+			gui.add(debug, 'bboxLeft', 0).listen().disable();
+			gui.add(debug, 'bboxBottom', 0).listen().disable();
+			gui.add(debug, 'bboxRight', 0).listen().disable();
+			gui.add(debug, 'bboxTop', 0).listen().disable();
+
+			gui
+				.add(
+					{
+						save: () => {
+							console.log(map.getStyle());
+						}
+					},
+					'save'
+				)
+				.name('Save');
+
+			// ファイルの保存
+
+			// map.on('move', () => {
+			//     debug.innerHTML = `zoom: ${map.getZoom()}<br>center: ${map.getCenter()}`;
+			// });
+
+			map.on('mousemove', (e) => {
+				// 座標を取得
+				const lngLat = e.lngLat;
+				const mercator = maplibregl.MercatorCoordinate.fromLngLat(lngLat);
+				debug.mouseX = mercator.x;
+				debug.mouseY = mercator.y;
+			});
+
+			map.on('zoom', (e) => {
+				debug.mapZ = map.getZoom();
+			});
+
+			map.on('moveend', (e) => {
+				const Bounds = map.getBounds();
+				const bbox = [Bounds.getWest(), Bounds.getSouth(), Bounds.getEast(), Bounds.getNorth()];
+
+				debug.bboxLeft = bbox[0];
+				debug.bboxBottom = bbox[1];
+				debug.bboxRight = bbox[2];
+				debug.bboxTop = bbox[3];
+
+				// const mySource = map.getSource('canvas-source') as maplibregl.CanvasSource;
+				// mySource.setCoordinates([
+				//     [bbox[0], bbox[3]],
+				//     [bbox[2], bbox[3]],
+				//     [bbox[2], bbox[1]],
+				//     [bbox[0], bbox[1]],
+				// ]);
+				// console.log(bbox);
+			});
 		}
 
 		if (!map) return;
