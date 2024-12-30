@@ -14,6 +14,8 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 
 	import { mapStore } from '$map/store/map';
+	import { DEBUG_MODE } from '$map/store/store';
+	import JsonEditor from '$lib/components/JsonEditor.svelte';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 
@@ -25,12 +27,13 @@
 		paint: any;
 	};
 
-	let layerDataEntries = $state<LayerEntry[] | undefined>([6, 5]); // レイヤーデータ
+	let layerDataEntries = $state<LayerEntry[] | undefined>([]); // レイヤーデータ
+	let mapStyle: StyleSpecification | null;
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	// mapStyleの作成
 	const createMapStyle = () => {
-		const mapStyle: StyleSpecification = {
+		mapStyle = {
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
@@ -76,6 +79,10 @@
 		console.log('click', e);
 	});
 
+	mapStore.onSetStyle((e) => {
+		mapStyle = createMapStyle();
+	});
+
 	// マップの回転
 	// const setMapBearing = (e) => {
 	// 	const mapBearing = e.detail;
@@ -93,6 +100,10 @@
 	// 	});
 	// };
 </script>
+
+{#if $DEBUG_MODE}
+	<JsonEditor {mapStyle} />
+{/if}
 
 <div bind:this={mapContainer} class="h-full w-full"></div>
 

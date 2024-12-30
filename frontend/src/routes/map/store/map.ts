@@ -37,6 +37,7 @@ const createMapStore = () => {
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
 	const rotateEvent = writable<MapLibreEvent | null>(null);
+	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isLoadingEvent = writable<boolean>(true);
 	const mapTriggerRepaint = () => {
 		if (map) {
@@ -72,10 +73,12 @@ const createMapStore = () => {
 			transformRequest: (url, resourceType) => {
 				// ここでリクエストのカスタマイズ
 
-				console.log(url, resourceType);
+				// console.log(url, resourceType);
 				return { url };
 			}
 		});
+
+		setStyleEvent.set(mapStyle);
 
 		// タイル境界を表示
 		if (get(DEBUG_MODE)) {
@@ -136,13 +139,14 @@ const createMapStore = () => {
 			gui
 				.add(
 					{
-						save: () => {
-							console.log(map.getStyle());
+						setStyle: () => {
+							const style = map.getStyle();
+							setStyle(style);
 						}
 					},
-					'save'
+					'setStyle'
 				)
-				.name('Save');
+				.name('setStyle');
 
 			// ファイルの保存
 
@@ -157,11 +161,9 @@ const createMapStore = () => {
 				debug.mouseX = mercator.x;
 				debug.mouseY = mercator.y;
 			});
-
 			map.on('zoom', (e) => {
 				debug.mapZ = map.getZoom();
 			});
-
 			map.on('moveend', (e) => {
 				const Bounds = map.getBounds();
 				const bbox = [Bounds.getWest(), Bounds.getSouth(), Bounds.getEast(), Bounds.getNorth()];
@@ -266,9 +268,10 @@ const createMapStore = () => {
 
 	// マップスタイルを設定するメソッド
 	const setStyle = debounce((style: StyleSpecification) => {
-		// NOTE: debug
-		if (import.meta.env.DEV) console.log('mapstyle', style);
 		if (!map) return;
+
+		setStyleEvent.set(style);
+
 		map.setStyle(style);
 	}, 100);
 
@@ -422,6 +425,7 @@ const createMapStore = () => {
 		addSearchFeature,
 		focusLayer,
 		focusFeature,
+		onSetStyle: setStyleEvent.subscribe,
 		getTerrain: () => map?.getTerrain(),
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
