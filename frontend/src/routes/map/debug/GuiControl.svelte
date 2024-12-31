@@ -139,14 +139,4 @@
 	onDestroy(() => {});
 </script>
 
-<div class="absolute left-1 z-10 max-lg:bottom-11 lg:bottom-9" bind:this={controlContainer}></div>
-
-<style>
-	.jsoneditor-container {
-		z-index: 100;
-		position: absolute;
-		height: 600px;
-		width: 600px;
-		border: 1px solid #ccc;
-	}
-</style>
+<div class="" bind:this={controlContainer}></div>

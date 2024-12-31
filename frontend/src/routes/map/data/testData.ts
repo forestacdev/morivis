@@ -1,5 +1,6 @@
 import type { GeojsonEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
+import { format } from 'maplibre-gl';
 
 type GeojsonEntry = {
 	id: string;
@@ -95,164 +96,237 @@ type GeojsonEntry = {
 	filters: {};
 };
 
-const geojsonPolygonEntries = [
-	{
-		id: 'ENSYURIN_rinhanzu', // ID※重複不可
-		data: {
-			// データの情報
-			name: '演習林林班図', // 名前
-			dataType: 'geojson', // データの種類
-			geometryType: 'polygon', // ジオメトリの種類
-			url: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`, // データのパスURL
-			attribution: '森林文化アカデミー', // データの出典
-			location: ['森林文化アカデミー'], // データの位置
-			minZoom: 13, // 表示するズームレベルの最小値
-			maxZoom: 18, // 表示するズームレベルの最大値
-			fieldDict: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu_dict.csv` // プロパティの辞書ファイルのURL
-		},
-		interaction: {
-			// インタラクションの設定
-			clickable: true, // クリック可能かどうか
-			searchKeys: ['小林班ID', '樹種', '林齢']
-		},
-		style: {
-			// スタイルの設定
-			visible: true, // 表示するかどうか
-			opacity: 0.5, // 透過率
-			colorExpressions: [
-				{
-					key: '樹種',
-					type: 'match',
-					label: '樹種ごとの色分け',
-					mapping: {
-						keys: ['スギ', 'ヒノキ', 'アカマツ', 'スラッシュマツ', '広葉樹', '草地', 'その他岩石'],
-						values: ['#399210', '#4ADDA5', '#DD2B2B', '#B720BF', '#EBBC22', '#2351E5', '#D98F34'],
-						showIndex: []
-					}
-				},
-				{
-					key: '林班',
-					type: 'match',
-					label: '林班区分の色分け',
-					mapping: {
-						keys: [1, 2, 3],
-						values: ['#399210', '#4ADDA5', '#DD2B2B'],
-						showIndex: []
-					}
-				},
-				{
-					key: '面積',
-					type: 'interpolate',
-					label: '面積ごとの色分け',
-					mapping: {
-						min: 0,
-						max: 1,
-						divisions: 2,
-						showIndex: []
-					}
-				}
-			],
-			numericExpressions: [
-				{
-					key: '区域の線の太さ',
-					type: 'interpolate',
-					label: '林齢ごとの数値',
-					mapping: {
-						min: 0,
-						max: 100,
-						divisions: 5,
-						showIndex: []
-					}
-				}
-			],
+const DataEntryMetadata = {};
 
-			layer: {
-				fill: {
-					color: {
-						single: '#2a826c'
-					},
-					numeric: {
-						single: 10,
-						expression: [
-							{
-								key: '林齢',
-								type: 'interpolate',
-								label: '林齢ごとの数値',
-								mapping: {
-									min: 0,
-									max: 100,
-									divisions: 5,
-									showIndex: []
-								}
+const metaData = {
+	ENSYURIN_rinhanzu: {
+		name: '演習林林班図',
+		description: '岐阜県の演習林の林班図です。',
+		dataType: 'geojson',
+		geometryType: 'polygon',
+		url: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`,
+		attribution: '森林文化アカデミー',
+		location: ['森林文化アカデミー'],
+		minZoom: 13,
+		maxZoom: 18,
+		fieldDict: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu_dict.csv`
+	},
+	ENSYURIN_pole: {
+		name: '演習林電柱',
+		description: '岐阜県の演習林の電柱です。',
+		dataType: 'geojson',
+		geometryType: 'point',
+		url: `${GEOJSON_BASE_PATH}/ENSYURIN_pole.geojson`,
+		attribution: '森林文化アカデミー',
+		location: ['森林文化アカデミー'],
+		minZoom: 13,
+		maxZoom: 18,
+		fieldDict: `${GEOJSON_BASE_PATH}/ENSYURIN_pole_dict.csv`
+	},
+	ortho_photo: {
+		name: 'オルソ画像',
+		description: '岐阜県のオルソ画像です。',
+		dataType: 'raster',
+		geometryType: 'polygon',
+		url: `${GIFU_DATA_BASE_PATH}/ortho_photo.tif`,
+		attribution: '岐阜県',
+		location: ['岐阜県'],
+		minZoom: 13,
+		maxZoom: 18,
+		fieldDict: ''
+	}
+};
+
+const geoDataIds = ['ENSYURIN_rinhanzu', 'ENSYURIN_pole', 'ortho_photo'] as const;
+
+type GeoDataId = (typeof geoDataIds)[number];
+
+interface MetaData {
+	name: string;
+	description: string;
+}
+
+interface GeoDataEntry {
+	id: GeoDataId;
+	metaData: MetaData;
+	// 必要に応じて他のフィールドも追加
+}
+
+const map = new Map([
+	['ENSYURIN_rinhanzu', { metaData: { name: '演習林林班図', description: '説明' } }],
+	['ENSYURIN_pole', { metaData: { name: '演習林ポール', description: '説明' } }]
+]);
+
+const DataEntry = new Map<GeoDataId, any>([
+	[
+		'ENSYURIN_rinhanzu',
+		{
+			type: 'vector',
+			format: {
+				type: 'geojson',
+				geometryType: 'polygon',
+				url: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`
+			},
+			metaData: {
+				name: '演習林林班図', // 名前
+				description: '岐阜県の演習林の林班図です。', // 説明
+				attribution: '森林文化アカデミー', // データの出典
+				location: ['森林文化アカデミー'], // データの位置
+				minZoom: 13, // 表示するズームレベルの最小値
+				maxZoom: 18 // 表示するズームレベルの最大値
+			},
+			properties: {
+				keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
+				dict: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu_dict.csv` // プロパティの辞書ファイルのURL
+			},
+			interaction: {
+				// インタラクションの設定
+				clickable: true, // クリック可能かどうか
+				searchKeys: ['小林班ID', '樹種', '林齢']
+			},
+			style: {
+				// visible: true,
+				opacity: 0.5, // 透過率
+				color: '#2a826c', // 塗りつぶしの色
+				expressions: {
+					color: [
+						{
+							key: '樹種',
+							type: 'match',
+							name: '樹種ごとの色分け',
+							categories: [
+								'スギ',
+								'ヒノキ',
+								'アカマツ',
+								'スラッシュマツ',
+								'広葉樹',
+								'草地',
+								'その他岩石'
+							]
+							// colors: ['#399210', '#4ADDA5', '#DD2B2B', '#B720BF', '#EBBC22', '#2351E5', '#D98F34'],
+							// showIndex: []
+						},
+						{
+							type: 'match',
+							key: '林班',
+							name: '林班区分の色分け',
+							categories: [1, 2, 3]
+						},
+						{
+							type: 'interpolate',
+							key: '面積',
+							name: '面積ごとの色分け',
+							mapping: {
+								range: [0, 1],
+								divisions: 2,
+								showIndex: []
 							}
-						]
-					},
-					paint: {
-						'fill-color': '#2a826c'
-					},
-					layout: {}
-				},
-				line: {
-					color: '#2a826c',
-					width: 1,
-					pattern: 'dasharray',
-					paint: {
-						'line-color': '#2a826c',
-						'line-width': 1,
-						'line-dasharray': [1, 0]
-					},
-					layout: {}
-				},
-				circle: {
-					color: '#ff0000',
-					radius: 3,
-					strokeColor: '#000000',
-					strokeWidth: 1,
-					paint: {
-						'circle-radius': 5,
-						'circle-stroke-width': 1,
-						'circle-color': '#ff0000',
-						'circle-stroke-color': '#000000'
-					},
-					layout: {}
-				},
-				symbol: {
-					field: [
-						{
-							label: '小林班ID',
-							key: '小林班ID',
-							value: []
-						},
-						{
-							label: '小林班ID',
-							key: '小林班ID',
-							value: []
-						},
-						{
-							label: '小林班ID',
-							key: '小林班ID',
-							value: []
 						}
 					],
-					color: '#000000',
-					size: 12,
-					'halo-color': '#ffffff',
-					'halo-width': 1,
+					numericExpressions: [
+						{
+							key: '区域の線の太さ',
+							type: 'interpolate',
+							label: '林齢ごとの数値',
+							mapping: {
+								min: 0,
+								max: 100,
+								divisions: 5,
+								showIndex: []
+							}
+						}
+					]
+				},
+				default: {},
 
-					paint: {
-						'text-halo-color': '#ffffff',
-						'text-halo-width': 1,
-						'text-size': 12,
-						'text-field': '{小林班ID}',
-						'icon-image': 'marker-15',
-						'icon-size': 1
+				layer: {
+					fill: {
+						color: {
+							single: '#2a826c'
+						},
+						numeric: {
+							single: 10,
+							expression: [
+								{
+									key: '林齢',
+									type: 'interpolate',
+									label: '林齢ごとの数値',
+									mapping: {
+										min: 0,
+										max: 100,
+										divisions: 5,
+										showIndex: []
+									}
+								}
+							]
+						},
+						paint: {
+							'fill-color': '#2a826c'
+						},
+						layout: {}
 					},
-					layout: {}
+					line: {
+						color: '#2a826c',
+						width: 1,
+						pattern: 'dasharray',
+						paint: {
+							'line-color': '#2a826c',
+							'line-width': 1,
+							'line-dasharray': [1, 0]
+						},
+						layout: {}
+					},
+					circle: {
+						color: '#ff0000',
+						radius: 3,
+						strokeColor: '#000000',
+						strokeWidth: 1,
+						paint: {
+							'circle-radius': 5,
+							'circle-stroke-width': 1,
+							'circle-color': '#ff0000',
+							'circle-stroke-color': '#000000'
+						},
+						layout: {}
+					},
+					symbol: {
+						field: [
+							{
+								label: '小林班ID',
+								key: '小林班ID',
+								value: []
+							},
+							{
+								label: '小林班ID',
+								key: '小林班ID',
+								value: []
+							},
+							{
+								label: '小林班ID',
+								key: '小林班ID',
+								value: []
+							}
+						],
+						color: '#000000',
+						size: 12,
+						'halo-color': '#ffffff',
+						'halo-width': 1,
+
+						paint: {
+							'text-halo-color': '#ffffff',
+							'text-halo-width': 1,
+							'text-size': 12,
+							'text-field': '{小林班ID}',
+							'icon-image': 'marker-15',
+							'icon-size': 1
+						},
+						layout: {}
+					}
 				}
-			}
-		},
-		filters: {}
-	}
-];
+			},
+			filters: {}
+		}
+	]
+]);
 
 export { geojsonPolygonEntries };

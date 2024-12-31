@@ -13,6 +13,7 @@
 		// JSONEditorの初期化
 		editor = new JSONEditor(container, {
 			mode: 'view', // 'tree', 'view', 'form', 'text', 'code'など
+			modes: ['code', 'form', 'text', 'tree', 'view'], // 利用可能なモード
 			language: 'en',
 			onChange: () => {
 				console.log('JSON changed:', editor.get());
@@ -37,14 +38,7 @@
 	});
 </script>
 
-<div class="jsoneditor-container" bind:this={container}></div>
+<div class=" z-10 max-h-full w-[500px] overflow-y-auto" bind:this={container}></div>
 
 <style>
-	.jsoneditor-container {
-		z-index: 100;
-		position: absolute;
-		height: 600px;
-		width: 600px;
-		border: 1px solid #ccc;
-	}
 </style>

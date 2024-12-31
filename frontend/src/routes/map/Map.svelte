@@ -17,6 +17,7 @@
 	import { DEBUG_MODE } from '$map/store/store';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
+	import Draggable from '$map/debug/Draggable.svelte';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
@@ -102,8 +103,11 @@
 
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
-		<JsonEditor map={mapStore.getMap()} />
+		<Draggable left={0} top={0}>
+			<JsonEditor map={mapStore.getMap()} />
+		</Draggable>
 	{/if}
+
 	<GuiControl map={mapStore.getMap()} {showJsonEditor} />
 {/if}
 
