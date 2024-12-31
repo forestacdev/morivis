@@ -107,7 +107,7 @@
 					{
 						setStyle: () => {
 							const style = map.getStyle();
-							setStyle(style);
+							mapStore.setStyle(style);
 						}
 					},
 					'setStyle'

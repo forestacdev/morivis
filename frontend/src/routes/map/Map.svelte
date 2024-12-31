@@ -12,33 +12,29 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import { GeoDataEntry } from '$routes/map/data';
-
-	// console.log('GeoDataEntry', GeoDataEntry.get('ENSYURIN_rinhanzu'));
-
+	import type { GeoDataEntry } from '$map/data';
+	import { geoDataEntry } from '$map/data';
+	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
 	import { DEBUG_MODE } from '$map/store/store';
+
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import Draggable from '$map/debug/Draggable.svelte';
+
+	debugJson.set(geoDataEntry);
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
 
-	type LayerEntry = {
-		id: string;
-		source: string;
-		type: string;
-		layout: any;
-		paint: any;
-	};
-
-	let layerDataEntries = $state<LayerEntry[] | undefined>([]); // レイヤーデータ
+	let layerDataEntries = $state<GeoDataEntry | undefined>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	// mapStyleの作成
-	const createMapStyle = () => {
+	const createMapStyle = (dataEntry) => {
+		const source = createSourceItems(dataEntry);
+		// const layers = createLayerItems(dataEntry);
 		const mapStyle = {
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -76,7 +72,7 @@
 	$effect(() => {
 		// console.log('layerDataEntries', layerDataEntries);
 		$inspect(layerDataEntries);
-		const mapStyle = createMapStyle();
+		const mapStyle = createMapStyle(layerDataEntries);
 		mapStore.setStyle(mapStyle as StyleSpecification);
 	});
 

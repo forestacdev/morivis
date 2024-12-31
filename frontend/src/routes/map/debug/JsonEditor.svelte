@@ -4,6 +4,7 @@
 	import { mapStore } from '$routes/map/store/map';
 	import type { Map } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
+	import { debugJson } from '$routes/map/debug/store';
 
 	let editor: any;
 	let container: HTMLElement;
@@ -15,17 +16,19 @@
 			mode: 'view', // 'tree', 'view', 'form', 'text', 'code'など
 			modes: ['code', 'form', 'text', 'tree', 'view'], // 利用可能なモード
 			language: 'en',
-			onChange: () => {
-				console.log('JSON changed:', editor.get());
-			}
+			onChange: () => {}
 		});
 
 		// 初期値を設定
 
-		$effect(() => {
-			if (map) {
-				editor.set(map.getStyle());
-			}
+		// $effect(() => {
+		// 	if (map) {
+		// 		editor.set(map.getStyle());
+		// 	}
+		// });
+
+		debugJson.subscribe((value) => {
+			editor.set(value);
 		});
 	});
 

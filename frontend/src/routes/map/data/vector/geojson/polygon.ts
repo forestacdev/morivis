@@ -251,4 +251,3 @@ export const geoJsonPolygonEntry: GeoJsonEntry = {
 		}
 	}
 };
-const geoJsonMap = new Map<string, GeoJsonEntry>(Object.entries(geoJsonPolygonEntry));
