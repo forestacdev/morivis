@@ -23,4 +23,4 @@ export interface VectorInteraction {
 
 export type VectorEntry = GeoJsonEntry;
 
-export const vectorEntry: GeoJsonEntry = { ...geoJsonEntry };
+export const vectorEntry: VectorEntry = { ...geoJsonEntry };

@@ -3,8 +3,8 @@ import { vectorEntry } from '$routes/map/data/vector';
 import type { VectorEntry } from '$routes/map/data/vector';
 import type { GeoJsonEntry } from '$routes/map/data/vector/geojson';
 
-const geoDataMap: GeoJsonEntry = {
+export const GeoDataEntry = {
 	...vectorEntry
 };
-
-export const GeoDataEntry = new Map<string, GeoJsonEntry>(Object.entries(vectorEntry));
+// Map に変換
+const geoJsonMap = new Map<string, GeoJsonEntry>(Object.entries(geoJsonPolygonEntry));

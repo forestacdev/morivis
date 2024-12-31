@@ -14,7 +14,7 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { GeoDataEntry } from '$routes/map/data';
 
-	console.log('GeoDataEntry', GeoDataEntry.get('ENSYURIN_rinhanzu'));
+	// console.log('GeoDataEntry', GeoDataEntry.get('ENSYURIN_rinhanzu'));
 
 	import { mapStore } from '$map/store/map';
 	import { DEBUG_MODE } from '$map/store/store';
