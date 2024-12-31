@@ -37,35 +37,35 @@ interface symbolStyle {
 	layout: SymbolLayerSpecification['layout'];
 }
 
-interface PolygonStyle {
+export interface PolygonStyle {
 	fill: fillStyle;
 	line: lineStyle;
 	circle: circleStyle;
 	symbol: symbolStyle;
 }
 
-interface LineStringStyle {
+export interface LineStringStyle {
 	line: lineStyle;
 	circle: circleStyle;
 	symbol: symbolStyle;
 }
 
-interface PointStyle {
+export interface PointStyle {
 	circle: circleStyle;
 	symbol: symbolStyle;
 }
 
-interface LabelStyle {
+export interface LabelStyle {
 	symbol: symbolStyle;
 }
 
-interface Labels {
+export interface Labels {
 	name: string;
 	key: string;
 	value: string;
 }
 
-export type VectorLayerType = 'circle' | 'line' | 'fill';
+export type VectorLayerType = 'circle' | 'line' | 'fill' | 'symbol' | 'heatmap' | 'fill-extrusion';
 
 export interface VectorStyle {
 	type: VectorLayerType;

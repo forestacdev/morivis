@@ -21,8 +21,9 @@ import {
 } from '$routes/map/constants';
 import { clickableLayerIds } from '$map/store';
 import { geoDataEntry } from '$map/data';
+import type { VectorStyle } from '$map/data/vector/style';
 import type { GeoDataEntry } from '$map/data';
-import type { LayerEntry } from '../data/types';
+import type { PointStyle, PolygonStyle, LineStringStyle, LabelStyle } from '$map/data/vector/style';
 
 // IDを収集
 const validIds = [...new Set(Object.keys(geoDataEntry))];
@@ -192,97 +193,122 @@ export const createHighlightLayer = (
 };
 
 // fillレイヤーの作成
-const createFillLayer = (layer, layerId, layerEntry, fillStyle, fillStyleKey) => {
-	const fillColor = fillStyle.color[fillStyleKey] ?? fillStyle.color['デフォルト'];
-	const color = createColorExpression(fillColor);
-
-	return {
+const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecification => {
+	const fillStyle = (style.default as PolygonStyle).fill;
+	const fillLayer: FillLayerSpecification = {
 		...layer,
 		type: 'fill',
 		paint: {
 			...(fillStyle.paint ?? {}),
-			'fill-opacity': fillStyle.show ? layerEntry.opacity : 0,
-			'fill-outline-color': '#00000000',
-			'fill-color': color
+			'fill-opacity': style.opacity,
+			// 'fill-outline-color': '#00000000',
+			'fill-color': style.color
 		},
 		layout: {
 			...(fillStyle.layout ?? {})
 		}
 	};
+
+	// TODO fill-outline-color
+	return fillLayer;
 };
 
 // lineレイヤーの作成
-const createLineLayer = (layer, layerId, layerEntry, lineStyle, lineStyleKey) => {
-	const lineColor = lineStyle.color[lineStyleKey] ?? lineStyle.color['デフォルト'];
-	const color = createColorExpression(lineColor);
-	const lineWidth = lineStyle.lineWidth.values[lineStyle.lineWidth.type] ?? 2;
-
-	return {
+const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecification => {
+	const lineStyle = (style.default as LineStringStyle).line;
+	const lineLayer: LineLayerSpecification = {
 		...layer,
-		id: `${layerId}_outline`,
 		type: 'line',
 		paint: {
 			...(lineStyle.paint ?? {}),
-			'line-opacity': layerEntry.opacity,
-			'line-color': color,
-			'line-width': lineWidth,
-			...(lineStyle.linePattern === 'dashed' ? { 'line-dasharray': [2, 2] } : {})
+			'line-opacity': style.opacity,
+			'line-color': style.color,
+			'line-width': 2
 		},
 		layout: {
 			...(lineStyle?.layout ?? {})
 		}
 	};
+
+	// TODO width line-dasharray
+	return lineLayer;
 };
 
 // pointレイヤーの作成
-const createCircleLayer = (layer, layerId, layerEntry, circleStyle, circleStyleKey) => {
-	const circleColor = circleStyle.color[circleStyleKey] ?? circleStyle.color['デフォルト'];
-	const color = createColorExpression(circleColor);
-	const circleRadius = circleStyle.circleRadius.values[circleStyle.circleRadius.type] ?? 5;
-	const circleStrokeColor =
-		circleStyle.strokeColor.values[circleStyle.strokeColor.type] ?? '#ffffff';
-	const circleStrokeWidth = circleStyle.strokeWidth.values[circleStyle.strokeWidth.type] ?? 1;
-	return {
+const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpecification => {
+	const circleStyle = (style.default as PointStyle).circle;
+	const circleLayer: CircleLayerSpecification = {
 		...layer,
 		type: 'circle',
 		paint: {
 			...(circleStyle.paint ?? {}),
-			'circle-opacity': layerEntry.opacity,
-			'circle-stroke-opacity': layerEntry.opacity,
-			'circle-color': color,
-			'circle-radius': circleRadius,
-			'circle-stroke-color': circleStrokeColor,
-			'circle-stroke-width': circleStrokeWidth
+			'circle-opacity': style.opacity,
+			'circle-stroke-opacity': style.opacity,
+			'circle-color': style.color,
+			'circle-radius': 6,
+			'circle-stroke-color': '#ffffff',
+			'circle-stroke-width': 2
 		},
 		layout: {
 			...(circleStyle.layout ?? {})
 		}
 	};
+
+	// TODO circle-radius circle-stroke-color circle-stroke-width
+	return circleLayer;
 };
 
 // symbolレイヤーの作成
-const createSymbolLayer = (layer, layerId, layerEntry, symbolStyle, symbolStyleKey) => {
-	const symbolColor = symbolStyle.color[symbolStyleKey] ?? symbolStyle.color['デフォルト'];
-	const color = createColorExpression(symbolColor);
-	return {
+const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
+	const symbolStyle = (style.default as LabelStyle).symbol;
+	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-		id: `${layerId}_label`,
+		id: `${layer.id}_label`,
 		type: 'symbol',
 		paint: {
 			...(symbolStyle.paint ?? {}),
-			'text-opacity': 1.0,
-			'icon-opacity': 1.0,
-			'text-color': color
+			'text-opacity': style.opacity,
+			'icon-opacity': style.opacity,
+			'text-color': style.color
 		},
 		layout: {
-			...(symbolStyle.layout ?? {})
+			...(symbolStyle.layout ?? {}),
+			// visibility: 'visible',
+			'text-field': style.labels[0].value,
+			'text-size': 12,
+			'text-max-width': 12
+			// "text-variable-anchor": ["top", "bottom", "left", "right"],
+			// "text-radial-offset": 0.5,
+			// "text-justify": "auto",
 		}
 	};
+
+	// TODO: text-halo-color text-halo-width text-size
+	return symbolLayer;
+};
+
+type LayerItem = {
+	id: string;
+	source: string;
+	maxzoom: number;
+	minzoom: number;
+	type?: string;
+	paint?:
+		| FillLayerSpecification['paint']
+		| LineLayerSpecification['paint']
+		| CircleLayerSpecification['paint']
+		| SymbolLayerSpecification['paint'];
+	layout?:
+		| FillLayerSpecification['layout']
+		| LineLayerSpecification['layout']
+		| CircleLayerSpecification['layout']
+		| SymbolLayerSpecification['layout'];
+	'source-layer'?: string;
+	filter?: FilterSpecification;
 };
 
 // layersの作成
 export const createLayersItems = (_dataEntries: GeoDataEntry) => {
-
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
@@ -292,155 +318,81 @@ export const createLayersItems = (_dataEntries: GeoDataEntry) => {
 	// const layerIdNameDict: { [_: string]: string } = {};
 
 	Object.entries(_dataEntries)
-		.filter((dataEntry) => dataEntry.visible)
+		.filter(([_, dataEntry]) => dataEntry.style.visible)
 		.reverse()
-		.forEach((layerEntry) => {
-			const layerId = `${layerEntry.id}`;
-			const sourceId = `${layerEntry.id}_source`;
-			if (layerEntry.clickable) layerIds.push(layerId);
+		.forEach(([id, dataEntry]) => {
+			const layerId = `${id}`;
+			const sourceId = `${id}_source`;
+			const { format, style, metaData, properties, interaction, type } = dataEntry;
+			if (interaction.clickable) layerIds.push(layerId);
 
-			type Layer = {
-				id: string;
-				source: string;
-				maxzoom: number;
-				minzoom: number;
-				type?: string;
-				paint?:
-					| FillLayerSpecification['paint']
-					| LineLayerSpecification['paint']
-					| CircleLayerSpecification['paint']
-					| SymbolLayerSpecification['paint'];
-				layout?:
-					| FillLayerSpecification['layout']
-					| LineLayerSpecification['layout']
-					| CircleLayerSpecification['layout']
-					| SymbolLayerSpecification['layout'];
-				'source-layer'?: string;
-				filter?: FilterSpecification;
-			};
-			const layer: Layer = {
+			const layer: LayerItem = {
 				id: layerId,
 				source: sourceId,
-				maxzoom: layerEntry.layerMaxZoom ?? 24,
-				minzoom: layerEntry.layerMinZoom ?? 0
+				maxzoom: 24,
+				minzoom: 0
 			};
 
-			switch (layerEntry.dataType) {
+			switch (type) {
 				// ラスターレイヤー
 				case 'raster': {
-					layerItems.push({
-						...layer,
-						type: 'raster',
-						paint: {
-							'raster-opacity': layerEntry.opacity,
-							...(layerEntry.style?.raster?.[0]?.paint ?? {})
-						}
-					});
+					// layerItems.push({
+					// 	...layer,
+					// 	type: 'raster',
+					// 	paint: {
+					// 		'raster-opacity': layerEntry.opacity,
+					// 		...(layerEntry.style?.raster?.[0]?.paint ?? {})
+					// 	}
+					// });
 					break;
 				}
-				// ベクトルタイル ポリゴンレイヤー
-				case 'vector':
-				case 'geojson': {
-					if (layerEntry.filter) layer.filter = layerEntry.filter as FilterSpecification;
-					if (layerEntry.dataType === 'vector') {
-						layer['source-layer'] = layerEntry.sourceLayer;
+				// ベクターレイヤー
+				case 'vector': {
+					if (format.type === 'mvt') {
+						// TODO: source-layer
+						// layer['source-layer'] = metaData.sourceLayer;
 					}
-					const fillStyle = layerEntry.style?.fill;
-					const lineStyle = layerEntry.style?.line;
-					const circleStyle = layerEntry.style?.circle;
-					const symbolStyle = layerEntry.style?.symbol;
 
-					const fillStyleKey = fillStyle?.styleKey;
-					const lineStyleKey = lineStyle?.styleKey;
-					const circleStyleKey = circleStyle?.styleKey;
-					const symbolStyleKey = symbolStyle?.styleKey;
-					if (layerEntry.geometryType === 'polygon' && fillStyle && fillStyleKey) {
-						const fillLayer = createFillLayer(layer, layerId, layerEntry, fillStyle, fillStyleKey);
-
-						layerItems.push(fillLayer as FillLayerSpecification);
-
-						// アウトラインを追加
-						if (lineStyle && lineStyleKey && lineStyle.show) {
-							const lineLayer = createLineLayer(
-								layer,
-								layerId,
-								layerEntry,
-								lineStyle,
-								lineStyleKey
-							);
-							layerItems.push(lineLayer as LineLayerSpecification);
+					switch (style.type) {
+						case 'fill': {
+							const fillLayer = createFillLayer(layer, style);
+							layerItems.push(fillLayer);
+							break;
 						}
-
-						// ラベルを追加
-						if (symbolStyle && symbolStyleKey && symbolStyle.show) {
-							const symbolLayer = createSymbolLayer(
-								layer,
-								layerId,
-								layerEntry,
-								symbolStyle,
-								symbolStyleKey
-							);
-							symbolLayerItems.push(symbolLayer as SymbolLayerSpecification);
+						case 'line': {
+							const lineLayer = createLineLayer(layer, style);
+							layerItems.push(lineLayer);
+							break;
 						}
-					} else if (layerEntry.geometryType === 'line' && lineStyle && lineStyleKey) {
-						const lineLayer = createLineLayer(layer, layerId, layerEntry, lineStyle, lineStyleKey);
-
-						layerItems.push(lineLayer as LineLayerSpecification);
-					} else if (layerEntry.geometryType === 'point') {
-						const pointLayer = createCircleLayer(
-							layer,
-							layerId,
-							layerEntry,
-							circleStyle,
-							circleStyleKey
-						);
-						layerItems.push(pointLayer as CircleLayerSpecification);
-					} else if (layerEntry.geometryType === 'label') {
-						const setStyele = layerEntry.style?.symbol?.find((item) => item.name === styleKey);
-						const pointLayer = {
-							...layer,
-							type: 'symbol',
-							paint: {
-								'text-opacity': layerEntry.opacity,
-								'icon-opacity': layerEntry.opacity,
-								...(setStyele?.paint ?? {})
-							},
-							layout: {
-								...(setStyele?.layout ?? {})
-							}
-						};
-
-						layerItems.push(pointLayer as SymbolLayerSpecification);
+						case 'circle': {
+							const circleLayer = createCircleLayer(layer, style);
+							layerItems.push(circleLayer);
+							break;
+						}
+						case 'symbol': {
+							const symbolLayer = createSymbolLayer(layer, style);
+							symbolLayerItems.push(symbolLayer);
+							break;
+						}
 					}
 
 					// ラベルを追加
-					if (layerEntry.showSymbol && layerEntry.geometryType !== 'label') {
-						symbolLayerItems.push({
-							...layer,
-							id: `${layerId}_label`,
-							type: 'symbol',
-							paint: {
-								'text-opacity': layerEntry.opacity,
-								'icon-opacity': layerEntry.opacity,
-								...(layerEntry.style?.symbol?.[0]?.paint ?? {})
-							},
-							layout: {
-								...(layerEntry.style?.symbol?.[0]?.layout ?? {})
-							}
-						});
+					if (style.displayLabel && style.type !== 'symbol') {
+						const symbolLayer = createSymbolLayer(layer, style);
+						symbolLayerItems.push(symbolLayer);
 					}
 
 					break;
 				}
 
 				default:
-					console.warn(`Unknown layer: ${layerEntry}`);
+					console.warn(`Unknown layer: ${id}`);
 					break;
 			}
 		});
 
 	clickableLayerIds.set(layerIds);
-	const highlightLayers = selectedhighlightData ? createHighlightLayer(selectedhighlightData) : [];
+	// const highlightLayers = selectedhighlightData ? createHighlightLayer(selectedhighlightData) : [];
 
-	return [...layerItems, ...highlightLayers, ...symbolLayerItems];
+	return [...layerItems, ...symbolLayerItems];
 };

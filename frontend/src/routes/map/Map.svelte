@@ -60,9 +60,12 @@
 					id: 'pales_layer', // レイヤーのID
 					source: 'pales', // ソースのID
 					type: 'raster' // データタイプはラスターを指定
-				}
+				},
+				...layers
 			]
 		};
+
+		debugJson.set(mapStyle);
 		return mapStyle;
 	};
 
