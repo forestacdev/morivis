@@ -21,21 +21,28 @@
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
-	import { DEBUG_MODE } from '$map/store/store';
-
-	debugJson.set(geoDataEntry);
+	import { DEBUG_MODE } from '$routes/map/store';
+	import { createSourcesItems } from '$map/utils/sources';
+	import { createLayersItems } from '$map/utils/layers';
+	import { addedLayerIds } from '$routes/map/store';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
 
+	const activeDataEntry = addedLayerIds.subscribe((value) => {
+		console.log('addedLayerIds', value);
+	});
+
 	let layerDataEntries = $state<GeoDataEntry | undefined>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	// mapStyleの作成
-	const createMapStyle = () => {
-		// const source = createSourceItems(dataEntry);
-		// const layers = createLayerItems(dataEntry);
+	const createMapStyle = (_dataEntries: GeoDataEntry) => {
+		// ソースとレイヤーの作成
+		const source = createSourcesItems(_dataEntries);
+		const layers = createLayersItems(_dataEntries);
+
 		const mapStyle = {
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -63,19 +70,19 @@
 	// 初期描画時
 	onMount(() => {
 		if (!mapContainer) return;
-		const mapStyle = createMapStyle();
+		const mapStyle = createMapStyle(layerDataEntries);
 		if (!mapStyle) return;
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
 
-	$effect(() => {
-		// console.log('layerDataEntries', layerDataEntries);
-		$inspect(layerDataEntries);
-		const mapStyle = createMapStyle(layerDataEntries);
-		mapStore.setStyle(mapStyle as StyleSpecification);
-	});
+	// $effect(() => {
+	// 	if (!layerDataEntries) return;
+	// 	// console.log('layerDataEntries', layerDataEntries);
+	// 	const mapStyle = createMapStyle(layerDataEntries);
+	// 	mapStore.setStyle(mapStyle as StyleSpecification);
+	// });
 
 	mapStore.onClick((e) => {
 		console.log('click', e);

@@ -27,7 +27,7 @@ import { GUI } from 'lil-gui';
 import debounce from 'lodash.debounce';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
-import { DEBUG_MODE, EDIT_MODE } from '$map/store/store';
+import { DEBUG_MODE, EDIT_MODE } from '$map/store';
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;

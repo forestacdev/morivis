@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
-import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
+import { INT_ADD_LAYER_IDS } from '$map/constants';
+import { geoDataEntry } from '$map/data';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
@@ -71,7 +72,7 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
 export const showDataMenu = writable<boolean>(false);
-export const showlayerOptionId = writable<string>('');
+export const showLayerOptionId = writable<string>('');
 
 /** 外部コンポーネントからイベントを発火させるストア */
 // const eventStore = () => {

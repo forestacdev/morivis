@@ -1,17 +1,5 @@
-import { vectorPolygonEntries } from '$routes/map/data/vecter/polygon';
-import { geojsonPolygonEntries } from '$routes/map/data/geojson/polygon';
-import { geojsonLineEntries } from '$routes/map/data/geojson/line';
-import { geojsonPointEntries } from '$routes/map/data/geojson/point';
-import { geojsonLabelEntries } from '$routes/map/data/geojson/label';
-import { addedLayerIds } from '$routes/map/store/store';
 import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
-import { demLayers } from '$routes/map/data/raster/dem';
 
-import { createColorExpression } from '$routes/map/data/expression';
-
-import { rasterEntries } from '$routes/map/data/raster';
-import { demEntry } from '$routes/map/data/raster/dem';
-import type { LayerEntry } from '$routes/map/data/types';
 import type {
 	SourceSpecification,
 	LayerSpecification,
@@ -31,27 +19,18 @@ import {
 	EXCLUDE_IDS_CLICK_LAYER,
 	GIFU_DATA_BASE_PATH
 } from '$routes/map/constants';
-import { clickableLayerIds } from '$routes/map/store/store';
-
-export const layerData: LayerEntry[] = [
-	...geojsonLabelEntries,
-	...geojsonPointEntries,
-	...geojsonLineEntries,
-	...geojsonPolygonEntries,
-	...vectorPolygonEntries,
-	...rasterEntries,
-	demEntry
-];
+import { clickableLayerIds } from '$map/store';
+import { geoDataEntry } from '$map/data';
+import type { GeoDataEntry } from '$map/data';
+import type { LayerEntry } from '../data/types';
 
 // IDを収集
-const validIds = [...new Set([...layerData.map((obj) => obj.id)])];
-
+const validIds = [...new Set(Object.keys(geoDataEntry))];
 const validateId = (id: string) => {
 	if (!validIds.includes(id)) {
 		throw new Error(`Invalid ID: ${id}`);
 	}
 };
-
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
 		validateId(id); // ここでエラーが発生します
@@ -116,11 +95,7 @@ export const createHighlightLayer = (
 			};
 
 			if (layerEntry.idField) {
-				baseLayer.filter = [
-					'==',
-					['get', layerEntry.idField],
-					selectedhighlightData.featureId
-				];
+				baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
 			}
 			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
 			if (layerEntry.geometryType === 'polygon') {
@@ -215,74 +190,6 @@ export const createHighlightLayer = (
 	return layers;
 };
 
-// sourcesの作成
-export const createSourceItems = (layerDataEntries: LayerEntry[]) => {
-	const sourceItems: { [_: string]: SourceSpecification } = {};
-
-	layerDataEntries.forEach((layerEntry) => {
-		const sourceId = `${layerEntry.id}_source`;
-
-		if (layerEntry.dataType === 'raster') {
-			if (layerEntry.geometryType === 'raster') {
-				sourceItems[sourceId] = {
-					type: 'raster',
-					tiles: [layerEntry.url],
-					maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
-					minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
-					tileSize: 256,
-					attribution: layerEntry.attribution,
-					bounds: layerEntry.bbox ?? [-180, -85.051129, 180, 85.051129]
-				};
-			} else if (layerEntry.geometryType === 'dem') {
-				const demData = demLayers.find((layer) => layer.id === layerEntry.tileId);
-				if (!demData) {
-					console.warn(`Unknown: ${layerEntry.tileId}`);
-					return;
-				}
-				demEntry.name = demData.name;
-				demEntry.url = demData.tiles[0];
-				demEntry.demType = demData.demType;
-				demEntry.sourceMaxZoom = demData.maxzoom;
-				demEntry.sourceMinZoom = demData.minzoom;
-				demEntry.attribution = demData.attribution;
-				demEntry.location = demData.location;
-				demEntry.bbox = demData.bbox ?? [-180, -85.051129, 180, 85.051129];
-				demEntry.tileId = demData.id;
-
-				sourceItems[sourceId] = {
-					type: 'raster',
-					tiles: [`${layerEntry.protocolKey}://${demData.tiles[0]}`],
-					maxzoom: demData.maxzoom ? demData.maxzoom : 24,
-					minzoom: demData.minzoom ? demData.minzoom : 0,
-					tileSize: 256,
-					attribution: demData.attribution,
-					bounds: demData.bbox ?? [-180, -85.051129, 180, 85.051129]
-				};
-			}
-		} else if (layerEntry.dataType === 'vector') {
-			sourceItems[sourceId] = {
-				type: 'vector',
-				tiles: [layerEntry.url],
-				maxzoom: layerEntry.sourceMaxZoom ? layerEntry.sourceMaxZoom : 24,
-				minzoom: layerEntry.sourceMinZoom ? layerEntry.sourceMinZoom : 0,
-				attribution: layerEntry.attribution,
-				promoteId: layerEntry.idField ?? undefined
-			};
-		} else if (layerEntry.dataType === 'geojson') {
-			sourceItems[sourceId] = {
-				type: 'geojson',
-				data: layerEntry.url,
-				generateId: true,
-				attribution: layerEntry.attribution
-			};
-		} else {
-			console.warn(`Unknown layer: ${sourceId}`);
-		}
-	});
-
-	return sourceItems;
-};
-
 // fillレイヤーの作成
 const createFillLayer = (layer, layerId, layerEntry, fillStyle, fillStyleKey) => {
 	const fillColor = fillStyle.color[fillStyleKey] ?? fillStyle.color['デフォルト'];
@@ -373,10 +280,8 @@ const createSymbolLayer = (layer, layerId, layerEntry, symbolStyle, symbolStyleK
 };
 
 // layersの作成
-export const createLayerItems = (
-	layerDataEntries: LayerEntry[],
-	selectedhighlightData: SelectedHighlightData | null
-) => {
+export const createLayersItems = (_dataEntries: GeoDataEntry) => {
+	return [];
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
@@ -385,8 +290,8 @@ export const createLayerItems = (
 
 	// const layerIdNameDict: { [_: string]: string } = {};
 
-	layerDataEntries
-		.filter((layerEntry) => layerEntry.visible)
+	Object.entries(_dataEntries)
+		.filter((dataEntry) => dataEntry.visible)
 		.reverse()
 		.forEach((layerEntry) => {
 			const layerId = `${layerEntry.id}`;
@@ -449,13 +354,7 @@ export const createLayerItems = (
 					const circleStyleKey = circleStyle?.styleKey;
 					const symbolStyleKey = symbolStyle?.styleKey;
 					if (layerEntry.geometryType === 'polygon' && fillStyle && fillStyleKey) {
-						const fillLayer = createFillLayer(
-							layer,
-							layerId,
-							layerEntry,
-							fillStyle,
-							fillStyleKey
-						);
+						const fillLayer = createFillLayer(layer, layerId, layerEntry, fillStyle, fillStyleKey);
 
 						layerItems.push(fillLayer as FillLayerSpecification);
 
@@ -483,13 +382,7 @@ export const createLayerItems = (
 							symbolLayerItems.push(symbolLayer as SymbolLayerSpecification);
 						}
 					} else if (layerEntry.geometryType === 'line' && lineStyle && lineStyleKey) {
-						const lineLayer = createLineLayer(
-							layer,
-							layerId,
-							layerEntry,
-							lineStyle,
-							lineStyleKey
-						);
+						const lineLayer = createLineLayer(layer, layerId, layerEntry, lineStyle, lineStyleKey);
 
 						layerItems.push(lineLayer as LineLayerSpecification);
 					} else if (layerEntry.geometryType === 'point') {
@@ -502,9 +395,7 @@ export const createLayerItems = (
 						);
 						layerItems.push(pointLayer as CircleLayerSpecification);
 					} else if (layerEntry.geometryType === 'label') {
-						const setStyele = layerEntry.style?.symbol?.find(
-							(item) => item.name === styleKey
-						);
+						const setStyele = layerEntry.style?.symbol?.find((item) => item.name === styleKey);
 						const pointLayer = {
 							...layer,
 							type: 'symbol',
@@ -548,9 +439,7 @@ export const createLayerItems = (
 		});
 
 	clickableLayerIds.set(layerIds);
-	const highlightLayers = selectedhighlightData
-		? createHighlightLayer(selectedhighlightData)
-		: [];
+	const highlightLayers = selectedhighlightData ? createHighlightLayer(selectedhighlightData) : [];
 
 	return [...layerItems, ...highlightLayers, ...symbolLayerItems];
 };

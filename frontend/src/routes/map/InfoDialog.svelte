@@ -9,7 +9,7 @@
 	} from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
-	import { isSide, excludeIdsClickLayer } from '$routes/map/store/store';
+	import { isSide, excludeIdsClickLayer } from '$routes/map/store';
 
 	// export let mapBearing: number;
 </script>
