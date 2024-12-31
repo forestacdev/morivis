@@ -1,6 +1,5 @@
 import type { GeojsonEntry } from '$routes/map/data/types';
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
-import { format } from 'maplibre-gl';
 
 type GeojsonEntry = {
 	id: string;
