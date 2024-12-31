@@ -1,7 +1,4 @@
-<script setup lang="ts">
-	import { fade } from 'svelte/transition';
-	import { isSide, excludeIdsClickLayer } from '$routes/map/store/store';
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
 	import type {
 		Map,
 		StyleSpecification,
@@ -10,6 +7,9 @@
 		TerrainSpecification,
 		Marker
 	} from 'maplibre-gl';
+	import { fade } from 'svelte/transition';
+
+	import { isSide, excludeIdsClickLayer } from '$routes/map/store/store';
 
 	// export let mapBearing: number;
 </script>

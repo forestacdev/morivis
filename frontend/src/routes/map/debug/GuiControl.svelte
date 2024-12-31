@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import JSONEditor from 'jsoneditor';
+	import { onMount, onDestroy } from 'svelte';
+
 	import 'jsoneditor/dist/jsoneditor.min.css';
 	import { mapStore } from '$routes/map/store/map';
+
 	import type { Map } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { GUI } from 'lil-gui';

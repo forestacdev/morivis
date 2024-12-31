@@ -1,0 +1,20 @@
+{
+	"[typescript]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit",
+			"source.addMissingImports": "explicit"
+		}
+	},
+	"[svelte]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "svelte.svelte-vscode",
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit",
+			"source.addMissingImports": "explicit"
+		}
+	},
+	"eslint.probe": ["html", "javascript", "typescript", "svelte", "markdown"],
+	"eslint.validate": ["svelte"]
+}

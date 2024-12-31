@@ -10,17 +10,18 @@
 		CircleLayerSpecification
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { onMount } from 'svelte';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+	import { onMount } from 'svelte';
+
 	import type { GeoDataEntry } from '$map/data';
 	import { geoDataEntry } from '$map/data';
+
+	import Draggable from '$map/debug/Draggable.svelte';
+	import GuiControl from '$map/debug/GuiControl.svelte';
+	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
 	import { DEBUG_MODE } from '$map/store/store';
-
-	import JsonEditor from '$map/debug/JsonEditor.svelte';
-	import GuiControl from '$map/debug/GuiControl.svelte';
-	import Draggable from '$map/debug/Draggable.svelte';
 
 	debugJson.set(geoDataEntry);
 
@@ -32,8 +33,8 @@
 	let layerDataEntries = $state<GeoDataEntry | undefined>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	// mapStyleの作成
-	const createMapStyle = (dataEntry) => {
-		const source = createSourceItems(dataEntry);
+	const createMapStyle = () => {
+		// const source = createSourceItems(dataEntry);
 		// const layers = createLayerItems(dataEntry);
 		const mapStyle = {
 			version: 8,

@@ -32,7 +32,7 @@ import { DEBUG_MODE, EDIT_MODE } from '$map/store/store';
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
 	let lockOnMarker: Marker | null = null;
-	let gui: GUI | null = null;
+	const gui: GUI | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);

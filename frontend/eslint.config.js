@@ -5,6 +5,8 @@ import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
+
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default ts.config(
@@ -24,11 +26,29 @@ export default ts.config(
 	},
 	{
 		files: ['**/*.svelte'],
-
+		plugins: {
+			import: importPlugin
+		},
 		languageOptions: {
 			parserOptions: {
 				parser: ts.parser
 			}
+		},
+		rules: {
+			'import/order': [
+				'error',
+				{
+					groups: [
+						['builtin', 'external'],
+						['internal', 'parent', 'sibling', 'index']
+					],
+					'newlines-between': 'always',
+					alphabetize: {
+						order: 'asc',
+						caseInsensitive: true
+					}
+				}
+			]
 		}
 	}
 );

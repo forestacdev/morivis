@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import JSONEditor from 'jsoneditor';
-	import { mapStore } from '$routes/map/store/map';
 	import type { Map } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
+	import { onMount, onDestroy } from 'svelte';
+
 	import { debugJson } from '$routes/map/debug/store';
+	import { mapStore } from '$routes/map/store/map';
 
 	let editor: any;
 	let container: HTMLElement;
