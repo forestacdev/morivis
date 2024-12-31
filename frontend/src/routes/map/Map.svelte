@@ -35,8 +35,6 @@
 
 	// mapStyleの作成
 	const createMapStyle = (_dataEntries: GeoDataEntry) => {
-		if (!_dataEntries) return;
-
 		// ソースとレイヤーの作成
 		const sources = createSourcesItems(_dataEntries);
 		const layers = createLayersItems(_dataEntries);
@@ -65,7 +63,9 @@
 			]
 		};
 
-		debugJson.set(mapStyle);
+		// NOTE:debug
+		if (import.meta.env.DEV) debugJson.set(mapStyle);
+
 		return mapStyle;
 	};
 

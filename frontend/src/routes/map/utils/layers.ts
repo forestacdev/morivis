@@ -267,9 +267,11 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 		type: 'symbol',
 		paint: {
 			...(symbolStyle.paint ?? {}),
-			'text-opacity': style.opacity,
-			'icon-opacity': style.opacity,
-			'text-color': style.color
+			'text-opacity': 1,
+			'icon-opacity': 1,
+			'text-color': '#000000',
+			'text-halo-color': '#FFFFFF',
+			'text-halo-width': 2
 		},
 		layout: {
 			...(symbolStyle.layout ?? {}),
@@ -277,6 +279,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-field': style.labels[0].value,
 			'text-size': 12,
 			'text-max-width': 12
+
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
 			// "text-justify": "auto",
