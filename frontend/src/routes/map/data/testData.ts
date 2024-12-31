@@ -137,7 +137,7 @@ const metaData = {
 	}
 };
 
-const geoDataIds = ['ENSYURIN_rinhanzu', 'ENSYURIN_pole', 'ortho_photo'] as const;
+export const geoDataIds = ['ENSYURIN_rinhanzu', 'ENSYURIN_pole', 'ortho_photo'] as const;
 
 type GeoDataId = (typeof geoDataIds)[number];
 
@@ -157,7 +157,7 @@ const map = new Map([
 	['ENSYURIN_pole', { metaData: { name: '演習林ポール', description: '説明' } }]
 ]);
 
-const DataEntry = new Map<GeoDataId, any>([
+export const GeojsonDataEntry = new Map<GeoDataId, any>([
 	[
 		'ENSYURIN_rinhanzu',
 		{
@@ -171,9 +171,10 @@ const DataEntry = new Map<GeoDataId, any>([
 				name: '演習林林班図', // 名前
 				description: '岐阜県の演習林の林班図です。', // 説明
 				attribution: '森林文化アカデミー', // データの出典
-				location: ['森林文化アカデミー'], // データの位置
+				location: '森林文化アカデミー',
 				minZoom: 13, // 表示するズームレベルの最小値
-				maxZoom: 18 // 表示するズームレベルの最大値
+				maxZoom: 18, // 表示するズームレベルの最大値
+				bounds: null // データの範囲
 			},
 			properties: {
 				keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
@@ -185,9 +186,9 @@ const DataEntry = new Map<GeoDataId, any>([
 				searchKeys: ['小林班ID', '樹種', '林齢']
 			},
 			style: {
-				// visible: true,
+				type: 'fill',
 				opacity: 0.5, // 透過率
-				color: '#2a826c', // 塗りつぶしの色
+				color: '#2a826c', // 塗りつぶしの色色
 				expressions: {
 					color: [
 						{
@@ -237,96 +238,48 @@ const DataEntry = new Map<GeoDataId, any>([
 						}
 					]
 				},
-				default: {},
-
-				layer: {
+				label: {
+					data: [
+						{
+							name: '小林班ID',
+							value: '{林齢}'
+						},
+						{
+							name: '小林班ID',
+							value: '{小林班ID}'
+						},
+						{
+							name: '小林班ID',
+							value: '{樹種}'
+						}
+					]
+				},
+				default: {
 					fill: {
-						color: {
-							single: '#2a826c'
-						},
-						numeric: {
-							single: 10,
-							expression: [
-								{
-									key: '林齢',
-									type: 'interpolate',
-									label: '林齢ごとの数値',
-									mapping: {
-										min: 0,
-										max: 100,
-										divisions: 5,
-										showIndex: []
-									}
-								}
-							]
-						},
-						paint: {
-							'fill-color': '#2a826c'
-						},
+						paint: {},
 						layout: {}
 					},
 					line: {
-						color: '#2a826c',
-						width: 1,
-						pattern: 'dasharray',
 						paint: {
-							'line-color': '#2a826c',
 							'line-width': 1,
 							'line-dasharray': [1, 0]
 						},
 						layout: {}
 					},
 					circle: {
-						color: '#ff0000',
-						radius: 3,
-						strokeColor: '#000000',
-						strokeWidth: 1,
 						paint: {
 							'circle-radius': 5,
 							'circle-stroke-width': 1,
-							'circle-color': '#ff0000',
 							'circle-stroke-color': '#000000'
 						},
 						layout: {}
 					},
 					symbol: {
-						field: [
-							{
-								label: '小林班ID',
-								key: '小林班ID',
-								value: []
-							},
-							{
-								label: '小林班ID',
-								key: '小林班ID',
-								value: []
-							},
-							{
-								label: '小林班ID',
-								key: '小林班ID',
-								value: []
-							}
-						],
-						color: '#000000',
-						size: 12,
-						'halo-color': '#ffffff',
-						'halo-width': 1,
-
-						paint: {
-							'text-halo-color': '#ffffff',
-							'text-halo-width': 1,
-							'text-size': 12,
-							'text-field': '{小林班ID}',
-							'icon-image': 'marker-15',
-							'icon-size': 1
-						},
+						paint: {},
 						layout: {}
 					}
 				}
-			},
-			filters: {}
+			}
 		}
 	]
 ]);
-
-export { geojsonPolygonEntries };

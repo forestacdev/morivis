@@ -69,6 +69,21 @@
 				)
 				.name('doc');
 
+			gui
+				.add(
+					{
+						button: () => {
+							window.open(
+								'https://maplibre.org/maplibre-style-spec/expressions/',
+								'_blank',
+								'noopener'
+							);
+						}
+					},
+					'button'
+				)
+				.name('expressions');
+
 			const debug = {
 				mouseX: 0,
 				mouseY: 0,
