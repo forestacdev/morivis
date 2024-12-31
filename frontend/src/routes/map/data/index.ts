@@ -5,8 +5,18 @@ export type GeoDataType = 'raster' | 'vector' | '3d';
 
 export type GeoDataEntry = VectorEntry;
 
+// 共通の初期化処理
+// visible を true にする
+const initData = (data: GeoDataEntry) => {
+	Object.values(data).forEach((value) => {
+		value.style.visible = true;
+	});
+
+	return data;
+};
+
 export const geoDataEntry: GeoDataEntry = {
-	...vectorEntry
+	...initData(vectorEntry)
 };
 
 // Map に変換

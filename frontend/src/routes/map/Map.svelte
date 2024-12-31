@@ -30,17 +30,15 @@
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
-
-	const activeDataEntry = addedLayerIds.subscribe((value) => {
-		console.log('addedLayerIds', value);
-	});
-
-	let layerDataEntries = $state<GeoDataEntry | undefined>(geoDataEntry); // レイヤーデータ
+	let layerDataEntries = $state<GeoDataEntry | null>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
+
 	// mapStyleの作成
 	const createMapStyle = (_dataEntries: GeoDataEntry) => {
+		if (!_dataEntries) return;
+
 		// ソースとレイヤーの作成
-		const source = createSourcesItems(_dataEntries);
+		const sources = createSourcesItems(_dataEntries);
 		const layers = createLayersItems(_dataEntries);
 
 		const mapStyle = {
@@ -54,7 +52,8 @@
 					tileSize: 256, // タイルのサイズ
 					maxzoom: 18, // 最大ズームレベル
 					attribution: "<a href='https://www.gsi.go.jp/' target='_blank'>国土地理院</a>" // 地図上に表示される属性テキスト
-				}
+				},
+				...sources
 			},
 			layers: [
 				{
@@ -69,20 +68,28 @@
 
 	// 初期描画時
 	onMount(() => {
-		if (!mapContainer) return;
-		const mapStyle = createMapStyle(layerDataEntries);
-		if (!mapStyle) return;
+		const mapStyle = createMapStyle(geoDataEntry);
+
+		if (!mapStyle || !mapContainer) return;
+
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
+
+		addedLayerIds.subscribe((ids) => {
+			const filteredDataEntry = Object.fromEntries(
+				Object.entries(geoDataEntry).filter(([key]) => ids.includes(key))
+			);
+			layerDataEntries = filteredDataEntry;
+		});
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
 
-	// $effect(() => {
-	// 	if (!layerDataEntries) return;
-	// 	// console.log('layerDataEntries', layerDataEntries);
-	// 	const mapStyle = createMapStyle(layerDataEntries);
-	// 	mapStore.setStyle(mapStyle as StyleSpecification);
-	// });
+	$effect(() => {
+		if (!layerDataEntries || mapContainer) return;
+		// console.log('layerDataEntries', layerDataEntries);
+		const mapStyle = createMapStyle(layerDataEntries);
+		mapStore.setStyle(mapStyle as StyleSpecification);
+	});
 
 	mapStore.onClick((e) => {
 		console.log('click', e);

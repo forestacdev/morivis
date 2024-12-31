@@ -34,8 +34,9 @@ const validateId = (id: string) => {
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
 		validateId(id); // ここでエラーが発生します
-	} catch (error: any) {
-		console.error(error.message); // "Invalid ID: 6"
+	} catch (error: Error) {
+		console.error(error.message);
+		alert('無効なidです: ${id}');
 	}
 });
 
@@ -281,7 +282,7 @@ const createSymbolLayer = (layer, layerId, layerEntry, symbolStyle, symbolStyleK
 
 // layersの作成
 export const createLayersItems = (_dataEntries: GeoDataEntry) => {
-	return [];
+
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];

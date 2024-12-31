@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { INT_ADD_LAYER_IDS } from '$map/constants';
 import { geoDataEntry } from '$map/data';
 
@@ -10,19 +10,20 @@ export const DEBUG_MODE = writable<boolean>(false); /* デバッグモード */
 export const EDIT_MODE = writable<boolean>(false); /* 編集モード */
 /* リストに追加されてるレイヤーID */
 
+// 配列を自動ソートする ラスターが下になるように
 const sortedLayers = (Layers: string[]) => {
-	// const raster = [];
-	// const vector = [];
-	// Layers.forEach((layerId) => {
-	// 	// typeを調べる
-	// 	const layer = layerData.find((entry) => entry.id === layerId);
-	// 	if (layer?.dataType === 'raster' && !layer.isOverVector) {
-	// 		raster.push(layerId);
-	// 	} else {
-	// 		vector.push(layerId);
-	// 	}
-	// });
-	// return [...vector, ...raster];
+	const raster: string[] = [];
+	const vector: string[] = [];
+	Layers.forEach((layerId) => {
+		// typeを調べる
+		const data = geoDataEntry[layerId];
+		if (data?.type === 'raster') {
+			raster.push(layerId);
+		} else {
+			vector.push(layerId);
+		}
+	});
+	return [...vector, ...raster];
 };
 
 const createLayerStore = (initialLayers: string[] = []) => {

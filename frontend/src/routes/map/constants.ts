@@ -15,7 +15,8 @@ export const INT_ADD_LAYER_IDS = [
 	// 'TITEN',
 	// 'ENSYURIN_MITI',
 	// 'ENSYURIN_pole',
-	'ENSYURIN_rinhanzu'
+	'ENSYURIN_rinhanzu',
+	'ENSYURIN_rinhanzu2'
 	// 'TATEMONO',
 	// 'ZIRIKI',
 	// 'custom-rgb-dem'
