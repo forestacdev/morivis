@@ -7,13 +7,13 @@ export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
 export interface VectorFormat {
 	type: VectorFormatType;
-	geometryType: GeometryType;
+	geometryType?: GeometryType;
 	url: string;
 }
 
 export interface VectorProperties {
 	keys: string[];
-	dict: string;
+	dict: string | null;
 }
 
 export interface VectorInteraction {

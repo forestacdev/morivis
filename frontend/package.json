@@ -53,6 +53,7 @@
 		"@turf/bearing": "^7.2.0",
 		"@turf/boolean-crosses": "^7.2.0",
 		"@turf/boolean-point-on-line": "^7.2.0",
+		"flatgeobuf": "^3.36.0",
 		"jsoneditor": "^10.1.2",
 		"lil-gui": "^0.20.0",
 		"lodash.debounce": "^4.0.8",

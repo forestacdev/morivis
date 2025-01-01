@@ -8,9 +8,13 @@ export type GeoDataEntry = VectorEntry;
 // 共通の初期化処理
 // visible を true にする
 const initData = (data: GeoDataEntry) => {
-	Object.values(data).forEach((value) => {
-		value.style.visible = true;
-	});
+	try {
+		Object.values(data).forEach((value) => {
+			value.style.visible = true;
+		});
+	} catch (e) {
+		alert('visible を true にする処理でエラーが発生しました。');
+	}
 
 	return data;
 };
