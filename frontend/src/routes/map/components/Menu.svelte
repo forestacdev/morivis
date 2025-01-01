@@ -1,6 +1,7 @@
 <script lang="ts">
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
+	import { Icon } from 'svelte-hero-icons';
 
 	import { isSide } from '$map/store';
 
@@ -18,9 +19,10 @@
 	});
 </script>
 
-<div
-	class="custom-side pointer-events-none absolute left-[0px] top-[80px] z-50 flex h-full flex-col gap-[20px] p-[6px] text-sm"
-></div>
+<div class="pointer-events-none absolute z-10 w-[200px] bg-white p-2">
+	<Icon src={ArrowUp} size="32" />
+	<button class="w-full bg-gray-200 p-2 text-left" on:click={() => toggleMenu('base')}>あ</button>
+</div>
 
 <style>
 </style>

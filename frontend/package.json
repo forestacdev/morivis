@@ -20,12 +20,11 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
 		"@playwright/test": "^1.45.3",
-		"@sveltejs/adapter-static": "^3.0.6",
+		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/enhanced-img": "^0.4.4",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/jsoneditor": "^9.9.5",
-		"@types/lodash.debounce": "^4.0.9",
 		"autoprefixer": "^10.4.20",
 		"eslint": "^9.7.0",
 		"eslint-config-prettier": "^9.1.0",
@@ -36,7 +35,7 @@
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.5",
-		"svelte": "^5.0.0",
+		"svelte": "^5.16.0",
 		"svelte-check": "^4.0.0",
 		"tailwindcss": "^3.4.9",
 		"typescript": "^5.0.0",
@@ -45,6 +44,7 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
+		"@iconify/svelte": "^4.1.0",
 		"@mapbox/tilebelt": "^2.0.2",
 		"@tailwindcss/typography": "^0.5.15",
 		"@turf/bbox": "^7.2.0",
@@ -52,11 +52,11 @@
 		"@turf/bearing": "^7.2.0",
 		"@turf/boolean-crosses": "^7.2.0",
 		"@turf/boolean-point-on-line": "^7.2.0",
+		"es-toolkit": "^1.31.0",
 		"flatgeobuf": "^3.36.0",
 		"gsap": "^3.12.5",
 		"jsoneditor": "^10.1.2",
 		"lil-gui": "^0.20.0",
-		"lodash.debounce": "^4.0.8",
 		"maplibre-gl": "^4.7.1",
 		"maplibre-gl-gsi-terrain": "^2.0.1",
 		"pmtiles": "^4.1.0"

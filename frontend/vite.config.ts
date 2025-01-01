@@ -11,6 +11,9 @@ export default defineConfig({
 			$routes: path.resolve('./src/routes')
 		}
 	},
+	ssr: {
+		noExternal: ['svelte-hero-icons']
+	},
 	// server: {
 	// 	host: true
 	// }
