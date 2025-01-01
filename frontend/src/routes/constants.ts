@@ -16,12 +16,11 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 export const INT_ADD_LAYER_IDS = [
 	// 'TITEN',
 	// 'ENSYURIN_MITI',
-	'ENSYURIN_pole',
-	'ENSYURIN_rinhanzu',
+	'ENSYURIN_rinhanzu'
 	// 'TATEMONO',
 	// 'ZIRIKI',
 	// 'custom-rgb-dem'
 	// 'custom-gsi-dem',
 	// 'gsi-rinya_m',
-	'ortho_photo'
+	// 'ortho_photo'
 ];
