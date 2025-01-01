@@ -7,9 +7,9 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
-	compilerOptions: {
-		runes: true
-	},
+	// compilerOptions: {
+	// 	runes: true
+	// },
 
 	kit: {
 		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.

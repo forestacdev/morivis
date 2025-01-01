@@ -19,6 +19,7 @@
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
+		"@iconify/svelte": "^4.1.0",
 		"@playwright/test": "^1.45.3",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/enhanced-img": "^0.4.4",
@@ -44,7 +45,6 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
-		"@iconify/svelte": "^4.1.0",
 		"@mapbox/tilebelt": "^2.0.2",
 		"@tailwindcss/typography": "^0.5.15",
 		"@turf/bbox": "^7.2.0",

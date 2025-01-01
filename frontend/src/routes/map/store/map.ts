@@ -27,7 +27,7 @@ const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import { GUI } from 'lil-gui';
-import debounce from 'lodash.debounce';
+import { debounce } from 'es-toolkit';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
 import { DEBUG_MODE, EDIT_MODE } from '$map/store';
