@@ -22,6 +22,7 @@
 	import { mapStore } from '$map/store/map';
 	import { createLayersItems } from '$map/utils/layers';
 	import { createSourcesItems } from '$map/utils/sources';
+	import Menu from '$routes/map/components/Menu.svelte';
 	import { DEBUG_MODE } from '$routes/map/store';
 	import { addedLayerIds } from '$routes/map/store';
 
@@ -117,6 +118,9 @@
 	// };
 </script>
 
+<Menu />
+<div bind:this={mapContainer} class="h-full w-full"></div>
+
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
 		<Draggable left={0} top={0}>
@@ -126,8 +130,6 @@
 
 	<GuiControl map={mapStore.getMap()} {showJsonEditor} />
 {/if}
-
-<div bind:this={mapContainer} class="h-full w-full"></div>
 
 <style>
 </style>

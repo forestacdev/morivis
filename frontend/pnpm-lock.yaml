@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@iconify/svelte':
-        specifier: ^4.1.0
-        version: 4.1.0(svelte@5.16.0)
       '@mapbox/tilebelt':
         specifier: ^2.0.2
         version: 2.0.2
@@ -35,6 +32,9 @@ importers:
       flatgeobuf:
         specifier: ^3.36.0
         version: 3.36.0
+      gsap:
+        specifier: ^3.12.5
+        version: 3.12.5
       jsoneditor:
         specifier: ^10.1.2
         version: 10.1.2
@@ -343,14 +343,6 @@ packages:
   '@humanwhocodes/retry@0.4.1':
     resolution: {integrity: sha512-c7hNEllBlenFTHBky65mhq8WD2kbN9Q6gk0bTk8lSBvc554jpXSkST1iePudpt7+A/AQvuHs9EMqjHDXMY1lrA==}
     engines: {node: '>=18.18'}
-
-  '@iconify/svelte@4.1.0':
-    resolution: {integrity: sha512-6oLonIDZHXPcQa9ZKbJocaOUMOV+ALeGPVDfex/lwdlHRNUxtJzI6pu121SaoVoXpRGSAYXB/VCv/MuYzCjn5w==}
-    peerDependencies:
-      svelte: '>4.0.0'
-
-  '@iconify/types@2.0.0':
-    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
@@ -1541,6 +1533,9 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  gsap@3.12.5:
+    resolution: {integrity: sha512-srBfnk4n+Oe/ZnMIOXt3gT605BX9x5+rh/prT2F1SsNJsU1XuMiP0E2aptW481OnonOGACZWBqseH5Z7csHxhQ==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -2841,13 +2836,6 @@ snapshots:
   '@humanwhocodes/retry@0.3.1': {}
 
   '@humanwhocodes/retry@0.4.1': {}
-
-  '@iconify/svelte@4.1.0(svelte@5.16.0)':
-    dependencies:
-      '@iconify/types': 2.0.0
-      svelte: 5.16.0
-
-  '@iconify/types@2.0.0': {}
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -4184,6 +4172,8 @@ snapshots:
   gopd@1.2.0: {}
 
   graphemer@1.4.0: {}
+
+  gsap@3.12.5: {}
 
   has-bigints@1.1.0: {}
 

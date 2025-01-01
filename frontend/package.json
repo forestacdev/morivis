@@ -45,7 +45,6 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
-		"@iconify/svelte": "^4.1.0",
 		"@mapbox/tilebelt": "^2.0.2",
 		"@tailwindcss/typography": "^0.5.15",
 		"@turf/bbox": "^7.2.0",
@@ -54,6 +53,7 @@
 		"@turf/boolean-crosses": "^7.2.0",
 		"@turf/boolean-point-on-line": "^7.2.0",
 		"flatgeobuf": "^3.36.0",
+		"gsap": "^3.12.5",
 		"jsoneditor": "^10.1.2",
 		"lil-gui": "^0.20.0",
 		"lodash.debounce": "^4.0.8",
