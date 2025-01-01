@@ -15,15 +15,14 @@
 
 	import type { GeoDataEntry } from '$map/data';
 	import { geoDataEntry } from '$map/data';
-
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
-	import { DEBUG_MODE } from '$routes/map/store';
-	import { createSourcesItems } from '$map/utils/sources';
 	import { createLayersItems } from '$map/utils/layers';
+	import { createSourcesItems } from '$map/utils/sources';
+	import { DEBUG_MODE } from '$routes/map/store';
 	import { addedLayerIds } from '$routes/map/store';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
@@ -34,10 +33,10 @@
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	// mapStyleの作成
-	const createMapStyle = (_dataEntries: GeoDataEntry) => {
+	const createMapStyle = async (_dataEntries: GeoDataEntry) => {
 		// ソースとレイヤーの作成
-		const sources = createSourcesItems(_dataEntries);
-		const layers = createLayersItems(_dataEntries);
+		const sources = await createSourcesItems(_dataEntries);
+		const layers = await createLayersItems(_dataEntries);
 
 		const mapStyle = {
 			version: 8,
@@ -70,8 +69,8 @@
 	};
 
 	// 初期描画時
-	onMount(() => {
-		const mapStyle = createMapStyle(geoDataEntry);
+	onMount(async () => {
+		const mapStyle = await createMapStyle(geoDataEntry);
 
 		if (!mapStyle || !mapContainer) return;
 

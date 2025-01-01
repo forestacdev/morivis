@@ -1,4 +1,5 @@
 import { geoJsonEntry } from '$routes/map/data/vector/geojson';
+import { fgbEntry } from '$routes/map/data/vector/fgb';
 import type { GeoJsonEntry } from '$routes/map/data/vector/geojson';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
@@ -23,4 +24,4 @@ export interface VectorInteraction {
 
 export type VectorEntry = GeoJsonEntry;
 
-export const vectorEntry: VectorEntry = { ...geoJsonEntry };
+export const vectorEntry: VectorEntry = { ...geoJsonEntry, ...fgbEntry };
