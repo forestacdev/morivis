@@ -21,7 +21,10 @@ import type {
 	RasterSourceSpecification,
 	RasterTileSource
 } from 'maplibre-gl';
-import * as pmtiles from 'pmtiles';
+import { Protocol } from 'pmtiles';
+
+const pmtilesProtocol = new Protocol();
+maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import { GUI } from 'lil-gui';
 import debounce from 'lodash.debounce';

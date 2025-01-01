@@ -69,6 +69,17 @@ export const createSourcesItems = async (
 							attribution: metaData.attribution
 						};
 						items[sourceId] = geojsonSource;
+					} else if (format.type === 'pmtiles') {
+						const vectorSource: VectorSourceSpecification = {
+							type: 'vector',
+							url: `pmtiles://${format.url}`,
+							maxzoom: metaData.maxZoom,
+							minzoom: metaData.minZoom,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+						};
+
+						items[sourceId] = vectorSource;
 					}
 					break;
 				}

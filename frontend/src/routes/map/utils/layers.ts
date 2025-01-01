@@ -96,10 +96,12 @@ export const createHighlightLayer = (
 				'source-layer': layerEntry.sourceLayer
 			};
 
+			// TODO idとして決めるkey
 			if (layerEntry.idField) {
 				baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
 			}
 			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+
 			if (layerEntry.geometryType === 'polygon') {
 				layers.push({
 					id: layerId,
@@ -199,10 +201,10 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 		...layer,
 		type: 'fill',
 		paint: {
-			...(fillStyle.paint ?? {}),
 			'fill-opacity': style.opacity,
 			// 'fill-outline-color': '#00000000',
-			'fill-color': style.color
+			'fill-color': style.color,
+			...(fillStyle.paint ?? {})
 		},
 		layout: {
 			...(fillStyle.layout ?? {})
@@ -220,10 +222,10 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 		...layer,
 		type: 'line',
 		paint: {
-			...(lineStyle.paint ?? {}),
 			'line-opacity': style.opacity,
 			'line-color': style.color,
-			'line-width': 2
+			'line-width': 2,
+			...(lineStyle.paint ?? {})
 		},
 		layout: {
 			...(lineStyle?.layout ?? {})
@@ -241,13 +243,13 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 		...layer,
 		type: 'circle',
 		paint: {
-			...(circleStyle.paint ?? {}),
 			'circle-opacity': style.opacity,
 			'circle-stroke-opacity': style.opacity,
 			'circle-color': style.color,
 			'circle-radius': 6,
 			'circle-stroke-color': '#ffffff',
-			'circle-stroke-width': 2
+			'circle-stroke-width': 2,
+			...(circleStyle.paint ?? {})
 		},
 		layout: {
 			...(circleStyle.layout ?? {})
@@ -266,19 +268,19 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 		id: `${layer.id}_label`,
 		type: 'symbol',
 		paint: {
-			...(symbolStyle.paint ?? {}),
 			'text-opacity': 1,
 			'icon-opacity': 1,
 			'text-color': '#000000',
 			'text-halo-color': '#FFFFFF',
-			'text-halo-width': 2
+			'text-halo-width': 2,
+			...(symbolStyle.paint ?? {})
 		},
 		layout: {
-			...(symbolStyle.layout ?? {}),
 			// visibility: 'visible',
 			'text-field': style.labels[0].value,
 			'text-size': 12,
-			'text-max-width': 12
+			'text-max-width': 12,
+			...(symbolStyle.layout ?? {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
@@ -351,9 +353,9 @@ export const createLayersItems = (_dataEntries: GeoDataEntry) => {
 				}
 				// ベクターレイヤー
 				case 'vector': {
-					if (format.type === 'mvt') {
+					if (format.type === 'mvt' || format.type === 'pmtiles') {
 						// TODO: source-layer
-						// layer['source-layer'] = metaData.sourceLayer;
+						layer['source-layer'] = metaData.sourceLayer;
 					}
 
 					switch (style.type) {

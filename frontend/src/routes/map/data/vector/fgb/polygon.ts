@@ -1,7 +1,7 @@
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
-import type { FgbEntry } from '$routes/map/data/vector/fgb';
+import type { GeoJsonEntry } from '$routes/map/data/vector';
 
-export const fgbPolygonEntry: FgbEntry = {
+export const fgbPolygonEntry: GeoJsonEntry = {
 	ensyurin_rinhanzu_fgb: {
 		type: 'vector',
 		format: {
