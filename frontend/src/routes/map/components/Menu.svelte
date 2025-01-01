@@ -66,19 +66,29 @@
 			'#6e40e6' // 80 以上の場合の色
 		];
 
+	interface StyleColor {
+		key: string;
+		values: ExpressionColorData;
+	}
+
 	interface ExpressionColorData {
 		[name: string]: {
-			type: 'match' | 'interpolate' | 'case';
+			type: 'single' | 'match' | 'interpolate' | 'case';
 			expression: DataDrivenPropertyValueSpecification<ColorSpecification>;
 		};
 	}
 
 	interface Memory {
-		mapping: Record<string | number, ColorSpecification>;
+		type: 'single' | 'match' | 'interpolate' | 'case';
+		mapping: Record<string | number, ColorSpecification> | null;
 		default: ColorSpecification;
 	}
 
 	const expressionColorData: ExpressionColorData = {
+		['単色']: {
+			type: 'single',
+			expression: '#FF0000'
+		},
 		['樹種']: {
 			type: 'match',
 			expression: matchExpression
@@ -93,24 +103,29 @@
 		}
 	};
 
+	const styleColor: StyleColor = {
+		key: '樹種',
+		values: expressionColorData
+	};
+
 	onMount(() => {
 		// 初期のMapbox式を受け取り、オブジェクト形式に変換する
 		// isSide.set('base');
 	});
 
 	// Mapbox式からオブジェクトに変換
-	const parseExpression = (expression) => {
+	const parseMatchExpression = (expression): Memory => {
 		const mapping = {};
 		for (let i = 2; i < expression.length - 1; i += 2) {
 			mapping[expression[i]] = expression[i + 1];
 		}
 		// デフォルト値は別途保存
 		const defaultValue = expression[expression.length - 1];
-		return { mapping, default: defaultValue };
+		return { mapping, default: defaultValue, type: 'match' };
 	};
 
 	// オブジェクトからMapbox式を生成
-	const generateExpression = ({ mapping, default: defaultValue }) => {
+	const generateMatchExpression = ({ mapping, default: defaultValue }) => {
 		const expression = ['match', ['get', '樹種']];
 		for (const [key, value] of Object.entries(mapping)) {
 			expression.push(key, value);
@@ -119,41 +134,67 @@
 		return expression;
 	};
 
-	// let targetKeys = $state(Object.keys(expressionColorData));
+	const parseExpression = (data: ExpressionColorData[string]): Memory => {
+		if (data.type === 'single') {
+			console.log('data:', data);
+			return { mapping: null, default: data.expression, type: 'single' };
+		} else if (data.type === 'match') {
+			return parseMatchExpression(data.expression);
+		}
+	};
 
 	// 初期データをオブジェクト形式に変換して格納
-	const state = $state({
-		...parseExpression(expressionColorData['樹種'].expression)
+	let stateData = $state(styleColor);
+
+	let total: Memory = $state(parseExpression(stateData.values[stateData.key]));
+
+	$effect(() => {
+		let updatedExpression;
+		if (total.type === 'single') {
+			updatedExpression = total.default;
+		} else if (total.type === 'match') {
+			updatedExpression = generateMatchExpression(total);
+		}
+		// Mapbox GL JS のレイヤー設定を更新
+		const map = mapStore.getMap();
+		if (map && map.getLayer('ENSYURIN_rinhanzu') && updatedExpression) {
+			map.setPaintProperty('ENSYURIN_rinhanzu', 'fill-color', updatedExpression);
+		}
 	});
 
-	// Mapbox式を更新する関数
-	const updateStyle = (value) => {
-		console.log('value:', value);
-		const updatedExpression = generateExpression(state);
-
-		console.log('updatedExpression:', updatedExpression);
-		// Mapbox GL JS のレイヤー設定を更新
-		mapStore.getMap().setPaintProperty('ENSYURIN_rinhanzu', 'fill-color', updatedExpression);
-	};
+	$effect(() => {
+		const currentTotal = parseExpression(stateData.values[stateData.key]);
+		total = currentTotal;
+	});
 </script>
 
 <div class="bg-main absolute z-10 w-[200px] p-2">
-	<select class="w-full bg-gray-200 p-2 text-left" on:change={(e) => updateStyle(e.target.value)}>
-		{#each Object.keys(expressionColorData) as key}
+	<select class="w-full bg-gray-200 p-2 text-left" bind:value={stateData.key}>
+		{#each Object.keys(stateData.values) as key}
 			<option value={key}>{key}</option>
 		{/each}
 	</select>
-	<div class="bg-main absolute z-10 w-[200px] p-2">
-		<div class="bg-white p-2">
-			<!-- オブジェクト形式のデータをループ -->
-			{#each Object.entries(state.mapping) as [key, value]}
-				<div class="mb-2 flex items-center justify-between">
-					<span>{key === 'default' ? 'デフォルト' : key}</span>
-					<input type="color" bind:value={state.mapping[key]} on:input={() => updateStyle()} />
-				</div>
-			{/each}
+	{JSON.stringify(total)}
+	{#if total}
+		<div class="bg-main absolute z-10 w-[200px] p-2">
+			<div class="bg-white p-2">
+				<!-- オブジェクト形式のデータをループ -->
+				{#if total.type === 'single'}
+					<div class="mb-2 flex items-center justify-between">
+						<span>色</span>
+						<input type="color" bind:value={total.default} />
+					</div>
+				{:else if total.mapping}
+					{#each Object.entries(total.mapping) as [key, value]}
+						<div class="mb-2 flex items-center justify-between">
+							<span>{key}</span>
+							<input type="color" bind:value={total.mapping[key]} />
+						</div>
+					{/each}
+				{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
 
 <!-- <button class="w-full bg-gray-200 p-2 text-left" on:click={() => toggleMenu('base')}>
