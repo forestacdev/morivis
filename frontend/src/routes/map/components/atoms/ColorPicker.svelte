@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 	export let label: string | null = null;
 	export let value: string;
 </script>

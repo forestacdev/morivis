@@ -1,6 +1,5 @@
-<script setup lang="ts">
-	export let label: string;
-	export let value: boolean;
+<script lang="ts">
+	let { label, value = $bindable() }: { label: string; value: boolean | undefined } = $props();
 </script>
 
 <label class="flex flex-grow cursor-pointer gap-2">

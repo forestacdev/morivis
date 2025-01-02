@@ -4,12 +4,9 @@
 
 @layer components {
 	.btn-primary {
-		@apply;
+		@apply; 
 	}
 }
 
-/* @layer base {
-	body {
-		@apply text-primary;
-	}
-} */
+@layer base {
+}

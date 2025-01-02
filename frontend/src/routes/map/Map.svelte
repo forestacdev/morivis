@@ -92,7 +92,7 @@
 			layerToEdit = undefined;
 			return;
 		} else {
-			layerToEdit = geoDataEntry.find((entry) => entry.id === id);
+			layerToEdit = layerEntries.find((entry) => entry.id === id);
 		}
 	});
 
