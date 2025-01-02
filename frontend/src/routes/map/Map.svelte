@@ -32,7 +32,9 @@
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
+	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
+
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 
@@ -74,7 +76,9 @@
 
 	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {
-		const filteredDataEntry = geoDataEntry.filter((entry) => ids.includes(entry.id));
+		const filteredDataEntry = [...geoDataEntry, ...tempLayerEntries].filter((entry) =>
+			ids.includes(entry.id)
+		);
 
 		// idsの順番に並び替え
 		layerEntries = filteredDataEntry.sort((a, b) => {
@@ -146,7 +150,7 @@
 <!-- <Menu /> -->
 
 <LayerMenu bind:layerEntries />
-<LayerOptionMenu bind:layerToEdit />
+<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 <div bind:this={mapContainer} class="h-full w-full"></div>
 <!-- <div class="z-100 absolute bottom-0 right-0 max-h-[300px] max-w-[300px] overflow-auto bg-white p-2">
 	{JSON.stringify(layerEntries, null, 2)}

@@ -11,7 +11,10 @@
 	import { showLayerOptionId, isSide, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
-	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry | undefined } = $props();
+	let {
+		layerToEdit = $bindable(),
+		tempLayerEntries = $bindable()
+	}: { layerToEdit: GeoDataEntry | undefined; tempLayerEntries: GeoDataEntry[] } = $props();
 
 	isSide.subscribe((value) => {
 		if (value !== 'layer') {
@@ -60,8 +63,8 @@
 		copy.id = uuid;
 		copy.metaData.name = `${layerToEdit.metaData.name} (コピー)`;
 
-		// tempLayerEntries = [...tempLayerEntries, copy];
-		// addedLayerIds.addLayer(uuid);
+		tempLayerEntries = [...tempLayerEntries, copy];
+		addedLayerIds.addLayer(uuid);
 	};
 
 	onMount(() => {});
