@@ -13,6 +13,9 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount } from 'svelte';
 
+	import LayerMenu from '$map/components/LayerMenu.svelte';
+	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
+	import Menu from '$map/components/Menu.svelte';
 	import type { GeoDataEntry } from '$map/data';
 	import { geoDataEntry } from '$map/data';
 	import Draggable from '$map/debug/Draggable.svelte';
@@ -20,12 +23,10 @@
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
-	import LayerMenu from '$routes/map/components/LayerMenu.svelte';
-	import Menu from '$routes/map/components/Menu.svelte';
 	import { createLayersItems } from '$routes/map/layers';
 	import { createSourcesItems } from '$routes/map/sources';
 	import { DEBUG_MODE } from '$routes/map/store';
-	import { addedLayerIds } from '$routes/map/store';
+	import { addedLayerIds, showLayerOptionId } from '$routes/map/store';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
@@ -33,6 +34,7 @@
 	}>({ value: false });
 	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
+	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
@@ -70,10 +72,24 @@
 		return mapStyle as StyleSpecification;
 	};
 
+	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {
 		const filteredDataEntry = geoDataEntry.filter((entry) => ids.includes(entry.id));
 
-		layerEntries = filteredDataEntry;
+		// idsの順番に並び替え
+		layerEntries = filteredDataEntry.sort((a, b) => {
+			return ids.indexOf(a.id) - ids.indexOf(b.id);
+		});
+	});
+
+	// 編集中のレイヤーの取得
+	showLayerOptionId.subscribe((id) => {
+		if (!id) {
+			layerToEdit = undefined;
+			return;
+		} else {
+			layerToEdit = geoDataEntry.find((entry) => entry.id === id);
+		}
 	});
 
 	// 初期描画時
@@ -130,6 +146,7 @@
 <!-- <Menu /> -->
 
 <LayerMenu bind:layerEntries />
+<LayerOptionMenu bind:layerToEdit />
 <div bind:this={mapContainer} class="h-full w-full"></div>
 <!-- <div class="z-100 absolute bottom-0 right-0 max-h-[300px] max-w-[300px] overflow-auto bg-white p-2">
 	{JSON.stringify(layerEntries, null, 2)}

@@ -14,7 +14,7 @@
 	});
 </script>
 
-<div class="bg-main absolute z-10 h-full w-[200px] p-2">
+<div class="bg-main absolute z-10 flex h-full w-[200px] flex-col gap-2 p-2">
 	{#each layerEntries as layerEntry, i (layerEntry.id)}
 		<LayerSlot bind:layerEntry={layerEntries[i]} />
 	{/each}
