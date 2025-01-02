@@ -24,9 +24,9 @@
 			// タイル境界を表示
 
 			map.showTileBoundaries = true;
-			map.showCollisionBoxes = true;
+			map.showCollisionBoxes = false;
 			map.showOverdrawInspector = false;
-			map.showPadding = true;
+			map.showPadding = false;
 
 			const mapTriggerRepaint = () => {
 				if (map) {

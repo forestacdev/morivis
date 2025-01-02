@@ -21,8 +21,9 @@
 	};
 </script>
 
+<!-- TODO:エラー -->
 <section class="absolute z-10" style="left: {left}px; top: {top}px;">
-	<div onmousedown={onMouseDown} class="cursor-move select-none bg-slate-800 p-2 text-white">
+	<div onmousedown={onMouseDown} class="bg-base cursor-move select-none p-2 text-white">
 		on move
 	</div>
 	<slot></slot>

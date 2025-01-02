@@ -95,7 +95,5 @@ export const createSourcesItems = async (
 	// 配列をオブジェクトに統合
 	const sourceItems = Object.assign({}, ...sourceItemsArray);
 
-	console.log(sourceItems);
-
 	return sourceItems;
 };
