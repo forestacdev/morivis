@@ -81,8 +81,22 @@ export interface ColorStepExpressions {
 	key: string;
 	name: string;
 	mapping: {
-		categories: number[];
-		values: string[];
+		range: [number, number]; // min, max
+		divisions: number;
+		colorScale:
+			| 'OrRd'
+			| 'OrYl'
+			| 'OrYlRd'
+			| 'PuRd'
+			| 'BuPu'
+			| 'RdPu'
+			| 'BuGn'
+			| 'YlGn'
+			| 'YlGnBu'
+			| 'YlOrBr'
+			| 'YlOrRd'
+			| 'RdYlBu'
+			| 'RdYlGn';
 	};
 }
 

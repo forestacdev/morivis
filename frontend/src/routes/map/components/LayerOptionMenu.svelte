@@ -19,6 +19,7 @@
 	} from '$map/data/vector/style';
 	import { showLayerOptionId, isSide, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import { generateNumberAndColorMap } from '$map/utils/colorMapping';
 
 	let {
 		layerToEdit = $bindable(),
@@ -97,6 +98,9 @@
 		if (!layerToEdit) return;
 		const target = ColorsExpressions.find((color) => color.key === layerToEdit.style.colors.key);
 		if (!target) return;
+		if (target.type === 'step') {
+			return generateNumberAndColorMap(target.mapping);
+		}
 		return target;
 	};
 
@@ -143,9 +147,8 @@
 </script>
 
 {#if $showLayerOptionId}
-	{layerToEdit}
 	<div
-		class="absolute left-[270px] z-10 flex h-[400px] w-[300px] flex-col gap-2 rounded-sm bg-[#C27142] p-2 shadow-2xl"
+		class="bg-main absolute left-[270px] z-10 flex h-[400px] w-[300px] flex-col gap-2 rounded-sm p-2 shadow-2xl"
 	>
 		<span class="text-lg">レイヤーオプション</span>
 		<div class="h-full flex-grow overflow-y-auto">
@@ -197,25 +200,22 @@
 								<option value={colortype.key}>{colortype.name}</option>
 							{/each}
 						</select>
-						{#if colorStyle}
-							{#if colorStyle.type === 'single'}
-								<input type="color" bind:value={colorStyle.mapping.value} />
-							{:else if colorStyle.type === 'match'}
-								{#each colorStyle.mapping.categories as _, index}
-									<div>{colorStyle.mapping.categories[index]}</div>
-									<input type="color" bind:value={colorStyle.mapping.values[index]} />
-								{/each}
-							{:else if colorStyle.type === 'step'}
-								{#each colorStyle.mapping.categories as _, index}
-									<input
-										type="number"
-										bind:value={colorStyle.mapping.categories[index]}
-										placeholder="Enter category"
-									/>
-									<input type="color" bind:value={colorStyle.mapping.values[index]} />
-								{/each}
+						<div class="flex flex-col gap-2">
+							{#if colorStyle}
+								{#if colorStyle.type === 'single'}
+									<input type="color" bind:value={colorStyle.mapping.value} />
+								{:else if colorStyle.type === 'match' || colorStyle.type === 'step'}
+									{#each colorStyle.mapping.categories as _, index}
+										<div class="flex-between flex w-full gap-2">
+											<div class="w-full">{colorStyle.mapping.categories[index]}</div>
+											<input type="color" bind:value={colorStyle.mapping.values[index]} />
+										</div>
+									{/each}
+
+									<!-- TODO:stepで数値を変更できるようにするか検討 -->
+								{/if}
 							{/if}
-						{/if}
+						</div>
 					{/if}
 
 					{#if layerToEdit.type === 'raster'}

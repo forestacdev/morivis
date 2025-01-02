@@ -16,7 +16,7 @@ const sortedLayers = (Layers: string[]) => {
 	const vector: string[] = [];
 	Layers.forEach((layerId) => {
 		// typeを調べる
-		const data = geoDataEntry[layerId];
+		const data = geoDataEntry.find((entry) => entry.id === layerId);
 		if (data?.type === 'raster') {
 			raster.push(layerId);
 		} else {

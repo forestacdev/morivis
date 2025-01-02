@@ -74,8 +74,9 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 						key: '林齢',
 						name: '林齢の範囲による色分け',
 						mapping: {
-							categories: [0, 20, 40, 60, 80, 100],
-							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff']
+							range: [0, 100],
+							divisions: 5,
+							colorScale: 'OrRd'
 						}
 					}
 				]

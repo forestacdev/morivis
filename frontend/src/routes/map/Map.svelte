@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { debounce } from 'es-toolkit';
 	import maplibregl from 'maplibre-gl';
 	import type {
 		Map,
@@ -104,23 +105,14 @@
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
 
+	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
+		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
+		mapStore.setStyle(mapStyle);
+	}, 100);
+
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
-		let cancelled = false;
-
-		(async () => {
-			// 非同期処理の開始
-			const mapStyle = await createMapStyle(currentEntries as GeoDataEntry[]);
-
-			// 処理がキャンセルされていない場合にのみ適用
-			if (!cancelled) {
-				mapStore.setStyle(mapStyle);
-			}
-		})();
-		// クリーンアップ処理
-		return () => {
-			cancelled = true;
-		};
+		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
 	mapStore.onClick((e) => {

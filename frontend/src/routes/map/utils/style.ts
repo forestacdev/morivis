@@ -8,7 +8,7 @@ import { GeoDataEntry } from '$map/data';
  * @param divisions 分割数
  * @returns 数値の配列
  */
-function generateNumberMap(min: number, max: number, divisions: number): number[] {
+const generateNumberMap = (min: number, max: number, divisions: number): number[] => {
 	if (divisions <= 0) {
 		throw new Error('divisions must be greater than 0');
 	}
@@ -21,7 +21,7 @@ function generateNumberMap(min: number, max: number, divisions: number): number[
 	}
 
 	return result;
-}
+};
 
 const min = 0;
 const max = 100;
@@ -44,4 +44,3 @@ const data = {
 
 const result = dynamicTemplate(template, data);
 console.log(result);
-

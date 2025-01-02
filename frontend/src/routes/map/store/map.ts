@@ -27,7 +27,6 @@ const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import { GUI } from 'lil-gui';
-import { debounce } from 'es-toolkit';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
 import { DEBUG_MODE, EDIT_MODE } from '$map/store';
@@ -162,13 +161,11 @@ const createMapStore = () => {
 	};
 
 	// マップスタイルを設定するメソッド
-	const setStyle = debounce((style: StyleSpecification) => {
+	const setStyle = (style: StyleSpecification) => {
 		if (!map) return;
-
 		setStyleEvent.set(style);
-
 		map.setStyle(style);
-	}, 100);
+	};
 
 	// クリックマーカーを追加するメソッド
 	const addLockonMarker = (element: HTMLElement, lngLat: LngLat) => {

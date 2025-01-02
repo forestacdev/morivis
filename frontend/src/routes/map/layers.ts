@@ -34,7 +34,7 @@ import type {
 } from '$map/data/vector/style';
 import type { GeoDataEntry } from '$map/data';
 import type { PointStyle, PolygonStyle, LineStringStyle, LabelStyle } from '$map/data/vector/style';
-import { get } from 'svelte/store';
+import { generateNumberAndColorMap } from '$map/utils/colorMapping';
 
 // IDを収集
 const validIds = geoDataEntry.map((entry) => entry.id);
@@ -243,7 +243,7 @@ const generateStepExpression = (
 		['coalesce', ['to-number', ['get', key], -9999], -9999] // 数値以外の場合に -9999 を使用
 	];
 
-	const { categories, values } = expressionData.mapping;
+	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
 
 	if (categories.length !== values.length) {
 		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
