@@ -76,6 +76,48 @@ export interface ColorMatchExpressions {
 	};
 }
 
+const COLOR_MAP_TYPE = [
+	'OrRd',
+	'PuBu',
+	'BuPu',
+	'Oranges',
+	'BuGn',
+	'YlOrBr',
+	'YlGn',
+	'Reds',
+	'RdPu',
+	'Greens',
+	'YlGnBu',
+	'Purples',
+	'GnBu',
+	'Greys',
+	'YlOrRd',
+	'PuRd',
+	'Blues',
+	'PuBuGn',
+	'Viridis',
+	'Spectral',
+	'RdYlGn',
+	'RdBu',
+	'PiYG',
+	'PRGn',
+	'RdYlBu',
+	'BrBG',
+	'RdGy',
+	'PuOr',
+	'Set2',
+	'Accent',
+	'Set1',
+	'Set3',
+	'Dark2',
+	'Paired',
+	'Pastel2',
+	'Pastel1'
+] as const;
+
+export type ColorMapType = (typeof COLOR_MAP_TYPE)[number];
+export const mutableColorMapType: ColorMapType[] = [...COLOR_MAP_TYPE];
+
 export interface ColorStepExpressions {
 	type: 'step';
 	key: string;
@@ -83,20 +125,7 @@ export interface ColorStepExpressions {
 	mapping: {
 		range: [number, number]; // min, max
 		divisions: number;
-		colorScale:
-			| 'OrRd'
-			| 'OrYl'
-			| 'OrYlRd'
-			| 'PuRd'
-			| 'BuPu'
-			| 'RdPu'
-			| 'BuGn'
-			| 'YlGn'
-			| 'YlGnBu'
-			| 'YlOrBr'
-			| 'YlOrRd'
-			| 'RdYlBu'
-			| 'RdYlGn';
+		colorScale: ColorMapType;
 	};
 }
 

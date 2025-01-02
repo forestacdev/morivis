@@ -76,7 +76,7 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 						mapping: {
 							range: [0, 100],
 							divisions: 5,
-							colorScale: 'OrRd'
+							colorScale: 'PuBu'
 						}
 					}
 				]

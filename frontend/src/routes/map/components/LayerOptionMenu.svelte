@@ -17,9 +17,10 @@
 		ColorsExpressions,
 		LabelsExpressions
 	} from '$map/data/vector/style';
+	import { mutableColorMapType } from '$map/data/vector/style';
 	import { showLayerOptionId, isSide, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';
-	import { generateNumberAndColorMap } from '$map/utils/colorMapping';
+	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
 
 	let {
 		layerToEdit = $bindable(),
@@ -98,15 +99,26 @@
 		if (!layerToEdit) return;
 		const target = ColorsExpressions.find((color) => color.key === layerToEdit.style.colors.key);
 		if (!target) return;
-		if (target.type === 'step') {
-			return generateNumberAndColorMap(target.mapping);
-		}
+		// if (target.type === 'step') {
+		// 	return {
+		// 		type: 'step',
+		// 		mapping: generateNumberAndColorMap(target.mapping)
+		// 	};
+		// }
 		return target;
 	};
 
 	let colorStyle = $derived.by(() => {
 		if (!layerToEdit) return;
 		return getColorPallet(layerToEdit.style.colors.expressions);
+	});
+
+	let stepPallet = $derived.by(() => {
+		if (!layerToEdit) return;
+		const target = getColorPallet(layerToEdit.style.colors.expressions);
+		if (target && target.type === 'step') {
+			return generateNumberAndColorMap(target.mapping);
+		}
 	});
 
 	// レイヤーの削除
@@ -204,15 +216,41 @@
 							{#if colorStyle}
 								{#if colorStyle.type === 'single'}
 									<input type="color" bind:value={colorStyle.mapping.value} />
-								{:else if colorStyle.type === 'match' || colorStyle.type === 'step'}
+								{:else if colorStyle.type === 'match'}
 									{#each colorStyle.mapping.categories as _, index}
 										<div class="flex-between flex w-full gap-2">
 											<div class="w-full">{colorStyle.mapping.categories[index]}</div>
 											<input type="color" bind:value={colorStyle.mapping.values[index]} />
 										</div>
 									{/each}
-
-									<!-- TODO:stepで数値を変更できるようにするか検討 -->
+								{:else if colorStyle.type === 'step'}
+									<!-- TODO:stepで colorを変更できるようにするか検討 -->
+									<select
+										class="w-full p-2 text-left text-black"
+										bind:value={colorStyle.mapping.colorScale}
+									>
+										{#each mutableColorMapType as type}
+											<option value={type}>{type}</option>
+										{/each}
+									</select>
+									<RangeSlider
+										label="分類数"
+										bind:value={colorStyle.mapping.divisions}
+										min={2}
+										max={10}
+										step={1}
+									/>
+									{#if stepPallet}
+										{#each stepPallet.categories as _, index}
+											<div class="flex-between flex w-full gap-2">
+												<div class="w-full">{stepPallet.categories[index]}</div>
+												<div
+													class="p-2"
+													style="background-color: {stepPallet.values[index]};"
+												></div>
+											</div>
+										{/each}
+									{/if}
 								{/if}
 							{/if}
 						</div>
