@@ -229,7 +229,6 @@ const generateMatchExpression = (
 	// デフォルト値を最後に追加
 	expression.push('#00000000');
 
-	console.log('expression', expression);
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
@@ -259,7 +258,6 @@ const generateStepExpression = (
 		expression.push(categories[i], values[i]);
 	}
 
-	console.log('expression', expression);
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 

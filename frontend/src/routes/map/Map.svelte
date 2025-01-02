@@ -20,10 +20,10 @@
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
-	import { createLayersItems } from '$map/utils/layers';
-	import { createSourcesItems } from '$map/utils/sources';
 	import LayerMenu from '$routes/map/components/LayerMenu.svelte';
 	import Menu from '$routes/map/components/Menu.svelte';
+	import { createLayersItems } from '$routes/map/layers';
+	import { createSourcesItems } from '$routes/map/sources';
 	import { DEBUG_MODE } from '$routes/map/store';
 	import { addedLayerIds } from '$routes/map/store';
 
@@ -35,7 +35,7 @@
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	// mapStyleの作成
-	const createMapStyle = async (_dataEntries: GeoDataEntry[]) => {
+	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
 		const layers = await createLayersItems(_dataEntries);
@@ -67,23 +67,23 @@
 		// NOTE:debug
 		if (import.meta.env.DEV) debugJson.set(mapStyle);
 
-		return mapStyle;
+		return mapStyle as StyleSpecification;
 	};
 
 	// 初期描画時
 	onMount(async () => {
-		const mapStyle = await createMapStyle(geoDataEntry);
+		addedLayerIds.subscribe((ids) => {
+			const filteredDataEntry = geoDataEntry.filter((entry) => ids.includes(entry.id));
+
+			layerDataEntries = filteredDataEntry;
+		});
+
+		if (!layerDataEntries) return;
+		const mapStyle = await createMapStyle(layerDataEntries);
 
 		if (!mapStyle || !mapContainer) return;
 
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
-
-		addedLayerIds.subscribe((ids) => {
-			const filteredDataEntry = Object.fromEntries(
-				Object.entries(geoDataEntry).filter(([key]) => ids.includes(key))
-			);
-			layerDataEntries = filteredDataEntry;
-		});
 	});
 
 	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
@@ -92,7 +92,7 @@
 		if (!layerDataEntries || mapContainer) return;
 		// console.log('layerDataEntries', layerDataEntries);
 		const mapStyle = createMapStyle(layerDataEntries);
-		mapStore.setStyle(mapStyle as StyleSpecification);
+		mapStore.setStyle(mapStyle);
 	});
 
 	mapStore.onClick((e) => {

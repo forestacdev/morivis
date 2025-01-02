@@ -5,7 +5,7 @@ import type {
 	GeoJSONSourceSpecification
 } from 'maplibre-gl';
 
-import type { GeoDataEntry } from '../data';
+import type { GeoDataEntry } from '$map/data';
 import { geojson as fgb } from 'flatgeobuf';
 
 export const createSourcesItems = async (
