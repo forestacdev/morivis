@@ -1,8 +1,10 @@
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
 import type { GeoJsonEntry } from '$routes/map/data/vector';
 
-export const fgbPolygonEntry: GeoJsonEntry = {
-	ensyurin_rinhanzu_fgb: {
+export const fgbPolygonEntry: GeoJsonEntry[] = [
+	// 演習林林班図
+	{
+		id: 'ensyurin_rinhanzu_fgb',
 		type: 'vector',
 		format: {
 			type: 'fgb',
@@ -29,28 +31,18 @@ export const fgbPolygonEntry: GeoJsonEntry = {
 		},
 		style: {
 			type: 'fill',
-			opacity: 1, // 透過率
-			color: '#ffffff', // 塗りつぶしの色
-			displayLabel: true,
-			labels: [
-				{
-					name: '林齢のラベル',
-					key: '林齢',
-					value: '{林齢}'
-				},
-				{
-					name: '小林班IDのラベル',
-					key: '小林班ID',
-					value: '{小林班ID}'
-				},
-				{
-					name: '樹種のラベル',
-					key: '樹種',
-					value: '{樹種}'
-				}
-			],
-			expressions: {
-				color: [
+			opacity: 0.5, // 透過率
+			colors: {
+				key: '林齢',
+				expressions: [
+					{
+						type: 'single',
+						key: '単色',
+						name: '単色',
+						mapping: {
+							value: '#00ff00'
+						}
+					},
 					{
 						type: 'match',
 						key: '樹種',
@@ -64,38 +56,48 @@ export const fgbPolygonEntry: GeoJsonEntry = {
 								'広葉樹',
 								'草地',
 								'その他岩石'
-							]
+							],
+							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#000000']
 						}
 					},
 					{
 						type: 'match',
 						key: '林班',
-						name: '林班区分の色分け',
+						name: '林班ごとの色分け',
 						mapping: {
-							categories: [1, 2, 3]
+							categories: [1, 2, 3],
+							values: ['#ff0000', '#00ff00', '#0000ff']
 						}
 					},
 					{
-						type: 'interpolate',
-						key: '面積',
-						name: '面積ごとの色分け',
+						type: 'step',
+						key: '林齢',
+						name: '林齢の範囲による色分け',
 						mapping: {
-							min: 0,
-							max: 100,
-							divisions: 2
+							categories: [0, 20, 40, 60, 80, 100],
+							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff']
 						}
 					}
-				],
-				number: [
+				]
+			},
+			labels: {
+				key: '林齢', // 現在選択されているラベルのキー
+				show: true, // ラベル表示状態
+				expressions: [
 					{
-						type: 'interpolate',
-						key: '区域の線の太さ',
-						name: '林齢ごとの数値',
-						mapping: {
-							min: 0,
-							max: 100,
-							divisions: 5
-						}
+						key: '小林班ID',
+						name: '小林班IDのラベル',
+						value: '{小林班ID}'
+					},
+					{
+						key: '林齢',
+						name: '林齢のラベル',
+						value: '{林齢}'
+					},
+					{
+						key: '樹種',
+						name: '樹種のラベル',
+						value: '{樹種}'
 					}
 				]
 			},
@@ -124,6 +126,8 @@ export const fgbPolygonEntry: GeoJsonEntry = {
 					layout: {}
 				}
 			}
-		}
+		},
+		extension: {},
+		debug: false
 	}
-};
+];

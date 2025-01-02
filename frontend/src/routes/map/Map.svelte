@@ -30,11 +30,11 @@
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
-	let layerDataEntries = $state<GeoDataEntry | null>(geoDataEntry); // レイヤーデータ
+	let layerDataEntries = $state<GeoDataEntry[] | null>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	// mapStyleの作成
-	const createMapStyle = async (_dataEntries: GeoDataEntry) => {
+	const createMapStyle = async (_dataEntries: GeoDataEntry[]) => {
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
 		const layers = await createLayersItems(_dataEntries);

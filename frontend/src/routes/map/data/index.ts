@@ -1,42 +1,44 @@
 import { geoJsonPolygonEntry } from '$map/data/vector/geojson/polygon';
+import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
 import { geoJsonLineStringEntry } from '$map/data/vector/geojson/lineString';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
-import type { VectorEntry } from '$routes/map/data/vector';
+import type { GeoJsonEntry, VectorEntry } from '$routes/map/data/vector';
 
 export type GeoDataType = 'raster' | 'vector' | '3d';
 
-export type GeoDataEntry = VectorEntry;
+export type GeoDataEntry = VectorEntry | GeoJsonEntry;
 
 // 共通の初期化処理
 // visible を true にする
-const initData = (data: GeoDataEntry) => {
+const initData = (data: GeoDataEntry[]) => {
 	try {
-		Object.values(data).forEach((value) => {
+		data.forEach((value) => {
 			value.style.visible = true;
 		});
 	} catch (e) {
-		alert('visible を true にする処理でエラーが発生しました。');
+		console.error(e);
+		console.warn('初期化処理に失敗しました。');
 	}
 
 	return data;
 };
 
+const entries: GeoDataEntry[] = [...fgbPolygonEntry, ...pmtilesPolygonEntry];
+
 export const geoDataEntry = (() => {
-	const entries = [geoJsonPolygonEntry, geoJsonLineStringEntry, pmtilesPolygonEntry];
+	// 全てのIDを取得
+	const allIds = entries.map((entry) => entry.id);
 
-	// 全てのキーを取得
-	const allKeys = entries.flatMap((entry) => Object.keys(entry));
-
-	// 重複するキーを検出
-	const duplicateKeys = allKeys.filter((key, index, self) => self.indexOf(key) !== index);
+	// 重複するIDを検出
+	const duplicateKeys = allIds.filter((id, index, self) => self.indexOf(id) !== index);
 
 	// 警告を出力
 	if (duplicateKeys.length > 0) {
-		console.warn('Duplicate keys found while merging geoJsonEntry:', duplicateKeys);
+		console.warn('idが重複してます。:', duplicateKeys);
 	}
 
 	// オブジェクトを結合
-	return initData(Object.assign({}, ...entries));
+	return initData(entries);
 })();
 
 // Map に変換

@@ -9,13 +9,13 @@ import type { GeoDataEntry } from '../data';
 import { geojson as fgb } from 'flatgeobuf';
 
 export const createSourcesItems = async (
-	_dataEntries: GeoDataEntry
+	_dataEntries: GeoDataEntry[]
 ): Promise<{ [_: string]: SourceSpecification }> => {
 	const sourceItemsArray = await Promise.all(
-		Object.entries(_dataEntries).map(async ([id, data]) => {
+		_dataEntries.map(async (entry) => {
 			const items: { [_: string]: SourceSpecification } = {};
-			const sourceId = `${id}_source`;
-			const { metaData, format, type } = data;
+			const sourceId = `${entry.id}_source`;
+			const { metaData, format, type } = entry;
 
 			switch (type) {
 				case 'raster': {

@@ -45,23 +45,27 @@ interface GeoJsonMetaData {
 }
 
 export interface GeoJsonEntry {
-	[id: string]: {
-		type: GeoDataType;
-		format: VectorFormat;
-		metaData: GeoJsonMetaData;
-		properties: VectorProperties;
-		interaction: VectorInteraction;
-		style: VectorStyle;
-	};
+	id: string;
+	type: GeoDataType;
+	format: VectorFormat;
+	metaData: GeoJsonMetaData;
+	properties: VectorProperties;
+	interaction: VectorInteraction;
+	style: VectorStyle;
+	debug: boolean;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	extension: any;
 }
 
 export interface VectorEntry {
-	[id: string]: {
-		type: GeoDataType;
-		format: VectorFormat;
-		metaData: VectorMetaData;
-		properties: VectorProperties;
-		interaction: VectorInteraction;
-		style: VectorStyle;
-	};
+	id: string;
+	type: GeoDataType;
+	format: VectorFormat;
+	metaData: VectorMetaData;
+	properties: VectorProperties;
+	interaction: VectorInteraction;
+	style: VectorStyle;
+	debug: boolean;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	extension: any;
 }

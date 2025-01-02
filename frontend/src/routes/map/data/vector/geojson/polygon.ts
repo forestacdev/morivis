@@ -1,8 +1,10 @@
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
 import type { GeoJsonEntry } from '$routes/map/data/vector';
 
-export const geoJsonPolygonEntry: GeoJsonEntry = {
-	ENSYURIN_rinhanzu: {
+export const geoJsonPolygonEntry: GeoJsonEntry[] = [
+	// 演習林林班図
+	{
+		id: 'ensyurin_rinhanzu_fgb',
 		type: 'vector',
 		format: {
 			type: 'geojson',
@@ -10,7 +12,7 @@ export const geoJsonPolygonEntry: GeoJsonEntry = {
 			url: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu.geojson`
 		},
 		metaData: {
-			name: '演習林林班図', // 名前
+			name: '演習林林班図fgb', // 名前
 			description: '岐阜県の演習林の林班図です。', // 説明
 			attribution: '森林文化アカデミー', // データの出典
 			location: '森林文化アカデミー',
@@ -29,31 +31,19 @@ export const geoJsonPolygonEntry: GeoJsonEntry = {
 		},
 		style: {
 			type: 'fill',
-			opacity: 0.5, // 透過率
-			color: '#2a826c', // 塗りつぶしの色
-			displayLabel: true,
-			labels: [
-				{
-					name: '林齢のラベル',
-					key: '林齢',
-					value: '{林齢}'
-				},
-				{
-					name: '小林班IDのラベル',
-					key: '小林班ID',
-					value: '{小林班ID}'
-				},
-				{
-					name: '樹種のラベル',
-					key: '樹種',
-					value: '{樹種}'
-				}
-			],
-			expressions: {
-				color: [
+			opacity: 1, // 透過率
+			colors: {
+				key: '単色',
+				expressions: [
 					{
-						type: 'match',
+						key: '単色',
+						type: 'single',
+						name: '単色',
+						mapping: null
+					},
+					{
 						key: '樹種',
+						type: 'match',
 						name: '樹種ごとの色分け',
 						mapping: {
 							categories: [
@@ -64,38 +54,48 @@ export const geoJsonPolygonEntry: GeoJsonEntry = {
 								'広葉樹',
 								'草地',
 								'その他岩石'
-							]
+							],
+							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#000000']
 						}
 					},
 					{
-						type: 'match',
 						key: '林班',
-						name: '林班区分の色分け',
+						type: 'match',
+						name: '林班ごとの色分け',
 						mapping: {
-							categories: [1, 2, 3]
+							categories: [1, 2, 3],
+							values: ['#ff0000', '#00ff00', '#0000ff']
 						}
 					},
 					{
-						type: 'interpolate',
-						key: '面積',
-						name: '面積ごとの色分け',
+						key: '林齢',
+						type: 'step',
+						name: '林齢の範囲による色分け',
 						mapping: {
-							min: 0,
-							max: 100,
-							divisions: 2
+							categories: [0, 20, 40, 60, 80, 100],
+							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff']
 						}
 					}
-				],
-				number: [
+				]
+			},
+			labels: {
+				key: '林齢', // 現在選択されているラベルのキー
+				show: true, // ラベル表示状態
+				expressions: [
 					{
-						type: 'interpolate',
-						key: '区域の線の太さ',
-						name: '林齢ごとの数値',
-						mapping: {
-							min: 0,
-							max: 100,
-							divisions: 5
-						}
+						key: '小林班ID',
+						name: '小林班IDのラベル',
+						value: '{小林班ID}'
+					},
+					{
+						key: '林齢',
+						name: '林齢のラベル',
+						value: '{林齢}'
+					},
+					{
+						key: '樹種',
+						name: '樹種のラベル',
+						value: '{樹種}'
 					}
 				]
 			},
@@ -124,6 +124,8 @@ export const geoJsonPolygonEntry: GeoJsonEntry = {
 					layout: {}
 				}
 			}
-		}
+		},
+		extension: {},
+		debug: false
 	}
-};
+];

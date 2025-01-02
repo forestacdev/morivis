@@ -266,7 +266,7 @@
 		// Mapbox GL JS のレイヤー設定を更新
 		const map = mapStore.getMap();
 		if (map && map.getLayer('ENSYURIN_rinhanzu') && updatedExpression) {
-			// map.setPaintProperty('ENSYURIN_rinhanzu', 'fill-color', updatedExpression);
+			map.setPaintProperty('ENSYURIN_rinhanzu', 'fill-color', updatedExpression);
 		}
 	});
 

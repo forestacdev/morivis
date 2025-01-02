@@ -12,7 +12,9 @@ import type {
 	RasterLayerSpecification,
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification,
-	FilterSpecification
+	FilterSpecification,
+	DataDrivenPropertyValueSpecification,
+	ColorSpecification
 } from 'maplibre-gl';
 import {
 	GEOJSON_BASE_PATH,
@@ -21,12 +23,21 @@ import {
 } from '$routes/map/constants';
 import { clickableLayerIds } from '$map/store';
 import { geoDataEntry } from '$map/data';
-import type { VectorStyle } from '$map/data/vector/style';
+import type {
+	Labels,
+	VectorStyle,
+	Colors,
+	ColorsExpressions,
+	ColorSingleExpressions,
+	ColorMatchExpressions,
+	ColorStepExpressions
+} from '$map/data/vector/style';
 import type { GeoDataEntry } from '$map/data';
 import type { PointStyle, PolygonStyle, LineStringStyle, LabelStyle } from '$map/data/vector/style';
+import { get } from 'svelte/store';
 
 // IDを収集
-const validIds = [...new Set(Object.keys(geoDataEntry))];
+const validIds = geoDataEntry.map((entry) => entry.id);
 const validateId = (id: string) => {
 	if (!validIds.includes(id)) {
 		throw new Error(`Invalid ID: ${id}`);
@@ -35,9 +46,12 @@ const validateId = (id: string) => {
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
 		validateId(id); // ここでエラーが発生します
-	} catch (error: Error) {
-		console.error(error.message);
-		alert('無効なidです: ${id}');
+	} catch (error) {
+		if (error instanceof Error) {
+			console.error(error.message);
+		}
+		console.warn(`無効なidです: ${id}`);
+		console.warn('有効なid: ', validIds.join(', '));
 	}
 });
 
@@ -194,17 +208,93 @@ export const createHighlightLayer = (
 	return layers;
 };
 
+const generateMatchExpression = (
+	expressionData: ColorMatchExpressions
+): DataDrivenPropertyValueSpecification<ColorSpecification> => {
+	const key = expressionData.key;
+	const expression = ['match', ['get', key]];
+
+	const { categories, values } = expressionData.mapping;
+
+	if (categories.length !== values.length) {
+		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
+		return '#ff0000';
+	}
+
+	// categories と values のペアをループ処理
+	for (let i = 0; i < categories.length; i++) {
+		expression.push(categories[i] as string, values[i]);
+	}
+
+	// デフォルト値を最後に追加
+	expression.push('#00000000');
+
+	console.log('expression', expression);
+	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
+};
+
+const generateStepExpression = (
+	expressionData: ColorStepExpressions
+): DataDrivenPropertyValueSpecification<ColorSpecification> => {
+	const key = expressionData.key;
+
+	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
+	const expression = [
+		'step',
+		['coalesce', ['to-number', ['get', key], -9999], -9999] // 数値以外の場合に -9999 を使用
+	];
+
+	const { categories, values } = expressionData.mapping;
+
+	if (categories.length !== values.length) {
+		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
+		return '#ff0000';
+	}
+
+	// 最初のカテゴリの色を追加（数値が -9999 の場合のデフォルト色）
+	expression.push('#00000000');
+
+	// 残りのカテゴリと対応する色を追加
+	for (let i = 1; i < categories.length; i++) {
+		expression.push(categories[i], values[i]);
+	}
+
+	console.log('expression', expression);
+	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
+};
+
+const getColorExpression = (colors: Colors) => {
+	const key = colors.key;
+	const expressionData = colors.expressions.find((expression) => expression.key === key);
+	if (!expressionData) {
+		console.warn(`カラー設定が見つかりません: ${key}`);
+		return '#ff0000';
+	}
+	switch (expressionData.type) {
+		case 'single':
+			return expressionData.mapping.value;
+		case 'match':
+			return generateMatchExpression(expressionData);
+		case 'step':
+			return generateStepExpression(expressionData);
+		default:
+			console.warn(`カラー設定が見つかりません: ${key}`);
+			return '#ff0000';
+	}
+};
+
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecification => {
 	const fillStyle = (style.default as PolygonStyle).fill;
+	const color = getColorExpression(style.colors);
 	const fillLayer: FillLayerSpecification = {
 		...layer,
 		type: 'fill',
 		paint: {
+			...(fillStyle.paint ?? {}),
 			'fill-opacity': style.opacity,
 			// 'fill-outline-color': '#00000000',
-			'fill-color': style.color,
-			...(fillStyle.paint ?? {})
+			'fill-color': color
 		},
 		layout: {
 			...(fillStyle.layout ?? {})
@@ -218,14 +308,15 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 // lineレイヤーの作成
 const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecification => {
 	const lineStyle = (style.default as LineStringStyle).line;
+	const color = getColorExpression(style.colors);
 	const lineLayer: LineLayerSpecification = {
 		...layer,
 		type: 'line',
 		paint: {
+			...(lineStyle.paint ?? {}),
 			'line-opacity': style.opacity,
-			'line-color': style.color,
-			'line-width': 2,
-			...(lineStyle.paint ?? {})
+			'line-color': color,
+			'line-width': 2
 		},
 		layout: {
 			...(lineStyle?.layout ?? {})
@@ -239,17 +330,18 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 // pointレイヤーの作成
 const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpecification => {
 	const circleStyle = (style.default as PointStyle).circle;
+	const color = getColorExpression(style.colors);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
 		type: 'circle',
 		paint: {
+			...(circleStyle.paint ?? {}),
 			'circle-opacity': style.opacity,
 			'circle-stroke-opacity': style.opacity,
-			'circle-color': style.color,
+			'circle-color': color,
 			'circle-radius': 6,
 			'circle-stroke-color': '#ffffff',
-			'circle-stroke-width': 2,
-			...(circleStyle.paint ?? {})
+			'circle-stroke-width': 2
 		},
 		layout: {
 			...(circleStyle.layout ?? {})
@@ -263,6 +355,7 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 // symbolレイヤーの作成
 const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const symbolStyle = (style.default as LabelStyle).symbol;
+	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
 		id: `${layer.id}_label`,
@@ -277,7 +370,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 		},
 		layout: {
 			// visibility: 'visible',
-			'text-field': style.labels[0].value,
+			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
 			...(symbolStyle.layout ?? {})
@@ -313,7 +406,7 @@ type LayerItem = {
 };
 
 // layersの作成
-export const createLayersItems = (_dataEntries: GeoDataEntry) => {
+export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
@@ -322,13 +415,13 @@ export const createLayersItems = (_dataEntries: GeoDataEntry) => {
 
 	// const layerIdNameDict: { [_: string]: string } = {};
 
-	Object.entries(_dataEntries)
-		.filter(([_, dataEntry]) => dataEntry.style.visible)
+	_dataEntries
+		.filter((entry) => entry.style.visible)
 		.reverse()
-		.forEach(([id, dataEntry]) => {
-			const layerId = `${id}`;
-			const sourceId = `${id}_source`;
-			const { format, style, metaData, properties, interaction, type } = dataEntry;
+		.forEach((entry) => {
+			const layerId = `${entry.id}`;
+			const sourceId = `${entry.id}_source`;
+			const { format, style, metaData, properties, interaction, type } = entry;
 			if (interaction.clickable) layerIds.push(layerId);
 
 			const layer: LayerItem = {
@@ -382,7 +475,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry) => {
 					}
 
 					// ラベルを追加
-					if (style.displayLabel && style.type !== 'symbol') {
+					if (style.labels.show && style.type !== 'symbol') {
 						const symbolLayer = createSymbolLayer(layer, style);
 						symbolLayerItems.push(symbolLayer);
 					}
@@ -391,7 +484,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry) => {
 				}
 
 				default:
-					console.warn(`Unknown layer: ${id}`);
+					console.warn(`対応してないtypeのデータ: ${layerId}`);
 					break;
 			}
 		});

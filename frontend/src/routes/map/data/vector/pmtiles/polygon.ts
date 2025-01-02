@@ -1,8 +1,10 @@
 import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
 import type { VectorEntry } from '$map/data/vector';
+import type { format } from 'maplibre-gl';
 
-export const pmtilesPolygonEntry: VectorEntry = {
-	mino_geology: {
+export const pmtilesPolygonEntry: VectorEntry[] = [
+	{
+		id: 'mino_geology',
 		type: 'vector',
 		format: {
 			type: 'pmtiles',
@@ -20,8 +22,8 @@ export const pmtilesPolygonEntry: VectorEntry = {
 			bounds: null // データの範囲
 		},
 		properties: {
-			keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
-			dict: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu_dict.csv` // プロパティの辞書ファイルのURL
+			keys: [],
+			dict: null // プロパティの辞書ファイルのURL
 		},
 		interaction: {
 			// インタラクションの設定
@@ -31,18 +33,148 @@ export const pmtilesPolygonEntry: VectorEntry = {
 		style: {
 			type: 'fill',
 			opacity: 0.5, // 透過率
-			color: '#ffffff', // 塗りつぶしの色
-			displayLabel: true,
-			labels: [
-				{
-					name: 'Symbol',
-					key: 'Symbol',
-					value: '{Symbol}'
-				}
-			],
-			expressions: {
-				color: [],
-				number: []
+			colors: {
+				key: 'Symbol',
+				expressions: [
+					{
+						type: 'single',
+						key: '単色',
+						name: '単色',
+						mapping: {
+							value: '#9f1c1c'
+						}
+					},
+					{
+						type: 'match',
+						key: 'Symbol',
+						name: '地質ごとの色分け',
+						mapping: {
+							categories: [
+								'a',
+								'ts',
+								'tl',
+								'th',
+								'A',
+								'Ha',
+								'Q',
+								'D',
+								'Kgr',
+								'Au',
+								'Al',
+								'Kz',
+								'Ktu',
+								'Ktl',
+								'Kou',
+								'Kol',
+								'Ta',
+								'Ya',
+								'Nmx',
+								'Nmm',
+								'Nbf',
+								'Ncs',
+								'Nss',
+								'Nal',
+								'Nms',
+								'Nsi',
+								'Ncl',
+								'Nch',
+								'Nto',
+								'Nls',
+								'Nbs',
+								'Fmx',
+								'Fss',
+								'Fch',
+								'Flc',
+								'Fls',
+								'Fbs',
+								'Kmx',
+								'Ksx',
+								'Kss',
+								'Kms',
+								'Ksi',
+								'Kch',
+								'Kto',
+								'Kls',
+								'Kbs',
+								'KAcgl',
+								'KAss',
+								'KAsi',
+								'KAch',
+								'KAto',
+								'KAls',
+								'KAbs',
+								'Water'
+							],
+							values: [
+								'rgb(255, 255, 255)',
+								'rgb(186, 208, 238)',
+								'rgb(215, 226, 244)',
+								'rgb(231, 238, 229)',
+								'rgb(111, 77, 97)',
+								'rgb(160, 178, 79)',
+								'rgb(234, 102, 69)',
+								'rgb(205, 99, 128)',
+								'rgb(236, 101, 114)',
+								'rgb(249, 158, 165)',
+								'rgb(111, 106, 121)',
+								'rgb(209, 162, 132)',
+								'rgb(213, 137, 133)',
+								'rgb(249, 160, 156)',
+								'rgb(209, 162, 132)',
+								'rgb(255, 203, 164)',
+								'rgb(179, 167, 185)',
+								'rgb(255, 203, 164)',
+								'rgb(200, 174, 155)',
+								'rgb(221, 208, 170)',
+								'rgb(206, 224, 223)',
+								'rgb(255, 234, 137)',
+								'rgb(222, 212, 129)',
+								'rgb(181, 199, 131)',
+								'rgb(184, 208, 241)',
+								'rgb(206, 203, 229)',
+								'rgb(55, 74, 135)',
+								'rgb(246, 151, 74)',
+								'rgb(55, 94, 135)',
+								'rgb(58, 105, 186)',
+								'rgb(53, 91, 70)',
+								'rgb(200, 174, 155)',
+								'rgb(222, 212, 129)',
+								'rgb(246, 151, 74)',
+								'rgb(55, 74, 135)',
+								'rgb(58, 105, 186)',
+								'rgb(53, 91, 70)',
+								'rgb(200, 174, 155)',
+								'rgb(176, 161, 150)',
+								'rgb(222, 212, 129)',
+								'rgb(184, 208, 241)',
+								'rgb(206, 203, 229)',
+								'rgb(246, 151, 74)',
+								'rgb(55, 94, 135)',
+								'rgb(58, 105, 186)',
+								'rgb(53, 91, 70)',
+								'rgb(185, 131, 63)',
+								'rgb(219, 209, 120)',
+								'rgb(206, 203, 229)',
+								'rgb(246, 151, 74)',
+								'rgb(55, 94, 135)',
+								'rgb(58, 105, 186)',
+								'rgb(53, 91, 70)',
+								'rgb(214, 255, 255)'
+							]
+						}
+					}
+				]
+			},
+			labels: {
+				key: '地質', // 現在選択されているラベルのキー
+				show: true, // ラベル表示状態
+				expressions: [
+					{
+						key: 'Symbol',
+						name: 'Symbolのラベル',
+						value: '{Symbol}'
+					}
+				]
 			},
 			default: {
 				fill: {
@@ -157,8 +289,7 @@ export const pmtilesPolygonEntry: VectorEntry = {
 							'KAbs',
 							'rgb(53, 91, 70)',
 							'Water',
-							'rgb(214, 255, 255)',
-							'rgb(0, 0, 0)' // デフォルトの色（該当しない場合）
+							'rgb(214, 255, 255)'
 						]
 					},
 					layout: {}
@@ -183,9 +314,11 @@ export const pmtilesPolygonEntry: VectorEntry = {
 					layout: {}
 				}
 			}
-		}
+		},
+		extension: {},
+		debug: false
 	}
-};
+];
 
 // import type { VectorEntry } from '$routes/map/data/types';
 // import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
