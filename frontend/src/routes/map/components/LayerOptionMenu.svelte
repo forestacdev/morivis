@@ -93,19 +93,6 @@
 		return labelsExpressions.map((label) => ({ key: label.key, name: label.name }));
 	};
 
-	const parseExpression = (data: ExpressionColorData[string]): Memory => {
-		if (data.type === 'single') {
-			console.log('data:', data);
-			return { mapping: null, default: data.expression, type: 'single' };
-		} else if (data.type === 'match') {
-			return parseMatchExpression(data.expression);
-		} else if (data.type === 'interpolate') {
-			return parseInterpolateExpression(data.expression);
-		} else if (data.type === 'step') {
-			return parseStepExpression(data.expression);
-		}
-	};
-
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
 		if (!layerToEdit) return;
 		const target = ColorsExpressions.find((color) => color.key === layerToEdit.style.colors.key);
@@ -113,27 +100,11 @@
 		return target;
 	};
 
-	let step = $derived.by(() => {
+	let colorStyle = $derived.by(() => {
 		if (!layerToEdit) return;
 		return getColorPallet(layerToEdit.style.colors.expressions);
 	});
 
-	// let selectedColor = $derived.by(() => {
-	// 	if (!layerToEdit) return;
-
-	// 	const styleKey = layerToEdit.style.type;
-
-	//     return layerToEdit.style[styleKey].color[getStyleKey(layerToEdit, styleKey)].values;
-	// });
-	// let selectedlabel = isSide.subscribe((value) => {
-	// 	if (value !== 'layer') {
-	// 		showLayerOptionId.set('');
-	// 	}
-	// });
-
-	// let categorieskeys = layerOption.style[layerType].color[styleKey].values.categories;
-
-	// console.log('styleColor', styleColor);
 	// レイヤーの削除
 	const removeLayer = () => {
 		if (!layerToEdit) return;
@@ -145,7 +116,6 @@
 	const moveLayerById = (direction: 'up' | 'down') => {
 		if (!layerToEdit) return;
 		const id = layerToEdit.id;
-
 		addedLayerIds.reorderLayer(id, direction);
 	};
 
@@ -156,6 +126,7 @@
 		mapStore.focusLayer(layerToEdit.id);
 	};
 
+	// レイヤーのコピー
 	const copyLayer = () => {
 		if (!layerToEdit) return;
 		const uuid = crypto.randomUUID();
@@ -195,8 +166,7 @@
 					<button onclick={copyLayer}> コピーの作成 </button>
 				</div>
 				<div class="h-full flex-grow overscroll-y-auto">
-					<CheckBox label={'表示'} bind:value={layerToEdit.style.visible} />
-
+					<!-- <CheckBox label={'表示'} bind:value={layerToEdit.style.visible} /> -->
 					<RangeSlider label="透過度" bind:value={layerToEdit.style.opacity} />
 					{#if layerToEdit.type === 'vector'}
 						<!-- レイヤータイプの選択 -->
@@ -205,15 +175,7 @@
 								<option value={layerType.key}>{layerType.name}</option>
 							{/each}
 						</select>
-						<!-- 色の選択 -->
-						<select
-							class="w-full p-2 text-left text-black"
-							bind:value={layerToEdit.style.colors.key}
-						>
-							{#each getColorKeys(layerToEdit.style.colors.expressions) as colortype}
-								<option value={colortype.key}>{colortype.name}</option>
-							{/each}
-						</select>
+
 						<!-- ラベルの設定 -->
 						<CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />
 						<select
@@ -224,56 +186,36 @@
 								<option value={labelType.key}>{labelType.name}</option>
 							{/each}
 						</select>
-						{#if step}
-							<h2>{step.name}</h2>
 
-							<h3>カテゴリ</h3>
-							{#if step.type === 'single'}
-								<input type="color" bind:value={step.mapping.value} />
-							{:else if step.type === 'match'}
-								{#each step.mapping.categories as category, index}
-									<div>{step.mapping.categories[index]}</div>
-									<input type="color" bind:value={step.mapping.values[index]} />
+						<!-- 色の選択 -->
+						<h3>色の選択</h3>
+						<select
+							class="w-full p-2 text-left text-black"
+							bind:value={layerToEdit.style.colors.key}
+						>
+							{#each getColorKeys(layerToEdit.style.colors.expressions) as colortype}
+								<option value={colortype.key}>{colortype.name}</option>
+							{/each}
+						</select>
+						{#if colorStyle}
+							{#if colorStyle.type === 'single'}
+								<input type="color" bind:value={colorStyle.mapping.value} />
+							{:else if colorStyle.type === 'match'}
+								{#each colorStyle.mapping.categories as _, index}
+									<div>{colorStyle.mapping.categories[index]}</div>
+									<input type="color" bind:value={colorStyle.mapping.values[index]} />
 								{/each}
-							{:else if step.type === 'step'}
-								{#each step.mapping.categories as category, index}
+							{:else if colorStyle.type === 'step'}
+								{#each colorStyle.mapping.categories as _, index}
 									<input
 										type="number"
-										bind:value={step.mapping.categories[index]}
+										bind:value={colorStyle.mapping.categories[index]}
 										placeholder="Enter category"
 									/>
-									<input type="color" bind:value={step.mapping.values[index]} />
+									<input type="color" bind:value={colorStyle.mapping.values[index]} />
 								{/each}
 							{/if}
-
-							<!-- {#each step.mapping.categories as category, index}
-							<input
-								type="number"
-								bind:value={step.mapping.categories[index]}
-								placeholder="Enter category"
-							/>
-						{/each} -->
-
-							<!-- <h3>Values</h3>
-							{#each step.mapping.values as value, index}
-								<input type="color" bind:value={step.mapping.values[index]} />
-							{/each}
-
-							<h3>Preview</h3>
-							<ul>
-								{#each step.mapping.categories as category, index}
-									<li style="color: {step.mapping.values[index]}">
-										Category: {category}, Color: {step.mapping.values[index]}
-									</li>
-								{/each}
-							</ul> -->
 						{/if}
-						<!-- {#each getColorPallet(layerToEdit.style.colors.expressions).values as color}
-							<input type="color" bind:value={color} />
-							{color}
-						{/each} -->
-
-						<!-- {JSON.stringify(getColorPallet(layerToEdit.style.colors.expressions))} -->
 					{/if}
 
 					{#if layerToEdit.type === 'raster'}
