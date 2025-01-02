@@ -31,7 +31,7 @@
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
-	let layerDataEntries = $state<GeoDataEntry[] | null>(geoDataEntry); // レイヤーデータ
+	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	// mapStyleの作成
@@ -70,29 +70,37 @@
 		return mapStyle as StyleSpecification;
 	};
 
+	addedLayerIds.subscribe((ids) => {
+		const filteredDataEntry = geoDataEntry.filter((entry) => ids.includes(entry.id));
+
+		layerEntries = filteredDataEntry;
+	});
+
 	// 初期描画時
 	onMount(async () => {
-		addedLayerIds.subscribe((ids) => {
-			const filteredDataEntry = geoDataEntry.filter((entry) => ids.includes(entry.id));
-
-			layerDataEntries = filteredDataEntry;
-		});
-
-		if (!layerDataEntries) return;
-		const mapStyle = await createMapStyle(layerDataEntries);
-
+		if (!layerEntries) return;
+		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
-
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
 
-	// 変更を監視して地図を更新（MapMenuのベースマップとレイヤー）
-
 	$effect(() => {
-		if (!layerDataEntries || mapContainer) return;
-		// console.log('layerDataEntries', layerDataEntries);
-		const mapStyle = createMapStyle(layerDataEntries);
-		mapStore.setStyle(mapStyle);
+		const currentEntries = $state.snapshot(layerEntries);
+		let cancelled = false;
+
+		(async () => {
+			// 非同期処理の開始
+			const mapStyle = await createMapStyle(currentEntries as GeoDataEntry[]);
+
+			// 処理がキャンセルされていない場合にのみ適用
+			if (!cancelled) {
+				mapStore.setStyle(mapStyle);
+			}
+		})();
+		// クリーンアップ処理
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	mapStore.onClick((e) => {
@@ -120,9 +128,12 @@
 </script>
 
 <!-- <Menu /> -->
-<LayerMenu bind:value={layerDataEntries} />
-<div bind:this={mapContainer} class="h-full w-full"></div>
 
+<LayerMenu bind:layerEntries />
+<div bind:this={mapContainer} class="h-full w-full"></div>
+<!-- <div class="z-100 absolute bottom-0 right-0 max-h-[300px] max-w-[300px] overflow-auto bg-white p-2">
+	{JSON.stringify(layerEntries, null, 2)}
+</div> -->
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
 		<Draggable left={0} top={0}>

@@ -5,13 +5,13 @@ export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 
 	theme: {
-		// 色の定義
-		colors: {
-			base: '#242424',
-			main: '#299413',
-			accent: '#02bfe0'
-		},
 		extend: {
+			// 色の定義
+			colors: {
+				base: '#242424',
+				main: '#e9e9e9',
+				accent: '#299413'
+			},
 			textColor: {
 				primary: '#e9e9e9' // デフォルトにしたい色を指定
 			}

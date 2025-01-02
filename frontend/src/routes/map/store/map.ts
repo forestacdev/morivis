@@ -34,6 +34,7 @@ import { DEBUG_MODE, EDIT_MODE } from '$map/store';
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
+	let isInitialized = false;
 	let lockOnMarker: Marker | null = null;
 	const gui: GUI | null = null;
 
@@ -157,6 +158,7 @@ const createMapStore = () => {
 		// 		processingImages.delete(id);
 		// 	}
 		// });
+		isInitialized = true;
 	};
 
 	// マップスタイルを設定するメソッド
@@ -307,6 +309,7 @@ const createMapStore = () => {
 	return {
 		subscribe,
 		init,
+		isInitialized,
 		setStyle,
 		addLockonMarker,
 		removeLockonMarker,
