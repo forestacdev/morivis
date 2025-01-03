@@ -1,8 +1,6 @@
-import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
-import type { VectorEntry } from '$map/data/vector';
-import type { format } from 'maplibre-gl';
+import type { VectorEntry, TileMetaData } from '$map/data/vector';
 
-export const pmtilesPolygonEntry: VectorEntry[] = [
+export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 	{
 		id: 'mino_geology',
 		type: 'vector',
@@ -12,27 +10,26 @@ export const pmtilesPolygonEntry: VectorEntry[] = [
 			url: './pmtiles/mino_geology.pmtiles'
 		},
 		metaData: {
-			name: '美濃市地質図', // 名前
-			description: '美濃市地質図。', // 説明
-			attribution: '産総研', // データの出典 https://www.gsj.jp/Map/JP/geology4-10.html#10082
+			name: '美濃市地質図',
+			description: '美濃市地質図。',
+			attribution: '産総研',
 			location: '美濃市',
-			minZoom: 0, // 表示するズームレベルの最小値
-			maxZoom: 14, // 表示するズームレベルの最大値
+			minZoom: 0,
+			maxZoom: 14,
 			sourceLayer: 'geo_A',
-			bounds: null // データの範囲
+			bounds: null
 		},
 		properties: {
 			keys: [],
-			dict: null // プロパティの辞書ファイルのURL
+			dict: null
 		},
 		interaction: {
-			// インタラクションの設定
-			clickable: true, // クリック可能かどうか
+			clickable: true,
 			searchKeys: ['小林班ID', '樹種', '林齢']
 		},
 		style: {
 			type: 'fill',
-			opacity: 0.5, // 透過率
+			opacity: 0.5,
 			colors: {
 				key: 'Symbol',
 				expressions: [
@@ -166,8 +163,8 @@ export const pmtilesPolygonEntry: VectorEntry[] = [
 				]
 			},
 			labels: {
-				key: 'Symbol', // 現在選択されているラベルのキー
-				show: true, // ラベル表示状態
+				key: 'Symbol',
+				show: true,
 				expressions: [
 					{
 						key: 'Symbol',
@@ -295,18 +292,11 @@ export const pmtilesPolygonEntry: VectorEntry[] = [
 					layout: {}
 				},
 				line: {
-					paint: {
-						'line-width': 1,
-						'line-dasharray': [1, 0]
-					},
+					paint: {},
 					layout: {}
 				},
 				circle: {
-					paint: {
-						'circle-radius': 5,
-						'circle-stroke-width': 1,
-						'circle-stroke-color': '#000000'
-					},
+					paint: {},
 					layout: {}
 				},
 				symbol: {

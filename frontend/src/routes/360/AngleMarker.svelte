@@ -1,16 +1,7 @@
-<script setup lang="ts">
+<script lang="ts">
 	import { onMount } from 'svelte';
-	// export let lngLat: [number, number];	import { createEventDispatcher } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
 
 	export let cameraBearing: number;
-
-	import Icon from '@iconify/svelte';
-	// const handleButtonClick = (event) => {
-	// 	event.stopPropagation(); // クリックイベントの伝播を止める
-	// 	dispatch('click', event);
-	// };
 
 	onMount(() => {});
 

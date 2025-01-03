@@ -37,7 +37,10 @@ export const createSourcesItems = async (
 							type: 'geojson',
 							data: format.url,
 							generateId: true,
+							maxzoom: metaData.maxZoom,
 							attribution: metaData.attribution
+							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
+							// lineMetrics: true // 線の長さを計算
 						};
 						items[sourceId] = geojsonSource;
 					} else if (format.type === 'mvt') {

@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import * as pmtiles from 'pmtiles';
-	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import styleJson from '$lib/json/fac_style.json';
-	import ThreeCanvas from './three/canvas.svelte';
-	import turfDistance from '@turf/distance';
 	import turfBearing from '@turf/bearing';
-	import turfBooleanPointOnLine from '@turf/boolean-point-on-line';
 	import turfBooleanCrosses from '@turf/boolean-crosses';
 	import turfBuffer from '@turf/buffer';
+	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
+	import maplibregl from 'maplibre-gl';
+	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+	import * as pmtiles from 'pmtiles';
+	import { mount } from 'svelte';
+	import { onMount } from 'svelte';
+
 	import AngleMarker from './AngleMarker.svelte';
+	import ThreeCanvas from './three/canvas.svelte';
+	import styleJson from '../../../static/style.json';
 
 	import { page } from '$app/stores';
 
@@ -42,8 +43,8 @@
 	let angleMarker = null;
 
 	const setPoint = (point) => {
-		if(!point) return;
-        feature = point;
+		if (!point) return;
+		feature = point;
 
 		const urlSearchParams = $page.url.searchParams;
 		urlSearchParams.set('imageId', point.properties['ID']);
@@ -76,8 +77,9 @@
 		if (angleMarker) {
 			angleMarker.remove();
 		}
+
 		const markerContainer = document.createElement('div');
-		new AngleMarker({
+		mount(AngleMarker, {
 			target: markerContainer,
 			props: {
 				cameraBearing: cameraBearing

@@ -1,7 +1,6 @@
-import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
-import type { GeoJsonEntry } from '$routes/map/data/vector';
+import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/vector';
 
-export const fgbPolygonEntry: GeoJsonEntry[] = [
+export const fgbPolygonEntry: VectorEntry<GeoJsonMetaData>[] = [
 	// 演習林林班図
 	{
 		id: 'ensyurin_rinhan',
@@ -16,7 +15,6 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 			description: '森林文化アカデミー演習林の林班。', // 説明
 			attribution: '森林文化アカデミー', // データの出典
 			location: '森林文化アカデミー',
-			minZoom: 0, // 表示するズームレベルの最小値
 			maxZoom: 24, // 表示するズームレベルの最大値
 			bounds: null // データの範囲
 		},

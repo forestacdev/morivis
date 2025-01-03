@@ -1,13 +1,11 @@
-import { geoJsonPolygonEntry } from '$map/data/vector/geojson/polygon';
 import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
 import { fgbLineStringEntry } from '$map/data/vector/fgb/lineString';
-import { geoJsonLineStringEntry } from '$map/data/vector/geojson/lineString';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
-import type { GeoJsonEntry, VectorEntry } from '$routes/map/data/vector';
+import type { GeoJsonMetaData, VectorEntry, TileMetaData } from '$routes/map/data/vector';
 
 export type GeoDataType = 'raster' | 'vector' | '3d';
 
-export type GeoDataEntry = VectorEntry | GeoJsonEntry;
+export type GeoDataEntry = VectorEntry<GeoJsonMetaData> | VectorEntry<TileMetaData>;
 
 // 共通の初期化処理
 // visible を true にする
@@ -41,9 +39,3 @@ export const geoDataEntry = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
-
-// Map に変換
-
-// export const GeoDataIndex = new Map<string, GeoJsonEntry[keyof GeoJsonEntry]>(
-// 	Object.entries(GeoDataEntry) as [string, GeoJsonEntry[keyof GeoJsonEntry]][]
-// );

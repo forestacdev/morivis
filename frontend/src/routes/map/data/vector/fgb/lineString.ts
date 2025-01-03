@@ -1,7 +1,6 @@
-import { GEOJSON_BASE_PATH, GIFU_DATA_BASE_PATH } from '$routes/map/constants';
-import type { GeoJsonEntry } from '$routes/map/data/vector';
+import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/vector';
 
-export const fgbLineStringEntry: GeoJsonEntry[] = [
+export const fgbLineStringEntry: VectorEntry<GeoJsonMetaData>[] = [
 	// 演習林道
 	{
 		id: 'ensyurin_road',
@@ -12,21 +11,19 @@ export const fgbLineStringEntry: GeoJsonEntry[] = [
 			url: './fgb/ensyurin_road.fgb'
 		},
 		metaData: {
-			name: '演習林の道', // 名前
-			description: '演習林の道', // 説明
-			attribution: '森林文化アカデミー', // データの出典
+			name: '演習林の道',
+			description: '演習林の道',
+			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
-			minZoom: 13, // 表示するズームレベルの最小値
-			maxZoom: 18, // 表示するズームレベルの最大値
-			bounds: null // データの範囲
+			maxZoom: 24,
+			bounds: null
 		},
 		properties: {
 			keys: ['種類'],
-			dict: null // プロパティの辞書ファイルのURL
+			dict: null
 		},
 		interaction: {
-			// インタラクションの設定
-			clickable: true, // クリック可能かどうか
+			clickable: true,
 			searchKeys: ['種類']
 		},
 		style: {
@@ -55,8 +52,8 @@ export const fgbLineStringEntry: GeoJsonEntry[] = [
 				]
 			},
 			labels: {
-				key: '種類', // 現在選択されているラベルのキー
-				show: false, // ラベル表示状態
+				key: '種類',
+				show: false,
 				expressions: [
 					{
 						key: '種類',

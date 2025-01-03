@@ -18,7 +18,12 @@ export interface VectorProperties {
 	dict: string | null;
 }
 
-export interface VectorMetaData {
+export interface VectorInteraction {
+	clickable: boolean;
+	searchKeys: string[];
+}
+
+export interface TileMetaData {
 	name: string;
 	description: string;
 	attribution: string;
@@ -29,39 +34,20 @@ export interface VectorMetaData {
 	bounds: [number, number, number, number] | null;
 }
 
-export interface VectorInteraction {
-	clickable: boolean;
-	searchKeys: string[];
-}
-
-interface GeoJsonMetaData {
+export interface GeoJsonMetaData {
 	name: string;
 	description: string;
 	attribution: string;
 	location: Region;
-	minZoom: number;
 	maxZoom: number;
 	bounds: [number, number, number, number] | null;
 }
 
-export interface GeoJsonEntry {
+export interface VectorEntry<T> {
 	id: string;
 	type: GeoDataType;
 	format: VectorFormat;
-	metaData: GeoJsonMetaData;
-	properties: VectorProperties;
-	interaction: VectorInteraction;
-	style: VectorStyle;
-	debug: boolean;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	extension: any;
-}
-
-export interface VectorEntry {
-	id: string;
-	type: GeoDataType;
-	format: VectorFormat;
-	metaData: VectorMetaData;
+	metaData: T;
 	properties: VectorProperties;
 	interaction: VectorInteraction;
 	style: VectorStyle;
