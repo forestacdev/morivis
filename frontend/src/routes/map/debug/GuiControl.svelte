@@ -75,6 +75,17 @@
 				.add(
 					{
 						button: () => {
+							window.open('https://maplibre.org/maplibre-style-spec/', '_blank', 'noopener');
+						}
+					},
+					'button'
+				)
+				.name('style-spec');
+
+			gui
+				.add(
+					{
+						button: () => {
 							window.open(
 								'https://maplibre.org/maplibre-style-spec/expressions/',
 								'_blank',

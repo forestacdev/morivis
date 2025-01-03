@@ -1,7 +1,9 @@
 <script lang="ts">
 	// let left = $state<number>(100);
 	// let top = $state<number>(100);
-	let { left = 100, top = 100 } = $props();
+
+	let { children, left = 100, top = 100 } = $props();
+	let tag = 'slot'; // 動的にタグを指定
 
 	let moving = false;
 
@@ -23,10 +25,15 @@
 
 <!-- TODO:エラー -->
 <section class="absolute z-10" style="left: {left}px; top: {top}px;">
-	<div onmousedown={onMouseDown} class="bg-base cursor-move select-none p-2 text-white">
+	<div
+		onmousedown={onMouseDown}
+		role="button"
+		tabindex="0"
+		class="bg-base cursor-move select-none p-2 text-white"
+	>
 		on move
 	</div>
-	<slot></slot>
+	{@render children()}
 </section>
 
 <svelte:window onmouseup={onMouseUp} onmousemove={onMouseMove} />
