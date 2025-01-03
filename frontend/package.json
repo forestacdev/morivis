@@ -44,6 +44,7 @@
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
 		"vite": "^5.4.11",
+		"vite-plugin-pwa": "^0.21.1",
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
@@ -56,6 +57,7 @@
 		"@turf/boolean-point-on-line": "^7.2.0",
 		"@turf/buffer": "^7.2.0",
 		"@turf/distance": "^7.2.0",
+		"@turf/nearest-point": "^7.2.0",
 		"chroma-js": "^3.1.2",
 		"colormap": "^2.3.2",
 		"d3-scale": "^4.0.2",
@@ -67,6 +69,7 @@
 		"lil-gui": "^0.20.0",
 		"maplibre-gl": "^4.7.1",
 		"maplibre-gl-gsi-terrain": "^2.0.1",
-		"pmtiles": "^4.1.0"
+		"pmtiles": "^4.1.0",
+		"three": "^0.172.0"
 	}
 }
