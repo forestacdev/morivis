@@ -15,46 +15,46 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-interface fillStyle {
+interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];
 	layout: FillLayerSpecification['layout'];
 }
 
-interface lineStyle {
+interface lineLayerStyle {
 	paint: LineLayerSpecification['paint'];
 	layout: LineLayerSpecification['layout'];
 }
 
-interface circleStyle {
+interface circleLayerStyle {
 	paint: CircleLayerSpecification['paint'];
 	layout: CircleLayerSpecification['layout'];
 }
 
-interface symbolStyle {
+interface SymbolLayerStyle {
 	paint: SymbolLayerSpecification['paint'];
 	layout: SymbolLayerSpecification['layout'];
 }
 
-export interface PolygonStyle {
-	fill: fillStyle;
-	line: lineStyle;
-	circle: circleStyle;
-	symbol: symbolStyle;
+export interface PolygonDefaultStyle {
+	fill: fillLayerStyle;
+	line: lineLayerStyle;
+	circle: circleLayerStyle;
+	symbol: SymbolLayerStyle;
 }
 
-export interface LineStringStyle {
-	line: lineStyle;
-	circle: circleStyle;
-	symbol: symbolStyle;
+export interface LineStringDefaultStyle {
+	line: lineLayerStyle;
+	circle: circleLayerStyle;
+	symbol: SymbolLayerStyle;
 }
 
-export interface PointStyle {
-	circle: circleStyle;
-	symbol: symbolStyle;
+export interface PointDefaultStyle {
+	circle: circleLayerStyle;
+	symbol: SymbolLayerStyle;
 }
 
-export interface LabelStyle {
-	symbol: symbolStyle;
+export interface LabelDefaultStyle {
+	symbol: SymbolLayerStyle;
 }
 
 export interface ColorSingleExpressions {
@@ -153,11 +153,31 @@ export interface Labels {
 
 export type VectorLayerType = 'circle' | 'line' | 'fill' | 'symbol' | 'heatmap' | 'fill-extrusion';
 
-export interface VectorStyle {
-	type: VectorLayerType;
+interface BaseVectorStyle {
 	opacity: number;
 	visible?: boolean;
 	labels: Labels;
 	colors: Colors;
-	default: PolygonStyle | LineStringStyle | PointStyle | LabelStyle;
 }
+
+export interface PolygonStyle extends BaseVectorStyle {
+	type: 'fill' | 'line' | 'circle';
+	default: PolygonDefaultStyle;
+}
+
+export interface LineStringStyle extends BaseVectorStyle {
+	type: 'line' | 'circle';
+	default: LineStringDefaultStyle;
+}
+
+export interface PointStyle extends BaseVectorStyle {
+	type: 'circle';
+	default: PointDefaultStyle;
+}
+
+export interface LabelStyle extends BaseVectorStyle {
+	type: 'symbol';
+	default: LabelDefaultStyle;
+}
+
+export type VectorStyle = PolygonStyle | LineStringStyle | PointStyle | LabelStyle;

@@ -1,11 +1,7 @@
 import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
 import { fgbLineStringEntry } from '$map/data/vector/fgb/lineString';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
-import type { GeoJsonMetaData, VectorEntry, TileMetaData } from '$routes/map/data/vector';
-
-export type GeoDataType = 'raster' | 'vector' | '3d';
-
-export type GeoDataEntry = VectorEntry<GeoJsonMetaData> | VectorEntry<TileMetaData>;
+import type { GeoDataEntry } from '$routes/map/data/types';
 
 // 共通の初期化処理
 // visible を true にする

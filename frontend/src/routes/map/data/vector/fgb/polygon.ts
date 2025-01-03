@@ -1,6 +1,6 @@
-import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/vector';
+import type { GeoJsonMetaData, PolygonEntry } from '$routes/map/data/types/vector';
 
-export const fgbPolygonEntry: VectorEntry<GeoJsonMetaData>[] = [
+export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 	// 演習林林班図
 	{
 		id: 'ensyurin_rinhan',

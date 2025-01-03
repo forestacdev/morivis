@@ -16,8 +16,8 @@
 		VectorLayerType,
 		ColorsExpressions,
 		LabelsExpressions
-	} from '$map/data/vector/style';
-	import { mutableColorMapType } from '$map/data/vector/style';
+	} from '$routes/map/data/types/vector/style';
+	import { mutableColorMapType } from '$routes/map/data/types/vector/style';
 	import { showLayerOptionId, isSide, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
