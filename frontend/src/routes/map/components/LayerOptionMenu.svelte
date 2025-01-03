@@ -32,7 +32,7 @@
 	const focusLayer = () => {
 		if (!layerToEdit) return;
 
-		mapStore.focusLayer(layerToEdit.id);
+		mapStore.focusLayer(layerToEdit);
 	};
 
 	// レイヤーのコピー

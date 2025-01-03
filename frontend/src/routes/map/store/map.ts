@@ -23,6 +23,8 @@ import type {
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 
+import { getLocationBbox } from '$map/data/locationBbox';
+
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
@@ -30,6 +32,8 @@ import { GUI } from 'lil-gui';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
 import { DEBUG_MODE, EDIT_MODE } from '$map/store';
+import type { GeoDataEntry } from '../data/types';
+import { GeojsonCache } from '../utils/geojson';
 
 const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
@@ -197,27 +201,24 @@ const createMapStore = () => {
 		map.easeTo(options);
 	};
 
-	const focusLayer = async (layerId: string) => {
-		// if (!map) return;
-		// const targetLayer = layerData.find((layer: LayerEntry) => layer.id === layerId);
-		// if (!targetLayer) return;
-		// if (targetLayer.dataType === 'geojson') {
-		// 	try {
-		// 		const geojson = await getGeojson(targetLayer.url);
-		// 		const bbox = turfBbox(geojson) as [number, number, number, number];
-		// 		console.log(bbox);
-		// 		map.fitBounds(bbox);
-		// 	} catch (error) {
-		// 		console.error(error);
-		// 		alert('Failed to fetch GeoJSON');
-		// 	}
-		// } else if (targetLayer.location) {
-		// 	console.log(targetLayer.location);
-		// 	const bbox = getLocationBbox(targetLayer.location[0]);
-		// 	if (bbox) {
-		// 		map.fitBounds(bbox);
-		// 	}
-		// }
+	const focusLayer = async (entry: GeoDataEntry) => {
+		if (!map) return;
+		if (entry.format.type === 'fgb') {
+			try {
+				const geojson = GeojsonCache.get(entry.id);
+				const bbox = turfBbox(geojson) as [number, number, number, number];
+				map.fitBounds(bbox);
+			} catch (error) {
+				console.error(error);
+			}
+		} else if (entry.metaData.location) {
+			const bbox = getLocationBbox(entry.metaData.location);
+			if (bbox) {
+				map.fitBounds(bbox);
+			}
+		} else {
+			console.warn('フォーカスの処理に対応してません', entry.id);
+		}
 	};
 
 	// フィーチャーをフォーカスするメソッド
