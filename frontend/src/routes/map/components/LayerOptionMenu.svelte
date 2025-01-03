@@ -31,7 +31,6 @@
 	// レイヤーのフォーカス
 	const focusLayer = () => {
 		if (!layerToEdit) return;
-
 		mapStore.focusLayer(layerToEdit);
 	};
 
@@ -53,11 +52,11 @@
 
 {#if $showLayerOptionId}
 	<div
-		class="bg-main absolute left-[270px] z-10 flex h-[400px] w-[300px] flex-col gap-2 rounded-sm p-2 shadow-2xl"
+		class="bg-main absolute left-[350px] top-2 z-10 flex h-[400px] w-[300px] flex-col gap-2 overflow-hidden rounded-lg p-2 shadow-2xl"
 	>
-		<span class="text-lg">レイヤーオプション</span>
-		<div class="h-full flex-grow overflow-y-auto">
-			{#if $showLayerOptionId && layerToEdit}
+		{#if $showLayerOptionId && layerToEdit}
+			<span class="text-lg">{layerToEdit.metaData.name}</span>
+			<div class="h-full flex-grow">
 				<div class="flex gap-2">
 					<button class="" onclick={() => moveLayerById('up')}
 						><Icon icon="bx:up-arrow" width="24" height="24" class="" />
@@ -73,9 +72,7 @@
 					</button>
 					<button onclick={copyLayer}> コピーの作成 </button>
 				</div>
-				<div class="h-full flex-grow overscroll-y-auto">
-					<!-- <CheckBox label={'表示'} bind:value={layerToEdit.style.visible} /> -->
-					<RangeSlider label="透過度" bind:value={layerToEdit.style.opacity} />
+				<div class="h-full flex-grow overflow-x-hidden overscroll-y-auto">
 					{#if layerToEdit.type === 'vector'}
 						<VectorOptionMenu bind:layerToEdit />
 					{/if}
@@ -84,8 +81,14 @@
 						<RasterOptionMenu bind:layerToEdit />
 					{/if}
 				</div>
-			{/if}
-		</div>
+			</div>
+		{/if}
+	</div>
+
+	<div
+		class="bg-main absolute left-[700px] top-2 z-10 flex h-[400px] w-[300px] flex-col gap-2 overflow-hidden rounded-lg p-2 shadow-2xl"
+	>
+		いろわけあのやつ
 	</div>
 {/if}
 

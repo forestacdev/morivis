@@ -1,13 +1,28 @@
-<script setup lang="ts">
-	export let options: string[];
-	export let value: string;
+<script lang="ts">
+	import type { VectorLayerType } from '$routes/map/data/types/vector/style';
+	let {
+		group = $bindable(),
+		options = $bindable()
+	}: {
+		group: string;
+		options: {
+			key: VectorLayerType;
+			name: string;
+		}[];
+	} = $props();
 </script>
 
-<select class="custom-select" bind:value>
-	{#each options as item (item)}
-		<option value={item}>{item}</option>
+<div class="flex items-center gap-2">
+	{#each options as option}
+		<label
+			for={option.key}
+			class="grid cursor-pointer place-items-center rounded-full bg-gray-400 p-2"
+		>
+			<input type="radio" id={option.key} bind:group value={option.key} class="hidden" />
+			<span class="">{option.name}</span>
+		</label>
 	{/each}
-</select>
+</div>
 
 <style>
 </style>

@@ -5,9 +5,9 @@ interface BasemapImageTile {
 }
 
 export const BASEMAP_IMAGE_TILE: BasemapImageTile = {
-	Z: 15,
 	X: 28846,
-	Y: 12917
+	Y: 12917,
+	Z: 15
 };
 
 export const GEOJSON_BASE_PATH =

@@ -1,6 +1,6 @@
-import type { RasterLayerSpecification } from 'maplibre-gl';
+import type { RasterEntry } from '$map/data/types/raster';
 
-export const imageTileEntry: RasterEntries = [
+export const imageTileEntry: RasterEntry[] = [
 	{
 		id: 'gsi_std',
 		type: 'raster',
@@ -15,6 +15,7 @@ export const imageTileEntry: RasterEntries = [
 			location: '全国',
 			minZoom: 1, // 表示するズームレベルの最小値
 			maxZoom: 18, // 表示するズームレベルの最大値
+			xyzImageTile: null,
 			bounds: null // データの範囲
 		},
 		interaction: {

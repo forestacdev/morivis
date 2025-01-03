@@ -4,7 +4,9 @@
 	import { onMount } from 'svelte';
 
 	import CheckBox from '$map/components/atoms/CheckBox.svelte';
+	import ColorPicker from '$map/components/atoms/ColorPicker.svelte';
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
+	import SelectBox from '$map/components/atoms/SelectBox.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { GeometryType } from '$map/data/types/vector';
 	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
@@ -116,11 +118,13 @@
 
 {#if layerToEdit && layerToEdit.type === 'vector'}
 	<!-- レイヤータイプの選択 -->
-	<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.type}>
-		{#each getLayerTypes(layerToEdit.format.geometryType) as layerType}
-			<option value={layerType.key}>{layerType.name}</option>
-		{/each}
-	</select>
+
+	<SelectBox
+		bind:group={layerToEdit.style.type}
+		options={getLayerTypes(layerToEdit.format.geometryType)}
+	/>
+
+	<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} />
 
 	<!-- ラベルの設定 -->
 	<CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />
@@ -140,13 +144,13 @@
 	<div class="flex flex-col gap-2">
 		{#if colorStyle}
 			{#if colorStyle.type === 'single'}
-				<input type="color" bind:value={colorStyle.mapping.value} />
+				<ColorPicker label={'塗りつぶしの色'} bind:value={colorStyle.mapping.value} />
 			{:else if colorStyle.type === 'match'}
 				{#each colorStyle.mapping.categories as _, index}
-					<div class="flex-between flex w-full gap-2">
-						<div class="w-full">{colorStyle.mapping.categories[index]}</div>
-						<input type="color" bind:value={colorStyle.mapping.values[index]} />
-					</div>
+					<ColorPicker
+						label={colorStyle.mapping.categories[index] as string}
+						bind:value={colorStyle.mapping.values[index]}
+					/>
 				{/each}
 			{:else if colorStyle.type === 'step'}
 				<!-- TODO:stepで colorを変更できるようにするか検討 -->

@@ -14,7 +14,8 @@ export interface RasterEntry {
 		location: string;
 		minZoom: number;
 		maxZoom: number;
-		bounds: null;
+		xyzImageTile: { x: number; y: number; z: number } | null;
+		bounds: [number, number, number, number] | null;
 	};
 	interaction: {
 		clickable: boolean;

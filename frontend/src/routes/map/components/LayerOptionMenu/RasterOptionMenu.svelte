@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import gsap from 'gsap';
 	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
@@ -15,14 +16,13 @@
 		type LabelsExpressions
 	} from '$routes/map/data/types/vector/style';
 
-	let {
-		layerToEdit = $bindable()
-	}: { layerToEdit: GeoDataEntry | undefined; tempLayerEntries: GeoDataEntry[] } = $props();
+	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry } = $props();
 
 	onMount(() => {});
 </script>
 
 {#if layerToEdit && layerToEdit.type === 'raster'}
+	<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} />
 	<!-- レイヤータイプの選択 -->
 	<RangeSlider
 		label={'明るさ-最小輝度'}

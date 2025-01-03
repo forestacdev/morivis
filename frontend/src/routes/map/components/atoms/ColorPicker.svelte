@@ -3,12 +3,16 @@
 	export let value: string;
 </script>
 
-<label class="flex cursor-pointer gap-2">
+<label class="flex cursor-pointer items-center justify-between">
 	{#if label}
 		<span class="">{label}</span>
 	{/if}
-
-	<input type="color" class="custom-color" bind:value />
+	<div
+		class="grid h-[30px] w-[30px] place-items-center rounded-full"
+		style="background-color: {value}"
+	>
+		<input type="color" class="custom-color invisible" bind:value />
+	</div>
 </label>
 
 <style>

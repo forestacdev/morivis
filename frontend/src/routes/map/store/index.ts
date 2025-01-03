@@ -74,7 +74,7 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
 export const showDataMenu = writable<boolean>(false);
-export const showLayerOptionId = writable<string>('');
+export const showLayerOptionId = writable<string>('ensyurin_rinhan');
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;

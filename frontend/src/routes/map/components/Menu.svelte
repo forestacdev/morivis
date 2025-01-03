@@ -25,8 +25,8 @@
 
 <div class="bg-main absolute z-10 w-[200px] p-2">
 	<button class="w-full bg-gray-200 p-2 text-left" on:click={() => toggleMenu('base')}>
-		<Icon icon="ic:round-menu" /></button
-	>
+		<Icon icon="ic:round-menu" />
+	</button>
 </div>
 
 <style>
