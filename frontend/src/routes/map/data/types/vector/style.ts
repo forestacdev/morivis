@@ -4,7 +4,9 @@ import type {
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
 	HeatmapLayerSpecification,
-	FillExtrusionLayerSpecification
+	FillExtrusionLayerSpecification,
+	DataDrivenPropertyValueSpecification,
+	FormattedSpecification
 } from 'maplibre-gl';
 
 interface fillLayerStyle {
@@ -148,7 +150,7 @@ export interface Colors {
 export interface LabelsExpressions {
 	key: string;
 	name: string;
-	value: string;
+	value: DataDrivenPropertyValueSpecification<FormattedSpecification>;
 }
 
 export interface Labels {

@@ -385,7 +385,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
-			const { format, style, metaData, properties, interaction, type } = entry;
+			const { format, style, metaData, interaction, type } = entry;
 			if (interaction.clickable) layerIds.push(layerId);
 
 			const layer: LayerItem = {
@@ -398,14 +398,22 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 			switch (type) {
 				// ラスターレイヤー
 				case 'raster': {
-					// layerItems.push({
-					// 	...layer,
-					// 	type: 'raster',
-					// 	paint: {
-					// 		'raster-opacity': layerEntry.opacity,
-					// 		...(layerEntry.style?.raster?.[0]?.paint ?? {})
-					// 	}
-					// });
+					layerItems.push({
+						...layer,
+						type: 'raster',
+						paint: {
+							'raster-opacity': style.opacity,
+							'raster-hue-rotate': style.hueRotate,
+							'raster-brightness-max': style.brightnessMax,
+							'raster-brightness-min': style.brightnessMin,
+							'raster-saturation': style.saturation,
+							'raster-contrast': style.contrast,
+							...(style.raster.paint ?? {})
+						},
+						layout: {
+							...(style.raster.layout ?? {})
+						}
+					});
 					break;
 				}
 				// ベクターレイヤー

@@ -56,24 +56,9 @@
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
 				terrain: gsiTerrainSource,
-				pales: {
-					// ソースの定義
-					type: 'raster', // データタイプはラスターを指定
-					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'], // タイルのURL
-					tileSize: 256, // タイルのサイズ
-					maxzoom: 18, // 最大ズームレベル
-					attribution: "<a href='https://www.gsi.go.jp/' target='_blank'>国土地理院</a>" // 地図上に表示される属性テキスト
-				},
 				...sources
 			},
-			layers: [
-				{
-					id: 'pales_layer', // レイヤーのID
-					source: 'pales', // ソースのID
-					type: 'raster' // データタイプはラスターを指定
-				},
-				...layers
-			],
+			layers: [...layers],
 			terrain: terrain ? terrain : undefined
 		};
 

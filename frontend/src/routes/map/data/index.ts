@@ -2,6 +2,8 @@ import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
 import { fgbLineStringEntry } from '$map/data/vector/fgb/lineString';
 import { fgbPointEntry } from '$map/data/vector/fgb/point';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
+import { imageTileEntry } from '$map/data/raster/imageTile';
+
 import type { GeoDataEntry } from '$routes/map/data/types';
 
 // 共通の初期化処理
@@ -23,7 +25,8 @@ const entries: GeoDataEntry[] = [
 	...fgbPolygonEntry,
 	...fgbLineStringEntry,
 	...fgbPointEntry,
-	...pmtilesPolygonEntry
+	...pmtilesPolygonEntry,
+	...imageTileEntry
 ];
 
 export const geoDataEntry = (() => {

@@ -54,14 +54,15 @@ const createMapStore = () => {
 
 		map = new maplibregl.Map({
 			container: mapContainer,
-			style: mapStyle ?? 'https://demotiles.maplibre.org/style.json', // style URL
+			style: mapStyle,
 			center: [136.923004009, 35.5509525769706],
 			zoom: 14.5,
 			fadeDuration: 100, // フェードアニメーションの時間
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
-			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			attributionControl: false, // 著作権表示を非表示
-
+			localIdeographFontFamily: false, // ローカルのフォントを使う
+			// renderWorldCopies: false // 世界地図を繰り返し表示しない
+			// localIdeographFontFamily: 'sans-serif',
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
 			// maxZoom: 18,
