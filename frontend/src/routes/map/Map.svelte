@@ -99,8 +99,6 @@
 			ids.includes(entry.id)
 		);
 
-		console.log('filteredDataEntry', filteredDataEntry);
-
 		// idsの順番に並び替え
 		layerEntries = filteredDataEntry.sort((a, b) => {
 			return ids.indexOf(a.id) - ids.indexOf(b.id);

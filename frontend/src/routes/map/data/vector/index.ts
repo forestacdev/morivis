@@ -7,10 +7,42 @@ export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
 export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
-export interface VectorFormat {
+// GeometryとStyleのペア型を定義
+type GeometryStyleMapping =
+	| { geometryType: 'LineString'; style: LineStyle }
+	| { geometryType: 'Polygon'; style: PolygonStyle }
+	| { geometryType: 'Point'; style: PointStyle }
+	| { geometryType: 'Label'; style: LabelStyle };
+
+// Format型の基本構造
+interface FormatVectorBase {
 	type: VectorFormatType;
 	geometryType: GeometryType;
 	url: string;
+}
+
+// 各スタイルの型定義
+interface BaseStyle {
+	opacity: number;
+}
+
+// Format型を定義
+export type VectorFormat = Omit<GeometryStyleMapping, 'style'> & FormatVectorBase;
+
+interface PolygonStyle extends BaseStyle {
+	type: 'fill' | 'line' | 'circle';
+}
+
+interface LineStyle extends BaseStyle {
+	type: 'line' | 'circle';
+}
+
+interface PointStyle extends BaseStyle {
+	type: 'circle';
+}
+
+interface LabelStyle extends BaseStyle {
+	type: 'symbol';
 }
 
 export interface VectorProperties {
@@ -50,7 +82,7 @@ export interface VectorEntry<T> {
 	metaData: T;
 	properties: VectorProperties;
 	interaction: VectorInteraction;
-	style: VectorStyle;
+	style: Extract<GeometryStyleMapping, { geometryType: typeof format.geometryType }>['style']; // Formatから派生;
 	debug: boolean;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	extension: any;
