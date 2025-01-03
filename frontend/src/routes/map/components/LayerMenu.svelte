@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 
 	import LayerSlot from '$map/components/LayerSlot.svelte';
-	import type { GeoDataEntry } from '$map/data';
+	import type { GeoDataEntry } from '$map/data/types';
 	import { mapStore } from '$map/store/map';
 	let { layerEntries = $bindable() }: { layerEntries: GeoDataEntry[] } = $props();
 
@@ -14,7 +14,7 @@
 	});
 </script>
 
-<div class="bg-main absolute z-10 flex h-full w-[200px] flex-col gap-2 p-2">
+<div class="absolute z-10 flex h-full w-[200px] flex-col gap-2 bg-blue-300 p-2">
 	{#each layerEntries as layerEntry, i (layerEntry.id)}
 		<LayerSlot bind:layerEntry={layerEntries[i]} />
 	{/each}

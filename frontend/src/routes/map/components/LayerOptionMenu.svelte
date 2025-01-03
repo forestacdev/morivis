@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte';
 
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
-	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
+	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showLayerOptionId, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';

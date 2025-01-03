@@ -15,9 +15,7 @@
 		type LabelsExpressions
 	} from '$routes/map/data/types/vector/style';
 
-	let {
-		layerToEdit = $bindable()
-	}: { layerToEdit: GeoDataEntry | undefined; tempLayerEntries: GeoDataEntry[] } = $props();
+	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry | undefined } = $props();
 
 	// 有効なレイヤータイプの取得
 	const getLayerTypes = (
@@ -116,7 +114,7 @@
 	onMount(() => {});
 </script>
 
-{#if layerToEdit}
+{#if layerToEdit && layerToEdit.type === 'vector'}
 	<!-- レイヤータイプの選択 -->
 	<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.type}>
 		{#each getLayerTypes(layerToEdit.format.geometryType) as layerType}

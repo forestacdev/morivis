@@ -22,8 +22,43 @@
 	onMount(() => {});
 </script>
 
-{#if layerToEdit}
+{#if layerToEdit && layerToEdit.type === 'raster'}
 	<!-- レイヤータイプの選択 -->
+	<RangeSlider
+		label={'明るさ-最小輝度'}
+		bind:value={layerToEdit.style.brightnessMin}
+		min={0}
+		max={1}
+		step={0.01}
+	/>
+	<RangeSlider
+		label={'明るさ-最大輝度'}
+		bind:value={layerToEdit.style.brightnessMax}
+		min={0}
+		max={1}
+		step={0.01}
+	/>
+	<RangeSlider
+		label={'コントラスト'}
+		bind:value={layerToEdit.style.contrast}
+		min={-1}
+		max={1}
+		step={0.01}
+	/>
+	<RangeSlider
+		label={'色相'}
+		bind:value={layerToEdit.style.hueRotate}
+		min={-360}
+		max={360}
+		step={0.1}
+	/>
+	<RangeSlider
+		label={'彩度'}
+		bind:value={layerToEdit.style.saturation}
+		min={-1}
+		max={1}
+		step={0.01}
+	/>
 {/if}
 
 <style>

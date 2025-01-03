@@ -166,9 +166,11 @@
 
 <!-- <Menu /> -->
 
-<LayerMenu bind:layerEntries />
-<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
-<div bind:this={mapContainer} class="h-full w-full"></div>
+<div class="relative h-full w-full">
+	<LayerMenu bind:layerEntries />
+	<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
+	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
+</div>
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
 		<Draggable left={0} top={0}>
