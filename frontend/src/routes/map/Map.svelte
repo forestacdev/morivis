@@ -17,7 +17,8 @@
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Menu from '$map/components/Menu.svelte';
-	import { geoDataEntry, type GeoDataEntry } from '$map/data';
+	import { geoDataEntry } from '$map/data';
+	import type { GeoDataEntry } from '$map/data/types';
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
@@ -31,6 +32,8 @@
 		DEBUG_MODE,
 		selectedHighlightData
 	} from '$routes/map/store';
+
+	console.log('geoDataEntry', geoDataEntry);
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{

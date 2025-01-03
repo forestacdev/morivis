@@ -1,4 +1,4 @@
-import type { GeoJsonMetaData, PolygonEntry } from '$routes/map/data/types/vector';
+import type { GeoJsonMetaData, PolygonEntry } from '$map/data/types/vector';
 
 export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 	// 演習林林班図
@@ -124,6 +124,10 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 					layout: {}
 				},
 				symbol: {
+					paint: {},
+					layout: {}
+				},
+				fillExtrusion: {
 					paint: {},
 					layout: {}
 				}

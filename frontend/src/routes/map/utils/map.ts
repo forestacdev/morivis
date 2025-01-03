@@ -1,4 +1,4 @@
-import tilebelt from '@mapbox/tilebelt';
+import * as tilebelt from '@mapbox/tilebelt';
 import type {
 	Map,
 	StyleSpecification,
@@ -115,24 +115,24 @@ const EARTH_CIRCUMFERENCE = 40075016.686; // 約40,075km
 const TILE_SIZE = 256;
 
 // 与えられたズームレベルでの1ピクセルあたりの地上距離を計算する関数
-function distancePerPixel(zoomLevel) {
+const distancePerPixel = (zoomLevel) => {
 	// ズームレベルに基づいて、1ピクセルあたりのメートル数を計算
 	return EARTH_CIRCUMFERENCE / Math.pow(2, zoomLevel) / TILE_SIZE;
-}
+};
 
 // ズームレベルを指定して、1ピクセルあたりの高さスケールを計算
 const zoomLevel = 14; // 任意のズームレベル
 const pixelDistance = distancePerPixel(zoomLevel);
 
 // タイル内の高さデータをスケーリングする
-function scaleHeightToZoomLevel(heightValue, zoomLevel) {
+const scaleHeightToZoomLevel = (heightValue, zoomLevel) => {
 	const pixelDistance = distancePerPixel(zoomLevel);
 
 	// 高さのスケールは通常標高タイルのデータ（例えばcm単位など）に依存するので、
 	// 必要に応じて適切なスケールファクターを適用する
 	const scaleFactor = 1; // 適切なスケールを設定
 	return heightValue * scaleFactor * pixelDistance;
-}
+};
 
 /* style.jsonを取得 */
 export const getFieldDictJson = async (url: string): Promise<{ [key: string]: string }> => {

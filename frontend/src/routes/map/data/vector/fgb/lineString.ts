@@ -1,6 +1,6 @@
-import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/vector';
+import type { GeoJsonMetaData, LineStringEntry } from '$map/data/types/vector';
 
-export const fgbLineStringEntry: VectorEntry<GeoJsonMetaData>[] = [
+export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 	// 演習林道
 	{
 		id: 'ensyurin_road',

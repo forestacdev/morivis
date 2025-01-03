@@ -1,18 +1,10 @@
 import type {
-	SourceSpecification,
-	LayerSpecification,
 	FillLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
 	HeatmapLayerSpecification,
-	FillExtrusionLayerSpecification,
-	RasterLayerSpecification,
-	HillshadeLayerSpecification,
-	BackgroundLayerSpecification,
-	FilterSpecification,
-	DataDrivenPropertyValueSpecification,
-	ColorSpecification
+	FillExtrusionLayerSpecification
 } from 'maplibre-gl';
 
 interface fillLayerStyle {
@@ -35,11 +27,24 @@ interface SymbolLayerStyle {
 	layout: SymbolLayerSpecification['layout'];
 }
 
+// TODO: 押し出しポリゴンのスタイルを追加
+interface FillExtrusionLayerStyle {
+	paint: FillExtrusionLayerSpecification['paint'];
+	layout: FillExtrusionLayerSpecification['layout'];
+}
+
+// TODO: ヒートマップのスタイルを追加
+interface HeatmapLayerStyle {
+	paint: HeatmapLayerSpecification['paint'];
+	layout: HeatmapLayerSpecification['layout'];
+}
+
 export interface PolygonDefaultStyle {
 	fill: fillLayerStyle;
 	line: lineLayerStyle;
 	circle: circleLayerStyle;
 	symbol: SymbolLayerStyle;
+	fillExtrusion: FillExtrusionLayerStyle;
 }
 
 export interface LineStringDefaultStyle {
@@ -51,6 +56,7 @@ export interface LineStringDefaultStyle {
 export interface PointDefaultStyle {
 	circle: circleLayerStyle;
 	symbol: SymbolLayerStyle;
+	heatmap: HeatmapLayerStyle;
 }
 
 export interface LabelDefaultStyle {
