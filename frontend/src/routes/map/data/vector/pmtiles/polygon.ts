@@ -166,7 +166,7 @@ export const pmtilesPolygonEntry: VectorEntry[] = [
 				]
 			},
 			labels: {
-				key: '地質', // 現在選択されているラベルのキー
+				key: 'Symbol', // 現在選択されているラベルのキー
 				show: true, // ラベル表示状態
 				expressions: [
 					{

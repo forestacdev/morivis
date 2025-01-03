@@ -21,8 +21,8 @@ import {
 	EXCLUDE_IDS_CLICK_LAYER,
 	GIFU_DATA_BASE_PATH
 } from '$routes/map/constants';
-import { clickableLayerIds } from '$map/store';
-import { geoDataEntry } from '$map/data';
+import { clickableLayerIds, selectedHighlightData, type SelectedHighlightData } from '$map/store';
+import { geoDataEntry, type GeoDataEntry } from '$map/data';
 import type {
 	Labels,
 	VectorStyle,
@@ -30,11 +30,15 @@ import type {
 	ColorsExpressions,
 	ColorSingleExpressions,
 	ColorMatchExpressions,
-	ColorStepExpressions
+	ColorStepExpressions,
+	PointStyle,
+	PolygonStyle,
+	LineStringStyle,
+	LabelStyle
 } from '$map/data/vector/style';
-import type { GeoDataEntry } from '$map/data';
-import type { PointStyle, PolygonStyle, LineStringStyle, LabelStyle } from '$map/data/vector/style';
+
 import { generateNumberAndColorMap } from '$map/utils/colorMapping';
+import { get } from 'svelte/store';
 
 // IDを収集
 const validIds = geoDataEntry.map((entry) => entry.id);
@@ -48,10 +52,10 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 		validateId(id); // ここでエラーが発生します
 	} catch (error) {
 		if (error instanceof Error) {
+			console.warn(`無効なidです: ${id}`);
+			console.warn('有効なid: ', validIds.join(', '));
 			console.error(error.message);
 		}
-		console.warn(`無効なidです: ${id}`);
-		console.warn('有効なid: ', validIds.join(', '));
 	}
 });
 
@@ -80,132 +84,85 @@ const highlightSymbolPaint: SymbolLayerSpecification['paint'] = {
 	'text-opacity': 1
 };
 
-export type SelectedHighlightData = {
-	LayerData: LayerEntry;
-	featureId: string;
-};
+interface LayerItem {
+	id: string;
+	source: string;
+	maxzoom: number;
+	minzoom: number;
+	type?: string;
+	paint?:
+		| FillLayerSpecification['paint']
+		| LineLayerSpecification['paint']
+		| CircleLayerSpecification['paint']
+		| SymbolLayerSpecification['paint'];
+	layout?:
+		| FillLayerSpecification['layout']
+		| LineLayerSpecification['layout']
+		| CircleLayerSpecification['layout']
+		| SymbolLayerSpecification['layout'];
+	'source-layer'?: string;
+	filter?: FilterSpecification;
+}
 
 /* ハイライトレイヤー */
 export const createHighlightLayer = (
-	selectedhighlightData: SelectedHighlightData | null
-): (FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification)[] => {
-	if (!selectedhighlightData) return [];
+	_selectedHighlightData: SelectedHighlightData | null
+): (FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification | undefined)[] => {
+	if (!_selectedHighlightData) return [];
+	const entry = _selectedHighlightData.layerData;
+	const { format, style, metaData, properties, interaction, type } = entry;
 
-	const layerEntry = selectedhighlightData.LayerData;
-	if (layerEntry.dataType === 'raster') return [];
+	if (entry.type === 'raster') return [];
 	const layerId = 'HighlightFeatureId';
-	const sourceId = `${layerEntry.id}_source`;
 
-	const layers = [];
+	// TODO 元のデータが削除されたらハイライトを消す必要がある
+	const sourceId = `${entry.id}_source`;
 
-	switch (layerEntry.dataType) {
-		case 'vector': {
-			type BaseLayer = {
-				source: string;
-				'source-layer': string;
-				filter?: FilterSpecification;
-			};
-			const baseLayer: BaseLayer = {
-				source: sourceId,
-				'source-layer': layerEntry.sourceLayer
-			};
+	const layerItems = [];
+	const layer: LayerItem = {
+		id: layerId,
+		source: sourceId,
+		maxzoom: 24,
+		minzoom: 0
+	};
 
-			// TODO idとして決めるkey
-			if (layerEntry.idField) {
-				baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
+	// case 'vector': {
+
+	// TODO idとして決めるkey
+	// if (layerEntry.idField) {
+	// 	baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
+	// }
+	// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
+
+	// }
+
+	if (type === 'vector') {
+		if (format.type === 'mvt' || format.type === 'pmtiles') {
+			if ('sourceLayer' in metaData) {
+				layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
 			}
-			// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-
-			if (layerEntry.geometryType === 'polygon') {
-				layers.push({
-					id: layerId,
-					type: 'fill',
-					...baseLayer,
-					paint: {
-						...highlightFillPaint
-					}
-				} as FillLayerSpecification);
-				layers.push({
-					id: layerId + '_line',
-					type: 'line',
-
-					paint: {
-						...highlightLinePaint
-					}
-				} as LineLayerSpecification);
-			} else if (layerEntry.geometryType === 'line') {
-				layers.push({
-					id: layerId,
-					type: 'line',
-					...baseLayer,
-					paint: {
-						...highlightLinePaint
-					}
-				} as LineLayerSpecification);
-			} else if (layerEntry.geometryType === 'point') {
-				layers.push({
-					id: layerId,
-					type: 'circle',
-					...baseLayer,
-					paint: {
-						...highlightCirclePaint
-					}
-				} as CircleLayerSpecification);
-			}
-			break;
 		}
-		case 'geojson': {
-			if (layerEntry.geometryType === 'polygon') {
-				layers.push({
-					id: layerId,
-					type: 'fill',
-					source: sourceId,
-					paint: {
-						...highlightFillPaint
-					},
-					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-					filter: ['==', ['id'], selectedhighlightData.featureId]
-				} as FillLayerSpecification);
 
-				layers.push({
-					id: layerId + '_line',
-					type: 'line',
-					source: sourceId,
-					paint: {
-						...highlightLinePaint
-					},
-					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-					filter: ['==', ['id'], selectedhighlightData.featureId]
-				} as LineLayerSpecification);
-			} else if (layerEntry.geometryType === 'line') {
-				layers.push({
-					id: layerId,
-					type: 'line',
-					source: sourceId,
-					paint: {
-						...highlightLinePaint
-					},
-					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-					filter: ['==', ['id'], selectedhighlightData.featureId]
-				} as LineLayerSpecification);
-			} else if (layerEntry.geometryType === 'point') {
-				layers.push({
-					id: layerId,
-					type: 'circle',
-					source: sourceId,
-					paint: {
-						...highlightCirclePaint
-					},
-					// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-					filter: ['==', ['id'], selectedhighlightData.featureId]
-				} as CircleLayerSpecification);
-			}
-			break;
+		const vectorLayer = createVectorLayer(layer, style);
+		if (!vectorLayer || vectorLayer.type === 'symbol') return [];
+		switch (vectorLayer.type) {
+			case 'fill':
+				vectorLayer.paint = highlightFillPaint;
+				break;
+			case 'line':
+				vectorLayer.paint = highlightLinePaint;
+				break;
+			case 'circle':
+				vectorLayer.paint = highlightCirclePaint;
+				break;
+			default:
+				break;
 		}
-		default:
-			break;
+
+		vectorLayer.filter = ['==', ['id'], _selectedHighlightData.featureId];
+		layerItems.push(vectorLayer);
 	}
-	return layers;
+	return layerItems;
 };
 
 const generateMatchExpression = (
@@ -289,10 +246,10 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 		...layer,
 		type: 'fill',
 		paint: {
-			...(fillStyle.paint ?? {}),
 			'fill-opacity': style.opacity,
 			// 'fill-outline-color': '#00000000',
-			'fill-color': color
+			'fill-color': color,
+			...(fillStyle.paint ?? {})
 		},
 		layout: {
 			...(fillStyle.layout ?? {})
@@ -311,10 +268,10 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 		...layer,
 		type: 'line',
 		paint: {
-			...(lineStyle.paint ?? {}),
 			'line-opacity': style.opacity,
 			'line-color': color,
-			'line-width': 2
+			'line-width': 2,
+			...(lineStyle.paint ?? {})
 		},
 		layout: {
 			...(lineStyle?.layout ?? {})
@@ -333,13 +290,13 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 		...layer,
 		type: 'circle',
 		paint: {
-			...(circleStyle.paint ?? {}),
 			'circle-opacity': style.opacity,
 			'circle-stroke-opacity': style.opacity,
 			'circle-color': color,
 			'circle-radius': 6,
 			'circle-stroke-color': '#ffffff',
-			'circle-stroke-width': 2
+			'circle-stroke-width': 2,
+			...(circleStyle.paint ?? {})
 		},
 		layout: {
 			...(circleStyle.layout ?? {})
@@ -383,24 +340,33 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 	return symbolLayer;
 };
 
-type LayerItem = {
-	id: string;
-	source: string;
-	maxzoom: number;
-	minzoom: number;
-	type?: string;
-	paint?:
-		| FillLayerSpecification['paint']
-		| LineLayerSpecification['paint']
-		| CircleLayerSpecification['paint']
-		| SymbolLayerSpecification['paint'];
-	layout?:
-		| FillLayerSpecification['layout']
-		| LineLayerSpecification['layout']
-		| CircleLayerSpecification['layout']
-		| SymbolLayerSpecification['layout'];
-	'source-layer'?: string;
-	filter?: FilterSpecification;
+// ベクターレイヤーの作成
+const createVectorLayer = (
+	layer: LayerItem,
+	style: VectorStyle
+):
+	| FillLayerSpecification
+	| LineLayerSpecification
+	| CircleLayerSpecification
+	| SymbolLayerSpecification
+	| undefined => {
+	switch (style.type) {
+		case 'fill': {
+			return createFillLayer(layer, style);
+		}
+		case 'line': {
+			return createLineLayer(layer, style);
+		}
+		case 'circle': {
+			return createCircleLayer(layer, style);
+		}
+		case 'symbol': {
+			return createSymbolLayer(layer, style);
+		}
+		default:
+			console.warn(`対応してないstyle.typeのデータ: ${layer.id}`);
+			return undefined;
+	}
 };
 
 // layersの作成
@@ -445,39 +411,20 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 				// ベクターレイヤー
 				case 'vector': {
 					if (format.type === 'mvt' || format.type === 'pmtiles') {
-						// TODO: source-layer
-						layer['source-layer'] = metaData.sourceLayer;
+						if ('sourceLayer' in metaData) {
+							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
+						}
 					}
 
-					switch (style.type) {
-						case 'fill': {
-							const fillLayer = createFillLayer(layer, style);
-							layerItems.push(fillLayer);
-							break;
-						}
-						case 'line': {
-							const lineLayer = createLineLayer(layer, style);
-							layerItems.push(lineLayer);
-							break;
-						}
-						case 'circle': {
-							const circleLayer = createCircleLayer(layer, style);
-							layerItems.push(circleLayer);
-							break;
-						}
-						case 'symbol': {
-							const symbolLayer = createSymbolLayer(layer, style);
-							symbolLayerItems.push(symbolLayer);
-							break;
-						}
-					}
+					const vectorLayer = createVectorLayer(layer, style);
+					if (!vectorLayer) return;
+					layerItems.push(vectorLayer);
 
 					// ラベルを追加
 					if (style.labels.show && style.type !== 'symbol') {
 						const symbolLayer = createSymbolLayer(layer, style);
 						symbolLayerItems.push(symbolLayer);
 					}
-
 					break;
 				}
 
@@ -488,7 +435,9 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 		});
 
 	clickableLayerIds.set(layerIds);
-	// const highlightLayers = selectedhighlightData ? createHighlightLayer(selectedhighlightData) : [];
+	const highlightLayers = get(selectedHighlightData)
+		? createHighlightLayer(get(selectedHighlightData))
+		: [];
 
-	return [...layerItems, ...symbolLayerItems];
+	return [...layerItems, ...symbolLayerItems, ...highlightLayers];
 };

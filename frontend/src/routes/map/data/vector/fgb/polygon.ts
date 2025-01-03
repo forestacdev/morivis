@@ -4,7 +4,7 @@ import type { GeoJsonEntry } from '$routes/map/data/vector';
 export const fgbPolygonEntry: GeoJsonEntry[] = [
 	// 演習林林班図
 	{
-		id: 'ensyurin_rinhanzu_fgb',
+		id: 'ensyurin_rinhan',
 		type: 'vector',
 		format: {
 			type: 'fgb',
@@ -12,17 +12,17 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 			url: './fgb/ensyurin_rinhan.fgb'
 		},
 		metaData: {
-			name: '演習林林班図fgb', // 名前
-			description: '岐阜県の演習林の林班図です。', // 説明
+			name: '演習林林班', // 名前
+			description: '森林文化アカデミー演習林の林班。', // 説明
 			attribution: '森林文化アカデミー', // データの出典
 			location: '森林文化アカデミー',
-			minZoom: 13, // 表示するズームレベルの最小値
-			maxZoom: 18, // 表示するズームレベルの最大値
+			minZoom: 0, // 表示するズームレベルの最小値
+			maxZoom: 24, // 表示するズームレベルの最大値
 			bounds: null // データの範囲
 		},
 		properties: {
 			keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
-			dict: `${GEOJSON_BASE_PATH}/ENSYURIN_rinhanzu_dict.csv` // プロパティの辞書ファイルのURL
+			dict: null // プロパティの辞書ファイルのURL
 		},
 		interaction: {
 			// インタラクションの設定
@@ -33,7 +33,7 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 			type: 'fill',
 			opacity: 0.5, // 透過率
 			colors: {
-				key: '林齢',
+				key: '樹種',
 				expressions: [
 					{
 						type: 'single',
@@ -57,7 +57,7 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 								'草地',
 								'その他岩石'
 							],
-							values: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#000000']
+							values: ['#399210', '#4ADDA5', '#DD2B2B', '#B720BF', '#EBBC22', '#2351E5', '#D98F34']
 						}
 					},
 					{
@@ -66,7 +66,7 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 						name: '林班ごとの色分け',
 						mapping: {
 							categories: [1, 2, 3],
-							values: ['#ff0000', '#00ff00', '#0000ff']
+							values: ['#ff0000', '#059854', '#9d00ff']
 						}
 					},
 					{
@@ -75,6 +75,16 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 						name: '林齢の範囲による色分け',
 						mapping: {
 							range: [0, 100],
+							divisions: 5,
+							colorScale: 'PuBu'
+						}
+					},
+					{
+						type: 'step',
+						key: '面積',
+						name: '面積の範囲による色分け',
+						mapping: {
+							range: [0, 1],
 							divisions: 5,
 							colorScale: 'PuBu'
 						}
@@ -108,18 +118,11 @@ export const fgbPolygonEntry: GeoJsonEntry[] = [
 					layout: {}
 				},
 				line: {
-					paint: {
-						'line-width': 1,
-						'line-dasharray': [1, 0]
-					},
+					paint: {},
 					layout: {}
 				},
 				circle: {
-					paint: {
-						'circle-radius': 5,
-						'circle-stroke-width': 1,
-						'circle-stroke-color': '#000000'
-					},
+					paint: {},
 					layout: {}
 				},
 				symbol: {

@@ -1,5 +1,6 @@
 import { geoJsonPolygonEntry } from '$map/data/vector/geojson/polygon';
 import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
+import { fgbLineStringEntry } from '$map/data/vector/fgb/lineString';
 import { geoJsonLineStringEntry } from '$map/data/vector/geojson/lineString';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
 import type { GeoJsonEntry, VectorEntry } from '$routes/map/data/vector';
@@ -23,7 +24,7 @@ const initData = (data: GeoDataEntry[]) => {
 	return data;
 };
 
-const entries: GeoDataEntry[] = [...fgbPolygonEntry, ...pmtilesPolygonEntry];
+const entries: GeoDataEntry[] = [...fgbPolygonEntry, ...fgbLineStringEntry, ...pmtilesPolygonEntry];
 
 export const geoDataEntry = (() => {
 	// 全てのIDを取得

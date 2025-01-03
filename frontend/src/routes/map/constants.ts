@@ -13,10 +13,9 @@ export const GIFU_DATA_BASE_PATH =
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 export const INT_ADD_LAYER_IDS = [
 	// 'TITEN',
-	// 'ENSYURIN_MITI',
-	'ensyurin_rinhanzu_fgb',
+	'ensyurin_road',
+	'ensyurin_rinhan',
 	'mino_geology'
-
 	// 'TATEMONO',
 	// 'ZIRIKI',
 	// 'custom-rgb-dem'

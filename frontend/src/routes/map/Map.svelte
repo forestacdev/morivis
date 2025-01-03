@@ -17,8 +17,7 @@
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Menu from '$map/components/Menu.svelte';
-	import type { GeoDataEntry } from '$map/data';
-	import { geoDataEntry } from '$map/data';
+	import { geoDataEntry, type GeoDataEntry } from '$map/data';
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
@@ -26,8 +25,12 @@
 	import { mapStore } from '$map/store/map';
 	import { createLayersItems } from '$routes/map/layers';
 	import { createSourcesItems } from '$routes/map/sources';
-	import { DEBUG_MODE } from '$routes/map/store';
-	import { addedLayerIds, showLayerOptionId } from '$routes/map/store';
+	import {
+		addedLayerIds,
+		showLayerOptionId,
+		DEBUG_MODE,
+		selectedHighlightData
+	} from '$routes/map/store';
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
@@ -45,10 +48,13 @@
 		const sources = await createSourcesItems(_dataEntries);
 		const layers = await createLayersItems(_dataEntries);
 
+		const terrain = mapStore.getTerrain();
+
 		const mapStyle = {
 			version: 8,
 			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
 			sources: {
+				terrain: gsiTerrainSource,
 				pales: {
 					// ソースの定義
 					type: 'raster', // データタイプはラスターを指定
@@ -66,7 +72,8 @@
 					type: 'raster' // データタイプはラスターを指定
 				},
 				...layers
-			]
+			],
+			terrain: terrain ? terrain : undefined
 		};
 
 		// NOTE:debug
@@ -115,8 +122,29 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
+	selectedHighlightData.subscribe((data) => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
 	mapStore.onClick((e) => {
-		console.log('click', e);
+		// console.log('click', e);
+		if (!e) return;
+		const features = mapStore.queryRenderedFeatures(e.point);
+		if (!features || features?.length === 0) return;
+
+		const feature = features[0];
+
+		const layerId = feature.layer.id;
+		const featureId = feature.id;
+
+		const entry = layerEntries.find((entry) => entry.id === layerId);
+
+		if (!entry || !featureId) return;
+
+		$selectedHighlightData = {
+			layerData: entry,
+			featureId
+		};
 	});
 
 	mapStore.onSetStyle((e) => {});

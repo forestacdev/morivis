@@ -1,6 +1,7 @@
 import { get, writable } from 'svelte/store';
 import { INT_ADD_LAYER_IDS } from '$map/constants';
 import { geoDataEntry } from '$map/data';
+import type { GeoDataEntry } from '$map/data';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
@@ -74,6 +75,12 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 export const isSide = writable<Side>(null);
 export const showDataMenu = writable<boolean>(false);
 export const showLayerOptionId = writable<string>('');
+
+export interface SelectedHighlightData {
+	layerData: GeoDataEntry;
+	featureId: number | string;
+}
+export const selectedHighlightData = writable<SelectedHighlightData | null>(null);
 
 /** 外部コンポーネントからイベントを発火させるストア */
 // const eventStore = () => {
