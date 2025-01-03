@@ -15,7 +15,8 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"preinstall": "npx only-allow pnpm"
+		"preinstall": "npx only-allow pnpm",
+		"generate-pwa-assets": "pwa-assets-generator"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
@@ -58,6 +59,7 @@
 		"@turf/buffer": "^7.2.0",
 		"@turf/distance": "^7.2.0",
 		"@turf/nearest-point": "^7.2.0",
+		"@vite-pwa/assets-generator": "^0.2.6",
 		"chroma-js": "^3.1.2",
 		"colormap": "^2.3.2",
 		"d3-scale": "^4.0.2",
