@@ -7,6 +7,15 @@ import type {
 
 import type { GeoDataEntry } from '$map/data/types';
 import { geojson as fgb } from 'flatgeobuf';
+import { GeojsonCache } from '$map/utils/geojson';
+
+// const fgbBoundingBox = () => {
+// 	// mapStore.
+// 	const bounds = mapStore.getBounds();
+// 	console.log(bounds);
+// 	if (!bounds) return;
+// 	return bounds;
+// };
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[]
@@ -16,6 +25,7 @@ export const createSourcesItems = async (
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
 			const { metaData, format, type } = entry;
+			// const boundingBox = fgbBoundingBox();
 
 			switch (type) {
 				case 'raster': {
@@ -48,22 +58,31 @@ export const createSourcesItems = async (
 							type: 'vector',
 							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
-							minzoom: metaData.minZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						};
 						items[sourceId] = vectorSource;
 					} else if (format.type === 'fgb') {
 						const response = await fetch(format.url);
+						// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
+						// 	minX: 136.92278224505964,
+						// 	minY: 35.5550269493974,
+						// 	maxX: 136.92300017454164,
+						// 	maxY: 35.555151603539045
+						// });
+
 						const featureIterator = fgb.deserialize(response.body as ReadableStream);
 
 						const geojson: GeoJSON.GeoJSON = {
 							type: 'FeatureCollection',
 							features: []
 						};
+
 						for await (const feature of featureIterator) {
 							geojson.features.push(feature);
 						}
+						if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
 
 						const geojsonSource: GeoJSONSourceSpecification = {
 							type: 'geojson',
@@ -77,7 +96,7 @@ export const createSourcesItems = async (
 							type: 'vector',
 							url: `pmtiles://${format.url}`,
 							maxzoom: metaData.maxZoom,
-							minzoom: metaData.minZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						};

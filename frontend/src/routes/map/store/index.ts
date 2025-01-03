@@ -1,7 +1,7 @@
-import { get, writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { INT_ADD_LAYER_IDS } from '$map/constants';
 import { geoDataEntry } from '$map/data';
-import type { GeoDataEntry } from '$map/data';
+import type { GeoDataEntry } from '$map/data/types';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);

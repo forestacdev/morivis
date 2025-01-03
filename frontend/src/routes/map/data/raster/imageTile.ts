@@ -14,7 +14,7 @@ export const imageTileEntry: RasterEntries = [
 			attribution: '国土地理院', // データの出典
 			location: '全国',
 			minZoom: 1, // 表示するズームレベルの最小値
-			maxZoom: 24, // 表示するズームレベルの最大値
+			maxZoom: 18, // 表示するズームレベルの最大値
 			bounds: null // データの範囲
 		},
 		interaction: {

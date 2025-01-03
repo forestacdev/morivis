@@ -304,6 +304,17 @@ const createMapStore = () => {
 		map.addLayer(layerItems[0]);
 	};
 
+	const getBounds = () => {
+		if (!map) return;
+		const { _sw, _ne } = map.getBounds();
+		return {
+			minX: _sw.lng,
+			minY: _sw.lat,
+			maxX: _ne.lng,
+			maxY: _ne.lat
+		};
+	};
+
 	return {
 		subscribe,
 		init,
@@ -322,6 +333,7 @@ const createMapStore = () => {
 		focusFeature,
 		onSetStyle: setStyleEvent.subscribe,
 		getTerrain: () => map?.getTerrain(),
+		getBounds: getBounds,
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド

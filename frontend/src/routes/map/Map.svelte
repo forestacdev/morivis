@@ -169,9 +169,6 @@
 <LayerMenu bind:layerEntries />
 <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 <div bind:this={mapContainer} class="h-full w-full"></div>
-<!-- <div class="z-100 absolute bottom-0 right-0 max-h-[300px] max-w-[300px] overflow-auto bg-white p-2">
-	{JSON.stringify(layerEntries, null, 2)}
-</div> -->
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
 		<Draggable left={0} top={0}>
