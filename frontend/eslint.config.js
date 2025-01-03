@@ -58,7 +58,12 @@ export default ts.config(
 					destructuredArrayIgnorePattern: '^_'
 				}
 			],
-			'no-console': 'warn',
+			'no-console': [
+				'warn',
+				{
+					allow: ['warn']
+				}
+			],
 			camelcase: ['error', { properties: 'never' }]
 		}
 	}

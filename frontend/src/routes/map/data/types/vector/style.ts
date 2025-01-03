@@ -44,7 +44,7 @@ export interface PolygonDefaultStyle {
 	line: lineLayerStyle;
 	circle: circleLayerStyle;
 	symbol: SymbolLayerStyle;
-	fillExtrusion: FillExtrusionLayerStyle;
+	fillExtrusion?: FillExtrusionLayerStyle;
 }
 
 export interface LineStringDefaultStyle {
@@ -56,7 +56,7 @@ export interface LineStringDefaultStyle {
 export interface PointDefaultStyle {
 	circle: circleLayerStyle;
 	symbol: SymbolLayerStyle;
-	heatmap: HeatmapLayerStyle;
+	heatmap?: HeatmapLayerStyle;
 }
 
 export interface LabelDefaultStyle {

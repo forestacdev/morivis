@@ -63,10 +63,6 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 				]
 			},
 			default: {
-				fill: {
-					paint: {},
-					layout: {}
-				},
 				line: {
 					layout: {},
 					paint: {

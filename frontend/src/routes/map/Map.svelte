@@ -33,8 +33,6 @@
 		selectedHighlightData
 	} from '$routes/map/store';
 
-	console.log('geoDataEntry', geoDataEntry);
-
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
 		value: boolean;
