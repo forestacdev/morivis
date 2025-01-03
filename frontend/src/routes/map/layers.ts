@@ -328,6 +328,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
+			'text-font': ['Noto Sans JP Light'],
 			...(symbolStyle.layout ?? {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],

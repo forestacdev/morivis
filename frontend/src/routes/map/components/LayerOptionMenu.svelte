@@ -1,26 +1,21 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { each } from 'es-toolkit/compat';
 	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	// import CircleOptionMenu from './_ui/layermenu/LayerOptionMenu/CircleOptionMenu.svelte';
-	// import FillOptionMenu from './_ui/layermenu/LayerOptionMenu/FillOptionMenu.svelte';
-	// import LineOptionMenu from './_ui/layermenu/LayerOptionMenu/LineOptionMenu.svelte';
-
 	import CheckBox from '$map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
-	import type { GeoDataEntry } from '$map/data';
-	import type { GeometryType } from '$map/data/vector';
-	import type {
-		VectorLayerType,
-		ColorsExpressions,
-		LabelsExpressions
-	} from '$routes/map/data/types/vector/style';
-	import { mutableColorMapType } from '$routes/map/data/types/vector/style';
+	import type { GeoDataEntry } from '$map/data/types';
+	import type { GeometryType } from '$map/data/types/vector';
 	import { showLayerOptionId, isSide, addedLayerIds } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
+	import {
+		mutableColorMapType,
+		type VectorLayerType,
+		type ColorsExpressions,
+		type LabelsExpressions
+	} from '$routes/map/data/types/vector/style';
 
 	let {
 		layerToEdit = $bindable(),

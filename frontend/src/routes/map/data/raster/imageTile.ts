@@ -35,7 +35,7 @@ export const imageTileEntry: RasterEntries = [
 				layout: {}
 			}
 		},
-		debug: true,
+		debug: false,
 		extension: {}
 	}
 ];

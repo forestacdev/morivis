@@ -20,7 +20,9 @@ export const INT_ADD_LAYER_IDS = [
 	// 'TITEN',
 	'ensyurin_pole',
 	'ensyurin_road',
-	'ensyurin_rinhan'
+	'ensyurin_rinhan',
+	'gsi_std'
+
 	// 'mino_geology'
 	// 'ZIRIKI',
 	// 'custom-rgb-dem'

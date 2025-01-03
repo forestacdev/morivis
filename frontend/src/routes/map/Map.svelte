@@ -53,7 +53,7 @@
 
 		const mapStyle = {
 			version: 8,
-			glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
 				terrain: gsiTerrainSource,
 				...sources
