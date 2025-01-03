@@ -37,7 +37,7 @@
 		value: boolean;
 	}>({ value: false });
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
+	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
@@ -84,9 +84,22 @@
 
 	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {
+		if (import.meta.env.DEV) {
+			const debugEntry = geoDataEntry.filter((entry) => entry.debug);
+			if (debugEntry.length > 0) {
+				debugEntry.forEach((entry) => {
+					console.warn('デバッグデータのみ追加します。', entry.id);
+				});
+				layerEntries = [...debugEntry, ...tempLayerEntries];
+				return;
+			}
+		}
+
 		const filteredDataEntry = [...geoDataEntry, ...tempLayerEntries].filter((entry) =>
 			ids.includes(entry.id)
 		);
+
+		console.log('filteredDataEntry', filteredDataEntry);
 
 		// idsの順番に並び替え
 		layerEntries = filteredDataEntry.sort((a, b) => {

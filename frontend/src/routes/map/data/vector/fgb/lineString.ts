@@ -40,16 +40,16 @@ export const fgbLineStringEntry: GeoJsonEntry[] = [
 						key: '単色',
 						name: '単色',
 						mapping: {
-							value: '#00ff00'
+							value: '#898989'
 						}
 					},
 					{
 						type: 'match',
 						key: '種類',
-						name: '樹種ごとの色分け',
+						name: '歩道と林道の色分け',
 						mapping: {
 							categories: ['林道', '歩道'],
-							values: ['#399210', '#4ADDA5']
+							values: ['#b89300', '#4adddd']
 						}
 					}
 				]
@@ -71,8 +71,10 @@ export const fgbLineStringEntry: GeoJsonEntry[] = [
 					layout: {}
 				},
 				line: {
-					paint: {},
-					layout: {}
+					layout: {},
+					paint: {
+						'line-width': ['match', ['get', '種類'], '林道', 10, '歩道', 5, 5]
+					}
 				},
 				circle: {
 					paint: {},
@@ -80,7 +82,11 @@ export const fgbLineStringEntry: GeoJsonEntry[] = [
 				},
 				symbol: {
 					paint: {},
-					layout: {}
+					layout: {
+						'text-size': 10,
+						'symbol-placement': 'line',
+						'symbol-spacing': 100
+					}
 				}
 			}
 		},
