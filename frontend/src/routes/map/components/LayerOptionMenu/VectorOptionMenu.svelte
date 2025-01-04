@@ -16,6 +16,7 @@
 		type ColorsExpressions,
 		type LabelsExpressions
 	} from '$routes/map/data/types/vector/style';
+	import { showLayerOptionId } from '$routes/map/store';
 
 	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry | undefined } = $props();
 
@@ -132,7 +133,13 @@
 		options={getLayerTypes(layerToEdit.format.geometryType)}
 	/>
 
-	<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} />
+	<RangeSlider
+		label="不透明度"
+		bind:value={layerToEdit.style.opacity}
+		min={0}
+		max={1}
+		step={0.01}
+	/>
 
 	<!-- ラベルの設定 -->
 	<!-- <CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />

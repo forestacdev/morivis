@@ -4,7 +4,7 @@
 
 	import { BASEMAP_IMAGE_TILE } from '$map/constants';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { addedLayerIds, showLayerOptionId } from '$map/store';
+	import { addedLayerIds, showLayerOptionId, isAnimation } from '$map/store';
 	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
 
 	let { layerEntry = $bindable() }: { layerEntry: GeoDataEntry } = $props();
@@ -59,6 +59,7 @@
 	layerEntry.id
 		? 'css-gradient'
 		: ' hover:border-accent'}"
+	class:pointer-events-none={$isAnimation}
 	onclick={toggleEdit}
 >
 	<div class="flex items-center justify-start gap-2">

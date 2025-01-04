@@ -1,6 +1,8 @@
 <script lang="ts">
 	import gsap from 'gsap';
 	import { onMount, unmount } from 'svelte';
+
+	import { showLayerOptionId, isAnimation } from '$map/store';
 	let {
 		label,
 		value = $bindable(),
@@ -15,31 +17,34 @@
 		step: number;
 	} = $props();
 
-	let rangeElement = $state<HTMLInputElement | null>(null);
+	// TODO: animation
+	let rangeElement = $state<HTMLDivElement | null>(null);
 
-	onMount(() => {
-		// スライダーを0から現在の値までアニメーション
-		const initialValue = value;
-		value = min; // 一旦値をリセット
-		gsap.to(rangeElement, {
-			duration: 0.3, // アニメーション時間
-			value: initialValue, // 目標値を設定
-			ease: 'power2.out', // イージング
-			onUpdate: () => {
-				// 手動でスライダーの表示を更新
-				value = parseFloat(rangeElement?.value || '0');
-			}
-		});
-	});
+	// onMount(() => {
+	// 	// isAnimation.set(true);
+	// 	if (!rangeElement) return;
 
-	// unmount(() => {
-	// 	range = null;
+	// 	showLayerOptionId.subscribe((id) => {
+	// 		gsap.from(rangeElement, {
+	// 			textContent: 0,
+	// 			duration: 0.5,
+	// 			ease: 'power2.out',
+	// 			snap: { textContent: 1 },
+	// 			stagger: 1,
+	// 			onUpdate: (v) => {
+	// 				if (rangeElement) {
+	// 					console.log(v);
+	// 				}
+	// 			}
+	// 		});
+	// 	});
 	// });
 </script>
 
 <div class="flex flex-col gap-2">
 	<span class="">{label}: {value.toFixed(2)}</span>
-	<input type="range" class="" bind:value {min} {max} {step} bind:this={rangeElement} />
+	<input type="range" class="" bind:value {min} {max} {step} />
+	<!-- <div bind:this={rangeElement}>{1900000}</div> -->
 </div>
 
 <style>

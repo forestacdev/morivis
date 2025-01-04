@@ -75,6 +75,7 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 export const isSide = writable<Side>(null);
 export const showDataMenu = writable<boolean>(false);
 export const showLayerOptionId = writable<string>('ensyurin_rinhan');
+export const isAnimation = writable<boolean>(false);
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;
