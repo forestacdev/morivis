@@ -1,5 +1,5 @@
 import { PMTiles } from 'pmtiles';
-import type { TileSize, ZoomLevel, Legend } from '$map/data/types/raster';
+import type { TileSize, ZoomLevel, Legend, RasterFormatType } from '$map/data/types/raster';
 import chroma from 'chroma-js';
 
 /**  PMTiles から画像を取得する */
@@ -56,17 +56,32 @@ export const getPixelColor = async (
 	url: string,
 	lngLat: LngLat,
 	zoom: ZoomLevel,
-	tileSize: TileSize
+	tileSize: TileSize,
+	type: RasterFormatType
 ): Promise<string | null> => {
 	const { lng, lat } = lngLat;
 
 	try {
 		// タイル座標を計算
 		const tile = tilebelt.pointToTile(lng, lat, zoom);
-		const tileUrl = url
-			.replace('{z}', tile[2].toString())
-			.replace('{x}', tile[0].toString())
-			.replace('{y}', tile[1].toString());
+		let src: string | null = null;
+		if (type === 'pmtiles') {
+			src = await getImagePmtiles(url, {
+				x: tile[0],
+				y: tile[1],
+				z: tile[2]
+			});
+		} else if (type === 'image') {
+			src = await url
+				.replace('{z}', tile[2].toString())
+				.replace('{x}', tile[0].toString())
+				.replace('{y}', tile[1].toString());
+		}
+
+		if (!src) {
+			return null;
+		}
+
 		const bbox = tilebelt.tileToBBOX(tile);
 
 		// クリックした座標からタイル画像のピクセル座標を計算
@@ -77,7 +92,7 @@ export const getPixelColor = async (
 		// タイル画像を読み込み
 		const img = new Image();
 		img.crossOrigin = 'anonymous';
-		img.src = tileUrl;
+		img.src = src;
 
 		return await new Promise((resolve, reject) => {
 			img.onload = () => {

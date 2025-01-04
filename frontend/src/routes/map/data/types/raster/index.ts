@@ -37,13 +37,15 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
+export type RasterFormatType = 'image' | 'pmtiles';
+
 export type TileSize = 512 | 256;
 
 export interface RasterEntry {
 	id: string;
 	type: 'raster';
 	format: {
-		type: 'image' | 'pmtiles';
+		type: RasterFormatType;
 		url: string;
 	};
 	metaData: {

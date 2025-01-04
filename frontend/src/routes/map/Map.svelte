@@ -185,39 +185,37 @@
 		const map = mapStore.getMap();
 		if (!map) return;
 
+		console.log('clickableRasterIds', $clickableRasterIds);
+
 		//TODO: 複数のラスターの場合の処理
 		const targetId = $clickableRasterIds[0];
 
 		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
 		if (!targetEntry || targetEntry.type !== 'raster') return;
-		if (targetEntry.format.type === 'image') {
-			const url = targetEntry.format.url;
+		const url = targetEntry.format.url;
 
-			const tileSize = targetEntry.metaData.tileSize;
-			const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
-			const zoom = Math.min(
-				Math.round(map.getZoom() + zoomOffset),
-				targetEntry.metaData.maxZoom
-			) as ZoomLevel;
+		const tileSize = targetEntry.metaData.tileSize;
+		const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
+		const zoom = Math.min(
+			Math.round(map.getZoom() + zoomOffset),
+			targetEntry.metaData.maxZoom
+		) as ZoomLevel;
 
-			const pixelColor = await getPixelColor(url, lngLat, zoom, tileSize);
+		const pixelColor = await getPixelColor(url, lngLat, zoom, tileSize, targetEntry.format.type);
 
-			if (!pixelColor) {
-				console.warn('ピクセルカラーが取得できませんでした。');
-				return;
-			}
+		if (!pixelColor) {
+			console.warn('ピクセルカラーが取得できませんでした。');
+			return;
+		}
 
-			const legend = targetEntry.metaData.legend;
-			if (legend) {
-				const data = getGuide(pixelColor, legend);
+		const legend = targetEntry.metaData.legend;
+		if (legend) {
+			const data = getGuide(pixelColor, legend);
 
-				generateLegendPopup(data, legend, lngLat);
-			} else {
-				//TODO:ガイドがない場合の処理;
-				console.warn('color', pixelColor);
-			}
-		} else if (targetEntry.format.type === 'pmtiles') {
-			// console.log('pmtiles');
+			generateLegendPopup(data, legend, lngLat);
+		} else {
+			//TODO:ガイドがない場合の処理;
+			console.warn('color', pixelColor);
 		}
 	};
 
