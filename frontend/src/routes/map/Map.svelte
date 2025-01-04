@@ -29,6 +29,7 @@
 	import {
 		addedLayerIds,
 		showLayerOptionId,
+		clickableLayerIds,
 		DEBUG_MODE,
 		selectedHighlightData
 	} from '$routes/map/store';
@@ -123,14 +124,16 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	// 地図のクリックイベント
 	mapStore.onClick((e) => {
 		// console.log('click', e);
 		if (!e) return;
-		const features = mapStore.queryRenderedFeatures(e.point);
+		const features = mapStore.queryRenderedFeatures(e.point, {
+			layers: $clickableLayerIds
+		});
 		if (!features || features?.length === 0) return;
 
 		const feature = features[0];
-
 		const layerId = feature.layer.id;
 		const featureId = feature.id;
 

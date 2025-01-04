@@ -1,21 +1,14 @@
-import type {
-	SourceSpecification,
-	VectorSourceSpecification,
-	RasterSourceSpecification,
-	GeoJSONSourceSpecification
+import {
+	type SourceSpecification,
+	type VectorSourceSpecification,
+	type RasterSourceSpecification,
+	type GeoJSONSourceSpecification
 } from 'maplibre-gl';
 
 import type { GeoDataEntry } from '$map/data/types';
-import { geojson as fgb } from 'flatgeobuf';
-import { GeojsonCache } from '$map/utils/geojson';
 
-// const fgbBoundingBox = () => {
-// 	// mapStore.
-// 	const bounds = mapStore.getBounds();
-// 	console.log(bounds);
-// 	if (!bounds) return;
-// 	return bounds;
-// };
+import { GeojsonCache, getGeojson } from '$map/utils/geojson';
+import { getFgbToGeojson } from '$map/utils/geojson';
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[]
@@ -42,17 +35,29 @@ export const createSourcesItems = async (
 					break;
 				}
 				case 'vector': {
-					if (format.type === 'geojson') {
+					if (format.type === 'geojson' || format.type === 'fgb') {
+						let geojson: GeoJSON.GeoJSON | string = '';
+						if (GeojsonCache.has(entry.id)) {
+							geojson = GeojsonCache.get(entry.id);
+						} else if (format.type === 'fgb') {
+							geojson = await getFgbToGeojson(format.url);
+							if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
+						} else if (format.type === 'geojson') {
+							geojson = await getGeojson(format.url);
+							if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
+						}
+
 						const geojsonSource: GeoJSONSourceSpecification = {
 							type: 'geojson',
-							data: format.url,
+							data: geojson,
 							generateId: true,
 							maxzoom: metaData.maxZoom,
 							attribution: metaData.attribution
+							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
 							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
-							// lineMetrics: true // 線の長さを計算
 						};
 						items[sourceId] = geojsonSource;
+						if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
 					} else if (format.type === 'mvt') {
 						const vectorSource: VectorSourceSpecification = {
 							type: 'vector',
@@ -63,34 +68,6 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						};
 						items[sourceId] = vectorSource;
-					} else if (format.type === 'fgb') {
-						const response = await fetch(format.url);
-						// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
-						// 	minX: 136.92278224505964,
-						// 	minY: 35.5550269493974,
-						// 	maxX: 136.92300017454164,
-						// 	maxY: 35.555151603539045
-						// });
-
-						const featureIterator = fgb.deserialize(response.body as ReadableStream);
-
-						const geojson: GeoJSON.GeoJSON = {
-							type: 'FeatureCollection',
-							features: []
-						};
-
-						for await (const feature of featureIterator) {
-							geojson.features.push(feature);
-						}
-						if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
-
-						const geojsonSource: GeoJSONSourceSpecification = {
-							type: 'geojson',
-							data: geojson,
-							generateId: true,
-							attribution: metaData.attribution
-						};
-						items[sourceId] = geojsonSource;
 					} else if (format.type === 'pmtiles') {
 						const vectorSource: VectorSourceSpecification = {
 							type: 'vector',

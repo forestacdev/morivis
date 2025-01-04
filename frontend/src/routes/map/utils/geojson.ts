@@ -1,5 +1,5 @@
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
-
+import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
+import { geojson as fgb, geojson } from 'flatgeobuf';
 import { addedLayerIds } from '$map/store';
 
 export const getUniquePropertyValues = (
@@ -20,11 +20,49 @@ export const getUniquePropertyValues = (
 	return Array.from(uniqueValues);
 };
 
+/** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
 
 		return response.json();
+	} catch (error) {
+		console.error(error);
+		throw new Error('Failed to fetch GeoJSON');
+	}
+};
+
+// const fgbBoundingBox = () => {
+// 	// mapStore.
+// 	const bounds = mapStore.getBounds();
+// 	console.log(bounds);
+// 	if (!bounds) return;
+// 	return bounds;
+// };
+
+/** fgbを取得してGeoJSONで返す */
+export const getFgbToGeojson = async (url: string): GeoJSON.GeoJSON => {
+	try {
+		const response = await fetch(url);
+		// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
+		// 	minX: 136.92278224505964,
+		// 	minY: 35.5550269493974,
+		// 	maxX: 136.92300017454164,
+		// 	maxY: 35.555151603539045
+		// });
+
+		const featureIterator = fgb.deserialize(response.body as ReadableStream);
+
+		const geojson: GeoJSON.GeoJSON = {
+			type: 'FeatureCollection',
+			features: []
+		};
+
+		for await (const feature of featureIterator) {
+			geojson.features.push(feature);
+		}
+
+		return geojson;
 	} catch (error) {
 		console.error(error);
 		throw new Error('Failed to fetch GeoJSON');

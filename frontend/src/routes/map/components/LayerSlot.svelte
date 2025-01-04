@@ -41,8 +41,10 @@
 	});
 
 	let isHovered = $state(false);
+	let isCheckBoxHovered = $state(false);
 
 	const toggleEdit = () => {
+		if (isHovered) return;
 		if ($showLayerOptionId === layerEntry.id) {
 			showLayerOptionId.set('');
 		} else {

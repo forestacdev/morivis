@@ -114,6 +114,14 @@
 	});
 
 	onMount(() => {});
+
+	let colorOptions = [
+		{ key: 'single', name: '単色' },
+		{ key: 'match', name: '分類' },
+		{ key: 'step', name: '範囲' }
+	];
+
+	let colortype = 'single';
 </script>
 
 {#if layerToEdit && layerToEdit.type === 'vector'}
@@ -127,22 +135,43 @@
 	<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} />
 
 	<!-- ラベルの設定 -->
-	<CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />
+	<!-- <CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />
 	<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.labels.key}>
 		{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType}
 			<option value={labelType.key}>{labelType.name}</option>
 		{/each}
-	</select>
+	</select> -->
 
 	<!-- 色の選択 -->
 	<h3>色の選択</h3>
-	<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.colors.key}>
-		{#each getColorKeys(layerToEdit.style.colors.expressions) as colortype}
-			<option value={colortype.key}>{colortype.name}</option>
-		{/each}
-	</select>
-	<div class="flex flex-col gap-2">
-		{#if colorStyle}
+	{#if colorStyle}
+		<div class="full flex w-full items-center">
+			{#each colorOptions as option, idx}
+				<label
+					for={option.key}
+					class="grid w-full cursor-pointer place-items-center bg-gray-400 p-2 {idx === 0
+						? 'rounded-l-full'
+						: colorOptions.length === idx + 1
+							? 'rounded-r-full'
+							: ''}"
+				>
+					<input
+						type="radio"
+						id={option.key}
+						bind:group={colorStyle.type}
+						value={option.key}
+						class="hidden"
+					/>
+					<span class="">{option.name}</span>
+				</label>
+			{/each}
+		</div>
+		<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.colors.key}>
+			{#each getColorKeys(layerToEdit.style.colors.expressions) as colorType}
+				<option value={colorType.key}>{colorType.name}</option>
+			{/each}
+		</select>
+		<div class="flex flex-col gap-2">
 			{#if colorStyle.type === 'single'}
 				<ColorPicker label={'塗りつぶしの色'} bind:value={colorStyle.mapping.value} />
 			{:else if colorStyle.type === 'match'}
@@ -175,8 +204,8 @@
 					{/each}
 				{/if}
 			{/if}
-		{/if}
-	</div>
+		</div>
+	{/if}
 {/if}
 
 <style>

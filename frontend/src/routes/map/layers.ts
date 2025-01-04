@@ -278,7 +278,7 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 		}
 	};
 
-	// TODO width line-dasharray
+	// TODO width line-dasharray line-gradient
 	return lineLayer;
 };
 
@@ -376,7 +376,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
 	const lineItems: LayerSpecification[] = [];
-	const layerIds: string[] = []; // クリックイベントを有効にするレイヤーID
+	const clickableIds: string[] = []; // クリックイベントを有効にするレイヤーID
 
 	// const layerIdNameDict: { [_: string]: string } = {};
 
@@ -387,7 +387,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
 			const { format, style, metaData, interaction, type } = entry;
-			if (interaction.clickable) layerIds.push(layerId);
+			if (interaction.clickable) clickableIds.push(layerId);
 
 			const layer: LayerItem = {
 				id: layerId,
@@ -443,7 +443,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 			}
 		});
 
-	clickableLayerIds.set(layerIds);
+	clickableLayerIds.set(clickableIds);
 	const highlightLayers = get(selectedHighlightData)
 		? createHighlightLayer(get(selectedHighlightData))
 		: [];
