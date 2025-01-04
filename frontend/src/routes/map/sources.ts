@@ -7,23 +7,26 @@ import {
 
 import type { GeoDataEntry } from '$map/data/types';
 
+import { layerAttributions } from '$map/store';
+import { type AttributionKey } from '$map/data/attribution';
+
 import { GeojsonCache, getGeojson } from '$map/utils/geojson';
 import { getFgbToGeojson } from '$map/utils/geojson';
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[]
 ): Promise<{ [_: string]: SourceSpecification }> => {
+	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
-		_dataEntries.map(async (entry) => {
+		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
 			const { metaData, format, type } = entry;
-			// const boundingBox = fgbBoundingBox();
 
 			switch (type) {
 				case 'raster': {
 					if (format.type === 'image') {
-						const rasterSource: RasterSourceSpecification = {
+						items[sourceId] = {
 							type: 'raster',
 							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
@@ -31,20 +34,17 @@ export const createSourcesItems = async (
 							tileSize: metaData.tileSize,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-						};
-						items[sourceId] = rasterSource;
+						} as RasterSourceSpecification;
 					} else if (format.type === 'pmtiles') {
-						const vectorSource: RasterSourceSpecification = {
+						items[sourceId] = {
 							type: 'raster',
 							url: `pmtiles://${format.url}`,
 							maxzoom: metaData.maxZoom,
-							tileSize: metaData.tileSize,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							tileSize: metaData.tileSize,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-						};
-
-						items[sourceId] = vectorSource;
+						} as RasterSourceSpecification;
 					}
 					break;
 				}
@@ -55,44 +55,41 @@ export const createSourcesItems = async (
 							geojson = GeojsonCache.get(entry.id);
 						} else if (format.type === 'fgb') {
 							geojson = await getFgbToGeojson(format.url);
-							if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
+							GeojsonCache.set(entry.id, geojson);
 						} else if (format.type === 'geojson') {
 							geojson = await getGeojson(format.url);
-							if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
+							GeojsonCache.set(entry.id, geojson);
 						}
 
-						const geojsonSource: GeoJSONSourceSpecification = {
+						items[sourceId] = {
 							type: 'geojson',
 							data: geojson,
 							generateId: true,
 							maxzoom: metaData.maxZoom,
 							attribution: metaData.attribution
+
 							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
 							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
-						};
-						items[sourceId] = geojsonSource;
-						if (!GeojsonCache.has(entry.id)) GeojsonCache.set(entry.id, geojson);
+							// TODO: 線のグラセーシュンをする場合は以下を追加
+						} as GeoJSONSourceSpecification;
 					} else if (format.type === 'mvt') {
-						const vectorSource: VectorSourceSpecification = {
+						items[sourceId] = {
 							type: 'vector',
 							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-						};
-						items[sourceId] = vectorSource;
+						} as VectorSourceSpecification;
 					} else if (format.type === 'pmtiles') {
-						const vectorSource: VectorSourceSpecification = {
+						items[sourceId] = {
 							type: 'vector',
 							url: `pmtiles://${format.url}`,
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-						};
-
-						items[sourceId] = vectorSource;
+						} as VectorSourceSpecification;
 					}
 					break;
 				}
@@ -101,12 +98,32 @@ export const createSourcesItems = async (
 					break;
 			}
 
-			return items;
+			return { index, items }; // インデックスを含めて返す
 		})
 	);
 
+	// 出典表示のための Set
+	const attributions: Set<AttributionKey> = new Set();
+
+	// インデックス順に並び替え
+	const sortedItems = sourceItemsArray
+		.sort((a, b) => a.index - b.index) // インデックス順にソート
+		.map((item) => {
+			const sourceId = Object.keys(item.items)[0];
+			// NOTE: attributionは必須なので存在することを前提とする
+			const source = item.items[sourceId] as RasterSourceSpecification;
+			const attributionKey = source.attribution as AttributionKey;
+
+			attributions.add(attributionKey);
+
+			return item.items;
+		}); // items だけを抽出
+
 	// 配列をオブジェクトに統合
-	const sourceItems = Object.assign({}, ...sourceItemsArray);
+	const sourceItems = Object.assign({}, ...sortedItems);
+
+	// 出典表示を store に保存
+	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
 	return sourceItems;
 };

@@ -5,6 +5,7 @@ import type {
 	LabelStyle
 } from '$map/data/types/vector/style';
 import type { Region } from '$map/data/types/location';
+import type { AttributionKey } from '$map/data/attribution';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
@@ -23,7 +24,7 @@ export interface VectorInteraction {
 export interface TileMetaData {
 	name: string;
 	description: string;
-	attribution: string;
+	attribution: AttributionKey;
 	location: Region;
 	minZoom: number;
 	maxZoom: number;
@@ -34,7 +35,7 @@ export interface TileMetaData {
 export interface GeoJsonMetaData {
 	name: string;
 	description: string;
-	attribution: string;
+	attribution: AttributionKey;
 	location: Region;
 	maxZoom: number;
 	bounds: [number, number, number, number] | null;

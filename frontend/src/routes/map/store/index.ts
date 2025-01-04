@@ -5,18 +5,27 @@ import type { GeoDataEntry } from '$map/data/types';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
-export const clickableVectorIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
-export const clickableRasterIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
 
-export const DEBUG_MODE = writable<boolean>(false); /* デバッグモード */
-export const EDIT_MODE = writable<boolean>(false); /* 編集モード */
-/* リストに追加されてるレイヤーID */
+/**  クリックイベントを発火するレイヤーID */
+export const clickableVectorIds = writable<string[]>([]);
+
+/* クリックイベントを発火するレイヤーID */
+export const clickableRasterIds = writable<string[]>([]);
+
+/**  レイヤーの出典表示 */
+export const layerAttributions = writable<string[]>([]);
+
+/**  デバッグモード */
+export const DEBUG_MODE = writable<boolean>(false);
+
+/** TODO:編集モード */
+export const EDIT_MODE = writable<boolean>(false);
 
 // 配列を自動ソートする ラスターが下になるように
-const sortedLayers = (Layers: string[]) => {
+const sortedLayers = (layers: string[]) => {
 	const raster: string[] = [];
 	const vector: string[] = [];
-	Layers.forEach((layerId) => {
+	layers.forEach((layerId) => {
 		// typeを調べる
 		const data = geoDataEntry.find((entry) => entry.id === layerId);
 		if (data?.type === 'raster') {
@@ -69,13 +78,20 @@ const createLayerStore = (initialLayers: string[] = []) => {
 	};
 };
 
+/* リストに追加されてるレイヤーID */
 export const addedLayerIds = createLayerStore(INT_ADD_LAYER_IDS);
 
 export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 /** 表示中のサイドメニューの種類 */
 export const isSide = writable<Side>(null);
+
+/** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
-export const showLayerOptionId = writable<string>('ensyurin_rinhan');
+
+/** レイヤーオプションの表示 TODO:Editと混在 */
+export const showLayerOptionId = writable<string>('');
+
+/** TODO: アニメーションの状態 */
 export const isAnimation = writable<boolean>(false);
 
 export interface SelectedHighlightData {

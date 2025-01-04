@@ -1,4 +1,5 @@
 import type { RasterLayerSpecification } from 'maplibre-gl';
+import type { AttributionKey } from '$map/data/attribution';
 
 export interface Legend {
 	name: string;
@@ -51,7 +52,7 @@ export interface RasterEntry {
 	metaData: {
 		name: string;
 		description: string;
-		attribution: string;
+		attribution: AttributionKey;
 		location: string;
 		minZoom: number;
 		maxZoom: number;

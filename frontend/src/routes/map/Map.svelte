@@ -16,6 +16,7 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { mount, onMount } from 'svelte';
 
+	import Attribution from '$map/Attribution.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Menu from '$map/components/Menu.svelte';
@@ -185,8 +186,6 @@
 		const map = mapStore.getMap();
 		if (!map) return;
 
-		console.log('clickableRasterIds', $clickableRasterIds);
-
 		//TODO: 複数のラスターの場合の処理
 		const targetId = $clickableRasterIds[0];
 
@@ -236,13 +235,24 @@
 
 		const lngLat = e.lngLat;
 
-		generatePopup(feature, lngLat);
 		const layerId = feature.layer.id;
 		const featureId = feature.id;
 
 		const entry = layerEntries.find((entry) => entry.id === layerId);
+		if (!entry || !featureId || entry.type !== 'vector') return;
+		const propKes = entry.properties.keys;
 
-		if (!entry || !featureId) return;
+		if (!propKes) return;
+
+		feature.properties = Object.entries(feature.properties)
+			.filter(([key, value]) => propKes.includes(key)) // `propKes` に含まれないキーだけを残す
+			.reduce((acc, [key, value]) => {
+				acc[key] = value; // フィルタリングされたキーと値をオブジェクトに戻す
+				return acc;
+			}, {});
+
+		// ポッアップの作成
+		generatePopup(feature, lngLat);
 
 		$selectedHighlightData = {
 			layerData: entry,
@@ -276,7 +286,9 @@
 	<LayerMenu bind:layerEntries />
 	<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
+	<Attribution />
 </div>
+
 {#if $DEBUG_MODE}
 	{#if showJsonEditor.value}
 		<Draggable left={0} top={0}>
@@ -288,4 +300,8 @@
 {/if}
 
 <style>
+	/* maplibreのデフォルトの出典表記を非表示 */
+	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
+		display: none !important;
+	}
 </style>

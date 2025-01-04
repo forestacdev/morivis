@@ -32,12 +32,6 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_rinhan',
 	'gifu_sugi_kansetugai',
 	'gifu_slope_map',
-	'gsi_seamlessphoto'
-
-	// 'mino_geology'
-	// 'ZIRIKI',
-	// 'custom-rgb-dem'
-	// 'custom-gsi-dem',
-	// 'gsi-rinya_m',
-	// 'ortho_photo'
+	'gsi_seamlessphoto',
+	'gsi_std'
 ];

@@ -84,21 +84,14 @@ const createMapStore = () => {
 
 		if (!map) return;
 		// set(map);
-		map.addControl(
-			new maplibregl.AttributionControl({
-				compact: false
-			}),
-			'bottom-right'
-		);
-		map.addControl(new maplibregl.ScaleControl(), 'bottom-right');
-		map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+		map.addControl(new maplibregl.NavigationControl());
 		// 3D地形コントロール
 		map.addControl(
 			new maplibregl.TerrainControl({
 				source: 'terrain',
 				exaggeration: 1
-			}),
-			'bottom-right'
+			})
 		);
 
 		map.on('click', (e) => {
