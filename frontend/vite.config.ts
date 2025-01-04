@@ -32,6 +32,10 @@ export default defineConfig({
 			},
 			devOptions: {
 				enabled: true
+			},
+			workbox: {
+				// ファイルサイズ制限を 5 MiB に設定
+				maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
 			}
 		})
 	],

@@ -8,7 +8,7 @@
 	import { getImagePmtiles } from '$map/utils/raster';
 	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
 
-	let { layerEntry = $bindable() }: { layerEntry: GeoDataEntry } = $props();
+	let { layerEntry = $bindable(), toggleVisible }: { layerEntry: GeoDataEntry } = $props();
 
 	const generateIconImage = (_layerEntry: GeoDataEntry) => {
 		if (_layerEntry.type !== 'raster') return;
@@ -68,8 +68,9 @@
 	// 非同期関数を初期化時に実行
 	const promise = fetchTileImage(layerEntry);
 
-	// コンポーネントがマウントされたら画像を取得
-	// fetchTileImage();
+	const toggleChecked = (id: string) => {
+		toggleVisible(id);
+	};
 </script>
 
 <button
@@ -92,7 +93,7 @@
 			<input
 				type="checkbox"
 				class="hidden"
-				bind:checked={layerEntry.style.visible}
+				oninput={() => toggleChecked(layerEntry.id)}
 				onclick={(event) => event.stopPropagation()}
 			/>
 			{#if layerEntry.style.visible}

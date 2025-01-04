@@ -23,18 +23,20 @@
 	});
 </script>
 
-<div class="bg-main absolute z-10 flex h-full w-[80px] flex-col gap-2 p-2">
-	<button class="bg-gray-200 p-2 text-left" onclick={() => toggleMenu('base')}>
-		<Icon icon="ic:round-menu" class="h-8 w-8" />
-	</button>
+{#if !$isSide}
+	<div class="bg-main absolute z-10 flex h-full w-[80px] flex-col gap-2 p-2">
+		<button class="bg-gray-200 p-2 text-left" onclick={() => toggleMenu('base')}>
+			<Icon icon="ic:round-menu" class="h-8 w-8" />
+		</button>
 
-	<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('layer')}>
-		<Icon icon="ic:round-layers" class="h-8 w-8" />
-	</button>
-	<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('data')}>
-		<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-	</button>
-</div>
+		<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('layer')}>
+			<Icon icon="ic:round-layers" class="h-8 w-8" />
+		</button>
+		<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('data')}>
+			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+		</button>
+	</div>
+{/if}
 
 <style>
 </style>
