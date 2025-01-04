@@ -22,7 +22,7 @@
 </script>
 
 {#if layerToEdit && layerToEdit.type === 'raster'}
-	<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} />
+	<RangeSlider label={'不透明度'} bind:value={layerToEdit.style.opacity} />
 	<!-- レイヤータイプの選択 -->
 	<RangeSlider
 		label={'明るさ-最小輝度'}
