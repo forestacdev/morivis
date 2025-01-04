@@ -19,7 +19,7 @@
 	import Attribution from '$map/Attribution.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
-	import Menu from '$map/components/Menu.svelte';
+	import Logo from '$map/components/Logo.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import { geoDataEntry } from '$map/data';
@@ -287,6 +287,7 @@
 	<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
 	<Attribution />
+	<Logo />
 </div>
 
 {#if $DEBUG_MODE}

@@ -1,4 +1,4 @@
-<div class="pointer-events-none absolute left-2 top-0">
+<div class="pointer-events-none absolute bottom-[40px] right-2">
 	<svg
 		width="271"
 		height="60"
