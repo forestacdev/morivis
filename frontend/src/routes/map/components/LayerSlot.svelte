@@ -74,16 +74,18 @@
 
 <button
 	id={layerEntry.id}
-	class="bg-main relative w-full select-none flex-col rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$showLayerOptionId ===
+	class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$showLayerOptionId ===
 	layerEntry.id
 		? 'css-gradient'
 		: ' hover:border-accent'}"
 	class:pointer-events-none={$isAnimation}
 	onclick={toggleEdit}
+	style:width={layerEntry.style.visible ? '100%' : '70px'}
+	style:transition="width 0.3s ease"
 >
 	<div class="flex items-center justify-start gap-2">
 		<label
-			class="relative grid h-[40px] w-[40px] cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
+			class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
 			onmouseenter={() => (isHovered = true)}
 			onmouseleave={() => (isHovered = false)}
 		>
@@ -140,8 +142,8 @@
 			{/if}
 		</label>
 		<div>
-			<span>{layerEntry.metaData.name}</span>
-			<div class="flex items-center gap-2 text-xs">
+			<span class="text-nowrap">{layerEntry.metaData.name}</span>
+			<div class="flex items-center gap-2 overflow-hidden">
 				<span class="">{layerEntry.metaData.location ?? '---'}</span>
 			</div>
 		</div>

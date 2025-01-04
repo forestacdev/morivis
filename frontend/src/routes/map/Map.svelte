@@ -22,6 +22,7 @@
 	import Logo from '$map/components/Logo.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
+	import SideMenu from '$map/components/SideMenu.svelte';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ZoomLevel, Legend } from '$map/data/types/raster';
@@ -283,6 +284,7 @@
 <!-- <Menu /> -->
 
 <div class="relative h-full w-full">
+	<SideMenu />
 	<LayerMenu bind:layerEntries />
 	<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
