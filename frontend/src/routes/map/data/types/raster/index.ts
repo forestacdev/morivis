@@ -4,7 +4,7 @@ export interface RasterEntry {
 	id: string;
 	type: 'raster';
 	format: {
-		type: 'image' | 'categorical' | 'dem';
+		type: 'image' | 'categorical' | 'dem' | 'pmtiles';
 		url: string;
 	};
 	metaData: {

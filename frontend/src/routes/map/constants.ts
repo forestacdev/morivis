@@ -21,6 +21,7 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_pole',
 	'ensyurin_road',
 	'ensyurin_rinhan',
+	'gifu_sugi_kansetugai',
 	'gsi_std'
 
 	// 'mino_geology'

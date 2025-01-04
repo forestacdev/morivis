@@ -22,16 +22,30 @@ export const createSourcesItems = async (
 
 			switch (type) {
 				case 'raster': {
-					const rasterSource: RasterSourceSpecification = {
-						type: 'raster',
-						tiles: [format.url],
-						maxzoom: metaData.maxZoom,
-						minzoom: metaData.minZoom,
-						tileSize: 256,
-						attribution: metaData.attribution,
-						bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-					};
-					items[sourceId] = rasterSource;
+					if (format.type === 'image') {
+						const rasterSource: RasterSourceSpecification = {
+							type: 'raster',
+							tiles: [format.url],
+							maxzoom: metaData.maxZoom,
+							minzoom: metaData.minZoom,
+							tileSize: 256,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+						};
+						items[sourceId] = rasterSource;
+					} else if (format.type === 'pmtiles') {
+						const vectorSource: RasterSourceSpecification = {
+							type: 'raster',
+							url: `pmtiles://${format.url}`,
+							maxzoom: metaData.maxZoom,
+							tileSize: 512,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+						};
+
+						items[sourceId] = vectorSource;
+					}
 					break;
 				}
 				case 'vector': {
