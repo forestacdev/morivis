@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import { BASEMAP_IMAGE_TILE } from '$map/constants';
+	import { IMAGE_TILE_XYZ } from '$map/constants';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { addedLayerIds, showLayerOptionId, isAnimation } from '$map/store';
 	import { getImagePmtiles } from '$map/utils/raster';
@@ -14,7 +14,7 @@
 		if (_layerEntry.type !== 'raster') return;
 		const tile = _layerEntry.metaData.xyzImageTile
 			? _layerEntry.metaData.xyzImageTile
-			: BASEMAP_IMAGE_TILE;
+			: IMAGE_TILE_XYZ;
 
 		return _layerEntry.format.url
 			.replace('{z}', tile.z.toString())
@@ -58,7 +58,7 @@
 			if (_layerEntry.type !== 'raster' || _layerEntry.format.type !== 'pmtiles') return;
 			const tile = _layerEntry.metaData.xyzImageTile
 				? _layerEntry.metaData.xyzImageTile
-				: BASEMAP_IMAGE_TILE;
+				: IMAGE_TILE_XYZ;
 			return await getImagePmtiles(_layerEntry.format.url, tile);
 		} catch (e) {
 			console.error('Error fetching tile image:', e);

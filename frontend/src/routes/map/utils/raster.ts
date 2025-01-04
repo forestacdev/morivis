@@ -1,5 +1,5 @@
 import { PMTiles } from 'pmtiles';
-import type { TileSize, ZoomLevel } from '$map/data/types/raster';
+import type { TileSize, ZoomLevel, Legend } from '$map/data/types/raster';
 import chroma from 'chroma-js';
 
 /**  PMTiles から画像を取得する */
@@ -51,44 +51,96 @@ import type {
 type BBOX = [number, number, number, number];
 type RGBA = [number, number, number, number];
 
-/**  タイル画像のピクセル色を取得 */
-export const getPixelColor = (
+/** タイル画像のピクセル色を取得 */
+export const getPixelColor = async (
 	url: string,
 	lngLat: LngLat,
 	zoom: ZoomLevel,
 	tileSize: TileSize
-): Promise<string> => {
+): Promise<string | null> => {
 	const { lng, lat } = lngLat;
 
-	const tile = tilebelt.pointToTile(lng, lat, zoom);
-	const tileUrl = url
-		.replace('{z}', tile[2].toString())
-		.replace('{x}', tile[0].toString())
-		.replace('{y}', tile[1].toString());
-	const bbox = tilebelt.tileToBBOX(tile);
-	// クリックした座標がらタイル画像のピクセル座標を計算
-	const [lngMin, latMin, lngMax, latMax] = bbox;
-	const x = ((lng - lngMin) / (lngMax - lngMin)) * tileSize;
-	const y = ((latMax - lat) / (latMax - latMin)) * tileSize;
+	try {
+		// タイル座標を計算
+		const tile = tilebelt.pointToTile(lng, lat, zoom);
+		const tileUrl = url
+			.replace('{z}', tile[2].toString())
+			.replace('{x}', tile[0].toString())
+			.replace('{y}', tile[1].toString());
+		const bbox = tilebelt.tileToBBOX(tile);
 
-	// タイル画像を読み込み、ピクセル座標の色を返す
-	return new Promise((resolve) => {
+		// クリックした座標からタイル画像のピクセル座標を計算
+		const [lngMin, latMin, lngMax, latMax] = bbox;
+		const x = Math.floor(((lng - lngMin) / (lngMax - lngMin)) * tileSize);
+		const y = Math.floor(((latMax - lat) / (latMax - latMin)) * tileSize);
+
+		// タイル画像を読み込み
 		const img = new Image();
 		img.crossOrigin = 'anonymous';
 		img.src = tileUrl;
-		img.onload = () => {
-			const canvas = document.createElement('canvas');
-			const ctx = canvas.getContext('2d');
-			canvas.width = img.width;
-			canvas.height = img.height;
-			ctx?.drawImage(img, 0, 0);
-			const pixel = ctx?.getImageData(x, y, 1, 1).data;
-			if (!pixel) return;
-			const [r, g, b, a] = [...pixel];
-			const hexColor = chroma([r, g, b, a / 255]).hex(); // α値は 0〜1 の範囲
-			resolve(hexColor);
-		};
-	});
+
+		return await new Promise((resolve, reject) => {
+			img.onload = () => {
+				try {
+					// Canvas を使用してピクセルデータを取得
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx?.drawImage(img, 0, 0);
+
+					// ピクセルの色を取得
+					const pixel = ctx?.getImageData(x, y, 1, 1).data;
+					if (!pixel) {
+						reject(new Error('ピクセルデータの取得に失敗しました'));
+						return;
+					}
+
+					const [r, g, b, a] = [...pixel];
+
+					// 透明色の場合は処理を終了
+					if (a === 0) {
+						resolve(null);
+						return;
+					}
+					const hexColor = chroma([r, g, b, a / 255]).hex(); // α値は 0〜1 の範囲
+					resolve(hexColor);
+				} catch (error) {
+					reject(error);
+				}
+			};
+
+			img.onerror = (error) => {
+				reject(new Error(`画像の読み込みに失敗しました: ${tileUrl}`));
+			};
+		});
+	} catch (error) {
+		console.error('getPixelColor でエラーが発生しました:', error);
+		return null; // エラー時は null を返す
+	}
+};
+
+/**  凡例から最も近いラベルを取得 */
+export const getGuide = (
+	targetColor: string,
+	legend: Legend
+): {
+	color: string;
+	label: string;
+} => {
+	if (legend.colors.length !== legend.labels.length) {
+		throw new Error('Legendの colors と labels の長さが一致していません');
+	}
+
+	// 各色とのユークリッド距離を計算し、最も近い色を見つける
+	const closest = legend.colors
+		.map((color, index) => {
+			const distance = chroma.distance(targetColor, color); // 色の距離を計算
+			return { distance, color, label: legend.labels[index] }; // 距離とラベルを紐付け
+		})
+		.sort((a, b) => a.distance - b.distance)[0]; // 距離が最も小さいものを選択
+
+	return { color: closest.color, label: closest.label };
 };
 
 /* タイルURLを取得 */

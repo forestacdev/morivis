@@ -28,7 +28,8 @@
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
-	import { getPixelColor } from '$map/utils/raster';
+	import { getPixelColor, getGuide } from '$map/utils/raster';
+	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/map/constants';
 	import { createLayersItems } from '$routes/map/layers';
 	import { createSourcesItems } from '$routes/map/sources';
 	import {
@@ -132,7 +133,7 @@
 	});
 
 	// ポップアップの作成
-	const generatePopup = (_feature: MapGeoJSONFeature, lngLat: LngLat) => {
+	const generatePopup = (_feature: MapGeoJSONFeature, _lngLat: LngLat) => {
 		const popupContainer = document.createElement('div');
 		mount(TablePopup, {
 			target: popupContainer,
@@ -140,20 +141,36 @@
 				feature: _feature
 			}
 		});
-
-		// const geometry = _feature.geometry as GeoJSON.Geometry;
-
-		// console.log('geometry', geometry);
 		if (maplibrePopup) {
 			maplibrePopup.remove();
 		}
 
-		maplibrePopup = new maplibregl.Popup({
-			closeButton: false,
-			maxWidth: 'none',
-			anchor: 'bottom'
-		})
-			.setLngLat(lngLat)
+		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
+			.setLngLat(_lngLat)
+			.setDOMContent(popupContainer)
+			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
+	const generateLegendPopup = (
+		_data: {
+			color: string;
+			label: string;
+		},
+		_lngLat: LngLat
+	) => {
+		const popupContainer = document.createElement('div');
+		mount(TablePopup, {
+			target: popupContainer,
+			props: {
+				data: _data
+			}
+		});
+		if (maplibrePopup) {
+			maplibrePopup.remove();
+		}
+
+		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
+			.setLngLat(_lngLat)
 			.setDOMContent(popupContainer)
 			.addTo(mapStore.getMap() as maplibregl.Map);
 	};
@@ -163,26 +180,39 @@
 		if ($clickableRasterIds.length === 0) return;
 		const map = mapStore.getMap();
 		if (!map) return;
-		$clickableRasterIds.forEach((id) => {
-			const targetEntry = layerEntries.find((entry) => entry.id === id);
-			if (!targetEntry || targetEntry.type !== 'raster') return;
-			if (targetEntry.format.type === 'image') {
-				const url = targetEntry.format.url;
 
-				const tileSize = targetEntry.metaData.tileSize;
-				const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
-				const zoom = Math.min(
-					Math.round(map.getZoom() + zoomOffset),
-					targetEntry.metaData.maxZoom
-				) as ZoomLevel;
+		//TODO: 複数のラスターの場合の処理
+		const targetId = $clickableRasterIds[0];
 
-				const  colorgetPixelColor(url, lngLat, zoom, tileSize).then((color) => {
-					console.log('color', color);
-				});
-			} else if (targetEntry.format.type === 'pmtiles') {
-				// console.log('pmtiles');
+		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
+		if (!targetEntry || targetEntry.type !== 'raster') return;
+		if (targetEntry.format.type === 'image') {
+			const url = targetEntry.format.url;
+
+			const tileSize = targetEntry.metaData.tileSize;
+			const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
+			const zoom = Math.min(
+				Math.round(map.getZoom() + zoomOffset),
+				targetEntry.metaData.maxZoom
+			) as ZoomLevel;
+
+			const pixelColor = await getPixelColor(url, lngLat, zoom, tileSize);
+
+			if (!pixelColor) {
+				console.warn('ピクセルカラーが取得できませんでした。');
+				return;
 			}
-		});
+
+			const legend = targetEntry.metaData.legend;
+			if (legend) {
+				const data = getGuide(pixelColor, legend);
+				generateLegendPopup(data, lngLat);
+			} else {
+				console.log('color', pixelColor);
+			}
+		} else if (targetEntry.format.type === 'pmtiles') {
+			// console.log('pmtiles');
+		}
 	};
 
 	// 地図のクリックイベント

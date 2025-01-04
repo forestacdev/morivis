@@ -1,6 +1,6 @@
 import type { RasterLayerSpecification } from 'maplibre-gl';
 
-interface Legend {
+export interface Legend {
 	name: string;
 	colors: string[];
 	labels: string[];

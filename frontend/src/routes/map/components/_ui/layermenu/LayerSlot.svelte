@@ -5,7 +5,7 @@
 	import { flip } from 'svelte/animate';
 	import { crossfade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { BASEMAP_IMAGE_TILE } from '$routes/map/constants';
+	import { IMAGE_TILE_XYZ } from '$routes/map/constants';
 	import { mapStore } from '$routes/map/store/map';
 
 	import { createEventDispatcher } from 'svelte';
@@ -87,21 +87,15 @@
 				src={layerEntry.url
 					.replace(
 						'{z}',
-						layerEntry.tileImage
-							? layerEntry.tileImage.z.toString()
-							: BASEMAP_IMAGE_TILE.Z.toString()
+						layerEntry.tileImage ? layerEntry.tileImage.z.toString() : IMAGE_TILE_XYZ.Z.toString()
 					)
 					.replace(
 						'{x}',
-						layerEntry.tileImage
-							? layerEntry.tileImage.x.toString()
-							: BASEMAP_IMAGE_TILE.X.toString()
+						layerEntry.tileImage ? layerEntry.tileImage.x.toString() : IMAGE_TILE_XYZ.X.toString()
 					)
 					.replace(
 						'{y}',
-						layerEntry.tileImage
-							? layerEntry.tileImage.y.toString()
-							: BASEMAP_IMAGE_TILE.Y.toString()
+						layerEntry.tileImage ? layerEntry.tileImage.y.toString() : IMAGE_TILE_XYZ.Y.toString()
 					)}
 			/>
 		{/if}

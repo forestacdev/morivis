@@ -3,7 +3,7 @@
 	import type { LayerEntry } from '$routes/map/data/types';
 	import { showlayerOptionId } from '$routes/map/store/store';
 	import { mapStore } from '$routes/map/store/map';
-	import { BASEMAP_IMAGE_TILE } from '$routes/map/constants';
+	import { IMAGE_TILE_XYZ } from '$routes/map/constants';
 
 	import { addedLayerIds } from '$routes/map/store/store';
 
@@ -49,21 +49,15 @@
 			style="background-image: url({layerEntry.url
 				.replace(
 					'{z}',
-					layerEntry.tileImage
-						? layerEntry.tileImage.z.toString()
-						: BASEMAP_IMAGE_TILE.Z.toString()
+					layerEntry.tileImage ? layerEntry.tileImage.z.toString() : IMAGE_TILE_XYZ.Z.toString()
 				)
 				.replace(
 					'{x}',
-					layerEntry.tileImage
-						? layerEntry.tileImage.x.toString()
-						: BASEMAP_IMAGE_TILE.X.toString()
+					layerEntry.tileImage ? layerEntry.tileImage.x.toString() : IMAGE_TILE_XYZ.X.toString()
 				)
 				.replace(
 					'{y}',
-					layerEntry.tileImage
-						? layerEntry.tileImage.y.toString()
-						: BASEMAP_IMAGE_TILE.Y.toString()
+					layerEntry.tileImage ? layerEntry.tileImage.y.toString() : IMAGE_TILE_XYZ.Y.toString()
 				)})"
 		></div>
 	{/if}
