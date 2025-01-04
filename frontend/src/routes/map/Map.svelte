@@ -1,22 +1,24 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
+	import type { GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
-		Map,
 		StyleSpecification,
+		MapGeoJSONFeature,
 		SourceSpecification,
 		LayerSpecification,
 		TerrainSpecification,
 		Marker,
-		CircleLayerSpecification
+		Popup
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-	import { onMount } from 'svelte';
+	import { mount, onMount } from 'svelte';
 
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Menu from '$map/components/Menu.svelte';
+	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
 	import Draggable from '$map/debug/Draggable.svelte';
@@ -43,6 +45,7 @@
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
+	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
@@ -124,6 +127,33 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	// ポップアップの作成
+	const generatePopup = (_feature: MapGeoJSONFeature, lngLat: LngLat) => {
+		const popupContainer = document.createElement('div');
+		mount(TablePopup, {
+			target: popupContainer,
+			props: {
+				feature: _feature
+			}
+		});
+
+		// const geometry = _feature.geometry as GeoJSON.Geometry;
+
+		// console.log('geometry', geometry);
+		if (maplibrePopup) {
+			maplibrePopup.remove();
+		}
+
+		maplibrePopup = new maplibregl.Popup({
+			closeButton: false,
+			maxWidth: 'none',
+			anchor: 'bottom'
+		})
+			.setLngLat(lngLat as [number, number])
+			.setDOMContent(popupContainer)
+			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
 	// 地図のクリックイベント
 	mapStore.onClick((e) => {
 		// console.log('click', e);
@@ -134,6 +164,10 @@
 		if (!features || features?.length === 0) return;
 
 		const feature = features[0];
+
+		const lngLat = e.lngLat;
+
+		generatePopup(feature, lngLat);
 		const layerId = feature.layer.id;
 		const featureId = feature.id;
 

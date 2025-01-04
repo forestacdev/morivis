@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 	export let value: boolean;
 	export let label: string;
 </script>
