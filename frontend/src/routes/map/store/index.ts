@@ -5,7 +5,8 @@ import type { GeoDataEntry } from '$map/data/types';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
-export const clickableLayerIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
+export const clickableVectorIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
+export const clickableRasterIds = writable<string[]>([]); /* クリックイベントを発火するレイヤーID */
 
 export const DEBUG_MODE = writable<boolean>(false); /* デバッグモード */
 export const EDIT_MODE = writable<boolean>(false); /* 編集モード */

@@ -15,15 +15,21 @@ export const pmtilesRasterEntry: RasterEntry[] = [
 			location: '岐阜県',
 			minZoom: 6,
 			maxZoom: 10,
+			tileSize: 512,
 			xyzImageTile: { x: 901, y: 403, z: 10 },
-			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
+			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
+			legend: {
+				name: '20冬期中の危険日判定数',
+				colors: ['#FFFFFF', '#FEFEA5', '#FDCDFD', '#FFBE31', '#FC0013', '#6F359C', '#003796'],
+				labels: ['0日', '1~2日', '3~5日', '6~10日', '11〜15日', '16~20日', '21日以上']
+			}
 		},
 		interaction: {
-			clickable: false,
-			overlay: false,
-			legend: null
+			clickable: true,
+			overlay: true
 		},
 		style: {
+			type: 'categorical',
 			opacity: 0.6,
 			hueRotate: 0,
 			brightnessMin: 0,

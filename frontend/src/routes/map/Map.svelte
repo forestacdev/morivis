@@ -9,6 +9,7 @@
 		LayerSpecification,
 		TerrainSpecification,
 		Marker,
+		LngLat,
 		Popup
 	} from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
@@ -21,17 +22,20 @@
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
+	import type { ZoomLevel } from '$map/data/types/raster';
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
+	import { getPixelColor } from '$map/utils/raster';
 	import { createLayersItems } from '$routes/map/layers';
 	import { createSourcesItems } from '$routes/map/sources';
 	import {
 		addedLayerIds,
 		showLayerOptionId,
-		clickableLayerIds,
+		clickableVectorIds,
+		clickableRasterIds,
 		DEBUG_MODE,
 		selectedHighlightData
 	} from '$routes/map/store';
@@ -149,9 +153,36 @@
 			maxWidth: 'none',
 			anchor: 'bottom'
 		})
-			.setLngLat(lngLat as [number, number])
+			.setLngLat(lngLat)
 			.setDOMContent(popupContainer)
 			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
+	// ラスターのクリックイベント
+	const onRasterClick = async (lngLat: LngLat) => {
+		if ($clickableRasterIds.length === 0) return;
+		const map = mapStore.getMap();
+		if (!map) return;
+		$clickableRasterIds.forEach((id) => {
+			const targetEntry = layerEntries.find((entry) => entry.id === id);
+			if (!targetEntry || targetEntry.type !== 'raster') return;
+			if (targetEntry.format.type === 'image') {
+				const url = targetEntry.format.url;
+
+				const tileSize = targetEntry.metaData.tileSize;
+				const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
+				const zoom = Math.min(
+					Math.round(map.getZoom() + zoomOffset),
+					targetEntry.metaData.maxZoom
+				) as ZoomLevel;
+
+				const  colorgetPixelColor(url, lngLat, zoom, tileSize).then((color) => {
+					console.log('color', color);
+				});
+			} else if (targetEntry.format.type === 'pmtiles') {
+				// console.log('pmtiles');
+			}
+		});
 	};
 
 	// 地図のクリックイベント
@@ -159,9 +190,13 @@
 		// console.log('click', e);
 		if (!e) return;
 		const features = mapStore.queryRenderedFeatures(e.point, {
-			layers: $clickableLayerIds
+			layers: $clickableVectorIds
 		});
-		if (!features || features?.length === 0) return;
+		if (!features || features?.length === 0) {
+			const lngLat = e.lngLat;
+			onRasterClick(lngLat);
+			return;
+		}
 
 		const feature = features[0];
 

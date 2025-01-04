@@ -21,8 +21,9 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_pole',
 	'ensyurin_road',
 	'ensyurin_rinhan',
-	'gifu_sugi_kansetugai',
-	'gsi_std'
+	// 'gifu_sugi_kansetugai',
+	'gifu_slope_map',
+	'gsi_seamlessphoto'
 
 	// 'mino_geology'
 	// 'ZIRIKI',

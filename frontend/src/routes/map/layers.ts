@@ -21,8 +21,14 @@ import {
 	EXCLUDE_IDS_CLICK_LAYER,
 	GIFU_DATA_BASE_PATH
 } from '$routes/map/constants';
-import { clickableLayerIds, selectedHighlightData, type SelectedHighlightData } from '$map/store';
-import { geoDataEntry, type GeoDataEntry } from '$map/data';
+import {
+	clickableVectorIds,
+	clickableRasterIds,
+	selectedHighlightData,
+	type SelectedHighlightData
+} from '$map/store';
+import { geoDataEntry } from '$map/data';
+import type { GeoDataEntry } from '$map/data/types';
 import type {
 	Labels,
 	VectorStyle,
@@ -376,7 +382,8 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
 	const lineItems: LayerSpecification[] = [];
-	const clickableIds: string[] = []; // クリックイベントを有効にするレイヤーID
+	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
+	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
 	// const layerIdNameDict: { [_: string]: string } = {};
 
@@ -387,7 +394,6 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
 			const { format, style, metaData, interaction, type } = entry;
-			if (interaction.clickable) clickableIds.push(layerId);
 
 			const layer: LayerItem = {
 				id: layerId,
@@ -398,7 +404,9 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 
 			switch (type) {
 				// ラスターレイヤー
+
 				case 'raster': {
+					if (interaction.clickable) clickableRaster.push(layerId);
 					layerItems.push({
 						...layer,
 						type: 'raster',
@@ -419,6 +427,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 				}
 				// ベクターレイヤー
 				case 'vector': {
+					if (interaction.clickable) clickableVecter.push(layerId);
 					if (format.type === 'mvt' || format.type === 'pmtiles') {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
@@ -443,7 +452,10 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 			}
 		});
 
-	clickableLayerIds.set(clickableIds);
+	// クリックイベントを有効にするレイヤーIDをstoreに保存
+	clickableVectorIds.set(clickableVecter);
+	clickableRasterIds.set(clickableRaster);
+
 	const highlightLayers = get(selectedHighlightData)
 		? createHighlightLayer(get(selectedHighlightData))
 		: [];

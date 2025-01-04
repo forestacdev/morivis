@@ -28,7 +28,7 @@ export const createSourcesItems = async (
 							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
 							minzoom: metaData.minZoom,
-							tileSize: 256,
+							tileSize: metaData.tileSize,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						};
@@ -38,7 +38,7 @@ export const createSourcesItems = async (
 							type: 'raster',
 							url: `pmtiles://${format.url}`,
 							maxzoom: metaData.maxZoom,
-							tileSize: 512,
+							tileSize: metaData.tileSize,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]

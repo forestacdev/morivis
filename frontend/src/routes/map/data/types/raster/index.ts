@@ -1,10 +1,49 @@
 import type { RasterLayerSpecification } from 'maplibre-gl';
 
+interface Legend {
+	name: string;
+	colors: string[];
+	labels: string[];
+}
+
+export type ZoomLevel =
+	| 0
+	| 1
+	| 2
+	| 3
+	| 4
+	| 5
+	| 6
+	| 7
+	| 8
+	| 9
+	| 10
+	| 11
+	| 12
+	| 13
+	| 14
+	| 15
+	| 16
+	| 17
+	| 18
+	| 19
+	| 20
+	| 21
+	| 22;
+
+export interface TileXYZ {
+	x: number;
+	y: number;
+	z: ZoomLevel;
+}
+
+export type TileSize = 512 | 256;
+
 export interface RasterEntry {
 	id: string;
 	type: 'raster';
 	format: {
-		type: 'image' | 'categorical' | 'dem' | 'pmtiles';
+		type: 'image' | 'pmtiles';
 		url: string;
 	};
 	metaData: {
@@ -14,15 +53,17 @@ export interface RasterEntry {
 		location: string;
 		minZoom: number;
 		maxZoom: number;
-		xyzImageTile: { x: number; y: number; z: number } | null;
+		tileSize: TileSize;
+		xyzImageTile: TileXYZ | null;
 		bounds: [number, number, number, number] | null;
+		legend: Legend | null;
 	};
 	interaction: {
 		clickable: boolean;
 		overlay: boolean;
-		legend: Record<string | number, string> | null;
 	};
 	style: {
+		type: 'basemap' | 'categorical' | 'dem';
 		opacity: number;
 		visible?: boolean;
 		hueRotate: number;
