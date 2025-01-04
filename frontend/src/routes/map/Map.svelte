@@ -19,10 +19,11 @@
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Menu from '$map/components/Menu.svelte';
+	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
-	import type { ZoomLevel } from '$map/data/types/raster';
+	import type { ZoomLevel, Legend } from '$map/data/types/raster';
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
@@ -132,13 +133,13 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-	// ポップアップの作成
-	const generatePopup = (_feature: MapGeoJSONFeature, _lngLat: LngLat) => {
+	// ベクターポップアップの作成
+	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
 		const popupContainer = document.createElement('div');
 		mount(TablePopup, {
 			target: popupContainer,
 			props: {
-				feature: _feature
+				feature
 			}
 		});
 		if (maplibrePopup) {
@@ -151,18 +152,21 @@
 			.addTo(mapStore.getMap() as maplibregl.Map);
 	};
 
+	// ラスターの色のガイドポップアップの作成
 	const generateLegendPopup = (
-		_data: {
+		data: {
 			color: string;
 			label: string;
 		},
+		legend: Legend,
 		_lngLat: LngLat
 	) => {
 		const popupContainer = document.createElement('div');
-		mount(TablePopup, {
+		mount(LegendPopup, {
 			target: popupContainer,
 			props: {
-				data: _data
+				data,
+				legend
 			}
 		});
 		if (maplibrePopup) {
@@ -206,9 +210,11 @@
 			const legend = targetEntry.metaData.legend;
 			if (legend) {
 				const data = getGuide(pixelColor, legend);
-				generateLegendPopup(data, lngLat);
+
+				generateLegendPopup(data, legend, lngLat);
 			} else {
-				console.log('color', pixelColor);
+				//TODO:ガイドがない場合の処理;
+				console.warn('color', pixelColor);
 			}
 		} else if (targetEntry.format.type === 'pmtiles') {
 			// console.log('pmtiles');
