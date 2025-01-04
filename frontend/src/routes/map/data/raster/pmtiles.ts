@@ -24,7 +24,7 @@ export const pmtilesRasterEntry: RasterEntry[] = [
 			legend: null
 		},
 		style: {
-			opacity: 1.0,
+			opacity: 0.6,
 			hueRotate: 0,
 			brightnessMin: 0,
 			brightnessMax: 1,

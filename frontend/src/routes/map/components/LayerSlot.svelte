@@ -5,21 +5,21 @@
 	import { BASEMAP_IMAGE_TILE } from '$map/constants';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { addedLayerIds, showLayerOptionId, isAnimation } from '$map/store';
+	import { getImagePmtiles } from '$map/utils/raster';
 	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
 
 	let { layerEntry = $bindable() }: { layerEntry: GeoDataEntry } = $props();
 
-	const generateIconImage = (_xyzImageTile: { x: number; y: number; z: number } | null) => {
-		if (!_xyzImageTile) {
-			return layerEntry.format.url
-				.replace('{z}', BASEMAP_IMAGE_TILE.Z.toString())
-				.replace('{x}', BASEMAP_IMAGE_TILE.X.toString())
-				.replace('{y}', BASEMAP_IMAGE_TILE.Y.toString());
-		}
-		return layerEntry.format.url
-			.replace('{z}', _xyzImageTile.z.toString())
-			.replace('{x}', _xyzImageTile.x.toString())
-			.replace('{y}', _xyzImageTile.y.toString());
+	const generateIconImage = (_layerEntry: GeoDataEntry) => {
+		if (_layerEntry.type !== 'raster') return;
+		const tile = _layerEntry.metaData.xyzImageTile
+			? _layerEntry.metaData.xyzImageTile
+			: BASEMAP_IMAGE_TILE;
+
+		return _layerEntry.format.url
+			.replace('{z}', tile.z.toString())
+			.replace('{x}', tile.x.toString())
+			.replace('{y}', tile.y.toString());
 	};
 
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
@@ -51,6 +51,25 @@
 			showLayerOptionId.set(layerEntry.id);
 		}
 	};
+
+	// 非同期で画像URLを取得
+	const fetchTileImage = async (_layerEntry: GeoDataEntry) => {
+		try {
+			if (_layerEntry.type !== 'raster' || _layerEntry.format.type !== 'pmtiles') return;
+			const tile = _layerEntry.metaData.xyzImageTile
+				? _layerEntry.metaData.xyzImageTile
+				: BASEMAP_IMAGE_TILE;
+			return await getImagePmtiles(_layerEntry.format.url, tile);
+		} catch (e) {
+			console.error('Error fetching tile image:', e);
+		}
+	};
+
+	// 非同期関数を初期化時に実行
+	const promise = fetchTileImage(layerEntry);
+
+	// コンポーネントがマウントされたら画像を取得
+	// fetchTileImage();
 </script>
 
 <button
@@ -76,12 +95,23 @@
 			/>
 			{#if layerEntry.style.visible}
 				{#if layerEntry.type === 'raster'}
-					<img
-						transition:fade
-						class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-						alt={layerEntry.metaData.name}
-						src={generateIconImage(layerEntry.metaData.xyzImageTile)}
-					/>
+					{#if layerEntry.format.type === 'image'}
+						<img
+							transition:fade
+							class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+							alt={layerEntry.metaData.name}
+							src={generateIconImage(layerEntry)}
+						/>
+					{:else if layerEntry.format.type === 'pmtiles'}
+						{#await promise then url}
+							<img
+								transition:fade
+								class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+								alt={layerEntry.metaData.name}
+								src={url}
+							/>
+						{/await}
+					{/if}
 				{:else if layerEntry.type === 'vector'}
 					<div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
 						{#if layerEntry.format.geometryType === 'Point'}
