@@ -18,7 +18,7 @@
 
 	import Attribution from '$map/Attribution.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
-	// import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
+	import DataManu from '$map/components/DataManu.svelte';
 	import Logo from '$map/components/Logo.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
@@ -102,8 +102,6 @@
 			return ids.indexOf(a.id) - ids.indexOf(b.id);
 		});
 	});
-
-	
 
 	// 初期描画時
 	onMount(async () => {
@@ -282,6 +280,7 @@
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
 	<Attribution />
 	<Logo />
+	<DataManu />
 </div>
 
 {#if $DEBUG_MODE}

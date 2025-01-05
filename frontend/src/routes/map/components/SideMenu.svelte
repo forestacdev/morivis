@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { isSide } from '$map/store';
+	import { isSide, showDataMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	const toggleMenu = (key) => {
@@ -15,6 +15,10 @@
 		} else {
 			isSide.set(key);
 		}
+	};
+
+	const toggleDataMenu = () => {
+		showDataMenu.set(!$showDataMenu);
 	};
 
 	onMount(() => {
@@ -32,7 +36,7 @@
 		<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('layer')}>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button>
-		<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('data')}>
+		<button class="w-full bg-gray-200 p-2 text-left" onclick={toggleDataMenu}>
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
 		</button>
 	</div>

@@ -59,11 +59,7 @@
 		</div>
 		<div class="z-20 flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4">
 			{#each filterLayerEntries as _, i (filterLayerEntries[i].id)}
-				<div
-					animate:flip={{ duration: 200 }}
-					in:fade={{ duration: 200 }}
-					out:fade={{ duration: 200 }}
-				>
+				<div animate:flip={{ duration: 200 }}>
 					<LayerSlot bind:layerEntry={filterLayerEntries[i]} {toggleVisible} />
 				</div>
 			{/each}

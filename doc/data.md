@@ -1,0 +1,16 @@
+- geodata
+  - raster
+    - geotiff
+    - cog
+    - tiles
+      - imagetiles
+      - pmtiles
+  - vector
+    - tiles
+      - mvt
+      - pmtiles
+    - geojson
+    - shapefile
+    - csv
+    - kml
+    - gpx
