@@ -17,8 +17,9 @@
 	import { mount, onMount } from 'svelte';
 
 	import Attribution from '$map/Attribution.svelte';
-	import LayerMenu from '$map/components/LayerMenu.svelte';
+	import Compass from '$map/components/control/Compass.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
+	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import Logo from '$map/components/Logo.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
@@ -278,6 +279,7 @@
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
+	<Compass />
 	<Attribution />
 	<Logo />
 	<DataManu />

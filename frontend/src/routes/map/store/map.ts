@@ -83,16 +83,6 @@ const createMapStore = () => {
 		setStyleEvent.set(mapStyle);
 
 		if (!map) return;
-		// set(map);
-
-		map.addControl(new maplibregl.NavigationControl());
-		// 3D地形コントロール
-		map.addControl(
-			new maplibregl.TerrainControl({
-				source: 'terrain',
-				exaggeration: 1
-			})
-		);
 
 		map.on('click', (e) => {
 			clickEvent.set(e);

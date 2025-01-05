@@ -18,7 +18,6 @@ export const getImagePmtiles = async (
 	// Blob を生成
 	const blob = new Blob([tileData.data], { type: 'image/png' });
 
-	// Blob を Base64 エンコードして返す
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onloadend = () => {
