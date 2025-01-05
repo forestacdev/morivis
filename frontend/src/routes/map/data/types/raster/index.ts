@@ -38,7 +38,7 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
-export type RasterFormatType = 'image' | 'pmtiles';
+export type RasterFormatType = 'image' | 'pmtiles' | 'cog';
 
 export type TileSize = 512 | 256;
 
