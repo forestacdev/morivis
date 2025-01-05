@@ -19,7 +19,7 @@ export const layerAttributions = writable<string[]>([]);
 export const DEBUG_MODE = writable<boolean>(false);
 
 /** TODO:編集モード */
-export const EDIT_MODE = writable<boolean>(false);
+export const isEdit = writable<boolean>(false);
 
 // 配列を自動ソートする ラスターが下になるように
 const sortedLayers = (layers: string[]) => {

@@ -31,7 +31,7 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 import { GUI } from 'lil-gui';
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
-import { DEBUG_MODE, EDIT_MODE } from '$map/store';
+import { DEBUG_MODE, isEdit } from '$map/store';
 import type { GeoDataEntry } from '../data/types';
 import { GeojsonCache } from '../utils/geojson';
 

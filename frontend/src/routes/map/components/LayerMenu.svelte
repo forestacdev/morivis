@@ -5,16 +5,19 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
+	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import LayerSlot from '$map/components/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { isSide, showLayerOptionId } from '$map/store';
+	import { isSide, showLayerOptionId, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
-	let { layerEntries = $bindable() }: { layerEntries: GeoDataEntry[] } = $props();
-
-	let isEdit = $state(true);
+	let {
+		layerEntries = $bindable(),
+		tempLayerEntries = $bindable()
+	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
+	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 
 	let filterLayerEntries = $derived.by(() => {
-		if (isEdit) {
+		if ($isEdit) {
 			return layerEntries.filter((layerEntry) => layerEntry.id === $showLayerOptionId);
 		} else {
 			return layerEntries;
@@ -27,6 +30,15 @@
 		if (!layer) return;
 		layer.style.visible = !layer.style.visible;
 	};
+	// 編集中のレイヤーの取得
+	showLayerOptionId.subscribe((id) => {
+		if (!id) {
+			layerToEdit = undefined;
+			return;
+		} else {
+			layerToEdit = layerEntries.find((entry) => entry.id === id);
+		}
+	});
 
 	onMount(() => {
 		// 初期のMapbox式を受け取り、オブジェクト形式に変換する
@@ -39,14 +51,13 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute z-10 flex h-full w-[300px] flex-col gap-2 p-2"
 	>
-		<input type="checkbox" bind:checked={isEdit} />
 		<div class="flex items-center justify-between">
 			<span>レイヤー</span>
 			<button onclick={() => isSide.set(null)} class="bg-base rounded-full p-2">
 				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 			</button>
 		</div>
-		<div class="flex flex-grow flex-col gap-2 overflow-y-auto pb-4">
+		<div class="z-20 flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4">
 			{#each filterLayerEntries as _, i (filterLayerEntries[i].id)}
 				<div
 					animate:flip={{ duration: 200 }}
@@ -57,6 +68,8 @@
 				</div>
 			{/each}
 		</div>
+
+		<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 	</div>
 {/if}
 

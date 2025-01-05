@@ -18,7 +18,7 @@
 
 	import Attribution from '$map/Attribution.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
-	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
+	// import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import Logo from '$map/components/Logo.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
@@ -52,7 +52,7 @@
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
-	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
+
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 
 	// mapStyleの作成
@@ -103,15 +103,7 @@
 		});
 	});
 
-	// 編集中のレイヤーの取得
-	showLayerOptionId.subscribe((id) => {
-		if (!id) {
-			layerToEdit = undefined;
-			return;
-		} else {
-			layerToEdit = layerEntries.find((entry) => entry.id === id);
-		}
-	});
+	
 
 	// 初期描画時
 	onMount(async () => {
@@ -285,8 +277,8 @@
 
 <div class="relative h-full w-full">
 	<SideMenu />
-	<LayerMenu bind:layerEntries />
-	<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
+	<LayerMenu bind:layerEntries bind:tempLayerEntries />
+	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
 	<Attribution />
 	<Logo />

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { showLayerOptionId, addedLayerIds } from '$map/store';
+	import { showLayerOptionId, addedLayerIds, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -16,6 +17,7 @@
 
 	// レイヤーの削除
 	const removeLayer = () => {
+		$isEdit = false;
 		if (!layerToEdit) return;
 		addedLayerIds.removeLayer(layerToEdit.id);
 		showLayerOptionId.set('');
@@ -37,6 +39,7 @@
 	// レイヤーのコピー
 	const copyLayer = () => {
 		if (!layerToEdit) return;
+		$isEdit = false;
 		const uuid = crypto.randomUUID();
 		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerToEdit)); // 深いコピーを作成
 
@@ -50,12 +53,12 @@
 	onMount(() => {});
 </script>
 
-{#if $showLayerOptionId}
-	<div
-		class="bg-main absolute left-[350px] top-2 z-10 flex h-[400px] w-[300px] flex-col gap-2 overflow-hidden rounded-lg p-2 shadow-2xl"
-	>
-		{#if $showLayerOptionId && layerToEdit}
-			<span class="text-lg">{layerToEdit.metaData.name}</span>
+{#if $showLayerOptionId && $isEdit && layerToEdit}
+	<div class="absolute top-[130px] z-30 w-[280px]">
+		<div
+			transition:fly={{ duration: 300, y: -50, opacity: 0 }}
+			class="bg-main z-10 flex h-full w-full flex-col gap-2 overflow-hidden rounded-lg border-2 border-gray-500 p-2"
+		>
 			<div class="h-full flex-grow">
 				<div class="flex gap-2">
 					<button class="" onclick={() => moveLayerById('up')}
@@ -82,13 +85,7 @@
 					{/if}
 				</div>
 			</div>
-		{/if}
-	</div>
-
-	<div
-		class="bg-main absolute left-[700px] top-2 z-10 flex h-[400px] w-[300px] flex-col gap-2 overflow-hidden rounded-lg p-2 shadow-2xl"
-	>
-		いろわけあのやつ
+		</div>
 	</div>
 {/if}
 

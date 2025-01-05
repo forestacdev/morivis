@@ -1,5 +1,4 @@
-import { GeoDataEntry } from '$map/data';
-
+// TODO: 整理する 必要ない関数を削除する
 /**
  * minからmaxまでを指定した分割数で分割し、数値の配列を生成する関数
  *
