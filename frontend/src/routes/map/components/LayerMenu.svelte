@@ -39,8 +39,6 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute z-10 flex h-full w-[300px] flex-col gap-2 p-2"
 	>
-		{$showLayerOptionId}
-
 		<input type="checkbox" bind:checked={isEdit} />
 		<div class="flex items-center justify-between">
 			<span>レイヤー</span>

@@ -166,9 +166,10 @@
 			{/if}
 		</label>
 		<div>
-			<span class="text-nowrap">{layerEntry.metaData.name}</span>
-			<div class="flex items-center gap-2 overflow-hidden">
-				<span class="">{layerEntry.metaData.location ?? '---'}</span>
+			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
+				<span class="text-nowrap">{layerEntry.metaData.name}</span>
+
+				<span class="text-xs">{layerEntry.metaData.location ?? '---'}</span>
 			</div>
 		</div>
 		<div

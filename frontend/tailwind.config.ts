@@ -12,6 +12,9 @@ export default {
 				main: '#e9e9e9',
 				accent: '#299413'
 			},
+			fontFamily: {
+				noto: ['Noto Sans JP']
+			},
 			textColor: {
 				primary: '#e9e9e9' // デフォルトにしたい色を指定
 			}

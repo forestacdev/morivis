@@ -4,10 +4,15 @@
 
 @layer components {
 	.btn-primary {
-		@apply; 
+		@apply;
 	}
 }
 
 @layer base {
+	/* TODO:フォントの調整 */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
+		font-display: swap;
+	}
 }
-
