@@ -278,7 +278,7 @@
 	<SideMenu />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
-	<div bind:this={mapContainer} class="h-full w-full flex-grow"></div>
+	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
 	<Compass />
 	<Attribution />
 	<Logo />
@@ -299,5 +299,10 @@
 	/* maplibreのデフォルトの出典表記を非表示 */
 	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
 		display: none !important;
+	}
+
+	/* TODO:マップの調整 */
+	.css-map {
+		filter: saturate(80%);
 	}
 </style>

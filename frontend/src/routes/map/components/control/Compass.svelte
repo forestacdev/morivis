@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
 	import type {
@@ -68,9 +69,9 @@
 
 <div
 	bind:this={element}
-	class="absolute right-2 top-2 flex h-[100px] w-[100px] justify-center rounded-full bg-white"
+	class="bg-main absolute right-2 top-2 grid h-[80px] w-[80px] place-items-center rounded-full p-2"
 >
-	N
+	<Icon icon="mdi:compass-outline" class="h-12 w-12 -rotate-[45deg] text-base" />
 </div>
 
 <style>

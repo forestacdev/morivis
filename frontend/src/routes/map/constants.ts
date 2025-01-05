@@ -26,13 +26,12 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
-	// 'TITEN',
-	'cog_test',
+	// 'cog_test',
 	'ensyurin_pole',
 	'ensyurin_road',
 	'ensyurin_rinhan',
 	// 'gifu_sugi_kansetugai',
-	'gifu_slope_map',
+	// 'gifu_slope_map',
 	'gsi_seamlessphoto'
 	// 'gsi_std'
 ];
