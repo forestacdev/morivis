@@ -21,10 +21,11 @@
 		}
 	});
 
+	// TODO エラー チェックをすると
 	const toggleVisible = (id: string) => {
-		const layer = filterLayerEntries.find((layer) => layer.id === id);
+		const layer = layerEntries.find((layer) => layer.id === id);
 		if (!layer) return;
-		layer.style.visible = false;
+		layer.style.visible = !layer.style.visible;
 	};
 
 	onMount(() => {
@@ -49,7 +50,11 @@
 		</div>
 		<div class="flex flex-grow flex-col gap-2 overflow-y-auto pb-4">
 			{#each filterLayerEntries as _, i (filterLayerEntries[i].id)}
-				<div animate:flip={{ duration: 200 }}>
+				<div
+					animate:flip={{ duration: 200 }}
+					in:fade={{ duration: 200 }}
+					out:fade={{ duration: 200 }}
+				>
 					<LayerSlot bind:layerEntry={filterLayerEntries[i]} {toggleVisible} />
 				</div>
 			{/each}

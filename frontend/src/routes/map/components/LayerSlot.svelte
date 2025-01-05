@@ -8,18 +8,28 @@
 	import { getImagePmtiles } from '$map/utils/raster';
 	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
 
+	// TODO エラー チェックをすると
 	let { layerEntry = $bindable(), toggleVisible }: { layerEntry: GeoDataEntry } = $props();
+	let showColors = $state(false);
 
-	const generateIconImage = (_layerEntry: GeoDataEntry) => {
-		if (_layerEntry.type !== 'raster') return;
+	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
+		if (_layerEntry.type !== 'raster') {
+			// raster タイプ以外の場合は undefined を返す
+			return Promise.resolve(undefined);
+		}
+
+		// xyz タイル情報を取得
 		const tile = _layerEntry.metaData.xyzImageTile
 			? _layerEntry.metaData.xyzImageTile
 			: IMAGE_TILE_XYZ;
 
-		return _layerEntry.format.url
-			.replace('{z}', tile.z.toString())
-			.replace('{x}', tile.x.toString())
-			.replace('{y}', tile.y.toString());
+		// URLを生成して Promise として返す
+		return Promise.resolve(
+			_layerEntry.format.url
+				.replace('{z}', tile.z.toString())
+				.replace('{x}', tile.x.toString())
+				.replace('{y}', tile.y.toString())
+		);
 	};
 
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
@@ -66,9 +76,18 @@
 	};
 
 	// 非同期関数を初期化時に実行
-	const promise = fetchTileImage(layerEntry);
+	const promise = (() => {
+		if (layerEntry.type === 'raster') {
+			if (layerEntry.format.type === 'image') {
+				return generateIconImage(layerEntry);
+			} else if (layerEntry.format.type === 'pmtiles') {
+				return fetchTileImage(layerEntry);
+			}
+		}
+	})();
 
 	const toggleChecked = (id: string) => {
+		showColors = !showColors;
 		toggleVisible(id);
 	};
 </script>
@@ -99,16 +118,20 @@
 			{#if layerEntry.style.visible}
 				{#if layerEntry.type === 'raster'}
 					{#if layerEntry.format.type === 'image'}
-						<img
-							transition:fade
-							class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-							alt={layerEntry.metaData.name}
-							src={generateIconImage(layerEntry)}
-						/>
+						{#await promise then url}
+							<img
+								transition:fade
+								class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+								crossOrigin="anonymous"
+								alt={layerEntry.metaData.name}
+								src={url}
+							/>
+						{/await}
 					{:else if layerEntry.format.type === 'pmtiles'}
 						{#await promise then url}
 							<img
 								transition:fade
+								crossOrigin="anonymous"
 								class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
 								alt={layerEntry.metaData.name}
 								src={url}
