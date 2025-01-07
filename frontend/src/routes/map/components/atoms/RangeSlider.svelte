@@ -82,7 +82,4 @@
 		background-color: #ffffff;
 		border: 3px solid #47d400;
 	}
-	.custom-shadow {
-		box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
-	}
 </style>

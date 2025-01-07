@@ -25,22 +25,19 @@
 	};
 
 	let element = $state<HTMLDivElement | null>(null);
-	let rotation = $state<number>(0);
+	// let rotation = $state<number>(0);
 
 	// 回転値を -180° 〜 180° の範囲に正規化する関数
 	const normalizeAngle = (angle: number): number => {
 		return ((angle + 180) % 360) - 180;
 	};
 
-	$effect(() => {
-		console.log('rotation', rotation);
-		const map = mapStore.getMap();
-		if (!map) return;
-		map.setBearing(rotation * -1);
-	});
-
 	mapStore.onRotate((bearing) => {
-		console.log('bearing', bearing);
+		if (bearing) {
+			// rotation = bearing;
+			if (!element) return;
+			element.style.transform = `rotate(${bearing * -1}deg)`;
+		}
 	});
 
 	onMount(() => {
@@ -49,20 +46,24 @@
 			type: 'rotation', // 回転モード
 			inertia: true, // 慣性を有効化
 			onDrag: function () {
-				rotation = normalizeAngle(this.rotation); // 回転値を正規化して保持
-			},
-			onThrowComplete: function () {
-				// ドラッグ終了後にスナップ処理
-				if (Math.abs(normalizeAngle(rotation)) <= 7) {
-					gsap.to(element, {
-						rotation: 0, // 0度にスナップ
-						duration: 0.3, // アニメーションの長さ
-						onUpdate: () => {
-							rotation = normalizeAngle(this.targets()[0]._gsTransform.rotation);
-						}
-					});
+				const rotation = normalizeAngle(this.rotation); // 回転値を正規化して保持
+				const map = mapStore.getMap();
+				if (map) {
+					map.setBearing(rotation * -1); // マップの回転を更新
 				}
 			}
+			// onThrowComplete: function () {
+			// 	// ドラッグ終了後にスナップ処理
+			// 	if (Math.abs(normalizeAngle(rotation)) <= 7) {
+			// 		gsap.to(element, {
+			// 			rotation: 0, // 0度にスナップ
+			// 			duration: 0.3, // アニメーションの長さ
+			// 			onUpdate: () => {
+			// 				rotation = normalizeAngle(this.targets()[0]._gsTransform.rotation);
+			// 			}
+			// 		});
+			// 	}
+			// }
 		});
 	});
 </script>

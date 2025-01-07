@@ -16,6 +16,8 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { mount, onMount } from 'svelte';
 
+	import ZoomControl from './components/control/ZoomControl.svelte';
+
 	import Attribution from '$map/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
@@ -280,6 +282,7 @@
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
 	<Compass />
+	<ZoomControl />
 	<Attribution />
 	<Logo />
 	<DataManu />

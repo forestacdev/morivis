@@ -5,6 +5,7 @@
 	import { IMAGE_TILE_XYZ } from '$map/constants';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { addedLayerIds, showLayerOptionId, isAnimation, isEdit } from '$map/store';
+	import { mapStore } from '$map/store/map';
 	import { getImagePmtiles } from '$map/utils/raster';
 	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
 
@@ -17,7 +18,6 @@
 			// raster タイプ以外の場合は undefined を返す
 			return Promise.resolve(undefined);
 		}
-
 		// xyz タイル情報を取得
 		const tile = _layerEntry.metaData.xyzImageTile
 			? _layerEntry.metaData.xyzImageTile
