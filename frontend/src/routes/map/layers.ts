@@ -407,22 +407,37 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 
 				case 'raster': {
 					if (interaction.clickable) clickableRaster.push(layerId);
-					layerItems.push({
-						...layer,
-						type: 'raster',
-						paint: {
-							'raster-opacity': style.opacity,
-							'raster-hue-rotate': style.hueRotate,
-							'raster-brightness-max': style.brightnessMax,
-							'raster-brightness-min': style.brightnessMin,
-							'raster-saturation': style.saturation,
-							'raster-contrast': style.contrast,
-							...(style.raster.paint ?? {})
-						},
-						layout: {
-							...(style.raster.layout ?? {})
-						}
-					});
+
+					if (style.type === 'basemap') {
+						layerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity,
+								'raster-hue-rotate': style.hueRotate,
+								'raster-brightness-max': style.brightnessMax,
+								'raster-brightness-min': style.brightnessMin,
+								'raster-saturation': style.saturation,
+								'raster-contrast': style.contrast,
+								...(style.raster.paint ?? {})
+							},
+							layout: {
+								...(style.raster.layout ?? {})
+							}
+						});
+					} else if (style.type === 'categorical') {
+						layerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity,
+								...(style.raster.paint ?? {})
+							},
+							layout: {
+								...(style.raster.layout ?? {})
+							}
+						});
+					}
 					break;
 				}
 				// ベクターレイヤー

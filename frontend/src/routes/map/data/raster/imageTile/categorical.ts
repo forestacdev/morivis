@@ -58,5 +58,48 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 		},
 		debug: false,
 		extension: {}
+	},
+
+	// 傾斜量図 地理院
+	{
+		id: 'gsi_slopemap',
+		type: 'raster',
+		format: {
+			type: 'image',
+			url: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png'
+		},
+		metaData: {
+			name: '傾斜量図',
+			description: '傾斜量図　国土地理院',
+			attribution: '国土地理院',
+			location: '全国',
+			minZoom: 3,
+			maxZoom: 15,
+			tileSize: 256,
+			xyzImageTile: null,
+			bounds: null
+		},
+		interaction: {
+			clickable: true,
+			overlay: true
+		},
+		style: {
+			type: 'categorical',
+			opacity: 0.6,
+			legend: {
+				type: 'gradient',
+				name: '傾斜',
+				colors: ['#FFFFFF', '#000000'],
+				minValue: 0,
+				maxValue: 90,
+				unit: '度'
+			},
+			raster: {
+				paint: {},
+				layout: {}
+			}
+		},
+		debug: false,
+		extension: {}
 	}
 ];

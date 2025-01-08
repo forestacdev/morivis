@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
-	import type { GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
 		StyleSpecification,

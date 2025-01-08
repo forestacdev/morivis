@@ -32,6 +32,8 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_rinhan',
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
+	'gsi_slopemap',
 	'gsi_seamlessphoto'
+
 	// 'gsi_std'
 ];

@@ -11,9 +11,9 @@ export interface CategoryLegend {
 export interface GradientLegend {
 	type: 'gradient';
 	name: string;
+	colors: string[];
 	minValue: number;
 	maxValue: number;
-	colors: string[];
 	unit: string;
 }
 
