@@ -32,7 +32,7 @@
 					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 				</button>
 			</div>
-			<div class="columns-2 md:columns-3 lg:columns-4">
+			<div class="grid grid-cols-2 gap-4 p-2">
 				{#each dataEntries as dataEntry}
 					<button class="mb-4" onclick={() => addLayer(dataEntry.id)}>
 						<div class="h-full flex-grow rounded-md bg-gray-300 p-2">ここに画像</div>

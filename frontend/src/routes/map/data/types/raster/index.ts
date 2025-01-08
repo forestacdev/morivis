@@ -8,7 +8,6 @@ export interface Legend {
 }
 
 export type ZoomLevel =
-	| 0
 	| 1
 	| 2
 	| 3

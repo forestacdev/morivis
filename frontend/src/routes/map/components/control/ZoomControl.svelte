@@ -17,7 +17,7 @@
 	import { mapStore } from '$routes/map/store/map';
 
 	let container: HTMLElement;
-	let value: number = $state(0);
+	let value: number = $state(1);
 
 	gsap.registerPlugin(Draggable);
 
@@ -62,7 +62,7 @@
 	<input
 		class="css-range block"
 		type="range"
-		min="0"
+		min="1"
 		max="22"
 		step="0.01"
 		bind:value
