@@ -12,8 +12,7 @@ export interface GradientLegend {
 	type: 'gradient';
 	name: string;
 	colors: string[];
-	minValue: number;
-	maxValue: number;
+	range: number[];
 	unit: string;
 }
 

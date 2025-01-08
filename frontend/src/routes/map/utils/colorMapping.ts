@@ -42,6 +42,37 @@ export const generateNumberAndColorMap = (
 	};
 };
 
+// export const generateGradientColorScale = (
+// 	mapping: ColorStepExpressions['mapping']
+// ): {
+// 	categories: number[];
+// 	values: string[];
+// } => {
+// 	const { range, divisions } = mapping;
+
+// 	if (divisions <= 0) {
+// 		console.warn('divisions は 0 より大きくなければなりません。');
+// 		throw new Error('divisions must be greater than 0');
+// 	}
+
+// 	// 数値スケールの生成
+// 	const scale = scaleLinear()
+// 		.domain(range) // データの範囲
+// 		.nice() // きれいな値に調整
+// 		.ticks(divisions);
+
+// 	// 色スケールの生成
+// 	const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
+
+// 	// 各値に対応する色を生成
+// 	const colors = scale.map((value) => colorScale(value));
+
+// 	return {
+// 		categories: scale,
+// 		values: colors
+// 	};
+// };
+
 /**
  * minからmaxまでを指定した分割数で分割し、数値の配列を生成する関数
  *
