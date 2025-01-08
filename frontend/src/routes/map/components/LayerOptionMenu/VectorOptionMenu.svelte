@@ -8,7 +8,12 @@
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
 	import SelectBox from '$map/components/atoms/SelectBox.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import type { GeometryType } from '$map/data/types/vector';
+	import type {
+		GeometryType,
+		VectorEntry,
+		GeoJsonMetaData,
+		TileMetaData
+	} from '$map/data/types/vector';
 	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
 	import {
 		mutableColorMapType,
@@ -18,7 +23,8 @@
 	} from '$routes/map/data/types/vector/style';
 	import { showLayerOptionId } from '$routes/map/store';
 
-	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry | undefined } = $props();
+	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
+		$props();
 
 	// 有効なレイヤータイプの取得
 	const getLayerTypes = (

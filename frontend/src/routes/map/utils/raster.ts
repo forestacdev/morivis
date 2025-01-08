@@ -1,5 +1,7 @@
 import { PMTiles } from 'pmtiles';
-import type { TileSize, ZoomLevel, Legend, RasterFormatType } from '$map/data/types/raster';
+import type { TileSize, ZoomLevel, CategoryLegend, RasterFormatType } from '$map/data/types/raster';
+import * as tilebelt from '@mapbox/tilebelt';
+import type { LngLat } from 'maplibre-gl';
 import chroma from 'chroma-js';
 
 /**  PMTiles から画像を取得する */
@@ -34,21 +36,6 @@ export const getImagePmtiles = async (
 		reader.readAsDataURL(blob);
 	});
 };
-
-import * as tilebelt from '@mapbox/tilebelt';
-import type {
-	Map,
-	StyleSpecification,
-	SourceSpecification,
-	LayerSpecification,
-	TerrainSpecification,
-	Marker,
-	CircleLayerSpecification,
-	LngLat
-} from 'maplibre-gl';
-
-type BBOX = [number, number, number, number];
-type RGBA = [number, number, number, number];
 
 /** タイル画像のピクセル色を取得 */
 export const getPixelColor = async (
@@ -124,8 +111,9 @@ export const getPixelColor = async (
 				}
 			};
 
-			img.onerror = (error) => {
-				reject(new Error(`画像の読み込みに失敗しました: ${tileUrl}`));
+			img.onerror = (error: string | Event) => {
+				console.error('画像の読み込みに失敗しました:', error);
+				reject(new Error(`画像の読み込みに失敗しました: ${error}`));
 			};
 		});
 	} catch (error) {
@@ -137,7 +125,7 @@ export const getPixelColor = async (
 /**  凡例から最も近いラベルを取得 */
 export const getGuide = (
 	targetColor: string,
-	legend: Legend
+	legend: CategoryLegend
 ): {
 	color: string;
 	label: string;
@@ -165,27 +153,4 @@ export const getTileUrl = (lng: number, lat: number, zoom: number, tileUrl: stri
 		.replace('{z}', tile[2].toString())
 		.replace('{x}', tile[0].toString())
 		.replace('{y}', tile[1].toString());
-};
-
-/* 経緯度からピクセル座標を取得 */
-export const getTilePixelColor = async (
-	lng: number,
-	lat: number,
-	zoom: number,
-	tileUrl: string
-) => {
-	// asyncを追加
-	// ズームレベルを取得
-	const bbox = tilebelt.tileToBBOX(tilebelt.pointToTile(lng, lat, zoom));
-
-	const url = getTileUrl(lng, lat, zoom, tileUrl);
-
-	// クリックしたタイルの色を取得
-	const [r, g, b, a] = await getPixelColor(lng, lat, bbox, url);
-
-	// 透明色の場合は処理を終了
-	if (a === 0) return;
-
-	return [r, g, b, a];
-	// 省略
 };

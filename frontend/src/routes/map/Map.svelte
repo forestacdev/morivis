@@ -28,7 +28,7 @@
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
-	import type { ZoomLevel, Legend } from '$map/data/types/raster';
+	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$map/data/types/raster';
 	import Draggable from '$map/debug/Draggable.svelte';
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
@@ -153,7 +153,7 @@
 			color: string;
 			label: string;
 		},
-		legend: Legend,
+		legend: CategoryLegend | GradientLegend,
 		_lngLat: LngLat
 	) => {
 		const popupContainer = document.createElement('div');
@@ -201,14 +201,14 @@
 			return;
 		}
 
-		const legend = targetEntry.metaData.legend;
-		if (legend) {
-			const data = getGuide(pixelColor, legend);
+		if (targetEntry.style.type === 'categorical') {
+			const legend = targetEntry.style.legend;
 
-			generateLegendPopup(data, legend, lngLat);
-		} else {
-			//TODO:ガイドがない場合の処理;
-			console.warn('color', pixelColor);
+			if (legend.type === 'category') {
+				const data = getGuide(pixelColor, legend);
+
+				generateLegendPopup(data, legend, lngLat);
+			}
 		}
 	};
 
@@ -239,9 +239,9 @@
 		if (!propKes) return;
 
 		feature.properties = Object.entries(feature.properties)
-			.filter(([key, value]) => propKes.includes(key)) // `propKes` に含まれないキーだけを残す
-			.reduce((acc, [key, value]) => {
-				acc[key] = value; // フィルタリングされたキーと値をオブジェクトに戻す
+			.filter(([key, value]) => propKes.includes(key))
+			.reduce<Record<string, string | number>>((acc, [key, value]) => {
+				acc[key] = value;
 				return acc;
 			}, {});
 

@@ -1,23 +1,21 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { endsWith } from 'es-toolkit/compat';
 	import gsap from 'gsap';
-	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import CheckBox from '$map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import type { GeometryType } from '$map/data/types/vector';
+	import type {
+		RasterEntry,
+		RasterCategoricalStyle,
+		RasterBaseMapStyle
+	} from '$map/data/types/raster';
 	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
-	import {
-		mutableColorMapType,
-		type VectorLayerType,
-		type ColorsExpressions,
-		type LabelsExpressions
-	} from '$routes/map/data/types/vector/style';
 
-	let { layerToEdit = $bindable() }: { layerToEdit: GeoDataEntry } = $props();
+	let {
+		layerToEdit = $bindable()
+	}: { layerToEdit: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle> } = $props();
 
 	onMount(() => {});
 </script>
@@ -69,18 +67,18 @@
 		/>
 	{:else if layerToEdit.style.type === 'categorical'}
 		<!-- TODO:categorical 凡例は必須にする -->
-		{#if layerToEdit.metaData.legend}
+		{#if layerToEdit.style.legend}
 			<h1>凡例</h1>
 
-			<h2>{layerToEdit.metaData.legend.name}</h2>
+			<h2>{layerToEdit.style.legend.name}</h2>
 			<ul class="">
-				{#each layerToEdit.metaData.legend.colors as color, i}
+				{#each layerToEdit.style.legend.colors as color, i}
 					<li style="display: flex; align-items: center; margin-bottom: 5px;">
 						<span
 							style="width: 20px; height: 20px; background-color: {color}; margin-right: 10px; display: inline-block;"
 						>
 						</span>
-						<span>{layerToEdit.metaData.legend.labels[i]}</span>
+						<span>{layerToEdit.style.legend.labels[i]}</span>
 					</li>
 				{/each}
 			</ul>
