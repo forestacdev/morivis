@@ -1,4 +1,4 @@
-<div class="pointer-events-none absolute bottom-[40px] right-2">
+<div class="css-svg-container">
 	<svg
 		width="271"
 		height="60"
@@ -756,4 +756,15 @@
 </div>
 
 <style>
+	.css-svg-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 80%;
+		height: 100%;
+	}
+
+	.css-svg-container svg path {
+		fill: rgb(0, 0, 0);
+	}
 </style>

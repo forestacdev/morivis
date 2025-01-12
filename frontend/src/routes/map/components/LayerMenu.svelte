@@ -8,7 +8,7 @@
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import LayerSlot from '$map/components/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { isSide, showLayerOptionId, isEdit } from '$map/store';
+	import { showLayerOptionId, isEdit, mapMode } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	let {
 		layerEntries = $bindable(),
@@ -46,14 +46,14 @@
 	});
 </script>
 
-{#if $isSide === 'layer'}
+{#if $mapMode === 'style'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute z-10 flex h-full w-[300px] flex-col gap-2 p-2"
 	>
 		<div class="flex items-center justify-between">
 			<span>レイヤー</span>
-			<button onclick={() => isSide.set(null)} class="bg-base rounded-full p-2">
+			<button onclick={() => mapMode.set('view')} class="bg-base rounded-full p-2">
 				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 			</button>
 		</div>

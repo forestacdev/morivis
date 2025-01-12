@@ -41,7 +41,7 @@
 {#if clickedLayerIds.length > 0 && clickedLngLat}
 	<div
 		transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-		class="pointer-events-none absolute bottom-2 z-20 grid w-full place-items-center rounded-md"
+		class="pointer-events-none absolute bottom-2 grid w-full place-items-center rounded-md"
 	>
 		<div
 			class="pointer-events-auto relative flex max-w-[calc(100vw-2rem)] gap-2 rounded-md bg-white p-4 px-6 transition-all duration-100"

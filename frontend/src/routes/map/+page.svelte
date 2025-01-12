@@ -4,8 +4,6 @@
 </script>
 
 <div class="bg-base relative flex h-full w-full flex-grow flex-col">
-	ssss
-	<!-- <Header /> -->
 	<Map />
 </div>
 

@@ -21,6 +21,12 @@ export const layerAttributions = writable<string[]>([]);
 /**  デバッグモード */
 export const DEBUG_MODE = writable<boolean>(false);
 
+/**  地図のモード */
+export const mapMode = writable<'view' | 'style' | 'analysis'>('view');
+
+/** サイドメニューの表示状態 */
+export const showSideMenu = writable<boolean>(false);
+
 /** TODO:編集モード */
 export const isEdit = writable<boolean>(false);
 
@@ -90,6 +96,12 @@ export const isSide = writable<Side>(null);
 
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
+
+/** インフォメーションを表示 */
+export const showInfoDialog = writable<boolean>(false);
+
+/** 利用規約ダイアログを表示 */
+export const showTermsDialog = writable<boolean>(false);
 
 /** レイヤーオプションの表示 TODO:Editと混在 */
 export const showLayerOptionId = writable<string>('');

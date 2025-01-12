@@ -24,13 +24,15 @@
 	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
+	import HeaderMenu from '$map/components/HeaderMenu.svelte';
+	import InfoDialog from '$map/components/InfoDialog.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
-	import Logo from '$map/components/Logo.svelte';
 	import SelectionMarker from '$map/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$map/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
+	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
@@ -361,6 +363,7 @@
 
 <div class="relative h-full w-full">
 	<SideMenu />
+	<HeaderMenu />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
@@ -368,9 +371,10 @@
 	<Compass />
 	<ZoomControl />
 	<Attribution />
-	<Logo />
 	<DataManu />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
+	<InfoDialog />
+	<TermsOfServiceDialog />
 </div>
 
 {#if $DEBUG_MODE}

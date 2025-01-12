@@ -31,7 +31,7 @@
 		</span>
 		{#each attributions as atl}
 			<a
-				class="bg-base pointer-events-auto cursor-pointer rounded-full p-2 text-xs"
+				class="bg-base pointer-events-auto cursor-pointer select-none rounded-full p-2 text-xs"
 				href={atl.url}
 				target="_blank"
 				rel="noopener noreferrer">{atl.name}</a

@@ -4,20 +4,20 @@
 	import gsap from 'gsap';
 	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import { fade, slide, fly } from 'svelte/transition';
 
-	import { isSide, showDataMenu } from '$map/store';
+	import Logo from '$map/components/Logo.svelte';
+	import { showSideMenu, showDataMenu, mapMode, showInfoDialog } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
-	const toggleMenu = (key) => {
-		if (key === $isSide) {
-			isSide.set(null);
-		} else {
-			isSide.set(key);
-		}
+	const toggleInfoMenu = () => {
+		showSideMenu.set(false);
+		showInfoDialog.set(!$showInfoDialog);
 	};
 
 	const toggleDataMenu = () => {
+		showSideMenu.set(false);
 		showDataMenu.set(!$showDataMenu);
 	};
 
@@ -25,20 +25,79 @@
 		// 初期のMapbox式を受け取り、オブジェクト形式に変換する
 		// isSide.set('base');
 	});
+
+	mapMode.subscribe((mode) => {
+		showSideMenu.set(false);
+	});
 </script>
 
-{#if !$isSide}
-	<div class="bg-main absolute z-10 flex h-full w-[80px] flex-col gap-2 p-2">
-		<button class="bg-gray-200 p-2 text-left" onclick={() => toggleMenu('base')}>
-			<Icon icon="ic:round-menu" class="h-8 w-8" />
-		</button>
+{#if $showSideMenu}
+	<div
+		transition:fade={{ duration: 200 }}
+		class="absolute z-10 h-full w-full bg-black bg-opacity-50"
+		role="button"
+		tabindex="0"
+		onclick={() => showSideMenu.set(false)}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				showSideMenu.set(false);
+			}
+		}}
+	></div>
+	<div
+		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
+		class="bg-main absolute z-20 flex h-full w-[300px] flex-col gap-2 p-2"
+	>
+		<div class="flex items-center justify-between">
+			<Logo />
+			<button onclick={() => showSideMenu.set(false)} class="bg-base rounded-full p-2">
+				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
+			</button>
+		</div>
+		<ui>
+			<button
+				class="flex w-full items-center justify-start gap-2 p-2"
+				onclick={() => mapMode.set('style')}
+			>
+				<Icon icon="ic:round-layers" class="h-8 w-8" />
+				<span>地図を編集</span>
+			</button>
+			<button
+				class="flex w-full items-center justify-start gap-2 p-2"
+				onclick={() => mapMode.set('analysis')}
+			>
+				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
+				<span>地図の解析</span>
+			</button>
+			<button class="flex w-full items-center justify-start gap-2 p-2" onclick={toggleDataMenu}>
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+				<span>データカタログ</span>
+			</button>
+			<button class="flex w-full items-center justify-start gap-2 p-2" onclick={toggleDataMenu}>
+				<Icon icon="weui:setting-filled" class="h-8 w-8" />
+				<span>設定</span>
+			</button>
+		</ui>
+		<div class="w-hull bg-base h-[1px] rounded-full"></div>
+		<ui>
+			<button class="flex w-full items-center justify-start gap-2 p-2" onclick={toggleInfoMenu}>
+				<Icon icon="majesticons:note-text" class="h-8 w-8" />
+				<span>利用規約</span>
+			</button>
+			<button class="flex w-full items-center justify-start gap-2 p-2" onclick={toggleInfoMenu}>
+				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
+				<span>演習林GISについて</span>
+			</button>
 
-		<button class="w-full bg-gray-200 p-2 text-left" onclick={() => toggleMenu('layer')}>
-			<Icon icon="ic:round-layers" class="h-8 w-8" />
-		</button>
-		<button class="w-full bg-gray-200 p-2 text-left" onclick={toggleDataMenu}>
-			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-		</button>
+			<a
+				class="flex w-full items-center justify-start gap-2 p-2"
+				href="https://www.forest.ac.jp/"
+				target="_blank"
+				rel="noopener noreferrer"
+				><Icon icon="mdi:web" class="h-8 w-8" />
+				<span>森林文化アカデミーHP</span></a
+			>
+		</ui>
 	</div>
 {/if}
 
