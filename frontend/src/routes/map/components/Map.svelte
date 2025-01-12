@@ -26,7 +26,9 @@
 	import DataManu from '$map/components/DataManu.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import Logo from '$map/components/Logo.svelte';
+	import SelectionMarker from '$map/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
+	import SelectionPopup from '$map/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS } from '$map/constants';
@@ -41,6 +43,7 @@
 	import { createSourcesItems } from '$map/sources';
 	import { mapStore } from '$map/store/map';
 	import { convertToGeoJSONCollection } from '$map/utils/geojson';
+	import { isPointInBbox } from '$map/utils/map';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import {
 		addedLayerIds,
@@ -61,6 +64,9 @@
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
+	let maplibreMarker = $state<Marker | null>(null); // マーカー
+	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
+	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 
 	// TODO: CanvasLayerの実装
 	// let canvasSource = $state<CanvasSourceSpecification>({
@@ -170,6 +176,26 @@
 			.addTo(mapStore.getMap() as maplibregl.Map);
 	};
 
+	const generateMarker = (lngLat: LngLat) => {
+		const markerContainer = document.createElement('div');
+		mount(SelectionMarker, {
+			target: markerContainer,
+			props: {
+				lngLat
+			}
+		});
+
+		if (maplibreMarker) {
+			maplibreMarker.remove();
+		}
+
+		maplibreMarker = new maplibregl.Marker({
+			element: markerContainer
+		})
+			.setLngLat(lngLat)
+			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
 	// ラスターの色のガイドポップアップの作成
 	const generateLegendPopup = (
 		data: {
@@ -237,16 +263,46 @@
 
 	// 地図のクリックイベント
 	mapStore.onClick((e) => {
+		if (clickedLayerIds.length > 0) {
+			clickedLayerIds = [];
+			if (maplibreMarker) {
+				maplibreMarker.remove();
+			}
+			if (clickedLngLat) {
+				clickedLngLat = null;
+			}
+			return;
+		}
+
 		// console.log('click', e);
 		if (!e) return;
 		const features = mapStore.queryRenderedFeatures(e.point, {
 			layers: $clickableVectorIds
 		});
-		if (!features || features?.length === 0) {
-			const lngLat = e.lngLat;
-			onRasterClick(lngLat);
-			return;
-		}
+		// if (!features || features?.length === 0) {
+		// 	const lngLat = e.lngLat;
+		// 	onRasterClick(lngLat);
+		// 	return;
+		// }
+
+		const selectedVecterLayersId = features.map((feature) => feature.layer.id);
+		const selectedRasterLayersId = layerEntries
+			.filter((entry) => {
+				if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
+					if (entry.metaData.location === '全国') {
+						return true;
+					} else if (entry.metaData.bounds && isPointInBbox(e.lngLat, entry.metaData.bounds)) {
+						return true;
+					}
+				}
+			})
+			.map((entry) => entry.id);
+
+		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
+		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
+		clickedLngLat = e.lngLat;
+		generateMarker(clickedLngLat);
+		return;
 
 		const feature = features[0];
 
@@ -287,7 +343,7 @@
 
 		// if (!geojson) return;
 		// ポッアップの作成
-		if (import.meta.env.DEV) {
+		if ($DEBUG_MODE) {
 			console.log('featureId', featureId);
 			generatePopup(feature, lngLat);
 		}
@@ -314,6 +370,7 @@
 	<Attribution />
 	<Logo />
 	<DataManu />
+	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
 </div>
 
 {#if $DEBUG_MODE}

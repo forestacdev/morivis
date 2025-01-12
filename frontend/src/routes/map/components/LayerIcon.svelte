@@ -40,7 +40,6 @@
 		}
 	};
 
-	// 非同期関数を初期化時に実行
 	const promise = (() => {
 		if (layerEntry.type === 'raster') {
 			if (layerEntry.format.type === 'image') {

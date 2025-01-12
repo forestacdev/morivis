@@ -1,3 +1,20 @@
+import type { LngLat } from 'maplibre-gl';
+
+/**
+ * Check if a point is inside a bounding box.
+ * @param point - The point as maplibregl.LngLat.
+ * @param bbox - The bounding box as [minLng, minLat, maxLng, maxLat].
+ * @returns true if the point is inside the bbox, false otherwise.
+ */
+export const isPointInBbox = (point: LngLat, bbox: [number, number, number, number]): boolean => {
+	const [minLng, minLat, maxLng, maxLat] = bbox;
+
+	const lng = point.lng;
+	const lat = point.lat;
+
+	return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+};
+
 // 標高の取得
 // export const getElevation = async (lngLat: LngLat, zoom: number) => {
 // 	const zoomLevel = Math.min(Math.round(zoom), 14);
@@ -69,3 +86,5 @@ export const getFieldDictJson = async (url: string): Promise<{ [key: string]: st
 	}
 	return await response.json();
 };
+
+/** bbox */

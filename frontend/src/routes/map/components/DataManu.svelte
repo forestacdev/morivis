@@ -23,7 +23,7 @@
 {#if $showDataMenu}
 	<div
 		transition:fade={{ duration: 100 }}
-		class="  absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black bg-opacity-50 p-12"
+		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black bg-opacity-50 p-12"
 	>
 		<div class="bg-main flex h-full w-full flex-col rounded-lg p-2">
 			<div class="flex items-center justify-between p-2">
