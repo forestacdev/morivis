@@ -1,10 +1,13 @@
 <script lang="ts">
+	import turfDissolve from '@turf/dissolve';
+	import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
 	import maplibregl from 'maplibre-gl';
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
 		SourceSpecification,
+		CanvasSourceSpecification,
 		LayerSpecification,
 		TerrainSpecification,
 		Marker,
@@ -18,6 +21,7 @@
 	import ZoomControl from './components/control/ZoomControl.svelte';
 
 	import Attribution from '$map/Attribution.svelte';
+	// import CanvasLayer from '$routes/map/_CanvasLayer.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
@@ -33,6 +37,7 @@
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { mapStore } from '$map/store/map';
+	import { convertToGeoJSONCollection } from '$map/utils/geojson';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/map/constants';
 	import { createLayersItems } from '$routes/map/layers';
@@ -57,6 +62,24 @@
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 
+	// TODO: CanvasLayerの実装
+	// let canvasSource = $state<CanvasSourceSpecification>({
+	// 	type: 'canvas',
+	// 	canvas: 'canvas-layer',
+	// 	coordinates: [
+	// 		[136.91278, 35.556704],
+	// 		[136.92986, 35.556704],
+	// 		[136.92986, 35.543576],
+	// 		[136.91278, 35.543576]
+	// 	]
+	// });
+
+	// let canvasLayer = $state<LayerSpecification>({
+	// 	id: 'canvas-layer',
+	// 	type: 'raster',
+	// 	source: 'canvasSource'
+	// });
+
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
@@ -71,6 +94,7 @@
 			sources: {
 				terrain: gsiTerrainSource,
 				...sources
+				// canvasSource
 			},
 			layers: [...layers],
 			terrain: terrain ? terrain : undefined
@@ -123,9 +147,9 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
-	selectedHighlightData.subscribe((data) => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
+	// selectedHighlightData.subscribe((data) => {
+	// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
+	// });
 
 	// ベクターポップアップの作成
 	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
@@ -229,10 +253,10 @@
 		const lngLat = e.lngLat;
 
 		const layerId = feature.layer.id;
-		const featureId = feature.id;
+		const featureId = feature.id as number;
 
 		const entry = layerEntries.find((entry) => entry.id === layerId);
-		if (!entry || !featureId || entry.type !== 'vector') return;
+		if (!entry || featureId === undefined || entry.type !== 'vector') return;
 		const propKes = entry.properties.keys;
 
 		if (!propKes) return;
@@ -244,8 +268,26 @@
 				return acc;
 			}, {});
 
+		// console.log('features', features);
+
+		// const highlightFeatures = features.filter((feature) => feature.layer.id === layerId);
+		// const data = convertToGeoJSONCollection(highlightFeatures, featureId);
+
+		// if (data.features.length === 0) return;
+
+		// console.log('data', data);
+
+		// let geojson;
+
+		// if (data.features.length > 1) {
+		// 	geojson = turfDissolve(data);
+		// } else {
+		// 	geojson = data;
+		// }
+
+		// if (!geojson) return;
 		// ポッアップの作成
-		generatePopup(feature, lngLat);
+		// generatePopup(feature, lngLat);
 
 		$selectedHighlightData = {
 			layerData: entry,
@@ -254,23 +296,6 @@
 	});
 
 	mapStore.onSetStyle((e) => {});
-
-	// マップの回転
-	// const setMapBearing = (e) => {
-	// 	const mapBearing = e.detail;
-	// 	// mapInstance?.setBearing(mapBearing);
-
-	// 	mapInstance?.easeTo({ bearing: mapBearing, duration: 1000 });
-	// };
-
-	// // マップのズーム
-	// const setMapZoom = (e) => {
-	// 	const mapZoom = e.detail;
-	// 	mapInstance?.easeTo({
-	// 		zoom: mapZoom,
-	// 		duration: 1000
-	// 	});
-	// };
 </script>
 
 <!-- <Menu /> -->
@@ -280,6 +305,7 @@
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
+	<!-- <CanvasLayer bind:canvasSource /> -->
 	<Compass />
 	<ZoomControl />
 	<Attribution />

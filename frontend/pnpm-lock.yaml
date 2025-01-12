@@ -32,12 +32,21 @@ importers:
       '@turf/buffer':
         specifier: ^7.2.0
         version: 7.2.0
+      '@turf/dissolve':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@turf/distance':
         specifier: ^7.2.0
         version: 7.2.0
       '@turf/nearest-point':
         specifier: ^7.2.0
         version: 7.2.0
+      '@turf/union':
+        specifier: ^7.2.0
+        version: 7.2.0
+      '@types/geojson':
+        specifier: ^7946.0.15
+        version: 7946.0.15
       '@vite-pwa/assets-generator':
         specifier: ^0.2.6
         version: 0.2.6
@@ -53,6 +62,9 @@ importers:
       d3-scale-chromatic:
         specifier: ^3.1.0
         version: 3.1.0
+      earcut:
+        specifier: ^3.0.1
+        version: 3.0.1
       es-toolkit:
         specifier: ^1.31.0
         version: 1.31.0
@@ -1299,8 +1311,14 @@ packages:
   '@turf/clone@7.2.0':
     resolution: {integrity: sha512-JlGUT+/5qoU5jqZmf6NMFIoLDY3O7jKd53Up+zbpJ2vzUp6QdwdNzwrsCeONhynWM13F0MVtPXH4AtdkrgFk4g==}
 
+  '@turf/dissolve@7.2.0':
+    resolution: {integrity: sha512-gPG5TE3mAYuZqBut8tPYCKwi4hhx5Cq0ALoQMB9X0hrVtFIKrihrsj98XQM/5pL/UIpAxQfwisQvy6XaOFaoPA==}
+
   '@turf/distance@7.2.0':
     resolution: {integrity: sha512-HBjjXIgEcD/wJYjv7/6OZj5yoky2oUvTtVeIAqO3lL80XRvoYmVg6vkOIu6NswkerwLDDNT9kl7+BFLJoHbh6Q==}
+
+  '@turf/flatten@7.2.0':
+    resolution: {integrity: sha512-q38Qsqr4l7mxp780zSdn0gp/WLBX+sa+gV6qIbDQ1HKCrrPK8QQJmNx7gk1xxEXVot6tq/WyAPysCQdX+kLmMA==}
 
   '@turf/helpers@7.2.0':
     resolution: {integrity: sha512-cXo7bKNZoa7aC7ydLmUR02oB3IgDe7MxiPuRz3cCtYQHn+BJ6h1tihmamYDWWUlPHgSNF0i3ATc4WmDECZafKw==}
@@ -1325,6 +1343,9 @@ packages:
 
   '@turf/projection@7.2.0':
     resolution: {integrity: sha512-/qke5vJScv8Mu7a+fU3RSChBRijE6EVuFHU3RYihMuYm04Vw8dBMIs0enEpoq0ke/IjSbleIrGQNZIMRX9EwZQ==}
+
+  '@turf/union@7.2.0':
+    resolution: {integrity: sha512-Xex/cfKSmH0RZRWSJl4RLlhSmEALVewywiEXcu0aIxNbuZGTcpNoI0h4oLFrE/fUd0iBGFg/EGLXRL3zTfpg6g==}
 
   '@types/ace@0.0.52':
     resolution: {integrity: sha512-YPF9S7fzpuyrxru+sG/rrTpZkC6gpHBPF14W3x70kqVOD+ks6jkYLapk4yceh36xej7K4HYxcyz9ZDQ2lTvwgQ==}
@@ -1606,6 +1627,9 @@ packages:
 
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+
+  bignumber.js@9.1.2:
+    resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -2894,6 +2918,9 @@ packages:
   point-in-polygon-hao@1.2.4:
     resolution: {integrity: sha512-x2pcvXeqhRHlNRdhLs/tgFapAbSSe86wa/eqmj1G6pWftbEs5aVRJhRGM6FYSUERKu0PjekJzMq0gsI2XyiclQ==}
 
+  polyclip-ts@0.16.8:
+    resolution: {integrity: sha512-JPtKbDRuPEuAjuTdhR62Gph7Is2BS1Szx69CFOO3g71lpJDFo78k4tFyi+qFOMVPePEzdSKkpGU3NBXPHHjvKQ==}
+
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
     engines: {node: '>= 0.4'}
@@ -3300,6 +3327,9 @@ packages:
   sourcemap-codec@1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
     deprecated: Please use @jridgewell/sourcemap-codec instead
+
+  splaytree-ts@1.0.2:
+    resolution: {integrity: sha512-0kGecIZNIReCSiznK3uheYB8sbstLjCZLiwcQwbmLhgHJj2gz6OnSPkVzJQCMnmEz1BQ4gPK59ylhBoEWOhGNA==}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -5032,10 +5062,27 @@ snapshots:
       '@types/geojson': 7946.0.15
       tslib: 2.8.1
 
+  '@turf/dissolve@7.2.0':
+    dependencies:
+      '@turf/flatten': 7.2.0
+      '@turf/helpers': 7.2.0
+      '@turf/invariant': 7.2.0
+      '@turf/meta': 7.2.0
+      '@types/geojson': 7946.0.15
+      polyclip-ts: 0.16.8
+      tslib: 2.8.1
+
   '@turf/distance@7.2.0':
     dependencies:
       '@turf/helpers': 7.2.0
       '@turf/invariant': 7.2.0
+      '@types/geojson': 7946.0.15
+      tslib: 2.8.1
+
+  '@turf/flatten@7.2.0':
+    dependencies:
+      '@turf/helpers': 7.2.0
+      '@turf/meta': 7.2.0
       '@types/geojson': 7946.0.15
       tslib: 2.8.1
 
@@ -5088,6 +5135,14 @@ snapshots:
       '@turf/helpers': 7.2.0
       '@turf/meta': 7.2.0
       '@types/geojson': 7946.0.15
+      tslib: 2.8.1
+
+  '@turf/union@7.2.0':
+    dependencies:
+      '@turf/helpers': 7.2.0
+      '@turf/meta': 7.2.0
+      '@types/geojson': 7946.0.15
+      polyclip-ts: 0.16.8
       tslib: 2.8.1
 
   '@types/ace@0.0.52': {}
@@ -5434,6 +5489,8 @@ snapshots:
     optional: true
 
   base64-js@1.5.1: {}
+
+  bignumber.js@9.1.2: {}
 
   binary-extensions@2.3.0: {}
 
@@ -6781,6 +6838,11 @@ snapshots:
     dependencies:
       robust-predicates: 3.0.2
 
+  polyclip-ts@0.16.8:
+    dependencies:
+      bignumber.js: 9.1.2
+      splaytree-ts: 1.0.2
+
   possible-typed-array-names@1.0.0: {}
 
   postcss-import@15.1.0(postcss@8.4.49):
@@ -7195,6 +7257,8 @@ snapshots:
       whatwg-url: 7.1.0
 
   sourcemap-codec@1.4.8: {}
+
+  splaytree-ts@1.0.2: {}
 
   stackback@0.0.2: {}
 

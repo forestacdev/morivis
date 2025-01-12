@@ -19,7 +19,8 @@ import type {
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	RasterSourceSpecification,
-	RasterTileSource
+	RasterTileSource,
+	LngLatBounds
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 
@@ -35,13 +36,10 @@ import { DEBUG_MODE, isEdit } from '$map/store';
 import type { GeoDataEntry } from '../data/types';
 import { GeojsonCache } from '../utils/geojson';
 
-const mapAngle = writable<number | null>(0);
-
 const createMapStore = () => {
 	let isInitialized = false;
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
-	let isMapMoving: boolean = false; // マップをユーザーが操作中かどうか
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
@@ -49,6 +47,7 @@ const createMapStore = () => {
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isLoadingEvent = writable<boolean>(true);
+	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -72,7 +71,6 @@ const createMapStore = () => {
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// localIdeographFontFamily: 'sans-serif',
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
-			// localIdeographFontFamily: 'Noto Sans CJK JP' // 日本語フォントを指定
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 			hash: get(DEBUG_MODE) ? true : false,
@@ -103,32 +101,34 @@ const createMapStore = () => {
 		});
 		map.on('rotate', (e: MouseEvent) => {
 			if (!map) return;
-			console.log('rotate');
 			const bearing = map.getBearing();
 			rotateEvent.set(bearing);
 		});
 
 		// 地図上でマウスクリックを押した時のイベント
 		map.on('mousedown', (e: MouseEvent) => {
-			isMapMoving = true;
-			console.log('mousedown');
+			// console.log('mousedown');
 		});
 
 		// 地図上でマウスクリックを離した時のイベント
 		map.on('mouseup', (e: MouseEvent) => {
-			isMapMoving = false;
-			console.log('mouseup');
+			// console.log('mouseup');
 		});
 
 		// 地図にマウスが乗った時のイベント
 		map.on('mouseover', (e: MouseEvent) => {
-			console.log('mouseover');
+			// console.log('mouseover');
 		});
 
 		// 地図からマウスが離れた時のイベント
 		map.on('mouseout', (e: MouseEvent) => {
-			isMapMoving = false;
-			console.log('mouseout');
+			// console.log('mouseout');
+		});
+
+		map.on('moveend', (e: MapLibreEvent) => {
+			if (!map) return;
+
+			mooveEndEvent.set(e);
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
@@ -349,30 +349,9 @@ const createMapStore = () => {
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
+		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド
 	};
 };
 
 export const mapStore = createMapStore();
-
-// const createMapStore2 = () => {
-// 	const map: maplibregl.Map | null = null;
-
-// 	let angle: number;
-
-// 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
-// 	const rotateEvent = writable<MapLibreEvent | null>(null);
-// 	const mapAngle = writable<number | null>(null);
-
-// 	map?.on('rotate', (e: MouseEvent) => {
-// 		angle = map.getBearing();
-// 		mapAngle.set(angle);
-// 	});
-
-// 	return {
-// 		subscribe,
-// 		rotateEvent
-// 	};
-// };
-
-// export const mapStore2 = createMapStore2();

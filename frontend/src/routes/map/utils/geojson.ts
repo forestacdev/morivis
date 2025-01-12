@@ -1,6 +1,7 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 import { geojson as fgb, geojson } from 'flatgeobuf';
 import { addedLayerIds } from '$map/store';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 export const getUniquePropertyValues = (
 	geojson: FeatureCollection,
@@ -67,6 +68,36 @@ export const getFgbToGeojson = async (url: string): GeoJSON.GeoJSON => {
 		console.error(error);
 		throw new Error('Failed to fetch GeoJSON');
 	}
+};
+
+const convertToGeoJSON = (feature: MapGeoJSONFeature, featureId: number): Feature | null => {
+	const { geometry, properties, id } = feature;
+
+	// 特定のIDに一致するか確認
+	if (id === featureId) {
+		return {
+			type: 'Feature',
+			geometry: geometry,
+			properties: properties,
+			id: id
+		};
+	}
+
+	return null; // 条件に一致しない場合は無効な値を返す
+};
+
+/** MapGeoJSONFeature[]をgeojsonで返す */
+export const convertToGeoJSONCollection = (
+	features: MapGeoJSONFeature[],
+	featureId: number
+): FeatureCollection => {
+	return {
+		type: 'FeatureCollection',
+		// 特定のIDに一致するフィーチャーのみ変換
+		features: features
+			.map((feature) => convertToGeoJSON(feature, featureId)) // 個別に変換
+			.filter((feature): feature is Feature => feature !== null) // nullを除外
+	};
 };
 
 /** GeoJSONのキャッシュを管理するクラス */

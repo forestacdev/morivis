@@ -471,9 +471,9 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	clickableVectorIds.set(clickableVecter);
 	clickableRasterIds.set(clickableRaster);
 
-	const highlightLayers = get(selectedHighlightData)
-		? createHighlightLayer(get(selectedHighlightData))
-		: [];
+	// const highlightLayers = get(selectedHighlightData)
+	// 	? createHighlightLayer(get(selectedHighlightData))
+	// 	: [];
 
-	return [...layerItems, ...symbolLayerItems, ...highlightLayers];
+	return [...layerItems, ...symbolLayerItems];
 };
