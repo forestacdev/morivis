@@ -30,6 +30,7 @@
 	import SelectionMarker from '$map/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$map/components/popup/SelectionPopup.svelte';
+	import SidePopup from '$map/components/popup/SidePopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
@@ -371,8 +372,9 @@
 	<Compass />
 	<ZoomControl />
 	<Attribution />
-	<DataManu />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
+	<SidePopup />
+	<DataManu />
 	<InfoDialog />
 	<TermsOfServiceDialog />
 </div>

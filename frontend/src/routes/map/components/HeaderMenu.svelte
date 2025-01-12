@@ -6,10 +6,7 @@
 	import { showSideMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
-	onMount(() => {
-		// 初期のMapbox式を受け取り、オブジェクト形式に変換する
-		// isSide.set('base');
-	});
+	onMount(() => {});
 </script>
 
 <div

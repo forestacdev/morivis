@@ -40,10 +40,7 @@
 		}
 	});
 
-	onMount(() => {
-		// 初期のMapbox式を受け取り、オブジェクト形式に変換する
-		// isSide.set('base');
-	});
+	onMount(() => {});
 </script>
 
 {#if $mapMode === 'style'}

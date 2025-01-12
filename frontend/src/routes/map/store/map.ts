@@ -237,17 +237,6 @@ const createMapStore = () => {
 		map.fitBounds(bbox);
 	};
 
-	// isSide.subscribe((value) => {
-	// 	console.log(value);
-	// 	if (value !== null && value) {
-	// 		if (!map) return;
-	// 		map.panBy([-200, 0]);
-	// 	} else {
-	// 		if (!map) return;
-	// 		map.panBy([200, 0]);
-	// 	}
-	// });
-
 	// マップに検索結果を追加するメソッド
 	const addSearchFeature = (feature: MapGeoJSONFeature) => {
 		if (!map) return;

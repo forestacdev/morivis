@@ -97,11 +97,14 @@ export const isSide = writable<Side>(null);
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
 
-/** インフォメーションを表示 */
+/** インフォメーションの表示 */
 export const showInfoDialog = writable<boolean>(false);
 
-/** 利用規約ダイアログを表示 */
+/** 利用規約ダイアログの表示 */
 export const showTermsDialog = writable<boolean>(false);
+
+/** サイドポップアップの表示 */
+export const showSidePopup = writable<boolean>(false);
 
 /** レイヤーオプションの表示 TODO:Editと混在 */
 export const showLayerOptionId = writable<string>('');

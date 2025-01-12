@@ -4,7 +4,7 @@
 
 	import { geoDataEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isSide, addedLayerIds, showDataMenu } from '$routes/map/store';
+	import { addedLayerIds, showDataMenu } from '$routes/map/store';
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([]);
