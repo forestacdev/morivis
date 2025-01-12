@@ -127,13 +127,11 @@ const createMapStore = () => {
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
-
 			mooveEndEvent.set(e);
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
 			if (!map) return;
-			console.log('zoom');
 			const zoom = map.getZoom();
 			zoomEvent.set(zoom);
 		});
@@ -217,6 +215,7 @@ const createMapStore = () => {
 		if (entry.format.type === 'fgb') {
 			try {
 				const geojson = GeojsonCache.get(entry.id);
+				if (!geojson) return;
 				const bbox = turfBbox(geojson) as [number, number, number, number];
 				map.fitBounds(bbox);
 			} catch (error) {

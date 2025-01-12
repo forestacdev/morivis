@@ -74,7 +74,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 						mapping: {
 							range: [0, 100],
 							divisions: 5,
-							colorScale: 'PuBu'
+							values: ['#ff0000', '#059854']
 						}
 					},
 					{
@@ -84,7 +84,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 						mapping: {
 							range: [0, 1],
 							divisions: 5,
-							colorScale: 'PuBu'
+							values: ['#ff0000', '#059854']
 						}
 					}
 				]

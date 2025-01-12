@@ -9,6 +9,7 @@ import type {
 import colormap from 'colormap';
 
 import { scaleLinear, scaleSequential } from 'd3-scale';
+import { interpolateRgb } from 'd3-interpolate';
 import { interpolateOrRd, interpolateBrBG, interpolatePRGn } from 'd3-scale-chromatic';
 
 export const generateNumberAndColorMap = (
@@ -30,8 +31,15 @@ export const generateNumberAndColorMap = (
 		.nice() // きれいな値に調整
 		.ticks(divisions);
 
+	const minColor = '#0000FF';
+	const maxColor = '#FF0000';
+
 	// 色スケールの生成
-	const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
+	// const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
+	const colorScale = scaleLinear<string>()
+		.domain([range[0], range[1]]) // データ範囲
+		.interpolate(interpolateRgb) // 色の補間方法
+		.range([minColor, maxColor]); // 最小色と最大色
 
 	// 各値に対応する色を生成
 	const colors = scale.map((value) => colorScale(value));
