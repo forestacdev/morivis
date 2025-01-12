@@ -8,7 +8,7 @@ interface GsiGetelEvation {
  * https://maps.gsi.go.jp/development/elevation_s.html
  * @param lng 経度
  * @param lat 緯度
- * @returns 標高情報
+ * @returns 標高 (m)
  */
 export const gsiGetElevation = async (lng: number, lat: number): Promise<number> => {
 	const url = `https://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php?lon=${lng}&lat=${lat}&outtype=JSON`;
@@ -72,5 +72,3 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 		}
 	}
 };
-
-// curl "https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=35.75465&lon=139.468582"

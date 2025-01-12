@@ -32,7 +32,7 @@
 				address = await undefined;
 				elevation = await undefined;
 				address = await lonLatToAddress(clickedLngLat.lng, clickedLngLat.lat);
-				elevation = await gsiGetElevation(clickedLngLat.lng, clickedLngLat.lat);
+				// elevation = await gsiGetElevation(clickedLngLat.lng, clickedLngLat.lat);
 			}
 		})();
 	});
@@ -92,7 +92,7 @@
 					>
 
 					<span class="text-xs">{address ?? '-----'}</span>
-					<span class="text-xs">標高{elevation ?? '---'}m</span>
+					<!-- <span class="text-xs">標高{elevation ?? '---'}m</span> -->
 				</div>
 			</div>
 		</div>

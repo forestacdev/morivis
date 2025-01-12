@@ -3,18 +3,18 @@
 	import { fade } from 'svelte/transition';
 
 	import LayerIcon from '$map/components/LayerIcon.svelte';
-	import { IMAGE_TILE_XYZ } from '$map/constants';
+	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
 	import { addedLayerIds, showLayerOptionId, isAnimation, isEdit } from '$map/store';
-	import { mapStore } from '$map/store/map';
-	import { getImagePmtiles } from '$map/utils/raster';
 
-	// TODO エラー チェックをすると発生
-	let { layerEntry = $bindable(), toggleVisible }: { layerEntry: GeoDataEntry } = $props();
+	let {
+		layerEntry = $bindable(),
+		toggleVisible
+	}: { layerEntry: GeoDataEntry; toggleVisible: (id: string) => void } = $props();
 	let showColors = $state(false);
 
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
-		if (!layerEntry) return;
+		if (!layerEntry || layerEntry.type !== 'vector') return;
 		const target = ColorsExpressions.find((color) => color.key === layerEntry.style.colors.key);
 		if (!target) return;
 		// if (target.type === 'step') {
@@ -42,8 +42,6 @@
 			showLayerOptionId.set(layerEntry.id);
 		}
 	};
-
-	// 非同期関数を初期化時に実行
 
 	const toggleChecked = (id: string) => {
 		showColors = !showColors;
