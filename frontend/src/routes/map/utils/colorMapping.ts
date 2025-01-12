@@ -52,6 +52,35 @@ export const generateNumberAndColorMap = (
 	};
 };
 
+/**
+ * カラーパレットを生成する関数
+ * @param rows 縦方向の段階数（明度）
+ * @param cols 横方向の段階数（色相）
+ * @returns 2次元配列としてのカラーパレット
+ */
+export const generateColorPalette = (rows: number, cols: number): string[][] => {
+	// 色相スケール (横方向)
+	const hueScale = scaleLinear().domain([0, cols]).range([0, 360]);
+
+	// 明度スケール (縦方向)
+	const lightnessScale = scaleLinear().domain([0, rows]).range([90, 30]);
+
+	// 2次元配列のカラーパレットを生成
+	const palette: string[][] = [];
+	for (let i = 0; i < rows; i++) {
+		const row: string[] = [];
+		for (let j = 0; j < cols; j++) {
+			const hue = hueScale(j) as number; // scaleLinear の戻り値は number | undefined
+			const lightness = lightnessScale(i) as number;
+			const hexColor = color(`hsl(${hue}, 100%, ${lightness}%)`).formatHex();
+
+			row.push(hexColor);
+		}
+		palette.push(row);
+	}
+	return palette;
+};
+
 // export const generateGradientColorScale = (
 // 	mapping: ColorStepExpressions['mapping']
 // ): {

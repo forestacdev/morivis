@@ -134,6 +134,6 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			}
 		},
 		extension: {},
-		debug: true
+		debug: false
 	}
 ];

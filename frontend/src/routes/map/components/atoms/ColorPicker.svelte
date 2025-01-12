@@ -5,7 +5,7 @@
 
 <label class="flex cursor-pointer items-center justify-between">
 	{#if label}
-		<span class="">{label}</span>
+		<span class="select-none">{label}</span>
 	{/if}
 	<div
 		class="grid h-[30px] w-[30px] place-items-center rounded-full"

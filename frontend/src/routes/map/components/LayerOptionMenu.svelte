@@ -75,7 +75,7 @@
 					</button>
 					<button onclick={copyLayer}> コピーの作成 </button>
 				</div>
-				<div class="h-full flex-grow overflow-x-hidden overscroll-y-auto">
+				<div class="h-full flex-grow overflow-x-hidden">
 					{#if layerToEdit.type === 'vector'}
 						<VectorOptionMenu bind:layerToEdit />
 					{/if}
