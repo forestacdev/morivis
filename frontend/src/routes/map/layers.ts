@@ -16,11 +16,7 @@ import type {
 	DataDrivenPropertyValueSpecification,
 	ColorSpecification
 } from 'maplibre-gl';
-import {
-	GEOJSON_BASE_PATH,
-	EXCLUDE_IDS_CLICK_LAYER,
-	GIFU_DATA_BASE_PATH
-} from '$routes/map/constants';
+
 import {
 	clickableVectorIds,
 	clickableRasterIds,
@@ -41,7 +37,7 @@ import type {
 	PolygonStyle,
 	LineStringStyle,
 	LabelStyle
-} from '$map/data/vector/style';
+} from '$map/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$map/utils/colorMapping';
 import { get } from 'svelte/store';

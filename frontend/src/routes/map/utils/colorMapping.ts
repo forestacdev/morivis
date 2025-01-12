@@ -26,13 +26,13 @@ export const generateNumberAndColorMap = (
 	}
 
 	// 数値スケールの生成
-	const scale = scaleLinear()
+	const scale = scaleLinear<string>()
 		.domain(range) // データの範囲
 		.nice() // きれいな値に調整
 		.ticks(divisions);
 
-	const minColor = '#0000FF';
-	const maxColor = '#FF0000';
+	const minColor = mapping.values[0];
+	const maxColor = mapping.values[1];
 
 	// 色スケールの生成
 	// const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
@@ -42,7 +42,7 @@ export const generateNumberAndColorMap = (
 		.range([minColor, maxColor]); // 最小色と最大色
 
 	// 各値に対応する色を生成
-	const colors = scale.map((value) => colorScale(value));
+	const colors = scale.map((value: string) => colorScale(value));
 
 	return {
 		categories: scale,

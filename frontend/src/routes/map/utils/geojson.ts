@@ -42,7 +42,7 @@ export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 // };
 
 /** fgbを取得してGeoJSONで返す */
-export const getFgbToGeojson = async (url: string): GeoJSON.GeoJSON => {
+export const getFgbToGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
 		// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
@@ -54,7 +54,7 @@ export const getFgbToGeojson = async (url: string): GeoJSON.GeoJSON => {
 
 		const featureIterator = fgb.deserialize(response.body as ReadableStream);
 
-		const geojson: GeoJSON.GeoJSON = {
+		const geojson: FeatureCollection = {
 			type: 'FeatureCollection',
 			features: []
 		};

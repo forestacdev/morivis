@@ -14,13 +14,12 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$map/data/types/vector';
-	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
 	import {
-		mutableColorMapType,
 		type VectorLayerType,
 		type ColorsExpressions,
 		type LabelsExpressions
-	} from '$routes/map/data/types/vector/style';
+	} from '$map/data/types/vector/style';
+	import { generateNumberAndColorMap, generateNumberMap } from '$map/utils/colorMapping';
 	import { showLayerOptionId } from '$routes/map/store';
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
@@ -158,7 +157,7 @@
 	<!-- 色の選択 -->
 	<h3>色の選択</h3>
 	{#if colorStyle}
-		<div class="full flex w-full items-center">
+		<!-- <div class="full flex w-full items-center">
 			{#each colorOptions as option, idx}
 				<label
 					for={option.key}
@@ -178,7 +177,7 @@
 					<span class="">{option.name}</span>
 				</label>
 			{/each}
-		</div>
+		</div> -->
 		<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.colors.key}>
 			{#each getColorKeys(layerToEdit.style.colors.expressions) as colorType}
 				<option value={colorType.key}>{colorType.name}</option>
@@ -196,11 +195,13 @@
 				{/each}
 			{:else if colorStyle.type === 'step'}
 				<!-- TODO:stepで colorを変更できるようにするか検討 -->
-				<select class="w-full p-2 text-left text-black" bind:value={colorStyle.mapping.colorScale}>
-					{#each mutableColorMapType as type}
-						<option value={type}>{type}</option>
+				<div class="flex-between flex w-full gap-2">
+					{#each colorStyle.mapping.values as _, index}
+						<span>{index === 0 ? '最小' : '最大'}</span>
+						<ColorPicker bind:value={colorStyle.mapping.values[index]} />
 					{/each}
-				</select>
+				</div>
+
 				<RangeSlider
 					label="分類数"
 					bind:value={colorStyle.mapping.divisions}

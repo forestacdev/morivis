@@ -18,10 +18,10 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { mount, onMount } from 'svelte';
 
-	import ZoomControl from './components/control/ZoomControl.svelte';
+	import ZoomControl from './control/ZoomControl.svelte';
 
-	import Attribution from '$map/Attribution.svelte';
-	// import CanvasLayer from '$routes/map/_CanvasLayer.svelte';
+	// import CanvasLayer from '$map/components/_CanvasLayer.svelte';
+	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
@@ -29,6 +29,7 @@
 	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
+	import { MAPLIBRE_POPUP_OPTIONS } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$map/data/types/raster';
@@ -36,12 +37,11 @@
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
+	import { createLayersItems } from '$map/layers';
+	import { createSourcesItems } from '$map/sources';
 	import { mapStore } from '$map/store/map';
 	import { convertToGeoJSONCollection } from '$map/utils/geojson';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
-	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/map/constants';
-	import { createLayersItems } from '$routes/map/layers';
-	import { createSourcesItems } from '$routes/map/sources';
 	import {
 		addedLayerIds,
 		showLayerOptionId,

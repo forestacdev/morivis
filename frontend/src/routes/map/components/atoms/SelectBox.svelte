@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { VectorLayerType } from '$routes/map/data/types/vector/style';
+	import type { VectorLayerType } from '$map/data/types/vector/style';
 	let {
 		group = $bindable(),
 		options = $bindable()

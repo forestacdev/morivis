@@ -7,7 +7,7 @@
 	import { addedLayerIds, showLayerOptionId, isAnimation, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { getImagePmtiles } from '$map/utils/raster';
-	import type { ColorsExpressions } from '$routes/map/data/types/vector/style';
+	import type { ColorsExpressions } from '$map/data/types/vector/style';
 
 	// TODO エラー チェックをすると発生
 	let { layerEntry = $bindable(), toggleVisible }: { layerEntry: GeoDataEntry } = $props();
