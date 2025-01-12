@@ -287,7 +287,10 @@
 
 		// if (!geojson) return;
 		// ポッアップの作成
-		// generatePopup(feature, lngLat);
+		if (import.meta.env.DEV) {
+			console.log('featureId', featureId);
+			generatePopup(feature, lngLat);
+		}
 
 		$selectedHighlightData = {
 			layerData: entry,

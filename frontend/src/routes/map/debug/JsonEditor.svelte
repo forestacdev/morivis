@@ -42,7 +42,7 @@
 	});
 </script>
 
-<div class=" z-10 max-h-full w-[500px] overflow-y-auto" bind:this={container}></div>
+<div class=" z-10 h-[600px] max-h-full w-[500px] overflow-y-auto" bind:this={container}></div>
 
 <style>
 </style>

@@ -199,7 +199,14 @@ const generateStepExpression = (
 	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
 	const expression = [
 		'step',
-		['coalesce', ['to-number', ['get', key], -9999], -9999] // 数値以外の場合に -9999 を使用
+		[
+			'case',
+			['==', ['get', key], null],
+			-9999, // 値が null の場合
+			['!=', ['to-number', ['get', key], -9999], -9999], // 数値に変換可能な場合
+			['to-number', ['get', key], -9999], // 数値を使用
+			-9999 // デフォルトは -9999
+		] // 数値以外の場合に -9999 を使用
 	];
 
 	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
@@ -213,9 +220,14 @@ const generateStepExpression = (
 	expression.push('#00000000');
 
 	// 残りのカテゴリと対応する色を追加
-	for (let i = 1; i < categories.length; i++) {
-		expression.push(categories[i], values[i]);
-	}
+	// for (let i = 0; i < categories.length; i++) {
+	// 	expression.push(categories[i], values[i]);
+	// }
+
+	categories.forEach((category, index) => {
+		// カテゴリの値と対応する色をステップ式に追加
+		expression.push(category, values[index]);
+	});
 
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };

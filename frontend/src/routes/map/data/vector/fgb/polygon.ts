@@ -74,7 +74,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 						mapping: {
 							range: [0, 100],
 							divisions: 5,
-							values: ['#ff0000', '#059854']
+							values: ['#ffffff', '#059854']
 						}
 					},
 					{
@@ -84,7 +84,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 						mapping: {
 							range: [0, 1],
 							divisions: 5,
-							values: ['#ff0000', '#059854']
+							values: ['#ffffff', '#ff0000']
 						}
 					}
 				]
@@ -134,6 +134,6 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			}
 		},
 		extension: {},
-		debug: false
+		debug: true
 	}
 ];

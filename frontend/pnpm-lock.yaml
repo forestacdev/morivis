@@ -56,15 +56,15 @@ importers:
       colormap:
         specifier: ^2.3.2
         version: 2.3.2
+      d3-color:
+        specifier: ^3.1.0
+        version: 3.1.0
       d3-interpolate:
         specifier: ^3.0.1
         version: 3.0.1
       d3-scale:
         specifier: ^4.0.2
         version: 4.0.2
-      d3-scale-chromatic:
-        specifier: ^3.1.0
-        version: 3.1.0
       earcut:
         specifier: ^3.0.1
         version: 3.0.1
@@ -1813,10 +1813,6 @@ packages:
 
   d3-interpolate@3.0.1:
     resolution: {integrity: sha512-3bYs1rOD33uo8aqJfKP3JWPAibgw8Zm2+L9vBKEHJ2Rg+viTR7o5Mmv5mZcieN+FRYaAOWX5SJATX6k1PWz72g==}
-    engines: {node: '>=12'}
-
-  d3-scale-chromatic@3.1.0:
-    resolution: {integrity: sha512-A3s5PWiZ9YCXFye1o246KoscMWqf8BsD9eRiJ3He7C9OBaxKhAd5TFCdEx/7VbKtxxTsu//1mMJFrEt572cEyQ==}
     engines: {node: '>=12'}
 
   d3-scale@4.0.2:
@@ -5676,11 +5672,6 @@ snapshots:
   d3-interpolate@3.0.1:
     dependencies:
       d3-color: 3.1.0
-
-  d3-scale-chromatic@3.1.0:
-    dependencies:
-      d3-color: 3.1.0
-      d3-interpolate: 3.0.1
 
   d3-scale@4.0.2:
     dependencies:

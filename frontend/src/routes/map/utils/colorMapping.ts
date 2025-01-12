@@ -1,4 +1,3 @@
-import chroma from 'chroma-js';
 import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 import type {
 	VectorLayerType,
@@ -6,11 +5,10 @@ import type {
 	LabelsExpressions,
 	ColorStepExpressions
 } from '$map/data/vector/style';
-import colormap from 'colormap';
 
-import { scaleLinear, scaleSequential } from 'd3-scale';
+import { scaleLinear } from 'd3-scale';
 import { interpolateRgb } from 'd3-interpolate';
-import { interpolateOrRd, interpolateBrBG, interpolatePRGn } from 'd3-scale-chromatic';
+import { color } from 'd3-color';
 
 export const generateNumberAndColorMap = (
 	mapping: ColorStepExpressions['mapping']
@@ -42,7 +40,11 @@ export const generateNumberAndColorMap = (
 		.range([minColor, maxColor]); // 最小色と最大色
 
 	// 各値に対応する色を生成
-	const colors = scale.map((value: string) => colorScale(value));
+	const colors = scale.map((value: string) => {
+		const rgbColor = colorScale(value);
+		const hexColor = color(rgbColor).formatHex();
+		return hexColor;
+	});
 
 	return {
 		categories: scale,
