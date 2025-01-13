@@ -21,6 +21,7 @@
 		type ColorsExpressions,
 		type LabelsExpressions
 	} from '$map/data/types/vector/style';
+	import { mapStore } from '$map/store/map';
 	import {
 		generateNumberAndColorMap,
 		generateNumberMap,
@@ -128,9 +129,25 @@
 	const openColorOption = (key: string) => {
 		if (colorOptionKey === key) {
 			colorOptionKey = null;
-			return;
+		} else {
+			colorOptionKey = key;
 		}
-		colorOptionKey = key;
+
+		// TODO: 他のレイヤーを非表示にする表現
+		// const map = mapStore.getMap();
+		// if (!map) return;
+		// const orderedLayerIds = map.getLayersOrder();
+		// orderedLayerIds.forEach((layerId) => {
+		// 	if (colorOptionKey) {
+		// 		if (layerId === $showLayerOptionId) {
+		// 			map?.setLayoutProperty(layerId, 'visibility', 'visible');
+		// 		} else {
+		// 			map?.setLayoutProperty(layerId, 'visibility', 'none');
+		// 		}
+		// 	} else {
+		// 		map?.setLayoutProperty(layerId, 'visibility', 'visible');
+		// 	}
+		// });
 	};
 
 	let colorPalette = $state(generateColorPalette(7, 7));
@@ -299,7 +316,7 @@
 					/>
 					{#if stepPallet}
 						{#each stepPallet.categories as _, index}
-							<div class="flex-between flex w-full gap-2">
+							<div class="flex-between flex w-full select-none gap-2">
 								<div class="w-full">{stepPallet.categories[index]}</div>
 								<div class="p-2" style="background-color: {stepPallet.values[index]};"></div>
 							</div>

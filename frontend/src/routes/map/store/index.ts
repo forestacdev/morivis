@@ -114,7 +114,7 @@ export const isAnimation = writable<boolean>(false);
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;
-	featureId: number | string;
+	featureId: number;
 }
 export const selectedHighlightData = writable<SelectedHighlightData | null>(null);
 

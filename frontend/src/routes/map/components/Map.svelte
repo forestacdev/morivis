@@ -70,6 +70,7 @@
 	let maplibreMarker = $state<Marker | null>(null); // マーカー
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
+	let sidePopupData = $state<MapGeoJSONFeature | null>(null);
 
 	// TODO: CanvasLayerの実装
 	// let canvasSource = $state<CanvasSourceSpecification>({
@@ -103,9 +104,36 @@
 			sources: {
 				terrain: gsiTerrainSource,
 				...sources
-				// canvasSource
+				// base_map_source: {
+				// 	type: 'raster',
+				// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+				// 	tileSize: 256,
+				// 	maxzoom: 18,
+				// 	attribution:
+				// 		'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+				// }
 			},
-			layers: [...layers],
+			layers: [
+				// {
+				// 	id: 'base_map_layer',
+				// 	type: 'raster',
+				// 	source: 'base_map_source',
+				// 	paint: {
+				// 		'raster-brightness-min': 0.5,
+				// 		'raster-brightness-max': 0.0
+				// 	}
+				// },
+				// {
+				// 	id: 'base_map_hillshade',
+				// 	type: 'hillshade',
+				// 	source: 'terrain',
+				// 	hillshadeExaggeration: 0.05,
+				// 	hillshadeHighlightColor: '#fff',
+				// 	hillshadeShadowColor: '#000',
+				// 	hillshadeAccentColor: '#000'
+				// },
+				...layers
+			],
 			terrain: terrain ? terrain : undefined
 		};
 
@@ -288,6 +316,10 @@
 		// 	return;
 		// }
 
+		if (!features || features?.length === 0) {
+			return;
+		}
+
 		const selectedVecterLayersId = features.map((feature) => feature.layer.id);
 		const selectedRasterLayersId = layerEntries
 			.filter((entry) => {
@@ -305,9 +337,11 @@
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 		clickedLngLat = e.lngLat;
 		generateMarker(clickedLngLat);
-		return;
+		// return;
 
 		const feature = features[0];
+		sidePopupData = feature;
+		return;
 
 		const lngLat = e.lngLat;
 
@@ -373,7 +407,7 @@
 	<ZoomControl />
 	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
-	<SidePopup />
+	<SidePopup bind:sidePopupData {layerEntries} />
 	<DataManu />
 	<InfoDialog />
 	<TermsOfServiceDialog />

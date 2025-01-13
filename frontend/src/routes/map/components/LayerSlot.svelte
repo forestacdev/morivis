@@ -6,6 +6,7 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
 	import { addedLayerIds, showLayerOptionId, isAnimation, isEdit } from '$map/store';
+	import { mapStore } from '$map/store/map';
 
 	let {
 		layerEntry = $bindable(),
@@ -40,13 +41,41 @@
 			showLayerOptionId.set('');
 		} else {
 			showLayerOptionId.set(layerEntry.id);
+			mapStore.focusLayer(layerEntry);
 		}
 	};
 
 	const toggleChecked = (id: string) => {
 		showColors = !showColors;
+
 		toggleVisible(id);
 	};
+
+	isEdit.subscribe((value) => {
+		if (value) {
+			const map = mapStore.getMap();
+			if (map) {
+				const center = map.getCenter();
+
+				map.panTo(center, {
+					pitch: 45,
+					bearing: -30,
+					duration: 600
+				});
+			}
+		} else {
+			const map = mapStore.getMap();
+			if (map) {
+				const center = map.getCenter();
+
+				map.panTo(center, {
+					pitch: 0,
+					bearing: 0,
+					duration: 600
+				});
+			}
+		}
+	});
 </script>
 
 <div class="relative">

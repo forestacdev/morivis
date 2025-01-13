@@ -31,7 +31,7 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import turfBbox from '@turf/bbox';
 import { getParams } from '$map/utils/url';
-import { DEBUG_MODE } from '$map/store';
+import { DEBUG_MODE, showLayerOptionId } from '$map/store';
 import type { GeoDataEntry } from '../data/types';
 import { GeojsonCache } from '../utils/geojson';
 
@@ -135,6 +135,11 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
+		// showLayerOptionId.subscribe((id) => {
+		// 	if (!map) return;
+
+		// });
+
 		// const iconWorker = new Worker(new URL('../utils/icon/worker.ts', import.meta.url), {
 		// 	type: 'module'
 		// });
@@ -216,14 +221,20 @@ const createMapStore = () => {
 				const geojson = GeojsonCache.get(entry.id);
 				if (!geojson) return;
 				const bbox = turfBbox(geojson) as [number, number, number, number];
-				map.fitBounds(bbox);
+				map.fitBounds(bbox, {
+					padding: 100,
+					duration: 500
+				});
 			} catch (error) {
 				console.error(error);
 			}
 		} else if (entry.metaData.location) {
 			const bbox = getLocationBbox(entry.metaData.location);
 			if (bbox) {
-				map.fitBounds(bbox);
+				map.fitBounds(bbox, {
+					padding: 100,
+					duration: 500
+				});
 			}
 		} else {
 			console.warn('フォーカスの処理に対応してません', entry.id);

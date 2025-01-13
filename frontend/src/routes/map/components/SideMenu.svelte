@@ -1,9 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { indexOf } from 'es-toolkit/compat';
 	import gsap from 'gsap';
 	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
-	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
@@ -25,9 +23,6 @@
 		showSideMenu.set(false);
 		showTermsDialog.set(!$showTermsDialog);
 	};
-
-	onMount(() => {});
-
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
 	});
@@ -36,7 +31,7 @@
 {#if $showSideMenu}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute z-10 h-full w-full bg-black bg-opacity-50"
+		class="absolute z-30 h-full w-full bg-black bg-opacity-50"
 		role="button"
 		tabindex="0"
 		onclick={() => showSideMenu.set(false)}
@@ -48,7 +43,7 @@
 	></div>
 	<div
 		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
-		class="bg-main absolute z-20 flex h-full w-[300px] flex-col gap-2 p-2"
+		class="bg-main absolute z-30 flex h-full w-[300px] flex-col gap-2 p-2"
 	>
 		<div class="flex items-center justify-between">
 			<Logo />

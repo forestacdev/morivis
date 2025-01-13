@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="pointer-events-none absolute left-0 top-0 z-10 flex w-full flex-grow items-center justify-start gap-2 p-2"
+	class="pointer-events-none absolute left-0 top-0 z-20 flex w-full flex-grow items-center justify-start gap-2 p-2"
 >
 	<button
 		class="bg-main pointer-events-auto rounded-full p-2 text-left"
