@@ -302,6 +302,9 @@
 			if (clickedLngLat) {
 				clickedLngLat = null;
 			}
+			if (sidePopupData) {
+				sidePopupData = null;
+			}
 			return;
 		}
 
@@ -407,7 +410,9 @@
 	<ZoomControl />
 	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
-	<SidePopup bind:sidePopupData {layerEntries} />
+	{#if sidePopupData}
+		<SidePopup bind:sidePopupData {layerEntries} />
+	{/if}
 	<DataManu />
 	<InfoDialog />
 	<TermsOfServiceDialog />

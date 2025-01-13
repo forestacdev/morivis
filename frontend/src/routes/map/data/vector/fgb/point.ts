@@ -20,7 +20,8 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		},
 		properties: {
 			keys: ['種類'],
-			dict: null
+			dict: null,
+			imageKey: 'image'
 		},
 		interaction: {
 			clickable: true,
