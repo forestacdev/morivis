@@ -3,7 +3,7 @@
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # .webp ファイルを削除
-find "$script_dir/../static/images" -type f -iname '*.webp' | xargs rm
+# find "$script_dir/../static/images" -type f -iname '*.webp' | xargs rm
 
 # .jpg または .png ファイルを検索
 Files=$(find "$script_dir/../static/images" -type f \( -iname '*.jpg' -o -iname '*.png' \))
