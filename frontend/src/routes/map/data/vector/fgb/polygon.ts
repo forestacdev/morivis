@@ -16,7 +16,8 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			attribution: '森林文化アカデミー', // データの出典
 			location: '森林文化アカデミー',
 			maxZoom: 24, // 表示するズームレベルの最大値
-			bounds: null // データの範囲
+			bounds: null, // データの範囲
+			coverImage: './images/ensyurin.webp'
 		},
 		properties: {
 			keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],

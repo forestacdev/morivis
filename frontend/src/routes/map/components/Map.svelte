@@ -10,6 +10,7 @@
 		CanvasSourceSpecification,
 		LayerSpecification,
 		TerrainSpecification,
+		BackgroundLayerSpecification,
 		Marker,
 		LngLat,
 		Popup
@@ -90,6 +91,15 @@
 	// 	source: 'canvasSource'
 	// });
 
+	// let overlayLayer = $state<BackgroundLayerSpecification>({
+	// 	id: 'overlay-layer',
+	// 	type: 'background',
+	// 	paint: {
+	// 		'background-color': '#000000',
+	// 		'background-opacity': 0.0
+	// 	}
+	// });
+
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
@@ -133,6 +143,7 @@
 				// 	hillshadeAccentColor: '#000'
 				// },
 				...layers
+				// overlayLayer
 			],
 			terrain: terrain ? terrain : undefined
 		};

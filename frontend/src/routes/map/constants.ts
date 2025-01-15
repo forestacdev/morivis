@@ -28,9 +28,10 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 export const INT_ADD_LAYER_IDS = [
 	// 'cog_test',
 	'ensyurin_pole',
+	'fac_building',
 	'ensyurin_road',
 	'ensyurin_rinhan',
-	'gifu_sugi_kansetugai',
+	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
 	// 'gsi_slopemap',
 	'gsi_seamlessphoto'

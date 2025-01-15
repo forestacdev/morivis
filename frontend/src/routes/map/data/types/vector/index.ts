@@ -30,6 +30,7 @@ export interface TileMetaData {
 	maxZoom: number;
 	sourceLayer: string;
 	bounds: [number, number, number, number] | null;
+	coverImage: string | null;
 }
 
 export interface GeoJsonMetaData {
@@ -39,6 +40,7 @@ export interface GeoJsonMetaData {
 	location: Region;
 	maxZoom: number;
 	bounds: [number, number, number, number] | null;
+	coverImage: string | null;
 }
 
 interface BaseVectorEntry {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { BackgroundLayerSpecification } from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
 	import LayerIcon from '$map/components/LayerIcon.svelte';
@@ -51,38 +52,100 @@
 		toggleVisible(id);
 	};
 
-	isEdit.subscribe((value) => {
-		if (value) {
-			const map = mapStore.getMap();
-			if (map) {
-				const center = map.getCenter();
+	let overlayLayerId = '';
 
-				map.panTo(center, {
-					pitch: 45,
-					bearing: -30,
-					duration: 600
-				});
-			}
-		} else {
-			const map = mapStore.getMap();
-			if (map) {
-				const center = map.getCenter();
-
-				map.panTo(center, {
-					pitch: 0,
-					bearing: 0,
-					duration: 600
-				});
-			}
+	const overlayLayer: BackgroundLayerSpecification = {
+		id: 'overlay-layer',
+		type: 'background',
+		paint: {
+			'background-color': '#000000',
+			'background-opacity': 0.8
 		}
-	});
+	};
+
+	let edit = false;
+
+	// isEdit.subscribe((value) => {
+	// 	console.log('isEdit:', value);
+	// 	const map = mapStore.getMap();
+	// 	if (!map) return;
+	// 	if (value) {
+	// 		const layersIds = map.getLayersOrder();
+
+	// 		// 現在のレイヤーの上のれヤーを取得
+	// 		const layerIndex = layersIds.indexOf(layerEntry.id);
+	// 		overlayLayerId = layersIds[layerIndex + 1];
+
+	// 		map.addLayer(overlayLayer);
+	// 		map.moveLayer(layerEntry.id);
+
+	// 		const center = map.getCenter();
+
+	// 		map.panTo(center, {
+	// 			pitch: 45,
+	// 			bearing: -30,
+	// 			duration: 600
+	// 		});
+	// 	} else {
+	// 		if (!overlayLayerId) return;
+	// 		if (!map.getLayer(overlayLayerId)) return;
+	// 		map.moveLayer(layerEntry.id, overlayLayerId);
+	// 		map.removeLayer('overlay-layer');
+
+	// 		const center = map.getCenter();
+	// 		map.panTo(center, {
+	// 			pitch: 0,
+	// 			bearing: 0,
+	// 			duration: 600
+	// 		});
+	// 	}
+	// });
+
+	const setEdit = () => {
+		const layerId = layerEntry.id;
+		edit = !edit;
+		const map = mapStore.getMap();
+		if (!map) return;
+		if (edit) {
+			isEdit.set(true);
+			const layersIds = map.getLayersOrder();
+
+			// 現在のレイヤーの上のれヤーを取得
+			const layerIndex = layersIds.indexOf(layerId);
+			overlayLayerId = layersIds[layerIndex + 1];
+
+			map.addLayer(overlayLayer);
+			map.moveLayer(layerId);
+
+			const center = map.getCenter();
+
+			map.panTo(center, {
+				pitch: 45,
+				bearing: -30,
+				duration: 600
+			});
+		} else {
+			isEdit.set(false);
+			if (!overlayLayerId) return;
+			if (!map.getLayer(overlayLayerId)) return;
+			map.moveLayer(layerId, overlayLayerId);
+			map.removeLayer('overlay-layer');
+
+			const center = map.getCenter();
+			map.panTo(center, {
+				pitch: 0,
+				bearing: 0,
+				duration: 600
+			});
+		}
+	};
 </script>
 
 <div class="relative">
 	{#if $showLayerOptionId === layerEntry.id}
 		<button
 			class="bg-base trans absolute bottom-0 right-0 z-20 rounded-full p-2 text-xs text-white"
-			onclick={() => ($isEdit = !$isEdit)}
+			onclick={setEdit}
 			>編集
 		</button>
 	{/if}

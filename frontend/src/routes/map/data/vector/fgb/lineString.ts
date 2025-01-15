@@ -16,7 +16,8 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
 			maxZoom: 24,
-			bounds: null
+			bounds: null,
+			coverImage: null
 		},
 		properties: {
 			keys: ['種類'],

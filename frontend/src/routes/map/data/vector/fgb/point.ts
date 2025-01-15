@@ -16,7 +16,8 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
 			maxZoom: 24,
-			bounds: null
+			bounds: null,
+			coverImage: null
 		},
 		properties: {
 			keys: ['種類'],
@@ -73,6 +74,76 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		debug: false
 	},
 	{
+		id: 'fac_building',
+		type: 'vector',
+		format: {
+			type: 'fgb',
+			geometryType: 'Point',
+			url: './fgb/fac_building_point.fgb'
+		},
+		metaData: {
+			name: 'アカデミー施設',
+			description: '森林文化アカデミーの施設',
+			attribution: '森林文化アカデミー',
+			location: '森林文化アカデミー',
+			maxZoom: 22,
+			bounds: null,
+			coverImage: null
+		},
+		properties: {
+			keys: ['name', '建物名称', '構造規模'],
+			dict: null
+		},
+		interaction: {
+			clickable: true,
+			searchKeys: ['name']
+		},
+		style: {
+			type: 'circle',
+			opacity: 0.8, // 透過率
+			colors: {
+				key: '単色',
+				expressions: [
+					{
+						type: 'single',
+						key: '単色',
+						name: '単色',
+						mapping: {
+							value: '#004cfd'
+						}
+					}
+				]
+			},
+			labels: {
+				key: '名前',
+				show: false,
+				expressions: [
+					{
+						key: '名前',
+						name: '建物名称',
+						value: '{name}'
+					}
+				]
+			},
+			default: {
+				circle: {
+					paint: {},
+					layout: {}
+				},
+				symbol: {
+					paint: {},
+					layout: {}
+				},
+				heatmap: {
+					paint: {},
+					layout: {}
+				}
+			}
+		},
+		extension: {},
+		debug: false
+	},
+	{
 		id: 'fac_phenology_2020',
 		type: 'vector',
 		format: {
@@ -85,8 +156,9 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			description: '森林環境教育専攻のフェノロジー調査のデータ',
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
-			maxZoom: 24,
-			bounds: null
+			maxZoom: 22,
+			bounds: null,
+			coverImage: null
 		},
 		properties: {
 			keys: ['種名'],
