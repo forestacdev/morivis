@@ -17,12 +17,11 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 24,
 			bounds: null,
-			coverImage: null
+			coverImage: './images/pole_3.webp'
 		},
 		properties: {
 			keys: ['種類'],
-			dict: null,
-			imageKey: 'image'
+			dict: null
 		},
 		interaction: {
 			clickable: true,
@@ -88,7 +87,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 22,
 			bounds: null,
-			coverImage: null
+			coverImage: './images/akademi-senta-.webp'
 		},
 		properties: {
 			keys: ['name', '建物名称', '構造規模'],

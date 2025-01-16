@@ -6,7 +6,7 @@
 	import LayerIcon from '$map/components/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
-	import { addedLayerIds, showLayerOptionId, isAnimation, isEdit } from '$map/store';
+	import { addedLayerIds, showLayerOptionId, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -156,7 +156,6 @@
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
-		class:pointer-events-none={$isAnimation}
 		onclick={toggleEdit}
 		style:width={$showLayerOptionId === layerEntry.id
 			? '100%'

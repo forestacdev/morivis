@@ -95,7 +95,7 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 export const isSide = writable<Side>(null);
 
 /** データメニューの表示 */
-export const showDataMenu = writable<boolean>(false);
+export const showDataMenu = writable<boolean>(true);
 
 /** インフォメーションの表示 */
 export const showInfoDialog = writable<boolean>(false);
@@ -108,9 +108,6 @@ export const showSidePopup = writable<boolean>(false);
 
 /** レイヤーオプションの表示 TODO:Editと混在 */
 export const showLayerOptionId = writable<string>('');
-
-/** TODO: アニメーションの状態 */
-export const isAnimation = writable<boolean>(false);
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;

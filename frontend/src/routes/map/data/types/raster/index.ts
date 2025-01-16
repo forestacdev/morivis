@@ -97,6 +97,7 @@ interface RasterMetaData {
 	tileSize: TileSize;
 	xyzImageTile: TileXYZ | null;
 	bounds: [number, number, number, number] | null;
+	coverImage: string | null;
 }
 
 export interface RasterInteraction {
