@@ -9,26 +9,44 @@ export interface PropData {
 }
 
 export const propData: PropData = {
-	aozyutaki: {
-		image: `${BASE_IMAGE_PATH}aozyutaki.webp`,
+	// ポール
+	pole_1: {
+		image: `${BASE_IMAGE_PATH}pole_1.webp`,
 		description: '',
 		url: null
 	},
-	azumaya_1: {
-		image: `${BASE_IMAGE_PATH}azumaya_1.webp`,
+	pole_2: {
+		image: `${BASE_IMAGE_PATH}pole_2.webp`,
 		description: '',
 		url: null
 	},
-	azumaya_kezikabora: {
-		image: `${BASE_IMAGE_PATH}azumaya_kezikabora.webp`,
+	pole_3: {
+		image: `${BASE_IMAGE_PATH}pole_3.webp`,
 		description: '',
 		url: null
 	},
-	ensyurin: {
-		image: `${BASE_IMAGE_PATH}ensyurin.webp`,
+	pole_4: {
+		image: `${BASE_IMAGE_PATH}pole_4.webp`,
 		description: '',
 		url: null
 	},
+	pole_5: {
+		image: `${BASE_IMAGE_PATH}pole_5.webp`,
+		description: '',
+		url: null
+	},
+	pole_6: {
+		image: `${BASE_IMAGE_PATH}pole_6.webp`,
+		description: '',
+		url: null
+	},
+	pole_a: {
+		image: `${BASE_IMAGE_PATH}pole_a.webp`,
+		description: '',
+		url: null
+	},
+	// アカデミー施設
+
 	sinrinken: {
 		image: `${BASE_IMAGE_PATH}sinrinken.webp`,
 		description: '森林・林業に関する公設研究機関です。',
@@ -118,132 +136,7 @@ export const propData: PropData = {
 			'一般県民向け生涯学習講座のための施設。広いスペースを設け各種講座をサポートします。',
 		url: null
 	},
-	gate_ensyurin: {
-		image: `${BASE_IMAGE_PATH}gate_ensyurin.webp`,
-		description: '',
-		url: null
-	},
-	gate_kokuyurin: {
-		image: `${BASE_IMAGE_PATH}gate_kokuyurin.webp`,
-		description: '',
-		url: null
-	},
-	hebiotaki: {
-		image: `${BASE_IMAGE_PATH}hebiotaki.webp`,
-		description: '',
-		url: null
-	},
-	heihuuiwa: {
-		image: `${BASE_IMAGE_PATH}heihuuiwa.webp`,
-		description: '',
-		url: null
-	},
-	hirumesiiwa: {
-		image: `${BASE_IMAGE_PATH}hirumesiiwa.webp`,
-		description: '',
-		url: null
-	},
-	kezikaboraike: {
-		image: `${BASE_IMAGE_PATH}kezikaboraike.webp`,
-		description: '',
-		url: null
-	},
-	miharasiiwa: {
-		image: `${BASE_IMAGE_PATH}miharasiiwa.webp`,
-		description: '',
-		url: null
-	},
-	mokudou: {
-		image: `${BASE_IMAGE_PATH}mokudou.webp`,
-		description: '',
-		url: null
-	},
-	morinoiriguti: {
-		image: `${BASE_IMAGE_PATH}morinoiriguti.webp`,
-		description: '',
-		url: null
-	},
-	nagamenoiwa: {
-		image: `${BASE_IMAGE_PATH}nagamenoiwa.webp`,
-		description: '',
-		url: null
-	},
-	no_image: {
-		image: `${BASE_IMAGE_PATH}no_image.webp`,
-		description: '',
-		url: null
-	},
-	oosugi: {
-		image: `${BASE_IMAGE_PATH}oosugi.webp`,
-		description: '',
-		url: null
-	},
-	pole_1: {
-		image: `${BASE_IMAGE_PATH}pole_1.webp`,
-		description: '',
-		url: null
-	},
-	pole_2: {
-		image: `${BASE_IMAGE_PATH}pole_2.webp`,
-		description: '',
-		url: null
-	},
-	pole_3: {
-		image: `${BASE_IMAGE_PATH}pole_3.webp`,
-		description: '',
-		url: null
-	},
-	pole_4: {
-		image: `${BASE_IMAGE_PATH}pole_4.webp`,
-		description: '',
-		url: null
-	},
-	pole_5: {
-		image: `${BASE_IMAGE_PATH}pole_5.webp`,
-		description: '',
-		url: null
-	},
-	pole_6: {
-		image: `${BASE_IMAGE_PATH}pole_6.webp`,
-		description: '',
-		url: null
-	},
-	pole_a: {
-		image: `${BASE_IMAGE_PATH}pole_a.webp`,
-		description: '',
-		url: null
-	},
-	steel_tower_b: {
-		image: `${BASE_IMAGE_PATH}steel_tower_b.webp`,
-		description: '',
-		url: null
-	},
-	steel_tower_c: {
-		image: `${BASE_IMAGE_PATH}steel_tower_c.webp`,
-		description: '',
-		url: null
-	},
-	sumiyakigoya: {
-		image: `${BASE_IMAGE_PATH}sumiyakigoya.webp`,
-		description: '',
-		url: null
-	},
-
-	toilet: {
-		image: `${BASE_IMAGE_PATH}toilet.webp`,
-		description: '',
-		url: null
-	},
-	umanoseiwa: {
-		image: `${BASE_IMAGE_PATH}umanoseiwa.webp`,
-		description: '',
-		url: null
-	},
-	yamanokami: {
-		image: `${BASE_IMAGE_PATH}yamanokami.webp`,
-		description: '',
-		url: null
-	},
+	// 自力建設
 	ziriki_01: {
 		image: `${BASE_IMAGE_PATH}ziriki_01.webp`,
 		description: '',
@@ -346,6 +239,118 @@ export const propData: PropData = {
 	},
 	ziriki_21: {
 		image: `${BASE_IMAGE_PATH}ziriki_21.webp`,
+		description: '',
+		url: null
+	},
+	gate_ensyurin: {
+		image: `${BASE_IMAGE_PATH}gate_ensyurin.webp`,
+		description: '',
+		url: null
+	},
+	aozyutaki: {
+		image: `${BASE_IMAGE_PATH}aozyutaki.webp`,
+		description: '',
+		url: null
+	},
+	azumaya_1: {
+		image: `${BASE_IMAGE_PATH}azumaya_1.webp`,
+		description: '',
+		url: null
+	},
+	azumaya_kezikabora: {
+		image: `${BASE_IMAGE_PATH}azumaya_kezikabora.webp`,
+		description: '',
+		url: null
+	},
+	gate_kokuyurin: {
+		image: `${BASE_IMAGE_PATH}gate_kokuyurin.webp`,
+		description: '',
+		url: null
+	},
+	hebiotaki: {
+		image: `${BASE_IMAGE_PATH}hebiotaki.webp`,
+		description: '',
+		url: null
+	},
+	heihuuiwa: {
+		image: `${BASE_IMAGE_PATH}heihuuiwa.webp`,
+		description: '',
+		url: null
+	},
+	hirumesiiwa: {
+		image: `${BASE_IMAGE_PATH}hirumesiiwa.webp`,
+		description: '',
+		url: null
+	},
+	kezikaboraike: {
+		image: `${BASE_IMAGE_PATH}kezikaboraike.webp`,
+		description: '',
+		url: null
+	},
+	miharasiiwa: {
+		image: `${BASE_IMAGE_PATH}miharasiiwa.webp`,
+		description: '',
+		url: null
+	},
+	mokudou: {
+		image: `${BASE_IMAGE_PATH}mokudou.webp`,
+		description: '',
+		url: null
+	},
+	morinoiriguti: {
+		image: `${BASE_IMAGE_PATH}morinoiriguti.webp`,
+		description: '',
+		url: null
+	},
+	nagamenoiwa: {
+		image: `${BASE_IMAGE_PATH}nagamenoiwa.webp`,
+		description: '',
+		url: null
+	},
+	no_image: {
+		image: `${BASE_IMAGE_PATH}no_image.webp`,
+		description: '',
+		url: null
+	},
+	oosugi: {
+		image: `${BASE_IMAGE_PATH}oosugi.webp`,
+		description: '',
+		url: null
+	},
+
+	steel_tower_b: {
+		image: `${BASE_IMAGE_PATH}steel_tower_b.webp`,
+		description: '',
+		url: null
+	},
+	steel_tower_c: {
+		image: `${BASE_IMAGE_PATH}steel_tower_c.webp`,
+		description: '',
+		url: null
+	},
+	sumiyakigoya: {
+		image: `${BASE_IMAGE_PATH}sumiyakigoya.webp`,
+		description: '',
+		url: null
+	},
+
+	toilet: {
+		image: `${BASE_IMAGE_PATH}toilet.webp`,
+		description: '',
+		url: null
+	},
+	umanoseiwa: {
+		image: `${BASE_IMAGE_PATH}umanoseiwa.webp`,
+		description: '',
+		url: null
+	},
+	yamanokami: {
+		image: `${BASE_IMAGE_PATH}yamanokami.webp`,
+		description: '',
+		url: null
+	},
+	ensyurin: {
+		image: `${BASE_IMAGE_PATH}ensyurin.webp`,
 		description: '',
 		url: null
 	}
