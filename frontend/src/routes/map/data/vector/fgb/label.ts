@@ -200,8 +200,8 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			url: './fgb/fac_poi.fgb'
 		},
 		metaData: {
-			name: 'その他地点',
-			description: 'その他地点',
+			name: 'その他施設・林内ランドマーク',
+			description: 'その他施設・林内ランドマーク',
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
 			maxZoom: 22,

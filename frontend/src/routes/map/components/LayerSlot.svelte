@@ -58,7 +58,7 @@
 		id: 'overlay-layer',
 		type: 'background',
 		paint: {
-			'background-color': '#000000',
+			'background-color': '#FFFFFF',
 			'background-opacity': 0.8
 		}
 	};

@@ -350,9 +350,11 @@ export const propData: PropData = {
 		url: null
 	},
 	yamanokami: {
+		// 山の神
 		image: `${FEATURE_IMAGE_BASE_PATH}/yamanokami.webp`,
-		description: '',
-		url: null
+		description:
+			'演習林内には、「山の神」と呼ばれる神聖な場所が存在します。この「山の神」は、巨大な磐座（いわくら）の直下に祀られており、周囲には樹齢100年を超えるスギやヒノキの人工林が広がっています。毎年4月、アカデミーでは「入山式」と称する伝統行事が行われます。この式典では、学長をはじめ教職員や学生、隣接する森林研究所の職員が参加し、「山の神」に対して実習や研修の安全を祈願します。式典では、祝詞の奏上や御玉串の奉納が行われ、最後にはお供え物を参加者全員でいただく「直会（なおらい）」が執り行われます。',
+		url: 'https://www.forest.ac.jp/academy-archives/jimu0423/'
 	},
 	kozyo_kanritou: {
 		image: null,

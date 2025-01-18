@@ -25,7 +25,7 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 			titles: null
 		},
 		interaction: {
-			clickable: true,
+			clickable: false,
 			searchKeys: ['種類']
 		},
 		style: {

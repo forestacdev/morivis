@@ -46,7 +46,7 @@
 {#if $mapMode === 'style'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-10 flex h-full w-[300px] flex-col gap-2 p-2"
+		class="bg-main absolute z-20 flex h-full w-[300px] flex-col gap-2 p-2"
 	>
 		<div class="flex items-center justify-between">
 			<span>レイヤー</span>
