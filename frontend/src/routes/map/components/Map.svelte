@@ -421,9 +421,8 @@
 	<ZoomControl />
 	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
-	{#if sidePopupData}
-		<SidePopup bind:sidePopupData {layerEntries} />
-	{/if}
+	<SidePopup bind:sidePopupData {layerEntries} />
+
 	<DataManu />
 	<InfoDialog />
 	<TermsOfServiceDialog />

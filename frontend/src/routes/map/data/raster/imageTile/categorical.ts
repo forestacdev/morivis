@@ -18,7 +18,8 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 			maxZoom: 18,
 			tileSize: 256,
 			xyzImageTile: null,
-			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
+			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
+			coverImage: null
 		},
 		interaction: {
 			clickable: true,
@@ -77,7 +78,8 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 			maxZoom: 15,
 			tileSize: 256,
 			xyzImageTile: null,
-			bounds: null
+			bounds: null,
+			coverImage: null
 		},
 		interaction: {
 			clickable: true,

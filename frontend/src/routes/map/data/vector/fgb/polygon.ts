@@ -1,4 +1,5 @@
 import type { GeoJsonMetaData, PolygonEntry } from '$map/data/types/vector';
+import { COVER_IMAGE_BASE_PATH } from '$map/constants';
 
 export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 	// 演習林林班図
@@ -17,12 +18,25 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 24, // 表示するズームレベルの最大値
 			bounds: null, // データの範囲
-			coverImage: './images/ensyurin.webp'
+			coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp` // カバー画像
 		},
 		properties: {
 			keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
 			dict: null,
-			title: '演習林 林班{小林班ID}'
+			titles: [
+				{
+					conditions: ['樹種', '林齢'],
+					template: '{樹種}林 {林齢}年生'
+				},
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '演習林林班'
+				}
+			]
 		},
 		interaction: {
 			// インタラクションの設定

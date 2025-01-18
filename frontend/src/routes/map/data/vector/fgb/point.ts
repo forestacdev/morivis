@@ -1,4 +1,6 @@
 import type { GeoJsonMetaData, PointEntry } from '$map/data/types/vector';
+import { COVER_IMAGE_BASE_PATH } from '$map/constants';
+import { FEATURE_IMAGE_BASE_PATH } from '$map/constants';
 
 export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 	// ポール
@@ -17,12 +19,21 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 24,
 			bounds: null,
-			coverImage: './images/pole_3.webp'
+			coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`
 		},
 		properties: {
 			keys: ['name'],
 			dict: null,
-			title: '{name}'
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: 'サインポール'
+				}
+			]
 		},
 		interaction: {
 			clickable: true,
@@ -88,12 +99,21 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 22,
 			bounds: null,
-			coverImage: './images/fac_center.webp'
+			coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
 		},
 		properties: {
 			keys: ['name', '建物名称', '構造規模'],
 			dict: null,
-			title: '{name}'
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: '施設'
+				}
+			]
 		},
 		interaction: {
 			clickable: true,
@@ -145,6 +165,86 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		debug: false
 	},
 	{
+		id: 'fac_ziriki',
+		type: 'vector',
+		format: {
+			type: 'fgb',
+			geometryType: 'Point',
+			url: './fgb/fac_ziriki_point.fgb'
+		},
+		metaData: {
+			name: '自力建設',
+			description: '自力建設',
+			attribution: '森林文化アカデミー',
+			location: '森林文化アカデミー',
+			maxZoom: 22,
+			bounds: null,
+			coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
+		},
+		properties: {
+			keys: ['name', '年度'],
+			dict: null,
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: '自力建設'
+				}
+			]
+		},
+		interaction: {
+			clickable: true,
+			searchKeys: ['name']
+		},
+		style: {
+			type: 'circle',
+			opacity: 0.8, // 透過率
+			colors: {
+				key: '単色',
+				expressions: [
+					{
+						type: 'single',
+						key: '単色',
+						name: '単色',
+						mapping: {
+							value: '#fb6000'
+						}
+					}
+				]
+			},
+			labels: {
+				key: '名前',
+				show: false,
+				expressions: [
+					{
+						key: '名前',
+						name: '建物名称',
+						value: '{name}'
+					}
+				]
+			},
+			default: {
+				circle: {
+					paint: {},
+					layout: {}
+				},
+				symbol: {
+					paint: {},
+					layout: {}
+				},
+				heatmap: {
+					paint: {},
+					layout: {}
+				}
+			}
+		},
+		extension: {},
+		debug: false
+	},
+	{
 		id: 'fac_phenology_2020',
 		type: 'vector',
 		format: {
@@ -159,12 +259,21 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			location: '森林文化アカデミー',
 			maxZoom: 22,
 			bounds: null,
-			coverImage: null
+			coverImage: `${COVER_IMAGE_BASE_PATH}/phenology_2020.webp`
 		},
 		properties: {
 			keys: ['種名'],
 			dict: null,
-			title: '{種名}'
+			titles: [
+				{
+					conditions: ['種名'],
+					template: '{種名}'
+				},
+				{
+					conditions: [],
+					template: 'フェノロジー調査_2020のポイント'
+				}
+			]
 		},
 		interaction: {
 			clickable: true,

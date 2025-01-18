@@ -1,4 +1,5 @@
 import type { VectorEntry, TileMetaData } from '$map/data/types/vector/index';
+import { COVER_IMAGE_BASE_PATH } from '$map/constants';
 
 export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 	{
@@ -23,7 +24,16 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 		properties: {
 			keys: [],
 			dict: null,
-			title: null
+			titles: [
+				{
+					conditions: ['Symbol'],
+					template: '{Symbol}'
+				},
+				{
+					conditions: [],
+					template: '美濃市の地質'
+				}
+			]
 		},
 		interaction: {
 			clickable: true,

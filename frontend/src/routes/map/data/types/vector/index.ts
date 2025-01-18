@@ -11,10 +11,15 @@ export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
 export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
+export interface Title {
+	conditions: string[];
+	template: string;
+}
+
 export interface VectorProperties {
 	keys: string[];
 	dict: string | null;
-	title: string | null;
+	titles: Title[] | null;
 }
 
 export interface VectorInteraction {
