@@ -14,6 +14,7 @@ export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 export interface VectorProperties {
 	keys: string[];
 	dict: string | null;
+	title: string | null;
 }
 
 export interface VectorInteraction {

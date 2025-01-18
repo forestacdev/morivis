@@ -28,18 +28,3 @@ const divisions = 5;
 
 const numberMap = generateNumberMap(min, max, divisions);
 // console.log(numberMap); // [ 0, 20, 40, 60, 80, 100 ]
-
-function dynamicTemplate(template: string, data: Record<string, any>): string {
-	return template.replace(/{([^{}]+)}/g, (_, key) => {
-		return data[key] !== undefined ? data[key] : `{${key}}`;
-	});
-}
-
-const template = '{小林班ID}の土地で面積は{面積}です';
-const data = {
-	面積: 20,
-	小林班ID: 6
-};
-
-const result = dynamicTemplate(template, data);
-console.log(result);

@@ -21,7 +21,8 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 		},
 		properties: {
 			keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
-			dict: null // プロパティの辞書ファイルのURL
+			dict: null,
+			title: '演習林 林班{小林班ID}'
 		},
 		interaction: {
 			// インタラクションの設定

@@ -47,7 +47,7 @@ export const propData: PropData = {
 	},
 	// アカデミー施設
 	sinrinken: {
-		image: `${BASE_IMAGE_PATH}sinrinken.webp`,
+		image: null,
 		description: '森林・林業に関する公設研究機関です。',
 		url: 'https://www.forest.rd.pref.gifu.lg.jp/'
 	},

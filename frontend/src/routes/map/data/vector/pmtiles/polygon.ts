@@ -1,4 +1,4 @@
-import type { VectorEntry, TileMetaData } from '$map/data/vector';
+import type { VectorEntry, TileMetaData } from '$map/data/types/vector/index';
 
 export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 	{
@@ -12,16 +12,18 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 		metaData: {
 			name: '美濃市地質図',
 			description: '美濃市地質図。',
-			attribution: '産総研',
+			attribution: '産総研地質調査総合センター',
 			location: '美濃市',
 			minZoom: 0,
 			maxZoom: 14,
 			sourceLayer: 'geo_A',
-			bounds: null
+			bounds: null,
+			coverImage: null
 		},
 		properties: {
 			keys: [],
-			dict: null
+			dict: null,
+			title: null
 		},
 		interaction: {
 			clickable: true,
