@@ -3,24 +3,6 @@ import { geojson as fgb, geojson } from 'flatgeobuf';
 import { addedLayerIds } from '$map/store';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 
-export const getUniquePropertyValues = (
-	geojson: FeatureCollection,
-	propertyName: string
-): any[] => {
-	// Set を使用してユニークな値を格納
-	const uniqueValues = new Set<any>();
-
-	// 全ての地物（Feature）をループ
-	geojson.features.forEach((feature: Feature<Geometry>) => {
-		if (feature.properties && propertyName in feature.properties) {
-			uniqueValues.add(feature.properties[propertyName]);
-		}
-	});
-
-	// Set を配列に変換して返す
-	return Array.from(uniqueValues);
-};
-
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {

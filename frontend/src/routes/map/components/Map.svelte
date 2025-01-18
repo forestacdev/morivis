@@ -35,7 +35,7 @@
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
-	import { MAPLIBRE_POPUP_OPTIONS } from '$map/constants';
+	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$map/data/types/raster';

@@ -31,7 +31,7 @@ const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import turfBbox from '@turf/bbox';
-import { getParams } from '$map/utils/url';
+import { setMapParams, getMapParams, getParams } from '$map/utils/params';
 import { DEBUG_MODE, showLayerOptionId } from '$map/store';
 import type { GeoDataEntry } from '../data/types';
 import { GeojsonCache } from '../utils/geojson';
@@ -58,28 +58,24 @@ const createMapStore = () => {
 			}
 		}
 
+		const mapPosition = getMapParams();
+
 		map = new maplibregl.Map({
+			...mapPosition,
 			container: mapContainer,
 			style: mapStyle,
-			center: [136.923004009, 35.5509525769706],
-			zoom: 14.5,
-			fadeDuration: 100, // フェードアニメーションの時間
+			fadeDuration: 50, // フェードアニメーションの時間
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
-			attributionControl: false, // 著作権表示を非表示
+			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85,
+			maxPitch: 85
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
-			// localIdeographFontFamily: 'sans-serif',
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			hash: get(DEBUG_MODE) ? true : false,
-			transformRequest: (url, resourceType) => {
-				// ここでリクエストのカスタマイズ
-
-				// console.log(url, resourceType);
-				return { url };
-			}
+			// transformRequest: (url, resourceType) => {
+			// 	return { url };
+			// }
 		});
 
 		setStyleEvent.set(mapStyle);
@@ -127,6 +123,13 @@ const createMapStore = () => {
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
+			const center = map.getCenter();
+			setMapParams({
+				center: [center.lng, center.lat],
+				zoom: map.getZoom(),
+				pitch: map.getPitch(),
+				bearing: map.getBearing()
+			});
 			mooveEndEvent.set(e);
 		});
 

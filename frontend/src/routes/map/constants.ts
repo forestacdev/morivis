@@ -1,4 +1,4 @@
-import type { PopupOptions } from 'maplibre-gl';
+import type { PopupOptions, LngLat } from 'maplibre-gl';
 import type { TileXYZ } from '$map/data/types/raster';
 
 // TODO: データのURLを変更する
@@ -6,10 +6,26 @@ export const GEOJSON_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson';
 export const GIFU_DATA_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/gifu-dataset/main/data';
+
 export const COVER_IMAGE_BASE_PATH = 'http://localhost:5173/images/cover';
 export const FEATURE_IMAGE_BASE_PATH = 'http://localhost:5173/images/feature';
 export const COVER_NO_IMAGE_PATH = './images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = './images/feature/no_image.webp';
+
+export interface MapPosition {
+	center: [number, number];
+	zoom: number;
+	pitch: number;
+	bearing: number;
+}
+
+/** マップの初期位置 */
+export const MAP_POSITION: MapPosition = {
+	center: [136.923004009, 35.5509525769706],
+	zoom: 15,
+	pitch: 0,
+	bearing: 0
+};
 
 /** アイコン用画像タイルのXYZ */
 export const IMAGE_TILE_XYZ: TileXYZ = {
