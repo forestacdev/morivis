@@ -4,6 +4,7 @@
 
 	import DataPreview from '$map/components/DataPreview.svelte';
 	import { IMAGE_TILE_XYZ } from '$map/constants';
+	import { COVER_NO_IMAGE_PATH } from '$map/constants';
 	import { getImagePmtiles } from '$map/utils/raster';
 	import { geoDataEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -62,40 +63,10 @@
 				return fetchTileImage(layerEntry);
 			}
 		} else if (layerEntry.type === 'vector') {
-			return layerEntry.metaData.coverImage ?? './images/no_image.webp';
+			return layerEntry.metaData.coverImage ?? COVER_NO_IMAGE_PATH;
 		}
 	};
 </script>
-
-<!-- {#if $showDataMenu}
-	<div
-		transition:fade={{ duration: 100 }}
-		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black bg-opacity-50 p-8"
-	>
-		<div class="bg-main flex h-full w-full flex-grow flex-col rounded-lg p-2">
-			<div class="flex flex-shrink-0 items-center justify-between p-2">
-				<span class="text-lg">データカタログ</span>
-				<button onclick={toggleDataMenu} class="bg-base rounded-full p-2">
-					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
-				</button>
-			</div>
-			<div class="grid h-[700px] grid-cols-3 grid-rows-3 gap-4 overflow-y-auto p-2">
-				{#each dataEntries as dataEntry}
-					<button class="mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300">
-						<div class="aspect-square flex-grow p-2">
-							<img
-								src={dataEntry.metaData.coverImage ?? './images/no_image.webp'}
-								class="h-full w-full object-cover"
-								alt="サムネイル"
-							/>
-						</div>
-						<span class="h-[30px] flex-shrink-0">{dataEntry.metaData.name}</span>
-					</button>
-				{/each}
-			</div>
-		</div>
-	</div>
-{/if} -->
 
 {#if $showDataMenu}
 	<div

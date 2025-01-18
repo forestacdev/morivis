@@ -84,166 +84,166 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		extension: {},
 		debug: false
 	},
-	{
-		id: 'fac_building',
-		type: 'vector',
-		format: {
-			type: 'fgb',
-			geometryType: 'Point',
-			url: './fgb/fac_building_point.fgb'
-		},
-		metaData: {
-			name: 'アカデミー施設',
-			description: '森林文化アカデミーの施設',
-			attribution: '森林文化アカデミー',
-			location: '森林文化アカデミー',
-			maxZoom: 22,
-			bounds: null,
-			coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
-		},
-		properties: {
-			keys: ['name', '建物名称', '構造規模'],
-			dict: null,
-			titles: [
-				{
-					conditions: ['name'],
-					template: '{name}'
-				},
-				{
-					conditions: [],
-					template: '施設'
-				}
-			]
-		},
-		interaction: {
-			clickable: true,
-			searchKeys: ['name']
-		},
-		style: {
-			type: 'circle',
-			opacity: 0.8, // 透過率
-			colors: {
-				key: '単色',
-				expressions: [
-					{
-						type: 'single',
-						key: '単色',
-						name: '単色',
-						mapping: {
-							value: '#004cfd'
-						}
-					}
-				]
-			},
-			labels: {
-				key: '名前',
-				show: false,
-				expressions: [
-					{
-						key: '名前',
-						name: '建物名称',
-						value: '{name}'
-					}
-				]
-			},
-			default: {
-				circle: {
-					paint: {},
-					layout: {}
-				},
-				symbol: {
-					paint: {},
-					layout: {}
-				},
-				heatmap: {
-					paint: {},
-					layout: {}
-				}
-			}
-		},
-		extension: {},
-		debug: false
-	},
-	{
-		id: 'fac_ziriki',
-		type: 'vector',
-		format: {
-			type: 'fgb',
-			geometryType: 'Point',
-			url: './fgb/fac_ziriki_point.fgb'
-		},
-		metaData: {
-			name: '自力建設',
-			description: '自力建設',
-			attribution: '森林文化アカデミー',
-			location: '森林文化アカデミー',
-			maxZoom: 22,
-			bounds: null,
-			coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
-		},
-		properties: {
-			keys: ['name', '年度'],
-			dict: null,
-			titles: [
-				{
-					conditions: ['name'],
-					template: '{name}'
-				},
-				{
-					conditions: [],
-					template: '自力建設'
-				}
-			]
-		},
-		interaction: {
-			clickable: true,
-			searchKeys: ['name']
-		},
-		style: {
-			type: 'circle',
-			opacity: 0.8, // 透過率
-			colors: {
-				key: '単色',
-				expressions: [
-					{
-						type: 'single',
-						key: '単色',
-						name: '単色',
-						mapping: {
-							value: '#fb6000'
-						}
-					}
-				]
-			},
-			labels: {
-				key: '名前',
-				show: false,
-				expressions: [
-					{
-						key: '名前',
-						name: '建物名称',
-						value: '{name}'
-					}
-				]
-			},
-			default: {
-				circle: {
-					paint: {},
-					layout: {}
-				},
-				symbol: {
-					paint: {},
-					layout: {}
-				},
-				heatmap: {
-					paint: {},
-					layout: {}
-				}
-			}
-		},
-		extension: {},
-		debug: false
-	},
+	// {
+	// 	id: 'fac_building',
+	// 	type: 'vector',
+	// 	format: {
+	// 		type: 'fgb',
+	// 		geometryType: 'Point',
+	// 		url: './fgb/fac_building_point.fgb'
+	// 	},
+	// 	metaData: {
+	// 		name: 'アカデミー施設',
+	// 		description: '森林文化アカデミーの施設',
+	// 		attribution: '森林文化アカデミー',
+	// 		location: '森林文化アカデミー',
+	// 		maxZoom: 22,
+	// 		bounds: null,
+	// 		coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
+	// 	},
+	// 	properties: {
+	// 		keys: ['name', '建物名称', '構造規模'],
+	// 		dict: null,
+	// 		titles: [
+	// 			{
+	// 				conditions: ['name'],
+	// 				template: '{name}'
+	// 			},
+	// 			{
+	// 				conditions: [],
+	// 				template: '施設'
+	// 			}
+	// 		]
+	// 	},
+	// 	interaction: {
+	// 		clickable: true,
+	// 		searchKeys: ['name']
+	// 	},
+	// 	style: {
+	// 		type: 'circle',
+	// 		opacity: 0.8, // 透過率
+	// 		colors: {
+	// 			key: '単色',
+	// 			expressions: [
+	// 				{
+	// 					type: 'single',
+	// 					key: '単色',
+	// 					name: '単色',
+	// 					mapping: {
+	// 						value: '#004cfd'
+	// 					}
+	// 				}
+	// 			]
+	// 		},
+	// 		labels: {
+	// 			key: '名前',
+	// 			show: false,
+	// 			expressions: [
+	// 				{
+	// 					key: '名前',
+	// 					name: '建物名称',
+	// 					value: '{name}'
+	// 				}
+	// 			]
+	// 		},
+	// 		default: {
+	// 			circle: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			},
+	// 			symbol: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			},
+	// 			heatmap: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			}
+	// 		}
+	// 	},
+	// 	extension: {},
+	// 	debug: false
+	// },
+	// {
+	// 	id: 'fac_ziriki',
+	// 	type: 'vector',
+	// 	format: {
+	// 		type: 'fgb',
+	// 		geometryType: 'Point',
+	// 		url: './fgb/fac_ziriki_point.fgb'
+	// 	},
+	// 	metaData: {
+	// 		name: '自力建設',
+	// 		description: '自力建設',
+	// 		attribution: '森林文化アカデミー',
+	// 		location: '森林文化アカデミー',
+	// 		maxZoom: 22,
+	// 		bounds: null,
+	// 		coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
+	// 	},
+	// 	properties: {
+	// 		keys: ['name', '年度'],
+	// 		dict: null,
+	// 		titles: [
+	// 			{
+	// 				conditions: ['name'],
+	// 				template: '{name}'
+	// 			},
+	// 			{
+	// 				conditions: [],
+	// 				template: '自力建設'
+	// 			}
+	// 		]
+	// 	},
+	// 	interaction: {
+	// 		clickable: true,
+	// 		searchKeys: ['name']
+	// 	},
+	// 	style: {
+	// 		type: 'circle',
+	// 		opacity: 0.8, // 透過率
+	// 		colors: {
+	// 			key: '単色',
+	// 			expressions: [
+	// 				{
+	// 					type: 'single',
+	// 					key: '単色',
+	// 					name: '単色',
+	// 					mapping: {
+	// 						value: '#fb6000'
+	// 					}
+	// 				}
+	// 			]
+	// 		},
+	// 		labels: {
+	// 			key: '名前',
+	// 			show: false,
+	// 			expressions: [
+	// 				{
+	// 					key: '名前',
+	// 					name: '建物名称',
+	// 					value: '{name}'
+	// 				}
+	// 			]
+	// 		},
+	// 		default: {
+	// 			circle: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			},
+	// 			symbol: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			},
+	// 			heatmap: {
+	// 				paint: {},
+	// 				layout: {}
+	// 			}
+	// 		}
+	// 	},
+	// 	extension: {},
+	// 	debug: false
+	// },
 	{
 		id: 'fac_phenology_2020',
 		type: 'vector',

@@ -1,6 +1,7 @@
 import { fgbPolygonEntry } from '$map/data/vector/fgb/polygon';
 import { fgbLineStringEntry } from '$map/data/vector/fgb/lineString';
 import { fgbPointEntry } from '$map/data/vector/fgb/point';
+import { fgbLabelEntry } from '$map/data/vector/fgb/label';
 import { pmtilesPolygonEntry } from '$map/data/vector/pmtiles/polygon';
 import { imageTileCategoricalEntry } from '$map/data/raster/imageTile/categorical';
 import { imageTileBaseMapEntry } from '$map/data/raster/imageTile/basemap';
@@ -27,6 +28,7 @@ const entries: GeoDataEntry[] = [
 	...fgbPolygonEntry,
 	...fgbLineStringEntry,
 	...fgbPointEntry,
+	...fgbLabelEntry,
 	...pmtilesPolygonEntry,
 	...imageTileCategoricalEntry,
 	...imageTileBaseMapEntry,

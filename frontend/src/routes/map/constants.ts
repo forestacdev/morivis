@@ -6,8 +6,10 @@ export const GEOJSON_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson';
 export const GIFU_DATA_BASE_PATH =
 	'https://raw.githubusercontent.com/forestacdev/gifu-dataset/main/data';
-export const COVER_IMAGE_BASE_PATH = './images/cover';
-export const FEATURE_IMAGE_BASE_PATH = './images/feature';
+export const COVER_IMAGE_BASE_PATH = 'http://localhost:5173/images/cover';
+export const FEATURE_IMAGE_BASE_PATH = 'http://localhost:5173/images/feature';
+export const COVER_NO_IMAGE_PATH = './images/cover/no_image.webp';
+export const FEATURE_NO_IMAGE_PATH = './images/feature/no_image.webp';
 
 /** アイコン用画像タイルのXYZ */
 export const IMAGE_TILE_XYZ: TileXYZ = {
@@ -32,6 +34,7 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_pole',
 	'fac_ziriki',
 	'fac_building',
+	'fac_poi',
 	'ensyurin_road',
 	'ensyurin_rinhan',
 	// 'gifu_sugi_kansetugai',

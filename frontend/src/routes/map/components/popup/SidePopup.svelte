@@ -15,6 +15,7 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
+	import { FEATURE_NO_IMAGE_PATH } from '$map/constants';
 	import { propData } from '$map/data/propData';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showLayerOptionId, showSidePopup, mapMode, selectedHighlightData } from '$map/store';
@@ -49,10 +50,10 @@
 			if (layer && layer.type === 'vector' && data && data.image) {
 				return data.image;
 			} else {
-				return layer?.metaData.coverImage || './images/no_image.webp';
+				return layer?.metaData.coverImage || FEATURE_NO_IMAGE_PATH;
 			}
 		}
-		return './images/no_image.webp';
+		return FEATURE_NO_IMAGE_PATH;
 	});
 	let featureType = $derived.by(() => {
 		if (sidePopupData) {

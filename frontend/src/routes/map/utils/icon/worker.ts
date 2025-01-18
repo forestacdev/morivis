@@ -16,7 +16,7 @@ const vertexShaderSource = /* glsl */ `
 `;
 
 const fragmentShaderSource = /* glsl */ `
-      #ifdef GL_ES
+    #ifdef GL_ES
     precision mediump float;
     #endif
 
@@ -30,7 +30,9 @@ const fragmentShaderSource = /* glsl */ `
 
 // 円形マスク関数
 float circleMask(vec2 _st, vec2 center, float radius) {
-    return 1.0 - smoothstep(radius - 0.01, radius + 0.01, length(_st - center));
+    float dist = length(_st - center);
+    float edgeWidth = 0.02; // エッジ幅を増加
+    return 1.0 - smoothstep(radius - edgeWidth, radius + edgeWidth, dist);
 }
 
 void main(void){
@@ -103,11 +105,11 @@ const createProgram = (
 	return program;
 };
 
-const canvas = new OffscreenCanvas(64, 64);
+const canvas = new OffscreenCanvas(256, 256);
 const gl = canvas.getContext('webgl');
 
 self.onmessage = async (e) => {
-	const { url } = e.data;
+	const { id, url } = e.data;
 	try {
 		const image = await loadImage(url);
 
@@ -148,16 +150,16 @@ self.onmessage = async (e) => {
 		// テクスチャのパラメータ設定
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		gl.generateMipmap(gl.TEXTURE_2D);
+		// gl.generateMipmap(gl.TEXTURE_2D);
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-		self.postMessage({ id: url, imageBitmap: canvas.transferToImageBitmap() });
+		self.postMessage({ id, imageBitmap: canvas.transferToImageBitmap() });
 	} catch (e) {
 		console.error(e);
 	}

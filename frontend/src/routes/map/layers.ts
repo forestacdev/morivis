@@ -321,6 +321,40 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 	return circleLayer;
 };
 
+// TODO: 命名の検討
+// ラベルレイヤーの作成
+const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
+	const symbolStyle = (style.default as LabelStyle).symbol;
+	const key = style.labels.key as keyof Labels;
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+		id: `${layer.id}`,
+		type: 'symbol',
+		paint: {
+			'text-opacity': 1,
+			'icon-opacity': 1,
+			'text-color': '#000000',
+			'text-halo-color': '#FFFFFF',
+			'text-halo-width': 2,
+			...(symbolStyle.paint ?? {})
+		},
+		layout: {
+			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
+			'text-size': 12,
+			'text-max-width': 12,
+			'text-font': ['Noto Sans JP Light'],
+			...(symbolStyle.layout ?? {})
+
+			// "text-variable-anchor": ["top", "bottom", "left", "right"],
+			// "text-radial-offset": 0.5,
+			// "text-justify": "auto",
+		}
+	};
+
+	// TODO: text-halo-color text-halo-width text-size
+	return symbolLayer;
+};
+
 // symbolレイヤーの作成
 const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const symbolStyle = (style.default as LabelStyle).symbol;
@@ -376,7 +410,7 @@ const createVectorLayer = (
 			return createCircleLayer(layer, style);
 		}
 		case 'symbol': {
-			return createSymbolLayer(layer, style);
+			return createLabelLayer(layer, style);
 		}
 		default:
 			console.warn(`対応してないstyle.typeのデータ: ${layer.id}`);

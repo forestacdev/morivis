@@ -23,6 +23,7 @@ import type {
 	LngLatBounds
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
+import { propData } from '$map/data/propData';
 
 import { getLocationBbox } from '$map/data/locationBbox';
 
@@ -140,41 +141,46 @@ const createMapStore = () => {
 
 		// });
 
-		// const iconWorker = new Worker(new URL('../utils/icon/worker.ts', import.meta.url), {
-		// 	type: 'module'
-		// });
+		const iconWorker = new Worker(new URL('../utils/icon/worker.ts', import.meta.url), {
+			type: 'module'
+		});
 
-		// // メッセージハンドラーを一度だけ定義
-		// iconWorker.onmessage = async (e) => {
-		// 	const { imageBitmap, id } = e.data;
-		// 	if (map && !map.hasImage(id)) {
-		// 		map.addImage(id, imageBitmap);
-		// 	}
-		// };
+		// メッセージハンドラーを一度だけ定義
+		iconWorker.onmessage = async (e) => {
+			const { imageBitmap, id } = e.data;
 
-		// // エラーハンドリングを追加
-		// iconWorker.onerror = (error) => {
-		// 	console.error('Worker error:', error);
-		// };
+			if (map && !map.hasImage(id)) {
+				map.addImage(id, imageBitmap);
+			}
+		};
 
-		// // 処理中の画像IDを追跡
-		// const processingImages = new Set();
+		// エラーハンドリングを追加
+		iconWorker.onerror = (error) => {
+			console.error('Worker error:', error);
+		};
 
-		// map.on('styleimagemissing', async (e) => {
-		// 	if (!map) return;
-		// 	const id = e.id;
+		// 処理中の画像IDを追跡
+		const processingImages = new Set();
 
-		// 	// すでに処理中または追加済みの画像はスキップ
-		// 	if (processingImages.has(id) || map.hasImage(id)) return;
+		map.on('styleimagemissing', async (e) => {
+			if (!map) return;
+			const id = e.id;
 
-		// 	try {
-		// 		processingImages.add(id);
-		// 		iconWorker.postMessage({ url: id });
-		// 	} catch (error) {
-		// 		console.error(`Error processing image for id ${id}:`, error);
-		// 		processingImages.delete(id);
-		// 	}
-		// });
+			// すでに処理中または追加済みの画像はスキップ
+			if (processingImages.has(id) || map.hasImage(id)) return;
+
+			try {
+				processingImages.add(id);
+				const imageUrl = propData[id].image;
+				if (!imageUrl) return;
+
+				iconWorker.postMessage({ id, url: imageUrl });
+			} catch (error) {
+				console.error(`Error processing image for id ${id}:`, error);
+				processingImages.delete(id);
+			}
+		});
+
 		isInitialized = true;
 	};
 

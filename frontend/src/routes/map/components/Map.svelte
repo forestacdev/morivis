@@ -321,6 +321,7 @@
 
 		// console.log('click', e);
 		if (!e) return;
+		console.log('click', $clickableVectorIds);
 		const features = mapStore.queryRenderedFeatures(e.point, {
 			layers: $clickableVectorIds
 		});

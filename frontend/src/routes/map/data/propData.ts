@@ -334,17 +334,6 @@ export const propData: PropData = {
 		description: '',
 		url: null
 	},
-
-	steel_tower_b: {
-		image: `${FEATURE_IMAGE_BASE_PATH}/steel_tower_b.webp`,
-		description: '',
-		url: null
-	},
-	steel_tower_c: {
-		image: `${FEATURE_IMAGE_BASE_PATH}/steel_tower_c.webp`,
-		description: '',
-		url: null
-	},
 	sumiyakigoya: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/sumiyakigoya.webp`,
 		description: '',
@@ -365,9 +354,9 @@ export const propData: PropData = {
 		description: '',
 		url: null
 	},
-	ensyurin: {
-		image: `${FEATURE_IMAGE_BASE_PATH}/ensyurin.webp`,
+	kozyo_kanritou: {
+		image: null,
 		description: '',
-		url: null
+		url: 'https://mori-gakko.net/gifu/'
 	}
 };
