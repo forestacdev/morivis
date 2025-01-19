@@ -1,7 +1,11 @@
 <script lang="ts">
 	// import turfDissolve from '@turf/dissolve';
+	import turfBearing from '@turf/bearing';
+	import turfBooleanCrosses from '@turf/boolean-crosses';
+	import turfBuffer from '@turf/buffer';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
+
 	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
 	import maplibregl from 'maplibre-gl';
@@ -23,6 +27,8 @@
 
 	// import CanvasLayer from '$map/components/_CanvasLayer.svelte';
 
+	import { get } from 'svelte/store';
+
 	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import ScaleControl from '$map/components/control/ScaleControl.svelte';
@@ -38,6 +44,7 @@
 	import SidePopup from '$map/components/popup/SidePopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
+	import AngleMarker from '$map/components/StreetView/AngleMarker.svelte';
 	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
 	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
@@ -53,6 +60,7 @@
 	import { mapStore } from '$map/store/map';
 	import { convertToGeoJSONCollection } from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
+	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import {
 		addedLayerIds,
@@ -77,14 +85,105 @@
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let sidePopupData = $state<MapGeoJSONFeature | null>(null);
+
+	// ストリートビューのデータ
 	let nextPointData = $state<any>(null);
+	let angleMarker = $state<Marker | null>(null); // マーカー
 	let streetViewPoint = $state<any>(null);
 	let streetViewPointData = $state<any>({
 		type: 'FeatureCollection',
 		features: []
 	});
-
+	let streetViewLineData = $state<any>({
+		type: 'FeatureCollection',
+		features: []
+	});
 	let cameraBearing = $state<number>(0);
+
+	// ストリートビューのデータの取得
+	const setPoint = (point) => {
+		if (!point) return;
+		streetViewPoint = point;
+
+		setStreetViewParams(point.properties['ID']);
+
+		const targetPoint = point;
+
+		const buffer = turfBuffer(point, 0.001, { units: 'kilometers' });
+
+		const targetLines = streetViewLineData.features.filter((line) => {
+			return turfBooleanCrosses(buffer, line);
+		});
+
+		const mapInstance = mapStore.getMap();
+
+		if (!mapInstance) return;
+
+		// mapInstance.flyTo({
+		// 	center: targetPoint.geometry.coordinates,
+		// 	zoom: 18,
+		// 	speed: 1.5,
+		// 	curve: 1
+		// });
+
+		mapInstance.panTo(point.geometry.coordinates, {
+			duration: 1000,
+			animate: true,
+			zoom: mapInstance.getZoom() > 18 ? mapInstance.getZoom() : 18
+		});
+
+		if (angleMarker) {
+			angleMarker.remove();
+		}
+
+		const markerContainer = document.createElement('div');
+		mount(AngleMarker, {
+			target: markerContainer,
+			props: {
+				cameraBearing: cameraBearing
+			}
+		});
+
+		angleMarker = new maplibregl.Marker({
+			element: markerContainer,
+			pitchAlignment: 'map',
+			rotationAlignment: 'map'
+		})
+			.setLngLat(point.geometry.coordinates)
+			.addTo(mapInstance);
+
+		const nextData = [];
+
+		targetLines.forEach((line) => {
+			const crosses = findFarthestVertex(point, line);
+			const nextPoint = turfNearestPoint(crosses, streetViewPointData);
+
+			const bearing = turfBearing(point, nextPoint);
+			nextData.push({
+				feaureData: nextPoint,
+				bearing: bearing
+			});
+		});
+
+		nextPointData = nextData;
+	};
+
+	// 各ラインの最も遠い頂点を抽出する関数
+	const findFarthestVertex = (point, line) => {
+		let farthestVertex = null;
+		let maxDistance = 0;
+
+		line.geometry.coordinates.forEach((coord) => {
+			const distance = turfDistance(point, coord, { units: 'kilometers' }); // 距離を計算 (キロメートル単位)
+
+			if (distance > maxDistance) {
+				maxDistance = distance;
+				farthestVertex = coord;
+			}
+		});
+
+		return farthestVertex;
+	};
 
 	// TODO: CanvasLayerの実装
 	// let canvasSource = $state<CanvasSourceSpecification>({
@@ -232,6 +331,35 @@
 			.then((data) => {
 				return data;
 			});
+
+		streetViewLineData = await fetch(
+			'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
+		)
+			.then((res) => res.json())
+			.then((data) => {
+				return data;
+			});
+
+		const imageId = getStreetViewParams();
+		if (imageId) {
+			const targetPoint = streetViewPointData.features.find((point) => {
+				return point.properties['ID'] === imageId;
+			});
+
+			if (targetPoint) {
+				const mapInstance = mapStore.getMap();
+				if (mapInstance) {
+					mapInstance.flyTo({
+						center: targetPoint.geometry.coordinates,
+						zoom: 18,
+						speed: 1.5,
+						curve: 1
+					});
+				}
+			}
+
+			setPoint(targetPoint);
+		}
 	});
 
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
@@ -375,7 +503,8 @@
 			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
 			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
 			if (distance < 100) {
-				streetViewPoint = point;
+				// streetViewPoint = point;
+				setPoint(point);
 			}
 		}
 
@@ -474,7 +603,7 @@
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
-	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing />
+	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />
 	<!-- <CanvasLayer bind:canvasSource /> -->
 	<Compass />
 	<ZoomControl />

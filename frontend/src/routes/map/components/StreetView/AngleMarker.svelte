@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	export let cameraBearing: number;
+	let { cameraBearing }: { cameraBearing: number } = $props();
 
 	onMount(() => {});
 

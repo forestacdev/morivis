@@ -23,15 +23,21 @@
 	let {
 		feature,
 		nextPointData,
-		cameraBearing = $bindable()
-	}: { feature: any; nextPointData: any; cameraBearing: number } = $props();
+		cameraBearing = $bindable(),
+		setPoint
+	}: {
+		feature: any;
+		nextPointData: any;
+		cameraBearing: number;
+		setPoint: (feature: any) => void;
+	} = $props();
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
 	let renderer: THREE.WebGLRenderer;
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
-	let controlDiv = $state<HTMLCanvasElement | null>(null);
+	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	let currentRequestController = null;
 
@@ -79,6 +85,7 @@
 	};
 
 	const created360Mesh = async (feature) => {
+		console.log(feature);
 		if (!feature) return;
 		isLoading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
@@ -247,19 +254,20 @@
 	isStreetView.subscribe((value) => {
 		if (value) onResize();
 	});
-
-	const nextPoint = (point) => {};
+	const nextPoint = (point) => {
+		setPoint(point);
+	};
 
 	$effect(() => created360Mesh(feature));
 </script>
 
 <!-- <div class="custom-canvas-back"></div> -->
-<button
-	onclick={() => ($isStreetView = true)}
+<div
 	class="border-main absolute z-10 overflow-hidden border-2 {$isStreetView
 		? 'left-0 top-0 h-full w-full'
 		: 'bottom-[60px] right-2 h-[80px] w-[100px] rounded-lg p-0 shadow-md'}"
 >
+	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
 	{#if isLoading}
 		<div class="custom-loading">
 			<div class="custom-spinner"></div>
@@ -274,12 +282,14 @@
 				<div bind:this={controlDiv} class="custom-control">
 					{#each nextPointData as point, index}
 						<button
-							onclick={() => nextPoint(point)}
+							onclick={() => nextPoint(point.feaureData)}
 							class="custom-arrow"
-							style="--angle: {point.bearing}deg;"
+							style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
 						>
 							<Icon
 								icon="ic:baseline-double-arrow"
+								width={$isStreetView ? 128 : 64}
+								height={$isStreetView ? 128 : 64}
 								class=""
 								style="transform: rotate({point.bearing - 90}deg);"
 							/>
@@ -289,8 +299,13 @@
 			</div>
 		</div>
 	{/if}
-	<canvas class="h-full w-full" bind:this={canvas}></canvas>
-</button>
+	{#if $isStreetView}
+		<button
+			class="absolute left-4 top-[100px] rounded-md bg-white p-2"
+			onclick={() => ($isStreetView = false)}>戻る</button
+		>
+	{/if}
+</div>
 
 <style>
 	canvas {

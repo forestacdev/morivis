@@ -32,11 +32,27 @@ export const getMapParams = (): MapPosition => {
 
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
-	const params = new URLSearchParams();
+	const params = new URLSearchParams(location.search); // 現在のURLパラメータを取得
 	const center = option.center.map((value) => value.toFixed(6));
 	params.set('c', center.join(','));
 	params.set('z', option.zoom.toFixed(1));
 	params.set('p', option.pitch.toFixed(0));
 	params.set('b', option.bearing.toFixed(0));
-	history.replaceState(null, '', `${location.pathname}?${params}`);
+	history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+};
+
+/** street view用のURLパラメータのセット */
+export const setStreetViewParams = (imageId: string) => {
+	const params = new URLSearchParams(location.search); // 現在のURLパラメータを取得
+	params.set('imageId', imageId);
+	history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+};
+
+/** street view用のURLパラメータの取得 */
+export const getStreetViewParams = (): string | null => {
+	const params = new URLSearchParams(location.search);
+	if (!params.has('imageId')) {
+		return null;
+	}
+	return params.get('imageId') as string;
 };

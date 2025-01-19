@@ -124,13 +124,17 @@
 						>
 							<div class="relative aspect-video overflow-hidden p-2">
 								{#await promise(dataEntry) then url}
-									<img src={url} class="h-full w-full rounded-md object-cover" alt="サムネイル" />
+									<img
+										src={url}
+										class="css-no-drag-icon h-full w-full rounded-md object-cover"
+										alt="サムネイル"
+									/>
 								{/await}
 							</div>
 
 							<div class="flex w-full items-center justify-start gap-2 p-2">
 								<label
-									class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
+									class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
 								>
 									<LayerIcon layerEntry={dataEntry} />
 								</label>
