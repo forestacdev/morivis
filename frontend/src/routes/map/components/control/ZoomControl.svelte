@@ -54,7 +54,7 @@
 
 <div
 	bind:this={container}
-	class="bg-main rounded-ful absolute right-0 top-0 flex h-[50px] w-[300px] origin-center translate-x-[100px] translate-y-[240px] -rotate-90 items-center justify-center gap-2 rounded-full px-[10px]"
+	class="bg-main rounded-ful absolute right-0 top-0 flex h-[50px] w-[300px] origin-center translate-x-[100px] translate-y-[340px] -rotate-90 items-center justify-center gap-2 rounded-full px-[10px]"
 >
 	<button onclick={zoomOut} class="grid place-items-center">
 		<Icon icon="typcn:minus" class=" h-8 w-8 rotate-[90deg] text-base" />

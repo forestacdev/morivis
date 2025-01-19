@@ -24,6 +24,9 @@ export const DEBUG_MODE = writable<boolean>(false);
 /**  地図のモード */
 export const mapMode = writable<'view' | 'style' | 'analysis'>('view');
 
+/**  3D地形 */
+export const isTerrain3d = writable<boolean>(false);
+
 /** サイドメニューの表示状態 */
 export const showSideMenu = writable<boolean>(false);
 

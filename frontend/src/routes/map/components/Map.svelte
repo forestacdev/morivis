@@ -19,11 +19,11 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { mount, onMount } from 'svelte';
 
-	import ZoomControl from './control/ZoomControl.svelte';
-
 	// import CanvasLayer from '$map/components/_CanvasLayer.svelte';
 	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
+	import TerrainControl from '$map/components/control/TerrainControl.svelte';
+	import ZoomControl from '$map/components/control/ZoomControl.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
 	import InfoDialog from '$map/components/InfoDialog.svelte';
@@ -145,6 +145,15 @@
 				...layers
 				// overlayLayer
 			],
+			sky: {
+				'sky-color': '#2baeff',
+				'sky-horizon-blend': 0.5,
+				'horizon-color': '#ffffff',
+				'horizon-fog-blend': 0.5,
+				'fog-color': '#2222ff',
+				'fog-ground-blend': 0.5,
+				'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
+			},
 			terrain: terrain ? terrain : undefined
 		};
 
@@ -420,6 +429,7 @@
 	<!-- <CanvasLayer bind:canvasSource /> -->
 	<Compass />
 	<ZoomControl />
+	<TerrainControl />
 	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
 	<SidePopup bind:sidePopupData {layerEntries} />

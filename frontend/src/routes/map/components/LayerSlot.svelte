@@ -58,7 +58,7 @@
 		id: 'overlay-layer',
 		type: 'background',
 		paint: {
-			'background-color': '#FFFFFF',
+			'background-color': '#000000',
 			'background-opacity': 0.8
 		}
 	};
@@ -118,12 +118,6 @@
 			map.moveLayer(layerId);
 
 			const center = map.getCenter();
-
-			map.panTo(center, {
-				pitch: 45,
-				bearing: -30,
-				duration: 600
-			});
 		} else {
 			isEdit.set(false);
 			if (!overlayLayerId) return;
@@ -132,11 +126,6 @@
 			map.removeLayer('overlay-layer');
 
 			const center = map.getCenter();
-			map.panTo(center, {
-				pitch: 0,
-				bearing: 0,
-				duration: 600
-			});
 		}
 	};
 </script>

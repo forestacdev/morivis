@@ -231,6 +231,7 @@ const createMapStore = () => {
 				if (!geojson) return;
 				const bbox = turfBbox(geojson) as [number, number, number, number];
 				map.fitBounds(bbox, {
+					bearing: map.getBearing(),
 					padding: 100,
 					duration: 500
 				});
@@ -241,6 +242,7 @@ const createMapStore = () => {
 			const bbox = getLocationBbox(entry.metaData.location);
 			if (bbox) {
 				map.fitBounds(bbox, {
+					bearing: map.getBearing(),
 					padding: 100,
 					duration: 500
 				});
