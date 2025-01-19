@@ -42,7 +42,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		style: {
 			type: 'symbol',
-			opacity: 0.8, // 透過率
+			opacity: 1,
 			colors: {
 				key: '単色',
 				expressions: [
@@ -51,7 +51,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						key: '単色',
 						name: '単色',
 						mapping: {
-							value: '#004cfd'
+							value: '#000000'
 						}
 					}
 				]
@@ -72,11 +72,11 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					layout: {
 						'text-field': ['to-string', ['get', 'name']],
 						'text-size': 14,
-						'text-variable-anchor': ['left', 'right'],
+						'text-variable-anchor': ['left', 'right', 'top', 'bottom'],
 						'text-radial-offset': 2,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.25
+						'icon-size': 0.95
 						// 'icon-image': [
 						// 	'case',
 						// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
@@ -96,9 +96,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					},
 					paint: {
 						'text-halo-color': '#ffffff',
-						'text-halo-width': 2,
-						'text-opacity': 1,
-						'text-color': '#000000'
+						'text-halo-width': 2
 					}
 				}
 			}
@@ -143,7 +141,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		style: {
 			type: 'symbol',
-			opacity: 0.8, // 透過率
+			opacity: 1,
 			colors: {
 				key: '単色',
 				expressions: [
@@ -181,9 +179,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					},
 					paint: {
 						'text-halo-color': '#ffffff',
-						'text-halo-width': 2,
-						'text-opacity': 1,
-						'text-color': '#000000'
+						'text-halo-width': 2
 					}
 				}
 			}
@@ -218,7 +214,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 				},
 				{
 					conditions: [],
-					template: 'その他地点'
+					template: 'その他施設・林内ランドマーク'
 				}
 			]
 		},
@@ -228,7 +224,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		style: {
 			type: 'symbol',
-			opacity: 0.8, // 透過率
+			opacity: 1,
 			colors: {
 				key: '単色',
 				expressions: [
@@ -237,7 +233,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						key: '単色',
 						name: '単色',
 						mapping: {
-							value: '#fb6000'
+							value: '#c00a0a'
 						}
 					}
 				]
@@ -266,9 +262,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					},
 					paint: {
 						'text-halo-color': '#ffffff',
-						'text-halo-width': 2,
-						'text-opacity': 1,
-						'text-color': '#000000'
+						'text-halo-width': 2
 					}
 				}
 			}

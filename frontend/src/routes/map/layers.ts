@@ -325,20 +325,22 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 // ラベルレイヤーの作成
 const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const symbolStyle = (style.default as LabelStyle).symbol;
+	const color = getColorExpression(style.colors);
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
 		id: `${layer.id}`,
 		type: 'symbol',
 		paint: {
-			'text-opacity': 1,
-			'icon-opacity': 1,
-			'text-color': '#000000',
+			'text-opacity': style.opacity,
+			'icon-opacity': style.opacity,
+			'text-color': color,
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
 			...(symbolStyle.paint ?? {})
 		},
 		layout: {
+			'icon-anchor': 'bottom',
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
