@@ -423,7 +423,7 @@
 
 <div class="relative h-full w-full">
 	<SideMenu />
-	<HeaderMenu />
+	<HeaderMenu {layerEntries} />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>

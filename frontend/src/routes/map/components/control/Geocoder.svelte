@@ -1,10 +1,20 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import * as tilebelt from '@mapbox/tilebelt';
 	import turfBbox from '@turf/bbox';
+	import turfBboxPolygon from '@turf/bbox-polygon';
+	import Fuse from 'fuse.js';
+	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLatLike, Marker } from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
+	import type { GeoDataEntry } from '$map/data/types';
+	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$map/data/types/vector';
+	import { getFgbToGeojson, getGeojson } from '$map/utils/geojson';
+
+	let { layerEntries, results = $bindable() }: { layerEntries: GeoDataEntry[]; results: any } =
+		$props();
 	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
@@ -20,12 +30,93 @@
 
 		isLoading = true;
 		try {
+			await searchFeature(_searchWord);
 		} catch (e) {
 			console.error(e);
 		} finally {
 			isLoading = false;
 		}
 	};
+
+	// const focusFeature = (feature: any) => {
+	// 	mapStore.focusFeature(feature);
+	// 	mapStore.addSearchFeature(feature);
+	// };
+
+	const searchFeature = async (searchWord: string) => {
+		const data = layerEntries.filter(
+			(layerEntry) =>
+				layerEntry.type === 'vector' &&
+				layerEntry.interaction.searchKeys &&
+				(layerEntry.format.type === 'geojson' || layerEntry.format.type === 'fgb')
+		);
+		if (!data) return;
+
+		const promises = data.map(async (layerEntry) => {
+			if (layerEntry.type !== 'vector') return;
+			const searchKeys = layerEntry.interaction.searchKeys?.map((key) => `properties.${key}`);
+			if (!searchKeys) return;
+
+			let featuresData: FeatureCollection = {
+				type: 'FeatureCollection',
+				features: []
+			};
+
+			if (layerEntry.format.type === 'geojson') {
+				featuresData = await getGeojson(layerEntry.format.url);
+			} else if (layerEntry.format.type === 'fgb') {
+				featuresData = await getFgbToGeojson(layerEntry.format.url);
+			}
+
+			const fuseOptions = {
+				threshold: 0.3, // あいまい検索のしきい値
+				keys: searchKeys // 検索対象のプロパティ（ドット記法）
+			};
+
+			const fuse = new Fuse(featuresData.features, fuseOptions);
+
+			const matchingFeatures = fuse.search(searchWord).map((result) => result.item);
+
+			return {
+				name: layerEntry.metaData.name,
+				features: matchingFeatures
+			};
+		});
+
+		const resultsData = await Promise.all(promises);
+
+		const tilePattern = /^\d+\/\d+\/\d+$/;
+		const match = searchWord.match(tilePattern);
+		if (match) {
+			let numbers = searchWord.split('/');
+
+			// 分割した値を別々の変数に格納する
+			const z = Number(numbers[0]); // '89'
+			const x = Number(numbers[1]); // '8989'
+			const y = Number(numbers[2]); // '8980'
+
+			const tile = tilebelt.tileToBBOX([x, y, z]);
+			const feature = turfBboxPolygon(tile);
+			feature.properties = {
+				name: searchWord
+			};
+
+			resultsData.push({
+				name: 'タイル座標',
+				features: [feature]
+			});
+		}
+
+		console.log(results);
+
+		// resultsには全ての処理結果が含まれます
+
+		results = resultsData;
+	};
+
+	$effect(() => {
+		if (!inputSearchWord) results = null;
+	});
 
 	// 検索結果のリセット
 	const resetSearchResult = () => {};
