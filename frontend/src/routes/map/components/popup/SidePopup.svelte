@@ -16,6 +16,7 @@
 	import { fade, slide, fly } from 'svelte/transition';
 
 	import { FEATURE_NO_IMAGE_PATH } from '$map/constants';
+	import { fetchWikipediaImage } from '$map/data/api';
 	import { propData } from '$map/data/propData';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showLayerOptionId, showSidePopup, mapMode, selectedHighlightData } from '$map/store';
@@ -49,24 +50,31 @@
 			);
 			if (layer && layer.type === 'vector' && data && data.image) {
 				return data.image;
-			} else {
-				return layer?.metaData.coverImage || FEATURE_NO_IMAGE_PATH;
 			}
 		}
 		return FEATURE_NO_IMAGE_PATH;
 	});
+
+	// TODO: 画像取得処理
+	// const fetchImage = async () => {
+	// 	const phenologyData = await fetchWikipediaImage('イタドリ');
+	// 	return phenologyData;
+	// };
+
+	// const promise = (() => {
+	// 	const layer = layerEntries.find(
+	// 		(entry) => sidePopupData && entry.id === sidePopupData.layer.id
+	// 	);
+	// 	if (layer && layer.id === 'fac_phenology_2020') {
+	// 		return fetchImage();
+	// 	}
+	// })();
+
 	let featureType = $derived.by(() => {
 		if (sidePopupData) {
 			return sidePopupData.geometry.type;
 		}
 		return null;
-	});
-
-	$effect(() => {
-		if (targetLayer) {
-			console.log(sidePopupData);
-		}
-		// console.log(generatePopupTitle(sidePopupData.properties, targetLayer.properties.title));
 	});
 </script>
 
@@ -86,8 +94,17 @@
 				class="block h-full w-full object-cover"
 				crossOrigin="anonymous"
 				alt="画像"
-				src={srcData || './images/no_image.webp'}
+				src={srcData || FEATURE_NO_IMAGE_PATH}
 			/>
+			<!-- {#await promise then url}
+				<img
+					transition:fade
+					class="block h-full w-full object-cover"
+					crossOrigin="anonymous"
+					alt="画像"
+					src={url}
+				/>
+			{/await} -->
 		</div>
 		<div class="flex flex-col gap-2">
 			<span class="text-[22px] font-bold"

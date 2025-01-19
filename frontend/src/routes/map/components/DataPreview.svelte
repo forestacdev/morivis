@@ -1,107 +1,147 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import turfBbox from '@turf/bbox';
+	import { Map, ScaleControl, AttributionControl } from 'maplibre-gl';
+	import type { StyleSpecification } from 'maplibre-gl';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
+	import { MAP_POSITION } from '$map/constants';
 	import { IMAGE_TILE_XYZ } from '$map/constants';
+	import { getLocationBbox } from '$map/data/locationBbox';
+	import { createLayersItems } from '$map/layers';
+	import { createSourcesItems } from '$map/sources';
+	import { GeojsonCache } from '$map/utils/geojson';
 	import { getImagePmtiles } from '$map/utils/raster';
 	import { geoDataEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { addedLayerIds, showDataMenu } from '$routes/map/store';
 
-	// export let mapBearing: number;
-	let dataEntries = $state<GeoDataEntry[]>([]);
+	let { showDataEntry = $bindable() }: { showDataEntry: GeoDataEntry | null } = $props();
+	let mapContainer = $state<HTMLElement | null>(null);
 
-	dataEntries = geoDataEntry;
+	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
+		// ソースとレイヤーの作成
+		const sources = await createSourcesItems(_dataEntries);
+		const layers = await createLayersItems(_dataEntries);
 
-	const addLayer = (id: string) => {
-		addedLayerIds.addLayer(id);
+		const mapStyle = {
+			version: 8,
+			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
+			sources: {
+				mierune_mono: {
+					type: 'raster',
+					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+					tileSize: 256,
+					minzoom: 0,
+					maxzoom: 18,
+					attribution:
+						'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+				},
+				...sources
+			},
+
+			layers: [
+				{
+					id: 'mierune_mono_layer',
+					source: 'mierune_mono',
+					type: 'raster'
+				},
+				{
+					id: 'overlay-layer',
+					type: 'background',
+					paint: {
+						'background-color': '#000000',
+						'background-opacity': 0.8
+					}
+				},
+				...layers
+			]
+		};
+
+		return mapStyle as StyleSpecification;
 	};
 
-	const toggleDataMenu = () => {
-		showDataMenu.set(!showDataMenu);
-	};
+	onMount(() => {
+		$effect(() => {
+			if (showDataEntry) {
+				(async () => {
+					const map = new Map({
+						container: mapContainer as HTMLElement, // 地図を表示する要素
+						style: await createMapStyle([showDataEntry]), // スタイル設定
+						...MAP_POSITION // 地図の初期位置
+					});
 
-	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
-		if (_layerEntry.type !== 'raster') {
-			// raster タイプ以外の場合は undefined を返す
-			return Promise.resolve(undefined);
-		}
-		// xyz タイル情報を取得
-		const tile = _layerEntry.metaData.xyzImageTile
-			? _layerEntry.metaData.xyzImageTile
-			: IMAGE_TILE_XYZ;
-
-		// URLを生成して Promise として返す
-		return Promise.resolve(
-			_layerEntry.format.url
-				.replace('{z}', tile.z.toString())
-				.replace('{x}', tile.x.toString())
-				.replace('{y}', tile.y.toString())
-		);
-	};
-
-	// 非同期で画像URLを取得
-	const fetchTileImage = async (_layerEntry: GeoDataEntry) => {
-		try {
-			if (_layerEntry.type !== 'raster' || _layerEntry.format.type !== 'pmtiles') return;
-			const tile = _layerEntry.metaData.xyzImageTile
-				? _layerEntry.metaData.xyzImageTile
-				: IMAGE_TILE_XYZ;
-			return await getImagePmtiles(_layerEntry.format.url, tile);
-		} catch (e) {
-			console.error('Error fetching tile image:', e);
-		}
-	};
-
-	const promise = async (layerEntry: GeoDataEntry) => {
-		if (layerEntry.type === 'raster') {
-			if (layerEntry.format.type === 'image') {
-				return generateIconImage(layerEntry);
-			} else if (layerEntry.format.type === 'pmtiles') {
-				return fetchTileImage(layerEntry);
+					if (showDataEntry.format.type === 'fgb') {
+						try {
+							const geojson = GeojsonCache.get(showDataEntry.id);
+							if (!geojson) return;
+							const bbox = turfBbox(geojson) as [number, number, number, number];
+							map.fitBounds(bbox, {
+								bearing: map.getBearing(),
+								padding: 100,
+								duration: 0
+							});
+						} catch (error) {
+							console.error(error);
+						}
+					} else if (showDataEntry.metaData.bounds) {
+						map.fitBounds(showDataEntry.metaData.bounds, {
+							bearing: map.getBearing(),
+							padding: 100,
+							duration: 0
+						});
+					} else if (showDataEntry.metaData.location) {
+						const bbox = getLocationBbox(showDataEntry.metaData.location);
+						if (bbox) {
+							map.fitBounds(bbox, {
+								bearing: map.getBearing(),
+								padding: 100,
+								duration: 0
+							});
+						}
+					} else {
+						console.warn('フォーカスの処理に対応してません', showDataEntry.id);
+					}
+				})();
 			}
-		} else if (layerEntry.type === 'vector') {
-			return layerEntry.metaData.coverImage ?? './images/no_image.webp';
+		});
+	});
+
+	const addData = () => {
+		if (showDataEntry) {
+			addedLayerIds.addLayer(showDataEntry.id);
+			showDataEntry = null;
+		}
+	};
+	const deleteData = () => {
+		if (showDataEntry) {
+			addedLayerIds.removeLayer(showDataEntry.id);
+			showDataEntry = null;
 		}
 	};
 </script>
 
-<!-- {#if $showDataMenu}
+{#if showDataEntry}
 	<div
-		transition:fade={{ duration: 100 }}
-		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black bg-opacity-50 p-8"
+		transition:fade={{ duration: 100, delay: 100 }}
+		class="relative z-30 h-full w-full flex-grow"
 	>
-		<div class="bg-main flex h-full w-full flex-grow flex-col rounded-lg p-2">
-			<div class="flex flex-shrink-0 items-center justify-between p-2">
-				<span class="text-lg">データカタログ</span>
-				<button onclick={toggleDataMenu} class="bg-base rounded-full p-2">
-					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
-				</button>
-			</div>
-			<div class="grid h-[700px] grid-cols-3 grid-rows-3 gap-4 overflow-y-auto p-2">
-				{#each dataEntries as dataEntry}
-					<button class="mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300">
-						<div class="aspect-square flex-grow p-2">
-							<img
-								src={dataEntry.metaData.coverImage ?? './images/no_image.webp'}
-								class="h-full w-full object-cover"
-								alt="サムネイル"
-							/>
-						</div>
-						<span class="h-[30px] flex-shrink-0">{dataEntry.metaData.name}</span>
-					</button>
-				{/each}
-			</div>
+		<div class="absolute h-full w-full flex-grow" bind:this={mapContainer}></div>
+		<div
+			class="pointer-events-none absolute bottom-0 z-10 flex w-full items-center justify-center gap-4 p-4"
+		>
+			<button
+				class="bg-accent text-main pointer-events-auto rounded-full p-2 text-lg font-bold"
+				onclick={addData}
+				>地図に追加
+			</button>
+			<button
+				class="text-main pointer-events-auto rounded-full bg-red-600 p-2 text-lg font-bold"
+				onclick={deleteData}
+				>地図から削除
+			</button>
 		</div>
-	</div>
-{/if} -->
-
-{#if $showDataMenu}
-	<div
-		transition:fade={{ duration: 100 }}
-		class="h-ful bottom-0 z-30 w-full bg-black bg-opacity-50 p-8"
-	>
-		プレビュー
 	</div>
 {/if}
 

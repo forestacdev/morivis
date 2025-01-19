@@ -1,16 +1,18 @@
 <script lang="ts">
-	import maplibregl from 'maplibre-gl';
+	import { ScaleControl } from 'maplibre-gl';
 	import type { Map } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	export let map: Map;
+	import { mapStore } from '$map/store/map';
+
 	let controlContainer: HTMLDivElement;
 
 	onMount(() => {
+		const map = mapStore.getMap();
 		if (map) {
 			// スケールバーのコントロールを作成
-			const scaleControl = new maplibregl.ScaleControl({
-				maxWidth: 150,
+			const scaleControl = new ScaleControl({
+				maxWidth: 100,
 				unit: 'metric'
 			});
 
@@ -20,7 +22,7 @@
 	});
 </script>
 
-<div class="absolute left-1 max-lg:bottom-11 lg:bottom-9" bind:this={controlContainer}></div>
+<div class="absolute bottom-2 left-2" bind:this={controlContainer}></div>
 
 <style>
 </style>

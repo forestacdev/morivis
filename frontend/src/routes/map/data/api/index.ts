@@ -72,3 +72,92 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 		}
 	}
 };
+
+// 型定義
+interface WikiImage {
+	title: string;
+}
+
+interface WikiResponse {
+	query: {
+		pages: {
+			[key: string]: {
+				images: WikiImage[];
+			};
+		};
+	};
+}
+
+// wiki画像のフィルタリング関数
+const filterWikiImages = async (response: WikiResponse): Promise<WikiImage[]> => {
+	const pages = Object.values(response.query.pages);
+	if (pages.length === 0) return [];
+
+	const images = pages[0].images || [];
+
+	// ラスタ画像の拡張子でフィルタリング
+	const rasterImages = images.filter((image) => /\.(jpg|jpeg|png)$/i.test(image.title));
+
+	return rasterImages;
+};
+
+// wiki画像URLを取得する関数
+const getWikiImageUrls = async (imageTitles: WikiImage[]): Promise<string[]> => {
+	const baseUrl = 'https://ja.wikipedia.org/w/api.php';
+	const urls: string[] = [];
+
+	for (const image of imageTitles) {
+		const imageTitle = encodeURIComponent(image.title);
+		const url = `${baseUrl}?action=query&titles=${imageTitle}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+
+		const res = await fetch(url);
+		const data = await res.json();
+		const pages = Object.values(data.query.pages);
+
+		const imageUrl = pages[0]?.imageinfo?.[0]?.url || null;
+		if (imageUrl) {
+			urls.push(imageUrl);
+		}
+	}
+
+	return urls;
+};
+
+// 1つ目の画像URLを取得する関数
+const getFirstWikiImageUrl = async (imageTitle: string): Promise<string | null> => {
+	const baseUrl = 'https://ja.wikipedia.org/w/api.php';
+	const encodedTitle = encodeURIComponent(imageTitle);
+	const url = `${baseUrl}?action=query&titles=${encodedTitle}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+
+	const res = await fetch(url);
+	const data = await res.json();
+	const pages = Object.values(data.query.pages);
+
+	// 最初の画像URLを取得
+	return pages[0]?.imageinfo?.[0]?.url || null;
+};
+
+// メイン関数
+export const fetchWikipediaImage = async (pageTitle: string): Promise<string | null> => {
+	const baseUrl = 'https://ja.wikipedia.org/w/api.php';
+	const url = `${baseUrl}?action=query&prop=images&titles=${encodeURIComponent(
+		pageTitle
+	)}&format=json&origin=*`;
+
+	const res = await fetch(url);
+
+	const data: WikiResponse = await res.json();
+
+	console.log(data);
+
+	// 画像をフィルタリング
+	const Images = await filterWikiImages(data);
+
+	if (Images.length === 0) {
+		return null;
+	}
+
+	const image = getFirstWikiImageUrl(Images[0].title);
+
+	return image;
+};

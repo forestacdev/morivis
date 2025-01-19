@@ -22,6 +22,7 @@
 	// import CanvasLayer from '$map/components/_CanvasLayer.svelte';
 	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
+	import ScaleControl from '$map/components/control/ScaleControl.svelte';
 	import TerrainControl from '$map/components/control/TerrainControl.svelte';
 	import ZoomControl from '$map/components/control/ZoomControl.svelte';
 	import DataManu from '$map/components/DataManu.svelte';
@@ -430,6 +431,7 @@
 	<Compass />
 	<ZoomControl />
 	<TerrainControl />
+	<ScaleControl />
 	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
 	<SidePopup bind:sidePopupData {layerEntries} />

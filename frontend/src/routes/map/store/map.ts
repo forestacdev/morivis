@@ -1,6 +1,6 @@
 // stores/mapStore.js
 import { writable, get } from 'svelte/store';
-import maplibregl from 'maplibre-gl';
+import maplibregl, { ScaleControl } from 'maplibre-gl';
 import type {
 	StyleSpecification,
 	LngLat,
@@ -33,8 +33,8 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$map/utils/params';
 import { DEBUG_MODE, showLayerOptionId } from '$map/store';
-import type { GeoDataEntry } from '../data/types';
-import { GeojsonCache } from '../utils/geojson';
+import type { GeoDataEntry } from '$map/data/types';
+import { GeojsonCache } from '$map/utils/geojson';
 
 const createMapStore = () => {
 	let isInitialized = false;
@@ -238,6 +238,12 @@ const createMapStore = () => {
 			} catch (error) {
 				console.error(error);
 			}
+		} else if (entry.metaData.bounds) {
+			map.fitBounds(entry.metaData.bounds, {
+				bearing: map.getBearing(),
+				padding: 100,
+				duration: 500
+			});
 		} else if (entry.metaData.location) {
 			const bbox = getLocationBbox(entry.metaData.location);
 			if (bbox) {
