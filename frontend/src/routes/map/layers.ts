@@ -337,10 +337,10 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 			'text-color': color,
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
+
 			...(symbolStyle.paint ?? {})
 		},
 		layout: {
-			'icon-anchor': 'bottom',
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,

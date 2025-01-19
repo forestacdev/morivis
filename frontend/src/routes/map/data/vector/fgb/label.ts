@@ -72,11 +72,12 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					layout: {
 						'text-field': ['to-string', ['get', 'name']],
 						'text-size': 14,
-						'text-variable-anchor': ['left', 'right', 'top', 'bottom'],
-						'text-radial-offset': 2,
+						'text-variable-anchor': ['bottom-left', 'bottom-right'],
+						'text-radial-offset': 2.1,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.95
+						'icon-size': 0.25,
+						'icon-anchor': 'bottom'
 						// 'icon-image': [
 						// 	'case',
 						// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
@@ -150,7 +151,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						key: '単色',
 						name: '単色',
 						mapping: {
-							value: '#fb6000'
+							value: '#a03d00'
 						}
 					}
 				]
@@ -171,11 +172,12 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					layout: {
 						'text-field': ['to-string', ['get', 'name']],
 						'text-size': 14,
-						'text-variable-anchor': ['left', 'right'],
+						'text-variable-anchor': ['bottom-left', 'bottom-right'],
 						'text-radial-offset': 2,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.2
+						'icon-size': 0.2,
+						'icon-anchor': 'bottom'
 					},
 					paint: {
 						'text-halo-color': '#ffffff',
@@ -254,11 +256,12 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					layout: {
 						'text-field': ['to-string', ['get', 'name']],
 						'text-size': 14,
-						'text-variable-anchor': ['left', 'right'],
+						'text-variable-anchor': ['bottom-left', 'bottom-right'],
 						'text-radial-offset': 2,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.2
+						'icon-size': 0.2,
+						'icon-anchor': 'bottom'
 					},
 					paint: {
 						'text-halo-color': '#ffffff',

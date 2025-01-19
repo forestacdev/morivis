@@ -57,32 +57,28 @@ void main(void) {
     // テクスチャから色をサンプリング
     vec4 textureColor = texture(u_texture, texCoord);
 
-      // 三角形の頂点を設定（下向き三角形）
-      // 逆さまの三角形を画面の一番下に配置
+    // 初期の色とアルファを設定（画像と円を適用）
+    vec3 color = textureColor.rgb; // 画像を最優先で描画
+    float alpha = mask * textureColor.a;
+
+    // 円の縁を白くする
+    if (mask > 0.0 && outerMask < 1.0) {
+        color = vec3(1.0);
+        alpha = 1.0; // 円の縁は完全不透明
+    }
+
+    // 三角形の頂点を設定（下向き三角形）
     vec2 p0 = vec2(0.5, 0.0);   // 画面中央下
-    vec2 p1 = vec2(0.3, 0.13);   // 左上
-    vec2 p2 = vec2(0.7, 0.13);   // 右上
+    vec2 p1 = vec2(0.3, 0.18);  // 左上
+    vec2 p2 = vec2(0.7, 0.18);  // 右上
 
     // 三角形マスクを適用
     float triangle = triangleMask(st, p0, p1, p2);
 
-    // 円形マスク適用
-    vec3 color = textureColor.rgb;
-
-    // 縁取り部分を白にする
-    if (mask > 0.0 && outerMask < 1.0) {
-        color = vec3(1.0);
-    }
-
-    // 三角形部分を白にする
-    if (triangle > 0.0) {
-        color = vec3(1.0);
-    }
-
-    // マスクの外側を透明にする
-    float alpha = mask * textureColor.a;
-    if (triangle > 0.0) {
-        alpha = 1.0; // 三角形部分は完全に不透明
+    // 三角形部分を背景色として描画（画像より後ろにする）
+    if (triangle > 0.0 && alpha == 0.0) {
+        color = vec3(1.0); // 三角形を白色で描画
+        alpha = 1.0;       // 三角形は不透明
     }
 
     outColor = vec4(color, alpha);
