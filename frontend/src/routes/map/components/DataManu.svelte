@@ -82,6 +82,17 @@
 			return layerEntry.metaData.coverImage ?? COVER_NO_IMAGE_PATH;
 		}
 	};
+
+	const addData = () => {
+		if (showDataEntry) {
+			addedLayerIds.addLayer(showDataEntry.id);
+		}
+	};
+	const deleteData = () => {
+		if (showDataEntry) {
+			addedLayerIds.removeLayer(showDataEntry.id);
+		}
+	};
 </script>
 
 {#if $showDataMenu}
@@ -99,7 +110,7 @@
 			<div class="h-full w-full flex-grow overflow-auto {showDataEntry ? 'flex' : ''}">
 				<div class={showDataEntry ? 'w-[400px] flex-shrink' : 'css-grid h-full'}>
 					{#if showDataEntry}
-						<div class="flex flex-shrink-0 items-center justify-between p-2">
+						<div class="absolute z-10 flex flex-shrink-0 items-center justify-between p-2">
 							<button onclick={() => (showDataEntry = null)} class="bg-base rounded-full p-2">
 								<Icon icon="ep:back" class="text-main w-4] h-4" />
 							</button>
@@ -107,7 +118,7 @@
 					{/if}
 					{#each filterDataEntries as dataEntry (dataEntry.id)}
 						<button
-							animate:flip={{ duration: 200 }}
+							animate:flip={{ duration: 500 }}
 							onclick={() => showData(dataEntry.id)}
 							class="relative mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300"
 						>
@@ -115,14 +126,6 @@
 								{#await promise(dataEntry) then url}
 									<img src={url} class="h-full w-full rounded-md object-cover" alt="サムネイル" />
 								{/await}
-								{#if addedDataIds.includes(dataEntry.id)}
-									<div
-										class="text-main absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
-									>
-										<div>地図に追加済み</div>
-										<Icon icon="material-symbols:check" class=" h-8 w-8" />
-									</div>
-								{/if}
 							</div>
 
 							<div class="flex w-full items-center justify-start gap-2 p-2">
@@ -133,6 +136,24 @@
 								</label>
 								<span class="h-[30px] flex-shrink-0">{dataEntry.metaData.name}</span>
 							</div>
+
+							{#if addedDataIds.includes(dataEntry.id)}
+								<button
+									onclick={addData}
+									class="bg-main flex items-center justify-center rounded-full px-4"
+								>
+									<Icon icon="material-symbols:check" class=" h-8 w-8" />
+									<div>地図に追加済み</div>
+								</button>
+							{:else}
+								<button
+									onclick={deleteData}
+									class="text-main bg-accent flex items-center justify-center rounded-full px-4"
+								>
+									<Icon icon="material-symbols:add" class=" h-8 w-8" />
+									<div>地図に追加</div>
+								</button>
+							{/if}
 						</button>
 					{/each}
 				</div>

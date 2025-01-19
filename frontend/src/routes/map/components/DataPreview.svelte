@@ -124,7 +124,7 @@
 
 {#if showDataEntry}
 	<div
-		transition:fade={{ duration: 100, delay: 100 }}
+		transition:fade={{ duration: 100, delay: 400 }}
 		class="relative z-30 h-full w-full flex-grow"
 	>
 		<div class="absolute h-full w-full flex-grow" bind:this={mapContainer}></div>

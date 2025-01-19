@@ -63,7 +63,7 @@
 		class="css-range block"
 		type="range"
 		min="1"
-		max="22"
+		max="20"
 		step="0.01"
 		bind:value
 		oninput={(e) => setMapZoom(e)}

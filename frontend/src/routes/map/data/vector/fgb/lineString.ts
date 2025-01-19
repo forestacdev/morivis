@@ -1,4 +1,6 @@
 import type { GeoJsonMetaData, LineStringEntry } from '$map/data/types/vector';
+import { COVER_IMAGE_BASE_PATH } from '$map/constants';
+import { FEATURE_IMAGE_BASE_PATH } from '$map/constants';
 
 export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 	// 演習林道
@@ -15,9 +17,9 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 			description: '演習林の道',
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
-			maxZoom: 24,
+			maxZoom: 22,
 			bounds: null,
-			coverImage: null
+			coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`
 		},
 		properties: {
 			keys: ['種類'],

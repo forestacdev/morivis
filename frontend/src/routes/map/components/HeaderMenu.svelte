@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
+	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import Geocoder from '$map/components/control/Geocoder.svelte';
@@ -17,11 +18,15 @@
 
 	onMount(() => {});
 
-	let { layerEntries }: { layerEntries: GeoDataEntry[] } = $props();
+	let {
+		layerEntries,
+		sidePopupData = $bindable()
+	}: { layerEntries: GeoDataEntry[]; sidePopupData: MapGeoJSONFeature | null } = $props();
 
 	const focusFeature = (feature: any) => {
+		console.log('focusFeature', feature);
 		mapStore.focusFeature(feature);
-		mapStore.addSearchFeature(feature);
+		// mapStore.addSearchFeature(feature);
 	};
 </script>
 
@@ -42,9 +47,9 @@
 			{#each result.features as feature}
 				<button
 					onclick={() => focusFeature(feature)}
-					class="flex w-full flex-col rounded-sm bg-slate-50 p-1 text-left text-black"
+					class="flex w-full flex-col text-left text-black"
 				>
-					<span class="text-lg">{feature.properties.name ?? feature.properties['小林班ID']}</span>
+					<span class="">{feature.properties.name}</span>
 					<span class="text-xs">{result.name}</span>
 				</button>
 			{/each}

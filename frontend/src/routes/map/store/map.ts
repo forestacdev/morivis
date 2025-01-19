@@ -68,7 +68,8 @@ const createMapStore = () => {
 			preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85
+			maxPitch: 85,
+			maxZoom: 20
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,

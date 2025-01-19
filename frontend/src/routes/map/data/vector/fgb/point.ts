@@ -17,7 +17,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			description: '演習林内のサインポール',
 			attribution: '森林文化アカデミー',
 			location: '森林文化アカデミー',
-			maxZoom: 24,
+			maxZoom: 22,
 			bounds: null,
 			coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`
 		},
@@ -84,166 +84,6 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		extension: {},
 		debug: false
 	},
-	// {
-	// 	id: 'fac_building',
-	// 	type: 'vector',
-	// 	format: {
-	// 		type: 'fgb',
-	// 		geometryType: 'Point',
-	// 		url: './fgb/fac_building_point.fgb'
-	// 	},
-	// 	metaData: {
-	// 		name: 'アカデミー施設',
-	// 		description: '森林文化アカデミーの施設',
-	// 		attribution: '森林文化アカデミー',
-	// 		location: '森林文化アカデミー',
-	// 		maxZoom: 22,
-	// 		bounds: null,
-	// 		coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
-	// 	},
-	// 	properties: {
-	// 		keys: ['name', '建物名称', '構造規模'],
-	// 		dict: null,
-	// 		titles: [
-	// 			{
-	// 				conditions: ['name'],
-	// 				template: '{name}'
-	// 			},
-	// 			{
-	// 				conditions: [],
-	// 				template: '施設'
-	// 			}
-	// 		]
-	// 	},
-	// 	interaction: {
-	// 		clickable: true,
-	// 		searchKeys: ['name']
-	// 	},
-	// 	style: {
-	// 		type: 'circle',
-	// 		opacity: 0.8, // 透過率
-	// 		colors: {
-	// 			key: '単色',
-	// 			expressions: [
-	// 				{
-	// 					type: 'single',
-	// 					key: '単色',
-	// 					name: '単色',
-	// 					mapping: {
-	// 						value: '#004cfd'
-	// 					}
-	// 				}
-	// 			]
-	// 		},
-	// 		labels: {
-	// 			key: '名前',
-	// 			show: false,
-	// 			expressions: [
-	// 				{
-	// 					key: '名前',
-	// 					name: '建物名称',
-	// 					value: '{name}'
-	// 				}
-	// 			]
-	// 		},
-	// 		default: {
-	// 			circle: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			},
-	// 			symbol: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			},
-	// 			heatmap: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			}
-	// 		}
-	// 	},
-	// 	extension: {},
-	// 	debug: false
-	// },
-	// {
-	// 	id: 'fac_ziriki',
-	// 	type: 'vector',
-	// 	format: {
-	// 		type: 'fgb',
-	// 		geometryType: 'Point',
-	// 		url: './fgb/fac_ziriki_point.fgb'
-	// 	},
-	// 	metaData: {
-	// 		name: '自力建設',
-	// 		description: '自力建設',
-	// 		attribution: '森林文化アカデミー',
-	// 		location: '森林文化アカデミー',
-	// 		maxZoom: 22,
-	// 		bounds: null,
-	// 		coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
-	// 	},
-	// 	properties: {
-	// 		keys: ['name', '年度'],
-	// 		dict: null,
-	// 		titles: [
-	// 			{
-	// 				conditions: ['name'],
-	// 				template: '{name}'
-	// 			},
-	// 			{
-	// 				conditions: [],
-	// 				template: '自力建設'
-	// 			}
-	// 		]
-	// 	},
-	// 	interaction: {
-	// 		clickable: true,
-	// 		searchKeys: ['name']
-	// 	},
-	// 	style: {
-	// 		type: 'circle',
-	// 		opacity: 0.8, // 透過率
-	// 		colors: {
-	// 			key: '単色',
-	// 			expressions: [
-	// 				{
-	// 					type: 'single',
-	// 					key: '単色',
-	// 					name: '単色',
-	// 					mapping: {
-	// 						value: '#fb6000'
-	// 					}
-	// 				}
-	// 			]
-	// 		},
-	// 		labels: {
-	// 			key: '名前',
-	// 			show: false,
-	// 			expressions: [
-	// 				{
-	// 					key: '名前',
-	// 					name: '建物名称',
-	// 					value: '{name}'
-	// 				}
-	// 			]
-	// 		},
-	// 		default: {
-	// 			circle: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			},
-	// 			symbol: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			},
-	// 			heatmap: {
-	// 				paint: {},
-	// 				layout: {}
-	// 			}
-	// 		}
-	// 	},
-	// 	extension: {},
-	// 	debug: false
-	// },
 	{
 		id: 'fac_phenology_2020',
 		type: 'vector',
@@ -309,6 +149,100 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			default: {
 				circle: {
 					paint: {},
+					layout: {}
+				},
+				symbol: {
+					paint: {},
+					layout: {}
+				},
+				heatmap: {
+					paint: {},
+					layout: {}
+				}
+			}
+		},
+		extension: {},
+		debug: false
+	},
+	{
+		id: 'ensyurin_owl',
+		type: 'vector',
+		format: {
+			type: 'fgb',
+			geometryType: 'Point',
+			url: './fgb/ensyurin_owl.fgb'
+		},
+		metaData: {
+			name: '林業専攻-OWL利用研修立木計測データ',
+			description: '林業専攻-OWL利用研修立木計測データ',
+			attribution: '株式会社アドイン研究所',
+			location: '森林文化アカデミー',
+			maxZoom: 22,
+			bounds: null,
+			coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
+		},
+		properties: {
+			keys: ['樹種'],
+			dict: null,
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '林業専攻-OWL利用研修立木計測データ'
+				}
+			]
+		},
+		interaction: {
+			clickable: true,
+			searchKeys: ['樹種']
+		},
+		style: {
+			type: 'circle',
+			opacity: 0.8, // 透過率
+			colors: {
+				key: '単色',
+				expressions: [
+					{
+						type: 'single',
+						key: '単色',
+						name: '単色',
+						mapping: {
+							value: '#e70000'
+						}
+					}
+				]
+			},
+			labels: {
+				key: '名前',
+				show: false,
+				expressions: [
+					{
+						key: '名前',
+						name: 'ポールの名前',
+						value: '{name}'
+					}
+				]
+			},
+			default: {
+				circle: {
+					paint: {
+						'circle-stroke-width': 2,
+						'circle-stroke-color': '#FFFFFF',
+						'circle-color': [
+							'interpolate',
+							['linear'],
+							['get', '樹高m'],
+							4.1,
+							'hsl(52, 93%, 85%)',
+							18.7,
+							'hsl(0, 79%, 57%)'
+						],
+						'circle-radius': ['interpolate', ['linear'], ['get', '胸高直径cm'], 7, 5, 42.5, 10]
+						// "circle-opacity" :0
+					},
 					layout: {}
 				},
 				symbol: {

@@ -1,17 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type {
-		StyleSpecification,
-		MapGeoJSONFeature,
-		SourceSpecification,
-		CanvasSourceSpecification,
-		LayerSpecification,
-		TerrainSpecification,
-		Marker,
-		LngLat,
-		Popup
-	} from 'maplibre-gl';
-	import { onMount } from 'svelte';
+	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 

@@ -6,6 +6,7 @@ export type AttributionKey =
 	| '産総研地質調査総合センター'
 	| 'Q地図タイル'
 	| 'OSM'
+	| '株式会社アドイン研究所'
 	| 'Esri';
 
 export type Attribution = {
@@ -54,6 +55,11 @@ const attributionData: Attribution[] = [
 		key: 'Esri',
 		name: 'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
+	},
+	{
+		key: '株式会社アドイン研究所',
+		name: '株式会社アドイン研究所',
+		url: 'https://www.owl-sys.com/'
 	}
 ];
 

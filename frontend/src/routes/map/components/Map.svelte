@@ -1,6 +1,8 @@
 <script lang="ts">
-	import turfDissolve from '@turf/dissolve';
-	import turfUnion from '@turf/union';
+	// import turfDissolve from '@turf/dissolve';
+	import turfDistance from '@turf/distance';
+	import turfNearestPoint from '@turf/nearest-point';
+	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
 	import maplibregl from 'maplibre-gl';
 	import type {
@@ -20,6 +22,7 @@
 	import { mount, onMount } from 'svelte';
 
 	// import CanvasLayer from '$map/components/_CanvasLayer.svelte';
+
 	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import ScaleControl from '$map/components/control/ScaleControl.svelte';
@@ -35,6 +38,7 @@
 	import SidePopup from '$map/components/popup/SidePopup.svelte';
 	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
+	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
 	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
@@ -73,6 +77,14 @@
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let sidePopupData = $state<MapGeoJSONFeature | null>(null);
+	let nextPointData = $state<any>(null);
+	let streetViewPoint = $state<any>(null);
+	let streetViewPointData = $state<any>({
+		type: 'FeatureCollection',
+		features: []
+	});
+
+	let cameraBearing = $state<number>(0);
 
 	// TODO: CanvasLayerの実装
 	// let canvasSource = $state<CanvasSourceSpecification>({
@@ -114,6 +126,10 @@
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
 				terrain: gsiTerrainSource,
+				street_view_line: {
+					type: 'geojson',
+					data: 'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
+				},
 				...sources
 				// base_map_source: {
 				// 	type: 'raster',
@@ -143,7 +159,22 @@
 				// 	hillshadeShadowColor: '#000',
 				// 	hillshadeAccentColor: '#000'
 				// },
-				...layers
+				...layers,
+				{
+					id: 'street_view_line_layer',
+					type: 'line',
+					source: 'street_view_line',
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 10,
+						'line-opacity': 0.5,
+						'line-blur': 0.5
+					},
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round'
+					}
+				}
 				// overlayLayer
 			],
 			sky: {
@@ -193,6 +224,14 @@
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
+
+		streetViewPointData = await fetch(
+			'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360.geojson'
+		)
+			.then((res) => res.json())
+			.then((data) => {
+				return data;
+			});
 	});
 
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
@@ -331,7 +370,15 @@
 
 		// console.log('click', e);
 		if (!e) return;
-		console.log('click', $clickableVectorIds);
+
+		if (streetViewPointData.features.length > 0) {
+			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
+			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
+			if (distance < 100) {
+				streetViewPoint = point;
+			}
+		}
+
 		const features = mapStore.queryRenderedFeatures(e.point, {
 			layers: $clickableVectorIds
 		});
@@ -423,10 +470,11 @@
 
 <div class="relative h-full w-full">
 	<SideMenu />
-	<HeaderMenu {layerEntries} />
+	<HeaderMenu bind:sidePopupData {layerEntries} />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div bind:this={mapContainer} class="css-map h-full w-full flex-grow"></div>
+	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing />
 	<!-- <CanvasLayer bind:canvasSource /> -->
 	<Compass />
 	<ZoomControl />

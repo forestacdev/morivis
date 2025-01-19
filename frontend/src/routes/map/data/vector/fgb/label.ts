@@ -38,7 +38,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		interaction: {
 			clickable: true,
-			searchKeys: ['name']
+			searchKeys: ['name', '建物名称']
 		},
 		style: {
 			type: 'symbol',
@@ -138,7 +138,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		interaction: {
 			clickable: true,
-			searchKeys: ['name']
+			searchKeys: ['name', 'category']
 		},
 		style: {
 			type: 'symbol',
@@ -222,7 +222,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 		},
 		interaction: {
 			clickable: true,
-			searchKeys: ['name']
+			searchKeys: ['name', '種類']
 		},
 		style: {
 			type: 'symbol',
