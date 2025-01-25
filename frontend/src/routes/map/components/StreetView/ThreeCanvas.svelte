@@ -84,8 +84,7 @@
 		}
 	};
 
-	const created360Mesh = async (feature) => {
-		console.log(feature);
+	const created360Mesh = async (feature): void => {
 		if (!feature) return;
 		isLoading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
@@ -140,8 +139,9 @@
 	// 画面リサイズ時にキャンバスもリサイズ
 	const onResize = () => {
 		// サイズを取得
-		const width = window.innerWidth;
-		const height = window.innerHeight;
+		if (!renderer) return;
+		const width = !$isStreetView ? window.innerWidth : 100;
+		const height = !$isStreetView ? window.innerHeight : 80;
 
 		// レンダラーのサイズを調整する
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -230,14 +230,14 @@
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
 
-			let degreesX = THREE.MathUtils.radToDeg(camera.rotation.x);
-			degreesX = ((degreesX + 360) % 360) - 270; // 0〜360度の範囲に調整
+			// let degreesX = THREE.MathUtils.radToDeg(camera.rotation.x);
+			// degreesX = ((degreesX + 360) % 360) - 270; // 0〜360度の範囲に調整
 
-			if (!controlDiv) return;
-
-			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 			// controlDiv親要素のを取得
-			cameraBearing = degrees;
+			if (!controlDiv) return;
+			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
+
+			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
 
 			// テクスチャを回転させる
 			scene.backgroundRotation.set(
@@ -252,7 +252,7 @@
 	});
 
 	isStreetView.subscribe((value) => {
-		if (value) onResize();
+		onResize();
 	});
 	const nextPoint = (point) => {
 		setPoint(point);
@@ -261,7 +261,7 @@
 	$effect(() => created360Mesh(feature));
 </script>
 
-<!-- <div class="custom-canvas-back"></div> -->
+<!-- <div class="css-canvas-back"></div> -->
 <div
 	class="border-main absolute z-10 overflow-hidden border-2 {$isStreetView
 		? 'left-0 top-0 h-full w-full'
@@ -269,21 +269,21 @@
 >
 	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
 	{#if isLoading}
-		<div class="custom-loading">
-			<div class="custom-spinner"></div>
+		<div class="css-loading">
+			<div class="css-spinner"></div>
 		</div>
 	{:else}
 		<div
-			class="custom-3d pointer-events-none absolute bottom-0 grid w-full p-0 place-items-center{$isStreetView
+			class="css-3d pointer-events-none absolute bottom-0 grid w-full p-0 place-items-center{$isStreetView
 				? ' h-[400px]'
 				: ' h-full'}"
 		>
-			<div class="custom-control-warp">
-				<div bind:this={controlDiv} class="custom-control">
+			<div class="css-control-warp">
+				<div bind:this={controlDiv} class="css-control">
 					{#each nextPointData as point, index}
 						<button
 							onclick={() => nextPoint(point.feaureData)}
-							class="custom-arrow"
+							class="css-arrow"
 							style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
 						>
 							<Icon
@@ -313,25 +313,25 @@
 		padding: 0;
 	}
 
-	.custom-3d {
+	.css-3d {
 		pointer-events: none;
 		transform-style: preserve-3d;
 		perspective: 1000px;
 		/* background-color: #000000; */
 	}
 
-	.custom-control-warp {
+	.css-control-warp {
 		transform: rotateX(60deg);
 	}
 
-	.custom-control {
+	.css-control {
 		transform-origin: center;
 		height: 400px;
 		width: 400px;
 		pointer-events: none;
 	}
 
-	.custom-arrow {
+	.css-arrow {
 		pointer-events: auto;
 		display: grid;
 		place-items: center;
@@ -347,7 +347,7 @@
 		filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
 	}
 
-	.custom-loading {
+	.css-loading {
 		z-index: 1;
 		width: 100%;
 		height: 100%;
@@ -359,7 +359,7 @@
 		justify-content: center;
 	}
 
-	.custom-spinner {
+	.css-spinner {
 		width: 100px;
 		height: 100px;
 		border: 10px solid #333;

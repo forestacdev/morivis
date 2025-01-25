@@ -37,7 +37,6 @@ import type { GeoDataEntry } from '$map/data/types';
 import { GeojsonCache } from '$map/utils/geojson';
 
 const createMapStore = () => {
-	let isInitialized = false;
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
 
@@ -48,6 +47,7 @@ const createMapStore = () => {
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isLoadingEvent = writable<boolean>(true);
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
+	const initEvent = writable<maplibregl.Map | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -185,7 +185,7 @@ const createMapStore = () => {
 			}
 		});
 
-		isInitialized = true;
+		initEvent.set(map);
 	};
 
 	// マップスタイルを設定するメソッド
@@ -346,7 +346,6 @@ const createMapStore = () => {
 	return {
 		subscribe,
 		init,
-		isInitialized,
 		setStyle,
 		addLockonMarker,
 		removeLockonMarker,
@@ -366,7 +365,8 @@ const createMapStore = () => {
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
-		onLoading: isLoadingEvent.subscribe // ローディングイベントの購読用メソッド
+		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
+		onInitialized: initEvent.subscribe // 初期化イベントの購読用メソッド
 	};
 };
 
