@@ -6,4 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.7",
+    "numpy>=2.2.2",
+    "rio-rgbify>=0.4.0",
 ]
