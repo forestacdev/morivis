@@ -7,6 +7,7 @@
 	import turfNearestPoint from '@turf/nearest-point';
 	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
+	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
 		StyleSpecification,
@@ -54,7 +55,7 @@
 	import { createLayersItems } from '$map/layers';
 	import { createSourcesItems } from '$map/sources';
 	import { mapStore } from '$map/store/map';
-	import { convertToGeoJSONCollection } from '$map/utils/geojson';
+	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
@@ -81,7 +82,8 @@
 	let maplibreMarker = $state<Marker | null>(null); // マーカー
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
-	let sidePopupData = $state<MapGeoJSONFeature | null>(null);
+	let sidePopupData = $state<SidePopupData | null>(null);
+	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ
 	let nextPointData = $state<any>(null);
@@ -466,6 +468,9 @@
 			if (sidePopupData) {
 				sidePopupData = null;
 			}
+			if (inputSearchWord) {
+				inputSearchWord = '';
+			}
 			return;
 		}
 
@@ -511,10 +516,13 @@
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 		clickedLngLat = e.lngLat;
 		generateMarker(clickedLngLat);
-		// return;
 
 		const feature = features[0];
-		sidePopupData = feature;
+
+		const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
+
+		sidePopupData = geojsonFeature;
+
 		return;
 
 		const lngLat = e.lngLat;
@@ -596,7 +604,7 @@
 
 <div class="relative h-full w-full">
 	<SideMenu />
-	<HeaderMenu bind:sidePopupData {layerEntries} />
+	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div

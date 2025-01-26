@@ -52,7 +52,32 @@ export const getFgbToGeojson = async (url: string): Promise<FeatureCollection> =
 	}
 };
 
-const convertToGeoJSON = (feature: MapGeoJSONFeature, featureId: number): Feature | null => {
+export interface SidePopupData {
+	type: 'Feature';
+	geometry: Geometry;
+	properties: { [key: string]: any };
+	featureId: number;
+	layerId: string;
+}
+
+export const mapGeoJSONFeatureToSidePopupData = (feature: MapGeoJSONFeature): SidePopupData => {
+	const { geometry, properties, id, layer } = feature;
+
+	// 特定のIDに一致するか確認
+
+	return {
+		type: 'Feature',
+		geometry: geometry,
+		properties: properties,
+		featureId: id as number,
+		layerId: layer.id as string
+	};
+};
+
+export const convertToGeoJSONFeature = (
+	feature: MapGeoJSONFeature,
+	featureId: number
+): Feature | null => {
 	const { geometry, properties, id } = feature;
 
 	// 特定のIDに一致するか確認
@@ -77,7 +102,7 @@ export const convertToGeoJSONCollection = (
 		type: 'FeatureCollection',
 		// 特定のIDに一致するフィーチャーのみ変換
 		features: features
-			.map((feature) => convertToGeoJSON(feature, featureId)) // 個別に変換
+			.map((feature) => convertToGeoJSONFeature(feature, featureId)) // 個別に変換
 			.filter((feature): feature is Feature => feature !== null) // nullを除外
 	};
 };

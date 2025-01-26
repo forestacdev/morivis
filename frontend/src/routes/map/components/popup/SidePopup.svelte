@@ -9,17 +9,18 @@
 	import { propData } from '$map/data/propData';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showLayerOptionId, showSidePopup, mapMode, selectedHighlightData } from '$map/store';
+	import type { SidePopupData } from '$map/utils/geojson';
 	import { generatePopupTitle } from '$map/utils/properties';
 
 	let {
 		sidePopupData = $bindable(),
 		layerEntries
-	}: { sidePopupData: MapGeoJSONFeature | null; layerEntries: GeoDataEntry[] } = $props();
+	}: { sidePopupData: SidePopupData | null; layerEntries: GeoDataEntry[] } = $props();
 
 	let targetLayer = $derived.by(() => {
 		if (sidePopupData) {
 			const layer = layerEntries.find(
-				(entry) => sidePopupData && entry.id === sidePopupData.layer.id
+				(entry) => sidePopupData && entry.id === sidePopupData.layerId
 			);
 			return layer;
 		}
@@ -27,7 +28,7 @@
 	});
 
 	let data = $derived.by(() => {
-		if (sidePopupData) {
+		if (sidePopupData && sidePopupData.properties) {
 			return propData[sidePopupData.properties._prop_id];
 		}
 	});
@@ -35,7 +36,7 @@
 	let srcData = $derived.by(() => {
 		if (sidePopupData) {
 			const layer = layerEntries.find(
-				(entry) => sidePopupData && entry.id === sidePopupData.layer.id
+				(entry) => sidePopupData && entry.id === sidePopupData.layerId
 			);
 			if (layer && layer.type === 'vector' && data && data.image) {
 				return data.image;

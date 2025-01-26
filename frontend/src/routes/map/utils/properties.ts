@@ -4,10 +4,7 @@ import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON }
 import type { Title } from '$map/data/types/vector';
 
 /** ポップアップ用のタイトルを生成 */
-export const generatePopupTitle = (
-	prop: MapGeoJSONFeature['properties'],
-	titles: Title[]
-): string => {
+export const generatePopupTitle = (prop: { [key: string]: any }, titles: Title[]): string => {
 	// 条件を満たすテンプレートを検索
 	const matchedTemplate = titles.find(({ conditions }) =>
 		conditions.every((fieldName) => prop[fieldName] !== undefined)

@@ -13,12 +13,14 @@
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$map/data/types/vector';
 	import { getFgbToGeojson, getGeojson } from '$map/utils/geojson';
 
-	let { layerEntries, results = $bindable() }: { layerEntries: GeoDataEntry[]; results: any } =
-		$props();
+	let {
+		layerEntries,
+		results = $bindable(),
+		inputSearchWord = $bindable()
+	}: { layerEntries: GeoDataEntry[]; results: any; inputSearchWord: string } = $props();
 	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
-	let inputSearchWord = $state<string>('');
 
 	const LIMIT = 1000; // 検索結果の表示上限
 
@@ -79,7 +81,8 @@
 
 			return {
 				name: layerEntry.metaData.name,
-				features: matchingFeatures
+				features: matchingFeatures,
+				layerId: layerEntry.id
 			};
 		});
 
@@ -103,7 +106,8 @@
 
 			resultsData.push({
 				name: 'タイル座標',
-				features: [feature]
+				features: [feature],
+				layerId: 'tile'
 			});
 		}
 

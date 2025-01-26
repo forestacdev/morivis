@@ -8,25 +8,40 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showSideMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
 
-	type ResultData = {
+	interface ResultData {
 		name: string;
-		features: Feature<Geometry, GeoJsonProperties>[];
-	};
+		features: Feature<Geometry, { [key: string]: any }>[];
+		layerId: string;
+	}
 
-	let results = $state<any | null>([]);
+	let results = $state<ResultData[] | null>([]);
 
 	onMount(() => {});
 
 	let {
 		layerEntries,
-		sidePopupData = $bindable()
-	}: { layerEntries: GeoDataEntry[]; sidePopupData: MapGeoJSONFeature | null } = $props();
+		sidePopupData = $bindable(),
+		inputSearchWord = $bindable()
+	}: {
+		layerEntries: GeoDataEntry[];
+		sidePopupData: SidePopupData | null;
+		inputSearchWord: string;
+	} = $props();
 
-	const focusFeature = (feature: any) => {
+	const focusFeature = (feature: any, layerId: string) => {
 		console.log('focusFeature', feature);
 		mapStore.focusFeature(feature);
-		// mapStore.addSearchFeature(feature);
+		const data: SidePopupData = {
+			type: 'Feature',
+			layerId: layerId,
+			properties: feature.properties,
+			geometry: feature.geometry,
+			featureId: feature.id
+		};
+		sidePopupData = data;
+		results = [];
 	};
 </script>
 
@@ -39,14 +54,14 @@
 	>
 		<Icon icon="ic:round-menu" class="h-6 w-6" />
 	</button>
-	<Geocoder {layerEntries} bind:results />
+	<Geocoder {layerEntries} bind:results bind:inputSearchWord />
 </div>
 {#if results}
 	<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
 		{#each results.filter((data) => data.features.length > 0) as result}
 			{#each result.features as feature}
 				<button
-					onclick={() => focusFeature(feature)}
+					onclick={() => focusFeature(feature, result.layerId)}
 					class="flex w-full flex-col text-left text-black"
 				>
 					<span class="">{feature.properties.name}</span>
