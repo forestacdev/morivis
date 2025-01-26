@@ -1,4 +1,6 @@
 import { MAP_POSITION, type MapPosition } from '$map/constants';
+import { page } from '$app/state';
+import { replaceState } from '$app/navigation';
 
 /* urlパラメーターの取得 **/
 export const getParams = (params: string): { [key: string]: string } => {
@@ -12,16 +14,21 @@ export const getParams = (params: string): { [key: string]: string } => {
 
 /** 地図表示用のURLパラメータの取得 */
 export const getMapParams = (): MapPosition => {
-	const params = new URLSearchParams(location.search);
+	const url = new URL(page.url);
 
-	if (!params.has('c') || !params.has('z') || !params.has('p') || !params.has('b')) {
+	if (
+		!url.searchParams.has('c') ||
+		!url.searchParams.has('z') ||
+		!url.searchParams.has('p') ||
+		!url.searchParams.has('b')
+	) {
 		return MAP_POSITION;
 	}
 
-	const center = params.get('c')?.split(',').map(Number) as [number, number];
-	const zoom = Number(params.get('z'));
-	const pitch = Number(params.get('p'));
-	const bearing = Number(params.get('b'));
+	const center = url.searchParams.get('c')?.split(',').map(Number) as [number, number];
+	const zoom = Number(url.searchParams.get('z'));
+	const pitch = Number(url.searchParams.get('p'));
+	const bearing = Number(url.searchParams.get('b'));
 	return {
 		center,
 		zoom,
@@ -32,27 +39,27 @@ export const getMapParams = (): MapPosition => {
 
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
-	const params = new URLSearchParams(location.search); // 現在のURLパラメータを取得
+	const url = new URL(page.url);
 	const center = option.center.map((value) => value.toFixed(6));
-	params.set('c', center.join(','));
-	params.set('z', option.zoom.toFixed(1));
-	params.set('p', option.pitch.toFixed(0));
-	params.set('b', option.bearing.toFixed(0));
-	history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+	url.searchParams.set('c', center.join(','));
+	url.searchParams.set('z', option.zoom.toFixed(1));
+	url.searchParams.set('p', option.pitch.toFixed(0));
+	url.searchParams.set('b', option.bearing.toFixed(0));
+	replaceState(url, {});
 };
 
 /** street view用のURLパラメータのセット */
 export const setStreetViewParams = (imageId: string) => {
-	const params = new URLSearchParams(location.search); // 現在のURLパラメータを取得
-	params.set('imageId', imageId);
-	history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+	const url = new URL(page.url);
+	url.searchParams.set('imageId', imageId);
+	replaceState(url, {});
 };
 
 /** street view用のURLパラメータの取得 */
 export const getStreetViewParams = (): string | null => {
-	const params = new URLSearchParams(location.search);
-	if (!params.has('imageId')) {
+	const url = new URL(page.url);
+	if (!url.searchParams.has('imageId')) {
 		return null;
 	}
-	return params.get('imageId') as string;
+	return url.searchParams.get('imageId') as string;
 };
