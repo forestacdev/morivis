@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fromArrayBuffer } from 'geotiff';
+	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -7,6 +8,8 @@
 
 	import fragmentShader from './shader/fragment.glsl?raw';
 	import vertexShader from './shader/vertex.glsl?raw';
+
+	import { goto } from '$app/navigation';
 
 	// ラスターデータの読み込み
 	const loadRasterData = async (url: string) => {
@@ -29,6 +32,7 @@
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
 	let renderer: THREE.WebGLRenderer;
+	let orbitControls: OrbitControls;
 
 	const material2uniforms = {
 		uTime: { value: 0 },
@@ -102,8 +106,6 @@
 		// if (!imageurl) return;
 
 		const demData = await loadRasterData('./ensyurin_dem.tiff');
-
-		console.log(demData);
 
 		// return;
 
@@ -228,6 +230,89 @@
 		scene.add(mesh);
 	};
 
+	let isMapView = false;
+
+	const toggleView = (val: boolean) => {
+		goto('/map');
+
+		// isMapView = !isMapView;
+
+		// let rot = 0;
+		// const radian = (rot * Math.PI) / 180;
+		// const distance = 180;
+		// // 角度に応じてカメラの位置を設定
+		// camera.position.x = distance * Math.sin(radian);
+		// camera.position.z = distance * Math.cos(radian);
+
+		// // カメラの近距離と遠距離の設定
+		// // const closeView = { position: camera.position.clone(), lookAt: { x: 0, y: 0, z: 0 } };
+		// const closeView = { position: camera.position.clone(), lookAt: { x: 0, y: 0, z: 0 } };
+		// const farView = {
+		// 	position: { x: distance * Math.cos(radian), y: 600, z: distance * Math.sin(radian) },
+		// 	lookAt: { x: 0, y: 0, z: 0 }
+		// };
+		// if (isMapView) {
+		// 	closeView.position = camera.position.clone();
+
+		// 	const target = orbitControls.target;
+		// 	closeView.lookAt = { x: target.x, y: target.y, z: target.z };
+		// } else {
+		// 	farView.position = camera.position.clone();
+		// 	const target = orbitControls.target;
+		// 	farView.lookAt = { x: target.x, y: target.y, z: target.z };
+		// }
+
+		// const targetView = isMapView ? farView : closeView;
+
+		// // カメラ位置のアニメーション
+		// const cameraPositionAnim = gsap.to(camera.position, {
+		// 	x: targetView.position.x,
+		// 	y: targetView.position.y,
+		// 	z: targetView.position.z,
+		// 	duration: 1.0,
+		// 	ease: 'power1',
+		// 	onUpdate: () => {
+		// 		camera.up.set(0, 1, 0); // カメラの「上方向」を y 軸に固定
+		// 		camera.lookAt(targetView.lookAt.x, targetView.lookAt.y, targetView.lookAt.z);
+		// 	}
+		// });
+
+		// // ターゲットのアニメーション
+		// const targetAnim = gsap.to(orbitControls.target, {
+		// 	x: targetView.lookAt.x,
+		// 	y: targetView.lookAt.y,
+		// 	z: targetView.lookAt.z,
+		// 	duration: 1.0,
+		// 	ease: 'power1',
+		// 	onUpdate: () => {
+		// 		camera.lookAt(orbitControls.target.x, orbitControls.target.y, orbitControls.target.z);
+		// 	}
+		// });
+
+		// // `camera.fov` のスムーズなアニメーション
+		// const fovAnim = gsap.to(camera, {
+		// 	fov: isMapView ? 45 : 75, // 目標視野角
+		// 	duration: 1.0,
+		// 	ease: 'power1',
+		// 	onUpdate: () => {
+		// 		camera.updateProjectionMatrix(); // 投影行列の更新が必須
+		// 	}
+		// });
+
+		// // すべてのアニメーションの完了を待つ
+		// gsap
+		// 	.timeline({
+		// 		onComplete: () => {
+		// 			if (isMapView) {
+		// 				// goto('/map');
+		// 			}
+		// 		}
+		// 	})
+		// 	.add(cameraPositionAnim)
+		// 	.add(targetAnim, '-=1.0')
+		// 	.add(fovAnim, '-=1.0');
+	};
+
 	onMount(async () => {
 		if (!canvas) return;
 		// シーンの作成
@@ -251,12 +336,12 @@
 		const context = canvas.getContext('webgl2') as WebGL2RenderingContext;
 
 		// コントロール
-		const orbitControls = new OrbitControls(camera, canvas);
+		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.enableDamping = true;
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;
-		// orbitControls.autoRotateSpeed = 1.0;
-		// orbitControls.autoRotate = true;
+		orbitControls.autoRotateSpeed = 1.0;
+		orbitControls.autoRotate = true;
 
 		const zoomControls = new TrackballControls(camera, canvas);
 		zoomControls.noPan = true;
@@ -332,13 +417,17 @@
 			<span class="text-[30px] font-bold text-white [text-shadow:_0px_0px_10px_#000]"
 				>ENSHURIN MAP VIEW</span
 			>
-			<a class="pointer-events-auto cursor-pointer" href="/map">
+			<button
+				class="pointer-events-auto text-[30px] font-bold text-white"
+				onclick={() => toggleView(isMapView)}>Let's take a look at the map.</button
+			>
+			<!-- <a class="pointer-events-auto cursor-pointer" href="/map">
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="text-[30px] font-bold text-white [text-shadow:_0px_0px_10px_#000]"
 						>Let's take a look at the map.</span
 					>
 				</div>
-			</a>
+			</a> -->
 		</div>
 	</div>
 </div>

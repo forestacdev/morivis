@@ -124,6 +124,7 @@ const createMapStore = () => {
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
+			console.log('moveend');
 			const center = map.getCenter();
 			setMapParams({
 				center: [center.lng, center.lat],
