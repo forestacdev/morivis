@@ -22,7 +22,7 @@ void main(){
 
     //  フォッグの割合を計算 (線形補間)
     float fade = mod(uTime, 1.0); // u_timeを0〜1に正規化
-    float fogFactor = smoothstep(0.0,200.0,  v_fogDistance);
+    float fogFactor = smoothstep(0.0,300.0,  v_fogDistance);
     float fog_alpha = 1.0 - fogFactor; // フォッグが濃いほど透明に
     float coefficient = 1.2;
     float power = 1.0;

@@ -40,6 +40,8 @@ export const getMapParams = (): MapPosition => {
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
 	const url = new URL(page.url);
+	// NOTE: ページ遷移時にmoveendで書き込めるのを防ぐ
+	if (url.pathname !== '/map') return;
 	const center = option.center.map((value) => value.toFixed(6));
 	url.searchParams.set('c', center.join(','));
 	url.searchParams.set('z', option.zoom.toFixed(1));
