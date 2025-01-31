@@ -32,7 +32,7 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$map/utils/params';
-import { DEBUG_MODE, showLayerOptionId } from '$map/store';
+import { DEBUG_MODE, editingLayerId } from '$map/store';
 import type { GeoDataEntry } from '$map/data/types';
 import { GeojsonCache } from '$map/utils/geojson';
 
@@ -141,7 +141,7 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
-		// showLayerOptionId.subscribe((id) => {
+		// editingLayerId.subscribe((id) => {
 		// 	if (!map) return;
 
 		// });

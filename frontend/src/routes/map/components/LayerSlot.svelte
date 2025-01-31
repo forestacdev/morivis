@@ -6,7 +6,7 @@
 	import LayerIcon from '$map/components/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
-	import { addedLayerIds, showLayerOptionId, isEdit } from '$map/store';
+	import { addedLayerIds, editingLayerId, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -36,12 +36,12 @@
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
 
-	const toggleEdit = () => {
+	const selectedLayer = () => {
 		if (isHovered || $isEdit) return;
-		if ($showLayerOptionId === layerEntry.id) {
-			showLayerOptionId.set('');
+		if ($editingLayerId === layerEntry.id) {
+			editingLayerId.set('');
 		} else {
-			showLayerOptionId.set(layerEntry.id);
+			editingLayerId.set(layerEntry.id);
 			mapStore.focusLayer(layerEntry);
 		}
 	};
@@ -131,7 +131,7 @@
 </script>
 
 <div class="relative">
-	{#if $showLayerOptionId === layerEntry.id}
+	{#if $editingLayerId === layerEntry.id}
 		<button
 			class="bg-base trans absolute bottom-0 right-0 z-20 rounded-full p-2 text-xs text-white"
 			onclick={setEdit}
@@ -141,12 +141,12 @@
 
 	<button
 		id={layerEntry.id}
-		class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$showLayerOptionId ===
+		class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$editingLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
-		onclick={toggleEdit}
-		style:width={$showLayerOptionId === layerEntry.id
+		onclick={selectedLayer}
+		style:width={$editingLayerId === layerEntry.id
 			? '100%'
 			: layerEntry.style.visible
 				? '90%'

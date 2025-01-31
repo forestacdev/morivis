@@ -22,7 +22,7 @@ export const layerAttributions = writable<string[]>([]);
 export const DEBUG_MODE = writable<boolean>(false);
 
 /**  地図のモード */
-export const mapMode = writable<'view' | 'style' | 'analysis'>('view');
+export const mapMode = writable<'view' | 'edit' | 'analysis'>('view');
 
 /**  3D地形 */
 export const isTerrain3d = writable<boolean>(false);
@@ -106,13 +106,10 @@ export const showInfoDialog = writable<boolean>(false);
 /** 利用規約ダイアログの表示 */
 export const showTermsDialog = writable<boolean>(false);
 
-/** サイドポップアップの表示 */
-export const showSidePopup = writable<boolean>(false);
-
 export const isStreetView = writable<boolean>(false);
 
-/** レイヤーオプションの表示 TODO:Editと混在 */
-export const showLayerOptionId = writable<string>('');
+/** 編集中のレイヤーid TODO:Editと混在 */
+export const editingLayerId = writable<string>('');
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;

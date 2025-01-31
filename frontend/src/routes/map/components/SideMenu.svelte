@@ -54,7 +54,7 @@
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-				onclick={() => mapMode.set('style')}
+				onclick={() => mapMode.set('edit')}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
 				<span>地図を編集</span>

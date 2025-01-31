@@ -7,7 +7,7 @@
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { showLayerOptionId, addedLayerIds, isEdit } from '$map/store';
+	import { editingLayerId, addedLayerIds, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -20,7 +20,7 @@
 		$isEdit = false;
 		if (!layerToEdit) return;
 		addedLayerIds.removeLayer(layerToEdit.id);
-		showLayerOptionId.set('');
+		editingLayerId.set('');
 	};
 
 	// レイヤーの移動
@@ -53,7 +53,7 @@
 	onMount(() => {});
 </script>
 
-{#if $showLayerOptionId && $isEdit && layerToEdit}
+{#if $editingLayerId && $isEdit && layerToEdit}
 	<div class="absolute top-[130px] z-30 w-[280px]">
 		<div
 			transition:fly={{ duration: 300, y: -50, opacity: 0 }}

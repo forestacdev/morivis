@@ -27,7 +27,7 @@
 		generateNumberMap,
 		generateColorPalette
 	} from '$map/utils/colorMapping';
-	import { showLayerOptionId } from '$routes/map/store';
+	import { editingLayerId } from '$routes/map/store';
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
 		$props();
@@ -139,7 +139,7 @@
 		// const orderedLayerIds = map.getLayersOrder();
 		// orderedLayerIds.forEach((layerId) => {
 		// 	if (colorOptionKey) {
-		// 		if (layerId === $showLayerOptionId) {
+		// 		if (layerId === $editingLayerId) {
 		// 			map?.setLayoutProperty(layerId, 'visibility', 'visible');
 		// 		} else {
 		// 			map?.setLayoutProperty(layerId, 'visibility', 'none');

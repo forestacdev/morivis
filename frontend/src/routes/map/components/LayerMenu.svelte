@@ -8,7 +8,7 @@
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import LayerSlot from '$map/components/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { showLayerOptionId, isEdit, mapMode } from '$map/store';
+	import { editingLayerId, isEdit, mapMode } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	let {
 		layerEntries = $bindable(),
@@ -16,22 +16,24 @@
 	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
 	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 
+	// レイヤー表示のフィルタリング（編集時）
 	let filterLayerEntries = $derived.by(() => {
 		if ($isEdit) {
-			return layerEntries.filter((layerEntry) => layerEntry.id === $showLayerOptionId);
+			return layerEntries.filter((layerEntry) => layerEntry.id === $editingLayerId);
 		} else {
-			return layerEntries;
+			console.log('$editingLayerId', $editingLayerId);
+			return layerEntries.filter((layerEntry) => layerEntry.id === $editingLayerId);
 		}
 	});
 
-	// TODO エラー チェックをすると
+	// TODO チェックをすると警告が出る
 	const toggleVisible = (id: string) => {
 		const layer = layerEntries.find((layer) => layer.id === id);
 		if (!layer) return;
 		layer.style.visible = !layer.style.visible;
 	};
 	// 編集中のレイヤーの取得
-	showLayerOptionId.subscribe((id) => {
+	editingLayerId.subscribe((id) => {
 		if (!id) {
 			layerToEdit = undefined;
 			return;
@@ -43,7 +45,7 @@
 	onMount(() => {});
 </script>
 
-{#if $mapMode === 'style'}
+{#if $mapMode === 'edit'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute z-20 flex h-full w-[350px] flex-col gap-2 p-2"

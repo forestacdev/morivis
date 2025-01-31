@@ -61,7 +61,7 @@
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import {
 		addedLayerIds,
-		showLayerOptionId,
+		editingLayerId,
 		clickableVectorIds,
 		clickableRasterIds,
 		DEBUG_MODE,
@@ -299,17 +299,13 @@
 		if (!mapStyle || !mapContainer) return;
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 
-		streetViewPointData = await fetch(
-			'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360.geojson'
-		)
+		streetViewPointData = await fetch('./streetView/THETA360.geojson')
 			.then((res) => res.json())
 			.then((data) => {
 				return data;
 			});
 
-		streetViewLineData = await fetch(
-			'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
-		)
+		streetViewLineData = await fetch('./streetView/THETA360_line.geojson')
 			.then((res) => res.json())
 			.then((data) => {
 				return data;
