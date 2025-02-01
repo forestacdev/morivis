@@ -6,7 +6,7 @@
 	import LayerIcon from '$map/components/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
-	import { addedLayerIds, editingLayerId, isEdit } from '$map/store';
+	import { addedLayerIds, selectedLayerId, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -38,10 +38,10 @@
 
 	const selectedLayer = () => {
 		if (isHovered || $isEdit) return;
-		if ($editingLayerId === layerEntry.id) {
-			editingLayerId.set('');
+		if ($selectedLayerId === layerEntry.id) {
+			selectedLayerId.set('');
 		} else {
-			editingLayerId.set(layerEntry.id);
+			selectedLayerId.set(layerEntry.id);
 			mapStore.focusLayer(layerEntry);
 		}
 	};
@@ -53,15 +53,6 @@
 	};
 
 	let overlayLayerId = '';
-
-	const overlayLayer: BackgroundLayerSpecification = {
-		id: 'overlay-layer',
-		type: 'background',
-		paint: {
-			'background-color': '#000000',
-			'background-opacity': 0.8
-		}
-	};
 
 	let edit = false;
 
@@ -108,30 +99,14 @@
 		if (!map) return;
 		if (edit) {
 			isEdit.set(true);
-			const layersIds = map.getLayersOrder();
-
-			// 現在のレイヤーの上のれヤーを取得
-			const layerIndex = layersIds.indexOf(layerId);
-			overlayLayerId = layersIds[layerIndex + 1];
-
-			map.addLayer(overlayLayer);
-			map.moveLayer(layerId);
-
-			const center = map.getCenter();
 		} else {
 			isEdit.set(false);
-			if (!overlayLayerId) return;
-			if (!map.getLayer(overlayLayerId)) return;
-			map.moveLayer(layerId, overlayLayerId);
-			map.removeLayer('overlay-layer');
-
-			const center = map.getCenter();
 		}
 	};
 </script>
 
 <div class="relative">
-	{#if $editingLayerId === layerEntry.id}
+	{#if $selectedLayerId === layerEntry.id}
 		<button
 			class="bg-base trans absolute bottom-0 right-0 z-20 rounded-full p-2 text-xs text-white"
 			onclick={setEdit}
@@ -141,12 +116,12 @@
 
 	<button
 		id={layerEntry.id}
-		class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$editingLayerId ===
+		class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
 		onclick={selectedLayer}
-		style:width={$editingLayerId === layerEntry.id
+		style:width={$selectedLayerId === layerEntry.id
 			? '100%'
 			: layerEntry.style.visible
 				? '90%'

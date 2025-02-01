@@ -8,7 +8,7 @@
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import LayerSlot from '$map/components/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { editingLayerId, isEdit, mapMode } from '$map/store';
+	import { selectedLayerId, isEdit, mapMode } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	let {
 		layerEntries = $bindable(),
@@ -19,10 +19,9 @@
 	// レイヤー表示のフィルタリング（編集時）
 	let filterLayerEntries = $derived.by(() => {
 		if ($isEdit) {
-			return layerEntries.filter((layerEntry) => layerEntry.id === $editingLayerId);
+			return layerEntries.filter((layerEntry) => layerEntry.id === $selectedLayerId);
 		} else {
-			console.log('$editingLayerId', $editingLayerId);
-			return layerEntries.filter((layerEntry) => layerEntry.id === $editingLayerId);
+			return layerEntries;
 		}
 	});
 
@@ -33,7 +32,7 @@
 		layer.style.visible = !layer.style.visible;
 	};
 	// 編集中のレイヤーの取得
-	editingLayerId.subscribe((id) => {
+	selectedLayerId.subscribe((id) => {
 		if (!id) {
 			layerToEdit = undefined;
 			return;
@@ -48,11 +47,18 @@
 {#if $mapMode === 'edit'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-20 flex h-full w-[350px] flex-col gap-2 p-2"
+		class="bg-main absolute z-20 flex h-full w-[400px] flex-col gap-2 p-2"
 	>
 		<div class="flex items-center justify-between">
 			<span>レイヤー</span>
-			<button onclick={() => mapMode.set('view')} class="bg-base rounded-full p-2">
+			<button
+				onclick={() => {
+					mapMode.set('view');
+					isEdit.set(false);
+					selectedLayerId.set('');
+				}}
+				class="bg-base rounded-full p-2"
+			>
 				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 			</button>
 		</div>

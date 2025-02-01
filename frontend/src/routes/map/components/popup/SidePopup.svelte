@@ -9,7 +9,7 @@
 	import { fetchWikipediaImage } from '$map/data/api';
 	import { propData } from '$map/data/propData';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { editingLayerId, mapMode, selectedHighlightData, isEdit } from '$map/store';
+	import { selectedLayerId, mapMode, selectedHighlightData, isEdit } from '$map/store';
 	import type { SidePopupData } from '$map/utils/geojson';
 	import { generatePopupTitle } from '$map/utils/properties';
 
@@ -19,6 +19,17 @@
 	}: { sidePopupData: SidePopupData | null; layerEntries: GeoDataEntry[] } = $props();
 
 	let showProp = $state<'metadata' | 'attributes'>('metadata');
+
+	const options = [
+		{ label: '概要', value: 'metadata' },
+		{ label: '詳細データ', value: 'attributes' }
+	];
+
+	$effect(() => {
+		if (!sidePopupData) {
+			showProp = 'metadata';
+		}
+	});
 
 	let targetLayer = $derived.by(() => {
 		if (sidePopupData) {
@@ -47,6 +58,14 @@
 		}
 		return FEATURE_NO_IMAGE_PATH;
 	});
+
+	const edit = () => {
+		if (sidePopupData) {
+			selectedLayerId.set(sidePopupData.layerId);
+			mapMode.set('edit');
+			isEdit.set(true);
+		}
+	};
 
 	// TODO: 画像取得処理
 	// const fetchImage = async () => {
@@ -81,7 +100,7 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<div class="relative aspect-video w-full overflow-hidden rounded-md">
+		<div class="relative aspect-video w-full flex-shrink-0 overflow-hidden rounded-md">
 			<img
 				transition:fade
 				class="block h-full w-full object-cover"
@@ -101,42 +120,36 @@
 		</div>
 		<div class="flex h-full flex-col gap-2">
 			<!-- タイトルを表示 -->
-			<span class="flex-shrink-0 text-[22px] font-bold"
-				>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
-					? generatePopupTitle(sidePopupData.properties, targetLayer.properties.titles)
-					: ''}</span
-			>
+			<div class="flex flex-shrink-0 flex-col gap-1">
+				<span class="text-[22px] font-bold"
+					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
+						? generatePopupTitle(sidePopupData.properties, targetLayer.properties.titles)
+						: ''}</span
+				>
+				<span class="text-[14px] text-gray-600"
+					>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
+				>
+			</div>
 			<!-- ボタン -->
 			<div class="flex w-full flex-shrink-0 gap-2 p-2">
-				<button
-					class="bg-accent w-full rounded-md p-2 text-white"
-					onclick={() => {
-						const id = sidePopupData.layerId;
-						editingLayerId.set(id);
-
-						mapMode.set('edit');
-						$isEdit = true;
-						// sidePopupData = null;
-					}}
-				>
-					編集
-				</button>
-				<button
-					class="bg-accent w-full rounded-md p-2 text-white"
-					onclick={() => {
-						showProp = 'metadata';
-					}}
-				>
-					概要
-				</button>
-				<button
-					class="bg-accent w-full rounded-md p-2 text-white"
-					onclick={() => {
-						showProp = 'attributes';
-					}}
-				>
-					属性情報
-				</button>
+				{#each options as option}
+					<label
+						for={option.value}
+						class="grid w-full flex-grow cursor-pointer place-items-center rounded-md p-2 {showProp ===
+						option.value
+							? 'bg-accent text-white'
+							: ''}"
+					>
+						<input
+							type="radio"
+							bind:group={showProp}
+							id={option.value}
+							value={option.value}
+							class="hidden"
+						/>
+						<span>{option.label}</span>
+					</label>
+				{/each}
 			</div>
 			<!-- 詳細情報 -->
 			<div class="relative h-full w-full flex-col">
@@ -145,7 +158,7 @@
 						transition:fly={{ duration: 200, x: 100 }}
 						class="flex-grow' absolute flex h-full w-full flex-col gap-2"
 					>
-						{#if featureType === 'Point' && sidePopupData.geometry}
+						{#if featureType === 'Point' && sidePopupData.geometry.type === 'Point'}
 							<div class="flex w-full items-center justify-start gap-2">
 								<Icon icon="lucide:map-pin" class="h-6 w-6" />
 								<span class="text-accent"
@@ -182,17 +195,26 @@
 					>
 						{#if sidePopupData.properties}
 							{#each Object.entries(sidePopupData.properties) as [key, value]}
-								<div
-									class="flex w-full items-center justify-start gap-2 border-b-2 border-gray-300"
-								>
-									<span class="text-accent flex-shrink-0">{key}</span>
-									<span class="text-accent ml-auto">{value}</span>
-								</div>
+								{#if key !== '_prop_id'}
+									<div
+										class="flex w-full items-center justify-start gap-2 border-b-2 border-gray-300"
+									>
+										<span class="text-accent flex-shrink-0">{key}</span>
+										<span class="text-accent ml-auto">{value}</span>
+									</div>
+								{/if}
 							{/each}
 						{/if}
 					</div>
 				{/if}
 			</div>
+			<button
+				onclick={edit}
+				class="absolute bottom-2 right-4 grid place-items-center rounded-full border-2 border-gray-500 p-2"
+			>
+				<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
+				<span class="text-accent">編集</span>
+			</button>
 		</div>
 	</div>
 {/if}

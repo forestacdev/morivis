@@ -54,6 +54,7 @@
 	import { debugJson } from '$map/debug/store';
 	import { createLayersItems } from '$map/layers';
 	import { createSourcesItems } from '$map/sources';
+	import { mapMode, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
@@ -61,7 +62,7 @@
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import {
 		addedLayerIds,
-		editingLayerId,
+		selectedLayerId,
 		clickableVectorIds,
 		clickableRasterIds,
 		DEBUG_MODE,
@@ -217,7 +218,15 @@
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
-		const layers = await createLayersItems(_dataEntries);
+		let layers = await createLayersItems(_dataEntries);
+		let target = undefined;
+
+		if ($isEdit) {
+			target = layers.find((layer) => layer.id === $selectedLayerId);
+			console.log('target', target);
+			layers = layers.filter((layer) => layer.id !== $selectedLayerId);
+			console.log('layers', layers);
+		}
 
 		const terrain = mapStore.getTerrain();
 
@@ -234,6 +243,15 @@
 			},
 			layers: [
 				...layers,
+				{
+					id: 'overlay-layer',
+					type: 'background',
+					paint: {
+						'background-color': '#000000',
+						'background-opacity': $isEdit ? 0.8 : 0
+					}
+				},
+				...(target ? [target] : []), // `target` がある場合のみ追加
 				{
 					id: 'street_view_line_layer',
 					type: 'line',
@@ -333,6 +351,7 @@
 		}
 	});
 
+	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
 		mapStore.setStyle(mapStyle);
@@ -471,7 +490,7 @@
 		}
 
 		// console.log('click', e);
-		if (!e) return;
+		if (!e || $mapMode === 'edit') return;
 
 		if (streetViewPointData.features.length > 0) {
 			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);

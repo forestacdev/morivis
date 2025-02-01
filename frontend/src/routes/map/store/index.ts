@@ -109,7 +109,7 @@ export const showTermsDialog = writable<boolean>(false);
 export const isStreetView = writable<boolean>(false);
 
 /** 編集中のレイヤーid TODO:Editと混在 */
-export const editingLayerId = writable<string>('');
+export const selectedLayerId = writable<string>('');
 
 export interface SelectedHighlightData {
 	layerData: GeoDataEntry;

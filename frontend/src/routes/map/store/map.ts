@@ -32,13 +32,14 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$map/utils/params';
-import { DEBUG_MODE, editingLayerId } from '$map/store';
+import { DEBUG_MODE, isEdit, selectedLayerId } from '$map/store';
 import type { GeoDataEntry } from '$map/data/types';
 import { GeojsonCache } from '$map/utils/geojson';
 
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
+	let overlayLayerId: string | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
@@ -141,7 +142,7 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
-		// editingLayerId.subscribe((id) => {
+		// selectedLayerId.subscribe((id) => {
 		// 	if (!map) return;
 
 		// });
@@ -266,6 +267,24 @@ const createMapStore = () => {
 		const bbox = turfBbox(feature.geometry) as [number, number, number, number];
 		map.fitBounds(bbox);
 	};
+
+	isEdit.subscribe((value) => {
+		if (!map) return;
+		map.setPaintProperty('overlay-layer', 'background-opacity', value ? 0.8 : 0);
+
+		const layersIds = map.getLayersOrder();
+
+		if (value) {
+			// 現在のレイヤーの上のれヤーを取得
+			const layerIndex = layersIds.indexOf(get(selectedLayerId));
+			overlayLayerId = layersIds[layerIndex + 1];
+
+			map.moveLayer(get(selectedLayerId));
+		} else {
+			if (!overlayLayerId) return;
+			map.moveLayer(get(selectedLayerId), overlayLayerId);
+		}
+	});
 
 	// マップに検索結果を追加するメソッド
 	const addSearchFeature = (feature: MapGeoJSONFeature) => {

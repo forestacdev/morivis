@@ -7,7 +7,7 @@
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { editingLayerId, addedLayerIds, isEdit } from '$map/store';
+	import { selectedLayerId, addedLayerIds, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -20,7 +20,7 @@
 		$isEdit = false;
 		if (!layerToEdit) return;
 		addedLayerIds.removeLayer(layerToEdit.id);
-		editingLayerId.set('');
+		selectedLayerId.set('');
 	};
 
 	// レイヤーの移動
@@ -31,10 +31,10 @@
 	};
 
 	// レイヤーのフォーカス
-	const focusLayer = () => {
-		if (!layerToEdit) return;
-		mapStore.focusLayer(layerToEdit);
-	};
+	// const focusLayer = () => {
+	// 	if (!layerToEdit) return;
+	// 	mapStore.focusLayer(layerToEdit);
+	// };
 
 	// レイヤーのコピー
 	const copyLayer = () => {
@@ -50,10 +50,18 @@
 		addedLayerIds.addLayer(uuid);
 	};
 
+	// レイヤーのフォーカス
+	selectedLayerId.subscribe((id) => {
+		if (id && layerToEdit) {
+			mapStore.focusLayer(layerToEdit);
+			return;
+		}
+	});
+
 	onMount(() => {});
 </script>
 
-{#if $editingLayerId && $isEdit && layerToEdit}
+{#if $selectedLayerId && $isEdit && layerToEdit}
 	<div class="absolute top-[130px] z-30 w-[280px]">
 		<div
 			transition:fly={{ duration: 300, y: -50, opacity: 0 }}
@@ -70,7 +78,7 @@
 					<button onclick={removeLayer}>
 						<Icon icon="bx:trash" width="24" height="24" class="custom-anime" />
 					</button>
-					<button onclick={focusLayer}>
+					<button>
 						<Icon icon="hugeicons:target-03" width="24" height="24" class="custom-anime" />
 					</button>
 					<button onclick={copyLayer}> コピーの作成 </button>
