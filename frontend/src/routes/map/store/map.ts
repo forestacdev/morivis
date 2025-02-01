@@ -142,11 +142,6 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
-		// selectedLayerId.subscribe((id) => {
-		// 	if (!map) return;
-
-		// });
-
 		const iconWorker = new Worker(new URL('../utils/icon/worker.ts', import.meta.url), {
 			type: 'module'
 		});
@@ -268,9 +263,13 @@ const createMapStore = () => {
 		map.fitBounds(bbox);
 	};
 
+	// レイヤー編集時の描画処理
 	isEdit.subscribe((value) => {
 		if (!map) return;
 		map.setPaintProperty('overlay-layer', 'background-opacity', value ? 0.8 : 0);
+		map.setPaintProperty('selected-focus-layer-line', 'line-opacity', value ? 0 : 1);
+		map.setPaintProperty('selected-focus-layer-point', 'circle-opacity', value ? 0 : 1);
+		map.setPaintProperty('selected-focus-layer-point', 'circle-stroke-opacity', value ? 0 : 1);
 
 		const layersIds = map.getLayersOrder();
 

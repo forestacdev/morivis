@@ -1,5 +1,7 @@
 <script lang="ts">
 	// import turfDissolve from '@turf/dissolve';
+	import turfBbox from '@turf/bbox';
+	import turfBboxPolygon from '@turf/bbox-polygon';
 	import turfBearing from '@turf/bearing';
 	import turfBooleanCrosses from '@turf/boolean-crosses';
 	import turfBuffer from '@turf/buffer';
@@ -7,6 +9,7 @@
 	import turfNearestPoint from '@turf/nearest-point';
 	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
+	import { map } from 'es-toolkit/compat';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
@@ -46,6 +49,7 @@
 	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
+	import { getLocationBbox } from '$map/data/locationBbox';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$map/data/types/raster';
 	import Draggable from '$map/debug/Draggable.svelte';
@@ -56,6 +60,7 @@
 	import { createSourcesItems } from '$map/sources';
 	import { mapMode, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import { GeojsonCache } from '$map/utils/geojson';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
@@ -214,6 +219,22 @@
 	// 	}
 	// });
 
+	let selectedFocusSources = $state<SourceSpecification>({
+		type: 'geojson',
+		data: {
+			type: 'FeatureCollection',
+			features: []
+		}
+	});
+
+	$effect(() => {
+		if (selectedFocusSources) {
+			const map = mapStore.getMap();
+			if (!map) return;
+			map.getSource('selected_focus_sources').setData(selectedFocusSources.data);
+		}
+	});
+
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
@@ -223,9 +244,7 @@
 
 		if ($isEdit) {
 			target = layers.find((layer) => layer.id === $selectedLayerId);
-			console.log('target', target);
 			layers = layers.filter((layer) => layer.id !== $selectedLayerId);
-			console.log('layers', layers);
 		}
 
 		const terrain = mapStore.getTerrain();
@@ -239,6 +258,9 @@
 					type: 'geojson',
 					data: 'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
 				},
+				selected_focus_sources: {
+					...selectedFocusSources
+				},
 				...sources
 			},
 			layers: [
@@ -251,8 +273,33 @@
 						'background-opacity': $isEdit ? 0.8 : 0
 					}
 				},
+				{
+					// レイヤー選択時
+					id: 'selected-focus-layer-line',
+					type: 'line',
+					source: 'selected_focus_sources',
+					paint: {
+						'line-color': '#08fa00',
+						'line-width': 5,
+						'line-opacity': 1
+					}
+				},
+				{
+					// レイヤー選択時
+					id: 'selected-focus-layer-point',
+					type: 'circle',
+					source: 'selected_focus_sources',
+					paint: {
+						'circle-color': '#08fa00',
+						'circle-radius': 5,
+						'circle-opacity': 1,
+						'circle-stroke-width': 2,
+						'circle-stroke-color': '#ffffff'
+					}
+				},
 				...(target ? [target] : []), // `target` がある場合のみ追加
 				{
+					// ストリートビューのライン
 					id: 'street_view_line_layer',
 					type: 'line',
 					source: 'street_view_line',
@@ -286,6 +333,53 @@
 
 		return mapStyle as StyleSpecification;
 	};
+
+	// レイヤーが選択された時の描画
+	selectedLayerId.subscribe((id) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		if (id) {
+			const entry = layerEntries.find((entry) => entry.id === id);
+			if (!entry) return;
+			let polygon;
+			if (entry.format.type === 'fgb') {
+				try {
+					const geojson = GeojsonCache.get(entry.id);
+					if (!geojson) return;
+					const bbox = turfBbox(geojson) as [number, number, number, number];
+					polygon = turfBboxPolygon(bbox);
+				} catch (error) {
+					console.error(error);
+				}
+			} else if (entry.metaData.bounds) {
+				polygon = turfBboxPolygon(entry.metaData.bounds);
+			} else if (entry.metaData.location) {
+				const bbox = getLocationBbox(entry.metaData.location);
+				if (bbox) {
+					polygon = turfBboxPolygon(bbox);
+				} else {
+					console.warn('boundsが取得できませんでした。', entry.id);
+					return;
+				}
+			} else {
+				console.warn('描画処理に失敗', entry.id);
+				return;
+			}
+
+			selectedFocusSources = {
+				type: 'geojson',
+				data: polygon as GeoJSON.Feature<GeoJSON.Polygon, GeoJsonProperties>
+			};
+		} else {
+			selectedFocusSources = {
+				type: 'geojson',
+				data: {
+					type: 'FeatureCollection',
+					features: []
+				}
+			};
+		}
+	});
 
 	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {

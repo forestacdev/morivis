@@ -205,11 +205,12 @@ const locationBboxMap = new Map<string, [number, number, number, number]>(
 	locationBboxData.map((entry) => [entry.name, entry.bbox])
 );
 
-export const getLocationBbox = (location: string): [number, number, number, number] => {
+export const getLocationBbox = (location: string): [number, number, number, number] | null => {
 	const bbox = locationBboxMap.get(location);
 	if (bbox) {
 		return bbox;
 	} else {
-		throw new Error('Location not found');
+		console.warn('getLocationBbox: not found', location);
+		return null;
 	}
 };
