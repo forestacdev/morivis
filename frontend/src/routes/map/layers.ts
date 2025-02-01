@@ -253,8 +253,8 @@ const getColorExpression = (colors: Colors) => {
 };
 
 // fillレイヤーの作成
-const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecification => {
-	const fillStyle = (style.default as PolygonStyle).fill;
+const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
+	const fillStyle = style.default.fill;
 	const color = getColorExpression(style.colors);
 	const fillLayer: FillLayerSpecification = {
 		...layer,
@@ -270,20 +270,19 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 		}
 	};
 
-	// TODO fill-outline-color
 	return fillLayer;
 };
 
 // lineレイヤーの作成
-const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecification => {
-	const lineStyle = (style.default as LineStringStyle).line;
+const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
+	const lineStyle = style.default.line;
 	const color = getColorExpression(style.colors);
 	const lineLayer: LineLayerSpecification = {
 		...layer,
 		type: 'line',
 		paint: {
-			'line-opacity': style.opacity,
-			'line-color': color,
+			'line-opacity': style.colors.show ? style.opacity : 0,
+			'line-color': style.colors.show ? color : '#00000000',
 			'line-width': 2,
 			...(lineStyle.paint ?? {})
 		},
@@ -324,7 +323,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 			'circle-opacity': style.colors.show ? style.opacity : 0,
 			'circle-stroke-opacity': style.opacity,
 			'circle-color': style.colors.show ? color : '#00000000',
-			'circle-radius': style.radius,
+			'circle-radius': 7,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
 			'circle-stroke-width': outline.show ? style.outline.width : 0,
 			...(circleStyle.paint ?? {})
@@ -375,8 +374,8 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 };
 
 // symbolレイヤーの作成
-const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const symbolStyle = (style.default as LabelStyle).symbol;
+const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
+	const symbolStyle = style.default.symbol;
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,

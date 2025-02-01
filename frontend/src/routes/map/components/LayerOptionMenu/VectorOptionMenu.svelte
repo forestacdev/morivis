@@ -146,10 +146,6 @@
 		step={0.01}
 	/>
 
-	{#if layerToEdit.style.type === 'circle'}
-		<RangeSlider label="半径" bind:value={layerToEdit.style.radius} min={0} max={30} step={0.01} />
-	{/if}
-
 	<!-- 色 -->
 	{#if colorStyle}
 		<Accordion label={'塗りつぶし'} bind:value={layerToEdit.style.colors.show}>

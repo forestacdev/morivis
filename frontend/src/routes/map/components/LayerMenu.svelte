@@ -75,7 +75,7 @@
 			<div class="flex justify-center">
 				<button
 					onclick={() => showDataMenu.set(true)}
-					class="bg-accent flex items-center gap-2 rounded-lg p-2 text-white"
+					class="bg-accent flex select-none items-center gap-2 rounded-lg p-2 text-white"
 				>
 					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
 						>データの追加</span

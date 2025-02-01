@@ -153,7 +153,6 @@ export interface LineStringStyle extends BaseVectorStyle {
 
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
-	radius: number;
 	outline: PointOutLine;
 	default: PointDefaultStyle;
 }

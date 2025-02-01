@@ -42,7 +42,6 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 0.8, // 透過率
-			radius: 7,
 			colors: {
 				show: true,
 				key: '単色',
