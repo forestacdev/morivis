@@ -296,6 +296,22 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 	return lineLayer;
 };
 
+const createOutLineLayer = (
+	layer: LayerItem,
+	outline: { show: boolean; color: string; width: number }
+) => {
+	const outlineLayer: LineLayerSpecification = {
+		...layer,
+		id: `${layer.id}_outline`,
+		type: 'line',
+		paint: {
+			'line-color': outline.color,
+			'line-width': outline.width
+		}
+	};
+	return outlineLayer;
+};
+
 // pointレイヤーの作成
 const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpecification => {
 	const circleStyle = (style.default as PointStyle).circle;
@@ -496,6 +512,12 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 					const vectorLayer = createVectorLayer(layer, style);
 					if (!vectorLayer) return;
 					layerItems.push(vectorLayer);
+
+					// ポリゴンのアウトライン
+					if (style.type === 'fill' && style.outline.show) {
+						const lineLayer = createOutLineLayer(layer, style.outline);
+						layerItems.push(lineLayer);
+					}
 
 					// ラベルを追加
 					if (style.labels.show && style.type !== 'symbol') {

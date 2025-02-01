@@ -16,7 +16,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			description: '森林文化アカデミー演習林の林班。', // 説明
 			attribution: '森林文化アカデミー', // データの出典
 			location: '森林文化アカデミー',
-			maxZoom: 24, // 表示するズームレベルの最大値
+			maxZoom: 22, // 表示するズームレベルの最大値
 			bounds: null, // データの範囲
 			coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp` // カバー画像
 		},
@@ -104,6 +104,11 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 						}
 					}
 				]
+			},
+			outline: {
+				show: true,
+				color: '#000000',
+				width: 1
 			},
 			labels: {
 				key: '林齢', // 現在選択されているラベルのキー

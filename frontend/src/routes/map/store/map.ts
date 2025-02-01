@@ -40,6 +40,8 @@ const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
 	let overlayLayerId: string | null = null;
+	let overlayOutlineLayerId: string | null = null;
+	let overlayLabelLayerId: string | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
@@ -271,17 +273,56 @@ const createMapStore = () => {
 		map.setPaintProperty('selected-focus-layer-point', 'circle-opacity', value ? 0 : 1);
 		map.setPaintProperty('selected-focus-layer-point', 'circle-stroke-opacity', value ? 0 : 1);
 
-		const layersIds = map.getLayersOrder();
+		const layerId = get(selectedLayerId);
+		const outlineLayerId = `${layerId}_outline`;
+		const labelLayerId = `${layerId}_label`;
 
 		if (value) {
+			const layersIds = map.getLayersOrder();
 			// 現在のレイヤーの上のれヤーを取得
-			const layerIndex = layersIds.indexOf(get(selectedLayerId));
+			const layerIndex = layersIds.indexOf(layerId);
 			overlayLayerId = layersIds[layerIndex + 1];
 
-			map.moveLayer(get(selectedLayerId));
+			const outlineLayerIndex = layersIds.indexOf(outlineLayerId);
+
+			// アウトラインレイヤーが存在する場合は移動
+			if (outlineLayerIndex !== -1) {
+				overlayOutlineLayerId = layersIds[outlineLayerIndex + 1];
+			}
+
+			// ラベルレイヤーが存在する場合は移動
+			const labelLayerIndex = layersIds.indexOf(labelLayerId);
+			if (labelLayerIndex !== -1) {
+				overlayLabelLayerId = layersIds[labelLayerIndex + 1];
+			}
+
+			if (overlayLayerId) {
+				map.moveLayer(layerId);
+			}
+			if (overlayOutlineLayerId) {
+				map.moveLayer(outlineLayerId);
+			}
+			if (overlayLabelLayerId) {
+				map.moveLayer(labelLayerId);
+			}
 		} else {
-			if (!overlayLayerId) return;
-			map.moveLayer(get(selectedLayerId), overlayLayerId);
+			// ラベルレイヤーが存在する場合は移動
+			if (overlayLabelLayerId) {
+				map.moveLayer(labelLayerId, overlayLabelLayerId);
+			}
+
+			// アウトラインレイヤーが存在する場合は移動
+			if (overlayOutlineLayerId) {
+				map.moveLayer(outlineLayerId, overlayOutlineLayerId);
+			}
+
+			if (overlayLayerId) {
+				map.moveLayer(layerId, overlayLayerId);
+			}
+
+			overlayLayerId = null;
+			overlayOutlineLayerId = null;
+			overlayLabelLayerId = null;
 		}
 	});
 

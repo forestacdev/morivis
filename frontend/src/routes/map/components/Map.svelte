@@ -20,6 +20,7 @@
 		LayerSpecification,
 		TerrainSpecification,
 		BackgroundLayerSpecification,
+		GeoJSONSourceSpecification,
 		Marker,
 		LngLat,
 		Popup
@@ -219,7 +220,7 @@
 	// 	}
 	// });
 
-	let selectedFocusSources = $state<SourceSpecification>({
+	let selectedFocusSources = $state<GeoJSONSourceSpecification>({
 		type: 'geojson',
 		data: {
 			type: 'FeatureCollection',
@@ -231,7 +232,10 @@
 		if (selectedFocusSources) {
 			const map = mapStore.getMap();
 			if (!map) return;
-			map.getSource('selected_focus_sources').setData(selectedFocusSources.data);
+			const source = map.getSource('selected_focus_sources') as maplibregl.GeoJSONSource;
+			if (source) {
+				source.setData(selectedFocusSources.data);
+			}
 		}
 	});
 
@@ -241,10 +245,22 @@
 		const sources = await createSourcesItems(_dataEntries);
 		let layers = await createLayersItems(_dataEntries);
 		let target = undefined;
+		let targetOutlines = undefined;
+		let targetLabel = undefined;
 
+		// 編集中のレイヤーを上に移動させる処理
 		if ($isEdit) {
 			target = layers.find((layer) => layer.id === $selectedLayerId);
 			layers = layers.filter((layer) => layer.id !== $selectedLayerId);
+
+			targetOutlines = layers.find((layer) => layer.id === `${$selectedLayerId}_outline`);
+			if (targetOutlines) {
+				layers = layers.filter((layer) => layer.id !== `${$selectedLayerId}_outline`);
+			}
+			targetLabel = layers.find((layer) => layer.id === `${$selectedLayerId}_label`);
+			if (targetLabel) {
+				layers = layers.filter((layer) => layer.id !== `${$selectedLayerId}_label`);
+			}
 		}
 
 		const terrain = mapStore.getTerrain();
@@ -299,6 +315,8 @@
 					}
 				},
 				...(target ? [target] : []), // `target` がある場合のみ追加
+				...(targetOutlines ? [targetOutlines] : []), // `targetOutlines` がある場合のみ追加
+				...(targetLabel ? [targetLabel] : []), // `targetLabel` がある場合のみ追加
 				{
 					// ストリートビューのライン
 					id: 'street_view_line_layer',

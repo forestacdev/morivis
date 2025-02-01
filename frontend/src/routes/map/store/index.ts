@@ -106,9 +106,10 @@ export const showInfoDialog = writable<boolean>(false);
 /** 利用規約ダイアログの表示 */
 export const showTermsDialog = writable<boolean>(false);
 
+/** ストリートビュー */
 export const isStreetView = writable<boolean>(false);
 
-/** 編集中のレイヤーid TODO:Editと混在 */
+/** 選択中のレイヤーid */
 export const selectedLayerId = writable<string>('');
 
 export interface SelectedHighlightData {

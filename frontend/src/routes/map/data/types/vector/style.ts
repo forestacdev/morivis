@@ -128,6 +128,11 @@ interface BaseVectorStyle {
 
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill' | 'line' | 'circle';
+	outline: {
+		show: boolean;
+		color: string;
+		width: number;
+	};
 	default: PolygonDefaultStyle;
 }
 
