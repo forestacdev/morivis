@@ -262,7 +262,7 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 		paint: {
 			'fill-opacity': style.opacity,
 			'fill-outline-color': '#00000000',
-			'fill-color': color,
+			'fill-color': style.colors.show ? color : '#00000000',
 			...(fillStyle.paint ?? {})
 		},
 		layout: {
@@ -297,7 +297,7 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 };
 
 // ポリゴンのアウトラインレイヤーの作成
-const createOutLineLayer = (layer: LayerItem, outline: OutLine) => {
+const createOutLineLayer = (layer: LayerItem, outline: OutLine, opacity: number) => {
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,
@@ -305,6 +305,7 @@ const createOutLineLayer = (layer: LayerItem, outline: OutLine) => {
 		paint: {
 			'line-color': outline.color,
 			'line-width': outline.width,
+			'line-opacity': opacity,
 			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }) // 条件がtrueの時のみ追加
 		}
 	};
@@ -514,7 +515,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 
 					// ポリゴンのアウトライン
 					if (style.type === 'fill' && style.outline.show) {
-						const lineLayer = createOutLineLayer(layer, style.outline);
+						const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
 						layerItems.push(lineLayer);
 					}
 

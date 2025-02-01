@@ -102,6 +102,7 @@ export type ColorsExpressions =
 
 export interface Colors {
 	key: string;
+	show: boolean;
 	expressions: ColorsExpressions[];
 }
 
@@ -134,13 +135,13 @@ export interface OutLine {
 }
 
 export interface PolygonStyle extends BaseVectorStyle {
-	type: 'fill' | 'line' | 'circle';
+	type: 'fill';
 	outline: OutLine;
 	default: PolygonDefaultStyle;
 }
 
 export interface LineStringStyle extends BaseVectorStyle {
-	type: 'line' | 'circle';
+	type: 'line';
 	default: LineStringDefaultStyle;
 }
 

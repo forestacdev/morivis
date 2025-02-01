@@ -48,6 +48,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			opacity: 0.5, // 透過率
 			colors: {
 				key: '樹種',
+				show: true,
 				expressions: [
 					{
 						type: 'single',
