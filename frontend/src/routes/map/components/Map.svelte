@@ -741,7 +741,6 @@
 	<SideMenu />
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	<!-- <LayerOptionMenu bind:layerToEdit bind:tempLayerEntries /> -->
 	<div
 		bind:this={mapContainer}
 		class="css-map absolute flex-grow transition-all duration-500 {$isStreetView

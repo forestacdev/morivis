@@ -37,7 +37,7 @@ import type {
 	PolygonStyle,
 	LineStringStyle,
 	LabelStyle,
-	OutLine
+	PolygonOutLine
 } from '$map/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$map/utils/colorMapping';
@@ -297,7 +297,7 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 };
 
 // ポリゴンのアウトラインレイヤーの作成
-const createOutLineLayer = (layer: LayerItem, outline: OutLine, opacity: number) => {
+const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: number) => {
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,
@@ -313,19 +313,20 @@ const createOutLineLayer = (layer: LayerItem, outline: OutLine, opacity: number)
 };
 
 // pointレイヤーの作成
-const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpecification => {
-	const circleStyle = (style.default as PointStyle).circle;
+const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpecification => {
+	const outline = style.outline;
+	const circleStyle = style.default.circle;
 	const color = getColorExpression(style.colors);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
 		type: 'circle',
 		paint: {
-			'circle-opacity': style.opacity,
+			'circle-opacity': style.colors.show ? style.opacity : 0,
 			'circle-stroke-opacity': style.opacity,
-			'circle-color': color,
-			'circle-radius': 6,
-			'circle-stroke-color': '#ffffff',
-			'circle-stroke-width': 2,
+			'circle-color': style.colors.show ? color : '#00000000',
+			'circle-radius': style.radius,
+			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
+			'circle-stroke-width': outline.show ? style.outline.width : 0,
 			...(circleStyle.paint ?? {})
 		},
 		layout: {
@@ -340,7 +341,7 @@ const createCircleLayer = (layer: LayerItem, style: VectorStyle): CircleLayerSpe
 // TODO: 命名の検討
 // ラベルレイヤーの作成
 const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const symbolStyle = (style.default as LabelStyle).symbol;
+	const symbolStyle = style.default.symbol;
 	const color = getColorExpression(style.colors);
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {

@@ -42,7 +42,9 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 0.8, // 透過率
+			radius: 7,
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -54,6 +56,11 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 						}
 					}
 				]
+			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
 			},
 			labels: {
 				key: '名前',
@@ -123,6 +130,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			type: 'circle',
 			opacity: 0.8, // 透過率
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -203,6 +211,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			type: 'circle',
 			opacity: 0.8, // 透過率
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{

@@ -127,16 +127,22 @@ interface BaseVectorStyle {
 	colors: Colors;
 }
 
-export interface OutLine {
+export interface PolygonOutLine {
 	show: boolean;
 	color: string;
 	width: number;
 	lineStyle: 'solid' | 'dashed';
 }
 
+export interface PointOutLine {
+	show: boolean;
+	color: string;
+	width: number;
+}
+
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill';
-	outline: OutLine;
+	outline: PolygonOutLine;
 	default: PolygonDefaultStyle;
 }
 
@@ -147,6 +153,8 @@ export interface LineStringStyle extends BaseVectorStyle {
 
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
+	radius: number;
+	outline: PointOutLine;
 	default: PointDefaultStyle;
 }
 

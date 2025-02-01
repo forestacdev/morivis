@@ -32,8 +32,9 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 		},
 		style: {
 			type: 'line',
-			opacity: 0.8, // 透過率
+			opacity: 0.8,
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{

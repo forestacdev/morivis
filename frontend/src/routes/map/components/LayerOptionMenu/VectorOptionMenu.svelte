@@ -146,6 +146,10 @@
 		step={0.01}
 	/>
 
+	{#if layerToEdit.style.type === 'circle'}
+		<RangeSlider label="半径" bind:value={layerToEdit.style.radius} min={0} max={30} step={0.01} />
+	{/if}
+
 	<!-- 色 -->
 	{#if colorStyle}
 		<Accordion label={'塗りつぶし'} bind:value={layerToEdit.style.colors.show}>
@@ -228,19 +232,19 @@
 		</Accordion>
 	{/if}
 
-	{#if layerToEdit.format.geometryType === 'Polygon' && layerToEdit.style.type === 'fill'}
-		<Accordion label={'アウトラインの表示'} bind:value={layerToEdit.style.outline.show}>
-			{#if layerToEdit.format.geometryType === 'Polygon' && layerToEdit.style.type === 'fill'}
-				<RangeSlider
-					label="ライン幅"
-					bind:value={layerToEdit.style.outline.width}
-					min={0}
-					max={10}
-					step={0.01}
-				/>
-				<div class="flex flex-col gap-2 pb-2">
-					<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
-				</div>
+	{#if layerToEdit.style.type === 'fill' || layerToEdit.style.type === 'circle'}
+		<Accordion label={'アウトライン'} bind:value={layerToEdit.style.outline.show}>
+			<RangeSlider
+				label="ライン幅"
+				bind:value={layerToEdit.style.outline.width}
+				min={0}
+				max={10}
+				step={0.01}
+			/>
+			<div class="flex flex-col gap-2 pb-2">
+				<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
+			</div>
+			{#if layerToEdit.style.type === 'fill'}
 				<HorizontalSelectBox
 					label={'ラインのスタイル'}
 					bind:group={layerToEdit.style.outline.lineStyle}

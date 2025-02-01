@@ -44,6 +44,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			type: 'symbol',
 			opacity: 1,
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -144,6 +145,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			type: 'symbol',
 			opacity: 1,
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -228,6 +230,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			type: 'symbol',
 			opacity: 1,
 			colors: {
+				show: true,
 				key: '単色',
 				expressions: [
 					{
