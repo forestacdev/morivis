@@ -5,10 +5,10 @@
 
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
-	import VectorOptionMenu from '$map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { selectedLayerId, addedLayerIds, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import VectorOptionMenu from '$routes/map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 
 	let {
 		layerToEdit = $bindable(),
@@ -62,7 +62,7 @@
 </script>
 
 {#if $selectedLayerId && $isEdit && layerToEdit}
-	<div class="absolute top-[130px] z-30 w-[280px]">
+	<div class="absolute top-[130px] z-30 w-[380px]">
 		<div
 			transition:fly={{ duration: 300, y: -50, opacity: 0 }}
 			class="bg-main z-10 flex h-full w-full flex-col gap-2 overflow-hidden rounded-lg border-2 border-gray-500 p-2"

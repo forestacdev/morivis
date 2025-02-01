@@ -36,11 +36,11 @@ import type {
 	PointStyle,
 	PolygonStyle,
 	LineStringStyle,
-	LabelStyle
+	LabelStyle,
+	OutLine
 } from '$map/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$map/utils/colorMapping';
-import { get } from 'svelte/store';
 
 // IDを収集
 const validIds = geoDataEntry.map((entry) => entry.id);
@@ -261,7 +261,7 @@ const createFillLayer = (layer: LayerItem, style: VectorStyle): FillLayerSpecifi
 		type: 'fill',
 		paint: {
 			'fill-opacity': style.opacity,
-			// 'fill-outline-color': '#00000000',
+			'fill-outline-color': '#00000000',
 			'fill-color': color,
 			...(fillStyle.paint ?? {})
 		},
@@ -296,17 +296,16 @@ const createLineLayer = (layer: LayerItem, style: VectorStyle): LineLayerSpecifi
 	return lineLayer;
 };
 
-const createOutLineLayer = (
-	layer: LayerItem,
-	outline: { show: boolean; color: string; width: number }
-) => {
+// ポリゴンのアウトラインレイヤーの作成
+const createOutLineLayer = (layer: LayerItem, outline: OutLine) => {
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,
 		type: 'line',
 		paint: {
 			'line-color': outline.color,
-			'line-width': outline.width
+			'line-width': outline.width,
+			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }) // 条件がtrueの時のみ追加
 		}
 	};
 	return outlineLayer;

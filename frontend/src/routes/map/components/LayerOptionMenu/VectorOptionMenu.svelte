@@ -27,6 +27,7 @@
 		generateNumberMap,
 		generateColorPalette
 	} from '$map/utils/colorMapping';
+	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import { selectedLayerId } from '$routes/map/store';
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
@@ -294,7 +295,43 @@
 	{/if}
 
 	{#if layerToEdit.format.geometryType === 'Polygon' && layerToEdit.style.type === 'fill'}
-		<CheckBox label={'アウトラインの表示'} bind:value={layerToEdit.style.outline.show} />
+		<Accordion label={'アウトラインの表示'} bind:value={layerToEdit.style.outline.show}>
+			<div slot="details">
+				{#if layerToEdit.style.outline.show}
+					<RangeSlider
+						label="ライン幅"
+						bind:value={layerToEdit.style.outline.width}
+						min={0}
+						max={10}
+						step={0.01}
+					/>
+					<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-2">
+							<span>ラインのスタイル</span>
+						</div>
+						<div class="flex w-full overflow-hidden rounded-full">
+							{#each [{ name: '実線', type: 'solid' }, { name: '破線', type: 'dashed' }] as line (line.type)}
+								<label
+									for={line.type}
+									class="text z-20 flex w-full cursor-pointer items-center justify-center bg-gray-400 p-2"
+									class:bg-green-600={line.type === layerToEdit.style.outline.lineStyle}
+								>
+									<input
+										type="radio"
+										id={line.type}
+										bind:group={layerToEdit.style.outline.lineStyle}
+										value={line.type}
+										class="hidden"
+									/>
+									<span class="select-none">{line.name}</span>
+								</label>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+		</Accordion>
 	{/if}
 
 	<!-- ラベルの設定 -->

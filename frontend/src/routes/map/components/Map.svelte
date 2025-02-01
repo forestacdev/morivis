@@ -378,6 +378,13 @@
 					polygon = turfBboxPolygon(bbox);
 				} else {
 					console.warn('boundsが取得できませんでした。', entry.id);
+					selectedFocusSources = {
+						type: 'geojson',
+						data: {
+							type: 'FeatureCollection',
+							features: []
+						}
+					};
 					return;
 				}
 			} else {

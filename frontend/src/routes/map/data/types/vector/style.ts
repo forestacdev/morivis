@@ -126,13 +126,16 @@ interface BaseVectorStyle {
 	colors: Colors;
 }
 
+export interface OutLine {
+	show: boolean;
+	color: string;
+	width: number;
+	lineStyle: 'solid' | 'dashed';
+}
+
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill' | 'line' | 'circle';
-	outline: {
-		show: boolean;
-		color: string;
-		width: number;
-	};
+	outline: OutLine;
 	default: PolygonDefaultStyle;
 }
 

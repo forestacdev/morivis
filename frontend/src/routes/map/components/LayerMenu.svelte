@@ -8,7 +8,7 @@
 	import LayerOptionMenu from '$map/components/LayerOptionMenu.svelte';
 	import LayerSlot from '$map/components/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
-	import { selectedLayerId, isEdit, mapMode } from '$map/store';
+	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	let {
 		layerEntries = $bindable(),
@@ -71,6 +71,18 @@
 		</div>
 
 		<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
+		{#if !$isEdit}
+			<div class="flex justify-center">
+				<button
+					onclick={() => showDataMenu.set(true)}
+					class="bg-accent flex items-center gap-2 rounded-lg p-2 text-white"
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
+						>データの追加</span
+					>
+				</button>
+			</div>
+		{/if}
 	</div>
 {/if}
 

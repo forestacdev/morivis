@@ -108,7 +108,8 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			outline: {
 				show: true,
 				color: '#000000',
-				width: 1
+				width: 2,
+				lineStyle: 'dashed'
 			},
 			labels: {
 				key: '林齢', // 現在選択されているラベルのキー
