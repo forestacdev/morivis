@@ -35,7 +35,8 @@
 	import ScaleControl from '$map/components/control/ScaleControl.svelte';
 	import TerrainControl from '$map/components/control/TerrainControl.svelte';
 	import ZoomControl from '$map/components/control/ZoomControl.svelte';
-	import DataManu from '$map/components/DataManu.svelte';
+	import DataMenu from '$map/components/DataMenu.svelte';
+	import FooterMenu from '$map/components/FooterMenu.svelte';
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
 	import InfoDialog from '$map/components/InfoDialog.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
@@ -740,6 +741,7 @@
 <div class="relative h-full w-full">
 	<SideMenu />
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
+	<FooterMenu {layerEntries} />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<div
 		bind:this={mapContainer}
@@ -749,7 +751,7 @@
 	></div>
 	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />
 	<!-- <CanvasLayer bind:canvasSource /> -->
-	<Compass />
+	<!-- <Compass /> -->
 	<ZoomControl />
 	<TerrainControl />
 	<GeolocateControl />
@@ -758,7 +760,7 @@
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
 	<SidePopup bind:sidePopupData {layerEntries} />
 
-	<DataManu />
+	<DataMenu />
 	<InfoDialog />
 	<TermsOfServiceDialog />
 </div>

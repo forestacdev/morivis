@@ -83,22 +83,18 @@
 		}
 	};
 
-	const addData = () => {
-		if (showDataEntry) {
-			addedLayerIds.addLayer(showDataEntry.id);
-		}
+	const addData = (id: string) => {
+		addedLayerIds.addLayer(id);
 	};
-	const deleteData = () => {
-		if (showDataEntry) {
-			addedLayerIds.removeLayer(showDataEntry.id);
-		}
+	const deleteData = (id: string) => {
+		addedLayerIds.removeLayer(id);
 	};
 </script>
 
 {#if $showDataMenu}
 	<div
 		transition:fade={{ duration: 100 }}
-		class="absolute bottom-0 z-30 h-screen w-full bg-black bg-opacity-50 p-8"
+		class="absolute bottom-0 z-30 h-screen w-full p-8 pl-[120px]"
 	>
 		<div class="bg-main relative flex h-full w-full flex-grow flex-col rounded-lg p-2">
 			<div class="flex flex-shrink-0 items-center justify-between p-2">
@@ -117,12 +113,14 @@
 						</div>
 					{/if}
 					{#each filterDataEntries as dataEntry (dataEntry.id)}
-						<button
+						<div
 							animate:flip={{ duration: 500 }}
-							onclick={() => showData(dataEntry.id)}
 							class="relative mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300"
 						>
-							<div class="relative aspect-video overflow-hidden p-2">
+							<button
+								class="relative aspect-video overflow-hidden p-2"
+								onclick={() => showData(dataEntry.id)}
+							>
 								{#await promise(dataEntry) then url}
 									<img
 										src={url}
@@ -130,7 +128,7 @@
 										alt="サムネイル"
 									/>
 								{/await}
-							</div>
+							</button>
 
 							<div class="flex w-full items-center justify-start gap-2 p-2">
 								<label
@@ -143,7 +141,7 @@
 
 							{#if addedDataIds.includes(dataEntry.id)}
 								<button
-									onclick={addData}
+									onclick={() => deleteData(dataEntry.id)}
 									class="bg-main flex items-center justify-center rounded-full px-4"
 								>
 									<Icon icon="material-symbols:check" class=" h-8 w-8" />
@@ -151,14 +149,14 @@
 								</button>
 							{:else}
 								<button
-									onclick={deleteData}
+									onclick={() => addData(dataEntry.id)}
 									class="text-main bg-accent flex items-center justify-center rounded-full px-4"
 								>
 									<Icon icon="material-symbols:add" class=" h-8 w-8" />
 									<div>地図に追加</div>
 								</button>
 							{/if}
-						</button>
+						</div>
 					{/each}
 				</div>
 				<DataPreview bind:showDataEntry />

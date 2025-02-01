@@ -31,7 +31,6 @@
 	} = $props();
 
 	const focusFeature = (feature: any, layerId: string) => {
-		console.log('focusFeature', feature);
 		mapStore.focusFeature(feature);
 		const data: SidePopupData = {
 			type: 'Feature',

@@ -7,6 +7,7 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
 	import { addedLayerIds, selectedLayerId, isEdit } from '$map/store';
+	import { showDataMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 
 	let {
@@ -103,6 +104,12 @@
 			isEdit.set(false);
 		}
 	};
+
+	showDataMenu.subscribe((value) => {
+		if (value) {
+			$selectedLayerId = '';
+		}
+	});
 </script>
 
 <div class="relative">
@@ -121,11 +128,7 @@
 			? 'css-gradient'
 			: ' hover:border-accent'}"
 		onclick={selectedLayer}
-		style:width={$selectedLayerId === layerEntry.id
-			? '100%'
-			: layerEntry.style.visible
-				? '90%'
-				: '70px'}
+		style:width={$selectedLayerId === layerEntry.id ? '100%' : !$showDataMenu ? '90%' : '70px'}
 		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
