@@ -7,8 +7,8 @@
 
 	import CheckBox from '$map/components/atoms/CheckBox.svelte';
 	import ColorPicker from '$map/components/atoms/ColorPicker.svelte';
+	import HorizontalSelectBox from '$map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
-	import SelectBox from '$map/components/atoms/SelectBox.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type {
 		GeometryType,
@@ -32,64 +32,6 @@
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
 		$props();
-
-	// 有効なレイヤータイプの取得
-	const getLayerTypes = (
-		type: GeometryType
-	): {
-		key: VectorLayerType;
-		name: string;
-	}[] => {
-		switch (type) {
-			case 'Point':
-				return [
-					{
-						key: 'circle',
-						name: 'ポイント'
-					}
-				];
-			case 'LineString':
-				return [
-					{
-						key: 'line',
-						name: 'ライン'
-					},
-					{
-						key: 'circle',
-						name: 'ポイント'
-					}
-				];
-			case 'Polygon':
-				return [
-					{
-						key: 'fill',
-						name: 'ポリゴン'
-					},
-					{
-						key: 'line',
-						name: 'ライン'
-					},
-					{
-						key: 'circle',
-						name: 'ポイント'
-					}
-				];
-			case 'Label':
-				return [
-					{
-						key: 'symbol',
-						name: 'ラベル'
-					}
-				];
-			default:
-				return [
-					{
-						key: 'symbol',
-						name: 'ラベル'
-					}
-				];
-		}
-	};
 
 	// 色分けのキーの取得
 	const getColorKeys = (ColorsExpressions: ColorsExpressions[]) => {
@@ -196,13 +138,6 @@
 </script>
 
 {#if layerToEdit && layerToEdit.type === 'vector'}
-	<!-- レイヤータイプの選択 -->
-
-	<SelectBox
-		bind:group={layerToEdit.style.type}
-		options={getLayerTypes(layerToEdit.format.geometryType)}
-	/>
-
 	<RangeSlider
 		label="不透明度"
 		bind:value={layerToEdit.style.opacity}
@@ -218,13 +153,11 @@
 			{#each filterExpressions as colorStyle, idx (colorStyle.key)}
 				<label
 					animate:flip={{ duration: 200 }}
-					for={colorStyle.key}
 					class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
 					class:bg-green-600={colorStyle.key === layerToEdit.style.colors.key}
 				>
 					<input
 						type="radio"
-						id={colorStyle.key}
 						bind:group={layerToEdit.style.colors.key}
 						value={colorStyle.key}
 						class="hidden"
@@ -296,51 +229,54 @@
 
 	{#if layerToEdit.format.geometryType === 'Polygon' && layerToEdit.style.type === 'fill'}
 		<Accordion label={'アウトラインの表示'} bind:value={layerToEdit.style.outline.show}>
-			<div slot="details">
-				{#if layerToEdit.style.outline.show}
-					<RangeSlider
-						label="ライン幅"
-						bind:value={layerToEdit.style.outline.width}
-						min={0}
-						max={10}
-						step={0.01}
-					/>
+			{#if layerToEdit.format.geometryType === 'Polygon' && layerToEdit.style.type === 'fill'}
+				<RangeSlider
+					label="ライン幅"
+					bind:value={layerToEdit.style.outline.width}
+					min={0}
+					max={10}
+					step={0.01}
+				/>
+				<div class="flex flex-col gap-2 pb-2">
 					<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
-					<div class="flex flex-col gap-2">
-						<div class="flex items-center gap-2">
-							<span>ラインのスタイル</span>
-						</div>
-						<div class="flex w-full overflow-hidden rounded-full">
-							{#each [{ name: '実線', type: 'solid' }, { name: '破線', type: 'dashed' }] as line (line.type)}
-								<label
-									for={line.type}
-									class="text z-20 flex w-full cursor-pointer items-center justify-center bg-gray-400 p-2"
-									class:bg-green-600={line.type === layerToEdit.style.outline.lineStyle}
-								>
-									<input
-										type="radio"
-										id={line.type}
-										bind:group={layerToEdit.style.outline.lineStyle}
-										value={line.type}
-										class="hidden"
-									/>
-									<span class="select-none">{line.name}</span>
-								</label>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
+				</div>
+				<HorizontalSelectBox
+					label={'ラインのスタイル'}
+					bind:group={layerToEdit.style.outline.lineStyle}
+					options={[
+						{ name: '実線', key: 'solid' },
+						{ name: '破線', key: 'dashed' }
+					]}
+				/>
+			{/if}
 		</Accordion>
 	{/if}
 
-	<!-- ラベルの設定 -->
-	<CheckBox label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show} />
-	<select class="w-full p-2 text-left text-black" bind:value={layerToEdit.style.labels.key}>
-		{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType}
-			<option value={labelType.key}>{labelType.name}</option>
-		{/each}
-	</select>
+	{#if layerToEdit.style.labels.show !== undefined}
+		<!-- ラベルの設定 -->
+
+		<Accordion label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show}>
+			<div class="flex flex-grow flex-col gap-2">
+				{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType (labelType.key)}
+					<label
+						class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
+						class:bg-green-600={labelType.key === layerToEdit.style.labels.key}
+					>
+						<input
+							type="radio"
+							bind:group={layerToEdit.style.labels.key}
+							value={labelType.key}
+							class="hidden"
+						/>
+						<div class="flex items-center gap-2">
+							<Icon icon={'ci:font'} width={20} />
+							<span class="select-none">{labelType.name}</span>
+						</div>
+					</label>
+				{/each}
+			</div>
+		</Accordion>
+	{/if}
 {/if}
 
 <style>

@@ -18,7 +18,7 @@
 </script>
 
 <div class="flex flex-col gap-2 pb-4">
-	<span class="">{label}: {value.toFixed(2)}</span>
+	<span class="select-none">{label}: {value.toFixed(2)}</span>
 	<input class="css-range" type="range" bind:value {min} {max} {step} />
 
 	<!-- <div bind:this={rangeElement}>{1900000}</div> -->
