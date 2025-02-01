@@ -281,7 +281,7 @@
 					paint: {
 						'line-color': '#08fa00',
 						'line-width': 5,
-						'line-opacity': 1
+						'line-opacity': $isEdit ? 0 : 1
 					}
 				},
 				{
@@ -292,7 +292,8 @@
 					paint: {
 						'circle-color': '#08fa00',
 						'circle-radius': 5,
-						'circle-opacity': 1,
+						'circle-opacity': $isEdit ? 0 : 1,
+						'circle-stroke-opacity': $isEdit ? 0 : 1,
 						'circle-stroke-width': 2,
 						'circle-stroke-color': '#ffffff'
 					}
