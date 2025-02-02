@@ -4,6 +4,7 @@
 	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { mapStore } from '$map/store/map';
@@ -28,6 +29,8 @@
 <div
 	class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-grow items-center justify-start gap-2 p-2"
 >
+	<Attribution />
+
 	<Compass />
 	フッターメニュー
 </div>

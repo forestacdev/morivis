@@ -29,7 +29,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import Attribution from '$map/components/Attribution.svelte';
 	import Compass from '$map/components/control/Compass.svelte';
 	import GeolocateControl from '$map/components/control/GeolocateControl.svelte';
 	import ScaleControl from '$map/components/control/ScaleControl.svelte';
@@ -756,7 +755,6 @@
 	<TerrainControl />
 	<GeolocateControl />
 	<ScaleControl />
-	<Attribution />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
 	<SidePopup bind:sidePopupData {layerEntries} />
 
