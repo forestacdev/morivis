@@ -1,12 +1,12 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Run generateJson",
-            "type": "shell",
-            "command": "node generateJson.js",
-            "problemMatcher": [],
-            "runOptions": { "runOn": "folderOpen" }
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run generateJson",
+			"type": "shell",
+			"command": "pnpm run dev",
+			"problemMatcher": [],
+			"runOptions": { "runOn": "folderOpen" }
+		}
+	]
 }

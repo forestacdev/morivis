@@ -70,9 +70,20 @@
 
 <div
 	bind:this={element}
-	class="bg-main absolute right-2 top-2 grid h-[80px] w-[80px] place-items-center rounded-full p-2"
+	class="bg-main absolute bottom-0 right-0 grid h-[150px] w-[150px] place-items-center rounded-full"
 >
-	<Icon icon="mdi:compass-outline" class="h-12 w-12 -rotate-[45deg] text-base" />
+	<svg
+		class="scale-50"
+		xmlns="http://www.w3.org/2000/svg"
+		width="132"
+		height="132"
+		viewBox="0 0 132 132"
+	>
+		<g transform="translate(47,0)">
+			<path fill="#000" d="m19 0 16.455 66H2.545L19 0Z" />
+			<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
+		</g>
+	</svg>
 </div>
 
 <style>
