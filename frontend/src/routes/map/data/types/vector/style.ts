@@ -140,6 +140,12 @@ export interface PointOutLine {
 	width: number;
 }
 
+export interface LabelOutLine {
+	show: boolean;
+	color: string;
+	width: number;
+}
+
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill';
 	outline: PolygonOutLine;
@@ -148,6 +154,7 @@ export interface PolygonStyle extends BaseVectorStyle {
 
 export interface LineStringStyle extends BaseVectorStyle {
 	type: 'line';
+	lineStyle: 'solid' | 'dashed';
 	default: LineStringDefaultStyle;
 }
 
@@ -159,6 +166,7 @@ export interface PointStyle extends BaseVectorStyle {
 
 export interface LabelStyle extends BaseVectorStyle {
 	type: 'symbol';
+	outline: LabelOutLine;
 	default: LabelDefaultStyle;
 }
 

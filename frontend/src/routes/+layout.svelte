@@ -1,5 +1,12 @@
 <script lang="ts">
 	import '../app.css';
+
+	// TODO: circle UI
+	import '@zumer/orbit/dist/orbit.css';
+	import { onMount } from 'svelte';
+	onMount(async () => {
+		await import('@zumer/orbit/dist/orbit.js');
+	});
 	let { children } = $props();
 
 	import { onNavigate } from '$app/navigation';

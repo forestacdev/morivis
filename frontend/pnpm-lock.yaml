@@ -50,6 +50,9 @@ importers:
       '@vite-pwa/assets-generator':
         specifier: ^0.2.6
         version: 0.2.6
+      '@zumer/orbit':
+        specifier: ^1.1.0
+        version: 1.1.0
       chroma-js:
         specifier: ^3.1.2
         version: 3.1.2
@@ -1505,6 +1508,9 @@ packages:
 
   '@webgpu/types@0.1.53':
     resolution: {integrity: sha512-x+BLw/opaz9LiVyrMsP75nO1Rg0QfrACUYIbVSfGwY/w0DiWIPYYrpte6us//KZXinxFAOJl0+C17L1Vi2vmDw==}
+
+  '@zumer/orbit@1.1.0':
+    resolution: {integrity: sha512-Y+7CCVv4X/Wght3Za48KLnIkjiHm9DayDnGyjBo+aeqYYJ6ScPNZQvLlN/vO+8n1l+N/OkHj98btw0WphGlWWA==}
 
   ace-builds@1.37.1:
     resolution: {integrity: sha512-6/jxFucA1z1C3hgLlVkTE5/znZ+iYvD301vfwtybiMc3k76IDykliCD0xh/eYZMJUfsJtaOQHZ2AJO5ey0PHWw==}
@@ -5362,6 +5368,8 @@ snapshots:
       tinyrainbow: 1.2.0
 
   '@webgpu/types@0.1.53': {}
+
+  '@zumer/orbit@1.1.0': {}
 
   ace-builds@1.37.1: {}
 

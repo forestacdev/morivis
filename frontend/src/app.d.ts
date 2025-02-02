@@ -12,5 +12,6 @@ declare global {
 
 // モジュールの型定義を追加
 declare module 'path';
+declare module '@zumer/orbit/dist/orbit.js';
 
 export {};

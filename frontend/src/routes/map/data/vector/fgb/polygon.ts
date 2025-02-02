@@ -114,7 +114,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 			},
 			labels: {
 				key: '林齢', // 現在選択されているラベルのキー
-				show: true, // ラベル表示状態
+				show: true, // ラベル表示状態ルの色
 				expressions: [
 					{
 						key: '小林班ID',
