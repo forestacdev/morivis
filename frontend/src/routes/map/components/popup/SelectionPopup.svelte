@@ -58,6 +58,8 @@
 						<button
 							animate:flip={{ duration: 200 }}
 							class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
+							onmousemove={() => console.log('hover')}
+							onmouseleave={() => console.log('leave')}
 							><LayerIcon {layerEntry} />
 						</button>
 					{/each}

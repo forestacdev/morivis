@@ -70,7 +70,7 @@
 
 <div
 	bind:this={element}
-	class="bg-main absolute bottom-0 right-0 grid h-[150px] w-[150px] place-items-center rounded-full"
+	class="bg-main absolute bottom-[40px] right-[20px] grid h-[150px] w-[150px] place-items-center rounded-full"
 >
 	<svg
 		class="scale-50"

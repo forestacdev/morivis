@@ -109,18 +109,17 @@ interface LayerItem {
 /* ハイライトレイヤー */
 export const createHighlightLayer = (
 	_selectedHighlightData: SelectedHighlightData | null
-): (FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification | undefined)[] => {
-	if (!_selectedHighlightData) return [];
-	const entry = _selectedHighlightData.layerData;
+): FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification | undefined => {
+	if (!_selectedHighlightData) return undefined;
+	const entry = _selectedHighlightData.layerEntry;
 	const { format, style, metaData, properties, interaction, type } = entry;
 
-	if (entry.type === 'raster') return [];
-	const layerId = 'HighlightFeatureId';
+	if (entry.type === 'raster') return undefined;
+	const layerId = `@highlight_${entry.id}`;
 
 	// TODO 元のデータが削除されたらハイライトを消す必要がある
 	const sourceId = `${entry.id}_source`;
 
-	const layerItems = [];
 	const layer: LayerItem = {
 		id: layerId,
 		source: sourceId,
@@ -138,6 +137,8 @@ export const createHighlightLayer = (
 
 	// }
 
+	let vectorLayer;
+
 	if (type === 'vector') {
 		if (format.type === 'mvt' || format.type === 'pmtiles') {
 			if ('sourceLayer' in metaData) {
@@ -145,8 +146,8 @@ export const createHighlightLayer = (
 			}
 		}
 
-		const vectorLayer = createVectorLayer(layer, style);
-		if (!vectorLayer || vectorLayer.type === 'symbol') return [];
+		vectorLayer = createVectorLayer(layer, style);
+		if (!vectorLayer) return undefined;
 		switch (vectorLayer.type) {
 			case 'fill':
 				vectorLayer.paint = highlightFillPaint;
@@ -157,14 +158,16 @@ export const createHighlightLayer = (
 			case 'circle':
 				vectorLayer.paint = highlightCirclePaint;
 				break;
+			case 'symbol':
+				vectorLayer.paint = highlightSymbolPaint;
+				break;
 			default:
 				break;
 		}
 
 		vectorLayer.filter = ['==', ['id'], _selectedHighlightData.featureId];
-		layerItems.push(vectorLayer);
 	}
-	return layerItems;
+	return vectorLayer;
 };
 
 const generateMatchExpression = (

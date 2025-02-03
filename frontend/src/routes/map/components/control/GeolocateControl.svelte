@@ -20,7 +20,6 @@
 			if (target.classList.contains('maplibregl-ctrl-geolocate-waiting')) {
 				// 処理中
 				state = 'waiting';
-				console.log('現在位置取得中');
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-active') ||
@@ -28,19 +27,16 @@
 			) {
 				// 現在位置表示中
 				state = 'active';
-				console.log('現在位置表示中');
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-error') ||
 				target.classList.contains('maplibregl-ctrl-geolocate-background-error')
 			) {
 				state = 'error';
-				console.log('現在位置取得エラー');
 				return;
 			} else {
 				// 現在位置表示していない
 				state = '';
-				console.log('現在位置表示していない');
 			}
 		}
 	};
@@ -78,10 +74,10 @@
 >
 	<Icon
 		icon="streamline:location-target-1-solid"
-		class="absolute h-8 w-8 text-black {state === 'waiting'
-			? 'css-anime'
+		class="absolute h-8 w-8 {state === 'waiting'
+			? 'css-rotate text-accent'
 			: state === 'active'
-				? 'text-green-500'
+				? 'text-accent'
 				: state === 'error'
 					? 'text-red-500'
 					: 'text-black'}"
@@ -89,15 +85,15 @@
 </div>
 
 <style>
-	.css-anime {
-		animation: rotate 1s infinite;
-		@keyframes rotate {
-			0% {
-				transform: rotate(0deg);
-			}
-			100% {
-				transform: rotate(360deg);
-			}
+	:global(.css-rotate) {
+		animation: spin 2s linear infinite;
+	}
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
 		}
 	}
 	:global(.maplibregl-ctrl-group) {

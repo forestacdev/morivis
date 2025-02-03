@@ -268,7 +268,7 @@ const createMapStore = () => {
 	// レイヤー編集時の描画処理
 	isEdit.subscribe((value) => {
 		if (!map) return;
-		map.setPaintProperty('overlay-layer', 'background-opacity', value ? 0.8 : 0);
+		map.setPaintProperty('@overlay_layer', 'background-opacity', value ? 0.8 : 0);
 		map.setPaintProperty('selected-focus-layer-line', 'line-opacity', value ? 0 : 1);
 		map.setPaintProperty('selected-focus-layer-point', 'circle-opacity', value ? 0 : 1);
 		map.setPaintProperty('selected-focus-layer-point', 'circle-stroke-opacity', value ? 0 : 1);

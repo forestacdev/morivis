@@ -48,7 +48,7 @@
 					type: 'raster'
 				},
 				{
-					id: 'overlay-layer',
+					id: '@overlay_layer',
 					type: 'background',
 					paint: {
 						'background-color': '#000000',

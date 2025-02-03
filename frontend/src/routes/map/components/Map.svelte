@@ -57,7 +57,7 @@
 	import GuiControl from '$map/debug/GuiControl.svelte';
 	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
-	import { createLayersItems } from '$map/layers';
+	import { createHighlightLayer, createLayersItems } from '$map/layers';
 	import { createSourcesItems } from '$map/sources';
 	import { mapMode, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
@@ -89,6 +89,13 @@
 	let maplibreMarker = $state<Marker | null>(null); // マーカー
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
+
+	interface ClickedLayerFeaturesData {
+		layerEntry: GeoDataEntry;
+		feature: MapGeoJSONFeature;
+		featureId: number;
+	}
+	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 	let sidePopupData = $state<SidePopupData | null>(null);
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
@@ -212,7 +219,7 @@
 	// });
 
 	// let overlayLayer = $state<BackgroundLayerSpecification>({
-	// 	id: 'overlay-layer',
+	// 	id: '@overlay_layer',
 	// 	type: 'background',
 	// 	paint: {
 	// 		'background-color': '#000000',
@@ -282,7 +289,7 @@
 			layers: [
 				...layers,
 				{
-					id: 'overlay-layer',
+					id: '@overlay_layer',
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
@@ -606,6 +613,8 @@
 			if (inputSearchWord) {
 				inputSearchWord = '';
 			}
+			// toggleOverlayLayer(false);
+			clickedLayerFeaturesData = null;
 			return;
 		}
 
@@ -650,6 +659,16 @@
 		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 		clickedLngLat = e.lngLat;
+
+		clickedLayerFeaturesData = features.map((feature) => {
+			const entry = layerEntries.find((entry) => entry.id === feature.layer.id);
+			if (!entry) return null;
+			return {
+				layerEntry: entry,
+				feature: feature,
+				featureId: feature.id
+			};
+		});
 		generateMarker(clickedLngLat);
 
 		const feature = features[0];
@@ -708,6 +727,42 @@
 		};
 	});
 
+	const removehighlightLayer = () => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		map.setPaintProperty('@overlay_layer', 'background-opacity', 0);
+		const layerIds = map.getLayersOrder();
+
+		// _highlight_ で始まるレイヤーを削除
+		layerIds.forEach((id) => {
+			if (id.startsWith('@highlight_')) {
+				map.removeLayer(id);
+			}
+		});
+	};
+
+	const toggleOverlayLayer = (val: boolean) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		map.setPaintProperty('@overlay_layer', 'background-opacity', val ? 0.8 : 0);
+	};
+
+	$effect(() => {
+		if (clickedLayerFeaturesData) {
+			removehighlightLayer();
+			const map = mapStore.getMap();
+			if (!map) return;
+
+			clickedLayerFeaturesData.forEach(({ layerEntry, feature, featureId }) => {
+				const highlightLayer = createHighlightLayer({ layerEntry, featureId });
+
+				if (highlightLayer) {
+					map.addLayer(highlightLayer);
+				}
+			});
+		}
+	});
+
 	// streetビューの表示切り替え時
 	isStreetView.subscribe((value) => {
 		const map = mapStore.getMap();
@@ -756,7 +811,7 @@
 	<GeolocateControl />
 	<ScaleControl />
 	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
-	<SidePopup bind:sidePopupData {layerEntries} />
+	<SidePopup bind:sidePopupData {layerEntries} {clickedLayerFeaturesData} />
 
 	<DataMenu />
 	<InfoDialog />

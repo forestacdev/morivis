@@ -9,13 +9,13 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import { mapStore } from '$map/store/map';
 
-	interface ResultData {
-		name: string;
-		features: Feature<Geometry, { [key: string]: any }>[];
-		layerId: string;
-	}
+	let zoom = $state(0);
 
-	let results = $state<ResultData[] | null>([]);
+	mapStore.onZoom((z) => {
+		if (z) {
+			zoom = z;
+		}
+	});
 
 	onMount(() => {});
 
@@ -27,12 +27,11 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-grow items-center justify-start gap-2 p-2"
+	class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
 >
-	<Attribution />
-
 	<Compass />
-	フッターメニュー
+	<div class="bg-accent absolute bottom-[30px] right-[20px]">{zoom.toFixed(1)}</div>
+	<Attribution />
 </div>
 
 <style>

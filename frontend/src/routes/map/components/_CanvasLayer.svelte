@@ -196,7 +196,7 @@
 			if (!map) return;
 
 			const features = map.queryRenderedFeatures({
-				layers: [_selectedHighlightData.layerData.id]
+				layers: [_selectedHighlightData.layerEntry.id]
 			});
 
 			if (!features || features.length === 0) return;

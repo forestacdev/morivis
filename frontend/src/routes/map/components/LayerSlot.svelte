@@ -82,7 +82,7 @@
 	// 		if (!overlayLayerId) return;
 	// 		if (!map.getLayer(overlayLayerId)) return;
 	// 		map.moveLayer(layerEntry.id, overlayLayerId);
-	// 		map.removeLayer('overlay-layer');
+	// 		map.removeLayer('@overlay_layer');
 
 	// 		const center = map.getCenter();
 	// 		map.panTo(center, {
