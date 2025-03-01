@@ -2,6 +2,7 @@ import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON }
 import { geojson as fgb, geojson } from 'flatgeobuf';
 import { addedLayerIds } from '$map/store';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { GeoDataEntry } from '$map/data/types';
 
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
@@ -24,7 +25,7 @@ export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 // };
 
 /** fgbを取得してGeoJSONで返す */
-export const getFgbToGeojson = async (url: string): Promise<FeatureCollection> => {
+export const getFgbToGeojson = async (url: string, index?: number): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
 		// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
@@ -41,6 +42,18 @@ export const getFgbToGeojson = async (url: string): Promise<FeatureCollection> =
 			features: []
 		};
 
+		if (index) {
+			let featureIndex = 0;
+			for await (const feature of featureIterator) {
+				if (featureIndex === index) {
+					geojson.features.push(feature);
+					break;
+				}
+				featureIndex++;
+			}
+			return geojson;
+		}
+
 		for await (const feature of featureIterator) {
 			geojson.features.push(feature);
 		}
@@ -51,6 +64,12 @@ export const getFgbToGeojson = async (url: string): Promise<FeatureCollection> =
 		throw new Error('Failed to fetch GeoJSON');
 	}
 };
+
+export interface ClickedLayerFeaturesData {
+	layerEntry: GeoDataEntry;
+	feature: MapGeoJSONFeature;
+	featureId: number;
+}
 
 export interface SidePopupData {
 	type: 'Feature';

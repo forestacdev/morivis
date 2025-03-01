@@ -9,6 +9,7 @@
 	import type { LngLatLike, Marker } from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
+	import searchData from '$map/data/api/search_data.json';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$map/data/types/vector';
 	import { getFgbToGeojson, getGeojson } from '$map/utils/geojson';
@@ -86,6 +87,29 @@
 			};
 		});
 
+		const test = searchData.filter((data) => {
+			return Object.values(data.prop).some(
+				(value) =>
+					(typeof value === 'string' || typeof value === 'number') &&
+					value.toString().includes(searchWord)
+			);
+		});
+
+		const promises2 = test.map(async (data) => {
+			const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
+
+			return {
+				name: 5555,
+				features: fgb.features,
+				layerId: data.file_id
+			};
+		});
+
+		if (test) {
+			const resultsData = await Promise.all(promises2);
+			results = resultsData;
+		}
+
 		const resultsData = await Promise.all(promises);
 
 		const tilePattern = /^\d+\/\d+\/\d+$/;
@@ -111,11 +135,9 @@
 			});
 		}
 
-		console.log(results);
-
 		// resultsには全ての処理結果が含まれます
 
-		results = resultsData;
+		// results = resultsData;
 	};
 
 	$effect(() => {

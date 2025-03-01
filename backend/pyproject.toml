@@ -6,6 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.7",
+    "flatgeobuf>=0.3.1",
+    "geopandas>=1.0.1",
     "numpy>=2.2.2",
+    "pandas>=2.2.3",
+    "pathlib>=1.0.1",
     "rio-rgbify>=0.4.0",
+    "shapely>=2.0.7",
 ]

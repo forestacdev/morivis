@@ -1,23 +1,36 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { LngLat } from 'maplibre-gl';
+	import type { MapGeoJSONFeature, LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
 	import LayerIcon from '$map/components/LayerIcon.svelte';
+	import { HIGHLIGHT_LAYER_COLOR } from '$map/constants';
 	import { gsiGetElevation, lonLatToAddress } from '$map/data/api';
 	import type { GeoDataEntry } from '$map/data/types';
+	import { mapStore } from '$map/store/map';
+	import {
+		mapGeoJSONFeatureToSidePopupData,
+		type SidePopupData,
+		type ClickedLayerFeaturesData
+	} from '$map/utils/geojson';
+
+	interface Props {
+		clickedLayerIds: string[];
+		clickedLayerFeaturesData: ClickedLayerFeaturesData[] | null;
+		sidePopupData: SidePopupData | null;
+		layerEntries: GeoDataEntry[];
+		clickedLngLat: LngLat | null;
+	}
 
 	let {
 		clickedLayerIds = $bindable(),
+		clickedLayerFeaturesData = $bindable(),
+		sidePopupData = $bindable(),
 		layerEntries,
 		clickedLngLat
-	}: {
-		clickedLayerIds: string[];
-		layerEntries: GeoDataEntry[];
-		clickedLngLat: LngLat | null;
-	} = $props();
+	}: Props = $props();
 
 	let address = $state<string | undefined>(undefined);
 	let elevation = $state<number | undefined>(undefined);
@@ -36,9 +49,46 @@
 			}
 		})();
 	});
+
+	let selectedLayer = $state<{
+		layerId: string;
+		bool: boolean;
+	}>({ layerId: '', bool: false });
+
+	const showPopup = (layerId: string) => {
+		if (!clickedLayerFeaturesData) return;
+		const feature = clickedLayerFeaturesData.find(
+			(data) => data.layerEntry.id === layerId
+		)?.feature;
+		if (!feature) return;
+		const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
+
+		sidePopupData = geojsonFeature;
+		clickedLayerFeaturesData = null;
+		clickedLayerIds = [];
+	};
+
+	$effect(() => {
+		if (selectedLayer.layerId && clickedLayerIds.length > 0) {
+			const map = mapStore.getMap();
+			if (!map) return;
+			const layer = map.getLayer(selectedLayer.layerId);
+			if (!layer) return;
+
+			let type: string = layer.type;
+			if (type === 'symbol') type = 'text';
+			map.setPaintProperty(
+				`@highlight_${selectedLayer.layerId}`,
+				`${type}-color`,
+				selectedLayer.bool ? '#00d5ff' : HIGHLIGHT_LAYER_COLOR
+			);
+
+			map.moveLayer(`@highlight_${selectedLayer.layerId}`);
+		}
+	});
 </script>
 
-{#if clickedLayerIds.length > 0 && clickedLngLat}
+{#if clickedLayerIds.length > 1 && clickedLngLat}
 	<div
 		transition:fly={{ duration: 200, y: 100, opacity: 0 }}
 		class="pointer-events-none absolute bottom-2 grid w-full place-items-center rounded-md"
@@ -47,7 +97,10 @@
 			class="pointer-events-auto relative flex max-w-[calc(100vw-2rem)] gap-2 rounded-md bg-white p-4 px-6 transition-all duration-100"
 		>
 			<button
-				onclick={() => (clickedLayerIds = [])}
+				onclick={() => {
+					clickedLayerFeaturesData = null;
+					clickedLayerIds = [];
+				}}
 				class="absolute right-0 top-0 rounded-full p-2"
 			>
 				<Icon icon="material-symbols:close-rounded" class="h-4 w-4 text-black" />
@@ -58,13 +111,14 @@
 						<button
 							animate:flip={{ duration: 200 }}
 							class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
-							onmousemove={() => console.log('hover')}
-							onmouseleave={() => console.log('leave')}
+							onclick={() => showPopup(layerEntry.id)}
+							onmousemove={() => (selectedLayer = { layerId: layerEntry.id, bool: true })}
+							onmouseleave={() => (selectedLayer = { layerId: layerEntry.id, bool: false })}
 							><LayerIcon {layerEntry} />
 						</button>
 					{/each}
 					<!-- 標高値の取得 -->
-					<button
+					<!-- <button
 						class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 						><div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
 							<Icon
@@ -73,7 +127,7 @@
 								width={30}
 							/>
 						</div>
-					</button>
+					</button> -->
 					<!-- TODO: 他の地図にアクセス -->
 					<!-- <button
 						class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"

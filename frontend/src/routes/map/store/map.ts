@@ -127,7 +127,6 @@ const createMapStore = () => {
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
-			console.log('moveend');
 			const center = map.getCenter();
 			setMapParams({
 				center: [center.lng, center.lat],
@@ -270,8 +269,6 @@ const createMapStore = () => {
 		if (!map) return;
 		map.setPaintProperty('@overlay_layer', 'background-opacity', value ? 0.8 : 0);
 		map.setPaintProperty('selected-focus-layer-line', 'line-opacity', value ? 0 : 1);
-		map.setPaintProperty('selected-focus-layer-point', 'circle-opacity', value ? 0 : 1);
-		map.setPaintProperty('selected-focus-layer-point', 'circle-stroke-opacity', value ? 0 : 1);
 
 		const layerId = get(selectedLayerId);
 		const outlineLayerId = `${layerId}_outline`;

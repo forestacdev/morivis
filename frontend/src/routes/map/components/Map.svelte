@@ -62,7 +62,11 @@
 	import { mapMode, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { GeojsonCache } from '$map/utils/geojson';
-	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
+	import {
+		mapGeoJSONFeatureToSidePopupData,
+		type SidePopupData,
+		type ClickedLayerFeaturesData
+	} from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
@@ -90,11 +94,6 @@
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 
-	interface ClickedLayerFeaturesData {
-		layerEntry: GeoDataEntry;
-		feature: MapGeoJSONFeature;
-		featureId: number;
-	}
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 	let sidePopupData = $state<SidePopupData | null>(null);
 	let inputSearchWord = $state<string>(''); // 検索ワード
@@ -304,21 +303,7 @@
 					paint: {
 						'line-color': '#08fa00',
 						'line-width': 5,
-						'line-opacity': $isEdit ? 0 : 1
-					}
-				},
-				{
-					// レイヤー選択時
-					id: 'selected-focus-layer-point',
-					type: 'circle',
-					source: 'selected_focus_sources',
-					paint: {
-						'circle-color': '#08fa00',
-						'circle-radius': 5,
-						'circle-opacity': $isEdit ? 0 : 1,
-						'circle-stroke-opacity': $isEdit ? 0 : 1,
-						'circle-stroke-width': 2,
-						'circle-stroke-color': '#ffffff'
+						'line-opacity': $isEdit ? 0 : 0.6
 					}
 				},
 				...(target ? [target] : []), // `target` がある場合のみ追加
@@ -660,8 +645,19 @@
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 		clickedLngLat = e.lngLat;
 
+		if (features.length === 1) {
+			const feature = features[0];
+
+			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
+
+			sidePopupData = geojsonFeature;
+
+			return;
+		}
+
 		clickedLayerFeaturesData = features.map((feature) => {
 			const entry = layerEntries.find((entry) => entry.id === feature.layer.id);
+			console.log('entry', entry);
 			if (!entry) return null;
 			return {
 				layerEntry: entry,
@@ -670,12 +666,6 @@
 			};
 		});
 		generateMarker(clickedLngLat);
-
-		const feature = features[0];
-
-		const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
-
-		sidePopupData = geojsonFeature;
 
 		return;
 
@@ -749,7 +739,6 @@
 
 	$effect(() => {
 		if (clickedLayerFeaturesData) {
-			removehighlightLayer();
 			const map = mapStore.getMap();
 			if (!map) return;
 
@@ -760,6 +749,10 @@
 					map.addLayer(highlightLayer);
 				}
 			});
+			toggleOverlayLayer(true);
+		} else {
+			removehighlightLayer();
+			toggleOverlayLayer(false);
 		}
 	});
 
@@ -810,8 +803,14 @@
 	<TerrainControl />
 	<GeolocateControl />
 	<ScaleControl />
-	<SelectionPopup bind:clickedLayerIds {layerEntries} {clickedLngLat} />
-	<SidePopup bind:sidePopupData {layerEntries} {clickedLayerFeaturesData} />
+	<SelectionPopup
+		bind:clickedLayerIds
+		bind:sidePopupData
+		bind:clickedLayerFeaturesData
+		{layerEntries}
+		{clickedLngLat}
+	/>
+	<SidePopup bind:sidePopupData {layerEntries} />
 
 	<DataMenu />
 	<InfoDialog />

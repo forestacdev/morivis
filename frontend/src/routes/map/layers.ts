@@ -1,4 +1,4 @@
-import { INT_ADD_LAYER_IDS } from '$routes/map/constants';
+import { HIGHLIGHT_LAYER_COLOR, INT_ADD_LAYER_IDS } from '$routes/map/constants';
 
 import type {
 	SourceSpecification,
@@ -63,27 +63,32 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 
 const highlightFillPaint: FillLayerSpecification['paint'] = {
 	'fill-opacity': 0.4,
-	'fill-color': '#00d5ff'
+	'fill-color': HIGHLIGHT_LAYER_COLOR,
+	'fill-outline-color': '#ffffff'
 };
 
 const highlightLinePaint: LineLayerSpecification['paint'] = {
-	'line-color': '#ffffff',
+	'line-color': HIGHLIGHT_LAYER_COLOR,
 	'line-opacity': 1,
 	'line-width': 5
 };
 
 const highlightCirclePaint: CircleLayerSpecification['paint'] = {
-	'circle-color': '#00d5ff',
+	'circle-color': HIGHLIGHT_LAYER_COLOR,
 	'circle-radius': 10,
 	'circle-stroke-width': 5,
 	'circle-stroke-color': '#ffffff'
 };
 
 const highlightSymbolPaint: SymbolLayerSpecification['paint'] = {
-	'text-color': '#c50000',
+	'text-color': HIGHLIGHT_LAYER_COLOR,
 	'text-halo-color': '#FFFFFF',
 	'text-halo-width': 10,
 	'text-opacity': 1
+};
+
+const highlightSymbolLayout: SymbolLayerSpecification['layout'] = {
+	'text-size': 20
 };
 
 interface LayerItem {
@@ -109,7 +114,12 @@ interface LayerItem {
 /* ハイライトレイヤー */
 export const createHighlightLayer = (
 	_selectedHighlightData: SelectedHighlightData | null
-): FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification | undefined => {
+):
+	| FillLayerSpecification
+	| LineLayerSpecification
+	| CircleLayerSpecification
+	| SymbolLayerSpecification
+	| undefined => {
 	if (!_selectedHighlightData) return undefined;
 	const entry = _selectedHighlightData.layerEntry;
 	const { format, style, metaData, properties, interaction, type } = entry;
@@ -160,6 +170,7 @@ export const createHighlightLayer = (
 				break;
 			case 'symbol':
 				vectorLayer.paint = highlightSymbolPaint;
+				// vectorLayer.layout = highlightSymbolLayout;
 				break;
 			default:
 				break;
