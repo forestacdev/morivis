@@ -2,9 +2,6 @@
 	// import turfDissolve from '@turf/dissolve';
 	import turfBbox from '@turf/bbox';
 	import turfBboxPolygon from '@turf/bbox-polygon';
-	import turfDistance from '@turf/distance';
-	import turfNearestPoint from '@turf/nearest-point';
-	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
@@ -44,7 +41,6 @@
 		type ClickedLayerFeaturesData
 	} from '$map/utils/geojson';
 	import { isPointInBbox } from '$map/utils/map';
-	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$routes/map/components/popup/LegendPopup.svelte';
