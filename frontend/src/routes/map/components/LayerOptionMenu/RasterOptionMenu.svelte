@@ -3,8 +3,8 @@
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 
-	import CheckBox from '$map/components/atoms/CheckBox.svelte';
-	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
+	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type {
 		RasterEntry,

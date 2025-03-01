@@ -3,7 +3,7 @@
 	import type { BackgroundLayerSpecification } from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
-	import LayerIcon from '$map/components/LayerIcon.svelte';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ColorsExpressions } from '$map/data/types/vector/style';
 	import { addedLayerIds, selectedLayerId, isEdit } from '$map/store';

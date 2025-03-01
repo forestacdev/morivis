@@ -4,7 +4,7 @@
 	import { fade } from 'svelte/transition';
 
 	import DataPreview from '$map/components/DataMenu/DataPreview.svelte';
-	import LayerIcon from '$map/components/LayerIcon.svelte';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { IMAGE_TILE_XYZ } from '$map/constants';
 	import { COVER_NO_IMAGE_PATH } from '$map/constants';
 	import { getImagePmtiles } from '$map/utils/raster';

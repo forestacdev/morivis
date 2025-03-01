@@ -5,10 +5,10 @@
 	import { flip } from 'svelte/animate';
 	import { fade, fly } from 'svelte/transition';
 
-	import CheckBox from '$map/components/atoms/CheckBox.svelte';
-	import ColorPicker from '$map/components/atoms/ColorPicker.svelte';
-	import HorizontalSelectBox from '$map/components/atoms/HorizontalSelectBox.svelte';
-	import RangeSlider from '$map/components/atoms/RangeSlider.svelte';
+	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
+	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type {
 		GeometryType,

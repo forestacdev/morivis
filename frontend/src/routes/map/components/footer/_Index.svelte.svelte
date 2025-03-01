@@ -4,10 +4,10 @@
 	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import Attribution from '$map/components/Attribution.svelte';
-	import Compass from '$routes/map/components/MapControl/Compass.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { mapStore } from '$map/store/map';
+	import Attribution from '$routes/map/components/footer/Attribution.svelte';
+	import Compass from '$routes/map/components/footer/Compass.svelte';
 
 	let zoom = $state(0);
 
