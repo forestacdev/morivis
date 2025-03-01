@@ -5,9 +5,9 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
-	import Logo from '$map/components/Logo.svelte';
 	import { showSideMenu, showDataMenu, mapMode, showInfoDialog, showTermsDialog } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import Logo from '$routes/map/components/sideMenu/Logo.svelte';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -57,27 +57,27 @@
 				onclick={() => mapMode.set('edit')}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
-				<span>地図を編集</span>
+				<span class="select-none">地図を編集</span>
 			</button>
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={() => mapMode.set('analysis')}
 			>
 				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
-				<span>地図の解析</span>
+				<span class="select-none">地図の解析</span>
 			</button>
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleDataMenu}
 			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-				<span>データカタログ</span>
+				<span class="select-none">データカタログ</span>
 			</button>
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 			>
 				<Icon icon="weui:setting-filled" class="h-8 w-8" />
-				<span>設定</span>
+				<span class="select-none">設定</span>
 			</button>
 		</ui>
 		<div class="w-hull bg-base h-[1px] rounded-full"></div>
@@ -87,14 +87,14 @@
 				onclick={toggleTermsDialog}
 			>
 				<Icon icon="majesticons:note-text" class="h-8 w-8" />
-				<span>利用規約</span>
+				<span class="select-none">利用規約</span>
 			</button>
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleInfoDialog}
 			>
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
-				<span>演習林GISについて</span>
+				<span class="select-none">演習林GISについて</span>
 			</button>
 
 			<a
