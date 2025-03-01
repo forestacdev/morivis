@@ -6,6 +6,8 @@
 	import turfBuffer from '@turf/buffer';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
+	import type { FeatureCollection } from 'geojson';
+	import maplibregl from 'maplibre-gl';
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
@@ -34,6 +36,7 @@
 	import { mapStore } from '$map/store/map';
 	import { getGeojson } from '$map/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
+	import AngleMarker from '$routes/map/components/streetView/AngleMarker.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
@@ -52,11 +55,11 @@
 	let nextPointData = $state<any>(null);
 	let angleMarker = $state<Marker | null>(null); // マーカー
 	let streetViewPoint = $state<any>(null);
-	let streetViewPointData = $state<any>({
+	let streetViewPointData = $state<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
-	let streetViewLineData = $state<any>({
+	let streetViewLineData = $state<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
@@ -65,7 +68,7 @@
 	onMount(async () => {
 		streetViewPointData = await getGeojson('./streetView/THETA360.geojson');
 
-		streetViewLineData = await getGeojson('./streetView/THETA360_line.geojson');
+		streetViewLineData = await getGeojson('./streetView/link.geojson');
 
 		// const imageId = getStreetViewParams();
 		// if (imageId) {
@@ -177,22 +180,46 @@
 		return farthestVertex;
 	};
 
+	// streetビューの表示切り替え時
+	isStreetView.subscribe((value) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		if (value) {
+			if (angleMarker) {
+				map.setCenter(angleMarker._lngLat, {
+					zoom: map.getZoom() > 18 ? map.getZoom() : 18
+				});
+			}
+			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
+		} else {
+			map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
+		}
+	});
+
+	$effect(() => {
+		if (cameraBearing && angleMarker) {
+			// TODO: 回転の調整
+			const markerContainer = angleMarker.getElement().firstElementChild;
+			if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
+		}
+	});
+
 	mapStore.onClick((e) => {
-		// if (!e || $mapMode === 'edit') return;
-		// if (streetViewPointData.features.length > 0) {
-		// 	const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-		// 	const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-		// 	if (distance < 100) {
-		// 		// streetViewPoint = point;
-		// 		setPoint(point);
-		// 	}
-		// }
+		if (!e || $mapMode === 'edit') return;
+		if (streetViewPointData.features.length > 0) {
+			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
+			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
+			if (distance < 100) {
+				// streetViewPoint = point;
+				setPoint(point);
+			}
+		}
 	});
 </script>
 
 <div class="bg-base relative flex h-full w-full flex-grow">
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	<Map bind:layerEntries bind:tempLayerEntries />
+	<Map bind:layerEntries bind:tempLayerEntries {streetViewLineData} />
 	<FooterMenu {layerEntries} />
 	<DataMenu />
 	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />

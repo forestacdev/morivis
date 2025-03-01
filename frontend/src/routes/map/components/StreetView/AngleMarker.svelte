@@ -17,11 +17,13 @@
 {/if}
 
 <style>
+	/* カメラ角度マーカー */
 	.custom-marker {
 		width: 50px;
 		height: 50px;
 		transform-origin: bottom right;
 		background: rgb(255, 255, 255);
+		rotate: 45deg;
 		background: linear-gradient(315deg, rgb(205, 223, 2) 0%, rgba(0, 250, 245, 0) 100%);
 		border-top-left-radius: 50px;
 	}

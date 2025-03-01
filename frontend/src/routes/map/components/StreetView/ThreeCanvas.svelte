@@ -185,25 +185,25 @@
 		// orbitControls.enableZoom = false;
 		// orbitControls.maxZoom = 1;
 		// パン操作禁止
-		orbitControls.enablePan = false;
-		orbitControls.panSpeed = -1;
+		// orbitControls.enablePan = false;
+		// orbitControls.panSpeed = -1;
 
 		// ヘルパーグリッド
 		// const gridHelper = new THREE.GridHelper(200, 100);
 		// scene.add(gridHelper);
 		// gridHelper.position.y = -5;
 
-		// const radius = 10;
-		// const sectors = 16;
-		// const rings = 80;
-		// const divisions = 64;
+		const radius = 10;
+		const sectors = 16;
+		const rings = 80;
+		const divisions = 64;
 
-		// const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
-		// scene.add(helper);
+		const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+		scene.add(helper);
 
 		// // ヘルパー方向
-		// const axesHelper = new THREE.AxesHelper(100);
-		// scene.add(axesHelper);
+		const axesHelper = new THREE.AxesHelper(1000);
+		scene.add(axesHelper);
 
 		// レンダラー
 
@@ -263,9 +263,9 @@
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="border-main absolute z-10 overflow-hidden border-2 {$isStreetView
+	class="border-main absolute z-10 cursor-pointer overflow-hidden border-2 {$isStreetView
 		? 'left-0 top-0 h-full w-full'
-		: 'bottom-[60px] right-2 h-[80px] w-[100px] rounded-lg p-0 shadow-md'}"
+		: 'bottom-[60px] right-[200px] h-[80px] w-[100px] rounded-lg p-0 shadow-md'}"
 >
 	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
 	{#if isLoading}

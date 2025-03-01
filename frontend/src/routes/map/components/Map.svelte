@@ -51,7 +51,6 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import SidePopup from '$routes/map/components/popup/SidePopup.svelte';
 	import TablePopup from '$routes/map/components/popup/TablePopup.svelte';
-	import AngleMarker from '$routes/map/components/streetView/AngleMarker.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
@@ -65,9 +64,14 @@
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
+		streetViewLineData: FeatureCollection;
 	}
 
-	let { layerEntries = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+	let {
+		layerEntries = $bindable(),
+		tempLayerEntries = $bindable(),
+		streetViewLineData
+	}: Props = $props();
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -133,7 +137,7 @@
 				terrain: gsiTerrainSource,
 				street_view_line: {
 					type: 'geojson',
-					data: 'https://raw.githubusercontent.com/forestacdev/ensyurin-webgis-data/main/geojson/THETA360_line.geojson'
+					data: streetViewLineData
 				},
 				selected_focus_sources: {
 					...selectedFocusSources
@@ -566,30 +570,6 @@
 		} else {
 			removehighlightLayer();
 			toggleOverlayLayer(false);
-		}
-	});
-
-	// streetビューの表示切り替え時
-	isStreetView.subscribe((value) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		if (value) {
-			if (angleMarker) {
-				map.setCenter(angleMarker._lngLat, {
-					zoom: map.getZoom() > 18 ? map.getZoom() : 18
-				});
-			}
-			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
-		} else {
-			map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
-		}
-	});
-
-	$effect(() => {
-		if (cameraBearing && angleMarker) {
-			// TODO: 回転の調整
-			const markerContainer = angleMarker.getElement().firstElementChild;
-			if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
 		}
 	});
 
