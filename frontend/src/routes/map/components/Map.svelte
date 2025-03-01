@@ -193,33 +193,6 @@
 		return farthestVertex;
 	};
 
-	// TODO: CanvasLayerの実装
-	// let canvasSource = $state<CanvasSourceSpecification>({
-	// 	type: 'canvas',
-	// 	canvas: 'canvas-layer',
-	// 	coordinates: [
-	// 		[136.91278, 35.556704],
-	// 		[136.92986, 35.556704],
-	// 		[136.92986, 35.543576],
-	// 		[136.91278, 35.543576]
-	// 	]
-	// });
-
-	// let canvasLayer = $state<LayerSpecification>({
-	// 	id: 'canvas-layer',
-	// 	type: 'raster',
-	// 	source: 'canvasSource'
-	// });
-
-	// let overlayLayer = $state<BackgroundLayerSpecification>({
-	// 	id: '@overlay_layer',
-	// 	type: 'background',
-	// 	paint: {
-	// 		'background-color': '#000000',
-	// 		'background-opacity': 0.0
-	// 	}
-	// });
-
 	let selectedFocusSources = $state<GeoJSONSourceSpecification>({
 		type: 'geojson',
 		data: {
