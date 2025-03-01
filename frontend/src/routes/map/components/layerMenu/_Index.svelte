@@ -9,7 +9,7 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
-	import LayerOptionMenu from '$routes/map/components/layerMenu/LayerOptionMenu.svelte';
+	import LayerOptionMenu from '$routes/map/components/layerMenu/layerOptionMenu/_Index.svelte';
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
