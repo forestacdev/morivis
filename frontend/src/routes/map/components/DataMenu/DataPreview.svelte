@@ -131,16 +131,8 @@
 		<div
 			class="pointer-events-none absolute bottom-0 z-10 flex w-full items-center justify-center gap-4 p-4"
 		>
-			<button
-				class="bg-accent text-main pointer-events-auto rounded-full p-2 text-lg font-bold"
-				onclick={addData}
-				>地図に追加
-			</button>
-			<button
-				class="text-main pointer-events-auto rounded-full bg-red-600 p-2 text-lg font-bold"
-				onclick={deleteData}
-				>地図から削除
-			</button>
+			<button class="c-btn-confirm pointer-events-auto" onclick={addData}>地図に追加 </button>
+			<button class="c-btn-delete pointer-events-auto" onclick={deleteData}>地図から削除 </button>
 		</div>
 	</div>
 {/if}

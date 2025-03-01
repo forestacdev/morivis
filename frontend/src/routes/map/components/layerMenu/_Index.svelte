@@ -89,7 +89,7 @@
 			<div class="flex justify-center">
 				<button
 					onclick={() => showDataMenu.set(true)}
-					class="bg-accent flex select-none items-center gap-2 rounded-lg p-2 text-white"
+					class="c-btn-confirm flex items-center justify-center gap-2"
 				>
 					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
 						>データの追加</span
@@ -101,16 +101,4 @@
 {/if}
 
 <style>
-	.c-delay-show {
-		animation: show 0s linear 0.3s forwards;
-	}
-
-	@keyframes show {
-		from {
-			display: none;
-		}
-		to {
-			display: block;
-		}
-	}
 </style>

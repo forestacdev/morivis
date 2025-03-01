@@ -6,6 +6,7 @@
 	import Map from '$map/components/Map.svelte';
 	import SideMenu from '$map/components/sideMenu/_Index.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
+	import DataMenu from '$routes/map/components/dataMenu/_Index.svelte';
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
@@ -14,6 +15,7 @@
 <div class="bg-base relative flex h-full w-full flex-grow">
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<Map bind:layerEntries bind:tempLayerEntries />
+	<DataMenu />
 </div>
 <SideMenu />
 <InfoDialog />

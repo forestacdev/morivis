@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 
 	import type { GeoDataEntry } from '$map/data/types';
-	import { showSideMenu } from '$map/store';
+	import { showSideMenu, mapMode, showDataMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
 	import Geocoder from '$routes/map/components/header/Geocoder.svelte';
@@ -44,31 +44,33 @@
 	};
 </script>
 
-<div
-	class="pointer-events-none absolute left-0 top-0 z-20 flex w-full flex-grow items-center justify-start gap-2 p-2"
->
-	<button
-		class="bg-main pointer-events-auto rounded-full p-2 text-left"
-		onclick={() => showSideMenu.set(true)}
+{#if $mapMode !== 'edit'}
+	<div
+		class="pointer-events-none absolute left-0 top-0 z-20 flex w-full flex-grow items-center justify-start gap-2 p-2"
 	>
-		<Icon icon="ic:round-menu" class="h-6 w-6" />
-	</button>
-	<Geocoder {layerEntries} bind:results bind:inputSearchWord />
-</div>
-{#if results}
-	<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
-		{#each results.filter((data) => data.features.length > 0) as result}
-			{#each result.features as feature}
-				<button
-					onclick={() => focusFeature(feature, result.layerId)}
-					class="flex w-full flex-col text-left text-black"
-				>
-					<span class="">{feature.properties.name}</span>
-					<span class="text-xs">{result.name}</span>
-				</button>
-			{/each}
-		{/each}
+		<button
+			class="bg-main pointer-events-auto rounded-full p-2 text-left"
+			onclick={() => showSideMenu.set(true)}
+		>
+			<Icon icon="ic:round-menu" class="h-6 w-6" />
+		</button>
+		<Geocoder {layerEntries} bind:results bind:inputSearchWord />
 	</div>
+	{#if results}
+		<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
+			{#each results.filter((data) => data.features.length > 0) as result}
+				{#each result.features as feature}
+					<button
+						onclick={() => focusFeature(feature, result.layerId)}
+						class="flex w-full flex-col text-left text-black"
+					>
+						<span class="">{feature.properties.name}</span>
+						<span class="text-xs">{result.name}</span>
+					</button>
+				{/each}
+			{/each}
+		</div>
+	{/if}
 {/if}
 
 <style>

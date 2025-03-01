@@ -11,7 +11,11 @@
 
 	/* 決定ボタンスタイル */
 	.c-btn-confirm {
-		@apply cursor-pointer rounded-full border-2 border-accent bg-main p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+		@apply cursor-pointer rounded-full border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+	}
+
+	.c-btn-delete {
+		@apply cursor-pointer rounded-full border-2 border-red-400 bg-red-400 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-red-400;
 	}
 	/* キャンセルボタンスタイル */
 	.c-btn-cancel {

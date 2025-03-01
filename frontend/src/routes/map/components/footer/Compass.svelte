@@ -50,6 +50,7 @@
 				const map = mapStore.getMap();
 				if (map) {
 					map.setBearing(rotation * -1); // マップの回転を更新
+					// map.easeTo({ bearing: rotation * -1 });
 				}
 			}
 			// onThrowComplete: function () {

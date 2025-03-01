@@ -53,7 +53,6 @@
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
-	import DataMenu from '$routes/map/components/dataMenu/_Index.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$routes/map/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
@@ -772,7 +771,6 @@
 		{clickedLngLat}
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
-	<DataMenu />
 </div>
 
 {#if $DEBUG_MODE}
