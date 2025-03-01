@@ -8,9 +8,9 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
-	// import { angleData } from './angle';
 	import angleDataJson from './angle.json';
 
+	import type { NextPointData, StreetViewPoint } from '$map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$map/store';
 
 	//svelteからcreateEventDispatcher関数をインポートする。
@@ -20,20 +20,18 @@
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	// main/images/R0010026/face_1.jpg
 
-	let {
-		feature,
-		nextPointData,
-		cameraBearing = $bindable(),
-		setPoint
-	}: {
-		feature: any;
-		nextPointData: any;
+	interface Props {
+		feature: StreetViewPoint;
+		nextPointData: NextPointData[] | null;
 		cameraBearing: number;
-		setPoint: (feature: any) => void;
-	} = $props();
+		setPoint: (feature: StreetViewPoint) => void;
+	}
+
+	let { feature, nextPointData, cameraBearing = $bindable(), setPoint }: Props = $props();
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
+	let orbitControls: OrbitControls;
 	let renderer: THREE.WebGLRenderer;
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
@@ -84,6 +82,83 @@
 		}
 	};
 
+	// 球体のパラメータ
+	const radius = 5; // 球体を配置する半径
+	const sphereRadius = 0.3; // 球体の大きさ
+	const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+	let spheres = []; // 球体を管理する配列
+
+	// 球体を配置する関数
+	function placeSpheres(nextPointData: NextPointData[]) {
+		removeSpheres(); // 既存の球体を削除
+
+		nextPointData.forEach((pointData) => {
+			const angleRad = THREE.MathUtils.degToRad(pointData.bearing);
+			const x = radius * Math.sin(angleRad);
+			const z = -radius * Math.cos(angleRad);
+
+			const geometry = new THREE.SphereGeometry(sphereRadius, 16, 16);
+			const sphere = new THREE.Mesh(geometry, material);
+			sphere.name = pointData.featureData.properties['ID'];
+			sphere.position.set(x, 0, z);
+			scene.add(sphere);
+			spheres.push(sphere); // 配列に追加
+		});
+
+		lookAtSphere(spheres[0]);
+	}
+
+	// 球体を削除する関数
+	function removeSpheres() {
+		if (spheres.length > 0) {
+			spheres.forEach((sphere) => {
+				scene.remove(sphere);
+				sphere.geometry.dispose(); // メモリ解放
+				sphere.material.dispose();
+			});
+			spheres = []; // 配列を空にする
+		}
+	}
+
+	// **カメラを指定したオブジェクトの方向に向ける**
+	function lookAtSphere(target) {
+		console.log('ターゲット位置:', target.position);
+
+		// ターゲットの座標を取得
+		const targetPos = target.position;
+
+		// カメラの位置をターゲットと正反対に設定
+		const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
+		camera.position.set(oppositePos.x, oppositePos.y, oppositePos.z);
+
+		// カメラをターゲットの方向へ向ける
+		camera.lookAt(target.position);
+	}
+
+	function lookAtSphereAnime(target: THREE.Mesh, point: StreetViewPoint) {
+		// ターゲットの座標を取得
+		const targetPos = target.position.clone();
+
+		// カメラの位置をターゲットと正反対に設定（X, Z を反転）
+		const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
+
+		// GSAPを使ってカメラの位置をスムーズに移動
+		gsap.to(camera.position, {
+			x: oppositePos.x,
+			y: camera.position.y,
+			z: oppositePos.z,
+			duration: 0.3, // 1.5秒かけて移動
+			ease: 'power2.out',
+			onUpdate: () => {
+				camera.lookAt(targetPos);
+			},
+
+			onComplete: () => {
+				setPoint(point);
+			}
+		});
+	}
+
 	const created360Mesh = async (feature): void => {
 		if (!feature) return;
 		isLoading = true;
@@ -115,21 +190,22 @@
 				geometryBearing.z = angleData.angleZ;
 
 				// GUI側のコントロールの値を更新
-				if ($DEBUG_MODE) {
-					controllerX.setValue(geometryBearing.x);
-					controllerY.setValue(geometryBearing.y);
-					controllerZ.setValue(geometryBearing.z);
-				}
+				// if ($DEBUG_MODE) {
+				// 	controllerX.setValue(geometryBearing.x);
+				// 	controllerY.setValue(geometryBearing.y);
+				// 	controllerZ.setValue(geometryBearing.z);
+				// }
 
 				isLoading = false;
 
 				scene.background = texture;
 
-				// 回転を設定
-				// const rotationMatrix = new THREE.Matrix3().setFromMatrix4(
-				// 	new THREE.Matrix4().makeRotationY(angleData)
-				// );
-				// material.userData.uniforms.envMapRotation.value.copy(rotationMatrix);
+				placeSpheres(nextPointData);
+
+				// const angle = 0;
+
+				// const radians = THREE.MathUtils.degToRad((angle - 180 + 360) % 360); // ラジアン変換
+				// camera.rotation.y = radians;
 			},
 			undefined,
 			(error) => console.error('テクスチャの読み込みに失敗しました', error)
@@ -173,7 +249,7 @@
 		camera.updateProjectionMatrix();
 
 		// パソコン閲覧時マウスドラッグで視点操作する
-		const orbitControls = new OrbitControls(camera, canvas);
+		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
 		// 視点操作のイージングをONにする
 		orbitControls.enableDamping = true;
@@ -193,12 +269,11 @@
 		// scene.add(gridHelper);
 		// gridHelper.position.y = -5;
 
-		const radius = 10;
 		const sectors = 16;
 		const rings = 80;
 		const divisions = 64;
 
-		const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+		const helper = new THREE.PolarGridHelper(10, sectors, rings, divisions);
 		scene.add(helper);
 
 		// // ヘルパー方向
@@ -255,7 +330,11 @@
 		onResize();
 	});
 	const nextPoint = (point) => {
-		setPoint(point);
+		const target = spheres.find((sphere) => sphere.name === point.properties['ID']);
+
+		if (!target) return;
+
+		lookAtSphereAnime(target, point);
 	};
 
 	$effect(() => created360Mesh(feature));
@@ -263,9 +342,9 @@
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="border-main absolute z-10 cursor-pointer overflow-hidden border-2 {$isStreetView
-		? 'left-0 top-0 h-full w-full'
-		: 'bottom-[60px] right-[200px] h-[80px] w-[100px] rounded-lg p-0 shadow-md'}"
+	class="border-main absolute z-10 cursor-pointer overflow-hidden border-2 duration-500 {$isStreetView
+		? 'left-0 top-0 h-full w-full opacity-100'
+		: 'pointer-events-none left-0 top-0 h-full w-full opacity-0'}"
 >
 	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
 	{#if isLoading}
@@ -280,21 +359,25 @@
 		>
 			<div class="css-control-warp">
 				<div bind:this={controlDiv} class="css-control">
-					{#each nextPointData as point, index}
-						<button
-							onclick={() => nextPoint(point.featureData)}
-							class="css-arrow"
-							style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
-						>
-							<Icon
-								icon="ic:baseline-double-arrow"
-								width={$isStreetView ? 128 : 64}
-								height={$isStreetView ? 128 : 64}
-								class=""
-								style="transform: rotate({point.bearing - 90}deg);"
-							/>
-						</button>
-					{/each}
+					{#if nextPointData}
+						{#each nextPointData as point, index}
+							<button
+								onclick={() => {
+									nextPoint(point.featureData);
+								}}
+								class="css-arrow"
+								style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
+							>
+								<Icon
+									icon="ic:baseline-double-arrow"
+									width={$isStreetView ? 128 : 64}
+									height={$isStreetView ? 128 : 64}
+									class=""
+									style="transform: rotate({point.bearing - 90}deg);"
+								/>
+							</button>
+						{/each}
+					{/if}
 				</div>
 			</div>
 		</div>

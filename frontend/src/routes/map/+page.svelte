@@ -27,6 +27,7 @@
 	import turfBearing from '@turf/bearing';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
+	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
@@ -122,7 +123,7 @@
 	});
 
 	// ストリートビューのデータの取得
-	const setPoint = (point: StreetViewPoint) => {
+	const setPoint = async (point: StreetViewPoint) => {
 		if (!point) return;
 		const pointId = point.properties['ID'];
 		streetViewPoint = point;
@@ -136,9 +137,9 @@
 				featureData: nextPoint,
 				bearing: turfBearing(point, nextPoint)
 			}));
-		const mapInstance = mapStore.getMap();
+		const map = mapStore.getMap();
 
-		if (!mapInstance) return;
+		if (!map) return;
 
 		// mapInstance.flyTo({
 		// 	center: targetPoint.geometry.coordinates,
@@ -148,10 +149,19 @@
 		// });
 
 		if ($isStreetView) {
-			mapInstance.panTo(point.geometry.coordinates, {
+			map.panTo(point.geometry.coordinates, {
 				duration: 1000,
 				animate: true,
-				zoom: mapInstance.getZoom() > 18 ? mapInstance.getZoom() : (18 as number)
+				zoom: map.getZoom() > 18 ? map.getZoom() : (18 as number)
+			});
+		} else {
+			// マップを移動
+			map.easeTo({
+				center: point.geometry.coordinates,
+				zoom: 20,
+				duration: 1300,
+				bearing: nextPoints[0].bearing,
+				pitch: 60
 			});
 		}
 
@@ -173,9 +183,11 @@
 			rotationAlignment: 'map'
 		})
 			.setLngLat(point.geometry.coordinates)
-			.addTo(mapInstance);
+			.addTo(map);
 
 		nextPointData = nextPoints;
+		await delay(1500);
+		$isStreetView = true;
 	};
 
 	// streetビューの表示切り替え時
