@@ -3,8 +3,8 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 
 	let { lngLat }: { lngLat: LngLat } = $props();
 </script>

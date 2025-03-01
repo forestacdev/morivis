@@ -29,8 +29,13 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import AngleMarker from '$map/components/StreetView/AngleMarker.svelte';
-	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
+	import InfoDialog from '$map/components/dialog/InfoDialog.svelte';
+	import TermsOfServiceDialog from '$map/components/dialog/TermsOfServiceDialog.svelte';
+	import FooterMenu from '$map/components/footer/_Index.svelte.svelte';
+	import HeaderMenu from '$map/components/header/_Index.svelte';
+	import LayerMenu from '$map/components/layerMenu/_Index.svelte';
+	import MapControl from '$map/components/mapControl/_Index.svelte';
+	import SideMenu from '$map/components/sideMenu/_Index.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import { getLocationBbox } from '$map/data/locationBbox';
@@ -53,19 +58,14 @@
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
-	import DataMenu from '$routes/map/components/DataMenu/_Index.svelte';
-	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
-	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
-	import FooterMenu from '$routes/map/components/footer/_Index.svelte.svelte';
-	import HeaderMenu from '$routes/map/components/header/_Index.svelte';
-	import LayerMenu from '$routes/map/components/layerMenu/_Index.svelte';
-	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
-	import SelectionMarker from '$routes/map/components/Marker/SelectionMarker.svelte';
-	import LegendPopup from '$routes/map/components/Popup/LegendPopup.svelte';
-	import SelectionPopup from '$routes/map/components/Popup/SelectionPopup.svelte';
-	import SidePopup from '$routes/map/components/Popup/SidePopup.svelte';
-	import TablePopup from '$routes/map/components/Popup/TablePopup.svelte';
-	import SideMenu from '$routes/map/components/sideMenu/_Index.svelte';
+	import DataMenu from '$routes/map/components/dataMenu/_Index.svelte';
+	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
+	import LegendPopup from '$routes/map/components/popup/LegendPopup.svelte';
+	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
+	import SidePopup from '$routes/map/components/popup/SidePopup.svelte';
+	import TablePopup from '$routes/map/components/popup/TablePopup.svelte';
+	import AngleMarker from '$routes/map/components/streetView/AngleMarker.svelte';
+	import StreetViewCanvas from '$routes/map/components/streetView/ThreeCanvas.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
