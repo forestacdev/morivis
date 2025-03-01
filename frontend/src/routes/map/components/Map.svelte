@@ -2,9 +2,6 @@
 	// import turfDissolve from '@turf/dissolve';
 	import turfBbox from '@turf/bbox';
 	import turfBboxPolygon from '@turf/bbox-polygon';
-	import turfBearing from '@turf/bearing';
-	import turfBooleanCrosses from '@turf/boolean-crosses';
-	import turfBuffer from '@turf/buffer';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
 	// import turfUnion from '@turf/union';
@@ -83,107 +80,6 @@
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 	let sidePopupData = $state<SidePopupData | null>(null);
 	let inputSearchWord = $state<string>(''); // 検索ワード
-
-	// ストリートビューのデータ
-	let nextPointData = $state<any>(null);
-	let angleMarker = $state<Marker | null>(null); // マーカー
-	let streetViewPoint = $state<any>(null);
-	let streetViewPointData = $state<any>({
-		type: 'FeatureCollection',
-		features: []
-	});
-	let streetViewLineData = $state<any>({
-		type: 'FeatureCollection',
-		features: []
-	});
-	let cameraBearing = $state<number>(0);
-
-	// ストリートビューのデータの取得
-	const setPoint = (point) => {
-		if (!point) return;
-		streetViewPoint = point;
-
-		setStreetViewParams(point.properties['ID']);
-
-		const targetPoint = point;
-
-		const buffer = turfBuffer(point, 0.001, { units: 'kilometers' });
-
-		const targetLines = streetViewLineData.features.filter((line) => {
-			return turfBooleanCrosses(buffer, line);
-		});
-
-		const mapInstance = mapStore.getMap();
-
-		if (!mapInstance) return;
-
-		// mapInstance.flyTo({
-		// 	center: targetPoint.geometry.coordinates,
-		// 	zoom: 18,
-		// 	speed: 1.5,
-		// 	curve: 1
-		// });
-
-		if ($isStreetView) {
-			mapInstance.panTo(point.geometry.coordinates, {
-				duration: 1000,
-				animate: true,
-				zoom: mapInstance.getZoom() > 18 ? mapInstance.getZoom() : (18 as number)
-			});
-		}
-
-		if (angleMarker) {
-			angleMarker.remove();
-		}
-
-		const markerContainer = document.createElement('div');
-		mount(AngleMarker, {
-			target: markerContainer,
-			props: {
-				cameraBearing: cameraBearing
-			}
-		});
-
-		angleMarker = new maplibregl.Marker({
-			element: markerContainer,
-			pitchAlignment: 'map',
-			rotationAlignment: 'map'
-		})
-			.setLngLat(point.geometry.coordinates)
-			.addTo(mapInstance);
-
-		const nextData = [];
-
-		targetLines.forEach((line) => {
-			const crosses = findFarthestVertex(point, line);
-			const nextPoint = turfNearestPoint(crosses, streetViewPointData);
-
-			const bearing = turfBearing(point, nextPoint);
-			nextData.push({
-				feaureData: nextPoint,
-				bearing: bearing
-			});
-		});
-
-		nextPointData = nextData;
-	};
-
-	// 各ラインの最も遠い頂点を抽出する関数
-	const findFarthestVertex = (point, line) => {
-		let farthestVertex = null;
-		let maxDistance = 0;
-
-		line.geometry.coordinates.forEach((coord) => {
-			const distance = turfDistance(point, coord, { units: 'kilometers' }); // 距離を計算 (キロメートル単位)
-
-			if (distance > maxDistance) {
-				maxDistance = distance;
-				farthestVertex = coord;
-			}
-		});
-
-		return farthestVertex;
-	};
 
 	let selectedFocusSources = $state<GeoJSONSourceSpecification>({
 		type: 'geojson',
@@ -387,39 +283,6 @@
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
-
-		streetViewPointData = await fetch('./streetView/THETA360.geojson')
-			.then((res) => res.json())
-			.then((data) => {
-				return data;
-			});
-
-		streetViewLineData = await fetch('./streetView/THETA360_line.geojson')
-			.then((res) => res.json())
-			.then((data) => {
-				return data;
-			});
-
-		const imageId = getStreetViewParams();
-		if (imageId) {
-			const targetPoint = streetViewPointData.features.find((point) => {
-				return point.properties['ID'] === imageId;
-			});
-
-			if (targetPoint) {
-				const mapInstance = mapStore.getMap();
-				if (mapInstance) {
-					mapInstance.flyTo({
-						center: targetPoint.geometry.coordinates,
-						zoom: 18,
-						speed: 1.5,
-						curve: 1
-					});
-				}
-			}
-
-			setPoint(targetPoint);
-		}
 	});
 
 	// マップのスタイルの更新
@@ -564,15 +427,6 @@
 
 		// console.log('click', e);
 		if (!e || $mapMode === 'edit') return;
-
-		if (streetViewPointData.features.length > 0) {
-			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-			if (distance < 100) {
-				// streetViewPoint = point;
-				setPoint(point);
-			}
-		}
 
 		const features = mapStore.queryRenderedFeatures(e.point, {
 			layers: $clickableVectorIds
@@ -753,7 +607,6 @@
 			? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
 			: 'bottom-0 left-0 h-full w-full'}"
 	></div>
-	<!-- <StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} /> -->
 	<MapControl />
 	<SelectionPopup
 		bind:clickedLayerIds

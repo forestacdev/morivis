@@ -10,6 +10,7 @@ dependencies = [
     "geopandas>=1.0.1",
     "numpy>=2.2.2",
     "pandas>=2.2.3",
+    "path>=17.1.0",
     "pathlib>=1.0.1",
     "rio-rgbify>=0.4.0",
     "shapely>=2.0.7",
