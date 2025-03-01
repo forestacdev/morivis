@@ -28,8 +28,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import InfoDialog from '$map/components/dialog/InfoDialog.svelte';
-	import TermsOfServiceDialog from '$map/components/dialog/TermsOfServiceDialog.svelte';
 	import FooterMenu from '$map/components/footer/_Index.svelte.svelte';
 	import HeaderMenu from '$map/components/header/_Index.svelte';
 	import LayerMenu from '$map/components/layerMenu/_Index.svelte';
@@ -772,8 +770,6 @@
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
 	<DataMenu />
-	<InfoDialog />
-	<TermsOfServiceDialog />
 </div>
 
 {#if $DEBUG_MODE}
