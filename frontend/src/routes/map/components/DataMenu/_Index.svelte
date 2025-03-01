@@ -3,7 +3,7 @@
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
 
-	import DataPreview from '$map/components/DataPreview.svelte';
+	import DataPreview from '$map/components/DataMenu/DataPreview.svelte';
 	import LayerIcon from '$map/components/LayerIcon.svelte';
 	import { IMAGE_TILE_XYZ } from '$map/constants';
 	import { COVER_NO_IMAGE_PATH } from '$map/constants';

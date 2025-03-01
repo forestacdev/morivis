@@ -29,7 +29,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import DataMenu from '$map/components/DataMenu.svelte';
 	import FooterMenu from '$map/components/FooterMenu.svelte';
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
 	import InfoDialog from '$map/components/InfoDialog.svelte';
@@ -60,6 +59,7 @@
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
+	import DataMenu from '$routes/map/components/DataMenu/_Index.svelte';
 	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
 	import SelectionMarker from '$routes/map/components/Marker/SelectionMarker.svelte';
 	import LegendPopup from '$routes/map/components/Popup/LegendPopup.svelte';
