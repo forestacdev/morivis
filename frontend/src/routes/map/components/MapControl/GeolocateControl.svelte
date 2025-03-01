@@ -10,7 +10,6 @@
 	let state: string = '';
 
 	const handleClassChange = (mutations) => {
-		// console.log('クラスが変更されました:', mutations);
 		if (!Array.isArray(mutations) && mutations.length === 0) return;
 
 		const mutation = mutations[0];

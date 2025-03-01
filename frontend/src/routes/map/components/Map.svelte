@@ -29,11 +29,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import Compass from '$map/components/control/Compass.svelte';
-	import GeolocateControl from '$map/components/control/GeolocateControl.svelte';
-	import ScaleControl from '$map/components/control/ScaleControl.svelte';
-	import TerrainControl from '$map/components/control/TerrainControl.svelte';
-	import ZoomControl from '$map/components/control/ZoomControl.svelte';
 	import DataMenu from '$map/components/DataMenu.svelte';
 	import FooterMenu from '$map/components/FooterMenu.svelte';
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
@@ -70,6 +65,8 @@
 	import { isPointInBbox } from '$map/utils/map';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
+	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
+
 	import {
 		addedLayerIds,
 		selectedLayerId,
@@ -799,10 +796,8 @@
 	<!-- <StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} /> -->
 	<!-- <CanvasLayer bind:canvasSource /> -->
 	<!-- <Compass /> -->
-	<ZoomControl />
-	<TerrainControl />
-	<GeolocateControl />
-	<ScaleControl />
+	<MapControl />
+
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:sidePopupData
