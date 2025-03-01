@@ -9,7 +9,6 @@
 	import turfNearestPoint from '@turf/nearest-point';
 	// import turfUnion from '@turf/union';
 	import { debounce } from 'es-toolkit';
-	import { map } from 'es-toolkit/compat';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type {
@@ -65,7 +64,6 @@
 	import SidePopup from '$routes/map/components/popup/SidePopup.svelte';
 	import TablePopup from '$routes/map/components/popup/TablePopup.svelte';
 	import AngleMarker from '$routes/map/components/streetView/AngleMarker.svelte';
-	import StreetViewCanvas from '$routes/map/components/streetView/ThreeCanvas.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
@@ -793,7 +791,6 @@
 			: 'bottom-0 left-0 h-full w-full'}"
 	></div>
 	<!-- <StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} /> -->
-	<!-- <CanvasLayer bind:canvasSource /> -->
 	<!-- <Compass /> -->
 	<MapControl />
 
