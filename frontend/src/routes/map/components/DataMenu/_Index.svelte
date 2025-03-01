@@ -3,13 +3,13 @@
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
 
+	import LayerIcon from '$map/components/atoms/LayerIcon.svelte';
+	import DataPreview from '$map/components/dataMenu/DataPreview.svelte';
 	import { IMAGE_TILE_XYZ } from '$map/constants';
 	import { COVER_NO_IMAGE_PATH } from '$map/constants';
+	import { geoDataEntry } from '$map/data';
 	import { getImagePmtiles } from '$map/utils/raster';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import DataPreview from '$routes/map/components/dataMenu/DataPreview.svelte';
-	import { geoDataEntry } from '$routes/map/data';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { GeoDataEntry } from '$rmap/data/types';
 	import { addedLayerIds, showDataMenu } from '$routes/map/store';
 
 	// export let mapBearing: number;

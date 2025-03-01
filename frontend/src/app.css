@@ -3,8 +3,46 @@
 @import 'tailwindcss/utilities';
 
 @layer components {
-	.btn-primary {
-		@apply;
+	:root {
+		--main-color: #e9e9e9;
+		--base-color: #242424;
+		--accent-color: #299413;
+	}
+
+	/* 決定ボタンスタイル */
+	.c-btn-confirm {
+		@apply cursor-pointer rounded-full border-2 border-accent bg-main p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+	}
+	/* キャンセルボタンスタイル */
+	.c-btn-cancel {
+		@apply cursor-pointer rounded-full border-2 border-gray-400 bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
+	}
+	/* 入力フォームスタイル */
+	.c-form-field {
+		@apply w-full rounded border-2 border-gray-300 px-3 py-2 outline-accent transition-colors duration-200;
+	}
+
+	/* スクロールバー */
+	.css-scroll {
+		scrollbar-gutter: stable;
+	}
+
+	.css-scroll::-webkit-scrollbar {
+		width: 7px;
+		height: 7px;
+	}
+	.css-scroll::-webkit-scrollbar-track {
+		background-color: #d9d9d9;
+	}
+	.css-scroll::-webkit-scrollbar-thumb {
+		background-color: var(--accent-color);
+	}
+
+	/* アイコン画像のドラッグを無効にする */
+	.css-no-drag-icon {
+		user-drag: none;
+		-webkit-user-drag: none;
+		-moz-user-select: none;
 	}
 }
 
@@ -15,27 +53,4 @@
 		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
 		font-display: swap;
 	}
-}
-
-/* スクロールバー */
-.css-scroll {
-	scrollbar-gutter: stable;
-}
-
-.css-scroll::-webkit-scrollbar {
-	width: 7px;
-	height: 7px;
-}
-.css-scroll::-webkit-scrollbar-track {
-	background-color: #d9d9d9;
-}
-.css-scroll::-webkit-scrollbar-thumb {
-	background-color: #058005;
-}
-
-/* アイコン画像のドラッグを無効にする */
-.css-no-drag-icon {
-	user-drag: none;
-	-webkit-user-drag: none;
-	-moz-user-select: none;
 }
