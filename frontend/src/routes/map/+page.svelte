@@ -14,6 +14,11 @@
 		featureData: StreetViewPoint;
 		bearing: number;
 	}
+
+	export interface StreetViewPointGeoJson {
+		type: 'FeatureCollection';
+		features: StreetViewPoint[];
+	}
 </script>
 
 <script lang="ts">
@@ -77,7 +82,7 @@
 	let nextPointData = $state<NextPointData[] | null>(null);
 	let angleMarker = $state<Marker | null>(null); // マーカー
 	let streetViewPoint = $state<any>(null);
-	let streetViewPointData = $state<FeatureCollection>({
+	let streetViewPointData = $state<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []
 	});
@@ -88,7 +93,9 @@
 	let cameraBearing = $state<number>(0);
 
 	onMount(async () => {
-		streetViewPointData = await getGeojson('./streetView/THETA360.geojson');
+		streetViewPointData = (await getGeojson(
+			'./streetView/THETA360.geojson'
+		)) as StreetViewPointGeoJson;
 
 		streetViewLineData = await getGeojson('./streetView/link.geojson');
 
@@ -115,7 +122,7 @@
 	});
 
 	// ストリートビューのデータの取得
-	const setPoint = (point) => {
+	const setPoint = (point: StreetViewPoint) => {
 		if (!point) return;
 		const pointId = point.properties['ID'];
 		streetViewPoint = point;
@@ -124,7 +131,7 @@
 
 		const nextPoints = (nodeConnections[pointId] || [])
 			.map((id) => streetViewPointData.features.find((point) => point.properties['ID'] === id))
-			.filter(Boolean) // `null` / `undefined` を除外
+			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
 				featureData: nextPoint,
 				bearing: turfBearing(point, nextPoint)
