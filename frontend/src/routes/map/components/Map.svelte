@@ -34,7 +34,6 @@
 	import HeaderMenu from '$map/components/header/_Index.svelte';
 	import LayerMenu from '$map/components/layerMenu/_Index.svelte';
 	import MapControl from '$map/components/mapControl/_Index.svelte';
-	import SideMenu from '$map/components/sideMenu/_Index.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import { getLocationBbox } from '$map/data/locationBbox';
@@ -753,7 +752,6 @@
 <!-- <Menu /> -->
 
 <div class="relative h-full w-full">
-	<SideMenu />
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
 	<FooterMenu {layerEntries} />
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
@@ -763,10 +761,8 @@
 			? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
 			: 'bottom-0 left-0 h-full w-full'}"
 	></div>
-	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />
-	<!-- <Compass /> -->
+	<!-- <StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} /> -->
 	<MapControl />
-
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:sidePopupData
@@ -775,7 +771,6 @@
 		{clickedLngLat}
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
-
 	<DataMenu />
 	<InfoDialog />
 	<TermsOfServiceDialog />
