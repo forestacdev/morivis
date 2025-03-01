@@ -15,5 +15,6 @@
 		}
 	},
 	"eslint.probe": ["html", "javascript", "typescript", "svelte", "markdown"],
-	"eslint.validate": ["svelte"]
+	"eslint.validate": ["svelte"],
+	"css.lint.unknownAtRules": "ignore" // Tailwind CSS `@apply`
 }
