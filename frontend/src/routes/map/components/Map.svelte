@@ -28,7 +28,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import FooterMenu from '$map/components/footer/_Index.svelte.svelte';
 	import HeaderMenu from '$map/components/header/_Index.svelte';
 	import MapControl from '$map/components/mapControl/_Index.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
@@ -747,7 +746,7 @@
 
 <div class="relative h-full w-full">
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
-	<FooterMenu {layerEntries} />
+
 	<div
 		bind:this={mapContainer}
 		class="css-map absolute flex-grow transition-all duration-500 {$isStreetView
