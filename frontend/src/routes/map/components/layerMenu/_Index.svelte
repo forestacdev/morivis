@@ -44,11 +44,21 @@
 	onMount(() => {});
 </script>
 
+<!-- マップのオフセット調整用 -->
+{#if $mapMode === 'edit' || $showDataMenu}
+	<div
+		in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+		class="flex h-full flex-shrink-0 flex-col {!$showDataMenu ? 'w-[400px]' : 'w-[90px]'}"
+	></div>
+{/if}
+
+<!-- レイヤーメニュー -->
 {#if $mapMode === 'edit' || $showDataMenu}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-20 flex h-full flex-col gap-2 p-2"
-		style:width={!$showDataMenu ? '400px' : '90px'}
+		class="bg-main absolute z-30 flex h-full flex-col gap-2 p-2 {!$showDataMenu
+			? 'w-[400px]'
+			: 'w-[90px]'}"
 		style:transition="width 0.3s ease"
 	>
 		{#if !$showDataMenu}
@@ -91,4 +101,16 @@
 {/if}
 
 <style>
+	.c-delay-show {
+		animation: show 0s linear 0.3s forwards;
+	}
+
+	@keyframes show {
+		from {
+			display: none;
+		}
+		to {
+			display: block;
+		}
+	}
 </style>

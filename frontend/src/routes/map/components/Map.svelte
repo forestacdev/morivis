@@ -30,7 +30,6 @@
 
 	import FooterMenu from '$map/components/footer/_Index.svelte.svelte';
 	import HeaderMenu from '$map/components/header/_Index.svelte';
-	import LayerMenu from '$map/components/layerMenu/_Index.svelte';
 	import MapControl from '$map/components/mapControl/_Index.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
@@ -71,12 +70,17 @@
 		isStreetView
 	} from '$routes/map/store';
 
+	interface Props {
+		layerEntries: GeoDataEntry[];
+		tempLayerEntries: GeoDataEntry[];
+	}
+
+	let { layerEntries = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
 	let showJsonEditor = $state<{
 		value: boolean;
 	}>({ value: false });
-	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
@@ -752,7 +756,6 @@
 <div class="relative h-full w-full">
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
 	<FooterMenu {layerEntries} />
-	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<div
 		bind:this={mapContainer}
 		class="css-map absolute flex-grow transition-all duration-500 {$isStreetView
