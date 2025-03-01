@@ -4,9 +4,6 @@
             "path": "."
         },
         {
-            "path": "svelte4"
-        },
-        {
             "path": "frontend"
         },
         {
