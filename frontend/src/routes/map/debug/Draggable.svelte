@@ -24,7 +24,7 @@
 </script>
 
 <!-- TODO:エラー -->
-<section class="absolute z-10" style="left: {left}px; top: {top}px;">
+<section class="z-100 absolute" style="left: {left}px; top: {top}px;">
 	<div
 		onmousedown={onMouseDown}
 		role="button"

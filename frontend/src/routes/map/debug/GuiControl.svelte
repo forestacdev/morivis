@@ -1,14 +1,12 @@
 <script lang="ts">
-	import JSONEditor from 'jsoneditor';
+	import { GUI } from 'lil-gui';
+	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 
 	import 'jsoneditor/dist/jsoneditor.min.css';
 	import { mapStore } from '$routes/map/store/map';
 
-	import maplibregl from 'maplibre-gl';
-	import { GUI } from 'lil-gui';
-
-	let { map, showJsonEditor } = $props();
+	let { map, showDebugJsonEditor } = $props();
 
 	let controlContainer: HTMLDivElement;
 
@@ -55,7 +53,7 @@
 				.onChange(() => mapTriggerRepaint);
 
 			gui
-				.add(showJsonEditor, 'value')
+				.add(showDebugJsonEditor, 'value')
 				.name('JSON')
 				.onChange(() => mapTriggerRepaint);
 

@@ -36,9 +36,6 @@
 	import { getLocationBbox } from '$map/data/locationBbox';
 	import type { GeoDataEntry } from '$map/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$map/data/types/raster';
-	import Draggable from '$map/debug/Draggable.svelte';
-	import GuiControl from '$map/debug/GuiControl.svelte';
-	import JsonEditor from '$map/debug/JsonEditor.svelte';
 	import { debugJson } from '$map/debug/store';
 	import { createHighlightLayer, createLayersItems } from '$map/layers';
 	import { createSourcesItems } from '$map/sources';
@@ -77,10 +74,6 @@
 	let { layerEntries = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
-	let showJsonEditor = $state<{
-		value: boolean;
-	}>({ value: false });
-
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
@@ -772,16 +765,6 @@
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
 </div>
-
-{#if $DEBUG_MODE}
-	{#if showJsonEditor.value}
-		<Draggable left={0} top={0}>
-			<JsonEditor map={mapStore.getMap()} />
-		</Draggable>
-	{/if}
-
-	<GuiControl map={mapStore.getMap()} {showJsonEditor} />
-{/if}
 
 <style>
 	/* maplibreのデフォルトの出典表記を非表示 */

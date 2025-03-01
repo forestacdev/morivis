@@ -62,6 +62,7 @@
 	const edit = () => {
 		if (sidePopupData) {
 			selectedLayerId.set(sidePopupData.layerId);
+			sidePopupData = null;
 			mapMode.set('edit');
 			isEdit.set(true);
 		}
