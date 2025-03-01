@@ -29,7 +29,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import HeaderMenu from '$map/components/HeaderMenu.svelte';
 	import AngleMarker from '$map/components/StreetView/AngleMarker.svelte';
 	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
@@ -58,6 +57,7 @@
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
 	import FooterMenu from '$routes/map/components/footer/_Index.svelte.svelte';
+	import HeaderMenu from '$routes/map/components/header/_Index.svelte';
 	import LayerMenu from '$routes/map/components/layerMenu/_Index.svelte';
 	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
 	import SelectionMarker from '$routes/map/components/Marker/SelectionMarker.svelte';

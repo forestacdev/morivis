@@ -4,11 +4,11 @@
 	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import Geocoder from '$routes/map/components/MapControl/Geocoder.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { showSideMenu } from '$map/store';
 	import { mapStore } from '$map/store/map';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$map/utils/geojson';
+	import Geocoder from '$routes/map/components/header/Geocoder.svelte';
 
 	interface ResultData {
 		name: string;
