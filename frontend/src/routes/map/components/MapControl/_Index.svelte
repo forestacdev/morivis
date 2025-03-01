@@ -1,8 +1,8 @@
 <script lang="ts">
-	import GeolocateControl from '$routes/map/components/mapControl/GeolocateControl.svelte';
-	import ScaleControl from '$routes/map/components/mapControl/ScaleControl.svelte';
-	import TerrainControl from '$routes/map/components/mapControl/TerrainControl.svelte';
-	import ZoomControl from '$routes/map/components/mapControl/ZoomControl.svelte';
+	import GeolocateControl from '$map/components/mapControl/GeolocateControl.svelte';
+	import ScaleControl from '$map/components/mapControl/ScaleControl.svelte';
+	import TerrainControl from '$map/components/mapControl/TerrainControl.svelte';
+	import ZoomControl from '$map/components/mapControl/ZoomControl.svelte';
 </script>
 
 <ZoomControl />

@@ -763,7 +763,7 @@
 			? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
 			: 'bottom-0 left-0 h-full w-full'}"
 	></div>
-	<!-- <StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} /> -->
+	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />
 	<!-- <Compass /> -->
 	<MapControl />
 
