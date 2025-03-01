@@ -1,9 +1,25 @@
+<script lang="ts" module>
+	export interface StreetViewPoint {
+		type: 'Feature';
+		geometry: {
+			type: 'Point';
+			coordinates: [number, number];
+		};
+		properties: {
+			ID: string;
+			name: string;
+		};
+	}
+	export interface NextPointData {
+		featureData: StreetViewPoint;
+		bearing: number;
+	}
+</script>
+
 <script lang="ts">
 	// import Header from '$routes/map/components/_Header.svelte';
 
 	import turfBearing from '@turf/bearing';
-	import turfBooleanCrosses from '@turf/boolean-crosses';
-	import turfBuffer from '@turf/buffer';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
 	import type { FeatureCollection } from 'geojson';
@@ -30,6 +46,7 @@
 	import LayerMenu from '$map/components/layerMenu/_Index.svelte';
 	import Map from '$map/components/Map.svelte';
 	import SideMenu from '$map/components/sideMenu/_Index.svelte';
+	import nodeConnectionsJson from '$map/components/streetView/node_connections.json';
 	import StreetViewCanvas from '$map/components/streetView/ThreeCanvas.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import DebugControl from '$map/debug/_Index.svelte';
@@ -48,11 +65,16 @@
 		mapMode
 	} from '$routes/map/store';
 
+	type NodeConnections = Record<string, string[]>;
+
+	// 型を適用
+	const nodeConnections: NodeConnections = nodeConnectionsJson;
+
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
 	// ストリートビューのデータ
-	let nextPointData = $state<any>(null);
+	let nextPointData = $state<NextPointData[] | null>(null);
 	let angleMarker = $state<Marker | null>(null); // マーカー
 	let streetViewPoint = $state<any>(null);
 	let streetViewPointData = $state<FeatureCollection>({
@@ -95,19 +117,18 @@
 	// ストリートビューのデータの取得
 	const setPoint = (point) => {
 		if (!point) return;
+		const pointId = point.properties['ID'];
 		streetViewPoint = point;
 
-		setStreetViewParams(point.properties['ID']);
+		setStreetViewParams(pointId);
 
-		const targetPoint = point;
-
-		const buffer = turfBuffer(point, 0.001, { units: 'kilometers' });
-
-		if (!buffer) return;
-		const targetLines = streetViewLineData.features.filter((line) => {
-			return turfBooleanCrosses(buffer, line);
-		});
-
+		const nextPoints = (nodeConnections[pointId] || [])
+			.map((id) => streetViewPointData.features.find((point) => point.properties['ID'] === id))
+			.filter(Boolean) // `null` / `undefined` を除外
+			.map((nextPoint) => ({
+				featureData: nextPoint,
+				bearing: turfBearing(point, nextPoint)
+			}));
 		const mapInstance = mapStore.getMap();
 
 		if (!mapInstance) return;
@@ -147,37 +168,7 @@
 			.setLngLat(point.geometry.coordinates)
 			.addTo(mapInstance);
 
-		const nextData = [];
-
-		targetLines.forEach((line) => {
-			const crosses = findFarthestVertex(point, line);
-			const nextPoint = turfNearestPoint(crosses, streetViewPointData);
-
-			const bearing = turfBearing(point, nextPoint);
-			nextData.push({
-				feaureData: nextPoint,
-				bearing: bearing
-			});
-		});
-
-		nextPointData = nextData;
-	};
-
-	// 各ラインの最も遠い頂点を抽出する関数
-	const findFarthestVertex = (point, line) => {
-		let farthestVertex = null;
-		let maxDistance = 0;
-
-		line.geometry.coordinates.forEach((coord) => {
-			const distance = turfDistance(point, coord, { units: 'kilometers' }); // 距離を計算 (キロメートル単位)
-
-			if (distance > maxDistance) {
-				maxDistance = distance;
-				farthestVertex = coord;
-			}
-		});
-
-		return farthestVertex;
+		nextPointData = nextPoints;
 	};
 
 	// streetビューの表示切り替え時

@@ -38,6 +38,8 @@ for feature in nodes_geojson["features"]:
         node_dict[coordinates] = node_id
 
 # --- 2. ラインデータに "source" と "target" を付与 ---
+node_connections = {}  # 各ノードの隣接ノード情報を保持する辞書
+
 for feature in links_geojson["features"]:
     if feature["geometry"]["type"] == "LineString":
         coordinates = feature["geometry"]["coordinates"]
@@ -50,14 +52,34 @@ for feature in links_geojson["features"]:
         if source_id and target_id:
             feature["properties"]["source"] = source_id
             feature["properties"]["target"] = target_id
+
+            # --- 3. 隣接ノードの辞書を作成 ---
+            if source_id not in node_connections:
+                node_connections[source_id] = []
+            if target_id not in node_connections:
+                node_connections[target_id] = []
+
+            # 双方向のつながりを登録
+            node_connections[source_id].append(target_id)
+            node_connections[target_id].append(source_id)
+
         else:
             print(f"⚠️ 識別できないノードがある: {coordinates}")
             print(f"  - source: {source_id}")
             print(f"  - target: {target_id}")
 
-# --- 3. 結果をファイルに保存 ---
-output_file = OUTPUT_DIR / "link.geojson"
-with open(output_file, "w", encoding="utf-8") as f:
+# --- 4. 結果をファイルに保存 ---
+
+# 更新されたリンクデータを保存
+output_link_file = OUTPUT_DIR / "link.geojson"
+with open(output_link_file, "w", encoding="utf-8") as f:
     json.dump(links_geojson, f, indent=2, ensure_ascii=False)
 
-print(f"✅ 更新されたリンクデータを {output_file} に保存しました。")
+print(f"✅ 更新されたリンクデータを {output_link_file} に保存しました。")
+
+# 隣接ノードの辞書を保存
+output_connections_file = OUTPUT_DIR / "node_connections.json"
+with open(output_connections_file, "w", encoding="utf-8") as f:
+    json.dump(node_connections, f, indent=2, ensure_ascii=False)
+
+print(f"✅ ノード接続データを {output_connections_file} に保存しました。")

@@ -282,7 +282,7 @@
 				<div bind:this={controlDiv} class="css-control">
 					{#each nextPointData as point, index}
 						<button
-							onclick={() => nextPoint(point.feaureData)}
+							onclick={() => nextPoint(point.featureData)}
 							class="css-arrow"
 							style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
 						>
