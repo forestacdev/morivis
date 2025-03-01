@@ -34,10 +34,6 @@
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
 	import InfoDialog from '$map/components/InfoDialog.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
-	import LegendPopup from '$map/components/popup/LegendPopup.svelte';
-	import SelectionPopup from '$map/components/popup/SelectionPopup.svelte';
-	import SidePopup from '$map/components/popup/SidePopup.svelte';
-	import TablePopup from '$map/components/popup/TablePopup.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import AngleMarker from '$map/components/StreetView/AngleMarker.svelte';
 	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
@@ -66,6 +62,10 @@
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
 	import SelectionMarker from '$routes/map/components/Marker/SelectionMarker.svelte';
+	import LegendPopup from '$routes/map/components/Popup/LegendPopup.svelte';
+	import SelectionPopup from '$routes/map/components/Popup/SelectionPopup.svelte';
+	import SidePopup from '$routes/map/components/Popup/SidePopup.svelte';
+	import TablePopup from '$routes/map/components/Popup/TablePopup.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
