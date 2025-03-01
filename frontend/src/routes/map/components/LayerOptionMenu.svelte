@@ -3,11 +3,11 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RasterOptionMenu from '$map/components/LayerOptionMenu/RasterOptionMenu.svelte';
 	import type { GeoDataEntry } from '$map/data/types';
 	import { selectedLayerId, addedLayerIds, isEdit } from '$map/store';
 	import { mapStore } from '$map/store/map';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import VectorOptionMenu from '$routes/map/components/LayerOptionMenu/VectorOptionMenu.svelte';
 
 	let {

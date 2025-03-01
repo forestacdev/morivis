@@ -30,12 +30,10 @@
 	import { onMount, mount } from 'svelte';
 
 	import HeaderMenu from '$map/components/HeaderMenu.svelte';
-	import InfoDialog from '$map/components/InfoDialog.svelte';
 	import LayerMenu from '$map/components/LayerMenu.svelte';
 	import SideMenu from '$map/components/SideMenu.svelte';
 	import AngleMarker from '$map/components/StreetView/AngleMarker.svelte';
 	import StreetViewCanvas from '$map/components/StreetView/ThreeCanvas.svelte';
-	import TermsOfServiceDialog from '$map/components/TermsOfServiceDialog.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$map/constants';
 	import { geoDataEntry } from '$map/data';
 	import { getLocationBbox } from '$map/data/locationBbox';
@@ -59,6 +57,8 @@
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import { getPixelColor, getGuide } from '$map/utils/raster';
 	import DataMenu from '$routes/map/components/DataMenu/_Index.svelte';
+	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
+	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
 	import FooterMenu from '$routes/map/components/footer/_Index.svelte.svelte';
 	import MapControl from '$routes/map/components/MapControl/_Index.svelte';
 	import SelectionMarker from '$routes/map/components/Marker/SelectionMarker.svelte';
