@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+import geopandas as gpd
+from shapely.geometry import LineString
+
 
 # --- ファイルからGeoJSONデータを読み込む ---
 def load_geojson(file_path):
@@ -9,11 +12,19 @@ def load_geojson(file_path):
 
 
 INPUT_DIR = Path(__file__).resolve().parent.parent / "data"
-
 OUTPUT_DIR = (
     Path(__file__).resolve().parent.parent.parent / "frontend" / "static" / "streetView"
 )
 
+OUTPUT_DIR2 = (
+    Path(__file__).resolve().parent.parent.parent
+    / "frontend"
+    / "src"
+    / "routes"
+    / "map"
+    / "components"
+    / "streetView"
+)
 
 # ノードデータとリンクデータのファイルパスを指定（適宜変更）
 nodes_file = OUTPUT_DIR / "THETA360.geojson"
@@ -31,6 +42,7 @@ def round_coordinates(coord, precision=6):
 
 
 node_dict = {}
+
 for feature in nodes_geojson["features"]:
     if feature["geometry"]["type"] == "Point":
         node_id = feature["properties"]["ID"]
@@ -39,6 +51,7 @@ for feature in nodes_geojson["features"]:
 
 # --- 2. ラインデータに "source" と "target" を付与 ---
 node_connections = {}  # 各ノードの隣接ノード情報を保持する辞書
+link_features = []  # FGB出力用のリンクリスト
 
 for feature in links_geojson["features"]:
     if feature["geometry"]["type"] == "LineString":
@@ -52,6 +65,15 @@ for feature in links_geojson["features"]:
         if source_id and target_id:
             feature["properties"]["source"] = source_id
             feature["properties"]["target"] = target_id
+
+            # GeoPandas DataFrame 用のデータリスト
+            link_features.append(
+                {
+                    "geometry": LineString(coordinates),
+                    "source": source_id,
+                    "target": target_id,
+                }
+            )
 
             # --- 3. 隣接ノードの辞書を作成 ---
             if source_id not in node_connections:
@@ -68,17 +90,17 @@ for feature in links_geojson["features"]:
             print(f"  - source: {source_id}")
             print(f"  - target: {target_id}")
 
-# --- 4. 結果をファイルに保存 ---
+# --- 4. FGB ファイル（リンクデータのみ）に保存 ---
+links_gdf = gpd.GeoDataFrame(link_features, crs="EPSG:4326")
 
-# 更新されたリンクデータを保存
-output_link_file = OUTPUT_DIR / "link.geojson"
-with open(output_link_file, "w", encoding="utf-8") as f:
-    json.dump(links_geojson, f, indent=2, ensure_ascii=False)
+# FGB ファイルに保存（リンクのみ）
+output_links_fgb = OUTPUT_DIR / "links.fgb"
+links_gdf.to_file(output_links_fgb, driver="FlatGeobuf")
 
-print(f"✅ 更新されたリンクデータを {output_link_file} に保存しました。")
+print(f"✅ リンクデータを {output_links_fgb} に保存しました。")
 
-# 隣接ノードの辞書を保存
-output_connections_file = OUTPUT_DIR / "node_connections.json"
+# --- 5. 隣接ノードデータを JSON で保存 ---
+output_connections_file = OUTPUT_DIR2 / "node_connections.json"
 with open(output_connections_file, "w", encoding="utf-8") as f:
     json.dump(node_connections, f, indent=2, ensure_ascii=False)
 
