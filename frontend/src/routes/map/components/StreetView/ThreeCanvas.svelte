@@ -9,6 +9,8 @@
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 	import angleDataJson from './angle.json';
+	import fs from './shader/fragment.glsl?raw';
+	import vs from './shader/vertex.glsl?raw';
 
 	import type { NextPointData, StreetViewPoint } from '$map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$map/store';
@@ -36,6 +38,9 @@
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
+	let skyGeometry: THREE.SphereGeometry;
+	let skyMaterial: THREE.ShaderMaterial;
+	let skyMesh: THREE.Mesh;
 
 	let currentRequestController = null;
 
@@ -81,15 +86,18 @@
 			console.error('Failed to update angle', result.error);
 		}
 	};
-
-	// 球体のパラメータ
-	const radius = 5; // 球体を配置する半径
-	const sphereRadius = 0.3; // 球体の大きさ
-	const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-	let spheres = []; // 球体を管理する配列
+	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 
 	// 球体を配置する関数
-	function placeSpheres(nextPointData: NextPointData[]) {
+	const placeSpheres = (nextPointData: NextPointData[]) => {
+		// 球体のパラメータ
+		const radius = 5; // 球体を配置する半径
+		const sphereRadius = 0.3; // 球体の大きさ
+		const material = new THREE.MeshBasicMaterial({
+			color: 0xff0000,
+			visible: $DEBUG_MODE ? true : false
+		});
+
 		removeSpheres(); // 既存の球体を削除
 
 		nextPointData.forEach((pointData) => {
@@ -106,19 +114,18 @@
 		});
 
 		lookAtSphere(spheres[0]);
-	}
+	};
 
 	// 球体を削除する関数
-	function removeSpheres() {
+	const removeSpheres = () => {
 		if (spheres.length > 0) {
 			spheres.forEach((sphere) => {
 				scene.remove(sphere);
 				sphere.geometry.dispose(); // メモリ解放
-				sphere.material.dispose();
 			});
 			spheres = []; // 配列を空にする
 		}
-	}
+	};
 
 	// **カメラを指定したオブジェクトの方向に向ける**
 	function lookAtSphere(target) {
@@ -129,7 +136,7 @@
 
 		// カメラの位置をターゲットと正反対に設定
 		const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
-		camera.position.set(oppositePos.x, oppositePos.y, oppositePos.z);
+		camera.position.set(oppositePos.x, camera.position.y, oppositePos.z);
 
 		// カメラをターゲットの方向へ向ける
 		camera.lookAt(target.position);
@@ -168,48 +175,77 @@
 		const url = imageUrl.replace('.JPG', '/');
 
 		if (!imageUrl) return;
-		const textureCube = new THREE.CubeTextureLoader();
 
-		textureCube.load(
-			[
+		const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+			type: 'module'
+		});
+
+		worker.postMessage({
+			urls: [
 				`${url}face_1.jpg`,
 				`${url}face_2.jpg`,
-				`${url}face_3.jpg`, // 球体の場合は逆になる
+				`${url}face_3.jpg`,
 				`${url}face_4.jpg`,
 				`${url}face_5.jpg`,
 				`${url}face_6.jpg`
-			],
-			(texture) => {
-				texture.colorSpace = THREE.SRGBColorSpace;
-				// texture.mapping = THREE.CubeReflectionMapping;
-				// texture.flipY = true;
-				// shaderMaterial.needsUpdate = true;
+			]
+		});
 
-				geometryBearing.x = angleData.angleX;
-				geometryBearing.y = angleData.angleY;
-				geometryBearing.z = angleData.angleZ;
-
-				// GUI側のコントロールの値を更新
-				// if ($DEBUG_MODE) {
-				// 	controllerX.setValue(geometryBearing.x);
-				// 	controllerY.setValue(geometryBearing.y);
-				// 	controllerZ.setValue(geometryBearing.z);
-				// }
-
+		// Worker からのメッセージを受け取る
+		worker.onmessage = (event) => {
+			if (event.data.error) {
+				console.error(event.data.error);
 				isLoading = false;
+				return;
+			}
 
-				scene.background = texture;
+			const { blobUrls } = event.data;
+			const textureCube = new THREE.CubeTextureLoader();
 
-				placeSpheres(nextPointData);
+			textureCube.load(
+				blobUrls,
+				(texture) => {
+					texture.colorSpace = THREE.SRGBColorSpace;
 
-				// const angle = 0;
+					// texture.mapping = THREE.CubeReflectionMapping;
+					// texture.flipY = true;
+					// shaderMaterial.needsUpdate = true;
 
-				// const radians = THREE.MathUtils.degToRad((angle - 180 + 360) % 360); // ラジアン変換
-				// camera.rotation.y = radians;
-			},
-			undefined,
-			(error) => console.error('テクスチャの読み込みに失敗しました', error)
-		);
+					geometryBearing.x = angleData.angleX;
+					geometryBearing.y = angleData.angleY;
+					geometryBearing.z = angleData.angleZ;
+
+					// GUI側のコントロールの値を更新
+					// if ($DEBUG_MODE) {
+					// 	controllerX.setValue(geometryBearing.x);
+					// 	controllerY.setValue(geometryBearing.y);
+					// 	controllerZ.setValue(geometryBearing.z);
+					// }
+
+					isLoading = false;
+					// scene.background = texture;
+
+					skyGeometry = new THREE.SphereGeometry(10, 16, 16);
+
+					skyMaterial = new THREE.ShaderMaterial({
+						uniforms: {
+							skybox: { value: texture }
+						},
+						vertexShader: vs,
+						fragmentShader: fs,
+						side: THREE.BackSide,
+						wireframe: false
+					});
+
+					skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
+					scene.add(skyMesh);
+
+					placeSpheres(nextPointData);
+				},
+				undefined,
+				(error) => console.error('テクスチャの適用に失敗しました', error)
+			);
+		};
 	};
 
 	// 画面リサイズ時にキャンバスもリサイズ
@@ -258,27 +294,23 @@
 		// 視点変更の速さ
 		orbitControls.rotateSpeed = 0.5;
 		// ズーム禁止
-		// orbitControls.enableZoom = false;
-		// orbitControls.maxZoom = 1;
-		// パン操作禁止
-		// orbitControls.enablePan = false;
-		// orbitControls.panSpeed = -1;
 
-		// ヘルパーグリッド
-		// const gridHelper = new THREE.GridHelper(200, 100);
-		// scene.add(gridHelper);
-		// gridHelper.position.y = -5;
+		if (!$DEBUG_MODE) {
+			orbitControls.enableZoom = false;
+			orbitControls.maxZoom = 1;
+			// パン操作禁止
+			orbitControls.enablePan = false;
+			orbitControls.panSpeed = -1;
+		}
 
-		const sectors = 16;
-		const rings = 80;
-		const divisions = 64;
+		if ($DEBUG_MODE) {
+			const helper = new THREE.PolarGridHelper(10, 16, 80, 64);
+			scene.add(helper);
 
-		const helper = new THREE.PolarGridHelper(10, sectors, rings, divisions);
-		scene.add(helper);
-
-		// // ヘルパー方向
-		const axesHelper = new THREE.AxesHelper(1000);
-		scene.add(axesHelper);
+			// // ヘルパー方向
+			const axesHelper = new THREE.AxesHelper(1000);
+			scene.add(axesHelper);
+		}
 
 		// レンダラー
 
