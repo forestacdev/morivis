@@ -2,7 +2,6 @@
 	import Icon from '@iconify/svelte';
 	import bearing from '@turf/bearing';
 	import gsap from 'gsap';
-	import { GUI } from 'lil-gui';
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -11,16 +10,15 @@
 	import angleDataJson from './angle.json';
 	import fs from './shader/fragment.glsl?raw';
 	import vs from './shader/vertex.glsl?raw';
+	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$map/+page.svelte';
+	import { gui } from '$map/debug/utils';
 	import { isStreetView, DEBUG_MODE } from '$map/store';
-
-	//svelteからcreateEventDispatcher関数をインポートする。
 
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
-	// main/images/R0010026/face_1.jpg
 
 	interface Props {
 		feature: StreetViewPoint;
@@ -38,20 +36,32 @@
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
-	let skyGeometry: THREE.SphereGeometry;
-	let skyMaterial: THREE.ShaderMaterial;
-	let skyMesh: THREE.Mesh;
 
-	let currentRequestController = null;
+	interface Uniforms {
+		skybox: { value: THREE.CubeTexture | null };
+		rotationAngles: { value: THREE.Vector3 };
+	}
+	const uniforms = {
+		skybox: { value: null },
+		rotationAngles: { value: new THREE.Vector3() }
+	};
+	const skyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
+	const skyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
+		uniforms: uniforms,
+		vertexShader: vs,
+		fragmentShader: fs,
+		side: THREE.BackSide,
+		wireframe: false
+	});
+	let skyMesh: THREE.Mesh;
 
 	let geometryBearing = { x: 0, y: 0, z: 0 };
 	let controllerX;
 	let controllerY;
 	let controllerZ;
-	let gui;
 
 	if ($DEBUG_MODE) {
-		gui = new GUI();
+		console.log('DEBUG_MODE:', $DEBUG_MODE);
 		controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
 		controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
 		controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
@@ -66,26 +76,6 @@
 		gui.add(submit, 'updateAngle').name('Update Angle');
 	}
 
-	const updateAngle = async (id: string, geometryBearing: { x: number; y: number; z: number }) => {
-		// const test = await fetch('/360', {
-		// 	method: 'GET'
-		// });
-
-		// console.log(test);
-		const response = await fetch('/360', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ id, geometryBearing })
-		});
-		const result = await response.json();
-		if (result.success) {
-			console.log('Angle updated successfully', result.updatedData);
-		} else {
-			console.error('Failed to update angle', result.error);
-		}
-	};
 	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 
 	// 球体を配置する関数
@@ -223,22 +213,8 @@
 					// }
 
 					isLoading = false;
-					// scene.background = texture;
 
-					skyGeometry = new THREE.SphereGeometry(10, 16, 16);
-
-					skyMaterial = new THREE.ShaderMaterial({
-						uniforms: {
-							skybox: { value: texture }
-						},
-						vertexShader: vs,
-						fragmentShader: fs,
-						side: THREE.BackSide,
-						wireframe: false
-					});
-
-					skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-					scene.add(skyMesh);
+					uniforms.skybox.value = texture;
 
 					placeSpheres(nextPointData);
 				},
@@ -276,7 +252,24 @@
 
 		// カメラ
 		camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
+
+		// カメラの初期位置
+		gui
+			.add(
+				{
+					value: 75
+				},
+				'value'
+			)
+			.name('cameraFov')
+			.onChange((value) => {
+				camera.fov = value;
+				camera.updateProjectionMatrix();
+			});
+
 		camera.position.set(0, 0, 0);
+		camera.rotation.order = 'YXZ';
+
 		// camera.position.set(-100, 100, -100);
 		scene.add(camera);
 
@@ -287,20 +280,31 @@
 		// パソコン閲覧時マウスドラッグで視点操作する
 		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
-		// 視点操作のイージングをONにする
-		orbitControls.enableDamping = true;
+
 		// 視点操作のイージングの値
 		orbitControls.dampingFactor = 0.1;
-		// 視点変更の速さ
-		orbitControls.rotateSpeed = 0.5;
+
+		// マウスドラッグの反転
+		orbitControls.rotateSpeed *= -1;
+
+		orbitControls.enableDamping = true;
+		orbitControls.enablePan = false;
+		orbitControls.enableZoom = false;
+		orbitControls.maxZoom = 1;
+
+		const zoomControls = new TrackballControls(camera, canvas);
+		zoomControls.noPan = true;
+		zoomControls.noRotate = true;
+		zoomControls.zoomSpeed = 0.2;
+
+		skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
+		scene.add(skyMesh);
+
 		// ズーム禁止
 
 		if (!$DEBUG_MODE) {
-			orbitControls.enableZoom = false;
-			orbitControls.maxZoom = 1;
 			// パン操作禁止
 			orbitControls.enablePan = false;
-			orbitControls.panSpeed = -1;
 		}
 
 		if ($DEBUG_MODE) {
@@ -324,16 +328,14 @@
 
 		canvas.addEventListener('resize', onResize);
 
-		// テクスチャ
-
 		// アニメーション
 		const animate = () => {
 			requestAnimationFrame(animate);
 			if (!isRendering) return;
 
 			orbitControls.update();
+			zoomControls.update();
 
-			camera.rotation.order = 'YXZ';
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
 
@@ -346,12 +348,27 @@
 
 			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
 
-			// テクスチャを回転させる
-			scene.backgroundRotation.set(
-				THREE.MathUtils.degToRad(geometryBearing.x),
-				THREE.MathUtils.degToRad(geometryBearing.y),
-				THREE.MathUtils.degToRad(geometryBearing.z)
+			// 0~360度で指定
+
+			// 度をラジアンに変換してシェーダーに渡す
+			let rotationAngles = new THREE.Vector3(
+				degreesToRadians(geometryBearing.x),
+				degreesToRadians(geometryBearing.y),
+				degreesToRadians(geometryBearing.z)
 			);
+
+			uniforms.rotationAngles.value = rotationAngles;
+
+			// テクスチャを回転させる
+			// scene.backgroundRotation.set(
+			// 	THREE.MathUtils.degToRad(geometryBearing.x),
+			// 	THREE.MathUtils.degToRad(geometryBearing.y),
+			// 	THREE.MathUtils.degToRad(geometryBearing.z)
+			// );
+
+			// uniforms.rotationAngles.value.x = THREE.MathUtils.degToRad(geometryBearing.x);
+			// uniforms.rotationAngles.value.y = THREE.MathUtils.degToRad(geometryBearing.y);
+			// uniforms.rotationAngles.value.z = THREE.MathUtils.degToRad(geometryBearing.z);
 
 			renderer.render(scene, camera);
 		};

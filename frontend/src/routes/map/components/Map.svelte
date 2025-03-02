@@ -579,9 +579,11 @@
 
 	<div
 		bind:this={mapContainer}
-		class="css-map absolute flex-grow transition-all duration-500 {$isStreetView
+		class="css-map absolute flex-grow transition-opacity duration-500 {$isStreetView
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
-			: 'bottom-0 left-0 h-full w-full opacity-100'}"
+			: $isStreetView && $mapMode === 'small'
+				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
+				: 'bottom-0 left-0 h-full w-full opacity-100'}"
 	></div>
 	<MapControl />
 	<SelectionPopup

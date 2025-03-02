@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { GUI } from 'lil-gui';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+
+	import { gui } from './utils';
 
 	import 'jsoneditor/dist/jsoneditor.min.css';
 	import { mapStore } from '$routes/map/store/map';
@@ -31,7 +32,6 @@
 					map.resize();
 				}
 			};
-			const gui = new GUI();
 			gui
 				.add(map, 'showTileBoundaries')
 				.name('タイル境界表示')

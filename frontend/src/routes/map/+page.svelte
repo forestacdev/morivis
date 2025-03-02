@@ -161,7 +161,7 @@
 				zoom: 20,
 				duration: 1300,
 				bearing: nextPoints[0].bearing,
-				pitch: 60
+				pitch: 65
 			});
 		}
 
@@ -188,6 +188,7 @@
 		nextPointData = nextPoints;
 		await delay(1500);
 		$isStreetView = true;
+		mapMode.set('small');
 	};
 
 	// streetビューの表示切り替え時
@@ -203,6 +204,14 @@
 			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
 		} else {
 			map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
+			// マップを移動
+			map.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 17,
+				duration: 1300,
+				bearing: 0,
+				pitch: 0
+			});
 		}
 	});
 
