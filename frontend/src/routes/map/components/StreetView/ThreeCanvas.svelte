@@ -60,21 +60,19 @@
 	let controllerY;
 	let controllerZ;
 
-	if ($DEBUG_MODE) {
-		console.log('DEBUG_MODE:', $DEBUG_MODE);
-		controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
-		controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
-		controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
+	console.log('DEBUG_MODE:', $DEBUG_MODE);
+	controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
+	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
+	controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
 
-		const submit = {
-			updateAngle: () => {
-				updateAngle(feature.properties['ID'], geometryBearing);
-			}
-		};
+	const submit = {
+		updateAngle: () => {
+			updateAngle(feature.properties['ID'], geometryBearing);
+		}
+	};
 
-		// 角度を更新するボタンを追加
-		gui.add(submit, 'updateAngle').name('Update Angle');
-	}
+	// 角度を更新するボタンを追加
+	gui.add(submit, 'updateAngle').name('Update Angle');
 
 	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 
@@ -206,11 +204,11 @@
 					geometryBearing.z = angleData.angleZ;
 
 					// GUI側のコントロールの値を更新
-					// if ($DEBUG_MODE) {
-					// 	controllerX.setValue(geometryBearing.x);
-					// 	controllerY.setValue(geometryBearing.y);
-					// 	controllerZ.setValue(geometryBearing.z);
-					// }
+					if ($DEBUG_MODE) {
+						controllerX.setValue(geometryBearing.x);
+						controllerY.setValue(geometryBearing.y);
+						controllerZ.setValue(geometryBearing.z);
+					}
 
 					isLoading = false;
 
