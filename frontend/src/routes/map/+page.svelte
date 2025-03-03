@@ -8,6 +8,7 @@
 		properties: {
 			ID: string;
 			name: string;
+			Name: string;
 		};
 	}
 	export interface NextPointData {
@@ -188,7 +189,9 @@
 		nextPointData = nextPoints;
 		await delay(1500);
 		$isStreetView = true;
+		await delay(1000);
 		mapMode.set('small');
+		map.setPitch(0);
 	};
 
 	// streetビューの表示切り替え時

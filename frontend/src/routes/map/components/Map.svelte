@@ -569,6 +569,10 @@
 		}
 	});
 
+	mapMode.subscribe((mode) => {
+		console.log('mapMode', mode);
+	});
+
 	mapStore.onSetStyle((e) => {});
 </script>
 
@@ -579,7 +583,8 @@
 
 	<div
 		bind:this={mapContainer}
-		class="css-map absolute flex-grow transition-opacity duration-500 {$isStreetView
+		class="c-map-satellite absolute flex-grow transition-opacity duration-500 {$isStreetView &&
+		$mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'
 				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
@@ -603,7 +608,7 @@
 	}
 
 	/* TODO:マップの調整 */
-	.css-map {
+	.c-map-satellite {
 		filter: saturate(80%);
 	}
 </style>

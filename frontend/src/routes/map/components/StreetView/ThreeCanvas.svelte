@@ -5,7 +5,6 @@
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 	import angleDataJson from './angle.json';
 	import fs from './shader/fragment.glsl?raw';
@@ -60,7 +59,6 @@
 	let controllerY;
 	let controllerZ;
 
-	console.log('DEBUG_MODE:', $DEBUG_MODE);
 	controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
 	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
 	controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
@@ -116,9 +114,7 @@
 	};
 
 	// **カメラを指定したオブジェクトの方向に向ける**
-	function lookAtSphere(target) {
-		console.log('ターゲット位置:', target.position);
-
+	const lookAtSphere = (target: THREE.Mesh) => {
 		// ターゲットの座標を取得
 		const targetPos = target.position;
 
@@ -128,9 +124,9 @@
 
 		// カメラをターゲットの方向へ向ける
 		camera.lookAt(target.position);
-	}
+	};
 
-	function lookAtSphereAnime(target: THREE.Mesh, point: StreetViewPoint) {
+	const lookAtSphereAnime = (target: THREE.Mesh, point: StreetViewPoint) => {
 		// ターゲットの座標を取得
 		const targetPos = target.position.clone();
 
@@ -152,9 +148,11 @@
 				setPoint(point);
 			}
 		});
-	}
-
-	const created360Mesh = async (feature): void => {
+	};
+	const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+		type: 'module'
+	});
+	const created360Mesh = async (feature: StreetViewPoint): void => {
 		if (!feature) return;
 		isLoading = true;
 		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
@@ -163,10 +161,6 @@
 		const url = imageUrl.replace('.JPG', '/');
 
 		if (!imageUrl) return;
-
-		const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-			type: 'module'
-		});
 
 		worker.postMessage({
 			urls: [
@@ -252,18 +246,6 @@
 		camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
 
 		// カメラの初期位置
-		gui
-			.add(
-				{
-					value: 75
-				},
-				'value'
-			)
-			.name('cameraFov')
-			.onChange((value) => {
-				camera.fov = value;
-				camera.updateProjectionMatrix();
-			});
 
 		camera.position.set(0, 0, 0);
 		camera.rotation.order = 'YXZ';
@@ -284,26 +266,13 @@
 
 		// マウスドラッグの反転
 		orbitControls.rotateSpeed *= -1;
-
 		orbitControls.enableDamping = true;
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;
 		orbitControls.maxZoom = 1;
 
-		const zoomControls = new TrackballControls(camera, canvas);
-		zoomControls.noPan = true;
-		zoomControls.noRotate = true;
-		zoomControls.zoomSpeed = 0.2;
-
 		skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
 		scene.add(skyMesh);
-
-		// ズーム禁止
-
-		if (!$DEBUG_MODE) {
-			// パン操作禁止
-			orbitControls.enablePan = false;
-		}
 
 		if ($DEBUG_MODE) {
 			const helper = new THREE.PolarGridHelper(10, 16, 80, 64);
@@ -325,6 +294,21 @@
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 		canvas.addEventListener('resize', onResize);
+		// マウスホイールでFOVを変更するイベントリスナー
+		canvas.addEventListener('wheel', (event) => {
+			const minFov = 30; // 最小FOV
+			const maxFov = 100; // 最大FOV
+			const zoomSpeed = 1; // ズーム速度
+
+			// マウススクロールの方向に応じてFOVを増減
+			camera.fov += event.deltaY * 0.05 * zoomSpeed;
+
+			// FOVの範囲を制限
+			camera.fov = Math.max(minFov, Math.min(maxFov, camera.fov));
+
+			// 変更を適用
+			camera.updateProjectionMatrix();
+		});
 
 		// アニメーション
 		const animate = () => {
@@ -332,13 +316,9 @@
 			if (!isRendering) return;
 
 			orbitControls.update();
-			zoomControls.update();
 
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
-
-			// let degreesX = THREE.MathUtils.radToDeg(camera.rotation.x);
-			// degreesX = ((degreesX + 360) % 360) - 270; // 0〜360度の範囲に調整
 
 			// controlDiv親要素のを取得
 			if (!controlDiv) return;
@@ -356,17 +336,6 @@
 			);
 
 			uniforms.rotationAngles.value = rotationAngles;
-
-			// テクスチャを回転させる
-			// scene.backgroundRotation.set(
-			// 	THREE.MathUtils.degToRad(geometryBearing.x),
-			// 	THREE.MathUtils.degToRad(geometryBearing.y),
-			// 	THREE.MathUtils.degToRad(geometryBearing.z)
-			// );
-
-			// uniforms.rotationAngles.value.x = THREE.MathUtils.degToRad(geometryBearing.x);
-			// uniforms.rotationAngles.value.y = THREE.MathUtils.degToRad(geometryBearing.y);
-			// uniforms.rotationAngles.value.z = THREE.MathUtils.degToRad(geometryBearing.z);
 
 			renderer.render(scene, camera);
 		};
@@ -389,9 +358,9 @@
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="border-main absolute z-10 cursor-pointer overflow-hidden border-2 duration-500 {$isStreetView
+	class="absolute z-10 cursor-pointer overflow-hidden duration-500 {$isStreetView
 		? 'left-0 top-0 h-full w-full opacity-100'
-		: 'pointer-events-none left-0 top-0 h-full w-full opacity-0'}"
+		: 'border-main pointer-events-none left-0 top-0 h-full w-full border-2 opacity-0'}"
 >
 	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
 	{#if isLoading}
