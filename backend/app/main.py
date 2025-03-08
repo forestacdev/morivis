@@ -4,9 +4,19 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
+
+# CORSミドルウェアの設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # フロントエンドのURL（Viteのデフォルト）
+    allow_credentials=True,
+    allow_methods=["*"],  # すべてのHTTPメソッドを許可（GET, POST, PUT, DELETE など）
+    allow_headers=["*"],  # すべてのHTTPヘッダーを許可
+)
 
 JSON_FILE = "data.json"
 

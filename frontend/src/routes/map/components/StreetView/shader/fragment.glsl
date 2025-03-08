@@ -40,7 +40,7 @@ void main() {
     
     // 回転行列を適用（Y → X → Z の順）
     // Y軸から受け取る角度はマイナスにする
-    mat3 rotationMatrix = rotateY(-rotationAngles.y) * rotateX(rotationAngles.x) * rotateZ(rotationAngles.z);
+    mat3 rotationMatrix = rotateY(-rotationAngles.y) * rotateX(-rotationAngles.x) * rotateZ(-rotationAngles.z);
     
     // 回転を適用
     vec3 rotatedCoords = rotationMatrix * correctedCoords;
