@@ -29,7 +29,7 @@
 <div
 	class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
 >
-	<!-- <Compass /> -->
+	<Compass />
 	<div class="bg-accent absolute bottom-[30px] right-[20px]">{zoom.toFixed(1)}</div>
 	<Attribution />
 </div>

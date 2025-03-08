@@ -1,4 +1,4 @@
-# ENSHURIN MAP VIEW
+# ENSHURIN VIEW
 
 ![alt text](image.png)
 

@@ -12,6 +12,7 @@
 	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import { isStreetView } from '$routes/map/store';
 	import { mapStore } from '$routes/map/store/map';
 
 	gsap.registerPlugin(Draggable);
@@ -71,7 +72,7 @@
 
 <div
 	bind:this={element}
-	class="bg-main absolute bottom-[40px] right-[20px] grid h-[150px] w-[150px] place-items-center rounded-full"
+	class="bg-main absolute bottom-[40px] right-[20px] grid h-[150px] w-[150px] place-items-center overflow-hidden rounded-full"
 >
 	<svg
 		class="scale-50"
@@ -85,6 +86,11 @@
 			<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
 		</g>
 	</svg>
+
+	<button
+		class="pointer-events-auto absolute h-full w-full bg-white"
+		onclick={() => ($isStreetView = !$isStreetView)}>360</button
+	>
 </div>
 
 <style>

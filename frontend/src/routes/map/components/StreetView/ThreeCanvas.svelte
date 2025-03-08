@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import bearing from '@turf/bearing';
+	import { delay } from 'es-toolkit';
 	import gsap from 'gsap';
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
@@ -18,6 +19,10 @@
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
+	const IN_CAMERA_FOV = 75;
+	const OUT_CAMERA_FOV = 150;
+	const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
+	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
 	interface Props {
 		feature: StreetViewPoint;
@@ -35,6 +40,7 @@
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
+	let showCanvas = $state<boolean>(false);
 
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
@@ -220,8 +226,8 @@
 	const onResize = () => {
 		// サイズを取得
 		if (!renderer) return;
-		const width = !$isStreetView ? window.innerWidth : 100;
-		const height = !$isStreetView ? window.innerHeight : 80;
+		const width = window.innerWidth;
+		const height = window.innerHeight;
 
 		// レンダラーのサイズを調整する
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -243,14 +249,12 @@
 		scene = new THREE.Scene();
 
 		// カメラ
-		camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
+		camera = new THREE.PerspectiveCamera(IN_CAMERA_FOV, sizes.width / sizes.height, 0.1, 1000);
 
 		// カメラの初期位置
 
 		camera.position.set(0, 0, 0);
 		camera.rotation.order = 'YXZ';
-
-		// camera.position.set(-100, 100, -100);
 		scene.add(camera);
 
 		// カメラの設定
@@ -285,7 +289,6 @@
 
 		// レンダラー
 
-		await tick();
 		renderer = new THREE.WebGLRenderer({
 			canvas: canvas,
 			alpha: true
@@ -296,7 +299,7 @@
 		canvas.addEventListener('resize', onResize);
 		// マウスホイールでFOVを変更するイベントリスナー
 		canvas.addEventListener('wheel', (event) => {
-			const minFov = 30; // 最小FOV
+			const minFov = 20; // 最小FOV
 			const maxFov = 100; // 最大FOV
 			const zoomSpeed = 1; // ズーム速度
 
@@ -326,15 +329,12 @@
 
 			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
 
-			// 0~360度で指定
-
 			// 度をラジアンに変換してシェーダーに渡す
 			let rotationAngles = new THREE.Vector3(
 				degreesToRadians(geometryBearing.x),
 				degreesToRadians(geometryBearing.y),
 				degreesToRadians(geometryBearing.z)
 			);
-
 			uniforms.rotationAngles.value = rotationAngles;
 
 			renderer.render(scene, camera);
@@ -342,8 +342,56 @@
 		animate();
 	});
 
-	isStreetView.subscribe((value) => {
+	isStreetView.subscribe(async (value) => {
 		onResize();
+		if (value) {
+			await delay(1000);
+			// gsap.to(camera, {
+			// 	duration: 1, // アニメーション時間（秒）
+			// 	fov: IN_CAMERA_FOV, // 目標FOV（ズームイン）
+			// 	ease: 'power2.inOut', // スムーズなイージング
+			// 	onUpdate: () => camera.updateProjectionMatrix() // FOV変更を適用
+			// });
+
+			// const target = spheres.find(
+			// 	(sphere) => sphere.name === nextPointData[0].featureData.properties['ID']
+			// );
+
+			// const targetPos = target.position.clone();
+
+			// // カメラの位置をターゲットと正反対に設定（X, Z を反転）
+			// const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
+
+			// gsap.to(camera.position, {
+			// 	ease: 'power2.inOut',
+			// 	onUpdate: () => {
+			// 		camera.lookAt(oppositePos);
+			// 		camera.updateProjectionMatrix();
+			// 	}
+			// });
+
+			showCanvas = value;
+		} else {
+			// gsap.to(camera, {
+			// 	duration: 1, // アニメーション時間（秒）
+			// 	fov: OUT_CAMERA_FOV, // 目標FOV（ズームイン）
+			// 	ease: 'power2.inOut', // スムーズなイージング
+			// 	onUpdate: () => camera.updateProjectionMatrix() // FOV変更を適用
+			// });
+
+			// gsap.to(camera.position, {
+			// 	duration: 1,
+			// 	y: OUT_CAMERA_POSITION.y, // カメラを上へ移動して真下を向く
+			// 	x: camera.position.x,
+			// 	z: camera.position.z,
+
+			// 	ease: 'power2.inOut',
+			// 	onUpdate: () => {
+			// 		camera.lookAt(0, 0, 0); // 確実に真下を向く
+			// 		camera.updateProjectionMatrix();
+			// 	}
+			// });
+		}
 	});
 	const nextPoint = (point) => {
 		const target = spheres.find((sphere) => sphere.name === point.properties['ID']);
@@ -358,18 +406,18 @@
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="absolute z-10 cursor-pointer overflow-hidden duration-500 {$isStreetView
-		? 'left-0 top-0 h-full w-full opacity-100'
-		: 'border-main pointer-events-none left-0 top-0 h-full w-full border-2 opacity-0'}"
+	class="absolute z-10 flex cursor-pointer overflow-hidden duration-500 {showCanvas
+		? 'bottom-0 right-0 h-full w-full opacity-100'
+		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
 >
-	<canvas class="h-full w-full" bind:this={canvas} onclick={() => ($isStreetView = true)}></canvas>
+	<canvas class="h-full w-full" bind:this={canvas}></canvas>
 	{#if isLoading}
 		<div class="css-loading">
 			<div class="css-spinner"></div>
 		</div>
 	{:else}
 		<div
-			class="css-3d pointer-events-none absolute bottom-0 grid w-full p-0 place-items-center{$isStreetView
+			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showCanvas
 				? ' h-[400px]'
 				: ' h-full'}"
 		>
@@ -382,12 +430,12 @@
 									nextPoint(point.featureData);
 								}}
 								class="css-arrow"
-								style="--angle: {point.bearing}deg; --distance: {$isStreetView ? '128' : '64'}px;"
+								style="--angle: {point.bearing}deg; --distance: {showCanvas ? '128' : '64'}px;"
 							>
 								<Icon
 									icon="ic:baseline-double-arrow"
-									width={$isStreetView ? 128 : 64}
-									height={$isStreetView ? 128 : 64}
+									width={showCanvas ? 128 : 64}
+									height={showCanvas ? 128 : 64}
 									class=""
 									style="transform: rotate({point.bearing - 90}deg);"
 								/>
@@ -398,7 +446,7 @@
 			</div>
 		</div>
 	{/if}
-	{#if $isStreetView}
+	{#if showCanvas}
 		<button
 			class="absolute left-4 top-[100px] rounded-md bg-white p-2"
 			onclick={() => ($isStreetView = false)}>戻る</button

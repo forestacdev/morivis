@@ -458,7 +458,7 @@
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 		clickedLngLat = e.lngLat;
 
-		if (features.length === 1) {
+		if (features.length > 0) {
 			const feature = features[0];
 
 			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
@@ -575,8 +575,6 @@
 
 	mapStore.onSetStyle((e) => {});
 </script>
-
-<!-- <Menu /> -->
 
 <div class="relative h-full w-full">
 	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />

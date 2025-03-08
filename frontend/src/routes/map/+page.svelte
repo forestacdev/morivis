@@ -156,14 +156,14 @@
 				zoom: map.getZoom() > 18 ? map.getZoom() : (18 as number)
 			});
 		} else {
-			// マップを移動
-			map.easeTo({
-				center: point.geometry.coordinates,
-				zoom: 20,
-				duration: 1300,
-				bearing: nextPoints[0].bearing,
-				pitch: 65
-			});
+			// // マップを移動
+			// map.easeTo({
+			// 	center: point.geometry.coordinates,
+			// 	zoom: 20,
+			// 	duration: 1300,
+			// 	bearing: nextPoints[0].bearing,
+			// 	pitch: 65
+			// });
 		}
 
 		if (angleMarker) {
@@ -186,12 +186,14 @@
 			.setLngLat(point.geometry.coordinates)
 			.addTo(map);
 
+		if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
+
 		nextPointData = nextPoints;
-		await delay(1500);
-		$isStreetView = true;
-		await delay(1000);
-		mapMode.set('small');
-		map.setPitch(0);
+		// await delay(1500);
+		// $isStreetView = true;
+		// await delay(1000);
+		// mapMode.set('small');
+		// map.setPitch(0);
 	};
 
 	// streetビューの表示切り替え時
@@ -200,8 +202,16 @@
 		if (!map) return;
 		if (value) {
 			if (angleMarker) {
-				map.setCenter(angleMarker._lngLat, {
-					zoom: map.getZoom() > 18 ? map.getZoom() : 18
+				// map.setCenter(angleMarker._lngLat, {
+				// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
+				// });
+
+				map.easeTo({
+					center: streetViewPoint.geometry.coordinates,
+					zoom: 20,
+					duration: 1300,
+					bearing: 0,
+					pitch: 65
 				});
 			}
 			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
@@ -218,9 +228,9 @@
 		}
 	});
 
+	// マーカーの回転
 	$effect(() => {
 		if (cameraBearing && angleMarker) {
-			// TODO: 回転の調整
 			const markerContainer = angleMarker.getElement().firstElementChild;
 			if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
 		}
