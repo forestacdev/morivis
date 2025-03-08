@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -8,6 +9,17 @@ from pydantic import BaseModel
 app = FastAPI()
 
 JSON_FILE = "data.json"
+
+JSON_FILE = (
+    Path(__file__).resolve().parent.parent.parent
+    / "frontend"
+    / "src"
+    / "routes"
+    / "map"
+    / "components"
+    / "streetView"
+    / "angle.json"
+)
 
 
 # JSONファイルを読み込む関数
@@ -47,3 +59,14 @@ async def update_angle(data: UpdateAngles):
             return {"message": "Updated successfully", "data": obj}
 
     raise HTTPException(status_code=404, detail="ID not found")
+
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
+# jsonファイルのデータを取得
+@app.get("/json")
+async def read_angles():
+    return load_json()

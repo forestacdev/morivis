@@ -10,28 +10,43 @@ export const getCameraYRotation = (camera: THREE.Camera): number => {
 	return (degrees + 360) % 360; // 0〜360度の範囲に調整
 };
 
+/**
+ * パノラマ写真の回転角度を設定する
+ * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
+ * @param degrees 0〜360度の Y 軸回転角度
+ */
 export const updateAngle = async (
 	id: string,
-	geometryBearing: { x: number; y: number; z: number }
+	{
+		x,
+		y,
+		z
+	}: {
+		x: number;
+		y: number;
+		z: number;
+	}
 ) => {
-	// const test = await fetch('/360', {
-	// 	method: 'GET'
-	// });
-
-	// console.log(test);
-	const response = await fetch('/360', {
-		method: 'POST',
+	const response = await fetch('http://127.0.0.1:8000/update_angle', {
+		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({ id, geometryBearing })
+		body: JSON.stringify({
+			id,
+			angleX: x,
+			angleY: y,
+			angleZ: z
+		})
 	});
-	const result = await response.json();
-	if (result.success) {
-		console.log('Angle updated successfully', result.updatedData);
-	} else {
-		console.error('Failed to update angle', result.error);
+
+	if (!response.ok) {
+		console.error('Failed to update angles:', response.status);
+		return;
 	}
+
+	const data = await response.json();
+	console.log('Updated data:', data);
 };
 
 /** 度（°）をラジアン（rad）に変換する関数 */
