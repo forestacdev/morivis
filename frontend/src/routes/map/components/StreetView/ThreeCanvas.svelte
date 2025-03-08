@@ -391,6 +391,7 @@
 			// 		camera.updateProjectionMatrix();
 			// 	}
 			// });
+            showCanvas = value;
 		}
 	});
 	const nextPoint = (point) => {

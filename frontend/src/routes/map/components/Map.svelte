@@ -61,12 +61,16 @@
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
 		streetViewLineData: FeatureCollection;
+		angleMarker: Marker | null;
+		streetViewPoint: any;
 	}
 
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
-		streetViewLineData
+		streetViewLineData,
+		angleMarker,
+		streetViewPoint
 	}: Props = $props();
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
@@ -574,6 +578,38 @@
 	});
 
 	mapStore.onSetStyle((e) => {});
+
+	// streetビューの表示切り替え時
+	isStreetView.subscribe((value) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		if (value) {
+			if (angleMarker) {
+				// map.setCenter(angleMarker._lngLat, {
+				// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
+				// });
+
+				map.easeTo({
+					center: streetViewPoint.geometry.coordinates,
+					zoom: 20,
+					duration: 1300,
+					bearing: 0,
+					pitch: 65
+				});
+			}
+			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
+		} else {
+			map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
+			// マップを移動
+			map.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 17,
+				duration: 1300,
+				bearing: 0,
+				pitch: 0
+			});
+		}
+	});
 </script>
 
 <div class="relative h-full w-full">
