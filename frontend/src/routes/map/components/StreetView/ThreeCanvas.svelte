@@ -73,6 +73,10 @@
 	let controllerY;
 	let controllerZ;
 
+	// if (gui) {
+	// 	gui.destroy(); // 既存の GUI を削除
+	// }
+
 	controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
 	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
 	controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();

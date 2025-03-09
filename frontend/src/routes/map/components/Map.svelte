@@ -175,13 +175,13 @@
 				...(targetLabel ? [targetLabel] : []), // `targetLabel` がある場合のみ追加
 				{
 					// ストリートビューのライン
-					id: 'street_view_line_layer',
+					id: '@street_view_line_layer',
 					type: 'line',
 					source: 'street_view_line',
 					paint: {
 						'line-color': '#ff0000',
 						'line-width': 10,
-						'line-opacity': 0,
+						'line-opacity': 1.0,
 						'line-blur': 0.5
 					},
 					layout: {

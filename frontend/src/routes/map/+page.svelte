@@ -104,26 +104,27 @@
 
 		streetViewLineData = await getGeojson('./streetView/link.geojson');
 
-		// const imageId = getStreetViewParams();
-		// if (imageId) {
-		// 	const targetPoint = streetViewPointData.features.find((point) => {
-		// 		return point.properties['ID'] === imageId;
-		// 	});
+		const imageId = getStreetViewParams();
+		if (imageId) {
+			const targetPoint = streetViewPointData.features.find((point) => {
+				return point.properties['ID'] === imageId;
+			});
 
-		// 	if (targetPoint) {
-		// 		const mapInstance = mapStore.getMap();
-		// 		if (mapInstance) {
-		// 			mapInstance.flyTo({
-		// 				center: targetPoint.geometry.coordinates,
-		// 				zoom: 18,
-		// 				speed: 1.5,
-		// 				curve: 1
-		// 			});
-		// 		}
-		// 	}
+			if (targetPoint) {
+				const mapInstance = mapStore.getMap();
+				if (mapInstance) {
+					mapInstance.flyTo({
+						center: targetPoint.geometry.coordinates,
+						zoom: 18,
+						speed: 1.5,
+						curve: 1
+					});
+				}
+			}
 
-		// 	setPoint(targetPoint);
-		// }
+			setPoint(targetPoint);
+			$isStreetView = true;
+		}
 	});
 
 	// ストリートビューのデータの取得
@@ -206,38 +207,38 @@
 			// map.setCenter(angleMarker._lngLat, {
 			// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
 			// });
-			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
+			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
 
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
-				duration: 1300,
+				duration: 500,
 				bearing: (cameraBearing + 180) % 360,
 				pitch: 65
 			});
 
-			console.log(cameraBearing);
-
-			await delay(1300);
+			await delay(500);
 			showMapCanvas = false;
 			showThreeCanvas = true;
 
 			await delay(500);
+
+			map.setBearing(0);
+			map.setPitch(0);
 			$mapMode = 'small';
 		} else {
-			// map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
+			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
 
 			$mapMode = 'view';
 			showMapCanvas = true;
 			showThreeCanvas = false;
 
+			await delay(300);
+
 			// マップを移動
 			map.easeTo({
-				center: streetViewPoint.geometry.coordinates,
 				zoom: 17,
-				duration: 1300,
-				bearing: 0,
-				pitch: 0
+				duration: 500
 			});
 		}
 	});

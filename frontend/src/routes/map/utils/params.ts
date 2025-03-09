@@ -47,6 +47,7 @@ export const setMapParams = (option: MapPosition) => {
 	url.searchParams.set('z', option.zoom.toFixed(1));
 	url.searchParams.set('p', option.pitch.toFixed(0));
 	url.searchParams.set('b', option.bearing.toFixed(0));
+
 	replaceState(url, {});
 };
 
