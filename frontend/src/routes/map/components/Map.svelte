@@ -194,22 +194,33 @@
 						'line-cap': 'round',
 						'line-join': 'round'
 					}
+				},
+				{
+					// ストリートビューのライン
+					id: '@street_view_circle_layer',
+					type: 'circle',
+					source: 'street_view_point',
+					paint: {
+						'circle-color': '#ff0000',
+						'circle-radius': 10,
+						'circle-opacity': 1.0
+					}
+				},
+				{
+					// ストリートビューのライン
+					id: '@street_view_symbol_layer',
+					type: 'symbol',
+					source: 'street_view_point',
+					layout: {
+						'text-field': '📍',
+						'text-size': 14,
+						'text-justify': 'auto'
+					},
+					paint: {
+						'text-halo-color': '#ffffff',
+						'text-halo-width': 2
+					}
 				}
-				// {
-				// 	// ストリートビューのライン
-				// 	id: '@street_view_symbol_layer',
-				// 	type: 'symbol',
-				// 	source: 'street_view_point',
-				// 	layout: {
-				// 		'text-field': '📍',
-				// 		'text-size': 14,
-				// 		'text-justify': 'auto'
-				// 	},
-				// 	paint: {
-				// 		'text-halo-color': '#ffffff',
-				// 		'text-halo-width': 2
-				// 	}
-				// }
 				// overlayLayer
 			],
 			sky: {
@@ -339,11 +350,11 @@
 
 	$effect(() => {
 		if (streetViewPointData) {
-			console.log('streetViewPointData', streetViewPointData);
 			const map = mapStore.getMap();
 			if (!map) return;
 			const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
 			if (source) {
+				console.log('streetViewPointData', streetViewPointData);
 				source.setData(streetViewPointData);
 			}
 		}

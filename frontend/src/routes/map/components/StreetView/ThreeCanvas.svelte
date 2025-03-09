@@ -299,6 +299,8 @@
 			const axesHelper = new THREE.AxesHelper(1000);
 			scene.add(axesHelper);
 		}
+		const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+		scene.add(helper);
 
 		// レンダラー
 

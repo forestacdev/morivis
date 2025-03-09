@@ -87,6 +87,10 @@ for feature in links_geojson["features"]:
                     node_connections[source_id].append(target_id)
                 if source_id not in node_connections[target_id]:
                     node_connections[target_id].append(source_id)
+            if target_id == "eff8984a-a037-44a9-a6d3-b67271dca211":
+                print(f"source: {source_id}")
+                print(f"target: {target_id}")
+                print(f"coordinates: {coordinates}")
 
         else:
             print(f"⚠️ 識別できないノードがある: {coordinates}")
@@ -95,6 +99,13 @@ for feature in links_geojson["features"]:
 
 # --- 4. FGB ファイル（リンクデータのみ）に保存 ---
 links_gdf = gpd.GeoDataFrame(link_features, crs="EPSG:4326")
+
+# nodeも保存
+output_nodes_fgb = OUTPUT_DIR / "nodes.fgb"
+nodes_gdf = gpd.GeoDataFrame.from_features(nodes_geojson)
+# crs
+nodes_gdf.crs = "EPSG:4326"
+nodes_gdf.to_file(output_nodes_fgb, driver="FlatGeobuf")
 
 # FGB ファイルに保存（リンクのみ）
 output_links_fgb = OUTPUT_DIR / "links.fgb"

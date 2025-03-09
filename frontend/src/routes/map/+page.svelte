@@ -98,8 +98,8 @@
 	let showThreeCanvas = $state<boolean>(false);
 
 	onMount(async () => {
-		streetViewPointData = (await getGeojson(
-			'./streetView/THETA360.geojson'
+		streetViewPointData = (await getFgbToGeojson(
+			'./streetView/nodes.fgb'
 		)) as StreetViewPointGeoJson;
 
 		streetViewLineData = await getFgbToGeojson('./streetView/links.fgb');
