@@ -3,8 +3,8 @@
 	import turfBbox from '@turf/bbox';
 	import turfBboxPolygon from '@turf/bbox-polygon';
 	import { debounce } from 'es-toolkit';
+	import { delay } from 'es-toolkit';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
-	import maplibregl from 'maplibre-gl';
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
@@ -18,6 +18,7 @@
 		LngLat,
 		Popup
 	} from 'maplibre-gl';
+	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
@@ -63,6 +64,7 @@
 		streetViewLineData: FeatureCollection;
 		angleMarker: Marker | null;
 		streetViewPoint: any;
+		showMapCanvas: boolean;
 	}
 
 	let {
@@ -70,10 +72,13 @@
 		tempLayerEntries = $bindable(),
 		streetViewLineData,
 		angleMarker,
-		streetViewPoint
+		streetViewPoint,
+		showMapCanvas
 	}: Props = $props();
 
-	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol, {
+		tileUrl: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
+	});
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
@@ -578,38 +583,6 @@
 	});
 
 	mapStore.onSetStyle((e) => {});
-
-	// streetビューの表示切り替え時
-	isStreetView.subscribe((value) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		if (value) {
-			if (angleMarker) {
-				// map.setCenter(angleMarker._lngLat, {
-				// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
-				// });
-
-				map.easeTo({
-					center: streetViewPoint.geometry.coordinates,
-					zoom: 20,
-					duration: 1300,
-					bearing: 0,
-					pitch: 65
-				});
-			}
-			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
-		} else {
-			map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
-			// マップを移動
-			map.easeTo({
-				center: streetViewPoint.geometry.coordinates,
-				zoom: 17,
-				duration: 1300,
-				bearing: 0,
-				pitch: 0
-			});
-		}
-	});
 </script>
 
 <div class="relative h-full w-full">
@@ -617,7 +590,7 @@
 
 	<div
 		bind:this={mapContainer}
-		class="c-map-satellite absolute flex-grow transition-opacity duration-500 {$isStreetView &&
+		class="c-map-satellite absolute flex-grow transition-opacity duration-500 {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'

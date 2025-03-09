@@ -17,17 +17,17 @@ services:
   #       pnpm install
   #       pnpm run dev -- --host
 
-  maputnik:
-    image: ghcr.io/maplibre/maputnik:main
-    container_name: maputnik
-    ports:
-      - "8888:80"
-    volumes:
-      - ./maputnik:/maputnik
-    working_dir: /maputnik
-    stdin_open: true   # `-it` の代替
-    tty: true          # `-it` の代替
-    restart: no        # `--rm` の代替
+  # maputnik:
+  #   image: ghcr.io/maplibre/maputnik:main
+  #   container_name: maputnik
+  #   ports:
+  #     - "8888:80"
+  #   volumes:
+  #     - ./maputnik:/maputnik
+  #   working_dir: /maputnik
+  #   stdin_open: true   # `-it` の代替
+  #   tty: true          # `-it` の代替
+  #   restart: no        # `--rm` の代替
     # command: >
     #   /bin/bash -c "maputnik --watch --file /maputnik/style.json"
   # api-doc:

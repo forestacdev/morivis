@@ -309,7 +309,7 @@
 			.timeline({
 				onComplete: () => {
 					if (isMapView) {
-						goto('/map');
+						window.location.href = '/map';
 					}
 				}
 			})

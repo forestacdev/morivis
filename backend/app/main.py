@@ -1,6 +1,6 @@
 import json
 import os
-import uuid
+import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -33,6 +33,8 @@ JSON_FILE = (
 
 
 # JSONファイルを読み込む関数
+
+
 def load_json():
     if not os.path.exists(JSON_FILE):
         return []
@@ -48,7 +50,7 @@ def save_json(data):
 
 # リクエストボディのバリデーション
 class UpdateAngles(BaseModel):
-    id: uuid.UUID
+    id: str  # または id: uuid.UUID でバリデーションを強化
     angleX: int
     angleY: int
     angleZ: int
@@ -57,17 +59,26 @@ class UpdateAngles(BaseModel):
 @app.put("/update_angle")
 async def update_angle(data: UpdateAngles):
     json_data = load_json()
+    print("Received Data:", data.dict())
+    sys.stdout.flush()  # 🔥 標準出力を強制フラッシュ（すぐに表示させる）
+
+    print("Before Update:", json_data)
+    sys.stdout.flush()
 
     for obj in json_data:
-        if obj["id"] == str(data.id):
+        if obj["id"] == str(data.id):  # `id` が文字列なのでそのまま比較
+            print("Found matching ID:", obj["id"])  # 確認用
+
             obj["angleX"] = data.angleX
             obj["angleY"] = data.angleY
             obj["angleZ"] = data.angleZ
 
             save_json(json_data)  # 更新後にJSONを保存
+            print("After Update:", json_data)  # 更新後の JSON を出力
 
             return {"message": "Updated successfully", "data": obj}
 
+    print("ID not found:", data.id)  # IDが見つからなかった場合
     raise HTTPException(status_code=404, detail="ID not found")
 
 

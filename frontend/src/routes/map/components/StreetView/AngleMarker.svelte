@@ -10,11 +10,9 @@
 	// $: console.log(makerPosition, cameraBearing);
 </script>
 
-{#if $isStreetView}
-	<div class="pointer-events-none z-50 flex h-[100px] w-[100px]">
-		<div class="custom-marker"></div>
-	</div>
-{/if}
+<div class="pointer-events-none z-50 flex h-[100px] w-[100px]">
+	<div class="custom-marker"></div>
+</div>
 
 <style>
 	/* カメラ角度マーカー */

@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import type { NearestPoint } from '@turf/nearest-point';
 	export interface StreetViewPoint {
 		type: 'Feature';
 		geometry: {
@@ -93,6 +94,8 @@
 		features: []
 	});
 	let cameraBearing = $state<number>(0);
+	let showMapCanvas = $state<boolean>(true);
+	let showThreeCanvas = $state<boolean>(false);
 
 	onMount(async () => {
 		streetViewPointData = (await getGeojson(
@@ -127,7 +130,6 @@
 	const setPoint = async (point: StreetViewPoint) => {
 		if (!point) return;
 		const pointId = point.properties['ID'];
-		streetViewPoint = point;
 
 		setStreetViewParams(pointId);
 
@@ -142,28 +144,12 @@
 
 		if (!map) return;
 
-		// mapInstance.flyTo({
-		// 	center: targetPoint.geometry.coordinates,
-		// 	zoom: 18,
-		// 	speed: 1.5,
-		// 	curve: 1
-		// });
-
 		if ($isStreetView) {
 			map.panTo(point.geometry.coordinates, {
 				duration: 1000,
 				animate: true,
 				zoom: map.getZoom() > 18 ? map.getZoom() : (18 as number)
 			});
-		} else {
-			// // マップを移動
-			// map.easeTo({
-			// 	center: point.geometry.coordinates,
-			// 	zoom: 20,
-			// 	duration: 1300,
-			// 	bearing: nextPoints[0].bearing,
-			// 	pitch: 65
-			// });
 		}
 
 		if (angleMarker) {
@@ -189,14 +175,8 @@
 		if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
 
 		nextPointData = nextPoints;
-		// await delay(1500);
-		// $isStreetView = true;
-		// await delay(1000);
-		// mapMode.set('small');
-		// map.setPitch(0);
+		streetViewPoint = point;
 	};
-
-
 
 	// マーカーの回転
 	$effect(() => {
@@ -213,18 +193,76 @@
 			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
 			if (distance < 100) {
 				// streetViewPoint = point;
-				setPoint(point);
+				setPoint(point as StreetViewPoint);
 			}
 		}
 	});
+
+	// streetビューの表示切り替え時
+	isStreetView.subscribe(async (value) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+		if (value) {
+			// map.setCenter(angleMarker._lngLat, {
+			// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
+			// });
+			map.setPaintProperty('street_view_line_layer', 'line-opacity', 1);
+
+			map.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 20,
+				duration: 1300,
+				bearing: (cameraBearing + 180) % 360,
+				pitch: 65
+			});
+
+			console.log(cameraBearing);
+
+			await delay(1300);
+			showMapCanvas = false;
+			showThreeCanvas = true;
+
+			await delay(500);
+			$mapMode = 'small';
+		} else {
+			// map.setPaintProperty('street_view_line_layer', 'line-opacity', 0);
+
+			$mapMode = 'view';
+			showMapCanvas = true;
+			showThreeCanvas = false;
+
+			// マップを移動
+			map.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 17,
+				duration: 1300,
+				bearing: 0,
+				pitch: 0
+			});
+		}
+	});
+	$inspect(streetViewPoint);
 </script>
 
 <div class="bg-base relative flex h-full w-full flex-grow">
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	<Map bind:layerEntries bind:tempLayerEntries {streetViewLineData} {angleMarker} {streetViewPoint} />
+	<Map
+		bind:layerEntries
+		bind:tempLayerEntries
+		{streetViewLineData}
+		{angleMarker}
+		{streetViewPoint}
+		{showMapCanvas}
+	/>
 	<FooterMenu {layerEntries} />
 	<DataMenu />
-	<StreetViewCanvas feature={streetViewPoint} {nextPointData} bind:cameraBearing {setPoint} />
+	<StreetViewCanvas
+		{streetViewPoint}
+		{nextPointData}
+		{showThreeCanvas}
+		bind:cameraBearing
+		{setPoint}
+	/>
 </div>
 <SideMenu />
 <InfoDialog />

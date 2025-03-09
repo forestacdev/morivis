@@ -25,13 +25,21 @@
 	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
 	interface Props {
-		feature: StreetViewPoint;
+		streetViewPoint: StreetViewPoint;
 		nextPointData: NextPointData[] | null;
 		cameraBearing: number;
-		setPoint: (feature: StreetViewPoint) => void;
+		setPoint: (streetViewPoint: StreetViewPoint) => void;
+		showThreeCanvas: boolean;
 	}
 
-	let { feature, nextPointData, cameraBearing = $bindable(), setPoint }: Props = $props();
+	let {
+		streetViewPoint,
+		nextPointData,
+		cameraBearing = $bindable(),
+		setPoint,
+		showThreeCanvas
+	}: Props = $props();
+
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
@@ -40,7 +48,7 @@
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
-	let showCanvas = $state<boolean>(false);
+	let fromPoint = $state<StreetViewPoint | null>(null);
 
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
@@ -71,7 +79,7 @@
 
 	const submit = {
 		updateAngle: () => {
-			updateAngle(feature.properties['ID'], geometryBearing);
+			updateAngle(streetViewPoint.properties['ID'], geometryBearing);
 		}
 	};
 
@@ -105,7 +113,7 @@
 			spheres.push(sphere); // 配列に追加
 		});
 
-		lookAtSphere(spheres[0]);
+		// lookAtSphere(spheres[0]);
 	};
 
 	// 球体を削除する関数
@@ -158,11 +166,12 @@
 	const worker = new Worker(new URL('./worker.ts', import.meta.url), {
 		type: 'module'
 	});
-	const created360Mesh = async (feature: StreetViewPoint): void => {
-		if (!feature) return;
+	const created360Mesh = async (point: StreetViewPoint): void => {
+		if (!point) return;
+		fromPoint = point;
 		isLoading = true;
-		const imageUrl = `${IMAGE_URL}${feature.properties['Name']}`;
-		const id = feature.properties['ID'];
+		const imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
+		const id = point.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
 		const url = imageUrl.replace('.JPG', '/');
 
@@ -344,55 +353,6 @@
 
 	isStreetView.subscribe(async (value) => {
 		onResize();
-		if (value) {
-			await delay(1000);
-			// gsap.to(camera, {
-			// 	duration: 1, // アニメーション時間（秒）
-			// 	fov: IN_CAMERA_FOV, // 目標FOV（ズームイン）
-			// 	ease: 'power2.inOut', // スムーズなイージング
-			// 	onUpdate: () => camera.updateProjectionMatrix() // FOV変更を適用
-			// });
-
-			// const target = spheres.find(
-			// 	(sphere) => sphere.name === nextPointData[0].featureData.properties['ID']
-			// );
-
-			// const targetPos = target.position.clone();
-
-			// // カメラの位置をターゲットと正反対に設定（X, Z を反転）
-			// const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
-
-			// gsap.to(camera.position, {
-			// 	ease: 'power2.inOut',
-			// 	onUpdate: () => {
-			// 		camera.lookAt(oppositePos);
-			// 		camera.updateProjectionMatrix();
-			// 	}
-			// });
-
-			showCanvas = value;
-		} else {
-			// gsap.to(camera, {
-			// 	duration: 1, // アニメーション時間（秒）
-			// 	fov: OUT_CAMERA_FOV, // 目標FOV（ズームイン）
-			// 	ease: 'power2.inOut', // スムーズなイージング
-			// 	onUpdate: () => camera.updateProjectionMatrix() // FOV変更を適用
-			// });
-
-			// gsap.to(camera.position, {
-			// 	duration: 1,
-			// 	y: OUT_CAMERA_POSITION.y, // カメラを上へ移動して真下を向く
-			// 	x: camera.position.x,
-			// 	z: camera.position.z,
-
-			// 	ease: 'power2.inOut',
-			// 	onUpdate: () => {
-			// 		camera.lookAt(0, 0, 0); // 確実に真下を向く
-			// 		camera.updateProjectionMatrix();
-			// 	}
-			// });
-            showCanvas = value;
-		}
 	});
 	const nextPoint = (point) => {
 		const target = spheres.find((sphere) => sphere.name === point.properties['ID']);
@@ -402,12 +362,12 @@
 		lookAtSphereAnime(target, point);
 	};
 
-	$effect(() => created360Mesh(feature));
+	$effect(() => created360Mesh(streetViewPoint));
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="absolute z-10 flex cursor-pointer overflow-hidden duration-500 {showCanvas
+	class="absolute z-10 flex cursor-pointer overflow-hidden duration-500 {showThreeCanvas
 		? 'bottom-0 right-0 h-full w-full opacity-100'
 		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
 >
@@ -418,7 +378,7 @@
 		</div>
 	{:else}
 		<div
-			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showCanvas
+			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showThreeCanvas
 				? ' h-[400px]'
 				: ' h-full'}"
 		>
@@ -431,12 +391,12 @@
 									nextPoint(point.featureData);
 								}}
 								class="css-arrow"
-								style="--angle: {point.bearing}deg; --distance: {showCanvas ? '128' : '64'}px;"
+								style="--angle: {point.bearing}deg; --distance: {showThreeCanvas ? '128' : '64'}px;"
 							>
 								<Icon
 									icon="ic:baseline-double-arrow"
-									width={showCanvas ? 128 : 64}
-									height={showCanvas ? 128 : 64}
+									width={showThreeCanvas ? 128 : 64}
+									height={showThreeCanvas ? 128 : 64}
 									class=""
 									style="transform: rotate({point.bearing - 90}deg);"
 								/>
@@ -447,7 +407,7 @@
 			</div>
 		</div>
 	{/if}
-	{#if showCanvas}
+	{#if showThreeCanvas}
 		<button
 			class="absolute left-4 top-[100px] rounded-md bg-white p-2"
 			onclick={() => ($isStreetView = false)}>戻る</button
