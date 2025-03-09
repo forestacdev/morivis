@@ -3,6 +3,7 @@
 "name": "THETA360_line",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920966666666629, 35.548633333333335 ], [ 136.921, 35.548633333333335 ] ] } },
 { "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920066666666656, 35.55145 ], [ 136.920183333333341, 35.551366666666667 ] ] } },
 { "type": "Feature", "properties": { "id": 2 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920183333333341, 35.551366666666667 ], [ 136.920283333333344, 35.5513 ] ] } },
 { "type": "Feature", "properties": { "id": 3 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920283333333344, 35.5513 ], [ 136.920366666666666, 35.55125 ] ] } },
@@ -69,7 +70,7 @@
 { "type": "Feature", "properties": { "id": null }, "geometry": { "type": "LineString", "coordinates": [ [ 136.923330555555538, 35.552533333333329 ], [ 136.92328333333333, 35.552633333333333 ] ] } },
 { "type": "Feature", "properties": { "id": 65 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920883333333336, 35.548766666666666 ], [ 136.92091666666667, 35.548716666666664 ] ] } },
 { "type": "Feature", "properties": { "id": null }, "geometry": { "type": "LineString", "coordinates": [ [ 136.92371666666665, 35.554616666666661 ], [ 136.924077777777768, 35.554613888888888 ] ] } },
-{ "type": "Feature", "properties": { "id": 67 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920966666666658, 35.548633333333335 ], [ 136.921066666666661, 35.54855 ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "LineString", "coordinates": [ [ 136.921, 35.548633333333335 ], [ 136.921066666666661, 35.54855 ] ] } },
 { "type": "Feature", "properties": { "id": 68 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.921066666666661, 35.54855 ], [ 136.92115, 35.5485 ] ] } },
 { "type": "Feature", "properties": { "id": 69 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.92115, 35.5485 ], [ 136.92125, 35.54845 ] ] } },
 { "type": "Feature", "properties": { "id": 70 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.92125, 35.54845 ], [ 136.921383333333324, 35.548416666666668 ] ] } },
