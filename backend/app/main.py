@@ -51,9 +51,9 @@ def save_json(data):
 # リクエストボディのバリデーション
 class UpdateAngles(BaseModel):
     id: str  # または id: uuid.UUID でバリデーションを強化
-    angleX: int
-    angleY: int
-    angleZ: int
+    angleX: float
+    angleY: float
+    angleZ: float
 
 
 @app.put("/update_angle")
