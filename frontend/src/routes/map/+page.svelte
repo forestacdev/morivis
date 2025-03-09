@@ -207,7 +207,7 @@
 			// map.setCenter(angleMarker._lngLat, {
 			// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
 			// });
-			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
+			map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
 
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
@@ -227,7 +227,7 @@
 			map.setPitch(0);
 			$mapMode = 'small';
 		} else {
-			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
+			map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
 
 			$mapMode = 'view';
 			showMapCanvas = true;

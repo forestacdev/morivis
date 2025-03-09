@@ -305,6 +305,17 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
+	$effect(() => {
+		if (streetViewLineData) {
+			const map = mapStore.getMap();
+			if (!map) return;
+			const source = map.getSource('street_view_line') as maplibregl.GeoJSONSource;
+			if (source) {
+				source.setData(streetViewLineData);
+			}
+		}
+	});
+
 	// selectedHighlightData.subscribe((data) => {
 	// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
 	// });
