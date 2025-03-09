@@ -81,9 +81,12 @@ for feature in links_geojson["features"]:
             if target_id not in node_connections:
                 node_connections[target_id] = []
 
-            # 双方向のつながりを登録
-            node_connections[source_id].append(target_id)
-            node_connections[target_id].append(source_id)
+            # ⚠️ 修正: 自身を追加しないようにする
+            if source_id != target_id:
+                if target_id not in node_connections[source_id]:
+                    node_connections[source_id].append(target_id)
+                if source_id not in node_connections[target_id]:
+                    node_connections[target_id].append(source_id)
 
         else:
             print(f"⚠️ 識別できないノードがある: {coordinates}")

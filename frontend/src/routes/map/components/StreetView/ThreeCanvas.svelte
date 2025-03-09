@@ -292,7 +292,7 @@
 		scene.add(skyMesh);
 
 		if ($DEBUG_MODE) {
-			const helper = new THREE.PolarGridHelper(10, 16, 80, 64);
+			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
 			scene.add(helper);
 
 			// // ヘルパー方向

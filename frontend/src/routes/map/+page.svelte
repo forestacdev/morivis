@@ -59,7 +59,7 @@
 	import type { GeoDataEntry } from '$map/data/types';
 	import DebugControl from '$map/debug/_Index.svelte';
 	import { mapStore } from '$map/store/map';
-	import { getGeojson } from '$map/utils/geojson';
+	import { getGeojson, getFgbToGeojson } from '$map/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$map/utils/params';
 	import AngleMarker from '$routes/map/components/streetView/AngleMarker.svelte';
 	import {
@@ -102,7 +102,7 @@
 			'./streetView/THETA360.geojson'
 		)) as StreetViewPointGeoJson;
 
-		streetViewLineData = await getGeojson('./streetView/link.geojson');
+		streetViewLineData = await getFgbToGeojson('./streetView/links.fgb');
 
 		const imageId = getStreetViewParams();
 		if (imageId) {
@@ -242,7 +242,7 @@
 			});
 		}
 	});
-	$inspect(streetViewPoint);
+	$inspect(nextPointData);
 </script>
 
 <div class="bg-base relative flex h-full w-full flex-grow">
