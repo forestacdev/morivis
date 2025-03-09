@@ -62,6 +62,7 @@
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
 		streetViewLineData: FeatureCollection;
+		streetViewPointData: FeatureCollection;
 		angleMarker: Marker | null;
 		streetViewPoint: any;
 		showMapCanvas: boolean;
@@ -71,6 +72,7 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		streetViewLineData,
+		streetViewPointData,
 		angleMarker,
 		streetViewPoint,
 		showMapCanvas
@@ -140,6 +142,10 @@
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
 				terrain: gsiTerrainSource,
+				street_view_point: {
+					type: 'geojson',
+					data: streetViewPointData
+				},
 				street_view_line: {
 					type: 'geojson',
 					data: streetViewLineData
@@ -189,6 +195,21 @@
 						'line-join': 'round'
 					}
 				}
+				// {
+				// 	// ストリートビューのライン
+				// 	id: '@street_view_symbol_layer',
+				// 	type: 'symbol',
+				// 	source: 'street_view_point',
+				// 	layout: {
+				// 		'text-field': '📍',
+				// 		'text-size': 14,
+				// 		'text-justify': 'auto'
+				// 	},
+				// 	paint: {
+				// 		'text-halo-color': '#ffffff',
+				// 		'text-halo-width': 2
+				// 	}
+				// }
 				// overlayLayer
 			],
 			sky: {
@@ -316,6 +337,17 @@
 		}
 	});
 
+	$effect(() => {
+		if (streetViewPointData) {
+			console.log('streetViewPointData', streetViewPointData);
+			const map = mapStore.getMap();
+			if (!map) return;
+			const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
+			if (source) {
+				source.setData(streetViewPointData);
+			}
+		}
+	});
 	// selectedHighlightData.subscribe((data) => {
 	// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
 	// });

@@ -381,6 +381,12 @@
 			<div class="css-spinner"></div>
 		</div>
 	{:else}
+		{#if streetViewPoint}
+			<div class="z-100 absolute left-[100px] top-[100px] bg-white p-2">
+				{streetViewPoint.properties['Date']}
+				{streetViewPoint.properties['Time']}
+			</div>
+		{/if}
 		<div
 			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showThreeCanvas
 				? ' h-[400px]'

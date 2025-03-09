@@ -251,6 +251,7 @@
 		bind:layerEntries
 		bind:tempLayerEntries
 		{streetViewLineData}
+		{streetViewPointData}
 		{angleMarker}
 		{streetViewPoint}
 		{showMapCanvas}
