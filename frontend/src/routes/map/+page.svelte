@@ -97,7 +97,17 @@
 	let showMapCanvas = $state<boolean>(true);
 	let showThreeCanvas = $state<boolean>(false);
 
+	const markerContainer = document.createElement('div');
+	document.body.appendChild(markerContainer);
+
 	onMount(async () => {
+		const angleMarkerInstance = mount(AngleMarker, {
+			target: markerContainer,
+			props: {
+				cameraBearing: cameraBearing,
+				angleMarker
+			}
+		});
 		streetViewPointData = (await getFgbToGeojson(
 			'./streetView/nodes.fgb'
 		)) as StreetViewPointGeoJson;
@@ -157,34 +167,40 @@
 			angleMarker.remove();
 		}
 
-		const markerContainer = document.createElement('div');
-		mount(AngleMarker, {
-			target: markerContainer,
-			props: {
-				cameraBearing: cameraBearing
-			}
-		});
+		const popup = new maplibregl.Popup({
+			closeButton: false,
+			closeOnClick: false,
+			offset: 40,
+			anchor: 'bottom'
+		})
+			.setLngLat(point.geometry.coordinates)
+			.setHTML(point.properties.name)
+			.addTo(map);
 
 		angleMarker = new maplibregl.Marker({
 			element: markerContainer,
+
 			pitchAlignment: 'map',
 			rotationAlignment: 'map',
 			draggable: true,
 			rotation: -cameraBearing + 180
 		})
 			.setLngLat(point.geometry.coordinates)
+			.setPopup(popup)
 			.addTo(map);
+
+		angleMarker.togglePopup();
 
 		nextPointData = nextPoints;
 		streetViewPoint = point;
 
 		// マーカーのドラッグ
-		// angleMarker?.on('dragend', () => {
-		// 	const lngLat = angleMarker?.getLngLat();
-		// 	if (!lngLat) return;
-		// 	const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
-		// 	setPoint(point as StreetViewPoint);
-		// });
+		angleMarker?.on('dragend', () => {
+			const lngLat = angleMarker?.getLngLat();
+			if (!lngLat) return;
+			const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
+			setPoint(point as StreetViewPoint);
+		});
 	};
 
 	// マーカーの回転
@@ -251,7 +267,6 @@
 			});
 		}
 	});
-	$inspect(nextPointData);
 </script>
 
 <div class="bg-base relative flex h-full w-full flex-grow">

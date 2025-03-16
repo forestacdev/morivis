@@ -1,16 +1,33 @@
 <script lang="ts">
+	import { Marker } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { isStreetView } from '$map/store';
 
-	let { cameraBearing }: { cameraBearing: number } = $props();
+	interface Props {
+		cameraBearing: number;
+		angleMarker: Marker | null;
+	}
+
+	let { cameraBearing, angleMarker }: Props = $props();
+
+	$inspect(angleMarker);
+	$inspect(cameraBearing);
 
 	onMount(() => {});
 
 	// $: console.log(makerPosition, cameraBearing);
 </script>
 
-<div class="c-player-marker pointer-events-none z-50 grid place-items-center">
+<div class="absolute bg-white">sss</div>
+
+<div
+	class="c-player-marker z-50 grid place-items-center"
+	role="button"
+	tabindex="0"
+	onmouseenter={() => console.log('hover')}
+	onmouseleave={() => console.log('leave')}
+>
 	<svg xmlns="http://www.w3.org/2000/svg" width="73" height="73" fill="none"
 		><path fill="#333" d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z" /><path
 			stroke="#333"

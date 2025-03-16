@@ -146,26 +146,28 @@
 
 	const lookAtSphereAnime = (target: THREE.Mesh, point: StreetViewPoint) => {
 		// ターゲットの座標を取得
-		const targetPos = target.position.clone();
+		// const targetPos = target.position.clone();
 
-		// カメラの位置をターゲットと正反対に設定（X, Z を反転）
-		const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
+		// // カメラの位置をターゲットと正反対に設定（X, Z を反転）
+		// const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
 
-		// GSAPを使ってカメラの位置をスムーズに移動
-		gsap.to(camera.position, {
-			x: oppositePos.x,
-			y: camera.position.y,
-			z: oppositePos.z,
-			duration: 0.3, // 1.5秒かけて移動
-			ease: 'power2.out',
-			onUpdate: () => {
-				camera.lookAt(targetPos);
-			},
+		// // GSAPを使ってカメラの位置をスムーズに移動
+		// gsap.to(camera.position, {
+		// 	x: oppositePos.x,
+		// 	y: camera.position.y,
+		// 	z: oppositePos.z,
+		// 	duration: 0.3, // 1.5秒かけて移動
+		// 	ease: 'power2.out',
+		// 	onUpdate: () => {
+		// 		camera.lookAt(targetPos);
+		// 	},
 
-			onComplete: () => {
-				setPoint(point);
-			}
-		});
+		// 	onComplete: () => {
+		// 		setPoint(point);
+		// 	}
+		// });
+
+		setPoint(point);
 	};
 	const worker = new Worker(new URL('./worker.ts', import.meta.url), {
 		type: 'module'
