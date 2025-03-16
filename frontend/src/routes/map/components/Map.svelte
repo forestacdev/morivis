@@ -143,8 +143,8 @@
 			sources: {
 				terrain: gsiTerrainSource,
 				street_view_point: {
-					type: 'geojson',
-					data: streetViewPointData
+					type: 'vector',
+					url: 'pmtiles://./streetView/nodes.pmtiles'
 				},
 				street_view_line: {
 					type: 'geojson',
@@ -187,7 +187,7 @@
 					paint: {
 						'line-color': '#08fa00',
 						'line-width': 10,
-						'line-opacity': 1.0,
+						'line-opacity': 0.5,
 						'line-blur': 0.5
 					},
 					layout: {
@@ -196,29 +196,21 @@
 					}
 				},
 				{
-					// ストリートビューのライン
+					// ストリートビューのポイント
 					id: '@street_view_circle_layer',
 					type: 'circle',
 					source: 'street_view_point',
+					'source-layer': 'THETA360',
+
+					minzoom: 15,
 					paint: {
 						'circle-color': '#08fa00',
-						'circle-radius': 10,
-						'circle-opacity': 1.0
-					}
-				},
-				{
-					// ストリートビューのライン
-					id: '@street_view_symbol_layer',
-					type: 'symbol',
-					source: 'street_view_point',
-					layout: {
-						'text-field': '📍',
-						'text-size': 14,
-						'text-justify': 'auto'
-					},
-					paint: {
-						'text-halo-color': '#ffffff',
-						'text-halo-width': 2
+						'circle-radius': 12,
+						'circle-opacity': 0.6,
+						'circle-stroke-width': 2,
+						'circle-stroke-color': '#ffffff',
+						'circle-stroke-opacity': 0.5,
+						'circle-blur': 0.3
 					}
 				}
 				// overlayLayer
@@ -337,29 +329,29 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
-	$effect(() => {
-		if (streetViewLineData) {
-			const map = mapStore.getMap();
-			if (!map) return;
-			const source = map.getSource('street_view_line') as maplibregl.GeoJSONSource;
-			if (source) {
-				source.setData(streetViewLineData);
-			}
-		}
-	});
+	// $effect(() => {
+	// 	if (streetViewLineData) {
+	// 		const map = mapStore.getMap();
+	// 		if (!map) return;
+	// 		const source = map.getSource('street_view_line') as maplibregl.GeoJSONSource;
+	// 		if (source) {
+	// 			source.setData(streetViewLineData);
+	// 		}
+	// 	}
+	// });
 
-	$effect(() => {
-		if (streetViewPointData) {
-			const map = mapStore.getMap();
-			if (!map) return;
-			const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
-			if (source) {
-				source.setData(streetViewPointData);
-			}
-
-			console.log('streetViewPointData', streetViewPointData);
-		}
-	});
+	// $effect(() => {
+	// 	$state.snapshot(streetViewPointData);
+	// 	const map = mapStore.getMap();
+	// 	if (!map) return;
+	// 	const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
+	// 	console.log(map.getStyle());
+	// 	console.log('source', source);
+	// 	console.log('streetViewPointData', streetViewPointData);
+	// 	if (source) {
+	// 		source.setData(streetViewPointData);
+	// 	}
+	// });
 	// selectedHighlightData.subscribe((data) => {
 	// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
 	// });

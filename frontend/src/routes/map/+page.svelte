@@ -168,24 +168,32 @@
 		angleMarker = new maplibregl.Marker({
 			element: markerContainer,
 			pitchAlignment: 'map',
-			rotationAlignment: 'map'
+			rotationAlignment: 'map',
+			draggable: true,
+			rotation: -cameraBearing + 180
 		})
 			.setLngLat(point.geometry.coordinates)
 			.addTo(map);
 
-		if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
-
 		nextPointData = nextPoints;
 		streetViewPoint = point;
+
+		angleMarker?.on('dragend', () => {
+			const lngLat = angleMarker?.getLngLat();
+			if (!lngLat) return;
+			const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
+			setPoint(point as StreetViewPoint);
+		});
 	};
 
 	// マーカーの回転
 	$effect(() => {
 		if (cameraBearing && angleMarker) {
-			const markerContainer = angleMarker.getElement().firstElementChild;
-			if (markerContainer) markerContainer.style.transform = `rotateZ(${-cameraBearing + 180}deg)`;
+			angleMarker.setRotation(-cameraBearing + 180);
 		}
 	});
+
+	$inspect(streetViewPointData);
 
 	mapStore.onClick((e) => {
 		if (!e || $mapMode === 'edit') return;
@@ -247,15 +255,17 @@
 
 <div class="bg-base relative flex h-full w-full flex-grow">
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	<Map
-		bind:layerEntries
-		bind:tempLayerEntries
-		{streetViewLineData}
-		{streetViewPointData}
-		{angleMarker}
-		{streetViewPoint}
-		{showMapCanvas}
-	/>
+	{#if streetViewLineData.features.length > 0 && streetViewPointData.features.length > 0}
+		<Map
+			bind:layerEntries
+			bind:tempLayerEntries
+			{streetViewLineData}
+			{streetViewPointData}
+			{angleMarker}
+			{streetViewPoint}
+			{showMapCanvas}
+		/>
+	{/if}
 	<FooterMenu {layerEntries} />
 	<DataMenu />
 	<StreetViewCanvas

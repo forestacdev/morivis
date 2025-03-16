@@ -27,7 +27,7 @@ OUTPUT_DIR2 = (
 )
 
 # ノードデータとリンクデータのファイルパスを指定（適宜変更）
-nodes_file = OUTPUT_DIR / "THETA360.geojson"
+nodes_file = INPUT_DIR / "THETA360.geojson"
 links_file = INPUT_DIR / "THETA360_line.geojson"
 
 # GeoJSONファイルの読み込み

@@ -10,19 +10,26 @@
 	// $: console.log(makerPosition, cameraBearing);
 </script>
 
-<div class="pointer-events-none z-50 flex h-[100px] w-[100px]">
-	<div class="custom-marker"></div>
+<div class="c-player-marker pointer-events-none z-50 grid place-items-center">
+	<svg xmlns="http://www.w3.org/2000/svg" width="73" height="73" fill="none"
+		><path fill="#333" d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z" /><path
+			stroke="#333"
+			d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z"
+		/></svg
+	>
 </div>
 
 <style>
 	/* カメラ角度マーカー */
-	.custom-marker {
-		width: 50px;
-		height: 50px;
-		transform-origin: bottom right;
-		background: rgb(255, 255, 255);
-		rotate: 45deg;
-		background: linear-gradient(315deg, rgb(205, 223, 2) 0%, rgba(0, 250, 245, 0) 100%);
-		border-top-left-radius: 50px;
+	/* 現在地マーカー*/
+	:root {
+		--primary-color: #f6fe00;
+	}
+	.c-player-marker > svg {
+		transform-origin: center;
+		filter: drop-shadow(0 0 5px var(--primary-color));
+	}
+	.c-player-marker > svg > path {
+		fill: var(--primary-color);
 	}
 </style>
