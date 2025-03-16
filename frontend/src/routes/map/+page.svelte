@@ -84,7 +84,7 @@
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
 	let angleMarker = $state<Marker | null>(null); // マーカー
-	let streetViewPoint = $state<any>(null);
+	let streetViewPoint = $state<StreetViewPoint>(null);
 	let streetViewPointData = $state<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []

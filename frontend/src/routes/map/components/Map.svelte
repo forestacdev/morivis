@@ -185,7 +185,7 @@
 					type: 'line',
 					source: 'street_view_line',
 					paint: {
-						'line-color': '#ff0000',
+						'line-color': '#08fa00',
 						'line-width': 10,
 						'line-opacity': 1.0,
 						'line-blur': 0.5
@@ -201,7 +201,7 @@
 					type: 'circle',
 					source: 'street_view_point',
 					paint: {
-						'circle-color': '#ff0000',
+						'circle-color': '#08fa00',
 						'circle-radius': 10,
 						'circle-opacity': 1.0
 					}
@@ -354,9 +354,10 @@
 			if (!map) return;
 			const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
 			if (source) {
-				console.log('streetViewPointData', streetViewPointData);
 				source.setData(streetViewPointData);
 			}
+
+			console.log('streetViewPointData', streetViewPointData);
 		}
 	});
 	// selectedHighlightData.subscribe((data) => {
