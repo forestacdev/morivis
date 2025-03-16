@@ -142,13 +142,9 @@
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
 				terrain: gsiTerrainSource,
-				street_view_point: {
+				street_view_sources: {
 					type: 'vector',
-					url: 'pmtiles://./streetView/nodes.pmtiles'
-				},
-				street_view_line: {
-					type: 'geojson',
-					data: streetViewLineData
+					url: 'pmtiles://./streetView/THETA360.pmtiles'
 				},
 				selected_focus_sources: {
 					...selectedFocusSources
@@ -183,7 +179,8 @@
 					// ストリートビューのライン
 					id: '@street_view_line_layer',
 					type: 'line',
-					source: 'street_view_line',
+					source: 'street_view_sources',
+					'source-layer': 'THETA360_line',
 					paint: {
 						'line-color': '#08fa00',
 						'line-width': 10,
@@ -199,9 +196,8 @@
 					// ストリートビューのポイント
 					id: '@street_view_circle_layer',
 					type: 'circle',
-					source: 'street_view_point',
+					source: 'street_view_sources',
 					'source-layer': 'THETA360',
-
 					minzoom: 15,
 					paint: {
 						'circle-color': '#08fa00',
@@ -213,6 +209,23 @@
 						'circle-blur': 0.3
 					}
 				}
+				// {
+				// 	// ラベル
+				// 	id: '@street_view_circle_label',
+				// 	type: 'symbol',
+				// 	source: 'street_view_point',
+				// 	'source-layer': 'THETA360',
+				// 	layout: {
+				// 		'text-field': 'aaaa',
+				// 		'text-size': 12
+				// 	},
+				// 	paint: {
+				// 		'text-color': '#000000',
+				// 		'text-halo-color': '#ffffff',
+				// 		'text-halo-width': 1
+				// 	}
+				// }
+
 				// overlayLayer
 			],
 			sky: {

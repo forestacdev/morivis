@@ -178,12 +178,13 @@
 		nextPointData = nextPoints;
 		streetViewPoint = point;
 
-		angleMarker?.on('dragend', () => {
-			const lngLat = angleMarker?.getLngLat();
-			if (!lngLat) return;
-			const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
-			setPoint(point as StreetViewPoint);
-		});
+		// マーカーのドラッグ
+		// angleMarker?.on('dragend', () => {
+		// 	const lngLat = angleMarker?.getLngLat();
+		// 	if (!lngLat) return;
+		// 	const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
+		// 	setPoint(point as StreetViewPoint);
+		// });
 	};
 
 	// マーカーの回転
@@ -215,7 +216,7 @@
 			// map.setCenter(angleMarker._lngLat, {
 			// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
 			// });
-			map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
+			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
 
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
@@ -235,7 +236,7 @@
 			map.setPitch(0);
 			$mapMode = 'small';
 		} else {
-			map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
+			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
 
 			$mapMode = 'view';
 			showMapCanvas = true;
@@ -255,17 +256,17 @@
 
 <div class="bg-base relative flex h-full w-full flex-grow">
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	{#if streetViewLineData.features.length > 0 && streetViewPointData.features.length > 0}
-		<Map
-			bind:layerEntries
-			bind:tempLayerEntries
-			{streetViewLineData}
-			{streetViewPointData}
-			{angleMarker}
-			{streetViewPoint}
-			{showMapCanvas}
-		/>
-	{/if}
+
+	<Map
+		bind:layerEntries
+		bind:tempLayerEntries
+		{streetViewLineData}
+		{streetViewPointData}
+		{angleMarker}
+		{streetViewPoint}
+		{showMapCanvas}
+	/>
+
 	<FooterMenu {layerEntries} />
 	<DataMenu />
 	<StreetViewCanvas
