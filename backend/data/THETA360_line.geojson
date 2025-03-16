@@ -37,7 +37,7 @@
 { "type": "Feature", "properties": { "id": 31 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920733333333345, 35.5503 ], [ 136.9206, 35.550233333333331 ] ] } },
 { "type": "Feature", "properties": { "id": 32 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920633333333342, 35.550233333333331 ], [ 136.9206, 35.550233333333331 ] ] } },
 { "type": "Feature", "properties": { "id": 33 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.921627777777758, 35.553866666666664 ], [ 136.9216, 35.55395 ] ] } },
-{ "type": "Feature", "properties": { "id": 34 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.921627777777758, 35.553866666666664 ], [ 136.921613888888885, 35.55371944444444 ] ] } },
+{ "type": "Feature", "properties": { "id": 34 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.921547222222216, 35.553852777777777 ], [ 136.921613888888885, 35.55371944444444 ] ] } },
 { "type": "Feature", "properties": { "id": 35 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920383333333319, 35.550333333333334 ], [ 136.920216666666676, 35.550383333333336 ] ] } },
 { "type": "Feature", "properties": { "id": 36 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.920216666666676, 35.550383333333336 ], [ 136.92005, 35.5504 ] ] } },
 { "type": "Feature", "properties": { "id": 37 }, "geometry": { "type": "LineString", "coordinates": [ [ 136.92005, 35.5504 ], [ 136.920016666666669, 35.5503 ] ] } },
