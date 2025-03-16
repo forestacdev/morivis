@@ -2179,9 +2179,9 @@
     },
     {
         "id": "3f274290-615a-41ee-a79f-4dbbe0c3211c",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 66.6,
+        "angleZ": 0.0
     },
     {
         "id": "a97b6488-d714-402e-a187-22a364703662",
@@ -2623,9 +2623,9 @@
     },
     {
         "id": "b217d1ab-256c-4568-b932-6bbfd78ff9b4",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 159.84,
+        "angleZ": 0.0
     },
     {
         "id": "e933fbf0-eb98-4003-b310-8b7d24d30e64",
@@ -2875,9 +2875,9 @@
     },
     {
         "id": "bf88a7d0-8d76-49ae-9fad-f1b94a76f586",
-        "angleX": 0,
+        "angleX": 343.8,
         "angleY": 54.72,
-        "angleZ": 0
+        "angleZ": 347.76
     },
     {
         "id": "1d8d5060-0d6d-4236-af28-04508a87f241",
@@ -5239,9 +5239,9 @@
     },
     {
         "id": "90bea81b-96ec-46cf-a2c3-5f17b2080d11",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 7.92,
+        "angleZ": 0.0
     },
     {
         "id": "25384263-ba3d-449b-99eb-bf1267721af1",
@@ -5653,9 +5653,9 @@
     },
     {
         "id": "8718c06a-c2b8-48a2-b4bc-078f5c8a7adb",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 30.24,
+        "angleZ": 0.0
     },
     {
         "id": "7c0d3cb7-4b9b-45e4-8889-6a6d92ec46db",
@@ -5737,9 +5737,9 @@
     },
     {
         "id": "e05a0215-0025-4c34-9576-7fd1add32e78",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 40.32,
+        "angleZ": 0.0
     },
     {
         "id": "66ad565f-3706-43fc-a992-f0c3c4afe8e2",
@@ -6169,9 +6169,9 @@
     },
     {
         "id": "b5de7082-e92f-4da4-ad87-d96696b6201d",
-        "angleX": 0,
-        "angleY": 0,
-        "angleZ": 0
+        "angleX": 0.0,
+        "angleY": 22.32,
+        "angleZ": 0.0
     },
     {
         "id": "dfd89ab7-2149-4943-ac5f-006865c0a70c",
