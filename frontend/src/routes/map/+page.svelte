@@ -167,16 +167,6 @@
 			angleMarker.remove();
 		}
 
-		const popup = new maplibregl.Popup({
-			closeButton: false,
-			closeOnClick: false,
-			offset: 40,
-			anchor: 'bottom'
-		})
-			.setLngLat(point.geometry.coordinates)
-			.setHTML(point.properties.name)
-			.addTo(map);
-
 		angleMarker = new maplibregl.Marker({
 			element: markerContainer,
 
@@ -186,7 +176,7 @@
 			rotation: -cameraBearing + 180
 		})
 			.setLngLat(point.geometry.coordinates)
-			.setPopup(popup)
+
 			.addTo(map);
 
 		angleMarker.togglePopup();
@@ -237,12 +227,12 @@
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
-				duration: 500,
-				bearing: (cameraBearing + 180) % 360,
+				duration: 750,
+				bearing: -cameraBearing + 180,
 				pitch: 65
 			});
 
-			await delay(500);
+			await delay(750);
 			showMapCanvas = false;
 			showThreeCanvas = true;
 
@@ -254,6 +244,14 @@
 		} else {
 			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
 
+			map.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 20,
+				duration: 0,
+				bearing: -cameraBearing + 180,
+				pitch: 65
+			});
+
 			$mapMode = 'view';
 			showMapCanvas = true;
 			showThreeCanvas = false;
@@ -263,7 +261,9 @@
 			// マップを移動
 			map.easeTo({
 				zoom: 17,
-				duration: 500
+				bearing: 0,
+				pitch: 0,
+				duration: 750
 			});
 		}
 	});
