@@ -56,9 +56,7 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	},
 
 	// 傾斜量図 地理院
@@ -99,8 +97,6 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	}
 ];

@@ -110,9 +110,6 @@ interface BaseRasterEntry {
 	type: 'raster';
 	metaData: RasterMetaData;
 	interaction: RasterInteraction;
-	debug: boolean;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	extension: any;
 }
 
 export interface RasterImageEntry<T> extends BaseRasterEntry {

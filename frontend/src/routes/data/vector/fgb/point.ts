@@ -36,8 +36,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['name']
+			clickable: true
 		},
 		style: {
 			type: 'circle',
@@ -86,9 +85,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					layout: {}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	},
 	{
 		id: 'fac_phenology_2020',
@@ -122,8 +119,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['種名']
+			clickable: true
 		},
 		style: {
 			type: 'circle',
@@ -167,9 +163,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					layout: {}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	},
 	{
 		id: 'ensyurin_owl',
@@ -203,8 +197,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['樹種']
+			clickable: true
 		},
 		style: {
 			type: 'circle',
@@ -262,8 +255,6 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					layout: {}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	}
 ];

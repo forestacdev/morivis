@@ -28,7 +28,6 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 		},
 		interaction: {
 			clickable: false,
-			searchKeys: ['種類']
 		},
 		style: {
 			type: 'line',
@@ -87,8 +86,6 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 					}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	}
 ];

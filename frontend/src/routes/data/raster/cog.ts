@@ -37,7 +37,5 @@ export const cogEntry: RasterEntry[] = [
 				layout: {}
 			}
 		},
-		debug: false,
-		extension: {}
 	}
 ];

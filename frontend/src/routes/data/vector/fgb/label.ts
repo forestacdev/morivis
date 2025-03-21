@@ -37,8 +37,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['name', '建物名称']
+			clickable: true
 		},
 		style: {
 			type: 'symbol',
@@ -102,9 +101,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	},
 	{
 		id: 'fac_ziriki',
@@ -138,8 +135,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['name', 'category']
+			clickable: true
 		},
 		style: {
 			type: 'symbol',
@@ -187,9 +183,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	},
 	{
 		id: 'fac_poi',
@@ -223,8 +217,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['name', '種類']
+			clickable: true
 		},
 		style: {
 			type: 'symbol',
@@ -272,8 +265,6 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	}
 ];

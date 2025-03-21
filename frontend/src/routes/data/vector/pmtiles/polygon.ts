@@ -36,8 +36,7 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 			]
 		},
 		interaction: {
-			clickable: true,
-			searchKeys: ['小林班ID', '樹種', '林齢']
+			clickable: true
 		},
 		style: {
 			type: 'fill',
@@ -316,9 +315,7 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 					layout: {}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	}
 ];
 

@@ -47,46 +47,6 @@
 	// };
 
 	const searchFeature = async (searchWord: string) => {
-		const data = layerEntries.filter(
-			(layerEntry) =>
-				layerEntry.type === 'vector' &&
-				layerEntry.interaction.searchKeys &&
-				(layerEntry.format.type === 'geojson' || layerEntry.format.type === 'fgb')
-		);
-		if (!data) return;
-
-		const promises = data.map(async (layerEntry) => {
-			if (layerEntry.type !== 'vector') return;
-			const searchKeys = layerEntry.interaction.searchKeys?.map((key) => `properties.${key}`);
-			if (!searchKeys) return;
-
-			let featuresData: FeatureCollection = {
-				type: 'FeatureCollection',
-				features: []
-			};
-
-			if (layerEntry.format.type === 'geojson') {
-				featuresData = await getGeojson(layerEntry.format.url);
-			} else if (layerEntry.format.type === 'fgb') {
-				featuresData = await getFgbToGeojson(layerEntry.format.url);
-			}
-
-			const fuseOptions = {
-				threshold: 0.3, // あいまい検索のしきい値
-				keys: searchKeys // 検索対象のプロパティ（ドット記法）
-			};
-
-			const fuse = new Fuse(featuresData.features, fuseOptions);
-
-			const matchingFeatures = fuse.search(searchWord).map((result) => result.item);
-
-			return {
-				name: layerEntry.metaData.name,
-				features: matchingFeatures,
-				layerId: layerEntry.id
-			};
-		});
-
 		const test = searchData.filter((data) => {
 			return Object.values(data.prop).some(
 				(value) =>
@@ -95,7 +55,7 @@
 			);
 		});
 
-		const promises2 = test.map(async (data) => {
+		const promises = test.map(async (data) => {
 			const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
 
 			return {
@@ -104,11 +64,6 @@
 				layerId: data.file_id
 			};
 		});
-
-		if (test) {
-			const resultsData = await Promise.all(promises2);
-			results = resultsData;
-		}
 
 		const resultsData = await Promise.all(promises);
 
@@ -149,7 +104,7 @@
 </script>
 
 <div
-	class="duration-15 pointer-events-auto relative flex flex overflow-hidden rounded-full shadow-md transition-all"
+	class="duration-15 pointer-events-auto relative flex overflow-hidden rounded-full shadow-md transition-all"
 >
 	<input
 		type="text"

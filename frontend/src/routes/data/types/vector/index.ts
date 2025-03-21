@@ -24,7 +24,6 @@ export interface VectorProperties {
 
 export interface VectorInteraction {
 	clickable: boolean;
-	searchKeys: string[];
 }
 
 export interface TileMetaData {
@@ -54,9 +53,6 @@ interface BaseVectorEntry {
 	type: 'vector';
 	properties: VectorProperties;
 	interaction: VectorInteraction;
-	debug: boolean;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	extension: any;
 }
 
 export interface PolygonEntry<T> extends BaseVectorEntry {

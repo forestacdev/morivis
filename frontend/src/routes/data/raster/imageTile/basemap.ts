@@ -36,9 +36,7 @@ export const imageTileBaseMapEntry: RasterImageEntry<RasterBaseMapStyle>[] = [
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	},
 	{
 		id: 'gsi_seamlessphoto',
@@ -75,9 +73,7 @@ export const imageTileBaseMapEntry: RasterImageEntry<RasterBaseMapStyle>[] = [
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	},
 	// CS立体図
 	{
@@ -115,8 +111,6 @@ export const imageTileBaseMapEntry: RasterImageEntry<RasterBaseMapStyle>[] = [
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	}
 ];

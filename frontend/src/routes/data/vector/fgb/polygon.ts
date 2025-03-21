@@ -40,8 +40,7 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 		},
 		interaction: {
 			// インタラクションの設定
-			clickable: true, // クリック可能かどうか
-			searchKeys: ['小林班ID', '樹種', '林齢']
+			clickable: true // クリック可能かどうか
 		},
 		style: {
 			type: 'fill',
@@ -155,8 +154,6 @@ export const fgbPolygonEntry: PolygonEntry<GeoJsonMetaData>[] = [
 					layout: {}
 				}
 			}
-		},
-		extension: {},
-		debug: false
+		}
 	}
 ];

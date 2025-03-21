@@ -36,8 +36,6 @@ export const pmTilesRasterCategoricalEntry: RasterPMTilesEntry<RasterCategorical
 				paint: {},
 				layout: {}
 			}
-		},
-		debug: false,
-		extension: {}
+		}
 	}
 ];
