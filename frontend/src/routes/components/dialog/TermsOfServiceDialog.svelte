@@ -32,7 +32,7 @@
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">サービスの変更・停止</div>
-					<div>事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。</div>
+					<div>サーバー障害、メンテナンス、その他の理由により、本アプリのサービスを一時的または永久に停止することがあります。その際、当社は事前に通知を行う義務を負いません。</div>
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">知的財産権について</div>
