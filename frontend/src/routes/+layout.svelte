@@ -3,18 +3,24 @@
 
 	let { children } = $props();
 
-	import { onNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
 
-	// onNavigate((navigation) => {
-	// 	if (!document.startViewTransition) return;
+	import { MOBILE_WIDTH } from '$routes/constants';
+	import { isMobile } from '$routes/utils/ui';
 
-	// 	return new Promise((resolve) => {
-	// 		document.startViewTransition(async () => {
-	// 			resolve();
-	// 			await navigation.complete;
-	// 		});
-	// 	});
-	// });
+	type Device = 'mobile' | 'pc' | '';
+
+	let isDevice = $state<Device>('');
+	let deviceWidth = $state<number>(window.innerWidth);
+
+	onMount(() => {
+		// スマホかPCかの判定
+		if (isMobile()) {
+			isDevice = 'mobile';
+		} else {
+			isDevice = 'pc';
+		}
+	});
 </script>
 
 <svelte:head>
@@ -38,4 +44,10 @@
 	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
-{@render children()}
+<svelte:window on:resize={() => (deviceWidth = window.innerWidth)} />
+
+{#if (isDevice === 'mobile' && deviceWidth < MOBILE_WIDTH) || (isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)}
+	{@render children()}
+{:else}
+	<p>このデバイスは非対応です。再読み込みをしてください。</p>
+{/if}

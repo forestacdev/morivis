@@ -22,6 +22,9 @@ export interface MapPosition {
 	bearing: number;
 }
 
+/* スマホ判定の幅 */
+export const MOBILE_WIDTH = 1024;
+
 /** マップの初期位置 */
 export const MAP_POSITION: MapPosition = {
 	center: [136.923004009, 35.5509525769706],
