@@ -192,7 +192,7 @@
 				{:else if showProp === 'attributes'}
 					<div
 						transition:fly={{ duration: 200, x: 100 }}
-						class="css-scroll absolute flex h-full w-full flex-grow flex-col gap-2 overflow-y-auto"
+						class="c-scroll absolute flex h-full w-full flex-grow flex-col gap-2 overflow-y-auto"
 					>
 						{#if sidePopupData.properties}
 							{#each Object.entries(sidePopupData.properties) as [key, value]}

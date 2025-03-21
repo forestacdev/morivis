@@ -28,23 +28,23 @@
 	}
 
 	/* スクロールバー */
-	.css-scroll {
+	.c-scroll {
 		scrollbar-gutter: stable;
 	}
 
-	.css-scroll::-webkit-scrollbar {
+	.c-scroll::-webkit-scrollbar {
 		width: 7px;
 		height: 7px;
 	}
-	.css-scroll::-webkit-scrollbar-track {
+	.c-scroll::-webkit-scrollbar-track {
 		background-color: #d9d9d9;
 	}
-	.css-scroll::-webkit-scrollbar-thumb {
+	.c-scroll::-webkit-scrollbar-thumb {
 		background-color: var(--accent-color);
 	}
 
 	/* アイコン画像のドラッグを無効にする */
-	.css-no-drag-icon {
+	.c-no-drag-icon {
 		user-drag: none;
 		-webkit-user-drag: none;
 		-moz-user-select: none;
