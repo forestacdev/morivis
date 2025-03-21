@@ -9,10 +9,10 @@ import type { MapGeoJSONFeature } from 'maplibre-gl';
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
 
-/**  クリックイベントを発火するレイヤーID */
+/**  クリックイベントを発火するベクターレイヤーID */
 export const clickableVectorIds = writable<string[]>([]);
 
-/* クリックイベントを発火するレイヤーID */
+/* クリックイベントを発火するラスターレイヤーID */
 export const clickableRasterIds = writable<string[]>([]);
 
 /**  レイヤーの出典表示 */
