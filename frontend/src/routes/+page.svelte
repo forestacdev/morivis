@@ -58,7 +58,6 @@
 	import nodeConnectionsJson from '$routes/components/streetView/node_connections.json';
 	import StreetViewCanvas from '$routes/components/streetView/ThreeCanvas.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import DebugControl from '$routes/debug/_Index.svelte';
 	import {
 		addedLayerIds,
 		selectedLayerId,
@@ -295,8 +294,6 @@
 <SideMenu />
 <InfoDialog />
 <TermsOfServiceDialog />
-
-<DebugControl />
 
 <style>
 </style>

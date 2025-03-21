@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import bearing from '@turf/bearing';
-	import { delay } from 'es-toolkit';
-	import gsap from 'gsap';
+	import { GUI } from 'lil-gui';
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -13,7 +11,6 @@
 	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/+page.svelte';
-	import { gui } from '$routes/debug/utils';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 
 	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
@@ -73,9 +70,7 @@
 	let controllerY;
 	let controllerZ;
 
-	// if (gui) {
-	// 	gui.destroy(); // 既存の GUI を削除
-	// }
+	const gui = new GUI();
 
 	controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
 	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
@@ -430,6 +425,10 @@
 </div>
 
 <style>
+	/* NOTE: debug */
+	:global(.lil-gui) {
+		display: none !important;
+	}
 	canvas {
 		background-image: radial-gradient(#000000, #000000);
 		padding: 0;

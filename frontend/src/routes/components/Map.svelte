@@ -35,7 +35,6 @@
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
-	import { debugJson } from '$routes/debug/store';
 	import { createHighlightLayer, createLayersItems } from '$routes/layers';
 	import { createSourcesItems } from '$routes/sources';
 	import {
@@ -241,7 +240,6 @@
 		};
 
 		// NOTE:debug
-		if (import.meta.env.DEV) debugJson.set(mapStyle);
 
 		return mapStyle as StyleSpecification;
 	};
