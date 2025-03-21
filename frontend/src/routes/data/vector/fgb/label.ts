@@ -75,8 +75,8 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						'text-variable-anchor': ['bottom-left', 'bottom-right'],
 						'text-radial-offset': 2.1,
 						'text-justify': 'auto',
-						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.25,
+						// 'icon-image': ['get', '_prop_id'],
+						// 'icon-size': 0.1,
 						'icon-anchor': 'bottom'
 						// 'icon-image': [
 						// 	'case',
@@ -174,7 +174,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						'text-radial-offset': 2,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.2,
+						'icon-size': 0.1,
 						'icon-anchor': 'bottom'
 					},
 					paint: {
@@ -256,7 +256,7 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						'text-radial-offset': 2,
 						'text-justify': 'auto',
 						'icon-image': ['get', '_prop_id'],
-						'icon-size': 0.2,
+						'icon-size': 0.1,
 						'icon-anchor': 'bottom'
 					},
 					paint: {

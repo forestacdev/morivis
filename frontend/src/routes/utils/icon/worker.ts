@@ -48,7 +48,7 @@ const createProgram = (
 	return program;
 };
 
-const canvas = new OffscreenCanvas(256, 256);
+const canvas = new OffscreenCanvas(512, 512);
 const gl = canvas.getContext('webgl2');
 
 self.onmessage = async (e) => {
@@ -72,6 +72,9 @@ self.onmessage = async (e) => {
 
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 		const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+
+		const imageResolutionUniformLocation = gl.getUniformLocation(program, 'u_imageResolution');
+		gl.uniform2f(imageResolutionUniformLocation, image.width, image.height);
 
 		const positionBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);

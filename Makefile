@@ -1,3 +1,7 @@
+dev:
+	cd frontend && \
+	pnpm run dev
+
 360_update: ## データの更新
 	cd backend && \
 	uv run scripts/node.py && \

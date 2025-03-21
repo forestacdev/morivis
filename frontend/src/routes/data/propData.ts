@@ -255,6 +255,24 @@ export const propData: PropData = {
 			'樹状架構が人と人をつなげる「みち」となる。ウッド・ラボ棟前面に広がるウッドデッキは、学生たちがグリーンウッドワーク（生木を使った木工製作）を行う場。そして、休憩や昼食を取る交流の場でもある。この空間に、庇・屋根付き通路から構成する「木立（こだち）のこみち」を建設した。アカデミーの雰囲気に適した形態として「樹状」で庇・通路のデザインを統一し、柱梁・方杖を細い部材としたことで、既存の校舎や植栽空間にも馴染む軽やかな架構となり、快適な軒下通路・休憩の場・木工製作の場が生まれた。',
 		url: 'https://www.forest.ac.jp/facilities/self/jiriki-kodachi/'
 	},
+	ziriki_22: {
+		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_22.webp`,
+		description: `今回の自力建設は、2007年度の自力建設「地空楼」を増改築し、木造建築倉庫を建築することでした。
+            丁稚という言葉は、大工などの職人仕事で、門下に弟子入りした新入りなどのことをいいます。
+            それは、立場は違えど新しく建築の世界に夢を持ち勉学や技術習得に励む私たちに近しいのではないかという思いと、コンセプトの秘密基地にかけて「丁稚基地」と名付けました。
+            またここを利用するすべての人が、こだわりと愛着を持って、道具と倉庫本体を扱えるように、その拠点となれるという思いが込められています。`,
+		url: 'https://www.forest.ac.jp/facilities/self/jiriki-decchi/'
+	},
+	ziriki_23: {
+		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_23.webp`,
+		description: ``,
+		url: 'https://www.forest.ac.jp/facilities/self/jiriki-hotori/'
+	},
+	ziriki_24: {
+		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_24.webp`,
+		description: `小規模木材乾燥庫の計画`,
+		url: 'https://www.forest.ac.jp/facilities/self/shiori-jiriki2024/'
+	},
 	// other_point
 	sinrinken: {
 		// 岐阜県森林研究所

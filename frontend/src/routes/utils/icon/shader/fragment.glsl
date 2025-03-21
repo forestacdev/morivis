@@ -6,6 +6,7 @@ precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
+uniform vec2 u_imageResolution; // 画像の解像度
 uniform sampler2D u_texture; // 画像テクスチャ
 
 out vec4 outColor; // 出力する色
@@ -15,7 +16,7 @@ out vec4 outColor; // 出力する色
 // 円形マスク関数
 float circleMask(vec2 _st, vec2 center, float radius) {
     float dist = length(_st - center);
-    float edgeWidth = 0.02; // エッジ幅を増加
+    float edgeWidth = 1.0 / u_resolution.x * 3.0; // 自動でスケール
     return 1.0 - smoothstep(radius - edgeWidth, radius + edgeWidth, dist);
 }
 
@@ -41,10 +42,27 @@ float triangleMask(vec2 p, vec2 p0, vec2 p1, vec2 p2) {
 }
 
 void main(void) {
+    // 画像とキャンバスのアスペクト比
+    float canvasAspect = u_resolution.x / u_resolution.y;
+    float imageAspect = u_imageResolution.x / u_imageResolution.y;
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
     
     // テクスチャ座標 yを反転
     vec2 texCoord = vec2(st.x, 1.0 - st.y);
+
+
+
+    if (imageAspect > canvasAspect) {
+        // 横長の画像：左右を削る
+        float scale = canvasAspect / imageAspect;
+        float offset = (1.0 - scale) / 2.0;
+        texCoord.x = offset + texCoord.x * scale;
+    } else {
+        // 縦長の画像：上下を削る
+        float scale = imageAspect / canvasAspect;
+        float offset = (1.0 - scale) / 2.0;
+        texCoord.y = offset + texCoord.y * scale;
+    }
 
     // 円形マスクの設定
     float radius = 0.4;
