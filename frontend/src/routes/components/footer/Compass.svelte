@@ -42,6 +42,11 @@
 		}
 	});
 
+	// マップの回転をリセットする関数
+	const resetMapRotation = () => {
+		mapStore.easeTo({ bearing: 0 });
+	};
+
 	onMount(() => {
 		if (!element) return;
 		Draggable.create(element, {
@@ -49,24 +54,17 @@
 			inertia: true, // 慣性を有効化
 			onDrag: function () {
 				const rotation = normalizeAngle(this.rotation); // 回転値を正規化して保持
-				const map = mapStore.getMap();
-				if (map) {
-					map.setBearing(rotation * -1); // マップの回転を更新
-					// map.easeTo({ bearing: rotation * -1 });
+				mapStore.setBearing(rotation * -1);
+			},
+			onClick: function () {
+				mapStore.easeTo({ bearing: 0 });
+			},
+			onDragEnd: function () {
+				const bearing = mapStore.getBearing();
+				if (bearing && bearing >= -7 && bearing <= 7) {
+					mapStore.easeTo({ bearing: 0 });
 				}
 			}
-			// onThrowComplete: function () {
-			// 	// ドラッグ終了後にスナップ処理
-			// 	if (Math.abs(normalizeAngle(rotation)) <= 7) {
-			// 		gsap.to(element, {
-			// 			rotation: 0, // 0度にスナップ
-			// 			duration: 0.3, // アニメーションの長さ
-			// 			onUpdate: () => {
-			// 				rotation = normalizeAngle(this.targets()[0]._gsTransform.rotation);
-			// 			}
-			// 		});
-			// 	}
-			// }
 		});
 	});
 </script>
@@ -75,25 +73,20 @@
 	<!-- PC -->
 	<div
 		bind:this={element}
-		class="bg-main absolute bottom-[40px] right-[20px] grid h-[150px] w-[150px] place-items-center overflow-hidden rounded-full"
+		class="bg-main absolute bottom-[40px] right-[20px] grid h-[120px] w-[120px] place-items-center overflow-hidden rounded-full"
 	>
 		<svg
-			class="scale-50"
+			class="h-full w-full scale-50"
 			xmlns="http://www.w3.org/2000/svg"
 			width="132"
 			height="132"
 			viewBox="0 0 132 132"
 		>
 			<g transform="translate(47,0)">
-				<path fill="#000" d="m19 0 16.455 66H2.545L19 0Z" />
+				<path fill="#299413" d="m19 0 16.455 66H2.545L19 0Z" />
 				<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
 			</g>
 		</svg>
-
-		<button
-			class="pointer-events-auto absolute h-full w-full bg-white"
-			onclick={() => ($isStreetView = !$isStreetView)}>360</button
-		>
 	</div>
 {:else}
 	<!-- Mobile -->

@@ -5,6 +5,7 @@ import type {
 	StyleSpecification,
 	LngLat,
 	AnimationOptions,
+	EaseToOptions,
 	SourceSpecification,
 	LayerSpecification,
 	TerrainSpecification,
@@ -217,7 +218,7 @@ const createMapStore = () => {
 		map.panTo(lngLat, option);
 	};
 
-	const easeTo = (options: AnimationOptions) => {
+	const easeTo = (options: EaseToOptions) => {
 		if (!map) return;
 		map.easeTo(options);
 	};
@@ -410,8 +411,12 @@ const createMapStore = () => {
 		getMap: () => map,
 		queryRenderedFeatures,
 		getZoom: () => map?.getZoom(),
+		getCenter: () => map?.getCenter(),
+		getPitch: () => map?.getPitch(),
+		getBearing: () => map?.getBearing(),
+		setBearing: (bearing: number) => map?.setBearing(bearing),
 		panTo,
-		easeTo,
+		easeTo: (options: EaseToOptions) => easeTo(options),
 		addSearchFeature,
 		focusLayer,
 		focusFeature,

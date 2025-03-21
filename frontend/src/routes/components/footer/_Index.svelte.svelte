@@ -33,13 +33,13 @@
 		class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
 	>
 		<Compass />
-		<div class="bg-accent absolute bottom-[30px] right-[20px]">{zoom.toFixed(1)}</div>
+		<div class="absolute bottom-[40px] right-[60px] text-base font-bold">{zoom.toFixed(1)}</div>
 		<Attribution />
 	</div>
 {:else}
 	<!-- Mobile -->
 	<div
-		class="bottom-0 left-0 flex flex h-[70px] w-full flex-grow items-center justify-start gap-2"
+		class="bottom-0 left-0 flex h-[70px] w-full flex-grow items-center justify-start gap-2"
 	></div>
 	<Compass />
 {/if}
