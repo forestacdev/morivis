@@ -56,7 +56,7 @@
 				return data.image;
 			}
 		}
-		return FEATURE_NO_IMAGE_PATH;
+		return null;
 	});
 
 	const edit = () => {
@@ -101,15 +101,16 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<div class="relative aspect-video w-full flex-shrink-0 overflow-hidden rounded-md">
-			<img
-				transition:fade
-				class="block h-full w-full object-cover"
-				crossOrigin="anonymous"
-				alt="画像"
-				src={srcData || FEATURE_NO_IMAGE_PATH}
-			/>
-			<!-- {#await promise then url}
+		{#if srcData}
+			<div class="relative aspect-video w-full flex-shrink-0 overflow-hidden rounded-md">
+				<img
+					transition:fade
+					class="block h-full w-full object-cover"
+					crossOrigin="anonymous"
+					alt="画像"
+					src={srcData}
+				/>
+				<!-- {#await promise then url}
 				<img
 					transition:fade
 					class="block h-full w-full object-cover"
@@ -118,7 +119,8 @@
 					src={url}
 				/>
 			{/await} -->
-		</div>
+			</div>
+		{/if}
 		<div class="flex h-full flex-col gap-2">
 			<!-- タイトルを表示 -->
 			<div class="flex flex-shrink-0 flex-col gap-1">
