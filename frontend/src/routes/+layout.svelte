@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 
 	import { MOBILE_WIDTH } from '$routes/constants';
-	import { isMobile } from '$routes/utils/ui';
+	import { isPc } from '$routes/utils/ui';
 
 	type Device = 'mobile' | 'pc' | '';
 
@@ -15,10 +15,10 @@
 
 	onMount(() => {
 		// スマホかPCかの判定
-		if (isMobile()) {
-			isDevice = 'mobile';
-		} else {
+		if (isPc()) {
 			isDevice = 'pc';
+		} else {
+			isDevice = 'mobile';
 		}
 	});
 </script>
@@ -46,7 +46,7 @@
 
 <svelte:window on:resize={() => (deviceWidth = window.innerWidth)} />
 
-{#if (isDevice === 'mobile' && deviceWidth < MOBILE_WIDTH) || (isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)}
+{#if (isDevice === 'mobile' && deviceWidth <= MOBILE_WIDTH) || (isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)}
 	{@render children()}
 {:else}
 	<p>このデバイスは非対応です。再読み込みをしてください。</p>

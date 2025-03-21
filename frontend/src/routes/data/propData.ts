@@ -48,20 +48,20 @@ export const propData: PropData = {
 	// アカデミー施設
 	fac_center: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`,
-		description:
-			'アカデミーの玄関であるエントランスホールからテクニカルゾーン、宿泊ゾーン、森の体験ゾーンへと繋がっていきます。ここには講義室や事務室、ゆったりとした学生ホールなどを備えています。',
+		description: `アカデミーの玄関であるエントランスホールからテクニカルゾーン、宿泊ゾーン、森の体験ゾーンへと繋がっていきます。
+                        ここには講義室や事務室、ゆったりとした学生ホールなどを備えています。`,
 		url: 'https://www.forest.ac.jp/facilities/centerzone/'
 	},
 	fac_cottage: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_cottage.webp`,
-		description:
-			'ゲストや研修・講座受講者のための宿泊施設六角形ユニットで構成され、大小様々な部屋が15部屋あり、最大30人が利用できます。厨房、食堂、洗面所、共同浴室、談話室も備えています。',
+		description: `ゲストや研修・講座受講者のための宿泊施設六角形ユニットで構成され、大小様々な部屋が15部屋あり、最大30人が利用できます。
+                        厨房、食堂、洗面所、共同浴室、談話室も備えています。`,
 		url: 'https://www.forest.ac.jp/facilities/stay/'
 	},
 	fac_forest_labo: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_forest_labo.webp`,
-		description:
-			'情報システムを支える情報処理室や数多くの関連図書を保有する図書室を備えます。このほか、森の分野と環境の分野に関連する研究施設を備えています。',
+		description: `情報システムを支える情報処理室や数多くの関連図書を保有する図書室を備えます。
+                このほか、森の分野と環境の分野に関連する研究施設を備えています。`,
 		url: 'https://www.forest.ac.jp/facilities/centerzone/'
 	},
 	fac_kakoutou: {
@@ -76,14 +76,12 @@ export const propData: PropData = {
 	},
 	fac_koubou: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_koubou.webp`,
-		description:
-			'一般県民向けの木工講座などをサポートする施設工作に関するさまざまな木工機械などを備えています',
+		description: `一般県民向けの木工講座などをサポートする施設工作に関するさまざまな木工機械などを備えています`,
 		url: 'https://www.forest.ac.jp/facilities/testroom/'
 	},
 	fac_morinos: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_morinos.webp`,
-		description:
-			'すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。',
+		description: `すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。`,
 		url: 'https://morinos.net/'
 	},
 	fac_open_labo: {
@@ -93,7 +91,7 @@ export const propData: PropData = {
 	},
 	fac_ringyoukikaitou: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/fac_ringyoukikaitou.webp`,
-		description: '高性能林業機械を格納し、その技術を学ぶための学習施設',
+		description: `高性能林業機械を格納し、その技術を学ぶための学習施設`,
 		url: 'https://www.forest.ac.jp/facilities/fmeb/'
 	},
 	fac_seizaitou: {

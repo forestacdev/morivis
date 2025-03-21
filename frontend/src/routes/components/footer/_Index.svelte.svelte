@@ -4,10 +4,11 @@
 	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import type { GeoDataEntry } from '$routes/data/types';
-	import { mapStore } from '$routes/store/map';
 	import Attribution from '$routes/components/footer/Attribution.svelte';
 	import Compass from '$routes/components/footer/Compass.svelte';
+	import type { GeoDataEntry } from '$routes/data/types';
+	import { mapStore } from '$routes/store/map';
+	import { isPc } from '$routes/utils/ui';
 
 	let zoom = $state(0);
 
@@ -26,13 +27,22 @@
 	} = $props();
 </script>
 
-<div
-	class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
->
+{#if isPc()}
+	<!-- PC -->
+	<div
+		class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
+	>
+		<Compass />
+		<div class="bg-accent absolute bottom-[30px] right-[20px]">{zoom.toFixed(1)}</div>
+		<Attribution />
+	</div>
+{:else}
+	<!-- Mobile -->
+	<div
+		class="bottom-0 left-0 flex flex h-[70px] w-full flex-grow items-center justify-start gap-2"
+	></div>
 	<Compass />
-	<div class="bg-accent absolute bottom-[30px] right-[20px]">{zoom.toFixed(1)}</div>
-	<Attribution />
-</div>
+{/if}
 
 <style>
 </style>

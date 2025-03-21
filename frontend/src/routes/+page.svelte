@@ -1,5 +1,7 @@
 <script lang="ts" module>
 	import type { NearestPoint } from '@turf/nearest-point';
+
+	import { isPc } from '$routes/utils/ui';
 	export interface StreetViewPoint {
 		type: 'Feature';
 		geometry: {
@@ -115,24 +117,22 @@
 
 		const imageId = getStreetViewParams();
 		if (imageId) {
-			const targetPoint = streetViewPointData.features.find((point) => {
-				return point.properties['ID'] === imageId;
-			});
-
-			if (targetPoint) {
-				const mapInstance = mapStore.getMap();
-				if (mapInstance) {
-					mapInstance.flyTo({
-						center: targetPoint.geometry.coordinates,
-						zoom: 18,
-						speed: 1.5,
-						curve: 1
-					});
-				}
-			}
-
-			setPoint(targetPoint);
-			$isStreetView = true;
+			// const targetPoint = streetViewPointData.features.find((point) => {
+			// 	return point.properties['ID'] === imageId;
+			// });
+			// if (targetPoint) {
+			// 	const mapInstance = mapStore.getMap();
+			// 	if (mapInstance) {
+			// 		mapInstance.flyTo({
+			// 			center: targetPoint.geometry.coordinates,
+			// 			zoom: 18,
+			// 			speed: 1.5,
+			// 			curve: 1
+			// 		});
+			// 	}
+			// }
+			// setPoint(targetPoint);
+			// $isStreetView = true;
 		}
 	});
 
@@ -268,29 +268,58 @@
 	});
 </script>
 
-<div class="bg-base relative flex h-full w-full flex-grow">
-	<LayerMenu bind:layerEntries bind:tempLayerEntries />
+{#if isPc()}
+	<!-- PC -->
+	<div class="bg-base relative flex h-full w-full flex-grow">
+		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
-	<Map
-		bind:layerEntries
-		bind:tempLayerEntries
-		{streetViewLineData}
-		{streetViewPointData}
-		{angleMarker}
-		{streetViewPoint}
-		{showMapCanvas}
-	/>
+		<Map
+			bind:layerEntries
+			bind:tempLayerEntries
+			{streetViewLineData}
+			{streetViewPointData}
+			{angleMarker}
+			{streetViewPoint}
+			{showMapCanvas}
+		/>
+		<FooterMenu {layerEntries} />
+		<DataMenu />
 
-	<FooterMenu {layerEntries} />
-	<DataMenu />
-	<StreetViewCanvas
-		{streetViewPoint}
-		{nextPointData}
-		{showThreeCanvas}
-		bind:cameraBearing
-		{setPoint}
-	/>
-</div>
+		<StreetViewCanvas
+			{streetViewPoint}
+			{nextPointData}
+			{showThreeCanvas}
+			bind:cameraBearing
+			{setPoint}
+		/>
+	</div>
+{:else}
+	<!-- Mobile -->
+	<div class="bg-base relative flex h-full w-full flex-grow flex-col">
+		<LayerMenu bind:layerEntries bind:tempLayerEntries />
+
+		<Map
+			bind:layerEntries
+			bind:tempLayerEntries
+			{streetViewLineData}
+			{streetViewPointData}
+			{angleMarker}
+			{streetViewPoint}
+			{showMapCanvas}
+		/>
+		<FooterMenu {layerEntries} />
+		<DataMenu />
+
+		<StreetViewCanvas
+			{streetViewPoint}
+			{nextPointData}
+			{showThreeCanvas}
+			bind:cameraBearing
+			{setPoint}
+		/>
+	</div>
+{/if}
+
 <SideMenu />
 <InfoDialog />
 <TermsOfServiceDialog />
