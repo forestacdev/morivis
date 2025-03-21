@@ -126,48 +126,10 @@
 		}
 	};
 
-	// **カメラを指定したオブジェクトの方向に向ける**
-	const lookAtSphere = (target: THREE.Mesh) => {
-		// ターゲットの座標を取得
-		const targetPos = target.position;
-
-		// カメラの位置をターゲットと正反対に設定
-		const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
-		camera.position.set(oppositePos.x, camera.position.y, oppositePos.z);
-
-		// カメラをターゲットの方向へ向ける
-		camera.lookAt(target.position);
-	};
-
-	const lookAtSphereAnime = (target: THREE.Mesh, point: StreetViewPoint) => {
-		// ターゲットの座標を取得
-		// const targetPos = target.position.clone();
-
-		// // カメラの位置をターゲットと正反対に設定（X, Z を反転）
-		// const oppositePos = new THREE.Vector3(-targetPos.x, targetPos.y, -targetPos.z);
-
-		// // GSAPを使ってカメラの位置をスムーズに移動
-		// gsap.to(camera.position, {
-		// 	x: oppositePos.x,
-		// 	y: camera.position.y,
-		// 	z: oppositePos.z,
-		// 	duration: 0.3, // 1.5秒かけて移動
-		// 	ease: 'power2.out',
-		// 	onUpdate: () => {
-		// 		camera.lookAt(targetPos);
-		// 	},
-
-		// 	onComplete: () => {
-		// 		setPoint(point);
-		// 	}
-		// });
-
-		setPoint(point);
-	};
 	const worker = new Worker(new URL('./worker.ts', import.meta.url), {
 		type: 'module'
 	});
-	const created360Mesh = async (point: StreetViewPoint): void => {
+	const created360Mesh = async (point: StreetViewPoint) => {
 		if (!point) return;
 		fromPoint = point;
 		isLoading = true;
@@ -208,6 +170,7 @@
 					// texture.mapping = THREE.CubeReflectionMapping;
 					// texture.flipY = true;
 					// shaderMaterial.needsUpdate = true;
+					if (!angleData) return;
 
 					geometryBearing.x = angleData.angleX;
 					geometryBearing.y = angleData.angleY;
@@ -289,15 +252,13 @@
 		scene.add(skyMesh);
 
 		if ($DEBUG_MODE) {
-			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-			scene.add(helper);
-
 			// // ヘルパー方向
 			const axesHelper = new THREE.AxesHelper(1000);
 			scene.add(axesHelper);
+
+			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+			scene.add(helper);
 		}
-		const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-		scene.add(helper);
 
 		// レンダラー
 
@@ -358,11 +319,7 @@
 		onResize();
 	});
 	const nextPoint = (point) => {
-		const target = spheres.find((sphere) => sphere.name === point.properties['ID']);
-
-		if (!target) return;
-
-		lookAtSphereAnime(target, point);
+		setPoint(point);
 	};
 
 	$effect(() => created360Mesh(streetViewPoint));
@@ -383,7 +340,6 @@
 		{#if streetViewPoint}
 			<div class="z-100 absolute left-[100px] top-[100px] bg-white p-2">
 				{streetViewPoint.properties['Date']}
-				{streetViewPoint.properties['Time']}
 			</div>
 		{/if}
 		<div

@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte';
 
 	import { MOBILE_WIDTH } from '$routes/constants';
+	import { showTermsDialog } from '$routes/store';
+	import { checkLocalStorage } from '$routes/utils/localStorage';
 	import { isPc } from '$routes/utils/ui';
 
 	type Device = 'mobile' | 'pc' | '';
@@ -19,6 +21,10 @@
 			isDevice = 'pc';
 		} else {
 			isDevice = 'mobile';
+		}
+
+		if (checkLocalStorage('userData')) {
+			showTermsDialog.set(true);
 		}
 	});
 </script>

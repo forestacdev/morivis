@@ -5,6 +5,7 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
+	import Logo from '$routes/components/sideMenu/Logo.svelte';
 	import {
 		showSideMenu,
 		showDataMenu,
@@ -13,7 +14,6 @@
 		showTermsDialog
 	} from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import Logo from '$routes/components/sideMenu/Logo.svelte';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -65,13 +65,13 @@
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
 				<span class="select-none">地図を編集</span>
 			</button>
-			<button
+			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={() => mapMode.set('analysis')}
 			>
 				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
 				<span class="select-none">地図の解析</span>
-			</button>
+			</button> -->
 			<button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleDataMenu}
@@ -102,6 +102,14 @@
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
 				<span class="select-none">演習林GISについて</span>
 			</button>
+			<a
+				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				href="https://github.com/forestacdev/enshurin-viewer"
+				target="_blank"
+				rel="noopener noreferrer"
+				><Icon icon="mdi:github" class="h-8 w-8" />
+				<span>GitHub</span></a
+			>
 
 			<a
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"

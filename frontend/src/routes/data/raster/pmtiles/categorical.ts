@@ -17,8 +17,10 @@ export const pmTilesRasterCategoricalEntry: RasterPMTilesEntry<RasterCategorical
 			maxZoom: 10,
 			tileSize: 512,
 			xyzImageTile: { x: 901, y: 403, z: 10 },
-			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
+			bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
+			coverImage: null
 		},
+
 		interaction: {
 			clickable: true,
 			overlay: true
