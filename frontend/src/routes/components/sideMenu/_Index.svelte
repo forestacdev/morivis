@@ -100,7 +100,7 @@
 				onclick={toggleInfoDialog}
 			>
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
-				<span class="select-none">演習林GISについて</span>
+				<span class="select-none">このアプリについて</span>
 			</button>
 			<a
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
@@ -120,6 +120,7 @@
 				<span>森林文化アカデミーHP</span></a
 			>
 		</ui>
+		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>
 	</div>
 {/if}
 

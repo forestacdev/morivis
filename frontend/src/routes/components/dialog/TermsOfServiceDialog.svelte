@@ -10,16 +10,19 @@
 		transition:fade={{ duration: 100 }}
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-50"
 	>
-		<div class="bg-opacity-8 bg-main h-[600px] w-[800px] rounded-md p-2">
-			<div class="flex flex-shrink-0 items-center justify-between pb-2">
-				<span class="text-lg font-bold">利用規約</span>
+		<div
+			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4"
+		>
+			<div class="flex flex-shrink-0 items-center justify-between overflow-auto pb-4">
+				<span class="text-2xl font-bold">利用規約</span>
 			</div>
-			<div class="c-scroll h-full flex-grow overflow-y-auto overflow-x-hidden">
-				<div class="pb-2">
+			<div class="c-scroll flex h-full flex-grow flex-col overflow-y-auto overflow-x-hidden pb-4">
+				<div class="pb-4">
 					本規約は、本アプリケーション（以下、「本アプリ」）の利用に関する条件を定めるものです。本アプリをご利用いただくことで、本規約に同意したものとみなします。
 				</div>
-				<div class="pb-2">
-					本アプリは、地図情報の閲覧および関連機能の提供を目的としています。以下の行為を禁止します：
+				<div class="pb-4">
+					<div class="text-lg font-bold">本アプリの目的と禁止事項</div>
+					本アプリは、地図情報の閲覧および関連機能の提供を目的としています。 ご利用にあたり、以下の行為を禁止します：
 					<div class="pl-2">
 						<div>1. 本アプリの機能やコンテンツを不正に利用する行為</div>
 						<div>2. 他のユーザーや第三者の権利を侵害する行為</div>
@@ -27,41 +30,55 @@
 						<div>4. 法律や公序良俗に反する行為</div>
 					</div>
 				</div>
-				<div class="pb-2">
-					本アプリで提供される地図情報およびその他のコンテンツの正確性や最新性について保証するものではありません。本アプリの利用によって生じたいかなる損害についても、当社は一切の責任を負いません。
-					サーバー障害、メンテナンス、その他の理由により本アプリのサービスを一時的または永久に停止することがあります。この場合、当社は事前通知を行う義務を負いません。
+				<div class="pb-4">
+					<div class="text-lg font-bold">サービスの変更・停止</div>
+					<div>事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。</div>
 				</div>
-				<div class="pb-2">
-					本アプリ内の地図データ、画像、プログラムその他のコンテンツに関する著作権、商標権その他の知的財産権は、当社または正当な権利を有する第三者に帰属します。これらを無断で複製、改変、再配布することを禁止します。
+				<div class="pb-4">
+					<div class="text-lg font-bold">知的財産権について</div>
+					<div>
+						本アプリ内の地図データ、画像、プログラムその他のコンテンツに関する著作権、商標権その他の知的財産権は、当社または正当な権利を有する第三者に帰属します。これらを無断で複製、改変、再配布することを禁止します。
+					</div>
 				</div>
-				<div class="pb-2">
-					本アプリの利用に際して取得した個人情報は、当社のプライバシーポリシーに基づき適切に取り扱います。本アプリでは、サービスの品質向上および利用状況の分析のために、Google
-					アナリティクスを利用しています。Google アナリティクスは、トラフィックデータの収集のために
-					Cookie
-					を使用しています。このデータは匿名で収集されており、個人を特定するものではありません。Google
-					によるデータの取扱いについては、Google のポリシーをご参照ください。
+				<div class="pb-4">
+					<div class="text-lg font-bold">地図情報に関する注意および免責事項</div>
+					<div>
+						本アプリで表示される地図は、岐阜県立森林文化アカデミーの演習林を対象としたものであり、当該施設とは直接の関係はありません。個人が制作したものであり、正式な地図や情報と異なる場合があります。内容の正確性・最新性は保証されませんので、参考情報としてご利用ください。
+						また、本アプリの利用により生じたいかなる損害についても、当社は一切の責任を負いません。
+					</div>
 				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
+				<div class="pb-4">
+					<div class="text-lg font-bold">個人情報の取扱いについて</div>
+					<div>
+						本アプリの利用に際して取得した個人情報は、当社のプライバシーポリシーに基づき、適切に取り扱います。
+					</div>
 				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
+				<div class="pb-4">
+					<div class="text-lg font-bold">Google アナリティクスの利用について</div>
+					<div>
+						本アプリでは、サービスの品質向上および利用状況の分析のために、Google
+						アナリティクスを使用しています。Google
+						アナリティクスは、トラフィックデータの収集のために Cookie
+						を使用しており、データは匿名で収集され、個人を特定するものではありません。Google
+						によるデータの取扱いについては、<a
+							class="text-accent underline"
+							target="_blank"
+							href="https://policies.google.com/privacy"
+							rel="noopener noreferrer">Google のプライバシーポリシー</a
+						>をご確認ください。
+					</div>
 				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
-				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
-				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
-				</div>
-				<div class="pb-2">
-					事前通知なしに本アプリの内容や機能を変更、または提供を終了する場合があります。
+				<div class="pb-4">
+					<div class="text-lg font-bold">本規約の変更について</div>
+					<div>
+						事前の通知なしに、本アプリの内容や機能を変更、または提供を終了する場合があります。
+					</div>
 				</div>
 			</div>
-			<div>
-				<button onclick={() => showTermsDialog.set(false)} class="c-btn-confirm"> 同意する </button>
+			<div class="flex flex-shrink-0 justify-center overflow-auto pt-2">
+				<button onclick={() => showTermsDialog.set(false)} class="c-btn-confirm px-6 text-lg">
+					同意する
+				</button>
 			</div>
 		</div>
 	</div>
