@@ -218,11 +218,6 @@
 		const map = mapStore.getMap();
 		if (!map) return;
 		if (value) {
-			// map.setCenter(angleMarker._lngLat, {
-			// 	zoom: map.getZoom() > 18 ? map.getZoom() : 18
-			// });
-			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 1);
-
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
@@ -241,8 +236,6 @@
 			map.setPitch(0);
 			$mapMode = 'small';
 		} else {
-			// map.setPaintProperty('@street_view_line_layer', 'line-opacity', 0);
-
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,

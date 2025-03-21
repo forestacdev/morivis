@@ -12,30 +12,26 @@
 	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import { isTerrain3d } from '$routes/store';
+	import { showStreetViewLayer } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 
-	const toggle3d = (e: any) => {
-		isTerrain3d.set(!$isTerrain3d);
+	const toggleLayer = () => {
+		showStreetViewLayer.set(!$showStreetViewLayer);
 	};
 
-	isTerrain3d.subscribe((is3d) => {
+	showStreetViewLayer.subscribe((showLayer) => {
 		const map = mapStore.getMap();
 		if (!map) return;
-		if (is3d) {
-			map.setTerrain({
-				source: 'terrain',
-				exaggeration: 1.0
-			});
-			map.easeTo({ pitch: 60 });
+		if (showLayer) {
+			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'visible');
+			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'visible');
 		} else {
-			map.setTerrain(null);
-			map.easeTo({ pitch: 0 });
+			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'none');
+			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'none');
 		}
 	});
 
 	let element = $state<HTMLButtonElement | null>(null);
-	// let rotation = $state<number>(0);
 
 	onMount(() => {
 		if (!element) return;
@@ -44,10 +40,13 @@
 
 <button
 	bind:this={element}
-	onclick={toggle3d}
+	onclick={toggleLayer}
 	class="bg-main grid h-[50px] w-[50px] place-items-center rounded-full p-2"
 >
-	<Icon icon={$isTerrain3d ? 'mdi:video-2d' : 'mdi:video-3d'} class="h-8 w-8 text-base" />
+	<Icon
+		icon="fluent:video-360-20-regular"
+		class="h-8 w-8 {$showStreetViewLayer ? 'text-accent' : ''}"
+	/>
 </button>
 
 <style>

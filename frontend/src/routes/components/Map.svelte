@@ -176,6 +176,7 @@
 						'line-blur': 0.5
 					},
 					layout: {
+						visibility: 'none',
 						'line-cap': 'round',
 						'line-join': 'round'
 					}
@@ -187,6 +188,9 @@
 					source: 'street_view_sources',
 					'source-layer': 'THETA360',
 					minzoom: 15,
+					layout: {
+						visibility: 'none'
+					},
 					paint: {
 						'circle-color': '#08fa00',
 						'circle-radius': 12,
@@ -466,8 +470,10 @@
 		// console.log('click', e);
 		if (!e || $mapMode === 'edit') return;
 
+		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
+
 		const features = mapStore.queryRenderedFeatures(e.point, {
-			layers: $clickableVectorIds
+			layers: clickLayerIds
 		});
 		// if (!features || features?.length === 0) {
 		// 	const lngLat = e.lngLat;
@@ -491,6 +497,12 @@
 				}
 			})
 			.map((entry) => entry.id);
+
+		// ストリートビューに切り返る
+		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+			isStreetView.set(true);
+			return;
+		}
 
 		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];

@@ -14,14 +14,16 @@
 	onMount(() => {});
 </script>
 
-<div class="c-player-marker z-50 grid scale-75 place-items-center">
-	<svg xmlns="http://www.w3.org/2000/svg" width="73" height="73" fill="none"
-		><path fill="#333" d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z" /><path
-			stroke="#333"
-			d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z"
-		/></svg
-	>
-</div>
+{#if $isStreetView}
+	<div class="c-player-marker z-50 grid scale-75 place-items-center">
+		<svg xmlns="http://www.w3.org/2000/svg" width="73" height="73" fill="none"
+			><path fill="#333" d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z" /><path
+				stroke="#333"
+				d="M36.5 2 59 64 36.5 50.5 14 64 36.5 2Z"
+			/></svg
+		>
+	</div>
+{/if}
 
 <style>
 	/* カメラ角度マーカー */

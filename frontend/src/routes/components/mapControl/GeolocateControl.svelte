@@ -68,12 +68,12 @@
 </script>
 
 <div
-	class="bg-main grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full"
+	class="bg-main grid h-[50px] w-[50px] place-items-center overflow-hidden rounded-full"
 	bind:this={controlContainer}
 >
 	<Icon
 		icon="streamline:location-target-1-solid"
-		class="absolute h-8 w-8 {state === 'waiting'
+		class="absolute h-6 w-6 {state === 'waiting'
 			? 'css-rotate text-accent'
 			: state === 'active'
 				? 'text-accent'

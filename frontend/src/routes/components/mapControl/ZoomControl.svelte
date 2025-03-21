@@ -56,13 +56,13 @@
 	bind:this={container}
 	class="bg-main rounded-ful flex origin-center flex-col items-center justify-center gap-2 rounded-full px-[10px] py-4"
 >
-	<button onclick={zoomOut} class="grid place-items-center">
-		<Icon icon="typcn:minus" class=" h-8 w-8 text-base" />
-	</button>
-	<div class="w-full border-[1px] border-gray-300"></div>
-
 	<button onclick={zoomIn} class="grid place-items-center">
-		<Icon icon="typcn:plus" class="h-8 w-8  text-base" />
+		<Icon icon="typcn:plus" class="h-6 w-6  text-base" />
+	</button>
+
+	<div class="w-full border-[1px] border-gray-300"></div>
+	<button onclick={zoomOut} class="grid place-items-center">
+		<Icon icon="typcn:minus" class=" h-6 w-6 text-base" />
 	</button>
 </div>
 
