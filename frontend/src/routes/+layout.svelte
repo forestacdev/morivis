@@ -46,8 +46,20 @@
 
 <svelte:window on:resize={() => (deviceWidth = window.innerWidth)} />
 
-{#if (isDevice === 'mobile' && deviceWidth <= MOBILE_WIDTH) || (isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)}
+<div
+	class="absolute h-full w-full {(isDevice === 'mobile' && deviceWidth <= MOBILE_WIDTH) ||
+	(isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)
+		? ''
+		: 'invisible'}"
+>
 	{@render children()}
-{:else}
+</div>
+
+<div
+	class="h-full w-full {(isDevice === 'mobile' && deviceWidth <= MOBILE_WIDTH) ||
+	(isDevice === 'pc' && deviceWidth > MOBILE_WIDTH)
+		? 'invisible'
+		: 'block'}"
+>
 	<p>このデバイスは非対応です。再読み込みをしてください。</p>
-{/if}
+</div>

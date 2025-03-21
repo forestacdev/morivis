@@ -5,25 +5,16 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
+	import LayerOptionMenu from '$routes/components/layerMenu/layerOptionMenu/_Index.svelte';
 	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import LayerOptionMenu from '$routes/components/layerMenu/layerOptionMenu/_Index.svelte';
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
 	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
 	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
-
-	// レイヤー表示のフィルタリング（編集時）
-	let filterLayerEntries = $derived.by(() => {
-		if ($isEdit) {
-			return layerEntries.filter((layerEntry) => layerEntry.id === $selectedLayerId);
-		} else {
-			return layerEntries;
-		}
-	});
 
 	// TODO チェックをすると警告が出る
 	const toggleVisible = (id: string) => {
@@ -77,9 +68,9 @@
 			</div>
 		{/if}
 		<div class="z-20 flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4">
-			{#each filterLayerEntries as _, i (filterLayerEntries[i].id)}
+			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: 200 }}>
-					<LayerSlot bind:layerEntry={filterLayerEntries[i]} {toggleVisible} />
+					<LayerSlot bind:layerEntry={layerEntries[i]} {toggleVisible} />
 				</div>
 			{/each}
 		</div>

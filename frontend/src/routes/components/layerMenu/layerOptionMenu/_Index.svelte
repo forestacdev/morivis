@@ -3,12 +3,13 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, addedLayerIds, isEdit } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import RasterOptionMenu from '$routes/components/layerMenu/layerOptionMenu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/components/layerMenu/layerOptionMenu/VectorOptionMenu.svelte';
+	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
+	import type { GeoDataEntry } from '$routes/data/types';
+	import { selectedLayerId, addedLayerIds, isEdit } from '$routes/store';
+	import { mapStore } from '$routes/store/map';
 
 	let {
 		layerToEdit = $bindable(),
@@ -62,11 +63,12 @@
 </script>
 
 {#if $selectedLayerId && $isEdit && layerToEdit}
-	<div class="absolute top-[130px] z-30 w-[380px]">
-		<div
-			transition:fly={{ duration: 300, y: -50, opacity: 0 }}
-			class="bg-main z-10 flex h-full w-full flex-col gap-2 overflow-hidden rounded-lg border-2 border-gray-500 p-2"
-		>
+	<div
+		transition:fly={{ duration: 300, y: -50, opacity: 0 }}
+		class="bg-main absolute top-0 z-30 flex h-full w-full flex-col p-2"
+	>
+		<LayerSlot bind:layerEntry={layerToEdit} />
+		<div class="flex h-full w-full flex-col gap-2 overflow-hidden">
 			<div class="h-full flex-grow">
 				<div class="flex gap-2">
 					<button class="" onclick={() => moveLayerById('up')}

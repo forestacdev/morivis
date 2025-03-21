@@ -157,18 +157,7 @@
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
-						'background-opacity': $isEdit ? 0.8 : 0
-					}
-				},
-				{
-					// レイヤー選択時
-					id: 'selected-focus-layer-line',
-					type: 'line',
-					source: 'selected_focus_sources',
-					paint: {
-						'line-color': '#08fa00',
-						'line-width': 5,
-						'line-opacity': $isEdit ? 0 : 0.6
+						'background-opacity': 0
 					}
 				},
 				...(target ? [target] : []), // `target` がある場合のみ追加
@@ -208,24 +197,6 @@
 						'circle-blur': 0.3
 					}
 				}
-				// {
-				// 	// ラベル
-				// 	id: '@street_view_circle_label',
-				// 	type: 'symbol',
-				// 	source: 'street_view_point',
-				// 	'source-layer': 'THETA360',
-				// 	layout: {
-				// 		'text-field': 'aaaa',
-				// 		'text-size': 12
-				// 	},
-				// 	paint: {
-				// 		'text-color': '#000000',
-				// 		'text-halo-color': '#ffffff',
-				// 		'text-halo-width': 1
-				// 	}
-				// }
-
-				// overlayLayer
 			],
 			sky: {
 				'sky-color': '#2baeff',
@@ -600,7 +571,6 @@
 	const removehighlightLayer = () => {
 		const map = mapStore.getMap();
 		if (!map) return;
-		map.setPaintProperty('@overlay_layer', 'background-opacity', 0);
 		const layerIds = map.getLayersOrder();
 
 		// _highlight_ で始まるレイヤーを削除
@@ -614,7 +584,6 @@
 	const toggleOverlayLayer = (val: boolean) => {
 		const map = mapStore.getMap();
 		if (!map) return;
-		map.setPaintProperty('@overlay_layer', 'background-opacity', val ? 0.8 : 0);
 	};
 
 	$effect(() => {
@@ -629,10 +598,8 @@
 					map.addLayer(highlightLayer);
 				}
 			});
-			toggleOverlayLayer(true);
 		} else {
 			removehighlightLayer();
-			toggleOverlayLayer(false);
 		}
 	});
 

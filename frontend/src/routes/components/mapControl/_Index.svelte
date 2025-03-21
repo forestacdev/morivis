@@ -5,9 +5,12 @@
 	import ZoomControl from '$routes/components/mapControl/ZoomControl.svelte';
 </script>
 
-<ZoomControl />
-<TerrainControl />
-<GeolocateControl />
+<div class="absolute right-0 top-0 z-10 flex flex-col gap-2 p-2">
+	<ZoomControl />
+	<TerrainControl />
+	<GeolocateControl />
+</div>
+
 <ScaleControl />
 
 <style>

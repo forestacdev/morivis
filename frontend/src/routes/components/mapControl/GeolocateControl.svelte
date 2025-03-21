@@ -68,7 +68,7 @@
 </script>
 
 <div
-	class="bg-main absolute right-2 top-2 grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full"
+	class="bg-main grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full"
 	bind:this={controlContainer}
 >
 	<Icon

@@ -13,7 +13,7 @@
 	let {
 		layerEntry = $bindable(),
 		toggleVisible
-	}: { layerEntry: GeoDataEntry; toggleVisible: (id: string) => void } = $props();
+	}: { layerEntry: GeoDataEntry; toggleVisible?: (id: string) => void } = $props();
 	let showColors = $state(false);
 
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
@@ -53,45 +53,7 @@
 		toggleVisible(id);
 	};
 
-	let overlayLayerId = '';
-
 	let edit = false;
-
-	// isEdit.subscribe((value) => {
-	// 	console.log('isEdit:', value);
-	// 	const map = mapStore.getMap();
-	// 	if (!map) return;
-	// 	if (value) {
-	// 		const layersIds = map.getLayersOrder();
-
-	// 		// 現在のレイヤーの上のれヤーを取得
-	// 		const layerIndex = layersIds.indexOf(layerEntry.id);
-	// 		overlayLayerId = layersIds[layerIndex + 1];
-
-	// 		map.addLayer(overlayLayer);
-	// 		map.moveLayer(layerEntry.id);
-
-	// 		const center = map.getCenter();
-
-	// 		map.panTo(center, {
-	// 			pitch: 45,
-	// 			bearing: -30,
-	// 			duration: 600
-	// 		});
-	// 	} else {
-	// 		if (!overlayLayerId) return;
-	// 		if (!map.getLayer(overlayLayerId)) return;
-	// 		map.moveLayer(layerEntry.id, overlayLayerId);
-	// 		map.removeLayer('@overlay_layer');
-
-	// 		const center = map.getCenter();
-	// 		map.panTo(center, {
-	// 			pitch: 0,
-	// 			bearing: 0,
-	// 			duration: 600
-	// 		});
-	// 	}
-	// });
 
 	const setEdit = () => {
 		const layerId = layerEntry.id;
