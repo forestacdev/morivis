@@ -337,9 +337,14 @@
 			<div class="css-spinner"></div>
 		</div>
 	{:else}
-		{#if streetViewPoint}
-			<div class="z-100 absolute left-[100px] top-[100px] bg-white p-2">
-				{streetViewPoint.properties['Date']}
+		{#if showThreeCanvas}
+			<div
+				class="absolute left-4 top-[100px] z-10 flex items-center justify-center gap-2 rounded-lg bg-white p-2"
+			>
+				<button class="rounded-md bg-white p-2" onclick={() => ($isStreetView = false)}
+					><Icon icon="ep:back" class="h-4 w-4" />
+				</button>
+				<span>撮影日:{streetViewPoint.properties['Date']}<span> </span></span>
 			</div>
 		{/if}
 		<div
@@ -359,11 +364,11 @@
 								style="--angle: {point.bearing}deg; --distance: {showThreeCanvas ? '128' : '64'}px;"
 							>
 								<Icon
-									icon="ic:baseline-double-arrow"
+									icon="ep:arrow-up-bold"
 									width={showThreeCanvas ? 128 : 64}
 									height={showThreeCanvas ? 128 : 64}
 									class=""
-									style="transform: rotate({point.bearing - 90}deg);"
+									style="transform: rotate({point.bearing}deg);"
 								/>
 							</button>
 						{/each}
@@ -371,12 +376,6 @@
 				</div>
 			</div>
 		</div>
-	{/if}
-	{#if showThreeCanvas}
-		<button
-			class="absolute left-4 top-[100px] rounded-md bg-white p-2"
-			onclick={() => ($isStreetView = false)}>戻る</button
-		>
 	{/if}
 </div>
 

@@ -63,7 +63,7 @@
 				onclick={() => mapMode.set('edit')}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
-				<span class="select-none">地図を編集</span>
+				<span class="select-none">レイヤー</span>
 			</button>
 			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"

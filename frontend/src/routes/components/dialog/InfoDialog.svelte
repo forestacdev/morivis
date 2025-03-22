@@ -23,24 +23,28 @@
 				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">概要</div>
 					<div class="">
-						岐阜県立森林文化アカデミーのクリエーター科20期生の課題研究<a
-							class="text-accent"
-							href="https://www.forest.ac.jp/wp-content/uploads/2022/02/b_03_%E8%AA%B2%E9%A1%8C%E7%A0%94%E7%A9%B6%E8%A6%81%E6%97%A8_%E5%B0%8F%E6%9D%BE%E8%81%96.pdf"
-							target="_blank"
-							rel="noopener noreferrer"
-							>「WebGIS を活用したアカデミー演習林の情報共有化」
-						</a> により作成したアカデミー演習林のWebGISです。
-					</div>
-				</div>
-
-				<div class="pb-4">
-					バグなどを見つけた場合は、お手数ですが<a
+						岐阜県立森林文化アカデミーのクリエーター科20期生の課題研究「WebGIS を活用したアカデミー演習林の情報共有化」により作成したアカデミー演習林のWebGISです。現在も開発中であり、機能の追加や改善を行っています。バグなどを見つけた場合は、お手数ですが<a
 						class="text-accent"
 						href="https://github.com/forestacdev/enshurin-viewer/issues"
 						target="_blank"
 						rel="noopener noreferrer">GitHubのイシュー</a
 					>にてご報告ください。
+					</div>
 				</div>
+
+                <div class="pb-4">
+					<div class="pb-2 text-lg font-bold">利用データ</div>
+					<div class="">
+						本アプリケーションでは主に下記のデータを利用しております。
+
+                        <ul class="list-disc pl-8">
+                            <li>岐阜県立森林文化アカデミーの演習林データ</li>
+                            <li>岐阜県森林研究所</li>
+                            <li>国土地理院</li>
+                        </ul>
+					</div>
+				</div>
+
 				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">Contributors / コントリビューターの皆さま</div>
 					<div class="pb-2">

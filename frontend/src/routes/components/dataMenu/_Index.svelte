@@ -96,7 +96,7 @@
 		<div class="flex flex-shrink-0 items-center justify-between p-2">
 			<span class="text-lg">データカタログ</span>
 			<button onclick={toggleDataMenu} class="bg-base rounded-full p-2">
-				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main w-4 h-4" />
 			</button>
 		</div>
 		<div class="h-full w-full flex-grow overflow-auto {showDataEntry ? 'flex' : ''}">
@@ -104,7 +104,7 @@
 				{#if showDataEntry}
 					<div class="absolute z-10 flex flex-shrink-0 items-center justify-between p-2">
 						<button onclick={() => (showDataEntry = null)} class="bg-base rounded-full p-2">
-							<Icon icon="ep:back" class="text-main w-4] h-4" />
+							<Icon icon="ep:back" class="text-main w-4 h-4" />
 						</button>
 					</div>
 				{/if}
