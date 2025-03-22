@@ -1,6 +1,5 @@
 import type { GeoJsonMetaData, LineStringEntry } from '$routes/data/types/vector';
 import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
-import { FEATURE_IMAGE_BASE_PATH } from '$routes/constants';
 
 export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 	// 演習林道
@@ -27,7 +26,7 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 			titles: null
 		},
 		interaction: {
-			clickable: false,
+			clickable: false
 		},
 		style: {
 			type: 'line',
@@ -55,6 +54,7 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			lineStyle: 'solid',
 			labels: {
 				key: '種類',
 				show: false,

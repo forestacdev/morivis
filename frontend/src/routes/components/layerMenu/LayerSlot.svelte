@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { BackgroundLayerSpecification } from 'maplibre-gl';
+	import { slide } from 'svelte/transition';
 	import { fade } from 'svelte/transition';
 
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
@@ -74,23 +75,23 @@
 	});
 </script>
 
-<div class="relative">
-	{#if $selectedLayerId === layerEntry.id}
+<div class="relative flex flex-col">
+	<!-- {#if $selectedLayerId === layerEntry.id}
 		<button
 			class="bg-base trans absolute bottom-0 right-0 z-20 rounded-full p-2 text-xs text-white"
 			onclick={setEdit}
 			>編集
 		</button>
-	{/if}
+	{/if} -->
 
 	<button
 		id={layerEntry.id}
-		class="bg-main relative select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-main relative z-10 select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
 		onclick={selectedLayer}
-		style:width={$selectedLayerId === layerEntry.id ? '100%' : !$showDataMenu ? '90%' : '70px'}
+		style:width={!$showDataMenu ? '100%' : '70px'}
 		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
@@ -108,6 +109,7 @@
 				{#if layerEntry.style.visible}
 					<LayerIcon {layerEntry} />
 				{/if}
+				<!-- 表示トグル -->
 				{#if isHovered || !layerEntry.style.visible}
 					<div
 						transition:fade={{ duration: 100 }}
@@ -138,6 +140,22 @@
 			></div>
 		</div>
 	</button>
+	{#if $selectedLayerId === layerEntry.id}
+		<div
+			transition:slide={{ duration: 250 }}
+			id={layerEntry.id}
+			class="bg-main max-h-300px] pointer-events-none left-0 top-0 w-full -translate-y-10 select-none flex-col overflow-clip text-clip text-nowrap rounded-lg rounded-bl-[35px] rounded-br-[35px] border-2 border-gray-500 p-2 text-left"
+		>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+			<p>aaaaaa</p>
+		</div>
+	{/if}
 </div>
 
 <style>

@@ -56,6 +56,11 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
+			},
 			labels: {
 				key: '名前',
 				show: false,
@@ -154,6 +159,11 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
+			},
 			labels: {
 				key: '名前',
 				show: false,
@@ -235,6 +245,11 @@ export const fgbLabelEntry: LabelEntry<GeoJsonMetaData>[] = [
 						}
 					}
 				]
+			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
 			},
 			labels: {
 				key: '名前',

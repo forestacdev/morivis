@@ -14,13 +14,7 @@
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([]);
-	let filterDataEntries = $derived.by(() => {
-		if (showDataEntry) {
-			return dataEntries.filter((data) => showDataEntry && data.id === showDataEntry.id);
-		} else {
-			return dataEntries;
-		}
-	});
+
 	let showDataEntry = $state<GeoDataEntry | null>(null);
 
 	dataEntries = geoDataEntry;
@@ -96,7 +90,7 @@
 		<div class="flex flex-shrink-0 items-center justify-between p-2">
 			<span class="text-lg">データカタログ</span>
 			<button onclick={toggleDataMenu} class="bg-base rounded-full p-2">
-				<Icon icon="material-symbols:close-rounded" class="text-main w-4 h-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
 		<div class="h-full w-full flex-grow overflow-auto {showDataEntry ? 'flex' : ''}">
@@ -104,19 +98,16 @@
 				{#if showDataEntry}
 					<div class="absolute z-10 flex flex-shrink-0 items-center justify-between p-2">
 						<button onclick={() => (showDataEntry = null)} class="bg-base rounded-full p-2">
-							<Icon icon="ep:back" class="text-main w-4 h-4" />
+							<Icon icon="ep:back" class="text-main h-4 w-4" />
 						</button>
 					</div>
 				{/if}
-				{#each filterDataEntries as dataEntry (dataEntry.id)}
+				{#each dataEntries as dataEntry (dataEntry.id)}
 					<div
 						animate:flip={{ duration: 500 }}
 						class="relative mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300"
 					>
-						<button
-							class="relative aspect-video overflow-hidden p-2"
-							onclick={() => showData(dataEntry.id)}
-						>
+						<button class="relative aspect-video overflow-hidden p-2">
 							{#await promise(dataEntry) then url}
 								<img
 									src={url}
@@ -155,7 +146,7 @@
 					</div>
 				{/each}
 			</div>
-			<DataPreview bind:showDataEntry />
+			<!-- <DataPreview bind:showDataEntry /> -->
 		</div>
 	</div>
 </div>

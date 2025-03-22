@@ -138,6 +138,11 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
+			},
 			labels: {
 				key: '種名',
 				show: false,
@@ -215,6 +220,11 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 						}
 					}
 				]
+			},
+			outline: {
+				show: true,
+				color: '#ffffff',
+				width: 2
 			},
 			labels: {
 				key: '名前',
