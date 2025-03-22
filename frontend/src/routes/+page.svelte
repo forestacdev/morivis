@@ -199,8 +199,6 @@
 		}
 	});
 
-	$inspect(streetViewPointData);
-
 	mapStore.onClick((e) => {
 		if (!e || $mapMode === 'edit') return;
 		if (streetViewPointData.features.length > 0) {

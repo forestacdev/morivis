@@ -52,8 +52,9 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
+	'ensyurin_owl',
 	// 'cog_test',
-	'ensyurin_pole',
+	// 'ensyurin_pole',
 	'fac_ziriki',
 	'fac_building',
 	'fac_poi',

@@ -106,6 +106,46 @@ export interface Colors {
 	expressions: ColorsExpressions[];
 }
 
+export interface NumberSingleExpressions {
+	type: 'single';
+	key: string;
+	name: string;
+	mapping: {
+		value: number;
+	};
+}
+
+export interface NumberMatchExpressions {
+	type: 'match';
+	key: string;
+	name: string;
+	mapping: {
+		categories: string[] | number[];
+		values: number[];
+	};
+}
+
+export interface NumberStepExpressions {
+	type: 'step';
+	key: string;
+	name: string;
+	mapping: {
+		range: [number, number]; // min, max
+		divisions: number;
+		values: number[];
+	};
+}
+
+export type NumbersExpressions =
+	| NumberSingleExpressions
+	| NumberMatchExpressions
+	| NumberStepExpressions;
+
+export interface Numbers {
+	key: string;
+	expressions: NumbersExpressions[];
+}
+
 export interface LabelsExpressions {
 	key: string;
 	name: string;
@@ -122,7 +162,7 @@ export type VectorLayerType = 'circle' | 'line' | 'fill' | 'symbol' | 'heatmap' 
 
 interface BaseVectorStyle {
 	opacity: number;
-	visible?: boolean;
+	visible?: boolean; // NOTE: 動的追加
 	labels: Labels;
 	colors: Colors;
 }
@@ -143,7 +183,7 @@ export interface PointOutLine {
 export interface LabelOutLine {
 	show: boolean;
 	color: string;
-	width: number;
+	width: Numbers[];
 }
 
 export interface PolygonStyle extends BaseVectorStyle {
@@ -154,18 +194,21 @@ export interface PolygonStyle extends BaseVectorStyle {
 
 export interface LineStringStyle extends BaseVectorStyle {
 	type: 'line';
+	width: Numbers[];
 	lineStyle: 'solid' | 'dashed';
 	default: LineStringDefaultStyle;
 }
 
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
+	radius: Numbers;
 	outline: PointOutLine;
 	default: PointDefaultStyle;
 }
 
 export interface LabelStyle extends BaseVectorStyle {
 	type: 'symbol';
+	textSize: Numbers[];
 	outline: LabelOutLine;
 	default: LabelDefaultStyle;
 }

@@ -29,6 +29,11 @@ import type {
 	Labels,
 	VectorStyle,
 	Colors,
+	Numbers,
+	NumbersExpressions,
+	NumberSingleExpressions,
+	NumberMatchExpressions,
+	NumberStepExpressions,
 	ColorsExpressions,
 	ColorSingleExpressions,
 	ColorMatchExpressions,
@@ -41,6 +46,7 @@ import type {
 } from '$routes/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
+import { get } from 'svelte/store';
 
 // IDを収集
 const validIds = geoDataEntry.map((entry) => entry.id);
@@ -266,6 +272,90 @@ const getColorExpression = (colors: Colors) => {
 	}
 };
 
+const generateNumberMatchExpression = (
+	expressionData: NumberMatchExpressions
+): DataDrivenPropertyValueSpecification<number> => {
+	const key = expressionData.key;
+	const expression = ['match', ['get', key]];
+
+	const { categories, values } = expressionData.mapping;
+
+	if (categories.length !== values.length) {
+		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
+		return 0;
+	}
+
+	// categories と values のペアをループ処理
+	for (let i = 0; i < categories.length; i++) {
+		expression.push(categories[i] as number, values[i]);
+	}
+
+	// デフォルト値を最後に追加
+	expression.push(0);
+
+	return expression as DataDrivenPropertyValueSpecification<number>;
+};
+
+const generateNumberStepExpression = (
+	expressionData: NumberStepExpressions
+): DataDrivenPropertyValueSpecification<number> => {
+	const key = expressionData.key;
+
+	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
+	const expression = [
+		'step',
+		[
+			'case',
+			['==', ['get', key], null],
+			-9999, // 値が null の場合
+			['!=', ['to-number', ['get', key], -9999], -9999], // 数値に変換可能な場合
+			['to-number', ['get', key], -9999], // 数値を使用
+			-9999 // デフォルトは -9999
+		] // 数値以外の場合に -9999 を使用
+	];
+
+	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
+
+	if (categories.length !== values.length) {
+		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
+		return 0;
+	}
+
+	// 最初のカテゴリの色を追加（数値が -9999 の場合のデフォルト色）
+	expression.push(0);
+
+	// 残りのカテゴリと対応する色を追加
+	// for (let i = 0; i < categories.length; i++) {
+	// 	expression.push(categories[i], values[i]);
+	// }
+
+	categories.forEach((category, index) => {
+		// カテゴリの値と対応する色をステップ式に追加
+		expression.push(category, values[index]);
+	});
+
+	return expression as DataDrivenPropertyValueSpecification<number>;
+};
+
+const getNumberExpression = (numbers: Numbers) => {
+	const key = numbers.key;
+	const expressionData = numbers.expressions.find((expression) => expression.key === key);
+	if (!expressionData) {
+		console.warn(`数値設定が見つかりません: ${key}`);
+		return 0;
+	}
+	switch (expressionData.type) {
+		case 'single':
+			return expressionData.mapping.value;
+		case 'match':
+			return generateNumberMatchExpression(expressionData);
+		case 'step':
+			return generateNumberStepExpression(expressionData);
+		default:
+			console.warn(`数値設定が見つかりません: ${key}`);
+			return 0;
+	}
+};
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
 	const fillStyle = style.default.fill;
@@ -330,6 +420,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 	const outline = style.outline;
 	const circleStyle = style.default.circle;
 	const color = getColorExpression(style.colors);
+	const radius = getNumberExpression(style.radius);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
 		type: 'circle',

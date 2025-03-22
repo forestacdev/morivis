@@ -55,6 +55,19 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			radius: {
+				key: '単一',
+				expressions: [
+					{
+						type: 'single',
+						key: '単一',
+						name: '単一',
+						mapping: {
+							value: 8
+						}
+					}
+				]
+			},
 			outline: {
 				show: true,
 				color: '#ffffff',
@@ -138,6 +151,19 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			radius: {
+				key: '単一',
+				expressions: [
+					{
+						type: 'single',
+						key: '単一',
+						name: '単一',
+						mapping: {
+							value: 8
+						}
+					}
+				]
+			},
 			outline: {
 				show: true,
 				color: '#ffffff',
@@ -217,6 +243,29 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 						name: '単色',
 						mapping: {
 							value: '#e70000'
+						}
+					}
+				]
+			},
+			radius: {
+				key: '胸高直径cm',
+				expressions: [
+					{
+						type: 'single',
+						key: '単一',
+						name: '単一',
+						mapping: {
+							value: 8
+						}
+					},
+					{
+						type: 'step',
+						key: '胸高直径cm',
+						name: '胸高直径',
+						mapping: {
+							range: [7, 42.5],
+							divisions: 5,
+							values: [5, 10]
 						}
 					}
 				]
