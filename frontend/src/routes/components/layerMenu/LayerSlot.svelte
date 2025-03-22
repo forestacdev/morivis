@@ -11,10 +11,13 @@
 	import { showDataMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 
-	let {
-		layerEntry = $bindable(),
-		toggleVisible
-	}: { layerEntry: GeoDataEntry; toggleVisible?: (id: string) => void } = $props();
+	interface Props {
+		layerEntry: GeoDataEntry;
+		tempLayerEntries: GeoDataEntry[];
+		toggleVisible?: (id: string) => void;
+	}
+
+	let { layerEntry = $bindable(), tempLayerEntries = $bindable(), toggleVisible }: Props = $props();
 	let showColors = $state(false);
 
 	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
@@ -44,7 +47,6 @@
 			selectedLayerId.set('');
 		} else {
 			selectedLayerId.set(layerEntry.id);
-			mapStore.focusLayer(layerEntry);
 		}
 	};
 
@@ -54,39 +56,57 @@
 		toggleVisible(id);
 	};
 
-	let edit = false;
-
-	const setEdit = () => {
-		const layerId = layerEntry.id;
-		edit = !edit;
-		const map = mapStore.getMap();
-		if (!map) return;
-		if (edit) {
-			isEdit.set(true);
-		} else {
-			isEdit.set(false);
-		}
-	};
-
 	showDataMenu.subscribe((value) => {
 		if (value) {
 			$selectedLayerId = '';
 		}
 	});
+
+	// レイヤーのコピー
+	const copyLayer = () => {
+		if (!layerEntry) return;
+		$isEdit = false;
+		const uuid = crypto.randomUUID();
+		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+
+		copy.id = uuid;
+		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
+
+		tempLayerEntries = [...tempLayerEntries, copy];
+		addedLayerIds.addLayer(uuid);
+	};
+
+	// レイヤーの削除
+	const removeLayer = () => {
+		$isEdit = false;
+		if (!layerEntry) return;
+		addedLayerIds.removeLayer(layerEntry.id);
+		selectedLayerId.set('');
+	};
+
+	// レイヤーの移動
+	const moveLayerById = (direction: 'up' | 'down') => {
+		if (!layerEntry) return;
+		const id = layerEntry.id;
+		addedLayerIds.reorderLayer(id, direction);
+	};
+
+	// レイヤーのフォーカス
+	const focusLayer = () => {
+		if (!layerEntry) return;
+		mapStore.focusLayer(layerEntry);
+	};
+
+	const editLayer = () => {
+		if (!layerEntry) return;
+		$isEdit = !$isEdit;
+	};
 </script>
 
 <div class="relative flex flex-col">
-	<!-- {#if $selectedLayerId === layerEntry.id}
-		<button
-			class="bg-base trans absolute bottom-0 right-0 z-20 rounded-full p-2 text-xs text-white"
-			onclick={setEdit}
-			>編集
-		</button>
-	{/if} -->
-
 	<button
 		id={layerEntry.id}
-		class="bg-main relative z-10 select-none flex-col overflow-clip text-clip text-nowrap rounded-full border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-main c-rounded relative z-10 select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
@@ -95,6 +115,12 @@
 		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
+			<div
+				class="absolute bottom-[7px] left-[4px] z-10 rounded-full p-[7px] transition-all"
+				style="background-color: {colorStyle?.type === 'single'
+					? colorStyle.mapping.value
+					: 'bg-gray-200'};"
+			></div>
 			<label
 				class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
 				onmouseenter={() => (isHovered = true)}
@@ -127,35 +153,38 @@
 			</label>
 			<div>
 				<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-					<span class="text-nowrap">{layerEntry.metaData.name}</span>
+					<span class="text-nowrap {$selectedLayerId === layerEntry.id ? '' : ''}"
+						>{layerEntry.metaData.name}</span
+					>
 
-					<span class="text-xs">{layerEntry.metaData.location ?? '---'}</span>
+					{#if $selectedLayerId === layerEntry.id}
+						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class="">
+							<div class="flex gap-2">
+								<button class="" onclick={() => moveLayerById('up')}
+									><Icon icon="bx:up-arrow" width="20" height="20" class="" />
+								</button>
+								<button class="" onclick={() => moveLayerById('down')}
+									><Icon icon="bx:down-arrow" width="20" height="20" />
+								</button>
+								<button onclick={removeLayer}>
+									<Icon icon="bx:trash" width="20" height="20" class="custom-anime" />
+								</button>
+								<button onclick={focusLayer}>
+									<Icon icon="hugeicons:target-03" width="20" height="20" class="custom-anime" />
+								</button>
+								<button onclick={copyLayer}>
+									<Icon icon="lucide:copy" width="20" height="20" class="custom-anime" />
+								</button>
+								<button onclick={editLayer}>
+									<Icon icon="lucide:edit" width="20" height="20" class="custom-anime" />
+								</button>
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
-			<div
-				class="absolute bottom-[23px] right-[15px] rounded-full p-[5px] transition-all"
-				style="background-color: {colorStyle?.type === 'single'
-					? colorStyle.mapping.value
-					: 'bg-gray-200'};"
-			></div>
 		</div>
 	</button>
-	{#if $selectedLayerId === layerEntry.id}
-		<div
-			transition:slide={{ duration: 250 }}
-			id={layerEntry.id}
-			class="bg-main max-h-300px] pointer-events-none left-0 top-0 w-full -translate-y-10 select-none flex-col overflow-clip text-clip text-nowrap rounded-lg rounded-bl-[35px] rounded-br-[35px] border-2 border-gray-500 p-2 text-left"
-		>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-			<p>aaaaaa</p>
-		</div>
-	{/if}
 </div>
 
 <style>
@@ -170,19 +199,12 @@
 		--color2: #004b54;
 	}
 
-	@keyframes gradient {
-		0% {
-			--angle: 0deg;
-		}
-
-		100% {
-			--angle: 360deg;
-		}
+	.css-gradient {
+		background: linear-gradient(-90deg, var(--color1), var(--color2));
+		color: white;
 	}
 
-	.css-gradient {
-		background: linear-gradient(var(--angle), var(--color1), var(--color2));
-		color: white;
-		animation: gradient 5s linear infinite;
+	.c-rounded {
+		border-radius: 9999px 9999px 9999px 9999px;
 	}
 </style>

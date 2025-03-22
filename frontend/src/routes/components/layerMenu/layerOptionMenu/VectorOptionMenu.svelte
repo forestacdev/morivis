@@ -6,6 +6,10 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import ColorOption from './ColorOption.svelte';
+	import LabelOption from './vecterOption/LabelOption.svelte';
+	import LineStringOption from './vecterOption/LineStringOption.svelte';
+	import PointOption from './vecterOption/PointOption.svelte';
+	import PolygonOption from './vecterOption/PolygonOption.svelte';
 
 	import Accordion from '$routes/components/atoms/Accordion.svelte';
 	import CheckBox from '$routes/components/atoms/CheckBox.svelte';
@@ -16,6 +20,10 @@
 	import type {
 		GeometryType,
 		VectorEntry,
+		PolygonEntry,
+		LineStringEntry,
+		LabelEntry,
+		PointEntry,
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/data/types/vector';
@@ -34,74 +42,25 @@
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
 		$props();
-
-	// ラベルのキーの取得
-	const getlabelKeys = (labelsExpressions: LabelsExpressions[]) => {
-		return labelsExpressions.map((label) => ({ key: label.key, name: label.name }));
-	};
 </script>
 
 {#if layerToEdit && layerToEdit.type === 'vector'}
-	<RangeSlider
-		label="不透明度"
-		bind:value={layerToEdit.style.opacity}
-		min={0}
-		max={1}
-		step={0.01}
-	/>
-
-	<!-- 色 -->
-	<ColorOption bind:layerToEdit />
-
-	{#if layerToEdit.style.type === 'fill' || layerToEdit.style.type === 'circle'}
-		<Accordion label={'アウトライン'} bind:value={layerToEdit.style.outline.show}>
-			<RangeSlider
-				label="ライン幅"
-				bind:value={layerToEdit.style.outline.width}
-				min={0}
-				max={10}
-				step={0.01}
-			/>
-			<div class="flex flex-col gap-2 pb-2">
-				<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
-			</div>
-			{#if layerToEdit.style.type === 'fill'}
-				<HorizontalSelectBox
-					label={'ラインのスタイル'}
-					bind:group={layerToEdit.style.outline.lineStyle}
-					options={[
-						{ name: '実線', key: 'solid' },
-						{ name: '破線', key: 'dashed' }
-					]}
-				/>
-			{/if}
-		</Accordion>
+	{#if layerToEdit.format.geometryType === 'Point'}
+		<PointOption bind:layerToEdit={layerToEdit as PointEntry<GeoJsonMetaData | TileMetaData>} />
 	{/if}
 
-	{#if layerToEdit.style.labels.show !== undefined}
-		<!-- ラベルの設定 -->
+	{#if layerToEdit.format.geometryType === 'LineString'}
+		<LineStringOption
+			bind:layerToEdit={layerToEdit as LineStringEntry<GeoJsonMetaData | TileMetaData>}
+		/>
+	{/if}
 
-		<Accordion label={'ラベルの表示'} bind:value={layerToEdit.style.labels.show}>
-			<div class="flex flex-grow flex-col gap-2">
-				{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType (labelType.key)}
-					<label
-						class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
-						class:bg-green-600={labelType.key === layerToEdit.style.labels.key}
-					>
-						<input
-							type="radio"
-							bind:group={layerToEdit.style.labels.key}
-							value={labelType.key}
-							class="hidden"
-						/>
-						<div class="flex items-center gap-2">
-							<Icon icon={'ci:font'} width={20} />
-							<span class="select-none">{labelType.name}</span>
-						</div>
-					</label>
-				{/each}
-			</div>
-		</Accordion>
+	{#if layerToEdit.format.geometryType === 'Polygon'}
+		<PolygonOption bind:layerToEdit={layerToEdit as PolygonEntry<GeoJsonMetaData | TileMetaData>} />
+	{/if}
+
+	{#if layerToEdit.format.geometryType === 'Label'}
+		<LabelOption bind:layerToEdit />
 	{/if}
 {/if}
 

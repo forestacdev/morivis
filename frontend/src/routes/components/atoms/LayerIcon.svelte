@@ -6,7 +6,11 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
-	let { layerEntry }: { layerEntry: GeoDataEntry } = $props();
+	interface Props {
+		layerEntry: GeoDataEntry;
+	}
+
+	let { layerEntry }: Props = $props();
 
 	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
 		if (_layerEntry.type !== 'raster') {

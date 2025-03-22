@@ -70,7 +70,7 @@
 		<div class="c-scroll z-20 flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4">
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: 200 }}>
-					<LayerSlot bind:layerEntry={layerEntries[i]} {toggleVisible} />
+					<LayerSlot bind:layerEntry={layerEntries[i]} bind:tempLayerEntries {toggleVisible} />
 				</div>
 			{/each}
 		</div>

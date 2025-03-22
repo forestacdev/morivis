@@ -198,60 +198,6 @@
 		return mapStyle as StyleSpecification;
 	};
 
-	// レイヤーが選択された時の描画
-	selectedLayerId.subscribe((id) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		if (id) {
-			const entry = layerEntries.find((entry) => entry.id === id);
-			if (!entry) return;
-			let polygon;
-			if (entry.format.type === 'fgb') {
-				try {
-					const geojson = GeojsonCache.get(entry.id);
-					if (!geojson) return;
-					const bbox = turfBbox(geojson) as [number, number, number, number];
-					polygon = turfBboxPolygon(bbox);
-				} catch (error) {
-					console.error(error);
-				}
-			} else if (entry.metaData.bounds) {
-				polygon = turfBboxPolygon(entry.metaData.bounds);
-			} else if (entry.metaData.location) {
-				const bbox = getLocationBbox(entry.metaData.location);
-				if (bbox) {
-					polygon = turfBboxPolygon(bbox);
-				} else {
-					console.warn('boundsが取得できませんでした。', entry.id);
-					selectedFocusSources = {
-						type: 'geojson',
-						data: {
-							type: 'FeatureCollection',
-							features: []
-						}
-					};
-					return;
-				}
-			} else {
-				console.warn('描画処理に失敗', entry.id);
-				return;
-			}
-
-			selectedFocusSources = {
-				type: 'geojson',
-				data: polygon as GeoJSON.Feature<GeoJSON.Polygon, GeoJsonProperties>
-			};
-		} else {
-			selectedFocusSources = {
-				type: 'geojson',
-				data: {
-					type: 'FeatureCollection',
-					features: []
-				}
-			};
-		}
-	});
-
 	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {
 		if (import.meta.env.DEV) {

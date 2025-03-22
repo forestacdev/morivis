@@ -3,13 +3,14 @@
 	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 
 	import Accordion from '$routes/components/atoms/Accordion.svelte';
 	import CheckBox from '$routes/components/atoms/CheckBox.svelte';
 	import ColorPicker from '$routes/components/atoms/ColorPicker.svelte';
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
+	import Switch from '$routes/components/atoms/Switch.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type {
 		GeometryType,
@@ -75,15 +76,10 @@
 	onMount(() => {});
 
 	let colorOptionKey = $state<string | null>(null);
+	let showColorOption = $state<boolean>(false);
 
-	let filterExpressions = $derived.by(() => {
-		if (colorOptionKey) {
-			return layerToEdit.style.colors.expressions.filter(
-				(expression) => expression.key === colorOptionKey
-			);
-		} else {
-			return layerToEdit.style.colors.expressions;
-		}
+	let expressions = $derived.by(() => {
+		return layerToEdit.style.colors.expressions;
 	});
 
 	const createGradient = (colorStyle: ColorsExpressions): string => {
@@ -116,11 +112,11 @@
 </script>
 
 {#if colorStyle}
-	<Accordion label={'塗りつぶし'} bind:value={layerToEdit.style.colors.show}>
+	<Accordion label={'色の調整'} bind:value={showColorOption}>
+		<Switch label={'塗りつぶし'} bind:value={layerToEdit.style.colors.show} />
 		<div class="flex flex-grow flex-col gap-2">
-			{#each filterExpressions as colorStyle, idx (colorStyle.key)}
+			{#each expressions as colorStyle, idx (colorStyle.key)}
 				<label
-					animate:flip={{ duration: 200 }}
 					class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
 					class:bg-green-600={colorStyle.key === layerToEdit.style.colors.key}
 				>
@@ -139,59 +135,72 @@
 									: 'bxs:color-fill'}
 							width={20}
 						/>
-
 						<span class="select-none">{colorStyle.name}</span>
 					</div>
 					{#if layerToEdit.style.colors.key === colorStyle.key}
-						<button
-							onclick={() => openColorOption(colorStyle.key)}
-							class="b h-[20px] w-[20px] rounded-full"
-							aria-label="色の設定"
-							style={createGradient(colorStyle)}
-						></button>
+						{#if colorStyle.type === 'single'}
+							<button
+								onclick={() => openColorOption(colorStyle.key)}
+								class="h-[20px] w-[20px] rounded-full"
+								aria-label="色の設定"
+								style={createGradient(colorStyle)}
+							></button>
+						{:else}
+							<button
+								onclick={() => openColorOption(colorStyle.key)}
+								class="grid h-full place-items-center transition-transform duration-150 {colorOptionKey ===
+								colorStyle.key
+									? 'rotate-180'
+									: 'rotate-0'}"
+								aria-label="色の設定"
+							>
+								<Icon icon="bxs:down-arrow" class="h-6 w-6" />
+							</button>
+						{/if}
 					{/if}
 				</label>
+				<!-- 色分け選択 -->
+				{#if colorOptionKey === colorStyle.key}
+					<div
+						transition:slide={{ duration: 300 }}
+						class="flex max-h-[300px] flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pt-2"
+					>
+						{#if colorStyle.type === 'single'}
+							<ColorPicker label="全体の色" bind:value={colorStyle.mapping.value} />
+						{:else if colorStyle.type === 'match'}
+							{#each colorStyle.mapping.categories as _, index}
+								<ColorPicker
+									label={colorStyle.mapping.categories[index] as string}
+									bind:value={colorStyle.mapping.values[index]}
+								/>
+							{/each}
+						{:else if colorStyle.type === 'step'}
+							<div class="flex-between flex w-full gap-2">
+								{#each colorStyle.mapping.values as _, index}
+									<span>{index === 0 ? '最小' : '最大'}</span>
+									<ColorPicker bind:value={colorStyle.mapping.values[index]} />
+								{/each}
+							</div>
+
+							<RangeSlider
+								label="分類数"
+								bind:value={colorStyle.mapping.divisions}
+								min={2}
+								max={10}
+								step={1}
+							/>
+							{#if stepPallet}
+								{#each stepPallet.categories as _, index}
+									<div class="flex-between flex w-full select-none gap-2">
+										<div class="w-full">{stepPallet.categories[index]}</div>
+										<div class="p-2" style="background-color: {stepPallet.values[index]};"></div>
+									</div>
+								{/each}
+							{/if}
+						{/if}
+					</div>
+				{/if}
 			{/each}
 		</div>
-		{#if colorOptionKey}
-			<div
-				in:fly={{ duration: 300, y: -50, opacity: 0 }}
-				class="flex max-h-[300px] flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pt-2"
-			>
-				{#if colorStyle.type === 'single'}
-					<ColorPicker label="全体の色" bind:value={colorStyle.mapping.value} />
-				{:else if colorStyle.type === 'match'}
-					{#each colorStyle.mapping.categories as _, index}
-						<ColorPicker
-							label={colorStyle.mapping.categories[index] as string}
-							bind:value={colorStyle.mapping.values[index]}
-						/>
-					{/each}
-				{:else if colorStyle.type === 'step'}
-					<div class="flex-between flex w-full gap-2">
-						{#each colorStyle.mapping.values as _, index}
-							<span>{index === 0 ? '最小' : '最大'}</span>
-							<ColorPicker bind:value={colorStyle.mapping.values[index]} />
-						{/each}
-					</div>
-
-					<RangeSlider
-						label="分類数"
-						bind:value={colorStyle.mapping.divisions}
-						min={2}
-						max={10}
-						step={1}
-					/>
-					{#if stepPallet}
-						{#each stepPallet.categories as _, index}
-							<div class="flex-between flex w-full select-none gap-2">
-								<div class="w-full">{stepPallet.categories[index]}</div>
-								<div class="p-2" style="background-color: {stepPallet.values[index]};"></div>
-							</div>
-						{/each}
-					{/if}
-				{/if}
-			</div>
-		{/if}
 	</Accordion>
 {/if}
