@@ -32,7 +32,7 @@
 	/>
 
 	<!-- 色 -->
-	<ColorOption bind:layerToEdit />
+	<ColorOption bind:colorStyle={layerToEdit.style.colors} />
 
 	<Accordion label={'アウトライン'} bind:value={showOutlineOption}>
 		<Switch label={'表示'} bind:value={layerToEdit.style.outline.show} />

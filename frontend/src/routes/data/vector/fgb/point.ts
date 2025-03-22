@@ -289,18 +289,18 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			default: {
 				circle: {
 					paint: {
-						'circle-stroke-width': 2,
-						'circle-stroke-color': '#FFFFFF',
-						'circle-color': [
-							'interpolate',
-							['linear'],
-							['get', '樹高m'],
-							4.1,
-							'hsl(52, 93%, 85%)',
-							18.7,
-							'hsl(0, 79%, 57%)'
-						],
-						'circle-radius': ['interpolate', ['linear'], ['get', '胸高直径cm'], 7, 5, 42.5, 10]
+						// 'circle-stroke-width': 2,
+						// 'circle-stroke-color': '#FFFFFF',
+						// 'circle-color': [
+						// 	'interpolate',
+						// 	['linear'],
+						// 	['get', '樹高m'],
+						// 	4.1,
+						// 	'hsl(52, 93%, 85%)',
+						// 	18.7,
+						// 	'hsl(0, 79%, 57%)'
+						// ],
+						// 'circle-radius': ['interpolate', ['linear'], ['get', '胸高直径cm'], 7, 5, 42.5, 10]
 						// "circle-opacity" :0
 					},
 					layout: {}
