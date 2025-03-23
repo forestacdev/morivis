@@ -30,15 +30,15 @@
 	import { generateNumberAndColorMap, generateColorPalette } from '$routes/utils/colorMapping';
 
 	interface Props {
-		colorStyle: ColorsStyle;
+		label: string;
+		numberStyle: NumbersStyle;
 	}
 
-	let { colorStyle = $bindable() }: Props = $props();
+	let { numberStyle = $bindable() }: Props = $props();
 
-	let showColorOption = $state<boolean>(false);
+	let showNumberOption = $state<boolean>(false);
 </script>
 
-<Accordion label={'色の調整'} bind:value={showColorOption}>
-	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
-	<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'colors'} />
+<Accordion {label} bind:value={showNumberOption}>
+	<ExpressionsPulldownBox bind:style={numberStyle} expressionType={'numbers'} />
 </Accordion>

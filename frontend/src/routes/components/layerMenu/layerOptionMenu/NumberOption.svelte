@@ -20,9 +20,9 @@
 	} from '$routes/data/types/vector';
 	import type {
 		NumbersStyle,
-		NumbersExpression,
+		NumbersExpressions,
 		NumberStepExpressions,
-		NumberMatchExpression,
+		NumberMatchExpressions,
 		NumberSingleExpression
 	} from '$routes/data/types/vector/style';
 	import { selectedLayerId } from '$routes/store';
@@ -36,7 +36,7 @@
 
 	let { label, numberStyle = $bindable() }: Props = $props();
 
-	const getNumbersPallet = (ColorsExpression: NumbersExpression[]) => {
+	const getNumbersPallet = (ColorsExpression: NumbersExpressions[]) => {
 		const target = ColorsExpression.find((color) => color.key === numberStyle.key);
 		if (!target) return;
 		return target;
