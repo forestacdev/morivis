@@ -1,0 +1,63 @@
+<script lang="ts">
+	import Icon from '@iconify/svelte';
+	import type { Vector2 } from 'three';
+
+	import Accordion from '$routes/components/atoms/Accordion.svelte';
+	import ColorPicker from '$routes/components/atoms/ColorPicker.svelte';
+	import LabelPulldownBox from '$routes/components/atoms/LabelPulldownBox.svelte';
+	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
+	import Switch from '$routes/components/atoms/Switch.svelte';
+	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
+	import type {
+		GeometryType,
+		LabelEntry,
+		GeoJsonMetaData,
+		TileMetaData,
+		VectorEntry
+	} from '$routes/data/types/vector';
+	import {
+		type VectorLayerType,
+		type ColorsExpression,
+		type LabelsExpressions
+	} from '$routes/data/types/vector/style';
+
+	interface Props {
+		layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData>;
+	}
+
+	let { layerToEdit = $bindable() }: Props = $props();
+
+	let showLabelOption = $state<boolean>(false);
+	// ラベルのキーの取得
+	const getlabelKeys = (labelsExpressions: LabelsExpressions[]) => {
+		return labelsExpressions.map((label) => ({ key: label.key, name: label.name }));
+	};
+</script>
+
+<Accordion label={'ラベル'} bind:value={showLabelOption}>
+	<Switch label={'表示'} bind:value={layerToEdit.style.labels.show} />
+	<LabelPulldownBox bind:labels={layerToEdit.style.labels} />
+
+	<!-- <div class="flex flex-grow flex-col gap-2">
+		{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType (labelType.key)}
+			<label
+				class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
+				class:bg-green-600={labelType.key === layerToEdit.style.labels.key}
+			>
+				<input
+					type="radio"
+					bind:group={layerToEdit.style.labels.key}
+					value={labelType.key}
+					class="hidden"
+				/>
+				<div class="flex items-center gap-2">
+					<Icon icon={'ci:font'} width={20} />
+					<span class="select-none">{labelType.name}</span>
+				</div>
+			</label>
+		{/each}
+	</div> -->
+</Accordion>
+
+<style>
+</style>

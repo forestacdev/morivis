@@ -5,7 +5,7 @@
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
-	import LabelOption from '$routes/components/layerMenu/layerOptionMenu/vecterOption/LabelOption.svelte';
+	import LabelOption from '$routes/components/layerMenu/layerOptionMenu/LabelOption.svelte';
 	import type {
 		GeometryType,
 		PolygonEntry,
@@ -58,7 +58,7 @@
 		/>
 	</Accordion>
 
-	<LabelOption bind:layerToEdit />
+	<LabelOption bind:labels={layerToEdit.style.labels} />
 </div>
 
 <style>

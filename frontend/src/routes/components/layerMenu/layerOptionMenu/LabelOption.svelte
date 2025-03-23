@@ -4,7 +4,7 @@
 
 	import Accordion from '$routes/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/components/atoms/ColorPicker.svelte';
-	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
+	import LabelPulldownBox from '$routes/components/atoms/LabelPulldownBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
@@ -15,17 +15,18 @@
 		TileMetaData,
 		VectorEntry
 	} from '$routes/data/types/vector';
-	import {
-		type VectorLayerType,
-		type ColorsExpression,
-		type LabelsExpressions
+	import type {
+		VectorLayerType,
+		ColorsExpression,
+		LabelsExpressions,
+		Labels
 	} from '$routes/data/types/vector/style';
 
 	interface Props {
-		layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		labels: Labels;
 	}
 
-	let { layerToEdit = $bindable() }: Props = $props();
+	let { labels = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	// ラベルのキーの取得
@@ -35,9 +36,10 @@
 </script>
 
 <Accordion label={'ラベル'} bind:value={showLabelOption}>
-	<Switch label={'表示'} bind:value={layerToEdit.style.labels.show} />
+	<Switch label={'表示'} bind:value={labels.show} />
+	<LabelPulldownBox bind:labels />
 
-	<div class="flex flex-grow flex-col gap-2">
+	<!-- <div class="flex flex-grow flex-col gap-2">
 		{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType (labelType.key)}
 			<label
 				class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
@@ -55,7 +57,7 @@
 				</div>
 			</label>
 		{/each}
-	</div>
+	</div> -->
 </Accordion>
 
 <style>

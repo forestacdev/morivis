@@ -6,7 +6,7 @@
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
 	import NumberOption from '$routes/components/layerMenu/layerOptionMenu/NumberOption.svelte';
-	import LabelOption from '$routes/components/layerMenu/layerOptionMenu/vecterOption/LabelOption.svelte';
+	import LabelOption from '$routes/components/layerMenu/layerOptionMenu/LabelOption.svelte';
 	import type {
 		GeometryType,
 		PointEntry,

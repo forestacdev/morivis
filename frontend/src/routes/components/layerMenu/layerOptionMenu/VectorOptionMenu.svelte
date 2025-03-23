@@ -6,7 +6,7 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import ColorOption from './ColorOption.svelte';
-	import LabelOption from './vecterOption/LabelOption.svelte';
+	import LabelLayerOption from './vecterOption/LabelLayerOption.svelte';
 	import LineStringOption from './vecterOption/LineStringOption.svelte';
 	import PointOption from './vecterOption/PointOption.svelte';
 	import PolygonOption from './vecterOption/PolygonOption.svelte';
@@ -56,7 +56,7 @@
 	{/if}
 
 	{#if layerToEdit.format.geometryType === 'Label'}
-		<LabelOption bind:layerToEdit />
+		<LabelLayerOption bind:layerToEdit />
 	{/if}
 {/if}
 
