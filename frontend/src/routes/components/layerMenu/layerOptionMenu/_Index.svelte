@@ -21,9 +21,15 @@
 
 {#if $selectedLayerId && $isEdit && layerToEdit}
 	<div
-		transition:fly={{ duration: 300, y: -50, opacity: 0 }}
+		transition:fly={{ duration: 300, x: -50, opacity: 0 }}
 		class="bg-main absolute top-0 z-30 flex h-full w-full flex-col p-2"
 	>
+		<div class="flex flex-shrink-0 items-center justify-start gap-2 pb-2">
+			<button onclick={() => isEdit.set(false)} class="bg-base grid items-center rounded-full p-2">
+				<Icon icon="ep:back" class="text-main h-4 w-4" />
+			</button>
+			<span class="text-lg">レイヤーの編集</span>
+		</div>
 		<LayerSlot bind:layerEntry={layerToEdit} bind:tempLayerEntries />
 		<div class="c-scroll h-full flex-grow overflow-x-hidden">
 			{#if layerToEdit.type === 'vector'}

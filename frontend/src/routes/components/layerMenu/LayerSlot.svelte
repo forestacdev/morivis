@@ -62,19 +62,19 @@
 		}
 	});
 
-	// レイヤーのコピー
-	const copyLayer = () => {
-		if (!layerEntry) return;
-		$isEdit = false;
-		const uuid = crypto.randomUUID();
-		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+	// TODO: レイヤーのコピー
+	// const copyLayer = () => {
+	// 	if (!layerEntry) return;
+	// 	$isEdit = false;
+	// 	const uuid = crypto.randomUUID();
+	// 	const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
-		copy.id = uuid;
-		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
+	// 	copy.id = uuid;
+	// 	copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
-		tempLayerEntries = [...tempLayerEntries, copy];
-		addedLayerIds.addLayer(uuid);
-	};
+	// 	tempLayerEntries = [...tempLayerEntries, copy];
+	// 	addedLayerIds.addLayer(uuid);
+	// };
 
 	// レイヤーの削除
 	const removeLayer = () => {
@@ -157,7 +157,7 @@
 						>{layerEntry.metaData.name}</span
 					>
 
-					{#if $selectedLayerId === layerEntry.id}
+					{#if $selectedLayerId === layerEntry.id && !$isEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class="">
 							<div class="flex gap-2">
 								<button class="" onclick={() => moveLayerById('up')}
@@ -172,9 +172,9 @@
 								<button onclick={focusLayer}>
 									<Icon icon="hugeicons:target-03" width="20" height="20" class="custom-anime" />
 								</button>
-								<button onclick={copyLayer}>
+								<!-- <button onclick={copyLayer}>
 									<Icon icon="lucide:copy" width="20" height="20" class="custom-anime" />
-								</button>
+								</button> -->
 								<button onclick={editLayer}>
 									<Icon icon="lucide:edit" width="20" height="20" class="custom-anime" />
 								</button>

@@ -16,32 +16,33 @@
 			<div class="flex flex-shrink-0 items-center justify-between pb-4">
 				<span class="text-2xl font-bold">ENSHURIN View について</span>
 				<button onclick={() => showInfoDialog.set(false)} class="bg-base rounded-full p-2">
-					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
+					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 				</button>
 			</div>
 			<div class="flex-flex-col c-scroll overflow-y-auto overflow-x-hidden p-2">
 				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">概要</div>
 					<div class="">
-						岐阜県立森林文化アカデミーのクリエーター科20期生の課題研究「WebGIS を活用したアカデミー演習林の情報共有化」により作成したアカデミー演習林のWebGISです。現在も開発中であり、機能の追加や改善を行っています。バグなどを見つけた場合は、お手数ですが<a
-						class="text-accent"
-						href="https://github.com/forestacdev/enshurin-viewer/issues"
-						target="_blank"
-						rel="noopener noreferrer">GitHubのイシュー</a
-					>にてご報告ください。
+						岐阜県立森林文化アカデミーのクリエーター科20期生の課題研究「WebGIS
+						を活用したアカデミー演習林の情報共有化」により作成したアカデミー演習林のWebGISです。現在も開発中であり、機能の追加や改善を行っています。バグなどを見つけた場合は、お手数ですが<a
+							class="text-accent"
+							href="https://github.com/forestacdev/enshurin-viewer/issues"
+							target="_blank"
+							rel="noopener noreferrer">GitHubのイシュー</a
+						>にてご報告ください。
 					</div>
 				</div>
 
-                <div class="pb-4">
+				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">利用データ</div>
 					<div class="">
 						本アプリケーションでは主に下記のデータを利用しております。
 
-                        <ul class="list-disc pl-8">
-                            <li>岐阜県立森林文化アカデミーの演習林データ</li>
-                            <li>岐阜県森林研究所</li>
-                            <li>国土地理院</li>
-                        </ul>
+						<ul class="list-disc pl-8">
+							<li>岐阜県立森林文化アカデミーの演習林データ</li>
+							<li>岐阜県森林研究所</li>
+							<li>国土地理院</li>
+						</ul>
 					</div>
 				</div>
 
