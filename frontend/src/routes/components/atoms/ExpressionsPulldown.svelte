@@ -7,7 +7,7 @@
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import type {
 		VectorLayerType,
-		ColorsExpressions,
+		ColorsExpression,
 		LabelsExpressions,
 		ColorsStyle
 	} from '$routes/data/types/vector/style';

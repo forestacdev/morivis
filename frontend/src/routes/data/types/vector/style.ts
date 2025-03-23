@@ -65,7 +65,7 @@ export interface LabelDefaultStyle {
 	symbol: SymbolLayerStyle;
 }
 
-export interface ColorSingleExpressions {
+export interface ColorSingleExpression {
 	type: 'single';
 	key: string;
 	name: string;
@@ -74,7 +74,7 @@ export interface ColorSingleExpressions {
 	};
 }
 
-export interface ColorMatchExpressions {
+export interface ColorMatchExpression {
 	type: 'match';
 	key: string;
 	name: string;
@@ -84,7 +84,7 @@ export interface ColorMatchExpressions {
 	};
 }
 
-export interface ColorStepExpressions {
+export interface ColorStepExpression {
 	type: 'step';
 	key: string;
 	name: string;
@@ -95,18 +95,29 @@ export interface ColorStepExpressions {
 	};
 }
 
-export type ColorsExpressions =
-	| ColorSingleExpressions
-	| ColorMatchExpressions
-	| ColorStepExpressions;
+export interface ColorLinearExpression {
+	type: 'linear';
+	key: string;
+	name: string;
+	mapping: {
+		range: [number, number]; // min, max
+		values: [string, string];
+	};
+}
+
+export type ColorsExpression =
+	| ColorSingleExpression
+	| ColorMatchExpression
+	| ColorStepExpression
+	| ColorLinearExpression;
 
 export interface ColorsStyle {
 	key: string;
 	show: boolean;
-	expressions: ColorsExpressions[];
+	expressions: ColorsExpression[];
 }
 
-export interface NumberSingleExpressions {
+export interface NumberSingleExpression {
 	type: 'single';
 	key: string;
 	name: string;
@@ -115,7 +126,7 @@ export interface NumberSingleExpressions {
 	};
 }
 
-export interface NumberMatchExpressions {
+export interface NumberMatchExpression {
 	type: 'match';
 	key: string;
 	name: string;
@@ -125,7 +136,7 @@ export interface NumberMatchExpressions {
 	};
 }
 
-export interface NumberStepExpressions {
+export interface NumberStepExpression {
 	type: 'step';
 	key: string;
 	name: string;
@@ -136,7 +147,7 @@ export interface NumberStepExpressions {
 	};
 }
 
-export interface NumberLinearExpressions {
+export interface NumberLinearExpression {
 	type: 'linear';
 	key: string;
 	name: string;
@@ -146,15 +157,14 @@ export interface NumberLinearExpressions {
 	};
 }
 
-export type NumbersExpressions =
-	| NumberSingleExpressions
-	| NumberMatchExpressions
-	| NumberStepExpressions
-	| NumberLinearExpressions;
+export type NumbersExpression =
+	| NumberSingleExpression
+	| NumberMatchExpression
+	| NumberLinearExpression;
 
 export interface NumbersStyle {
 	key: string;
-	expressions: NumbersExpressions[];
+	expressions: NumbersExpression[];
 }
 
 export interface LabelsExpressions {

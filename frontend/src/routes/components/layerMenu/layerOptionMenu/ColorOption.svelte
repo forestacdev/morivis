@@ -21,7 +21,7 @@
 	} from '$routes/data/types/vector';
 	import type {
 		VectorLayerType,
-		ColorsExpressions,
+		ColorsExpression,
 		LabelsExpressions,
 		ColorsStyle
 	} from '$routes/data/types/vector/style';

@@ -1,9 +1,9 @@
 import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 import type {
 	VectorLayerType,
-	ColorsExpressions,
+	ColorsExpression,
 	LabelsExpressions,
-	ColorStepExpressions
+	ColorStepExpression
 } from '$routes/data/vector/style';
 
 import { scaleLinear } from 'd3-scale';
@@ -11,7 +11,7 @@ import { interpolateRgb } from 'd3-interpolate';
 import { color } from 'd3-color';
 
 export const generateNumberAndColorMap = (
-	mapping: ColorStepExpressions['mapping']
+	mapping: ColorStepExpression['mapping']
 ): {
 	categories: number[];
 	values: string[];

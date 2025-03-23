@@ -6,7 +6,7 @@
 
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { ColorsExpressions } from '$routes/data/types/vector/style';
+	import type { ColorsExpression } from '$routes/data/types/vector/style';
 	import { addedLayerIds, selectedLayerId, isEdit } from '$routes/store';
 	import { showDataMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
@@ -20,9 +20,9 @@
 	let { layerEntry = $bindable(), tempLayerEntries = $bindable(), toggleVisible }: Props = $props();
 	let showColors = $state(false);
 
-	const getColorPallet = (ColorsExpressions: ColorsExpressions[]) => {
+	const getColorPallet = (ColorsExpression: ColorsExpression[]) => {
 		if (!layerEntry || layerEntry.type !== 'vector') return;
-		const target = ColorsExpressions.find((color) => color.key === layerEntry.style.colors.key);
+		const target = ColorsExpression.find((color) => color.key === layerEntry.style.colors.key);
 		if (!target) return;
 		// if (target.type === 'step') {
 		// 	return {

@@ -30,15 +30,15 @@ import type {
 	VectorStyle,
 	ColorsStyle,
 	NumbersStyle,
-	NumbersExpressions,
-	NumberSingleExpressions,
-	NumberLinearExpressions,
-	NumberMatchExpressions,
+	NumbersExpression,
+	NumberSingleExpression,
+	NumberLinearExpression,
+	NumberMatchExpression,
 	NumberStepExpressions,
-	ColorsExpressions,
-	ColorSingleExpressions,
-	ColorMatchExpressions,
-	ColorStepExpressions,
+	ColorsExpression,
+	ColorSingleExpression,
+	ColorMatchExpression,
+	ColorStepExpression,
 	PointStyle,
 	PolygonStyle,
 	LineStringStyle,
@@ -189,7 +189,7 @@ export const createHighlightLayer = (
 };
 
 const generateMatchExpression = (
-	expressionData: ColorMatchExpressions
+	expressionData: ColorMatchExpression
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
 	const key = expressionData.key;
 	const expression = ['match', ['get', key]];
@@ -213,7 +213,7 @@ const generateMatchExpression = (
 };
 
 const generateStepExpression = (
-	expressionData: ColorStepExpressions
+	expressionData: ColorStepExpression
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {
 	const key = expressionData.key;
 
@@ -274,7 +274,7 @@ const getColorExpression = (colors: ColorsStyle) => {
 };
 
 const generateNumberMatchExpression = (
-	expressionData: NumberMatchExpressions
+	expressionData: NumberMatchExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
 	const expression = ['match', ['get', key]];
@@ -339,7 +339,7 @@ const generateNumberStepExpression = (
 };
 
 export const generateNumberLinearExpression = (
-	expr: NumberLinearExpressions
+	expr: NumberLinearExpression
 ): DataDrivenPropertyValueSpecification<number>[] => {
 	const { key, mapping } = expr;
 	const [inputMin, inputMax] = mapping.range;
