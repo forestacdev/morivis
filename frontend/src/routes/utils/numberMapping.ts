@@ -1,25 +1,8 @@
-import type {
-	NumberLinearExpression,
-	NumberStepExpressions
-} from '$routes/data/types/vector/style';
+import type { NumberLinearExpression, NumberStepExpression } from '$routes/data/types/vector/style';
 import { scaleLinear } from 'd3-scale';
 
-export const generateNumberLinearMap = (
-	mapping: NumberLinearExpression['mapping']
-): {
-	categories: number[]; // 境界値（divisions + 1 個）
-	values: number[]; // 各カテゴリに対応する値（divisions 個）
-} => {
-	const { range, values } = mapping;
-
-	return {
-		categories: range,
-		values
-	};
-};
-
 export const generateNumberToNumberMap = (
-	mapping: NumberStepExpressions['mapping']
+	mapping: NumberStepExpression['mapping']
 ): {
 	categories: number[]; // 境界値（divisions + 1 個）
 	values: number[]; // 各カテゴリに対応する値（divisions 個）

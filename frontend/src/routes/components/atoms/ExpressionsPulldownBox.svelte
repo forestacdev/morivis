@@ -2,23 +2,21 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import ColorPicker from '$routes/components/atoms/ColorPicker.svelte';
-	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
-	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorExpressionsOption from '$routes/components/layerMenu/layerOptionMenu/extensionMenu/ColorExpressionsOption.svelte';
+	import NumberExpressionsOption from '$routes/components/layerMenu/layerOptionMenu/extensionMenu/NumberExpressionsOption.svelte';
 	import type {
-		VectorLayerType,
 		ColorsExpression,
+		NumbersExpression,
 		LabelsExpressions,
 		ColorsStyle,
-		NumbersStyle
+		NumbersStyle,
+		ExpressionType
 	} from '$routes/data/types/vector/style';
-	import { generateNumberAndColorMap, generateColorPalette } from '$routes/utils/colorMapping';
 	import { getIconStyle } from '$routes/utils/ui';
 
 	interface Props {
 		style: ColorsStyle | NumbersStyle;
-		expressionType: 'colors' | 'numbers';
+		expressionType: ExpressionType;
 	}
 	let { style = $bindable(), expressionType }: Props = $props();
 	let showPullDown = $state<boolean>(false);
@@ -43,7 +41,7 @@
 			class="c-select flex w-full justify-between"
 		>
 			<div class="flex items-center gap-2">
-				<Icon icon={getIconStyle(setExpression.type)} width={20} />
+				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} />
 
 				<span> {expressionsList.find((exp) => exp.key === style.key)?.name}</span>
 			</div>
@@ -69,7 +67,7 @@
 							onchange={() => (showPullDown = false)}
 						/>
 						<div class="flex items-center gap-2">
-							<Icon icon={getIconStyle(expressionItem.type)} width={20} />
+							<Icon icon={getIconStyle(expressionItem.type, expressionType)} width={20} />
 							<span class="select-none">{expressionItem.name}</span>
 						</div>
 					</label>
@@ -79,11 +77,11 @@
 	</div>
 	<!-- 色分け選択 -->
 	<div class="flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pt-2">
-		{#if expressionType === 'colors'}
+		{#if expressionType === 'color'}
 			<ColorExpressionsOption setExpression={setExpression as ColorsExpression} />
 		{/if}
-		{#if expressionType === 'numbers'}
-			ここに数値の設定を追加
+		{#if expressionType === 'number'}
+			<NumberExpressionsOption setExpression={setExpression as NumbersExpression} />
 		{/if}
 	</div>
 {/if}

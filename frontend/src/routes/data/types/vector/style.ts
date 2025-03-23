@@ -167,6 +167,8 @@ export interface NumbersStyle {
 	expressions: NumbersExpression[];
 }
 
+export type ExpressionType = 'color' | 'number';
+
 export interface LabelsExpressions {
 	key: string;
 	name: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Accordion from '$routes/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/components/atoms/ColorPicker.svelte';
-	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
+	import ExpressionsPulldownBox from '$routes/components/atoms/ExpressionsPulldownBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';

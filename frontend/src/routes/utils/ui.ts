@@ -1,4 +1,5 @@
 import { MOBILE_WIDTH } from '$routes/constants';
+import type { ExpressionType } from '$routes/data/types/vector/style';
 
 /**
  * PC画面かどうかを判定する
@@ -20,8 +21,18 @@ type MappingType = 'single' | 'match' | 'linear' | 'step';
  * @returns string
  * @description アイコンのスタイルを取得する関数
  */
-export const getIconStyle = (type: MappingType) => {
-	if (!type) return 'bxs:color-fill';
+export const getIconStyle = (type: MappingType, expressionType: ExpressionType) => {
+	let defaultIcon;
+
+	if (expressionType === 'color') {
+		defaultIcon = 'bxs:color-fill';
+	} else if (expressionType === 'number') {
+		defaultIcon = 'lsicon:number-filled';
+	} else {
+		defaultIcon = 'bxs:color-fill';
+	}
+
+	if (!type) return defaultIcon;
 	switch (type) {
 		case 'match':
 			return 'material-symbols:category-rounded';
@@ -30,6 +41,6 @@ export const getIconStyle = (type: MappingType) => {
 		case 'linear':
 			return 'mdi:graph-bell-curve-cumulative';
 		default:
-			return 'bxs:color-fill';
+			return defaultIcon;
 	}
 };
