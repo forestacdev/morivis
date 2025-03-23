@@ -19,7 +19,7 @@
 		TileMetaData
 	} from '$routes/data/types/vector';
 	import type {
-		Numbers,
+		NumbersStyle,
 		NumbersExpressions,
 		NumberStepExpressions,
 		NumberMatchExpressions,
@@ -31,7 +31,7 @@
 
 	interface Props {
 		label: string;
-		numberStyle: Numbers;
+		numberStyle: NumbersStyle;
 	}
 
 	let { label, numberStyle = $bindable() }: Props = $props();
@@ -48,7 +48,6 @@
 
 	let stepPallet = $derived.by(() => {
 		const target = getNumbersPallet(numberStyle.expressions);
-		console.log(target);
 		if (target && target.type === 'linear') {
 			return generateNumberLinearMap(target.mapping);
 		}

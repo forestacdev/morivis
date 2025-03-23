@@ -28,6 +28,8 @@
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/chroma-js": "^2.4.5",
 		"@types/colormap": "^2.3.4",
+		"@types/d3-color": "^3.1.3",
+		"@types/d3-interpolate": "^3.0.4",
 		"@types/d3-scale": "^4.0.9",
 		"@types/jsoneditor": "^9.9.5",
 		"@types/three": "^0.172.0",

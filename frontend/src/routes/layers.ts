@@ -28,8 +28,8 @@ import type { GeoDataEntry } from '$routes/data/types';
 import type {
 	Labels,
 	VectorStyle,
-	Colors,
-	Numbers,
+	ColorsStyle,
+	NumbersStyle,
 	NumbersExpressions,
 	NumberSingleExpressions,
 	NumberLinearExpressions,
@@ -253,7 +253,7 @@ const generateStepExpression = (
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
-const getColorExpression = (colors: Colors) => {
+const getColorExpression = (colors: ColorsStyle) => {
 	const key = colors.key;
 	const expressionData = colors.expressions.find((expression) => expression.key === key);
 	if (!expressionData) {
@@ -356,7 +356,7 @@ export const generateNumberLinearExpression = (
 	] as DataDrivenPropertyValueSpecification<number>[];
 };
 
-const getNumberExpression = (numbers: Numbers) => {
+const getNumberExpression = (numbers: NumbersStyle) => {
 	const key = numbers.key;
 	const expressionData = numbers.expressions.find((expression) => expression.key === key);
 	if (!expressionData) {

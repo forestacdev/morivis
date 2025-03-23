@@ -100,7 +100,7 @@ export type ColorsExpressions =
 	| ColorMatchExpressions
 	| ColorStepExpressions;
 
-export interface Colors {
+export interface ColorsStyle {
 	key: string;
 	show: boolean;
 	expressions: ColorsExpressions[];
@@ -152,7 +152,7 @@ export type NumbersExpressions =
 	| NumberStepExpressions
 	| NumberLinearExpressions;
 
-export interface Numbers {
+export interface NumbersStyle {
 	key: string;
 	expressions: NumbersExpressions[];
 }
@@ -175,7 +175,7 @@ interface BaseVectorStyle {
 	opacity: number;
 	visible?: boolean; // NOTE: 動的追加
 	labels: Labels;
-	colors: Colors;
+	colors: ColorsStyle;
 }
 
 export interface PolygonOutLine {
@@ -194,7 +194,7 @@ export interface PointOutLine {
 export interface LabelOutLine {
 	show: boolean;
 	color: string;
-	width: Numbers[];
+	width: NumbersStyle[];
 }
 
 export interface PolygonStyle extends BaseVectorStyle {
@@ -205,21 +205,21 @@ export interface PolygonStyle extends BaseVectorStyle {
 
 export interface LineStringStyle extends BaseVectorStyle {
 	type: 'line';
-	width: Numbers[];
+	width: NumbersStyle[];
 	lineStyle: 'solid' | 'dashed';
 	default: LineStringDefaultStyle;
 }
 
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
-	radius: Numbers;
+	radius: NumbersStyle;
 	outline: PointOutLine;
 	default: PointDefaultStyle;
 }
 
 export interface LabelStyle extends BaseVectorStyle {
 	type: 'symbol';
-	textSize: Numbers[];
+	textSize: NumbersStyle[];
 	outline: LabelOutLine;
 	default: LabelDefaultStyle;
 }

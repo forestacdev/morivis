@@ -40,7 +40,7 @@ export const generateNumberAndColorMap = (
 		.range([minColor, maxColor]); // 最小色と最大色
 
 	// 各値に対応する色を生成
-	const colors = scale.map((value: string) => {
+	const colors = scale.map((value: number) => {
 		const rgbColor = colorScale(value);
 		const hexColor = color(rgbColor).formatHex();
 		return hexColor;
@@ -80,5 +80,3 @@ export const generateColorPalette = (rows: number, cols: number): string[][] => 
 	}
 	return palette;
 };
-
-
