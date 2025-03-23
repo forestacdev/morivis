@@ -34,11 +34,7 @@
 	} from '$routes/data/types/vector/style';
 	import { selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import {
-		generateNumberAndColorMap,
-		generateNumberMap,
-		generateColorPalette
-	} from '$routes/utils/colorMapping';
+	import { generateNumberAndColorMap, generateColorPalette } from '$routes/utils/colorMapping';
 
 	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
 		$props();

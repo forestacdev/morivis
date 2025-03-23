@@ -235,7 +235,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			opacity: 0.8, // 透過率
 			colors: {
 				show: true,
-				key: '単色',
+				key: '樹高m',
 				expressions: [
 					{
 						type: 'single',
@@ -243,6 +243,16 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 						name: '単色',
 						mapping: {
 							value: '#e70000'
+						}
+					},
+					{
+						type: 'step',
+						key: '樹高m',
+						name: '樹高の範囲による色分け',
+						mapping: {
+							range: [4.0, 20],
+							divisions: 6,
+							values: ['#dcd69c', '#e20000']
 						}
 					}
 				]
@@ -259,12 +269,11 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 						}
 					},
 					{
-						type: 'step',
+						type: 'linear',
 						key: '胸高直径cm',
 						name: '胸高直径',
 						mapping: {
 							range: [7, 42.5],
-							divisions: 5,
 							values: [5, 10]
 						}
 					}
@@ -276,13 +285,13 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 				width: 2
 			},
 			labels: {
-				key: '名前',
+				key: '胸高直径cm',
 				show: false,
 				expressions: [
 					{
-						key: '名前',
-						name: 'ポールの名前',
-						value: '{name}'
+						key: '胸高直径cm',
+						name: '胸高直径cm',
+						value: '{胸高直径cm}'
 					}
 				]
 			},

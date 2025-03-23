@@ -27,19 +27,14 @@
 	} from '$routes/data/types/vector/style';
 	import { selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import {
-		generateNumberAndColorMap,
-		generateNumberMap,
-		generateColorPalette
-	} from '$routes/utils/colorMapping';
+	import { generateNumberToNumberMap, generateNumberLinearMap } from '$routes/utils/numberMapping';
 
 	interface Props {
 		label: string;
-		secondaryLabel: string;
 		numberStyle: Numbers;
 	}
 
-	let { label, secondaryLabel, numberStyle = $bindable() }: Props = $props();
+	let { label, numberStyle = $bindable() }: Props = $props();
 
 	const getNumbersPallet = (ColorsExpressions: NumbersExpressions[]) => {
 		const target = ColorsExpressions.find((color) => color.key === numberStyle.key);
@@ -53,8 +48,12 @@
 
 	let stepPallet = $derived.by(() => {
 		const target = getNumbersPallet(numberStyle.expressions);
+		console.log(target);
+		if (target && target.type === 'linear') {
+			return generateNumberLinearMap(target.mapping);
+		}
 		if (target && target.type === 'step') {
-			return generateNumberAndColorMap(target.mapping);
+			return generateNumberToNumberMap(target.mapping);
 		}
 	});
 
@@ -74,6 +73,22 @@
 	let expressions = $derived.by(() => {
 		return numberStyle.expressions;
 	});
+
+	type MappingType = 'single' | 'match' | 'linear' | 'step';
+
+	const getIconStyle = (type: MappingType) => {
+		if (!type) return 'bxs:color-fill';
+		switch (type) {
+			case 'match':
+				return 'material-symbols:category-rounded';
+			case 'step':
+				return 'subway:step-1';
+			case 'linear':
+				return 'mdi:graph-bell-curve-cumulative';
+			default:
+				return 'bxs:color-fill';
+		}
+	};
 </script>
 
 {#if numbersExpressions}
@@ -91,14 +106,7 @@
 						class="hidden"
 					/>
 					<div class="flex items-center gap-2">
-						<Icon
-							icon={numbersExpressions.type === 'match'
-								? 'material-symbols:category-rounded'
-								: numbersExpressions.type === 'step'
-									? 'subway:step-1'
-									: 'bxs:color-fill'}
-							width={20}
-						/>
+						<Icon icon={getIconStyle(numbersExpressions.type)} width={20} />
 						<span class="select-none">{numbersExpressions.name}</span>
 					</div>
 					{#if numberStyle.key === numbersExpressions.key}
@@ -114,7 +122,7 @@
 						</button>
 					{/if}
 				</label>
-				<!-- 色分け選択 -->
+				<!-- 数値分け選択 -->
 				{#if numberOptionKey === numbersExpressions.key}
 					<div
 						transition:slide={{ duration: 300 }}
@@ -124,11 +132,12 @@
 							<RangeSlider
 								label="大きさ"
 								bind:value={numbersExpressions.mapping.value}
-								min={2}
-								max={10}
-								step={1}
+								min={1}
+								max={20}
+								step={0.01}
 							/>
-						{:else if numbersExpressions.type === 'match'}
+						{/if}
+						{#if numbersExpressions.type === 'match'}
 							{#each numbersExpressions.mapping.categories as _, index}
 								<RangeSlider
 									label="大きさ"
@@ -138,16 +147,32 @@
 									step={1}
 								/>
 							{/each}
-						{:else if numbersExpressions.type === 'step'}
+						{/if}
+						{#if numbersExpressions.type === 'linear'}
+							{#each numbersExpressions.mapping.range as _, index}
+								<div class="flex-between flex w-full select-none gap-2">
+									<div class="w-full">{numbersExpressions.mapping.range[index]}</div>
+									<span>{index === 0 ? '最小' : '最大'}</span>
+									<RangeSlider
+										label="大きさ"
+										bind:value={numbersExpressions.mapping.values[index]}
+										min={0}
+										max={30}
+										step={0.01}
+									/>
+								</div>
+							{/each}
+						{/if}
+						{#if numbersExpressions.type === 'step'}
 							<div class="flex-between flex w-full gap-2">
 								{#each numbersExpressions.mapping.values as _, index}
 									<span>{index === 0 ? '最小' : '最大'}</span>
 									<RangeSlider
 										label="大きさ"
 										bind:value={numbersExpressions.mapping.values[index]}
-										min={2}
-										max={10}
-										step={1}
+										min={0}
+										max={30}
+										step={0.01}
 									/>
 								{/each}
 							</div>
@@ -167,6 +192,7 @@
 									</div>
 								{/each}
 							{/if}
+							{JSON.stringify(stepPallet)}
 						{/if}
 					</div>
 				{/if}

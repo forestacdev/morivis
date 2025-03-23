@@ -32,6 +32,7 @@ import type {
 	Numbers,
 	NumbersExpressions,
 	NumberSingleExpressions,
+	NumberLinearExpressions,
 	NumberMatchExpressions,
 	NumberStepExpressions,
 	ColorsExpressions,
@@ -337,6 +338,24 @@ const generateNumberStepExpression = (
 	return expression as DataDrivenPropertyValueSpecification<number>;
 };
 
+export const generateNumberLinearExpression = (
+	expr: NumberLinearExpressions
+): DataDrivenPropertyValueSpecification<number>[] => {
+	const { key, mapping } = expr;
+	const [inputMin, inputMax] = mapping.range;
+	const [outputMin, outputMax] = mapping.values;
+
+	return [
+		'interpolate',
+		['linear'],
+		['get', key],
+		inputMin,
+		outputMin,
+		inputMax,
+		outputMax
+	] as DataDrivenPropertyValueSpecification<number>[];
+};
+
 const getNumberExpression = (numbers: Numbers) => {
 	const key = numbers.key;
 	const expressionData = numbers.expressions.find((expression) => expression.key === key);
@@ -349,6 +368,9 @@ const getNumberExpression = (numbers: Numbers) => {
 			return expressionData.mapping.value;
 		case 'match':
 			return generateNumberMatchExpression(expressionData);
+		case 'linear':
+			return generateNumberLinearExpression(expressionData);
+
 		case 'step':
 			return generateNumberStepExpression(expressionData);
 		default:
@@ -420,6 +442,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 	const outline = style.outline;
 	const circleStyle = style.default.circle;
 	const color = getColorExpression(style.colors);
+	console.log('color', color);
 	const radius = getNumberExpression(style.radius);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
@@ -428,7 +451,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 			'circle-opacity': style.colors.show ? style.opacity : 0,
 			'circle-stroke-opacity': style.opacity,
 			'circle-color': style.colors.show ? color : '#00000000',
-			'circle-radius': 7,
+			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
 			'circle-stroke-width': outline.show ? style.outline.width : 0,
 			...(circleStyle.paint ?? {})

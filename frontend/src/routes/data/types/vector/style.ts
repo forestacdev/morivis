@@ -136,10 +136,21 @@ export interface NumberStepExpressions {
 	};
 }
 
+export interface NumberLinearExpressions {
+	type: 'linear';
+	key: string;
+	name: string;
+	mapping: {
+		range: [number, number]; // min, max
+		values: [number, number];
+	};
+}
+
 export type NumbersExpressions =
 	| NumberSingleExpressions
 	| NumberMatchExpressions
-	| NumberStepExpressions;
+	| NumberStepExpressions
+	| NumberLinearExpressions;
 
 export interface Numbers {
 	key: string;

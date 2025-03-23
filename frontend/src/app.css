@@ -27,6 +27,11 @@
 		@apply w-full rounded border-2 border-gray-300 px-3 py-2 outline-accent transition-colors duration-200;
 	}
 
+	/* プルダウンスタイル */
+	.c-select {
+		@apply cursor-pointer rounded-lg border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+	}
+
 	/* スクロールバー */
 	.c-scroll {
 		scrollbar-gutter: stable;

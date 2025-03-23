@@ -29,11 +29,7 @@
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerToEdit.style.colors} />
 
-<NumberOption
-	label={'円'}
-	secondaryLabel={'円の大きさ'}
-	bind:numberStyle={layerToEdit.style.radius}
-/>
+<NumberOption label={'円の半径'} bind:numberStyle={layerToEdit.style.radius} />
 
 <Accordion label={'縁'} bind:value={showOutlineOption}>
 	<Switch label={'表示'} bind:value={layerToEdit.style.outline.show} />

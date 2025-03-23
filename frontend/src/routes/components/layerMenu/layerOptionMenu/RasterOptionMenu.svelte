@@ -11,7 +11,7 @@
 		RasterCategoricalStyle,
 		RasterBaseMapStyle
 	} from '$routes/data/types/raster';
-	import { generateNumberAndColorMap, generateNumberMap } from '$routes/utils/colorMapping';
+	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 
 	let {
 		layerToEdit = $bindable()

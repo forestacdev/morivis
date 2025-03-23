@@ -3,7 +3,9 @@
 	export let value: string;
 </script>
 
-<label class="flex cursor-pointer items-center justify-between">
+<label
+	class="hover:text-accent flex cursor-pointer items-center justify-between transition-colors duration-100"
+>
 	{#if label}
 		<span class="select-none">{label}</span>
 	{/if}
