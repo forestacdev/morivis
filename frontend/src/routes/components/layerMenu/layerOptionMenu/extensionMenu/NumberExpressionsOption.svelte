@@ -18,7 +18,6 @@
 
 {#if setExpression}
 	{#if setExpression.type === 'single'}
-		<ColorPicker label="全体の色" bind:value={setExpression.mapping.value as string} />
 		<RangeSlider
 			label="大きさ"
 			bind:value={setExpression.mapping.value}
@@ -40,9 +39,11 @@
 	{/if}
 	{#if setExpression.type === 'linear'}
 		{#each setExpression.mapping.range as _, index}
-			<div class="flex-between flex w-full select-none gap-2">
-				<div class="w-full">{setExpression.mapping.range[index]}</div>
-				<span>{index === 0 ? '最小' : '最大'}</span>
+			<div class="flex w-full select-none flex-col gap-2">
+				<div class="">
+					<span>{index === 0 ? '最小' : '最大'}値: {setExpression.mapping.range[index]}</span>
+				</div>
+
 				<RangeSlider
 					label="大きさ"
 					bind:value={setExpression.mapping.values[index]}
@@ -53,6 +54,7 @@
 			</div>
 		{/each}
 	{/if}
+	<!-- TODO:step -->
 	{#if setExpression.type === 'step'}
 		<div class="flex-between flex w-full gap-2">
 			{#each setExpression.mapping.values as _, index}

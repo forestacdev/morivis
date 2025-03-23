@@ -1,24 +1,19 @@
 <script lang="ts">
-	let {
-		label,
-		value = $bindable(),
-		min = 0,
-		max = 1,
-		step = 0.01
-	}: {
-		label: string;
+	interface Props {
+		label?: string;
 		value: number;
 		min: number;
 		max: number;
 		step: number;
-	} = $props();
+	}
+	let { label, value = $bindable(), min = 0, max = 1, step = 0.01 }: Props = $props();
 
 	// TODO: animation
 	let rangeElement = $state<HTMLDivElement | null>(null);
 </script>
 
 <div class="flex flex-col gap-2 pb-4">
-	<span class="select-none">{label}: {value.toFixed(2)}</span>
+	<span class="select-none">{label ? `${label}: ` : ''}{value.toFixed(2)}</span>
 	<input class="css-range" type="range" bind:value {min} {max} {step} />
 
 	<!-- <div bind:this={rangeElement}>{1900000}</div> -->
