@@ -27,17 +27,17 @@
 
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerToEdit.style.colors} />
-
 <NumberOption label={'ライン幅'} bind:numberStyle={layerToEdit.style.width} />
-
-<HorizontalSelectBox
-	label={'ラインのスタイル'}
-	bind:group={layerToEdit.style.lineStyle}
-	options={[
-		{ name: '実線', key: 'solid' },
-		{ name: '破線', key: 'dashed' }
-	]}
-/>
+<Accordion label={'スタイル'} bind:value={showLineOption}>
+	<HorizontalSelectBox
+		label={'ラインのスタイル'}
+		bind:group={layerToEdit.style.lineStyle}
+		options={[
+			{ name: '実線', key: 'solid' },
+			{ name: '破線', key: 'dashed' }
+		]}
+	/>
+</Accordion>
 
 <style>
 </style>
