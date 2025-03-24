@@ -54,6 +54,28 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 					}
 				]
 			},
+			width: {
+				key: '種類',
+				expressions: [
+					{
+						type: 'single',
+						key: '単一',
+						name: '単一',
+						mapping: {
+							value: 5
+						}
+					},
+					{
+						type: 'match',
+						key: '種類',
+						name: '歩道と林道の太さ分け',
+						mapping: {
+							categories: ['林道', '歩道'],
+							values: [10, 5]
+						}
+					}
+				]
+			},
 			lineStyle: 'solid',
 			labels: {
 				key: '種類',
@@ -70,7 +92,7 @@ export const fgbLineStringEntry: LineStringEntry<GeoJsonMetaData>[] = [
 				line: {
 					layout: {},
 					paint: {
-						'line-width': ['match', ['get', '種類'], '林道', 10, '歩道', 5, 5]
+						// 'line-width': ['match', ['get', '種類'], '林道', 10, '歩道', 5, 5]
 					}
 				},
 				circle: {

@@ -277,7 +277,7 @@ const generateNumberMatchExpression = (
 	expressionData: NumberMatchExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
-	const expression = ['match', ['get', key]];
+	const expression: (string | string[] | number)[] = ['match', ['get', key]];
 
 	const { categories, values } = expressionData.mapping;
 
@@ -340,20 +340,12 @@ const generateNumberStepExpression = (
 
 export const generateNumberLinearExpression = (
 	expr: NumberLinearExpression
-): DataDrivenPropertyValueSpecification<number>[] => {
+): DataDrivenPropertyValueSpecification<number> => {
 	const { key, mapping } = expr;
 	const [inputMin, inputMax] = mapping.range;
 	const [outputMin, outputMax] = mapping.values;
 
-	return [
-		'interpolate',
-		['linear'],
-		['get', key],
-		inputMin,
-		outputMin,
-		inputMax,
-		outputMax
-	] as DataDrivenPropertyValueSpecification<number>[];
+	return ['interpolate', ['linear'], ['get', key], inputMin, outputMin, inputMax, outputMax];
 };
 
 const getNumberExpression = (numbers: NumbersStyle) => {
@@ -370,7 +362,6 @@ const getNumberExpression = (numbers: NumbersStyle) => {
 			return generateNumberMatchExpression(expressionData);
 		case 'linear':
 			return generateNumberLinearExpression(expressionData);
-
 		case 'step':
 			return generateNumberStepExpression(expressionData);
 		default:
@@ -403,13 +394,15 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
 	const lineStyle = style.default.line;
 	const color = getColorExpression(style.colors);
+	const width = getNumberExpression(style.width);
 	const lineLayer: LineLayerSpecification = {
 		...layer,
 		type: 'line',
 		paint: {
 			'line-opacity': style.colors.show ? style.opacity : 0,
 			'line-color': style.colors.show ? color : '#00000000',
-			'line-width': 2,
+			'line-width': width,
+			...(style.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }),
 			...(lineStyle.paint ?? {})
 		},
 		layout: {
@@ -431,7 +424,7 @@ const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: 
 			'line-color': outline.color,
 			'line-width': outline.width,
 			'line-opacity': opacity,
-			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }) // 条件がtrueの時のみ追加
+			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
 		}
 	};
 	return outlineLayer;
@@ -442,7 +435,6 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 	const outline = style.outline;
 	const circleStyle = style.default.circle;
 	const color = getColorExpression(style.colors);
-	console.log('color', color);
 	const radius = getNumberExpression(style.radius);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,

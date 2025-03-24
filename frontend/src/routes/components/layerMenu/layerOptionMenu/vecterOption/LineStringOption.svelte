@@ -5,6 +5,7 @@
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
+	import NumberOption from '$routes/components/layerMenu/layerOptionMenu/NumberOption.svelte';
 	import type {
 		GeometryType,
 		LineStringEntry,
@@ -19,36 +20,24 @@
 	let { layerToEdit = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
-	let showOutlineOption = $state<boolean>(false);
+	let showLineOption = $state<boolean>(false);
 </script>
 
 <RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} min={0} max={1} step={0.01} />
 
 <!-- 色 -->
-<ColorOption bind:layerToEdit />
+<ColorOption bind:colorStyle={layerToEdit.style.colors} />
 
-<Accordion label={'アウトライン'} bind:value={layerToEdit.style.outline.show}>
-	<RangeSlider
-		label="ライン幅"
-		bind:value={layerToEdit.style.outline.width}
-		min={0}
-		max={10}
-		step={0.01}
-	/>
-	<div class="flex flex-col gap-2 pb-2">
-		<ColorPicker label="ラインの色" bind:value={layerToEdit.style.outline.color} />
-	</div>
-	{#if layerToEdit.style.type === 'fill'}
-		<HorizontalSelectBox
-			label={'ラインのスタイル'}
-			bind:group={layerToEdit.style.outline.lineStyle}
-			options={[
-				{ name: '実線', key: 'solid' },
-				{ name: '破線', key: 'dashed' }
-			]}
-		/>
-	{/if}
-</Accordion>
+<NumberOption label={'ライン幅'} bind:numberStyle={layerToEdit.style.width} />
+
+<HorizontalSelectBox
+	label={'ラインのスタイル'}
+	bind:group={layerToEdit.style.lineStyle}
+	options={[
+		{ name: '実線', key: 'solid' },
+		{ name: '破線', key: 'dashed' }
+	]}
+/>
 
 <style>
 </style>

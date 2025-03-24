@@ -206,7 +206,7 @@ export interface PointOutLine {
 export interface LabelOutLine {
 	show: boolean;
 	color: string;
-	width: NumbersStyle[];
+	width: NumbersStyle;
 }
 
 export interface PolygonStyle extends BaseVectorStyle {
@@ -217,7 +217,7 @@ export interface PolygonStyle extends BaseVectorStyle {
 
 export interface LineStringStyle extends BaseVectorStyle {
 	type: 'line';
-	width: NumbersStyle[];
+	width: NumbersStyle;
 	lineStyle: 'solid' | 'dashed';
 	default: LineStringDefaultStyle;
 }
@@ -231,7 +231,7 @@ export interface PointStyle extends BaseVectorStyle {
 
 export interface LabelStyle extends BaseVectorStyle {
 	type: 'symbol';
-	textSize: NumbersStyle[];
+	textSize: NumbersStyle;
 	outline: LabelOutLine;
 	default: LabelDefaultStyle;
 }
