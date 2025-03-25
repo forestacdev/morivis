@@ -203,6 +203,11 @@ export interface PointOutLine {
 	width: number;
 }
 
+export interface PointIcon {
+	show: boolean;
+	size: number;
+}
+
 export interface LabelOutLine {
 	show: boolean;
 	color: string;
@@ -225,6 +230,7 @@ export interface LineStringStyle extends BaseVectorStyle {
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
 	radius: NumbersStyle;
+	icon?: PointIcon;
 	outline: PointOutLine;
 	default: PointDefaultStyle;
 }

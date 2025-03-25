@@ -45,6 +45,10 @@
 	</div>
 </Accordion>
 
+{#if layerToEdit.style.icon}
+	<Switch label={'アイコン'} bind:value={layerToEdit.style.icon.show} />
+{/if}
+
 <LabelOption bind:labels={layerToEdit.style.labels} />
 
 <style>

@@ -410,7 +410,7 @@ const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpe
 		}
 	};
 
-	// TODO width line-dasharray line-gradient
+	// TODO width line-gradient
 	return lineLayer;
 };
 
@@ -452,12 +452,10 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 			...(circleStyle.layout ?? {})
 		}
 	};
-
-	// TODO circle-radius circle-stroke-color circle-stroke-width
 	return circleLayer;
 };
 
-// TODO: 命名の検討
+// TODO: 破棄する
 // ラベルレイヤーの作成
 const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const symbolStyle = style.default.symbol;
@@ -493,6 +491,42 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 	return symbolLayer;
 };
 
+// ポイントのicon用レイヤーの作成
+const createPointIconLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
+	const symbolStyle = style.default.symbol;
+	const key = style.labels.key as keyof Labels;
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+		id: `${layer.id}_label`,
+		type: 'symbol',
+		paint: {
+			'text-opacity': 1,
+			'icon-opacity': 1,
+			'text-color': '#000000',
+			'text-halo-color': '#FFFFFF',
+			'text-halo-width': 2,
+			...(symbolStyle.paint ?? {})
+		},
+		layout: {
+			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
+			'text-size': 12,
+			'text-max-width': 12,
+			'text-font': ['Noto Sans JP Light'],
+			'icon-image': ['get', '_prop_id'],
+			'icon-size': 0.1,
+			'icon-anchor': 'bottom',
+			...(symbolStyle.layout ?? {})
+
+			// "text-variable-anchor": ["top", "bottom", "left", "right"],
+			// "text-radial-offset": 0.5,
+			// "text-justify": "auto",
+		}
+	};
+
+	// TODO: text-halo-color text-halo-width text-size
+	return symbolLayer;
+};
+
 // symbolレイヤーの作成
 const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
 	const symbolStyle = style.default.symbol;
@@ -510,7 +544,6 @@ const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpec
 			...(symbolStyle.paint ?? {})
 		},
 		layout: {
-			// visibility: 'visible',
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
@@ -639,8 +672,16 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 						layerItems.push(lineLayer);
 					}
 
-					// ラベルを追加
-					if (style.labels.show && style.type !== 'symbol') {
+					// ポイントのアイコン表示がが有効かどうか
+					const showPointIcon = style.type === 'circle' && style.icon && style.icon.show;
+
+					if (showPointIcon) {
+						// ポイントのアイコン用レイヤーを追加
+						const iconLayer = createPointIconLayer(layer, style);
+						symbolLayerItems.push(iconLayer);
+					}
+					if (style.labels.show && style.type !== 'symbol' && !showPointIcon) {
+						// ラベルを追加
 						const symbolLayer = createSymbolLayer(layer, style);
 						symbolLayerItems.push(symbolLayer);
 					}
