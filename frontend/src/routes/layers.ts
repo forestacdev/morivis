@@ -499,7 +499,6 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
 	const labelPaint = {
 		'text-opacity': 1,
-		'icon-opacity': 1,
 		'text-color': '#000000',
 		'text-halo-color': '#FFFFFF',
 		'text-halo-width': 2
@@ -517,14 +516,16 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 		type: 'symbol',
 		paint: {
 			...(showLabel ? labelPaint : {}),
-			...(showLabel ? symbolStyle.paint : {})
+			...(showLabel ? symbolStyle.paint : {}),
+			'icon-opacity': style.opacity
 		},
 		layout: {
 			...(showLabel ? labelLayout : {}),
 			...(showLabel ? symbolStyle.layout : {}),
 			'icon-image': ['get', '_prop_id'],
-			'icon-size': 0.1,
+			'icon-size': style.icon?.size ?? 0.1,
 			'icon-anchor': 'bottom'
+
 			// ...(symbolStyle.layout ?? {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],

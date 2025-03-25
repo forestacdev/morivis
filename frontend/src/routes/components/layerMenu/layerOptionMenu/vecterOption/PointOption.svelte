@@ -23,24 +23,23 @@
 
 	let showTypeOption = $state<boolean>(false);
 	let showOutlineOption = $state<boolean>(false);
+	let showIconOption = $state<boolean>(false);
 </script>
 
 <RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} min={0} max={1} step={0.01} />
 
 {#if layerToEdit.style.icon}
-	<Accordion label={'スタイル'} bind:value={showTypeOption}>
-		<HorizontalSelectBox
-			label={'ポイントのスタイル'}
-			bind:group={layerToEdit.style.markerType}
-			options={[
-				{ name: '円', key: 'circle' },
-				{ name: 'アイコン', key: 'icon' }
-			]}
-		/>
-	</Accordion>
+	<HorizontalSelectBox
+		label={'ポイントのスタイル'}
+		bind:group={layerToEdit.style.markerType}
+		options={[
+			{ name: '円', key: 'circle' },
+			{ name: 'アイコン', key: 'icon' }
+		]}
+	/>
 {/if}
 
-{#if layerToEdit.style.markerType === 'circle' && layerToEdit.style.icon}
+{#if layerToEdit.style.markerType === 'circle'}
 	<!-- 色 -->
 	<ColorOption bind:colorStyle={layerToEdit.style.colors} />
 
@@ -62,7 +61,16 @@
 {/if}
 
 {#if layerToEdit.style.markerType === 'icon' && layerToEdit.style.icon}
-	<Switch label={'アイコン'} bind:value={layerToEdit.style.icon.show} />
+	<Accordion label={'アイコン'} bind:value={showIconOption}>
+		<Switch label={'表示'} bind:value={layerToEdit.style.icon.show} />
+		<RangeSlider
+			label="アイコンサイズ"
+			bind:value={layerToEdit.style.icon.size}
+			min={0}
+			max={0.5}
+			step={0.01}
+		/>
+	</Accordion>
 {/if}
 
 <LabelOption bind:labels={layerToEdit.style.labels} />

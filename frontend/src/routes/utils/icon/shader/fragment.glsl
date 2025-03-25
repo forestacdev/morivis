@@ -46,7 +46,13 @@ void main(void) {
     float canvasAspect = u_resolution.x / u_resolution.y;
     float imageAspect = u_imageResolution.x / u_imageResolution.y;
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
-    
+
+    // アスペクト比
+    float aspect = u_resolution.x / u_resolution.y;
+
+    // アスペクト補正あり（図形用）
+    vec2 stForShape = st;
+    stForShape.x *= aspect;
     // テクスチャ座標 yを反転
     vec2 texCoord = vec2(st.x, 1.0 - st.y);
 
@@ -64,13 +70,17 @@ void main(void) {
         texCoord.y = offset + texCoord.y * scale;
     }
 
+    vec2 center = vec2(0.5, 0.5);
+    // アスペクト比を補正
+    center.x *= aspect;
+
     // 円形マスクの設定
     float radius = 0.4;
-    float mask = circleMask(st, vec2(0.5, 0.5), radius);
+    float mask = circleMask(stForShape, center, radius);
 
     // 白い縁の設定
     float borderThickness = 0.02; // 縁の太さを指定
-    float outerMask = circleMask(st, vec2(0.5, 0.5), radius - borderThickness);
+    float outerMask = circleMask(stForShape, center, radius - borderThickness);
 
     // テクスチャから色をサンプリング
     vec4 textureColor = texture(u_texture, texCoord);
@@ -86,12 +96,12 @@ void main(void) {
     }
 
     // 三角形の頂点を設定（下向き三角形）
-    vec2 p0 = vec2(0.5, 0.0);   // 画面中央下
-    vec2 p1 = vec2(0.3, 0.18);  // 左上
-    vec2 p2 = vec2(0.7, 0.18);  // 右上
+    vec2 p0 = vec2(0.5 * aspect, 0.0);   // 画面中央下
+    vec2 p1 = vec2(0.3 * aspect, 0.18);  // 左上
+    vec2 p2 = vec2(0.7 * aspect, 0.18);  // 右上
 
     // 三角形マスクを適用
-    float triangle = triangleMask(st, p0, p1, p2);
+    float triangle = triangleMask(stForShape, p0, p1, p2);
 
     // 三角形部分を背景色として描画（画像より後ろにする）
     if (triangle > 0.0 && alpha == 0.0) {
