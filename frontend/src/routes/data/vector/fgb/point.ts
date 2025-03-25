@@ -41,6 +41,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 0.8, // 透過率
+			markerType: 'circle',
 			colors: {
 				show: true,
 				key: '単色',
@@ -137,8 +138,9 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 1,
+			markerType: 'icon',
 			colors: {
-				show: false,
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -152,7 +154,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 				]
 			},
 			outline: {
-				show: false,
+				show: true,
 				color: '#ffffff',
 				width: 2
 			},
@@ -261,8 +263,9 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 1,
+			markerType: 'icon',
 			colors: {
-				show: false,
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -276,7 +279,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 				]
 			},
 			outline: {
-				show: false,
+				show: true,
 				color: '#ffffff',
 				width: 2
 			},
@@ -366,8 +369,9 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 1,
+			markerType: 'icon',
 			colors: {
-				show: false,
+				show: true,
 				key: '単色',
 				expressions: [
 					{
@@ -474,6 +478,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 0.8, // 透過率
+			markerType: 'circle',
 			colors: {
 				show: true,
 				key: '単色',
@@ -570,6 +575,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 0.8, // 透過率
+			markerType: 'circle',
 			colors: {
 				show: true,
 				key: '樹高m',

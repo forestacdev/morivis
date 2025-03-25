@@ -230,6 +230,7 @@ export interface LineStringStyle extends BaseVectorStyle {
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
 	radius: NumbersStyle;
+	markerType: 'circle' | 'icon';
 	icon?: PointIcon;
 	outline: PointOutLine;
 	default: PointDefaultStyle;

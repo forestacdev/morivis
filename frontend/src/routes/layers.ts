@@ -492,30 +492,40 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 };
 
 // ポイントのicon用レイヤーの作成
-const createPointIconLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
+const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerSpecification => {
 	const symbolStyle = style.default.symbol;
 	const key = style.labels.key as keyof Labels;
+	const showLabel = style.labels.show;
+	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
+	const labelPaint = {
+		'text-opacity': 1,
+		'icon-opacity': 1,
+		'text-color': '#000000',
+		'text-halo-color': '#FFFFFF',
+		'text-halo-width': 2
+	};
+	const labelLayout = {
+		'text-field': textField,
+		'text-size': 12,
+		'text-max-width': 12,
+		'text-font': ['Noto Sans JP Light']
+	};
+
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-		id: `${layer.id}_label`,
+		id: `${layer.id}`,
 		type: 'symbol',
 		paint: {
-			'text-opacity': 1,
-			'icon-opacity': 1,
-			'text-color': '#000000',
-			'text-halo-color': '#FFFFFF',
-			'text-halo-width': 2,
-			...(symbolStyle.paint ?? {})
+			...(showLabel ? labelPaint : {}),
+			...(showLabel ? symbolStyle.paint : {})
 		},
 		layout: {
-			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
-			'text-size': 12,
-			'text-max-width': 12,
-			'text-font': ['Noto Sans JP Light'],
+			...(showLabel ? labelLayout : {}),
+			...(showLabel ? symbolStyle.layout : {}),
 			'icon-image': ['get', '_prop_id'],
 			'icon-size': 0.1,
-			'icon-anchor': 'bottom',
-			...(symbolStyle.layout ?? {})
+			'icon-anchor': 'bottom'
+			// ...(symbolStyle.layout ?? {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
@@ -578,7 +588,19 @@ const createVectorLayer = (
 			return createLineLayer(layer, style);
 		}
 		case 'circle': {
-			return createCircleLayer(layer, style);
+			switch (style.markerType) {
+				case 'icon':
+					if (style.icon?.show) {
+						return createPointIconLayer(layer, style);
+					} else {
+						return undefined;
+					}
+				case 'circle':
+					return createCircleLayer(layer, style);
+				default:
+					console.warn(`未対応の style.markerType: ${style.markerType} （layer.id: ${layer.id}）`);
+					return undefined;
+			}
 		}
 		case 'symbol': {
 			return createLabelLayer(layer, style);
@@ -663,8 +685,9 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 					}
 
 					const vectorLayer = createVectorLayer(layer, style);
-					if (!vectorLayer) return;
-					layerItems.push(vectorLayer);
+					if (vectorLayer) {
+						layerItems.push(vectorLayer);
+					}
 
 					// ポリゴンのアウトライン
 					if (style.type === 'fill' && style.outline.show) {
@@ -672,15 +695,10 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 						layerItems.push(lineLayer);
 					}
 
-					// ポイントのアイコン表示がが有効かどうか
-					const showPointIcon = style.type === 'circle' && style.icon && style.icon.show;
-
-					if (showPointIcon) {
-						// ポイントのアイコン用レイヤーを追加
-						const iconLayer = createPointIconLayer(layer, style);
-						symbolLayerItems.push(iconLayer);
-					}
-					if (style.labels.show && style.type !== 'symbol' && !showPointIcon) {
+					if (
+						style.labels.show &&
+						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
+					) {
 						// ラベルを追加
 						const symbolLayer = createSymbolLayer(layer, style);
 						symbolLayerItems.push(symbolLayer);
