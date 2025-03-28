@@ -99,6 +99,16 @@
 		}
 	});
 
+	const markerContainer = document.createElement('div');
+	document.body.appendChild(markerContainer);
+
+	onMount(() => {
+		mount(SelectionMarker, {
+			target: markerContainer,
+			props: {}
+		});
+	});
+
 	$effect(() => {
 		if (selectedFocusSources) {
 			const map = mapStore.getMap();
@@ -299,9 +309,7 @@
 			maplibreMarker.remove();
 		}
 
-		maplibreMarker = new maplibregl.Marker({
-			element: markerContainer
-		})
+		maplibreMarker = new maplibregl.Marker({})
 			.setLngLat(lngLat)
 			.addTo(mapStore.getMap() as maplibregl.Map);
 	};
@@ -440,7 +448,7 @@
 
 			sidePopupData = geojsonFeature;
 
-			return;
+			// return;
 		}
 
 		clickedLayerFeaturesData = features.map((feature) => {

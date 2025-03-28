@@ -213,10 +213,10 @@
 			</div>
 			<button
 				onclick={edit}
-				class="absolute bottom-2 right-4 grid place-items-center rounded-full border-2 border-gray-500 p-2"
+				class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
 			>
 				<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
-				<span class="text-accent">編集</span>
+				<span class="">編集</span>
 			</button>
 		</div>
 	</div>

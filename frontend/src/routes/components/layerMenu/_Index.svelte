@@ -47,14 +47,14 @@
 {#if $mapMode === 'edit' || $showDataMenu}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-30 flex h-full flex-col gap-2 p-2 {!$showDataMenu
+		class="bg-main absolute z-30 flex h-full flex-col gap-2 {!$showDataMenu
 			? 'w-[400px]'
 			: 'w-[90px]'}"
 		style:transition="width 0.3s ease"
 	>
 		{#if !$showDataMenu}
 			<div transition:slide={{ duration: 250 }} class="flex items-center justify-between">
-				<span>レイヤー</span>
+				<span class="text-lg">レイヤー</span>
 				<button
 					onclick={() => {
 						mapMode.set('view');
@@ -67,17 +67,32 @@
 				</button>
 			</div>
 		{/if}
-		<div class="c-scroll z-20 flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4">
+		<div
+			class="c-scroll-hidden flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
+		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: 200 }}>
 					<LayerSlot bind:layerEntry={layerEntries[i]} bind:tempLayerEntries {toggleVisible} />
 				</div>
 			{/each}
+			<div class="h-[200px] w-full flex-shrink-0"></div>
 		</div>
-
-		<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
-			<div class="flex justify-center">
+			<div
+				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[200px] w-full items-end justify-center pb-4"
+			>
+				<button
+					onclick={() => showDataMenu.set(true)}
+					class="c-btn-confirm pointer-events-auto flex flex-shrink items-center justify-center gap-2"
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
+						>データの追加</span
+					>
+				</button>
+			</div>
+			<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
+
+			<!-- <div class="z-20 flex justify-center">
 				<button
 					onclick={() => showDataMenu.set(true)}
 					class="c-btn-confirm flex items-center justify-center gap-2"
@@ -86,10 +101,14 @@
 						>データの追加</span
 					>
 				</button>
-			</div>
+			</div> -->
 		{/if}
 	</div>
 {/if}
 
 <style>
+	.c-fog {
+		background: rgb(233, 233, 233);
+		background: linear-gradient(0deg, rgba(233, 233, 233, 1) 10%, rgba(233, 233, 233, 0) 100%);
+	}
 </style>

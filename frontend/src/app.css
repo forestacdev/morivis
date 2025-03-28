@@ -48,6 +48,16 @@
 		background-color: var(--accent-color);
 	}
 
+	/* スクロールバー非表示 */
+	.c-scroll-hidden {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.c-scroll-hidden::-webkit-scrollbar {
+		display: none;
+	}
+
 	/* アイコン画像のドラッグを無効にする */
 	.c-no-drag-icon {
 		user-drag: none;

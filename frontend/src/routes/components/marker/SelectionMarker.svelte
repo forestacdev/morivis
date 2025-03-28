@@ -3,10 +3,10 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/data/types';
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
+	import type { GeoDataEntry } from '$routes/data/types';
 
-	let { lngLat }: { lngLat: LngLat } = $props();
+	let { lngLat }: { lngLat?: LngLat } = $props();
 </script>
 
 <div class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center">

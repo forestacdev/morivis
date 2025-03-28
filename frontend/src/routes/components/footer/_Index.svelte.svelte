@@ -30,7 +30,7 @@
 {#if isPc()}
 	<!-- PC -->
 	<div
-		class="absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
+		class="pointer-events-none absolute bottom-0 left-0 z-20 flex h-[40px] w-full flex-grow items-center justify-start gap-2"
 	>
 		<Compass />
 		<div class="absolute bottom-[40px] right-[60px] text-base font-bold">{zoom.toFixed(1)}</div>

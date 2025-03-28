@@ -102,7 +102,7 @@
 	document.body.appendChild(markerContainer);
 
 	onMount(async () => {
-		const angleMarkerInstance = mount(AngleMarker, {
+		mount(AngleMarker, {
 			target: markerContainer,
 			props: {
 				cameraBearing: cameraBearing,
