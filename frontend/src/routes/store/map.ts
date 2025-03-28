@@ -43,6 +43,8 @@ const createMapStore = () => {
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
+	const mouseoverEvent = writable<MapMouseEvent | null>(null);
+	const mouseoutEvent = writable<MapMouseEvent | null>(null);
 	const rotateEvent = writable<number | null>(null);
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
@@ -114,13 +116,13 @@ const createMapStore = () => {
 		});
 
 		// 地図にマウスが乗った時のイベント
-		map.on('mouseover', (e: MouseEvent) => {
-			// console.log('mouseover');
+		map.on('mouseover', (e) => {
+			mouseoverEvent.set(e);
 		});
 
 		// 地図からマウスが離れた時のイベント
-		map.on('mouseout', (e: MouseEvent) => {
-			// console.log('mouseout');
+		map.on('mouseout', (e) => {
+			mouseoutEvent.set(e);
 		});
 
 		map.on('moveend', (e: MapLibreEvent) => {
@@ -362,6 +364,8 @@ const createMapStore = () => {
 		getTerrain: () => map?.getTerrain(),
 		getBounds: getBounds,
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
+		onMouseover: mouseoverEvent.subscribe, // マウスオーバーイベントの購読用メソッド
+		onMouseout: mouseoutEvent.subscribe, // マウスアウトイベントの購読用メソッド
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド

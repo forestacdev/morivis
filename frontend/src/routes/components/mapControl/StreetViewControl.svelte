@@ -19,18 +19,6 @@
 		showStreetViewLayer.set(!$showStreetViewLayer);
 	};
 
-	showStreetViewLayer.subscribe((showLayer) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		if (showLayer) {
-			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'visible');
-			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'visible');
-		} else {
-			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'none');
-			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'none');
-		}
-	});
-
 	let element = $state<HTMLButtonElement | null>(null);
 
 	onMount(() => {

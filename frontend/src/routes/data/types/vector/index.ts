@@ -33,6 +33,7 @@ export interface TileMetaData {
 	location: Region;
 	minZoom: number;
 	maxZoom: number;
+	promoteId?: string;
 	sourceLayer: string;
 	bounds: [number, number, number, number] | null;
 	coverImage: string | null;

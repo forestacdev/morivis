@@ -25,6 +25,12 @@
 
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/mapControl/_Index.svelte';
+	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
+	import {
+		streetViewCircleLayer,
+		streetViewLineLayer,
+		streetViewSources
+	} from '$routes/components/mapLayer/StreetViewLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
@@ -81,6 +87,7 @@
 		tileUrl: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
 	});
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
+	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 	let maplibreMarker = $state<Marker | null>(null); // マーカー
@@ -133,10 +140,7 @@
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
 				terrain: gsiTerrainSource,
-				street_view_sources: {
-					type: 'vector',
-					url: 'pmtiles://./streetView/THETA360.pmtiles'
-				},
+				...streetViewSources,
 				selected_focus_sources: {
 					...selectedFocusSources
 				},
@@ -152,44 +156,8 @@
 						'background-opacity': 0
 					}
 				},
-				{
-					// ストリートビューのライン
-					id: '@street_view_line_layer',
-					type: 'line',
-					source: 'street_view_sources',
-					'source-layer': 'THETA360_line',
-					paint: {
-						'line-color': '#08fa00',
-						'line-width': 10,
-						'line-opacity': 0.5,
-						'line-blur': 0.5
-					},
-					layout: {
-						visibility: 'none',
-						'line-cap': 'round',
-						'line-join': 'round'
-					}
-				},
-				{
-					// ストリートビューのポイント
-					id: '@street_view_circle_layer',
-					type: 'circle',
-					source: 'street_view_sources',
-					'source-layer': 'THETA360',
-					minzoom: 15,
-					layout: {
-						visibility: 'none'
-					},
-					paint: {
-						'circle-color': '#08fa00',
-						'circle-radius': 12,
-						'circle-opacity': 0.6,
-						'circle-stroke-width': 2,
-						'circle-stroke-color': '#ffffff',
-						'circle-stroke-opacity': 0.5,
-						'circle-blur': 0.3
-					}
-				}
+				streetViewLineLayer,
+				streetViewCircleLayer
 			],
 			sky: {
 				'sky-color': '#2baeff',
@@ -553,6 +521,9 @@
 	});
 
 	mapStore.onSetStyle((e) => {});
+	mapStore.onInitialized((map) => {
+		maplibreMap = map;
+	});
 </script>
 
 <div class="relative h-full w-full">
@@ -577,6 +548,10 @@
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
 </div>
+
+{#if maplibreMap}
+	<StreetViewLayer map={maplibreMap} />
+{/if}
 
 <style>
 	/* maplibreのデフォルトの出典表記を非表示 */

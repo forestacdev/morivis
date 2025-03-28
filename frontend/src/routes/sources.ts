@@ -81,6 +81,7 @@ export const createSourcesItems = async (
 							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						} as VectorSourceSpecification;
@@ -90,6 +91,7 @@ export const createSourcesItems = async (
 							url: `pmtiles://${format.url}`,
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
 							attribution: metaData.attribution,
 							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
 						} as VectorSourceSpecification;
