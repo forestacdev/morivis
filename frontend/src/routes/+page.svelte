@@ -81,7 +81,7 @@
 	const nodeConnections: NodeConnections = nodeConnectionsJson;
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
+	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
@@ -257,6 +257,12 @@
 				duration: 750
 			});
 		}
+	});
+
+	addedLayerIds.subscribe((value) => {
+		layerEntries = geoDataEntry.filter((entry) => {
+			return value.includes(entry.id);
+		});
 	});
 </script>
 

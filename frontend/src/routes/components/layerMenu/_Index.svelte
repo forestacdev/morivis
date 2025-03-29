@@ -72,12 +72,14 @@
 			class="c-scroll-hidden flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
-				<LayerSlot
-					bind:layerEntry={layerEntries[i]}
-					bind:tempLayerEntries
-					{toggleVisible}
-					{enableFlip}
-				/>
+				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<LayerSlot
+						bind:layerEntry={layerEntries[i]}
+						bind:tempLayerEntries
+						{toggleVisible}
+						bind:enableFlip
+					/>
+				</div>
 			{/each}
 			<div class="h-[200px] w-full flex-shrink-0"></div>
 		</div>

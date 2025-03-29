@@ -104,7 +104,6 @@
 				{/if}
 				{#each dataEntries as dataEntry (dataEntry.id)}
 					<div
-						animate:flip={{ duration: 500 }}
 						class="relative mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300"
 					>
 						<button class="relative aspect-video overflow-hidden p-2">

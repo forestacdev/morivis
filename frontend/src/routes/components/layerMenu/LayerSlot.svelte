@@ -22,7 +22,7 @@
 		layerEntry = $bindable(),
 		tempLayerEntries = $bindable(),
 		toggleVisible,
-		enableFlip
+		enableFlip = $bindable()
 	}: Props = $props();
 	let showColors = $state(false);
 
