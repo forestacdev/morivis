@@ -4,6 +4,8 @@
 	import { slide } from 'svelte/transition';
 	import { fade } from 'svelte/transition';
 
+	import Legend from './Legend.svelte';
+
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
@@ -15,7 +17,7 @@
 		layerEntry: GeoDataEntry;
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
-		toggleVisible?: (id: string) => void;
+		toggleVisible: (id: string) => void;
 	}
 
 	let {
@@ -24,25 +26,7 @@
 		toggleVisible,
 		enableFlip = $bindable()
 	}: Props = $props();
-	let showColors = $state(false);
-
-	const getColorPallet = (ColorsExpression: ColorsExpression[]) => {
-		if (!layerEntry || layerEntry.type !== 'vector') return;
-		const target = ColorsExpression.find((color) => color.key === layerEntry.style.colors.key);
-		if (!target) return;
-		// if (target.type === 'step') {
-		// 	return {
-		// 		type: 'step',
-		// 		mapping: generateNumberAndColorMap(target.mapping)
-		// 	};
-		// }
-		return target;
-	};
-
-	let colorStyle = $derived.by(() => {
-		if (!layerEntry || layerEntry.type !== 'vector') return;
-		return getColorPallet(layerEntry.style.colors.expressions);
-	});
+	let showLegend = $state(false);
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
@@ -57,9 +41,10 @@
 	};
 
 	const toggleChecked = (id: string) => {
-		showColors = !showColors;
-
-		toggleVisible(id);
+		showLegend = !showLegend;
+		if (showLegend) {
+			selectedLayerId.set(id);
+		}
 	};
 
 	showDataMenu.subscribe((value) => {
@@ -88,13 +73,6 @@
 		if (!layerEntry) return;
 		addedLayerIds.removeLayer(layerEntry.id);
 		selectedLayerId.set('');
-	};
-
-	// レイヤーの移動
-	const moveLayerById = (direction: 'up' | 'down') => {
-		if (!layerEntry) return;
-		const id = layerEntry.id;
-		addedLayerIds.reorderLayer(id, direction);
 	};
 
 	// レイヤーのフォーカス
@@ -149,23 +127,12 @@
 		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
-			<div
-				class="absolute bottom-[7px] left-[4px] z-10 rounded-full p-[7px] transition-all"
-				style="background-color: {colorStyle?.type === 'single'
-					? colorStyle.mapping.value
-					: 'bg-gray-200'};"
-			></div>
 			<label
 				class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
-				<input
-					type="checkbox"
-					class="hidden"
-					oninput={() => toggleChecked(layerEntry.id)}
-					onclick={(event) => event.stopPropagation()}
-				/>
+				<input type="checkbox" class="hidden" oninput={() => toggleChecked(layerEntry.id)} />
 				{#if layerEntry.style.visible}
 					<LayerIcon {layerEntry} />
 				{/if}
@@ -190,35 +157,44 @@
 					<span class="text-nowrap {$selectedLayerId === layerEntry.id ? '' : ''}"
 						>{layerEntry.metaData.name}</span
 					>
+					<span class="text-nowrap text-xs">{layerEntry.metaData.location ?? '---'}</span>
 
-					{#if $selectedLayerId === layerEntry.id && !$isEdit}
-						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class="">
-							<div class="flex gap-2">
-								<!-- <button class="" onclick={() => moveLayerById('up')}
+					<!-- {#if $selectedLayerId === layerEntry.id && !$isEdit}
+						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
+					{/if} -->
+				</div>
+			</div>
+		</div>
+	</button>
+	{#if showLegend}
+		<div transition:slide={{ duration: 200 }} class="flex pl-[33px]">
+			<div class="w-[2px] items-stretch bg-gray-500"></div>
+
+			<div class="flex flex-col gap-2 pl-2 pt-2">
+				<div class="flex gap-2">
+					<!-- <button class="" onclick={() => moveLayerById('up')}
 									><Icon icon="bx:up-arrow" width="20" height="20" class="" />
 								</button>
 								<button class="" onclick={() => moveLayerById('down')}
 									><Icon icon="bx:down-arrow" width="20" height="20" />
 								</button> -->
-								<button onclick={removeLayer}>
-									<Icon icon="bx:trash" width="20" height="20" class="custom-anime" />
-								</button>
-								<button onclick={focusLayer}>
-									<Icon icon="hugeicons:target-03" width="20" height="20" class="custom-anime" />
-								</button>
-								<!-- <button onclick={copyLayer}>
+					<button onclick={removeLayer}>
+						<Icon icon="bx:trash" width="20" height="20" class="custom-anime" />
+					</button>
+					<button onclick={focusLayer}>
+						<Icon icon="hugeicons:target-03" width="20" height="20" class="custom-anime" />
+					</button>
+					<!-- <button onclick={copyLayer}>
 									<Icon icon="lucide:copy" width="20" height="20" class="custom-anime" />
 								</button> -->
-								<button onclick={editLayer}>
-									<Icon icon="lucide:edit" width="20" height="20" class="custom-anime" />
-								</button>
-							</div>
-						</div>
-					{/if}
+					<button onclick={editLayer}>
+						<Icon icon="lucide:edit" width="20" height="20" class="custom-anime" />
+					</button>
 				</div>
+				<Legend {layerEntry} />
 			</div>
 		</div>
-	</button>
+	{/if}
 </div>
 
 <style>
