@@ -77,6 +77,7 @@
 			{/each}
 			<div class="h-[200px] w-full flex-shrink-0"></div>
 		</div>
+		<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[200px] w-full items-end justify-center pb-4"
@@ -90,7 +91,6 @@
 					>
 				</button>
 			</div>
-			<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
 
 			<!-- <div class="z-20 flex justify-center">
 				<button

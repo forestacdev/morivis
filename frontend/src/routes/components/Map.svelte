@@ -32,6 +32,7 @@
 		streetViewSources
 	} from '$routes/components/mapLayer/StreetViewLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
+	import MouseManager from '$routes/components/MouseManager.svelte';
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import SidePopup from '$routes/components/popup/SidePopup.svelte';
@@ -60,7 +61,6 @@
 		type SidePopupData,
 		type ClickedLayerFeaturesData
 	} from '$routes/utils/geojson';
-	import { isPointInBbox } from '$routes/utils/map';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 
 	interface Props {
@@ -93,6 +93,8 @@
 	let maplibreMarker = $state<Marker | null>(null); // マーカー
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
+	let showMarker = $state<boolean>(false); // マーカーの表示
+	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 	let sidePopupData = $state<SidePopupData | null>(null);
@@ -104,16 +106,6 @@
 			type: 'FeatureCollection',
 			features: []
 		}
-	});
-
-	const markerContainer = document.createElement('div');
-	document.body.appendChild(markerContainer);
-
-	onMount(() => {
-		mount(SelectionMarker, {
-			target: markerContainer,
-			props: {}
-		});
 	});
 
 	$effect(() => {
@@ -264,24 +256,6 @@
 			.addTo(mapStore.getMap() as maplibregl.Map);
 	};
 
-	const generateMarker = (lngLat: LngLat) => {
-		const markerContainer = document.createElement('div');
-		mount(SelectionMarker, {
-			target: markerContainer,
-			props: {
-				lngLat
-			}
-		});
-
-		if (maplibreMarker) {
-			maplibreMarker.remove();
-		}
-
-		maplibreMarker = new maplibregl.Marker({})
-			.setLngLat(lngLat)
-			.addTo(mapStore.getMap() as maplibregl.Map);
-	};
-
 	// ラスターの色のガイドポップアップの作成
 	const generateLegendPopup = (
 		data: {
@@ -346,140 +320,6 @@
 			}
 		}
 	};
-
-	// 地図のクリックイベント
-	mapStore.onClick((e) => {
-		if (clickedLayerIds.length > 0) {
-			clickedLayerIds = [];
-			if (maplibreMarker) {
-				maplibreMarker.remove();
-			}
-			if (clickedLngLat) {
-				clickedLngLat = null;
-			}
-			if (sidePopupData) {
-				sidePopupData = null;
-			}
-			if (inputSearchWord) {
-				inputSearchWord = '';
-			}
-			// toggleOverlayLayer(false);
-			clickedLayerFeaturesData = null;
-			return;
-		}
-
-		// console.log('click', e);
-		if (!e || $mapMode === 'edit') return;
-
-		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
-
-		const features = mapStore.queryRenderedFeatures(e.point, {
-			layers: clickLayerIds
-		});
-		// if (!features || features?.length === 0) {
-		// 	const lngLat = e.lngLat;
-		// 	onRasterClick(lngLat);
-		// 	return;
-		// }
-
-		if (!features || features?.length === 0) {
-			return;
-		}
-
-		const selectedVecterLayersId = features.map((feature) => feature.layer.id);
-		const selectedRasterLayersId = layerEntries
-			.filter((entry) => {
-				if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
-					if (entry.metaData.location === '全国') {
-						return true;
-					} else if (entry.metaData.bounds && isPointInBbox(e.lngLat, entry.metaData.bounds)) {
-						return true;
-					}
-				}
-			})
-			.map((entry) => entry.id);
-
-		// ストリートビューに切り返る
-		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-			isStreetView.set(true);
-			return;
-		}
-
-		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
-		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
-		clickedLngLat = e.lngLat;
-
-		if (features.length > 0) {
-			const feature = features[0];
-
-			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
-
-			sidePopupData = geojsonFeature;
-
-			// return;
-		}
-
-		clickedLayerFeaturesData = features.map((feature) => {
-			const entry = layerEntries.find((entry) => entry.id === feature.layer.id);
-			console.log('entry', entry);
-			if (!entry) return null;
-			return {
-				layerEntry: entry,
-				feature: feature,
-				featureId: feature.id
-			};
-		});
-		generateMarker(clickedLngLat);
-
-		return;
-
-		const lngLat = e.lngLat;
-
-		const layerId = feature.layer.id;
-		const featureId = feature.id as number;
-
-		const entry = layerEntries.find((entry) => entry.id === layerId);
-		if (!entry || featureId === undefined || entry.type !== 'vector') return;
-		const propKes = entry.properties.keys;
-
-		if (!propKes) return;
-
-		feature.properties = Object.entries(feature.properties)
-			.filter(([key, value]) => propKes.includes(key))
-			.reduce<Record<string, string | number>>((acc, [key, value]) => {
-				acc[key] = value;
-				return acc;
-			}, {});
-
-		// console.log('features', features);
-
-		// const highlightFeatures = features.filter((feature) => feature.layer.id === layerId);
-		// const data = convertToGeoJSONCollection(highlightFeatures, featureId);
-
-		// if (data.features.length === 0) return;
-
-		// console.log('data', data);
-
-		// let geojson;
-
-		// if (data.features.length > 1) {
-		// 	geojson = turfDissolve(data);
-		// } else {
-		// 	geojson = data;
-		// }
-
-		// if (!geojson) return;
-		// ポッアップの作成
-		if ($DEBUG_MODE) {
-			console.log('featureId', featureId);
-			generatePopup(feature, lngLat);
-		}
-
-		$selectedHighlightData = {
-			layerData: entry,
-			featureId
-		};
-	});
 
 	const removehighlightLayer = () => {
 		const map = mapStore.getMap();
@@ -551,6 +391,17 @@
 
 {#if maplibreMap}
 	<StreetViewLayer map={maplibreMap} />
+	<MouseManager
+		map={maplibreMap}
+		bind:markerLngLat
+		bind:sidePopupData
+		bind:showMarker
+		bind:clickedLayerIds
+		{layerEntries}
+	/>
+	{#key markerLngLat}
+		<SelectionMarker map={maplibreMap} bind:show={showMarker} bind:lngLat={markerLngLat} />
+	{/key}
 {/if}
 
 <style>

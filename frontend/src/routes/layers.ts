@@ -46,6 +46,8 @@ import type {
 	PolygonOutLine
 } from '$routes/data/types/vector/style';
 
+import { FeatureStateManager } from '$routes/utils/featureState';
+
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
 
@@ -369,17 +371,42 @@ const getNumberExpression = (numbers: NumbersStyle) => {
 			return 0;
 	}
 };
+
+const getSelectedColorExpression = (
+	colorExpression: DataDrivenPropertyValueSpecification<ColorSpecification>
+): DataDrivenPropertyValueSpecification<ColorSpecification> => {
+	return [
+		'case',
+		['boolean', ['feature-state', 'selected'], false],
+		HIGHLIGHT_LAYER_COLOR,
+		colorExpression
+	];
+};
+
+const getSelectedOpacityExpression = (
+	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
+): DataDrivenPropertyValueSpecification<number> => {
+	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.8, numbercolorExpression];
+};
+
+const getSelectedIconSizeExpression = (
+	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
+): DataDrivenPropertyValueSpecification<number> => {
+	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.12, numbercolorExpression];
+};
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
 	const fillStyle = style.default.fill;
 	const color = getColorExpression(style.colors);
+	const colorExpression = getSelectedColorExpression(color);
+	const opacity = getSelectedOpacityExpression(style.opacity);
 	const fillLayer: FillLayerSpecification = {
 		...layer,
 		type: 'fill',
 		paint: {
-			'fill-opacity': style.opacity,
+			'fill-opacity': opacity,
 			'fill-outline-color': '#00000000',
-			'fill-color': style.colors.show ? color : '#00000000',
+			'fill-color': style.colors.show ? colorExpression : '#00000000',
 			...(fillStyle.paint ?? {})
 		},
 		layout: {
@@ -394,13 +421,14 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
 	const lineStyle = style.default.line;
 	const color = getColorExpression(style.colors);
+	const colorExpression = getSelectedColorExpression(color);
 	const width = getNumberExpression(style.width);
 	const lineLayer: LineLayerSpecification = {
 		...layer,
 		type: 'line',
 		paint: {
 			'line-opacity': style.colors.show ? style.opacity : 0,
-			'line-color': style.colors.show ? color : '#00000000',
+			'line-color': style.colors.show ? colorExpression : '#00000000',
 			'line-width': width,
 			...(style.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }),
 			...(lineStyle.paint ?? {})
@@ -435,6 +463,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 	const outline = style.outline;
 	const circleStyle = style.default.circle;
 	const color = getColorExpression(style.colors);
+	const colorExpression = getSelectedColorExpression(color);
 	const radius = getNumberExpression(style.radius);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
@@ -442,7 +471,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 		paint: {
 			'circle-opacity': style.colors.show ? style.opacity : 0,
 			'circle-stroke-opacity': style.opacity,
-			'circle-color': style.colors.show ? color : '#00000000',
+			'circle-color': style.colors.show ? colorExpression : '#00000000',
 			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
 			'circle-stroke-width': outline.show ? style.outline.width : 0,
@@ -621,6 +650,8 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
+	FeatureStateManager.clear();
+
 	// const layerIdNameDict: { [_: string]: string } = {};
 
 	_dataEntries
@@ -678,7 +709,19 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 				}
 				// ベクターレイヤー
 				case 'vector': {
-					if (interaction.clickable) clickableVecter.push(layerId);
+					if (interaction.clickable) {
+						clickableVecter.push(layerId);
+						if ('sourceLayer' in metaData) {
+							FeatureStateManager.set(layerId, {
+								source: sourceId,
+								sourceLayer: metaData.sourceLayer
+							});
+						} else {
+							FeatureStateManager.set(layerId, {
+								source: sourceId
+							});
+						}
+					}
 					if (format.type === 'mvt' || format.type === 'pmtiles') {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証

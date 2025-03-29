@@ -13,7 +13,7 @@ export const COVER_NO_IMAGE_PATH = './images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = './images/feature/no_image.webp';
 
 /** ハイライトさせるレイヤーの色 */
-export const HIGHLIGHT_LAYER_COLOR = '#FFFFFF';
+export const HIGHLIGHT_LAYER_COLOR = '#00d4fe';
 
 export interface MapPosition {
 	center: [number, number];
