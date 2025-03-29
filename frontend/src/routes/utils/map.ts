@@ -21,7 +21,6 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
  * Export the map as an image with a scale bar and compass.
  * @param map
  */
-
 export const imageExport = (map: MaplibreMap) => {
 	map.once('render', async () => {
 		const mapCanvas = map.getCanvas();
