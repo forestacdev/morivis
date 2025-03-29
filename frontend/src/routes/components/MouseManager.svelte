@@ -104,8 +104,9 @@
 			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
 
 			sidePopupData = geojsonFeature;
-
-			// return;
+			// mapStore.panTo(e.lngLat, {
+			// 	duration: 1000
+			// });
 		}
 
 		if ($DEBUG_MODE) {
@@ -175,6 +176,21 @@
 			map.on('mouseenter', layerId, mouseEnterListener);
 			map.on('mouseleave', layerId, mouseLeaveListener);
 		});
+	});
+
+	$effect(() => {
+		if (!sidePopupData) {
+			if (hoveredId !== null && hoveredFeatureState !== null) {
+				map.setFeatureState(
+					{
+						...hoveredFeatureState,
+						id: hoveredId
+					},
+					{ selected: false }
+				);
+				hoveredId = null;
+			}
+		}
 	});
 
 	onDestroy(() => {

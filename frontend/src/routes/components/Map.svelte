@@ -210,6 +210,13 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
+	$effect(() => {
+		if (!sidePopupData) {
+			// maplibreMarker?.remove();
+			showMarker = false;
+		}
+	});
+
 	// $effect(() => {
 	// 	if (streetViewLineData) {
 	// 		const map = mapStore.getMap();

@@ -7,7 +7,8 @@ export type AttributionKey =
 	| 'Q地図タイル'
 	| 'OSM'
 	| '株式会社アドイン研究所'
-	| 'Esri';
+	| 'Esri'
+	| '林野庁';
 
 export type Attribution = {
 	key: AttributionKey;
@@ -60,6 +61,11 @@ const attributionData: Attribution[] = [
 		key: '株式会社アドイン研究所',
 		name: '株式会社アドイン研究所',
 		url: 'https://www.owl-sys.com/'
+	},
+	{
+		key: '林野庁',
+		name: '林野庁',
+		url: 'https://www.rinya.maff.go.jp/index.html'
 	}
 ];
 
