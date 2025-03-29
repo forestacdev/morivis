@@ -31,6 +31,7 @@
 	import turfBearing from '@turf/bearing';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
+	import { debounce } from 'es-toolkit';
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
@@ -80,6 +81,7 @@
 	// 型を適用
 	const nodeConnections: NodeConnections = nodeConnectionsJson;
 
+	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntry]); // レイヤーデータ
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
 
@@ -260,9 +262,23 @@
 	});
 
 	addedLayerIds.subscribe((value) => {
-		layerEntries = geoDataEntry.filter((entry) => {
+		layerEntries = layerEntriesData.filter((entry) => {
 			return value.includes(entry.id);
 		});
+	});
+
+	const updateLayerEntries = debounce((_layerEntries: GeoDataEntry[]) => {
+		_layerEntries.forEach((updatedEntry) => {
+			const index = layerEntriesData.findIndex((e) => e.id === updatedEntry.id);
+			if (index !== -1) {
+				layerEntriesData[index] = { ...updatedEntry };
+			}
+		});
+	}, 100);
+
+	$effect(() => {
+		const currentEntries = $state.snapshot(layerEntries);
+		updateLayerEntries(currentEntries as GeoDataEntry[]);
 	});
 </script>
 

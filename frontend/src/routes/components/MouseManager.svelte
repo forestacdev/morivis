@@ -151,7 +151,7 @@
 	});
 
 	map.on('mousemove', (e) => {
-		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
+		const clickLayerIds = [...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});

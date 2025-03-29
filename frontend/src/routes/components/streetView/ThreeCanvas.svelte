@@ -327,7 +327,7 @@
 
 <!-- <div class="css-canvas-back"></div> -->
 <div
-	class="absolute z-10 flex cursor-pointer overflow-hidden duration-500 {showThreeCanvas
+	class="absolute z-10 flex overflow-hidden duration-500 {showThreeCanvas
 		? 'bottom-0 right-0 h-full w-full opacity-100'
 		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
 >

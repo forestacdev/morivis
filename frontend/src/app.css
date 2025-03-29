@@ -72,6 +72,39 @@
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
 		font-display: swap;
+		font-weight: 300;
+	}
+
+	/* Light (300) */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
+		font-weight: 300;
+		font-display: swap;
+	}
+
+	/* Regular (400) */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-Regular.ttf');
+		font-weight: 400;
+		font-display: swap;
+	}
+
+	/* Medium (500) */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-Medium.ttf');
+		font-weight: 500;
+		font-display: swap;
+	}
+
+	/* Bold (700) */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-Bold.ttf');
+		font-weight: 700;
+		font-display: swap;
 	}
 
 	/* html2canvasでテキストがずれるバグの対処 https://github.com/niklasvh/html2canvas/issues/2775 */
