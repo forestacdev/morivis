@@ -54,7 +54,7 @@
 		style:transition="width 0.3s ease"
 	>
 		{#if !$showDataMenu}
-			<div transition:slide={{ duration: 250 }} class="flex items-center justify-between">
+			<div transition:slide={{ duration: 250 }} class="flex items-center justify-between p-2">
 				<span class="text-lg">レイヤー</span>
 				<button
 					onclick={() => {
