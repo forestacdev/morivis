@@ -125,8 +125,6 @@
 	const dragEnd = () => {
 		enableFlip = true;
 	};
-
-	$inspect(dragLayerId);
 </script>
 
 <div

@@ -170,18 +170,7 @@
 
 	// レイヤーの追加
 	addedLayerIds.subscribe((ids) => {
-		if (import.meta.env.DEV) {
-			const debugEntry = geoDataEntry.filter((entry) => entry.debug);
-			if (debugEntry.length > 0) {
-				debugEntry.forEach((entry) => {
-					console.warn('デバッグデータのみ追加します。', entry.id);
-				});
-				layerEntries = [...debugEntry, ...tempLayerEntries];
-				return;
-			}
-		}
-
-		const filteredDataEntry = [...geoDataEntry, ...tempLayerEntries].filter((entry) =>
+		const filteredDataEntry = [...layerEntries, ...tempLayerEntries].filter((entry) =>
 			ids.includes(entry.id)
 		);
 

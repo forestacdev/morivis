@@ -59,6 +59,7 @@
 	import AngleMarker from '$routes/components/streetView/AngleMarker.svelte';
 	import nodeConnectionsJson from '$routes/components/streetView/node_connections.json';
 	import StreetViewCanvas from '$routes/components/streetView/ThreeCanvas.svelte';
+	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import {
 		addedLayerIds,
@@ -80,7 +81,7 @@
 	const nodeConnections: NodeConnections = nodeConnectionsJson;
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
+	let layerEntries = $state<GeoDataEntry[]>(geoDataEntry); // レイヤーデータ
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
