@@ -150,33 +150,46 @@
 		}
 	});
 
-	// // マウスカーソルの変更
-	const mouseEnterListener = (e: MapLayerMouseEvent) => {
-		if (!e.features || e.features.length === 0) return;
-
-		map.getCanvas().style.cursor = 'pointer';
-	};
-	const mouseLeaveListener = (e: MapLayerMouseEvent) => {
-		map.getCanvas().style.cursor = '';
-	};
-
-	clickableVectorIds.subscribe((layers) => {
-		if (layers.length === 0) return;
-
-		if (currentLayerIds.length > 0) {
-			currentLayerIds.forEach((layerId) => {
-				map.off('mouseenter', layerId, mouseEnterListener);
-				map.off('mouseleave', layerId, mouseLeaveListener);
-			});
-		}
-
-		currentLayerIds = layers;
-
-		layers.forEach((layerId) => {
-			map.on('mouseenter', layerId, mouseEnterListener);
-			map.on('mouseleave', layerId, mouseLeaveListener);
+	map.on('mousemove', (e) => {
+		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
+		const features = map.queryRenderedFeatures(e.point, {
+			layers: clickLayerIds
 		});
+
+		if (features.length > 0) {
+			map.getCanvas().style.cursor = 'pointer';
+		} else {
+			map.getCanvas().style.cursor = 'default';
+		}
 	});
+
+	// // マウスカーソルの変更
+	// const mouseEnterListener = (e: MapLayerMouseEvent) => {
+	// 	if (!e.features || e.features.length === 0) return;
+
+	// 	map.getCanvas().style.cursor = 'pointer';
+	// };
+	// const mouseLeaveListener = (e: MapLayerMouseEvent) => {
+	// 	map.getCanvas().style.cursor = '';
+	// };
+
+	// clickableVectorIds.subscribe((layers) => {
+	// 	if (layers.length === 0) return;
+
+	// 	if (currentLayerIds.length > 0) {
+	// 		currentLayerIds.forEach((layerId) => {
+	// 			map.off('mouseenter', layerId, mouseEnterListener);
+	// 			map.off('mouseleave', layerId, mouseLeaveListener);
+	// 		});
+	// 	}
+
+	// 	currentLayerIds = layers;
+
+	// 	layers.forEach((layerId) => {
+	// 		map.on('mouseenter', layerId, mouseEnterListener);
+	// 		map.on('mouseleave', layerId, mouseLeaveListener);
+	// 	});
+	// });
 
 	$effect(() => {
 		if (!sidePopupData) {
