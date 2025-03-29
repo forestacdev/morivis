@@ -14,6 +14,7 @@
 		showTermsDialog
 	} from '$routes/store';
 	import { mapStore } from '$routes/store/map';
+	import { imageExport } from '$routes/utils/map';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -28,6 +29,13 @@
 	const toggleTermsDialog = () => {
 		showSideMenu.set(false);
 		showTermsDialog.set(!$showTermsDialog);
+	};
+
+	const mapExport = async () => {
+		showSideMenu.set(false);
+		const map = mapStore.getMap();
+		if (!map) return;
+		imageExport(map);
 	};
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
@@ -79,11 +87,18 @@
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
 				<span class="select-none">データカタログ</span>
 			</button>
-			<button
+			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 			>
 				<Icon icon="weui:setting-filled" class="h-8 w-8" />
 				<span class="select-none">設定</span>
+			</button> -->
+			<button
+				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				onclick={mapExport}
+			>
+				<Icon icon="bx:export" class="h-8 w-8" />
+				<span class="select-none">地図をエクスポート</span>
 			</button>
 		</ui>
 		<div class="w-hull bg-base h-[1px] rounded-full"></div>

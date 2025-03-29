@@ -1,4 +1,6 @@
 import type { LngLat } from 'maplibre-gl';
+import type { Map as MaplibreMap } from 'maplibre-gl';
+import html2canvas from 'html2canvas';
 
 /**
  * Check if a point is inside a bounding box.
@@ -13,6 +15,120 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
 	const lat = point.lat;
 
 	return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+};
+
+/**
+ * Export the map as an image with a scale bar and compass.
+ * @param map
+ */
+
+export const imageExport = (map: MaplibreMap) => {
+	map.once('render', async () => {
+		const mapCanvas = map.getCanvas();
+		const mapImage = mapCanvas.toDataURL('image/png');
+		const image = new Image();
+
+		image.onload = async () => {
+			// スケールバーの要素を取得
+			const scaleDiv = document.querySelector('.maplibregl-ctrl-scale') as HTMLElement;
+
+			try {
+				const finalCanvas = document.createElement('canvas');
+				finalCanvas.width = mapCanvas.width;
+				finalCanvas.height = mapCanvas.height;
+				const ctx = finalCanvas.getContext('2d') as CanvasRenderingContext2D;
+
+				// 地図の画像を描画
+				ctx.drawImage(image, 0, 0);
+
+				// スケールバーの画像をキャプチャ
+				const scaleCanvas = await html2canvas(scaleDiv);
+
+				// スケールバーの画像を左下に描画
+				const scaleWidth = scaleCanvas.width;
+				const scaleHeight = scaleCanvas.height;
+				const scaleMargin = 10; // スケールバーの余白
+
+				// 透過度を設定
+				ctx.globalAlpha = 0.7;
+
+				ctx.drawImage(
+					scaleCanvas,
+					scaleMargin,
+					finalCanvas.height - scaleHeight - scaleMargin,
+					scaleWidth,
+					scaleHeight
+				);
+
+				// 方位の画像を取得
+				const connpassImageElement = await new Promise<HTMLImageElement>((resolve) => {
+					const image = new Image();
+					image.onload = () => resolve(image);
+					image.src = './images/map_connpass.png';
+				});
+
+				// 余白
+				const connpassMargin = 20;
+
+				// コンパス画像のサイズ
+				const connpassWidth = connpassImageElement.width;
+				const connpassHeight = connpassImageElement.height;
+
+				// 回転の中心を指定（例: 画像の中央）
+				const centerX = finalCanvas.width - connpassWidth / 2 - connpassMargin;
+				const centerY = connpassMargin + connpassHeight / 2;
+
+				// キャンバスの状態を保存
+				ctx.save();
+
+				// 透過度を設定
+				ctx.globalAlpha = 0.7;
+
+				// 回転
+				const bearing360 = (Number(map.getBearing().toFixed(1)) + 360) % 360;
+				ctx.translate(centerX, centerY);
+				const angleInRadians = (bearing360 * Math.PI) / -180;
+				ctx.rotate(angleInRadians);
+
+				// 画像を描画（回転の中心に戻して描画するため、位置を調整）
+				ctx.drawImage(
+					connpassImageElement,
+					-connpassWidth / 2,
+					-connpassHeight / 2,
+					connpassWidth,
+					connpassHeight
+				);
+
+				// キャンバスの状態を復元
+				ctx.restore();
+
+				// 地図画像をダウンロード
+				const link = document.createElement('a');
+				link.href = finalCanvas.toDataURL('image/png');
+
+				// 現在の日時を取得してフォーマット（YYYYMMDDhhmmss）
+				const now = new Date();
+				const formattedDate =
+					now.getFullYear() +
+					String(now.getMonth() + 1).padStart(2, '0') +
+					String(now.getDate()).padStart(2, '0') +
+					String(now.getHours()).padStart(2, '0') +
+					String(now.getMinutes()).padStart(2, '0') +
+					String(now.getSeconds()).padStart(2, '0');
+
+				link.download = formattedDate + '.png';
+				link.click();
+			} catch (error) {
+				console.error('エクスポートエラー:', error);
+			} finally {
+				console.log('エクスポート完了');
+			}
+		};
+
+		image.src = mapImage;
+	});
+
+	map.triggerRepaint();
 };
 
 // 標高の取得

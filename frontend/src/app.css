@@ -73,6 +73,11 @@
 		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
 		font-display: swap;
 	}
+
+	/* html2canvasでテキストがずれるバグの対処 https://github.com/niklasvh/html2canvas/issues/2775 */
+	img {
+		@apply inline-block;
+	}
 }
 
 .lil-gui {
