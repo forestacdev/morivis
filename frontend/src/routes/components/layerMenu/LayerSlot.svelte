@@ -14,10 +14,16 @@
 	interface Props {
 		layerEntry: GeoDataEntry;
 		tempLayerEntries: GeoDataEntry[];
+		enableFlip: boolean;
 		toggleVisible?: (id: string) => void;
 	}
 
-	let { layerEntry = $bindable(), tempLayerEntries = $bindable(), toggleVisible }: Props = $props();
+	let {
+		layerEntry = $bindable(),
+		tempLayerEntries = $bindable(),
+		toggleVisible,
+		enableFlip
+	}: Props = $props();
 	let showColors = $state(false);
 
 	const getColorPallet = (ColorsExpression: ColorsExpression[]) => {
@@ -101,9 +107,39 @@
 		if (!layerEntry) return;
 		$isEdit = !$isEdit;
 	};
+
+	// ドラッグ開始時にアニメーションを無効にする
+	const dragStart = (layerId: string) => {
+		enableFlip = false;
+		selectedLayerId.set(layerId);
+	};
+
+	// ドラッグ中のレイヤーを取得
+	const dragEnter = (layerId: string) => {
+		if (layerId && $selectedLayerId !== layerId) {
+			addedLayerIds.swapLayers($selectedLayerId, layerId);
+		}
+	};
+
+	// ドラッグ終了時にアニメーションを有効にする
+	const dragEnd = () => {
+		enableFlip = true;
+	};
+
+	$inspect(dragLayerId);
 </script>
 
-<div class="relative flex flex-col">
+<div
+	class="relative flex flex-col"
+	draggable={true}
+	ondragstart={() => dragStart(layerEntry.id)}
+	ondragenter={() => dragEnter(layerEntry.id)}
+	ondragover={(e) => e.preventDefault()}
+	ondragend={dragEnd}
+	role="button"
+	tabindex="0"
+	aria-label="レイヤー"
+>
 	<button
 		id={layerEntry.id}
 		class="bg-main c-rounded relative z-10 select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
@@ -160,12 +196,12 @@
 					{#if $selectedLayerId === layerEntry.id && !$isEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class="">
 							<div class="flex gap-2">
-								<button class="" onclick={() => moveLayerById('up')}
+								<!-- <button class="" onclick={() => moveLayerById('up')}
 									><Icon icon="bx:up-arrow" width="20" height="20" class="" />
 								</button>
 								<button class="" onclick={() => moveLayerById('down')}
 									><Icon icon="bx:down-arrow" width="20" height="20" />
-								</button>
+								</button> -->
 								<button onclick={removeLayer}>
 									<Icon icon="bx:trash" width="20" height="20" class="custom-anime" />
 								</button>

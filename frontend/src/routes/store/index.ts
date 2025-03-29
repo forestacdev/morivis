@@ -62,7 +62,7 @@ const createLayerStore = (initialLayers: string[] = []) => {
 		addLayer: (id: string) =>
 			update((layers) => {
 				if (!layers.includes(id)) {
-					return sortedLayers([id, ...layers]);
+					return [id, ...layers];
 				}
 				return layers;
 			}),
@@ -74,6 +74,17 @@ const createLayerStore = (initialLayers: string[] = []) => {
 			return layerExists;
 		},
 		removeLayer: (id: string) => update((layers) => layers.filter((layerId) => layerId !== id)),
+		swapLayers: (fromId: string, toId: string) =>
+			update((layers) => {
+				const fromIndex = layers.indexOf(fromId);
+				const toIndex = layers.indexOf(toId);
+
+				if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return layers;
+
+				const newLayers = [...layers];
+				[newLayers[fromIndex], newLayers[toIndex]] = [newLayers[toIndex], newLayers[fromIndex]];
+				return newLayers;
+			}),
 		reorderLayer: (id: string, direction: 'up' | 'down') =>
 			update((layers) => {
 				const index = layers.indexOf(id);
@@ -87,7 +98,7 @@ const createLayerStore = (initialLayers: string[] = []) => {
 					// 下に移動（配列の後方に移動）
 					[newLayers[index], newLayers[index + 1]] = [newLayers[index + 1], newLayers[index]];
 				}
-				return sortedLayers(newLayers);
+				return newLayers;
 			}),
 		reset: () => set([]) // 全てのIDをリセットする関数
 	};
