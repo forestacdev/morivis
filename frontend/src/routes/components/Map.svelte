@@ -4,6 +4,7 @@
 	import turfBboxPolygon from '@turf/bbox-polygon';
 	import { debounce } from 'es-toolkit';
 	import { delay } from 'es-toolkit';
+	import { map } from 'es-toolkit/compat';
 	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 	import type {
 		StyleSpecification,
@@ -192,6 +193,7 @@
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
 		mapStore.setStyle(mapStyle);
+		mapStore.terrainReload();
 	}, 100);
 
 	$effect(() => {

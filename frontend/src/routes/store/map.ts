@@ -205,6 +205,13 @@ const createMapStore = () => {
 		lockOnMarker.remove();
 	};
 
+	// 地形をリロードするメソッド
+	// https://github.com/maplibre/maplibre-gl-js/issues/3001
+	const terrainReload = () => {
+		if (!map || !map.getTerrain()) return;
+		map.terrain.sourceCache.sourceCache.reload();
+	};
+
 	const queryRenderedFeatures = (
 		geometryOrOptions?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesOptions,
 		options?: QueryRenderedFeaturesOptions
@@ -370,7 +377,8 @@ const createMapStore = () => {
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
-		onInitialized: initEvent.subscribe // 初期化イベントの購読用メソッド
+		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
+		terrainReload: terrainReload // 地形をリロードするメソッド
 	};
 };
 
