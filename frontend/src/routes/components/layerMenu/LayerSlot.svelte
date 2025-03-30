@@ -172,7 +172,7 @@
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
-					<button onclick={() => toggleVisible(layerEntry.id)}>
+					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}>
 						<Icon
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
 							width="20"
