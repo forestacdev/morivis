@@ -1,6 +1,6 @@
 import type { RasterLayerSpecification } from 'maplibre-gl';
 import type { AttributionKey } from '$routes/data/attribution';
-
+import type { BaseMetaData } from '$routes/data/types';
 export interface CategoryLegend {
 	type: 'category';
 	name: string;
@@ -38,7 +38,9 @@ export type ZoomLevel =
 	| 19
 	| 20
 	| 21
-	| 22;
+	| 22
+	| 23
+	| 24;
 
 export interface TileXYZ {
 	x: number;
@@ -87,17 +89,10 @@ export interface RasterDemStyle {
 	};
 }
 
-interface RasterMetaData {
-	name: string;
-	description: string;
-	attribution: AttributionKey;
-	location: string;
+interface RasterMetaData extends BaseMetaData {
 	minZoom: number;
-	maxZoom: number;
 	tileSize: TileSize;
 	xyzImageTile: TileXYZ | null;
-	bounds: [number, number, number, number] | null;
-	coverImage: string | null;
 }
 
 export interface RasterInteraction {

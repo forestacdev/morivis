@@ -4,8 +4,8 @@ import type {
 	PointStyle,
 	LabelStyle
 } from '$routes/data/types/vector/style';
-import type { Region } from '$routes/data/types/location';
-import type { AttributionKey } from '$routes/data/attribution';
+
+import type { BaseMetaData } from '$routes/data/types';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
@@ -26,28 +26,13 @@ export interface VectorInteraction {
 	clickable: boolean;
 }
 
-export interface TileMetaData {
-	name: string;
-	description: string;
-	attribution: AttributionKey;
-	location: Region;
+export interface TileMetaData extends BaseMetaData {
 	minZoom: number;
-	maxZoom: number;
 	promoteId?: string;
 	sourceLayer: string;
-	bounds: [number, number, number, number] | null;
-	coverImage: string | null;
 }
 
-export interface GeoJsonMetaData {
-	name: string;
-	description: string;
-	attribution: AttributionKey;
-	location: Region;
-	maxZoom: number;
-	bounds: [number, number, number, number] | null;
-	coverImage: string | null;
-}
+export type GeoJsonMetaData = BaseMetaData;
 
 interface BaseVectorEntry {
 	id: string;

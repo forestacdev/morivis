@@ -72,16 +72,16 @@
 </script>
 
 <div
-	class="relative mb-4 flex flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+	class="relative mb-4 flex flex-shrink-0 flex-grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
-		class="relative aspect-video w-full overflow-hidden"
+		class="relative flex aspect-video w-full flex-shrink-0 overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="css-no-drag-icon h-full w-full rounded-md object-cover"
+				class="css-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
 				alt="サムネイル"
 			/>
 		{/await}
@@ -96,23 +96,25 @@
 		<span class="">{dataEntry.metaData.name}</span>
 	</div>
 
-	{#if addedDataIds.includes(dataEntry.id)}
-		<button
-			onclick={() => deleteData(dataEntry.id)}
-			class="c-btn-cancel flex items-center gap-2 px-4"
-		>
-			<Icon icon="material-symbols:check" class=" h-8 w-8" />
-			<div>地図に追加済み</div>
-		</button>
-	{:else}
-		<button
-			onclick={() => addData(dataEntry.id)}
-			class="c-btn-confirm flex items-center gap-2 px-4"
-		>
-			<Icon icon="material-symbols:add" class=" h-8 w-8" />
-			<div>地図に追加</div>
-		</button>
-	{/if}
+	<div class=" flex-shrink-0">
+		{#if addedDataIds.includes(dataEntry.id)}
+			<button
+				onclick={() => deleteData(dataEntry.id)}
+				class="c-btn-cancel flex items-center gap-2 px-4"
+			>
+				<Icon icon="material-symbols:check" class=" h-8 w-8" />
+				<div>地図に追加済み</div>
+			</button>
+		{:else}
+			<button
+				onclick={() => addData(dataEntry.id)}
+				class="c-btn-confirm flex flex-shrink-0 flex-grow items-center gap-2 px-4"
+			>
+				<Icon icon="material-symbols:add" class=" h-8 w-8" />
+				<div>地図に追加</div>
+			</button>
+		{/if}
+	</div>
 </div>
 
 <style>

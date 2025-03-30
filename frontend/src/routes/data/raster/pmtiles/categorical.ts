@@ -11,6 +11,7 @@ export const pmTilesRasterCategoricalEntry: RasterPMTilesEntry<RasterCategorical
 		metaData: {
 			name: 'スギ人工林冠雪害危険度',
 			description: '岐阜県スギ人工林冠雪害危険度マップ',
+			downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/kansetsugaimap.html',
 			attribution: '岐阜県森林研究所',
 			location: '岐阜県',
 			minZoom: 6,

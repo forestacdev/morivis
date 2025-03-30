@@ -25,6 +25,16 @@
 	let { showDataEntry = $bindable() }: Props = $props();
 	let mapContainer = $state<HTMLElement | null>(null);
 
+	let dataType = $derived.by(() => {
+		if (showDataEntry) {
+			if (showDataEntry.type === 'raster') {
+				return 'ラスター';
+			} else if (showDataEntry.type === 'vector') {
+				return 'ベクター';
+			}
+		}
+	});
+
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
@@ -175,7 +185,7 @@
 		}
 	};
 
-	const handleKeydown = (e) => {
+	const handleKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
 			showDataEntry = null;
 		}
@@ -184,23 +194,42 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<!-- <div
+<div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="bg-main absolute flex h-full w-full"
+	class="bg-main absolute inset-0 flex h-full w-full flex-grow"
 >
-	<div class="bg-main flex flex-col p-2">ここに説明書く</div>
+	<div class="bg-main flex w-[400px] flex-col gap-2 p-2">
+		<div>{showDataEntry?.metaData.name}</div>
+		<div>{showDataEntry?.metaData.location}</div>
+		<div>{showDataEntry?.metaData.description}</div>
+
+		<div>{dataType}</div>
+		{#if showDataEntry?.metaData.downloadUrl}
+			<a
+				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				href={showDataEntry?.metaData.downloadUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				><Icon icon="el:download" class="h-8 w-8" />
+				<span>ダウンロード</span></a
+			>
+		{/if}
+	</div>
 	<div class="absolute h-full w-full" bind:this={mapContainer}>
 		<div
 			class="pointer-events-none absolute bottom-0 z-10 flex w-full items-center justify-center gap-4 p-4"
 		>
-			<button class="c-btn-confirm pointer-events-auto" onclick={addData}>地図に追加 </button>
-			<button class="c-btn-cancel pointer-events-auto" onclick={() => (showDataEntry = null)}
+			<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
+				>地図に追加
+			</button>
+			<button
+				class="c-btn-cancel pointer-events-auto px-4 text-lg"
+				onclick={() => (showDataEntry = null)}
 				>キャンセル
 			</button>
 		</div>
 	</div>
-</div> -->
-<div class="absolute flex h-full w-full bg-red-400">sss</div>
+</div>
 
 <style>
 </style>

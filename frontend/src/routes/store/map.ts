@@ -209,7 +209,9 @@ const createMapStore = () => {
 	// https://github.com/maplibre/maplibre-gl-js/issues/3001
 	const terrainReload = () => {
 		if (!map || !map.getTerrain()) return;
-		map.terrain.sourceCache.sourceCache.reload();
+		setTimeout(() => {
+			if (map) map.terrain.sourceCache.sourceCache.reload();
+		}, 200);
 	};
 
 	const queryRenderedFeatures = (

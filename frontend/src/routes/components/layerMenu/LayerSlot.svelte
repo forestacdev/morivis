@@ -170,8 +170,16 @@
 		<div transition:slide={{ duration: 200 }} class="flex pl-[33px]">
 			<div class="w-[2px] items-stretch bg-gray-500"></div>
 
-			<div class="flex flex-col gap-2 pl-2 pt-2">
-				<div class="flex gap-2">
+			<div class="flex w-full flex-col gap-4 px-2 pt-2">
+				<div class="flex gap-4 text-gray-100">
+					<button onclick={() => toggleVisible(layerEntry.id)}>
+						<Icon
+							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
+							width="20"
+							height="20"
+							class="custom-anime"
+						/>
+					</button>
 					<!-- <button class="" onclick={() => moveLayerById('up')}
 									><Icon icon="bx:up-arrow" width="20" height="20" class="" />
 								</button>

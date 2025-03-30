@@ -12,6 +12,7 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 		metaData: {
 			name: '傾斜区分図',
 			description: '岐阜県の傾斜区分図',
+			downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/sinrinwebmap.html',
 			attribution: '岐阜県森林研究所',
 			location: '岐阜県',
 			minZoom: 1,
@@ -69,8 +70,9 @@ export const imageTileCategoricalEntry: RasterImageEntry<RasterCategoricalStyle>
 		},
 		metaData: {
 			name: '傾斜量図',
-			description: '傾斜量図　国土地理院',
+			description: '',
 			attribution: '国土地理院',
+			downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#slopemap',
 			location: '全国',
 			minZoom: 3,
 			maxZoom: 15,

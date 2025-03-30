@@ -32,8 +32,8 @@
 	};
 </script>
 
-<div class="absolute bottom-0 z-30 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
-	<div class="bg-main flex h-full w-full flex-col rounded-lg p-2">
+<div class="absolute bottom-0 z-20 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
+	<div class="bg-main relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2">
 		<div class="flex flex-grow items-center justify-between gap-4 p-2">
 			<span class="flex-shrink-0 text-lg">データカタログ</span>
 			<div class="flex w-full max-w-[400px] rounded-full border-[1px] border-gray-400 px-4">
@@ -79,7 +79,7 @@
 	.css-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 幅を指定 */
-		grid-auto-rows: 300px; /* 高さを指定 */
+		grid-auto-rows: 360px; /* 高さを指定 */
 		gap: 10px; /* 子要素間の隙間 */
 	}
 	/* 検索ボックスのスタイル */

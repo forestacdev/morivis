@@ -8,8 +8,8 @@ export default {
 		extend: {
 			// 色の定義
 			colors: {
-				base: '#242424',
-				main: '#e9e9e9',
+				base: '#e9e9e9',
+				main: '#242424',
 				accent: '#299413'
 			},
 			fontFamily: {
