@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@mapbox/tilebelt": "^2.0.2",
+		"@mapbox/vector-tile": "^2.0.3",
 		"@tailwindcss/typography": "^0.5.15",
 		"@turf/bbox": "^7.2.0",
 		"@turf/bbox-polygon": "^7.2.0",
@@ -83,6 +84,7 @@
 		"lil-gui": "^0.20.0",
 		"maplibre-gl": "^4.7.1",
 		"maplibre-gl-gsi-terrain": "^2.0.1",
+		"pbf": "^4.0.1",
 		"pmtiles": "^4.1.0",
 		"proj4": "^2.15.0",
 		"three": "^0.172.0"

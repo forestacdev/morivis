@@ -1,17 +1,39 @@
 import { PMTiles } from 'pmtiles';
+import Pbf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
 
-/** PMTiles から .pbf を取得 */
-export const getVectorTilePmtiles = async (
+interface Tile {
+	z: number;
+	x: number;
+	y: number;
+}
+
+export const getPropertiesFromPMTiles = async (
 	url: string,
-	tile: { x: number; y: number; z: number }
-): Promise<Uint8Array> => {
+	{ z, x, y }: Tile,
+	layerName: string,
+	featureId: number
+) => {
 	const pmtiles = new PMTiles(url);
+	const tileData = await pmtiles.getZxy(z, x, y);
 
-	const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y);
-	if (!tileData || !tileData.data) {
-		throw new Error('Vector tile data not found');
+	if (!tileData || !tileData.data) throw new Error('タイル取得失敗');
+
+	const vt = new VectorTile(new Pbf(tileData.data));
+	const layer = vt.layers[layerName];
+
+	if (!layer) throw new Error('指定レイヤが存在しません');
+
+	for (let i = 0; i < layer.length; i++) {
+		const feature = layer.feature(i);
+
+		if (feature.id === featureId) {
+			const props = feature.properties;
+			console.log('✔️ 該当属性:', props);
+			return props;
+		}
 	}
 
-	// tileData.data は Uint8Array（または ArrayBuffer）として返ってくる
-	return tileData.data; // このままベクタータイルデータとして利用
+	console.warn('⚠️ 該当 feature_id が見つかりません');
+	return null;
 };

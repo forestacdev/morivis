@@ -9,10 +9,17 @@
 	import { showSideMenu, mapMode, showDataMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$routes/utils/geojson';
+	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 
 	interface ResultData {
 		name: string;
 		features: Feature<Geometry, { [key: string]: any }>[];
+		tile: {
+			x: number;
+			y: number;
+			z: number;
+		};
+		featureId: number;
 		layerId: string;
 	}
 
@@ -30,17 +37,38 @@
 		inputSearchWord: string;
 	} = $props();
 
-	const focusFeature = (feature: any, layerId: string) => {
-		mapStore.focusFeature(feature);
+	// const focusFeature = (feature: any, layerId: string) => {
+	// 	mapStore.focusFeature(feature);
+	// 	const data: SidePopupData = {
+	// 		type: 'Feature',
+	// 		layerId: layerId,
+	// 		properties: feature.properties,
+	// 		geometry: feature.geometry,
+	// 		featureId: feature.id
+	// 	};
+	// 	sidePopupData = data;
+	// 	results = [];
+	// };
+
+	const focusFeature = async (result: ResultData) => {
+		const hoge = await getPropertiesFromPMTiles(
+			'./fac_search.pmtiles',
+			result.tile,
+			result.layerId,
+			result.featureId
+		);
+
 		const data: SidePopupData = {
 			type: 'Feature',
-			layerId: layerId,
-			properties: feature.properties,
-			geometry: feature.geometry,
-			featureId: feature.id
+			layerId: result.layerId,
+			properties: hoge,
+			geometry: result.features[0].geometry,
+			featureId: result.featureId
 		};
 		sidePopupData = data;
 		results = [];
+
+		console.log('hoge', hoge);
 	};
 </script>
 
@@ -60,7 +88,7 @@
 		<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
 			{#each results as result}
 				<button
-					onclick={() => focusFeature(result.features, result.layerId)}
+					onclick={() => focusFeature(result)}
 					class="flex w-full flex-col text-left text-black"
 				>
 					<span class="">{result.name}</span>

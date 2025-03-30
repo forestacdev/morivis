@@ -98,7 +98,8 @@
 			return {
 				name: data.name,
 				features: featureCollection.features,
-
+				tile: data.tile_coords,
+				featureId: data.feature_id,
 				layerId: data.layer_id
 			};
 		});
@@ -122,6 +123,12 @@
 			resultsData.push({
 				name: 'タイル座標',
 				features: [feature],
+				tile: {
+					x: x,
+					y: y,
+					z: z
+				},
+				featureId: 0,
 				layerId: 'tile'
 			});
 		}
