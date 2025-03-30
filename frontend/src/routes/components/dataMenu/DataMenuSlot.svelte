@@ -10,9 +10,10 @@
 
 	interface Props {
 		dataEntry: GeoDataEntry;
+		showDataEntry: GeoDataEntry | null;
 	}
 
-	let { dataEntry }: Props = $props();
+	let { dataEntry, showDataEntry = $bindable() }: Props = $props();
 
 	let addedDataIds = $state<string[]>($addedLayerIds);
 
@@ -70,8 +71,13 @@
 	};
 </script>
 
-<div class="relative mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-300">
-	<button class="relative aspect-video overflow-hidden p-2">
+<div
+	class="relative mb-4 flex flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+>
+	<button
+		onclick={() => (showDataEntry = dataEntry)}
+		class="relative aspect-video w-full overflow-hidden"
+	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
@@ -81,19 +87,19 @@
 		{/await}
 	</button>
 
-	<div class="flex w-full items-center justify-start gap-2 p-2">
+	<div class="flex w-full items-center justify-start gap-2 py-2">
 		<label
 			class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
 		>
 			<LayerIcon layerEntry={dataEntry} />
 		</label>
-		<span class="h-[30px] flex-shrink-0">{dataEntry.metaData.name}</span>
+		<span class="">{dataEntry.metaData.name}</span>
 	</div>
 
 	{#if addedDataIds.includes(dataEntry.id)}
 		<button
 			onclick={() => deleteData(dataEntry.id)}
-			class="bg-main flex items-center justify-center rounded-full px-4"
+			class="c-btn-cancel flex items-center gap-2 px-4"
 		>
 			<Icon icon="material-symbols:check" class=" h-8 w-8" />
 			<div>地図に追加済み</div>
@@ -101,7 +107,7 @@
 	{:else}
 		<button
 			onclick={() => addData(dataEntry.id)}
-			class="text-main bg-accent flex items-center justify-center rounded-full px-4"
+			class="c-btn-confirm flex items-center gap-2 px-4"
 		>
 			<Icon icon="material-symbols:add" class=" h-8 w-8" />
 			<div>地図に追加</div>

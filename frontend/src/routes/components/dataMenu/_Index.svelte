@@ -13,6 +13,7 @@
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntry]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
+	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
 
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
@@ -31,9 +32,9 @@
 	};
 </script>
 
-<div class="absolute bottom-0 z-30 h-screen w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
-	<div class="bg-main relative flex h-full w-full flex-grow flex-col rounded-lg p-2">
-		<div class="flex flex-shrink-0 items-center justify-between gap-4 p-2">
+<div class="absolute bottom-0 z-30 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
+	<div class="bg-main flex h-full w-full flex-col rounded-lg p-2">
+		<div class="flex flex-grow items-center justify-between gap-4 p-2">
 			<span class="flex-shrink-0 text-lg">データカタログ</span>
 			<div class="flex w-full max-w-[400px] rounded-full border-[1px] border-gray-400 px-4">
 				<input
@@ -54,14 +55,23 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<div class="c-scroll h-full w-full flex-grow overflow-y-auto overflow-x-hidden">
+		<div class="c-scroll relative h-full w-full flex-grow overflow-y-auto overflow-x-hidden">
 			<div class="css-grid h-full">
+				{#if filterDataEntries.length === 0}
+					<div
+						class="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+					>
+						<span class="text-gray-500">データが見つかりません</span>
+					</div>
+				{/if}
 				{#each filterDataEntries as dataEntry (dataEntry.id)}
-					<DataSlot {dataEntry} />
+					<DataSlot {dataEntry} bind:showDataEntry />
 				{/each}
 			</div>
-			<!-- <DataPreview bind:showDataEntry /> -->
 		</div>
+		{#if showDataEntry}
+			<DataPreview bind:showDataEntry />
+		{/if}
 	</div>
 </div>
 
