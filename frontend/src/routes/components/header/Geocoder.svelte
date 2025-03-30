@@ -9,7 +9,8 @@
 	import type { LngLatLike, Marker } from 'maplibre-gl';
 	import { fade } from 'svelte/transition';
 
-	import searchData from '$routes/data/api/search_data.json';
+	import searchData from './search_data.json';
+
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/data/types/vector';
 	import { getFgbToGeojson, getGeojson } from '$routes/utils/geojson';
@@ -41,31 +42,66 @@
 		}
 	};
 
+	//　Fuse.js の初期化
+	const fuse = new Fuse(searchData, {
+		keys: ['search_values'], // ←ここで search_values を対象にする
+		threshold: 0.3 // あいまい検索の感度（0 に近いほど厳密）
+	});
+
 	// const focusFeature = (feature: any) => {
 	// 	mapStore.focusFeature(feature);
 	// 	mapStore.addSearchFeature(feature);
 	// };
 
 	const searchFeature = async (searchWord: string) => {
-		const test = searchData.filter((data) => {
-			return Object.values(data.prop).some(
-				(value) =>
-					(typeof value === 'string' || typeof value === 'number') &&
-					value.toString().includes(searchWord)
-			);
+		// 検索実行
+		const result = fuse.search(searchWord, {
+			limit: LIMIT
 		});
 
-		const promises = test.map(async (data) => {
-			const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
+		console.log('result', result);
+
+		// const promises = test.map(async (data) => {
+		// 	const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
+
+		// 	return {
+		// 		name: 5555,
+		// 		features: fgb.features,
+		// 		layerId: data.file_id
+		// 	};
+		// });
+
+		const resultsData = result.map((item) => {
+			const data = item.item;
+
+			// const fgb = await getFgbToGeojson(`./fgb/${fileId}.fgb`, searchId);
+			// const features = fgb.features;
+
+			const featureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
+				type: 'FeatureCollection',
+				features: [
+					{
+						id: data.feature_id,
+						type: 'Feature',
+						geometry: {
+							type: 'Point',
+							coordinates: data.point
+						},
+
+						properties: {
+							layerId: data.layer_id
+						}
+					}
+				]
+			};
 
 			return {
-				name: 5555,
-				features: fgb.features,
-				layerId: data.file_id
+				name: data.name,
+				features: featureCollection.features,
+
+				layerId: data.layer_id
 			};
 		});
-
-		const resultsData = await Promise.all(promises);
 
 		const tilePattern = /^\d+\/\d+\/\d+$/;
 		const match = searchWord.match(tilePattern);
@@ -92,7 +128,7 @@
 
 		// resultsには全ての処理結果が含まれます
 
-		// results = resultsData;
+		results = resultsData;
 	};
 
 	$effect(() => {
@@ -141,67 +177,6 @@
 		{/if}
 	</div>
 </div>
-
-<!-- {#if showMenu}
-	<div
-		transition:fade={{ duration: 150 }}
-		class="absolute left-2 top-[60px] flex h-3/5 w-[400px] flex-col overflow-hidden rounded-md bg-white shadow-lg"
-	>
-		<div class="h-[3rem] flex-shrink-0 bg-[#1DB5C8] p-2 max-lg:hidden">
-			<div class="flex h-full w-full justify-center">
-				<span class="flex w-full items-center text-lg text-white"
-					>検索結果 {featuresData.length > 1000
-						? '1000'
-						: featuresData.length}件中{filterFeatures.length > 1000
-						? '1000'
-						: filterFeatures.length}件表示</span
-				>
-				<button on:click={() => (showMenu = false)}
-					><Icon src={XMark} class="h-8 w-8 text-white" /></button
-				>
-			</div>
-		</div>
-		<div class="flex w-full gap-2 p-2">
-			<select
-				bind:value={selectedPrefecture}
-				class="flex w-auto cursor-pointer items-center justify-center rounded-full border-2 border-gray-400 bg-white px-2 py-[3px] text-sm transition-all duration-150 focus:outline-none lg:hover:bg-gray-100"
-			>
-				<option value="">都道府県</option>
-				{#each prefectures as prefecture}
-					<option value={prefecture}>{prefecture}</option>
-				{/each}
-			</select>
-
-			<select
-				bind:value={selectedMunicipality}
-				class="flex w-auto cursor-pointer items-center justify-center rounded-full border-2 border-gray-400 bg-white px-2 py-[3px] text-sm transition-all duration-150 focus:outline-none lg:hover:bg-gray-100"
-			>
-				<option value="">市区町村</option>
-				{#each municipalities as municipality}
-					<option value={municipality}>{municipality}</option>
-				{/each}
-			</select>
-		</div>
-		<div class="custom-scroll flex h-full flex-col overflow-y-auto p-2">
-			{#if featuresData}
-				{#each filterFeatures as feature}
-					<button
-						on:click={() => addMarker(feature.geometry.coordinates, true)}
-						on:mouseover={() => addMarker(feature.geometry.coordinates)}
-						on:mouseleave={() => marker?.remove()}
-						on:focus={() => addMarker(feature.geometry.coordinates)}
-						class="flax flex-col gap-2 p-2 text-left lg:hover:!text-[#1DB5C8]"
-					>
-						<div>{feature.properties['title']}</div>
-						<div class="text-sm text-gray-600">
-							{feature.properties.address ?? feature.properties['title']}
-						</div>
-					</button>
-				{/each}
-			{/if}
-		</div>
-	</div>
-{/if} -->
 
 <style>
 </style>

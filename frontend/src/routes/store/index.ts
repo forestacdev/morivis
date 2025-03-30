@@ -112,7 +112,7 @@ export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 export const isSide = writable<Side>(null);
 
 /** データメニューの表示 */
-export const showDataMenu = writable<boolean>(true);
+export const showDataMenu = writable<boolean>(false);
 
 /** インフォメーションの表示 */
 export const showInfoDialog = writable<boolean>(false);

@@ -4,11 +4,11 @@
 	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import Geocoder from '$routes/components/header/Geocoder.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showSideMenu, mapMode, showDataMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$routes/utils/geojson';
-	import Geocoder from '$routes/components/header/Geocoder.svelte';
 
 	interface ResultData {
 		name: string;
@@ -58,16 +58,14 @@
 	</div>
 	{#if results}
 		<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
-			{#each results.filter((data) => data.features.length > 0) as result}
-				{#each result.features as feature}
-					<button
-						onclick={() => focusFeature(feature, result.layerId)}
-						class="flex w-full flex-col text-left text-black"
-					>
-						<span class="">{feature.properties.name}</span>
-						<span class="text-xs">{result.name}</span>
-					</button>
-				{/each}
+			{#each results as result}
+				<button
+					onclick={() => focusFeature(result.features, result.layerId)}
+					class="flex w-full flex-col text-left text-black"
+				>
+					<span class="">{result.name}</span>
+					<span class="text-xs">{result.name}</span>
+				</button>
 			{/each}
 		</div>
 	{/if}
