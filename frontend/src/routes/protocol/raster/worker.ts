@@ -144,7 +144,6 @@ const calculateLightDirection = (azimuth: number, altitude: number) => {
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	console.log('WebGL worker message received');
 	const { center, left, right, top, bottom, tileId, z, uniformsData, elevationColorArray } = e.data;
 
 	try {

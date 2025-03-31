@@ -60,7 +60,7 @@ export const INT_ADD_LAYER_IDS = [
 	// 'fac_poi',
 	'ensyurin_road',
 	'ensyurin_rinhan',
-	'dem_10b',
+	'dem_5a',
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
 	// 'gsi_slopemap',

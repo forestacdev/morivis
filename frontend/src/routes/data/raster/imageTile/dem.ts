@@ -2,20 +2,20 @@ import type { RasterImageEntry, RasterDemStyle } from '../../types/raster';
 
 export const imageTileDemEntry: RasterImageEntry<RasterDemStyle>[] = [
 	{
-		id: 'dem_10b',
+		id: 'dem_5a',
 		type: 'raster',
 		format: {
 			type: 'image',
-			url: 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
+			url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
 		},
 		metaData: {
-			name: '基盤地図情報数値標高モデル DEM10B',
+			name: '基盤地図情報数値標高モデル DEM5A',
 			description: '',
 			downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
 			attribution: '国土地理院',
 			location: '全国',
 			minZoom: 1,
-			maxZoom: 14,
+			maxZoom: 15,
 			tileSize: 256,
 			xyzImageTile: null,
 			bounds: [122.935, 20.425, 153.986, 45.551],

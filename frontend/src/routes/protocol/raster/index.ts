@@ -72,7 +72,7 @@ class WorkerProtocol {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
-		const baseUrl = 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png';
+		const baseUrl = 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png';
 
 		const images = await this.tileCache.getAdjacentTilesWithImages(x, y, z, baseUrl, controller);
 
