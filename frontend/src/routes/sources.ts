@@ -24,20 +24,32 @@ export const createSourcesItems = async (
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
-			const { metaData, format, type } = entry;
+			const { metaData, format, type, style } = entry;
 
 			switch (type) {
 				case 'raster': {
 					if (format.type === 'image') {
-						items[sourceId] = {
-							type: 'raster',
-							tiles: [format.url],
-							maxzoom: metaData.maxZoom,
-							minzoom: metaData.minZoom,
-							tileSize: metaData.tileSize,
-							attribution: metaData.attribution,
-							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-						} as RasterSourceSpecification;
+						if (style.type === 'dem') {
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [`webgl://${format.url}?x={x}&y={y}&z={z}`],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+							} as RasterSourceSpecification;
+						} else {
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [format.url],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+							} as RasterSourceSpecification;
+						}
 					} else if (format.type === 'pmtiles') {
 						items[sourceId] = {
 							type: 'raster',

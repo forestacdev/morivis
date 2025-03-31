@@ -7,6 +7,7 @@ import { imageTileCategoricalEntry } from '$routes/data/raster/imageTile/categor
 import { imageTileBaseMapEntry } from '$routes/data/raster/imageTile/basemap';
 import { pmTilesRasterCategoricalEntry } from '$routes/data/raster/pmtiles/categorical';
 import { mvtPolygonEntry } from '$routes/data/vector/mvt/polygon';
+import { imageTileDemEntry } from '$routes/data/raster/imageTile/dem';
 
 import type { GeoDataEntry } from '$routes/data/types';
 
@@ -34,7 +35,8 @@ const entries: GeoDataEntry[] = [
 	...mvtPolygonEntry,
 	...imageTileCategoricalEntry,
 	...imageTileBaseMapEntry,
-	...pmTilesRasterCategoricalEntry
+	...pmTilesRasterCategoricalEntry,
+	...imageTileDemEntry
 	// ...cogEntry
 ];
 

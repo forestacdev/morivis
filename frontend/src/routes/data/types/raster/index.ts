@@ -1,7 +1,6 @@
 import type { RasterLayerSpecification } from 'maplibre-gl';
 import type { AttributionKey } from '$routes/data/attribution';
 import type { BaseMetaData } from '$routes/data/types';
-import { name } from '../../../../../static/svg/prefectures/pref';
 export interface CategoryLegend {
 	type: 'category';
 	name: string;
@@ -174,21 +173,21 @@ export interface RasterDemStyle {
 				altitude: number;
 			};
 			slope: {
-				colorMap: 'salinity';
+				colorMap: ColorMapTypeKey;
 			};
 			evolution: {
 				max: number;
 				min: number;
-				colorMap: 'earth';
+				colorMap: ColorMapTypeKey;
 			};
 			aspect: {
-				colorMap: 'rainbowSoft';
+				colorMap: ColorMapTypeKey;
 			};
 			curvature: {
 				ridgeThreshold: number;
 				valleyThreshold: number;
-				ridgeColor: '#980707';
-				valleyColor: '#137c83';
+				ridgeColor: string;
+				valleyColor: string;
 			};
 		};
 	};

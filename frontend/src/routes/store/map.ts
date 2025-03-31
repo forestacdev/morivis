@@ -28,14 +28,19 @@ import { propData } from '$routes/data/propData';
 
 import { getLocationBbox } from '$routes/data/locationBbox';
 
-const pmtilesProtocol = new Protocol();
-maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
-
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
 import { DEBUG_MODE, isEdit, selectedLayerId } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
+
+import { demProtocol } from '$routes/protocol/raster';
+
+const pmtilesProtocol = new Protocol();
+maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
+
+const protocol = demProtocol('webgl');
+maplibregl.addProtocol(protocol.protocolName, protocol.request);
 
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
@@ -152,7 +157,9 @@ const createMapStore = () => {
 			const { imageBitmap, id } = e.data;
 
 			if (map && !map.hasImage(id)) {
-				map.addImage(id, imageBitmap);
+				map.addImage(id, imageBitmap, {
+					pixelRatio: 2
+				});
 			}
 		};
 

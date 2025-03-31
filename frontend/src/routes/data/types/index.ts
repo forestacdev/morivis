@@ -3,7 +3,8 @@ import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/data/ty
 import type {
 	RasterEntry,
 	RasterCategoricalStyle,
-	RasterBaseMapStyle
+	RasterBaseMapStyle,
+	RasterDemStyle
 } from '$routes/data/types/raster';
 import type { AttributionKey } from '../attribution';
 import type { Region } from './location';
@@ -23,4 +24,4 @@ export interface BaseMetaData {
 
 export type GeoDataEntry =
 	| VectorEntry<GeoJsonMetaData | TileMetaData>
-	| RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle>;
+	| RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle>;

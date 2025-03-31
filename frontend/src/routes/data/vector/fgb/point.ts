@@ -138,7 +138,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 		style: {
 			type: 'circle',
 			opacity: 1,
-			markerType: 'icon',
+			markerType: 'circle',
 			colors: {
 				show: true,
 				key: '単色',
@@ -173,7 +173,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			},
 			icon: {
 				show: true,
-				size: 0.1
+				size: 0.2
 			},
 			labels: {
 				key: '名前',
@@ -298,7 +298,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			},
 			icon: {
 				show: true,
-				size: 0.1
+				size: 0.2
 			},
 			labels: {
 				key: '名前',
@@ -404,7 +404,7 @@ export const fgbPointEntry: PointEntry<GeoJsonMetaData>[] = [
 			},
 			icon: {
 				show: true,
-				size: 0.1
+				size: 0.2
 			},
 			labels: {
 				key: '名前',

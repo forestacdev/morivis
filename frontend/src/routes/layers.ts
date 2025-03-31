@@ -704,6 +704,18 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 								...(style.raster.layout ?? {})
 							}
 						});
+					} else if (style.type === 'dem') {
+						layerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity,
+								...(style.raster.paint ?? {})
+							},
+							layout: {
+								...(style.raster.layout ?? {})
+							}
+						});
 					}
 					break;
 				}
