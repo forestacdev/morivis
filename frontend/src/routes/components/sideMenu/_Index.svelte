@@ -57,12 +57,12 @@
 	></div>
 	<div
 		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
-		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2"
+		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
 	>
 		<div class="flex items-center justify-between">
 			<Logo />
 			<button onclick={() => showSideMenu.set(false)} class="bg-base rounded-full p-2">
-				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main w-4 h-4" />
 			</button>
 		</div>
 		<ui>

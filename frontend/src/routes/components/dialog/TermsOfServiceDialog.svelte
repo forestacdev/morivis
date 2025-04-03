@@ -11,7 +11,7 @@
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-50"
 	>
 		<div
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4"
+			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4 text-base"
 		>
 			<div class="flex flex-shrink-0 items-center justify-between overflow-auto pb-4">
 				<span class="text-2xl font-bold">利用規約</span>

@@ -765,6 +765,6 @@
 	}
 
 	.css-svg-container svg path {
-		fill: rgb(0, 0, 0);
+		fill: rgb(255, 255, 255);
 	}
 </style>

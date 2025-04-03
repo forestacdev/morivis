@@ -128,7 +128,7 @@
 	>
 		<div class="flex items-center justify-start gap-2">
 			<label
-				class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500"
+				class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
@@ -154,10 +154,10 @@
 			</label>
 			<div>
 				<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-					<span class="text-nowrap {$selectedLayerId === layerEntry.id ? '' : ''}"
+					<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
 						>{layerEntry.metaData.name}</span
 					>
-					<span class="text-nowrap text-xs">{layerEntry.metaData.location ?? '---'}</span>
+					<span class="text-nowrap text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span>
 
 					<!-- {#if $selectedLayerId === layerEntry.id && !$isEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>

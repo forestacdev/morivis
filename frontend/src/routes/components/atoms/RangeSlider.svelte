@@ -12,7 +12,7 @@
 	let rangeElement = $state<HTMLDivElement | null>(null);
 </script>
 
-<div class="flex flex-col gap-2 pb-4">
+<div class="flex flex-col gap-2 pb-4 text-base">
 	<span class="select-none">{label ? `${label}: ` : ''}{value.toFixed(2)}</span>
 	<input class="css-range" type="range" bind:value {min} {max} {step} />
 
@@ -32,8 +32,7 @@
 
 	/* スライダー バー */
 	.css-range::-webkit-slider-runnable-track {
-		background: rgb(1, 44, 7);
-
+		background: rgb(201, 201, 201);
 		height: 8px;
 		border-radius: 8px;
 	}
