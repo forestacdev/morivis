@@ -8,6 +8,7 @@ export type AttributionKey =
 	| 'OSM'
 	| '株式会社アドイン研究所'
 	| 'Esri'
+	| '東京都オープンデータカタログサイト'
 	| '林野庁';
 
 export type Attribution = {
@@ -66,6 +67,11 @@ const attributionData: Attribution[] = [
 		key: '林野庁',
 		name: '林野庁',
 		url: 'https://www.rinya.maff.go.jp/index.html'
+	},
+	{
+		key: '東京都オープンデータカタログサイト',
+		name: '東京都オープンデータカタログサイト',
+		url: 'https://portal.data.metro.tokyo.lg.jp/'
 	}
 ];
 

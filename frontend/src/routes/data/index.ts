@@ -3,6 +3,7 @@ import { fgbLineStringEntry } from '$routes/data/vector/fgb/lineString';
 import { fgbPointEntry } from '$routes/data/vector/fgb/point';
 import { fgbLabelEntry } from '$routes/data/vector/fgb/label';
 import { pmtilesPolygonEntry } from '$routes/data/vector/pmtiles/polygon';
+import { pmtilesPointEntry } from '$routes/data/vector/pmtiles/point';
 import { imageTileCategoricalEntry } from '$routes/data/raster/imageTile/categorical';
 import { imageTileBaseMapEntry } from '$routes/data/raster/imageTile/basemap';
 import { pmTilesRasterCategoricalEntry } from '$routes/data/raster/pmtiles/categorical';
@@ -31,6 +32,7 @@ const entries: GeoDataEntry[] = [
 	...fgbLineStringEntry,
 	...fgbPointEntry,
 	...fgbLabelEntry,
+	...pmtilesPointEntry,
 	...pmtilesPolygonEntry,
 	...mvtPolygonEntry,
 	...imageTileCategoricalEntry,

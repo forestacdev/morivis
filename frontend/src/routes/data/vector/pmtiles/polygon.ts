@@ -8,7 +8,7 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 		format: {
 			type: 'pmtiles',
 			geometryType: 'Polygon',
-			url: './pmtiles/mino_geology.pmtiles'
+			url: './pmtiles/vector/mino_geology.pmtiles'
 		},
 		metaData: {
 			name: '美濃市地質図',
@@ -18,7 +18,7 @@ export const pmtilesPolygonEntry: VectorEntry<TileMetaData>[] = [
 			minZoom: 0,
 			maxZoom: 14,
 			sourceLayer: 'geo_A',
-			bounds: null,
+			bounds: [136.74706, 35.503199, 137.014386, 35.669838],
 			coverImage: null
 		},
 		properties: {

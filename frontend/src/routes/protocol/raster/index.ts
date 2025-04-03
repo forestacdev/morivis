@@ -26,8 +26,8 @@ export const uniformsData: UniformsData = {
 	// 標高
 	elevation: {
 		opacity: 1.0, // 不透明度
-		maxHeight: 2500, // 最大標高値
-		minHeight: 500 // 最小標高値
+		maxHeight: 3776, // 最大標高値
+		minHeight: 0 // 最小標高値
 	},
 	// 陰影
 	shadow: {
