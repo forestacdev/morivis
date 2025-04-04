@@ -1,12 +1,9 @@
 <script lang="ts">
-
 	import { debounce } from 'es-toolkit';
-
 	import type { FeatureCollection } from 'geojson';
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
-
 		GeoJSONSourceSpecification,
 		Marker,
 		LngLat,
@@ -17,10 +14,10 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
+	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/mapControl/_Index.svelte';
 	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
-    import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import {
 		streetViewCircleLayer,
 		streetViewLineLayer,
@@ -33,19 +30,9 @@
 	import SidePopup from '$routes/components/popup/SidePopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
-	import { geoDataEntry } from '$routes/data';
-	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
-	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/utils/sources';
-	import {
-		addedLayerIds,
-	
-		clickableRasterIds,
-
-		isStreetView
-	} from '$routes/store';
+	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isEdit } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import {
@@ -53,7 +40,9 @@
 		type SidePopupData,
 		type ClickedLayerFeaturesData
 	} from '$routes/utils/geojson';
+	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
+	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -82,7 +71,6 @@
 	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
 
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
-	let maplibreMarker = $state<Marker | null>(null); // マーカー
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let showMarker = $state<boolean>(false); // マーカーの表示
@@ -119,7 +107,7 @@
 
 		const terrain = mapStore.getTerrain();
 
-		const mapStyle:StyleSpecification = {
+		const mapStyle: StyleSpecification = {
 			version: 8,
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
@@ -129,7 +117,7 @@
 					...selectedFocusSources
 				},
 				...sources
-			}
+			},
 			layers: [
 				...layers,
 				{
@@ -154,8 +142,6 @@
 			},
 			terrain: terrain ? terrain : undefined
 		};
-
-
 
 		return mapStyle;
 	};
@@ -198,8 +184,6 @@
 			showMarker = false;
 		}
 	});
-
-
 
 	// ベクターポップアップの作成
 	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
@@ -320,9 +304,6 @@
 		}
 	});
 
-
-
-	
 	mapStore.onInitialized((map) => {
 		maplibreMap = map;
 	});
@@ -349,7 +330,7 @@
 		{clickedLngLat}
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
-    <LockOnScreen />
+	<LockOnScreen />
 </div>
 
 {#if maplibreMap}

@@ -67,8 +67,6 @@
 		};
 		sidePopupData = data;
 		results = [];
-
-		console.log('hoge', hoge);
 	};
 </script>
 
