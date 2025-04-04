@@ -13,7 +13,7 @@
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/sources';
+	import { createSourcesItems } from '$routes/utils/sources';
 	import { addedLayerIds, showDataMenu } from '$routes/store';
 	import { GeojsonCache } from '$routes/utils/geojson';
 	import { getImagePmtiles } from '$routes/utils/raster';

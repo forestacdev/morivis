@@ -45,7 +45,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/sources';
+	import { createSourcesItems } from '$routes/utils/sources';
 	import {
 		addedLayerIds,
 		selectedLayerId,
