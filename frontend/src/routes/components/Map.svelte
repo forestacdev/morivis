@@ -356,6 +356,6 @@
 
 	/* TODO:マップの調整 */
 	.c-map-satellite {
-		filter: saturate(80%);
+		filter: saturate(100%);
 	}
 </style>
