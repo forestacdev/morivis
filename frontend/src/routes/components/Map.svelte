@@ -44,7 +44,7 @@
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
-	import { createHighlightLayer, createLayersItems } from '$routes/layers';
+	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/sources';
 	import {
 		addedLayerIds,
