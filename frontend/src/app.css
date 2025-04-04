@@ -4,9 +4,9 @@
 
 @layer components {
 	:root {
-		--main-color: #242424;
+		--main-color: #282828;
 		--base-color: #e9e9e9;
-		--accent-color: #299413;
+		--accent-color: #23a209;
 		--secondary-color: #11abe3;
 	}
 

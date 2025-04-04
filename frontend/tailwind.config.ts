@@ -9,8 +9,8 @@ export default {
 			// 色の定義
 			colors: {
 				base: '#e9e9e9',
-				main: '#242424',
-				accent: '#299413'
+				main: '#282828',
+				accent: '#23a209'
 			},
 			fontFamily: {
 				noto: ['Noto Sans JP']
