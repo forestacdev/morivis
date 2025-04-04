@@ -42,10 +42,9 @@
 		}
 	};
 
-	//　Fuse.js の初期化
 	const fuse = new Fuse(searchData, {
-		keys: ['search_values'], // ←ここで search_values を対象にする
-		threshold: 0.3 // あいまい検索の感度（0 に近いほど厳密）
+		keys: ['search_values'],
+		threshold: 0.3
 	});
 
 	// const focusFeature = (feature: any) => {
@@ -58,8 +57,6 @@
 		const result = fuse.search(searchWord, {
 			limit: LIMIT
 		});
-
-		console.log('result', result);
 
 		// const promises = test.map(async (data) => {
 		// 	const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
@@ -151,7 +148,7 @@
 >
 	<input
 		type="text"
-		class="bg-main w-[280px] rounded-md px-4 py-2 focus:outline-none"
+		class="bg-main w-[280px] rounded-md px-4 py-2 text-base focus:outline-none"
 		bind:value={inputSearchWord}
 		oncompositionstart={() => (isComposing = true)}
 		oncompositionend={() => (isComposing = false)}

@@ -2,6 +2,18 @@ dev:
 	cd frontend && \
 	pnpm run dev
 
+build:
+	cd frontend && \
+	pnpm run build
+
+lint:
+	cd frontend && \
+	pnpm run lint
+
+check:
+	cd frontend && \
+	pnpm run check
+
 360_update: ## データの更新
 	cd batch && \
 	uv run scripts/node.py && \

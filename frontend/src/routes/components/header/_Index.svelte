@@ -83,11 +83,13 @@
 		<Geocoder {layerEntries} bind:results bind:inputSearchWord />
 	</div>
 	{#if results}
-		<div class="bg-main absolute left-2 top-[60px] z-20 w-[350px] overflow-y-auto rounded-md p-4">
+		<div
+			class="bg-main absolute left-2 top-[60px] z-20 flex w-[350px] flex-col gap-2 overflow-y-auto rounded-md p-4"
+		>
 			{#each results as result}
 				<button
 					onclick={() => focusFeature(result)}
-					class="flex w-full flex-col text-left text-black"
+					class="flex w-full flex-col text-left text-base"
 				>
 					<span class="">{result.name}</span>
 					<span class="text-xs">{result.name}</span>

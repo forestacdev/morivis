@@ -1,4 +1,4 @@
-import type { PopupOptions, LngLat } from 'maplibre-gl';
+import type { PopupOptions } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/data/types/raster';
 
 // TODO: データのURLを変更する
@@ -55,9 +55,9 @@ export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
 	// 'cog_test',
 	// 'ensyurin_pole',
-	// 'fac_ziriki',
-	// 'fac_building',
-	// 'fac_poi',
+	'fac_ziriki',
+	'fac_building',
+	'fac_poi',
 	'ensyurin_road',
 	'ensyurin_rinhan',
 	'dem_5a',

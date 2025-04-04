@@ -29,7 +29,7 @@ export const getPropertiesFromPMTiles = async (
 
 		if (feature.id === featureId) {
 			const props = feature.properties;
-			console.log('✔️ 該当属性:', props);
+
 			return props;
 		}
 	}
