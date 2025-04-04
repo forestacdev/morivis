@@ -32,7 +32,9 @@
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">サービスの変更・停止</div>
-					<div>サーバー障害、メンテナンス、その他の理由により、本アプリのサービスを一時的または永久に停止することがあります。その際、当社は事前に通知を行う義務を負いません。</div>
+					<div>
+						サーバー障害、メンテナンス、その他の理由により、本アプリのサービスを一時的または永久に停止することがあります。その際、当社は事前に通知を行う義務を負いません。
+					</div>
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">知的財産権について</div>
@@ -76,7 +78,7 @@
 				</div>
 			</div>
 			<div class="flex flex-shrink-0 justify-center overflow-auto pt-2">
-				<button onclick={() => showTermsDialog.set(false)} class="c-btn-confirm px-6 text-lg">
+				<button onclick={() => showTermsDialog.set(false)} class="c-btn-confirm px-12 py-6 text-lg">
 					同意する
 				</button>
 			</div>
