@@ -27,6 +27,7 @@
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/mapControl/_Index.svelte';
 	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
+    import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import {
 		streetViewCircleLayer,
 		streetViewLineLayer,
@@ -385,6 +386,7 @@
 		{clickedLngLat}
 	/>
 	<SidePopup bind:sidePopupData {layerEntries} />
+    <LockOnScreen />
 </div>
 
 {#if maplibreMap}
