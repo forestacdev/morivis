@@ -1,20 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { MapGeoJSONFeature, LngLat } from 'maplibre-gl';
-	import { onMount } from 'svelte';
+	import type { LngLat } from 'maplibre-gl';
 	import { flip } from 'svelte/animate';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-	import { gsiGetElevation, lonLatToAddress } from '$routes/data/api';
+	import { lonLatToAddress } from '$routes/data/api';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import {
-		mapGeoJSONFeatureToSidePopupData,
-		type SidePopupData,
-		type ClickedLayerFeaturesData
-	} from '$routes/utils/geojson';
+	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 
 	interface Props {
 		clickedLayerIds: string[];
@@ -61,9 +56,7 @@
 			(data) => data.layerEntry.id === layerId
 		)?.feature;
 		if (!feature) return;
-		const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
 
-		sidePopupData = geojsonFeature;
 		clickedLayerFeaturesData = null;
 		clickedLayerIds = [];
 	};

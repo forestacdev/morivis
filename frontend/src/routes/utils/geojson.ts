@@ -1,7 +1,7 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 import { geojson as fgb, geojson } from 'flatgeobuf';
 import { addedLayerIds } from '$routes/store';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { LngLat, MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
 
 /** GeoJSONを取得する */
@@ -72,21 +72,22 @@ export interface ClickedLayerFeaturesData {
 }
 
 export interface SidePopupData {
-	type: 'Feature';
-	geometry: Geometry;
-	properties: { [key: string]: any };
+	point: [number, number];
+	properties: { [key: string]: string | number | null | undefined } | null;
 	featureId: number;
 	layerId: string;
 }
 
-export const mapGeoJSONFeatureToSidePopupData = (feature: MapGeoJSONFeature): SidePopupData => {
-	const { geometry, properties, id, layer } = feature;
+export const mapGeoJSONFeatureToSidePopupData = (
+	feature: MapGeoJSONFeature,
+	point: [number, number]
+): SidePopupData => {
+	const { properties, id, layer } = feature;
 
 	// 特定のIDに一致するか確認
 
 	return {
-		type: 'Feature',
-		geometry: geometry,
+		point,
 		properties: properties,
 		featureId: id as number,
 		layerId: layer.id as string

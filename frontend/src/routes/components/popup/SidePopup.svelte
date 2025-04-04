@@ -62,13 +62,6 @@
 			isEdit.set(true);
 		}
 	};
-
-	let featureType = $derived.by(() => {
-		if (sidePopupData) {
-			return sidePopupData.geometry.type;
-		}
-		return null;
-	});
 </script>
 
 {#if sidePopupData}
@@ -132,16 +125,13 @@
 						transition:fly={{ duration: 200, x: 100 }}
 						class="flex-grow' absolute flex h-full w-full flex-col gap-2"
 					>
-						{#if featureType === 'Point' && sidePopupData.geometry.type === 'Point'}
-							<div class="flex w-full items-center justify-start gap-2">
-								<Icon icon="lucide:map-pin" class="h-6 w-6" />
-								<span class="text-accent"
-									>{sidePopupData.geometry.coordinates[0].toFixed(6)}, {sidePopupData.geometry.coordinates[1].toFixed(
-										6
-									)}</span
-								>
-							</div>
-						{/if}
+						<div class="flex w-full items-center justify-start gap-2">
+							<Icon icon="lucide:map-pin" class="h-6 w-6" />
+							<span class="text-accent"
+								>{sidePopupData.point[0].toFixed(6)}, {sidePopupData.point[1].toFixed(6)}</span
+							>
+						</div>
+
 						{#if data}
 							{#if data.url}
 								<a

@@ -228,7 +228,15 @@ const createMapStore = () => {
 		return map?.queryRenderedFeatures(geometryOrOptions, options);
 	};
 
-	const panTo = (lngLat: LngLat, option?: AnimationOptions) => {
+	const panTo = (
+		lngLat:
+			| [number, number]
+			| {
+					lng: number;
+					lat: number;
+			  },
+		option?: AnimationOptions
+	) => {
 		if (!map) return;
 		map.panTo(lngLat, option);
 	};

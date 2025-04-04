@@ -2,21 +2,15 @@
 </script>
 
 <script lang="ts">
-	import type { MapMouseEvent, MapLayerMouseEvent } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onMount } from 'svelte';
 	import { onDestroy } from 'svelte';
 
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { isStreetView, showStreetViewLayer, clickableVectorIds } from '$routes/store';
+	import { isStreetView, clickableVectorIds } from '$routes/store';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
-	import {
-		mapGeoJSONFeatureToSidePopupData,
-		type SidePopupData,
-		type ClickedLayerFeaturesData
-	} from '$routes/utils/geojson';
+	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$routes/utils/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
 
 	interface Props {
@@ -100,8 +94,12 @@
 
 		if (features.length > 0) {
 			const feature = features[0];
+			const point =
+				feature.geometry.type === 'Point'
+					? feature.geometry.coordinates
+					: ([e.lngLat.lng, e.lngLat.lat] as [number, number]);
 
-			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature);
+			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
 
 			sidePopupData = geojsonFeature;
 			// mapStore.panTo(e.lngLat, {
@@ -110,8 +108,9 @@
 		}
 
 		if ($DEBUG_MODE) {
-			console.log(feature);
+			console.warn(features);
 		}
+
 		// ストリートビューに切り返る
 		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
 			isStreetView.set(true);

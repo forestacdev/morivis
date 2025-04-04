@@ -10,16 +10,19 @@
 	import { fade } from 'svelte/transition';
 
 	import searchData from './search_data.json';
+	import SidePopup from '../popup/SidePopup.svelte';
 
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/data/types/vector';
+	import type { ResultData } from '$routes/utils/feature';
 	import { getFgbToGeojson, getGeojson } from '$routes/utils/geojson';
+	interface Props {
+		layerEntries: GeoDataEntry[];
+		results: ResultData[] | null;
+		inputSearchWord: string;
+	}
 
-	let {
-		layerEntries,
-		results = $bindable(),
-		inputSearchWord = $bindable()
-	}: { layerEntries: GeoDataEntry[]; results: any; inputSearchWord: string } = $props();
+	let { layerEntries, results = $bindable(), inputSearchWord = $bindable() }: Props = $props();
 	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
@@ -44,7 +47,7 @@
 
 	const fuse = new Fuse(searchData, {
 		keys: ['search_values'],
-		threshold: 0.3
+		threshold: 0.1
 	});
 
 	// const focusFeature = (feature: any) => {
@@ -71,68 +74,52 @@
 		const resultsData = result.map((item) => {
 			const data = item.item;
 
-			// const fgb = await getFgbToGeojson(`./fgb/${fileId}.fgb`, searchId);
-			// const features = fgb.features;
-
-			const featureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
-				type: 'FeatureCollection',
-				features: [
-					{
-						id: data.feature_id,
-						type: 'Feature',
-						geometry: {
-							type: 'Point',
-							coordinates: data.point
-						},
-
-						properties: {
-							layerId: data.layer_id
-						}
-					}
-				]
-			};
-
 			return {
 				name: data.name,
-				features: featureCollection.features,
+
 				tile: data.tile_coords,
-				featureId: data.feature_id,
-				layerId: data.layer_id
+				point: data.point,
+				layerId: data.layer_id,
+				featureId: data.feature_id
 			};
 		});
 
-		const tilePattern = /^\d+\/\d+\/\d+$/;
-		const match = searchWord.match(tilePattern);
-		if (match) {
-			let numbers = searchWord.split('/');
-
-			// 分割した値を別々の変数に格納する
-			const z = Number(numbers[0]); // '89'
-			const x = Number(numbers[1]); // '8989'
-			const y = Number(numbers[2]); // '8980'
-
-			const tile = tilebelt.tileToBBOX([x, y, z]);
-			const feature = turfBboxPolygon(tile);
-			feature.properties = {
-				name: searchWord
-			};
-
-			resultsData.push({
-				name: 'タイル座標',
-				features: [feature],
-				tile: {
-					x: x,
-					y: y,
-					z: z
-				},
-				featureId: 0,
-				layerId: 'tile'
-			});
+		if (resultsData.length === 0) {
+			return;
 		}
 
-		// resultsには全ての処理結果が含まれます
-
 		results = resultsData;
+
+		// const tilePattern = /^\d+\/\d+\/\d+$/;
+		// const match = searchWord.match(tilePattern);
+		// if (match) {
+		// 	let numbers = searchWord.split('/');
+
+		// 	// 分割した値を別々の変数に格納する
+		// 	const z = Number(numbers[0]); // '89'
+		// 	const x = Number(numbers[1]); // '8989'
+		// 	const y = Number(numbers[2]); // '8980'
+
+		// 	const tile = tilebelt.tileToBBOX([x, y, z]);
+		// 	const feature = turfBboxPolygon(tile);
+		// 	feature.properties = {
+		// 		name: searchWord
+		// 	};
+
+		// 	resultsData.push({
+		// 		name: 'タイル座標',
+		// 		features: [feature],
+		// 		tile: {
+		// 			x: x,
+		// 			y: y,
+		// 			z: z
+		// 		},
+		// 		featureId: 0,
+		// 		layerId: 'tile'
+		// 	});
+		// }
+
+		// resultsには全ての処理結果が含まれます
 	};
 
 	$effect(() => {

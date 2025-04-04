@@ -35,11 +35,7 @@
 	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isEdit } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import {
-		mapGeoJSONFeatureToSidePopupData,
-		type SidePopupData,
-		type ClickedLayerFeaturesData
-	} from '$routes/utils/geojson';
+	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 	import { createSourcesItems } from '$routes/utils/sources';
@@ -310,7 +306,7 @@
 </script>
 
 <div class="relative h-full w-full">
-	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord />
+	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord map={maplibreMap} />
 
 	<div
 		bind:this={mapContainer}

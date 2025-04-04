@@ -273,7 +273,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "SOMA’s Hut(ソマズハット)",
     "search_values": [
-      "SOMA’s Hut(ソマズハット)"
+      "SOMA’s Hut(ソマズハット)",
+      "自力建設",
+      "2015"
     ],
     "feature_id": 0,
     "point": [
@@ -291,7 +293,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "森の中の四寸傘",
     "search_values": [
-      "森の中の四寸傘"
+      "森の中の四寸傘",
+      "自力建設",
+      "2001"
     ],
     "feature_id": 1,
     "point": [
@@ -309,7 +313,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "こならのみち",
     "search_values": [
-      "こならのみち"
+      "こならのみち",
+      "自力建設",
+      "2009"
     ],
     "feature_id": 2,
     "point": [
@@ -327,7 +333,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "森のインターチェンジ",
     "search_values": [
-      "森のインターチェンジ"
+      "森のインターチェンジ",
+      "自力建設",
+      "2011"
     ],
     "feature_id": 3,
     "point": [
@@ -345,7 +353,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "Cobiki(こびき)",
     "search_values": [
-      "Cobiki(こびき)"
+      "Cobiki(こびき)",
+      "自力建設",
+      "2019"
     ],
     "feature_id": 4,
     "point": [
@@ -363,7 +373,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "みさきのちゃや",
     "search_values": [
-      "みさきのちゃや"
+      "みさきのちゃや",
+      "自力建設",
+      "2002"
     ],
     "feature_id": 5,
     "point": [
@@ -381,7 +393,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "アラカシのだんだん",
     "search_values": [
-      "アラカシのだんだん"
+      "アラカシのだんだん",
+      "自力建設",
+      "2010"
     ],
     "feature_id": 6,
     "point": [
@@ -399,7 +413,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "里山獣肉学舎",
     "search_values": [
-      "里山獣肉学舎"
+      "里山獣肉学舎",
+      "自力建設",
+      "2017"
     ],
     "feature_id": 7,
     "point": [
@@ -417,7 +433,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "ほとりの櫓",
     "search_values": [
-      "ほとりの櫓"
+      "ほとりの櫓",
+      "自力建設",
+      "2023"
     ],
     "feature_id": 8,
     "point": [
@@ -435,7 +453,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "ほたるの川床",
     "search_values": [
-      "ほたるの川床"
+      "ほたるの川床",
+      "自力建設",
+      "2008"
     ],
     "feature_id": 9,
     "point": [
@@ -453,7 +473,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "みどりのアトリエ",
     "search_values": [
-      "みどりのアトリエ"
+      "みどりのアトリエ",
+      "自力建設",
+      "2020"
     ],
     "feature_id": 10,
     "point": [
@@ -471,7 +493,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "おうらいの茶の間",
     "search_values": [
-      "おうらいの茶の間"
+      "おうらいの茶の間",
+      "自力建設",
+      "2013"
     ],
     "feature_id": 11,
     "point": [
@@ -489,7 +513,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "桂の湯殿",
     "search_values": [
-      "桂の湯殿"
+      "桂の湯殿",
+      "自力建設",
+      "2006"
     ],
     "feature_id": 12,
     "point": [
@@ -507,7 +533,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "森のいちだんらく",
     "search_values": [
-      "森のいちだんらく"
+      "森のいちだんらく",
+      "自力建設",
+      "2018"
     ],
     "feature_id": 13,
     "point": [
@@ -525,7 +553,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "木立てのこみち",
     "search_values": [
-      "木立てのこみち"
+      "木立てのこみち",
+      "自力建設",
+      "2021"
     ],
     "feature_id": 14,
     "point": [
@@ -543,7 +573,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "Switch(スイッチ)",
     "search_values": [
-      "Switch(スイッチ)"
+      "Switch(スイッチ)",
+      "自力建設",
+      "2005"
     ],
     "feature_id": 15,
     "point": [
@@ -561,7 +593,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "木漏れ日の塔",
     "search_values": [
-      "木漏れ日の塔"
+      "木漏れ日の塔",
+      "自力建設",
+      "2012"
     ],
     "feature_id": 16,
     "point": [
@@ -579,7 +613,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "森湊灯台",
     "search_values": [
-      "森湊灯台"
+      "森湊灯台",
+      "自力建設",
+      "2014"
     ],
     "feature_id": 17,
     "point": [
@@ -597,7 +633,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "栞",
     "search_values": [
-      "栞"
+      "栞",
+      "自力建設",
+      "2024"
     ],
     "feature_id": 18,
     "point": [
@@ -615,7 +653,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "丁稚基地",
     "search_values": [
-      "丁稚基地"
+      "丁稚基地",
+      "自力建設",
+      "2022"
     ],
     "feature_id": 19,
     "point": [
@@ -633,7 +673,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "地空楼",
     "search_values": [
-      "地空楼"
+      "地空楼",
+      "自力建設",
+      "2007"
     ],
     "feature_id": 20,
     "point": [
@@ -651,7 +693,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "風の円居",
     "search_values": [
-      "風の円居"
+      "風の円居",
+      "自力建設",
+      "2004"
     ],
     "feature_id": 21,
     "point": [
@@ -669,7 +713,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "Oasis(オアシス)",
     "search_values": [
-      "Oasis(オアシス)"
+      "Oasis(オアシス)",
+      "自力建設",
+      "2016"
     ],
     "feature_id": 22,
     "point": [
@@ -687,7 +733,9 @@
     "layer_id": "fac_ziriki_point",
     "name": "活木処",
     "search_values": [
-      "活木処"
+      "活木処",
+      "自力建設",
+      "2003"
     ],
     "feature_id": 23,
     "point": [

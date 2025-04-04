@@ -32,7 +32,7 @@ search_data_dict = {
     "fac_ziriki_point": {
         "name_key": "name",
         "path": "fac_ziriki_point.geojson",
-        "search_keys": ["name"],
+        "search_keys": ["name", "category", "年度"],
     },
     "fac_building_point": {
         "name_key": "name",

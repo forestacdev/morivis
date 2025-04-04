@@ -1,41 +1,30 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
-	import type { MapGeoJSONFeature } from 'maplibre-gl';
-	import { onMount } from 'svelte';
+	import type { Map as MLMap } from 'maplibre-gl';
 
 	import Geocoder from '$routes/components/header/Geocoder.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showSideMenu, mapMode, showDataMenu } from '$routes/store';
+	import { showSideMenu, mapMode } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$routes/utils/geojson';
+	import type { ResultData } from '$routes/utils/feature';
+	import { type SidePopupData } from '$routes/utils/geojson';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 
-	interface ResultData {
-		name: string;
-		features: Feature<Geometry, { [key: string]: any }>[];
-		tile: {
-			x: number;
-			y: number;
-			z: number;
-		};
-		featureId: number;
-		layerId: string;
-	}
-
 	let results = $state<ResultData[] | null>([]);
+	interface Props {
+		layerEntries: GeoDataEntry[];
 
-	onMount(() => {});
+		sidePopupData: SidePopupData | null;
+		inputSearchWord: string;
+		map: MLMap;
+	}
 
 	let {
 		layerEntries,
 		sidePopupData = $bindable(),
-		inputSearchWord = $bindable()
-	}: {
-		layerEntries: GeoDataEntry[];
-		sidePopupData: SidePopupData | null;
-		inputSearchWord: string;
-	} = $props();
+		inputSearchWord = $bindable(),
+		map
+	}: Props = $props();
 
 	// const focusFeature = (feature: any, layerId: string) => {
 	// 	mapStore.focusFeature(feature);
@@ -51,7 +40,7 @@
 	// };
 
 	const focusFeature = async (result: ResultData) => {
-		const hoge = await getPropertiesFromPMTiles(
+		const prop = await getPropertiesFromPMTiles(
 			'./fac_search.pmtiles',
 			result.tile,
 			result.layerId,
@@ -59,14 +48,17 @@
 		);
 
 		const data: SidePopupData = {
-			type: 'Feature',
 			layerId: result.layerId,
-			properties: hoge,
-			geometry: result.features[0].geometry,
+			properties: prop,
+			point: result.point,
 			featureId: result.featureId
 		};
 		sidePopupData = data;
 		results = [];
+		mapStore.easeTo({
+			center: result.point,
+			zoom: 16
+		});
 	};
 </script>
 
