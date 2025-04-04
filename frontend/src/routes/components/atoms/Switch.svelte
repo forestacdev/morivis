@@ -9,7 +9,7 @@
 <label
 	class="hover:text-accent flex flex-grow cursor-pointer items-start justify-between gap-2 py-2 transition-colors duration-100"
 >
-	<span class="select-none font-bold">{label}</span>
+	<span class="select-none text-base font-bold">{label}</span>
 	<input type="checkbox" class="hidden" bind:checked={value} />
 	<div
 		class="relative flex h-[30px] w-[60px] items-center rounded-full {value

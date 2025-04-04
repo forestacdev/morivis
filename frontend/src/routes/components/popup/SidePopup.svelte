@@ -1,15 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { MapGeoJSONFeature } from 'maplibre-gl';
-	import { flip } from 'svelte/animate';
-	import { readable } from 'svelte/store';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
-	import { FEATURE_NO_IMAGE_PATH } from '$routes/constants';
-	import { fetchWikipediaImage } from '$routes/data/api';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, mapMode, selectedHighlightData, isEdit } from '$routes/store';
+	import { selectedLayerId, mapMode, isEdit } from '$routes/store';
 	import type { SidePopupData } from '$routes/utils/geojson';
 	import { generatePopupTitle } from '$routes/utils/properties';
 
@@ -68,21 +63,6 @@
 		}
 	};
 
-	// TODO: 画像取得処理
-	// const fetchImage = async () => {
-	// 	const phenologyData = await fetchWikipediaImage('イタドリ');
-	// 	return phenologyData;
-	// };
-
-	// const promise = (() => {
-	// 	const layer = layerEntries.find(
-	// 		(entry) => sidePopupData && entry.id === sidePopupData.layer.id
-	// 	);
-	// 	if (layer && layer.id === 'fac_phenology_2020') {
-	// 		return fetchImage();
-	// 	}
-	// })();
-
 	let featureType = $derived.by(() => {
 		if (sidePopupData) {
 			return sidePopupData.geometry.type;
@@ -110,20 +90,11 @@
 					alt="画像"
 					src={srcData}
 				/>
-				<!-- {#await promise then url}
-				<img
-					transition:fade
-					class="block h-full w-full object-cover"
-					crossOrigin="anonymous"
-					alt="画像"
-					src={url}
-				/>
-			{/await} -->
 			</div>
 		{/if}
 		<div class="flex h-full flex-col gap-2">
 			<!-- タイトルを表示 -->
-			<div class="flex flex-shrink-0 flex-col gap-1">
+			<div class="flex flex-shrink-0 flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
 					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
 						? generatePopupTitle(sidePopupData.properties, targetLayer.properties.titles)

@@ -14,9 +14,9 @@
 >
 	<Icon
 		icon="weui:arrow-filled"
-		class="h-6 w-6 transition-transform duration-150 {value ? 'rotate-90' : 'rotate-0'}"
+		class="h-6 w-6 text-base transition-transform duration-150 {value ? 'rotate-90' : 'rotate-0'}"
 	/>
-	<span class="select-none font-bold">{label}</span>
+	<span class="select-none text-base font-bold">{label}</span>
 	<input type="checkbox" class="hidden" bind:checked={value} />
 </label>
 

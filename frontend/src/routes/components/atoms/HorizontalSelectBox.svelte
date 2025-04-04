@@ -14,7 +14,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<div class="flex select-none items-center gap-2">
+	<div class="flex select-none items-center gap-2 text-base">
 		<span>{label}</span>
 	</div>
 	<div class="flex w-full overflow-hidden rounded-full">
