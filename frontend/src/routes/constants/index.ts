@@ -1,4 +1,4 @@
-import type { PopupOptions } from 'maplibre-gl';
+import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/data/types/raster';
 
 // TODO: データのURLを変更する
@@ -20,6 +20,7 @@ export interface MapPosition {
 	zoom: number;
 	pitch: number;
 	bearing: number;
+	bounds?: LngLatBoundsLike;
 }
 
 /* スマホ判定の幅 */
@@ -28,9 +29,10 @@ export const MOBILE_WIDTH = 1024;
 /** マップの初期位置 */
 export const MAP_POSITION: MapPosition = {
 	center: [136.923004009, 35.5509525769706],
-	zoom: 15,
-	pitch: 0,
-	bearing: 0
+	zoom: 16,
+	pitch: 60,
+	bearing: 118
+	// bounds: [136.91278, 35.543576, 136.92986, 35.556704]
 };
 
 /** アイコン用画像タイルのXYZ */
@@ -60,7 +62,7 @@ export const INT_ADD_LAYER_IDS = [
 	'fac_poi',
 	'ensyurin_road',
 	'ensyurin_rinhan',
-	'dem_5a',
+	// 'dem_5a',
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
 	// 'gsi_slopemap',

@@ -20,10 +20,10 @@ export const getMapParams = (): MapPosition => {
 			c: ssp.array(),
 			z: ssp.number(),
 			p: ssp.number(),
-			d: ssp.number()
+			b: ssp.number()
 		})
 	);
-	if (!params.c || !params.z || !params.p || !params.d) {
+	if (!params.c || !params.z || !params.p || !params.b) {
 		return MAP_POSITION;
 	}
 
@@ -47,7 +47,7 @@ export const setMapParams = (option: MapPosition) => {
 	params.c = center;
 	params.z = option.zoom.toFixed(1);
 	params.p = option.pitch.toFixed(0);
-	params.d = option.bearing.toFixed(0);
+	params.b = option.bearing.toFixed(0);
 	queryParameters().set(params);
 };
 

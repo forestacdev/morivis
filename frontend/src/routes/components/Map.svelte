@@ -33,7 +33,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
-	import { mapMode, isEdit } from '$routes/store';
+	import { mapMode, isTerrain3d } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
@@ -101,7 +101,10 @@
 		const sources = await createSourcesItems(_dataEntries);
 		let layers = await createLayersItems(_dataEntries);
 
-		const terrain = mapStore.getTerrain();
+		const terrain = {
+			source: 'terrain',
+			exaggeration: 1
+		};
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
@@ -136,7 +139,7 @@
 				'fog-ground-blend': 0.5,
 				'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
 			},
-			terrain: terrain ? terrain : undefined
+			terrain: $isTerrain3d ? terrain : undefined
 		};
 
 		return mapStyle;
@@ -159,6 +162,7 @@
 		if (!layerEntries) return;
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
+
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
 
