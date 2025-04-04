@@ -17,13 +17,11 @@
 		layerEntry: GeoDataEntry;
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
-		toggleVisible: (id: string) => void;
 	}
 
 	let {
 		layerEntry = $bindable(),
 		tempLayerEntries = $bindable(),
-		toggleVisible,
 		enableFlip = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
@@ -157,7 +155,9 @@
 					<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
 						>{layerEntry.metaData.name}</span
 					>
-					<span class="text-nowrap text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span>
+					<span class="text-nowrap text-xs text-gray-400"
+						>{layerEntry.metaData.location ?? '---'}</span
+					>
 
 					<!-- {#if $selectedLayerId === layerEntry.id && !$isEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>

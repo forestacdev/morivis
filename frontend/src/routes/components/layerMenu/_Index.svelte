@@ -1,15 +1,13 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { slide, fly } from 'svelte/transition';
 
 	import LayerOptionMenu from '$routes/components/layerMenu/layerOptionMenu/_Index.svelte';
 	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
@@ -17,12 +15,6 @@
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 
-	// TODO チェックをすると警告が出る
-	const toggleVisible = (id: string) => {
-		const layer = layerEntries.find((layer) => layer.id === id);
-		if (!layer) return;
-		layer.style.visible = !layer.style.visible;
-	};
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
 		if (!id) {
@@ -73,12 +65,7 @@
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-					<LayerSlot
-						bind:layerEntry={layerEntries[i]}
-						bind:tempLayerEntries
-						{toggleVisible}
-						bind:enableFlip
-					/>
+					<LayerSlot bind:layerEntry={layerEntries[i]} bind:tempLayerEntries bind:enableFlip />
 				</div>
 			{/each}
 			<div class="h-[200px] w-full flex-shrink-0"></div>
