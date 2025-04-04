@@ -47,7 +47,7 @@
 	>
 		{#if !$showDataMenu}
 			<div transition:slide={{ duration: 250 }} class="flex items-center justify-between p-2">
-				<span class="text-lg">レイヤー</span>
+				<span class="p-2 text-base text-lg">レイヤー</span>
 				<button
 					onclick={() => {
 						mapMode.set('view');
@@ -73,7 +73,7 @@
 		<LayerOptionMenu bind:layerEntry bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
 			<div
-				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[200px] w-full items-end justify-center pb-4"
+				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
 			>
 				<button
 					onclick={() => showDataMenu.set(true)}
@@ -84,17 +84,6 @@
 					>
 				</button>
 			</div>
-
-			<!-- <div class="z-20 flex justify-center">
-				<button
-					onclick={() => showDataMenu.set(true)}
-					class="c-btn-confirm flex items-center justify-center gap-2"
-				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
-						>データの追加</span
-					>
-				</button>
-			</div> -->
 		{/if}
 	</div>
 {/if}
@@ -102,6 +91,6 @@
 <style>
 	.c-fog {
 		background: rgb(233, 233, 233);
-		background: linear-gradient(0deg, rgba(233, 233, 233, 1) 10%, rgba(233, 233, 233, 0) 100%);
+		background: linear-gradient(0deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
 	}
 </style>
