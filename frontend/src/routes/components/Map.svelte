@@ -1,19 +1,12 @@
 <script lang="ts">
-	// import turfDissolve from '@turf/dissolve';
-	import turfBbox from '@turf/bbox';
-	import turfBboxPolygon from '@turf/bbox-polygon';
+
 	import { debounce } from 'es-toolkit';
-	import { delay } from 'es-toolkit';
-	import { map } from 'es-toolkit/compat';
-	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
+
+	import type { FeatureCollection } from 'geojson';
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
-		SourceSpecification,
-		CanvasSourceSpecification,
-		LayerSpecification,
-		TerrainSpecification,
-		BackgroundLayerSpecification,
+
 		GeoJSONSourceSpecification,
 		Marker,
 		LngLat,
@@ -48,16 +41,13 @@
 	import { createSourcesItems } from '$routes/utils/sources';
 	import {
 		addedLayerIds,
-		selectedLayerId,
-		clickableVectorIds,
+	
 		clickableRasterIds,
-		DEBUG_MODE,
-		selectedHighlightData,
+
 		isStreetView
 	} from '$routes/store';
 	import { mapMode, isEdit } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { GeojsonCache } from '$routes/utils/geojson';
 	import {
 		mapGeoJSONFeatureToSidePopupData,
 		type SidePopupData,
@@ -129,7 +119,7 @@
 
 		const terrain = mapStore.getTerrain();
 
-		const mapStyle = {
+		const mapStyle:StyleSpecification = {
 			version: 8,
 			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
 			sources: {
@@ -139,7 +129,7 @@
 					...selectedFocusSources
 				},
 				...sources
-			},
+			}
 			layers: [
 				...layers,
 				{
@@ -165,9 +155,9 @@
 			terrain: terrain ? terrain : undefined
 		};
 
-		// NOTE:debug
 
-		return mapStyle as StyleSpecification;
+
+		return mapStyle;
 	};
 
 	// レイヤーの追加
@@ -209,32 +199,7 @@
 		}
 	});
 
-	// $effect(() => {
-	// 	if (streetViewLineData) {
-	// 		const map = mapStore.getMap();
-	// 		if (!map) return;
-	// 		const source = map.getSource('street_view_line') as maplibregl.GeoJSONSource;
-	// 		if (source) {
-	// 			source.setData(streetViewLineData);
-	// 		}
-	// 	}
-	// });
 
-	// $effect(() => {
-	// 	$state.snapshot(streetViewPointData);
-	// 	const map = mapStore.getMap();
-	// 	if (!map) return;
-	// 	const source = map.getSource('street_view_point') as maplibregl.GeoJSONSource;
-	// 	console.log(map.getStyle());
-	// 	console.log('source', source);
-	// 	console.log('streetViewPointData', streetViewPointData);
-	// 	if (source) {
-	// 		source.setData(streetViewPointData);
-	// 	}
-	// });
-	// selectedHighlightData.subscribe((data) => {
-	// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
-	// });
 
 	// ベクターポップアップの作成
 	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
@@ -355,11 +320,9 @@
 		}
 	});
 
-	mapMode.subscribe((mode) => {
-		console.log('mapMode', mode);
-	});
 
-	mapStore.onSetStyle((e) => {});
+
+	
 	mapStore.onInitialized((map) => {
 		maplibreMap = map;
 	});
