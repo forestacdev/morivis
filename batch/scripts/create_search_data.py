@@ -135,9 +135,7 @@ def create_search_json(file_paths, output_json=OUTPUT_DIR / "search_data.json"):
 
 
 # `.fgb` ファイルのディレクトリを指定
-INPUT_DIR = (
-    Path(__file__).resolve().parent.parent.parent / "backend" / "data" / "search"
-)
+INPUT_DIR = Path(__file__).resolve().parent.parent.parent / "batch" / "data" / "search"
 
 if __name__ == "__main__":
     # `.fgb` ファイルのリストを取得

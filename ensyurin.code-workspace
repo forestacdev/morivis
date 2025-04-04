@@ -7,7 +7,7 @@
             "path": "frontend"
         },
         {
-            "path": "backend"
+            "path": "batch"
         }
     ],
     "settings": {}
