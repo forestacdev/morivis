@@ -13,6 +13,18 @@ export const isPc = () => {
 	return false;
 };
 
+/**
+ * スマホ画面かどうかを判定する
+ * @returns boolean
+ * @description スマホ画面と判定する関数
+ */
+export const isPhone = () => {
+	if (window.innerWidth <= MOBILE_WIDTH) {
+		return true;
+	}
+	return false;
+};
+
 type MappingType = 'single' | 'match' | 'linear' | 'step';
 
 /**

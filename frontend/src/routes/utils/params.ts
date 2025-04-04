@@ -1,6 +1,4 @@
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
-import { page } from '$app/state';
-import { replaceState } from '$app/navigation';
 
 import { queryParameters, ssp } from 'sveltekit-search-params';
 import { get } from 'svelte/store';
@@ -44,9 +42,7 @@ export const getMapParams = (): MapPosition => {
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
 	const params = get(queryParameters({}));
-	const url = new URL(page.url);
-	// NOTE: ページ遷移時にmoveendで書き込めるのを防ぐ
-	if (url.pathname !== '/map') return;
+
 	const center = option.center.map((value) => value.toFixed(6));
 	params.c = center;
 	params.z = option.zoom.toFixed(1);

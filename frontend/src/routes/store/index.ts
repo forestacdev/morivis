@@ -131,16 +131,3 @@ export interface SelectedHighlightData {
 	featureId: number;
 }
 export const selectedHighlightData = writable<SelectedHighlightData | null>(null);
-
-/** 外部コンポーネントからイベントを発火させるストア */
-// const eventStore = () => {
-// 	const { subscribe, set } = writable<UseEventTriggerType>('');
-// 	return {
-// 		subscribe,
-// 		trigger: (eventKey: UseEventTriggerType) => {
-// 			set(eventKey);
-// 			setTimeout(() => set(''), 0);
-// 		}
-// 	};
-// };
-// export const useEventTrigger = eventStore();
