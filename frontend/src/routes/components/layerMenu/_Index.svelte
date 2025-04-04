@@ -14,7 +14,7 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
 	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
-	let layerToEdit = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
+	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 
 	// TODO チェックをすると警告が出る
@@ -26,10 +26,10 @@
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
 		if (!id) {
-			layerToEdit = undefined;
+			layerEntry = undefined;
 			return;
 		} else {
-			layerToEdit = layerEntries.find((entry) => entry.id === id);
+			layerEntry = layerEntries.find((entry) => entry.id === id);
 		}
 	});
 
@@ -83,7 +83,7 @@
 			{/each}
 			<div class="h-[200px] w-full flex-shrink-0"></div>
 		</div>
-		<LayerOptionMenu bind:layerToEdit bind:tempLayerEntries />
+		<LayerOptionMenu bind:layerEntry bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[200px] w-full items-end justify-center pb-4"

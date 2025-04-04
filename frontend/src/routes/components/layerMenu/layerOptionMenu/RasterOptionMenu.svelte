@@ -14,15 +14,15 @@
 	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 
 	let {
-		layerToEdit = $bindable()
-	}: { layerToEdit: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle> } = $props();
+		layerEntry = $bindable()
+	}: { layerEntry: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle> } = $props();
 
-	let style = $derived(layerToEdit.style);
+	let style = $derived(layerEntry.style);
 
 	onMount(() => {});
 </script>
 
-{#if layerToEdit && layerToEdit.type === 'raster' && style}
+{#if layerEntry && layerEntry.type === 'raster' && style}
 	<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}

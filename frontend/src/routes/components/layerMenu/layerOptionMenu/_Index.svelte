@@ -12,14 +12,14 @@
 	import { mapStore } from '$routes/store/map';
 
 	let {
-		layerToEdit = $bindable(),
+		layerEntry = $bindable(),
 		tempLayerEntries = $bindable()
-	}: { layerToEdit: GeoDataEntry | undefined; tempLayerEntries: GeoDataEntry[] } = $props();
+	}: { layerEntry: GeoDataEntry | undefined; tempLayerEntries: GeoDataEntry[] } = $props();
 
 	onMount(() => {});
 </script>
 
-{#if $selectedLayerId && $isEdit && layerToEdit}
+{#if $selectedLayerId && $isEdit && layerEntry}
 	<div
 		transition:fly={{ duration: 300, x: -50, opacity: 0 }}
 		class="bg-main absolute top-0 z-30 flex h-full w-full flex-col p-2"
@@ -30,14 +30,14 @@
 			</button>
 			<span class="text-lg">レイヤーの編集</span>
 		</div>
-		<LayerSlot bind:layerEntry={layerToEdit} bind:tempLayerEntries />
+		<LayerSlot bind:layerEntry bind:tempLayerEntries />
 		<div class="c-scroll h-full flex-grow overflow-x-hidden">
-			{#if layerToEdit.type === 'vector'}
-				<VectorOptionMenu bind:layerToEdit />
+			{#if layerEntry.type === 'vector'}
+				<VectorOptionMenu bind:layerEntry />
 			{/if}
 
-			{#if layerToEdit.type === 'raster'}
-				<RasterOptionMenu bind:layerToEdit />
+			{#if layerEntry.type === 'raster'}
+				<RasterOptionMenu bind:layerEntry />
 			{/if}
 		</div>
 	</div>

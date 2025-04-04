@@ -13,27 +13,27 @@
 		TileMetaData
 	} from '$routes/data/types/vector';
 
-	let { layerToEdit = $bindable() }: { layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData> } =
+	let { layerEntry = $bindable() }: { layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData> } =
 		$props();
 </script>
 
-{#if layerToEdit && layerToEdit.type === 'vector'}
-	{#if layerToEdit.format.geometryType === 'Point'}
-		<PointOption bind:layerToEdit={layerToEdit as PointEntry<GeoJsonMetaData | TileMetaData>} />
+{#if layerEntry && layerEntry.type === 'vector'}
+	{#if layerEntry.format.geometryType === 'Point'}
+		<PointOption bind:layerEntry={layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>} />
 	{/if}
 
-	{#if layerToEdit.format.geometryType === 'LineString'}
+	{#if layerEntry.format.geometryType === 'LineString'}
 		<LineStringOption
-			bind:layerToEdit={layerToEdit as LineStringEntry<GeoJsonMetaData | TileMetaData>}
+			bind:layerEntry={layerEntry as LineStringEntry<GeoJsonMetaData | TileMetaData>}
 		/>
 	{/if}
 
-	{#if layerToEdit.format.geometryType === 'Polygon'}
-		<PolygonOption bind:layerToEdit={layerToEdit as PolygonEntry<GeoJsonMetaData | TileMetaData>} />
+	{#if layerEntry.format.geometryType === 'Polygon'}
+		<PolygonOption bind:layerEntry={layerEntry as PolygonEntry<GeoJsonMetaData | TileMetaData>} />
 	{/if}
 
-	{#if layerToEdit.format.geometryType === 'Label'}
-		<LabelLayerOption bind:layerToEdit />
+	{#if layerEntry.format.geometryType === 'Label'}
+		<LabelLayerOption bind:layerEntry />
 	{/if}
 {/if}
 

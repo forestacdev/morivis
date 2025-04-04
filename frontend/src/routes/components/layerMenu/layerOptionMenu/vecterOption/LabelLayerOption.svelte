@@ -22,10 +22,10 @@
 	} from '$routes/data/types/vector/style';
 
 	interface Props {
-		layerToEdit: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
 	}
 
-	let { layerToEdit = $bindable() }: Props = $props();
+	let { layerEntry = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	// ラベルのキーの取得
@@ -35,18 +35,18 @@
 </script>
 
 <Accordion label={'ラベル'} bind:value={showLabelOption}>
-	<Switch label={'表示'} bind:value={layerToEdit.style.labels.show} />
-	<LabelPulldownBox bind:labels={layerToEdit.style.labels} />
+	<Switch label={'表示'} bind:value={layerEntry.style.labels.show} />
+	<LabelPulldownBox bind:labels={layerEntry.style.labels} />
 
 	<!-- <div class="flex flex-grow flex-col gap-2">
-		{#each getlabelKeys(layerToEdit.style.labels.expressions) as labelType (labelType.key)}
+		{#each getlabelKeys(layerEntry.style.labels.expressions) as labelType (labelType.key)}
 			<label
 				class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"
-				class:bg-green-600={labelType.key === layerToEdit.style.labels.key}
+				class:bg-green-600={labelType.key === layerEntry.style.labels.key}
 			>
 				<input
 					type="radio"
-					bind:group={layerToEdit.style.labels.key}
+					bind:group={layerEntry.style.labels.key}
 					value={labelType.key}
 					class="hidden"
 				/>

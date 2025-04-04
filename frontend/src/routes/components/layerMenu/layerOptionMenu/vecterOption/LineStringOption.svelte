@@ -14,24 +14,24 @@
 	} from '$routes/data/types/vector';
 
 	interface Props {
-		layerToEdit: LineStringEntry<GeoJsonMetaData | TileMetaData>;
+		layerEntry: LineStringEntry<GeoJsonMetaData | TileMetaData>;
 	}
 
-	let { layerToEdit = $bindable() }: Props = $props();
+	let { layerEntry = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	let showLineOption = $state<boolean>(false);
 </script>
 
-<RangeSlider label="不透明度" bind:value={layerToEdit.style.opacity} min={0} max={1} step={0.01} />
+<RangeSlider label="不透明度" bind:value={layerEntry.style.opacity} min={0} max={1} step={0.01} />
 
 <!-- 色 -->
-<ColorOption bind:colorStyle={layerToEdit.style.colors} />
-<NumberOption label={'ライン幅'} bind:numberStyle={layerToEdit.style.width} />
+<ColorOption bind:colorStyle={layerEntry.style.colors} />
+<NumberOption label={'ライン幅'} bind:numberStyle={layerEntry.style.width} />
 <Accordion label={'スタイル'} bind:value={showLineOption}>
 	<HorizontalSelectBox
 		label={'ラインのスタイル'}
-		bind:group={layerToEdit.style.lineStyle}
+		bind:group={layerEntry.style.lineStyle}
 		options={[
 			{ name: '実線', key: 'solid' },
 			{ name: '破線', key: 'dashed' }
