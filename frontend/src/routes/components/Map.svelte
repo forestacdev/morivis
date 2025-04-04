@@ -33,7 +33,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
-	import { mapMode, isTerrain3d } from '$routes/store';
+	import { mapMode, isTerrain3d, isSide } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
@@ -314,7 +314,7 @@
 
 	<div
 		bind:this={mapContainer}
-		class="c-map-satellite absolute flex-grow transition-opacity duration-500 {!showMapCanvas &&
+		class="c-map-satellite absolute flex-grow bg-black transition-opacity duration-500 {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'

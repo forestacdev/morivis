@@ -42,6 +42,17 @@ const entries: GeoDataEntry[] = [
 	// ...cogEntry
 ];
 
+const modules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
+	'$routes/data/vector/fgb/*.ts',
+	{
+		eager: true
+	}
+);
+
+export const test = Object.values(modules).map((mod) => mod);
+
+console.log(test);
+
 export const geoDataEntry = (() => {
 	// 全てのIDを取得
 	const allIds = entries.map((entry) => entry.id);

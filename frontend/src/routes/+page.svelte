@@ -284,7 +284,7 @@
 
 {#if isPc()}
 	<!-- PC -->
-	<div class="bg-base relative flex h-full w-full flex-grow">
+	<div class="relative flex h-full w-full flex-grow">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map
@@ -309,7 +309,7 @@
 	</div>
 {:else}
 	<!-- Mobile -->
-	<div class="bg-base relative flex h-full w-full flex-grow flex-col">
+	<div class="relative flex h-full w-full flex-grow flex-col">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map
