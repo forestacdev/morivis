@@ -217,14 +217,14 @@ export interface LabelOutLine {
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill';
 	outline: PolygonOutLine;
-	default: PolygonDefaultStyle;
+	default?: PolygonDefaultStyle;
 }
 
 export interface LineStringStyle extends BaseVectorStyle {
 	type: 'line';
 	width: NumbersStyle;
 	lineStyle: 'solid' | 'dashed';
-	default: LineStringDefaultStyle;
+	default?: LineStringDefaultStyle;
 }
 
 export interface PointStyle extends BaseVectorStyle {
@@ -233,14 +233,14 @@ export interface PointStyle extends BaseVectorStyle {
 	markerType: 'circle' | 'icon';
 	icon?: PointIcon;
 	outline: PointOutLine;
-	default: PointDefaultStyle;
+	default?: PointDefaultStyle;
 }
 
 export interface LabelStyle extends BaseVectorStyle {
 	type: 'symbol';
 	textSize: NumbersStyle;
 	outline: LabelOutLine;
-	default: LabelDefaultStyle;
+	default?: LabelDefaultStyle;
 }
 
 export type VectorStyle = PolygonStyle | LineStringStyle | PointStyle | LabelStyle;

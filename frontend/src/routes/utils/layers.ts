@@ -396,7 +396,7 @@ const getSelectedIconSizeExpression = (
 };
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
-	const fillStyle = style.default.fill;
+	const defaultStyle = style.default;
 	const color = getColorExpression(style.colors);
 	const colorExpression = getSelectedColorExpression(color);
 	const opacity = getSelectedOpacityExpression(style.opacity);
@@ -407,10 +407,10 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 			'fill-opacity': opacity,
 			'fill-outline-color': '#00000000',
 			'fill-color': style.colors.show ? colorExpression : '#00000000',
-			...(fillStyle.paint ?? {})
+			...(defaultStyle ? defaultStyle.fill.paint : {})
 		},
 		layout: {
-			...(fillStyle.layout ?? {})
+			...(defaultStyle ? defaultStyle.fill.layout : {})
 		}
 	};
 
@@ -419,7 +419,7 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 
 // lineレイヤーの作成
 const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
-	const lineStyle = style.default.line;
+	const defaultStyle = style.default;
 	const color = getColorExpression(style.colors);
 	const colorExpression = getSelectedColorExpression(color);
 	const width = getNumberExpression(style.width);
@@ -431,10 +431,10 @@ const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpe
 			'line-color': style.colors.show ? colorExpression : '#00000000',
 			'line-width': width,
 			...(style.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }),
-			...(lineStyle.paint ?? {})
+			...(defaultStyle ? defaultStyle.line.paint : {})
 		},
 		layout: {
-			...(lineStyle?.layout ?? {})
+			...(defaultStyle ? defaultStyle.line.layout : {})
 		}
 	};
 
@@ -461,7 +461,7 @@ const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: 
 // pointレイヤーの作成
 const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpecification => {
 	const outline = style.outline;
-	const circleStyle = style.default.circle;
+	const defaultStyle = style.default;
 	const color = getColorExpression(style.colors);
 	const colorExpression = getSelectedColorExpression(color);
 	const radius = getNumberExpression(style.radius);
@@ -475,10 +475,10 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
 			'circle-stroke-width': outline.show ? style.outline.width : 0,
-			...(circleStyle.paint ?? {})
+			...(defaultStyle ? defaultStyle.circle.paint : {})
 		},
 		layout: {
-			...(circleStyle.layout ?? {})
+			...(defaultStyle ? defaultStyle.circle.layout : {})
 		}
 	};
 	return circleLayer;
@@ -487,7 +487,7 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 // TODO: 破棄する
 // ラベルレイヤーの作成
 const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const symbolStyle = style.default.symbol;
+	const defaultStyle = style.default;
 	const color = getColorExpression(style.colors);
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
@@ -500,15 +500,14 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 			'text-color': color,
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
-
-			...(symbolStyle.paint ?? {})
+			...(defaultStyle ? defaultStyle.symbol.paint : {})
 		},
 		layout: {
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Light'],
-			...(symbolStyle.layout ?? {})
+			...(defaultStyle ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
@@ -522,7 +521,7 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 
 // ポイントのicon用レイヤーの作成
 const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerSpecification => {
-	const symbolStyle = style.default.symbol;
+	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
 	const showLabel = style.labels.show;
 	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
@@ -545,12 +544,12 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 		type: 'symbol',
 		paint: {
 			...(showLabel ? labelPaint : {}),
-			...(showLabel ? symbolStyle.paint : {}),
+			...(showLabel && defaultStyle ? defaultStyle.symbol.paint : {}),
 			'icon-opacity': style.opacity
 		},
 		layout: {
 			...(showLabel ? labelLayout : {}),
-			...(showLabel ? symbolStyle.layout : {}),
+			...(showLabel && defaultStyle ? defaultStyle.symbol.layout : {}),
 			'icon-image': ['get', '_prop_id'],
 			'icon-size': style.icon?.size ?? 0.1,
 			'icon-anchor': 'bottom'
@@ -569,7 +568,7 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 
 // symbolレイヤーの作成
 const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
-	const symbolStyle = style.default.symbol;
+	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
@@ -581,14 +580,14 @@ const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpec
 			'text-color': '#000000',
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
-			...(symbolStyle.paint ?? {})
+			...(defaultStyle ? defaultStyle.symbol.paint : {})
 		},
 		layout: {
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Light'],
-			...(symbolStyle.layout ?? {})
+			...(defaultStyle ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,

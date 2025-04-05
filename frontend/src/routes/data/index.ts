@@ -5,7 +5,6 @@ import { fgbLabelEntry } from '$routes/data/vector/fgb/label';
 import { pmtilesPolygonEntry } from '$routes/data/vector/pmtiles/polygon';
 import { pmtilesPointEntry } from '$routes/data/vector/pmtiles/point';
 import { imageTileCategoricalEntry } from '$routes/data/raster/imageTile/categorical';
-import { imageTileBaseMapEntry } from '$routes/data/raster/imageTile/basemap';
 import { pmTilesRasterCategoricalEntry } from '$routes/data/raster/pmtiles/categorical';
 import { mvtPolygonEntry } from '$routes/data/vector/mvt/polygon';
 import { imageTileDemEntry } from '$routes/data/raster/imageTile/dem';
@@ -36,20 +35,19 @@ const entries: GeoDataEntry[] = [
 	...pmtilesPolygonEntry,
 	...mvtPolygonEntry,
 	...imageTileCategoricalEntry,
-	...imageTileBaseMapEntry,
 	...pmTilesRasterCategoricalEntry,
 	...imageTileDemEntry
 	// ...cogEntry
 ];
 
 const modules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
-	'$routes/data/vector/fgb/*.ts',
+	'$routes/data/raster/imageTile/**/*.ts',
 	{
 		eager: true
 	}
 );
 
-export const test = Object.values(modules).map((mod) => mod);
+export const test = Object.values(modules).map((mod) => mod.default);
 
 console.log(test);
 
