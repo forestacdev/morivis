@@ -4,10 +4,7 @@ import { fgbPointEntry } from '$routes/data/vector/fgb/point';
 import { fgbLabelEntry } from '$routes/data/vector/fgb/label';
 import { pmtilesPolygonEntry } from '$routes/data/vector/pmtiles/polygon';
 import { pmtilesPointEntry } from '$routes/data/vector/pmtiles/point';
-import { imageTileCategoricalEntry } from '$routes/data/raster/imageTile/categorical';
-import { pmTilesRasterCategoricalEntry } from '$routes/data/raster/pmtiles/categorical';
 import { mvtPolygonEntry } from '$routes/data/vector/mvt/polygon';
-import { imageTileDemEntry } from '$routes/data/raster/imageTile/dem';
 
 import type { GeoDataEntry } from '$routes/data/types';
 
@@ -26,6 +23,17 @@ const initData = (data: GeoDataEntry[]) => {
 	return data;
 };
 
+const entryModules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
+	'$routes/data/entrys/**/*.ts',
+	{
+		eager: true
+	}
+);
+
+export const rasterEntry: GeoDataEntry[] = Object.values(entryModules)
+	.map((mod) => mod.default)
+	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));
+
 const entries: GeoDataEntry[] = [
 	...fgbPolygonEntry,
 	...fgbLineStringEntry,
@@ -34,22 +42,9 @@ const entries: GeoDataEntry[] = [
 	...pmtilesPointEntry,
 	...pmtilesPolygonEntry,
 	...mvtPolygonEntry,
-	...imageTileCategoricalEntry,
-	...pmTilesRasterCategoricalEntry,
-	...imageTileDemEntry
+	...rasterEntry
 	// ...cogEntry
 ];
-
-const modules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
-	'$routes/data/raster/imageTile/**/*.ts',
-	{
-		eager: true
-	}
-);
-
-export const test = Object.values(modules).map((mod) => mod.default);
-
-console.log(test);
 
 export const geoDataEntry = (() => {
 	// 全てのIDを取得
