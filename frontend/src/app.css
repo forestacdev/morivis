@@ -69,12 +69,6 @@
 
 @layer base {
 	/* TODO:フォントの調整 */
-	@font-face {
-		font-family: 'Noto Sans JP';
-		src: local('Noto Sans JP'), url('./font/NotoSansJP-Light.ttf');
-		font-display: swap;
-		font-weight: 300;
-	}
 
 	/* Light (300) */
 	@font-face {
@@ -97,6 +91,14 @@
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'), url('./font/NotoSansJP-Medium.ttf');
 		font-weight: 500;
+		font-display: swap;
+	}
+
+	/* SemiBold (600) */
+	@font-face {
+		font-family: 'Noto Sans JP';
+		src: local('Noto Sans JP'), url('./font/NotoSansJP-SemiBold.ttf');
+		font-weight: 600;
 		font-display: swap;
 	}
 
