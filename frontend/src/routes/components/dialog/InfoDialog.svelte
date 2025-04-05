@@ -16,7 +16,7 @@
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4 text-base"
 		>
 			<div class="flex flex-shrink-0 items-center justify-between pb-4">
-				<span class="text-2xl font-bold">ENSHURIN View について</span>
+				<span class="text-2xl font-bold">morivis（モリビス） について</span>
 				<button onclick={() => showInfoDialog.set(false)} class="bg-base rounded-full p-2">
 					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 				</button>

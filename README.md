@@ -1,7 +1,5 @@
-# ENSHURIN VIEW
+# morivis
+
+A WebGIS platform for exploring our campus forest.
 
 ![alt text](image.png)
-
-## 概要
-
-森林文化アカデミーの演習林マップです。
