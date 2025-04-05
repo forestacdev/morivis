@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"deploy": "pnpm run build && gh-pages -d build -m \"Updates --skip-ci\"",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -38,6 +39,7 @@
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.31.0",
 		"eslint-plugin-svelte": "^2.36.0",
+		"gh-pages": "^6.3.0",
 		"globals": "^15.0.0",
 		"path": "^0.12.7",
 		"prettier": "^3.3.2",
