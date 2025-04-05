@@ -73,7 +73,7 @@
 	<!-- PC -->
 	<div
 		bind:this={element}
-		class="bg-main absolute bottom-[40px] right-[20px] grid h-[110px] w-[110px] place-items-center overflow-hidden rounded-full bg-opacity-60"
+		class="bg-main pointer-events-auto absolute bottom-[40px] right-[20px] grid h-[110px] w-[110px] place-items-center overflow-hidden rounded-full bg-opacity-60"
 	>
 		<svg
 			class="h-full w-full scale-50"

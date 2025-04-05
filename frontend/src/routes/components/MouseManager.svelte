@@ -89,6 +89,12 @@
 			})
 			.map((entry) => entry.id);
 
+		// ストリートビューに切り返る
+		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+			isStreetView.set(true);
+			return;
+		}
+
 		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
@@ -109,12 +115,6 @@
 
 		if ($DEBUG_MODE) {
 			console.warn(features);
-		}
-
-		// ストリートビューに切り返る
-		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-			isStreetView.set(true);
-			return;
 		}
 
 		const feature = features[0]; // 一番上のfeature

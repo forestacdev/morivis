@@ -33,7 +33,7 @@
 >
 	<Icon
 		icon="fluent:video-360-20-regular"
-		class="h-8 w-8 {$showStreetViewLayer ? 'text-accent' : ''}"
+		class="h-8 w-8 {$showStreetViewLayer ? 'text-accent' : 'text-base'}"
 	/>
 </button>
 

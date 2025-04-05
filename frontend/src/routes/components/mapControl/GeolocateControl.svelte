@@ -68,7 +68,7 @@
 </script>
 
 <div
-	class="bg-main grid h-[50px] w-[50px] place-items-center overflow-hidden rounded-full"
+	class="bg-main pointer-events-auto grid h-[50px] w-[50px] place-items-center overflow-hidden rounded-full"
 	bind:this={controlContainer}
 >
 	<Icon
@@ -79,7 +79,7 @@
 				? 'text-accent'
 				: state === 'error'
 					? 'text-red-500'
-					: 'text-black'}"
+					: 'text-base'}"
 	/>
 </div>
 
