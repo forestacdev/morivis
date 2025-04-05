@@ -1,20 +1,23 @@
-import type { GeoJsonMetaData, LineStringEntry } from '$routes/data/types/vector';
 import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
 
-const entry: LineStringEntry<GeoJsonMetaData> = {
+import type { TileMetaData, VectorEntry } from '$routes/data/types/vector';
+
+const entry: VectorEntry<TileMetaData> = {
 	id: 'ensyurin_road',
 	type: 'vector',
 	format: {
-		type: 'fgb',
+		type: 'pmtiles',
 		geometryType: 'LineString',
-		url: './fgb/ensyurin_road.fgb'
+		url: './pmtiles/vector/ensyurin.pmtiles'
 	},
 	metaData: {
 		name: '演習林の道',
 		description: '演習林の道',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		maxZoom: 22,
+		maxZoom: 14,
+		minZoom: 1,
+		sourceLayer: 'ensyurin_road',
 		bounds: null,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`
 	},

@@ -14,6 +14,11 @@ check:
 	cd frontend && \
 	pnpm run check
 
+ensyurin_update: ## 演習林のデータ更新
+	cd batch && \
+	tippecanoe -o ../frontend/static/pmtiles/vector/ensyurin.pmtiles \
+	$$(find data/ensyurin -name '*.geojson') --force
+
 360_update: ## データの更新
 	cd batch && \
 	uv run scripts/node.py && \

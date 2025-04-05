@@ -1,0 +1,87 @@
+import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+
+import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
+
+const entry: VectorEntry<TileMetaData> = {
+	id: 'ensyurin_siken',
+	type: 'vector',
+	format: {
+		type: 'pmtiles',
+		geometryType: 'Polygon',
+		url: './pmtiles/vector/ensyurin.pmtiles'
+	},
+	metaData: {
+		name: '演習林試験地',
+		description: '森林文化アカデミー演習林の試験地。',
+		attribution: '森林文化アカデミー',
+		location: '森林文化アカデミー',
+		maxZoom: 14,
+		minZoom: 1,
+		sourceLayer: 'ensyurin_siken',
+		bounds: null,
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`
+	},
+	properties: {
+		keys: ['活用内容', '活用期間', '番号'],
+		dict: null,
+		titles: [
+			{
+				conditions: ['活用内容', '活用期間'],
+				template: '{活用内容} {活用期間}'
+			},
+			{
+				conditions: ['活用内容'],
+				template: '{活用内容}'
+			},
+			{
+				conditions: [],
+				template: '演習林林班'
+			}
+		]
+	},
+	interaction: {
+		clickable: true
+	},
+	style: {
+		type: 'fill',
+		opacity: 0.5, // 透過率
+		colors: {
+			key: '単色',
+			show: true,
+			expressions: [
+				{
+					type: 'single',
+					key: '単色',
+					name: '単色',
+					mapping: {
+						value: '#001aff'
+					}
+				}
+			]
+		},
+		outline: {
+			show: false,
+			color: '#000000',
+			width: 2,
+			lineStyle: 'solid'
+		},
+		labels: {
+			key: '活用内容', // 現在選択されているラベルのキー
+			show: true, // ラベル表示状態ルの色
+			expressions: [
+				{
+					key: '活用内容',
+					name: '活用内容',
+					value: '{活用内容}'
+				},
+				{
+					key: '活用期間',
+					name: '活用期間',
+					value: '{活用期間}'
+				}
+			]
+		}
+	}
+};
+
+export default entry;

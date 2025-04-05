@@ -1,22 +1,25 @@
-import type { GeoJsonMetaData, PolygonEntry } from '$routes/data/types/vector';
 import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
 
-const entry: PolygonEntry<GeoJsonMetaData> = {
+import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
+
+const entry: VectorEntry<TileMetaData> = {
 	id: 'ensyurin_rinhan',
 	type: 'vector',
 	format: {
-		type: 'fgb',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: './fgb/ensyurin_rinhan.fgb'
+		url: './pmtiles/vector/ensyurin.pmtiles'
 	},
 	metaData: {
-		name: '演習林林班', // 名前
-		description: '森林文化アカデミー演習林の林班。', // 説明
-		attribution: '森林文化アカデミー', // データの出典
+		name: '演習林林班',
+		description: '森林文化アカデミー演習林の林班。',
+		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		maxZoom: 22, // 表示するズームレベルの最大値
-		bounds: null, // データの範囲
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp` // カバー画像
+		maxZoom: 14,
+		minZoom: 1,
+		sourceLayer: 'ensyurin_rinhan',
+		bounds: null,
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`
 	},
 	properties: {
 		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
@@ -129,28 +132,6 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					value: '{樹種}'
 				}
 			]
-		},
-		default: {
-			fill: {
-				paint: {},
-				layout: {}
-			},
-			line: {
-				paint: {},
-				layout: {}
-			},
-			circle: {
-				paint: {},
-				layout: {}
-			},
-			symbol: {
-				paint: {},
-				layout: {}
-			},
-			fillExtrusion: {
-				paint: {},
-				layout: {}
-			}
 		}
 	}
 };
