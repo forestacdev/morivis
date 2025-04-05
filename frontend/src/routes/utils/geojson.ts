@@ -1,7 +1,7 @@
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
-import { geojson as fgb, geojson } from 'flatgeobuf';
+import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import { geojson as fgb } from 'flatgeobuf';
 import { addedLayerIds } from '$routes/store';
-import type { LngLat, MapGeoJSONFeature } from 'maplibre-gl';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
 
 /** GeoJSONを取得する */

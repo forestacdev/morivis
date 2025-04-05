@@ -1,11 +1,3 @@
-import { fgbPolygonEntry } from '$routes/data/vector/fgb/polygon';
-import { fgbLineStringEntry } from '$routes/data/vector/fgb/lineString';
-import { fgbPointEntry } from '$routes/data/vector/fgb/point';
-import { fgbLabelEntry } from '$routes/data/vector/fgb/label';
-import { pmtilesPolygonEntry } from '$routes/data/vector/pmtiles/polygon';
-import { pmtilesPointEntry } from '$routes/data/vector/pmtiles/point';
-import { mvtPolygonEntry } from '$routes/data/vector/mvt/polygon';
-
 import type { GeoDataEntry } from '$routes/data/types';
 
 // 共通の初期化処理
@@ -30,21 +22,9 @@ const entryModules: Record<string, { default: GeoDataEntry }> = import.meta.glob
 	}
 );
 
-export const rasterEntry: GeoDataEntry[] = Object.values(entryModules)
+export const entries: GeoDataEntry[] = Object.values(entryModules)
 	.map((mod) => mod.default)
 	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));
-
-const entries: GeoDataEntry[] = [
-	...fgbPolygonEntry,
-	...fgbLineStringEntry,
-	...fgbPointEntry,
-	...fgbLabelEntry,
-	...pmtilesPointEntry,
-	...pmtilesPolygonEntry,
-	...mvtPolygonEntry,
-	...rasterEntry
-	// ...cogEntry
-];
 
 export const geoDataEntry = (() => {
 	// 全てのIDを取得

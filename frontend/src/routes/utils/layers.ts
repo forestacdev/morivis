@@ -407,10 +407,10 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 			'fill-opacity': opacity,
 			'fill-outline-color': '#00000000',
 			'fill-color': style.colors.show ? colorExpression : '#00000000',
-			...(defaultStyle ? defaultStyle.fill.paint : {})
+			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})
 		},
 		layout: {
-			...(defaultStyle ? defaultStyle.fill.layout : {})
+			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
 		}
 	};
 
@@ -431,10 +431,10 @@ const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpe
 			'line-color': style.colors.show ? colorExpression : '#00000000',
 			'line-width': width,
 			...(style.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }),
-			...(defaultStyle ? defaultStyle.line.paint : {})
+			...(defaultStyle && defaultStyle.line ? defaultStyle.line.paint : {})
 		},
 		layout: {
-			...(defaultStyle ? defaultStyle.line.layout : {})
+			...(defaultStyle && defaultStyle.line ? defaultStyle.line.layout : {})
 		}
 	};
 
@@ -475,10 +475,10 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
 			'circle-stroke-width': outline.show ? style.outline.width : 0,
-			...(defaultStyle ? defaultStyle.circle.paint : {})
+			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.paint : {})
 		},
 		layout: {
-			...(defaultStyle ? defaultStyle.circle.layout : {})
+			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.layout : {})
 		}
 	};
 	return circleLayer;
@@ -500,14 +500,14 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 			'text-color': color,
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
-			...(defaultStyle ? defaultStyle.symbol.paint : {})
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
 		},
 		layout: {
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Light'],
-			...(defaultStyle ? defaultStyle.symbol.layout : {})
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
@@ -544,12 +544,12 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 		type: 'symbol',
 		paint: {
 			...(showLabel ? labelPaint : {}),
-			...(showLabel && defaultStyle ? defaultStyle.symbol.paint : {}),
+			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {}),
 			'icon-opacity': style.opacity
 		},
 		layout: {
 			...(showLabel ? labelLayout : {}),
-			...(showLabel && defaultStyle ? defaultStyle.symbol.layout : {}),
+			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
 			'icon-image': ['get', '_prop_id'],
 			'icon-size': style.icon?.size ?? 0.1,
 			'icon-anchor': 'bottom'

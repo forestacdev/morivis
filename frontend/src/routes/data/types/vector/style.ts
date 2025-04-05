@@ -42,22 +42,22 @@ interface HeatmapLayerStyle {
 }
 
 export interface PolygonDefaultStyle {
-	fill: fillLayerStyle;
-	line: lineLayerStyle;
-	circle: circleLayerStyle;
-	symbol: SymbolLayerStyle;
+	fill?: fillLayerStyle;
+	line?: lineLayerStyle;
+	circle?: circleLayerStyle;
+	symbol?: SymbolLayerStyle;
 	fillExtrusion?: FillExtrusionLayerStyle;
 }
 
 export interface LineStringDefaultStyle {
-	line: lineLayerStyle;
-	circle: circleLayerStyle;
-	symbol: SymbolLayerStyle;
+	line?: lineLayerStyle;
+	circle?: circleLayerStyle;
+	symbol?: SymbolLayerStyle;
 }
 
 export interface PointDefaultStyle {
-	circle: circleLayerStyle;
-	symbol: SymbolLayerStyle;
+	circle?: circleLayerStyle;
+	symbol?: SymbolLayerStyle;
 	heatmap?: HeatmapLayerStyle;
 }
 
