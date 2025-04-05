@@ -19,7 +19,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 1,
 		sourceLayer: 'ensyurin_siken',
 		bounds: null,
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`
 	},
 	properties: {
 		keys: ['活用内容', '活用期間', '番号'],

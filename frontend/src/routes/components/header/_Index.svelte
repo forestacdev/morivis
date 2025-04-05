@@ -7,35 +7,35 @@
 	import { showSideMenu, mapMode } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import type { ResultData } from '$routes/utils/feature';
-	import { type SidePopupData } from '$routes/utils/geojson';
+	import { type FeatureMenuData } from '$routes/utils/geojson';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 
 	let results = $state<ResultData[] | null>([]);
 	interface Props {
 		layerEntries: GeoDataEntry[];
 
-		sidePopupData: SidePopupData | null;
+		featureMenuData: FeatureMenuData | null;
 		inputSearchWord: string;
 		map: MLMap;
 	}
 
 	let {
 		layerEntries,
-		sidePopupData = $bindable(),
+		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		map
 	}: Props = $props();
 
 	// const focusFeature = (feature: any, layerId: string) => {
 	// 	mapStore.focusFeature(feature);
-	// 	const data: SidePopupData = {
+	// 	const data: FeatureMenuData = {
 	// 		type: 'Feature',
 	// 		layerId: layerId,
 	// 		properties: feature.properties,
 	// 		geometry: feature.geometry,
 	// 		featureId: feature.id
 	// 	};
-	// 	sidePopupData = data;
+	// 	featureMenuData = data;
 	// 	results = [];
 	// };
 
@@ -47,13 +47,13 @@
 			result.featureId
 		);
 
-		const data: SidePopupData = {
+		const data: FeatureMenuData = {
 			layerId: result.layerId,
 			properties: prop,
 			point: result.point,
 			featureId: result.featureId
 		};
-		sidePopupData = data;
+		featureMenuData = data;
 		results = [];
 		mapStore.easeTo({
 			center: result.point,

@@ -15,6 +15,7 @@
 	import { onMount, mount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
+	import FeatureMenu from '$routes/components/featureMenu/featureMenu.svelte';
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/mapControl/_Index.svelte';
 	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
@@ -27,7 +28,6 @@
 	import MouseManager from '$routes/components/MouseManager.svelte';
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
-	import SidePopup from '$routes/components/popup/SidePopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -35,7 +35,7 @@
 	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d, isSide } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 	import { createSourcesItems } from '$routes/utils/sources';
@@ -73,7 +73,7 @@
 	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
-	let sidePopupData = $state<SidePopupData | null>(null);
+	let featureMenuData = $state<FeatureMenuData | null>(null);
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	let selectedFocusSources = $state<GeoJSONSourceSpecification>({
@@ -179,7 +179,7 @@
 	});
 
 	$effect(() => {
-		if (!sidePopupData) {
+		if (!featureMenuData) {
 			// maplibreMarker?.remove();
 			showMarker = false;
 		}
@@ -310,7 +310,7 @@
 </script>
 
 <div class="relative h-full w-full">
-	<HeaderMenu bind:sidePopupData {layerEntries} bind:inputSearchWord map={maplibreMap} />
+	<HeaderMenu bind:featureMenuData {layerEntries} bind:inputSearchWord map={maplibreMap} />
 
 	<div
 		bind:this={mapContainer}
@@ -324,12 +324,12 @@
 	<MapControl />
 	<SelectionPopup
 		bind:clickedLayerIds
-		bind:sidePopupData
+		bind:featureMenuData
 		bind:clickedLayerFeaturesData
 		{layerEntries}
 		{clickedLngLat}
 	/>
-	<SidePopup bind:sidePopupData {layerEntries} />
+	<FeatureMenu bind:featureMenuData {layerEntries} />
 	<LockOnScreen />
 </div>
 
@@ -338,7 +338,7 @@
 	<MouseManager
 		map={maplibreMap}
 		bind:markerLngLat
-		bind:sidePopupData
+		bind:featureMenuData
 		bind:showMarker
 		bind:clickedLayerIds
 		{layerEntries}

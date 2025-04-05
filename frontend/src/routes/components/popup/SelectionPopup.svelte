@@ -9,12 +9,12 @@
 	import { lonLatToAddress } from '$routes/data/api';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import { type SidePopupData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 
 	interface Props {
 		clickedLayerIds: string[];
 		clickedLayerFeaturesData: ClickedLayerFeaturesData[] | null;
-		sidePopupData: SidePopupData | null;
+		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
 		clickedLngLat: LngLat | null;
 	}
@@ -22,7 +22,7 @@
 	let {
 		clickedLayerIds = $bindable(),
 		clickedLayerFeaturesData = $bindable(),
-		sidePopupData = $bindable(),
+		featureMenuData = $bindable(),
 		layerEntries,
 		clickedLngLat
 	}: Props = $props();

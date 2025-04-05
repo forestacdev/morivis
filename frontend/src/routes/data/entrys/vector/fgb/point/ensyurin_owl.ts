@@ -119,14 +119,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					// "circle-opacity" :0
 				},
 				layout: {}
-			},
-			symbol: {
-				paint: {},
-				layout: {}
-			},
-			heatmap: {
-				paint: {},
-				layout: {}
 			}
 		}
 	}

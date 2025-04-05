@@ -5,13 +5,13 @@
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, mapMode, isEdit } from '$routes/store';
-	import type { SidePopupData } from '$routes/utils/geojson';
+	import type { FeatureMenuData } from '$routes/utils/geojson';
 	import { generatePopupTitle } from '$routes/utils/properties';
 
 	let {
-		sidePopupData = $bindable(),
+		featureMenuData = $bindable(),
 		layerEntries
-	}: { sidePopupData: SidePopupData | null; layerEntries: GeoDataEntry[] } = $props();
+	}: { featureMenuData: FeatureMenuData | null; layerEntries: GeoDataEntry[] } = $props();
 
 	let showProp = $state<'metadata' | 'attributes'>('metadata');
 
@@ -21,15 +21,15 @@
 	];
 
 	$effect(() => {
-		if (!sidePopupData) {
+		if (!featureMenuData) {
 			showProp = 'metadata';
 		}
 	});
 
 	let targetLayer = $derived.by(() => {
-		if (sidePopupData) {
+		if (featureMenuData) {
 			const layer = layerEntries.find(
-				(entry) => sidePopupData && entry.id === sidePopupData.layerId
+				(entry) => featureMenuData && entry.id === featureMenuData.layerId
 			);
 			return layer;
 		}
@@ -37,15 +37,15 @@
 	});
 
 	let data = $derived.by(() => {
-		if (sidePopupData && sidePopupData.properties) {
-			return propData[sidePopupData.properties._prop_id];
+		if (featureMenuData && featureMenuData.properties) {
+			return propData[featureMenuData.properties._prop_id];
 		}
 	});
 
 	let srcData = $derived.by(() => {
-		if (sidePopupData) {
+		if (featureMenuData) {
 			const layer = layerEntries.find(
-				(entry) => sidePopupData && entry.id === sidePopupData.layerId
+				(entry) => featureMenuData && entry.id === featureMenuData.layerId
 			);
 			if (layer && layer.type === 'vector' && data && data.image) {
 				return data.image;
@@ -55,22 +55,22 @@
 	});
 
 	const edit = () => {
-		if (sidePopupData) {
-			selectedLayerId.set(sidePopupData.layerId);
-			sidePopupData = null;
+		if (featureMenuData) {
+			selectedLayerId.set(featureMenuData.layerId);
+			featureMenuData = null;
 			mapMode.set('edit');
 			isEdit.set(true);
 		}
 	};
 </script>
 
-{#if sidePopupData}
+{#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute left-0 top-0 z-10 flex h-full w-[400px] flex-col gap-2 overflow-hidden px-2 pt-4"
 	>
 		<div class="flex w-full justify-between pb-2">
-			<button onclick={() => (sidePopupData = null)} class="bg-base ml-auto rounded-full p-2">
+			<button onclick={() => (featureMenuData = null)} class="bg-base ml-auto rounded-full p-2">
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
@@ -90,7 +90,7 @@
 			<div class="flex flex-shrink-0 flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
 					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
-						? generatePopupTitle(sidePopupData.properties, targetLayer.properties.titles)
+						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
 						: ''}</span
 				>
 				<span class="text-[14px] text-gray-600"
@@ -128,7 +128,7 @@
 						<div class="flex w-full items-center justify-start gap-2">
 							<Icon icon="lucide:map-pin" class="h-6 w-6" />
 							<span class="text-accent"
-								>{sidePopupData.point[0].toFixed(6)}, {sidePopupData.point[1].toFixed(6)}</span
+								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 							>
 						</div>
 
@@ -157,8 +157,8 @@
 						transition:fly={{ duration: 200, x: 100 }}
 						class="c-scroll absolute flex h-full w-full flex-grow flex-col gap-2 overflow-y-auto"
 					>
-						{#if sidePopupData.properties}
-							{#each Object.entries(sidePopupData.properties) as [key, value]}
+						{#if featureMenuData.properties}
+							{#each Object.entries(featureMenuData.properties) as [key, value]}
 								{#if key !== '_prop_id'}
 									<div
 										class="flex w-full items-center justify-start gap-2 border-b-2 border-gray-300"

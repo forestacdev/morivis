@@ -71,7 +71,7 @@ export interface ClickedLayerFeaturesData {
 	featureId: number;
 }
 
-export interface SidePopupData {
+export interface FeatureMenuData {
 	point: [number, number];
 	properties: { [key: string]: string | number | null | undefined } | null;
 	featureId: number;
@@ -81,7 +81,7 @@ export interface SidePopupData {
 export const mapGeoJSONFeatureToSidePopupData = (
 	feature: MapGeoJSONFeature,
 	point: [number, number]
-): SidePopupData => {
+): FeatureMenuData => {
 	const { properties, id, layer } = feature;
 
 	// 特定のIDに一致するか確認

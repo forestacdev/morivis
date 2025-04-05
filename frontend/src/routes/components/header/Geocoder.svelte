@@ -1,21 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import * as tilebelt from '@mapbox/tilebelt';
-	import turfBbox from '@turf/bbox';
-	import turfBboxPolygon from '@turf/bbox-polygon';
 	import Fuse from 'fuse.js';
-	import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
-	import maplibregl from 'maplibre-gl';
-	import type { LngLatLike, Marker } from 'maplibre-gl';
-	import { fade } from 'svelte/transition';
+	import type { Marker } from 'maplibre-gl';
 
 	import searchData from './search_data.json';
-	import SidePopup from '../popup/SidePopup.svelte';
 
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/data/types/vector';
 	import type { ResultData } from '$routes/utils/feature';
-	import { getFgbToGeojson, getGeojson } from '$routes/utils/geojson';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		results: ResultData[] | null;

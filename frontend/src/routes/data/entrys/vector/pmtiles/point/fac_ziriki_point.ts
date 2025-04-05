@@ -1,8 +1,8 @@
-import { FEATURE_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'fac_building',
+	id: 'fac_ziriki_point',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
@@ -10,18 +10,18 @@ const entry: VectorEntry<TileMetaData> = {
 		url: './fac_search.pmtiles'
 	},
 	metaData: {
-		name: 'アカデミー施設',
-		description: '森林文化アカデミーの施設',
+		name: '自力建設',
+		description: '自力建設',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 14,
 		minZoom: 1,
-		sourceLayer: 'fac_building',
+		sourceLayer: 'fac_ziriki_point',
 		bounds: null,
-		coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
 	},
 	properties: {
-		keys: ['name', '建物名称', '構造規模'],
+		keys: ['name', '年度'],
 		dict: null,
 		titles: [
 			{
@@ -30,7 +30,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '施設'
+				template: '自力建設'
 			}
 		]
 	},
@@ -40,7 +40,7 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 1,
-		markerType: 'circle',
+		markerType: 'icon',
 		colors: {
 			show: true,
 			key: '単色',
@@ -50,7 +50,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#000000'
+						value: '#a03d00'
 					}
 				}
 			]
@@ -94,27 +94,8 @@ const entry: VectorEntry<TileMetaData> = {
 					'text-field': ['to-string', ['get', 'name']],
 					'text-size': 14,
 					'text-variable-anchor': ['bottom-left', 'bottom-right'],
-					'text-radial-offset': 2.1,
+					'text-radial-offset': 2,
 					'text-justify': 'auto'
-					// 'icon-image': ['get', '_prop_id'],
-					// 'icon-size': 0.1,
-					// 'icon-anchor': 'bottom'
-					// 'icon-image': [
-					// 	'case',
-					// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
-					// 	'morinosuマーク',
-					// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-					// 	'アカデミーマークアイコン',
-					// 	'dot-11'
-					// ],
-					// 'icon-size': [
-					// 	'case',
-					// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
-					// 	0.4,
-					// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
-					// 	0.3,
-					// 	1
-					// ]
 				},
 				paint: {
 					'text-halo-color': '#ffffff',

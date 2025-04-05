@@ -10,7 +10,7 @@
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
-	import { mapGeoJSONFeatureToSidePopupData, type SidePopupData } from '$routes/utils/geojson';
+	import { mapGeoJSONFeatureToSidePopupData, type FeatureMenuData } from '$routes/utils/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
 
 	interface Props {
@@ -18,14 +18,14 @@
 		markerLngLat: maplibregl.LngLat | null;
 		showMarker: boolean;
 		clickedLayerIds: string[];
-		sidePopupData: SidePopupData | null;
+		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
 	}
 
 	let {
 		map,
 		markerLngLat = $bindable(),
-		sidePopupData = $bindable(),
+		featureMenuData = $bindable(),
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		layerEntries
@@ -52,7 +52,7 @@
 				hoveredId = null;
 			}
 
-			sidePopupData = null;
+			featureMenuData = null;
 			clickedLayerIds = [];
 
 			if (markerLngLat) {
@@ -101,7 +101,7 @@
 
 			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
 
-			sidePopupData = geojsonFeature;
+			featureMenuData = geojsonFeature;
 			// mapStore.panTo(e.lngLat, {
 			// 	duration: 1000
 			// });
@@ -191,7 +191,7 @@
 	// });
 
 	$effect(() => {
-		if (!sidePopupData) {
+		if (!featureMenuData) {
 			if (hoveredId !== null && hoveredFeatureState !== null) {
 				map.setFeatureState(
 					{
