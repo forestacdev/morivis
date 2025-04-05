@@ -2,9 +2,10 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import AttributeItem from '$routes/components/featureMenu/AttributeItem.svelte';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, mapMode, isEdit } from '$routes/store';
+	import { mapStore } from '$routes/store/map';
 	import type { FeatureMenuData } from '$routes/utils/geojson';
 	import { generatePopupTitle } from '$routes/utils/properties';
 
@@ -14,17 +15,6 @@
 	}: { featureMenuData: FeatureMenuData | null; layerEntries: GeoDataEntry[] } = $props();
 
 	let showProp = $state<'metadata' | 'attributes'>('metadata');
-
-	const options = [
-		{ label: '概要', value: 'metadata' },
-		{ label: '詳細データ', value: 'attributes' }
-	];
-
-	$effect(() => {
-		if (!featureMenuData) {
-			showProp = 'metadata';
-		}
-	});
 
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {
@@ -36,9 +26,22 @@
 		return null;
 	});
 
+	let options = $derived.by(() => {
+		if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
+			return [
+				{ label: '概要', value: 'metadata' },
+				{ label: '詳細データ', value: 'attributes' }
+			];
+		} else {
+			return [{ label: '詳細データ', value: 'attributes' }];
+		}
+	});
+
 	let data = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
-			return propData[featureMenuData.properties._prop_id];
+			return propData[featureMenuData.properties._prop_id as string];
+		} else {
+			return null;
 		}
 	});
 
@@ -54,14 +57,34 @@
 		return null;
 	});
 
-	const edit = () => {
+	const edit = () => {};
+
+	$effect(() => {
 		if (featureMenuData) {
-			selectedLayerId.set(featureMenuData.layerId);
-			featureMenuData = null;
-			mapMode.set('edit');
-			isEdit.set(true);
+			const map = mapStore.getMap();
+			if (!map) return;
+			const layer = map.getLayer(featureMenuData.layerId);
+			if (!layer) return;
+			const type: string = layer.type;
+			if (
+				type === 'raster' ||
+				!featureMenuData.properties ||
+				!featureMenuData.properties._prop_id
+			) {
+				showProp = 'metadata';
+			} else {
+				showProp = 'attributes';
+			}
 		}
-	};
+	});
+
+	$effect(() => {
+		if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
+			showProp = 'metadata';
+		} else {
+			showProp = 'attributes';
+		}
+	});
 </script>
 
 {#if featureMenuData}
@@ -86,25 +109,25 @@
 			</div>
 		{/if}
 		<div class="flex h-full flex-col gap-2">
-			<!-- タイトルを表示 -->
+			<!-- タイトル -->
 			<div class="flex flex-shrink-0 flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
 					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
 						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
 						: ''}</span
 				>
-				<span class="text-[14px] text-gray-600"
+				<span class="text-[14px] text-gray-300"
 					>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
 				>
 			</div>
-			<!-- ボタン -->
+			<!-- 切り替えタブ -->
 			<div class="flex w-full flex-shrink-0 gap-2 p-2">
 				{#each options as option}
 					<label
 						for={option.value}
-						class="grid w-full flex-grow cursor-pointer place-items-center rounded-md p-2 {showProp ===
+						class="grid w-full flex-grow cursor-pointer select-none place-items-center rounded-full p-2 text-base transition-colors {showProp ===
 						option.value
-							? 'bg-accent text-white'
+							? 'bg-gray-500'
 							: ''}"
 					>
 						<input
@@ -126,7 +149,7 @@
 						class="flex-grow' absolute flex h-full w-full flex-col gap-2"
 					>
 						<div class="flex w-full items-center justify-start gap-2">
-							<Icon icon="lucide:map-pin" class="h-6 w-6" />
+							<Icon icon="lucide:map-pin" class="h-6 w-6 text-base" />
 							<span class="text-accent"
 								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 							>
@@ -139,16 +162,15 @@
 									href={data.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									><Icon icon="mdi:web" class="h-6 w-6" />
+									><Icon icon="mdi:web" class="h-6 w-6 text-base" />
 									<span class="text-accent">{data.url}</span></a
 								>
 							{/if}
 						{/if}
 						<div class="w-hull bg-base h-[1px] rounded-full"></div>
-
 						{#if data}
 							{#if data.description}
-								<span class="">{data.description}</span>
+								<span class="text-base">{data.description}</span>
 							{/if}
 						{/if}
 					</div>
@@ -160,12 +182,7 @@
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
 								{#if key !== '_prop_id'}
-									<div
-										class="flex w-full items-center justify-start gap-2 border-b-2 border-gray-300"
-									>
-										<span class="text-accent flex-shrink-0">{key}</span>
-										<span class="text-accent ml-auto">{value}</span>
-									</div>
+									<AttributeItem {key} {value} />
 								{/if}
 							{/each}
 						{/if}
