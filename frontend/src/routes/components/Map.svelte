@@ -30,6 +30,7 @@
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
+	import { BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
@@ -108,7 +109,7 @@
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
-			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
+			glyphs: `${BASE_PATH}/font/{fontstack}/{range}.pbf`,
 			sources: {
 				terrain: gsiTerrainSource,
 				...streetViewSources,

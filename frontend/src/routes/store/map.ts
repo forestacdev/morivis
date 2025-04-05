@@ -1,6 +1,6 @@
 // stores/mapStore.js
-import { writable, get } from 'svelte/store';
-import maplibregl, { ScaleControl } from 'maplibre-gl';
+import { writable } from 'svelte/store';
+import maplibregl from 'maplibre-gl';
 import type {
 	StyleSpecification,
 	LngLat,
@@ -30,7 +30,7 @@ import { getLocationBbox } from '$routes/data/locationBbox';
 
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
-import { DEBUG_MODE, isEdit, selectedLayerId } from '$routes/store';
+import { DEBUG_MODE } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
 
