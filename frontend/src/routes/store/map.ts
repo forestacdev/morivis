@@ -144,6 +144,14 @@ const createMapStore = () => {
 				bearing: map.getBearing()
 			});
 			mooveEndEvent.set(e);
+
+			const zoom = map.getZoom();
+
+			if (zoom < 11) {
+				map.setProjection({ type: 'globe' });
+			} else {
+				map.setProjection({ type: 'mercator' });
+			}
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
