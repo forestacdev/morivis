@@ -47,6 +47,7 @@
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import SplashScreen from '$routes/SplashScreen.svelte';
 	import { addedLayerIds, isStreetView, mapMode } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
@@ -337,6 +338,7 @@
 <NotificationMessage />
 <InfoDialog />
 <TermsOfServiceDialog />
+<SplashScreen />
 
 <style>
 </style>

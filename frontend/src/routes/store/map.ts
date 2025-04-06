@@ -35,6 +35,7 @@ import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
 
 import { demProtocol } from '$routes/protocol/raster';
+import { map } from 'es-toolkit/compat';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);

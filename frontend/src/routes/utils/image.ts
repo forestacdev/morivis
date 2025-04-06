@@ -140,3 +140,30 @@ export const webglToPng = async (number: number): Promise<string> => {
 
 	return outputCanvas.toDataURL('image/png');
 };
+
+// 画像をPNG形式でダウンロードする関数
+const downloadImageBitmapAsPNG = (imageBitmap: ImageBitmap, filename: string) => {
+	// 1. canvasに描画
+	const canvas = document.createElement('canvas');
+	canvas.width = imageBitmap.width;
+	canvas.height = imageBitmap.height;
+
+	const ctx = canvas.getContext('2d');
+	if (!ctx) return;
+
+	ctx.drawImage(imageBitmap, 0, 0);
+
+	// 2. PNGとしてBlob化して保存
+	canvas.toBlob((blob) => {
+		if (!blob) return;
+
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		a.click();
+
+		// クリーンアップ
+		URL.revokeObjectURL(url);
+	}, 'image/png');
+};

@@ -10,7 +10,7 @@ export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
 export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
-export const STREET_VIEW_DATA_PATH = DATA_PATH + '/streetview';
+export const STREET_VIEW_DATA_PATH = DATA_PATH + '/streetView';
 export const FONT_DATA_PATH = DATA_PATH + '/font';
 export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
@@ -61,9 +61,9 @@ export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
 	// 'cog_test',
 	// 'ensyurin_pole',
-	'fac_ziriki_point',
-	'fac_building_point',
-	'fac_poi',
+	// 'fac_ziriki_point',
+	// 'fac_building_point',
+	// 'fac_poi',
 	'ensyurin_road2',
 	'gsi_road',
 	'ensyurin_rinhan',
