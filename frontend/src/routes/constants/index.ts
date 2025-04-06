@@ -69,7 +69,7 @@ export const INT_ADD_LAYER_IDS = [
 	// 'dem_5a',
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
-	// 'gsi_slopemap',
+	'gsi_rinya_m',
 	'gsi_seamlessphoto'
 
 	// 'gsi_std'
