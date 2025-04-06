@@ -14,6 +14,8 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
+	import labelLayer from './label.json';
+
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import FeatureMenu from '$routes/components/featureMenu/featureMenu.svelte';
 	import FileManager from '$routes/components/FileManager.svelte';
@@ -120,6 +122,14 @@
 				selected_focus_sources: {
 					...selectedFocusSources
 				},
+				'gsibv-vectortile-source-1-4-16': {
+					type: 'vector',
+					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf'],
+					minzoom: 4,
+					maxzoom: 16,
+					attribution:
+						'<a href="https://maps.gsi.go.jp/vector/" target="_blank">地理院地図Vector（仮称）</a>'
+				},
 				...sources
 			},
 			layers: [
@@ -133,7 +143,8 @@
 					}
 				},
 				streetViewLineLayer,
-				streetViewCircleLayer
+				streetViewCircleLayer,
+				...labelLayer.layers
 			],
 			sky: {
 				'sky-color': '#2baeff',
