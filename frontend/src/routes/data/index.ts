@@ -16,7 +16,7 @@ const initData = (data: GeoDataEntry[]) => {
 };
 
 const entryModules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
-	'$routes/data/entrys/**/*.ts',
+	'$routes/data/entrys/**/[!_]*.ts',
 	{
 		eager: true
 	}

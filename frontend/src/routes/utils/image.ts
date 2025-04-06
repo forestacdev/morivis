@@ -142,7 +142,7 @@ export const webglToPng = async (number: number): Promise<string> => {
 };
 
 // 画像をPNG形式でダウンロードする関数
-const downloadImageBitmapAsPNG = (imageBitmap: ImageBitmap, filename: string) => {
+export const downloadImageBitmapAsPNG = (imageBitmap: ImageBitmap, filename: string) => {
 	// 1. canvasに描画
 	const canvas = document.createElement('canvas');
 	canvas.width = imageBitmap.width;

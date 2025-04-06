@@ -1,8 +1,8 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'fac_ziriki_point',
+	id: 'fac_poi',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
@@ -10,18 +10,18 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`
 	},
 	metaData: {
-		name: '自力建設',
-		description: '自力建設',
+		name: 'その他施設・林内ランドマーク',
+		description: 'その他施設・林内ランドマーク',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 14,
 		minZoom: 1,
-		sourceLayer: 'fac_ziriki_point',
-		bounds: [136.91669416774363, 35.552165704819075, 136.9232546722223, 35.55613247338581],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
+		sourceLayer: 'fac_poi',
+		bounds: [136.9190129344606, 35.548385, 136.925213, 35.555474],
+		coverImage: null
 	},
 	properties: {
-		keys: ['name', '年度'],
+		keys: ['name'],
 		dict: null,
 		titles: [
 			{
@@ -30,7 +30,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '自力建設'
+				template: 'その他施設・林内ランドマーク'
 			}
 		]
 	},
@@ -50,15 +50,10 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#a03d00'
+						value: '#c00a0a'
 					}
 				}
 			]
-		},
-		outline: {
-			show: true,
-			color: '#ffffff',
-			width: 2
 		},
 		radius: {
 			key: '単一',
@@ -73,9 +68,14 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			]
 		},
+		outline: {
+			show: true,
+			color: '#ffffff',
+			width: 2
+		},
 		icon: {
 			show: true,
-			size: 0.2
+			size: 0.15
 		},
 		labels: {
 			key: '名前',
@@ -89,13 +89,20 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
+			circle: {
+				paint: {},
+				layout: {}
+			},
 			symbol: {
 				layout: {
 					'text-field': ['to-string', ['get', 'name']],
 					'text-size': 14,
 					'text-variable-anchor': ['bottom-left', 'bottom-right'],
 					'text-radial-offset': 2,
-					'text-justify': 'auto'
+					'text-justify': 'auto',
+					'icon-image': ['get', '_prop_id'],
+					'icon-size': 0.1,
+					'icon-anchor': 'bottom'
 				},
 				paint: {
 					'text-halo-color': '#ffffff',

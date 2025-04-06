@@ -32,7 +32,13 @@
 	let hoveredFeatureState: FeatureStateData | null = null;
 
 	map.on('click', (e) => {
-		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
+		const clickLayerIds = [
+			'@street_view_circle_layer',
+			'@fac_ziriki_point',
+			'@fac_building_point',
+			'@fac_poi',
+			...$clickableVectorIds
+		];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});
@@ -147,7 +153,12 @@
 	});
 
 	map.on('mousemove', (e) => {
-		const clickLayerIds = [...$clickableVectorIds];
+		const clickLayerIds = [
+			'@fac_ziriki_point',
+			'@fac_building_point',
+			'@fac_poi',
+			...$clickableVectorIds
+		];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});

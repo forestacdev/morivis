@@ -1,16 +1,29 @@
 <script lang="ts">
 	import { delay } from 'es-toolkit';
+	import { map } from 'es-toolkit/compat';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import { mapStore } from './store/map';
 
-	let show = $state<boolean>(true);
+	let show = $state<boolean>(false);
 	let container = $state<HTMLElement | null>(null);
 
 	onMount(async () => {
 		await delay(1500); // 2秒待機
-		show = false; // ローディングを非表示にする
+
+		// ローディングを非表示にする
+		mapStore.onInitialized((map) => {
+			if (map) {
+				map.on('load', () => {
+					map.resize();
+					show = false;
+				});
+			} else {
+				map.resize();
+				show = false;
+			}
+		});
 	});
 </script>
 

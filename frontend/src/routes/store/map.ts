@@ -35,7 +35,8 @@ import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
 
 import { demProtocol } from '$routes/protocol/raster';
-import { map } from 'es-toolkit/compat';
+
+import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -171,6 +172,8 @@ const createMapStore = () => {
 			const { imageBitmap, id } = e.data;
 
 			if (map && !map.hasImage(id)) {
+				// ↓ ここでダウンロード処理
+				await downloadImageBitmapAsPNG(imageBitmap, `${id}.png`);
 				map.addImage(id, imageBitmap, {
 					pixelRatio: 2
 				});

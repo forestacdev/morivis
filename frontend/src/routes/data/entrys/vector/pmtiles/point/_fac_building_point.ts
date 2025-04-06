@@ -1,8 +1,8 @@
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { FEATURE_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'fac_poi',
+	id: 'fac_building_point',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
@@ -10,18 +10,18 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`
 	},
 	metaData: {
-		name: 'その他施設・林内ランドマーク',
-		description: 'その他施設・林内ランドマーク',
+		name: 'アカデミー施設',
+		description: '森林文化アカデミーの施設',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 14,
 		minZoom: 1,
-		sourceLayer: 'fac_poi',
-		bounds: [136.9190129344606, 35.548385, 136.925213, 35.555474],
-		coverImage: null
+		sourceLayer: 'fac_building_point',
+		bounds: [136.91764622017772, 35.553369893337134, 136.9198923648159, 35.55575869336596],
+		coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
 	},
 	properties: {
-		keys: ['name'],
+		keys: ['name', '建物名称', '構造規模'],
 		dict: null,
 		titles: [
 			{
@@ -30,7 +30,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: 'その他施設・林内ランドマーク'
+				template: '施設'
 			}
 		]
 	},
@@ -50,10 +50,15 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#c00a0a'
+						value: '#000000'
 					}
 				}
 			]
+		},
+		outline: {
+			show: true,
+			color: '#ffffff',
+			width: 2
 		},
 		radius: {
 			key: '単一',
@@ -68,14 +73,9 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			]
 		},
-		outline: {
-			show: true,
-			color: '#ffffff',
-			width: 2
-		},
 		icon: {
 			show: true,
-			size: 0.2
+			size: 0.15
 		},
 		labels: {
 			key: '名前',
@@ -89,20 +89,32 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
-			circle: {
-				paint: {},
-				layout: {}
-			},
 			symbol: {
 				layout: {
 					'text-field': ['to-string', ['get', 'name']],
 					'text-size': 14,
 					'text-variable-anchor': ['bottom-left', 'bottom-right'],
-					'text-radial-offset': 2,
-					'text-justify': 'auto',
-					'icon-image': ['get', '_prop_id'],
-					'icon-size': 0.1,
-					'icon-anchor': 'bottom'
+					'text-radial-offset': 2.1,
+					'text-justify': 'auto'
+					// 'icon-image': ['get', '_prop_id'],
+					// 'icon-size': 0.1,
+					// 'icon-anchor': 'bottom'
+					// 'icon-image': [
+					// 	'case',
+					// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
+					// 	'morinosuマーク',
+					// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+					// 	'アカデミーマークアイコン',
+					// 	'dot-11'
+					// ],
+					// 'icon-size': [
+					// 	'case',
+					// 	['match', ['get', 'name'], ['森林総合教育センター(morinos)'], true, false],
+					// 	0.4,
+					// 	['match', ['get', 'name'], ['アカデミーセンター'], true, false],
+					// 	0.3,
+					// 	1
+					// ]
 				},
 				paint: {
 					'text-halo-color': '#ffffff',
