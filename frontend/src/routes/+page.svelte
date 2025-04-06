@@ -43,8 +43,8 @@
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
 	import SideMenu from '$routes/components/sideMenu/_Index.svelte';
 	import AngleMarker from '$routes/components/streetView/AngleMarker.svelte';
-	import nodeConnectionsJson from '$routes/components/streetView/node_connections.json';
 	import StreetViewCanvas from '$routes/components/streetView/ThreeCanvas.svelte';
+	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { addedLayerIds, isStreetView, mapMode } from '$routes/store';
@@ -63,6 +63,7 @@
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
+	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
 	let angleMarker = $state<Marker | null>(null); // マーカー
 	let streetViewPoint = $state<StreetViewPoint | null>(null);
 	let streetViewPointData = $state<StreetViewPointGeoJson>({
@@ -89,10 +90,14 @@
 			}
 		});
 		streetViewPointData = (await getFgbToGeojson(
-			'./streetView/nodes.fgb'
+			`${STREET_VIEW_DATA_PATH}/streetView/nodes.fgb`
 		)) as StreetViewPointGeoJson;
 
-		streetViewLineData = await getFgbToGeojson('./streetView/links.fgb');
+		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/streetView/links.fgb`);
+
+		nodeConnectionsJson = await fetch(
+			`${STREET_VIEW_DATA_PATH}/streetView/node_connections.json`
+		).then((res) => res.json());
 
 		const imageId = getStreetViewParams();
 		if (imageId) {

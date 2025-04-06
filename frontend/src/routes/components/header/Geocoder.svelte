@@ -2,9 +2,9 @@
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import type { Marker } from 'maplibre-gl';
+	import { onMount } from 'svelte';
 
-	import searchData from './search_data.json';
-
+	import { DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ResultData } from '$routes/utils/feature';
 	interface Props {
@@ -17,8 +17,21 @@
 	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
+	let searchData: any = null; // 検索データ
 
 	const LIMIT = 1000; // 検索結果の表示上限
+
+	onMount(async () => {
+		// 検索データの初期化
+		searchData = await fetch(`${DATA_PATH}/search_data.json`)
+			.then((res) => res.json())
+			.then((data) => {
+				return data;
+			})
+			.catch((error) => {
+				console.error('Error fetching search data:', error);
+			});
+	});
 
 	// 検索処理
 	const search = async (_searchWord: string) => {
@@ -36,17 +49,20 @@
 		}
 	};
 
-	const fuse = new Fuse(searchData, {
-		keys: ['search_values'],
-		threshold: 0.1
-	});
-
 	// const focusFeature = (feature: any) => {
 	// 	mapStore.focusFeature(feature);
 	// 	mapStore.addSearchFeature(feature);
 	// };
 
 	const searchFeature = async (searchWord: string) => {
+		if (!searchData) {
+			console.error('Search data is not loaded yet.');
+			return;
+		}
+		const fuse = new Fuse(searchData, {
+			keys: ['search_values'],
+			threshold: 0.1
+		});
 		// 検索実行
 		const result = fuse.search(searchWord, {
 			limit: LIMIT
