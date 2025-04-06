@@ -1,6 +1,3 @@
-<script module lang="ts">
-</script>
-
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy } from 'svelte';

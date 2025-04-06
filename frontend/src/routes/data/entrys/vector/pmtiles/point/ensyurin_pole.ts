@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'ensyurin_pole',
-		bounds: null,
+		bounds: [136.919359, 35.549761, 136.926759, 35.557836],
 		coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`
 	},
 	properties: {

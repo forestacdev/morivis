@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'fac_building_point',
-		bounds: null,
+		bounds: [136.91764622017772, 35.553369893337134, 136.9198923648159, 35.55575869336596],
 		coverImage: `${FEATURE_IMAGE_BASE_PATH}/fac_center.webp`
 	},
 	properties: {

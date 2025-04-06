@@ -12,11 +12,11 @@
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/utils/sources';
 	import { addedLayerIds, showDataMenu } from '$routes/store';
 	import { GeojsonCache } from '$routes/utils/geojson';
+	import { createLayersItems } from '$routes/utils/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';
+	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -24,6 +24,7 @@
 
 	let { showDataEntry = $bindable() }: Props = $props();
 	let mapContainer = $state<HTMLElement | null>(null);
+	let iconWorker: Worker;
 
 	let dataType = $derived.by(() => {
 		if (showDataEntry) {
@@ -86,10 +87,12 @@
 					map = new Map({
 						container: mapContainer as HTMLElement, // 地図を表示する要素
 						style: await createMapStyle([showDataEntry]), // スタイル設定
-						...MAP_POSITION // 地図の初期位置
+						...MAP_POSITION, // 地図の初期位置
+						pitch: 0,
+						bearing: 0
 					});
 
-					const iconWorker = new Worker(new URL('../../utils/icon/worker.ts', import.meta.url), {
+					iconWorker = new Worker(new URL('../../utils/icon/worker.ts', import.meta.url), {
 						type: 'module'
 					});
 
@@ -169,6 +172,11 @@
 		if (map) {
 			map.remove();
 			map = null;
+		}
+
+		if (iconWorker) {
+			iconWorker.terminate();
+			iconWorker = undefined;
 		}
 	});
 

@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'fac_ziriki_point',
-		bounds: null,
+		bounds: [136.91669416774363, 35.552165704819075, 136.9232546722223, 35.55613247338581],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ziriki.webp`
 	},
 	properties: {

@@ -16,6 +16,7 @@
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import FeatureMenu from '$routes/components/featureMenu/featureMenu.svelte';
+	import FileManager from '$routes/components/FileManager.svelte';
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/mapControl/_Index.svelte';
 	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
@@ -72,6 +73,8 @@
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let showMarker = $state<boolean>(false); // マーカーの表示
 	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
+	let isDragover = $state(false);
+	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 	let featureMenuData = $state<FeatureMenuData | null>(null);
@@ -308,9 +311,39 @@
 	mapStore.onInitialized((map) => {
 		maplibreMap = map;
 	});
+
+	// ドラッグ中のイベント
+	const dragover: (e: DragEvent) => void = (e) => {
+		e.preventDefault();
+		isDragover = true;
+	};
+	const dragleave: (e: DragEvent) => void = (e) => {
+		e.preventDefault();
+		isDragover = false;
+	};
+	// ドロップ完了時にファイルを取得
+	const drop: (e: DragEvent) => void = async (e) => {
+		e.preventDefault();
+		isDragover = false;
+
+		const dataTransfer = e.dataTransfer;
+		if (!dataTransfer) return;
+
+		const files = dataTransfer.files;
+		if (!files || files.length === 0) return;
+		const file = files[0]; // 最初のファイルを取得
+
+		dropFile = file;
+	};
 </script>
 
-<div class="relative h-full w-full">
+<div
+	role="region"
+	ondrop={drop}
+	ondragover={dragover}
+	ondragleave={dragleave}
+	class="relative h-full w-full"
+>
 	<HeaderMenu bind:featureMenuData {layerEntries} bind:inputSearchWord map={maplibreMap} />
 
 	<div
@@ -335,6 +368,7 @@
 </div>
 
 {#if maplibreMap}
+	<FileManager map={maplibreMap} bind:isDragover bind:dropFile />
 	<StreetViewLayer map={maplibreMap} />
 	<MouseManager
 		map={maplibreMap}

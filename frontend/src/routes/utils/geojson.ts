@@ -171,3 +171,20 @@ addedLayerIds.subscribe((ids) => {
 		}
 	}
 });
+
+export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
+	try {
+		const text = await file.text();
+		const geojson = JSON.parse(text);
+
+		// 型安全のため、FeatureCollectionかどうかを最低限チェック
+		if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
+			throw new Error('Invalid GeoJSON structure');
+		}
+
+		return geojson;
+	} catch (error) {
+		console.error('GeoJSON parsing error:', error);
+		throw new Error('Failed to parse GeoJSON file');
+	}
+};

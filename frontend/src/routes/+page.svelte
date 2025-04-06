@@ -1,6 +1,4 @@
 <script lang="ts" module>
-	import type { NearestPoint } from '@turf/nearest-point';
-
 	import { isPc } from '$routes/utils/ui';
 	export interface StreetViewPoint {
 		type: 'Feature';
@@ -26,8 +24,6 @@
 </script>
 
 <script lang="ts">
-	// import Header from '$routes/components/_Header.svelte';
-
 	import turfBearing from '@turf/bearing';
 	import turfDistance from '@turf/distance';
 	import turfNearestPoint from '@turf/nearest-point';
@@ -35,19 +31,7 @@
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
-	import type {
-		StyleSpecification,
-		MapGeoJSONFeature,
-		SourceSpecification,
-		CanvasSourceSpecification,
-		LayerSpecification,
-		TerrainSpecification,
-		BackgroundLayerSpecification,
-		GeoJSONSourceSpecification,
-		Marker,
-		LngLat,
-		Popup
-	} from 'maplibre-gl';
+	import type { Marker } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 
 	import DataMenu from '$routes/components/dataMenu/_Index.svelte';
@@ -56,22 +40,14 @@
 	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
 	import LayerMenu from '$routes/components/layerMenu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
+	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
 	import SideMenu from '$routes/components/sideMenu/_Index.svelte';
 	import AngleMarker from '$routes/components/streetView/AngleMarker.svelte';
 	import nodeConnectionsJson from '$routes/components/streetView/node_connections.json';
 	import StreetViewCanvas from '$routes/components/streetView/ThreeCanvas.svelte';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import {
-		addedLayerIds,
-		selectedLayerId,
-		clickableVectorIds,
-		clickableRasterIds,
-		DEBUG_MODE,
-		selectedHighlightData,
-		isStreetView,
-		mapMode
-	} from '$routes/store';
+	import { addedLayerIds, isStreetView, mapMode } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
@@ -158,10 +134,10 @@
 		if (!map) return;
 
 		if ($isStreetView) {
+			setCamera(map, point.geometry.coordinates);
 			map.panTo(point.geometry.coordinates, {
 				duration: 1000,
-				animate: true,
-				zoom: map.getZoom() > 18 ? map.getZoom() : (18 as number)
+				animate: true
 			});
 		}
 
@@ -214,11 +190,31 @@
 		}
 	});
 
+	const setCamera = (map: maplibregl.Map, lngLat: maplibregl.LngLat) => {
+		// https://github.com/maplibre/maplibre-gl-js/issues/4688
+
+		const elevation = map.queryTerrainElevation(lngLat);
+
+		map.setCenterClampedToGround(false);
+		map.setCenterElevation(elevation ?? 0); // 例: 高度400mの地点をターゲットとする
+
+		console.warn('elevation', elevation);
+		map._elevationStart = map._elevationTarget;
+	};
+
+	const resetCamera = (map: maplibregl.Map) => {
+		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
+		map.setCenterElevation(0);
+		map._elevationStart = map._elevationTarget;
+	};
+
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		const map = mapStore.getMap();
 		if (!map) return;
+
 		if (value) {
+			setCamera(map, streetViewPoint.geometry.coordinates);
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
@@ -248,6 +244,7 @@
 			$mapMode = 'view';
 			showMapCanvas = true;
 			showThreeCanvas = false;
+			resetCamera(map);
 
 			await delay(300);
 
@@ -335,6 +332,7 @@
 {/if}
 
 <SideMenu />
+<NotificationMessage />
 <InfoDialog />
 <TermsOfServiceDialog />
 

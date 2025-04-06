@@ -16,7 +16,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'fac_poi',
-		bounds: null,
+		bounds: [136.9190129344606, 35.548385, 136.925213, 35.555474],
 		coverImage: null
 	},
 	properties: {

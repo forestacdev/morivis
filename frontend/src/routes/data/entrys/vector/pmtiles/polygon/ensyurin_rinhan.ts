@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'ensyurin_rinhan',
-		bounds: null,
+		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`
 	},
 	properties: {
