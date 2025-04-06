@@ -1,5 +1,5 @@
 import type { GeoJsonMetaData, PointEntry } from '$routes/data/types/vector';
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
 
 const entry: PointEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_owl',
@@ -7,7 +7,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	format: {
 		type: 'fgb',
 		geometryType: 'Point',
-		url: './fgb/ensyurin_owl.fgb'
+		url: `${ENTRY_FGB_PATH}/ensyurin_owl.fgb`
 	},
 	metaData: {
 		name: '林業専攻-OWL利用研修立木計測データ',

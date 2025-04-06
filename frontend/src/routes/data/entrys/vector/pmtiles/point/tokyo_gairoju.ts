@@ -1,3 +1,4 @@
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -6,12 +7,15 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: './pmtiles/vector/tokyo_gairoju.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/tokyo_gairoju.pmtiles`
 	},
 	metaData: {
 		name: '東京都23区 街路樹',
-		description: `このデータは、以下の著作物を改変して利用しています。
-                            【ライセンスされている著作物のタイトル】、東京都・【その他の著作権者】、クリエイティブ・コモンズ・ライセンス 表示4.0国際（https://creativecommons.org/licenses/by/4.0/deed.ja）`,
+		description: `✅
+            本データは「東京都オープンデータカタログサイト」（https://catalog.data.metro.tokyo.lg.jp/）において公開されているデータをもとに作成しています。
+            データセット名：「都道の街路樹」
+            データ提供元：東京都
+            ライセンス：東京都オープンデータ利用規約（https://portal.data.metro.tokyo.lg.jp/terms/）`,
 		attribution: '東京都オープンデータカタログサイト',
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',
@@ -31,7 +35,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '街路樹'
+				template: '東京都23区 街路樹'
 			}
 		]
 	},
@@ -71,7 +75,7 @@ const entry: VectorEntry<TileMetaData> = {
 		},
 		outline: {
 			show: true,
-			color: '#000000',
+			color: '#FFFFFF',
 			width: 2
 		},
 		labels: {

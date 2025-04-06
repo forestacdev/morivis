@@ -1,12 +1,14 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import turfBbox from '@turf/bbox';
+	import DOMPurify from 'dompurify';
 	import { Map, ScaleControl, AttributionControl } from 'maplibre-gl';
 	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	// formatDescription.ts
 
-	import { MAP_POSITION } from '$routes/constants';
+	import { MAP_POSITION, BASE_PATH } from '$routes/constants';
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { geoDataEntry } from '$routes/data';
 	import { getLocationBbox } from '$routes/data/locationBbox';
@@ -43,7 +45,7 @@
 
 		const mapStyle = {
 			version: 8,
-			glyphs: './font/{fontstack}/{range}.pbf', // TODO; フォントの検討
+			glyphs: `${BASE_PATH}/font/{fontstack}/{range}.pbf`, // TODO; フォントの検討
 			sources: {
 				mierune_mono: {
 					type: 'raster',
@@ -198,6 +200,18 @@
 			showDataEntry = null;
 		}
 	};
+
+	const formatDescription = (text: string): string => {
+		const urlRegex = /(https?:\/\/[^\s））\]」」＞>、。,]+)/g;
+		const linked = text.replace(urlRegex, (url) => {
+			return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+		});
+		const withBreaks = linked.replace(/\n/g, '<br>');
+		return DOMPurify.sanitize(withBreaks, {
+			ALLOWED_TAGS: ['a', 'br'],
+			ALLOWED_ATTR: ['href', 'target', 'rel']
+		});
+	};
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -206,11 +220,14 @@
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
 	class="bg-main absolute inset-0 flex h-full w-full flex-grow"
 >
-	<div class="bg-main flex w-[400px] flex-col gap-2 p-2">
+	<div class="bg-main flex w-[400px] flex-col gap-2 p-2 text-base">
 		<div>{showDataEntry?.metaData.name}</div>
 		<div>{showDataEntry?.metaData.location}</div>
-		<div>{showDataEntry?.metaData.description}</div>
 
+		{#if showDataEntry}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
+		{/if}
 		<div>{dataType}</div>
 		{#if showDataEntry?.metaData.downloadUrl}
 			<a
@@ -219,7 +236,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 				><Icon icon="el:download" class="h-8 w-8" />
-				<span>ダウンロード</span></a
+				<span>提供元からダウンロード</span></a
 			>
 		{/if}
 	</div>

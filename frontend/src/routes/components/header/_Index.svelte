@@ -3,6 +3,7 @@
 	import type { Map as MLMap } from 'maplibre-gl';
 
 	import Geocoder from '$routes/components/header/Geocoder.svelte';
+	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showSideMenu, mapMode } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
@@ -41,7 +42,7 @@
 
 	const focusFeature = async (result: ResultData) => {
 		const prop = await getPropertiesFromPMTiles(
-			'./fac_search.pmtiles',
+			`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
 			result.tile,
 			result.layerId,
 			result.featureId

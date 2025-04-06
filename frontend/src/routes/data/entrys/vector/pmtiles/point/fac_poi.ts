@@ -1,3 +1,4 @@
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -6,7 +7,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: './fac_search.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`
 	},
 	metaData: {
 		name: 'その他施設・林内ランドマーク',

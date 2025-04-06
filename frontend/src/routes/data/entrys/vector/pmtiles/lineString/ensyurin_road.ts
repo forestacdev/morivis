@@ -1,5 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
-
+import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { TileMetaData, VectorEntry } from '$routes/data/types/vector';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -8,7 +7,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'LineString',
-		url: './pmtiles/vector/ensyurin.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
 		name: '演習林の道',
