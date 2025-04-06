@@ -1,3 +1,0 @@
-```
-uv run fastapi dev
-```
