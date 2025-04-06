@@ -1,5 +1,5 @@
 import type { TileMetaData, VectorEntry } from '$routes/data/types/vector';
-import { FEATURE_IMAGE_BASE_PATH } from '$routes/constants';
+import { FEATURE_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'ensyurin_pole',
@@ -7,7 +7,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: './pmtiles/vector/ensyurin.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
 		name: 'サインポール',

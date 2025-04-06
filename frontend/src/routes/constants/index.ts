@@ -3,7 +3,7 @@ import type { TileXYZ } from '$routes/data/types/raster';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';
-export const ENTRY_DATA_PATH = DATA_PATH + '/data/entry';
+export const ENTRY_DATA_PATH = DATA_PATH + '/entry';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
 export const ENTRY_FGB_PATH = ENTRY_DATA_PATH + '/fgb';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
@@ -11,6 +11,8 @@ export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/streetview';
+export const FONT_DATA_PATH = DATA_PATH + '/font';
+export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
 

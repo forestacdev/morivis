@@ -74,7 +74,7 @@
 	@font-face {
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'),
-			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/font/NotoSansJP-Light.ttf');
+			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/font/NotoSansJP-Light.ttf');
 		font-weight: 300;
 		font-display: swap;
 	}
@@ -83,7 +83,7 @@
 	@font-face {
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'),
-			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/font/NotoSansJP-Regular.ttf');
+			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/font/NotoSansJP-Regular.ttf');
 		font-weight: 400;
 		font-display: swap;
 	}
@@ -92,7 +92,7 @@
 	@font-face {
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'),
-			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/font/NotoSansJP-Medium.ttf');
+			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/font/NotoSansJP-Medium.ttf');
 		font-weight: 500;
 		font-display: swap;
 	}
@@ -101,7 +101,7 @@
 	@font-face {
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'),
-			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/font/NotoSansJP-SemiBold.ttf');
+			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/font/NotoSansJP-SemiBold.ttf');
 		font-weight: 600;
 		font-display: swap;
 	}
@@ -110,7 +110,7 @@
 	@font-face {
 		font-family: 'Noto Sans JP';
 		src: local('Noto Sans JP'),
-			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/font/NotoSansJP-Bold.ttf');
+			url('https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/font/NotoSansJP-Bold.ttf');
 		font-weight: 700;
 		font-display: swap;
 	}

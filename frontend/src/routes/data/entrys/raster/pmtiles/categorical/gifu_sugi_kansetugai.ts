@@ -1,11 +1,12 @@
 import type { RasterCategoricalStyle, RasterPMTilesEntry } from '$routes/data/types/raster';
+import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 	id: 'gifu_sugi_kansetugai',
 	type: 'raster',
 	format: {
 		type: 'pmtiles',
-		url: './pmtiles/raster/gifu_sugi_kansetugai.pmtiles'
+		url: `${ENTRY_PMTILES_RASTER_PATH}/gifu_sugi_kansetugai.pmtiles`
 	},
 	metaData: {
 		name: 'スギ人工林冠雪害危険度',

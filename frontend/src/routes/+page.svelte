@@ -54,9 +54,6 @@
 
 	type NodeConnections = Record<string, string[]>;
 
-	// 型を適用
-	const nodeConnections: NodeConnections = nodeConnectionsJson;
-
 	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntry]); // レイヤーデータ
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
@@ -90,14 +87,14 @@
 			}
 		});
 		streetViewPointData = (await getFgbToGeojson(
-			`${STREET_VIEW_DATA_PATH}/streetView/nodes.fgb`
+			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
 		)) as StreetViewPointGeoJson;
 
-		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/streetView/links.fgb`);
+		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
 
-		nodeConnectionsJson = await fetch(
-			`${STREET_VIEW_DATA_PATH}/streetView/node_connections.json`
-		).then((res) => res.json());
+		nodeConnectionsJson = await fetch(`${STREET_VIEW_DATA_PATH}/node_connections.json`).then(
+			(res) => res.json()
+		);
 
 		const imageId = getStreetViewParams();
 		if (imageId) {

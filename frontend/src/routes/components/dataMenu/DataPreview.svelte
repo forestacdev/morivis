@@ -6,6 +6,8 @@
 	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+
+	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	// formatDescription.ts
 
 	import { MAP_POSITION, BASE_PATH } from '$routes/constants';
@@ -45,7 +47,7 @@
 
 		const mapStyle = {
 			version: 8,
-			glyphs: `${BASE_PATH}/font/{fontstack}/{range}.pbf`, // TODO; フォントの検討
+			glyphs: MAP_FONT_DATA_PATH, // TODO; フォントの検討
 			sources: {
 				mierune_mono: {
 					type: 'raster',

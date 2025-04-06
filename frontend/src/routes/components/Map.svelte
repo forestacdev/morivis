@@ -30,6 +30,7 @@
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
+	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
 	import { BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -112,7 +113,7 @@
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
-			glyphs: `${BASE_PATH}/font/{fontstack}/{range}.pbf`,
+			glyphs: MAP_FONT_DATA_PATH,
 			sources: {
 				terrain: gsiTerrainSource,
 				...streetViewSources,

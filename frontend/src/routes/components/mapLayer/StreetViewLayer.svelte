@@ -1,8 +1,9 @@
 <script module lang="ts">
+	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	export const streetViewSources = {
 		street_view_sources: {
 			type: 'vector',
-			url: 'pmtiles://./streetView/THETA360.pmtiles'
+			url: `pmtiles://${STREET_VIEW_DATA_PATH}/THETA360.pmtiles`
 		}
 	};
 	export const streetViewLineLayer = {
@@ -52,12 +53,10 @@
 </script>
 
 <script lang="ts">
-	import type { MapMouseEvent, MapLayerMouseEvent } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onMount } from 'svelte';
 	import { onDestroy } from 'svelte';
 
-	import { isStreetView, showStreetViewLayer } from '$routes/store';
+	import { showStreetViewLayer } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 
 	interface Props {
