@@ -66,7 +66,7 @@
 	}: Props = $props();
 
 	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol, {
-		tileUrl: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
+		tileUrl: 'https://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png'
 	});
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
