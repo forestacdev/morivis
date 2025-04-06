@@ -7,7 +7,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: `${ENTRY_PMTILES_VECTOR_PATH }/fac_search.pmtiles`
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`
 	},
 	metaData: {
 		name: 'アカデミー施設',
@@ -40,7 +40,7 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 1,
-		markerType: 'circle',
+		markerType: 'icon',
 		colors: {
 			show: true,
 			key: '単色',

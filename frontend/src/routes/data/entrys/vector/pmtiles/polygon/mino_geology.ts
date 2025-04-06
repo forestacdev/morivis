@@ -1,4 +1,5 @@
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'mino_geology',
@@ -6,7 +7,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: './pmtiles/vector/mino_geology.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/mino_geology.pmtiles`
 	},
 	metaData: {
 		name: '美濃市地質図',

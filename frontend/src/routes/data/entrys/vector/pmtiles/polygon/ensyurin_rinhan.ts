@@ -108,12 +108,12 @@ const entry: VectorEntry<TileMetaData> = {
 		},
 		outline: {
 			show: true,
-			color: '#000000',
+			color: '#ffffff',
 			width: 2,
 			lineStyle: 'dashed'
 		},
 		labels: {
-			key: '林齢', // 現在選択されているラベルのキー
+			key: '樹種', // 現在選択されているラベルのキー
 			show: true, // ラベル表示状態ルの色
 			expressions: [
 				{
@@ -124,12 +124,12 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '林齢',
 					name: '林齢のラベル',
-					value: '{林齢}'
+					value: '{林齢}年生'
 				},
 				{
 					key: '樹種',
 					name: '樹種のラベル',
-					value: '{樹種}'
+					value: '{樹種}林'
 				}
 			]
 		}

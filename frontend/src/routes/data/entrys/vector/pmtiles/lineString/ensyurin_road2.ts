@@ -2,7 +2,7 @@ import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/consta
 import type { TileMetaData, VectorEntry } from '$routes/data/types/vector';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'ensyurin_road',
+	id: 'ensyurin_road2',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
@@ -10,18 +10,18 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
-		name: '演習林の道',
+		name: '演習林の道（テスト）',
 		description: '演習林の道',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 14,
 		minZoom: 1,
-		sourceLayer: 'ensyurin_road',
+		sourceLayer: 'ensyurin_road2',
 		bounds: [136.919181, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`
 	},
 	properties: {
-		keys: ['種類'],
+		keys: [],
 		dict: null,
 		titles: null
 	},
@@ -33,29 +33,20 @@ const entry: VectorEntry<TileMetaData> = {
 		opacity: 0.8,
 		colors: {
 			show: true,
-			key: '種類',
+			key: '単色',
 			expressions: [
 				{
 					type: 'single',
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#dd9c1b'
-					}
-				},
-				{
-					type: 'match',
-					key: '種類',
-					name: '歩道と林道の色分け',
-					mapping: {
-						categories: ['林道', '歩道'],
-						values: ['#ffec42', '#e0e0e0']
+						value: '#cacaca'
 					}
 				}
 			]
 		},
 		width: {
-			key: '種類',
+			key: '単一',
 			expressions: [
 				{
 					type: 'single',
@@ -63,15 +54,6 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '単一',
 					mapping: {
 						value: 5
-					}
-				},
-				{
-					type: 'match',
-					key: '種類',
-					name: '歩道と林道の太さ分け',
-					mapping: {
-						categories: ['林道', '歩道'],
-						values: [10, 5]
 					}
 				}
 			]

@@ -35,6 +35,17 @@
 					</div>
 				</div>
 
+				<iframe
+					width="560"
+					height="315"
+					src="https://www.youtube.com/embed/V4NfLkA3-L4?si=TWB89AUIzCIPS4H1"
+					title="YouTube video player"
+					frameborder="0"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+					referrerpolicy="strict-origin-when-cross-origin"
+					allowfullscreen
+				></iframe>
+
 				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">利用データ</div>
 					<div class="">
