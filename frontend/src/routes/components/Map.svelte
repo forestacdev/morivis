@@ -122,14 +122,7 @@
 				selected_focus_sources: {
 					...selectedFocusSources
 				},
-				'gsibv-vectortile-source-1-4-16': {
-					type: 'vector',
-					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf'],
-					minzoom: 4,
-					maxzoom: 16,
-					attribution:
-						'<a href="https://maps.gsi.go.jp/vector/" target="_blank">地理院地図Vector（仮称）</a>'
-				},
+				...labelLayer.sources,
 				...sources
 			},
 			layers: [
