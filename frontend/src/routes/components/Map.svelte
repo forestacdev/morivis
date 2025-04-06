@@ -116,6 +116,7 @@
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			glyphs: MAP_FONT_DATA_PATH,
+			sprite: labelLayer.sprite,
 			sources: {
 				terrain: gsiTerrainSource,
 				...streetViewSources,
