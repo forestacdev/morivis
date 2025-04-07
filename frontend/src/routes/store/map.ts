@@ -172,8 +172,6 @@ const createMapStore = () => {
 			const { imageBitmap, id } = e.data;
 
 			if (map && !map.hasImage(id)) {
-				// ↓ ここでダウンロード処理
-				await downloadImageBitmapAsPNG(imageBitmap, `${id}.png`);
 				map.addImage(id, imageBitmap, {
 					pixelRatio: 2
 				});

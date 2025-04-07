@@ -2,7 +2,7 @@
 	"version": 8,
 	"name": "optbv",
 	"glyphs": "https://gsi-cyberjapan.github.io/optimal_bvmap/glyphs/{fontstack}/{range}.pbf",
-	"sprite": "https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/sprite/sprite",
+	"sprite": "https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
 	"sources": {
 		"v": {
 			"type": "vector",
