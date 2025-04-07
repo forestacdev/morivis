@@ -84,6 +84,10 @@
 		$isEdit = !$isEdit;
 	};
 
+	const infoLayer = () => {
+		if (!layerEntry) return;
+	};
+
 	// ドラッグ開始時にアニメーションを無効にする
 	const dragStart = (layerId: string) => {
 		enableFlip = false;
@@ -175,28 +179,24 @@
 					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}>
 						<Icon
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-							width="20"
-							height="20"
-							class="custom-anime"
+							class="h-8 w-8"
 						/>
 					</button>
-					<!-- <button class="" onclick={() => moveLayerById('up')}
-									><Icon icon="bx:up-arrow" width="20" height="20" class="" />
-								</button>
-								<button class="" onclick={() => moveLayerById('down')}
-									><Icon icon="bx:down-arrow" width="20" height="20" />
-								</button> -->
-					<button onclick={removeLayer}>
-						<Icon icon="bx:trash" width="20" height="20" class="custom-anime" />
-					</button>
+
 					<button onclick={focusLayer}>
-						<Icon icon="hugeicons:target-03" width="20" height="20" class="custom-anime" />
+						<Icon icon="hugeicons:target-03" class="h-8 w-8" />
 					</button>
 					<!-- <button onclick={copyLayer}>
-									<Icon icon="lucide:copy" width="20" height="20" class="custom-anime" />
+									<Icon icon="lucide:copy" />
 								</button> -->
 					<button onclick={editLayer}>
-						<Icon icon="lucide:edit" width="20" height="20" class="custom-anime" />
+						<Icon icon="lucide:edit" class="ml-4 h-8 w-8" />
+					</button>
+					<button onclick={infoLayer}>
+						<Icon icon="akar-icons:info" class="h-8 w-8" />
+					</button>
+					<button onclick={removeLayer} class="">
+						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
 				</div>
 				<Legend {layerEntry} />

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { GeolocateControl } from 'maplibre-gl';
+	import { GeolocateControl, Marker } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { mapStore } from '$routes/store/map';
@@ -62,6 +62,11 @@
 						attributeFilter: ['class']
 					});
 				}
+
+				// TODO: 現在地の経緯度
+				geolocateControl.on('geolocate', (e) => {
+					console.log('geolocate', e.coords);
+				});
 			}
 		});
 	});
@@ -120,4 +125,13 @@
 	:global(.maplibregl-ctrl-geolocate > span) {
 		display: none !important;
 	}
+
+	/* マーカースタイル */
+	/* :global(.maplibregl-user-location-dot) {
+		display: none !important;
+	}
+
+	:global(.maplibregl-user-location-accuracy-circle) {
+		display: none !important;
+	} */
 </style>
