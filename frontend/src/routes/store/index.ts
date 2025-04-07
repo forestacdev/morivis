@@ -25,7 +25,7 @@ export const DEBUG_MODE = writable<boolean>(false);
 export const mapMode = writable<'view' | 'edit' | 'analysis' | 'small'>('view');
 
 /**  3D地形 */
-export const isTerrain3d = writable<boolean>(true);
+export const isTerrain3d = writable<boolean>(false);
 
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

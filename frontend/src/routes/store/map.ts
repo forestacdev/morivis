@@ -78,7 +78,7 @@ const createMapStore = () => {
 			// preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85
+			maxPitch: 85 // 最大ピッチ角度
 
 			// maxZoom: 20
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
@@ -89,9 +89,9 @@ const createMapStore = () => {
 			// 	return { url };
 			// }
 		});
-		map.scrollZoom.setWheelZoomRate(1 / 800);
+		// map.scrollZoom.setWheelZoomRate(1 / 800);
 
-		map.setBearing(mapPosition.bearing);
+		// map.setBearing(mapPosition.bearing);
 		// map.setZoom(mapPosition.zoom);
 
 		setStyleEvent.set(mapStyle);

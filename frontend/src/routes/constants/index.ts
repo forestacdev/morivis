@@ -34,9 +34,9 @@ export const MOBILE_WIDTH = 1024;
 export const MAP_POSITION: MapPosition = {
 	center: [136.923004009, 35.5509525769706],
 	zoom: 16,
-	pitch: 60,
-	bearing: 118
-	// bounds: [136.91278, 35.543576, 136.92986, 35.556704]
+	pitch: 0,
+	bearing: 0,
+	bounds: [136.91278, 35.543576, 136.92986, 35.556704]
 };
 
 /** アイコン用画像タイルのXYZ */

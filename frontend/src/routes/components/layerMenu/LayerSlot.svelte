@@ -10,19 +10,26 @@
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
 	import { showDataMenu } from '$routes/store';
 	import { selectedLayerId, isEdit } from '$routes/store';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
+	import {
+		orderedLayerIds,
+		groupedLayerStore,
+		reorderStatus,
+		type LayerType
+	} from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
+		dragEnterType: LayerType | null;
 	}
 
 	let {
 		layerEntry = $bindable(),
 		tempLayerEntries = $bindable(),
-		enableFlip = $bindable()
+		enableFlip = $bindable(),
+		dragEnterType = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
 
@@ -109,6 +116,7 @@
 	// ドラッグ開始時にアニメーションを無効にする
 	const dragStart = (layerId: string) => {
 		enableFlip = false;
+		dragEnterType = layerType as LayerType;
 		selectedLayerId.set(layerId);
 	};
 
@@ -122,11 +130,16 @@
 	// ドラッグ終了時にアニメーションを有効にする
 	const dragEnd = () => {
 		enableFlip = true;
+		dragEnterType = null;
+		reorderStatus.set('idle');
 	};
 </script>
 
 <div
-	class="relative flex flex-col"
+	class="relative flex flex-col transition-opacity {dragEnterType !== null &&
+	dragEnterType !== layerType
+		? 'opacity-50'
+		: ''}"
 	draggable={true}
 	ondragstart={() => dragStart(layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}

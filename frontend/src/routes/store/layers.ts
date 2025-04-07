@@ -14,6 +14,10 @@ interface GroupedLayers {
 	raster: string[];
 }
 
+export type ReorderStatus = 'idle' | 'success' | 'invalid';
+
+export const reorderStatus = writable<ReorderStatus>('idle');
+
 const createLayerStore = () => {
 	const initialState: GroupedLayers = {
 		label: [],
@@ -55,6 +59,7 @@ const createLayerStore = () => {
 
 				// 両方存在し、かつ違う位置でなければ無視
 				if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+					reorderStatus.set('invalid');
 					return { ...layers };
 				}
 
@@ -62,6 +67,7 @@ const createLayerStore = () => {
 				list.splice(toIndex, 0, item);
 
 				layers[type] = list;
+				reorderStatus.set('success');
 				return { ...layers };
 			}),
 
@@ -72,7 +78,23 @@ const createLayerStore = () => {
 
 export const groupedLayerStore = createLayerStore();
 
-// Flat表示用 derived store（順序保証付き）
+/** レイヤーidリスト Flat */
 export const orderedLayerIds = derived(groupedLayerStore, ($layers) =>
 	TYPE_ORDER.flatMap((type) => $layers[type])
 );
+
+/** レイヤータイプごとの区切りのインデックス */
+export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
+	const breaks: { [index: number]: LayerType } = {};
+	let index = 0;
+
+	for (const type of TYPE_ORDER) {
+		const items = $layers[type];
+		if (items.length > 0) {
+			breaks[index] = type;
+			index += items.length;
+		}
+	}
+
+	return breaks;
+});

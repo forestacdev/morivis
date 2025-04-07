@@ -8,12 +8,22 @@
 	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
+	import { typeBreakIndices } from '$routes/store/layers';
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
 	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
+	let dragEnterType = $state(null); // ドラッグ中のレイヤーのタイプ
+
+	const TYPE_LABELS = {
+		label: 'ラベル',
+		point: 'ポイント',
+		line: 'ライン',
+		polygon: 'ポリゴン',
+		raster: 'ラスター'
+	};
 
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
@@ -65,7 +75,20 @@
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-					<LayerSlot bind:layerEntry={layerEntries[i]} bind:tempLayerEntries bind:enableFlip />
+					{#if $typeBreakIndices[i]}
+						<!-- この index はタイプの切り替え地点 -->
+						<div
+							class="mb-1 mt-4 border-t p-2 text-base font-bold {$showDataMenu ? 'text-sm' : ''}"
+						>
+							{TYPE_LABELS[$typeBreakIndices[i]]}
+						</div>
+					{/if}
+					<LayerSlot
+						bind:layerEntry={layerEntries[i]}
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:dragEnterType
+					/>
 				</div>
 			{/each}
 			<div class="h-[200px] w-full flex-shrink-0"></div>
@@ -75,14 +98,16 @@
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
 			>
-				<button
-					onclick={() => showDataMenu.set(true)}
-					class="c-btn-confirm pointer-events-auto flex flex-shrink items-center justify-center gap-2"
-				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
-						>データの追加</span
+				{#if !dragEnterType}
+					<button
+						onclick={() => showDataMenu.set(true)}
+						class="c-btn-confirm pointer-events-auto flex flex-shrink items-center justify-center gap-2"
 					>
-				</button>
+						<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
+							>データの追加</span
+						>
+					</button>
+				{/if}
 			</div>
 		{/if}
 	</div>
