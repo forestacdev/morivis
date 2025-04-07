@@ -1,13 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { flip } from 'svelte/animate';
-	import { fade } from 'svelte/transition';
 
 	import DataSlot from '$routes/components/dataMenu/DataMenuSlot.svelte';
 	import DataPreview from '$routes/components/dataMenu/DataPreview.svelte';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { addedLayerIds, showDataMenu } from '$routes/store';
+	import { showDataMenu } from '$routes/store';
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntry]);

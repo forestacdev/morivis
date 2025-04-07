@@ -2,24 +2,21 @@
 	import Icon from '@iconify/svelte';
 	import turfBbox from '@turf/bbox';
 	import DOMPurify from 'dompurify';
-	import { Map, ScaleControl, AttributionControl } from 'maplibre-gl';
+	import { Map } from 'maplibre-gl';
 	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	// formatDescription.ts
 
 	import { MAP_POSITION, BASE_PATH } from '$routes/constants';
-	import { IMAGE_TILE_XYZ } from '$routes/constants';
-	import { geoDataEntry } from '$routes/data';
+	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { addedLayerIds, showDataMenu } from '$routes/store';
+	import { addedLayerIds } from '$routes/store/layers';
 	import { GeojsonCache } from '$routes/utils/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
-	import { getImagePmtiles } from '$routes/utils/raster';
 	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {

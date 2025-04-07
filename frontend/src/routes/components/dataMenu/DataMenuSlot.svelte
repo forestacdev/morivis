@@ -5,7 +5,8 @@
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { addedLayerIds, showDataMenu } from '$routes/store';
+	import { showDataMenu } from '$routes/store';
+	import { addedLayerIds } from '$routes/store/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
 	interface Props {

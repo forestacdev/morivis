@@ -8,7 +8,8 @@
 	import VectorOptionMenu from '$routes/components/layerMenu/layerOptionMenu/VectorOptionMenu.svelte';
 	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, addedLayerIds, isEdit } from '$routes/store';
+	import { selectedLayerId, isEdit } from '$routes/store';
+	import { addedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 
 	let {

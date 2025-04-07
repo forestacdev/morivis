@@ -1,15 +1,5 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-	import type { BackgroundLayerSpecification } from 'maplibre-gl';
-	import { slide } from 'svelte/transition';
-	import { fade } from 'svelte/transition';
-
-	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { ColorsExpression } from '$routes/data/types/vector/style';
-	import { addedLayerIds, selectedLayerId, isEdit } from '$routes/store';
-	import { showDataMenu } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
 	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 
 	interface Props {

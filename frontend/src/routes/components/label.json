@@ -10,14 +10,6 @@
 			"maxzoom": 16,
 			"tiles": ["https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf"],
 			"attribution": "国土地理院最適化ベクトルタイル"
-		},
-		"fac_poi_source": {
-			"type": "vector",
-			"url": "pmtiles://https://raw.githubusercontent.com/forestacdev/morivis-data/main/data/entry/pmtiles/vector/fac_search.pmtiles",
-			"maxzoom": 14,
-			"minzoom": 1,
-			"attribution": "森林文化アカデミー",
-			"bounds": [136.9166941, 35.548385, 136.9252129, 35.5561325]
 		}
 	},
 
@@ -3561,55 +3553,6 @@
 				],
 				"text-halo-color": "rgba(255,255,255,1)",
 				"text-halo-width": 1
-			}
-		},
-
-		{
-			"id": "@fac_ziriki_point",
-			"source": "fac_poi_source",
-			"maxzoom": 24,
-			"minzoom": 0,
-			"source-layer": "fac_ziriki_point",
-			"type": "symbol",
-			"paint": {
-				"icon-opacity": 1
-			},
-			"layout": {
-				"icon-image": ["get", "_prop_id"],
-				"icon-size": 0.1,
-				"icon-anchor": "bottom"
-			}
-		},
-		{
-			"id": "@fac_building_point",
-			"source": "fac_poi_source",
-			"maxzoom": 24,
-			"minzoom": 0,
-			"source-layer": "fac_building_point",
-			"type": "symbol",
-			"paint": {
-				"icon-opacity": 1
-			},
-			"layout": {
-				"icon-image": ["get", "_prop_id"],
-				"icon-size": 0.1,
-				"icon-anchor": "bottom"
-			}
-		},
-		{
-			"id": "@fac_poi",
-			"source": "fac_poi_source",
-			"maxzoom": 24,
-			"minzoom": 0,
-			"source-layer": "fac_poi",
-			"type": "symbol",
-			"paint": {
-				"icon-opacity": 1
-			},
-			"layout": {
-				"icon-image": ["get", "_prop_id"],
-				"icon-size": 0.1,
-				"icon-anchor": "bottom"
 			}
 		}
 	]

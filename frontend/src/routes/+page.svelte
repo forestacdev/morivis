@@ -48,7 +48,8 @@
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { addedLayerIds, isStreetView, mapMode } from '$routes/store';
+	import { isStreetView, mapMode } from '$routes/store';
+	import { addedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';

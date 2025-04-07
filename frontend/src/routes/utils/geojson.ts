@@ -1,6 +1,6 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { geojson as fgb } from 'flatgeobuf';
-import { addedLayerIds } from '$routes/store';
+import { addedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
 

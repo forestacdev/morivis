@@ -37,8 +37,9 @@
 	import { BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
-	import { addedLayerIds, clickableRasterIds, isStreetView } from '$routes/store';
+	import { clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d, isSide } from '$routes/store';
+	import { addedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
