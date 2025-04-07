@@ -14,7 +14,7 @@
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { GeojsonCache } from '$routes/utils/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
@@ -33,6 +33,23 @@
 				return 'ラスター';
 			} else if (showDataEntry.type === 'vector') {
 				return 'ベクター';
+			}
+		}
+	});
+	let layerType = $derived.by((): LayerType | unknown => {
+		if (showDataEntry) {
+			if (showDataEntry.type === 'raster') {
+				return 'raster';
+			} else if (showDataEntry.type === 'vector') {
+				if (showDataEntry.format.geometryType === 'Label') {
+					return 'label';
+				} else if (showDataEntry.format.geometryType === 'Point') {
+					return 'point';
+				} else if (showDataEntry.format.geometryType === 'LineString') {
+					return 'line';
+				} else if (showDataEntry.format.geometryType === 'Polygon') {
+					return 'polygon';
+				}
 			}
 		}
 	});
@@ -183,13 +200,13 @@
 
 	const addData = () => {
 		if (showDataEntry) {
-			addedLayerIds.addLayer(showDataEntry.id);
+			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
 			showDataEntry = null;
 		}
 	};
 	const deleteData = () => {
 		if (showDataEntry) {
-			addedLayerIds.removeLayer(showDataEntry.id);
+			groupedLayerStore.remove(showDataEntry.id);
 			showDataEntry = null;
 		}
 	};

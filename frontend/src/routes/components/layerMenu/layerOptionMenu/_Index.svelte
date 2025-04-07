@@ -9,7 +9,7 @@
 	import LayerSlot from '$routes/components/layerMenu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit } from '$routes/store';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 
 	let {

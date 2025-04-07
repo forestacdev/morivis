@@ -39,7 +39,7 @@
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d, isSide } from '$routes/store';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
@@ -157,7 +157,7 @@
 	};
 
 	// レイヤーの追加
-	addedLayerIds.subscribe((ids) => {
+	orderedLayerIds.subscribe((ids) => {
 		const filteredDataEntry = [...layerEntries, ...tempLayerEntries].filter((entry) =>
 			ids.includes(entry.id)
 		);

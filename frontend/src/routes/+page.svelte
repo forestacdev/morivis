@@ -49,7 +49,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import { isStreetView, mapMode } from '$routes/store';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
@@ -262,7 +262,7 @@
 		}
 	});
 
-	addedLayerIds.subscribe((value) => {
+	orderedLayerIds.subscribe((value) => {
 		layerEntries = layerEntriesData.filter((entry) => {
 			return value.includes(entry.id);
 		});

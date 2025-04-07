@@ -6,7 +6,7 @@
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
 	interface Props {
@@ -16,9 +16,27 @@
 
 	let { dataEntry, showDataEntry = $bindable() }: Props = $props();
 
-	let addedDataIds = $state<string[]>($addedLayerIds);
+	let addedDataIds = $state<string[]>($orderedLayerIds);
 
-	addedLayerIds.subscribe((value) => {
+	let layerType = $derived.by((): LayerType | unknown => {
+		if (dataEntry) {
+			if (dataEntry.type === 'raster') {
+				return 'raster';
+			} else if (dataEntry.type === 'vector') {
+				if (dataEntry.format.geometryType === 'Label') {
+					return 'label';
+				} else if (dataEntry.format.geometryType === 'Point') {
+					return 'point';
+				} else if (dataEntry.format.geometryType === 'LineString') {
+					return 'line';
+				} else if (dataEntry.format.geometryType === 'Polygon') {
+					return 'polygon';
+				}
+			}
+		}
+	});
+
+	orderedLayerIds.subscribe((value) => {
 		addedDataIds = value;
 	});
 	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
@@ -65,10 +83,11 @@
 	};
 
 	const addData = (id: string) => {
-		addedLayerIds.addLayer(id);
+		if (!layerType) return;
+		groupedLayerStore.add(id, layerType as LayerType);
 	};
 	const deleteData = (id: string) => {
-		addedLayerIds.removeLayer(id);
+		groupedLayerStore.remove(id);
 	};
 </script>
 

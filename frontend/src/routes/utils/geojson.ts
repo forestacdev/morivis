@@ -1,6 +1,6 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { geojson as fgb } from 'flatgeobuf';
-import { addedLayerIds } from '$routes/store/layers';
+import { orderedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
 
@@ -163,7 +163,7 @@ export class GeojsonCache {
 }
 
 // レイヤーメニューから削除されたgeojsonデータを削除
-addedLayerIds.subscribe((ids) => {
+orderedLayerIds.subscribe((ids) => {
 	// GeojsonCacheからidsに含まれていないものを削除
 	for (const id of GeojsonCache.keys()) {
 		if (!ids.includes(id)) {

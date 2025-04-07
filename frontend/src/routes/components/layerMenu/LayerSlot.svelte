@@ -10,7 +10,7 @@
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
 	import { showDataMenu } from '$routes/store';
 	import { selectedLayerId, isEdit } from '$routes/store';
-	import { addedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 
 	interface Props {
@@ -28,6 +28,24 @@
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
+
+	let layerType = $derived.by((): LayerType | unknown => {
+		if (layerEntry) {
+			if (layerEntry.type === 'raster') {
+				return 'raster';
+			} else if (layerEntry.type === 'vector') {
+				if (layerEntry.format.geometryType === 'Label') {
+					return 'label';
+				} else if (layerEntry.format.geometryType === 'Point') {
+					return 'point';
+				} else if (layerEntry.format.geometryType === 'LineString') {
+					return 'line';
+				} else if (layerEntry.format.geometryType === 'Polygon') {
+					return 'polygon';
+				}
+			}
+		}
+	});
 
 	const selectedLayer = () => {
 		if (isHovered || $isEdit) return;
@@ -62,14 +80,14 @@
 	// 	copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
 	// 	tempLayerEntries = [...tempLayerEntries, copy];
-	// 	addedLayerIds.addLayer(uuid);
+	// 	orderedLayerIds.addLayer(uuid);
 	// };
 
 	// レイヤーの削除
 	const removeLayer = () => {
 		$isEdit = false;
 		if (!layerEntry) return;
-		addedLayerIds.removeLayer(layerEntry.id);
+		groupedLayerStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
 
@@ -97,7 +115,7 @@
 	// ドラッグ中のレイヤーを取得
 	const dragEnter = (layerId: string) => {
 		if (layerId && $selectedLayerId !== layerId) {
-			addedLayerIds.swapLayers($selectedLayerId, layerId);
+			groupedLayerStore.reorderWithinTypeById(layerType as LayerType, $selectedLayerId, layerId);
 		}
 	};
 
