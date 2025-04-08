@@ -32,6 +32,7 @@
 		dragEnterType = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
+	let isDragging = $state(false);
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
@@ -113,9 +114,26 @@
 		if (!layerEntry) return;
 	};
 
-	// ドラッグ開始時にアニメーションを無効にする
-	const dragStart = (layerId: string) => {
+	let dragOffsetX = 0;
+	let dragOffsetY = 0;
+
+	const handleMouseDown = (e: MouseEvent, layerId: string) => {
+		const target = document.getElementById(layerId);
+		if (!target) return;
+		const rect = target.getBoundingClientRect();
+		dragOffsetX = e.clientX - rect.left;
+		dragOffsetY = e.clientY - rect.top;
+	};
+
+	const dragStart = (e: DragEvent, layerId: string) => {
+		if (!e.dataTransfer) return;
+		e.dataTransfer.effectAllowed = 'move';
+		const dragElement = document.getElementById(layerId) as HTMLElement;
+		e.dataTransfer.setDragImage(dragElement, dragOffsetX, dragOffsetY);
+
+		isDragging = true;
 		enableFlip = false;
+		showLegend = false;
 		dragEnterType = layerType as LayerType;
 		selectedLayerId.set(layerId);
 	};
@@ -129,6 +147,7 @@
 
 	// ドラッグ終了時にアニメーションを有効にする
 	const dragEnd = () => {
+		isDragging = false;
 		enableFlip = true;
 		dragEnterType = null;
 		reorderStatus.set('idle');
@@ -139,11 +158,12 @@
 	class="relative flex flex-col transition-opacity {dragEnterType !== null &&
 	dragEnterType !== layerType
 		? 'opacity-50'
-		: ''}"
+		: ''} {isDragging ? 'c-dragging-style' : ''}"
 	draggable={true}
-	ondragstart={() => dragStart(layerEntry.id)}
+	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
 	ondragover={(e) => e.preventDefault()}
+	onmousedown={(e) => handleMouseDown(e, layerEntry.id)}
 	ondragend={dragEnd}
 	role="button"
 	tabindex="0"
@@ -151,7 +171,7 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-main c-rounded relative z-10 select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-main c-dragging-style c-rounded relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
