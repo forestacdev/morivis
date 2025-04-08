@@ -1,23 +1,23 @@
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'tree_species_tochigi',
+	id: 'fr_mesh20m_hyogo',
 	type: 'vector',
 	format: {
 		type: 'mvt',
 		geometryType: 'Polygon',
-		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf'
+		url: 'https://rinya-hyogo.geospatial.jp/2023/rinya/tile/fr_mesh20m/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '樹種ポリゴン',
-		description: `出典：栃木県森林資源データ`,
+		name: '森林資源量集計メッシュ',
+		description: `出典「兵庫県森林資源データ」`,
 		attribution: '林野庁',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
-		location: '栃木県',
-		minZoom: 8,
-		maxZoom: 18,
-		sourceLayer: 'tree_species_tochigi',
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039],
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_hyogo',
+		location: '兵庫県',
+		minZoom: 13,
+		maxZoom: 16,
+		sourceLayer: 'fr_mesh20m_hyogo',
+		bounds: [134.252809, 34.156129, 135.468591, 35.674667],
 		coverImage: null
 	},
 	properties: {
@@ -30,7 +30,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '栃木県の樹種ポリゴン'
+				template: '兵庫県の森林資源メッシュ'
 			}
 		]
 	},
@@ -41,7 +41,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.5,
 		colors: {
-			key: '解析樹種ID',
+			key: '単色',
 			show: true,
 			expressions: [
 				{
@@ -51,57 +51,14 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#349f1c'
 					}
-				},
-				{
-					type: 'match',
-					key: '解析樹種ID',
-					name: '樹種ごとの色分け',
-					mapping: {
-						categories: [
-							'01',
-							'02',
-							'03',
-							'04',
-							'05',
-							'06',
-							'07',
-							'08',
-							'09',
-							'10',
-							'11',
-							'12',
-							'96',
-							'97',
-							'98',
-							'99'
-						],
-						values: [
-							'#00cc66',
-							'#99ff66',
-							'#cc0000',
-							'#ff9966',
-							'#ffcc99',
-							'#cc6600',
-							'#cc00cc',
-							'#ffff99',
-							'#ff9933',
-							'#cc9900',
-							'#ffff00',
-							'#8000ff',
-							'#8db3e2',
-							'#ccff99',
-							'#ff80ff',
-							'#bfbfbf'
-						]
-					}
 				}
 			]
 		},
 		outline: {
-			show: false,
+			show: true,
 			color: '#000000',
-			width: 2,
-			lineStyle: 'dashed'
+			width: 1,
+			lineStyle: 'solid'
 		},
 		labels: {
 			key: '樹種',

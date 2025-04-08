@@ -23,7 +23,7 @@ const createLayerStore = () => {
 		label: [],
 		point: ['fac_ziriki_point', 'fac_building_point', 'fac_poi'],
 		line: ['ensyurin_road2', 'gsi_road'],
-		polygon: ['ensyurin_rinhan'],
+		polygon: ['ensyurin_rinhan', 'fr_mesh20m_kochi'],
 		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
 	};
 
