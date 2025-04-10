@@ -243,9 +243,9 @@
 					<button onclick={editLayer}>
 						<Icon icon="lucide:edit" class="ml-4 h-8 w-8" />
 					</button>
-					<button onclick={infoLayer}>
+					<!-- <button onclick={infoLayer}>
 						<Icon icon="akar-icons:info" class="h-8 w-8" />
-					</button>
+					</button> -->
 					<button onclick={removeLayer} class="">
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>

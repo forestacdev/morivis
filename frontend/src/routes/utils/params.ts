@@ -17,7 +17,7 @@ export const getParams = (params: string): { [key: string]: string } => {
 export const getMapParams = (): MapPosition => {
 	const params = get(
 		queryParameters({
-			c: ssp.array(),
+			c: ssp.string(),
 			z: ssp.number(),
 			p: ssp.number(),
 			b: ssp.number()
@@ -26,11 +26,10 @@ export const getMapParams = (): MapPosition => {
 	if (!params.c || !params.z || !params.p || !params.b) {
 		return MAP_POSITION;
 	}
-
-	const center = params.c.map((value) => Number(value)) as [number, number];
+	const center = params.c.split(',').map(Number) as [number, number];
 	const zoom = Number(params.z);
 	const pitch = Number(params.p);
-	const bearing = Number(params.d);
+	const bearing = Number(params.b);
 	return {
 		center,
 		zoom,
