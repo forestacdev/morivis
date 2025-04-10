@@ -16,6 +16,10 @@ import { getFgbToGeojson } from '$routes/utils/geojson';
 // TODO: Geotiff
 // import { fromUrl, Pool } from 'geotiff';
 
+const detectTileScheme = (url: string): 'tms' | 'xyz' => {
+	return url.includes('{-y}') ? 'tms' : 'xyz';
+};
+
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[]
 ): Promise<{ [_: string]: SourceSpecification }> => {
@@ -45,6 +49,7 @@ export const createSourcesItems = async (
 								tiles: [format.url],
 								maxzoom: metaData.maxZoom,
 								minzoom: metaData.minZoom,
+								scheme: detectTileScheme(format.url),
 								tileSize: metaData.tileSize,
 								attribution: metaData.attribution,
 								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]

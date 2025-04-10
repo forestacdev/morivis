@@ -26,7 +26,7 @@ const attributionData: Attribution[] = [
 	{
 		key: '国土地理院',
 		name: '国土地理院',
-		url: 'http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html'
+		url: 'https://maps.gsi.go.jp/development/ichiran.html'
 	},
 	{
 		key: '岐阜県森林研究所',
