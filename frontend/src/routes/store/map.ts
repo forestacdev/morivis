@@ -33,16 +33,21 @@ import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
 import { DEBUG_MODE } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
+import { get } from 'svelte/store';
 
 import { demProtocol } from '$routes/protocol/raster';
+import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
-const protocol = demProtocol('webgl');
-maplibregl.addProtocol(protocol.protocolName, protocol.request);
+const webgl = demProtocol('webgl');
+maplibregl.addProtocol(webgl.protocolName, webgl.request);
+
+const tileIndex = tileIndexProtocol('tile_index');
+maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
@@ -63,7 +68,7 @@ const createMapStore = () => {
 		const params = getParams(location.search);
 
 		if (params) {
-			if (params.debug && params.debug === 'true') {
+			if (params.debug && params.debug === '1') {
 				DEBUG_MODE.set(true);
 			}
 		}
@@ -89,6 +94,10 @@ const createMapStore = () => {
 			// 	return { url };
 			// }
 		});
+
+		if (get(DEBUG_MODE)) {
+			map.showTileBoundaries = true; // タイルの境界を表示
+		}
 		// map.scrollZoom.setWheelZoomRate(1 / 800);
 
 		// map.setBearing(mapPosition.bearing);

@@ -125,7 +125,11 @@
 					...selectedFocusSources
 				},
 				...labelLayer.sources,
-				...sources
+				...sources,
+				tile_index: {
+					type: 'vector',
+					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
+				}
 			},
 			layers: [
 				...layers,
@@ -139,6 +143,46 @@
 				},
 				streetViewLineLayer,
 				streetViewCircleLayer,
+				{
+					id: '@tile_index_layer',
+					type: 'fill',
+					source: 'tile_index',
+					'source-layer': 'geojsonLayer',
+					paint: {
+						'fill-color': '#000000',
+						'fill-opacity': 0.4
+					}
+				},
+				{
+					id: '@tile_index_line_layer',
+					type: 'line',
+					source: 'tile_index',
+					'source-layer': 'geojsonLayer',
+					paint: {
+						'line-color': '#000000',
+						'line-width': 2
+					}
+				},
+				// {
+				// 	id: 'tile_index_line_label',
+				// 	type: 'symbol',
+				// 	source: 'tile_index',
+				// 	'source-layer': 'geojsonLayer',
+				// 	paint: {
+				// 		'text-color': '#000000',
+				// 		'text-halo-color': '#FFFFFF',
+				// 		'text-halo-width': 1,
+				// 		'text-opacity': 1
+				// 	},
+				// 	layout: {
+				// 		'text-field': ['to-string', ['get', 'z']],
+				// 		'text-max-width': 12,
+				// 		'text-size': 12,
+				// 		'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+				// 		'text-radial-offset': 0.5,
+				// 		'text-justify': 'auto'
+				// 	}
+				// },
 				...labelLayer.layers
 			],
 			sky: {
