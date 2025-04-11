@@ -6,7 +6,7 @@ self.onmessage = async (e) => {
 
 	try {
 		const tileIndex = geojsonvt(geojson, {
-			maxZoom: 14,
+			maxZoom: 22,
 			tolerance: 3,
 			extent: 4096,
 			buffer: 64

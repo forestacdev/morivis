@@ -128,6 +128,8 @@
 				...sources,
 				tile_index: {
 					type: 'vector',
+					maxzoom: 22,
+
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
 				}
 			},
@@ -148,6 +150,7 @@
 					type: 'fill',
 					source: 'tile_index',
 					'source-layer': 'geojsonLayer',
+					maxzoom: 22,
 					paint: {
 						'fill-color': '#000000',
 						'fill-opacity': 0.4
