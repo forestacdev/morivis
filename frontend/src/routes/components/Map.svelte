@@ -145,27 +145,27 @@
 				},
 				streetViewLineLayer,
 				streetViewCircleLayer,
-				{
-					id: '@tile_index_layer',
-					type: 'fill',
-					source: 'tile_index',
-					'source-layer': 'geojsonLayer',
-					maxzoom: 22,
-					paint: {
-						'fill-color': '#000000',
-						'fill-opacity': 0.4
-					}
-				},
-				{
-					id: '@tile_index_line_layer',
-					type: 'line',
-					source: 'tile_index',
-					'source-layer': 'geojsonLayer',
-					paint: {
-						'line-color': '#000000',
-						'line-width': 2
-					}
-				},
+				// {
+				// 	id: '@tile_index_layer',
+				// 	type: 'fill',
+				// 	source: 'tile_index',
+				// 	'source-layer': 'geojsonLayer',
+				// 	maxzoom: 22,
+				// 	paint: {
+				// 		'fill-color': '#000000',
+				// 		'fill-opacity': 0.4
+				// 	}
+				// },
+				// {
+				// 	id: '@tile_index_line_layer',
+				// 	type: 'line',
+				// 	source: 'tile_index',
+				// 	'source-layer': 'geojsonLayer',
+				// 	paint: {
+				// 		'line-color': '#000000',
+				// 		'line-width': 2
+				// 	}
+				// },
 				// {
 				// 	id: 'tile_index_line_label',
 				// 	type: 'symbol',

@@ -32,11 +32,7 @@
 	let hoveredFeatureState: FeatureStateData | null = null;
 
 	map.on('click', (e) => {
-		const clickLayerIds = [
-			'@street_view_circle_layer',
-			'@tile_index_layer',
-			...$clickableVectorIds
-		];
+		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});

@@ -75,7 +75,7 @@ const entry: VectorEntry<TileMetaData> = {
 		},
 		icon: {
 			show: true,
-			size: 0.15
+			size: 0.2
 		},
 		labels: {
 			key: '名前',

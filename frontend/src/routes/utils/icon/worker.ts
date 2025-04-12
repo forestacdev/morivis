@@ -48,7 +48,7 @@ const createProgram = (
 	return program;
 };
 
-const canvas = new OffscreenCanvas(432, 512);
+const canvas = new OffscreenCanvas(440, 512);
 const gl = canvas.getContext('webgl2');
 
 self.onmessage = async (e) => {
