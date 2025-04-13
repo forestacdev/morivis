@@ -34,16 +34,16 @@
 	import type { Marker } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 
-	import DataMenu from '$routes/components/data_menu/_Index.svelte';
+	import DataMenu from '$routes/components/data-menu/_Index.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
-	import LayerMenu from '$routes/components/layer_menu/_Index.svelte';
+	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
-	import SideMenu from '$routes/components/side_menu/_Index.svelte';
-	import AngleMarker from '$routes/components/street_view/AngleMarker.svelte';
-	import StreetViewCanvas from '$routes/components/street_view/ThreeCanvas.svelte';
+	import SideMenu from '$routes/components/side-menu/_Index.svelte';
+	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
+	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';

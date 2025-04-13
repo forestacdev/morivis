@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import DataSlot from '$routes/components/data_menu/DataMenuSlot.svelte';
-	import DataPreview from '$routes/components/data_menu/DataPreview.svelte';
+	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
+	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
 	import { geoDataEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';

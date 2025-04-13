@@ -5,7 +5,7 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
-	import Logo from '$routes/components/side_menu/Logo.svelte';
+	import Logo from '$routes/components/side-menu/Logo.svelte';
 	import {
 		showSideMenu,
 		showDataMenu,

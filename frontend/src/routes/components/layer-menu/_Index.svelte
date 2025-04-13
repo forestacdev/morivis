@@ -4,8 +4,8 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fly } from 'svelte/transition';
 
-	import LayerOptionMenu from '$routes/components/layer_menu/layer_option_menu/_Index.svelte';
-	import LayerSlot from '$routes/components/layer_menu/LayerSlot.svelte';
+	import LayerOptionMenu from '$routes/components/layer-menu/layer-option-menu/_Index.svelte';
+	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
 	import { typeBreakIndices } from '$routes/store/layers';
