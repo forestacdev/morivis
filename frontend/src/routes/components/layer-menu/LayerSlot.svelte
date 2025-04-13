@@ -234,14 +234,17 @@
 						/>
 					</button>
 
-					<button onclick={focusLayer}>
-						<Icon icon="hugeicons:target-03" class="h-8 w-8" />
-					</button>
+					{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+						<button onclick={focusLayer}>
+							<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+						</button>
+					{/if}
+
 					<!-- <button onclick={copyLayer}>
 									<Icon icon="lucide:copy" />
 								</button> -->
 					<button onclick={editLayer}>
-						<Icon icon="lucide:edit" class="ml-4 h-8 w-8" />
+						<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
 					</button>
 					<!-- <button onclick={infoLayer}>
 						<Icon icon="akar-icons:info" class="h-8 w-8" />
