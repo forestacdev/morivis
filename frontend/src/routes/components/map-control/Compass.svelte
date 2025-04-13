@@ -1,15 +1,6 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
-	import type {
-		Map,
-		StyleSpecification,
-		SourceSpecification,
-		LayerSpecification,
-		TerrainSpecification,
-		Marker
-	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { isStreetView } from '$routes/store';
@@ -17,14 +8,6 @@
 	import { isPc } from '$routes/utils/ui';
 
 	gsap.registerPlugin(Draggable);
-
-	const setMapBearing = (e: any) => {
-		const mapBearing = e.target.value;
-	};
-
-	const setMapZoom = (e: any) => {
-		const mapZoom = e.target.value;
-	};
 
 	let element = $state<HTMLDivElement | null>(null);
 	// let rotation = $state<number>(0);
@@ -35,29 +18,32 @@
 	};
 
 	mapStore.onRotate((bearing) => {
-		if (bearing) {
-			// rotation = bearing;
-			if (!element) return;
-			element.style.transform = `rotate(${bearing * -1}deg)`;
-		}
+		if (!element || bearing == null) return;
+		// rotation = bearing;
+		if (!element) return;
+		gsap.set(element, {
+			rotation: bearing * -1
+		});
 	});
-
-	// マップの回転をリセットする関数
-	const resetMapRotation = () => {
-		mapStore.easeTo({ bearing: 0 });
-	};
 
 	onMount(() => {
 		if (!element) return;
 		Draggable.create(element, {
 			type: 'rotation', // 回転モード
 			inertia: true, // 慣性を有効化
+			dragResistance: 0.5, // ドラッグ抵抗
 			onDrag: function () {
 				const rotation = normalizeAngle(this.rotation); // 回転値を正規化して保持
 				mapStore.setBearing(rotation * -1);
 			},
 			onClick: function () {
 				mapStore.easeTo({ bearing: 0 });
+				// rotation = 0;
+				if (element) {
+					element.style.transform = `rotate(0deg)`;
+				}
+				this.rotation = 0;
+				this.update(); // 内部状態を反映（これが重要！）
 			},
 			onDragEnd: function () {
 				const bearing = mapStore.getBearing();
@@ -73,7 +59,7 @@
 	<!-- PC -->
 	<div
 		bind:this={element}
-		class="bg-main pointer-events-auto absolute bottom-[40px] right-[20px] grid h-[110px] w-[110px] place-items-center overflow-hidden rounded-full bg-opacity-60"
+		class="grid h-[110px] w-[110px] cursor-grab place-items-center overflow-hidden rounded-full border-2"
 	>
 		<svg
 			class="h-full w-full scale-50"

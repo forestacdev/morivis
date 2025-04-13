@@ -19,6 +19,7 @@
 	import FileManager from '$routes/components/FileManager.svelte';
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
+	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
 	import {
 		streetViewCircleLayer,
@@ -391,6 +392,7 @@
 				: 'bottom-0 left-0 h-full w-full opacity-100'}"
 	></div>
 	<MapControl />
+	<MapStatePane />
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:featureMenuData
