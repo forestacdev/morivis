@@ -71,7 +71,7 @@
 </script>
 
 <div
-	class="bg-main pointer-events-auto grid h-[50px] w-[50px] place-items-center overflow-hidden rounded-full"
+	class="bg-main pointer-events-auto relative grid h-[50px] w-[50px] place-items-center overflow-hidden rounded-full"
 	bind:this={controlContainer}
 >
 	<Icon
