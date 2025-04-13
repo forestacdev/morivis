@@ -3,12 +3,12 @@
 
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
 	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
-	import { geoDataEntry } from '$routes/data';
+	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
 
 	// export let mapBearing: number;
-	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntry]);
+	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ

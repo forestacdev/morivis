@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 
-import { geoDataEntry } from '$routes/data';
+import { geoDataEntries } from '$routes/data';
 import type { FeatureCollection, Feature } from 'geojson';
 import type { GeoDataEntry } from '$routes/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
@@ -42,6 +42,9 @@ export const isSide = writable<Side>(null);
 
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
+
+/** 検索ーメニューの表示 */
+export const showSearchMenu = writable<boolean>(false);
 
 /** インフォメーションの表示 */
 export const showInfoDialog = writable<boolean>(false);

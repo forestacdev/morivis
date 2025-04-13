@@ -37,28 +37,34 @@
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
+	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
+	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
+	import SideBar from '$routes/components/side-bar/SideBar.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
 	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
+	import Tooltip from '$routes/components/Tooltip.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
-	import { geoDataEntry } from '$routes/data';
+	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import { isStreetView, mapMode } from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 
 	type NodeConnections = Record<string, string[]>;
 
-	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntry]); // レイヤーデータ
+	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntries]); // レイヤーデータ
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
+	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
@@ -76,6 +82,7 @@
 	let cameraBearing = $state<number>(0);
 	let showMapCanvas = $state<boolean>(true);
 	let showThreeCanvas = $state<boolean>(false);
+	let featureMenuData = $state<FeatureMenuData | null>(null);
 
 	const markerContainer = document.createElement('div');
 	document.body.appendChild(markerContainer);
@@ -291,13 +298,18 @@
 		<Map
 			bind:layerEntries
 			bind:tempLayerEntries
+			bind:featureMenuData
 			{streetViewLineData}
 			{streetViewPointData}
 			{angleMarker}
 			{streetViewPoint}
 			{showMapCanvas}
 		/>
+		<SideBar />
 		<FooterMenu {layerEntries} />
+		<FeatureMenu bind:featureMenuData {layerEntries} />
+		<SearchMenu bind:featureMenuData bind:inputSearchWord {layerEntries} {layerEntriesData} />
+
 		<DataMenu />
 
 		<StreetViewCanvas
@@ -308,6 +320,8 @@
 			{setPoint}
 		/>
 	</div>
+
+	<Tooltip />
 {:else}
 	<!-- Mobile -->
 	<div class="relative flex h-full w-full flex-grow flex-col">
@@ -316,6 +330,7 @@
 		<Map
 			bind:layerEntries
 			bind:tempLayerEntries
+			bind:featureMenuData
 			{streetViewLineData}
 			{streetViewPointData}
 			{angleMarker}

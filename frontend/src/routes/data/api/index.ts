@@ -40,7 +40,7 @@ interface Address {
 import { GSI } from './muni';
 
 // 国土地理院APIの変換表を使って住所コードを住所に変換
-const addressCodeToAddress = (addressCode: string) => {
+export const addressCodeToAddress = (addressCode: string) => {
 	const csvString = GSI.MUNI_ARRAY[addressCode as keyof typeof GSI.MUNI_ARRAY];
 	if (!csvString) return '';
 	const parts = csvString.split(',');
@@ -64,6 +64,37 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 		} else {
 			throw new Error('Failed to fetch');
 		}
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error('Unknown error occurred');
+		}
+	}
+};
+
+/* 国土地理院APIの住所検索レスポンスデータ */
+interface GsiAddressSearchData {
+	geometry: {
+		coordinates: [number, number];
+		type: 'Point';
+	};
+	type: 'Feature';
+	properties: {
+		addressCode: string;
+		title: string;
+	};
+}
+
+/** 国土地理院APIの住所検索 */
+export const addressSearch = async (searchWord: string): Promise<GsiAddressSearchData[]> => {
+	const url = `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${searchWord}`;
+	try {
+		const response = await fetch(url, {
+			method: 'GET'
+		});
+
+		if (response.ok) return response.json();
 	} catch (error) {
 		if (error instanceof Error) {
 			throw new Error(error.message);

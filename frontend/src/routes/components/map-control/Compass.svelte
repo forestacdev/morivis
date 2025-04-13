@@ -6,6 +6,10 @@
 	import { isStreetView } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { isPc } from '$routes/utils/ui';
+	interface Props {
+		isHover: boolean;
+	}
+	let { isHover = $bindable() }: Props = $props();
 
 	gsap.registerPlugin(Draggable);
 
@@ -59,7 +63,9 @@
 	<!-- PC -->
 	<div
 		bind:this={element}
-		class="grid h-[110px] w-[110px] cursor-grab place-items-center overflow-hidden rounded-full border-2"
+		class="grid flex-shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-2 transition-all duration-200 {isHover
+			? '  h-[110px] w-[110px] '
+			: '  h-[50px] w-[50px] '} "
 	>
 		<svg
 			class="h-full w-full scale-50"

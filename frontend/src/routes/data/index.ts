@@ -26,7 +26,7 @@ export const entries: GeoDataEntry[] = Object.values(entryModules)
 	.map((mod) => mod.default)
 	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));
 
-export const geoDataEntry = (() => {
+export const geoDataEntries = (() => {
 	// 全てのIDを取得
 	const allIds = entries.map((entry) => entry.id);
 

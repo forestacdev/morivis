@@ -90,7 +90,7 @@
 {#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute left-0 top-0 z-10 flex h-full w-[400px] flex-col gap-2 overflow-hidden px-2 pt-4"
+		class="bg-main absolute left-0 top-0 z-20 flex h-full w-[400px] flex-col gap-2 overflow-hidden px-2 pt-4"
 	>
 		<div class="flex w-full justify-between pb-2">
 			<button onclick={() => (featureMenuData = null)} class="bg-base ml-auto rounded-full p-2">

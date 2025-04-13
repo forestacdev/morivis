@@ -1,25 +1,34 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
-	import type { Marker } from 'maplibre-gl';
+	import type { Marker, LngLatLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { DATA_PATH } from '$routes/constants';
+	import { geoDataEntries } from '$routes/data';
+	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ResultData } from '$routes/utils/feature';
 	interface Props {
 		layerEntries: GeoDataEntry[];
+		layerEntriesData: GeoDataEntry[];
 		results: ResultData[] | null;
 		inputSearchWord: string;
 	}
 
-	let { layerEntries, results = $bindable(), inputSearchWord = $bindable() }: Props = $props();
+	let {
+		layerEntries,
+		layerEntriesData,
+		results = $bindable(),
+		inputSearchWord = $bindable()
+	}: Props = $props();
 	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
 	let searchData: any = null; // 検索データ
 
-	const LIMIT = 1000; // 検索結果の表示上限
+	const LIMIT = 100; // 検索結果の表示上限
+	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
 	onMount(async () => {
 		// 検索データの初期化
@@ -31,6 +40,17 @@
 			.catch((error) => {
 				console.error('Error fetching search data:', error);
 			});
+
+		searchData.forEach((data) => {
+			const layerId = data.layer_id;
+
+			const layer = geoDataEntries.find((entry) => entry.id === layerId);
+			const location = layer ? layer.metaData.location : null;
+			if (location) {
+				// レイヤー名が存在する場合のみ辞書に追加
+				dict[layerId] = location;
+			}
+		});
 	});
 
 	// 検索処理
@@ -59,6 +79,7 @@
 			console.error('Search data is not loaded yet.');
 			return;
 		}
+
 		const fuse = new Fuse(searchData, {
 			keys: ['search_values'],
 			threshold: 0.1
@@ -67,6 +88,38 @@
 		const result = fuse.search(searchWord, {
 			limit: LIMIT
 		});
+
+		const resultsData = result.map((item) => {
+			const data = item.item;
+
+			return {
+				name: data.name,
+				location: dict[data.layer_id] || null,
+
+				tile: data.tile_coords,
+				point: data.point,
+				layerId: data.layer_id,
+				featureId: data.feature_id
+			};
+		});
+
+		let addressSearchResponse = await addressSearch(searchWord);
+
+		const addressSearchData = addressSearchResponse
+			.slice(0, LIMIT - result.length)
+			.map(({ geometry: { coordinates: center }, properties }) => {
+				const address = properties.addressCode
+					? addressCodeToAddress(properties.addressCode)
+					: null;
+
+				return {
+					point: center,
+					name: properties.title,
+					address
+				};
+			});
+
+		console.log('features', addressSearchData);
 
 		// const promises = test.map(async (data) => {
 		// 	const fgb = await getFgbToGeojson(`./fgb/${data.file_id}.fgb`, data.search_id);
@@ -78,24 +131,7 @@
 		// 	};
 		// });
 
-		const resultsData = result.map((item) => {
-			const data = item.item;
-
-			return {
-				name: data.name,
-
-				tile: data.tile_coords,
-				point: data.point,
-				layerId: data.layer_id,
-				featureId: data.feature_id
-			};
-		});
-
-		if (resultsData.length === 0) {
-			return;
-		}
-
-		results = resultsData;
+		results = [...resultsData, ...addressSearchData];
 
 		// const tilePattern = /^\d+\/\d+\/\d+$/;
 		// const match = searchWord.match(tilePattern);

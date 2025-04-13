@@ -23,7 +23,7 @@ import {
 	selectedHighlightData,
 	type SelectedHighlightData
 } from '$routes/store';
-import { geoDataEntry } from '$routes/data';
+import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
 	Labels,
@@ -54,7 +54,7 @@ import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
 
 // IDを収集
-const validIds = geoDataEntry.map((entry) => entry.id);
+const validIds = geoDataEntries.map((entry) => entry.id);
 const validateId = (id: string) => {
 	if (!validIds.includes(id)) {
 		throw new Error(`Invalid ID: ${id}`);

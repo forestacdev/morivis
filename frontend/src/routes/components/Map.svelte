@@ -15,9 +15,7 @@
 	import { onMount, mount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FileManager from '$routes/components/FileManager.svelte';
-	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
@@ -54,11 +52,13 @@
 		angleMarker: Marker | null;
 		streetViewPoint: any;
 		showMapCanvas: boolean;
+		featureMenuData: FeatureMenuData | null;
 	}
 
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
+		featureMenuData = $bindable(),
 		streetViewLineData,
 		streetViewPointData,
 		angleMarker,
@@ -81,8 +81,6 @@
 	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
-	let featureMenuData = $state<FeatureMenuData | null>(null);
-	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
@@ -380,8 +378,6 @@
 	ondragleave={dragleave}
 	class="relative h-full w-full"
 >
-	<HeaderMenu bind:featureMenuData {layerEntries} bind:inputSearchWord map={maplibreMap} />
-
 	<div
 		bind:this={mapContainer}
 		class="c-map-satellite absolute flex-grow bg-black transition-opacity duration-500 {!showMapCanvas &&
@@ -400,7 +396,6 @@
 		{layerEntries}
 		{clickedLngLat}
 	/>
-	<FeatureMenu bind:featureMenuData {layerEntries} />
 	<LockOnScreen />
 </div>
 

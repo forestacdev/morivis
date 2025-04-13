@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import type { Map as MLMap } from 'maplibre-gl';
 
-	import Geocoder from '$routes/components/header/Geocoder.svelte';
+	import Geocoder from '$routes/components/search-menu/Geocoder.svelte';
 	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showSideMenu, mapMode } from '$routes/store';

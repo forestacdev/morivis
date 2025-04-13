@@ -1,19 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { gsap } from 'gsap';
-	import { Draggable } from 'gsap/Draggable';
-	import type {
-		Map,
-		StyleSpecification,
-		SourceSpecification,
-		LayerSpecification,
-		TerrainSpecification,
-		Marker
-	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { showStreetViewLayer } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
 
 	const toggleLayer = () => {
 		showStreetViewLayer.set(!$showStreetViewLayer);

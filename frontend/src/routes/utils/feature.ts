@@ -8,4 +8,5 @@ export interface ResultData {
 	point: [number, number];
 	featureId: number;
 	layerId: string;
+	location: string;
 }
