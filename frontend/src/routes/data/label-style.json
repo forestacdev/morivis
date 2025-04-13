@@ -2209,6 +2209,7 @@
 				["zoom"],
 				[
 					"all",
+					["!=", ["get", "vt_text"], "森林文化アカデミー"],
 					["==", ["geometry-type"], "Point"],
 					[
 						"in",
@@ -2228,6 +2229,7 @@
 				16,
 				[
 					"all",
+					["!=", ["get", "vt_text"], "森林文化アカデミー"],
 					["==", ["geometry-type"], "Point"],
 					["in", ["get", "vt_flag17"], ["literal", [0, 1]]],
 					[
@@ -2248,6 +2250,7 @@
 				17,
 				[
 					"all",
+					["!=", ["get", "vt_text"], "森林文化アカデミー"],
 					["==", ["geometry-type"], "Point"],
 					["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
 					[
