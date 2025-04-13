@@ -1,7 +1,6 @@
-// 配列を自動ソートする ラスターが下になるように
-
 import { writable, derived } from 'svelte/store';
 
+// 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'label' | 'point' | 'line' | 'polygon' | 'raster';
 
 const TYPE_ORDER: LayerType[] = ['label', 'point', 'line', 'polygon', 'raster'];
@@ -98,3 +97,5 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 
 	return breaks;
 });
+
+export const showLabelLayer = writable<boolean>(true);

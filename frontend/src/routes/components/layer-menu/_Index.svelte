@@ -4,11 +4,14 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fly } from 'svelte/transition';
 
+	import Switch from '$routes/components/atoms/Switch.svelte';
 	import LayerOptionMenu from '$routes/components/layer-menu/layer-option-menu/_Index.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
 	import { typeBreakIndices } from '$routes/store/layers';
+	import { showLabelLayer } from '$routes/store/layers';
+
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable()
@@ -73,6 +76,10 @@
 		<div
 			class="c-scroll-hidden flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
+			{#if !$showDataMenu}
+				<div class="mb-1 border-t p-2 text-base font-bold"></div>
+				<Switch label="ラベル表示" bind:value={$showLabelLayer} />
+			{/if}
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					{#if $typeBreakIndices[i]}

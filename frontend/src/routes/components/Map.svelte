@@ -14,8 +14,6 @@
 	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
-	import labelLayer from './label.json';
-
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FileManager from '$routes/components/FileManager.svelte';
@@ -39,6 +37,7 @@
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { clickableRasterIds, isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d, isSide } from '$routes/store';
+	import { showLabelLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
@@ -84,25 +83,6 @@
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
-	let selectedFocusSources = $state<GeoJSONSourceSpecification>({
-		type: 'geojson',
-		data: {
-			type: 'FeatureCollection',
-			features: []
-		}
-	});
-
-	$effect(() => {
-		if (selectedFocusSources) {
-			const map = mapStore.getMap();
-			if (!map) return;
-			const source = map.getSource('selected_focus_sources') as maplibregl.GeoJSONSource;
-			if (source) {
-				source.setData(selectedFocusSources.data);
-			}
-		}
-	});
-
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
@@ -117,14 +97,10 @@
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			glyphs: MAP_FONT_DATA_PATH,
-			sprite: labelLayer.sprite,
+			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
 			sources: {
 				terrain: gsiTerrainSource,
 				...streetViewSources,
-				selected_focus_sources: {
-					...selectedFocusSources
-				},
-				...labelLayer.sources,
 				...sources,
 				tile_index: {
 					type: 'vector',
@@ -144,7 +120,7 @@
 					}
 				},
 				streetViewLineLayer,
-				streetViewCircleLayer,
+				streetViewCircleLayer
 				// {
 				// 	id: '@tile_index_layer',
 				// 	type: 'fill',
@@ -186,7 +162,6 @@
 				// 		'text-justify': 'auto'
 				// 	}
 				// },
-				...labelLayer.layers
 			],
 			sky: {
 				'sky-color': '#2baeff',
@@ -231,9 +206,15 @@
 		mapStore.terrainReload();
 	}, 100);
 
+	// レイヤーの更新を監視
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
+	});
+
+	// ラベルの表示
+	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
 	$effect(() => {

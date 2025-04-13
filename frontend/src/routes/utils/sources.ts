@@ -6,6 +6,9 @@ import {
 } from 'maplibre-gl';
 
 import type { GeoDataEntry } from '$routes/data/types';
+import { getLabelSources } from '$routes/utils/label';
+import { showLabelLayer } from '$routes/store/layers';
+import { get } from 'svelte/store';
 
 import { layerAttributions } from '$routes/store';
 import { type AttributionKey } from '$routes/data/attribution';
@@ -147,5 +150,10 @@ export const createSourcesItems = async (
 	// 出典表示を store に保存
 	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
-	return sourceItems;
+	// ラベルのソースを追加
+	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
+
+	return { ...sourceItems, ...labelSources } as {
+		[_: string]: SourceSpecification;
+	};
 };

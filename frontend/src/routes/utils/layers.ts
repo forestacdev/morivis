@@ -47,6 +47,8 @@ import type {
 } from '$routes/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/utils/featureState';
+import { getLabelLayers } from '$routes/utils/label';
+import { showLabelLayer } from '$routes/store/layers';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
@@ -771,9 +773,12 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	clickableVectorIds.set(clickableVecter);
 	clickableRasterIds.set(clickableRaster);
 
+	// デフォルトラベルの表示
+	const mapLabelItems = get(showLabelLayer) ? getLabelLayers() : [];
+
 	// const highlightLayers = get(selectedHighlightData)
 	// 	? createHighlightLayer(get(selectedHighlightData))
 	// 	: [];
 
-	return [...layerItems, ...symbolLayerItems];
+	return [...layerItems, ...mapLabelItems, ...symbolLayerItems];
 };
