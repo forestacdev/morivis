@@ -9,9 +9,7 @@
 	let observer;
 	let state: string = '';
 
-	const handleClassChange = (mutations) => {
-		if (!Array.isArray(mutations) && mutations.length === 0) return;
-
+	const handleClassChange = (mutations: MutationRecord[]) => {
 		const mutation = mutations[0];
 
 		if (mutation.attributeName === 'class') {
