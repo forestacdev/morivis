@@ -4,8 +4,8 @@
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/components/layerMenu/layerOptionMenu/ColorOption.svelte';
-	import LabelOption from '$routes/components/layerMenu/layerOptionMenu/LabelOption.svelte';
+	import ColorOption from '$routes/components/layer_menu/layer_option_menu/ColorOption.svelte';
+	import LabelOption from '$routes/components/layer_menu/layer_option_menu/LabelOption.svelte';
 	import type {
 		GeometryType,
 		PolygonEntry,

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import LabelLayerOption from './vecterOption/LabelLayerOption.svelte';
-	import LineStringOption from './vecterOption/LineStringOption.svelte';
-	import PointOption from './vecterOption/PointOption.svelte';
-	import PolygonOption from './vecterOption/PolygonOption.svelte';
+	import LabelLayerOption from './vecter_option/LabelLayerOption.svelte';
+	import LineStringOption from './vecter_option/LineStringOption.svelte';
+	import PointOption from './vecter_option/PointOption.svelte';
+	import PolygonOption from './vecter_option/PolygonOption.svelte';
 
 	import type {
 		VectorEntry,

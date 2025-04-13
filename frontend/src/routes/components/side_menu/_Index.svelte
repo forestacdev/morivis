@@ -5,7 +5,7 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
-	import Logo from '$routes/components/sideMenu/Logo.svelte';
+	import Logo from '$routes/components/side_menu/Logo.svelte';
 	import {
 		showSideMenu,
 		showDataMenu,
@@ -62,7 +62,7 @@
 		<div class="flex items-center justify-between">
 			<Logo />
 			<button onclick={() => showSideMenu.set(false)} class="bg-base rounded-full p-2">
-				<Icon icon="material-symbols:close-rounded" class="text-main w-4 h-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
 		<ui>

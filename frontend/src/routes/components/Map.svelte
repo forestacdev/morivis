@@ -17,16 +17,16 @@
 	import labelLayer from './label.json';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import FeatureMenu from '$routes/components/featureMenu/featureMenu.svelte';
+	import FeatureMenu from '$routes/components/feature_menu/featureMenu.svelte';
 	import FileManager from '$routes/components/FileManager.svelte';
 	import HeaderMenu from '$routes/components/header/_Index.svelte';
-	import MapControl from '$routes/components/mapControl/_Index.svelte';
-	import StreetViewLayer from '$routes/components/mapLayer/StreetViewLayer.svelte';
+	import MapControl from '$routes/components/map_control/_Index.svelte';
+	import StreetViewLayer from '$routes/components/map_layer/StreetViewLayer.svelte';
 	import {
 		streetViewCircleLayer,
 		streetViewLineLayer,
 		streetViewSources
-	} from '$routes/components/mapLayer/StreetViewLayer.svelte';
+	} from '$routes/components/map_layer/StreetViewLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/components/MouseManager.svelte';
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
