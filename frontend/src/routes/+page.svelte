@@ -34,7 +34,7 @@
 	import type { Marker } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 
-	import DataMenu from '$routes/components/data-menu/_Index.svelte';
+	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
