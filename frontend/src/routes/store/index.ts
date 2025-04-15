@@ -46,6 +46,9 @@ export const showDataMenu = writable<boolean>(false);
 /** 検索ーメニューの表示 */
 export const showSearchMenu = writable<boolean>(false);
 
+/** 地形メニュー */
+export const showTerrainMenu = writable<boolean>(false);
+
 /** インフォメーションの表示 */
 export const showInfoDialog = writable<boolean>(false);
 

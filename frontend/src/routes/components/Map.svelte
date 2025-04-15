@@ -11,7 +11,6 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 	import { onMount, mount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
@@ -32,6 +31,7 @@
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
 	import { BASE_PATH } from '$routes/constants';
+	import { demEntry } from '$routes/data/dem';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { clickableRasterIds, isStreetView } from '$routes/store';
@@ -66,9 +66,6 @@
 		showMapCanvas
 	}: Props = $props();
 
-	const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol, {
-		tileUrl: 'https://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png'
-	});
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
 
@@ -98,7 +95,15 @@
 			glyphs: MAP_FONT_DATA_PATH,
 			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
 			sources: {
-				terrain: gsiTerrainSource,
+				terrain: {
+					type: 'raster-dem',
+					tiles: [`terrain://${demEntry.url}?x={x}&y={y}&z={z}`],
+					tileSize: 256,
+					minzoom: demEntry.sourceMinZoom,
+					maxzoom: demEntry.sourceMaxZoom,
+					attribution: demEntry.attribution,
+					bounds: demEntry.bbox
+				},
 				...streetViewSources,
 				...sources,
 				tile_index: {

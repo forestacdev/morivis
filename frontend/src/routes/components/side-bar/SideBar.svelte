@@ -10,7 +10,8 @@
 		mapMode,
 		showInfoDialog,
 		showTermsDialog,
-		showSearchMenu
+		showSearchMenu,
+		showTerrainMenu
 	} from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { tooltip } from '$routes/store/tooltip';
@@ -37,6 +38,10 @@
 
 	const toggleSearchMenu = () => {
 		showSearchMenu.set(!$showSearchMenu);
+	};
+
+	const toggleTerrainMenu = () => {
+		showTerrainMenu.set(!$showTerrainMenu);
 	};
 </script>
 
@@ -78,7 +83,7 @@
 		</button>
 		<button
 			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-			onclick={toggleDataMenu}
+			onclick={toggleTerrainMenu}
 		>
 			<Icon icon="ic:round-terrain" class="h-8 w-8" />
 		</button>

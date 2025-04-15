@@ -47,6 +47,7 @@
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
 	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
+	import TerrainMenu from '$routes/components/terrain-menu/TerrainMenu.svelte';
 	import Tooltip from '$routes/components/Tooltip.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/data';
@@ -309,6 +310,7 @@
 		<FooterMenu {layerEntries} />
 		<FeatureMenu bind:featureMenuData {layerEntries} />
 		<SearchMenu bind:featureMenuData bind:inputSearchWord {layerEntries} {layerEntriesData} />
+		<TerrainMenu />
 
 		<DataMenu />
 

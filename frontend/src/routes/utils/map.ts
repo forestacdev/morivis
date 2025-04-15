@@ -17,6 +17,13 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
 	return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
 };
 
+type BBox = [number, number, number, number];
+export const isBBoxOverlapping = (bbox1: BBox, bbox2: BBox): boolean => {
+	const [minX1, minY1, maxX1, maxY1] = bbox1;
+	const [minX2, minY2, maxX2, maxY2] = bbox2;
+	return minX1 < maxX2 && maxX1 > minX2 && minY1 < maxY2 && maxY1 > minY2;
+};
+
 /**
  * Export the map as an image with a scale bar and compass.
  * @param map

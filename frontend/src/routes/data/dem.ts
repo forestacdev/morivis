@@ -145,7 +145,7 @@ export const demLayers: DemData[] = [
 		demType: 'gsi'
 	},
 	{
-		id: 'rinya_nagaoka_dem',
+		id: 'rinya_toyama_dem',
 		name: '富山県 DEM',
 		tiles: ['https://forestgeo.info/opendata/16_toyama/dem_terrainRGB_2021/{z}/{x}/{y}.png'],
 		tileSize: 256,

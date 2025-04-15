@@ -35,16 +35,24 @@ import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
 import { get } from 'svelte/store';
 
+import { isBBoxOverlapping } from '$routes/utils/map';
+
 import { demProtocol } from '$routes/protocol/raster';
 import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
+import { terrainProtocol } from '$routes/protocol/terrain';
+import {} from '$routes/data/dem';
 
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
+import { demEntry, type DemEntry } from '$routes/data/dem';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 const webgl = demProtocol('webgl');
 maplibregl.addProtocol(webgl.protocolName, webgl.request);
+
+const terrain = terrainProtocol('terrain');
+maplibregl.addProtocol(terrain.protocolName, terrain.request);
 
 const tileIndex = tileIndexProtocol('tile_index');
 maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
@@ -389,6 +397,57 @@ const createMapStore = () => {
 		};
 	};
 
+	const resetDem = () => {
+		if (!map) return;
+		map.setTerrain(null);
+		map.removeSource('terrain');
+
+		terrain.cancelAllRequests();
+
+		map.addSource('terrain', {
+			type: 'raster-dem',
+			tiles: [`${terrain.protocolName}://${demEntry.url}?demType=${demEntry.demType}`],
+			tileSize: 256,
+			minzoom: demEntry.sourceMinZoom,
+			maxzoom: demEntry.sourceMaxZoom,
+			attribution: demEntry.attribution,
+			bounds: demEntry.bbox
+		});
+
+		map.setTerrain({
+			source: 'terrain',
+			exaggeration: 1
+		});
+
+		const bbox = demEntry.bbox;
+		if (!bbox) return;
+
+		const bounds = map.getBounds().toArray();
+
+		const zoom = map.getZoom();
+
+		if (
+			!isBBoxOverlapping(demEntry.bbox, [...bounds[0], ...bounds[1]] as [
+				number,
+				number,
+				number,
+				number
+			])
+		) {
+			map.fitBounds(bbox, {
+				padding: 100,
+				duration: 0,
+				bearing: map.getBearing()
+			});
+		}
+
+		if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
+			map.setZoom(demEntry.sourceMaxZoom - 1.5);
+		}
+
+		terrainReload();
+	};
+
 	return {
 		subscribe,
 		init,
@@ -419,7 +478,8 @@ const createMapStore = () => {
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
 		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
 		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
-		terrainReload: terrainReload // 地形をリロードするメソッド
+		terrainReload: terrainReload, // 地形をリロードするメソッド
+		resetDem: resetDem // 地形をリセットするメソッド
 	};
 };
 
