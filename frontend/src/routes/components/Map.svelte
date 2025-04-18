@@ -4,6 +4,8 @@
 	import type {
 		StyleSpecification,
 		MapGeoJSONFeature,
+		CanvasSourceSpecification,
+		CanvasSource,
 		GeoJSONSourceSpecification,
 		Marker,
 		LngLat,
@@ -23,6 +25,7 @@
 		streetViewLineLayer,
 		streetViewSources
 	} from '$routes/components/map-layer/StreetViewLayer.svelte';
+	// import WebGLCanvasLayer from '$routes/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/components/MouseManager.svelte';
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
@@ -79,6 +82,17 @@
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 
+	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
+	let webGLCanvasSource = $state<CanvasSourceSpecification>({
+		type: 'canvas',
+		canvas: 'canvas-layer',
+		coordinates: [
+			[bbox[0], bbox[3]],
+			[bbox[2], bbox[3]],
+			[bbox[2], bbox[1]],
+			[bbox[0], bbox[1]]
+		]
+	}); // WebGLキャンバスソース
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
@@ -112,6 +126,7 @@
 
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
 				}
+				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
 				...layers,
@@ -125,6 +140,11 @@
 				},
 				streetViewLineLayer,
 				streetViewCircleLayer
+				// {
+				// 	id: '@webgl_canvas_layer',
+				// 	type: 'raster',
+				// 	source: 'webgl_canvas'
+				// }
 				// {
 				// 	id: '@tile_index_layer',
 				// 	type: 'fill',
@@ -407,6 +427,7 @@
 {#if maplibreMap}
 	<FileManager map={maplibreMap} bind:isDragover bind:dropFile />
 	<StreetViewLayer map={maplibreMap} />
+	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		map={maplibreMap}
 		bind:markerLngLat

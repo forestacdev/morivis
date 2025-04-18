@@ -89,6 +89,9 @@ dependencies:
   geotiff:
     specifier: ^2.1.3
     version: 2.1.3
+  gl-matrix:
+    specifier: ^3.4.3
+    version: 3.4.3
   gsap:
     specifier: ^3.12.5
     version: 3.12.7

@@ -238,6 +238,19 @@ const createMapStore = () => {
 		lockOnMarker = new maplibregl.Marker({ element }).setLngLat(lngLat).addTo(map);
 	};
 
+	const getMapContainer = async () => {
+		if (!map) return;
+		const canvas = map.getCanvasContainer();
+		const witdh = canvas.clientWidth;
+		const height = canvas.clientHeight;
+
+		return {
+			canvas,
+			witdh,
+			height
+		};
+	};
+
 	// クリックマーカーを削除するメソッド
 	const removeLockonMarker = () => {
 		if (!map || !lockOnMarker) return;
@@ -479,7 +492,8 @@ const createMapStore = () => {
 		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
 		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
 		terrainReload: terrainReload, // 地形をリロードするメソッド
-		resetDem: resetDem // 地形をリセットするメソッド
+		resetDem: resetDem, // 地形をリセットするメソッド
+		getMapContainer: getMapContainer // マップコンテナを取得するメソッド
 	};
 };
 
