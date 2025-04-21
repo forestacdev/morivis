@@ -1,5 +1,6 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
+	import type { MapMouseEvent } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -17,6 +18,7 @@
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
+		toggleTooltip: (e?: MapMouseEvent) => void;
 	}
 
 	let {
@@ -25,7 +27,8 @@
 		featureMenuData = $bindable(),
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
-		layerEntries
+		layerEntries,
+		toggleTooltip
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -155,8 +158,10 @@
 
 		if (features.length > 0) {
 			map.getCanvas().style.cursor = 'pointer';
+			toggleTooltip(e);
 		} else {
 			map.getCanvas().style.cursor = 'default';
+			toggleTooltip();
 		}
 	});
 

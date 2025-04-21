@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
-	import type {
-		StyleSpecification,
-		MapGeoJSONFeature,
-		CanvasSourceSpecification,
-		CanvasSource,
-		GeoJSONSourceSpecification,
-		Marker,
-		LngLat,
+	import {
+		type StyleSpecification,
+		type MapGeoJSONFeature,
+		type CanvasSourceSpecification,
+		type CanvasSource,
+		type GeoJSONSourceSpecification,
+		type MapMouseEvent,
+		type Marker,
+		type LngLat,
 		Popup
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
@@ -31,6 +32,7 @@
 	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
+	import Tooltip from '$routes/components/popup/Tooltip.svelte';
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
 	import { BASE_PATH } from '$routes/constants';
@@ -77,6 +79,8 @@
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let showMarker = $state<boolean>(false); // マーカーの表示
 	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
+	let showTooltip = $state<boolean>(false); // ツールチップの表示
+	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
 	let isDragover = $state(false);
 	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
@@ -240,6 +244,18 @@
 	showLabelLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
+
+	const toggleTooltip = (e?: MapMouseEvent) => {
+		if (!maplibreMap) return;
+		if (!e) {
+			showTooltip = false;
+			return;
+		}
+		if (e) {
+			tooltipLngLat = e.lngLat;
+			showTooltip = true;
+		}
+	};
 
 	$effect(() => {
 		if (!featureMenuData) {
@@ -435,9 +451,14 @@
 		bind:showMarker
 		bind:clickedLayerIds
 		{layerEntries}
+		{toggleTooltip}
 	/>
 	{#key markerLngLat}
 		<SelectionMarker map={maplibreMap} bind:show={showMarker} bind:lngLat={markerLngLat} />
+	{/key}
+
+	{#key showTooltip}
+		<Tooltip map={maplibreMap} bind:show={showTooltip} bind:lngLat={tooltipLngLat} />
 	{/key}
 {/if}
 

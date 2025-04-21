@@ -9,6 +9,7 @@ import type {
 	SourceSpecification,
 	LayerSpecification,
 	TerrainSpecification,
+	Popup,
 	PointLike,
 	Marker,
 	MapMouseEvent,
@@ -60,6 +61,7 @@ maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
+	let popup: Popup | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);

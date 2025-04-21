@@ -80,8 +80,8 @@ export const createSourcesItems = async (
 							geojson = await getFgbToGeojson(format.url);
 							GeojsonCache.set(entry.id, geojson);
 						} else if (format.type === 'geojson') {
-							geojson = await getGeojson(format.url);
-							GeojsonCache.set(entry.id, geojson);
+							// TODO: 表記はurlではなくdataがいいかも
+							geojson = format.url;
 						}
 
 						items[sourceId] = {
@@ -93,7 +93,7 @@ export const createSourcesItems = async (
 
 							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
 							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
-							// TODO: 線のグラデーシュンをする場合は以下を追加
+							// TODO: 線のグラデーションをする場合は以下を追加
 						} as GeoJSONSourceSpecification;
 					} else if (format.type === 'mvt') {
 						items[sourceId] = {
