@@ -102,8 +102,8 @@ dependencies:
     specifier: ^0.20.0
     version: 0.20.0
   maplibre-gl:
-    specifier: ^5.3.0
-    version: 5.3.0
+    specifier: ^5.4.0
+    version: 5.4.0
   papaparse:
     specifier: ^5.5.2
     version: 5.5.2
@@ -5138,8 +5138,8 @@ packages:
       semver: 6.3.1
     dev: true
 
-  /maplibre-gl@5.3.0:
-    resolution: {integrity: sha512-qru6B6jHlDPR4Q9/P4W1zEPbPofR4wwYbrrjiHKWI7yLtyXmpJ1/G1KaIYDr5uNdFbPZ7uiZAWdqtfdNLmIhGg==}
+  /maplibre-gl@5.4.0:
+    resolution: {integrity: sha512-ZVrtdFIhFAqt53H2k5Ssqn7QIKNI19fW+He5tr4loxZxWZffp1aZYY9ImNncAJaALU/NYlV6Eul7UVB56/N7WQ==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
     dependencies:
       '@mapbox/geojson-rewind': 0.5.2
