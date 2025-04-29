@@ -45,7 +45,7 @@
 {#if $showSideMenu}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute left-0 top-0 z-30 h-full w-full bg-black bg-opacity-50"
+		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50"
 		role="button"
 		tabindex="0"
 		onclick={() => showSideMenu.set(false)}
@@ -67,7 +67,7 @@
 		</div>
 		<ui>
 			<button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={() => mapMode.set('edit')}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
@@ -81,7 +81,7 @@
 				<span class="select-none">地図の解析</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleDataMenu}
 			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
@@ -94,7 +94,7 @@
 				<span class="select-none">設定</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={mapExport}
 			>
 				<Icon icon="bx:export" class="h-8 w-8" />
@@ -104,21 +104,21 @@
 		<div class="w-hull bg-base h-[1px] rounded-full"></div>
 		<ui>
 			<button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleTermsDialog}
 			>
 				<Icon icon="majesticons:note-text" class="h-8 w-8" />
 				<span class="select-none">利用規約</span>
 			</button>
 			<button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleInfoDialog}
 			>
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
 				<span class="select-none">このアプリについて</span>
 			</button>
 			<a
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				href="https://github.com/forestacdev/enshurin-viewer"
 				target="_blank"
 				rel="noopener noreferrer"
@@ -127,7 +127,7 @@
 			>
 
 			<a
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				href="https://www.forest.ac.jp/"
 				target="_blank"
 				rel="noopener noreferrer"

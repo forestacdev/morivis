@@ -58,6 +58,8 @@
 		streetViewPoint: any;
 		showMapCanvas: boolean;
 		featureMenuData: FeatureMenuData | null;
+		showSelectionMarker: boolean;
+		selectionMarkerLngLat: LngLat | null;
 	}
 
 	let {
@@ -68,7 +70,9 @@
 		streetViewPointData,
 		angleMarker,
 		streetViewPoint,
-		showMapCanvas
+		showMapCanvas,
+		showSelectionMarker = $bindable(),
+		selectionMarkerLngLat = $bindable()
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -77,8 +81,6 @@
 	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
-	let showMarker = $state<boolean>(false); // マーカーの表示
-	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
 	let showTooltip = $state<boolean>(false); // ツールチップの表示
 	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
@@ -263,7 +265,7 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			// maplibreMarker?.remove();
-			showMarker = false;
+			showSelectionMarker = false;
 		}
 	});
 
@@ -449,15 +451,19 @@
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		map={maplibreMap}
-		bind:markerLngLat
+		bind:markerLngLat={selectionMarkerLngLat}
 		bind:featureMenuData
-		bind:showMarker
+		bind:showMarker={showSelectionMarker}
 		bind:clickedLayerIds
 		{layerEntries}
 		{toggleTooltip}
 	/>
-	{#key markerLngLat}
-		<SelectionMarker map={maplibreMap} bind:show={showMarker} bind:lngLat={markerLngLat} />
+	{#key selectionMarkerLngLat}
+		<SelectionMarker
+			map={maplibreMap}
+			bind:show={showSelectionMarker}
+			bind:lngLat={selectionMarkerLngLat}
+		/>
 	{/key}
 
 	{#key showTooltip}

@@ -31,7 +31,7 @@
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
-	import type { Marker } from 'maplibre-gl';
+	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
@@ -84,6 +84,10 @@
 	let showMapCanvas = $state<boolean>(true);
 	let showThreeCanvas = $state<boolean>(false);
 	let featureMenuData = $state<FeatureMenuData | null>(null);
+
+	// 選択マーカー
+	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
+	let selectionMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
 	const markerContainer = document.createElement('div');
 	document.body.appendChild(markerContainer);
@@ -300,6 +304,8 @@
 			bind:layerEntries
 			bind:tempLayerEntries
 			bind:featureMenuData
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
 			{streetViewLineData}
 			{streetViewPointData}
 			{angleMarker}
@@ -309,7 +315,13 @@
 		<SideBar />
 		<FooterMenu {layerEntries} />
 		<FeatureMenu bind:featureMenuData {layerEntries} />
-		<SearchMenu bind:featureMenuData bind:inputSearchWord {layerEntries} {layerEntriesData} />
+		<SearchMenu
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/>
 		<TerrainMenu />
 
 		<DataMenu />

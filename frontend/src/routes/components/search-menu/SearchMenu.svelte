@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import type { Map as MapLibreMap } from 'maplibre-gl';
+	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { slide, fly } from 'svelte/transition';
 
@@ -21,12 +22,16 @@
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
+		showSelectionMarker: boolean;
+		selectionMarkerLngLat: LngLat;
 	}
 
 	let {
 		layerEntries,
 		featureMenuData = $bindable(),
-		inputSearchWord = $bindable()
+		inputSearchWord = $bindable(),
+		showSelectionMarker = $bindable(),
+		selectionMarkerLngLat = $bindable()
 	}: Props = $props();
 
 	let searchData: any = null; // 検索データ
@@ -81,6 +86,9 @@
 			center: result.point,
 			zoom: 17
 		});
+
+		selectionMarkerLngLat = result.point;
+		showSelectionMarker = true;
 	};
 
 	const searchFeature = async (searchWord: string) => {

@@ -8,7 +8,7 @@
 		map: maplibregl.Map;
 		lngLat: LngLat | null;
 		show: boolean;
-		feature: MapGeoJSONFeature;
+		feature: MapGeoJSONFeature | null;
 	}
 	let { lngLat = $bindable(), map, show = $bindable(), feature }: Props = $props();
 	let container = $state<HTMLElement | null>(null);

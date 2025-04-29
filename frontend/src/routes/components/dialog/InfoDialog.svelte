@@ -3,13 +3,12 @@
 	import { fade } from 'svelte/transition';
 
 	import { showInfoDialog } from '$routes/store';
-
 </script>
 
 {#if $showInfoDialog}
 	<div
 		transition:fade={{ duration: 100 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-50"
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
 	>
 		<div
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
@@ -35,21 +34,8 @@
 				</div>
 
 				<div class="pb-4">
-					<div class="pb-2 text-lg font-bold">利用データ</div>
-					<div class="">
-						本アプリケーションでは主に下記のデータを利用しております。
-
-						<ul class="list-disc pl-8">
-							<li>岐阜県立森林文化アカデミーの演習林データ</li>
-							<li>岐阜県森林研究所</li>
-							<li>国土地理院</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="pb-4">
 					<div class="pb-2 text-lg font-bold">Contributors / コントリビューターの皆さま</div>
-				
+
 					<div class="flex max-w-[300px] flex-col gap-2">
 						<a
 							class="lg:hover:bg-accent flex cursor-pointer items-center justify-start gap-2 rounded-full border-2 border-gray-300 p-2 transition-colors lg:hover:text-white"

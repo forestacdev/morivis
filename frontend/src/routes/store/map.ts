@@ -500,11 +500,10 @@ const createMapStore = () => {
 			});
 		}
 
-		if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
-			map.setZoom(demEntry.sourceMaxZoom - 1.5);
-		}
+		// if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
+		// 	map.setZoom(demEntry.sourceMaxZoom - 1.5);
+		// }
 		resetAllSourcesAndLayers();
-
 		terrainReload();
 	};
 

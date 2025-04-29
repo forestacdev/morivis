@@ -61,7 +61,6 @@
 	let demItems = $state<DemData[]>([...demLayers]);
 
 	$effect(() => {
-		console.log('selectedDem', selectedDem);
 		demEntry.url = selectedDem.tiles[0];
 		demEntry.demType = selectedDem.demType;
 		demEntry.sourceMinZoom = selectedDem.minzoom;
