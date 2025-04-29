@@ -293,7 +293,7 @@
 
 {#if isPc()}
 	<!-- PC -->
-	<div class="relative flex h-full w-full flex-grow">
+	<div class="relative flex h-full w-full grow">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map
@@ -326,7 +326,7 @@
 	<Tooltip />
 {:else}
 	<!-- Mobile -->
-	<div class="relative flex h-full w-full flex-grow flex-col">
+	<div class="relative flex h-full w-full grow flex-col">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map

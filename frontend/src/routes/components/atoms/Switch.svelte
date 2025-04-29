@@ -7,7 +7,7 @@
 </script>
 
 <label
-	class="hover:text-accent flex flex-grow cursor-pointer items-start justify-between gap-2 py-2 transition-colors duration-100"
+	class="hover:text-accent flex grow cursor-pointer items-start justify-between gap-2 py-2 transition-colors duration-100"
 >
 	<span class="select-none text-base font-bold">{label}</span>
 	<input type="checkbox" class="hidden" bind:checked={value} />

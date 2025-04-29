@@ -98,12 +98,12 @@
 			>
 				<Icon icon="material-symbols:close-rounded" class="h-4 w-4 text-black" />
 			</button>
-			<div class="flex flex-grow flex-col gap-2">
+			<div class="flex grow flex-col gap-2">
 				<div class="flex gap-2">
 					{#each selectedLayers as layerEntry (layerEntry.id)}
 						<button
 							animate:flip={{ duration: 200 }}
-							class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
+							class="duration-scale-100 relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 							onclick={() => showPopup(layerEntry.id)}
 							onmousemove={() => (selectedLayer = { layerId: layerEntry.id, bool: true })}
 							onmouseleave={() => (selectedLayer = { layerId: layerEntry.id, bool: false })}
@@ -112,7 +112,7 @@
 					{/each}
 					<!-- 標高値の取得 -->
 					<!-- <button
-						class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
+						class="duration-scale-100 relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 						><div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
 							<Icon
 								icon="material-symbols:elevation-outline"
@@ -123,13 +123,13 @@
 					</button> -->
 					<!-- TODO: 他の地図にアクセス -->
 					<!-- <button
-						class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
+						class="duration-scale-100 relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 						><div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
 							<Icon icon="simple-icons:googlemaps" class="pointer-events-none" width={30} />
 						</div>
 					</button>
 					<button
-						class="duration-scale-100 relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
+						class="duration-scale-100 relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 						><div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
 							<Icon icon="arcticons:osm-go" class="pointer-events-none" width={30} />
 						</div>

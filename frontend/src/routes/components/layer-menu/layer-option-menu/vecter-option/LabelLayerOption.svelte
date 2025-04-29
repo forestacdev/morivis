@@ -38,7 +38,7 @@
 	<Switch label={'表示'} bind:value={layerEntry.style.labels.show} />
 	<LabelPulldownBox bind:labels={layerEntry.style.labels} />
 
-	<!-- <div class="flex flex-grow flex-col gap-2">
+	<!-- <div class="flex grow flex-col gap-2">
 		{#each getlabelKeys(layerEntry.style.labels.expressions) as labelType (labelType.key)}
 			<label
 				class="text z-20 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-gray-400 p-2"

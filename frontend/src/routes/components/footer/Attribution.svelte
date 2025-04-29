@@ -23,7 +23,7 @@
 
 {#if attributions}
 	<div
-		class="pointer-events-none absolute bottom-0 right-0 z-10 flex h-full w-full flex-shrink-0 justify-end gap-2 text-nowrap p-2 text-white"
+		class="pointer-events-none absolute bottom-0 right-0 z-10 flex h-full w-full shrink-0 justify-end gap-2 text-nowrap p-2 text-white"
 	>
 		<!-- ホバーで出典表記の説明を出す -->
 		<span class="bg-main grid place-items-center rounded-full">
@@ -32,7 +32,7 @@
 		<div class="flex gap-2">
 			{#each attributions as atl}
 				<a
-					class="bg-main pointer-events-auto grid flex-grow cursor-pointer select-none place-items-center rounded-full px-2 text-xs"
+					class="bg-main pointer-events-auto grid grow cursor-pointer select-none place-items-center rounded-full px-2 text-xs"
 					href={atl.url}
 					target="_blank"
 					rel="noopener noreferrer"

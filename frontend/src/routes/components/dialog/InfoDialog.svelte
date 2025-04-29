@@ -12,9 +12,9 @@
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-50"
 	>
 		<div
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4 text-base"
+			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
 		>
-			<div class="flex flex-shrink-0 items-center justify-between pb-4">
+			<div class="flex shrink-0 items-center justify-between pb-4">
 				<span class="text-2xl font-bold">morivis（モリビス） について</span>
 				<button onclick={() => showInfoDialog.set(false)} class="bg-base rounded-full p-2">
 					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />

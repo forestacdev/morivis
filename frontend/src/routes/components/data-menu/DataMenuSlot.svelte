@@ -92,11 +92,11 @@
 </script>
 
 <div
-	class="relative mb-4 flex flex-shrink-0 flex-grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
-		class="relative flex aspect-video w-full flex-shrink-0 overflow-hidden"
+		class="relative flex aspect-video w-full shrink-0 overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
@@ -109,14 +109,14 @@
 
 	<div class="flex w-full items-center justify-start gap-2 py-2">
 		<label
-			class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
+			class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
 		>
 			<LayerIcon layerEntry={dataEntry} />
 		</label>
 		<span class="">{dataEntry.metaData.name}</span>
 	</div>
 
-	<div class=" flex-shrink-0">
+	<div class=" shrink-0">
 		{#if addedDataIds.includes(dataEntry.id)}
 			<button
 				onclick={() => deleteData(dataEntry.id)}
@@ -128,7 +128,7 @@
 		{:else}
 			<button
 				onclick={() => addData(dataEntry.id)}
-				class="c-btn-confirm flex flex-shrink-0 flex-grow items-center gap-2 px-4"
+				class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
 			>
 				<Icon icon="material-symbols:add" class=" h-8 w-8" />
 				<div>地図に追加</div>

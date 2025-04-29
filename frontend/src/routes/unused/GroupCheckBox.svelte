@@ -4,7 +4,7 @@
 	export let group: (string | number)[]; // 型を厳密に定義
 </script>
 
-<label class="flex flex-grow cursor-pointer gap-2">
+<label class="flex grow cursor-pointer gap-2">
 	<span>{label}</span>
 	<input type="checkbox" class="custom-checkbox" bind:group bind:value />
 </label>

@@ -32,8 +32,8 @@
 
 <div class="absolute bottom-0 z-20 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
 	<div class="bg-main relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2">
-		<div class="flex flex-grow items-center justify-between gap-4 p-2">
-			<span class="flex-shrink-0 text-lg text-base">データカタログ</span>
+		<div class="flex grow items-center justify-between gap-4 p-2">
+			<span class="shrink-0 text-lg text-base">データカタログ</span>
 			<div class="flex w-full max-w-[400px] rounded-full border-[1px] border-gray-400 px-4">
 				<input
 					class="c-search-form tex grid w-full text-left text-gray-500"
@@ -53,7 +53,7 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<div class="c-scroll relative h-full w-full flex-grow overflow-y-auto overflow-x-hidden">
+		<div class="c-scroll relative h-full w-full grow overflow-y-auto overflow-x-hidden">
 			<div class="css-grid h-full">
 				{#if filterDataEntries.length === 0}
 					<div

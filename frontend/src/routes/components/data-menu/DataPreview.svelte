@@ -234,7 +234,7 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="bg-main absolute inset-0 flex h-full w-full flex-grow"
+	class="bg-main absolute inset-0 flex h-full w-full grow"
 >
 	<div class="bg-main flex w-[400px] flex-col gap-2 p-2 text-base">
 		<div>{showDataEntry?.metaData.name}</div>

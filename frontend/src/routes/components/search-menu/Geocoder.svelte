@@ -58,7 +58,7 @@
 >
 	<input
 		type="text"
-		class="bg-main w-[280px] rounded-md px-4 py-2 text-base focus:outline-none"
+		class="bg-main w-[280px] rounded-md px-4 py-2 text-base focus:outline-hidden"
 		bind:value={inputSearchWord}
 		oncompositionstart={() => (isComposing = true)}
 		oncompositionend={() => (isComposing = false)}

@@ -181,7 +181,7 @@
 	>
 		<div class="flex items-center justify-start gap-2">
 			<label
-				class="relative grid h-[50px] w-[50px] flex-shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
+				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>

@@ -421,7 +421,7 @@
 >
 	<div
 		bind:this={mapContainer}
-		class="c-map-satellite absolute flex-grow bg-black transition-opacity duration-500 {!showMapCanvas &&
+		class="c-map-satellite absolute grow bg-black transition-opacity duration-500 {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'

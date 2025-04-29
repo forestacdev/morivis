@@ -24,7 +24,7 @@
 		><span>{value}</span>
 		{#if isHover}
 			<div transition:fade={{ duration: 100 }} class="grid place-items-center">
-				<Icon icon="majesticons:clipboard-line" class="mr-2 h-6 w-6 flex-shrink-0 text-base" />
+				<Icon icon="majesticons:clipboard-line" class="mr-2 h-6 w-6 shrink-0 text-base" />
 			</div>
 		{/if}</button
 	>

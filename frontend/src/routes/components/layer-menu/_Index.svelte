@@ -45,7 +45,7 @@
 {#if $mapMode === 'edit' || $showDataMenu}
 	<div
 		in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-		class="flex h-full flex-shrink-0 flex-col {!$showDataMenu ? 'w-[400px]' : 'w-[90px]'}"
+		class="flex h-full shrink-0 flex-col {!$showDataMenu ? 'w-[400px]' : 'w-[90px]'}"
 	></div>
 {/if}
 
@@ -74,7 +74,7 @@
 			</div>
 		{/if}
 		<div
-			class="c-scroll-hidden flex flex-grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
+			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
 			{#if !$showDataMenu}
 				<div class="mb-1 border-t p-2 text-base font-bold"></div>
@@ -98,7 +98,7 @@
 					/>
 				</div>
 			{/each}
-			<div class="h-[200px] w-full flex-shrink-0"></div>
+			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
 		<LayerOptionMenu bind:layerEntry bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
@@ -108,7 +108,7 @@
 				{#if !dragEnterType}
 					<button
 						onclick={() => showDataMenu.set(true)}
-						class="c-btn-confirm pointer-events-auto flex flex-shrink items-center justify-center gap-2"
+						class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"
 					>
 						<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
 							>データの追加</span

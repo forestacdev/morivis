@@ -10,7 +10,7 @@
 </script>
 
 <label
-	class="hover:text-accent flex flex-grow cursor-pointer items-center justify-start gap-2 pb-2 pt-4 transition-colors duration-100"
+	class="hover:text-accent flex grow cursor-pointer items-center justify-start gap-2 pb-2 pt-4 transition-colors duration-100"
 >
 	<Icon
 		icon="weui:arrow-filled"

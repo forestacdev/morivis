@@ -11,12 +11,12 @@
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-50"
 	>
 		<div
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] flex-grow flex-col rounded-md p-4 text-base"
+			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
 		>
-			<div class="flex flex-shrink-0 items-center justify-between overflow-auto pb-4">
+			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 				<span class="text-2xl font-bold">利用規約</span>
 			</div>
-			<div class="c-scroll flex h-full flex-grow flex-col overflow-y-auto overflow-x-hidden pb-4">
+			<div class="c-scroll flex h-full grow flex-col overflow-y-auto overflow-x-hidden pb-4">
 				<div class="pb-4">
 					本規約は、本アプリケーション（以下、「本アプリ」）の利用に関する条件を定めるものです。本アプリをご利用いただくことで、本規約に同意したものとみなします。
 				</div>
@@ -77,7 +77,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="flex flex-shrink-0 justify-center overflow-auto pt-2">
+			<div class="flex shrink-0 justify-center overflow-auto pt-2">
 				<button onclick={() => showTermsDialog.set(false)} class="c-btn-confirm px-12 py-6 text-lg">
 					同意する
 				</button>

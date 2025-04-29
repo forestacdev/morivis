@@ -157,7 +157,7 @@
 		</div>
 
 		<div
-			class="c-scroll-hidden flex flex-grow flex-col divide-y-2 divide-gray-400 overflow-y-auto overflow-x-hidden px-2 pb-4"
+			class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-400 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
 			{#if !results}
 				<button
@@ -175,7 +175,7 @@
 						onclick={() => focusFeature(result)}
 						class="flex w-full items-center justify-center gap-2 p-2 text-left text-base"
 					>
-						<div class="grid flex-shrink-0 place-items-center">
+						<div class="grid shrink-0 place-items-center">
 							{#if result.propId && propData[result.propId]}
 								<img
 									src={propData[result.propId].image}
@@ -191,7 +191,7 @@
 					</button>
 				{/each}
 			{/if}
-			<div class="h-[200px] w-full flex-shrink-0"></div>
+			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
 		<div
 			class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"

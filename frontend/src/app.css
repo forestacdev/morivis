@@ -1,6 +1,92 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --color-base: #e9e9e9;
+  --color-main: #282828;
+  --color-accent: #23a209;
+
+  --font-noto: Noto Sans JP;
+
+  --text-color-primary: #e9e9e9;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility c-btn-confirm {
+  /* 決定ボタンスタイル */
+  @apply cursor-pointer rounded-full border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+}
+
+@utility c-btn-delete {
+  /* 削除ボタンスタイル */
+  @apply cursor-pointer rounded-full border-2 border-red-500 bg-red-500 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-red-400;
+}
+
+@utility c-btn-cancel {
+  /* キャンセルボタンスタイル */
+  @apply cursor-pointer rounded-full border-2 border-gray-400 bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
+}
+
+@utility c-form-field {
+  /* 入力フォームスタイル */
+  @apply w-full rounded-sm border-2 border-gray-300 px-3 py-2 outline-accent transition-colors duration-200;
+}
+
+@utility c-select {
+  /* プルダウンスタイル */
+  @apply cursor-pointer rounded-lg border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
+}
+
+@utility c-scroll {
+  /* スクロールバー */
+  scrollbar-gutter: stable;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: #d9d9d9;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+  }
+}
+
+@utility c-scroll-hidden {
+  /* スクロールバー非表示 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility c-no-drag-icon {
+  /* アイコン画像のドラッグを無効にする */
+  user-drag: none;
+  -webkit-user-drag: none;
+  -moz-user-select: none;
+}
 
 @layer components {
 	:root {
@@ -8,62 +94,6 @@
 		--base-color: #e9e9e9;
 		--accent-color: #23a209;
 		--secondary-color: #11abe3;
-	}
-
-	/* 決定ボタンスタイル */
-	.c-btn-confirm {
-		@apply cursor-pointer rounded-full border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
-	}
-
-	/* 削除ボタンスタイル */
-	.c-btn-delete {
-		@apply cursor-pointer rounded-full border-2 border-red-500 bg-red-500 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-red-400;
-	}
-	/* キャンセルボタンスタイル */
-	.c-btn-cancel {
-		@apply cursor-pointer rounded-full border-2 border-gray-400 bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
-	}
-	/* 入力フォームスタイル */
-	.c-form-field {
-		@apply w-full rounded border-2 border-gray-300 px-3 py-2 outline-accent transition-colors duration-200;
-	}
-
-	/* プルダウンスタイル */
-	.c-select {
-		@apply cursor-pointer rounded-lg border-2 border-accent bg-accent p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-accent;
-	}
-
-	/* スクロールバー */
-	.c-scroll {
-		scrollbar-gutter: stable;
-	}
-
-	.c-scroll::-webkit-scrollbar {
-		width: 7px;
-		height: 7px;
-	}
-	.c-scroll::-webkit-scrollbar-track {
-		background-color: #d9d9d9;
-	}
-	.c-scroll::-webkit-scrollbar-thumb {
-		background-color: var(--accent-color);
-	}
-
-	/* スクロールバー非表示 */
-	.c-scroll-hidden {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-
-	.c-scroll-hidden::-webkit-scrollbar {
-		display: none;
-	}
-
-	/* アイコン画像のドラッグを無効にする */
-	.c-no-drag-icon {
-		user-drag: none;
-		-webkit-user-drag: none;
-		-moz-user-select: none;
 	}
 }
 

@@ -98,7 +98,7 @@
 			</button>
 		</div>
 		{#if srcData}
-			<div class="relative aspect-video w-full flex-shrink-0 overflow-hidden rounded-md">
+			<div class="relative aspect-video w-full shrink-0 overflow-hidden rounded-md">
 				<img
 					transition:fade
 					class="block h-full w-full object-cover"
@@ -110,7 +110,7 @@
 		{/if}
 		<div class="flex h-full flex-col gap-2">
 			<!-- タイトル -->
-			<div class="flex flex-shrink-0 flex-col gap-1 text-base">
+			<div class="flex shrink-0 flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
 					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
 						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
@@ -121,11 +121,11 @@
 				>
 			</div>
 			<!-- 切り替えタブ -->
-			<div class="flex w-full flex-shrink-0 gap-2 p-2">
+			<div class="flex w-full shrink-0 gap-2 p-2">
 				{#each options as option}
 					<label
 						for={option.value}
-						class="grid w-full flex-grow cursor-pointer select-none place-items-center rounded-full p-2 text-base transition-colors {showProp ===
+						class="grid w-full grow cursor-pointer select-none place-items-center rounded-full p-2 text-base transition-colors {showProp ===
 						option.value
 							? 'bg-gray-500'
 							: ''}"
@@ -146,7 +146,7 @@
 				{#if showProp === 'metadata'}
 					<div
 						transition:fly={{ duration: 200, x: 100 }}
-						class="flex-grow' absolute flex h-full w-full flex-col gap-2"
+						class="grow' absolute flex h-full w-full flex-col gap-2"
 					>
 						<div class="flex w-full items-center justify-start gap-2">
 							<Icon icon="lucide:map-pin" class="h-6 w-6 text-base" />
@@ -177,7 +177,7 @@
 				{:else if showProp === 'attributes'}
 					<div
 						transition:fly={{ duration: 200, x: 100 }}
-						class="c-scroll absolute flex h-full w-full flex-grow flex-col gap-2 overflow-y-auto"
+						class="c-scroll absolute flex h-full w-full grow flex-col gap-2 overflow-y-auto"
 					>
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}

@@ -91,7 +91,7 @@
 		</div>
 
 		<div
-			class="c-scroll-hidden flex flex-grow flex-col divide-y-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
+			class="c-scroll-hidden flex grow flex-col divide-y-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
 			<Switch label="3D表示" bind:value={$isTerrain3d} />
 			{#each demLayers as demItem}
