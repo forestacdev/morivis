@@ -48,7 +48,7 @@
 <div class="bg-main absolute left-2 top-2 z-10 flex flex-col gap-2 rounded-full p-2 text-base">
 	<ui>
 		<button
-			class="bg-main pointer-events-auto rounded-full p-2 text-left text-base"
+			class="hover:text-accent bg-main pointer-events-auto cursor-pointer rounded-full p-2 text-left text-base duration-150"
 			onclick={() => showSideMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
@@ -58,12 +58,12 @@
 	<ui>
 		<button
 			onclick={toggleSearchMenu}
-			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 		>
 			<Icon icon="stash:search-solid" class="h-8 w-8" />
 		</button>
 		<button
-			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 			onclick={() => mapMode.set('edit')}
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
@@ -76,7 +76,7 @@
 				<span class="select-none">地図の解析</span>
 			</button> -->
 		<button
-			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 			onclick={toggleDataMenu}
 		>
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />

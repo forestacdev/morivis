@@ -61,7 +61,10 @@
 	>
 		<div class="flex items-center justify-between">
 			<Logo />
-			<button onclick={() => showSideMenu.set(false)} class="bg-base rounded-full p-2">
+			<button
+				onclick={() => showSideMenu.set(false)}
+				class="bg-base cursor-pointer rounded-full p-2"
+			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
@@ -93,13 +96,13 @@
 				<Icon icon="weui:setting-filled" class="h-8 w-8" />
 				<span class="select-none">設定</span>
 			</button> -->
-			<button
+			<!-- <button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={mapExport}
 			>
 				<Icon icon="bx:export" class="h-8 w-8" />
 				<span class="select-none">地図をエクスポート</span>
-			</button>
+			</button> -->
 		</ui>
 		<div class="w-hull bg-base h-[1px] rounded-full"></div>
 		<ui>
