@@ -31,7 +31,7 @@ import { getLocationBbox } from '$routes/data/locationBbox';
 
 import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
-import { DEBUG_MODE } from '$routes/store';
+import { DEBUG_MODE, isTerrain3d } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/geojson';
 import { get } from 'svelte/store';
@@ -41,7 +41,6 @@ import { isBBoxOverlapping } from '$routes/utils/map';
 import { demProtocol } from '$routes/protocol/raster';
 import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/protocol/terrain';
-import {} from '$routes/data/dem';
 
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 import { demEntry, type DemEntry } from '$routes/data/dem';
@@ -167,13 +166,13 @@ const createMapStore = () => {
 			});
 			mooveEndEvent.set(e);
 
-			const zoom = map.getZoom();
+			// const zoom = map.getZoom();
 
-			if (zoom < 11) {
-				map.setProjection({ type: 'globe' });
-			} else {
-				map.setProjection({ type: 'mercator' });
-			}
+			// if (zoom < 11) {
+			// 	map.setProjection({ type: 'globe' });
+			// } else {
+			// 	map.setProjection({ type: 'mercator' });
+			// }
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
@@ -412,6 +411,51 @@ const createMapStore = () => {
 		};
 	};
 
+	const resetAllSourcesAndLayers = () => {
+		if (!map) {
+			console.warn('Map is not ready yet.');
+			return;
+		}
+
+		// 現在のスタイル情報を取得
+		const style = map.getStyle();
+
+		// sources と layers を保持
+		const sources = { ...style.sources };
+		const layers = [...style.layers];
+
+		// レイヤーをすべて削除（ソースに依存しているため先に）
+		for (const layer of layers) {
+			if (map.getLayer(layer.id)) {
+				map.removeLayer(layer.id);
+			}
+		}
+
+		// ソースをすべて削除
+		for (const sourceId in sources) {
+			if (map.getSource(sourceId)) {
+				map.removeSource(sourceId);
+			}
+		}
+
+		// ソースを元通り追加
+		for (const [sourceId, sourceDef] of Object.entries(sources)) {
+			map.addSource(sourceId, sourceDef);
+		}
+
+		// レイヤーを元通り追加（元の順番を維持）
+		for (const layer of layers) {
+			map.addLayer(layer);
+		}
+
+		if (get(isTerrain3d)) {
+			map.setTerrain({
+				source: 'terrain',
+				exaggeration: 1.0
+			});
+		}
+	};
+
 	const resetDem = () => {
 		if (!map) return;
 		map.setTerrain(null);
@@ -451,7 +495,7 @@ const createMapStore = () => {
 		) {
 			map.fitBounds(bbox, {
 				padding: 100,
-				duration: 0,
+				duration: 300,
 				bearing: map.getBearing()
 			});
 		}
@@ -459,6 +503,7 @@ const createMapStore = () => {
 		if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
 			map.setZoom(demEntry.sourceMaxZoom - 1.5);
 		}
+		resetAllSourcesAndLayers();
 
 		terrainReload();
 	};
@@ -495,6 +540,7 @@ const createMapStore = () => {
 		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
+		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
 		getMapContainer: getMapContainer // マップコンテナを取得するメソッド
 	};
 };

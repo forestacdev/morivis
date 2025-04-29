@@ -35,7 +35,6 @@
 	// };
 
 	isTerrain3d.subscribe((is3d) => {
-		console.log('is3d', is3d);
 		const map = mapStore.getMap();
 		if (!map) return;
 		if (is3d) {
@@ -43,9 +42,17 @@
 				source: 'terrain',
 				exaggeration: 1.0
 			});
+			// map.setSourceTileLodParams(
+			// 	2, // maxZoomLevelsOnScreen
+			// 	3.0 // tileCountMaxMinRatio
+			// );
 			map.easeTo({ pitch: 60 });
 		} else {
 			map.setTerrain(null);
+			// map.setSourceTileLodParams(
+			// 	-1, // maxZoomLevelsOnScreen
+			// 	-1 // tileCountMaxMinRatio
+			// );
 			map.easeTo({ pitch: 0 });
 		}
 	});
