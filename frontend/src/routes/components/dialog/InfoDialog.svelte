@@ -4,7 +4,6 @@
 
 	import { showInfoDialog } from '$routes/store';
 
-	// export let mapBearing: number;
 </script>
 
 {#if $showInfoDialog}
