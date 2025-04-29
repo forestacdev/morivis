@@ -72,6 +72,5 @@ export const INT_ADD_LAYER_IDS = [
 	// 'gifu_slope_map',
 	'gsi_rinya_m',
 	'gsi_seamlessphoto'
-
 	// 'gsi_std'
 ];

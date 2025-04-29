@@ -79,8 +79,10 @@
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 	let showMarker = $state<boolean>(false); // マーカーの表示
 	let markerLngLat = $state<LngLat | null>(null); // マーカーの位置
+
 	let showTooltip = $state<boolean>(false); // ツールチップの表示
 	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
+	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 	let isDragover = $state(false);
 	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
@@ -245,14 +247,15 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-	const toggleTooltip = (e?: MapMouseEvent) => {
+	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {
 		if (!maplibreMap) return;
-		if (!e) {
+		if (!e || !feature) {
 			showTooltip = false;
 			return;
 		}
 		if (e) {
 			tooltipLngLat = e.lngLat;
+			tooltipFeature = feature;
 			showTooltip = true;
 		}
 	};
@@ -458,7 +461,12 @@
 	{/key}
 
 	{#key showTooltip}
-		<Tooltip map={maplibreMap} bind:show={showTooltip} bind:lngLat={tooltipLngLat} />
+		<Tooltip
+			map={maplibreMap}
+			bind:show={showTooltip}
+			bind:lngLat={tooltipLngLat}
+			feature={tooltipFeature}
+		/>
 	{/key}
 {/if}
 

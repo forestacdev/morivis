@@ -1,6 +1,6 @@
 <script lang="ts">
 	import gsap from 'gsap';
-	import type { LngLat } from 'maplibre-gl';
+	import type { LngLat, MapGeoJSONFeature } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount, type Snippet } from 'svelte';
 
@@ -8,13 +8,14 @@
 		map: maplibregl.Map;
 		lngLat: LngLat | null;
 		show: boolean;
+		feature: MapGeoJSONFeature;
 	}
-	let { lngLat = $bindable(), map, show = $bindable() }: Props = $props();
+	let { lngLat = $bindable(), map, show = $bindable(), feature }: Props = $props();
 	let container = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
 
 	onMount(() => {
-		if (container && show) {
+		if (container && show && lngLat) {
 			marker = new maplibregl.Marker({
 				element: container,
 				anchor: 'center',
@@ -65,6 +66,7 @@
 		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
 	>
 		<!-- <div class="css-ripple-effect"></div> -->
+		<div class="absolute translate-y-10 text-base font-bold">{feature.layer.metadata.name}</div>
 		<div class="css-rotate-effect absolute h-[30px] w-[30px] rotate-45 border-2 border-white"></div>
 	</div>
 {/if}

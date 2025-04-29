@@ -107,6 +107,7 @@ interface LayerItem {
 	source: string;
 	maxzoom: number;
 	minzoom: number;
+	metadata?: unknown;
 	type?: string;
 	paint?:
 		| FillLayerSpecification['paint']
@@ -667,7 +668,11 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 				id: layerId,
 				source: sourceId,
 				maxzoom: 24,
-				minzoom: 0
+				minzoom: 0,
+				metadata: {
+					name: metaData.name,
+					location: metaData.location
+				}
 			};
 
 			switch (type) {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import type { MapMouseEvent } from 'maplibre-gl';
+	import type { MapGeoJSONFeature } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -18,7 +19,7 @@
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
-		toggleTooltip: (e?: MapMouseEvent) => void;
+		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 	}
 
 	let {
@@ -158,7 +159,7 @@
 
 		if (features.length > 0) {
 			map.getCanvas().style.cursor = 'pointer';
-			toggleTooltip(e);
+			toggleTooltip(e, features[0]);
 		} else {
 			map.getCanvas().style.cursor = 'default';
 			toggleTooltip();
