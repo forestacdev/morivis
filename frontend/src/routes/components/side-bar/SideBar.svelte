@@ -81,12 +81,12 @@
 		>
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
 		</button>
-		<button
+		<!-- <button
 			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 			onclick={toggleTerrainMenu}
 		>
 			<Icon icon="ic:round-terrain" class="h-8 w-8" />
-		</button>
+		</button> -->
 		<!-- <button
 			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 		>

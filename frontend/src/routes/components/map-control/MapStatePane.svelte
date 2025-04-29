@@ -4,6 +4,7 @@
 	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
 	import ScaleControl from '$routes/components/map-control/ScaleControl.svelte';
 	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
 	import ZoomControl from '$routes/components/map-control/ZoomControl.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
@@ -27,13 +28,14 @@
 <!-- PC -->
 <div class="absolute bottom-32 right-2 z-10 flex flex-col gap-2 p-2">
 	<StreetViewControl />
+	<TerrainControl />
 	<GeolocateControl />
 </div>
 
 <div
-	class="bg-main absolute bottom-12 right-0 z-20 flex h-auto gap-2 rounded-l-full p-2 text-sm text-white transition-all duration-200 {isHover
-		? 'w-[250px] opacity-100'
-		: 'w-[150px] opacity-80'}"
+	class="bg-main absolute bottom-12 right-0 z-20 flex h-auto w-[150px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
+		? 'opacity-100'
+		: 'opacity-80'}"
 	onmouseenter={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
 	role="button"

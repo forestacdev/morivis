@@ -63,9 +63,7 @@
 	<!-- PC -->
 	<div
 		bind:this={element}
-		class="grid shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-2 transition-all duration-200 {isHover
-			? '  h-[110px] w-[110px] '
-			: '  h-[50px] w-[50px] '} "
+		class="grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-2"
 	>
 		<svg
 			class="h-full w-full scale-50"

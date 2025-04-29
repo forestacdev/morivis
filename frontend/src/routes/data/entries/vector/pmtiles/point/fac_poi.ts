@@ -1,4 +1,4 @@
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 1,
 		sourceLayer: 'fac_poi',
 		bounds: [136.9190129344606, 35.548385, 136.925213, 35.555474],
-		coverImage: null
+		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_poi.webp`
 	},
 	properties: {
 		keys: ['name'],
