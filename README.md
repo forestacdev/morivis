@@ -20,3 +20,13 @@ APIs, data structures, and features are subject to change without notice.
 - SvelteKit
 - MapLibre GL JS
 - Three.js
+
+## Related Repository
+
+The forest and geographic data used in this project are managed separately.
+Please refer to the following repository for data management:
+
+- [morivis-data (Data Management Repository)](https://github.com/forestacdev/morivis-data)
+- [fac-cubemap-image (Cubemap Image Data)](https://github.com/forestacdev/fac-cubemap-image)
+
+Note: This repository (morivis) focuses only on the application (frontend logic).
