@@ -227,7 +227,7 @@
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
-					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}>
+					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)} class="cursor-pointer">
 						<Icon
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
 							class="h-8 w-8"
@@ -235,7 +235,7 @@
 					</button>
 
 					{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
-						<button onclick={focusLayer}>
+						<button class="cursor-pointer" onclick={focusLayer}>
 							<Icon icon="hugeicons:target-03" class="h-8 w-8" />
 						</button>
 					{/if}
@@ -243,13 +243,13 @@
 					<!-- <button onclick={copyLayer}>
 									<Icon icon="lucide:copy" />
 								</button> -->
-					<button onclick={editLayer}>
+					<button onclick={editLayer} class="cursor-pointer">
 						<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
 					</button>
 					<!-- <button onclick={infoLayer}>
 						<Icon icon="akar-icons:info" class="h-8 w-8" />
 					</button> -->
-					<button onclick={removeLayer} class="">
+					<button onclick={removeLayer} class='cursor-pointer'>
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
 				</div>

@@ -139,6 +139,8 @@
 
 		results = [...resultsData, ...addressSearchData];
 	};
+
+	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
 </script>
 
 <!-- レイヤーメニュー -->
@@ -158,30 +160,37 @@
 				onclick={() => {
 					showSearchMenu.set(false);
 				}}
-				class="bg-base rounded-full p-2"
+				class="bg-base cursor-pointer rounded-full p-2"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 			</button>
 		</div>
 
-		<div
-			class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-400 overflow-y-auto overflow-x-hidden px-2 pb-4"
-		>
-			{#if !results}
-				<button
-					class="flex w-full items-center justify-center gap-2 p-2 text-left text-base"
-					onclick={() => {
-						inputSearchWord = '自力建設';
-						searchFeature(inputSearchWord);
-					}}
-					>自力建設
-				</button>
-			{/if}
-			{#if results}
+		{#if !results}
+			<div
+				class="c-scroll-hidden flex grow flex-col gap-4 divide-y-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
+			>
+				{#each searchWards as searchWard}
+					<button
+						class="bg-base flex w-full cursor-pointer items-center justify-center gap-2 rounded-full p-2 text-left"
+						onclick={() => {
+							inputSearchWord = searchWard;
+							searchFeature(inputSearchWord);
+						}}
+						>{searchWard}
+					</button>
+				{/each}
+				<div class="h-[200px] w-full shrink-0"></div>
+			</div>
+		{/if}
+		{#if results}
+			<div
+				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
+			>
 				{#each results as result}
 					<button
 						onclick={() => focusFeature(result)}
-						class="flex w-full items-center justify-center gap-2 p-2 text-left text-base"
+						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
 					>
 						<div class="grid shrink-0 place-items-center">
 							{#if result.propId && propData[result.propId]}
@@ -198,9 +207,9 @@
 						</div>
 					</button>
 				{/each}
-			{/if}
-			<div class="h-[200px] w-full shrink-0"></div>
-		</div>
+				<div class="h-[200px] w-full shrink-0"></div>
+			</div>
+		{/if}
 		<div
 			class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
 		></div>

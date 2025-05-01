@@ -29,7 +29,7 @@
 			<button onclick={() => isEdit.set(false)} class="bg-base grid items-center rounded-full p-2">
 				<Icon icon="ep:back" class="text-main h-4 w-4" />
 			</button>
-			<span class="text-lg">レイヤーの編集</span>
+			<span class="text-lg text-base">レイヤーの編集</span>
 		</div>
 		<LayerSlot bind:layerEntry bind:tempLayerEntries />
 		<div class="c-scroll h-full grow overflow-x-hidden">

@@ -54,11 +54,11 @@
 </script>
 
 <div
-	class="duration-15 pointer-events-auto relative flex overflow-hidden rounded-full shadow-md transition-all"
+	class="duration-15 pointer-events-auto relative flex overflow-hidden rounded-full transition-all"
 >
 	<input
 		type="text"
-		class="bg-main w-[280px] rounded-md px-4 py-2 text-base focus:outline-hidden"
+		class="bg-base focus:outline-hidden w-[280px] rounded-md px-4 py-2"
 		bind:value={inputSearchWord}
 		oncompositionstart={() => (isComposing = true)}
 		oncompositionend={() => (isComposing = false)}
@@ -67,13 +67,13 @@
 				search(inputSearchWord);
 			}
 		}}
-		placeholder="検索"
+		placeholder="施設名/住所"
 	/>
 
 	<div class="absolute right-1 top-2 grid place-self-center pr-2">
 		{#if isLoading}
 			<div
-				class="h-6 w-6 animate-spin rounded-full border-2 border-gray-400 border-t-transparent"
+				class="h-6 w-6 animate-spin cursor-pointer rounded-full border-2 border-gray-400 border-t-transparent"
 			></div>
 		{:else}
 			<button

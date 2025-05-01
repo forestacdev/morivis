@@ -67,7 +67,7 @@
 						isEdit.set(false);
 						selectedLayerId.set('');
 					}}
-					class="bg-base rounded-full p-2"
+					class="bg-base cursor-pointer rounded-full p-2"
 				>
 					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
 				</button>

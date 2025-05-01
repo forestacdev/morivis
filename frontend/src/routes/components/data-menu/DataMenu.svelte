@@ -33,8 +33,8 @@
 <div class="absolute bottom-0 z-20 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
 	<div class="bg-main relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2">
 		<div class="flex grow items-center justify-between gap-4 p-2">
-			<span class="shrink-0 text-lg text-base">データカタログ</span>
-			<div class="flex w-full max-w-[400px] rounded-full border-[1px] border-gray-400 px-4">
+			<span class="shrink-0 text-base text-lg">データカタログ</span>
+			<div class="bg-base flex w-full max-w-[400px] rounded-full border-[1px] px-4">
 				<input
 					class="c-search-form tex grid w-full text-left text-gray-500"
 					type="text"
@@ -44,12 +44,12 @@
 				<button
 					onclick={() => (searchWord = '')}
 					disabled={!searchWord}
-					class="grid place-items-center"
+					class="grid cursor-pointer place-items-center"
 				>
 					<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 				</button>
 			</div>
-			<button onclick={toggleDataMenu} class="bg-base rounded-full p-2">
+			<button onclick={toggleDataMenu} class="bg-base cursor-pointer rounded-full p-2">
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>

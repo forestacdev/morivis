@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
+
+	import { showNotification } from '$routes/store/notification';
 	let { key, value } = $props();
 
 	let isHover = $state<boolean>(false);
@@ -8,7 +10,7 @@
 	// クリップボードにコピー
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text);
-		alert(`クリップボードに ${text} をコピーしました`);
+		showNotification(`クリップボードに ${text} をコピーしました`, 'info');
 	};
 </script>
 
@@ -20,7 +22,7 @@
 		onmouseleave={() => (isHover = false)}
 		onfocus={() => (isHover = true)}
 		onblur={() => (isHover = false)}
-		class="text-accent flex w-full items-center justify-between rounded-md p-2 pl-4 text-left transition-colors duration-150 lg:hover:bg-gray-700"
+		class="text-accent flex w-full cursor-pointer items-center justify-between rounded-md p-2 pl-4 text-left transition-colors duration-150 lg:hover:bg-gray-700"
 		><span>{value}</span>
 		{#if isHover}
 			<div transition:fade={{ duration: 100 }} class="grid place-items-center">
