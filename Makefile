@@ -6,6 +6,10 @@ build:
 	cd frontend && \
 	pnpm run build
 
+deploy:
+	cd frontend && \
+	pnpm run deploy
+
 preview:
 	cd frontend && \
 	pnpm run preview
