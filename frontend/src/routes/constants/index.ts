@@ -56,6 +56,7 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 /** クリックさせないlayerのid */
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
+// TODO: 使用していない
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
