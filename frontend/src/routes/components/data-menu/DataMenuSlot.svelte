@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -108,11 +107,6 @@
 	</button>
 
 	<div class="flex w-full items-center justify-start gap-2 py-2">
-		<label
-			class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
-		>
-			<LayerIcon layerEntry={dataEntry} />
-		</label>
 		<span class="">{dataEntry.metaData.name}</span>
 	</div>
 

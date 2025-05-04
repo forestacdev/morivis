@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import VirtualList from 'svelte-tiny-virtual-list';
 
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
 	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
@@ -28,6 +29,24 @@
 	const toggleDataMenu = () => {
 		showDataMenu.set(!showDataMenu);
 	};
+
+	let gridHeight = $state<number>(0);
+	let gridWidth = $state<number>(0);
+	let rowColumns = $state<number>(2); // グリッドの列数
+	let itemHeight = $state<number>(350 + 10); // item Height + grid margin & padding
+	let itemWidth = $state<number>(300 + 10); // item Height + grid margin & padding
+
+	$effect(() => {
+		if (gridWidth > itemWidth * 2) {
+			// 2列分の幅がある場合のみ再計算
+			rowColumns = Math.floor(gridWidth / itemWidth);
+			if (rowColumns < 2) {
+				rowColumns = 2; // 計算結果が2未満になった場合も2を維持
+			}
+		} else {
+			rowColumns = 2; // 幅が足りない場合は最低2列を維持
+		}
+	});
 </script>
 
 <div class="absolute bottom-0 z-20 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
@@ -53,19 +72,35 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<div class="c-scroll relative h-full w-full grow overflow-y-auto overflow-x-hidden">
-			<div class="css-grid h-full">
-				{#if filterDataEntries.length === 0}
-					<div
-						class="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
-					>
-						<span class="text-gray-500">データが見つかりません</span>
-					</div>
-				{/if}
-				{#each filterDataEntries as dataEntry (dataEntry.id)}
-					<DataSlot {dataEntry} bind:showDataEntry />
-				{/each}
+		{#if filterDataEntries.length === 0}
+			<div
+				class="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+			>
+				<span class="text-gray-500">データが見つかりません</span>
 			</div>
+		{/if}
+
+		<div class="c-scroll h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
+			<VirtualList
+				width="100%"
+				height="100%"
+				itemCount={filterDataEntries.length}
+				itemSize={itemHeight}
+				class="c-scroll"
+			>
+				<div slot="item" let:index let:style {style}>
+					<div class="row" style="--grid-columns: {rowColumns};">
+						{#each Array(rowColumns) as _, i}
+							{#if filterDataEntries[index * rowColumns + i]}
+								<DataSlot
+									dataEntry={filterDataEntries[index * rowColumns + i]}
+									bind:showDataEntry
+								/>
+							{/if}
+						{/each}
+					</div>
+				</div>
+			</VirtualList>
 		</div>
 		{#if showDataEntry}
 			<DataPreview bind:showDataEntry />
@@ -74,12 +109,12 @@
 </div>
 
 <style>
-	.css-grid {
+	.row {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 幅を指定 */
-		grid-auto-rows: 360px; /* 高さを指定 */
-		gap: 10px; /* 子要素間の隙間 */
+		gap: 10px;
+		grid-template-columns: repeat(var(--grid-columns), minmax(300px, 1fr));
 	}
+
 	/* 検索ボックスのスタイル */
 	.c-search-form {
 		appearance: none;

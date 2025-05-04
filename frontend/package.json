@@ -95,6 +95,7 @@
 		"pbf": "^4.0.1",
 		"pmtiles": "^4.1.0",
 		"proj4": "^2.15.0",
+		"svelte-tiny-virtual-list": "^2.1.2",
 		"three": "^0.172.0",
 		"vt-pbf": "^3.1.3"
 	},
