@@ -22,10 +22,10 @@
 
 	const TYPE_LABELS = {
 		label: 'ラベル',
-		point: 'スポット ',
-		line: 'パス',
-		polygon: 'エリア',
-		raster: 'ワールドマップ'
+		point: 'ポイント',
+		line: 'ライン',
+		polygon: 'ポリゴン',
+		raster: 'ラスター'
 	};
 
 	const TYPE_ICONS = {

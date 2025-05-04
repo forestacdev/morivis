@@ -24,7 +24,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		titles: [
 			{
 				conditions: [],
-				template: '林業専攻-OWL利用研修立木計測データ'
+				template: '施設案内棟'
 			}
 		]
 	},
