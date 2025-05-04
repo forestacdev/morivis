@@ -1,4 +1,5 @@
 export type AttributionKey =
+	| '_template'
 	| '森林文化アカデミー'
 	| '国土地理院'
 	| '岐阜県森林研究所'
