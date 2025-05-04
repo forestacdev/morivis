@@ -95,14 +95,19 @@
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
-		class="relative flex aspect-video w-full shrink-0 overflow-hidden"
+		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="css-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
-				alt="サムネイル"
+				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
+				alt={dataEntry.metaData.name}
 			/>
+			<div
+				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+			>
+				<span class="text-lg text-white">プレビュー</span>
+			</div>
 		{/await}
 	</button>
 

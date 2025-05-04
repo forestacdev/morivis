@@ -80,13 +80,12 @@
 			</div>
 		{/if}
 
-		<div class="c-scroll h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
+		<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
 			<VirtualList
 				width="100%"
 				height="100%"
-				itemCount={filterDataEntries.length}
+				itemCount={filterDataEntries.length / rowColumns + 1}
 				itemSize={itemHeight}
-				class="c-scroll"
 			>
 				<div slot="item" let:index let:style {style}>
 					<div class="row" style="--grid-columns: {rowColumns};">
@@ -109,6 +108,10 @@
 </div>
 
 <style>
+	.c-list :global(.virtual-list-wrapper) {
+		height: 100%;
+	}
+
 	.row {
 		display: grid;
 		gap: 10px;
