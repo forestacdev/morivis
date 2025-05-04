@@ -22,7 +22,7 @@
 	});
 </script>
 
-<div class="absolute bottom-2 left-2" bind:this={controlContainer}></div>
+<div class="absolute bottom-2 left-2 z-20" bind:this={controlContainer}></div>
 
 <style>
 </style>

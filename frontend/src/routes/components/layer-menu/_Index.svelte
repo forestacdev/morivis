@@ -22,10 +22,10 @@
 
 	const TYPE_LABELS = {
 		label: 'ラベル',
-		point: 'ポイント',
-		line: 'ライン',
-		polygon: 'ポリゴン',
-		raster: 'ラスター'
+		point: 'スポット ',
+		line: 'パス',
+		polygon: 'エリア',
+		raster: 'ワールドマップ'
 	};
 
 	// 編集中のレイヤーの取得
