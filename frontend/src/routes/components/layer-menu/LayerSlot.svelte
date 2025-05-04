@@ -170,7 +170,7 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-main c-dragging-style c-rounded relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-sub c-dragging-style c-rounded border-base relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
@@ -179,19 +179,13 @@
 		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
+			<!-- アイコン -->
 			<label
 				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
-				<input
-					type="checkbox"
-					class="hidden"
-					oninput={() => {
-						if ($showDataMenu) return; // メニューが開いているときはチェックボックスを無効化
-						toggleChecked(layerEntry.id);
-					}}
-				/>
+				<input type="checkbox" class="hidden" bind:checked={layerEntry.style.visible} />
 				{#if layerEntry.style.visible}
 					<LayerIcon {layerEntry} />
 				{/if}
@@ -199,7 +193,7 @@
 				{#if isHovered || !layerEntry.style.visible}
 					<div
 						transition:fade={{ duration: 100 }}
-						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black bg-opacity-50"
+						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50"
 					></div>
 					<div
 						transition:fade={{ duration: 100 }}
@@ -207,7 +201,7 @@
 							? 'text-red-500'
 							: 'text-neutral-200'}"
 					>
-						<Icon icon="ic:round-power-settings-new" width={30} />
+						<Icon icon="akar-icons:eye-slashed" width={30} />
 					</div>
 				{/if}
 			</label>
@@ -225,6 +219,25 @@
 					{/if} -->
 				</div>
 			</div>
+
+			<label
+				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
+			>
+				<input
+					type="checkbox"
+					class="hidden"
+					oninput={() => {
+						if ($showDataMenu) return; // メニューが開いているときはチェックボックスを無効化
+						toggleChecked(layerEntry.id);
+					}}
+				/>
+				<Icon
+					icon="weui:arrow-filled"
+					class="h-8 w-8 text-base transition-transform duration-150 {showLegend
+						? '-rotate-90'
+						: 'rotate-90'}"
+				/>
+			</label>
 		</div>
 	</button>
 	{#if showLegend}
@@ -233,7 +246,7 @@
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
-					<button
+					<!-- <button
 						onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
 						class="cursor-pointer"
 					>
@@ -241,7 +254,7 @@
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
 							class="h-8 w-8"
 						/>
-					</button>
+					</button> -->
 
 					{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 						<button class="cursor-pointer" onclick={focusLayer}>

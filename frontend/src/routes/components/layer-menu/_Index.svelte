@@ -28,6 +28,14 @@
 		raster: 'ワールドマップ'
 	};
 
+	const TYPE_ICONS = {
+		label: 'mynaui:label-solid',
+		point: 'ic:baseline-mode-standby',
+		line: 'ic:baseline-polymer',
+		polygon: 'ic:baseline-pentagon',
+		raster: 'mdi:raster'
+	};
+
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
 		if (!id) {
@@ -85,9 +93,16 @@
 					{#if $typeBreakIndices[i]}
 						<!-- この index はタイプの切り替え地点 -->
 						<div
-							class="mb-1 mt-4 border-t p-2 text-base font-bold {$showDataMenu ? 'text-sm' : ''}"
+							class="mb-1 mt-4 flex items-center gap-2 border-t p-2 text-base {$showDataMenu
+								? 'text-sm'
+								: ''}"
 						>
-							{TYPE_LABELS[$typeBreakIndices[i]]}
+							<Icon
+								icon={TYPE_ICONS[$typeBreakIndices[i]]}
+								class="pointer-events-none"
+								width={20}
+							/>
+							<span class="">{TYPE_LABELS[$typeBreakIndices[i]]}</span>
 						</div>
 					{/if}
 					<LayerSlot
