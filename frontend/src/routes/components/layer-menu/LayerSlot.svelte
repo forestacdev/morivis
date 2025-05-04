@@ -8,8 +8,7 @@
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
-	import { showDataMenu } from '$routes/store';
-	import { selectedLayerId, isEdit } from '$routes/store';
+	import { selectedLayerId, isEdit, showDataMenu } from '$routes/store';
 	import {
 		orderedLayerIds,
 		groupedLayerStore,
@@ -185,7 +184,14 @@
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
-				<input type="checkbox" class="hidden" oninput={() => toggleChecked(layerEntry.id)} />
+				<input
+					type="checkbox"
+					class="hidden"
+					oninput={() => {
+						if ($showDataMenu) return; // メニューが開いているときはチェックボックスを無効化
+						toggleChecked(layerEntry.id);
+					}}
+				/>
 				{#if layerEntry.style.visible}
 					<LayerIcon {layerEntry} />
 				{/if}
@@ -227,7 +233,10 @@
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
-					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)} class="cursor-pointer">
+					<button
+						onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+						class="cursor-pointer"
+					>
 						<Icon
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
 							class="h-8 w-8"
@@ -249,7 +258,7 @@
 					<!-- <button onclick={infoLayer}>
 						<Icon icon="akar-icons:info" class="h-8 w-8" />
 					</button> -->
-					<button onclick={removeLayer} class='cursor-pointer'>
+					<button onclick={removeLayer} class="cursor-pointer">
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
 				</div>
