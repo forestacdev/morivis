@@ -7,7 +7,7 @@
 	class="hover:text-accent flex cursor-pointer items-center justify-between transition-colors duration-100"
 >
 	{#if label}
-		<span class="select-none">{label}</span>
+		<span class="select-none text-base">{label}</span>
 	{/if}
 	<div
 		class="grid h-[30px] w-[30px] place-items-center rounded-full"
