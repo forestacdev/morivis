@@ -16,6 +16,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { GeojsonCache } from '$routes/utils/geojson';
+	import { handleStyleImageMissing } from '$routes/utils/icon';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
 
@@ -103,52 +104,14 @@
 			if (showDataEntry) {
 				(async () => {
 					map = new Map({
-						container: mapContainer as HTMLElement, // 地図を表示する要素
+						container: mapContainer as HTMLElement,
 						style: await createMapStyle([showDataEntry]), // スタイル設定
 						...MAP_POSITION, // 地図の初期位置
 						pitch: 0,
 						bearing: 0
 					});
 
-					iconWorker = new Worker(new URL('../../utils/icon/worker.ts', import.meta.url), {
-						type: 'module'
-					});
-
-					// メッセージハンドラーを一度だけ定義
-					iconWorker.onmessage = async (e) => {
-						const { imageBitmap, id } = e.data;
-
-						if (map && !map.hasImage(id)) {
-							map.addImage(id, imageBitmap);
-						}
-					};
-
-					// エラーハンドリングを追加
-					iconWorker.onerror = (error) => {
-						console.error('Worker error:', error);
-					};
-
-					// 処理中の画像IDを追跡
-					const processingImages = new Set();
-
-					map.on('styleimagemissing', async (e) => {
-						if (!map) return;
-						const id = e.id;
-
-						// すでに処理中または追加済みの画像はスキップ
-						if (processingImages.has(id) || map.hasImage(id)) return;
-
-						try {
-							processingImages.add(id);
-							const imageUrl = propData[id].image;
-							if (!imageUrl) return;
-
-							iconWorker.postMessage({ id, url: imageUrl });
-						} catch (error) {
-							console.error(`Error processing image for id ${id}:`, error);
-							processingImages.delete(id);
-						}
-					});
+					map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 					if (showDataEntry.format.type === 'fgb') {
 						try {
