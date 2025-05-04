@@ -24,7 +24,6 @@ iconWorker.onerror = (error) => {
 };
 
 const loadImage = async (src: string): Promise<ImageBitmap> => {
-	console.log('Loading image from:', src);
 	const response = await fetch(src);
 	if (!response.ok) {
 		throw new Error('Failed to fetch image');

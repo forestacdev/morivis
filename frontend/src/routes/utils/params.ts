@@ -23,7 +23,17 @@ export const getMapParams = (): MapPosition => {
 			b: ssp.number()
 		})
 	);
-	if (!params.c || !params.z || !params.p || !params.b) {
+
+	if (
+		params.c === null ||
+		params.c === undefined ||
+		params.z === null ||
+		params.z === undefined ||
+		params.p === null ||
+		params.p === undefined ||
+		params.b === null ||
+		params.b === undefined
+	) {
 		return MAP_POSITION;
 	}
 	const center = params.c.split(',').map(Number) as [number, number];

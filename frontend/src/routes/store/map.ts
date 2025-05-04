@@ -61,7 +61,6 @@ maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
-	let popup: Popup | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 	const clickEvent = writable<MapMouseEvent | null>(null);
@@ -90,7 +89,6 @@ const createMapStore = () => {
 			container: mapContainer,
 			style: mapStyle,
 			fadeDuration: 50, // フェードアニメーションの時間
-			// preserveDrawingBuffer: true, // スクリーンショットを撮るために必要
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
