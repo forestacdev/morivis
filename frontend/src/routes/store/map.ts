@@ -182,12 +182,13 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
+		// Process for generating missing icons
 		map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		initEvent.set(map);
 	};
 
-	// マップスタイルを設定するメソッド
+	// Method for setting map style
 	const setStyle = (style: StyleSpecification) => {
 		if (!map) return;
 		setStyleEvent.set(style);
