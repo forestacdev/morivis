@@ -43,9 +43,9 @@
 			>
 				{#each labelsList as labelItem (labelItem.key)}
 					<label
-						class="hover:text-accent z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {labelItem.key ===
+						class="hover:text-accent bg-sub z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {labelItem.key ===
 						labels.key
-							? 'bg-accent text-white hover:text-white'
+							? 'bg-accent'
 							: ''}"
 					>
 						<input

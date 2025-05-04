@@ -21,9 +21,9 @@
 		{#each options as line (line.key)}
 			<label
 				for={line.key}
-				class="text z-20 flex w-full cursor-pointer items-center justify-center bg-gray-400 p-2 {line.key ===
+				class="z-20 flex w-full cursor-pointer items-center justify-center p-2 text-white {line.key ===
 				group
-					? 'bg-green-600 text-white'
+					? 'bg-green-600 '
 					: 'bg-gray-400'}"
 			>
 				<input type="radio" id={line.key} bind:group value={line.key} class="hidden" />
