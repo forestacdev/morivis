@@ -23,7 +23,17 @@ iconWorker.onerror = (error) => {
 	console.error('Worker error:', error);
 };
 
-export const handleStyleImageMissing = (e: MapStyleImageMissingEvent, map: Map | null) => {
+const loadImage = async (src: string): Promise<ImageBitmap> => {
+	console.log('Loading image from:', src);
+	const response = await fetch(src);
+	if (!response.ok) {
+		throw new Error('Failed to fetch image');
+	}
+	const blob = await response.blob();
+	return await createImageBitmap(blob);
+};
+
+export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
 	if (!map) return;
 	mapLibreMap = map;
 	const id = e.id;
@@ -33,9 +43,11 @@ export const handleStyleImageMissing = (e: MapStyleImageMissingEvent, map: Map |
 
 	try {
 		const imageUrl = propData[id].image;
-		if (!imageUrl) return;
 
-		iconWorker.postMessage({ id, url: imageUrl });
+		if (!imageUrl) return;
+		const image = await loadImage(imageUrl);
+
+		iconWorker.postMessage({ id, image });
 	} catch (error) {
 		console.error(`Error processing image for id ${id}:`, error);
 	}

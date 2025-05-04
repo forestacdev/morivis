@@ -1,15 +1,6 @@
 import vertexShaderSource from './shader/vertex.glsl?raw';
 import fragmentShaderSource from './shader/fragment.glsl?raw';
 
-const loadImage = async (src: string): Promise<ImageBitmap> => {
-	const response = await fetch(src);
-	if (!response.ok) {
-		throw new Error('Failed to fetch image');
-	}
-	const blob = await response.blob();
-	return await createImageBitmap(blob);
-};
-
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (
 	gl: WebGLRenderingContext,
@@ -52,10 +43,8 @@ const canvas = new OffscreenCanvas(440, 512);
 const gl = canvas.getContext('webgl2');
 
 self.onmessage = async (e) => {
-	const { id, url } = e.data;
+	const { id, image } = e.data;
 	try {
-		const image = await loadImage(url);
-
 		if (!gl) {
 			console.error('WebGL not supported');
 			return new ImageBitmap();
