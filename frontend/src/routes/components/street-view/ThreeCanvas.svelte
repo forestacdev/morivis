@@ -13,8 +13,6 @@
 	import type { NextPointData, StreetViewPoint } from '$routes/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 
-	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
-	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IN_CAMERA_FOV = 75;
 	const OUT_CAMERA_FOV = 150;
@@ -339,9 +337,9 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="absolute left-4 top-[100px] z-10 flex items-center justify-center gap-2 rounded-lg bg-white p-2"
+				class="bg-main absolute left-4 top-[100px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white"
 			>
-				<button class="rounded-md bg-white p-2" onclick={() => ($isStreetView = false)}
+				<button class="cursor-pointer rounded-md p-2" onclick={() => ($isStreetView = false)}
 					><Icon icon="ep:back" class="h-4 w-4" />
 				</button>
 				<span>撮影日:{streetViewPoint.properties['Date']}<span> </span></span>
