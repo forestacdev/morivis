@@ -1,4 +1,8 @@
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
+import {
+	DEFAULT_RASTER_BASEMAP_INTERACTION,
+	DEFAULT_RASTER_BASEMAP_STYLE
+} from '$routes/data/style';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gbank_seamless',
@@ -20,26 +24,13 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 			x: 1827,
 			y: 777,
 			z: 11
-		},
-		bounds: null,
-		coverImage: null
+		}
 	},
 	interaction: {
-		clickable: true,
-		overlay: true
+		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
 	style: {
-		type: 'basemap',
-		opacity: 1.0,
-		hueRotate: 0,
-		brightnessMin: 0,
-		brightnessMax: 1,
-		saturation: 0,
-		contrast: 0,
-		raster: {
-			paint: {},
-			layout: {}
-		}
+		...DEFAULT_RASTER_BASEMAP_STYLE
 	}
 };
 

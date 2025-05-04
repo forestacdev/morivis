@@ -17,8 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_kochi',
-		bounds: [132.479888, 32.702505, 134.31367, 33.882997],
-		coverImage: null
+		bounds: [132.479888, 32.702505, 134.31367, 33.882997]
 	},
 	properties: {
 		keys: [],

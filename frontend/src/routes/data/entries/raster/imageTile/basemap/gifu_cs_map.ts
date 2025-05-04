@@ -1,4 +1,8 @@
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
+import {
+	DEFAULT_RASTER_BASEMAP_INTERACTION,
+	DEFAULT_RASTER_BASEMAP_STYLE
+} from '$routes/data/style';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gifu_cs_map',
@@ -16,26 +20,13 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		xyzImageTile: null,
-		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
-		coverImage: null
+		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
 	},
 	interaction: {
-		clickable: false,
-		overlay: false
+		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
 	style: {
-		type: 'basemap',
-		opacity: 1.0,
-		hueRotate: 0,
-		brightnessMin: 0,
-		brightnessMax: 1,
-		saturation: 0,
-		contrast: 0,
-		raster: {
-			paint: {},
-			layout: {}
-		}
+		...DEFAULT_RASTER_BASEMAP_STYLE
 	}
 };
 

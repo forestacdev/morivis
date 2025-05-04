@@ -18,8 +18,8 @@ export interface BaseMetaData {
 	attribution: AttributionKey;
 	location: Region;
 	maxZoom: number;
-	bounds: [number, number, number, number] | null;
-	coverImage: string | null;
+	bounds?: [number, number, number, number];
+	coverImage?: string;
 }
 
 export type GeoDataEntry =

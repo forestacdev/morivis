@@ -16,13 +16,10 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,
-		xyzImageTile: null,
-		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
-		coverImage: null
+		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
 	},
 	interaction: {
-		clickable: true,
-		overlay: true
+		clickable: true
 	},
 	style: {
 		type: 'categorical',
@@ -50,10 +47,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 				'35.1 - 40度',
 				'40.1度以上'
 			]
-		},
-		raster: {
-			paint: {},
-			layout: {}
 		}
 	}
 };

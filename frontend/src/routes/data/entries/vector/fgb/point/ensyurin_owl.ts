@@ -15,7 +15,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		attribution: '株式会社アドイン研究所',
 		location: '森林文化アカデミー',
 		maxZoom: 22,
-		bounds: null,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
 	},
 	properties: {

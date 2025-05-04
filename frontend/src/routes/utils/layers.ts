@@ -691,11 +691,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 								'raster-brightness-max': style.brightnessMax,
 								'raster-brightness-min': style.brightnessMin,
 								'raster-saturation': style.saturation,
-								'raster-contrast': style.contrast,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-contrast': style.contrast
 							}
 						});
 					} else if (style.type === 'categorical') {
@@ -703,11 +699,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-opacity': style.opacity
 							}
 						});
 					} else if (style.type === 'dem') {
@@ -715,11 +707,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-opacity': style.opacity
 							}
 						});
 					}
