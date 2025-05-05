@@ -23,7 +23,7 @@
 
 {#if attributions}
 	<div
-		class="pointer-events-none absolute bottom-0 right-0 z-10 flex w-full shrink-0 justify-end gap-2 text-nowrap px-2 text-white"
+		class="pointer-events-none absolute bottom-[4px] right-0 z-10 flex w-full shrink-0 justify-end gap-2 text-nowrap px-2 text-white"
 	>
 		<div class="flex gap-2">
 			{#each attributions as atl}

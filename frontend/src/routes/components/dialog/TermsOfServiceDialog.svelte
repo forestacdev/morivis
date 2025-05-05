@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { elasticOut, type TransitionConfig } from 'svelte/easing';
 	import { fade, scale } from 'svelte/transition';
 
 	import { showTermsDialog } from '$routes/store';
