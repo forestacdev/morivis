@@ -674,7 +674,8 @@ export const createLayersItems = (
 				minzoom: 0,
 				metadata: {
 					name: metaData.name,
-					location: metaData.location
+					location: metaData.location,
+					titles: entry.type === 'vector' ? entry.properties.titles : null
 				}
 			};
 
