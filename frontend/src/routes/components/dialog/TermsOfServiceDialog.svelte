@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade } from 'svelte/transition';
+	import { elasticOut, type TransitionConfig } from 'svelte/easing';
+	import { fade, scale } from 'svelte/transition';
 
 	import { showTermsDialog } from '$routes/store';
 	import { saveToLocalStorage } from '$routes/utils/localStorage';
@@ -8,10 +9,11 @@
 
 {#if $showTermsDialog}
 	<div
-		transition:fade={{ duration: 100 }}
+		transition:fade={{ duration: 200 }}
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
 	>
 		<div
+			transition:scale={{ duration: 300 }}
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
 		>
 			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
