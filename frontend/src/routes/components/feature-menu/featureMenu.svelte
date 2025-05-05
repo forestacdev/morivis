@@ -115,9 +115,12 @@
 			<!-- タイトル -->
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
-					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
+					>{targetLayer &&
+					targetLayer.type === 'vector' &&
+					targetLayer.properties.titles.length &&
+					featureMenuData.properties
 						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-						: ''}</span
+						: targetLayer?.metaData.name}</span
 				>
 				<span class="text-[14px] text-gray-300"
 					>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span

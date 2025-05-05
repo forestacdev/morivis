@@ -22,8 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: [],
-
-		titles: null
+		titles: []
 	},
 	interaction: {
 		clickable: false

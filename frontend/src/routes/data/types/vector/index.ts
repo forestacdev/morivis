@@ -18,7 +18,7 @@ export interface Title {
 
 export interface VectorProperties {
 	keys: string[];
-	titles: Title[] | null;
+	titles: Title[];
 	dict?: string;
 }
 

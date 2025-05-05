@@ -22,8 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: ['種類'],
-
-		titles: null
+		titles: []
 	},
 	interaction: {
 		clickable: false
