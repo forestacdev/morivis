@@ -31,7 +31,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.8, // 透過率
+		opacity: 0.8,
 		markerType: 'circle',
 		colors: {
 			show: true,
