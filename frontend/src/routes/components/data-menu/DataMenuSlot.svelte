@@ -5,6 +5,7 @@
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
+	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
@@ -19,19 +20,7 @@
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (dataEntry) {
-			if (dataEntry.type === 'raster') {
-				return 'raster';
-			} else if (dataEntry.type === 'vector') {
-				if (dataEntry.format.geometryType === 'Label') {
-					return 'label';
-				} else if (dataEntry.format.geometryType === 'Point') {
-					return 'point';
-				} else if (dataEntry.format.geometryType === 'LineString') {
-					return 'line';
-				} else if (dataEntry.format.geometryType === 'Polygon') {
-					return 'polygon';
-				}
-			}
+			return getLayerType(dataEntry);
 		}
 	});
 

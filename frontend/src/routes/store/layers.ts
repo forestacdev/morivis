@@ -1,3 +1,4 @@
+import type { GeoDataEntry } from '$routes/data/types';
 import { writable, derived } from 'svelte/store';
 
 // 配列を自動ソートする ラスターが下になるように
@@ -99,3 +100,22 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 });
 
 export const showLabelLayer = writable<boolean>(true);
+
+/** レイヤータイプの取得 */
+export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
+	if (_dataEntry.type === 'raster') {
+		return 'raster';
+	} else if (_dataEntry.type === 'vector') {
+		if (_dataEntry.format.geometryType === 'Label') {
+			return 'label';
+		} else if (_dataEntry.format.geometryType === 'Point') {
+			return 'point';
+		} else if (_dataEntry.format.geometryType === 'LineString') {
+			return 'line';
+		} else if (_dataEntry.format.geometryType === 'Polygon') {
+			return 'polygon';
+		}
+	} else {
+		throw new Error(`Unknown layer type: ${_dataEntry.id}`);
+	}
+};

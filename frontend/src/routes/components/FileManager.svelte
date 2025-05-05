@@ -1,13 +1,13 @@
 <script lang="ts">
-	import turfBbox from '@turf/bbox';
 	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 
 	import { createGeoJsonEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
-	import { groupedLayerStore } from '$routes/store/layers';
 	import type { LayerType } from '$routes/store/layers';
+	import { groupedLayerStore } from '$routes/store/layers';
+	import { getLayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
@@ -54,19 +54,6 @@
 		}
 	};
 
-	const getLayerType = (geometryType: VectorEntryGeometryType): LayerType => {
-		switch (geometryType) {
-			case 'Point':
-				return 'point';
-			case 'LineString':
-				return 'line';
-			case 'Polygon':
-				return 'polygon';
-			default:
-				return 'point';
-		}
-	};
-
 	const setFile = async (file: File) => {
 		let geojsonData;
 		const ext = file.name.split('.').pop()?.toLowerCase();
@@ -97,12 +84,18 @@
 		}
 
 		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, file.name);
+
+		if (!entry) {
+			showNotification('データが不正です', 'error');
+			return;
+		}
+		const layerType = getLayerType(entry);
 		tempLayerEntries = [...tempLayerEntries, entry];
 
 		if (entry && entry.metaData.bounds) {
-			groupedLayerStore.add(entry.id, getLayerType(entryGeometryType), entry);
+			groupedLayerStore.add(entry.id, layerType as LayerType);
 			map.fitBounds(entry.metaData.bounds, {
-				padding: { top: 10, bottom: 25, left: 15, right: 5 },
+				padding: 100,
 				maxZoom: 20
 			});
 		}
