@@ -308,6 +308,7 @@
 		<Map
 			bind:layerEntries
 			bind:tempLayerEntries
+			bind:showDataEntry
 			bind:featureMenuData
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
@@ -328,8 +329,9 @@
 			bind:selectionMarkerLngLat
 		/>
 		<TerrainMenu />
-
-		<DataMenu bind:showDataEntry />
+		{#if !showDataEntry}
+			<DataMenu bind:showDataEntry />
+		{/if}
 		{#if showDataEntry}
 			<DataPreview bind:showDataEntry />
 		{/if}
@@ -358,6 +360,7 @@
 			{angleMarker}
 			{streetViewPoint}
 			{showMapCanvas}
+			{showDataEntry}
 		/>
 		<FooterMenu {layerEntries} />
 		<DataMenu {showDataEntry} />

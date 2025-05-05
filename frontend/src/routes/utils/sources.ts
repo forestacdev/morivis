@@ -31,7 +31,7 @@ export const createSourcesItems = async (
 	const sourceItemsArray = await Promise.all(
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
-			const sourceId = `${entry.id}_source`;
+			const sourceId = `${entry.id}_${_type}_source`;
 			const { metaData, format, type, style } = entry;
 
 			switch (type) {

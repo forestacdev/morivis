@@ -663,8 +663,8 @@ export const createLayersItems = (
 		.filter((entry) => entry.style.visible)
 		.reverse()
 		.forEach((entry) => {
-			const layerId = `${entry.id}`;
-			const sourceId = `${entry.id}_source`;
+			const layerId = _type === 'preview' ? `${entry.id}_${_type}` : `${entry.id}`;
+			const sourceId = `${entry.id}_${_type}_source`;
 			const { format, style, metaData, interaction, type } = entry;
 
 			const layer: LayerItem = {

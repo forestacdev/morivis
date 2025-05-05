@@ -60,11 +60,13 @@
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
+		showDataEntry = $bindable(),
 		featureMenuData = $bindable(),
 		streetViewLineData,
 		streetViewPointData,
@@ -105,7 +107,30 @@
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
-		let layers = await createLayersItems(_dataEntries);
+		const layers = await createLayersItems(_dataEntries);
+
+		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
+		if (showDataEntry) {
+			previewSources = {
+				...previewSources,
+				tile_grid: {
+					type: 'raster',
+					tiles: ['/tile_grid.png'],
+					tileSize: 256
+				}
+			};
+		}
+		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
+		if (showDataEntry) {
+			previewLayers = [
+				{
+					id: 'tile_grid',
+					type: 'raster',
+					source: 'tile_grid'
+				},
+				...previewLayers
+			];
+		}
 
 		const terrain = {
 			source: 'terrain',
@@ -133,7 +158,9 @@
 					maxzoom: 22,
 
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
-				}
+				},
+
+				...previewSources
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
@@ -143,11 +170,13 @@
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
-						'background-opacity': 0
+						'background-opacity': showDataEntry ? 0.7 : 0
 					}
 				},
+				...previewLayers,
 				streetViewLineLayer,
 				streetViewCircleLayer
+
 				// {
 				// 	id: '@webgl_canvas_layer',
 				// 	type: 'raster',
@@ -240,6 +269,14 @@
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
+	});
+
+	$effect(() => {
+		if (showDataEntry) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		} else {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
 	});
 
 	// ラベルの表示
