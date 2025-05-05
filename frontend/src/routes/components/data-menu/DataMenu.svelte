@@ -3,16 +3,20 @@
 	import VirtualList from 'svelte-tiny-virtual-list';
 
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
-	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
+
+	interface Props {
+		showDataEntry: GeoDataEntry | null;
+	}
+
+	let { showDataEntry = $bindable() }: Props = $props();
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
-	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
 
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
@@ -49,7 +53,7 @@
 	});
 </script>
 
-<div class="absolute bottom-0 z-20 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
+<div class="absolute bottom-0 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
 	<div class="bg-main relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2">
 		<div class="flex grow items-center justify-between gap-4 p-2">
 			<span class="shrink-0 text-base text-lg">データカタログ</span>
@@ -101,9 +105,6 @@
 				</div>
 			</VirtualList>
 		</div>
-		{#if showDataEntry}
-			<DataPreview bind:showDataEntry />
-		{/if}
 	</div>
 </div>
 

@@ -4,7 +4,6 @@
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showDataMenu } from '$routes/store';
 	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';

@@ -35,6 +35,7 @@
 	import { onMount, mount } from 'svelte';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
+	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
@@ -68,6 +69,7 @@
 	});
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
+	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ
@@ -327,7 +329,10 @@
 		/>
 		<TerrainMenu />
 
-		<DataMenu />
+		<DataMenu bind:showDataEntry />
+		{#if showDataEntry}
+			<DataPreview bind:showDataEntry />
+		{/if}
 
 		<StreetViewCanvas
 			{streetViewPoint}
