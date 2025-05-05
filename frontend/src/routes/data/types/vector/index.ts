@@ -11,7 +11,7 @@ import type { BaseMetaData } from '$routes/data/types';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
-export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
+export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
 export interface Title {
 	conditions: string[];

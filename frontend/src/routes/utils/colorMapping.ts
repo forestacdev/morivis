@@ -80,3 +80,30 @@ export const generateColorPalette = (rows: number, cols: number): string[][] => 
 	}
 	return palette;
 };
+
+export const commonColors = [
+	'#FF0000', // 赤
+	'#00FF00', // 緑
+	'#0000FF', // 青
+	'#FFFF00', // 黄
+	'#FF00FF', // マゼンタ
+	'#00FFFF', // シアン
+	'#FFA500', // オレンジ
+	'#800080', // 紫
+	'#008000', // 深緑
+	'#4682B4', // スティールブルー
+	'#FFC0CB', // ピンク
+	'#A9A9A9', // ダークグレー
+	'#D3D3D3', // ライトグレー
+	'#8B4513', // サドルブラウン
+	'#FA8072' // サーモン
+];
+
+/**
+ * ランダムな色を取得する関数
+ * @returns ランダムな色の16進数表現
+ */
+export const getRandomCommonColor = (): string => {
+	const randomIndex = Math.floor(Math.random() * commonColors.length);
+	return commonColors[randomIndex];
+};

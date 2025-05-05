@@ -1,9 +1,11 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 
 	import { createGeoJsonEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 	import { groupedLayerStore } from '$routes/store/layers';
 	import type { LayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
@@ -27,6 +29,44 @@
 
 	const allowedExtensions = ['csv', 'geojson', 'fgb'];
 
+	const geometryTypeToEntryType = (
+		geojson: FeatureCollection<Geometry, GeoJsonProperties>
+	): VectorEntryGeometryType | undefined => {
+		const geometryTypes = new Set<string>();
+		geojson.features.forEach((feature) => {
+			if (feature.geometry && feature.geometry.type) {
+				geometryTypes.add(feature.geometry.type);
+			}
+		});
+
+		if (geometryTypes.has('Point')) {
+			return 'Point';
+		} else if (geometryTypes.has('LineString')) {
+			return 'LineString';
+		} else if (geometryTypes.has('Polygon')) {
+			return 'Polygon';
+		} else if (geometryTypes.has('MultiPoint')) {
+			return 'Point';
+		} else if (geometryTypes.has('MultiLineString')) {
+			return 'LineString';
+		} else if (geometryTypes.has('MultiPolygon')) {
+			return 'Polygon';
+		}
+	};
+
+	const getLayerType = (geometryType: VectorEntryGeometryType): LayerType => {
+		switch (geometryType) {
+			case 'Point':
+				return 'point';
+			case 'LineString':
+				return 'line';
+			case 'Polygon':
+				return 'polygon';
+			default:
+				return 'point';
+		}
+	};
+
 	const setFile = async (file: File) => {
 		let geojsonData;
 		const ext = file.name.split('.').pop()?.toLowerCase();
@@ -46,13 +86,21 @@
 				break;
 			default:
 				showNotification('対応していないファイル形式です', 'error');
+				return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, 'Point', file.name);
+		const entryGeometryType = geometryTypeToEntryType(geojsonData);
+
+		if (!entryGeometryType) {
+			showNotification('対応していないジオメトリタイプです', 'error');
+			return;
+		}
+
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, file.name);
 		tempLayerEntries = [...tempLayerEntries, entry];
 
 		if (entry && entry.metaData.bounds) {
-			groupedLayerStore.add(entry.id, 'point');
+			groupedLayerStore.add(entry.id, getLayerType(entryGeometryType), entry);
 			map.fitBounds(entry.metaData.bounds, {
 				padding: { top: 10, bottom: 25, left: 15, right: 5 },
 				maxZoom: 20

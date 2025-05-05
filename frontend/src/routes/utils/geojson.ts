@@ -166,7 +166,9 @@ orderedLayerIds.subscribe((ids) => {
 	}
 });
 
-export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
+export const geoJsonFileToGeoJson = async (
+	file: File
+): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
 	try {
 		const text = await file.text();
 		const geojson = JSON.parse(text);

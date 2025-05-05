@@ -1,5 +1,7 @@
 import Papa from 'papaparse';
 
+import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+
 import type { ParseResult } from 'papaparse';
 import { showNotification } from '$routes/store/notification';
 
@@ -8,10 +10,12 @@ import { showNotification } from '$routes/store/notification';
  * @param {File} csv - CSVファイル
  * @returns {any} - GeoJSON形式のデータ
  */
-export const csvFileToGeojson = (csv: File): Promise<any> => {
+export const csvFileToGeojson = (
+	csv: File
+): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
 	return new Promise((resolve, reject) => {
 		Papa.parse(csv, {
-			complete: (results: ParseResult<any>) => {
+			complete: (results: ParseResult<Record<string, string | number>>) => {
 				const json = results.data.filter(
 					(item: Record<string, string | number>) => item.lat != null && item.lon != null
 				);
@@ -27,10 +31,9 @@ export const csvFileToGeojson = (csv: File): Promise<any> => {
 					reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
 					return;
 				}
-				const geojson: any = {
+				const geojson = {
 					type: 'FeatureCollection',
-					name: csv.name,
-					features: json.map((item: any) => {
+					features: json.map((item) => {
 						return {
 							type: 'Feature',
 							properties: item,
@@ -41,7 +44,7 @@ export const csvFileToGeojson = (csv: File): Promise<any> => {
 						};
 					})
 				};
-				resolve(geojson);
+				resolve(geojson as FeatureCollection<Geometry, GeoJsonProperties>);
 			},
 			header: true // CSV の最初の行をフィールド名として使用
 		});

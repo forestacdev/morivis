@@ -9,7 +9,7 @@
 	import LabelOption from '$routes/components/layer-menu/layer-option-menu/LabelOption.svelte';
 	import NumberOption from '$routes/components/layer-menu/layer-option-menu/NumberOption.svelte';
 	import type {
-		GeometryType,
+		VectorEntryGeometryType,
 		PointEntry,
 		GeoJsonMetaData,
 		TileMetaData

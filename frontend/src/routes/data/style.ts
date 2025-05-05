@@ -2,8 +2,10 @@ import type {
 	PolygonStyle,
 	LineStringStyle,
 	PointStyle,
-	LabelStyle
+	LabelStyle,
+	Labels
 } from '$routes/data/types/vector/style';
+
 export const DEFAULT_RASTER_BASEMAP_STYLE: {
 	type: 'basemap';
 	visible: boolean;
@@ -78,4 +80,102 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 			}
 		]
 	}
+};
+
+export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
+	type: 'line',
+	opacity: 0.5,
+	visible: true,
+	colors: {
+		show: true,
+		key: '単色',
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: '#cf42cc'
+				}
+			}
+		]
+	},
+	width: {
+		key: '単一',
+		expressions: [
+			{
+				type: 'single',
+				key: '単一',
+				name: '単一',
+				mapping: {
+					value: 5
+				}
+			}
+		]
+	},
+	lineStyle: 'solid',
+	labels: {
+		key: 'name',
+		show: false,
+		expressions: [
+			{
+				key: 'name',
+				name: 'name',
+				value: '{name}'
+			}
+		]
+	}
+};
+
+export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
+	type: 'fill',
+	opacity: 0.5,
+	visible: true,
+	colors: {
+		key: '単色',
+		show: true,
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: '#349f1c'
+				}
+			}
+		]
+	},
+	outline: {
+		show: true,
+		color: '#000000',
+		width: 1,
+		lineStyle: 'solid'
+	},
+	labels: {
+		key: 'name',
+		show: false,
+		expressions: [
+			{
+				key: 'name',
+				name: 'name',
+				value: '{name}'
+			}
+		]
+	}
+};
+
+export const createLabelsExpressions = (keys: string[]): Labels => {
+	const labelsExpressions = keys.map((label) => {
+		return {
+			key: label,
+			name: label,
+			value: `{${label}}`
+		};
+	});
+
+	return {
+		key: keys[0],
+		show: false,
+		expressions: labelsExpressions
+	};
 };

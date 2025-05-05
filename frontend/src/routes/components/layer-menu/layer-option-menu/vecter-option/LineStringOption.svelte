@@ -7,7 +7,7 @@
 	import ColorOption from '$routes/components/layer-menu/layer-option-menu/ColorOption.svelte';
 	import NumberOption from '$routes/components/layer-menu/layer-option-menu/NumberOption.svelte';
 	import type {
-		GeometryType,
+		VectorEntryGeometryType,
 		LineStringEntry,
 		GeoJsonMetaData,
 		TileMetaData
