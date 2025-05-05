@@ -360,7 +360,7 @@
 			{showMapCanvas}
 		/>
 		<FooterMenu {layerEntries} />
-		<DataMenu />
+		<DataMenu {showDataEntry} />
 
 		<StreetViewCanvas
 			{streetViewPoint}
