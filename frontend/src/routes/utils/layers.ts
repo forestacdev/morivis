@@ -644,7 +644,10 @@ const createVectorLayer = (
 };
 
 // layersの作成
-export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
+export const createLayersItems = (
+	_dataEntries: GeoDataEntry[],
+	_type: 'main' | 'preview' = 'main'
+) => {
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
@@ -767,7 +770,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	clickableRasterIds.set(clickableRaster);
 
 	// デフォルトラベルの表示
-	const mapLabelItems = get(showLabelLayer) ? getLabelLayers() : [];
+	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
 	// const highlightLayers = get(selectedHighlightData)
 	// 	? createHighlightLayer(get(selectedHighlightData))

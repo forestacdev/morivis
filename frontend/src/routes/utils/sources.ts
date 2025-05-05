@@ -24,7 +24,8 @@ const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 };
 
 export const createSourcesItems = async (
-	_dataEntries: GeoDataEntry[]
+	_dataEntries: GeoDataEntry[],
+	_type: 'main' | 'preview' = 'main'
 ): Promise<{ [_: string]: SourceSpecification }> => {
 	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
@@ -151,7 +152,8 @@ export const createSourcesItems = async (
 	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
 	// ラベルのソースを追加
-	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
+
+	const labelSources = get(showLabelLayer) && _type === 'main' ? getLabelSources() : {};
 
 	return { ...sourceItems, ...labelSources } as {
 		[_: string]: SourceSpecification;

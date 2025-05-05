@@ -57,8 +57,8 @@
 
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = await createSourcesItems(_dataEntries);
-		const layers = await createLayersItems(_dataEntries);
+		const sources = await createSourcesItems(_dataEntries, 'preview');
+		const layers = await createLayersItems(_dataEntries, 'preview');
 
 		const mapStyle = {
 			version: 8,
