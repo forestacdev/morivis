@@ -446,7 +446,8 @@
 </div>
 
 {#if maplibreMap}
-	<FileManager map={maplibreMap} bind:isDragover bind:dropFile />
+	<FileManager map={maplibreMap} bind:isDragover bind:dropFile bind:tempLayerEntries />
+
 	<StreetViewLayer map={maplibreMap} />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
