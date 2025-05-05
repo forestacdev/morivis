@@ -1,5 +1,12 @@
+import type {
+	PolygonStyle,
+	LineStringStyle,
+	PointStyle,
+	LabelStyle
+} from '$routes/data/types/vector/style';
 export const DEFAULT_RASTER_BASEMAP_STYLE: {
 	type: 'basemap';
+	visible: boolean;
 	opacity: number;
 	hueRotate: number;
 	brightnessMin: number;
@@ -9,6 +16,7 @@ export const DEFAULT_RASTER_BASEMAP_STYLE: {
 } = {
 	type: 'basemap',
 	opacity: 1.0,
+	visible: true,
 	hueRotate: 0,
 	brightnessMin: 0,
 	brightnessMax: 1,
@@ -20,4 +28,54 @@ export const DEFAULT_RASTER_BASEMAP_INTERACTION: {
 	clickable: boolean;
 } = {
 	clickable: false
+};
+
+export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
+	type: 'circle',
+	opacity: 0.8,
+	visible: true,
+	markerType: 'circle',
+	colors: {
+		show: true,
+		key: '単色',
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: '#ff00ea'
+				}
+			}
+		]
+	},
+	radius: {
+		key: '単一',
+		expressions: [
+			{
+				type: 'single',
+				key: '単一',
+				name: '単一',
+				mapping: {
+					value: 8
+				}
+			}
+		]
+	},
+	outline: {
+		show: true,
+		color: '#ffffff',
+		width: 2
+	},
+	labels: {
+		key: 'name',
+		show: false,
+		expressions: [
+			{
+				key: 'name',
+				name: 'name',
+				value: '{name}'
+			}
+		]
+	}
 };

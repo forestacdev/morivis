@@ -12,12 +12,12 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: ''
 	},
 	metaData: {
-		name: '',
+		name: 'カスタムデータ',
 		description: '',
-		attribution: '_template',
-		location: '_template',
+		attribution: 'カスタムデータ',
+		location: '不明',
 		minZoom: 0,
-		maxZoom: 17,
+		maxZoom: 22,
 		tileSize: 256
 	},
 	interaction: {

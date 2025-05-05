@@ -35,3 +35,17 @@ export const getUniquePropertyValues = (
 	// Set を配列に変換して返す
 	return Array.from(uniqueValues);
 };
+
+export const getUniquePropertyKeys = (geojson: FeatureCollection): string[] => {
+	const uniqueKeys = new Set<string>();
+
+	geojson.features.forEach((feature: Feature<Geometry>) => {
+		if (feature.properties) {
+			Object.keys(feature.properties).forEach((key) => {
+				uniqueKeys.add(key);
+			});
+		}
+	});
+
+	return Array.from(uniqueKeys);
+};

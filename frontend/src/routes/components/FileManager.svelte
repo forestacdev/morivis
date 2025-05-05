@@ -2,6 +2,10 @@
 	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
+	import { createGeoJsonEntry } from '$routes/data';
+	import type { GeoDataEntry } from '$routes/data/types';
+	import { groupedLayerStore } from '$routes/store/layers';
+	import type { LayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
@@ -11,9 +15,15 @@
 		map: maplibregl.Map;
 		isDragover: boolean;
 		dropFile: File | null;
+		tempLayerEntries: GeoDataEntry[];
 	}
 
-	let { map, isDragover = $bindable(), dropFile = $bindable() }: Props = $props();
+	let {
+		map,
+		isDragover = $bindable(),
+		dropFile = $bindable(),
+		tempLayerEntries = $bindable()
+	}: Props = $props();
 
 	const allowedExtensions = ['csv', 'geojson', 'fgb'];
 
@@ -38,10 +48,19 @@
 				showNotification('対応していないファイル形式です', 'error');
 		}
 
-		showNotification('ファイルを読み込みました', 'success');
+		const entry = createGeoJsonEntry(geojsonData, 'Point', file.name);
+		console.log('entry', entry);
+		tempLayerEntries = [...tempLayerEntries, entry];
 
-		const bounds = turfBbox(geojsonData);
-		console.warn('bounds', bounds);
+		if (entry && entry.metaData.bounds) {
+			// groupedLayerStore.add(entry.id, 'point');
+			map.fitBounds(entry.metaData.bounds, {
+				padding: { top: 10, bottom: 25, left: 15, right: 5 },
+				maxZoom: 20
+			});
+		}
+
+		showNotification('ファイルを読み込みました', 'success');
 	};
 
 	$effect(() => {

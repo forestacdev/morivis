@@ -1,4 +1,17 @@
 import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoJSONGeometryType } from '$routes/utils/geojson';
+import type { MapGeoJSONFeature, SourceSpecification, LayerSpecification } from 'maplibre-gl';
+import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import type { VectorEntry, GeoJsonMetaData, GeometryType } from '$routes/data/types/vector';
+import turfBbox from '@turf/bbox';
+import { getUniquePropertyKeys } from '$routes/utils/properties';
+import type {
+	PolygonStyle,
+	LineStringStyle,
+	PointStyle,
+	LabelStyle
+} from '$routes/data/types/vector/style';
+import { DEFAULT_VECTOR_POINT_STYLE } from '$routes/data/style';
 
 // 共通の初期化処理
 // visible を true にする
@@ -41,3 +54,43 @@ export const geoDataEntries = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
+
+export const createGeoJsonEntry = (
+	data: FeatureCollection,
+	type: GeometryType,
+	name: string
+): VectorEntry<GeoJsonMetaData> | undefined => {
+	let style;
+	const bbox = turfBbox(data);
+
+	if (type === 'Point') {
+		style = DEFAULT_VECTOR_POINT_STYLE;
+		const entry: VectorEntry<GeoJsonMetaData> = {
+			id: 'geojson_' + crypto.randomUUID(),
+			type: 'vector',
+			format: {
+				type: 'geojson',
+				geometryType: 'Point',
+				url: '',
+				data: data
+			},
+			metaData: {
+				name,
+				description: 'ユーザーがアップロードしたカスタムデータ',
+				attribution: 'カスタムデータ',
+				location: '不明',
+				maxZoom: 22,
+				bounds: bbox ? (bbox as [number, number, number, number]) : undefined
+			},
+			interaction: {
+				clickable: true
+			},
+			properties: {
+				keys: getUniquePropertyKeys(data),
+				titles: []
+			},
+			style
+		};
+		return entry;
+	}
+};
