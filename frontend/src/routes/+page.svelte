@@ -61,10 +61,13 @@
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 
 	type NodeConnections = Record<string, string[]>;
-
-	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntries]); // レイヤーデータ
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
+
+	let layerEntriesData = $derived.by(() => {
+		return [...geoDataEntries, ...tempLayerEntries];
+	});
+
+	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ

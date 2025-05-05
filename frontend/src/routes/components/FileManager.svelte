@@ -49,11 +49,10 @@
 		}
 
 		const entry = createGeoJsonEntry(geojsonData, 'Point', file.name);
-		console.log('entry', entry);
 		tempLayerEntries = [...tempLayerEntries, entry];
 
 		if (entry && entry.metaData.bounds) {
-			// groupedLayerStore.add(entry.id, 'point');
+			groupedLayerStore.add(entry.id, 'point');
 			map.fitBounds(entry.metaData.bounds, {
 				padding: { top: 10, bottom: 25, left: 15, right: 5 },
 				maxZoom: 20

@@ -212,9 +212,7 @@
 
 	// レイヤーの追加
 	orderedLayerIds.subscribe((ids) => {
-		const filteredDataEntry = [...layerEntries, ...tempLayerEntries].filter((entry) =>
-			ids.includes(entry.id)
-		);
+		const filteredDataEntry = layerEntries.filter((entry) => ids.includes(entry.id));
 
 		// idsの順番に並び替え
 		layerEntries = filteredDataEntry.sort((a, b) => {
