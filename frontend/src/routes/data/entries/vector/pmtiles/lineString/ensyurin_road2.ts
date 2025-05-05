@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: null
 	},
 	interaction: {

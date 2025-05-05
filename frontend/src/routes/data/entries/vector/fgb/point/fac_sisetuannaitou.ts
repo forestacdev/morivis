@@ -19,7 +19,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	properties: {
 		keys: [],
-		dict: null,
 		titles: [
 			{
 				conditions: [],

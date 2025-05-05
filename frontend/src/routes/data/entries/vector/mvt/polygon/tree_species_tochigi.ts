@@ -21,7 +21,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['樹種'],

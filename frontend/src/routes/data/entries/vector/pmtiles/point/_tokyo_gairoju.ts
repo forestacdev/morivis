@@ -22,12 +22,11 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 1,
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
-		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
-		coverImage: null
+		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772]
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['樹種'],

@@ -18,8 +18,8 @@ export interface Title {
 
 export interface VectorProperties {
 	keys: string[];
-	dict: string | null;
 	titles: Title[] | null;
+	dict?: string;
 }
 
 export interface VectorInteraction {
