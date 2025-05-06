@@ -165,10 +165,11 @@
 					});
 
 					map.on('load', () => {
+						if (!map) return;
 						map.fitBounds(data.bbox, {
 							bearing: map.getBearing(),
 							padding: 50,
-							duration: 3000
+							duration: 0
 						});
 					});
 				})();
