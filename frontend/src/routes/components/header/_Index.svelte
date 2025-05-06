@@ -81,12 +81,18 @@
 		<li class="flex">
 			<button
 				onclick={toggleSearchMenu}
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'search'
+					? 'text-accent'
+					: ''}"
 			>
 				<Icon icon="stash:search-solid" class="h-8 w-8" />
 			</button>
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'layer'
+					? 'text-accent'
+					: ''}"
 				onclick={toggleLayerMenu}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
@@ -94,7 +100,9 @@
 		</li>
 		<li class="flex">
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$showDataMenu
+					? 'text-accent'
+					: ''}"
 				onclick={toggleDataMenu}
 			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
