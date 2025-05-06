@@ -484,12 +484,19 @@
 </div>
 
 {#if maplibreMap}
-	<FileManager map={maplibreMap} bind:isDragover bind:dropFile bind:tempLayerEntries />
+	<FileManager
+		map={maplibreMap}
+		bind:isDragover
+		bind:dropFile
+		bind:tempLayerEntries
+		bind:showDataEntry
+	/>
 
 	<StreetViewLayer map={maplibreMap} />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		map={maplibreMap}
+		{showDataEntry}
 		bind:markerLngLat={selectionMarkerLngLat}
 		bind:featureMenuData
 		bind:showMarker={showSelectionMarker}

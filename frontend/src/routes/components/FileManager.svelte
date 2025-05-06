@@ -18,13 +18,15 @@
 		isDragover: boolean;
 		dropFile: File | null;
 		tempLayerEntries: GeoDataEntry[];
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
 		map,
 		isDragover = $bindable(),
 		dropFile = $bindable(),
-		tempLayerEntries = $bindable()
+		tempLayerEntries = $bindable(),
+		showDataEntry = $bindable()
 	}: Props = $props();
 
 	const allowedExtensions = ['csv', 'geojson', 'fgb'];
@@ -89,14 +91,18 @@
 			showNotification('データが不正です', 'error');
 			return;
 		}
-		const layerType = getLayerType(entry);
+
 		tempLayerEntries = [...tempLayerEntries, entry];
+		showDataEntry = entry;
+
+		return;
+		const layerType = getLayerType(entry);
 
 		if (entry && entry.metaData.bounds) {
 			groupedLayerStore.add(entry.id, layerType as LayerType);
 			map.fitBounds(entry.metaData.bounds, {
 				padding: 100,
-				maxZoom: 20
+				duration: 500
 			});
 		}
 
