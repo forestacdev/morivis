@@ -1,4 +1,22 @@
 import type { GeoDataEntry } from '$routes/data/types';
+import type { FeatureCollection } from 'geojson';
+import type {
+	VectorEntry,
+	GeoJsonMetaData,
+	VectorEntryGeometryType
+} from '$routes/data/types/vector';
+import turfBbox from '@turf/bbox';
+import { getUniquePropertyKeys } from '$routes/utils/properties';
+import { GeojsonCache } from '$routes/utils/geojson';
+
+import {
+	DEFAULT_VECTOR_POINT_STYLE,
+	DEFAULT_VECTOR_LINE_STYLE,
+	DEFAULT_VECTOR_POLYGON_STYLE
+} from '$routes/data/style';
+
+import { getRandomCommonColor } from '$routes/utils/colorMapping';
+import { createLabelsExpressions } from '$routes/data/style';
 
 // 共通の初期化処理
 // visible を true にする
@@ -41,3 +59,90 @@ export const geoDataEntries = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
+
+export const createGeoJsonEntry = (
+	data: FeatureCollection,
+	entryGeometryType: VectorEntryGeometryType,
+	name: string,
+	color: string = getRandomCommonColor()
+): VectorEntry<GeoJsonMetaData> | undefined => {
+	const bbox = turfBbox(data);
+	const metaData: GeoJsonMetaData = {
+		name,
+		description: 'ユーザーがアップロードしたカスタムデータ',
+		attribution: 'カスタムデータ',
+		location: '不明',
+		maxZoom: 22,
+		bounds: bbox ? (bbox as [number, number, number, number]) : undefined
+	};
+
+	let style;
+
+	if (entryGeometryType === 'Point') {
+		style = DEFAULT_VECTOR_POINT_STYLE;
+	} else if (entryGeometryType === 'LineString') {
+		style = DEFAULT_VECTOR_LINE_STYLE;
+	} else if (entryGeometryType === 'Polygon') {
+		style = DEFAULT_VECTOR_POLYGON_STYLE;
+	} else if (entryGeometryType === 'Label') {
+		// TODO : Labelのスタイルを作成する
+		style = DEFAULT_VECTOR_POINT_STYLE;
+
+		return undefined;
+	} else {
+		console.error('不明なジオメトリタイプです。');
+		return undefined;
+	}
+
+	if (!style) {
+		console.error('スタイルが見つかりませんでした。');
+		return undefined;
+	}
+
+	style.colors = {
+		key: '単色',
+		show: true,
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: color
+				}
+			}
+		]
+	};
+
+	const propKes = getUniquePropertyKeys(data);
+
+	style.labels = createLabelsExpressions(propKes);
+
+	const id = 'geojson_' + crypto.randomUUID();
+	GeojsonCache.set(id, data);
+
+	const entry: VectorEntry<GeoJsonMetaData> = {
+		id,
+		type: 'vector',
+		format: {
+			type: 'geojson',
+			geometryType: entryGeometryType,
+			url: ''
+		},
+		metaData,
+		interaction: {
+			clickable: true
+		},
+		properties: {
+			keys: propKes,
+			titles: [
+				{
+					conditions: [],
+					template: 'カスタムデータ'
+				}
+			]
+		},
+		style
+	};
+	return entry;
+};

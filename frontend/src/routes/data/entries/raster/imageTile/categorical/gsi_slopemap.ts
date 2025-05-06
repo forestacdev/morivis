@@ -15,14 +15,10 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		location: '全国',
 		minZoom: 3,
 		maxZoom: 15,
-		tileSize: 256,
-		xyzImageTile: null,
-		bounds: null,
-		coverImage: null
+		tileSize: 256
 	},
 	interaction: {
-		clickable: true,
-		overlay: true
+		clickable: true
 	},
 	style: {
 		type: 'categorical',
@@ -33,10 +29,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			colors: ['#FFFFFF', '#000000'],
 			range: [0, 90],
 			unit: '度'
-		},
-		raster: {
-			paint: {},
-			layout: {}
 		}
 	}
 };

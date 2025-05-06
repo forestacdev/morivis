@@ -16,14 +16,27 @@ export const getParams = (params: string): { [key: string]: string } => {
 /** 地図表示用のURLパラメータの取得 */
 export const getMapParams = (): MapPosition => {
 	const params = get(
-		queryParameters({
-			c: ssp.string(),
-			z: ssp.number(),
-			p: ssp.number(),
-			b: ssp.number()
-		})
+		queryParameters(
+			{
+				c: ssp.string(),
+				z: ssp.number(),
+				p: ssp.number(),
+				b: ssp.number()
+			},
+			{ pushHistory: false }
+		)
 	);
-	if (!params.c || !params.z || !params.p || !params.b) {
+
+	if (
+		params.c === null ||
+		params.c === undefined ||
+		params.z === null ||
+		params.z === undefined ||
+		params.p === null ||
+		params.p === undefined ||
+		params.b === null ||
+		params.b === undefined
+	) {
 		return MAP_POSITION;
 	}
 	const center = params.c.split(',').map(Number) as [number, number];
@@ -40,25 +53,25 @@ export const getMapParams = (): MapPosition => {
 
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
-	const params = get(queryParameters({}));
+	const params = get(queryParameters({}, { pushHistory: false }));
 
 	const center = option.center.map((value) => value.toFixed(6));
 	params.c = center;
 	params.z = option.zoom.toFixed(1);
 	params.p = option.pitch.toFixed(0);
 	params.b = option.bearing.toFixed(0);
-	queryParameters().set(params);
+	queryParameters({}, { pushHistory: false }).set(params);
 };
 
 /** street view用のURLパラメータのセット */
 export const setStreetViewParams = (imageId: string) => {
 	const params = get(queryParameters({}));
 	params.imageId = imageId;
-	queryParameters().set(params);
+	queryParameters({}, { pushHistory: false }).set(params);
 };
 
 /** street view用のURLパラメータの取得 */
 export const getStreetViewParams = (): string | null => {
-	const params = get(queryParameters({}));
+	const params = get(queryParameters({}, { pushHistory: false }));
 	return params.imageId as string;
 };

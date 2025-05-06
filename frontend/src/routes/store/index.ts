@@ -5,6 +5,7 @@ import { geoDataEntries } from '$routes/data';
 import type { FeatureCollection, Feature } from 'geojson';
 import type { GeoDataEntry } from '$routes/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { Side } from 'three';
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
@@ -33,12 +34,13 @@ export const showStreetViewLayer = writable<boolean>(false);
 /** サイドメニューの表示状態 */
 export const showSideMenu = writable<boolean>(false);
 
-/** TODO:編集モード */
-export const isEdit = writable<boolean>(false);
+/** スタイル編集モード */
+export const isStyleEdit = writable<boolean>(false);
 
-export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
+export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
+
 /** 表示中のサイドメニューの種類 */
-export const isSide = writable<Side>(null);
+export const isSideMenuType = writable<SideMenuType>(null);
 
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);

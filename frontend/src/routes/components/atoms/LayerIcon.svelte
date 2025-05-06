@@ -44,6 +44,11 @@
 		}
 	};
 
+	const fetchCoverImage = async (_layerEntry: GeoDataEntry) => {
+		// URLを生成して Promise として返す
+		return await Promise.resolve(_layerEntry.metaData.coverImage);
+	};
+
 	const promise = (() => {
 		if (layerEntry.type === 'raster') {
 			if (layerEntry.format.type === 'image') {
@@ -51,6 +56,8 @@
 			} else if (layerEntry.format.type === 'pmtiles') {
 				return fetchTileImage(layerEntry);
 			}
+		} else if (layerEntry.type === 'vector') {
+			return fetchCoverImage(layerEntry);
 		}
 	})();
 </script>
@@ -78,17 +85,25 @@
 		{/await}
 	{/if}
 {:else if layerEntry.type === 'vector'}
-	<div transition:fade={{ duration: 100 }} class="pointer-events-none absolute">
-		{#if layerEntry.format.geometryType === 'Point'}
-			<Icon icon="ic:baseline-mode-standby" class="pointer-events-none" width={30} />
-		{:else if layerEntry.format.geometryType === 'LineString'}
-			<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
-		{:else if layerEntry.format.geometryType === 'Polygon'}
-			<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
-		{:else if layerEntry.format.geometryType === 'Label'}
-			<Icon icon="mynaui:label-solid" class="pointer-events-none" width={30} />
-		{/if}
-	</div>
+	{#if layerEntry.metaData.coverImage}
+		{#await promise then url}
+			<img
+				transition:fade
+				crossOrigin="anonymous"
+				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+				alt={layerEntry.metaData.name}
+				src={url}
+			/>
+		{/await}
+	{:else if layerEntry.format.geometryType === 'Point'}
+		<Icon icon="ic:baseline-mode-standby" class="pointer-events-none" width={30} />
+	{:else if layerEntry.format.geometryType === 'LineString'}
+		<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
+	{:else if layerEntry.format.geometryType === 'Polygon'}
+		<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
+	{:else if layerEntry.format.geometryType === 'Label'}
+		<Icon icon="mynaui:label-solid" class="pointer-events-none" width={30} />
+	{/if}
 {/if}
 
 <style>

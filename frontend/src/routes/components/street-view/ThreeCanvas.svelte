@@ -13,8 +13,6 @@
 	import type { NextPointData, StreetViewPoint } from '$routes/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 
-	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/theta360-Images/main/images/';
-	// const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IN_CAMERA_FOV = 75;
 	const OUT_CAMERA_FOV = 150;
@@ -339,14 +337,16 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="absolute left-4 top-[100px] z-10 flex items-center justify-center gap-2 rounded-lg bg-white p-2"
+				class="bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white"
 			>
-				<button class="rounded-md bg-white p-2" onclick={() => ($isStreetView = false)}
+				<button class="cursor-pointer rounded-md p-2" onclick={() => ($isStreetView = false)}
 					><Icon icon="ep:back" class="h-4 w-4" />
 				</button>
 				<span>撮影日:{streetViewPoint.properties['Date']}<span> </span></span>
 			</div>
 		{/if}
+
+		<!-- コントロール -->
 		<div
 			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showThreeCanvas
 				? ' h-[400px]'
@@ -361,7 +361,7 @@
 									nextPoint(point.featureData);
 								}}
 								class="css-arrow"
-								style="--angle: {point.bearing}deg; --distance: {showThreeCanvas ? '128' : '64'}px;"
+								style="--angle: {point.bearing}deg; --distance: {showThreeCanvas ? '175' : '64'}px;"
 							>
 								<Icon
 									icon="ep:arrow-up-bold"
@@ -411,7 +411,7 @@
 		pointer-events: auto;
 		display: grid;
 		place-items: center;
-
+		transition: all 0.3s ease;
 		pointer-events: all;
 		position: absolute;
 		top: 50%;
@@ -421,6 +421,11 @@
 		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);
 		color: #fff;
 		filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+	}
+
+	.css-arrow:hover {
+		scale: 1.2;
+		cursor: pointer;
 	}
 
 	.css-loading {

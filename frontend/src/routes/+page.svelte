@@ -33,17 +33,21 @@
 	import maplibregl from 'maplibre-gl';
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
-	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
+	import FooterMenu from '$routes/components/footer/_Index.svelte';
+	import HeaderMenu from '$routes/components/Header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
+	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
+	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
+	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
-	import SideBar from '$routes/components/side-bar/SideBar.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
 	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
@@ -53,18 +57,37 @@
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isStreetView, mapMode } from '$routes/store';
+	import {
+		isSideMenuType,
+		isStreetView,
+		mapMode,
+		selectedLayerId,
+		isStyleEdit
+	} from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
+	import { getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 
 	type NodeConnections = Record<string, string[]>;
-
-	let layerEntriesData = $state<GeoDataEntry[]>([...geoDataEntries]); // レイヤーデータ
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
-	let layerEntries = $state<GeoDataEntry[]>([]); // レイヤーデータ
+
+	let layerEntriesData = $derived.by(() => {
+		return [...geoDataEntries, ...tempLayerEntries];
+	});
+
+	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
+	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
+
+	let isStyleEditEntry = $derived.by(() => {
+		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);
+		if (targetEntry && $isStyleEdit) {
+			return targetEntry;
+		} else {
+			return null;
+		}
+	});
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ
@@ -288,43 +311,81 @@
 			}
 		});
 	}, 100);
-
-	$effect(() => {
-		const currentEntries = $state.snapshot(layerEntries);
-		updateLayerEntries(currentEntries as GeoDataEntry[]);
-	});
 </script>
 
-{#if isPc()}
-	<!-- PC -->
-	<div class="relative flex h-full w-full grow">
+<div class="relative flex h-full w-full grow">
+	<!-- マップのオフセット調整用 -->
+	{#if $isSideMenuType}
+		<div
+			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
+		></div>
+	{/if}
+	<LayerMenu bind:layerEntries bind:tempLayerEntries />
+	<SearchMenu
+		bind:featureMenuData
+		bind:inputSearchWord
+		{layerEntries}
+		bind:showSelectionMarker
+		bind:selectionMarkerLngLat
+	/>
+
+	<Map
+		bind:layerEntries
+		bind:tempLayerEntries
+		bind:showDataEntry
+		bind:featureMenuData
+		bind:showSelectionMarker
+		bind:selectionMarkerLngLat
+		{streetViewLineData}
+		{streetViewPointData}
+		{angleMarker}
+		{streetViewPoint}
+		{showMapCanvas}
+	/>
+	<!-- <SideBar /> -->
+	<HeaderMenu />
+	<FooterMenu {layerEntries} />
+	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
+	<FeatureMenu bind:featureMenuData {layerEntries} />
+	<PreviewMenu bind:showDataEntry />
+
+	<TerrainMenu />
+	{#if !showDataEntry}
+		<DataMenu bind:showDataEntry />
+	{/if}
+	{#if showDataEntry}
+		<DataPreview bind:showDataEntry />
+	{/if}
+
+	<StreetViewCanvas
+		{streetViewPoint}
+		{nextPointData}
+		{showThreeCanvas}
+		bind:cameraBearing
+		{setPoint}
+	/>
+</div>
+
+<Tooltip />
+
+<!-- Mobile -->
+<!-- <div class="relative flex h-full w-full grow flex-col">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map
 			bind:layerEntries
 			bind:tempLayerEntries
 			bind:featureMenuData
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
 			{streetViewLineData}
 			{streetViewPointData}
 			{angleMarker}
 			{streetViewPoint}
 			{showMapCanvas}
+			{showDataEntry}
 		/>
-		<SideBar />
 		<FooterMenu {layerEntries} />
-		<FeatureMenu bind:featureMenuData {layerEntries} />
-		<SearchMenu
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/>
-		<TerrainMenu />
-
-		<DataMenu />
+		<DataMenu {showDataEntry} />
 
 		<StreetViewCanvas
 			{streetViewPoint}
@@ -333,36 +394,7 @@
 			bind:cameraBearing
 			{setPoint}
 		/>
-	</div>
-
-	<Tooltip />
-{:else}
-	<!-- Mobile -->
-	<div class="relative flex h-full w-full grow flex-col">
-		<LayerMenu bind:layerEntries bind:tempLayerEntries />
-
-		<Map
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:featureMenuData
-			{streetViewLineData}
-			{streetViewPointData}
-			{angleMarker}
-			{streetViewPoint}
-			{showMapCanvas}
-		/>
-		<FooterMenu {layerEntries} />
-		<DataMenu />
-
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			{setPoint}
-		/>
-	</div>
-{/if}
+	</div> -->
 
 <SideMenu />
 <NotificationMessage />

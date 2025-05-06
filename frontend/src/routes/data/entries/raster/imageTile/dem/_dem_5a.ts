@@ -16,13 +16,11 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		minZoom: 1,
 		maxZoom: 15,
 		tileSize: 256,
-		xyzImageTile: null,
-		bounds: [122.935, 20.425, 153.986, 45.551],
-		coverImage: null
+
+		bounds: [122.935, 20.425, 153.986, 45.551]
 	},
 	interaction: {
-		clickable: true,
-		overlay: true
+		clickable: true
 	},
 	style: {
 		type: 'dem',
@@ -53,10 +51,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 					valleyColor: '#137c83'
 				}
 			}
-		},
-		raster: {
-			paint: {},
-			layout: {}
 		}
 	}
 };

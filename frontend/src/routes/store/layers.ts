@@ -1,4 +1,6 @@
+import type { GeoDataEntry } from '$routes/data/types';
 import { writable, derived } from 'svelte/store';
+import { GeojsonCache } from '$routes/utils/geojson';
 
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'label' | 'point' | 'line' | 'polygon' | 'raster';
@@ -22,7 +24,7 @@ const createLayerStore = () => {
 		label: [],
 		point: ['fac_ziriki_point', 'fac_building_point', 'fac_poi'],
 		line: ['ensyurin_road2', 'gsi_road'],
-		polygon: ['ensyurin_rinhan', 'fr_mesh20m_kochi'],
+		polygon: ['ensyurin_rinhan'],
 		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
 	};
 
@@ -46,6 +48,9 @@ const createLayerStore = () => {
 				for (const type of TYPE_ORDER) {
 					layers[type] = layers[type].filter((l) => l !== id);
 				}
+
+				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
+
 				return { ...layers };
 			}),
 
@@ -99,3 +104,22 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 });
 
 export const showLabelLayer = writable<boolean>(true);
+
+/** レイヤータイプの取得 */
+export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
+	if (_dataEntry.type === 'raster') {
+		return 'raster';
+	} else if (_dataEntry.type === 'vector') {
+		if (_dataEntry.format.geometryType === 'Label') {
+			return 'label';
+		} else if (_dataEntry.format.geometryType === 'Point') {
+			return 'point';
+		} else if (_dataEntry.format.geometryType === 'LineString') {
+			return 'line';
+		} else if (_dataEntry.format.geometryType === 'Polygon') {
+			return 'polygon';
+		}
+	} else {
+		throw new Error(`Unknown layer type: ${_dataEntry.id}`);
+	}
+};

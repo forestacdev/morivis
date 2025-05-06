@@ -1,4 +1,5 @@
 export type AttributionKey =
+	| 'カスタムデータ'
 	| '森林文化アカデミー'
 	| '国土地理院'
 	| '岐阜県森林研究所'
@@ -9,6 +10,7 @@ export type AttributionKey =
 	| '株式会社アドイン研究所'
 	| 'Esri'
 	| '東京都オープンデータカタログサイト'
+	| '環境省生物多様性センター'
 	| '林野庁';
 
 export type Attribution = {
@@ -72,6 +74,11 @@ const attributionData: Attribution[] = [
 		key: '東京都オープンデータカタログサイト',
 		name: '東京都オープンデータカタログサイト',
 		url: 'https://portal.data.metro.tokyo.lg.jp/'
+	},
+	{
+		key: '環境省生物多様性センター',
+		name: '環境省生物多様性センター',
+		url: 'https://www.biodic.go.jp'
 	}
 ];
 

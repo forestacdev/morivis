@@ -60,40 +60,38 @@
 		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
 	>
 		<div class="css-ripple-effect"></div>
-		<div class="absolute h-[8px] w-[8px] rounded-full bg-white"></div>
+		<div class="border-main absolute h-[12px] w-[12px] rounded-full border-[2px] bg-white"></div>
+
+		<div class="border-main absolute h-[24px] w-[24px] rounded-full border-2"></div>
+		<div class="border-base absolute h-[20px] w-[20px] rounded-full border-2"></div>
 	</div>
 {/if}
 
 <style>
-	/* クリックできる要素 */
-
 	/* エフェクト要素 */
 	.css-ripple-effect {
-		/* 値の変更はエフェクト形体・サイズ・スピードに影響する */
-		width: 100px;
-		height: 100px;
-		background: #ffffff;
-
-		/* 必須 */
+		width: 70px;
+		height: 70px;
 		position: absolute;
 		border-radius: 100%;
 		pointer-events: none;
-		transform: scale(0);
 		opacity: 0;
-		animation: ripple 1.75s ease-out infinite;
+		animation: ripple 1.5s ease-out infinite;
+		background-color: var(--color-base);
 	}
 
 	/* アニメーションの定義 */
 	@keyframes ripple {
 		0% {
-			opacity: 1;
+			opacity: 0.5;
+			scale: 0;
 		}
 		60% {
-			transform: scale(1.5);
+			scale: 1.5;
 			opacity: 0;
 		}
 		100% {
-			transform: scale(1.5);
+			scale: 1.5;
 			opacity: 0;
 		}
 	}

@@ -1,5 +1,3 @@
-import type { RasterLayerSpecification } from 'maplibre-gl';
-import type { AttributionKey } from '$routes/data/attribution';
 import type { BaseMetaData } from '$routes/data/types';
 export interface CategoryLegend {
 	type: 'category';
@@ -61,10 +59,6 @@ export interface RasterBaseMapStyle {
 	brightnessMax: number;
 	saturation: number;
 	contrast: number;
-	raster: {
-		paint: RasterLayerSpecification['paint'];
-		layout: RasterLayerSpecification['layout'];
-	};
 }
 
 // TODO: グループ化したスタイルの型を定義する
@@ -85,10 +79,6 @@ export interface RasterBaseGroupMapStyle {
 			url: string;
 		}[];
 	};
-	raster: {
-		paint: RasterLayerSpecification['paint'];
-		layout: RasterLayerSpecification['layout'];
-	};
 }
 
 export interface RasterCategoricalStyle {
@@ -96,10 +86,6 @@ export interface RasterCategoricalStyle {
 	opacity: number;
 	visible?: boolean;
 	legend: CategoryLegend | GradientLegend;
-	raster: {
-		paint: RasterLayerSpecification['paint'];
-		layout: RasterLayerSpecification['layout'];
-	};
 }
 
 export const DEM_DATA_TYPE = {
@@ -191,21 +177,16 @@ export interface RasterDemStyle {
 			};
 		};
 	};
-	raster: {
-		paint: RasterLayerSpecification['paint'];
-		layout: RasterLayerSpecification['layout'];
-	};
 }
 
 interface RasterMetaData extends BaseMetaData {
 	minZoom: number;
 	tileSize: TileSize;
-	xyzImageTile: TileXYZ | null;
+	xyzImageTile?: TileXYZ;
 }
 
 export interface RasterInteraction {
 	clickable: boolean;
-	overlay: boolean;
 }
 
 interface BaseRasterEntry {

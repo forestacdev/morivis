@@ -17,12 +17,11 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 0,
 		maxZoom: 14,
 		sourceLayer: 'geo_A',
-		bounds: [136.74706, 35.503199, 137.014386, 35.669838],
-		coverImage: null
+		bounds: [136.74706, 35.503199, 137.014386, 35.669838]
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['Symbol'],

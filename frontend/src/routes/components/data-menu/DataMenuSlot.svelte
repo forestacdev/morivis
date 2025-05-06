@@ -1,11 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showDataMenu } from '$routes/store';
+	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
@@ -20,19 +19,7 @@
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (dataEntry) {
-			if (dataEntry.type === 'raster') {
-				return 'raster';
-			} else if (dataEntry.type === 'vector') {
-				if (dataEntry.format.geometryType === 'Label') {
-					return 'label';
-				} else if (dataEntry.format.geometryType === 'Point') {
-					return 'point';
-				} else if (dataEntry.format.geometryType === 'LineString') {
-					return 'line';
-				} else if (dataEntry.format.geometryType === 'Polygon') {
-					return 'polygon';
-				}
-			}
+			return getLayerType(dataEntry);
 		}
 	});
 
@@ -96,23 +83,23 @@
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
-		class="relative flex aspect-video w-full shrink-0 overflow-hidden"
+		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="css-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
-				alt="サムネイル"
+				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
+				alt={dataEntry.metaData.name}
 			/>
+			<div
+				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+			>
+				<span class="text-lg text-white">プレビュー</span>
+			</div>
 		{/await}
 	</button>
 
 	<div class="flex w-full items-center justify-start gap-2 py-2">
-		<label
-			class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
-		>
-			<LayerIcon layerEntry={dataEntry} />
-		</label>
 		<span class="">{dataEntry.metaData.name}</span>
 	</div>
 

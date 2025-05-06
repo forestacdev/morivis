@@ -23,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['樹種', '林齢'],

@@ -1,3 +1,7 @@
+import {
+	DEFAULT_RASTER_BASEMAP_INTERACTION,
+	DEFAULT_RASTER_BASEMAP_STYLE
+} from '$routes/data/style';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
@@ -20,26 +24,13 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 			x: 14515,
 			y: 6390,
 			z: 14
-		},
-		bounds: null,
-		coverImage: null
+		}
 	},
 	interaction: {
-		clickable: false,
-		overlay: false
+		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
 	style: {
-		type: 'basemap',
-		opacity: 1.0,
-		hueRotate: 0,
-		brightnessMin: 0,
-		brightnessMax: 1,
-		saturation: 0,
-		contrast: 0,
-		raster: {
-			paint: {},
-			layout: {}
-		}
+		...DEFAULT_RASTER_BASEMAP_STYLE
 	}
 };
 

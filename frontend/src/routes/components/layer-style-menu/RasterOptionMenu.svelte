@@ -44,10 +44,10 @@
 		<RangeSlider label={'色相'} bind:value={style.hueRotate} min={-360} max={360} step={0.1} />
 		<RangeSlider label={'彩度'} bind:value={style.saturation} min={-1} max={1} step={0.01} />
 	{:else if style.type === 'categorical'}
-		<h1>凡例</h1>
+		<h1 class="text-base">凡例</h1>
 		{#if style.legend.type === 'category'}
-			<h2>{style.legend.name}</h2>
-			<ul class="">
+			<h2 class="text-base">{style.legend.name}</h2>
+			<ul class="text-base">
 				{#each style.legend.colors as color, i}
 					<li style="display: flex; align-items: center; margin-bottom: 5px;">
 						<span
@@ -59,8 +59,8 @@
 				{/each}
 			</ul>
 		{:else if style.legend.type === 'gradient'}
-			<h2>{style.legend.name}</h2>
-			<div class="flex h-[200px] gap-2">
+			<h2 class="text-base">{style.legend.name}</h2>
+			<div class="flex h-[200px] gap-2 text-base">
 				<div class="h-full py-[10px]">
 					<div
 						class="h-full w-[30px]"
@@ -69,7 +69,7 @@
 					></div>
 				</div>
 
-				<div class="flex flex-col justify-between">
+				<div class="flex flex-col justify-between text-base">
 					{#each style.legend.range.slice().reverse() as value}
 						<span>{value} {style.legend.unit}</span>
 					{/each}

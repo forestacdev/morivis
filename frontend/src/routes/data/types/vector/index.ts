@@ -5,11 +5,13 @@ import type {
 	LabelStyle
 } from '$routes/data/types/vector/style';
 
+import type { FeatureCollection } from 'geojson';
+
 import type { BaseMetaData } from '$routes/data/types';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
-export type GeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
+export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
 export interface Title {
 	conditions: string[];
@@ -18,8 +20,8 @@ export interface Title {
 
 export interface VectorProperties {
 	keys: string[];
-	dict: string | null;
-	titles: Title[] | null;
+	titles: Title[];
+	dict?: string;
 }
 
 export interface VectorInteraction {
@@ -47,6 +49,7 @@ export interface PolygonEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Polygon';
 		url: string;
+		data?: FeatureCollection;
 	};
 	style: PolygonStyle;
 }
@@ -57,6 +60,7 @@ export interface LineStringEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'LineString';
 		url: string;
+		data?: FeatureCollection;
 	};
 	style: LineStringStyle;
 }
@@ -67,6 +71,7 @@ export interface PointEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Point';
 		url: string;
+		data?: FeatureCollection;
 	};
 	style: PointStyle;
 }
@@ -77,6 +82,7 @@ export interface LabelEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Label';
 		url: string;
+		data?: FeatureCollection;
 	};
 	style: LabelStyle;
 }

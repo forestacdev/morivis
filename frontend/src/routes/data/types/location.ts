@@ -40,4 +40,5 @@ export type Region =
 	| Okinawa
 	| '全国'
 	| '世界'
+	| '不明'
 	| LocationOther;

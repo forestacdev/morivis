@@ -8,8 +8,7 @@
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
-	import { showDataMenu } from '$routes/store';
-	import { selectedLayerId, isEdit } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
 	import {
 		orderedLayerIds,
 		groupedLayerStore,
@@ -56,7 +55,7 @@
 	});
 
 	const selectedLayer = () => {
-		if (isHovered || $isEdit) return;
+		if (isHovered || $isStyleEdit) return;
 		if ($selectedLayerId === layerEntry.id) {
 			selectedLayerId.set('');
 		} else {
@@ -80,7 +79,7 @@
 	// TODO: レイヤーのコピー
 	// const copyLayer = () => {
 	// 	if (!layerEntry) return;
-	// 	$isEdit = false;
+	// 	$isStyleEdit = false;
 	// 	const uuid = crypto.randomUUID();
 	// 	const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
@@ -93,7 +92,7 @@
 
 	// レイヤーの削除
 	const removeLayer = () => {
-		$isEdit = false;
+		$isStyleEdit = false;
 		if (!layerEntry) return;
 		groupedLayerStore.remove(layerEntry.id);
 		selectedLayerId.set('');
@@ -107,7 +106,7 @@
 
 	const editLayer = () => {
 		if (!layerEntry) return;
-		$isEdit = !$isEdit;
+		$isStyleEdit = !$isStyleEdit;
 	};
 
 	const infoLayer = () => {
@@ -171,21 +170,20 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-main c-dragging-style c-rounded relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 border-gray-500 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-sub c-dragging-style c-rounded border-base relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
 			: ' hover:border-accent'}"
 		onclick={selectedLayer}
-		style:width={!$showDataMenu ? '100%' : '70px'}
-		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
+			<!-- アイコン -->
 			<label
 				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
-				<input type="checkbox" class="hidden" oninput={() => toggleChecked(layerEntry.id)} />
+				<input type="checkbox" class="hidden" bind:checked={layerEntry.style.visible} />
 				{#if layerEntry.style.visible}
 					<LayerIcon {layerEntry} />
 				{/if}
@@ -193,7 +191,7 @@
 				{#if isHovered || !layerEntry.style.visible}
 					<div
 						transition:fade={{ duration: 100 }}
-						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black bg-opacity-50"
+						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50"
 					></div>
 					<div
 						transition:fade={{ duration: 100 }}
@@ -201,7 +199,7 @@
 							? 'text-red-500'
 							: 'text-neutral-200'}"
 					>
-						<Icon icon="ic:round-power-settings-new" width={30} />
+						<Icon icon="akar-icons:eye-slashed" width={30} />
 					</div>
 				{/if}
 			</label>
@@ -214,11 +212,29 @@
 						>{layerEntry.metaData.location ?? '---'}</span
 					>
 
-					<!-- {#if $selectedLayerId === layerEntry.id && !$isEdit}
+					<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
 					{/if} -->
 				</div>
 			</div>
+
+			<label
+				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
+			>
+				<input
+					type="checkbox"
+					class="hidden"
+					oninput={() => {
+						toggleChecked(layerEntry.id);
+					}}
+				/>
+				<Icon
+					icon="weui:arrow-filled"
+					class="h-8 w-8 text-base transition-transform duration-150 {showLegend
+						? '-rotate-90'
+						: 'rotate-90'}"
+				/>
+			</label>
 		</div>
 	</button>
 	{#if showLegend}
@@ -227,12 +243,15 @@
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
-					<button onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)} class="cursor-pointer">
+					<!-- <button
+						onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+						class="cursor-pointer"
+					>
 						<Icon
 							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
 							class="h-8 w-8"
 						/>
-					</button>
+					</button> -->
 
 					{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 						<button class="cursor-pointer" onclick={focusLayer}>
@@ -249,7 +268,7 @@
 					<!-- <button onclick={infoLayer}>
 						<Icon icon="akar-icons:info" class="h-8 w-8" />
 					</button> -->
-					<button onclick={removeLayer} class='cursor-pointer'>
+					<button onclick={removeLayer} class="cursor-pointer">
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
 				</div>

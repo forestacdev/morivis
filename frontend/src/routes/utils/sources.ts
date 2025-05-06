@@ -24,13 +24,14 @@ const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 };
 
 export const createSourcesItems = async (
-	_dataEntries: GeoDataEntry[]
+	_dataEntries: GeoDataEntry[],
+	_type: 'main' | 'preview' = 'main'
 ): Promise<{ [_: string]: SourceSpecification }> => {
 	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
-			const sourceId = `${entry.id}_source`;
+			const sourceId = `${entry.id}_${_type}_source`;
 			const { metaData, format, type, style } = entry;
 
 			switch (type) {
@@ -80,8 +81,8 @@ export const createSourcesItems = async (
 							geojson = await getFgbToGeojson(format.url);
 							GeojsonCache.set(entry.id, geojson);
 						} else if (format.type === 'geojson') {
-							// TODO: 表記はurlではなくdataがいいかも
-							geojson = format.url;
+							geojson = await getGeojson(format.url);
+							GeojsonCache.set(entry.id, geojson);
 						}
 
 						items[sourceId] = {
@@ -151,7 +152,8 @@ export const createSourcesItems = async (
 	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
 	// ラベルのソースを追加
-	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
+
+	const labelSources = get(showLabelLayer) && _type === 'main' ? getLabelSources() : {};
 
 	return { ...sourceItems, ...labelSources } as {
 		[_: string]: SourceSpecification;

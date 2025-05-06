@@ -1,17 +1,18 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, scale } from 'svelte/transition';
 
 	import { showTermsDialog } from '$routes/store';
-    import { saveToLocalStorage } from '$routes/utils/localStorage';
+	import { saveToLocalStorage } from '$routes/utils/localStorage';
 </script>
 
 {#if $showTermsDialog}
 	<div
-		transition:fade={{ duration: 100 }}
+		transition:fade={{ duration: 200 }}
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
 	>
 		<div
+			transition:scale={{ duration: 300 }}
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
 		>
 			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
@@ -39,26 +40,26 @@
 				<div class="pb-4">
 					<div class="text-lg font-bold">サービスの変更・停止</div>
 					<div>
-						サーバー障害、メンテナンス、その他の理由により、本アプリのサービスを一時的または永久に停止することがあります。その際、当社は事前に通知を行う義務を負いません。
+						サーバー障害、メンテナンス、その他の理由により、本アプリのサービスを一時的または永久に停止することがあります。その際、制作者は事前に通知を行う義務を負いません。
 					</div>
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">知的財産権について</div>
 					<div>
-						本アプリ内の地図データ、画像、プログラムその他のコンテンツに関する著作権、商標権その他の知的財産権は、当社または正当な権利を有する第三者に帰属します。これらを無断で複製、改変、再配布することを禁止します。
+						本アプリ内の地図データ、画像、プログラムその他のコンテンツに関する著作権、商標権その他の知的財産権は、制作者または正当な権利を有する第三者に帰属します。これらを無断で複製、改変、再配布することを禁止します。
 					</div>
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">地図情報に関する注意および免責事項</div>
 					<div>
 						本アプリで表示される地図は、岐阜県立森林文化アカデミーの演習林を対象としたものであり、当該施設とは直接の関係はありません。個人が制作したものであり、正式な地図や情報と異なる場合があります。内容の正確性・最新性は保証されませんので、参考情報としてご利用ください。
-						また、本アプリの利用により生じたいかなる損害についても、当社は一切の責任を負いません。
+						また、本アプリの利用により生じたいかなる損害についても、制作者は一切の責任を負いません。
 					</div>
 				</div>
 				<div class="pb-4">
 					<div class="text-lg font-bold">個人情報の取扱いについて</div>
 					<div>
-						本アプリの利用に際して取得した個人情報は、当社のプライバシーポリシーに基づき、適切に取り扱います。
+						本アプリの利用に際して取得した個人情報は、制作者のプライバシーポリシーに基づき、適切に取り扱います。
 					</div>
 				</div>
 				<div class="pb-4">
@@ -84,10 +85,13 @@
 				</div>
 			</div>
 			<div class="flex shrink-0 justify-center overflow-auto pt-2">
-				<button onclick={() => {
-                    showTermsDialog.set(false);
-                    saveToLocalStorage('userData');
-                }} class="c-btn-confirm px-12 py-6 text-lg">
+				<button
+					onclick={() => {
+						showTermsDialog.set(false);
+						saveToLocalStorage('userData');
+					}}
+					class="c-btn-confirm px-12 py-6 text-lg"
+				>
 					同意する
 				</button>
 			</div>

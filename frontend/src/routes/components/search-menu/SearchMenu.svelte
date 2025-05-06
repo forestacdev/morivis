@@ -13,7 +13,7 @@
 	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, isEdit, mapMode, showSearchMenu } from '$routes/store';
+	import { showSearchMenu, isSideMenuType } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import type { ResultData } from '$routes/utils/feature';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
@@ -144,10 +144,10 @@
 </script>
 
 <!-- レイヤーメニュー -->
-{#if $showSearchMenu}
+{#if $isSideMenuType === 'search'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2"
+		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
 		<div class="flex items-center justify-between p-2">
 			<Geocoder
@@ -156,23 +156,15 @@
 				bind:inputSearchWord
 				searchFeature={(v) => searchFeature(v)}
 			></Geocoder>
-			<button
-				onclick={() => {
-					showSearchMenu.set(false);
-				}}
-				class="bg-base cursor-pointer rounded-full p-2"
-			>
-				<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
-			</button>
 		</div>
 
 		{#if !results}
 			<div
-				class="c-scroll-hidden flex grow flex-col gap-4 divide-y-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
+				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
 				{#each searchWards as searchWard}
 					<button
-						class="bg-base flex w-full cursor-pointer items-center justify-center gap-2 rounded-full p-2 text-left"
+						class="bg-sub flex w-full cursor-pointer items-center justify-center gap-2 rounded-full p-2 text-left text-white"
 						onclick={() => {
 							inputSearchWord = searchWard;
 							searchFeature(inputSearchWord);
@@ -180,7 +172,6 @@
 						>{searchWard}
 					</button>
 				{/each}
-				<div class="h-[200px] w-full shrink-0"></div>
 			</div>
 		{/if}
 		{#if results}

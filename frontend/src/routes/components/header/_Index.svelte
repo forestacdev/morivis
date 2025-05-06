@@ -1,96 +1,110 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { Map as MLMap } from 'maplibre-gl';
+	import { fade, slide, fly } from 'svelte/transition';
 
-	import Geocoder from '$routes/components/search-menu/Geocoder.svelte';
-	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
-	import type { GeoDataEntry } from '$routes/data/types';
-	import { showSideMenu, mapMode } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
-	import type { ResultData } from '$routes/utils/feature';
-	import { type FeatureMenuData } from '$routes/utils/geojson';
-	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
+	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
+	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
+	import Logo from '$routes/components/side-menu/Logo.svelte';
+	import {
+		showSideMenu,
+		showDataMenu,
+		mapMode,
+		showInfoDialog,
+		showTermsDialog,
+		showTerrainMenu,
+		isSideMenuType
+	} from '$routes/store';
+	import { tooltip } from '$routes/store/tooltip';
+	import { imageExport } from '$routes/utils/map';
 
-	let results = $state<ResultData[] | null>([]);
-	interface Props {
-		layerEntries: GeoDataEntry[];
+	const toggleDataMenu = () => {
+		showSideMenu.set(false);
+		showDataMenu.set(!$showDataMenu);
+	};
 
-		featureMenuData: FeatureMenuData | null;
-		inputSearchWord: string;
-		map: MLMap;
-	}
+	const toggleInfoDialog = () => {
+		showSideMenu.set(false);
+		showInfoDialog.set(!$showInfoDialog);
+	};
 
-	let {
-		layerEntries,
-		featureMenuData = $bindable(),
-		inputSearchWord = $bindable(),
-		map
-	}: Props = $props();
+	const toggleTermsDialog = () => {
+		showSideMenu.set(false);
+		showTermsDialog.set(!$showTermsDialog);
+	};
 
-	// const focusFeature = (feature: any, layerId: string) => {
-	// 	mapStore.focusFeature(feature);
-	// 	const data: FeatureMenuData = {
-	// 		type: 'Feature',
-	// 		layerId: layerId,
-	// 		properties: feature.properties,
-	// 		geometry: feature.geometry,
-	// 		featureId: feature.id
-	// 	};
-	// 	featureMenuData = data;
-	// 	results = [];
-	// };
+	mapMode.subscribe((mode) => {
+		showSideMenu.set(false);
+	});
 
-	const focusFeature = async (result: ResultData) => {
-		const prop = await getPropertiesFromPMTiles(
-			`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-			result.tile,
-			result.layerId,
-			result.featureId
-		);
+	const toggleSearchMenu = () => {
+		if ($isSideMenuType === 'search') {
+			isSideMenuType.set(null);
+		} else {
+			isSideMenuType.set('search');
+		}
+	};
 
-		const data: FeatureMenuData = {
-			layerId: result.layerId,
-			properties: prop,
-			point: result.point,
-			featureId: result.featureId
-		};
-		featureMenuData = data;
-		results = [];
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 16
-		});
+	const toggleLayerMenu = () => {
+		if ($isSideMenuType === 'layer') {
+			isSideMenuType.set(null);
+		} else {
+			isSideMenuType.set('layer');
+		}
+	};
+
+	const toggleTerrainMenu = () => {
+		showTerrainMenu.set(!$showTerrainMenu);
 	};
 </script>
 
-{#if $mapMode !== 'edit'}
-	<div
-		class="pointer-events-none absolute left-0 top-0 z-20 flex w-full grow items-center justify-start gap-2 p-2"
-	>
-		<button
-			class="bg-main pointer-events-auto rounded-full p-2 text-left text-base"
-			onclick={() => showSideMenu.set(true)}
-		>
-			<Icon icon="ic:round-menu" class="h-6 w-6" />
-		</button>
-		<Geocoder {layerEntries} bind:results bind:inputSearchWord />
-	</div>
-	{#if results}
-		<div
-			class="bg-main absolute left-2 top-[60px] z-20 flex w-[350px] flex-col gap-2 overflow-y-auto rounded-md p-4"
-		>
-			{#each results as result}
-				<button
-					onclick={() => focusFeature(result)}
-					class="flex w-full flex-col text-left text-base"
-				>
-					<span class="">{result.name}</span>
-					<span class="text-xs">{result.name}</span>
-				</button>
-			{/each}
-		</div>
-	{/if}
-{/if}
+<div class="bg-main/60 absolute left-0 top-0 z-10 flex w-full gap-2 p-1 pl-4 pr-4 text-base">
+	<ui>
+		{#if $isSideMenuType}
+			<button
+				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left text-base duration-150"
+				onclick={() => isSideMenuType.set(null)}
+			>
+				<Icon icon="ep:back" class="h-8 w-8" />
+			</button>
+		{:else}
+			<button
+				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left text-base duration-150"
+				onclick={() => showSideMenu.set(true)}
+			>
+				<Icon icon="ic:round-menu" class="h-8 w-8" />
+			</button>
+		{/if}
+	</ui>
+	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+	<ui class="flex w-full justify-between">
+		<li class="flex">
+			<button
+				onclick={toggleSearchMenu}
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+			>
+				<Icon icon="stash:search-solid" class="h-8 w-8" />
+			</button>
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleLayerMenu}
+			>
+				<Icon icon="ic:round-layers" class="h-8 w-8" />
+			</button>
+		</li>
+		<li class="flex">
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleDataMenu}
+			>
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+			</button>
+			<StreetViewControl />
+			<TerrainControl />
+			<GeolocateControl />
+		</li>
+	</ui>
+</div>
 
 <style>
 </style>

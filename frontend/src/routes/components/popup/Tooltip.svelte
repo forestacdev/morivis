@@ -4,6 +4,8 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount, type Snippet } from 'svelte';
 
+	import { generatePopupTitle } from '$routes/utils/properties';
+
 	interface Props {
 		map: maplibregl.Map;
 		lngLat: LngLat | null;
@@ -60,13 +62,19 @@
 	});
 </script>
 
-{#if show}
+{#if show && feature}
 	<div
 		bind:this={container}
 		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
 	>
 		<!-- <div class="css-ripple-effect"></div> -->
-		<div class="absolute translate-y-10 text-base font-bold">{feature.layer.metadata.name}</div>
+		{#if feature.layer.metadata}
+			<div class="absolute translate-y-10 text-base font-bold">
+				{feature.layer.metadata.titles
+					? generatePopupTitle(feature.properties, feature.layer.metadata.titles)
+					: feature.layer.metadata.name}
+			</div>
+		{/if}
 		<div class="css-rotate-effect absolute h-[30px] w-[30px] rotate-45 border-2 border-white"></div>
 	</div>
 {/if}

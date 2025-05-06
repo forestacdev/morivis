@@ -81,7 +81,6 @@
 			{/each}
 		{:else if setColorExpression.type === 'step'}
 			{#if stepPallet}
-				<h2></h2>
 				{#each stepPallet.categories as _, index}
 					<div class="flex w-full select-none items-center justify-center gap-2 text-gray-100">
 						<div

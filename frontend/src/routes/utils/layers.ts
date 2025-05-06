@@ -644,7 +644,10 @@ const createVectorLayer = (
 };
 
 // layersの作成
-export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
+export const createLayersItems = (
+	_dataEntries: GeoDataEntry[],
+	_type: 'main' | 'preview' = 'main'
+) => {
 	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
 	const pointItems: LayerSpecification[] = [];
@@ -660,8 +663,8 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 		.filter((entry) => entry.style.visible)
 		.reverse()
 		.forEach((entry) => {
-			const layerId = `${entry.id}`;
-			const sourceId = `${entry.id}_source`;
+			const layerId = _type === 'preview' ? `${entry.id}_${_type}` : `${entry.id}`;
+			const sourceId = `${entry.id}_${_type}_source`;
 			const { format, style, metaData, interaction, type } = entry;
 
 			const layer: LayerItem = {
@@ -671,7 +674,8 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 				minzoom: 0,
 				metadata: {
 					name: metaData.name,
-					location: metaData.location
+					location: metaData.location,
+					titles: entry.type === 'vector' ? entry.properties.titles : null
 				}
 			};
 
@@ -691,11 +695,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 								'raster-brightness-max': style.brightnessMax,
 								'raster-brightness-min': style.brightnessMin,
 								'raster-saturation': style.saturation,
-								'raster-contrast': style.contrast,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-contrast': style.contrast
 							}
 						});
 					} else if (style.type === 'categorical') {
@@ -703,11 +703,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-opacity': style.opacity
 							}
 						});
 					} else if (style.type === 'dem') {
@@ -715,11 +711,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity,
-								...(style.raster.paint ?? {})
-							},
-							layout: {
-								...(style.raster.layout ?? {})
+								'raster-opacity': style.opacity
 							}
 						});
 					}
@@ -779,7 +771,7 @@ export const createLayersItems = (_dataEntries: GeoDataEntry[]) => {
 	clickableRasterIds.set(clickableRaster);
 
 	// デフォルトラベルの表示
-	const mapLabelItems = get(showLabelLayer) ? getLabelLayers() : [];
+	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
 	// const highlightLayers = get(selectedHighlightData)
 	// 	? createHighlightLayer(get(selectedHighlightData))

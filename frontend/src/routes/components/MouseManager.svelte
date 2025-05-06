@@ -19,6 +19,7 @@
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
+		showDataEntry: GeoDataEntry | null;
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 	}
 
@@ -29,6 +30,7 @@
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		layerEntries,
+		showDataEntry,
 		toggleTooltip
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
@@ -36,6 +38,9 @@
 	let hoveredFeatureState: FeatureStateData | null = null;
 
 	map.on('click', (e) => {
+		// プレビューモードの時は、クリックイベントを無視する
+		if (showDataEntry) return;
+
 		// console.log(map.queryRenderedFeatures(e.point));
 		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
@@ -74,8 +79,6 @@
 			if (clickedLayerEntry) {
 				selectedLayerId.set(clickedLayerEntry.id);
 			}
-
-			return;
 		}
 
 		const selectedVecterLayersId = features.map((feature) => feature.layer.id);

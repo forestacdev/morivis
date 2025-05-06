@@ -17,12 +17,11 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_tochigi',
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039],
-		coverImage: null
+		bounds: [139.326731, 36.199924, 140.291983, 37.155039]
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['樹種'],

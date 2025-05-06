@@ -15,12 +15,11 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 22,
-		bounds: null,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/phenology_2020.webp`
 	},
 	properties: {
 		keys: ['種名'],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['種名'],

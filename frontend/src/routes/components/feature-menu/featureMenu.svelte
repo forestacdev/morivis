@@ -90,14 +90,14 @@
 {#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute left-0 top-0 z-20 flex h-full w-[400px] flex-col gap-2 overflow-hidden px-2 pt-4"
+		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
 	>
 		<div class="flex w-full cursor-pointer justify-between pb-2">
 			<button
 				onclick={() => (featureMenuData = null)}
-				class="bg-base ml-auto cursor-pointer rounded-full p-2"
+				class="bg-base mr-auto cursor-pointer rounded-full p-2"
 			>
-				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
+				<Icon icon="ep:back" class="text-main h-4 w-4" />
 			</button>
 		</div>
 		{#if srcData}
@@ -111,13 +111,16 @@
 				/>
 			</div>
 		{/if}
-		<div class="flex h-full flex-col gap-2 overflow-auto">
+		<div class="flex h-full flex-col gap-2">
 			<!-- タイトル -->
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
-					>{targetLayer && targetLayer.type === 'vector' && targetLayer.properties.titles
+					>{targetLayer &&
+					targetLayer.type === 'vector' &&
+					targetLayer.properties.titles.length &&
+					featureMenuData.properties
 						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-						: ''}</span
+						: targetLayer?.metaData.name}</span
 				>
 				<span class="text-[14px] text-gray-300"
 					>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
@@ -126,7 +129,7 @@
 			<!-- 切り替えタブ -->
 
 			<!-- 詳細情報 -->
-			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto">
+			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto overflow-x-hidden">
 				<div class="flex h-full w-full flex-col gap-2">
 					<div class="flex w-full items-center justify-start gap-2">
 						<Icon icon="lucide:map-pin" class="h-6 w-6 text-base" />

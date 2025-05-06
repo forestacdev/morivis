@@ -4,6 +4,14 @@ import { orderedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
 
+export type GeoJSONGeometryType =
+	| 'Point'
+	| 'LineString'
+	| 'Polygon'
+	| 'MultiPoint'
+	| 'MultiPolygon'
+	| 'MultiLineString';
+
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
@@ -16,24 +24,10 @@ export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	}
 };
 
-// const fgbBoundingBox = () => {
-// 	// mapStore.
-// 	const bounds = mapStore.getBounds();
-// 	console.log(bounds);
-// 	if (!bounds) return;
-// 	return bounds;
-// };
-
 /** fgbを取得してGeoJSONで返す */
 export const getFgbToGeojson = async (url: string, index?: number): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
-		// const featureIterator = fgb.deserialize(response.body as ReadableStream, {
-		// 	minX: 136.92278224505964,
-		// 	minY: 35.5550269493974,
-		// 	maxX: 136.92300017454164,
-		// 	maxY: 35.555151603539045
-		// });
 
 		const featureIterator = fgb.deserialize(response.body as ReadableStream);
 
@@ -172,7 +166,9 @@ orderedLayerIds.subscribe((ids) => {
 	}
 });
 
-export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
+export const geoJsonFileToGeoJson = async (
+	file: File
+): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
 	try {
 		const text = await file.text();
 		const geojson = JSON.parse(text);

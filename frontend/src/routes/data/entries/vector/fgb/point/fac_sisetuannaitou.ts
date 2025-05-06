@@ -15,16 +15,14 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		maxZoom: 22,
-		bounds: null,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_sisetuannaitou.webp`
 	},
 	properties: {
 		keys: [],
-		dict: null,
 		titles: [
 			{
 				conditions: [],
-				template: '林業専攻-OWL利用研修立木計測データ'
+				template: '施設案内棟'
 			}
 		]
 	},

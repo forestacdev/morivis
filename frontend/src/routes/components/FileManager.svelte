@@ -1,7 +1,13 @@
 <script lang="ts">
-	import turfBbox from '@turf/bbox';
+	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 
+	import { createGeoJsonEntry } from '$routes/data';
+	import type { GeoDataEntry } from '$routes/data/types';
+	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
+	import type { LayerType } from '$routes/store/layers';
+	import { groupedLayerStore } from '$routes/store/layers';
+	import { getLayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
@@ -11,11 +17,44 @@
 		map: maplibregl.Map;
 		isDragover: boolean;
 		dropFile: File | null;
+		tempLayerEntries: GeoDataEntry[];
+		showDataEntry: GeoDataEntry | null;
 	}
 
-	let { map, isDragover = $bindable(), dropFile = $bindable() }: Props = $props();
+	let {
+		map,
+		isDragover = $bindable(),
+		dropFile = $bindable(),
+		tempLayerEntries = $bindable(),
+		showDataEntry = $bindable()
+	}: Props = $props();
 
 	const allowedExtensions = ['csv', 'geojson', 'fgb'];
+
+	const geometryTypeToEntryType = (
+		geojson: FeatureCollection<Geometry, GeoJsonProperties>
+	): VectorEntryGeometryType | undefined => {
+		const geometryTypes = new Set<string>();
+		geojson.features.forEach((feature) => {
+			if (feature.geometry && feature.geometry.type) {
+				geometryTypes.add(feature.geometry.type);
+			}
+		});
+
+		if (geometryTypes.has('Point')) {
+			return 'Point';
+		} else if (geometryTypes.has('LineString')) {
+			return 'LineString';
+		} else if (geometryTypes.has('Polygon')) {
+			return 'Polygon';
+		} else if (geometryTypes.has('MultiPoint')) {
+			return 'Point';
+		} else if (geometryTypes.has('MultiLineString')) {
+			return 'LineString';
+		} else if (geometryTypes.has('MultiPolygon')) {
+			return 'Polygon';
+		}
+	};
 
 	const setFile = async (file: File) => {
 		let geojsonData;
@@ -25,9 +64,10 @@
 			return;
 		}
 		switch (file.name.split('.').pop()?.toLowerCase()) {
-			case 'csv':
-				geojsonData = await csvFileToGeojson(file);
-				break;
+			// TODO:CSV
+			// case 'csv':
+			// 	geojsonData = await csvFileToGeojson(file);
+			// 	break;
 			case 'geojson':
 				geojsonData = await geoJsonFileToGeoJson(file);
 				break;
@@ -36,12 +76,27 @@
 				break;
 			default:
 				showNotification('対応していないファイル形式です', 'error');
+				return;
 		}
 
-		showNotification('ファイルを読み込みました', 'success');
+		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 
-		const bounds = turfBbox(geojsonData);
-		console.warn('bounds', bounds);
+		if (!entryGeometryType) {
+			showNotification('対応していないジオメトリタイプです', 'error');
+			return;
+		}
+
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, file.name);
+
+		if (!entry) {
+			showNotification('データが不正です', 'error');
+			return;
+		}
+
+		tempLayerEntries = [...tempLayerEntries, entry];
+		showDataEntry = entry;
+
+		showNotification('ファイルを読み込みました', 'success');
 	};
 
 	$effect(() => {

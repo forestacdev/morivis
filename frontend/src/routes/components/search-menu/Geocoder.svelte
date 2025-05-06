@@ -54,11 +54,11 @@
 </script>
 
 <div
-	class="duration-15 pointer-events-auto relative flex overflow-hidden rounded-full transition-all"
+	class="duration-15 pointer-events-auto relative flex w-full overflow-hidden rounded-full transition-all"
 >
 	<input
 		type="text"
-		class="bg-base focus:outline-hidden w-[280px] rounded-md px-4 py-2"
+		class="bg-base focus:outline-hidden w-full rounded-md px-4 py-2"
 		bind:value={inputSearchWord}
 		oncompositionstart={() => (isComposing = true)}
 		oncompositionend={() => (isComposing = false)}

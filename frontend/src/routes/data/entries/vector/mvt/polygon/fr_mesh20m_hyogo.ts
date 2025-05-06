@@ -17,12 +17,11 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_hyogo',
-		bounds: [134.252809, 34.156129, 135.468591, 35.674667],
-		coverImage: null
+		bounds: [134.252809, 34.156129, 135.468591, 35.674667]
 	},
 	properties: {
 		keys: [],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['樹種'],

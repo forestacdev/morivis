@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: ['name', '年度'],
-		dict: null,
+
 		titles: [
 			{
 				conditions: ['name'],

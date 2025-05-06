@@ -2,8 +2,8 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import ColorExpressionsOption from '$routes/components/layer-menu/layer-option-menu/extension-menu/ColorExpressionsOption.svelte';
-	import NumberExpressionsOption from '$routes/components/layer-menu/layer-option-menu/extension-menu/NumberExpressionsOption.svelte';
+	import ColorExpressionsOption from '$routes/components/layer-style-menu/extension-menu/ColorExpressionsOption.svelte';
+	import NumberExpressionsOption from '$routes/components/layer-style-menu/extension-menu/NumberExpressionsOption.svelte';
 	import type {
 		ColorsExpression,
 		NumbersExpression,
@@ -54,9 +54,9 @@
 			>
 				{#each expressionsList as expressionItem (expressionItem.key)}
 					<label
-						class="hover:text-accent z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {expressionItem.key ===
+						class="hover:text-accent bg-sub z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {expressionItem.key ===
 						style.key
-							? 'bg-accent text-white hover:text-white'
+							? 'bg-accent'
 							: ''}"
 					>
 						<input

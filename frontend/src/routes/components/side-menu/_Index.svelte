@@ -11,10 +11,21 @@
 		showDataMenu,
 		mapMode,
 		showInfoDialog,
-		showTermsDialog
+		showTermsDialog,
+		isSideMenuType
 	} from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { imageExport } from '$routes/utils/map';
+
+	const toggleLayerMenu = () => {
+		showSideMenu.set(false);
+		isSideMenuType.set('layer');
+	};
+
+	const togleSearchMenu = () => {
+		showSideMenu.set(false);
+		isSideMenuType.set('search');
+	};
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -71,11 +82,19 @@
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				onclick={() => mapMode.set('edit')}
+				onclick={togleSearchMenu}
+			>
+				<Icon icon="stash:search-solid" class="h-8 w-8" />
+				<span class="select-none">検索</span>
+			</button>
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleLayerMenu}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
 				<span class="select-none">レイヤー</span>
 			</button>
+
 			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={() => mapMode.set('analysis')}

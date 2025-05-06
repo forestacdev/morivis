@@ -10,17 +10,15 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_owl.fgb`
 	},
 	metaData: {
-		name: '林業専攻-OWL利用研修立木計測データ',
+		name: 'OWL利用研修立木計測データ',
 		description: '林業専攻-OWL利用研修立木計測データ',
 		attribution: '株式会社アドイン研究所',
 		location: '森林文化アカデミー',
 		maxZoom: 22,
-		bounds: null,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
 	},
 	properties: {
 		keys: ['樹種'],
-		dict: null,
 		titles: [
 			{
 				conditions: ['樹種'],
@@ -28,7 +26,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '林業専攻-OWL利用研修立木計測データ'
+				template: 'OWL利用研修立木計測データ'
 			}
 		]
 	},

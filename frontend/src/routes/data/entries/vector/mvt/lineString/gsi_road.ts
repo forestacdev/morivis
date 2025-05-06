@@ -16,13 +16,11 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 16,
 		minZoom: 4,
 		sourceLayer: 'RdCL',
-		downloadUrl: 'https://github.com/gsi-cyberjapan/optimal_bvmap',
-		bounds: null,
-		coverImage: null
+		downloadUrl: 'https://github.com/gsi-cyberjapan/optimal_bvmap'
 	},
 	properties: {
 		keys: ['種類'],
-		dict: null,
+
 		titles: null
 	},
 	interaction: {

@@ -75,7 +75,7 @@
 {#if $showTerrainMenu}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2"
+		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2"
 	>
 		<div class="flex items-center justify-between p-2">
 			<span class="p-2 text-base text-lg">地形</span>
