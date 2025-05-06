@@ -43,6 +43,7 @@
 	import FooterMenu from '$routes/components/footer/_Index.svelte';
 	import HeaderMenu from '$routes/components/Header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
+	import LayerStyleMenu from '$routes/components/layer-style-menu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
@@ -73,6 +74,7 @@
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
+	let isStyleEditEntry = $state<GeoDataEntry | null>(null); // スタイル編集用のデータ
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ

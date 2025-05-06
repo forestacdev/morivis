@@ -7,7 +7,7 @@
 	import LabelPulldownBox from '$routes/components/atoms/LabelPulldownBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/components/layer-menu/layer-option-menu/ColorOption.svelte';
+	import ColorOption from '$routes/components/layer-style-menu/ColorOption.svelte';
 	import type {
 		VectorEntryGeometryType,
 		LabelEntry,

@@ -4,8 +4,8 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
-	import RasterOptionMenu from '$routes/components/layer-menu/layer-option-menu/RasterOptionMenu.svelte';
-	import VectorOptionMenu from '$routes/components/layer-menu/layer-option-menu/VectorOptionMenu.svelte';
+	import RasterOptionMenu from '$routes/components/layer-style-menu/RasterOptionMenu.svelte';
+	import VectorOptionMenu from '$routes/components/layer-style-menu/VectorOptionMenu.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit } from '$routes/store';
@@ -29,7 +29,7 @@
 			<button onclick={() => isEdit.set(false)} class="bg-base grid items-center rounded-full p-2">
 				<Icon icon="ep:back" class="text-main h-4 w-4" />
 			</button>
-			<span class="text-lg text-base">レイヤーの編集</span>
+			<span class="text-base text-lg">レイヤーの編集</span>
 		</div>
 		<LayerSlot bind:layerEntry bind:tempLayerEntries />
 		<div class="c-scroll h-full grow overflow-x-hidden">

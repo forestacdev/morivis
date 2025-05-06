@@ -5,7 +5,6 @@
 	import { slide, fly } from 'svelte/transition';
 
 	import Switch from '$routes/components/atoms/Switch.svelte';
-	import LayerOptionMenu from '$routes/components/layer-menu/layer-option-menu/_Index.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isEdit, mapMode, showDataMenu, isSideMenuType } from '$routes/store';
@@ -55,7 +54,7 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute z-10 flex h-full flex-col gap-2"
 	>
-		<div class="flex h-[100px] w-full items-center justify-between"></div>
+		<div class="flex h-[70px] w-full items-center justify-between"></div>
 
 		<div
 			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
@@ -89,7 +88,6 @@
 			{/each}
 			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
-		<LayerOptionMenu bind:layerEntry bind:tempLayerEntries />
 		{#if !$isEdit && !$showDataMenu}
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
