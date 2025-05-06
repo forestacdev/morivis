@@ -22,7 +22,7 @@
 	let container = $state<HTMLElement | null>(null);
 
 	const updateItemHeight = (newHeight: number) => {
-		itemHeight = newHeight + 10;
+		itemHeight = newHeight + 20;
 	};
 
 	onMount(() => {
