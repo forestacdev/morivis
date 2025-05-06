@@ -61,6 +61,7 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		showDataEntry: GeoDataEntry | null;
+		dropFile: File | null;
 	}
 
 	let {
@@ -74,7 +75,8 @@
 		streetViewPoint,
 		showMapCanvas,
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		dropFile = $bindable()
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -88,7 +90,6 @@
 	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 	let isDragover = $state(false);
-	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 

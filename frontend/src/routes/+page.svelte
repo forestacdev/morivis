@@ -79,6 +79,7 @@
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
+	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
 	let isStyleEditEntry = $derived.by(() => {
 		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);
@@ -337,6 +338,7 @@
 		bind:featureMenuData
 		bind:showSelectionMarker
 		bind:selectionMarkerLngLat
+		bind:dropFile
 		{streetViewLineData}
 		{streetViewPointData}
 		{angleMarker}
@@ -352,7 +354,7 @@
 
 	<TerrainMenu />
 	{#if !showDataEntry}
-		<DataMenu bind:showDataEntry />
+		<DataMenu bind:showDataEntry bind:dropFile />
 	{/if}
 	{#if showDataEntry}
 		<DataPreview bind:showDataEntry />

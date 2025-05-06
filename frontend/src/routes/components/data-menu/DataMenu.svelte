@@ -2,16 +2,19 @@
 	import Icon from '@iconify/svelte';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
+	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
+	import UploadPane from '$routes/components/data-menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+		dropFile: File | null;
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
+	let { showDataEntry = $bindable(), dropFile = $bindable() }: Props = $props();
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
@@ -51,6 +54,18 @@
 			rowColumns = 2; // 幅が足りない場合は最低2列を維持
 		}
 	});
+
+	let options = $state<
+		{
+			key: string;
+			name: string;
+		}[]
+	>([
+		{ key: 'system', name: 'アプリ内' },
+		{ key: 'user', name: 'アップロード' }
+	]);
+
+	let selected = $state<string>('system');
 </script>
 
 <div
@@ -80,6 +95,9 @@
 					<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 				</button>
 			</div>
+			<div class="w-[300px] shrink-0">
+				<HorizontalSelectBox bind:group={selected} bind:options />
+			</div>
 			<button onclick={toggleDataMenu} class="bg-base cursor-pointer rounded-full p-2">
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
@@ -91,30 +109,34 @@
 				<span class="text-gray-500">データが見つかりません</span>
 			</div>
 		{/if}
-
-		<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
-			<VirtualList
-				width="100%"
-				height="100%"
-				itemCount={filterDataEntries.length / rowColumns + 1}
-				itemSize={itemHeight}
-			>
-				<div slot="item" let:index let:style {style}>
-					<div class="row" style="--grid-columns: {rowColumns};">
-						{#each Array(rowColumns) as _, i}
-							{#if filterDataEntries[index * rowColumns + i]}
-								<DataSlot
-									dataEntry={filterDataEntries[index * rowColumns + i]}
-									bind:showDataEntry
-									bind:itemHeight
-									index={index * rowColumns + i}
-								/>
-							{/if}
-						{/each}
+		{#if selected === 'system'}
+			<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
+				<VirtualList
+					width="100%"
+					height="100%"
+					itemCount={filterDataEntries.length / rowColumns + 1}
+					itemSize={itemHeight}
+				>
+					<div slot="item" let:index let:style {style}>
+						<div class="row" style="--grid-columns: {rowColumns};">
+							{#each Array(rowColumns) as _, i}
+								{#if filterDataEntries[index * rowColumns + i]}
+									<DataSlot
+										dataEntry={filterDataEntries[index * rowColumns + i]}
+										bind:showDataEntry
+										bind:itemHeight
+										index={index * rowColumns + i}
+									/>
+								{/if}
+							{/each}
+						</div>
 					</div>
-				</div>
-			</VirtualList>
-		</div>
+				</VirtualList>
+			</div>
+		{/if}
+		{#if selected === 'user'}
+			<UploadPane bind:showDataEntry bind:dropFile />
+		{/if}
 	</div>
 </div>
 

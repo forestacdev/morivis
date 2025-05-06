@@ -1,24 +1,21 @@
 <script lang="ts">
-	let {
-		label,
-		group = $bindable(),
-		options = $bindable()
-	}: {
-		label: string;
+	interface Props {
+		label?: string;
 		group: string;
 		options: {
 			key: string;
 			name: string;
 		}[];
-	} = $props();
-
-	let selectedKey = $state<string>(group);
+	}
+	let { label, group = $bindable(), options = $bindable() }: Props = $props();
 </script>
 
 <div class="flex flex-col gap-2">
-	<div class="flex select-none items-center gap-2 text-base">
-		<span>{label}</span>
-	</div>
+	{#if label}
+		<div class="flex select-none items-center gap-2 text-base">
+			<span>{label}</span>
+		</div>
+	{/if}
 	<div class="relative flex w-full overflow-hidden rounded-full bg-gray-400">
 		<div
 			class="bg-accent absolute h-full w-1/2 rounded-full transition-transform duration-200 {options[0]
