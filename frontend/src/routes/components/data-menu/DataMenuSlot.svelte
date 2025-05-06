@@ -7,6 +7,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
+	import { showNotification } from '$routes/store/notification';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
 	interface Props {
@@ -94,6 +95,7 @@
 	const addData = (id: string) => {
 		if (!layerType) return;
 		groupedLayerStore.add(id, layerType as LayerType);
+		showNotification(`${dataEntry.metaData.name}を追加しました`, 'success');
 	};
 	const deleteData = (id: string) => {
 		groupedLayerStore.remove(id);

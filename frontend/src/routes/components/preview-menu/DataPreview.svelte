@@ -4,8 +4,10 @@
 	// formatDescription.ts
 
 	import type { GeoDataEntry } from '$routes/data/types';
+	import { showDataMenu } from '$routes/store';
 	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
+	import { showNotification } from '$routes/store/notification';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -22,7 +24,9 @@
 	const addData = () => {
 		if (showDataEntry) {
 			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
+			showNotification(`${showDataEntry.metaData.name}を追加しました`, 'success');
 			showDataEntry = null;
+			showDataMenu.set(false);
 		}
 	};
 	const deleteData = () => {
