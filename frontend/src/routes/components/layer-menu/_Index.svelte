@@ -7,14 +7,16 @@
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, isEdit, mapMode, showDataMenu, isSideMenuType } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu, isSideMenuType } from '$routes/store';
 	import { typeBreakIndices } from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
 
-	let {
-		layerEntries = $bindable(),
-		tempLayerEntries = $bindable()
-	}: { layerEntries: GeoDataEntry[]; tempLayerEntries: GeoDataEntry[] } = $props();
+	interface Props {
+		layerEntries: GeoDataEntry[];
+		tempLayerEntries: GeoDataEntry[];
+	}
+
+	let { layerEntries = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 	let dragEnterType = $state(null); // ドラッグ中のレイヤーのタイプ
@@ -65,11 +67,7 @@
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					{#if $typeBreakIndices[i]}
 						<!-- この index はタイプの切り替え地点 -->
-						<div
-							class="mb-1 mt-4 flex items-center gap-2 border-t p-2 text-base {$showDataMenu
-								? 'text-sm'
-								: ''}"
-						>
+						<div class="mb-1 mt-4 flex items-center gap-2 border-t p-2 text-base">
 							<Icon
 								icon={TYPE_ICONS[$typeBreakIndices[i]]}
 								class="pointer-events-none"
@@ -88,7 +86,7 @@
 			{/each}
 			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
-		{#if !$isEdit && !$showDataMenu}
+		{#if !$isStyleEdit}
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
 			>

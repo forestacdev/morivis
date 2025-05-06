@@ -34,8 +34,8 @@ export const showStreetViewLayer = writable<boolean>(false);
 /** サイドメニューの表示状態 */
 export const showSideMenu = writable<boolean>(false);
 
-/** TODO:編集モード */
-export const isEdit = writable<boolean>(false);
+/** スタイル編集モード */
+export const isStyleEdit = writable<boolean>(false);
 
 export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
 

@@ -43,12 +43,11 @@
 	import FooterMenu from '$routes/components/footer/_Index.svelte';
 	import HeaderMenu from '$routes/components/Header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
-	import LayerStyleMenu from '$routes/components/layer-style-menu/_Index.svelte';
+	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
-	import SideBar from '$routes/components/side-bar/SideBar.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
 	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
@@ -58,11 +57,17 @@
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isSideMenuType, isStreetView, mapMode } from '$routes/store';
+	import {
+		isSideMenuType,
+		isStreetView,
+		mapMode,
+		selectedLayerId,
+		isStyleEdit
+	} from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
+	import { getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 
 	type NodeConnections = Record<string, string[]>;
@@ -74,7 +79,15 @@
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
-	let isStyleEditEntry = $state<GeoDataEntry | null>(null); // スタイル編集用のデータ
+
+	let isStyleEditEntry = $derived.by(() => {
+		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);
+		if (targetEntry && $isStyleEdit) {
+			return targetEntry;
+		} else {
+			return null;
+		}
+	});
 	let inputSearchWord = $state<string>(''); // 検索ワード
 
 	// ストリートビューのデータ
@@ -333,6 +346,7 @@
 	<!-- <SideBar /> -->
 	<HeaderMenu />
 	<FooterMenu {layerEntries} />
+	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 	<FeatureMenu bind:featureMenuData {layerEntries} />
 	<PreviewMenu bind:showDataEntry />
 

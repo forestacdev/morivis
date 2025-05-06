@@ -8,7 +8,7 @@
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
-	import { selectedLayerId, isEdit, showDataMenu } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
 	import {
 		orderedLayerIds,
 		groupedLayerStore,
@@ -55,7 +55,7 @@
 	});
 
 	const selectedLayer = () => {
-		if (isHovered || $isEdit) return;
+		if (isHovered || $isStyleEdit) return;
 		if ($selectedLayerId === layerEntry.id) {
 			selectedLayerId.set('');
 		} else {
@@ -79,7 +79,7 @@
 	// TODO: レイヤーのコピー
 	// const copyLayer = () => {
 	// 	if (!layerEntry) return;
-	// 	$isEdit = false;
+	// 	$isStyleEdit = false;
 	// 	const uuid = crypto.randomUUID();
 	// 	const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
@@ -92,7 +92,7 @@
 
 	// レイヤーの削除
 	const removeLayer = () => {
-		$isEdit = false;
+		$isStyleEdit = false;
 		if (!layerEntry) return;
 		groupedLayerStore.remove(layerEntry.id);
 		selectedLayerId.set('');
@@ -106,7 +106,7 @@
 
 	const editLayer = () => {
 		if (!layerEntry) return;
-		$isEdit = !$isEdit;
+		$isStyleEdit = !$isStyleEdit;
 	};
 
 	const infoLayer = () => {
@@ -175,8 +175,6 @@
 			? 'css-gradient'
 			: ' hover:border-accent'}"
 		onclick={selectedLayer}
-		style:width={!$showDataMenu ? '100%' : '70px'}
-		style:transition="width 0.3s ease"
 	>
 		<div class="flex items-center justify-start gap-2">
 			<!-- アイコン -->
@@ -214,7 +212,7 @@
 						>{layerEntry.metaData.location ?? '---'}</span
 					>
 
-					<!-- {#if $selectedLayerId === layerEntry.id && !$isEdit}
+					<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
 					{/if} -->
 				</div>
@@ -227,7 +225,6 @@
 					type="checkbox"
 					class="hidden"
 					oninput={() => {
-						if ($showDataMenu) return; // メニューが開いているときはチェックボックスを無効化
 						toggleChecked(layerEntry.id);
 					}}
 				/>
