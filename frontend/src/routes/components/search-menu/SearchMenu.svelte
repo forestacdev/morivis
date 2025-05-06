@@ -63,6 +63,7 @@
 	});
 
 	let results = $state<ResultData[] | null>([]);
+	let isLoading = $state<boolean>(false);
 
 	const focusFeature = async (result: ResultData) => {
 		if (result.propId) {
@@ -92,52 +93,66 @@
 	};
 
 	const searchFeature = async (searchWord: string) => {
-		if (!searchData) {
-			console.error('Search data is not loaded yet.');
-			return;
-		}
+		isLoading = true;
+		try {
+			if (!searchData) {
+				console.error('Search data is not loaded yet.');
+				return;
+			}
 
-		const fuse = new Fuse(searchData, {
-			keys: ['search_values'],
-			threshold: 0.1
-		});
-		// 検索実行
-		const result = fuse.search(searchWord, {
-			limit: LIMIT
-		});
+			const fuse = new Fuse(searchData, {
+				keys: ['search_values'],
+				threshold: 0.1
+			});
+			// 検索実行
+			const result = fuse.search(searchWord, {
+				limit: LIMIT
+			});
 
-		const resultsData = result.map((item) => {
-			const data = item.item;
-
-			return {
-				name: data.name,
-				location: dict[data.layer_id] || null,
-
-				tile: data.tile_coords,
-				point: data.point,
-				layerId: data.layer_id,
-				featureId: data.feature_id,
-				propId: data.prop_id
-			};
-		});
-
-		let addressSearchResponse = await addressSearch(searchWord);
-
-		const addressSearchData = addressSearchResponse
-			.slice(0, LIMIT - result.length)
-			.map(({ geometry: { coordinates: center }, properties }) => {
-				const address = properties.addressCode
-					? addressCodeToAddress(properties.addressCode)
-					: null;
+			const resultsData = result.map((item) => {
+				const data = item.item;
 
 				return {
-					point: center,
-					name: properties.title,
-					location: address
+					name: data.name,
+					location: dict[data.layer_id] || null,
+
+					tile: data.tile_coords,
+					point: data.point,
+					layerId: data.layer_id,
+					featureId: data.feature_id,
+					propId: data.prop_id
 				};
 			});
 
-		results = [...resultsData, ...addressSearchData];
+			let addressSearchData = [];
+
+			// 2文字以上の検索ワードの場合、住所検索を実行
+			if (searchWord.length > 1) {
+				// 住所検索
+
+				const addressSearchResponse = await addressSearch(searchWord);
+
+				addressSearchData = addressSearchResponse
+					.slice(0, LIMIT - result.length)
+					.map(({ geometry: { coordinates: center }, properties }) => {
+						const address = properties.addressCode
+							? addressCodeToAddress(properties.addressCode)
+							: null;
+
+						return {
+							point: center,
+							name: properties.title,
+							location: address
+						};
+					});
+			}
+
+			results = [...resultsData, ...addressSearchData];
+		} catch (error) {
+			console.error('Error searching features:', error);
+		} finally {
+			isLoading = false;
+		}
 	};
 
 	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
@@ -158,7 +173,13 @@
 			></Geocoder>
 		</div>
 
-		{#if !results}
+		{#if isLoading}
+			<div class="flex w-full items-center justify-center">
+				<div
+					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
+				></div>
+			</div>
+		{:else if !results}
 			<div
 				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
@@ -173,8 +194,11 @@
 					</button>
 				{/each}
 			</div>
-		{/if}
-		{#if results}
+		{:else if results && results.length === 0}
+			<div class="flex w-full items-center justify-center">
+				<span class="text-white">データが見つかりません</span>
+			</div>
+		{:else if results}
 			<div
 				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
