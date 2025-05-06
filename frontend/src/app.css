@@ -54,6 +54,11 @@
 	@apply border-accent bg-accent lg:hover:text-accent cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white;
 }
 
+@utility w-side-menu {
+	/* サイドメニューの幅 */
+	@apply w-[360px];
+}
+
 @utility c-scroll {
 	/* スクロールバー */
 	scrollbar-gutter: stable;

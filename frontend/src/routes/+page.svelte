@@ -318,7 +318,7 @@
 	{#if $isSideMenuType}
 		<div
 			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-			class="bg-main flex h-full w-[400px] shrink-0 flex-col"
+			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
 		></div>
 	{/if}
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
