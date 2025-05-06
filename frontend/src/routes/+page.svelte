@@ -36,7 +36,6 @@
 	import { slide } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
-	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
@@ -46,6 +45,7 @@
 	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
+	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
