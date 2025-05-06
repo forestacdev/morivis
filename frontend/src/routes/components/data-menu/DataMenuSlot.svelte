@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
@@ -11,11 +12,32 @@
 	interface Props {
 		dataEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null;
+		itemHeight: number;
+		index: number;
 	}
 
-	let { dataEntry, showDataEntry = $bindable() }: Props = $props();
+	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
 
 	let addedDataIds = $state<string[]>($orderedLayerIds);
+	let container = $state<HTMLElement | null>(null);
+
+	const updateItemHeight = (newHeight: number) => {
+		itemHeight = newHeight + 10;
+	};
+
+	onMount(() => {
+		if (container && index === 0) {
+			const h = container.clientHeight;
+			updateItemHeight(h);
+
+			window?.addEventListener('resize', () => {
+				if (container) {
+					const h = container.clientHeight;
+					updateItemHeight(h);
+				}
+			});
+		}
+	});
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (dataEntry) {
@@ -80,6 +102,7 @@
 
 <div
 	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+	bind:this={container}
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
