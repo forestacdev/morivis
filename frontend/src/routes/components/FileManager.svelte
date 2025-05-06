@@ -12,6 +12,7 @@
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/utils/geojson';
+	import { gpxFileToGeojson } from '$routes/utils/gpx';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -29,7 +30,7 @@
 		showDataEntry = $bindable()
 	}: Props = $props();
 
-	const allowedExtensions = ['csv', 'geojson', 'fgb'];
+	const allowedExtensions = ['csv', 'geojson', 'fgb', 'gpx'];
 
 	const geometryTypeToEntryType = (
 		geojson: FeatureCollection<Geometry, GeoJsonProperties>
@@ -73,6 +74,9 @@
 				break;
 			case 'fgb':
 				geojsonData = await fgbFileToGeojson(file);
+				break;
+			case 'gpx':
+				geojsonData = await gpxFileToGeojson(file);
 				break;
 			default:
 				showNotification('対応していないファイル形式です', 'error');
