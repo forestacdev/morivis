@@ -203,21 +203,21 @@
 					</div>
 				{/if}
 			</label>
-			<div>
-				<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-					<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
-						>{layerEntry.metaData.name}</span
-					>
-					<span class="text-nowrap text-xs text-gray-400"
-						>{layerEntry.metaData.location ?? '---'}</span
-					>
 
-					<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
+			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
+				<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
+					>{layerEntry.metaData.name}</span
+				>
+				<span class="text-nowrap text-xs text-gray-400"
+					>{layerEntry.metaData.location ?? '---'}</span
+				>
+
+				<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
 					{/if} -->
-				</div>
 			</div>
 
+			<!-- トグル -->
 			<label
 				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
 			>
