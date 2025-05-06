@@ -206,14 +206,10 @@
 				<div>{showDataEntry?.metaData.location}</div>
 				<span>最大ズームレベル{showDataEntry?.metaData.maxZoom}</span>
 
-				<div class="h-[250px] w-[250px] rounded-lg" bind:this={mapContainer}></div>
+				<div class="font-bold">データ範囲</div>
+				<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}></div>
 
-				{#if showDataEntry}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
-				{/if}
-
-				<div>データ出典元</div>
+				<div class="font-bold">データ出典元</div>
 				<div>{showDataEntry?.metaData.attribution}</div>
 
 				{#if showDataEntry?.metaData.downloadUrl}
@@ -225,6 +221,12 @@
 						><Icon icon="el:download" class="h-8 w-8" />
 						<span>提供元からダウンロード</span></a
 					>
+				{/if}
+
+				<div class="font-bold">概要</div>
+				{#if showDataEntry}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
 				{/if}
 			</div>
 			<!-- 切り替えタブ -->
