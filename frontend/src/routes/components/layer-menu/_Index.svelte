@@ -8,7 +8,7 @@
 	import LayerOptionMenu from '$routes/components/layer-menu/layer-option-menu/_Index.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, isEdit, mapMode, showDataMenu } from '$routes/store';
+	import { selectedLayerId, isEdit, mapMode, showDataMenu, isSideMenuType } from '$routes/store';
 	import { typeBreakIndices } from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
 
@@ -49,45 +49,19 @@
 	onMount(() => {});
 </script>
 
-<!-- マップのオフセット調整用 -->
-{#if $mapMode === 'edit' || $showDataMenu}
-	<div
-		in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-		class="flex h-full shrink-0 flex-col {!$showDataMenu ? 'w-[400px]' : 'w-[90px]'}"
-	></div>
-{/if}
-
 <!-- レイヤーメニュー -->
-{#if $mapMode === 'edit' || $showDataMenu}
+{#if $isSideMenuType === 'layer'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute z-30 flex h-full flex-col gap-2 {!$showDataMenu
-			? 'w-[400px]'
-			: 'w-[90px]'}"
-		style:transition="width 0.3s ease"
+		class="bg-main absolute z-10 flex h-full flex-col gap-2"
 	>
-		{#if !$showDataMenu}
-			<div transition:slide={{ duration: 250 }} class="flex items-center justify-between p-2">
-				<span class="p-2 text-base text-lg">レイヤー</span>
-				<button
-					onclick={() => {
-						mapMode.set('view');
-						isEdit.set(false);
-						selectedLayerId.set('');
-					}}
-					class="bg-base cursor-pointer rounded-full p-2"
-				>
-					<Icon icon="material-symbols:close-rounded" class="text-main w-4] h-4" />
-				</button>
-			</div>
-		{/if}
+		<div class="flex h-[100px] w-full items-center justify-between"></div>
+
 		<div
 			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
-			{#if !$showDataMenu}
-				<div class="mb-1 border-t p-2 text-base font-bold"></div>
-				<Switch label="ラベル表示" bind:value={$showLabelLayer} />
-			{/if}
+			<Switch label="ラベル表示" bind:value={$showLabelLayer} />
+
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					{#if $typeBreakIndices[i]}

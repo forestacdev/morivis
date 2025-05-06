@@ -81,7 +81,8 @@ export const createSourcesItems = async (
 							geojson = await getFgbToGeojson(format.url);
 							GeojsonCache.set(entry.id, geojson);
 						} else if (format.type === 'geojson') {
-							geojson = format.data ? format.data : format.url;
+							geojson = await getGeojson(format.url);
+							GeojsonCache.set(entry.id, geojson);
 						}
 
 						items[sourceId] = {

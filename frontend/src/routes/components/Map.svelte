@@ -40,7 +40,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
 	import { clickableRasterIds, isStreetView } from '$routes/store';
-	import { mapMode, isTerrain3d, isSide } from '$routes/store';
+	import { mapMode, isTerrain3d } from '$routes/store';
 	import { showLabelLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';

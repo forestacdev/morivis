@@ -45,7 +45,7 @@
 	};
 </script>
 
-<div class="bg-main absolute left-2 top-2 z-10 flex flex-col gap-2 rounded-full p-2 text-base">
+<div class="bg-main absolute left-0 top-2 z-10 flex gap-2 rounded-r-full p-1 pl-4 pr-4 text-base">
 	<ui>
 		<button
 			class="hover:text-accent bg-main pointer-events-auto cursor-pointer rounded-full p-2 text-left text-base duration-150"
@@ -54,8 +54,8 @@
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
 		</button>
 	</ui>
-	<div class="w-hull bg-base h-[1px] rounded-full"></div>
-	<ui>
+	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+	<ui class="flex">
 		<button
 			onclick={toggleSearchMenu}
 			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"

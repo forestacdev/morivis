@@ -1,7 +1,5 @@
 import type { GeoDataEntry } from '$routes/data/types';
-import type { GeoJSONGeometryType } from '$routes/utils/geojson';
-import type { MapGeoJSONFeature, SourceSpecification, LayerSpecification } from 'maplibre-gl';
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import type { FeatureCollection } from 'geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
@@ -9,12 +7,8 @@ import type {
 } from '$routes/data/types/vector';
 import turfBbox from '@turf/bbox';
 import { getUniquePropertyKeys } from '$routes/utils/properties';
-import type {
-	PolygonStyle,
-	LineStringStyle,
-	PointStyle,
-	LabelStyle
-} from '$routes/data/types/vector/style';
+import { GeojsonCache } from '$routes/utils/geojson';
+
 import {
 	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
@@ -124,14 +118,16 @@ export const createGeoJsonEntry = (
 
 	style.labels = createLabelsExpressions(propKes);
 
+	const id = 'geojson_' + crypto.randomUUID();
+	GeojsonCache.set(id, data);
+
 	const entry: VectorEntry<GeoJsonMetaData> = {
-		id: 'geojson_' + crypto.randomUUID(),
+		id,
 		type: 'vector',
 		format: {
 			type: 'geojson',
 			geometryType: entryGeometryType,
-			url: '',
-			data: data
+			url: ''
 		},
 		metaData,
 		interaction: {

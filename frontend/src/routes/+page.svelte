@@ -33,13 +33,15 @@
 	import maplibregl from 'maplibre-gl';
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import DataPreview from '$routes/components/data-menu/DataPreview.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
-	import FooterMenu from '$routes/components/footer/_Index.svelte.svelte';
+	import FooterMenu from '$routes/components/footer/_Index.svelte';
+	import HeaderMenu from '$routes/components/Header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
@@ -54,7 +56,7 @@
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isStreetView, mapMode } from '$routes/store';
+	import { isSideMenuType, isStreetView, mapMode } from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
@@ -293,62 +295,64 @@
 			}
 		});
 	}, 100);
-
-	$effect(() => {
-		const currentEntries = $state.snapshot(layerEntries);
-		updateLayerEntries(currentEntries as GeoDataEntry[]);
-	});
 </script>
 
-{#if isPc()}
-	<!-- PC -->
-	<div class="relative flex h-full w-full grow">
-		<LayerMenu bind:layerEntries bind:tempLayerEntries />
+<div class="relative flex h-full w-full grow">
+	<!-- マップのオフセット調整用 -->
+	{#if $isSideMenuType}
+		<div
+			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+			class="bg-main flex h-full w-[400px] shrink-0 flex-col"
+		></div>
+	{/if}
+	<LayerMenu bind:layerEntries bind:tempLayerEntries />
+	<SearchMenu
+		bind:featureMenuData
+		bind:inputSearchWord
+		{layerEntries}
+		bind:showSelectionMarker
+		bind:selectionMarkerLngLat
+	/>
 
-		<Map
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:showDataEntry
-			bind:featureMenuData
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-			{streetViewLineData}
-			{streetViewPointData}
-			{angleMarker}
-			{streetViewPoint}
-			{showMapCanvas}
-		/>
-		<SideBar />
-		<FooterMenu {layerEntries} />
-		<FeatureMenu bind:featureMenuData {layerEntries} />
-		<SearchMenu
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/>
-		<TerrainMenu />
-		{#if !showDataEntry}
-			<DataMenu bind:showDataEntry />
-		{/if}
-		{#if showDataEntry}
-			<DataPreview bind:showDataEntry />
-		{/if}
+	<Map
+		bind:layerEntries
+		bind:tempLayerEntries
+		bind:showDataEntry
+		bind:featureMenuData
+		bind:showSelectionMarker
+		bind:selectionMarkerLngLat
+		{streetViewLineData}
+		{streetViewPointData}
+		{angleMarker}
+		{streetViewPoint}
+		{showMapCanvas}
+	/>
+	<!-- <SideBar /> -->
+	<HeaderMenu />
+	<FooterMenu {layerEntries} />
+	<FeatureMenu bind:featureMenuData {layerEntries} />
 
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			{setPoint}
-		/>
-	</div>
+	<TerrainMenu />
+	{#if !showDataEntry}
+		<DataMenu bind:showDataEntry />
+	{/if}
+	{#if showDataEntry}
+		<DataPreview bind:showDataEntry />
+	{/if}
 
-	<Tooltip />
-{:else}
-	<!-- Mobile -->
-	<div class="relative flex h-full w-full grow flex-col">
+	<StreetViewCanvas
+		{streetViewPoint}
+		{nextPointData}
+		{showThreeCanvas}
+		bind:cameraBearing
+		{setPoint}
+	/>
+</div>
+
+<Tooltip />
+
+<!-- Mobile -->
+<!-- <div class="relative flex h-full w-full grow flex-col">
 		<LayerMenu bind:layerEntries bind:tempLayerEntries />
 
 		<Map
@@ -372,8 +376,7 @@
 			bind:cameraBearing
 			{setPoint}
 		/>
-	</div>
-{/if}
+	</div> -->
 
 <SideMenu />
 <NotificationMessage />

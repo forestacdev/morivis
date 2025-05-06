@@ -74,8 +74,6 @@
 			if (clickedLayerEntry) {
 				selectedLayerId.set(clickedLayerEntry.id);
 			}
-
-			return;
 		}
 
 		const selectedVecterLayersId = features.map((feature) => feature.layer.id);

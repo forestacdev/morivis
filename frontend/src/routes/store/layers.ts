@@ -1,5 +1,6 @@
 import type { GeoDataEntry } from '$routes/data/types';
 import { writable, derived } from 'svelte/store';
+import { GeojsonCache } from '$routes/utils/geojson';
 
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'label' | 'point' | 'line' | 'polygon' | 'raster';
@@ -47,6 +48,9 @@ const createLayerStore = () => {
 				for (const type of TYPE_ORDER) {
 					layers[type] = layers[type].filter((l) => l !== id);
 				}
+
+				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
+
 				return { ...layers };
 			}),
 
