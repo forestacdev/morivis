@@ -40,22 +40,25 @@
 		<div class="flex w-full cursor-pointer justify-between pb-2">
 			<button
 				onclick={() => (showDataEntry = null)}
-				class="bg-base ml-auto cursor-pointer rounded-full p-2"
+				class="bg-base mr-auto cursor-pointer rounded-full p-2"
 			>
-				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
+				<Icon icon="ep:back" class="text-main h-4 w-4" />
 			</button>
 		</div>
-
 		<div class="flex h-full flex-col gap-2 overflow-auto">
 			<!-- タイトル -->
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
-				<div>{showDataEntry?.metaData.name}</div>
+				<div class="text-lg">{showDataEntry?.metaData.name}</div>
 				<div>{showDataEntry?.metaData.location}</div>
+				<span>最大ズームレベル{showDataEntry?.metaData.maxZoom}</span>
 
 				{#if showDataEntry}
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
 				{/if}
+
+				<div>データ出典元</div>
+				<div>{showDataEntry?.metaData.attribution}</div>
 
 				{#if showDataEntry?.metaData.downloadUrl}
 					<a

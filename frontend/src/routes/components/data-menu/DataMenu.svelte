@@ -54,12 +54,14 @@
 </script>
 
 <div
-	class="pointer-events-none absolute bottom-0 z-10 h-dvh w-full p-8 pl-[120px] pt-[60px] {$showDataMenu
-		? ''
-		: 'hidden'}"
+	class="pointer-events-none absolute bottom-0 z-10 h-dvh w-full p-8 pl-[120px] pt-[60px] transition-all duration-150 {$showDataMenu
+		? 'opacity-100'
+		: 'opacity-0'}"
 >
 	<div
-		class="bg-main pointer-events-auto relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2"
+		class="bg-main pointer-events-auto relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2 {$showDataMenu
+			? 'pointer-events-auto'
+			: 'pointer-events-none'}"
 	>
 		<div class="flex grow items-center justify-between gap-4 p-2">
 			<span class="shrink-0 text-base text-lg">データカタログ</span>
