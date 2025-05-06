@@ -96,11 +96,18 @@
 			>
 				<span class="text-lg text-white">プレビュー</span>
 			</div>
+
+			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 text-xs text-white"
+				>{dataEntry.metaData.attribution}</span
+			>
 		{/await}
 	</button>
 
-	<div class="flex w-full items-center justify-start gap-2 py-2">
-		<span class="">{dataEntry.metaData.name}</span>
+	<div class="flex w-full flex-col gap-1 py-2">
+		<div class="">{dataEntry.metaData.name}</div>
+		<div class="flex items-center gap-1 text-sm text-gray-600">
+			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
+		</div>
 	</div>
 
 	<div class=" shrink-0">

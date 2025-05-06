@@ -37,7 +37,7 @@
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
 	let rowColumns = $state<number>(2); // グリッドの列数
-	let itemHeight = $state<number>(350 + 10); // item Height + grid margin & padding
+	let itemHeight = $state<number>(300 + 10); // item Height + grid margin & padding
 	let itemWidth = $state<number>(300 + 10); // item Height + grid margin & padding
 
 	$effect(() => {
