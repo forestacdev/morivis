@@ -1,8 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { flip } from 'svelte/animate';
 	import { fade, slide, fly } from 'svelte/transition';
 
+	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
+	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
 	import Logo from '$routes/components/side-menu/Logo.svelte';
 	import {
 		showSideMenu,
@@ -10,11 +12,9 @@
 		mapMode,
 		showInfoDialog,
 		showTermsDialog,
-		showSearchMenu,
 		showTerrainMenu,
 		isSideMenuType
 	} from '$routes/store';
-	import { mapStore } from '$routes/store/map';
 	import { tooltip } from '$routes/store/tooltip';
 	import { imageExport } from '$routes/utils/map';
 
@@ -77,43 +77,32 @@
 		{/if}
 	</ui>
 	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
-	<ui class="flex">
-		<button
-			onclick={toggleSearchMenu}
-			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-		>
-			<Icon icon="stash:search-solid" class="h-8 w-8" />
-		</button>
-		<button
-			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-			onclick={toggleLayerMenu}
-		>
-			<Icon icon="ic:round-layers" class="h-8 w-8" />
-		</button>
-		<!-- <button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-				onclick={() => mapMode.set('analysis')}
+	<ui class="flex w-full justify-between">
+		<li class="flex">
+			<button
+				onclick={toggleSearchMenu}
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 			>
-				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
-				<span class="select-none">地図の解析</span>
-			</button> -->
-		<button
-			class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-			onclick={toggleDataMenu}
-		>
-			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-		</button>
-		<!-- <button
-			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-			onclick={toggleTerrainMenu}
-		>
-			<Icon icon="ic:round-terrain" class="h-8 w-8" />
-		</button> -->
-		<!-- <button
-			class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-		>
-			<Icon icon="weui:setting-filled" class="h-8 w-8" />
-		</button> -->
+				<Icon icon="stash:search-solid" class="h-8 w-8" />
+			</button>
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleLayerMenu}
+			>
+				<Icon icon="ic:round-layers" class="h-8 w-8" />
+			</button>
+		</li>
+		<li class="flex">
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleDataMenu}
+			>
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+			</button>
+			<StreetViewControl />
+			<TerrainControl />
+			<GeolocateControl />
+		</li>
 	</ui>
 </div>
 

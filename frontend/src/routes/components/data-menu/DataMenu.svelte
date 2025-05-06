@@ -53,8 +53,14 @@
 	});
 </script>
 
-<div class="absolute bottom-0 h-dvh w-full p-8 pl-[120px] {$showDataMenu ? '' : 'hidden'}">
-	<div class="bg-main relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2">
+<div
+	class="pointer-events-none absolute bottom-0 z-10 h-dvh w-full p-8 pl-[120px] pt-[60px] {$showDataMenu
+		? ''
+		: 'hidden'}"
+>
+	<div
+		class="bg-main pointer-events-auto relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2"
+	>
 		<div class="flex grow items-center justify-between gap-4 p-2">
 			<span class="shrink-0 text-base text-lg">データカタログ</span>
 			<div class="bg-base flex w-full max-w-[400px] rounded-full border-[1px] px-4">

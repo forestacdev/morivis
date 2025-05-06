@@ -18,7 +18,7 @@
 <button
 	bind:this={element}
 	onclick={toggleLayer}
-	class="bg-main grid h-[50px] w-[50px] cursor-pointer place-items-center rounded-full p-2"
+	class="grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2"
 >
 	<Icon
 		icon="fluent:video-360-20-regular"

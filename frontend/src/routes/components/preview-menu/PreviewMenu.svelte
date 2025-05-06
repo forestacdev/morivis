@@ -1,178 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import turfBbox from '@turf/bbox';
 	import DOMPurify from 'dompurify';
-	import { Map } from 'maplibre-gl';
-	import type { StyleSpecification } from 'maplibre-gl';
-	import { onMount, onDestroy } from 'svelte';
-	import { fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
-	// formatDescription.ts
-
-	import { MAP_POSITION, BASE_PATH } from '$routes/constants';
-	import { MAP_FONT_DATA_PATH } from '$routes/constants';
-	import { getLocationBbox } from '$routes/data/locationBbox';
-	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
-	import { GeojsonCache } from '$routes/utils/geojson';
-	import { handleStyleImageMissing } from '$routes/utils/icon';
-	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 	}
 
 	let { showDataEntry = $bindable() }: Props = $props();
-	let mapContainer = $state<HTMLElement | null>(null);
-	let iconWorker: Worker;
-
-	let dataType = $derived.by(() => {
-		if (showDataEntry) {
-			if (showDataEntry.type === 'raster') {
-				return 'ラスター';
-			} else if (showDataEntry.type === 'vector') {
-				return 'ベクター';
-			}
-		}
-	});
-	let layerType = $derived.by((): LayerType | unknown => {
-		if (showDataEntry) {
-			if (showDataEntry.type === 'raster') {
-				return 'raster';
-			} else if (showDataEntry.type === 'vector') {
-				if (showDataEntry.format.geometryType === 'Label') {
-					return 'label';
-				} else if (showDataEntry.format.geometryType === 'Point') {
-					return 'point';
-				} else if (showDataEntry.format.geometryType === 'LineString') {
-					return 'line';
-				} else if (showDataEntry.format.geometryType === 'Polygon') {
-					return 'polygon';
-				}
-			}
-		}
-	});
-
-	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
-		// ソースとレイヤーの作成
-		const sources = await createSourcesItems(_dataEntries, 'preview');
-		const layers = await createLayersItems(_dataEntries, 'preview');
-
-		const mapStyle = {
-			version: 8,
-			glyphs: MAP_FONT_DATA_PATH, // TODO; フォントの検討
-			sources: {
-				mierune_mono: {
-					type: 'raster',
-					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-					tileSize: 256,
-					minzoom: 0,
-					maxzoom: 18,
-					attribution:
-						'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-				},
-				...sources
-			},
-
-			layers: [
-				{
-					id: 'mierune_mono_layer',
-					source: 'mierune_mono',
-					type: 'raster'
-				},
-				{
-					id: '@overlay_layer',
-					type: 'background',
-					paint: {
-						'background-color': '#000000',
-						'background-opacity': 0.8
-					}
-				},
-				...layers
-			]
-		};
-
-		return mapStyle as StyleSpecification;
-	};
-
-	// let map: Map | null = null;
-
-	// onMount(() => {
-	// 	$effect(() => {
-	// 		if (showDataEntry) {
-	// 			(async () => {
-	// 				map = new Map({
-	// 					container: mapContainer as HTMLElement,
-	// 					style: await createMapStyle([showDataEntry]), // スタイル設定
-	// 					...MAP_POSITION, // 地図の初期位置
-	// 					pitch: 0,
-	// 					bearing: 0
-	// 				});
-
-	// 				map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
-
-	// 				if (showDataEntry.format.type === 'fgb') {
-	// 					try {
-	// 						const geojson = GeojsonCache.get(showDataEntry.id);
-	// 						if (!geojson) return;
-	// 						const bbox = turfBbox(geojson) as [number, number, number, number];
-	// 						map.fitBounds(bbox, {
-	// 							bearing: map.getBearing(),
-	// 							padding: 100,
-	// 							duration: 0
-	// 						});
-	// 					} catch (error) {
-	// 						console.error(error);
-	// 					}
-	// 				} else if (showDataEntry.metaData.bounds) {
-	// 					map.fitBounds(showDataEntry.metaData.bounds, {
-	// 						bearing: map.getBearing(),
-	// 						padding: 100,
-	// 						duration: 0
-	// 					});
-	// 				} else if (showDataEntry.metaData.location) {
-	// 					const bbox = getLocationBbox(showDataEntry.metaData.location);
-	// 					if (bbox) {
-	// 						map.fitBounds(bbox, {
-	// 							bearing: map.getBearing(),
-	// 							padding: 100,
-	// 							duration: 0
-	// 						});
-	// 					}
-	// 				} else {
-	// 					console.warn('フォーカスの処理に対応してません', showDataEntry.id);
-	// 				}
-	// 			})();
-	// 		}
-	// 	});
-	// });
-
-	// onDestroy(() => {
-	// 	if (map) {
-	// 		map.remove();
-	// 		map = null;
-	// 	}
-
-	// 	if (iconWorker) {
-	// 		iconWorker.terminate();
-	// 		iconWorker = undefined;
-	// 	}
-	// });
-
-	const addData = () => {
-		if (showDataEntry) {
-			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
-			showDataEntry = null;
-		}
-	};
-	const deleteData = () => {
-		if (showDataEntry) {
-			groupedLayerStore.remove(showDataEntry.id);
-			showDataEntry = null;
-		}
-	};
 
 	const handleKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
@@ -195,45 +32,51 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div
-	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="bg-main absolute inset-0 flex h-full w-full grow"
->
-	<div class="bg-main flex w-[400px] flex-col gap-2 p-2 text-base">
-		<div>{showDataEntry?.metaData.name}</div>
-		<div>{showDataEntry?.metaData.location}</div>
-
-		{#if showDataEntry}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
-		{/if}
-		<div>{dataType}</div>
-		{#if showDataEntry?.metaData.downloadUrl}
-			<a
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-				href={showDataEntry?.metaData.downloadUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				><Icon icon="el:download" class="h-8 w-8" />
-				<span>提供元からダウンロード</span></a
-			>
-		{/if}
-	</div>
-	<div class="absolute h-full w-full" bind:this={mapContainer}>
-		<div
-			class="pointer-events-none absolute bottom-0 z-10 flex w-full items-center justify-center gap-4 p-4"
-		>
-			<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
-				>地図に追加
-			</button>
+{#if showDataEntry}
+	<div
+		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
+		class="bg-main absolute left-0 top-0 z-20 flex h-full w-[400px] flex-col gap-2 overflow-hidden px-2 pt-4"
+	>
+		<div class="flex w-full cursor-pointer justify-between pb-2">
 			<button
-				class="c-btn-cancel pointer-events-auto px-4 text-lg"
 				onclick={() => (showDataEntry = null)}
-				>キャンセル
+				class="bg-base ml-auto cursor-pointer rounded-full p-2"
+			>
+				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
+
+		<div class="flex h-full flex-col gap-2 overflow-auto">
+			<!-- タイトル -->
+			<div class="flex shrink-0 grow flex-col gap-1 text-base">
+				<div>{showDataEntry?.metaData.name}</div>
+				<div>{showDataEntry?.metaData.location}</div>
+
+				{#if showDataEntry}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
+				{/if}
+
+				{#if showDataEntry?.metaData.downloadUrl}
+					<a
+						class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
+						href={showDataEntry?.metaData.downloadUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						><Icon icon="el:download" class="h-8 w-8" />
+						<span>提供元からダウンロード</span></a
+					>
+				{/if}
+			</div>
+			<!-- 切り替えタブ -->
+
+			<!-- 詳細情報 -->
+			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto">
+				<!-- 属性情報 -->
+			</div>
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 </style>

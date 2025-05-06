@@ -126,7 +126,10 @@
 				{
 					id: 'tile_grid',
 					type: 'raster',
-					source: 'tile_grid'
+					source: 'tile_grid',
+					paint: {
+						'raster-opacity': 0.5
+					}
 				},
 				...previewLayers
 			];

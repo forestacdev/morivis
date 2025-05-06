@@ -45,6 +45,7 @@
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import Map from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
+	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
 	import SideBar from '$routes/components/side-bar/SideBar.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
@@ -331,6 +332,7 @@
 	<HeaderMenu />
 	<FooterMenu {layerEntries} />
 	<FeatureMenu bind:featureMenuData {layerEntries} />
+	<PreviewMenu bind:showDataEntry />
 
 	<TerrainMenu />
 	{#if !showDataEntry}
