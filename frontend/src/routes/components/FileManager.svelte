@@ -64,9 +64,10 @@
 			return;
 		}
 		switch (file.name.split('.').pop()?.toLowerCase()) {
-			case 'csv':
-				geojsonData = await csvFileToGeojson(file);
-				break;
+			// TODO:CSV
+			// case 'csv':
+			// 	geojsonData = await csvFileToGeojson(file);
+			// 	break;
 			case 'geojson':
 				geojsonData = await geoJsonFileToGeoJson(file);
 				break;
@@ -94,17 +95,6 @@
 
 		tempLayerEntries = [...tempLayerEntries, entry];
 		showDataEntry = entry;
-
-		return;
-		const layerType = getLayerType(entry);
-
-		if (entry && entry.metaData.bounds) {
-			groupedLayerStore.add(entry.id, layerType as LayerType);
-			map.fitBounds(entry.metaData.bounds, {
-				padding: 100,
-				duration: 500
-			});
-		}
 
 		showNotification('ファイルを読み込みました', 'success');
 	};
