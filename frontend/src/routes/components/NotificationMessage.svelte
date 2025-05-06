@@ -33,8 +33,8 @@
 
 {#if $notificationMessage}
 	<div
-		transition:fly={{ duration: 300, y: -200 }}
-		class="pointer-events-none absolute left-1/2 z-30 grid -translate-x-1/2 place-items-center rounded-lg p-2 shadow-md max-lg:top-2 max-lg:w-[calc(100%_-_10px)] lg:top-5 {bgcolor}"
+		transition:fly={{ duration: 300, x: 200 }}
+		class="pointer-events-none absolute right-0 top-[90px] z-30 grid place-items-center rounded-l-full px-6 py-2 shadow-md {bgcolor}"
 	>
 		{$notificationMessage.message}
 	</div>

@@ -111,7 +111,7 @@
 				/>
 			</div>
 		{/if}
-		<div class="flex h-full flex-col gap-2 overflow-auto">
+		<div class="flex h-full flex-col gap-2">
 			<!-- タイトル -->
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
@@ -129,7 +129,7 @@
 			<!-- 切り替えタブ -->
 
 			<!-- 詳細情報 -->
-			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto">
+			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto overflow-x-hidden">
 				<div class="flex h-full w-full flex-col gap-2">
 					<div class="flex w-full items-center justify-start gap-2">
 						<Icon icon="lucide:map-pin" class="h-6 w-6 text-base" />
