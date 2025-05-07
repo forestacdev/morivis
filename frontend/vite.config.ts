@@ -12,8 +12,8 @@ export default defineConfig({
 			// PWA用の設定
 			includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
 			manifest: {
-				name: '森林文化アカデミー演習林GIS',
-				short_name: '演習林GIS',
+				name: 'morivis',
+				short_name: 'morivis',
 				description: '森林文化アカデミーの演習林の地図アプリです。',
 				theme_color: '#369c00',
 				lang: 'ja',

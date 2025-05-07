@@ -16,13 +16,21 @@
 	};
 </script>
 
-<div class="h-full">
+<div class="h-full text-white">
 	<input
 		type="file"
 		accept=".geojson,.fgb,.gpx"
 		class="c-btn-confirm mt-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-4 text-center text-gray-500 hover:bg-gray-50"
 		onchange={(e) => inputFile(e)}
 	/>
+	<div>ラスタータイルのアップロード</div>
+	<div>URLを入力してください</div>
+	<input
+		type="text"
+		placeholder="https://example.com/z/x/y.png"
+		class="c-btn-confirm mt-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-4 text-center text-gray-500 hover:bg-gray-50"
+	/>
+	<div>最大ズームレベル</div>
 </div>
 
 <style>
