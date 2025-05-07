@@ -8,6 +8,10 @@ import type {
 import turfBbox from '@turf/bbox';
 import { getUniquePropertyKeys } from '$routes/utils/properties';
 import { GeojsonCache } from '$routes/utils/geojson';
+import {
+	DEFAULT_RASTER_BASEMAP_STYLE,
+	DEFAULT_RASTER_BASEMAP_INTERACTION
+} from '$routes/data/style';
 
 import {
 	DEFAULT_VECTOR_POINT_STYLE,
@@ -17,6 +21,8 @@ import {
 
 import { getRandomCommonColor } from '$routes/utils/colorMapping';
 import { createLabelsExpressions } from '$routes/data/style';
+
+import type { RasterEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
 
 // 共通の初期化処理
 // visible を true にする
@@ -144,5 +150,33 @@ export const createGeoJsonEntry = (
 		},
 		style
 	};
+	return entry;
+};
+
+export const createRasterEntry = (name: string, url: string): RasterEntry<RasterBaseMapStyle> => {
+	const entry: RasterEntry<RasterBaseMapStyle> = {
+		id: 'raster_' + crypto.randomUUID(),
+		type: 'raster',
+		format: {
+			type: 'image',
+			url
+		},
+		metaData: {
+			name,
+			description: 'ユーザーがアップロードしたカスタムデータ',
+			attribution: 'カスタムデータ',
+			location: '不明',
+			maxZoom: 22,
+			minZoom: 0,
+			tileSize: 256
+		},
+		interaction: {
+			...DEFAULT_RASTER_BASEMAP_INTERACTION
+		},
+		style: {
+			...DEFAULT_RASTER_BASEMAP_STYLE
+		}
+	};
+
 	return entry;
 };

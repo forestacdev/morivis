@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade, scale } from 'svelte/transition';
 
 	import { showTermsDialog } from '$routes/store';

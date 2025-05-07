@@ -1,12 +1,19 @@
 <script lang="ts">
+	import type { DialogType } from '$routes/+page.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import { showDataMenu } from '$routes/store';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | null;
+		showDialogType: DialogType;
 	}
 
-	let { showDataEntry = $bindable(), dropFile = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		dropFile = $bindable(),
+		showDialogType = $bindable()
+	}: Props = $props();
 
 	const inputFile = (e: Event) => {
 		const file = (e.target as HTMLInputElement).files?.[0];
@@ -14,23 +21,28 @@
 			dropFile = file;
 		}
 	};
+
+	const showUploadDialog = (type: DialogType) => {
+		showDialogType = type;
+		showDataMenu.set(false);
+	};
 </script>
 
-<div class="h-full text-white">
-	<input
-		type="file"
-		accept=".geojson,.fgb,.gpx"
-		class="c-btn-confirm mt-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-4 text-center text-gray-500 hover:bg-gray-50"
-		onchange={(e) => inputFile(e)}
-	/>
-	<div>ラスタータイルのアップロード</div>
-	<div>URLを入力してください</div>
-	<input
-		type="text"
-		placeholder="https://example.com/z/x/y.png"
-		class="c-btn-confirm mt-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-4 text-center text-gray-500 hover:bg-gray-50"
-	/>
-	<div>最大ズームレベル</div>
+<div class="flex h-full flex-col gap-4 p-4 text-white">
+	<button
+		onclick={() => showUploadDialog('raster')}
+		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
+		>ラスタータイルのアップロード
+	</button>
+	<button
+		onclick={() => showUploadDialog('vector')}
+		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
+		>ベクタータイルのアップロード
+	</button>
+	<label class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
+		>ファイルをアップロード
+		<input type="file" accept=".geojson,.fgb,.gpx" class="hidden" onchange={(e) => inputFile(e)} />
+	</label>
 </div>
 
 <style>

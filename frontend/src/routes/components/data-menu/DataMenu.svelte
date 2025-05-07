@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
+	import type { DialogType } from '$routes/+page.svelte';
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/components/data-menu/UploadPane.svelte';
@@ -12,9 +13,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | null;
+		showDialogType: DialogType;
 	}
 
-	let { showDataEntry = $bindable(), dropFile = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		dropFile = $bindable(),
+		showDialogType = $bindable()
+	}: Props = $props();
 
 	// export let mapBearing: number;
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
@@ -135,7 +141,7 @@
 			</div>
 		{/if}
 		{#if selected === 'user'}
-			<UploadPane bind:showDataEntry bind:dropFile />
+			<UploadPane bind:showDataEntry bind:dropFile bind:showDialogType />
 		{/if}
 	</div>
 </div>

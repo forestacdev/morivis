@@ -21,6 +21,8 @@
 		type: 'FeatureCollection';
 		features: StreetViewPoint[];
 	}
+
+	export type DialogType = 'raster' | 'vector' | null;
 </script>
 
 <script lang="ts">
@@ -53,6 +55,7 @@
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
 	import TerrainMenu from '$routes/components/terrain-menu/TerrainMenu.svelte';
 	import Tooltip from '$routes/components/Tooltip.svelte';
+	import UploadDaialog from '$routes/components/upload/BaseDaialog.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -112,6 +115,8 @@
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
 	let selectionMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
+
+	let showDialogType = $state<DialogType>(null);
 
 	const markerContainer = document.createElement('div');
 	document.body.appendChild(markerContainer);
@@ -354,7 +359,7 @@
 
 	<TerrainMenu />
 	{#if !showDataEntry}
-		<DataMenu bind:showDataEntry bind:dropFile />
+		<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
 	{/if}
 	{#if showDataEntry}
 		<DataPreview bind:showDataEntry />
@@ -368,6 +373,7 @@
 		{setPoint}
 	/>
 </div>
+<UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries />
 
 <Tooltip />
 
