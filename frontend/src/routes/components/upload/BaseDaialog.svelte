@@ -3,6 +3,7 @@
 
 	import type { DialogType } from '$routes/+page.svelte';
 	import TextForm from '$routes/components/atoms/TextForm.svelte';
+	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
 	import { createRasterEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 
@@ -17,17 +18,6 @@
 		showDataEntry = $bindable(),
 		tempLayerEntries = $bindable()
 	}: Props = $props();
-
-	let url = $state<string>('');
-	let name = $state<string>('');
-
-	const registration = () => {
-		const entry = createRasterEntry(name, url);
-		if (entry) {
-			showDataEntry = entry;
-			showDialogType = null;
-		}
-	};
 </script>
 
 {#if showDialogType}
@@ -40,19 +30,8 @@
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
 		>
 			{#if showDialogType === 'raster'}
-				<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-					<span class="text-2xl font-bold">ラスタータイルの登録</span>
-				</div>
-				<div
-					class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
-				>
-					<TextForm bind:value={name} label="データ名" />
-					<TextForm bind:value={url} label="URL" />
-				</div>
+				<RasterForm bind:showDataEntry bind:showDialogType />
 			{/if}
-			<div class="flex shrink-0 justify-center overflow-auto pt-2">
-				<button onclick={registration} class="c-btn-confirm px-12 py-6 text-lg"> 決定 </button>
-			</div>
 		</div>
 	</div>
 {/if}
