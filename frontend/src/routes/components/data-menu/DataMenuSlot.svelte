@@ -115,6 +115,7 @@
 				src={url}
 				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
 				alt={dataEntry.metaData.name}
+                loading="lazy"
 			/>
 			<div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 opacity-0 transition-opacity duration-150 group-hover:opacity-100"

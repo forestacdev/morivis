@@ -11,9 +11,10 @@
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+        tempLayerEntries: GeoDataEntry[];
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
+	let { showDataEntry = $bindable(), tempLayerEntries = $bindable()}: Props = $props();
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (showDataEntry) {
@@ -23,6 +24,7 @@
 
 	const addData = () => {
 		if (showDataEntry) {
+            tempLayerEntries = [...tempLayerEntries, showDataEntry];
 			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
 			showNotification(`${showDataEntry.metaData.name}を追加しました`, 'success');
 			showDataEntry = null;

@@ -362,7 +362,7 @@
 		<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
 	{/if}
 	{#if showDataEntry}
-		<DataPreview bind:showDataEntry />
+		<DataPreview bind:showDataEntry bind:tempLayerEntries />
 	{/if}
 
 	<StreetViewCanvas

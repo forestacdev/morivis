@@ -24,7 +24,6 @@
 	const registration = () => {
 		const entry = createRasterEntry(name, url);
 		if (entry) {
-			tempLayerEntries = [...tempLayerEntries, entry];
 			showDataEntry = entry;
 			showDialogType = null;
 		}

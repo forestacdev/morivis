@@ -31,7 +31,7 @@ export const createSourcesItems = async (
 	const sourceItemsArray = await Promise.all(
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
-			const sourceId = `${entry.id}_${_type}_source`;
+			const sourceId = `${entry.id}_source`;
 			const { metaData, format, type, style } = entry;
 
 			switch (type) {
@@ -153,7 +153,7 @@ export const createSourcesItems = async (
 
 	// ラベルのソースを追加
 
-	const labelSources = get(showLabelLayer) && _type === 'main' ? getLabelSources() : {};
+	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
 
 	return { ...sourceItems, ...labelSources } as {
 		[_: string]: SourceSpecification;

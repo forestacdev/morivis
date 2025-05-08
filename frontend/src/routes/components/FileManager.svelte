@@ -97,7 +97,7 @@
 			return;
 		}
 
-		tempLayerEntries = [...tempLayerEntries, entry];
+
 		showDataEntry = entry;
 
 		showNotification('ファイルを読み込みました', 'success');
