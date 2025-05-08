@@ -86,11 +86,13 @@
 	>
 		<div class="flex grow items-center justify-between gap-4 p-2">
 			<span class="shrink-0 text-base text-lg">データカタログ</span>
+
 			<div class="bg-base flex w-full max-w-[400px] rounded-full border-[1px] px-4">
 				<input
 					class="c-search-form tex grid w-full text-left text-gray-500"
 					type="text"
 					placeholder="検索"
+					disabled={selected === 'user'}
 					bind:value={searchWord}
 				/>
 				<button
@@ -101,6 +103,7 @@
 					<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 				</button>
 			</div>
+
 			<div class="w-[300px] shrink-0">
 				<HorizontalSelectBox bind:group={selected} bind:options />
 			</div>
@@ -108,13 +111,7 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		{#if filterDataEntries.length === 0}
-			<div
-				class="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
-			>
-				<span class="text-gray-500">データが見つかりません</span>
-			</div>
-		{/if}
+
 		{#if selected === 'system'}
 			<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
 				<VirtualList
@@ -139,6 +136,13 @@
 					</div>
 				</VirtualList>
 			</div>
+			{#if filterDataEntries.length === 0}
+				<div
+					class="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+				>
+					<span class="text-gray-500">データが見つかりません</span>
+				</div>
+			{/if}
 		{/if}
 		{#if selected === 'user'}
 			<UploadPane bind:showDataEntry bind:dropFile bind:showDialogType />
