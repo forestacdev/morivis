@@ -3,9 +3,10 @@ import type { FeatureCollection } from 'geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
-	VectorEntryGeometryType
+	VectorEntryGeometryType,
+	TileMetaData
 } from '$routes/data/types/vector';
-import turfBbox from '@turf/bbox';
+import turfBbox, { bbox } from '@turf/bbox';
 import { getUniquePropertyKeys } from '$routes/utils/properties';
 import { GeojsonCache } from '$routes/utils/geojson';
 import {
@@ -150,6 +151,91 @@ export const createGeoJsonEntry = (
 		},
 		style
 	};
+	return entry;
+};
+
+export const createVectorTileEntry = (
+	name: string,
+	url: string,
+	sourceLayer: string,
+	entryGeometryType: VectorEntryGeometryType,
+	color: string = getRandomCommonColor()
+): VectorEntry<TileMetaData> | undefined => {
+	const metaData: TileMetaData = {
+		name,
+		sourceLayer,
+		description: 'ユーザーがアップロードしたカスタムデータ',
+		attribution: 'カスタムデータ',
+		location: '不明',
+		minZoom: 0,
+		maxZoom: 22
+	};
+
+	let style;
+
+	if (entryGeometryType === 'Point') {
+		style = DEFAULT_VECTOR_POINT_STYLE;
+	} else if (entryGeometryType === 'LineString') {
+		style = DEFAULT_VECTOR_LINE_STYLE;
+	} else if (entryGeometryType === 'Polygon') {
+		style = DEFAULT_VECTOR_POLYGON_STYLE;
+	} else if (entryGeometryType === 'Label') {
+		// TODO : Labelのスタイルを作成する
+		style = DEFAULT_VECTOR_POINT_STYLE;
+
+		return undefined;
+	} else {
+		console.error('不明なジオメトリタイプです。');
+		return undefined;
+	}
+
+	if (!style) {
+		console.error('スタイルが見つかりませんでした。');
+		return undefined;
+	}
+
+	style.colors = {
+		key: '単色',
+		show: true,
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: color
+				}
+			}
+		]
+	};
+
+	const id = 'vectorTile_' + crypto.randomUUID();
+
+	const entry: VectorEntry<TileMetaData> = {
+		id,
+		type: 'vector',
+		format: {
+			type: 'mvt',
+			geometryType: entryGeometryType,
+			url
+		},
+		metaData,
+		interaction: {
+			clickable: true
+		},
+		properties: {
+			keys: [],
+			titles: [
+				{
+					conditions: [],
+					template: 'カスタムデータ'
+				}
+			]
+		},
+		style
+	};
+
+	console.log('entry', entry);
 	return entry;
 };
 

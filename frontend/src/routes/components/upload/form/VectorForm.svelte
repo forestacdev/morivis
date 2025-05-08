@@ -2,9 +2,11 @@
 	import * as yup from 'yup';
 
 	import type { DialogType } from '$routes/+page.svelte';
+	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/components/atoms/TextForm.svelte';
-	import { createRasterEntry } from '$routes/data';
+	import { createVectorTileEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 	import { showDataMenu } from '$routes/store';
 
 	interface Props {
@@ -21,6 +23,12 @@
 			.required('タイルのURLを入力してください。')
 			.test('半角英数のみ', 'ラスタータイルURLは半角英数です。', (value) => {
 				return !/[^a-zA-Z0-9!-/:-@¥[-`{-~]+/.test(value);
+			}),
+		source: yup
+			.string()
+			.required('ソースレイヤーを入力してください。')
+			.test('半角英数のみ', 'ソースレイヤーは半角英数です。', (value) => {
+				return !/[^a-zA-Z0-9!-/:-@¥[-`{-~]+/.test(value);
 			})
 	});
 
@@ -28,8 +36,21 @@
 
 	let forms = $state<RasterFormSchema>({
 		name: '',
-		tileUrl: ''
+		tileUrl: '',
+		source: ''
 	});
+
+	let geometryType = $state<VectorEntryGeometryType>('Point');
+	let geometryTypesOptions = $state<
+		{
+			key: string;
+			name: string;
+		}[]
+	>([
+		{ key: 'Point', name: 'ポイント' },
+		{ key: 'LineString', name: 'ライン' },
+		{ key: 'Polygon', name: 'ポリゴン' }
+	]);
 
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof RasterFormSchema, string>>>({});
@@ -57,8 +78,9 @@
 
 	const registration = () => {
 		forms.tileUrl = forms.tileUrl.trim();
+		forms.source = forms.source.trim();
 
-		const entry = createRasterEntry(forms.name, forms.tileUrl);
+		const entry = createVectorTileEntry(forms.name, forms.tileUrl, forms.source, geometryType);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -72,7 +94,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">ラスタータイルの登録</span>
+	<span class="text-2xl font-bold">ベクタータイルの登録</span>
 </div>
 
 <div
@@ -80,6 +102,14 @@
 >
 	<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 	<TextForm bind:value={forms.tileUrl} label="タイルURL" error={errors.tileUrl} />
+	<TextForm bind:value={forms.source} label="ソースレイヤー" error={errors.source} />
+</div>
+<div class="p-2">
+	<HorizontalSelectBox
+		label="ジオメトリタイプ"
+		bind:group={geometryType}
+		options={geometryTypesOptions}
+	/>
 </div>
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>

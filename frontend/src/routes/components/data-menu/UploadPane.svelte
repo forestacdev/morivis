@@ -32,12 +32,12 @@
 	<button
 		onclick={() => showUploadDialog('raster')}
 		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
-		>ラスタータイルのアップロード
+		>ラスタータイルの登録
 	</button>
 	<button
 		onclick={() => showUploadDialog('vector')}
 		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
-		>ベクタータイルのアップロード
+		>ベクタータイルの登録
 	</button>
 	<label class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
 		>ファイルをアップロード

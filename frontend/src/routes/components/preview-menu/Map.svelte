@@ -20,12 +20,13 @@
 	let { showDataEntry = $bindable() }: Props = $props();
 
 	let mapContainer = $state<HTMLElement | null>(null);
+	let hasBbox = $state<boolean>(true);
 
 	const createMapStyle = async (
 		_showDataEntry: GeoDataEntry
 	): Promise<{
 		style: StyleSpecification;
-		bbox: [number, number, number, number];
+		bbox: [number, number, number, number] | null;
 	}> => {
 		let bbox: [number, number, number, number] | null = null;
 		if (_showDataEntry.metaData.bounds) {
@@ -56,11 +57,12 @@
 			console.warn('データ範囲を取得できません', _showDataEntry.id);
 		}
 
-		if (!bbox) {
-			throw new Error('Bounding box not found');
-		}
-
-		const polygon = turfBboxPlygon(bbox);
+		const polygon = bbox
+			? turfBboxPlygon(bbox)
+			: {
+					type: 'FeatureCollection',
+					features: []
+				};
 
 		const mapStyle = {
 			version: 8,
@@ -129,28 +131,22 @@
 			if (showDataEntry) {
 				(async () => {
 					const data = await createMapStyle(showDataEntry);
-					map = new Map({
-						container: mapContainer as HTMLElement, // 地図を表示する要素
-						style: data.style, // スタイル設定
-						bounds: getLocationBbox('全国') as [number, number, number, number], // 初期表示範囲
-						pitch: 0,
-						bearing: 0
-					});
+					if (data.bbox) {
+						map = new Map({
+							container: mapContainer as HTMLElement, // 地図を表示する要素
+							style: data.style, // スタイル設定
+							pitch: 0,
+							bearing: 0
+						});
 
-					map.fitBounds(data.bbox, {
-						bearing: map.getBearing(),
-						padding: 10,
-						duration: 1000
-					});
-
-					map.on('load', () => {
-						if (!map) return;
 						map.fitBounds(data.bbox, {
-							bearing: map.getBearing(),
-							padding: 50,
+							bearing: 0,
+							padding: 30,
 							duration: 0
 						});
-					});
+					} else {
+						hasBbox = false;
+					}
 				})();
 			}
 		});
@@ -164,7 +160,9 @@
 	});
 </script>
 
-<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}></div>
+{#if hasBbox}
+	<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}></div>
+{/if}
 
 <style>
 </style>

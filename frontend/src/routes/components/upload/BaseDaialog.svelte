@@ -2,8 +2,8 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import type { DialogType } from '$routes/+page.svelte';
-	import TextForm from '$routes/components/atoms/TextForm.svelte';
 	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
+	import VectorForm from '$routes/components/upload/form/VectorForm.svelte';
 	import { createRasterEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 
@@ -31,6 +31,9 @@
 		>
 			{#if showDialogType === 'raster'}
 				<RasterForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'vector'}
+				<VectorForm bind:showDataEntry bind:showDialogType />
 			{/if}
 		</div>
 	</div>
