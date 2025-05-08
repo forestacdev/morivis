@@ -235,7 +235,6 @@ export const createVectorTileEntry = (
 		style
 	};
 
-	console.log('entry', entry);
 	return entry;
 };
 
