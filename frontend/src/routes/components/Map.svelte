@@ -121,6 +121,7 @@
 				}
 			};
 		}
+
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry) {
 			previewLayers = [
@@ -277,8 +278,6 @@
 
 	$effect(() => {
 		if (showDataEntry) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		} else {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});

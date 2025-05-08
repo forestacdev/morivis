@@ -3,6 +3,7 @@
 
 	// formatDescription.ts
 
+	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
 	import { getLayerType } from '$routes/store/layers';
@@ -11,23 +12,23 @@
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
-        tempLayerEntries: GeoDataEntry[];
+		tempLayerEntries: GeoDataEntry[];
 	}
 
-	let { showDataEntry = $bindable(), tempLayerEntries = $bindable()}: Props = $props();
-
-	let layerType = $derived.by((): LayerType | unknown => {
-		if (showDataEntry) {
-			return getLayerType(showDataEntry);
-		}
-	});
+	let { showDataEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 
 	const addData = () => {
 		if (showDataEntry) {
-            tempLayerEntries = [...tempLayerEntries, showDataEntry];
-			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
-			showNotification(`${showDataEntry.metaData.name}を追加しました`, 'success');
+			const copy = { ...showDataEntry };
 			showDataEntry = null;
+			if (!geoDataEntries.some((entry) => entry.id === copy.id)) {
+				tempLayerEntries = [...tempLayerEntries, copy];
+			}
+
+			const layerType = getLayerType(copy);
+
+			groupedLayerStore.add(copy.id, layerType as LayerType);
+			showNotification(`${copy.metaData.name}を追加しました`, 'success');
 			showDataMenu.set(false);
 		}
 	};
