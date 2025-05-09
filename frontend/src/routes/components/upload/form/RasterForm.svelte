@@ -67,7 +67,6 @@
 
 	const cancel = () => {
 		showDialogType = null;
-		showDataMenu.set(true);
 	};
 </script>
 

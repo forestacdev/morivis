@@ -24,23 +24,24 @@
 
 	const showUploadDialog = (type: DialogType) => {
 		showDialogType = type;
-		showDataMenu.set(false);
 	};
 </script>
 
 <div class="flex h-full flex-col gap-4 p-4 text-white">
 	<button
 		onclick={() => showUploadDialog('raster')}
-		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
+		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
 		>ラスタータイルの登録
 	</button>
 	<button
 		onclick={() => showUploadDialog('vector')}
-		class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
+		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
 		>ベクタータイルの登録
 	</button>
-	<label class="bg-sub grid w-full cursor-pointer place-items-center rounded-full p-4"
-		>ファイルをアップロード
+	<label
+		class="bg-sub flex w-full max-w-[300px] cursor-pointer flex-col items-center gap-2 rounded-full p-4"
+	>
+		<span>ファイルをアップロード</span><span class="text-sm">.geojson .fgb .gpx</span>
 		<input type="file" accept=".geojson,.fgb,.gpx" class="hidden" onchange={(e) => inputFile(e)} />
 	</label>
 </div>

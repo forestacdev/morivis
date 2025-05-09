@@ -10,6 +10,8 @@
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 
+	let addedDataIds = $state<string[]>($orderedLayerIds);
+
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		tempLayerEntries: GeoDataEntry[];
@@ -55,9 +57,11 @@
 	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
 		>キャンセル
 	</button>
-	<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
-		>地図に追加
-	</button>
+	{#if showDataEntry && !addedDataIds.includes(showDataEntry.id)}
+		<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
+			>地図に追加
+		</button>
+	{/if}
 </div>
 
 <style>
