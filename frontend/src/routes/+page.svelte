@@ -82,7 +82,7 @@
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
-	let dropFile = $state<File | null>(null); // ドロップしたファイル
+	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
 
 	let isStyleEditEntry = $derived.by(() => {
 		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);

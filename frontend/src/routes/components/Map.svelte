@@ -17,7 +17,6 @@
 	import { onMount, mount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import FileManager from '$routes/components/FileManager.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
@@ -33,6 +32,7 @@
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import TablePopup from '$routes/components/popup/TablePopup.svelte';
 	import Tooltip from '$routes/components/popup/Tooltip.svelte';
+	import FileManager from '$routes/components/upload/FileManager.svelte';
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
 	import { BASE_PATH } from '$routes/constants';
@@ -61,7 +61,7 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		showDataEntry: GeoDataEntry | null;
-		dropFile: File | null;
+		dropFile: File | FileList | null;
 	}
 
 	let {
@@ -449,9 +449,8 @@
 
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
-		const file = files[0]; // 最初のファイルを取得
 
-		dropFile = file;
+		dropFile = files;
 	};
 </script>
 

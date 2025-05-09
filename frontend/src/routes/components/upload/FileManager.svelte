@@ -13,11 +13,12 @@
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/utils/geojson';
 	import { gpxFileToGeojson } from '$routes/utils/gpx';
+	import { shpFileToGeojson } from '$routes/utils/shp';
 
 	interface Props {
 		map: maplibregl.Map;
 		isDragover: boolean;
-		dropFile: File | null;
+		dropFile: File | FileList | null;
 		tempLayerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
 	}
@@ -30,7 +31,15 @@
 		showDataEntry = $bindable()
 	}: Props = $props();
 
-	const allowedExtensions = ['csv', 'geojson', 'fgb', 'gpx'];
+	let shpfiles = $state<{
+		shp: File | null;
+		dbf: File | null;
+		prj: File | null;
+	}>({
+		shp: null,
+		dbf: null,
+		prj: null
+	});
 
 	const geometryTypeToEntryType = (
 		geojson: FeatureCollection<Geometry, GeoJsonProperties>
@@ -57,30 +66,55 @@
 		}
 	};
 
-	const setFile = async (file: File) => {
+	const setFile = async (file: File | FileList) => {
 		let geojsonData;
-		const ext = file.name.split('.').pop()?.toLowerCase();
-		if (!ext || !allowedExtensions.includes(ext)) {
-			showNotification('対応していないファイル形式です', 'error');
-			return;
-		}
-		switch (file.name.split('.').pop()?.toLowerCase()) {
-			// TODO:CSV
-			// case 'csv':
-			// 	geojsonData = await csvFileToGeojson(file);
-			// 	break;
-			case 'geojson':
-				geojsonData = await geoJsonFileToGeoJson(file);
-				break;
-			case 'fgb':
-				geojsonData = await fgbFileToGeojson(file);
-				break;
-			case 'gpx':
-				geojsonData = await gpxFileToGeojson(file);
-				break;
-			default:
-				showNotification('対応していないファイル形式です', 'error');
+
+		if (file instanceof File) {
+			const ext = file.name.split('.').pop()?.toLowerCase();
+
+			switch (ext) {
+				// TODO:CSV
+				// case 'csv':
+				// 	geojsonData = await csvFileToGeojson(file);
+				// 	break;
+				case 'geojson':
+					geojsonData = await geoJsonFileToGeoJson(file);
+					break;
+				case 'fgb':
+					geojsonData = await fgbFileToGeojson(file);
+					break;
+				case 'gpx':
+					geojsonData = await gpxFileToGeojson(file);
+					break;
+
+				default:
+					showNotification('対応していないファイル形式です', 'error');
+					return;
+			}
+		} else if (file instanceof FileList) {
+			// すべのファイルの拡張子を取得
+			let shpFile: File | undefined;
+			let dbfFile: File | undefined;
+			let prjFile: File | undefined;
+
+			// .shp .dbf .prj のファイルを探して File オブジェクトを取得
+			for (let i = 0; i < file.length; i++) {
+				const f = file[i];
+				if (f.name.endsWith('.shp')) {
+					shpFile = f;
+				} else if (f.name.endsWith('.dbf')) {
+					dbfFile = f;
+				} else if (f.name.endsWith('.prj')) {
+					prjFile = f;
+				}
+			}
+
+			if (shpFile && dbfFile && prjFile) {
+				geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjFile);
+			} else {
+				showNotification('SHPファイル、DBFファイル、PRJファイルをすべて選択してください', 'error');
 				return;
+			}
 		}
 
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
@@ -96,7 +130,6 @@
 			showNotification('データが不正です', 'error');
 			return;
 		}
-
 
 		showDataEntry = entry;
 

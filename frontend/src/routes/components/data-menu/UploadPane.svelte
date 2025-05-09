@@ -5,7 +5,7 @@
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
-		dropFile: File | null;
+		dropFile: File | FileList | null;
 		showDialogType: DialogType;
 	}
 
