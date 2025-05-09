@@ -116,7 +116,7 @@
 				...previewSources,
 				tile_grid: {
 					type: 'raster',
-					tiles: ['/tile_grid.png'],
+					tiles: ['./tile_grid.png'],
 					tileSize: 256
 				}
 			};

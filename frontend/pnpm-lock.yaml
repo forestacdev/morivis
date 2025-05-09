@@ -235,9 +235,6 @@ devDependencies:
   vite:
     specifier: ^5.4.11
     version: 5.4.18
-  vite-plugin-pwa:
-    specifier: ^0.21.1
-    version: 0.21.2(@vite-pwa/assets-generator@0.2.6)(vite@5.4.18)(workbox-build@7.3.0)(workbox-window@7.3.0)
   vitest:
     specifier: ^2.0.4
     version: 2.1.9(jsdom@15.2.1)
@@ -7399,29 +7396,6 @@ packages:
       - sugarss
       - supports-color
       - terser
-    dev: true
-
-  /vite-plugin-pwa@0.21.2(@vite-pwa/assets-generator@0.2.6)(vite@5.4.18)(workbox-build@7.3.0)(workbox-window@7.3.0):
-    resolution: {integrity: sha512-vFhH6Waw8itNu37hWUJxL50q+CBbNcMVzsKaYHQVrfxTt3ihk3PeLO22SbiP1UNWzcEPaTQv+YVxe4G0KOjAkg==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      '@vite-pwa/assets-generator': ^0.2.6
-      vite: ^3.1.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
-      workbox-build: ^7.3.0
-      workbox-window: ^7.3.0
-    peerDependenciesMeta:
-      '@vite-pwa/assets-generator':
-        optional: true
-    dependencies:
-      '@vite-pwa/assets-generator': 0.2.6
-      debug: 4.4.0
-      pretty-bytes: 6.1.1
-      tinyglobby: 0.2.12
-      vite: 5.4.18
-      workbox-build: 7.3.0
-      workbox-window: 7.3.0
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
   /vite-plugin-pwa@1.0.0(@vite-pwa/assets-generator@0.2.6)(vite@5.4.18)(workbox-build@7.3.0)(workbox-window@7.3.0):

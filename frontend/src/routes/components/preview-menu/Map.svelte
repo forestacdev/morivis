@@ -5,8 +5,6 @@
 	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 
-	// formatDescription.ts
-
 	import { MAP_FONT_DATA_PATH, MAP_POSITION } from '$routes/constants';
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';

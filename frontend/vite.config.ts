@@ -2,19 +2,19 @@ import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import path from 'path';
-import { VitePWA } from 'vite-plugin-pwa';
+import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
 	plugins: [
 		sveltekit(),
 		enhancedImages(),
-		VitePWA({
+		SvelteKitPWA({
 			// PWA用の設定
 			includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
 			manifest: {
 				name: 'morivis',
 				short_name: 'morivis',
-				description: '森林文化アカデミーの演習林の地図アプリです。',
+				description: '森林文化アカデミー演習林の地図アプリです。',
 				theme_color: '#369c00',
 				lang: 'ja',
 				icons: [
