@@ -1,12 +1,9 @@
 <script lang="ts">
 	import type { DialogType } from '$routes/+page.svelte';
-	import FileForm from '$routes/components/atoms/FileForm.svelte';
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry } from '$routes/data';
 	import { geometryTypeToEntryType } from '$routes/data';
-	import entry from '$routes/data/entries/raster/imageTile/basemap/_0_template';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 	import { notificationMessage, showNotification } from '$routes/store/notification';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/utils/gpx';
 
