@@ -37,7 +37,6 @@
 
 	const setFile = async (file: File | FileList) => {
 		let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
-		console.log('fileName', file);
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
@@ -58,6 +57,7 @@
 					return;
 				case 'shp':
 				case 'dbf':
+				case 'shx':
 				case 'prj':
 					showDialogType = 'shp';
 					return;

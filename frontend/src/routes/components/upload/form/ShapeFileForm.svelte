@@ -6,7 +6,8 @@
 	import { createGeoJsonEntry } from '$routes/data';
 	import { geometryTypeToEntryType } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { notificationMessage, showNotification } from '$routes/store/notification';
+	import { showNotification } from '$routes/store/notification';
+	import { isProcessing } from '$routes/store/ui';
 	import { shpFileToGeojson } from '$routes/utils/shp';
 
 	interface Props {
@@ -51,37 +52,50 @@
 					}
 					return true; // ファイルが選択されていない場合はバリデーションをパス
 				}),
+			shxFile: yup
+				.mixed()
+				.required('ファイルを選択してください')
+				.test('fileType', '対応していないファイル形式です (許可: .shx)', (value) => {
+					if (value instanceof File) {
+						return value.name.endsWith('.shx');
+					}
+					return true; // ファイルが選択されていない場合はバリデーションをパス
+				}),
 			shpName: yup.string().required('ファイル名が検出できません'),
 			dbfName: yup.string().required('ファイル名が検出できません'),
-			prjName: yup.string().required('ファイル名が検出できません')
+			prjName: yup.string().required('ファイル名が検出できません'),
+			shxName: yup.string().required('ファイル名が検出できません')
 		})
 		.test(
 			'filenames-match', // テスト名
 			'各ファイル名が一致しません', // エラーメッセージ
 			(values) => {
-				if (!values.shpName || !values.dbfName || !values.prjName) {
+				if (!values.shpName || !values.dbfName || !values.prjName || !values.shxName) {
 					return true; // いずれかの名前がない場合は、個別のrequiredエラーで処理される
 				}
 
-				const shpBaseName = values.shpName.replace(/\.shp$/i, ''); // 拡張子を除去 (大文字小文字を区別しない)
+				const shpBaseName = values.shpName.replace(/\.shp$/i, '');
 				const dbfBaseName = values.dbfName.replace(/\.dbf$/i, '');
 				const prjBaseName = values.prjName.replace(/\.prj$/i, '');
+				const shxBaseName = values.shxName.replace(/\.shx$/i, '');
 
-				return shpBaseName === dbfBaseName && shpBaseName === prjBaseName;
+				return (
+					shpBaseName === dbfBaseName && shpBaseName === prjBaseName && shpBaseName === shxBaseName
+				);
 			}
 		);
 
 	type ShpFormSchema = yup.InferType<typeof shpValidation>;
 
-	let setFileName = $state<string>('');
-
 	let forms = $state<ShpFormSchema>({
 		shpFile: null,
 		dbfFile: null,
 		prjFile: null,
+		shxFile: null,
 		shpName: '',
 		dbfName: '',
-		prjName: ''
+		prjName: '',
+		shxName: ''
 	});
 
 	const setFiles = (dropFile: File | FileList | null) => {
@@ -108,6 +122,11 @@
 		} else if (fileName.endsWith('.prj')) {
 			forms.prjFile = file;
 			forms.prjName = fileName;
+		} else if (fileName.endsWith('.shx')) {
+			forms.shxFile = file;
+			forms.shxName = fileName;
+		} else {
+			showNotification('対応していないファイル形式です', 'error');
 		}
 	};
 
@@ -150,7 +169,9 @@
 	});
 
 	const registration = async () => {
+		// NOTE: .shxファイルは仕様必須であるが、この処理では使用しないため、バリデーションから除外
 		if (!forms.shpFile || !forms.dbfFile || !forms.prjFile) return;
+		isProcessing.set(true);
 		const geojsonData = await shpFileToGeojson(
 			forms.shpFile as File,
 			forms.dbfFile as File,
@@ -164,12 +185,13 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpFile.name);
 
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
 		}
+		isProcessing.set(false);
 	};
 
 	const cancel = () => {
@@ -204,6 +226,13 @@
 		accept=".prj"
 		error={errors.prjFile}
 		bind:name={forms.prjName}
+	/>
+	<FileForm
+		label=".shx"
+		bind:file={forms.shxFile}
+		accept=".shx"
+		error={errors.shxFile}
+		bind:name={forms.shxName}
 	/>
 </div>
 <div></div>
