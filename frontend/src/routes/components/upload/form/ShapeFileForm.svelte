@@ -21,44 +21,67 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
-	const shpValidation = yup.object().shape({
-		shp: yup
-			.mixed()
-			.required('ファイルを選択してください')
-			.test('fileType', '対応していないファイル形式です (許可: .shp)', (value) => {
-				if (value instanceof File) {
-					return value.name.endsWith('.shp');
+	const shpValidation = yup
+		.object()
+		.shape({
+			shpFile: yup
+				.mixed()
+				.required('ファイルを選択してください')
+				.test('fileType', '対応していないファイル形式です (許可: .shp)', (value) => {
+					if (value instanceof File) {
+						return value.name.endsWith('.shp');
+					}
+					return true; // ファイルが選択されていない場合はバリデーションをパス
+				}),
+			dbfFile: yup
+				.mixed()
+				.required('ファイルを選択してください')
+				.test('fileType', '対応していないファイル形式です (許可: .dbf)', (value) => {
+					if (value instanceof File) {
+						return value.name.endsWith('.dbf');
+					}
+					return true; // ファイルが選択されていない場合はバリデーションをパス
+				}),
+			prjFile: yup
+				.mixed()
+				.required('ファイルを選択してください')
+				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
+					if (value instanceof File) {
+						return value.name.endsWith('.prj');
+					}
+					return true; // ファイルが選択されていない場合はバリデーションをパス
+				}),
+			shpName: yup.string().required('ファイル名が検出できません'),
+			dbfName: yup.string().required('ファイル名が検出できません'),
+			prjName: yup.string().required('ファイル名が検出できません')
+		})
+		.test(
+			'filenames-match', // テスト名
+			'各ファイル名が一致しません', // エラーメッセージ
+			(values) => {
+				if (!values.shpName || !values.dbfName || !values.prjName) {
+					return true; // いずれかの名前がない場合は、個別のrequiredエラーで処理される
 				}
-				return true; // ファイルが選択されていない場合はバリデーションをパス
-			}),
-		dbf: yup
-			.mixed()
-			.required('ファイルを選択してください')
-			.test('fileType', '対応していないファイル形式です (許可: .dbf)', (value) => {
-				if (value instanceof File) {
-					return value.name.endsWith('.dbf');
-				}
-				return true; // ファイルが選択されていない場合はバリデーションをパス
-			}),
-		prj: yup
-			.mixed()
-			.required('ファイルを選択してください')
-			.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
-				if (value instanceof File) {
-					return value.name.endsWith('.prj');
-				}
-				return true; // ファイルが選択されていない場合はバリデーションをパス
-			})
-	});
+
+				const shpBaseName = values.shpName.replace(/\.shp$/i, ''); // 拡張子を除去 (大文字小文字を区別しない)
+				const dbfBaseName = values.dbfName.replace(/\.dbf$/i, '');
+				const prjBaseName = values.prjName.replace(/\.prj$/i, '');
+
+				return shpBaseName === dbfBaseName && shpBaseName === prjBaseName;
+			}
+		);
 
 	type ShpFormSchema = yup.InferType<typeof shpValidation>;
 
 	let setFileName = $state<string>('');
 
 	let forms = $state<ShpFormSchema>({
-		shp: null,
-		dbf: null,
-		prj: null
+		shpFile: null,
+		dbfFile: null,
+		prjFile: null,
+		shpName: '',
+		dbfName: '',
+		prjName: ''
 	});
 
 	const setFiles = (dropFile: File | FileList | null) => {
@@ -76,19 +99,15 @@
 	const setFile = (file: File) => {
 		const fileName = file.name.toLowerCase();
 
-		if (setFileName && setFileName !== fileName) {
-			notificationMessage.set({
-				message: 'ファイル名が異なります。',
-				type: 'error'
-			});
-		}
-
 		if (fileName.endsWith('.shp')) {
-			forms['shp'] = file;
+			forms.shpFile = file;
+			forms.shpName = fileName;
 		} else if (fileName.endsWith('.dbf')) {
-			forms['dbf'] = file;
+			forms.dbfFile = file;
+			forms.dbfName = fileName;
 		} else if (fileName.endsWith('.prj')) {
-			forms['prj'] = file;
+			forms.prjFile = file;
+			forms.prjName = fileName;
 		}
 	};
 
@@ -101,40 +120,41 @@
 
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof ShpFormSchema, string>>>({});
+	let hasFilenameMatchError = $state<string>('');
 
 	$effect(() => {
 		shpValidation
 			.validate(forms, { abortEarly: false })
 			.then(() => {
 				isDisabled = false;
+				hasFilenameMatchError = '';
 				errors = {}; // バリデーション成功時はエラーをクリア
 			})
 			.catch((error) => {
 				isDisabled = true;
 				const newErrors: Record<string, string> = {};
+
 				if (error.inner && Array.isArray(error.inner)) {
 					error.inner.forEach((err: yup.ValidationError) => {
 						if (err.path) {
 							newErrors[err.path] = err.message;
 						}
+						if (err.type === 'filenames-match') {
+							hasFilenameMatchError = err.message;
+						}
 					});
 				}
+
 				errors = newErrors;
 			});
 	});
 
-	$effect(() => {
-		if (forms.shp) setFile(forms.shp);
-		if (forms.dbf) setFile(forms.dbf);
-		if (forms.prj) setFile(forms.prj);
-	});
-
 	const registration = async () => {
-		if (!forms.shp || !forms.dbf || !forms.prj) return;
+		if (!forms.shpFile || !forms.dbfFile || !forms.prjFile) return;
 		const geojsonData = await shpFileToGeojson(
-			forms.shp as File,
-			forms.dbf as File,
-			forms.prj as File
+			forms.shpFile as File,
+			forms.dbfFile as File,
+			forms.prjFile as File
 		);
 
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
@@ -164,11 +184,30 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
 >
-	<FileForm label=".shp" bind:file={forms.shp} accept=".shp" error={errors.shp} />
-	<FileForm label=".dbf" bind:file={forms.dbf} accept=".dbf" error={errors.dbf} />
-	<FileForm label=".prj" bind:file={forms.prj} accept=".prj" error={errors.prj} />
+	<FileForm
+		label=".shp"
+		bind:file={forms.shpFile}
+		accept=".shp"
+		error={errors.shpFile}
+		bind:name={forms.shpName}
+	/>
+	<FileForm
+		label=".dbf"
+		bind:file={forms.dbfFile}
+		accept=".dbf"
+		error={errors.dbfFile}
+		bind:name={forms.dbfName}
+	/>
+	<FileForm
+		label=".prj"
+		bind:file={forms.prjFile}
+		accept=".prj"
+		error={errors.prjFile}
+		bind:name={forms.prjName}
+	/>
 </div>
-
+<div></div>
+{hasFilenameMatchError}
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button

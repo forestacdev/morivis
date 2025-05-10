@@ -8,6 +8,7 @@
 	import { MAP_FONT_DATA_PATH, MAP_POSITION } from '$routes/constants';
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import { mapStore } from '$routes/store/map';
 	import { GeojsonCache } from '$routes/utils/geojson';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
 
@@ -142,6 +143,15 @@
 							padding: 30,
 							duration: 0
 						});
+
+						const mainMap = mapStore.getMap();
+						if (mainMap) {
+							mainMap.fitBounds(data.bbox, {
+								bearing: 0,
+								padding: 20,
+								duration: 1000
+							});
+						}
 					} else {
 						hasBbox = false;
 					}
