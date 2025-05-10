@@ -1,4 +1,3 @@
-import proj4 from 'proj4';
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 
 const readPrjFileBrowser = async (file: File) => {
@@ -108,17 +107,117 @@ export const isWgs84Crs = (crs: any): boolean => {
 	return false; // WGS84 ではない
 };
 
-// 座標系変換関数
-// export const convertCoordinates = (
-// 	coordinates: Array<Array<number>>,
-// 	firstProjectionDefinition: string, // PROJ.4 または WKT 文字列
-// 	secondProjection = 'EPSG:4326'
-// ) => {
-// 	return coordinates.map((coordinate) => {
-// 		if (Array.isArray(coordinate[0])) {
-// 			return convertCoordinates(coordinate, firstProjectionDefinition, secondProjection);
-// 		} else {
-// 			return proj4(firstProjectionDefinition, secondProjection, coordinate);
-// 		}
-// 	});
-// };
+const NUM_WORKERS = 4;
+
+export const transformGeoJSONParallel = (
+	geojson: FeatureCollection<Geometry, GeoJsonProperties>,
+	prjContent: string
+) => {
+	return new Promise((resolve, reject) => {
+		const featuresToProcess = geojson.features;
+		const totalFeatures = featuresToProcess.length;
+		const transformedFeatures: FeatureCollection<Geometry, GeoJsonProperties>['features'] = [];
+		let featuresProcessed = 0;
+		let nextFeatureIndex = 0;
+
+		if (totalFeatures === 0) {
+			resolve({ type: 'FeatureCollection', features: [] });
+			return;
+		}
+
+		const workers: Worker[] = [];
+		const availableWorkerQueue: Worker[] = []; // 利用可能なワーカーのインデックスを管理
+
+		const onWorkerMessage = (event: MessageEvent) => {
+			const { type, transformedFeature, featureIndex: processedFeatureIndex, error } = event.data;
+
+			if (type === 'TRANSFORMED_FEATURE') {
+				transformedFeatures.push(transformedFeature);
+			} else if (type === 'ERROR') {
+				console.error(
+					`Error processing feature (original index ${processedFeatureIndex}): ${error}`
+				);
+				// エラーが発生したfeatureも処理済みとしてカウントする（またはエラー処理戦略に応じて変更）
+			}
+
+			featuresProcessed++;
+			// console.log(`Main: Feature ${processedFeatureIndex} processed. Total processed: ${featuresProcessed}/${totalFeatures}`);
+
+			// このワーカーを再度利用可能にする
+			const workerInstance = event.target; // イベントを発行したワーカーインスタンス
+
+			availableWorkerQueue.push(workerInstance as Worker); // 利用可能なワーカーキューに追加
+
+			// まだ処理すべきfeatureがあり、利用可能なワーカーがあれば次のタスクを割り当てる
+			if (nextFeatureIndex < totalFeatures && availableWorkerQueue.length > 0) {
+				const workerToUse = availableWorkerQueue.shift(); // キューからワーカーを取得
+				// console.log(`Main: Assigning feature ${nextFeatureIndex} to a worker.`);
+
+				if (!workerToUse) {
+					console.error('No available worker found.');
+					return;
+				}
+				workerToUse.postMessage({
+					feature: featuresToProcess[nextFeatureIndex],
+					prjContent: prjContent,
+					featureIndex: nextFeatureIndex // デバッグや追跡のため
+				});
+				nextFeatureIndex++;
+			}
+
+			if (featuresProcessed === totalFeatures) {
+				// console.log('Main: All features processed.');
+				workers.forEach((worker) => worker.terminate()); // 全ワーカーを終了
+				resolve({
+					type: 'FeatureCollection',
+					features: transformedFeatures
+				});
+			}
+		};
+
+		const onWorkerError = (event: ErrorEvent) => {
+			console.error('Main: Worker error caught by onerror:');
+			console.error(`  Message: ${event.message}`);
+			console.error(`  Filename: ${event.filename}`);
+			console.error(`  Lineno: ${event.lineno}`);
+			console.error(`  Colno: ${event.colno}`);
+			if (event.error) {
+				console.error('  Error object:', event.error);
+			}
+
+			workers.forEach((w) => w.terminate());
+			// event.message を使うか、event.error が Error インスタンスならその message を使う
+			const errorMessage = event.error instanceof Error ? event.error.message : event.message;
+			reject(new Error(`Worker failed: ${errorMessage}`));
+		};
+
+		for (let i = 0; i < NUM_WORKERS; i++) {
+			// transformer.worker.js のパスは実際のプロジェクト構造に合わせてください
+			const worker = new Worker(new URL('./transformer.worker.ts', import.meta.url), {
+				type: 'module'
+			});
+			worker.onmessage = onWorkerMessage;
+			worker.onerror = onWorkerError;
+			workers.push(worker);
+			availableWorkerQueue.push(worker); // 初期状態では全てのワーカーが利用可能
+		}
+
+		// 最初のタスクを割り当てる
+		for (let i = 0; i < Math.min(NUM_WORKERS, totalFeatures); i++) {
+			if (availableWorkerQueue.length > 0) {
+				const workerToUse = availableWorkerQueue.shift();
+				// console.log(`Main: Assigning initial feature ${nextFeatureIndex} to a worker.`);
+				if (!workerToUse) {
+					console.error('No available worker found.');
+					return;
+				}
+				workerToUse.postMessage({
+					feature: featuresToProcess[nextFeatureIndex],
+					prjContent: prjContent,
+					featureIndex: nextFeatureIndex
+				});
+				nextFeatureIndex++;
+			}
+		}
+	});
+};

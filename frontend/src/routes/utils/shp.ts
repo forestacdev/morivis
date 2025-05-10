@@ -1,6 +1,6 @@
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import * as shapefile from 'shapefile';
-import { convertCoordinatesToGeojson, readPrjFileContent, isWgs84Prj } from '$routes/utils/proj';
+import { readPrjFileContent, isWgs84Prj, transformGeoJSONParallel } from '$routes/utils/proj';
 import { showNotification } from '$routes/store/notification';
 
 const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
@@ -41,5 +41,5 @@ export const shpFileToGeojson = async (
 		return geojson;
 	}
 
-	return await convertCoordinatesToGeojson(geojson, prjContent);
+	return await transformGeoJSONParallel(geojson, prjContent);
 };
