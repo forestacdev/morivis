@@ -16,8 +16,11 @@ import { type AttributionKey } from '$routes/data/attribution';
 import { GeojsonCache, getGeojson } from '$routes/utils/geojson';
 import { getFgbToGeojson } from '$routes/utils/geojson';
 
+import { objectToUrlParams } from '$routes/utils/params';
+
 // TODO: Geotiff
 // import { fromUrl, Pool } from 'geotiff';
+import { uniformsData } from '../protocol/raster/index';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -38,9 +41,16 @@ export const createSourcesItems = async (
 				case 'raster': {
 					if (format.type === 'image') {
 						if (style.type === 'dem') {
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							const demType = visualization.demType;
+							const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+
 							items[sourceId] = {
 								type: 'raster',
-								tiles: [`webgl://${format.url}?x={x}&y={y}&z={z}`],
+								tiles: [
+									`webgl://${format.url}?entryId=${entry.id}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
+								],
 								maxzoom: metaData.maxZoom,
 								minzoom: metaData.minZoom,
 								tileSize: metaData.tileSize,

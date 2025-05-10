@@ -89,8 +89,9 @@ export interface RasterCategoricalStyle {
 }
 
 export const DEM_DATA_TYPE = {
-	rgb: 1,
-	gsi: 2
+	mapbox: 0.0,
+	gsi: 1.0,
+	terrarium: 2.0
 } as const;
 
 export type DemDataType = typeof DEM_DATA_TYPE;
