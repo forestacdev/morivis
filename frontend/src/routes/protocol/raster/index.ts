@@ -1,52 +1,6 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
 import { TileImageManager, ColorMapManager } from '../image';
 
-export type UniformsData = {
-	elevation: {
-		opacity: number;
-		maxHeight: number;
-		minHeight: number;
-	};
-	shadow: {
-		opacity: number;
-		shadowColor: string;
-		highlightColor: string;
-		ambient: number;
-		azimuth: number;
-		altitude: number;
-	};
-	edge: {
-		opacity: number;
-		edgeIntensity: number;
-		edgeColor: string;
-	};
-};
-
-// ユニフォーム変数
-export const uniformsData: UniformsData = {
-	// 標高
-	elevation: {
-		opacity: 1.0, // 不透明度
-		maxHeight: 3776, // 最大標高値
-		minHeight: 0 // 最小標高値
-	},
-	// 陰影
-	shadow: {
-		opacity: 0.8, // 不透明度
-		shadowColor: '#000000', // 陰影色
-		highlightColor: '#00ff9d', // ハイライト色
-		ambient: 0.3, // 環境光
-		azimuth: 0, // 方位
-		altitude: 30 // 太陽高度
-	},
-	// エッジ
-	edge: {
-		opacity: 0.9, // 不透明度
-		edgeIntensity: 0.4, // エッジ強度
-		edgeColor: '#ffffff' // エッジカラー
-	}
-};
-
 class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<

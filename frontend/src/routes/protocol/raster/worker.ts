@@ -6,11 +6,11 @@ let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let positionBuffer: WebGLBuffer | null = null;
 
-function loadAndCombineShaders(
+const loadAndCombineShaders = (
 	mainShaderSource: string,
 	moduleSourceList: string[],
 	placeholder: string
-) {
+) => {
 	// 2. 各モジュールファイルを読み込み、結合する文字列を生成
 	let combinedModuleCode = '';
 	for (const moduleSource of moduleSourceList) {
@@ -21,7 +21,7 @@ function loadAndCombineShaders(
 	const finalShaderSource = mainShaderSource.replace(placeholder, combinedModuleCode);
 
 	return finalShaderSource;
-}
+};
 
 // 使用例
 const PLACEHOLDER = '// === INSERT_SHADER_MODULES_HERE === //';

@@ -20,7 +20,6 @@ import { objectToUrlParams } from '$routes/utils/params';
 
 // TODO: Geotiff
 // import { fromUrl, Pool } from 'geotiff';
-import { uniformsData } from '../protocol/raster/index';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
