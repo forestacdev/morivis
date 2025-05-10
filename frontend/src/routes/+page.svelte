@@ -59,6 +59,7 @@
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import {
 		isSideMenuType,
@@ -409,6 +410,9 @@
 <NotificationMessage />
 <InfoDialog />
 <TermsOfServiceDialog />
+
+<ProcessingScreen />
+
 <SplashScreen />
 
 <style>
