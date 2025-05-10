@@ -8,7 +8,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 	import { notificationMessage, showNotification } from '$routes/store/notification';
-	import { gpxFileToGeojson, checkGpxFile, DataType } from '$routes/utils/gpx';
+	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/utils/gpx';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
