@@ -112,7 +112,7 @@ const NUM_WORKERS = 4;
 export const transformGeoJSONParallel = (
 	geojson: FeatureCollection<Geometry, GeoJsonProperties>,
 	prjContent: string
-) => {
+): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
 	return new Promise((resolve, reject) => {
 		const featuresToProcess = geojson.features;
 		const totalFeatures = featuresToProcess.length;

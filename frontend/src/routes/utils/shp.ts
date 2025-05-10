@@ -41,5 +41,12 @@ export const shpFileToGeojson = async (
 		return geojson;
 	}
 
-	return await transformGeoJSONParallel(geojson, prjContent);
+	const geojsonWGS84 = await transformGeoJSONParallel(geojson, prjContent);
+
+	if (!geojsonWGS84) {
+		showNotification('座標系の変換に失敗しました。', 'error');
+		return geojson;
+	}
+
+	return geojsonWGS84;
 };
