@@ -1,4 +1,5 @@
 import proj4 from 'proj4';
+import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 
 export const flattenCoordinates = (coordinates: any, flattened: number[] = []) => {
 	coordinates.forEach((coord: any) => {
@@ -11,7 +12,10 @@ export const flattenCoordinates = (coordinates: any, flattened: number[] = []) =
 	return flattened;
 };
 
-export const unflattenCoordinates = (flattened: number[], originalStructure: any): any => {
+export const unflattenCoordinates = (
+	flattened: number[],
+	originalStructure: any
+): FeatureCollection<Geometry, GeoJsonProperties> => {
 	const result: any = [];
 	let index = 0;
 
@@ -33,25 +37,27 @@ onmessage = (event) => {
 	const { geojson, prjContent } = event.data;
 	console.log('Worker received data:', geojson, prjContent);
 
-	const transformedFeatures = geojson.features.map((feature) => {
-		const originalCoordinates = JSON.parse(JSON.stringify(feature.geometry.coordinates));
-		const flattenedCoordinates = flattenCoordinates(feature.geometry.coordinates);
-		const convertedFlattened = [];
-		for (let i = 0; i < flattenedCoordinates.length; i += 2) {
-			const converted = proj4(prjContent, 'EPSG:4326', [
-				flattenedCoordinates[i],
-				flattenedCoordinates[i + 1]
-			]);
-			convertedFlattened.push(...converted);
-		}
-		return {
-			...feature,
-			geometry: {
-				...feature.geometry,
-				coordinates: unflattenCoordinates(convertedFlattened, originalCoordinates)
+	const transformedFeatures = geojson.features.map(
+		(feature: FeatureCollection<Geometry, GeoJsonProperties>['features']) => {
+			const originalCoordinates = JSON.parse(JSON.stringify(feature.geometry.coordinates));
+			const flattenedCoordinates = flattenCoordinates(feature.geometry.coordinates);
+			const convertedFlattened = [];
+			for (let i = 0; i < flattenedCoordinates.length; i += 2) {
+				const converted = proj4(prjContent, 'EPSG:4326', [
+					flattenedCoordinates[i],
+					flattenedCoordinates[i + 1]
+				]);
+				convertedFlattened.push(...converted);
 			}
-		};
-	});
+			return {
+				...feature,
+				geometry: {
+					...feature.geometry,
+					coordinates: unflattenCoordinates(convertedFlattened, originalCoordinates)
+				}
+			};
+		}
+	);
 
 	postMessage({
 		type: 'FeatureCollection',
