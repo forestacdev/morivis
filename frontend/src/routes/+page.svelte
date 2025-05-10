@@ -352,7 +352,7 @@
 		{streetViewPoint}
 		{showMapCanvas}
 	/>
-	<!-- <SideBar /> -->
+
 	<HeaderMenu />
 	<FooterMenu {layerEntries} />
 	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />

@@ -1,4 +1,11 @@
-import { SourceSpecification } from 'maplibre-gl';
+export const DEM_DATA_TYPE = {
+	mapbox: 0.0,
+	gsi: 1.0,
+	terrarium: 2.0
+} as const;
+
+export type DemDataType = typeof DEM_DATA_TYPE;
+export type DemDataTypeKey = keyof DemDataType;
 
 export type DemData = {
 	id: string;
@@ -11,15 +18,6 @@ export type DemData = {
 	attribution: string;
 	demType: DemDataTypeKey;
 };
-
-export const DEM_DATA_TYPE = {
-	mapbox: 0.0,
-	gsi: 1.0,
-	terrarium: 2.0
-} as const;
-
-export type DemDataType = typeof DEM_DATA_TYPE;
-export type DemDataTypeKey = keyof DemDataType;
 
 export const demLayers: DemData[] = [
 	{

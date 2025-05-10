@@ -1,3 +1,4 @@
+import type { DemDataTypeKey } from '$routes/data/dem';
 import type { BaseMetaData } from '$routes/data/types';
 export interface CategoryLegend {
 	type: 'category';
@@ -87,15 +88,6 @@ export interface RasterCategoricalStyle {
 	visible?: boolean;
 	legend: CategoryLegend | GradientLegend;
 }
-
-export const DEM_DATA_TYPE = {
-	mapbox: 0.0,
-	gsi: 1.0,
-	terrarium: 2.0
-} as const;
-
-export type DemDataType = typeof DEM_DATA_TYPE;
-export type DemDataTypeKey = keyof DemDataType;
 
 export const COLOR_MAP_TYPE = [
 	'jet',
