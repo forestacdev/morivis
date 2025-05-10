@@ -42,20 +42,32 @@ export const createSourcesItems = async (
 						if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							const demType = visualization.demType;
-							const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+							if (mode !== 'default') {
+								const demType = visualization.demType;
+								const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
 
-							items[sourceId] = {
-								type: 'raster',
-								tiles: [
-									`webgl://${format.url}?entryId=${entry.id}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
-								],
-								maxzoom: metaData.maxZoom,
-								minzoom: metaData.minZoom,
-								tileSize: metaData.tileSize,
-								attribution: metaData.attribution,
-								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-							} as RasterSourceSpecification;
+								items[sourceId] = {
+									type: 'raster',
+									tiles: [
+										`webgl://${format.url}?entryId=${entry.id}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
+									],
+									maxzoom: metaData.maxZoom,
+									minzoom: metaData.minZoom,
+									tileSize: metaData.tileSize,
+									attribution: metaData.attribution,
+									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								} as RasterSourceSpecification;
+							} else {
+								items[sourceId] = {
+									type: 'raster',
+									tiles: [format.url],
+									maxzoom: metaData.maxZoom,
+									minzoom: metaData.minZoom,
+									tileSize: metaData.tileSize,
+									attribution: metaData.attribution,
+									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								} as RasterSourceSpecification;
+							}
 						} else {
 							items[sourceId] = {
 								type: 'raster',

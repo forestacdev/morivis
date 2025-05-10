@@ -2,22 +2,22 @@ import type { RasterImageEntry, RasterDemStyle } from '$routes/data/types/raster
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/data/style';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'dem_5a',
+	id: 'dem_yamanashi',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
+		url: 'https://forestgeo.info/opendata/19_yamanashi/dem_terrainRGB_2024/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '基盤地図情報数値標高モデル DEM5A',
+		name: '山梨県 DEM',
 		description: '',
-		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
-		attribution: '国土地理院',
-		location: '全国',
-		minZoom: 1,
-		maxZoom: 15,
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-yamanashi-maptiles',
+		attribution: '林野庁',
+		location: '山梨県',
+		minZoom: 8,
+		maxZoom: 18,
 		tileSize: 256,
-		bounds: [122.935, 20.425, 153.986, 45.551]
+		bounds: [139.539712, 37.73383, 140.646377, 39.208476]
 	},
 	interaction: {
 		clickable: true
@@ -26,7 +26,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
-			demType: 'gsi'
+			demType: 'mapbox'
 		}
 	}
 };
