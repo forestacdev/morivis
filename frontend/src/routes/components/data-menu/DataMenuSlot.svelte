@@ -134,7 +134,7 @@
 				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 			</div>
 
-			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 text-xs text-white"
+			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 pl-4 text-xs text-white"
 				>{dataEntry.metaData.attribution}</span
 			>
 		{/await}
