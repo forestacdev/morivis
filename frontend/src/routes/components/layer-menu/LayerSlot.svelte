@@ -6,6 +6,7 @@
 	import Legend from './Legend.svelte';
 
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
+	import OpacityRangeSlider from '$routes/components/layer-menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
@@ -32,6 +33,7 @@
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
+	let draggingEnabled = $state(true);
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
@@ -106,6 +108,7 @@
 
 	const editLayer = () => {
 		if (!layerEntry) return;
+		selectedLayerId.set(layerEntry.id);
 		$isStyleEdit = !$isStyleEdit;
 	};
 
@@ -158,7 +161,7 @@
 	dragEnterType !== layerType
 		? 'opacity-50'
 		: ''} {isDragging ? 'c-dragging-style' : ''}"
-	draggable={true}
+	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
 	ondragover={(e) => e.preventDefault()}
@@ -271,6 +274,15 @@
 					<button onclick={removeLayer} class="cursor-pointer">
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
+				</div>
+				<div
+					class="w-full"
+					onmousedown={() => (draggingEnabled = false)}
+					onmouseup={() => (draggingEnabled = true)}
+					role="button"
+					tabindex="0"
+				>
+					<OpacityRangeSlider min={0} max={1} step={0.01} bind:value={layerEntry.style.opacity} />
 				</div>
 				<Legend {layerEntry} />
 			</div>
