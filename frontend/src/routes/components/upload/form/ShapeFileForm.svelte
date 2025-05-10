@@ -97,7 +97,7 @@
 	};
 
 	const setFile = (file: File) => {
-		const fileName = file.name.toLowerCase();
+		const fileName = file.name;
 
 		if (fileName.endsWith('.shp')) {
 			forms.shpFile = file;
