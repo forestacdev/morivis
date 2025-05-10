@@ -22,7 +22,7 @@
 		features: StreetViewPoint[];
 	}
 
-	export type DialogType = 'raster' | 'vector' | 'shp' | null;
+	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | null;
 </script>
 
 <script lang="ts">

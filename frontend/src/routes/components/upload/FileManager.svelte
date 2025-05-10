@@ -13,7 +13,6 @@
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/utils/geojson';
-	import { gpxFileToGeojson, checkGpxFile } from '$routes/utils/gpx';
 	import { shpFileToGeojson } from '$routes/utils/shp';
 
 	interface Props {
@@ -57,12 +56,9 @@
 					geojsonData = await fgbFileToGeojson(file);
 					break;
 				case 'gpx':
-					const isGpx = await checkGpxFile(file);
 					showDialogType = 'gpx';
-					// const geojsonList = await gpxFileToGeojson(file);
+					return;
 
-					// geojsonData = await gpxFileToGeojson(file);
-					break;
 				case 'shp':
 				case 'dbf':
 				case 'prj':

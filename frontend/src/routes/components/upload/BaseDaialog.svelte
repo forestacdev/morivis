@@ -2,6 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import type { DialogType } from '$routes/+page.svelte';
+	import GpxForm from '$routes/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/components/upload/form/ShapeFileForm.svelte';
 	import VectorForm from '$routes/components/upload/form/VectorForm.svelte';
@@ -40,6 +41,9 @@
 			{/if}
 			{#if showDialogType === 'shp'}
 				<ShapeFileForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'gpx'}
+				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 		</div>
 	</div>
