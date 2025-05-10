@@ -3,19 +3,24 @@
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 
+	import DemOption from './raster-option/DemOption.svelte';
+
 	import CheckBox from '$routes/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,
-		RasterBaseMapStyle
+		RasterBaseMapStyle,
+		RasterDemStyle,
+		DemStyleMode
 	} from '$routes/data/types/raster';
 	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 
 	let {
 		layerEntry = $bindable()
-	}: { layerEntry: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle> } = $props();
+	}: { layerEntry: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle> } =
+		$props();
 
 	let style = $derived(layerEntry.style);
 
@@ -23,9 +28,9 @@
 </script>
 
 {#if layerEntry && layerEntry.type === 'raster' && style}
-	<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}
+		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
 		<RangeSlider
 			label={'明るさ-最小輝度'}
 			bind:value={style.brightnessMin}
@@ -44,6 +49,8 @@
 		<RangeSlider label={'色相'} bind:value={style.hueRotate} min={-360} max={360} step={0.1} />
 		<RangeSlider label={'彩度'} bind:value={style.saturation} min={-1} max={1} step={0.01} />
 	{:else if style.type === 'categorical'}
+		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
+
 		<h1 class="text-base">凡例</h1>
 		{#if style.legend.type === 'category'}
 			<h2 class="text-base">{style.legend.name}</h2>
@@ -76,6 +83,8 @@
 				</div>
 			</div>
 		{/if}
+	{:else if style.type === 'dem'}
+		<DemOption bind:style />
 	{/if}
 {/if}
 

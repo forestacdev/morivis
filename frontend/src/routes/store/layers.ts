@@ -25,7 +25,7 @@ const createLayerStore = () => {
 		point: ['fac_ziriki_point', 'fac_building_point', 'fac_poi'],
 		line: ['ensyurin_road2', 'gsi_road'],
 		polygon: ['ensyurin_rinhan'],
-		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
+		raster: ['dem_5a', 'gsi_rinya_m', 'gsi_seamlessphoto']
 	};
 
 	const { subscribe, update, set } = writable<GroupedLayers>({ ...initialState });

@@ -1,0 +1,69 @@
+<script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { fade, fly, slide } from 'svelte/transition';
+
+	import type { DemStyleMode } from '$routes/data/types/raster';
+
+	interface Props {
+		isMode: DemStyleMode;
+	}
+	let { isMode = $bindable() }: Props = $props();
+	interface DemStyleModeOptions {
+		key: DemStyleMode;
+		name: string;
+	}
+	let demStyleModes = $state<DemStyleModeOptions[]>([
+		{ key: 'evolution', name: '標高' },
+		{ key: 'shadow', name: '陰影' },
+		{ key: 'slope', name: '傾斜量' },
+		{ key: 'aspect', name: '傾斜方向' },
+		{ key: 'curvature', name: '曲率' }
+	]);
+
+	let showPullDown = $state<boolean>(false);
+</script>
+
+<div class="relative py-2">
+	<button
+		onclick={() => (showPullDown = !showPullDown)}
+		class="c-select flex w-full justify-between"
+	>
+		<div class="flex items-center gap-2">
+			<Icon icon={'ic:round-terrain'} width={20} />
+
+			<span>{demStyleModes.find((mode) => mode.key === isMode)?.name}</span>
+		</div>
+		<Icon icon="bi:chevron-down" class="h-6 w-6" />
+	</button>
+
+	{#if showPullDown}
+		<div
+			transition:fly={{ duration: 200, y: -20 }}
+			class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-300 overflow-hidden rounded-lg bg-white shadow-md"
+		>
+			{#each demStyleModes as { key, name } (key)}
+				<label
+					class="hover:text-accent bg-sub z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {isMode ===
+					key
+						? 'bg-accent'
+						: ''}"
+				>
+					<input
+						type="radio"
+						bind:group={isMode}
+						value={key}
+						class="hidden"
+						onchange={() => (showPullDown = false)}
+					/>
+					<div class="flex items-center gap-2">
+						<Icon icon={'ic:round-terrain'} width={20} />
+						<span class="select-none">{name}</span>
+					</div>
+				</label>
+			{/each}
+		</div>
+	{/if}
+</div>
+
+<style>
+</style>
