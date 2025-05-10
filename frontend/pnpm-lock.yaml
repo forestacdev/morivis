@@ -41,6 +41,9 @@ dependencies:
   '@turf/distance':
     specifier: ^7.2.0
     version: 7.2.0
+  '@turf/meta':
+    specifier: ^7.2.0
+    version: 7.2.0
   '@turf/nearest-point':
     specifier: ^7.2.0
     version: 7.2.0
