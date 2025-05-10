@@ -360,15 +360,13 @@ const createMapStore = () => {
 		map.addLayer(layerItems[0]);
 	};
 
-	const getBounds = () => {
-		if (!map) return;
+	const getMapBbox = (): [number, number, number, number] => {
+		if (!map) {
+			console.warn('Map is not ready yet.');
+			return [0, 0, 0, 0];
+		}
 		const { _sw, _ne } = map.getBounds();
-		return {
-			minX: _sw.lng,
-			minY: _sw.lat,
-			maxX: _ne.lng,
-			maxY: _ne.lat
-		};
+		return [_sw.lng, _sw.lat, _ne.lng, _ne.lat];
 	};
 
 	const resetAllSourcesAndLayers = () => {
@@ -481,6 +479,8 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		setBearing: (bearing: number) => map?.setBearing(bearing),
+		fitBounds: (bounds: LngLatBounds, options?: maplibregl.FitBoundsOptions) =>
+			map?.fitBounds(bounds, options),
 		panTo,
 		easeTo: (options: EaseToOptions) => easeTo(options),
 		addSearchFeature,
@@ -488,7 +488,7 @@ const createMapStore = () => {
 		focusFeature,
 		onSetStyle: setStyleEvent.subscribe,
 		getTerrain: () => map?.getTerrain(),
-		getBounds: getBounds,
+		getMapBbox: getMapBbox,
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onMouseover: mouseoverEvent.subscribe, // マウスオーバーイベントの購読用メソッド
 		onMouseout: mouseoutEvent.subscribe, // マウスアウトイベントの購読用メソッド

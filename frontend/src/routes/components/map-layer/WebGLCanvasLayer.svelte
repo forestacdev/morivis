@@ -35,7 +35,6 @@
 
 	const setCanvas = (_map: MapLibreMap) => {
 		const bbox = _map.getBounds();
-		const boxArray = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
 
 		const coordinates = [
 			[bbox._sw.lng, bbox._ne.lat],
