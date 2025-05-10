@@ -3,6 +3,7 @@
 
 	import type { DialogType } from '$routes/+page.svelte';
 	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
+	import ShapeFileForm from '$routes/components/upload/form/ShapeFileForm.svelte';
 	import VectorForm from '$routes/components/upload/form/VectorForm.svelte';
 	import { createRasterEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -11,12 +12,14 @@
 		showDialogType: DialogType;
 		tempLayerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
+		dropFile: File | FileList | null;
 	}
 
 	let {
 		showDialogType = $bindable(),
 		showDataEntry = $bindable(),
-		tempLayerEntries = $bindable()
+		tempLayerEntries = $bindable(),
+		dropFile = $bindable()
 	}: Props = $props();
 </script>
 
@@ -34,6 +37,9 @@
 			{/if}
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'shp'}
+				<ShapeFileForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 		</div>
 	</div>

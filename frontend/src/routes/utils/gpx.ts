@@ -1,39 +1,52 @@
 import GPXParser from 'gpxparser';
-import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import type { FeatureCollection, GeoJsonProperties, Geometry, LineString, Point } from 'geojson';
 
-export const gpxFileToGeojson = async (
+export const checkGpxFile = async (
 	file: File
-): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
+): Promise<{ tracks: boolean; routes: boolean; waypoints: boolean }> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
-		const geojson: GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> = {
+		return {
+			tracks: parser.tracks.length > 0,
+			routes: parser.routes.length > 0,
+			waypoints: parser.waypoints.length > 0
+		};
+	} catch (error) {
+		console.error('GPX ファイルの処理中にエラーが発生しました:', error);
+		// エラー処理 (例: 例外を再スロー、デフォルト値を返すなど)
+		throw error; // 例: エラーを再スロー
+	}
+};
+export const gpxFileToGeojson = async (
+	file: File
+): Promise<FeatureCollection<Geometry, GeoJsonProperties>[]> => {
+	try {
+		const gpxData = await file.text();
+		const parser = new GPXParser();
+		parser.parse(gpxData);
+
+		const trackGeojson: FeatureCollection<LineString> = {
 			type: 'FeatureCollection',
-			features: []
+			features: parser.tracks.map((track) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'LineString',
+					coordinates: track.points.map((p) => [p.lon, p.lat])
+				},
+				properties: {
+					name: track.name
+					// 必要に応じてトラックのプロパティを追加
+				}
+			}))
 		};
 
-		// トラック (経路) を GeoJSON の LineString として追加
-		parser.tracks.forEach((track) => {
-			if (track.points.length > 0) {
-				const coordinates = track.points.map((p) => [p.lon, p.lat]);
-				geojson.features.push({
-					type: 'Feature',
-					geometry: {
-						type: 'LineString',
-						coordinates: coordinates
-					},
-					properties: {
-						// 必要に応じてトラックのプロパティを追加
-					}
-				});
-			}
-		});
-
-		// ウェイポイント (地点) を GeoJSON の Point として追加
-		parser.waypoints.forEach((waypoint) => {
-			geojson.features.push({
+		// ウェイポイント (地点) を GeoJSON の FeatureCollection として追加
+		const waypointsGeojson: FeatureCollection<Point> = {
+			type: 'FeatureCollection',
+			features: parser.waypoints.map((waypoint) => ({
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
@@ -43,28 +56,25 @@ export const gpxFileToGeojson = async (
 					name: waypoint.name
 					// 必要に応じてウェイポイントのプロパティを追加
 				}
-			});
-		});
+			}))
+		};
 
-		// ルート (特定の順序で巡る地点) も同様に追加できます
-		parser.routes.forEach((route) => {
-			if (route.points.length > 0) {
-				const coordinates = route.points.map((p) => [p.lon, p.lat]);
-				geojson.features.push({
-					type: 'Feature',
-					geometry: {
-						type: 'LineString',
-						coordinates: coordinates
-					},
-					properties: {
-						name: route.name
-						// 必要に応じてルートのプロパティを追加
-					}
-				});
-			}
-		});
+		const routeGeojson: FeatureCollection<LineString> = {
+			type: 'FeatureCollection',
+			features: parser.routes.map((route) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'LineString',
+					coordinates: route.points.map((p) => [p.lon, p.lat])
+				},
+				properties: {
+					name: route.name
+					// 必要に応じてルートのプロパティを追加
+				}
+			}))
+		};
 
-		return geojson;
+		return [trackGeojson, waypointsGeojson, routeGeojson];
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
 		throw new Error('Failed to parse GeoJSON file');

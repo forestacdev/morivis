@@ -22,7 +22,7 @@
 		features: StreetViewPoint[];
 	}
 
-	export type DialogType = 'raster' | 'vector' | null;
+	export type DialogType = 'raster' | 'vector' | 'shp' | null;
 </script>
 
 <script lang="ts">
@@ -344,6 +344,7 @@
 		bind:showSelectionMarker
 		bind:selectionMarkerLngLat
 		bind:dropFile
+		bind:showDialogType
 		{streetViewLineData}
 		{streetViewPointData}
 		{angleMarker}
@@ -373,7 +374,7 @@
 		{setPoint}
 	/>
 </div>
-<UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries />
+<UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
 
 <Tooltip />
 

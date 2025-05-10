@@ -41,8 +41,14 @@
 	<label
 		class="bg-sub flex w-full max-w-[300px] cursor-pointer flex-col items-center gap-2 rounded-full p-4"
 	>
-		<span>ファイルをアップロード</span><span class="text-sm">.geojson .fgb .gpx</span>
-		<input type="file" accept=".geojson,.fgb,.gpx" class="hidden" onchange={(e) => inputFile(e)} />
+		<span>ファイルをアップロード</span><span class="text-sm">.geojson .fgb .gpx .shp .dbf .prj</span
+		>
+		<input
+			type="file"
+			accept=".geojson,.fgb,.gpx,.shp,.dbf,.prj"
+			class="hidden"
+			onchange={(e) => inputFile(e)}
+		/>
 	</label>
 </div>
 

@@ -5,7 +5,6 @@
 	import TextForm from '$routes/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showDataMenu } from '$routes/store';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

@@ -2,17 +2,18 @@
 	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 
+	import type { DialogType } from '$routes/+page.svelte';
 	import { createGeoJsonEntry } from '$routes/data';
+	import { geometryTypeToEntryType } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 	import type { LayerType } from '$routes/store/layers';
 	import { groupedLayerStore } from '$routes/store/layers';
-	import { getLayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { csvFileToGeojson } from '$routes/utils/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/utils/geojson';
-	import { gpxFileToGeojson } from '$routes/utils/gpx';
+	import { gpxFileToGeojson, checkGpxFile } from '$routes/utils/gpx';
 	import { shpFileToGeojson } from '$routes/utils/shp';
 
 	interface Props {
@@ -21,6 +22,7 @@
 		dropFile: File | FileList | null;
 		tempLayerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
+		showDialogType: DialogType;
 	}
 
 	let {
@@ -28,49 +30,20 @@
 		isDragover = $bindable(),
 		dropFile = $bindable(),
 		tempLayerEntries = $bindable(),
-		showDataEntry = $bindable()
+		showDataEntry = $bindable(),
+		showDialogType = $bindable()
 	}: Props = $props();
 
-	let shpfiles = $state<{
-		shp: File | null;
-		dbf: File | null;
-		prj: File | null;
-	}>({
-		shp: null,
-		dbf: null,
-		prj: null
-	});
-
-	const geometryTypeToEntryType = (
-		geojson: FeatureCollection<Geometry, GeoJsonProperties>
-	): VectorEntryGeometryType | undefined => {
-		const geometryTypes = new Set<string>();
-		geojson.features.forEach((feature) => {
-			if (feature.geometry && feature.geometry.type) {
-				geometryTypes.add(feature.geometry.type);
-			}
-		});
-
-		if (geometryTypes.has('Point')) {
-			return 'Point';
-		} else if (geometryTypes.has('LineString')) {
-			return 'LineString';
-		} else if (geometryTypes.has('Polygon')) {
-			return 'Polygon';
-		} else if (geometryTypes.has('MultiPoint')) {
-			return 'Point';
-		} else if (geometryTypes.has('MultiLineString')) {
-			return 'LineString';
-		} else if (geometryTypes.has('MultiPolygon')) {
-			return 'Polygon';
-		}
-	};
+	let fileName = $state<string>('');
 
 	const setFile = async (file: File | FileList) => {
-		let geojsonData;
+		let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
 
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
+			fileName = file.name;
+
+			console.log('ext', ext);
 
 			switch (ext) {
 				// TODO:CSV
@@ -84,8 +57,17 @@
 					geojsonData = await fgbFileToGeojson(file);
 					break;
 				case 'gpx':
-					geojsonData = await gpxFileToGeojson(file);
+					const isGpx = await checkGpxFile(file);
+					showDialogType = 'gpx';
+					// const geojsonList = await gpxFileToGeojson(file);
+
+					// geojsonData = await gpxFileToGeojson(file);
 					break;
+				case 'shp':
+				case 'dbf':
+				case 'prj':
+					showDialogType = 'shp';
+					return;
 
 				default:
 					showNotification('対応していないファイル形式です', 'error');
@@ -111,8 +93,9 @@
 
 			if (shpFile && dbfFile && prjFile) {
 				geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjFile);
+				fileName = shpFile.name;
 			} else {
-				showNotification('SHPファイル、DBFファイル、PRJファイルをすべて選択してください', 'error');
+				showDialogType = 'shp';
 				return;
 			}
 		}
@@ -124,7 +107,7 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, file.name);
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, fileName);
 
 		if (!entry) {
 			showNotification('データが不正です', 'error');
@@ -138,7 +121,15 @@
 
 	$effect(() => {
 		if (dropFile) {
-			setFile(dropFile);
+			if (dropFile instanceof FileList) {
+				if (dropFile.length === 1) {
+					const file = dropFile[0];
+					setFile(file);
+					return;
+				} else {
+					setFile(dropFile);
+				}
+			}
 		}
 	});
 </script>

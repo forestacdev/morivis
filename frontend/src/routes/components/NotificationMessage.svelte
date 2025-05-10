@@ -21,7 +21,9 @@
 					? 'bg-accent text-base'
 					: value?.type === 'info'
 						? 'bg-main text-base'
-						: '';
+						: value?.type === 'warning'
+							? 'bg-yellow-500 text-base'
+							: 'bg-main text-base';
 	});
 
 	onMount(() => {

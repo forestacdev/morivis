@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
+
+	import type { DialogType } from '$routes/+page.svelte';
+
 	import {
 		type StyleSpecification,
 		type MapGeoJSONFeature,
@@ -62,6 +65,7 @@
 		selectionMarkerLngLat: LngLat | null;
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
+		showDialogType: DialogType;
 	}
 
 	let {
@@ -76,7 +80,8 @@
 		showMapCanvas,
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		showDialogType = $bindable()
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -489,6 +494,7 @@
 		bind:dropFile
 		bind:tempLayerEntries
 		bind:showDataEntry
+		bind:showDialogType
 	/>
 
 	<StreetViewLayer map={maplibreMap} />

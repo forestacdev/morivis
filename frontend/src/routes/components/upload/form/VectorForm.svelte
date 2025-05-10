@@ -12,9 +12,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+
+	}: Props = $props();
 
 	const rasterValidation = yup.object().shape({
 		name: yup.string().required('データ名を入力してください。'),

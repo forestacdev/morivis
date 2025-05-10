@@ -1,5 +1,5 @@
 import type { GeoDataEntry } from '$routes/data/types';
-import type { FeatureCollection } from 'geojson';
+import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
@@ -66,6 +66,32 @@ export const geoDataEntries = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
+
+/** geojsonのジオメトリ対応からEntryTypeを取得 */
+export const geometryTypeToEntryType = (
+	geojson: FeatureCollection<Geometry, GeoJsonProperties>
+): VectorEntryGeometryType | undefined => {
+	const geometryTypes = new Set<string>();
+	geojson.features.forEach((feature) => {
+		if (feature.geometry && feature.geometry.type) {
+			geometryTypes.add(feature.geometry.type);
+		}
+	});
+
+	if (geometryTypes.has('Point')) {
+		return 'Point';
+	} else if (geometryTypes.has('LineString')) {
+		return 'LineString';
+	} else if (geometryTypes.has('Polygon')) {
+		return 'Polygon';
+	} else if (geometryTypes.has('MultiPoint')) {
+		return 'Point';
+	} else if (geometryTypes.has('MultiLineString')) {
+		return 'LineString';
+	} else if (geometryTypes.has('MultiPolygon')) {
+		return 'Polygon';
+	}
+};
 
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
