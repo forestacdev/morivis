@@ -16,8 +16,8 @@ export const checkGpxFile = async (
 		};
 	} catch (error) {
 		console.error('GPX ファイルの処理中にエラーが発生しました:', error);
-		// エラー処理 (例: 例外を再スロー、デフォルト値を返すなど)
-		throw error; // 例: エラーを再スロー
+
+		throw error;
 	}
 };
 export const gpxFileToGeojson = async (
@@ -26,7 +26,6 @@ export const gpxFileToGeojson = async (
 ): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
 	try {
 		const gpxData = await file.text();
-		console.log('gpxData', gpxData);
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
