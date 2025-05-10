@@ -37,12 +37,10 @@
 
 	const setFile = async (file: File | FileList) => {
 		let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
-
+		console.log('fileName', file);
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
-
-			console.log('ext', ext);
 
 			switch (ext) {
 				// TODO:CSV
@@ -58,7 +56,6 @@
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;
-
 				case 'shp':
 				case 'dbf':
 				case 'prj':
@@ -90,8 +87,11 @@
 			if (shpFile && dbfFile && prjFile) {
 				geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjFile);
 				fileName = shpFile.name;
-			} else {
+			} else if (shpFile || dbfFile || prjFile) {
 				showDialogType = 'shp';
+				return;
+			} else {
+				setFile(file[0]);
 				return;
 			}
 		}
@@ -117,15 +117,7 @@
 
 	$effect(() => {
 		if (dropFile) {
-			if (dropFile instanceof FileList) {
-				if (dropFile.length === 1) {
-					const file = dropFile[0];
-					setFile(file);
-					return;
-				} else {
-					setFile(dropFile);
-				}
-			}
+			setFile(dropFile);
 		}
 	});
 </script>

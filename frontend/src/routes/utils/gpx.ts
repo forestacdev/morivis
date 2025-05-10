@@ -29,6 +29,8 @@ export const gpxFileToGeojson = async (
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
+		console.log('GPX Parser:', parser);
+
 		let geojson: FeatureCollection<Geometry, GeoJsonProperties>;
 
 		if (type === 'tracks') {
