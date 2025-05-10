@@ -20,6 +20,12 @@
 	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
 
 	let addedDataIds = $state<string[]>($orderedLayerIds);
+	let isAdded = $derived.by(() => {
+		if (addedDataIds) {
+			return addedDataIds.includes(dataEntry.id);
+		}
+		return false;
+	});
 	let container = $state<HTMLElement | null>(null);
 
 	const updateItemHeight = (newHeight: number) => {
@@ -108,19 +114,24 @@
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
+		disabled={isAdded}
 		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
+				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
+					? ''
+					: 'hover:scale-110'}"
 				alt={dataEntry.metaData.name}
-                loading="lazy"
+				loading="lazy"
 			/>
 			<div
-				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
+					? ''
+					: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
 			>
-				<span class="text-lg text-white">プレビュー</span>
+				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 			</div>
 
 			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 text-xs text-white"
@@ -137,13 +148,13 @@
 	</div>
 
 	<div class=" shrink-0">
-		{#if addedDataIds.includes(dataEntry.id)}
+		{#if isAdded}
 			<button
 				onclick={() => deleteData(dataEntry.id)}
 				class="c-btn-cancel flex items-center gap-2 px-4"
 			>
-				<Icon icon="material-symbols:check" class=" h-8 w-8" />
-				<div>地図に追加済み</div>
+				<Icon icon="ic:round-minus" class=" h-8 w-8" />
+				<div>地図から削除</div>
 			</button>
 		{:else}
 			<button
