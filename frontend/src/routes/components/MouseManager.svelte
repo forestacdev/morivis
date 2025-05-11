@@ -131,7 +131,6 @@
 		// プレビューモードの時は、クリックイベントを無視する
 		if (showDataEntry) return;
 
-		// console.log(map.queryRenderedFeatures(e.point));
 		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
