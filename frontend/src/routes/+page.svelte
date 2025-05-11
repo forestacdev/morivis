@@ -1,5 +1,4 @@
 <script lang="ts" module>
-	import { isPc } from '$routes/utils/ui';
 	export interface StreetViewPoint {
 		type: 'Feature';
 		geometry: {
@@ -45,7 +44,7 @@
 	import HeaderMenu from '$routes/components/Header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
-	import Map from '$routes/components/Map.svelte';
+	import MapLibreMap from '$routes/components/Map.svelte';
 	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
 	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
@@ -304,20 +303,48 @@
 		}
 	});
 
-	orderedLayerIds.subscribe((value) => {
-		layerEntries = layerEntriesData.filter((entry) => {
-			return value.includes(entry.id);
-		});
-	});
+	// レイヤーの追加、削除、並び替えを行う
+	// orderedLayerIds.subscribe((ids) => {
+	// 	layerEntries = layerEntriesData
+	// 		.filter((entry) => ids.includes(entry.id))
+	// 		.sort((a, b) => {
+	// 			return ids.indexOf(a.id) - ids.indexOf(b.id);
+	// 		});
+	// });
 
-	const updateLayerEntries = debounce((_layerEntries: GeoDataEntry[]) => {
-		_layerEntries.forEach((updatedEntry) => {
-			const index = layerEntriesData.findIndex((e) => e.id === updatedEntry.id);
-			if (index !== -1) {
-				layerEntriesData[index] = { ...updatedEntry };
+	// レイヤーの追加、削除、並び替えを行う
+	orderedLayerIds.subscribe((newOrderedIds) => {
+		const currentLayerEntries = [...layerEntries];
+
+		// 現在の layerEntries をIDをキーとしたマップに変換し、既存のレイヤーオブジェクトを素早く参照できるようにする
+		const currentLayersMap = new Map(currentLayerEntries.map((entry) => [entry.id, entry]));
+
+		const newLayerEntries = []; // 新しい layerEntries の内容を格納する配列
+
+		for (const id of newOrderedIds) {
+			let layer = currentLayersMap.get(id); // 現在のマップからレイヤーを検索
+
+			if (layer) {
+				// 既存の layerEntries にそのレイヤーがあれば、そのオブジェクトをそのまま利用する
+				// これにより、そのレイヤーオブジェクトに対するプロパティの変更（例: active: false など）が保持されます。
+				newLayerEntries.push(layer);
+			} else {
+				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
+				layer = layerEntriesData.find((entry) => entry.id === id);
+				if (layer) {
+					// layerEntriesData から取得したオブジェクトを、初期状態として追加
+					// 必要であれば、ここでオブジェクトをディープコピーして、元の layerEntriesData に影響を与えないようにすることも検討できます。
+					// 例: newLayerEntries.push(JSON.parse(JSON.stringify(layer)));
+					newLayerEntries.push(layer);
+				}
+				// else: orderedLayerIds にあるが layerEntriesData に存在しないIDは無視
 			}
-		});
-	}, 100);
+		}
+
+		// layerEntries ストアを新しいソート・フィルターされたリストで更新
+		// これにより、Svelteコンポーネントは新しいデータで再レンダリングされます。
+		layerEntries = newLayerEntries;
+	});
 </script>
 
 <div class="relative flex h-full w-full grow">
@@ -337,7 +364,7 @@
 		bind:selectionMarkerLngLat
 	/>
 
-	<Map
+	<MapLibreMap
 		bind:layerEntries
 		bind:tempLayerEntries
 		bind:showDataEntry

@@ -42,7 +42,7 @@
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
+	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {
@@ -240,16 +240,6 @@
 
 		return mapStyle;
 	};
-
-	// レイヤーの追加
-	orderedLayerIds.subscribe((ids) => {
-		// idsの順番に並び替え
-		layerEntries = layerEntries
-			.filter((entry) => ids.includes(entry.id))
-			.sort((a, b) => {
-				return ids.indexOf(a.id) - ids.indexOf(b.id);
-			});
-	});
 
 	// 初期描画時
 	onMount(async () => {

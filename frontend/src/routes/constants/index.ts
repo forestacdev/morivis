@@ -40,11 +40,25 @@ export const MAP_POSITION: MapPosition = {
 };
 
 /** アイコン用画像タイルのXYZ */
-export const IMAGE_TILE_XYZ: TileXYZ = {
-	x: 28846,
-	y: 12917,
-	z: 15
+export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
+	zoom_15: {
+		x: 28846,
+		y: 12917,
+		z: 15
+	},
+	zoom_14: {
+		x: 14423,
+		y: 6458,
+		z: 14
+	},
+	zoom_13: {
+		x: 7211,
+		y: 3229,
+		z: 13
+	}
 };
+
+export const IMAGE_TILE_XYZ: TileXYZ = IMAGE_TILE_XYZ_SETS['zoom_14'];
 
 /** maplibreのデフォルトのpopupオプション */
 export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
