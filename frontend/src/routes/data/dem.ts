@@ -31,17 +31,17 @@ export const demLayers: DemData[] = [
 		bbox: [122.935, 20.425, 153.986, 45.551],
 		demType: 'gsi'
 	},
-	{
-		id: 'dem_5a',
-		name: '基盤地図情報数値標高モデル DEM5A',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 1,
-		maxzoom: 15,
-		attribution: '国土地理院',
-		bbox: [122.935, 20.425, 153.986, 45.551],
-		demType: 'gsi'
-	},
+	// {
+	// 	id: 'dem_5a',
+	// 	name: '基盤地図情報数値標高モデル DEM5A',
+	// 	tiles: ['https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'],
+	// 	tileSize: 256,
+	// 	minzoom: 1,
+	// 	maxzoom: 15,
+	// 	attribution: '国土地理院',
+	// 	bbox: [122.935, 20.425, 153.986, 45.551],
+	// 	demType: 'gsi'
+	// },
 	{
 		id: 'dem_5b',
 		name: '基盤地図情報数値標高モデル DEM5B',
@@ -64,17 +64,17 @@ export const demLayers: DemData[] = [
 		bbox: [122.935, 20.425, 153.986, 45.551],
 		demType: 'gsi'
 	},
-	{
-		id: 'tochigi_dem',
-		name: '栃木県 数値標高モデル(DEM)0.5m',
-		tiles: ['https://rinya-tochigi.geospatial.jp/2023/rinya/tile/terrainRGB/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 2,
-		maxzoom: 18,
-		bbox: [139.326731, 36.199924, 140.291983, 37.155039],
-		attribution: '栃木県',
-		demType: 'mapbox'
-	},
+	// {
+	// 	id: 'tochigi_dem',
+	// 	name: '栃木県 数値標高モデル(DEM)0.5m',
+	// 	tiles: ['https://rinya-tochigi.geospatial.jp/2023/rinya/tile/terrainRGB/{z}/{x}/{y}.png'],
+	// 	tileSize: 256,
+	// 	minzoom: 2,
+	// 	maxzoom: 18,
+	// 	bbox: [139.326731, 36.199924, 140.291983, 37.155039],
+	// 	attribution: '栃木県',
+	// 	demType: 'mapbox'
+	// },
 	{
 		id: 'kochi_dem',
 		name: '高知県 数値標高モデル(DEM)0.5m',

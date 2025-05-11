@@ -24,6 +24,11 @@ void main() {
 
 
     vec4 color = texture(u_height_map_center, uv);
+     if(color.a == 0.0){
+        // テクスチャなし、または透明ピクセルの場合
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
     float h = convertToHeight(color, u_dem_type);
     if(-9999.0 == h){
         // 無効地の場合
