@@ -37,7 +37,7 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			evolution: {
 				max: 4000,
 				min: 0,
-				colorMap: 'bone'
+				colorMap: 'greys'
 			},
 			shadow: {
 				azimuth: 180,
