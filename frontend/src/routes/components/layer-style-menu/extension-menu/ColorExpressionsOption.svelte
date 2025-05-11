@@ -33,7 +33,7 @@
 		/>
 	{/each}
 {:else if setExpression.type === 'step'}
-	<div class="flex-between flex w-full gap-2">
+	<div class="flex-between flex w-full gap-2 text-base">
 		{#each setExpression.mapping.values as _, index}
 			<span>{index === 0 ? '最小' : '最大'}</span>
 			<ColorPicker bind:value={setExpression.mapping.values[index]} />
@@ -49,7 +49,7 @@
 	/>
 	{#if stepPallet}
 		{#each stepPallet.categories as _, index}
-			<div class="flex-between flex w-full select-none gap-2">
+			<div class="flex-between flex w-full select-none gap-2 text-base">
 				<div class="w-full">{stepPallet.categories[index]}</div>
 				<div class="p-2" style="background-color: {stepPallet.values[index]};"></div>
 			</div>
