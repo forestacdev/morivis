@@ -157,10 +157,10 @@
 </script>
 
 <div
-	class="relative flex flex-col transition-opacity {dragEnterType !== null &&
+	class="relative flex flex-col rounded-[2.1rem] transition-colors {dragEnterType !== null &&
 	dragEnterType !== layerType
 		? 'opacity-50'
-		: ''} {isDragging ? 'c-dragging-style' : ''}"
+		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-sub' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
@@ -173,10 +173,10 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-sub c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap p-2 text-left transition-all transition-colors duration-100 {$selectedLayerId ===
+		class=" c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
-			? 'css-gradient'
-			: ''} {showLegend ? 'rounded-full' : 'rounded-full'}"
+			? ''
+			: ''} {showLegend ? 'bg-base' : 'bg-sub'}"
 		onclick={selectedLayer}
 	>
 		<div class="flex items-center justify-start gap-2">
@@ -199,17 +199,22 @@
 					<div
 						transition:fade={{ duration: 100 }}
 						class="pointer-events-none absolute {layerEntry.style.visible
-							? 'text-red-500'
+							? 'text-accent'
 							: 'text-neutral-200'}"
 					>
-						<Icon icon="akar-icons:eye-slashed" width={30} />
+						<Icon
+							icon={layerEntry.style.visible ? 'akar-icons:eye-open' : 'akar-icons:eye-slashed'}
+							width={30}
+						/>
 					</div>
 				{/if}
 			</label>
 
 			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-				<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
-					>{layerEntry.metaData.name}</span
+				<span
+					class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''} {showLegend
+						? 'text-main'
+						: 'text-base'}">{layerEntry.metaData.name}</span
 				>
 				<span class="text-nowrap text-xs text-gray-400"
 					>{layerEntry.metaData.location ?? '---'}</span
@@ -233,16 +238,16 @@
 				/>
 				<Icon
 					icon="weui:arrow-filled"
-					class="h-8 w-8 text-base transition-transform duration-150 {showLegend
-						? '-rotate-90'
-						: 'rotate-90'}"
+					class="h-8 w-8 transition-transform duration-150 {showLegend
+						? 'text-main -rotate-90'
+						: 'rotate-90 text-base'}"
 				/>
 			</label>
 		</div>
 	</button>
 	{#if showLegend}
-		<div transition:slide={{ duration: 200 }} class="flex pl-[33px]">
-			<div class="w-[2px] items-stretch bg-gray-500"></div>
+		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
+			<!-- <div class="w-[2px] items-stretch bg-gray-500"></div> -->
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
