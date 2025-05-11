@@ -173,10 +173,10 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-sub c-dragging-style c-rounded border-base relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="bg-sub c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap p-2 text-left transition-all transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? 'css-gradient'
-			: ' hover:border-accent'}"
+			: ''} {showLegend ? 'rounded-full' : 'rounded-full'}"
 		onclick={selectedLayer}
 	>
 		<div class="flex items-center justify-start gap-2">

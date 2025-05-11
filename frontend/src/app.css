@@ -3,12 +3,12 @@
 @plugin '@tailwindcss/typography';
 
 @theme {
-	--color-base: #e9e9e9;
-	--color-main: #282828;
-	--color-sub: #454545;
+	--color-base: #f1f1f1;
+	--color-main: #1c1e20;
+	--color-sub: #31302e;
 	--color-accent: #23a209;
 	--font-noto: Noto Sans JP;
-	--text-color-primary: #e9e9e9;
+	--text-color-primary: #f1f1f1;
 }
 
 /*

@@ -1,7 +1,5 @@
-// transformer.worker.js
-import proj4 from 'proj4'; // proj4ライブラリをインポート
+import proj4 from 'proj4';
 
-// ユーザー提供のヘルパー関数
 const flattenCoordinates = (coordinates, flattened = []) => {
 	coordinates.forEach((coord) => {
 		if (Array.isArray(coord[0])) {

@@ -27,29 +27,6 @@ export const readPrjFileContent = async (prjFile: File) => {
 	return prjContent;
 };
 
-export const convertCoordinatesToGeojson = async (
-	geojson: FeatureCollection<Geometry, GeoJsonProperties>,
-	prjContent: string
-): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
-	return new Promise((resolve, reject) => {
-		const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-
-		worker.onmessage = (event) => {
-			resolve(event.data as FeatureCollection<Geometry, GeoJsonProperties>);
-			worker.terminate(); // Worker を終了
-			return geojson;
-		};
-
-		worker.onerror = (error) => {
-			reject(error);
-			worker.terminate(); // Worker を終了
-		};
-
-		// Worker に処理に必要なデータを送信
-		worker.postMessage({ geojson, prjContent });
-	});
-};
-
 export const isWgs84Prj = (prjContent: string): boolean => {
 	if (!prjContent) {
 		return false;
