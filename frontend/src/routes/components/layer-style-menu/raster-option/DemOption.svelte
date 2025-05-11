@@ -12,7 +12,6 @@
 </script>
 
 <RangeSlider label="不透明度" bind:value={style.opacity} min={0} max={1} step={0.01} />
-<h2 class="text-base">描画モード</h2>
 
 <DemStyleModePulldownBox bind:isMode={style.visualization.mode} />
 {#if style.visualization.mode === 'evolution'}

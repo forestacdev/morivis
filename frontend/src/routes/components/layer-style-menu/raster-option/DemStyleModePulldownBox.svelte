@@ -24,6 +24,7 @@
 	let showPullDown = $state<boolean>(false);
 </script>
 
+<h2 class="text-base">描画モード</h2>
 <div class="relative py-2">
 	<button
 		onclick={() => (showPullDown = !showPullDown)}
