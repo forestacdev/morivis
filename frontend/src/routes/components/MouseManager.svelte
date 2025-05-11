@@ -244,19 +244,21 @@
 		}
 	});
 
-	map.on('mousemove', (e) => {
-		const clickLayerIds = [...$clickableVectorIds];
-		const features = map.queryRenderedFeatures(e.point, {
-			layers: clickLayerIds
-		});
+	map.on('load', () => {
+		map.on('mousemove', (e) => {
+			const clickLayerIds = [...$clickableVectorIds];
+			const features = map.queryRenderedFeatures(e.point, {
+				layers: clickLayerIds
+			});
 
-		if (features.length > 0) {
-			map.getCanvas().style.cursor = 'pointer';
-			toggleTooltip(e, features[0]);
-		} else {
-			map.getCanvas().style.cursor = 'default';
-			toggleTooltip();
-		}
+			if (features.length > 0) {
+				map.getCanvas().style.cursor = 'pointer';
+				toggleTooltip(e, features[0]);
+			} else {
+				map.getCanvas().style.cursor = 'default';
+				toggleTooltip();
+			}
+		});
 	});
 
 	// // マウスカーソルの変更
