@@ -58,9 +58,7 @@
 	};
 </script>
 
-<div
-	class="bg-main/60 c-bg-blur absolute left-0 top-0 z-10 flex w-full gap-2 p-1 pl-4 pr-4 text-base"
->
+<div class="bg-main/60 absolute left-0 top-0 z-10 flex w-full gap-2 p-1 pl-4 pr-4 text-base">
 	<ui>
 		{#if $isSideMenuType}
 			<button

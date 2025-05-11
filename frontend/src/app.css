@@ -5,7 +5,7 @@
 @theme {
 	--color-base: #f1f1f1;
 	--color-main: #1c1e20;
-	--color-sub: #31302e;
+	--color-sub: #3c3c3c;
 	--color-accent: #23a209;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
@@ -31,7 +31,12 @@
 
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
-	@apply border-accent bg-accent lg:hover:text-accent cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white;
+	@apply border-accent bg-accent hover:text-accent hover:border-base hover:bg-base cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150;
+}
+
+@utility c-btn-sub {
+	/* 決定ボタンスタイル */
+	@apply border-sub bg-sub hover:text-main hover:bg-base hover:border-base cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150;
 }
 
 @utility c-btn-delete {
@@ -51,7 +56,12 @@
 
 @utility c-select {
 	/* プルダウンスタイル */
-	@apply border-accent bg-accent lg:hover:text-accent cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white;
+	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
+}
+
+@utility c-option {
+	/* プルダウンスタイル */
+	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
 }
 
 @utility w-side-menu {

@@ -185,7 +185,7 @@
 			>
 				{#each searchWards as searchWard}
 					<button
-						class="bg-sub flex w-full cursor-pointer items-center justify-center gap-2 rounded-full p-2 text-left text-white"
+						class="c-btn-sub"
 						onclick={() => {
 							inputSearchWord = searchWard;
 							searchFeature(inputSearchWord);

@@ -14,7 +14,7 @@
 	<div
 		class="relative flex h-[30px] w-[60px] items-center rounded-full {value
 			? 'bg-accent'
-			: 'bg-gray-400'}"
+			: 'bg-sub'}"
 	>
 		<div
 			class="ml-[5px] h-[22px] w-[22px] rounded-full bg-white transition-transform duration-200 {value

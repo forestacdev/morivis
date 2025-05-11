@@ -182,7 +182,7 @@
 		<div class="flex items-center justify-start gap-2">
 			<!-- アイコン -->
 			<label
-				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
+				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
@@ -212,13 +212,11 @@
 
 			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
 				<span
-					class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''} {showLegend
+					class="truncate text-base {$selectedLayerId === layerEntry.id ? '' : ''} {showLegend
 						? 'text-main'
 						: 'text-base'}">{layerEntry.metaData.name}</span
 				>
-				<span class="text-nowrap text-xs text-gray-400"
-					>{layerEntry.metaData.location ?? '---'}</span
-				>
+				<span class="truncate text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span>
 
 				<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>

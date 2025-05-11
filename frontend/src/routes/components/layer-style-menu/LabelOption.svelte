@@ -37,7 +37,7 @@
 
 <Accordion label={'ラベル'} bind:value={showLabelOption}>
 	<Switch label={'表示'} bind:value={labels.show} />
-	<LabelPulldownBox bind:labels />
+	<LabelPulldownBox bind:labels icon={'ci:font'} />
 
 	<!-- <div class="flex grow flex-col gap-2">
 		{#each getlabelKeys(layerEntry.style.labels.expressions) as labelType (labelType.key)}
