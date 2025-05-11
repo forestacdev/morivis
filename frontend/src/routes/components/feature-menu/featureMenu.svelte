@@ -88,9 +88,9 @@
 {#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
+		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden pt-4"
 	>
-		<div class="flex w-full cursor-pointer justify-between pb-2">
+		<div class="flex w-full cursor-pointer justify-between px-2 pb-2">
 			<button
 				onclick={() => (featureMenuData = null)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2"
@@ -99,17 +99,17 @@
 			</button>
 		</div>
 		{#if srcData}
-			<div class="relative aspect-video w-full shrink-0 overflow-hidden rounded-md">
+			<div class="overflow-hiddenp-2 relative aspect-video w-full shrink-0 p-2">
 				<img
 					transition:fade
-					class="block h-full w-full object-cover"
+					class="block h-full w-full rounded-lg object-cover"
 					crossOrigin="anonymous"
 					alt="画像"
 					src={srcData}
 				/>
 			</div>
 		{/if}
-		<div class="flex h-full flex-col gap-2">
+		<div class="flex h-full flex-col gap-2 overflow-auto pl-2">
 			<!-- タイトル -->
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
 				<span class="text-[22px] font-bold"
@@ -148,18 +148,18 @@
 							>
 						{/if}
 					{/if}
-					<div class="w-hull bg-base h-[1px] rounded-full"></div>
+					<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
 					{#if data}
 						{#if data.description}
 							<span class="my-2 text-base">{data.description}</span>
-							<div class="w-hull bg-base h-[1px] rounded-full"></div>
+							<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
 						{/if}
 					{/if}
 				</div>
 
 				<!-- 属性情報 -->
 
-				<div class="flex h-full w-full flex-col gap-2">
+				<div class="mb-56 flex h-full w-full flex-col gap-2">
 					<div class="my-4 text-base text-lg">属性情報</div>
 					{#if featureMenuData.properties}
 						{#each Object.entries(featureMenuData.properties) as [key, value]}
