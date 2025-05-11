@@ -1,16 +1,21 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
-	import type { MapMouseEvent } from 'maplibre-gl';
-	import type { MapGeoJSONFeature } from 'maplibre-gl';
+	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
+	import { mount } from 'svelte';
 
+	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
+	import TablePopup from '$routes/components/popup/TablePopup.svelte';
+	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { isStreetView, clickableVectorIds } from '$routes/store';
+	import type { CategoryLegend, GradientLegend, ZoomLevel } from '$routes/data/types/raster';
+	import { isStreetView, clickableVectorIds, clickableRasterIds } from '$routes/store';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
 	import { mapGeoJSONFeatureToSidePopupData, type FeatureMenuData } from '$routes/utils/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
+	import { getPixelColor, getGuide } from '$routes/utils/raster';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -36,6 +41,91 @@
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
 	let hoveredFeatureState: FeatureStateData | null = null;
+	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
+
+	// ベクターポップアップの作成
+	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
+		const popupContainer = document.createElement('div');
+		mount(TablePopup, {
+			target: popupContainer,
+			props: {
+				feature
+			}
+		});
+		if (maplibrePopup) {
+			maplibrePopup.remove();
+		}
+
+		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
+			.setLngLat(_lngLat)
+			.setDOMContent(popupContainer)
+			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
+	// ラスターの色のガイドポップアップの作成
+	const generateLegendPopup = (
+		data: {
+			color: string;
+			label: string;
+		},
+		legend: CategoryLegend | GradientLegend,
+		_lngLat: LngLat
+	) => {
+		const popupContainer = document.createElement('div');
+		mount(LegendPopup, {
+			target: popupContainer,
+			props: {
+				data,
+				legend
+			}
+		});
+		if (maplibrePopup) {
+			maplibrePopup.remove();
+		}
+
+		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
+			.setLngLat(_lngLat)
+			.setDOMContent(popupContainer)
+			.addTo(mapStore.getMap() as maplibregl.Map);
+	};
+
+	// ラスターのクリックイベント
+	const onRasterClick = async (lngLat: LngLat) => {
+		if ($clickableRasterIds.length === 0) return;
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		//TODO: 複数のラスターの場合の処理
+		const targetId = $clickableRasterIds[0];
+
+		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
+		if (!targetEntry || targetEntry.type !== 'raster') return;
+		const url = targetEntry.format.url;
+
+		const tileSize = targetEntry.metaData.tileSize;
+		const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
+		const zoom = Math.min(
+			Math.round(map.getZoom() + zoomOffset),
+			targetEntry.metaData.maxZoom
+		) as ZoomLevel;
+
+		const pixelColor = await getPixelColor(url, lngLat, zoom, tileSize, targetEntry.format.type);
+
+		if (!pixelColor) {
+			console.warn('ピクセルカラーが取得できませんでした。');
+			return;
+		}
+
+		if (targetEntry.style.type === 'categorical') {
+			const legend = targetEntry.style.legend;
+
+			if (legend.type === 'category') {
+				const data = getGuide(pixelColor, legend);
+
+				generateLegendPopup(data, legend, lngLat);
+			}
+		}
+	};
 
 	map.on('click', (e) => {
 		// プレビューモードの時は、クリックイベントを無視する

@@ -17,12 +17,7 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-import {
-	clickableVectorIds,
-	clickableRasterIds,
-	selectedHighlightData,
-	type SelectedHighlightData
-} from '$routes/store';
+import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -123,6 +118,7 @@ interface LayerItem {
 	filter?: FilterSpecification;
 }
 
+// TODO: 使ってないので消す
 /* ハイライトレイヤー */
 export const createHighlightLayer = (
 	_selectedHighlightData: SelectedHighlightData | null
@@ -772,10 +768,6 @@ export const createLayersItems = (
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
-
-	// const highlightLayers = get(selectedHighlightData)
-	// 	? createHighlightLayer(get(selectedHighlightData))
-	// 	: [];
 
 	return [...layerItems, ...mapLabelItems, ...symbolLayerItems];
 };
