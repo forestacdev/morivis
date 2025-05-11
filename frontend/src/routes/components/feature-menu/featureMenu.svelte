@@ -57,8 +57,6 @@
 		return null;
 	});
 
-	const edit = () => {};
-
 	$effect(() => {
 		if (featureMenuData) {
 			const map = mapStore.getMap();
@@ -95,9 +93,9 @@
 		<div class="flex w-full cursor-pointer justify-between pb-2">
 			<button
 				onclick={() => (featureMenuData = null)}
-				class="bg-base mr-auto cursor-pointer rounded-full p-2"
+				class="bg-base ml-auto cursor-pointer rounded-full p-2"
 			>
-				<Icon icon="ep:back" class="text-main h-4 w-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
 		{#if srcData}
