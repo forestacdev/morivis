@@ -27,7 +27,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background-color: rgb(52, 52, 52, 0.5);
+		background-color: rgb(52, 52, 52, 0.7);
 	}
 
 	.spinner {

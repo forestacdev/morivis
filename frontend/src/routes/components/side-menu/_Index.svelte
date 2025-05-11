@@ -1,9 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import gsap from 'gsap';
-	import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
-	import { flip } from 'svelte/animate';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	import Logo from '$routes/components/side-menu/Logo.svelte';
 	import {
@@ -15,7 +12,9 @@
 		isSideMenuType
 	} from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { imageExport } from '$routes/utils/map';
+	import { showNotification } from '$routes/store/notification';
+	import { isProcessing } from '$routes/store/ui';
+	import { imageExport, exportPDF } from '$routes/utils/map';
 
 	const toggleLayerMenu = () => {
 		showSideMenu.set(false);
@@ -44,9 +43,12 @@
 
 	const mapExport = async () => {
 		showSideMenu.set(false);
+		isProcessing.set(true);
 		const map = mapStore.getMap();
 		if (!map) return;
-		imageExport(map);
+		await imageExport(map);
+		isProcessing.set(false);
+		showNotification('地図を.pngでエクスポートしました', 'success');
 	};
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
@@ -115,13 +117,13 @@
 				<Icon icon="weui:setting-filled" class="h-8 w-8" />
 				<span class="select-none">設定</span>
 			</button> -->
-			<!-- <button
+			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={mapExport}
 			>
 				<Icon icon="bx:export" class="h-8 w-8" />
 				<span class="select-none">地図をエクスポート</span>
-			</button> -->
+			</button>
 		</ui>
 		<div class="w-hull bg-base h-[1px] rounded-full"></div>
 		<ui>
