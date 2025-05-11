@@ -244,6 +244,7 @@
 		}
 	});
 
+	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	map.on('load', () => {
 		map.on('mousemove', (e) => {
 			const clickLayerIds = [...$clickableVectorIds];
