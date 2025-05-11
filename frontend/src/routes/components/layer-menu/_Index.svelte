@@ -54,10 +54,8 @@
 {#if $isSideMenuType === 'layer'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2"
+		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<div class="flex h-[70px] w-full items-center justify-between"></div>
-
 		<div
 			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
@@ -90,7 +88,7 @@
 			<div
 				class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
 			>
-				{#if !dragEnterType}
+				{#if !dragEnterType && !$showDataMenu}
 					<button
 						onclick={() => showDataMenu.set(true)}
 						class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"

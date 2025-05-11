@@ -63,15 +63,16 @@
 {#if setColorExpression}
 	{#if layerType === 'vector'}
 		{#if setColorExpression.type === 'single'}
-			<div class="flex-between flex w-full select-none gap-2">
+			<div class="flex-between flex w-full select-none items-center gap-2 text-gray-100">
 				<div
-					class="w-full rounded-full p-2"
+					class="h-[20px] w-[20px] flex-none rounded-full"
 					style="background-color: {setColorExpression.mapping.value};"
 				></div>
+				<div class="w-full">単色</div>
 			</div>
 		{:else if setColorExpression.type === 'match'}
 			{#each setColorExpression.mapping.categories as _, index}
-				<div class="flex-between flex w-full select-none gap-2 text-gray-100">
+				<div class="flex-between flex w-full select-none items-center gap-2 text-gray-100">
 					<div
 						class="h-[20px] w-[20px] flex-none rounded-full"
 						style="background-color: {setColorExpression.mapping.values[index]};"
@@ -82,7 +83,9 @@
 		{:else if setColorExpression.type === 'step'}
 			{#if stepPallet}
 				{#each stepPallet.categories as _, index}
-					<div class="flex w-full select-none items-center justify-center gap-2 text-gray-100">
+					<div
+						class="flex w-full select-none items-center items-center justify-center gap-2 text-gray-100"
+					>
 						<div
 							class="h-[20px] w-[20px] flex-none rounded-full"
 							style="background-color: {stepPallet.values[index]};"

@@ -11,7 +11,8 @@ export type AttributionKey =
 	| 'Esri'
 	| '東京都オープンデータカタログサイト'
 	| '環境省生物多様性センター'
-	| '林野庁';
+	| '林野庁'
+	| '栃木県森林資源データ';
 
 export type Attribution = {
 	key: AttributionKey;
@@ -79,6 +80,11 @@ const attributionData: Attribution[] = [
 		key: '環境省生物多様性センター',
 		name: '環境省生物多様性センター',
 		url: 'https://www.biodic.go.jp'
+	},
+	{
+		key: '栃木県森林資源データ',
+		name: '栃木県森林資源データ',
+		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
 	}
 ];
 

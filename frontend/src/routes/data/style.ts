@@ -5,6 +5,7 @@ import type {
 	LabelStyle,
 	Labels
 } from '$routes/data/types/vector/style';
+import type { RasterDemStyle } from '$routes/data/types/raster';
 
 export const DEFAULT_RASTER_BASEMAP_STYLE: {
 	type: 'basemap';
@@ -24,6 +25,38 @@ export const DEFAULT_RASTER_BASEMAP_STYLE: {
 	brightnessMax: 1,
 	saturation: 0,
 	contrast: 0
+};
+
+export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
+	type: 'dem',
+	opacity: 1.0,
+	visualization: {
+		demType: 'gsi',
+		mode: 'evolution',
+		uniformsData: {
+			evolution: {
+				max: 4000,
+				min: 0,
+				colorMap: 'greys'
+			},
+			shadow: {
+				azimuth: 180,
+				altitude: 45
+			},
+			slope: {
+				colorMap: 'salinity'
+			},
+			aspect: {
+				colorMap: 'rainbow-soft'
+			},
+			curvature: {
+				ridgeThreshold: 0.7,
+				valleyThreshold: 0.3,
+				ridgeColor: '#980707',
+				valleyColor: '#137c83'
+			}
+		}
+	}
 };
 
 export const DEFAULT_RASTER_BASEMAP_INTERACTION: {

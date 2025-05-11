@@ -27,8 +27,10 @@
 	// 検索処理
 	const search = async (_searchWord: string) => {
 		// 文字数の確認
-		if (!_searchWord || _searchWord.length < 2) return;
+
 		_searchWord = _searchWord.trim();
+
+		if (!_searchWord) return;
 
 		isLoading = true;
 		try {
@@ -58,7 +60,7 @@
 >
 	<input
 		type="text"
-		class="bg-base focus:outline-hidden w-full rounded-md px-4 py-2"
+		class="bg-base focus:outline-hidden w-full px-4 py-2"
 		bind:value={inputSearchWord}
 		oncompositionstart={() => (isComposing = true)}
 		oncompositionend={() => (isComposing = false)}
@@ -69,27 +71,23 @@
 		}}
 		placeholder="施設名/住所"
 	/>
+	{#if inputSearchWord}
+		<button
+			onclick={() => (inputSearchWord = '')}
+			disabled={!inputSearchWord}
+			class="absolute right-[60px] grid h-full cursor-pointer place-items-center"
+		>
+			<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
+		</button>
+	{/if}
 
-	<div class="absolute right-1 top-2 grid place-self-center pr-2">
-		{#if isLoading}
-			<div
-				class="h-6 w-6 animate-spin cursor-pointer rounded-full border-2 border-gray-400 border-t-transparent"
-			></div>
-		{:else}
-			<button
-				onclick={() => search(inputSearchWord)}
-				disabled={inputSearchWord.trim().length < 2}
-				class={inputSearchWord.trim().length > 1
-					? 'pointer-events-auto cursor-pointer'
-					: 'pointer-events-none'}
-			>
-				<Icon
-					icon="stash:search-solid"
-					class="h-6 w-6 {inputSearchWord.trim().length > 1 ? ' text-accent' : 'text-gray-400'}"
-				/>
-			</button>
-		{/if}
-	</div>
+	<button
+		onclick={() => search(inputSearchWord)}
+		disabled={inputSearchWord.trim().length < 2}
+		class="bg-accent pointer-events-auto grid h-full shrink-0 cursor-pointer place-items-center px-4 py-2"
+	>
+		<Icon icon="stash:search-solid" class="h-6 w-6  text-white" />
+	</button>
 </div>
 
 <style>

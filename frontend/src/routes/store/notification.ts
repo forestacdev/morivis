@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 /** 通知メッセージ */
 type NotificationMessage = {
 	message: string;
-	type: 'success' | 'info' | 'error';
+	type: 'success' | 'info' | 'error' | 'warning';
 	persistent?: boolean;
 };
 /** 通知メッセージを表示するストア */

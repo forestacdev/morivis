@@ -39,6 +39,37 @@ export class TileImageManager {
 			}
 		}
 	}
+	public async getSingleTileImage(
+		x: number,
+		y: number,
+		z: number,
+		baseurl: string,
+		controller: AbortController
+	): Promise<ImageBitmap> {
+		const imageUrl = baseurl
+			.replace('{x}', x.toString())
+			.replace('{y}', y.toString())
+			.replace('{z}', z.toString());
+
+		if (this.cache.has(imageUrl)) {
+			const cachedImage = this.cache.get(imageUrl)!; // `has()`で存在を確認済みなので`!`でアサーション
+			this.add(imageUrl, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
+			return cachedImage;
+		}
+
+		try {
+			const imageBitmap = await this.loadImage(imageUrl, controller.signal);
+			this.add(imageUrl, imageBitmap);
+			return imageBitmap;
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				throw error;
+			}
+
+			console.error(`Error in getSingleTileImage for ${imageUrl}:`, error);
+			return await createImageBitmap(new ImageData(1, 1)); // エラー時にも1x1画像を返す
+		}
+	}
 
 	public async getAdjacentTilesWithImages(
 		x: number,

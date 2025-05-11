@@ -17,12 +17,7 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-import {
-	clickableVectorIds,
-	clickableRasterIds,
-	selectedHighlightData,
-	type SelectedHighlightData
-} from '$routes/store';
+import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -123,6 +118,7 @@ interface LayerItem {
 	filter?: FilterSpecification;
 }
 
+// TODO: 使ってないので消す
 /* ハイライトレイヤー */
 export const createHighlightLayer = (
 	_selectedHighlightData: SelectedHighlightData | null
@@ -663,8 +659,8 @@ export const createLayersItems = (
 		.filter((entry) => entry.style.visible)
 		.reverse()
 		.forEach((entry) => {
-			const layerId = _type === 'preview' ? `${entry.id}_${_type}` : `${entry.id}`;
-			const sourceId = `${entry.id}_${_type}_source`;
+			const layerId = `${entry.id}`;
+			const sourceId = `${entry.id}_source`;
 			const { format, style, metaData, interaction, type } = entry;
 
 			const layer: LayerItem = {
@@ -772,10 +768,6 @@ export const createLayersItems = (
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
-
-	// const highlightLayers = get(selectedHighlightData)
-	// 	? createHighlightLayer(get(selectedHighlightData))
-	// 	: [];
 
 	return [...layerItems, ...mapLabelItems, ...symbolLayerItems];
 };

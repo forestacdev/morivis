@@ -57,8 +57,6 @@
 		return null;
 	});
 
-	const edit = () => {};
-
 	$effect(() => {
 		if (featureMenuData) {
 			const map = mapStore.getMap();
@@ -90,49 +88,57 @@
 {#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
+		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2"
 	>
-		<div class="flex w-full cursor-pointer justify-between pb-2">
+		<div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
 			<button
 				onclick={() => (featureMenuData = null)}
-				class="bg-base mr-auto cursor-pointer rounded-full p-2"
+				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
-				<Icon icon="ep:back" class="text-main h-4 w-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
-		{#if srcData}
-			<div class="relative aspect-video w-full shrink-0 overflow-hidden rounded-md">
-				<img
-					transition:fade
-					class="block h-full w-full object-cover"
-					crossOrigin="anonymous"
-					alt="画像"
-					src={srcData}
-				/>
-			</div>
-		{/if}
-		<div class="flex h-full flex-col gap-2">
-			<!-- タイトル -->
-			<div class="flex shrink-0 grow flex-col gap-1 text-base">
-				<span class="text-[22px] font-bold"
-					>{targetLayer &&
-					targetLayer.type === 'vector' &&
-					targetLayer.properties.titles.length &&
-					featureMenuData.properties
-						? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-						: targetLayer?.metaData.name}</span
+		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
+			<div class="relative w-full p-2">
+				{#if srcData}
+					<img
+						in:fade
+						class="block aspect-square h-full w-full rounded-lg object-cover"
+						crossOrigin="anonymous"
+						alt="画像"
+						src={srcData}
+					/>
+				{:else}
+					<div
+						in:fade
+						class="bg-sub grid aspect-square h-full w-full shrink-0 grow place-items-center overflow-hidden rounded-lg"
+					>
+						<Icon icon="material-symbols:photo" class="h-16 w-16 text-gray-400" />
+					</div>
+				{/if}
+				<div
+					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
 				>
-				<span class="text-[14px] text-gray-300"
-					>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
-				>
+					<span class="text-[22px] font-bold"
+						>{targetLayer &&
+						targetLayer.type === 'vector' &&
+						targetLayer.properties.titles.length &&
+						featureMenuData.properties
+							? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+							: targetLayer?.metaData.name}</span
+					>
+					<span class="text-[14px] text-gray-300"
+						>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
+					>
+				</div>
 			</div>
-			<!-- 切り替えタブ -->
 
-			<!-- 詳細情報 -->
-			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto overflow-x-hidden">
+			<div class="pl-2">
+				<!-- 詳細情報 -->
+
 				<div class="flex h-full w-full flex-col gap-2">
-					<div class="flex w-full items-center justify-start gap-2">
-						<Icon icon="lucide:map-pin" class="h-6 w-6 text-base" />
+					<div class="flex w-full justify-start gap-2">
+						<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
 						<span class="text-accent"
 							>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 						>
@@ -145,23 +151,23 @@
 								href={data.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								><Icon icon="mdi:web" class="h-6 w-6 text-base" />
+								><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
 								<span class="text-accent">{data.url}</span></a
 							>
 						{/if}
 					{/if}
-					<div class="w-hull bg-base h-[1px] rounded-full"></div>
+					<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
 					{#if data}
 						{#if data.description}
 							<span class="my-2 text-base">{data.description}</span>
-							<div class="w-hull bg-base h-[1px] rounded-full"></div>
+							<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
 						{/if}
 					{/if}
 				</div>
 
 				<!-- 属性情報 -->
 
-				<div class="flex h-full w-full flex-col gap-2">
+				<div class="mb-56 flex h-full w-full flex-col gap-2">
 					<div class="my-4 text-base text-lg">属性情報</div>
 					{#if featureMenuData.properties}
 						{#each Object.entries(featureMenuData.properties) as [key, value]}
@@ -171,17 +177,26 @@
 						{/each}
 					{/if}
 				</div>
-			</div>
-			<!-- <button
+
+				<!-- <button
 				onclick={edit}
 				class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
 			>
 				<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
 				<span class="">レイヤーを編集</span>
 			</button> -->
+			</div>
 		</div>
 	</div>
 {/if}
 
 <style>
+	.c-gradient {
+		background: linear-gradient(
+			0deg,
+			rgb(30, 30, 30) 0%,
+			rgba(233, 233, 233, 0) 60%,
+			rgba(233, 233, 233, 0) 100%
+		);
+	}
 </style>

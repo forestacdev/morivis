@@ -6,8 +6,9 @@
 
 	interface Props {
 		labels: Labels;
+		icon: string;
 	}
-	let { labels = $bindable() }: Props = $props();
+	let { labels = $bindable(), icon }: Props = $props();
 	let showPullDown = $state<boolean>(false);
 
 	// セットされた式の設定
@@ -30,7 +31,7 @@
 			class="c-select flex w-full justify-between"
 		>
 			<div class="flex items-center gap-2">
-				<Icon icon={'ci:font'} width={20} />
+				<Icon {icon} width={20} />
 
 				<span> {labelsList.find((label) => label.key === setLabel.key)?.name}</span>
 			</div>
@@ -39,14 +40,14 @@
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-300 overflow-hidden rounded-lg bg-white shadow-md"
+				class="bg-sub absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
 			>
 				{#each labelsList as labelItem (labelItem.key)}
 					<label
-						class="hover:text-accent bg-sub z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {labelItem.key ===
+						class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {labelItem.key ===
 						labels.key
-							? 'bg-accent'
-							: ''}"
+							? 'bg-base text-main'
+							: 'hover:text-accent text-white'}"
 					>
 						<input
 							type="radio"

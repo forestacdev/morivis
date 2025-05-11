@@ -6,6 +6,7 @@
 	import Legend from './Legend.svelte';
 
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
+	import OpacityRangeSlider from '$routes/components/layer-menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { ColorsExpression } from '$routes/data/types/vector/style';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
@@ -32,6 +33,7 @@
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
+	let draggingEnabled = $state(true);
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
@@ -106,6 +108,7 @@
 
 	const editLayer = () => {
 		if (!layerEntry) return;
+		selectedLayerId.set(layerEntry.id);
 		$isStyleEdit = !$isStyleEdit;
 	};
 
@@ -154,11 +157,11 @@
 </script>
 
 <div
-	class="relative flex flex-col transition-opacity {dragEnterType !== null &&
+	class="relative flex flex-col rounded-[2.1rem] transition-colors {dragEnterType !== null &&
 	dragEnterType !== layerType
 		? 'opacity-50'
-		: ''} {isDragging ? 'c-dragging-style' : ''}"
-	draggable={true}
+		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-sub' : ''}"
+	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
 	ondragover={(e) => e.preventDefault()}
@@ -170,16 +173,16 @@
 >
 	<button
 		id={layerEntry.id}
-		class="bg-sub c-dragging-style c-rounded border-base relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap border-2 p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class=" c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
-			? 'css-gradient'
-			: ' hover:border-accent'}"
+			? ''
+			: ''} {showLegend ? 'bg-base' : 'bg-sub'}"
 		onclick={selectedLayer}
 	>
 		<div class="flex items-center justify-start gap-2">
 			<!-- アイコン -->
 			<label
-				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-600 text-base"
+				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base"
 				onmouseenter={() => (isHovered = true)}
 				onmouseleave={() => (isHovered = false)}
 			>
@@ -196,28 +199,31 @@
 					<div
 						transition:fade={{ duration: 100 }}
 						class="pointer-events-none absolute {layerEntry.style.visible
-							? 'text-red-500'
+							? 'text-accent'
 							: 'text-neutral-200'}"
 					>
-						<Icon icon="akar-icons:eye-slashed" width={30} />
+						<Icon
+							icon={layerEntry.style.visible ? 'akar-icons:eye-open' : 'akar-icons:eye-slashed'}
+							width={30}
+						/>
 					</div>
 				{/if}
 			</label>
-			<div>
-				<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-					<span class="text-nowrap text-base {$selectedLayerId === layerEntry.id ? '' : ''}"
-						>{layerEntry.metaData.name}</span
-					>
-					<span class="text-nowrap text-xs text-gray-400"
-						>{layerEntry.metaData.location ?? '---'}</span
-					>
 
-					<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
+			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
+				<span
+					class="truncate text-base {$selectedLayerId === layerEntry.id ? '' : ''} {showLegend
+						? 'text-main'
+						: 'text-base'}">{layerEntry.metaData.name}</span
+				>
+				<span class="truncate text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span>
+
+				<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
 						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
 					{/if} -->
-				</div>
 			</div>
 
+			<!-- トグル -->
 			<label
 				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
 			>
@@ -230,16 +236,16 @@
 				/>
 				<Icon
 					icon="weui:arrow-filled"
-					class="h-8 w-8 text-base transition-transform duration-150 {showLegend
-						? '-rotate-90'
-						: 'rotate-90'}"
+					class="h-8 w-8 transition-transform duration-150 {showLegend
+						? 'text-main -rotate-90'
+						: 'rotate-90 text-base'}"
 				/>
 			</label>
 		</div>
 	</button>
 	{#if showLegend}
-		<div transition:slide={{ duration: 200 }} class="flex pl-[33px]">
-			<div class="w-[2px] items-stretch bg-gray-500"></div>
+		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
+			<!-- <div class="w-[2px] items-stretch bg-gray-500"></div> -->
 
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
 				<div class="flex gap-4 text-gray-100">
@@ -271,6 +277,15 @@
 					<button onclick={removeLayer} class="cursor-pointer">
 						<Icon icon="bx:trash" class="h-8 w-8" />
 					</button>
+				</div>
+				<div
+					class="w-full"
+					onmousedown={() => (draggingEnabled = false)}
+					onmouseup={() => (draggingEnabled = true)}
+					role="button"
+					tabindex="0"
+				>
+					<OpacityRangeSlider min={0} max={1} step={0.01} bind:value={layerEntry.style.opacity} />
 				</div>
 				<Legend {layerEntry} />
 			</div>

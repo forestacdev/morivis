@@ -5,6 +5,7 @@
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/components/layer-style-menu/ColorOption.svelte';
+	import LabelOption from '$routes/components/layer-style-menu/LabelOption.svelte';
 	import NumberOption from '$routes/components/layer-style-menu/NumberOption.svelte';
 	import type {
 		VectorEntryGeometryType,
@@ -38,6 +39,8 @@
 		]}
 	/>
 </Accordion>
+
+<LabelOption bind:labels={layerEntry.style.labels} />
 
 <style>
 </style>

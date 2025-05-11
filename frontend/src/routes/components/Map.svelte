@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
+
+	import type { DialogType } from '$routes/+page.svelte';
+
 	import {
 		type StyleSpecification,
 		type MapGeoJSONFeature,
@@ -9,15 +12,13 @@
 		type GeoJSONSourceSpecification,
 		type MapMouseEvent,
 		type Marker,
-		type LngLat,
-		Popup
+		type LngLat
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { onMount, mount } from 'svelte';
+	import { onMount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import FileManager from '$routes/components/FileManager.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
@@ -29,24 +30,19 @@
 	// import WebGLCanvasLayer from '$routes/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/components/MouseManager.svelte';
-	import LegendPopup from '$routes/components/popup/LegendPopup.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
-	import TablePopup from '$routes/components/popup/TablePopup.svelte';
 	import Tooltip from '$routes/components/popup/Tooltip.svelte';
+	import FileManager from '$routes/components/upload/FileManager.svelte';
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
-	import { MAPLIBRE_POPUP_OPTIONS, MAP_POSITION, type MapPosition } from '$routes/constants';
-	import { BASE_PATH } from '$routes/constants';
 	import { demEntry } from '$routes/data/dem';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { ZoomLevel, CategoryLegend, GradientLegend } from '$routes/data/types/raster';
-	import { clickableRasterIds, isStreetView } from '$routes/store';
+	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
 	import { showLabelLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { createHighlightLayer, createLayersItems } from '$routes/utils/layers';
-	import { getPixelColor, getGuide } from '$routes/utils/raster';
+	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
 
 	interface Props {
@@ -61,6 +57,8 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		showDataEntry: GeoDataEntry | null;
+		dropFile: File | FileList | null;
+		showDialogType: DialogType;
 	}
 
 	let {
@@ -74,13 +72,14 @@
 		streetViewPoint,
 		showMapCanvas,
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		dropFile = $bindable(),
+		showDialogType = $bindable()
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
 
-	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
 
@@ -88,7 +87,6 @@
 	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 	let isDragover = $state(false);
-	let dropFile = $state<File | null>(null); // ドロップしたファイル
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 
@@ -115,11 +113,12 @@
 				...previewSources,
 				tile_grid: {
 					type: 'raster',
-					tiles: ['/tile_grid.png'],
+					tiles: ['./tile_grid.png'],
 					tileSize: 256
 				}
 			};
 		}
+
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry) {
 			previewLayers = [
@@ -242,16 +241,6 @@
 		return mapStyle;
 	};
 
-	// レイヤーの追加
-	orderedLayerIds.subscribe((ids) => {
-		const filteredDataEntry = layerEntries.filter((entry) => ids.includes(entry.id));
-
-		// idsの順番に並び替え
-		layerEntries = filteredDataEntry.sort((a, b) => {
-			return ids.indexOf(a.id) - ids.indexOf(b.id);
-		});
-	});
-
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
@@ -274,10 +263,9 @@
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
+	// データプレビュー
 	$effect(() => {
 		if (showDataEntry) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		} else {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
@@ -307,125 +295,6 @@
 		}
 	});
 
-	// ベクターポップアップの作成
-	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
-		const popupContainer = document.createElement('div');
-		mount(TablePopup, {
-			target: popupContainer,
-			props: {
-				feature
-			}
-		});
-		if (maplibrePopup) {
-			maplibrePopup.remove();
-		}
-
-		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
-			.setLngLat(_lngLat)
-			.setDOMContent(popupContainer)
-			.addTo(mapStore.getMap() as maplibregl.Map);
-	};
-
-	// ラスターの色のガイドポップアップの作成
-	const generateLegendPopup = (
-		data: {
-			color: string;
-			label: string;
-		},
-		legend: CategoryLegend | GradientLegend,
-		_lngLat: LngLat
-	) => {
-		const popupContainer = document.createElement('div');
-		mount(LegendPopup, {
-			target: popupContainer,
-			props: {
-				data,
-				legend
-			}
-		});
-		if (maplibrePopup) {
-			maplibrePopup.remove();
-		}
-
-		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
-			.setLngLat(_lngLat)
-			.setDOMContent(popupContainer)
-			.addTo(mapStore.getMap() as maplibregl.Map);
-	};
-
-	// ラスターのクリックイベント
-	const onRasterClick = async (lngLat: LngLat) => {
-		if ($clickableRasterIds.length === 0) return;
-		const map = mapStore.getMap();
-		if (!map) return;
-
-		//TODO: 複数のラスターの場合の処理
-		const targetId = $clickableRasterIds[0];
-
-		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
-		if (!targetEntry || targetEntry.type !== 'raster') return;
-		const url = targetEntry.format.url;
-
-		const tileSize = targetEntry.metaData.tileSize;
-		const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
-		const zoom = Math.min(
-			Math.round(map.getZoom() + zoomOffset),
-			targetEntry.metaData.maxZoom
-		) as ZoomLevel;
-
-		const pixelColor = await getPixelColor(url, lngLat, zoom, tileSize, targetEntry.format.type);
-
-		if (!pixelColor) {
-			console.warn('ピクセルカラーが取得できませんでした。');
-			return;
-		}
-
-		if (targetEntry.style.type === 'categorical') {
-			const legend = targetEntry.style.legend;
-
-			if (legend.type === 'category') {
-				const data = getGuide(pixelColor, legend);
-
-				generateLegendPopup(data, legend, lngLat);
-			}
-		}
-	};
-
-	const removehighlightLayer = () => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		const layerIds = map.getLayersOrder();
-
-		// _highlight_ で始まるレイヤーを削除
-		layerIds.forEach((id) => {
-			if (id.startsWith('@highlight_')) {
-				map.removeLayer(id);
-			}
-		});
-	};
-
-	const toggleOverlayLayer = (val: boolean) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-	};
-
-	$effect(() => {
-		if (clickedLayerFeaturesData) {
-			const map = mapStore.getMap();
-			if (!map) return;
-
-			clickedLayerFeaturesData.forEach(({ layerEntry, feature, featureId }) => {
-				const highlightLayer = createHighlightLayer({ layerEntry, featureId });
-
-				if (highlightLayer) {
-					map.addLayer(highlightLayer);
-				}
-			});
-		} else {
-			removehighlightLayer();
-		}
-	});
-
 	mapStore.onInitialized((map) => {
 		maplibreMap = map;
 	});
@@ -449,9 +318,8 @@
 
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
-		const file = files[0]; // 最初のファイルを取得
 
-		dropFile = file;
+		dropFile = files;
 	};
 </script>
 
@@ -490,6 +358,7 @@
 		bind:dropFile
 		bind:tempLayerEntries
 		bind:showDataEntry
+		bind:showDialogType
 	/>
 
 	<StreetViewLayer map={maplibreMap} />

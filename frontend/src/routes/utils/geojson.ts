@@ -3,6 +3,7 @@ import { geojson as fgb } from 'flatgeobuf';
 import { orderedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/data/types';
+import type { VectorEntryGeometryType } from '$routes/data/types/vector';
 
 export type GeoJSONGeometryType =
 	| 'Point'

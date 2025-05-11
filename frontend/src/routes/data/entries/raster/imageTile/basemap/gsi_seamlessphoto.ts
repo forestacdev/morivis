@@ -2,6 +2,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/data/style';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
@@ -19,7 +20,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		location: '全国',
 		minZoom: 1,
 		maxZoom: 18,
-		tileSize: 256
+		tileSize: 256,
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

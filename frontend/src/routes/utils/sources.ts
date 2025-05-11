@@ -16,6 +16,8 @@ import { type AttributionKey } from '$routes/data/attribution';
 import { GeojsonCache, getGeojson } from '$routes/utils/geojson';
 import { getFgbToGeojson } from '$routes/utils/geojson';
 
+import { objectToUrlParams } from '$routes/utils/params';
+
 // TODO: Geotiff
 // import { fromUrl, Pool } from 'geotiff';
 
@@ -31,22 +33,41 @@ export const createSourcesItems = async (
 	const sourceItemsArray = await Promise.all(
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
-			const sourceId = `${entry.id}_${_type}_source`;
+			const sourceId = `${entry.id}_source`;
 			const { metaData, format, type, style } = entry;
 
 			switch (type) {
 				case 'raster': {
 					if (format.type === 'image') {
 						if (style.type === 'dem') {
-							items[sourceId] = {
-								type: 'raster',
-								tiles: [`webgl://${format.url}?x={x}&y={y}&z={z}`],
-								maxzoom: metaData.maxZoom,
-								minzoom: metaData.minZoom,
-								tileSize: metaData.tileSize,
-								attribution: metaData.attribution,
-								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-							} as RasterSourceSpecification;
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							if (mode !== 'default') {
+								const demType = visualization.demType;
+								const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+
+								items[sourceId] = {
+									type: 'raster',
+									tiles: [
+										`webgl://${format.url}?entryId=${entry.id}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
+									],
+									maxzoom: metaData.maxZoom,
+									minzoom: metaData.minZoom,
+									tileSize: metaData.tileSize,
+									attribution: metaData.attribution,
+									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								} as RasterSourceSpecification;
+							} else {
+								items[sourceId] = {
+									type: 'raster',
+									tiles: [format.url],
+									maxzoom: metaData.maxZoom,
+									minzoom: metaData.minZoom,
+									tileSize: metaData.tileSize,
+									attribution: metaData.attribution,
+									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								} as RasterSourceSpecification;
+							}
 						} else {
 							items[sourceId] = {
 								type: 'raster',
@@ -153,7 +174,7 @@ export const createSourcesItems = async (
 
 	// ラベルのソースを追加
 
-	const labelSources = get(showLabelLayer) && _type === 'main' ? getLabelSources() : {};
+	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
 
 	return { ...sourceItems, ...labelSources } as {
 		[_: string]: SourceSpecification;

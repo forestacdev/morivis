@@ -10,8 +10,8 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '樹種ポリゴン',
-		description: `出典：栃木県森林資源データ`,
-		attribution: '林野庁',
+		description: ``,
+		attribution: '栃木県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
 		location: '栃木県',
 		minZoom: 8,

@@ -62,9 +62,9 @@
 				}
 
 				// TODO: 現在地の経緯度
-				geolocateControl.on('geolocate', (e) => {
-					console.log('geolocate', e.coords);
-				});
+				// geolocateControl.on('geolocate', (e) => {
+				// 	console.log('geolocate', e.coords);
+				// });
 			}
 		});
 	});

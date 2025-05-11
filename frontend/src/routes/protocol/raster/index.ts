@@ -1,50 +1,5 @@
+import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
 import { TileImageManager, ColorMapManager } from '../image';
-
-export type UniformsData = {
-	elevation: {
-		opacity: number;
-		maxHeight: number;
-		minHeight: number;
-	};
-	shadow: {
-		opacity: number;
-		shadowColor: string;
-		highlightColor: string;
-		ambient: number;
-		azimuth: number;
-		altitude: number;
-	};
-	edge: {
-		opacity: number;
-		edgeIntensity: number;
-		edgeColor: string;
-	};
-};
-
-// ユニフォーム変数
-export const uniformsData: UniformsData = {
-	// 標高
-	elevation: {
-		opacity: 1.0, // 不透明度
-		maxHeight: 3776, // 最大標高値
-		minHeight: 0 // 最小標高値
-	},
-	// 陰影
-	shadow: {
-		opacity: 0.8, // 不透明度
-		shadowColor: '#000000', // 陰影色
-		highlightColor: '#00ff9d', // ハイライト色
-		ambient: 0.3, // 環境光
-		azimuth: 0, // 方位
-		altitude: 30 // 太陽高度
-	},
-	// エッジ
-	edge: {
-		opacity: 0.9, // 不透明度
-		edgeIntensity: 0.4, // エッジ強度
-		edgeColor: '#ffffff' // エッジカラー
-	}
-};
 
 class WorkerProtocol {
 	private worker: Worker;
@@ -72,33 +27,47 @@ class WorkerProtocol {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
-		const baseUrl = 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png';
+		const entryId = url.searchParams.get('entryId') || '';
+		const baseUrl = url.origin + url.pathname;
+		const tileId = `${baseUrl}_${entryId}`;
+		const demType = url.searchParams.get('demType'); // デフォルト値を設定
+		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
+		const mode = url.searchParams.get('mode');
 
-		const images = await this.tileCache.getAdjacentTilesWithImages(x, y, z, baseUrl, controller);
+		let image: ImageBitmap;
+		if (mode === 'evolution') {
+			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller);
+			const elevationColorArray = this.colorMapCache.createColorArray(
+				url.searchParams.get('colorMap') || 'bone'
+			);
+			const max = parseFloat(url.searchParams.get('max') || '10000');
+			const min = parseFloat(url.searchParams.get('min') || '0');
+			return new Promise((resolve, reject) => {
+				this.pendingRequests.set(tileId, { resolve, reject, controller });
 
-		return new Promise((resolve, reject) => {
-			const center = images.center;
-			const tileId = center.tileId;
-			const left = images.left;
-			const right = images.right;
-			const top = images.top;
-			const bottom = images.bottom;
-			this.pendingRequests.set(tileId, { resolve, reject, controller });
-
-			const elevationColorArray = this.colorMapCache.createColorArray('cool');
-
-			this.worker.postMessage({
-				tileId,
-				center: center.image,
-				left: left.image,
-				right: right.image,
-				top: top.image,
-				bottom: bottom.image,
-				z,
-				uniformsData: uniformsData,
-				elevationColorArray
+				this.worker.postMessage({
+					tileId,
+					center: image,
+					demTypeNumber,
+					mode,
+					elevationColorArray,
+					max,
+					min
+				});
 			});
-		});
+		} else {
+			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller);
+			return new Promise((resolve, reject) => {
+				this.pendingRequests.set(tileId, { resolve, reject, controller });
+
+				this.worker.postMessage({
+					tileId,
+					center: image,
+					z,
+					demTypeNumber
+				});
+			});
+		}
 	}
 
 	private handleMessage = (e: MessageEvent) => {

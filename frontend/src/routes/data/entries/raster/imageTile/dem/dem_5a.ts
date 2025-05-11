@@ -1,4 +1,5 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/data/types/raster';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/data/style';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dem_5a',
@@ -16,41 +17,16 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		minZoom: 1,
 		maxZoom: 15,
 		tileSize: 256,
-
 		bounds: [122.935, 20.425, 153.986, 45.551]
 	},
 	interaction: {
 		clickable: true
 	},
 	style: {
-		type: 'dem',
-		opacity: 1.0,
+		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
-			demType: 'gsi',
-			mode: 'evolution',
-			uniformsData: {
-				shadow: {
-					azimuth: 180,
-					altitude: 45
-				},
-				slope: {
-					colorMap: 'salinity'
-				},
-				evolution: {
-					max: 1000,
-					min: 0,
-					colorMap: 'earth'
-				},
-				aspect: {
-					colorMap: 'rainbowSoft'
-				},
-				curvature: {
-					ridgeThreshold: 0.7,
-					valleyThreshold: 0.3,
-					ridgeColor: '#980707',
-					valleyColor: '#137c83'
-				}
-			}
+			...DEFAULT_RASTER_DEM_STYLE.visualization,
+			demType: 'gsi'
 		}
 	}
 };

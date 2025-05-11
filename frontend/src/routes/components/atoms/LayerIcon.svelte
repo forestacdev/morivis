@@ -50,39 +50,60 @@
 	};
 
 	const promise = (() => {
-		if (layerEntry.type === 'raster') {
-			if (layerEntry.format.type === 'image') {
-				return generateIconImage(layerEntry);
-			} else if (layerEntry.format.type === 'pmtiles') {
-				return fetchTileImage(layerEntry);
+		try {
+			if (layerEntry.type === 'raster') {
+				if (layerEntry.format.type === 'image') {
+					return generateIconImage(layerEntry);
+				} else if (layerEntry.format.type === 'pmtiles') {
+					return fetchTileImage(layerEntry);
+				}
+			} else if (layerEntry.type === 'vector') {
+				return fetchCoverImage(layerEntry);
 			}
-		} else if (layerEntry.type === 'vector') {
-			return fetchCoverImage(layerEntry);
+		} catch (e) {
+			isImageError = true;
+			console.error('Error generating icon image:', e);
 		}
 	})();
+
+	let isImageError = $state<boolean>(false);
 </script>
 
 {#if layerEntry.type === 'raster'}
-	{#if layerEntry.format.type === 'image'}
-		{#await promise then url}
-			<img
-				transition:fade
-				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-				crossOrigin="anonymous"
-				alt={layerEntry.metaData.name}
-				src={url}
-			/>
-		{/await}
-	{:else if layerEntry.format.type === 'pmtiles'}
-		{#await promise then url}
-			<img
-				transition:fade
-				crossOrigin="anonymous"
-				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-				alt={layerEntry.metaData.name}
-				src={url}
-			/>
-		{/await}
+	{#if !isImageError}
+		{#if layerEntry.format.type === 'image'}
+			{#await promise then url}
+				<img
+					transition:fade
+					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+					crossOrigin="anonymous"
+					alt={layerEntry.metaData.name}
+					src={url}
+					onerror={() => {
+						isImageError = true;
+					}}
+				/>
+			{:catch}
+				<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
+			{/await}
+		{:else if layerEntry.format.type === 'pmtiles'}
+			{#await promise then url}
+				<img
+					transition:fade
+					crossOrigin="anonymous"
+					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+					alt={layerEntry.metaData.name}
+					src={url}
+					onerror={() => {
+						isImageError = true;
+					}}
+				/>
+			{:catch}
+				<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
+			{/await}
+		{/if}
+	{:else}
+		<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
 	{/if}
 {:else if layerEntry.type === 'vector'}
 	{#if layerEntry.metaData.coverImage}

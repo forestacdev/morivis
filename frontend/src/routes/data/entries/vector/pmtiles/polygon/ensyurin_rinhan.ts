@@ -45,7 +45,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.5, // 透過率
+		opacity: 0.5,
 		colors: {
 			key: '樹種',
 			show: true,
@@ -114,7 +114,7 @@ const entry: VectorEntry<TileMetaData> = {
 		},
 		labels: {
 			key: '樹種', // 現在選択されているラベルのキー
-			show: true, // ラベル表示状態ルの色
+			show: true, // ラベル表示状態の色
 			expressions: [
 				{
 					key: '小林班ID',

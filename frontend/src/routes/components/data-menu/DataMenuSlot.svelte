@@ -1,21 +1,50 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
+	import { showNotification } from '$routes/store/notification';
 	import { getImagePmtiles } from '$routes/utils/raster';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null;
+		itemHeight: number;
+		index: number;
 	}
 
-	let { dataEntry, showDataEntry = $bindable() }: Props = $props();
+	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
 
 	let addedDataIds = $state<string[]>($orderedLayerIds);
+	let isAdded = $derived.by(() => {
+		if (addedDataIds) {
+			return addedDataIds.includes(dataEntry.id);
+		}
+		return false;
+	});
+	let container = $state<HTMLElement | null>(null);
+
+	const updateItemHeight = (newHeight: number) => {
+		itemHeight = newHeight + 20;
+	};
+
+	onMount(() => {
+		if (container && index === 0) {
+			const h = container.clientHeight;
+			updateItemHeight(h);
+
+			window?.addEventListener('resize', () => {
+				if (container) {
+					const h = container.clientHeight;
+					updateItemHeight(h);
+				}
+			});
+		}
+	});
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (dataEntry) {
@@ -72,6 +101,7 @@
 	const addData = (id: string) => {
 		if (!layerType) return;
 		groupedLayerStore.add(id, layerType as LayerType);
+		showNotification(`${dataEntry.metaData.name}を追加しました`, 'success');
 	};
 	const deleteData = (id: string) => {
 		groupedLayerStore.remove(id);
@@ -80,37 +110,51 @@
 
 <div
 	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+	bind:this={container}
 >
 	<button
 		onclick={() => (showDataEntry = dataEntry)}
+		disabled={isAdded}
 		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 hover:scale-110"
+				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
+					? ''
+					: 'hover:scale-110'}"
 				alt={dataEntry.metaData.name}
+				loading="lazy"
 			/>
 			<div
-				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
+					? ''
+					: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
 			>
-				<span class="text-lg text-white">プレビュー</span>
+				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 			</div>
+
+			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 pl-4 text-xs text-white"
+				>{dataEntry.metaData.attribution}</span
+			>
 		{/await}
 	</button>
 
-	<div class="flex w-full items-center justify-start gap-2 py-2">
-		<span class="">{dataEntry.metaData.name}</span>
+	<div class="flex w-full flex-col gap-1 py-2">
+		<div class="">{dataEntry.metaData.name}</div>
+		<div class="flex items-center gap-1 text-sm text-gray-600">
+			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
+		</div>
 	</div>
 
 	<div class=" shrink-0">
-		{#if addedDataIds.includes(dataEntry.id)}
+		{#if isAdded}
 			<button
 				onclick={() => deleteData(dataEntry.id)}
 				class="c-btn-cancel flex items-center gap-2 px-4"
 			>
-				<Icon icon="material-symbols:check" class=" h-8 w-8" />
-				<div>地図に追加済み</div>
+				<Icon icon="ic:round-minus" class=" h-8 w-8" />
+				<div>地図から削除</div>
 			</button>
 		{:else}
 			<button

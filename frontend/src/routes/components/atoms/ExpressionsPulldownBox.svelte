@@ -50,14 +50,14 @@
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-300 overflow-hidden rounded-lg bg-white shadow-md"
+				class="bg-sub absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
 			>
 				{#each expressionsList as expressionItem (expressionItem.key)}
 					<label
-						class="hover:text-accent bg-sub z-20 flex w-full cursor-pointer items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {expressionItem.key ===
+						class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {expressionItem.key ===
 						style.key
-							? 'bg-accent'
-							: ''}"
+							? 'bg-base text-main'
+							: 'hover:text-accent text-white'}"
 					>
 						<input
 							type="radio"

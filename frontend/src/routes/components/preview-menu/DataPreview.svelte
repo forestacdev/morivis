@@ -3,26 +3,35 @@
 
 	// formatDescription.ts
 
+	import { geoDataEntries } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import { showDataMenu } from '$routes/store';
 	import { getLayerType } from '$routes/store/layers';
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
+	import { showNotification } from '$routes/store/notification';
+
+	let addedDataIds = $state<string[]>($orderedLayerIds);
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+		tempLayerEntries: GeoDataEntry[];
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
-
-	let layerType = $derived.by((): LayerType | unknown => {
-		if (showDataEntry) {
-			return getLayerType(showDataEntry);
-		}
-	});
+	let { showDataEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 
 	const addData = () => {
 		if (showDataEntry) {
-			groupedLayerStore.add(showDataEntry.id, layerType as LayerType);
+			const copy = { ...showDataEntry };
 			showDataEntry = null;
+			if (!geoDataEntries.some((entry) => entry.id === copy.id)) {
+				tempLayerEntries = [...tempLayerEntries, copy];
+			}
+
+			const layerType = getLayerType(copy);
+
+			groupedLayerStore.add(copy.id, layerType as LayerType);
+			showNotification(`${copy.metaData.name}を追加しました`, 'success');
+			showDataMenu.set(false);
 		}
 	};
 	const deleteData = () => {
@@ -48,9 +57,11 @@
 	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
 		>キャンセル
 	</button>
-	<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
-		>地図に追加
-	</button>
+	{#if showDataEntry && !addedDataIds.includes(showDataEntry.id)}
+		<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
+			>地図に追加
+		</button>
+	{/if}
 </div>
 
 <style>
