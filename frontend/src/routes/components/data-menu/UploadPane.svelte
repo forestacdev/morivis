@@ -38,6 +38,11 @@
 		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
 		>ベクタータイルの登録
 	</button>
+    <button
+		onclick={() => showUploadDialog('wmts')}
+		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
+		>wmstの登録
+	</button>
 	<label
 		class="bg-sub flex w-full max-w-[300px] cursor-pointer flex-col items-center gap-2 rounded-full p-4"
 	>

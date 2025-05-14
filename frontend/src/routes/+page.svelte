@@ -21,7 +21,7 @@
 		features: StreetViewPoint[];
 	}
 
-	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | null;
+	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | null;
 </script>
 
 <script lang="ts">
@@ -39,6 +39,7 @@
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
+	import DrawMenu from '$routes/components/draw-menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte';
 	import HeaderMenu from '$routes/components/Header/_Index.svelte';
@@ -363,6 +364,7 @@
 		bind:showSelectionMarker
 		bind:selectionMarkerLngLat
 	/>
+	<DrawMenu bind:layerEntries />
 
 	<MapLibreMap
 		bind:layerEntries

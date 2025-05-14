@@ -53,6 +53,13 @@
 		}
 	};
 
+	const toggleDrawMenu = () => {
+		if ($isSideMenuType === 'draw') {
+			isSideMenuType.set(null);
+		} else {
+			isSideMenuType.set('draw');
+		}
+	};
 	const toggleTerrainMenu = () => {
 		showTerrainMenu.set(!$showTerrainMenu);
 	};
@@ -96,6 +103,15 @@
 				onclick={toggleLayerMenu}
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
+			</button>
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'draw'
+					? 'text-accent'
+					: ''}"
+				onclick={toggleDrawMenu}
+			>
+				<Icon icon="fa6-solid:pen" class="h-8 w-8" />
 			</button>
 		</li>
 		<li class="flex">

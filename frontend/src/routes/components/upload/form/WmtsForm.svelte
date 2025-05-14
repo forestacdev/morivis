@@ -5,6 +5,7 @@
 	import TextForm from '$routes/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import { parseWmtsCapabilities } from '$routes/utils/wmts';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -13,24 +14,21 @@
 
 	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
 
-	const rasterValidation = yup.object().shape({
-		name: yup.string().required('データ名を入力してください。'),
-		tileUrl: yup.string().required('タイルのURLを入力してください。')
+	const WmtsValidation = yup.object().shape({
+		url: yup.string().required('URLを入力してください。')
 	});
 
-	type RasterFormSchema = yup.InferType<typeof rasterValidation>;
+	type WmtsFormSchema = yup.InferType<typeof WmtsValidation>;
 
-	let forms = $state<RasterFormSchema>({
-		name: '',
-		tileUrl: ''
+	let forms = $state<WmtsFormSchema>({
+		url: ''
 	});
 
 	let isDisabled = $state<boolean>(true);
-	let errors = $state<Partial<Record<keyof RasterFormSchema, string>>>({});
+	let errors = $state<Partial<Record<keyof WmtsFormSchema, string>>>({});
 
 	$effect(() => {
-		rasterValidation
-			.validate(forms, { abortEarly: false })
+		WmtsValidation.validate(forms, { abortEarly: false })
 			.then(() => {
 				isDisabled = false;
 				errors = {}; // バリデーション成功時はエラーをクリア
@@ -49,14 +47,10 @@
 			});
 	});
 
-	const registration = () => {
-		forms.tileUrl = forms.tileUrl.trim();
-
-		const entry = createRasterEntry(forms.name, forms.tileUrl);
-		if (entry) {
-			showDataEntry = entry;
-			showDialogType = null;
-		}
+	const registration = async () => {
+		forms.url = forms.url.trim();
+		const hoge = await parseWmtsCapabilities(forms.url);
+		console.log(hoge);
 	};
 
 	const cancel = () => {
@@ -65,14 +59,13 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">ラスタータイルの登録</span>
+	<span class="text-2xl font-bold">WMS/WMTSの登録</span>
 </div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
 >
-	<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-	<TextForm bind:value={forms.tileUrl} label="タイルURL" error={errors.tileUrl} />
+	<TextForm bind:value={forms.url} label="タイルURL" error={errors.url} />
 </div>
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>

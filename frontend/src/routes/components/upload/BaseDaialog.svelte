@@ -6,7 +6,7 @@
 	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/components/upload/form/ShapeFileForm.svelte';
 	import VectorForm from '$routes/components/upload/form/VectorForm.svelte';
-	import { createRasterEntry } from '$routes/data';
+	import WmtsForm from '$routes/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 
 	interface Props {
@@ -33,6 +33,9 @@
 			transition:scale={{ duration: 300 }}
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
 		>
+			<!-- {#if showDialogType === 'wmts'}
+				<WmtsForm bind:showDataEntry bind:showDialogType />
+			{/if} -->
 			{#if showDialogType === 'raster'}
 				<RasterForm bind:showDataEntry bind:showDialogType />
 			{/if}
