@@ -42,11 +42,6 @@
 		}
 	};
 
-	// const focusFeature = (feature: any) => {
-	// 	mapStore.focusFeature(feature);
-	// 	mapStore.addSearchFeature(feature);
-	// };
-
 	$effect(() => {
 		if (!inputSearchWord) results = null;
 	});

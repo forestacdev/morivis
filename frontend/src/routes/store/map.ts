@@ -92,7 +92,6 @@ const createMapStore = () => {
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
-
 			// maxZoom: 20
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
@@ -294,71 +293,7 @@ const createMapStore = () => {
 		map.fitBounds(bbox);
 	};
 
-	// マップに検索結果を追加するメソッド
-	const addSearchFeature = (feature: MapGeoJSONFeature) => {
-		if (!map) return;
-		const sourceId = `search_source`;
-		const sourceItems: Record<string, SourceSpecification> = {};
-		sourceItems[sourceId] = {
-			type: 'geojson',
-			data: {
-				type: 'FeatureCollection',
-				features: [feature]
-			}
-		};
-		if (map.getSource(sourceId)) map.removeSource(sourceId);
-		map.addSource(sourceId, sourceItems[sourceId]);
 
-		const layerId = `search_layer`;
-
-		const layerItems: LayerSpecification[] = [];
-
-		const baseLayer = {
-			id: layerId,
-			source: sourceId
-		};
-
-		const type = feature.geometry.type;
-
-		switch (type) {
-			case 'Point':
-				layerItems.push({
-					...baseLayer,
-					type: 'circle',
-					paint: {
-						'circle-radius': 10,
-						'circle-color': '#ff0000'
-					}
-				});
-				break;
-			case 'LineString':
-			case 'MultiLineString':
-				layerItems.push({
-					...baseLayer,
-					type: 'line',
-					paint: {
-						'line-width': 5,
-						'line-color': '#ff0000'
-					}
-				});
-				break;
-			case 'Polygon':
-			case 'MultiPolygon':
-				layerItems.push({
-					...baseLayer,
-					type: 'fill',
-					paint: {
-						'fill-color': '#ff0000',
-						'fill-opacity': 0.5
-					}
-				});
-				break;
-			default:
-				break;
-		}
-
-		map.addLayer(layerItems[0]);
-	};
 
 	const getMapBbox = (): [number, number, number, number] => {
 		if (!map) {
@@ -483,7 +418,6 @@ const createMapStore = () => {
 			map?.fitBounds(bounds, options),
 		panTo,
 		easeTo: (options: EaseToOptions) => easeTo(options),
-		addSearchFeature,
 		focusLayer,
 		focusFeature,
 		onSetStyle: setStyleEvent.subscribe,
