@@ -194,7 +194,7 @@
 					paint: {
 						'fill-color': ['get', 'color'],
 						'fill-opacity': ['get', 'opacity'],
-						'fill-outline-color': '#000'
+						'fill-outline-color': 'transparent'
 					},
 					filter: ['==', '$type', 'Polygon']
 				},
@@ -205,7 +205,7 @@
 					paint: {
 						'line-color': ['get', 'color'],
 						'line-opacity': ['get', 'opacity'],
-						'line-width': 4
+						'line-width': 5
 					},
 					filter: ['==', '$type', 'LineString']
 				},
@@ -216,7 +216,7 @@
 					paint: {
 						'circle-color': ['get', 'color'],
 						'circle-opacity': ['get', 'opacity'],
-						'circle-radius': 5
+						'circle-radius': 7
 					},
 					filter: ['==', '$type', 'Point']
 				}
