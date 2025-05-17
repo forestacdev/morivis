@@ -140,6 +140,12 @@ importers:
       svelte-tiny-virtual-list:
         specifier: ^2.1.2
         version: 2.1.2
+      terra-draw:
+        specifier: ^1.0.0
+        version: 1.0.0
+      terra-draw-maplibre-gl-adapter:
+        specifier: ^1.0.3
+        version: 1.1.0(maplibre-gl@5.5.0)(terra-draw@1.0.0)
       three:
         specifier: ^0.172.0
         version: 0.172.0
@@ -207,9 +213,6 @@ importers:
       '@vite-pwa/sveltekit':
         specifier: ^1.0.0
         version: 1.0.0(@sveltejs/kit@2.21.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.28.6)(vite@5.4.19(@types/node@22.15.18)(lightningcss@1.29.2)(terser@5.39.1)))(svelte@5.28.6)(vite@5.4.19(@types/node@22.15.18)(lightningcss@1.29.2)(terser@5.39.1)))(@vite-pwa/assets-generator@0.2.6)(vite@5.4.19(@types/node@22.15.18)(lightningcss@1.29.2)(terser@5.39.1))(workbox-build@7.3.0)(workbox-window@7.3.0)
-      '@watergis/maplibre-gl-terradraw':
-        specifier: ^1.3.14
-        version: 1.3.14(maplibre-gl@5.5.0)(terra-draw@1.5.0)
       eslint:
         specifier: ^9.7.0
         version: 9.26.0(jiti@2.4.2)
@@ -243,6 +246,9 @@ importers:
       svelte:
         specifier: ^5.16.0
         version: 5.28.6
+      svelte-awesome-color-picker:
+        specifier: ^4.0.2
+        version: 4.0.2(svelte@5.28.6)
       svelte-check:
         specifier: ^4.0.0
         version: 4.1.7(picomatch@4.0.2)(svelte@5.28.6)(typescript@5.8.3)
@@ -1918,20 +1924,6 @@ packages:
   '@vitest/utils@2.1.9':
     resolution: {integrity: sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ==}
 
-  '@watergis/maplibre-gl-terradraw@1.3.14':
-    resolution: {integrity: sha512-qjog95cqFu8xZQNhSv2JgFTzu5aAPRQkk9Uq2J5kUT+MfhJS1S2JMwKfNICNDrJrJISDD10cjf6XicoCyjzsSw==}
-    engines: {pnpm: ^10.0.0}
-    peerDependencies:
-      maplibre-gl: ^4.0.0 || ^5.0.0
-      terra-draw: ^1.0.0
-      terra-draw-maplibre-gl-adapter: ^1.0.0
-      terradraw: '*'
-    peerDependenciesMeta:
-      terra-draw-maplibre-gl-adapter:
-        optional: true
-      terradraw:
-        optional: true
-
   '@webgpu/types@0.1.60':
     resolution: {integrity: sha512-8B/tdfRFKdrnejqmvq95ogp8tf52oZ51p3f4QD5m5Paey/qlX4Rhhy5Y8tgFMi7Ms70HzcMMw3EQjH/jdhTwlA==}
 
@@ -2282,6 +2274,9 @@ packages:
   color@4.2.3:
     resolution: {integrity: sha512-1rXeuUUiGGrykh+CeBdu5Ie7OJwinCgQY0bc7GCRxy5xVHy+moaqkpL/jqQq0MtQOeYcrqEz4abc5f0KtU7W4A==}
     engines: {node: '>=12.5.0'}
+
+  colord@2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -4516,6 +4511,16 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  svelte-awesome-color-picker@4.0.2:
+    resolution: {integrity: sha512-Ez72goMMNmw6sZhB1/BXEA8984lEkudPrdlNS+y3nHm2Lnk1w4nwy5NFyWPxTP7nFnLxhIqyV3VuJVG4PokKwg==}
+    peerDependencies:
+      svelte: ^5.0.0
+
+  svelte-awesome-slider@2.0.0:
+    resolution: {integrity: sha512-YBkOdYm1Feaqsn2JkJBRs+Kc/X3Qy/3GuVmI7GmoYDjBaHkjx9uH4khTuED22z57Hg3gGWeDhp/clIjWDdLNaw==}
+    peerDependencies:
+      svelte: ^5.0.0
+
   svelte-check@4.1.7:
     resolution: {integrity: sha512-1jX4BzXrQJhC/Jt3SqYf6Ntu//vmfc6VWp07JkRfK2nn+22yIblspVUo96gzMkg0Zov8lQicxhxsMzOctwcMQQ==}
     engines: {node: '>= 18.0.0'}
@@ -4599,8 +4604,14 @@ packages:
     resolution: {integrity: sha512-G13vtMYPT/J8A4X2SjdtBTphZlrp1gKv6hZiOjw14RCWg6GbHuQBGtjlx75xLbYV/wEc0D7G5K4rxKP/cXk8Bw==}
     engines: {node: '>=10'}
 
-  terra-draw@1.5.0:
-    resolution: {integrity: sha512-agyCfNXzy0xn3UutntC8j1RoWXbNBi9D+RJe0g4Ih6l85iJQRc58tVtBnBoxdkSH6kb2/96UfhhA0/rjYw8NnQ==}
+  terra-draw-maplibre-gl-adapter@1.1.0:
+    resolution: {integrity: sha512-o9k0Ndk7Q/KfxpFeG7vq8YC+n1NxAHs4cCt+jqio36h4IbQvQ2O4kawcgAzrSqq6+MCBtNhsImwsvWZ+w+l3vw==}
+    peerDependencies:
+      maplibre-gl: '>=4'
+      terra-draw: ^1.0.0
+
+  terra-draw@1.0.0:
+    resolution: {integrity: sha512-LMD5wLHHSfkXOX0eGjhUV/Pnxedn5MvsKBvGOP6txCY1D1LAIVnIx1g+trTXfBHUjogDJj/vmswsGMD/5LtNKQ==}
 
   terser@5.39.1:
     resolution: {integrity: sha512-Mm6+uad0ZuDtcV8/4uOZQDQ8RuiC5Pu+iZRedJtF7yA/27sPL7d++In/AJKpWZlU3SYMPPkVfwetn6sgZ66pUA==}
@@ -6979,11 +6990,6 @@ snapshots:
       loupe: 3.1.3
       tinyrainbow: 1.2.0
 
-  '@watergis/maplibre-gl-terradraw@1.3.14(maplibre-gl@5.5.0)(terra-draw@1.5.0)':
-    dependencies:
-      maplibre-gl: 5.5.0
-      terra-draw: 1.5.0
-
   '@webgpu/types@0.1.60': {}
 
   JSONStream@1.3.5:
@@ -7359,6 +7365,8 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
       color-string: 1.9.1
+
+  colord@2.9.3: {}
 
   colorette@2.0.20: {}
 
@@ -9822,6 +9830,16 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
+  svelte-awesome-color-picker@4.0.2(svelte@5.28.6):
+    dependencies:
+      colord: 2.9.3
+      svelte: 5.28.6
+      svelte-awesome-slider: 2.0.0(svelte@5.28.6)
+
+  svelte-awesome-slider@2.0.0(svelte@5.28.6):
+    dependencies:
+      svelte: 5.28.6
+
   svelte-check@4.1.7(picomatch@4.0.2)(svelte@5.28.6)(typescript@5.8.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
@@ -9942,7 +9960,12 @@ snapshots:
       type-fest: 0.16.0
       unique-string: 2.0.0
 
-  terra-draw@1.5.0: {}
+  terra-draw-maplibre-gl-adapter@1.1.0(maplibre-gl@5.5.0)(terra-draw@1.0.0):
+    dependencies:
+      maplibre-gl: 5.5.0
+      terra-draw: 1.0.0
+
+  terra-draw@1.0.0: {}
 
   terser@5.39.1:
     dependencies:

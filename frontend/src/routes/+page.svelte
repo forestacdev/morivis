@@ -35,6 +35,7 @@
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import type { DrawGeojsonData } from '$routes/types/draw';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
@@ -94,6 +95,11 @@
 		}
 	});
 	let inputSearchWord = $state<string>(''); // 検索ワード
+
+	let drawGeojsonData = $state<DrawGeojsonData>({
+		type: 'FeatureCollection',
+		features: []
+	}); // 描画データ
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
@@ -364,7 +370,7 @@
 		bind:showSelectionMarker
 		bind:selectionMarkerLngLat
 	/>
-	<DrawMenu bind:layerEntries />
+	<DrawMenu bind:layerEntries bind:drawGeojsonData />
 
 	<MapLibreMap
 		bind:layerEntries
@@ -375,6 +381,7 @@
 		bind:selectionMarkerLngLat
 		bind:dropFile
 		bind:showDialogType
+		bind:drawGeojsonData
 		{streetViewLineData}
 		{streetViewPointData}
 		{angleMarker}

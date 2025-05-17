@@ -44,6 +44,7 @@
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
+	import type { DrawGeojsonData } from '$routes/types/draw';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -59,6 +60,7 @@
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		drawGeojsonData: DrawGeojsonData;
 	}
 
 	let {
@@ -74,7 +76,8 @@
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
 		dropFile = $bindable(),
-		showDialogType = $bindable()
+		showDialogType = $bindable(),
+		drawGeojsonData = $bindable()
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -162,6 +165,11 @@
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
 				},
 
+				draw_source: {
+					type: 'geojson',
+					data: drawGeojsonData as FeatureCollection
+				},
+
 				...previewSources
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -177,7 +185,40 @@
 				},
 				...previewLayers,
 				streetViewLineLayer,
-				streetViewCircleLayer
+				streetViewCircleLayer,
+				{
+					id: '@draw_fill_layer',
+					type: 'fill',
+					source: 'draw_source',
+					paint: {
+						'fill-color': ['get', 'color'],
+						'fill-opacity': ['get', 'opacity'],
+						'fill-outline-color': '#000'
+					},
+					filter: ['==', '$type', 'Polygon']
+				},
+				{
+					id: '@draw_line_layer',
+					type: 'line',
+					source: 'draw_source',
+					paint: {
+						'line-color': ['get', 'color'],
+						'line-opacity': ['get', 'opacity'],
+						'line-width': 4
+					},
+					filter: ['==', '$type', 'LineString']
+				},
+				{
+					id: '@draw_circle_layer',
+					type: 'circle',
+					source: 'draw_source',
+					paint: {
+						'circle-color': ['get', 'color'],
+						'circle-opacity': ['get', 'opacity'],
+						'circle-radius': 5
+					},
+					filter: ['==', '$type', 'Point']
+				}
 
 				// {
 				// 	id: '@webgl_canvas_layer',
@@ -261,6 +302,16 @@
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
+	});
+
+	// 書き込みデータの更新を監視
+	$effect(() => {
+		$state.snapshot(drawGeojsonData);
+		if (!maplibreMap) return;
+		const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
+		if (source) {
+			source.setData(drawGeojsonData as FeatureCollection);
+		}
 	});
 
 	// データプレビュー

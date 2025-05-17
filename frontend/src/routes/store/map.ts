@@ -45,6 +45,9 @@ import { terrainProtocol } from '$routes/protocol/terrain';
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 import { demEntry, type DemEntry } from '$routes/data/dem';
 import { handleStyleImageMissing } from '$routes/utils/icon';
+import { isStyleEdit } from './index';
+import { on } from 'svelte/events';
+
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -69,7 +72,8 @@ const createMapStore = () => {
 	const rotateEvent = writable<number | null>(null);
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
-	const isLoadingEvent = writable<boolean>(true);
+    const isLoadingEvent = writable<boolean>(true);
+    const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 
@@ -113,6 +117,15 @@ const createMapStore = () => {
 		setStyleEvent.set(mapStyle);
 
 		if (!map) return;
+
+        map.once('style.load', () => {
+			isStyleLoadEvent.set(map);
+        });
+        
+        // map.on('style.load', () => {
+        //     console.log(map);
+		// 	isStyleLoadEvent.set(map);
+		// });
 
 		map.on('click', (e) => {
 			clickEvent.set(e);
@@ -429,8 +442,9 @@ const createMapStore = () => {
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
-		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
-		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
+        onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
+        onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
+        onStyleLoad: isStyleLoadEvent.subscribe, // スタイルロードイベントの購読用メソッド
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
