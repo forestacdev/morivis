@@ -30,7 +30,7 @@
 
 {#if layerEntry}
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
+		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
 		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
 	>
 		<div class="flex w-full cursor-pointer items-center gap-4 pb-2">

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade, slide, fly } from 'svelte/transition';
 
 	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
 	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
-	import Logo from '$routes/components/side-menu/Logo.svelte';
 	import {
 		showSideMenu,
 		showDataMenu,
@@ -15,9 +13,7 @@
 		showTerrainMenu
 	} from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
-
-	import { tooltip } from '$routes/store/tooltip';
-	import { imageExport } from '$routes/utils/map';
+	import { slide } from 'svelte/transition';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -66,69 +62,99 @@
 	};
 </script>
 
-<div class="bg-main/60 absolute left-0 top-0 z-10 flex w-full gap-2 p-1 pl-4 pr-4 text-base">
-	<ui>
-		{#if $isSideMenuType}
+<div
+	class="pointer-events-none absolute left-0 top-0 z-10 flex w-full justify-between gap-2 p-2 text-base"
+>
+	<div
+		class="flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
+			? 'bg-base text-main pr-1'
+			: 'bg-main pr-2 text-white'}"
+	>
+		<div class="relative">
 			<button
-				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left text-base duration-150"
-				onclick={() => isSideMenuType.set(null)}
-			>
-				<Icon icon="ep:back" class="h-8 w-8" />
-			</button>
-		{:else}
-			<button
-				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left text-base duration-150"
+				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
 				onclick={() => showSideMenu.set(true)}
 			>
-				<Icon icon="ic:round-menu" class="h-8 w-8" />
+				<Icon icon="ic:round-menu" class="h-7 w-7" />
 			</button>
-		{/if}
-	</ui>
-	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
-	<ui class="flex w-full justify-between">
-		<li class="flex">
+		</div>
+		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+
+		<div class="flex w-full items-center justify-between">
 			<button
 				onclick={toggleSearchMenu}
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				class="hover:text-accent transition-text pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
 				'search'
-					? 'text-accent'
+					? 'text-accent scale-120'
 					: ''}"
 			>
-				<Icon icon="stash:search-solid" class="h-8 w-8" />
+				<Icon icon="stash:search-solid" class="h-7 w-7" />
 			</button>
+			{#if $isSideMenuType === 'search'}
+				<div
+					transition:slide={{ duration: 200, axis: 'x' }}
+					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+				>
+					検索
+				</div>
+			{/if}
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				class="hover:text-accent transition-text pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
 				'layer'
-					? 'text-accent'
+					? 'text-accent scale-120'
 					: ''}"
 				onclick={toggleLayerMenu}
 			>
-				<Icon icon="ic:round-layers" class="h-8 w-8" />
+				<Icon icon="ic:round-layers" class="h-7 w-7" />
 			</button>
+			{#if $isSideMenuType === 'layer'}
+				<div
+					transition:slide={{ duration: 200, axis: 'x' }}
+					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+				>
+					レイヤー
+				</div>
+			{/if}
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				class="hover:text-accent pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
 				'draw'
-					? 'text-accent'
+					? 'text-accent scale-120'
 					: ''}"
 				onclick={toggleDrawMenu}
 			>
-				<Icon icon="fa6-solid:pen" class="h-8 w-8" />
+				<Icon icon="fa6-solid:pen" class="h-5 w-5" />
 			</button>
-		</li>
-		<li class="flex">
+			{#if $isSideMenuType === 'draw'}
+				<div
+					transition:slide={{ duration: 200, axis: 'x' }}
+					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+				>
+					描画ツール
+				</div>
+			{/if}
+		</div>
+		{#if $isSideMenuType}
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$showDataMenu
-					? 'text-accent'
-					: ''}"
-				onclick={toggleDataMenu}
+				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
+				onclick={() => isSideMenuType.set(null)}
 			>
-				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+				<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
 			</button>
-			<StreetViewControl />
-			<TerrainControl />
-			<GeolocateControl />
-		</li>
-	</ui>
+		{/if}
+	</div>
+	<li class="flex">
+		<button
+			class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 {$showDataMenu
+				? 'text-accent'
+				: ''}"
+			onclick={toggleDataMenu}
+		>
+			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+		</button>
+		<StreetViewControl />
+		<TerrainControl />
+		<GeolocateControl />
+	</li>
 </div>
 
 <style>

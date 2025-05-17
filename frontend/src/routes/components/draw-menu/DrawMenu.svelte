@@ -273,10 +273,10 @@
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'draw'}
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
+		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
 		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<div class="c-color-picker">
+		<div class="c-color-picker [&_label]:w-full">
 			<ColorPicker
 				label="色の選択"
 				bind:hex={color}

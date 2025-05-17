@@ -45,7 +45,7 @@
 <button
 	bind:this={element}
 	onclick={toggle3d}
-	class="grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2"
+	class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2"
 >
 	<Icon icon={$isTerrain3d ? 'mdi:video-2d' : 'mdi:video-3d'} class="h-8 w-8 text-base" />
 </button>
