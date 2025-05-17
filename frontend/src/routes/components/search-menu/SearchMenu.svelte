@@ -13,7 +13,9 @@
 	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showSearchMenu, isSideMenuType } from '$routes/store';
+	import { showSearchMenu } from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
+
 	import { mapStore } from '$routes/store/map';
 	import type { ResultData } from '$routes/utils/feature';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';

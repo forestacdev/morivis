@@ -3,7 +3,9 @@
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/types/draw';
 
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { isSideMenuType } from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
+	import { downloadGeojson } from '$routes/utils/geojson';
+
 	import { mapStore } from '$routes/store/map';
 	import Icon from '@iconify/svelte';
 
@@ -24,6 +26,7 @@
 		TerraDrawSensorMode
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+	import { hex } from 'chroma-js';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -32,7 +35,16 @@
 
 	let { layerEntries = $bindable(), drawGeojsonData = $bindable() }: Props = $props();
 
-	let hex = $state<string>('#ae9f66');
+	export const TERRA_DRAW_DEFAULT_SELECT_FLAGS = {
+		feature: {
+			draggable: true,
+			coordinates: {
+				deletable: true,
+				midpoints: true,
+				draggable: true
+			}
+		}
+	};
 
 	const DRAW_MODE_TYPE = [
 		{
@@ -73,15 +85,11 @@
 			icon: 'majesticons:edit-pen-4'
 		},
 		{
-			type: 'hand',
-			name: '手のひら',
-			icon: 'bxs:hand'
+			type: 'select',
+			name: '選択',
+			icon: 'grommet-icons:select'
 		}
-		// {
-		// 	type: 'select',
-		// 	name: '選択',
-		// 	icon: 'healthicons:polygon'
-		// },
+
 		// {
 		// 	type: 'angled-rectangle',
 		// 	name: '角度付き矩形',
@@ -96,13 +104,17 @@
 	type DrawMode = (typeof DRAW_MODE_TYPE)[number]['type'];
 
 	let terraDraw = $state<TerraDraw | null>(null);
-	let isDrawMode = $state<DrawMode>('point');
+	let isDrawMode = $state<DrawMode>('select');
+	let selectedFeatureId = $state<string | null>(null);
+	let selectedFeature = $state<DrawGeojsonFeature | null>(null);
+	let color = $state<string>('#ff0000');
 
 	isSideMenuType.subscribe((value) => {
 		if (value === 'draw') {
 			if (!terraDraw) return;
 			if (terraDraw.enabled) return;
 			terraDraw.start();
+			terraDraw.setMode(isDrawMode);
 		} else {
 			if (!terraDraw) return;
 			if (terraDraw.enabled) {
@@ -115,78 +127,91 @@
 		if (isDrawMode) {
 			if (!terraDraw) return;
 			if (terraDraw.enabled) {
+				terraDraw.clear();
 				terraDraw.setMode(isDrawMode);
 			}
 		}
 	});
 
-	mapStore.onStyleLoad((_map) => {
-		console.log(_map);
-		if (!_map) {
-			return;
+	const setColor = (newColor: string) => {
+		if (isDrawMode === 'select') {
+			if (!terraDraw) return;
+			if (terraDraw.enabled && selectedFeatureId && terraDraw.hasFeature(selectedFeatureId)) {
+				console.log('newColor', newColor);
+				console.log('selectedFeature', selectedFeatureId);
+				// 対象のフィーチャーの色を変更
+				if (drawGeojsonData.features) {
+					const newFeatures = drawGeojsonData.features.map((f) => {
+						if (f.properties.id === selectedFeatureId) {
+							f.properties.color = newColor;
+						}
+						return f;
+					});
+				}
+			}
 		}
+	};
+
+	$effect(() => {
+		if (color) {
+			setColor(color);
+		}
+	});
+
+	mapStore.onStyleLoad((_map) => {
+		if (!_map) return;
 		const adapter = new TerraDrawMapLibreGLAdapter({
-			// Pass in the map instance
 			map: _map
 		});
-		// マップのスタイルが読み込まれたときの処理
+
 		terraDraw = new TerraDraw({
 			adapter: adapter,
 			modes: [
 				new TerraDrawSelectMode({
-					moduleName: 'select'
+					flags: {
+						point: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						linestring: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						polygon: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						freehand: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						circle: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						rectangle: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						sector: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						sensor: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
+						'angled-rectangle': TERRA_DRAW_DEFAULT_SELECT_FLAGS
+					}
 				}),
-				new TerraDrawPointMode({
-					modeName: 'point'
-				}),
-				new TerraDrawLineStringMode({
-					modeName: 'linestring'
-				}),
-				new TerraDrawPolygonMode({
-					modeName: 'polygon'
-				}),
-				new TerraDrawCircleMode({
-					modeName: 'circle' // 円
-				}),
-				new TerraDrawSectorMode({
-					modeName: 'sector' // 円弧
-				}),
-				new TerraDrawSensorMode({
-					modeName: 'sensor' // センサー
-				}),
-				new TerraDrawRectangleMode({
-					modeName: 'rectangle' // 矩形
-				}),
-				new TerraDrawAngledRectangleMode({
-					modeName: 'angled-rectangle' // 角度付き矩形
-				}),
-				new TerraDrawFreehandMode({
-					modeName: 'freehand' // 自由描画
-				}),
-
-				new TerraDrawRenderMode({
-					modeName: 'hand' // 手のひら
-				})
+				new TerraDrawPointMode(),
+				new TerraDrawLineStringMode(),
+				new TerraDrawPolygonMode(),
+				new TerraDrawCircleMode(),
+				new TerraDrawSectorMode(),
+				new TerraDrawRectangleMode(),
+				new TerraDrawFreehandMode()
+				// new TerraDrawAngledRectangleMode()// 角度付き矩形
+				// new TerraDrawSensorMode() // センサー
+				// new TerraDrawRenderMode()
 			]
 		});
 
-		terraDraw.on('finish', (id: string, context: { action: string; mode: string }) => {
+		terraDraw.on('finish', (id, context) => {
 			if (terraDraw && terraDraw.enabled) {
 				if (context.action === 'draw') {
-					const newFeature = terraDraw.getSnapshotFeature(id);
-					const copyFeature = JSON.parse(JSON.stringify(newFeature));
+					// const newFeature = terraDraw.selectFeature(id);
+					const newFeatures = terraDraw.getSnapshot();
+					const copyFeature = JSON.parse(JSON.stringify(newFeatures[0]));
 					const feature = {
 						type: 'Feature',
 						id: copyFeature.id,
 						geometry: copyFeature.geometry,
 						properties: {
 							id: copyFeature.id,
-							color: hex,
-							opacity: 1
+							color,
+							opacity: 1,
+							mode: context.mode
 						}
 					};
 					drawGeojsonData.features.push(feature as DrawGeojsonFeature);
-					terraDraw.clear(id);
+					terraDraw.clear();
 				}
 			}
 			// if (context.action === 'draw') {
@@ -199,8 +224,51 @@
 			// 	//
 			// }
 		});
+
+		_map.on('click', (e) => {
+			if (isDrawMode !== 'select') return;
+			if (terraDraw && terraDraw.enabled) {
+				terraDraw.clear();
+				selectedFeatureId = null;
+			}
+			const feature = _map.queryRenderedFeatures(e.point, {
+				layers: ['@draw_fill_layer', '@draw_line_layer', '@draw_circle_layer']
+			});
+
+			if (feature.length > 0) {
+				const clickedFeature = feature[0];
+				const clickedFeatureId = clickedFeature.properties.id;
+
+				const targetFeature = drawGeojsonData.features.find(
+					(f) => f.properties.id === clickedFeatureId
+				) as DrawGeojsonFeature;
+
+				terraDraw?.addFeatures([targetFeature]);
+				color = targetFeature.properties.color;
+				selectedFeatureId = clickedFeatureId;
+			}
+		});
 	});
+
+	const handleKeydown = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			if (terraDraw && terraDraw.enabled) {
+				terraDraw.clear();
+			}
+		}
+		if (e.key === 'Delete') {
+			if (terraDraw && terraDraw.enabled) {
+				const newFeatures = terraDraw.getSnapshot();
+				const copyFeature = newFeatures[0];
+				const id = copyFeature.id;
+				drawGeojsonData.features = drawGeojsonData.features.filter((f) => f.properties.id !== id);
+				terraDraw.clear();
+			}
+		}
+	};
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'draw'}
@@ -208,7 +276,15 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<div class="text-white">書き込みツール</div>
+		<div class="c-color-picker">
+			<ColorPicker
+				label="色の選択"
+				bind:hex={color}
+				components={ChromeVariant}
+				sliderDirection="horizontal"
+				isDialog={true}
+			/>
+		</div>
 		<div class="grid grid-cols-3 gap-2 p-2">
 			{#each DRAW_MODE_TYPE as { type, name, icon }}
 				<label
@@ -229,21 +305,27 @@
 				</label>
 			{/each}
 		</div>
-		<ColorPicker
-			bind:hex
-			components={ChromeVariant}
-			sliderDirection="horizontal"
-			isDialog={false}
-		/>
-		<div
-			class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
-		></div>
+
+		<div class="p-2">
+			{#if drawGeojsonData.features.length > 0}
+				<button
+					onclick={() => (drawGeojsonData ? downloadGeojson(drawGeojsonData) : null)}
+					class="c-btn-confirm max-w-[300px]"
+				>
+					<Icon icon="material-symbols:save-alt-rounded" class="h-8 w-8" />
+					<span class="text-sm">エクスポート</span>
+				</button>
+			{/if}
+		</div>
 	</div>
 {/if}
 
 <style>
-	.c-fog {
-		background: rgb(233, 233, 233);
-		background: linear-gradient(0deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
+	.c-color-picker {
+		--cp-bg-color: #333;
+		--cp-border-color: white;
+		--cp-text-color: white;
+		--cp-input-color: #555;
+		--cp-button-hover-color: #777;
 	}
 </style>

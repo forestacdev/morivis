@@ -109,7 +109,7 @@ export const convertToGeoJSONFeature = (
 };
 
 /** MapGeoJSONFeature[]をgeojsonで返す */
-export const convertToGeoJSONCollection = (
+export const convertMapGeoJSONFeaturesToGeoJSON = (
 	features: MapGeoJSONFeature[],
 	featureId: number
 ): FeatureCollection => {
@@ -120,6 +120,31 @@ export const convertToGeoJSONCollection = (
 			.map((feature) => convertToGeoJSONFeature(feature, featureId)) // 個別に変換
 			.filter((feature): feature is Feature => feature !== null) // nullを除外
 	};
+};
+
+
+
+/**
+ * GeoJSONデータをダウンロードする関数
+ * @param geojson ダウンロードするGeoJSONデータ (FeatureCollection形式)
+ * @param filename ダウンロード時のファイル名 (デフォルト: 'data.geojson')
+ */
+export const downloadGeojson = (
+    geojson: FeatureCollection,
+    filename: string = 'data.geojson' // デフォルト値を設定
+): void => {
+    const geojsonString = JSON.stringify(geojson);
+    const blob = new Blob([geojsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = url;
+
+    a.click();
+    setTimeout(() => {
+    }, 0);
+
 };
 
 /** GeoJSONのキャッシュを管理するクラス */

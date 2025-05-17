@@ -14,7 +14,6 @@ declare global {
 declare module 'path';
 declare module '@zumer/orbit/dist/orbit.js';
 declare module 'shapefile';
-declare module 'terra-draw';
-declare module 'terra-draw-maplibre-gl-adapter';
+
 
 export {};

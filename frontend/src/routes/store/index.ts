@@ -37,10 +37,7 @@ export const showSideMenu = writable<boolean>(false);
 /** スタイル編集モード */
 export const isStyleEdit = writable<boolean>(false);
 
-export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | 'draw' | null;
 
-/** 表示中のサイドメニューの種類 */
-export const isSideMenuType = writable<SideMenuType>(null);
 
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);

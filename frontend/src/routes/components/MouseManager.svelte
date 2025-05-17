@@ -10,6 +10,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { CategoryLegend, GradientLegend, ZoomLevel } from '$routes/data/types/raster';
 	import { isStreetView, clickableVectorIds, clickableRasterIds } from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
@@ -130,6 +131,7 @@
 	map.on('click', (e) => {
 		// プレビューモードの時は、クリックイベントを無視する
 		if (showDataEntry) return;
+		if ($isSideMenuType === 'draw') return;
 
 		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {

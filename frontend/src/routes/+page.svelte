@@ -62,13 +62,8 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import {
-		isSideMenuType,
-		isStreetView,
-		mapMode,
-		selectedLayerId,
-		isStyleEdit
-	} from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
+	import { isStreetView, mapMode, selectedLayerId, isStyleEdit } from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';

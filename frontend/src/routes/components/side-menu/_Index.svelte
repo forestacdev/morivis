@@ -8,9 +8,10 @@
 		showDataMenu,
 		mapMode,
 		showInfoDialog,
-		showTermsDialog,
-		isSideMenuType
+		showTermsDialog
 	} from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
+
 	import { mapStore } from '$routes/store/map';
 	import { showNotification } from '$routes/store/notification';
 	import { isProcessing } from '$routes/store/ui';

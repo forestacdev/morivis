@@ -7,9 +7,10 @@
 	import Switch from '$routes/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { selectedLayerId, isStyleEdit, showDataMenu, isSideMenuType } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
 	import { typeBreakIndices } from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
+	import { isSideMenuType } from '$routes/store/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

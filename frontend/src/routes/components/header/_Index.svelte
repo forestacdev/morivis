@@ -12,9 +12,10 @@
 		mapMode,
 		showInfoDialog,
 		showTermsDialog,
-		showTerrainMenu,
-		isSideMenuType
+		showTerrainMenu
 	} from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
+
 	import { tooltip } from '$routes/store/tooltip';
 	import { imageExport } from '$routes/utils/map';
 

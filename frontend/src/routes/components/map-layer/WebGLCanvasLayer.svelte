@@ -23,7 +23,6 @@
 
 	import { selectedHighlightData, type SelectedHighlightData } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { convertToGeoJSONCollection } from '$routes/utils/geojson';
 
 	interface Props {
 		map: MapLibreMap | null;

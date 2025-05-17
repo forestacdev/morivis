@@ -167,7 +167,8 @@
 
 				draw_source: {
 					type: 'geojson',
-					data: drawGeojsonData as FeatureCollection
+					data: drawGeojsonData as FeatureCollection,
+					promoteId: 'id'
 				},
 
 				...previewSources
