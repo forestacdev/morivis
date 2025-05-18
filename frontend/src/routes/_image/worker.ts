@@ -1,7 +1,6 @@
 import vertexShaderSource from './shader/vertex.glsl?raw';
 import fsMulchSource from './shader/fragment_mulch.glsl?raw';
 import fsShingleSource from './shader/fragment_shingle.glsl?raw';
-import fsDemSource from './shader/fragment_dem.glsl?raw';
 
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (
@@ -41,39 +40,25 @@ const createProgram = (
 	return program;
 };
 
-/**
- * R/G/B の各バンドの Uint8Array を 2D テクスチャ配列（TEXTURE_2D_ARRAY）用の RGBA フォーマットに変換
- * @param bands - 各バンドのデータ（例： [rasterR, rasterG, rasterB]）
- * @param width - ラスター幅
- * @param height - ラスター高さ
- * @returns RGBA 格納の Uint8Array（深さ = bands.length）
- */
-const combineBandsToTexture2DArrayData = (
-	bands: Uint8Array[],
+const combineFloatBandsToTexture2DArray = (
+	bands: Float32Array[],
 	width: number,
 	height: number
-): Uint8Array => {
+): Float32Array => {
 	const depth = bands.length;
-	const sizePerLayer = width * height * 4; // RGBA
-	const output = new Uint8Array(sizePerLayer * depth);
+	const layerSize = width * height;
+	const output = new Float32Array(layerSize * depth);
 
 	for (let z = 0; z < depth; z++) {
 		const band = bands[z];
-		const offsetZ = z * sizePerLayer;
-
-		for (let i = 0; i < width * height; i++) {
-			const val = band[i];
-			const offset = offsetZ + i * 4;
-
-			// グレースケールとして R/G/B に同じ値、Aは常に255
-			output[offset + 0] = val;
-			output[offset + 1] = val;
-			output[offset + 2] = val;
-			output[offset + 3] = 255;
-		}
+		output.set(band, z * layerSize); // 1バンドをまるごとコピー
 	}
 
 	return output;
+};
+
+const convertUint8BandsToFloat32 = (bands: Uint8Array[]): Float32Array[] => {
+	return bands.map((band) => new Float32Array(band));
 };
 
 self.onmessage = async (e) => {
@@ -100,7 +85,7 @@ self.onmessage = async (e) => {
 		let fragmentShader;
 
 		if (type === 'single') {
-			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsDemSource);
+			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
 		} else if (type === 'multi') {
 			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
 		}
@@ -130,7 +115,6 @@ self.onmessage = async (e) => {
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 
-			// 🔧 テクスチャパラメータを設定する（必須）
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -155,11 +139,6 @@ self.onmessage = async (e) => {
 			gl.uniform1f(uMaxLoc, max);
 		}
 		if (type === 'multi') {
-			const textureArrayData = combineBandsToTexture2DArrayData(
-				rasters as Uint8Array[],
-				width,
-				height
-			);
 			const uRedIndexLoc = gl.getUniformLocation(program, 'u_redIndex');
 			const uGreenIndexLoc = gl.getUniformLocation(program, 'u_greenIndex');
 			const uBlueIndexLoc = gl.getUniformLocation(program, 'u_blueIndex');
@@ -171,24 +150,33 @@ self.onmessage = async (e) => {
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
+			const float32Bands = convertUint8BandsToFloat32(rasters as Uint8Array[]);
+
+			const flatData = combineFloatBandsToTexture2DArray(float32Bands, width, height);
+
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+			// unit16array
 			gl.texImage3D(
 				gl.TEXTURE_2D_ARRAY,
 				0,
-				gl.RGBA,
+				gl.R32F,
 				width,
 				height,
 				rasters.length,
 				0,
-				gl.RGBA,
-				gl.UNSIGNED_BYTE,
-				textureArrayData
+				gl.RED,
+				gl.FLOAT,
+				flatData
 			);
 
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
+			const uMinLoc = gl.getUniformLocation(program, 'u_min');
+			const uMaxLoc = gl.getUniformLocation(program, 'u_max');
+			gl.uniform1f(uMinLoc, min);
+			gl.uniform1f(uMaxLoc, max);
 		}
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);

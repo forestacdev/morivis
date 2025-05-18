@@ -12,6 +12,12 @@ export const loadRasterData = async (url: string) => {
 		const tiff = await fromArrayBuffer(arrayBuffer);
 		const image = await tiff.getImage();
 
+		const { BitsPerSample, SampleFormat, PhotometricInterpretation } = image.fileDirectory;
+
+		console.log('BitsPerSample:', BitsPerSample); // [8, 8, 8] や [16, 16, 16] など
+		console.log('SampleFormat:', SampleFormat); // [1, 1, 1] = unsigned int, [3, 3, 3] = float
+		console.log('PhotometricInterpretation:', PhotometricInterpretation); // 2 = RGB
+
 		const geoKeys = image.geoKeys;
 		let epsgCode: string | null = null;
 		if (geoKeys) {
@@ -51,18 +57,19 @@ export const loadRasterData = async (url: string) => {
 
 		let min = Infinity;
 		let max = -Infinity;
-		if (type === 'single') {
-			const band = rasters[0] as Float32Array; // 1バンド目を取り出す
 
-			for (let i = 0; i < band.length; i++) {
-				const value = band[i];
-				if (!Number.isNaN(value)) {
-					min = Math.min(min, value);
-					max = Math.max(max, value);
-				}
+		const band = rasters[0] as Float32Array; // 1バンド目を取り出す
+
+		for (let i = 0; i < band.length; i++) {
+			const value = band[i];
+			if (!Number.isNaN(value)) {
+				min = Math.min(min, value);
+				max = Math.max(max, value);
 			}
-		} else {
 		}
+
+		console.log('min:', min);
+		console.log('max:', max);
 
 		return new Promise((resolve, reject) => {
 			const worker = new Worker(new URL('./worker.ts', import.meta.url), {
