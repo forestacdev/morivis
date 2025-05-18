@@ -1,40 +1,10 @@
 import { fromArrayBuffer } from 'geotiff';
+import { epsgDict, citationDict } from '$routes/utils/proj/dict';
+import { transformBbox } from '$routes/utils/proj';
 
 const worker = new Worker(new URL('./worker.ts', import.meta.url), {
 	type: 'module'
 });
-
-const loadImage = async (src: string): Promise<ImageBitmap> => {
-	const response = await fetch(src);
-	if (!response.ok) {
-		throw new Error('Failed to fetch image');
-	}
-	const blob = await response.blob();
-	return await createImageBitmap(blob);
-};
-
-const rgbaImage = async (
-	raster: Uint8Array,
-	width: number,
-	height: number
-): Promise<ImageBitmap> => {
-	// ラスターの高さと幅を取得
-
-	const rgba = new Uint8ClampedArray(width * height * 4);
-
-	// 例: rasterが1バンドのグレースケールUint8Arrayの場合
-	for (let i = 0; i < width * height; i++) {
-		const val = raster[i]; // 0-255
-		rgba[i * 4 + 0] = val;
-		rgba[i * 4 + 1] = val;
-		rgba[i * 4 + 2] = val;
-		rgba[i * 4 + 3] = 255; // α
-	}
-
-	const imageData = new ImageData(rgba, width, height);
-
-	return await createImageBitmap(imageData);
-};
 
 export type BandType = 'single' | 'multi';
 
@@ -45,12 +15,45 @@ export const loadRasterData = async (url: string) => {
 		const arrayBuffer = await response.arrayBuffer();
 		const tiff = await fromArrayBuffer(arrayBuffer);
 		const image = await tiff.getImage();
-		const bbox = image.getBoundingBox();
 
-		// 座標系を取得
+		const geoKeys = image.geoKeys;
+		let epsgCode: string | null = null;
+		if (geoKeys) {
+			// ① 明示的な EPSG コードがあるか確認
+			if (geoKeys.ProjectedCSTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey !== 32767) {
+				epsgCode = geoKeys.ProjectedCSTypeGeoKey;
+			} else if (geoKeys.GeographicTypeGeoKey && geoKeys.GeographicTypeGeoKey !== 32767) {
+				epsgCode = geoKeys.GeographicTypeGeoKey;
+			}
+			// ② EPSGコードがなく、GTCitationGeoKey から判別できる場合
+			else if (geoKeys.GTCitationGeoKey) {
+				const citation = geoKeys.GTCitationGeoKey.trim();
+
+				if (citationDict[citation]) {
+					epsgCode = citationDict[citation];
+				} else {
+					console.warn(`Unknown citation string: "${citation}"`);
+				}
+			}
+		} else {
+			console.warn('No geoKeys found in the image.');
+		}
+
+		let bbox = image.getBoundingBox();
+
+		console.log(epsgCode);
+
+		if (epsgCode === '4326' || epsgCode === null) {
+			bbox = image.getBoundingBox();
+		} else {
+			const epsgData = epsgDict[epsgCode as keyof typeof epsgDict];
+			bbox = transformBbox(bbox, epsgData.proj4); // EPSG:4326に変換
+		}
 
 		// ラスターデータを取得
 		const rasters = await image.readRasters({ interleave: false });
+
+		console.log('rasters', rasters);
 
 		const type = rasters.length > 1 ? 'multi' : 'single';
 

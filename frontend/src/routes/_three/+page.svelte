@@ -9,8 +9,6 @@
 	import fragmentShader from './shader/fragment.glsl?raw';
 	import vertexShader from './shader/vertex.glsl?raw';
 
-	import { goto } from '$app/navigation';
-
 	// ラスターデータの読み込み
 	const loadRasterData = async (url: string) => {
 		const response = await fetch(url);

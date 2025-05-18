@@ -1,4 +1,5 @@
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import proj4 from 'proj4';
 
 const readPrjFileBrowser = async (file: File) => {
 	return new Promise((resolve, reject) => {
@@ -197,4 +198,16 @@ export const transformGeoJSONParallel = (
 			}
 		}
 	});
+};
+
+export const transformBbox = (
+	bbox: [number, number, number, number],
+	prjContent: string
+): [number, number, number, number] => {
+	// 左下と右上の座標を個別に変換
+	const [minX, minY, maxX, maxY] = bbox;
+	const [llX, llY] = proj4(prjContent, 'EPSG:4326', [minX, minY]);
+	const [urX, urY] = proj4(prjContent, 'EPSG:4326', [maxX, maxY]);
+
+	return [llX, llY, urX, urY];
 };

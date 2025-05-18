@@ -75,14 +75,43 @@ const combineBandsToTexture2DArrayData = (
 	return output;
 };
 
+const encodeToTerrainRGB = (elevation: number): [number, number, number] => {
+	const val = Math.round((elevation + 10000) * 10);
+	const r = (val >> 16) & 0xff;
+	const g = (val >> 8) & 0xff;
+	const b = val & 0xff;
+	return [r, g, b];
+};
+
+const combineBandsToTexture2DArrayDemData = (
+	bands: Float32Array[], // DEMが1バンド
+	width: number,
+	height: number
+): Uint8Array => {
+	const size = width * height * 4; // RGBA
+	const output = new Uint8Array(size);
+	const band = bands[0]; // DEMは1バンドのみを想定
+
+	for (let i = 0; i < width * height; i++) {
+		const elevation = band[i];
+		const [r, g, b] = encodeToTerrainRGB(elevation);
+		const offset = i * 4;
+
+		output[offset + 0] = r;
+		output[offset + 1] = g;
+		output[offset + 2] = b;
+		output[offset + 3] = 255; // A
+	}
+
+	return output;
+};
+
 self.onmessage = async (e) => {
 	const { rasters, type } = e.data;
 
 	// ラスターの高さと幅を取得
 	const width = rasters.width;
 	const height = rasters.height;
-
-	const textureArrayData = combineBandsToTexture2DArrayData(rasters as Uint8Array[], width, height);
 
 	try {
 		const canvas = new OffscreenCanvas(width, height);
@@ -120,11 +149,18 @@ self.onmessage = async (e) => {
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
+		let textureArrayData;
 		if (type === 'single') {
+			textureArrayData = combineBandsToTexture2DArrayDemData(
+				rasters as Float32Array[],
+				width,
+				height
+			);
 			const uBandIndexLoc = gl.getUniformLocation(program, 'u_bandIndex');
 			gl.uniform1i(uBandIndexLoc, 0);
 		}
 		if (type === 'multi') {
+			textureArrayData = combineBandsToTexture2DArrayData(rasters as Uint8Array[], width, height);
 			const uRedIndexLoc = gl.getUniformLocation(program, 'u_redIndex');
 			const uGreenIndexLoc = gl.getUniformLocation(program, 'u_greenIndex');
 			const uBlueIndexLoc = gl.getUniformLocation(program, 'u_blueIndex');

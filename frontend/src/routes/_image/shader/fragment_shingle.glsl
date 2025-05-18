@@ -13,5 +13,6 @@ out vec4 fragColor;
 
 void main() {
     vec2 uv = v_tex_coord;
-    fragColor = texture(u_texArray, vec3(uv, u_bandIndex));
+    fragColor = texture(u_texArray, vec3(uv, 0));
+    // fragColor = vec4(vec2(uv),1.0,1.0);
 }
