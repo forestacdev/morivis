@@ -3,6 +3,7 @@ import type { ReadRasterResult } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
 import type { BandTypeKey, ShingleBandData, MultiBandData } from '$routes/data/types/raster';
+import { ColorMapManager } from '$routes/utils/colorMapping';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();
@@ -143,6 +144,8 @@ export const getRasters = async (
 	}
 };
 
+const colorMapManager = new ColorMapManager();
+
 // ラスターデータの読み込み
 export const loadRasterData = async (
 	id: string,
@@ -219,8 +222,12 @@ export const loadRasterData = async (
 				? parseFloat(image.fileDirectory.GDAL_NODATA)
 				: null;
 
-		const min = 0;
-		const max = 255;
+		console.log('UniformsData', UniformsData);
+
+		const colorArray = colorMapManager.createColorArray(UniformsData.colorMap || 'bone');
+
+		const min = UniformsData.min ?? getMinMax(rasters[UniformsData.index], nodata).min;
+		const max = UniformsData.max ?? getMinMax(rasters[UniformsData.index], nodata).max;
 
 		return new Promise((resolve, reject) => {
 			const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {
@@ -234,7 +241,8 @@ export const loadRasterData = async (
 				min,
 				max,
 				width,
-				height
+				height,
+				colorArray
 			});
 
 			// Define message handler once

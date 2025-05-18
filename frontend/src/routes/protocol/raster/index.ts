@@ -1,5 +1,6 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
-import { TileImageManager, ColorMapManager } from '../image';
+import { TileImageManager } from '../image';
+import { ColorMapManager } from '$routes/utils/colorMapping';
 
 class WorkerProtocol {
 	private worker: Worker;

@@ -31,7 +31,7 @@ const entry: RasterTiffEntry = {
 					index: 0,
 					min: 0,
 					max: 79.4177017211914,
-					colorMap: 'greys'
+					colorMap: 'jet'
 				},
 				multi: {
 					bands: [

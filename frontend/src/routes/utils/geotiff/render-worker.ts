@@ -87,8 +87,31 @@ const convertBandsToFloat32Texture2DArray = (
 	return output;
 };
 
+const bindTextures = (
+	gl: WebGL2RenderingContext,
+	program: WebGLProgram,
+	image: Uint8Array,
+	unit: number
+) => {
+	// テクスチャをバインド
+	const texture = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE0 + unit); // 現在のテクスチャユニットをアクティブ
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	const location = gl.getUniformLocation(program, 'u_elevationMap');
+	gl.uniform1i(location, unit);
+
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 256, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, image as Uint8Array);
+
+	// ラッピングとフィルタリングの設定
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+};
+
 self.onmessage = async (e) => {
-	const { rasters, size, type, min, max, width, height } = e.data;
+	const { rasters, size, type, min, max, width, height, colorArray } = e.data;
 
 	console.log('rasters', rasters);
 	console.log('size', size);
@@ -184,6 +207,8 @@ self.onmessage = async (e) => {
 			gl.uniform1f(uMinLoc, min);
 			gl.uniform1f(uMaxLoc, max);
 		}
+
+		bindTextures(gl, program, colorArray, 1);
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
