@@ -88,11 +88,14 @@ const convertBandsToFloat32Texture2DArray = (
 };
 
 self.onmessage = async (e) => {
-	const { rasters, type, min, max } = e.data;
+	const { rasters, type, min, max, width, height } = e.data;
 
-	// ラスターの高さと幅を取得
-	const width = rasters.width;
-	const height = rasters.height;
+	console.log('rasters', rasters);
+	console.log('type', type);
+	console.log('min', min);
+	console.log('max', max);
+	console.log('width', width);
+	console.log('height', height);
 
 	try {
 		const canvas = new OffscreenCanvas(width, height);
@@ -176,8 +179,6 @@ self.onmessage = async (e) => {
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
-			const flatData = convertBandsToFloat32Texture2DArray(rasters, width, height);
-
 			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -190,11 +191,11 @@ self.onmessage = async (e) => {
 				gl.R32F,
 				width,
 				height,
-				rasters.length,
+				3,
 				0,
 				gl.RED,
 				gl.FLOAT,
-				flatData
+				rasters
 			);
 
 			const uMinLoc = gl.getUniformLocation(program, 'u_min');

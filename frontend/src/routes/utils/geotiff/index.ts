@@ -1,25 +1,40 @@
 import { fromArrayBuffer } from 'geotiff';
+import type { ReadRasterResult } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
+import type { BandTypeKey, ShingleBandData, MultiBandData } from '$routes/data/types/raster';
+import bbox from '@turf/bbox';
+import type { image } from 'html2canvas/dist/types/css/types/image';
+import { get } from 'svelte/store';
+import { min, max } from 'es-toolkit/compat';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();
-	private static rasterCache: Map<string, { rasters: Float32Array[]; type: BandType }> = new Map();
+	private static rasterCache: Map<string, Float32Array[]> = new Map();
+	private static bboxCache: Map<string, [number, number, number, number]> = new Map();
 
 	static setDataUrl(key: string, url: string) {
 		this.dataUrlCache.set(key, url);
 	}
 
-	static setRasters(key: string, rasters: Float32Array[], type: BandType) {
-		this.rasterCache.set(key, { rasters, type });
+	static setRasters(key: string, rasters: Float32Array[]) {
+		this.rasterCache.set(key, rasters);
+	}
+
+	static setBbox(key: string, bbox: [number, number, number, number]) {
+		this.bboxCache.set(key, bbox);
 	}
 
 	static getDataUrl(key: string): string | undefined {
 		return this.dataUrlCache.get(key);
 	}
 
-	static getRasters(key: string): { rasters: Float32Array[]; type: BandType } | undefined {
+	static getRasters(key: string): Float32Array[] | undefined {
 		return this.rasterCache.get(key);
+	}
+
+	static getBbox(key: string): [number, number, number, number] | undefined {
+		return this.bboxCache.get(key);
 	}
 
 	static removeDataUrl(key: string): void {
@@ -28,9 +43,13 @@ export class GeoTiffCache {
 	static removeRasters(key: string): void {
 		this.rasterCache.delete(key);
 	}
+	static removeBbox(key: string): void {
+		this.bboxCache.delete(key);
+	}
 	static clear(): void {
 		this.dataUrlCache.clear();
 		this.rasterCache.clear();
+		this.bboxCache.clear();
 	}
 	static hasDataUrl(key: string): boolean {
 		return this.dataUrlCache.has(key);
@@ -38,19 +57,90 @@ export class GeoTiffCache {
 	static hasRasters(key: string): boolean {
 		return this.rasterCache.has(key);
 	}
+	static hasBbox(key: string): boolean {
+		return this.bboxCache.has(key);
+	}
 	static keysDataUrl(): IterableIterator<string> {
 		return this.dataUrlCache.keys();
 	}
 	static keysRasters(): IterableIterator<string> {
 		return this.rasterCache.keys();
 	}
+	static keysBbox(): IterableIterator<string> {
+		return this.bboxCache.keys();
+	}
 }
 
-export type BandType = 'single' | 'multi';
+export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: number } => {
+	let min = Infinity;
+	let max = -Infinity;
+
+	for (let i = 0; i < band.length; i++) {
+		const value = band[i];
+
+		const isValid =
+			Number.isFinite(value) &&
+			(nodata === null ||
+				(!Number.isNaN(nodata) && value !== nodata) ||
+				(Number.isNaN(nodata) && !Number.isNaN(value)));
+
+		if (isValid) {
+			min = Math.min(min, value);
+			max = Math.max(max, value);
+		}
+	}
+
+	return { min, max };
+};
+
+export const getRasters = async (
+	rasters: ReadRasterResult,
+	width: number,
+	height: number
+): Promise<Float32Array[] | undefined> => {
+	try {
+		return new Promise((resolve, reject) => {
+			if (rasters.length === 1) {
+				return rasters;
+			}
+
+			const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+				type: 'module'
+			});
+
+			worker.postMessage({
+				rasters,
+				width,
+				height
+			});
+
+			// Define message handler once
+			worker.onmessage = async (e) => {
+				const { result } = e.data;
+
+				resolve(result as Float32Array[]);
+
+				worker.terminate(); // Workerを終了
+			};
+
+			// Added error handling
+			worker.onerror = (error) => {
+				console.error('Worker error:', error);
+				reject(new Error(`Worker error: ${error.message}`));
+				worker.terminate(); // Workerを終了
+			};
+		});
+	} catch (error) {
+		console.error(`Error processing image`, error);
+	}
+};
 
 // ラスターデータの読み込み
 export const loadRasterData = async (
-	url: string
+	id: string,
+	url: string,
+	mode: BandTypeKey,
+	UniformsData: ShingleBandData | MultiBandData
 ): Promise<
 	| {
 			url: string;
@@ -63,6 +153,8 @@ export const loadRasterData = async (
 		const arrayBuffer = await response.arrayBuffer();
 		const tiff = await fromArrayBuffer(arrayBuffer);
 		const image = await tiff.getImage();
+		const width = image.getWidth();
+		const height = image.getHeight();
 
 		const geoKeys = image.geoKeys;
 		let epsgCode: string | number | null = null;
@@ -87,31 +179,28 @@ export const loadRasterData = async (
 			console.warn('No geoKeys found in the image.');
 		}
 
-		let bbox = image.getBoundingBox();
+		let extent;
+		if (!GeoTiffCache.hasBbox(id)) {
+			if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
+				extent = image.getBoundingBox();
+			} else {
+				const prjContent = proj4Dict[epsgCode];
+				extent = transformBbox(image.getBoundingBox(), prjContent); // EPSG:4326に変換
+			}
 
-		if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
-			bbox = image.getBoundingBox();
-		} else {
-			const prjContent = proj4Dict[epsgCode];
-			bbox = transformBbox(bbox, prjContent); // EPSG:4326に変換
+			GeoTiffCache.setBbox(id, extent as [number, number, number, number]);
 		}
 
 		let rasters: Float32Array[] = [];
-		if (GeoTiffCache.hasRasters(url)) {
-			const cachedRasters = GeoTiffCache.getRasters(url);
+		if (GeoTiffCache.hasRasters(id)) {
+			const cachedRasters = GeoTiffCache.getRasters(id);
 			if (cachedRasters) {
-				rasters = cachedRasters.rasters;
+				rasters = cachedRasters;
 			}
 		} else {
-			rasters = (await image.readRasters({ interleave: false })) as Float32Array[];
+			const rasterData = await image.readRasters({ interleave: false });
+			rasters = await getRasters(rasterData, width, height);
 		}
-
-		const type = rasters.length > 1 ? 'multi' : 'single';
-
-		let min = Infinity;
-		let max = -Infinity;
-
-		const band = rasters[0] as Float32Array;
 
 		// nodataの取得
 		const nodata =
@@ -119,34 +208,21 @@ export const loadRasterData = async (
 				? parseFloat(image.fileDirectory.GDAL_NODATA)
 				: null;
 
-		for (let i = 0; i < band.length; i++) {
-			const value = band[i];
-
-			const isValid =
-				Number.isFinite(value) &&
-				(nodata === null ||
-					(!Number.isNaN(nodata) && value !== nodata) ||
-					(Number.isNaN(nodata) && !Number.isNaN(value)));
-
-			if (isValid) {
-				min = Math.min(min, value);
-				max = Math.max(max, value);
-			}
-		}
-
-		console.log('min:', min);
-		console.log('max:', max);
+		const min = 0;
+		const max = 255;
 
 		return new Promise((resolve, reject) => {
-			const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+			const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {
 				type: 'module'
 			});
 
 			worker.postMessage({
 				rasters,
-				type,
+				type: 'multi',
 				min,
-				max
+				max,
+				width,
+				height
 			});
 
 			// Define message handler once
@@ -155,7 +231,7 @@ export const loadRasterData = async (
 
 				resolve({
 					url: URL.createObjectURL(blob),
-					bbox: bbox
+					bbox: extent
 				});
 
 				worker.terminate(); // Workerを終了

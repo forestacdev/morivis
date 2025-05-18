@@ -41,26 +41,35 @@ export const createSourcesItems = async (
 			switch (type) {
 				case 'raster': {
 					if (format.type === 'tiff') {
-						let url;
-						if (GeoTiffCache.hasDataUrl(entry.id)) {
-							url = GeoTiffCache.getDataUrl(entry.id);
-						} else {
-							const imageData = await loadRasterData(format.url);
-							if (imageData) {
-								url = imageData.url;
-								GeoTiffCache.setDataUrl(entry.id, url);
+						if (style.type === 'tiff') {
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							let url;
+							if (GeoTiffCache.hasDataUrl(entry.id)) {
+								url = GeoTiffCache.getDataUrl(entry.id);
 							} else {
-								console.error('Failed to load raster data');
+								const imageData = await loadRasterData(
+									entry.id,
+									format.url,
+									mode,
+									visualization.uniformsData[mode]
+								);
+								if (imageData) {
+									url = imageData.url;
+									GeoTiffCache.setDataUrl(entry.id, url);
+								} else {
+									console.error('Failed to load raster data');
+								}
 							}
-						}
 
-						items[sourceId] = {
-							type: 'image',
-							url,
-							coordinates: metaData.bounds
-								? getBoundingBoxCorners(metaData.bounds)
-								: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
-						} as ImageSourceSpecification;
+							items[sourceId] = {
+								type: 'image',
+								url,
+								coordinates: metaData.bounds
+									? getBoundingBoxCorners(metaData.bounds)
+									: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
+							} as ImageSourceSpecification;
+						}
 					} else if (format.type === 'image') {
 						if (style.type === 'dem') {
 							const visualization = style.visualization;
