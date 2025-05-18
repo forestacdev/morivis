@@ -11,7 +11,7 @@ uniform float u_min;
 uniform float u_max;
 
 
-in vec2 v_tex_coord ;
+in vec2 v_tex_coord;
 out vec4 fragColor;
 
 void main() {
