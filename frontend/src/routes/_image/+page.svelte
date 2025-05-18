@@ -17,8 +17,8 @@
 			return;
 		}
 
-		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/6675_dem.tif`);
-		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
+		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/slope.tif`);
+		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
 		// const imageData = await loadRasterData('./ensyurin_dem.tiff');
 
 		// MapLibreマップの初期化

@@ -76,14 +76,6 @@ const combineBandsToTexture2DArrayData = (
 	return output;
 };
 
-const encodeToTerrainRGB = (elevation: number): [number, number, number] => {
-	const val = Math.round((elevation + 10000) * 10);
-	const r = (val >> 16) & 0xff;
-	const g = (val >> 8) & 0xff;
-	const b = val & 0xff;
-	return [r, g, b];
-};
-
 self.onmessage = async (e) => {
 	const { rasters, type, min, max } = e.data;
 
@@ -179,12 +171,6 @@ self.onmessage = async (e) => {
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
-
 			gl.texImage3D(
 				gl.TEXTURE_2D_ARRAY,
 				0,
@@ -197,6 +183,12 @@ self.onmessage = async (e) => {
 				gl.UNSIGNED_BYTE,
 				textureArrayData
 			);
+
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
 		}
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
