@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import maplibregl, { MapMouseEvent, type LngLatLike } from 'maplibre-gl';
+	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { getBoundingBoxCorners } from '$routes/utils/map';
 	import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
