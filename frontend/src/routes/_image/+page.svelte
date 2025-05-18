@@ -17,12 +17,12 @@
 			return;
 		}
 
-		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/slope.tif`);
 		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
+		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/ensyurin_dem_3857.tif`);
 		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/HYP_50M_SR.tif`);
-		const imageData = await loadRasterData(
-			`${ENTRY_TIFF_DATA_PATH}/E000.00-S90.00-E180.00-N90.00-LST.tiff`
-		);
+		// const imageData = await loadRasterData(
+		// 	`${ENTRY_TIFF_DATA_PATH}/E000.00-S90.00-E180.00-N90.00-LST.tiff`
+		// );
 		// const imageData = await loadRasterData('./ensyurin_dem.tiff');
 
 		const maxBbox = [-180, -85.051129, 180, 85.051129];
@@ -46,7 +46,7 @@
 					tiff: {
 						type: 'image',
 						url: imageData.url as string,
-						coordinates: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
+						coordinates: getBoundingBoxCorners(imageData.bbox)
 					}
 				},
 				layers: [
@@ -60,7 +60,7 @@
 						source: 'tiff',
 						type: 'raster',
 						paint: {
-							'raster-opacity': 0.5
+							'raster-opacity': 0.9
 						},
 						minzoom: 0,
 						maxzoom: 22

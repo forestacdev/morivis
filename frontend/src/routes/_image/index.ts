@@ -43,14 +43,14 @@ export const loadRasterData = async (url: string) => {
 
 		let bbox = image.getBoundingBox();
 
-		console.log(bbox);
-
 		if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
 			bbox = image.getBoundingBox();
 		} else {
 			const prjContent = proj4Dict[epsgCode];
 			bbox = transformBbox(bbox, prjContent); // EPSG:4326に変換
 		}
+
+		console.log(bbox);
 
 		// ラスターデータを取得
 		const rasters = await image.readRasters({ interleave: false });
@@ -60,11 +60,24 @@ export const loadRasterData = async (url: string) => {
 		let min = Infinity;
 		let max = -Infinity;
 
-		const band = rasters[0] as Float32Array; // 1バンド目を取り出す
+		const band = rasters[0] as Float32Array;
+
+		// nodataの取得
+		const nodata =
+			image.fileDirectory.GDAL_NODATA !== undefined
+				? parseFloat(image.fileDirectory.GDAL_NODATA)
+				: null;
 
 		for (let i = 0; i < band.length; i++) {
 			const value = band[i];
-			if (!Number.isNaN(value)) {
+
+			const isValid =
+				Number.isFinite(value) &&
+				(nodata === null ||
+					(!Number.isNaN(nodata) && value !== nodata) ||
+					(Number.isNaN(nodata) && !Number.isNaN(value)));
+
+			if (isValid) {
 				min = Math.min(min, value);
 				max = Math.max(max, value);
 			}
