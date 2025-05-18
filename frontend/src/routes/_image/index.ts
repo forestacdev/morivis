@@ -2,10 +2,6 @@ import { fromArrayBuffer } from 'geotiff';
 import { epsgDict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-	type: 'module'
-});
-
 export type BandType = 'single' | 'multi';
 
 // ラスターデータの読み込み
@@ -55,7 +51,6 @@ export const loadRasterData = async (url: string) => {
 
 		let min = Infinity;
 		let max = -Infinity;
-
 		if (type === 'single') {
 			const band = rasters[0] as Float32Array; // 1バンド目を取り出す
 
@@ -70,6 +65,10 @@ export const loadRasterData = async (url: string) => {
 		}
 
 		return new Promise((resolve, reject) => {
+			const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+				type: 'module'
+			});
+
 			worker.postMessage({
 				rasters,
 				type,
@@ -85,11 +84,15 @@ export const loadRasterData = async (url: string) => {
 					url: dataUrl,
 					bbox: bbox
 				});
+
+				worker.terminate(); // Workerを終了
 			};
 
 			// Added error handling
 			worker.onerror = (error) => {
 				console.error('Worker error:', error);
+				reject(new Error(`Worker error: ${error.message}`));
+				worker.terminate(); // Workerを終了
 			};
 		});
 	} catch (error) {
