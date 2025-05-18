@@ -3,10 +3,6 @@ import type { ReadRasterResult } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
 import type { BandTypeKey, ShingleBandData, MultiBandData } from '$routes/data/types/raster';
-import bbox from '@turf/bbox';
-import type { image } from 'html2canvas/dist/types/css/types/image';
-import { get } from 'svelte/store';
-import { min, max } from 'es-toolkit/compat';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();
@@ -97,11 +93,20 @@ export const getRasters = async (
 	rasters: ReadRasterResult,
 	width: number,
 	height: number
-): Promise<Float32Array[] | undefined> => {
+): Promise<
+	| {
+			rastersData: Float32Array[];
+			size: number;
+	  }
+	| undefined
+> => {
 	try {
 		return new Promise((resolve, reject) => {
 			if (rasters.length === 1) {
-				return rasters;
+				return resolve({
+					rastersData: rasters as Float32Array[],
+					size: 1
+				});
 			}
 
 			const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
@@ -118,7 +123,10 @@ export const getRasters = async (
 			worker.onmessage = async (e) => {
 				const { result } = e.data;
 
-				resolve(result as Float32Array[]);
+				resolve({
+					rastersData: result,
+					size: rasters.length
+				});
 
 				worker.terminate(); // Workerを終了
 			};
@@ -192,6 +200,7 @@ export const loadRasterData = async (
 		}
 
 		let rasters: Float32Array[] = [];
+		let bandCount = 1;
 		if (GeoTiffCache.hasRasters(id)) {
 			const cachedRasters = GeoTiffCache.getRasters(id);
 			if (cachedRasters) {
@@ -199,7 +208,9 @@ export const loadRasterData = async (
 			}
 		} else {
 			const rasterData = await image.readRasters({ interleave: false });
-			rasters = await getRasters(rasterData, width, height);
+			const { rastersData, size } = await getRasters(rasterData, width, height);
+			rasters = rastersData as Float32Array[];
+			bandCount = size;
 		}
 
 		// nodataの取得
@@ -218,7 +229,8 @@ export const loadRasterData = async (
 
 			worker.postMessage({
 				rasters,
-				type: 'multi',
+				size: bandCount,
+				type: mode,
 				min,
 				max,
 				width,

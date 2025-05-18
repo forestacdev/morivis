@@ -6,7 +6,7 @@ const entry: RasterTiffEntry = {
 	type: 'raster',
 	format: {
 		type: 'tiff',
-		url: `${ENTRY_TIFF_DATA_PATH}/4326_test.tif`
+		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_slope_3857.tif`
 	},
 	metaData: {
 		name: '演習林傾斜量図',

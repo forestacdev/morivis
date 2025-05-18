@@ -88,9 +88,10 @@ const convertBandsToFloat32Texture2DArray = (
 };
 
 self.onmessage = async (e) => {
-	const { rasters, type, min, max, width, height } = e.data;
+	const { rasters, size, type, min, max, width, height } = e.data;
 
 	console.log('rasters', rasters);
+	console.log('size', size);
 	console.log('type', type);
 	console.log('min', min);
 	console.log('max', max);
@@ -138,27 +139,30 @@ self.onmessage = async (e) => {
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-		if (type === 'single') {
-			const demData = rasters[0] as Float32Array;
+		const texture = gl.createTexture();
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
-			const texture = gl.createTexture();
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texImage2D(
-				gl.TEXTURE_2D,
-				0,
-				gl.R32F, // 内部フォーマット
-				width,
-				height,
-				0,
-				gl.RED, // フォーマット
-				gl.FLOAT, // 型
-				demData
-			);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+		// unit16array
+		gl.texImage3D(
+			gl.TEXTURE_2D_ARRAY,
+			0,
+			gl.R32F,
+			width,
+			height,
+			size,
+			0,
+			gl.RED,
+			gl.FLOAT,
+			rasters
+		);
+
+		if (type === 'single') {
 			const uBandIndexLoc = gl.getUniformLocation(program, 'u_bandIndex');
 			gl.uniform1i(uBandIndexLoc, 0);
 
@@ -174,29 +178,6 @@ self.onmessage = async (e) => {
 			gl.uniform1i(uRedIndexLoc, 0); // バンド4（index = 3）
 			gl.uniform1i(uGreenIndexLoc, 1); // バンド3
 			gl.uniform1i(uBlueIndexLoc, 2); // バンド2
-
-			const texture = gl.createTexture();
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
-
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-			// unit16array
-			gl.texImage3D(
-				gl.TEXTURE_2D_ARRAY,
-				0,
-				gl.R32F,
-				width,
-				height,
-				3,
-				0,
-				gl.RED,
-				gl.FLOAT,
-				rasters
-			);
 
 			const uMinLoc = gl.getUniformLocation(program, 'u_min');
 			const uMaxLoc = gl.getUniformLocation(program, 'u_max');
