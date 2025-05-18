@@ -6,7 +6,7 @@ const entry: RasterTiffEntry = {
 	type: 'raster',
 	format: {
 		type: 'tiff',
-		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_slope_3857.tif`
+		url: `${ENTRY_TIFF_DATA_PATH}/4326_test.tif`
 	},
 	metaData: {
 		name: '演習林傾斜量図',
@@ -28,6 +28,7 @@ const entry: RasterTiffEntry = {
 			mode: 'single',
 			uniformsData: {
 				single: {
+					index: 0,
 					min: 0,
 					max: 79.4177017211914,
 					colorMap: 'greys'

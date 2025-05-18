@@ -174,6 +174,22 @@ export interface RasterDemStyle {
 
 export type BandTypeKey = 'single' | 'multi';
 
+export interface ShingleBandData {
+	index: number;
+	min: number;
+	max: number;
+	colorMap: ColorMapType;
+}
+
+export interface MultiBandData {
+	bands: [
+		{ index: number; min: number; max: number }, // R
+		{ index: number; min: number; max: number }, // G
+		{ index: number; min: number; max: number } // B
+	];
+	colorSpace: 'rgb';
+}
+
 export interface RasterTiffStyle {
 	type: 'tiff';
 	opacity: number;
@@ -181,19 +197,8 @@ export interface RasterTiffStyle {
 	visualization: {
 		mode: BandTypeKey;
 		uniformsData: {
-			single: {
-				min: number;
-				max: number;
-				colorMap: ColorMapType;
-			};
-			multi: {
-				bands: [
-					{ index: number; min: number; max: number }, // R
-					{ index: number; min: number; max: number }, // G
-					{ index: number; min: number; max: number } // B
-				];
-				colorSpace: 'rgb';
-			};
+			single: ShingleBandData;
+			multi: MultiBandData;
 		};
 	};
 }
