@@ -4,6 +4,7 @@ import type { TileXYZ } from '$routes/data/types/raster';
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';
 export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
+export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
 export const ENTRY_FGB_PATH = ENTRY_DATA_PATH + '/fgb';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';

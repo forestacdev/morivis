@@ -22,11 +22,7 @@
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
-	import {
-		streetViewCircleLayer,
-		streetViewLineLayer,
-		streetViewSources
-	} from '$routes/components/map-layer/StreetViewLayer.svelte';
+	import { streetViewSources } from '$routes/components/map-layer/StreetViewLayer.svelte';
 	// import WebGLCanvasLayer from '$routes/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/components/MouseManager.svelte';
@@ -185,8 +181,6 @@
 					}
 				},
 				...previewLayers,
-				streetViewLineLayer,
-				streetViewCircleLayer,
 				{
 					id: '@draw_fill_layer',
 					type: 'fill',

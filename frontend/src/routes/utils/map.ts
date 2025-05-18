@@ -2,6 +2,7 @@ import type { LngLat } from 'maplibre-gl';
 import type { Map as MaplibreMap } from 'maplibre-gl';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import bbox from '@turf/bbox';
 
 /**
  * Check if a point is inside a bounding box.
@@ -23,6 +24,35 @@ export const isBBoxOverlapping = (bbox1: BBox, bbox2: BBox): boolean => {
 	const [minX1, minY1, maxX1, maxY1] = bbox1;
 	const [minX2, minY2, maxX2, maxY2] = bbox2;
 	return minX1 < maxX2 && maxX1 > minX2 && minY1 < maxY2 && maxY1 > minY2;
+};
+
+/**
+ * [minLon, minLat, maxLon, maxLat] の形式のバウンディングボックスから、
+ * その4隅の座標ペアの配列 [[minLon, minLat], [maxLon, maxLat], [maxLon, minLat], [minLon, minLat]] を生成。
+ * @param bbox - [最小経度, 最小緯度, 最大経度, 最大緯度] の形式の配列 (バウンディングボックス)
+ * @returns バウンディングボックスの4隅の座標ペアの配列
+ */
+export const getBoundingBoxCorners = (
+	bbox: BBox
+): [[number, number], [number, number], [number, number], [number, number]] => {
+	if (bbox.length !== 4) {
+		throw new Error('Input array must contain exactly 4 numbers (minLon, minLat, maxLon, maxLat).');
+	}
+
+	const minLon = bbox[0];
+	const minLat = bbox[1];
+	const maxLon = bbox[2];
+	const maxLat = bbox[3];
+
+	// 4隅の座標を生成 (例: 左上, 右上, 右下, 左下の順)
+	const corners: [[number, number], [number, number], [number, number], [number, number]] = [
+		[minLon, maxLat], // 左上
+		[maxLon, maxLat], // 右上
+		[maxLon, minLat], // 右下
+		[minLon, minLat] // 左下
+	];
+
+	return corners;
 };
 
 /**

@@ -17,7 +17,14 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
+import { streetViewCircleLayer, streetViewLineLayer } from '$routes/utils/layers/street-view';
+
+import {
+	clickableVectorIds,
+	clickableRasterIds,
+	isStreetView,
+	type SelectedHighlightData
+} from '$routes/store';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -765,6 +772,9 @@ export const createLayersItems = (
 	// クリックイベントを有効にするレイヤーIDをstoreに保存
 	clickableVectorIds.set(clickableVecter);
 	clickableRasterIds.set(clickableRaster);
+
+	const streetViewLayer =
+		get(isStreetView) && _type === 'main' ? [...streetViewLineLayer, ...streetViewCircleLayer] : [];
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
