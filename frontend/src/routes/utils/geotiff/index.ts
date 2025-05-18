@@ -104,7 +104,7 @@ export const getRasters = async (
 		return new Promise((resolve, reject) => {
 			if (rasters.length === 1) {
 				return resolve({
-					rastersData: rasters as Float32Array[],
+					rastersData: rasters[0] as Float32Array[],
 					size: 1
 				});
 			}
