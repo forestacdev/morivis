@@ -1,6 +1,7 @@
 import vertexShaderSource from './shader/vertex.glsl?raw';
 import fsMulchSource from './shader/fragment_mulch.glsl?raw';
 import fsShingleSource from './shader/fragment_shingle.glsl?raw';
+import fsDemSource from './shader/fragment_dem.glsl?raw';
 
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (
@@ -83,31 +84,8 @@ const encodeToTerrainRGB = (elevation: number): [number, number, number] => {
 	return [r, g, b];
 };
 
-const combineBandsToTexture2DArrayDemData = (
-	bands: Float32Array[], // DEMが1バンド
-	width: number,
-	height: number
-): Uint8Array => {
-	const size = width * height * 4; // RGBA
-	const output = new Uint8Array(size);
-	const band = bands[0]; // DEMは1バンドのみを想定
-
-	for (let i = 0; i < width * height; i++) {
-		const elevation = band[i];
-		const [r, g, b] = encodeToTerrainRGB(elevation);
-		const offset = i * 4;
-
-		output[offset + 0] = r;
-		output[offset + 1] = g;
-		output[offset + 2] = b;
-		output[offset + 3] = 255; // A
-	}
-
-	return output;
-};
-
 self.onmessage = async (e) => {
-	const { rasters, type } = e.data;
+	const { rasters, type, min, max } = e.data;
 
 	// ラスターの高さと幅を取得
 	const width = rasters.width;
@@ -121,11 +99,16 @@ self.onmessage = async (e) => {
 			return new ImageBitmap();
 		}
 
+		const ext = gl.getExtension('EXT_color_buffer_float');
+		if (!ext) {
+			console.error('Float texture not supported');
+		}
+
 		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 		let fragmentShader;
 
 		if (type === 'single') {
-			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
+			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsDemSource);
 		} else if (type === 'multi') {
 			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
 		}
@@ -149,57 +132,77 @@ self.onmessage = async (e) => {
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-		let textureArrayData;
 		if (type === 'single') {
-			textureArrayData = combineBandsToTexture2DArrayDemData(
-				rasters as Float32Array[],
+			const demData = rasters[0] as Float32Array;
+			const texture = gl.createTexture();
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+
+			// 🔧 テクスチャパラメータを設定する（必須）
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texImage2D(
+				gl.TEXTURE_2D,
+				0,
+				gl.R32F, // 内部フォーマット
 				width,
-				height
+				height,
+				0,
+				gl.RED, // フォーマット
+				gl.FLOAT, // 型
+				demData
 			);
 			const uBandIndexLoc = gl.getUniformLocation(program, 'u_bandIndex');
 			gl.uniform1i(uBandIndexLoc, 0);
+
+			const uMinLoc = gl.getUniformLocation(program, 'u_min');
+			const uMaxLoc = gl.getUniformLocation(program, 'u_max');
+			gl.uniform1f(uMinLoc, min);
+			gl.uniform1f(uMaxLoc, max);
 		}
 		if (type === 'multi') {
-			textureArrayData = combineBandsToTexture2DArrayData(rasters as Uint8Array[], width, height);
+			const textureArrayData = combineBandsToTexture2DArrayData(
+				rasters as Uint8Array[],
+				width,
+				height
+			);
 			const uRedIndexLoc = gl.getUniformLocation(program, 'u_redIndex');
 			const uGreenIndexLoc = gl.getUniformLocation(program, 'u_greenIndex');
 			const uBlueIndexLoc = gl.getUniformLocation(program, 'u_blueIndex');
 			gl.uniform1i(uRedIndexLoc, 0); // バンド4（index = 3）
 			gl.uniform1i(uGreenIndexLoc, 1); // バンド3
 			gl.uniform1i(uBlueIndexLoc, 2); // バンド2
+
+			const texture = gl.createTexture();
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
+
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
+
+			gl.texImage3D(
+				gl.TEXTURE_2D_ARRAY,
+				0,
+				gl.RGBA,
+				width,
+				height,
+				rasters.length,
+				0,
+				gl.RGBA,
+				gl.UNSIGNED_BYTE,
+				textureArrayData
+			);
 		}
-
-		const texture = gl.createTexture();
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
-
-		const depth = type === 'single' ? 1 : rasters.length;
-
-		gl.texImage3D(
-			gl.TEXTURE_2D_ARRAY,
-			0,
-			gl.RGBA,
-			width,
-			height,
-			depth,
-			0,
-			gl.RGBA,
-			gl.UNSIGNED_BYTE,
-			textureArrayData
-		);
-
-		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-		// ✅ OffscreenCanvas から Blob を作成
 		const blob = await canvas.convertToBlob({ type: 'image/png' });
 
-		// ✅ Blob → DataURL に変換（main thread に送るため）
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			const dataUrl = reader.result as string;

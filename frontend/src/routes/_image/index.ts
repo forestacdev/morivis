@@ -41,8 +41,6 @@ export const loadRasterData = async (url: string) => {
 
 		let bbox = image.getBoundingBox();
 
-		console.log(epsgCode);
-
 		if (epsgCode === '4326' || epsgCode === null) {
 			bbox = image.getBoundingBox();
 		} else {
@@ -53,14 +51,30 @@ export const loadRasterData = async (url: string) => {
 		// ラスターデータを取得
 		const rasters = await image.readRasters({ interleave: false });
 
-		console.log('rasters', rasters);
-
 		const type = rasters.length > 1 ? 'multi' : 'single';
+
+		let min = Infinity;
+		let max = -Infinity;
+
+		if (type === 'single') {
+			const band = rasters[0] as Float32Array; // 1バンド目を取り出す
+
+			for (let i = 0; i < band.length; i++) {
+				const value = band[i];
+				if (!Number.isNaN(value)) {
+					min = Math.min(min, value);
+					max = Math.max(max, value);
+				}
+			}
+		} else {
+		}
 
 		return new Promise((resolve, reject) => {
 			worker.postMessage({
 				rasters,
-				type
+				type,
+				min,
+				max
 			});
 
 			// Define message handler once
