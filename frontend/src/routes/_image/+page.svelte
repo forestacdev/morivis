@@ -17,9 +17,9 @@
 			return;
 		}
 
-		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/6675_dem.tif`);
+		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/6675_dem.tif`);
 		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
-		const imageData = await loadRasterData('./ensyurin_dem.tiff');
+		// const imageData = await loadRasterData('./ensyurin_dem.tiff');
 
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({
@@ -60,6 +60,18 @@
 			zoom: 9, // 初期ズームレベル,
 			hash: true
 		});
+
+		map.fitBounds(
+			[
+				[imageData.bbox[0], imageData.bbox[1]], // SW
+				[imageData.bbox[2], imageData.bbox[3]] // NE
+			],
+			{
+				padding: { top: 10, right: 10, bottom: 10, left: 10 },
+				maxZoom: 18,
+				duration: 0
+			}
+		);
 	});
 </script>
 

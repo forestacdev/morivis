@@ -173,13 +173,15 @@ self.onmessage = async (e) => {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
+		const depth = type === 'single' ? 1 : rasters.length;
+
 		gl.texImage3D(
 			gl.TEXTURE_2D_ARRAY,
 			0,
 			gl.RGBA,
 			width,
 			height,
-			3, // depth = number of bands
+			depth,
 			0,
 			gl.RGBA,
 			gl.UNSIGNED_BYTE,
