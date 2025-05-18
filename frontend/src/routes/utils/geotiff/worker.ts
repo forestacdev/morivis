@@ -114,10 +114,10 @@ self.onmessage = async (e) => {
 
 		if (type === 'single') {
 			const demData = rasters[0] as Float32Array;
+
 			const texture = gl.createTexture();
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, texture);
-
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -154,7 +154,6 @@ self.onmessage = async (e) => {
 			gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
 
 			const float32Bands = convertUint8BandsToFloat32(rasters as Uint8Array[]);
-
 			const flatData = combineFloatBandsToTexture2DArray(float32Bands, width, height);
 
 			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

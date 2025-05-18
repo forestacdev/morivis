@@ -4,8 +4,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { getBoundingBoxCorners } from '$routes/utils/map';
 	import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-
-	import { loadRasterData } from '$routes/utils/geotiff';
+	import { loadRasterData } from '$routes/_image';
 
 	let map: maplibregl.Map | null = null;
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -46,7 +45,7 @@
 					tiff: {
 						type: 'image',
 						url: imageData.url as string,
-						coordinates: getBoundingBoxCorners(imageData.bbox)
+						coordinates: getBoundingBoxCorners(maxBbox)
 					}
 				},
 				layers: [

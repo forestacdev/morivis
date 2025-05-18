@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>OffscreenCanvas + WebGL Shader in Worker</title>
+		<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.css" />
+		<script src="https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.js"></script>
+		<style>
+			canvas {
+				width: 600px;
+				height: 400px;
+				border: 1px solid black;
+			}
+
+			body {
+				margin: 0;
+				padding: 0;
+			}
+			html,
+			body,
+			#map {
+				height: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="my-canvas" width="600" height="400"></canvas>
+		<div id="map"></div>
+
+		<script>
+			const canvas = document.getElementById('my-canvas');
+			const offscreen = canvas.transferControlToOffscreen();
+
+			const worker = new Worker('worker.js');
+			worker.postMessage({ canvas: offscreen }, [offscreen]);
+
+			const map = new maplibregl.Map({
+				container: 'map',
+				zoom: 5,
+				minZoom: 4,
+				center: [95.899147, 18.088694],
+				style:
+					'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL'
+			});
+
+			map.on('load', () => {
+				map.addSource('canvas-source', {
+					type: 'canvas',
+					canvas: 'my-canvas',
+					coordinates: [
+						[91.4461, 21.5006],
+						[100.3541, 21.5006],
+						[100.3541, 13.9706],
+						[91.4461, 13.9706]
+					],
+					// Set to true if the canvas source is animated. If the canvas is static, animate should be set to false to improve performance.
+					animate: true
+				});
+
+				map.addLayer({
+					id: 'canvas-layer',
+					type: 'raster',
+					source: 'canvas-source'
+				});
+			});
+		</script>
+	</body>
+</html>

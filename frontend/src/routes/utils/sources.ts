@@ -2,7 +2,8 @@ import {
 	type SourceSpecification,
 	type VectorSourceSpecification,
 	type RasterSourceSpecification,
-	type GeoJSONSourceSpecification
+	type GeoJSONSourceSpecification,
+	type ImageSourceSpecification
 } from 'maplibre-gl';
 
 import type { GeoDataEntry } from '$routes/data/types';
@@ -18,8 +19,9 @@ import { getFgbToGeojson } from '$routes/utils/geojson';
 
 import { objectToUrlParams } from '$routes/utils/params';
 
-// TODO: Geotiff
-// import { fromUrl, Pool } from 'geotiff';
+import { getBoundingBoxCorners } from '$routes/utils/map';
+import { loadRasterData } from '$routes/utils/geotiff';
+import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -38,7 +40,19 @@ export const createSourcesItems = async (
 
 			switch (type) {
 				case 'raster': {
-					if (format.type === 'image') {
+					if (format.type === 'tiff') {
+						const imageData = await loadRasterData(format.url);
+
+						if (imageData) {
+							items[sourceId] = {
+								type: 'image',
+								url: imageData.url,
+								coordinates: metaData.bounds
+									? getBoundingBoxCorners(metaData.bounds)
+									: getBoundingBoxCorners(imageData.bbox)
+							} as ImageSourceSpecification;
+						}
+					} else if (format.type === 'image') {
 						if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;

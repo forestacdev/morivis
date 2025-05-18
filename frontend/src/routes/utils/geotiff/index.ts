@@ -5,7 +5,15 @@ import { transformBbox } from '$routes/utils/proj';
 export type BandType = 'single' | 'multi';
 
 // ラスターデータの読み込み
-export const loadRasterData = async (url: string) => {
+export const loadRasterData = async (
+	url: string
+): Promise<
+	| {
+			url: string;
+			bbox: [number, number, number, number];
+	  }
+	| undefined
+> => {
 	try {
 		const response = await fetch(url);
 		const arrayBuffer = await response.arrayBuffer();

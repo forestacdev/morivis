@@ -172,6 +172,32 @@ export interface RasterDemStyle {
 	};
 }
 
+export type BandTypeKey = 'single' | 'multi';
+
+export interface RasterTiffStyle {
+	type: 'tiff';
+	opacity: number;
+	visible?: boolean;
+	visualization: {
+		mode: BandTypeKey;
+		uniformsData: {
+			single: {
+				min: number;
+				max: number;
+				colorMap: ColorMapType;
+			};
+			multi: {
+				bands: [
+					{ index: number; min: number; max: number }, // R
+					{ index: number; min: number; max: number }, // G
+					{ index: number; min: number; max: number } // B
+				];
+				colorSpace: 'rgb';
+			};
+		};
+	};
+}
+
 interface RasterMetaData extends BaseMetaData {
 	minZoom: number;
 	tileSize: TileSize;
@@ -205,6 +231,15 @@ export interface RasterPMTilesEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterTiffEntry extends BaseRasterEntry {
+	format: {
+		type: 'tiff';
+		url: string;
+	};
+	style: RasterTiffStyle;
+}
+
+// TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
 		type: 'image';

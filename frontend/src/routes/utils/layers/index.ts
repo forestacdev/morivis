@@ -660,8 +660,6 @@ export const createLayersItems = (
 
 	FeatureStateManager.clear();
 
-	// const layerIdNameDict: { [_: string]: string } = {};
-
 	_dataEntries
 		.filter((entry) => entry.style.visible)
 		.reverse()
@@ -710,6 +708,14 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'dem') {
+						layerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity
+							}
+						});
+					} else if (style.type === 'tiff') {
 						layerItems.push({
 							...layer,
 							type: 'raster',
