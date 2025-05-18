@@ -1,6 +1,8 @@
 import { fromArrayBuffer } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
+import type { Geometry } from 'flatgeobuf';
+import type { FeatureCollection, GeoJsonProperties } from 'geojson';
 
 export type BandType = 'single' | 'multi';
 
@@ -19,12 +21,6 @@ export const loadRasterData = async (
 		const arrayBuffer = await response.arrayBuffer();
 		const tiff = await fromArrayBuffer(arrayBuffer);
 		const image = await tiff.getImage();
-
-		const { BitsPerSample, SampleFormat, PhotometricInterpretation } = image.fileDirectory;
-
-		console.log('BitsPerSample:', image); // [8, 8, 8] や [16, 16, 16] など
-		console.log('SampleFormat:', SampleFormat); // [1, 1, 1] = unsigned int, [3, 3, 3] = float
-		console.log('PhotometricInterpretation:', PhotometricInterpretation); // 2 = RGB
 
 		const geoKeys = image.geoKeys;
 		let epsgCode: string | number | null = null;
@@ -108,10 +104,10 @@ export const loadRasterData = async (
 
 			// Define message handler once
 			worker.onmessage = async (e) => {
-				const { dataUrl } = e.data;
+				const { blob } = e.data;
 
 				resolve({
-					url: dataUrl,
+					url: URL.createObjectURL(blob),
 					bbox: bbox
 				});
 
@@ -129,3 +125,47 @@ export const loadRasterData = async (
 		console.error(`Error processing image`, error);
 	}
 };
+
+export class GeoTiffCache {
+	private static dataUrlCache: Map<string, string> = new Map();
+	private static rasterCache: Map<string, { rasters: Float32Array[]; type: BandType }> = new Map();
+
+	static setDataUrl(key: string, url: string) {
+		this.dataUrlCache.set(key, url);
+	}
+
+	static setRasters(key: string, rasters: Float32Array[], type: BandType) {
+		this.rasterCache.set(key, { rasters, type });
+	}
+
+	static getDataUrl(key: string): string | undefined {
+		return this.dataUrlCache.get(key);
+	}
+
+	static getRasters(key: string): { rasters: Float32Array[]; type: BandType } | undefined {
+		return this.rasterCache.get(key);
+	}
+
+	static removeDataUrl(key: string): void {
+		this.dataUrlCache.delete(key);
+	}
+	static removeRasters(key: string): void {
+		this.rasterCache.delete(key);
+	}
+	static clear(): void {
+		this.dataUrlCache.clear();
+		this.rasterCache.clear();
+	}
+	static hasDataUrl(key: string): boolean {
+		return this.dataUrlCache.has(key);
+	}
+	static hasRasters(key: string): boolean {
+		return this.rasterCache.has(key);
+	}
+	static keysDataUrl(): IterableIterator<string> {
+		return this.dataUrlCache.keys();
+	}
+	static keysRasters(): IterableIterator<string> {
+		return this.rasterCache.keys();
+	}
+}

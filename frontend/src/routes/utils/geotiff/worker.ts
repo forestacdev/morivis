@@ -184,15 +184,7 @@ self.onmessage = async (e) => {
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 		const blob = await canvas.convertToBlob({ type: 'image/png' });
-
-		const reader = new FileReader();
-		reader.onloadend = () => {
-			const dataUrl = reader.result as string;
-			self.postMessage({ dataUrl });
-		};
-		reader.readAsDataURL(blob);
-
-		// self.postMessage({ imageBitmap: canvas.transferToImageBitmap() });
+		self.postMessage({ blob }); // worker から転送
 	} catch (e) {
 		console.error(e);
 	}
