@@ -1,8 +1,50 @@
 import { fromArrayBuffer } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
-import type { Geometry } from 'flatgeobuf';
-import type { FeatureCollection, GeoJsonProperties } from 'geojson';
+
+export class GeoTiffCache {
+	private static dataUrlCache: Map<string, string> = new Map();
+	private static rasterCache: Map<string, { rasters: Float32Array[]; type: BandType }> = new Map();
+
+	static setDataUrl(key: string, url: string) {
+		this.dataUrlCache.set(key, url);
+	}
+
+	static setRasters(key: string, rasters: Float32Array[], type: BandType) {
+		this.rasterCache.set(key, { rasters, type });
+	}
+
+	static getDataUrl(key: string): string | undefined {
+		return this.dataUrlCache.get(key);
+	}
+
+	static getRasters(key: string): { rasters: Float32Array[]; type: BandType } | undefined {
+		return this.rasterCache.get(key);
+	}
+
+	static removeDataUrl(key: string): void {
+		this.dataUrlCache.delete(key);
+	}
+	static removeRasters(key: string): void {
+		this.rasterCache.delete(key);
+	}
+	static clear(): void {
+		this.dataUrlCache.clear();
+		this.rasterCache.clear();
+	}
+	static hasDataUrl(key: string): boolean {
+		return this.dataUrlCache.has(key);
+	}
+	static hasRasters(key: string): boolean {
+		return this.rasterCache.has(key);
+	}
+	static keysDataUrl(): IterableIterator<string> {
+		return this.dataUrlCache.keys();
+	}
+	static keysRasters(): IterableIterator<string> {
+		return this.rasterCache.keys();
+	}
+}
 
 export type BandType = 'single' | 'multi';
 
@@ -54,10 +96,15 @@ export const loadRasterData = async (
 			bbox = transformBbox(bbox, prjContent); // EPSG:4326に変換
 		}
 
-		console.log(bbox);
-
-		// ラスターデータを取得
-		const rasters = await image.readRasters({ interleave: false });
+		let rasters: Float32Array[] = [];
+		if (GeoTiffCache.hasRasters(url)) {
+			const cachedRasters = GeoTiffCache.getRasters(url);
+			if (cachedRasters) {
+				rasters = cachedRasters.rasters;
+			}
+		} else {
+			rasters = (await image.readRasters({ interleave: false })) as Float32Array[];
+		}
 
 		const type = rasters.length > 1 ? 'multi' : 'single';
 
@@ -125,47 +172,3 @@ export const loadRasterData = async (
 		console.error(`Error processing image`, error);
 	}
 };
-
-export class GeoTiffCache {
-	private static dataUrlCache: Map<string, string> = new Map();
-	private static rasterCache: Map<string, { rasters: Float32Array[]; type: BandType }> = new Map();
-
-	static setDataUrl(key: string, url: string) {
-		this.dataUrlCache.set(key, url);
-	}
-
-	static setRasters(key: string, rasters: Float32Array[], type: BandType) {
-		this.rasterCache.set(key, { rasters, type });
-	}
-
-	static getDataUrl(key: string): string | undefined {
-		return this.dataUrlCache.get(key);
-	}
-
-	static getRasters(key: string): { rasters: Float32Array[]; type: BandType } | undefined {
-		return this.rasterCache.get(key);
-	}
-
-	static removeDataUrl(key: string): void {
-		this.dataUrlCache.delete(key);
-	}
-	static removeRasters(key: string): void {
-		this.rasterCache.delete(key);
-	}
-	static clear(): void {
-		this.dataUrlCache.clear();
-		this.rasterCache.clear();
-	}
-	static hasDataUrl(key: string): boolean {
-		return this.dataUrlCache.has(key);
-	}
-	static hasRasters(key: string): boolean {
-		return this.rasterCache.has(key);
-	}
-	static keysDataUrl(): IterableIterator<string> {
-		return this.dataUrlCache.keys();
-	}
-	static keysRasters(): IterableIterator<string> {
-		return this.rasterCache.keys();
-	}
-}
