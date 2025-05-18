@@ -36,6 +36,8 @@ const rgbaImage = async (
 	return await createImageBitmap(imageData);
 };
 
+export type BandType = 'single' | 'multi';
+
 // ラスターデータの読み込み
 export const loadRasterData = async (url: string) => {
 	try {
@@ -43,32 +45,29 @@ export const loadRasterData = async (url: string) => {
 		const arrayBuffer = await response.arrayBuffer();
 		const tiff = await fromArrayBuffer(arrayBuffer);
 		const image = await tiff.getImage();
+		const bbox = image.getBoundingBox();
+
+		// 座標系を取得
 
 		// ラスターデータを取得
 		const rasters = await image.readRasters({ interleave: false });
 
-		// ラスターの高さと幅を取得
-		const width = rasters.width;
-		const height = rasters.height;
-
-		const bitmapR = await rgbaImage(rasters[0] as Uint8Array, width, height);
-		const bitmapG = await rgbaImage(rasters[1] as Uint8Array, width, height);
-		const bitmapB = await rgbaImage(rasters[2] as Uint8Array, width, height);
+		const type = rasters.length > 1 ? 'multi' : 'single';
 
 		return new Promise((resolve, reject) => {
 			worker.postMessage({
-				bitmapR,
-				bitmapG,
-				bitmapB,
-				width,
-				height
+				rasters,
+				type
 			});
 
 			// Define message handler once
 			worker.onmessage = async (e) => {
 				const { dataUrl } = e.data;
 
-				resolve(dataUrl);
+				resolve({
+					url: dataUrl,
+					bbox: bbox
+				});
 			};
 
 			// Added error handling

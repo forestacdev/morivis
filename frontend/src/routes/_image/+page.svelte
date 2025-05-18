@@ -17,7 +17,7 @@
 			return;
 		}
 
-		const image = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
+		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
 
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({
@@ -35,8 +35,8 @@
 					},
 					tiff: {
 						type: 'image',
-						url: image as string,
-						coordinates: getBoundingBoxCorners([136.276225, 35.133729, 137.651936, 36.465031])
+						url: imageData.url as string,
+						coordinates: getBoundingBoxCorners(imageData.bbox)
 					}
 				},
 				layers: [

@@ -128,9 +128,6 @@ importers:
       pbf:
         specifier: ^4.0.1
         version: 4.0.1
-      plotty:
-        specifier: ^0.4.9
-        version: 0.4.9
       pmtiles:
         specifier: ^4.1.0
         version: 4.3.0
@@ -3896,10 +3893,6 @@ packages:
     resolution: {integrity: sha512-JAwMNMBlxJ2oD1kce4KPtMkDeKGHQstdpFPcPH3maElAXon/QZeTvtsfXmTMRyO9TslfoYOXkSsvao2nE1ilTw==}
     engines: {node: '>=18'}
     hasBin: true
-
-  plotty@0.4.9:
-    resolution: {integrity: sha512-UUINHc6VzMMdvbvBoiBW8/Zk0KH2HfUV4P5xRqDxcu6eAIW2sxQO09sC5o0am5VIAO6RhJXKEJuwU5HTNJ8hPw==}
-    engines: {node: '>=0.8.0'}
 
   pmtiles@4.3.0:
     resolution: {integrity: sha512-wnzQeSiYT/MyO63o7AVxwt7+uKqU0QUy2lHrivM7GvecNy0m1A4voVyGey7bujnEW5Hn+ZzLdvHPoFaqrOzbPA==}
@@ -9085,8 +9078,6 @@ snapshots:
       playwright-core: 1.52.0
     optionalDependencies:
       fsevents: 2.3.2
-
-  plotty@0.4.9: {}
 
   pmtiles@4.3.0:
     dependencies:

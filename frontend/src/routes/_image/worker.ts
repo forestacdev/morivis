@@ -1,5 +1,6 @@
 import vertexShaderSource from './shader/vertex.glsl?raw';
-import fragmentShaderSource from './shader/fragment.glsl?raw';
+import fsMulchSource from './shader/fragment_mulch.glsl?raw';
+import fsShingleSource from './shader/fragment_shingle.glsl?raw';
 
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (
@@ -39,72 +40,50 @@ const createProgram = (
 	return program;
 };
 
-// function createGrayTexture(
-// 	gl: WebGL2RenderingContext,
-// 	data: Uint8Array,
-// 	width: number,
-// 	height: number
-// ): WebGLTexture {
-// 	const texture = gl.createTexture();
-// 	gl.bindTexture(gl.TEXTURE_2D, texture);
-
-// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-// 	gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-// 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RED, width, height, 0, gl.RED, gl.UNSIGNED_BYTE, data);
-
-// 	return texture!;
-// }
-
-const createGrayTexture = (
-	gl: WebGL2RenderingContext,
-	program: WebGLProgram,
+/**
+ * R/G/B の各バンドの Uint8Array を 2D テクスチャ配列（TEXTURE_2D_ARRAY）用の RGBA フォーマットに変換
+ * @param bands - 各バンドのデータ（例： [rasterR, rasterG, rasterB]）
+ * @param width - ラスター幅
+ * @param height - ラスター高さ
+ * @returns RGBA 格納の Uint8Array（深さ = bands.length）
+ */
+const combineBandsToTexture2DArrayData = (
+	bands: Uint8Array[],
 	width: number,
-	height: number,
-	data: Uint8Array,
-	unit: number,
-	name: string
-) => {
-	const tex = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0 + unit);
-	gl.bindTexture(gl.TEXTURE_2D, tex);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RED, width, height, 0, gl.RED, gl.UNSIGNED_BYTE, data);
-	gl.uniform1i(gl.getUniformLocation(program, name), unit);
-};
+	height: number
+): Uint8Array => {
+	const depth = bands.length;
+	const sizePerLayer = width * height * 4; // RGBA
+	const output = new Uint8Array(sizePerLayer * depth);
 
-const createGrayTextureBitmap = (
-	gl: WebGL2RenderingContext,
-	program: WebGLProgram,
+	for (let z = 0; z < depth; z++) {
+		const band = bands[z];
+		const offsetZ = z * sizePerLayer;
 
-	bitmap: ImageBitmap,
-	unit: number,
-	name: string
-) => {
-	const texture = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0 + unit);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	// gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
+		for (let i = 0; i < width * height; i++) {
+			const val = band[i];
+			const offset = offsetZ + i * 4;
 
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.uniform1i(gl.getUniformLocation(program, name), unit);
-	// gl.generateMipmap(gl.TEXTURE_2D);
+			// グレースケールとして R/G/B に同じ値、Aは常に255
+			output[offset + 0] = val;
+			output[offset + 1] = val;
+			output[offset + 2] = val;
+			output[offset + 3] = 255;
+		}
+	}
+
+	return output;
 };
 
 self.onmessage = async (e) => {
-	const { bitmapR, bitmapG, bitmapB, width, height } = e.data;
+	const { rasters, type } = e.data;
+
+	// ラスターの高さと幅を取得
+	const width = rasters.width;
+	const height = rasters.height;
+
+	const textureArrayData = combineBandsToTexture2DArrayData(rasters as Uint8Array[], width, height);
+
 	try {
 		const canvas = new OffscreenCanvas(width, height);
 		const gl = canvas.getContext('webgl2');
@@ -114,7 +93,13 @@ self.onmessage = async (e) => {
 		}
 
 		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-		const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+		let fragmentShader;
+
+		if (type === 'single') {
+			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
+		} else if (type === 'multi') {
+			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
+		}
 		if (!vertexShader || !fragmentShader) return new ImageBitmap();
 
 		const program = createProgram(gl, vertexShader, fragmentShader);
@@ -135,9 +120,41 @@ self.onmessage = async (e) => {
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-		createGrayTextureBitmap(gl, program, bitmapR, 0, 'u_textureBitmapR');
-		createGrayTextureBitmap(gl, program, bitmapG, 1, 'u_textureBitmapG');
-		createGrayTextureBitmap(gl, program, bitmapB, 2, 'u_textureBitmapB');
+		if (type === 'single') {
+			const uBandIndexLoc = gl.getUniformLocation(program, 'u_bandIndex');
+			gl.uniform1i(uBandIndexLoc, 0);
+		}
+		if (type === 'multi') {
+			const uRedIndexLoc = gl.getUniformLocation(program, 'u_redIndex');
+			const uGreenIndexLoc = gl.getUniformLocation(program, 'u_greenIndex');
+			const uBlueIndexLoc = gl.getUniformLocation(program, 'u_blueIndex');
+			gl.uniform1i(uRedIndexLoc, 0); // バンド4（index = 3）
+			gl.uniform1i(uGreenIndexLoc, 1); // バンド3
+			gl.uniform1i(uBlueIndexLoc, 2); // バンド2
+		}
+
+		const texture = gl.createTexture();
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
+
+		gl.texImage3D(
+			gl.TEXTURE_2D_ARRAY,
+			0,
+			gl.RGBA,
+			width,
+			height,
+			3, // depth = number of bands
+			0,
+			gl.RGBA,
+			gl.UNSIGNED_BYTE,
+			textureArrayData
+		);
+
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.generateMipmap(gl.TEXTURE_2D_ARRAY); // これがないと表示されない
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
