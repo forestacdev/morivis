@@ -19,7 +19,15 @@
 
 		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/slope.tif`);
 		// const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/4326_test.tif`);
-		const imageData = await loadRasterData('./ensyurin_dem.tiff');
+		const imageData = await loadRasterData(`${ENTRY_TIFF_DATA_PATH}/HYP_50M_SR.tif`);
+		// const imageData = await loadRasterData(
+		// 	`${ENTRY_TIFF_DATA_PATH}/E000.00-S90.00-E180.00-N90.00-LST.tiff`
+		// );
+		// const imageData = await loadRasterData('./ensyurin_dem.tiff');
+
+		const maxBbox = [-180, -85.051129, 180, 85.051129];
+
+		console.log('imageData', imageData);
 
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({
@@ -38,7 +46,7 @@
 					tiff: {
 						type: 'image',
 						url: imageData.url as string,
-						coordinates: getBoundingBoxCorners(imageData.bbox)
+						coordinates: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
 					}
 				},
 				layers: [
@@ -51,6 +59,9 @@
 						id: 'tiff_layer',
 						source: 'tiff',
 						type: 'raster',
+						paint: {
+							'raster-opacity': 0.5
+						},
 						minzoom: 0,
 						maxzoom: 22
 					}
@@ -58,7 +69,8 @@
 			},
 			center: [139.7454, 35.6586],
 			zoom: 9, // 初期ズームレベル,
-			hash: true
+			hash: true,
+			renderWorldCopies: false
 		});
 
 		map.fitBounds(

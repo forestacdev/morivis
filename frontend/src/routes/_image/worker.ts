@@ -49,14 +49,17 @@ const combineFloatBandsToTexture2DArray = (
 	const layerSize = width * height;
 	const output = new Float32Array(layerSize * depth);
 
-	for (let z = 0; z < depth; z++) {
+	// ループを最小限にする（境界チェック不要なら forEachでもOK）
+	for (let z = 0; z < depth; ++z) {
 		const band = bands[z];
-		output.set(band, z * layerSize); // 1バンドをまるごとコピー
+		if (band.length !== layerSize) {
+			throw new Error(`Band ${z} has incorrect length: ${band.length}`);
+		}
+		output.set(band, z * layerSize);
 	}
 
 	return output;
 };
-
 const convertUint8BandsToFloat32 = (bands: Uint8Array[]): Float32Array[] => {
 	return bands.map((band) => new Float32Array(band));
 };

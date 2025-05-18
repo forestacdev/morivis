@@ -1,5 +1,5 @@
 import { fromArrayBuffer } from 'geotiff';
-import { epsgDict, citationDict } from '$routes/utils/proj/dict';
+import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
 
 export type BandType = 'single' | 'multi';
@@ -14,12 +14,12 @@ export const loadRasterData = async (url: string) => {
 
 		const { BitsPerSample, SampleFormat, PhotometricInterpretation } = image.fileDirectory;
 
-		console.log('BitsPerSample:', BitsPerSample); // [8, 8, 8] や [16, 16, 16] など
+		console.log('BitsPerSample:', image); // [8, 8, 8] や [16, 16, 16] など
 		console.log('SampleFormat:', SampleFormat); // [1, 1, 1] = unsigned int, [3, 3, 3] = float
 		console.log('PhotometricInterpretation:', PhotometricInterpretation); // 2 = RGB
 
 		const geoKeys = image.geoKeys;
-		let epsgCode: string | null = null;
+		let epsgCode: string | number | null = null;
 		if (geoKeys) {
 			// ① 明示的な EPSG コードがあるか確認
 			if (geoKeys.ProjectedCSTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey !== 32767) {
@@ -43,11 +43,13 @@ export const loadRasterData = async (url: string) => {
 
 		let bbox = image.getBoundingBox();
 
-		if (epsgCode === '4326' || epsgCode === null) {
+		console.log(bbox);
+
+		if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
 			bbox = image.getBoundingBox();
 		} else {
-			const epsgData = epsgDict[epsgCode as keyof typeof epsgDict];
-			bbox = transformBbox(bbox, epsgData.proj4); // EPSG:4326に変換
+			const prjContent = proj4Dict[epsgCode];
+			bbox = transformBbox(bbox, prjContent); // EPSG:4326に変換
 		}
 
 		// ラスターデータを取得
