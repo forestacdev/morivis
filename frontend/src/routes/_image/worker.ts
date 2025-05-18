@@ -100,11 +100,11 @@ const createGrayTextureBitmap = (
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.uniform1i(gl.getUniformLocation(program, name), unit);
-	gl.generateMipmap(gl.TEXTURE_2D);
+	// gl.generateMipmap(gl.TEXTURE_2D);
 };
 
 self.onmessage = async (e) => {
-	const { bitmapR, bitmapG, bitmapB, width, height, rasterR, rasterG, rasterB } = e.data;
+	const { bitmapR, bitmapG, bitmapB, width, height } = e.data;
 	try {
 		const canvas = new OffscreenCanvas(width, height);
 		const gl = canvas.getContext('webgl2');
@@ -135,27 +135,9 @@ self.onmessage = async (e) => {
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-		// createGrayTexture(gl, program, width, height, rasterR, 0, 'u_textureR');
-		// createGrayTexture(gl, program, width, height, rasterG, 1, 'u_textureG');
-		// createGrayTexture(gl, program, width, height, rasterB, 2, 'u_textureB');
-
 		createGrayTextureBitmap(gl, program, bitmapR, 0, 'u_textureBitmapR');
 		createGrayTextureBitmap(gl, program, bitmapG, 1, 'u_textureBitmapG');
 		createGrayTextureBitmap(gl, program, bitmapB, 2, 'u_textureBitmapB');
-
-		// テクスチャの作成と読み込み
-		// const texture = gl.createTexture();
-		// gl.bindTexture(gl.TEXTURE_2D, texture);
-
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-		// gl.bindTexture(gl.TEXTURE_2D, texture);
-		// gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmapR);
-		// gl.uniform1i(gl.getUniformLocation(program, 'u_textureBitmapR'), 0);
-		// gl.generateMipmap(gl.TEXTURE_2D);
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 

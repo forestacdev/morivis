@@ -50,8 +50,6 @@ export const loadRasterData = async (url: string) => {
 		// ラスターの高さと幅を取得
 		const width = rasters.width;
 		const height = rasters.height;
-		// const width = image.getWidth();
-		// const height = image.getHeight();
 
 		const bitmapR = await rgbaImage(rasters[0] as Uint8Array, width, height);
 		const bitmapG = await rgbaImage(rasters[1] as Uint8Array, width, height);
@@ -63,10 +61,7 @@ export const loadRasterData = async (url: string) => {
 				bitmapG,
 				bitmapB,
 				width,
-				height,
-				rasterR: rasters[0],
-				rasterG: rasters[1],
-				rasterB: rasters[2]
+				height
 			});
 
 			// Define message handler once
