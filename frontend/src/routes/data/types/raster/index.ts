@@ -192,6 +192,7 @@ export interface RasterTiffStyle {
 	opacity: number;
 	visible?: boolean;
 	visualization: {
+		numBands: number;
 		mode: BandTypeKey;
 		uniformsData: {
 			single: ShingleBandData;

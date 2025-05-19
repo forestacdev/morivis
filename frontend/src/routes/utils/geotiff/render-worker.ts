@@ -2,44 +2,6 @@ import vertexShaderSource from './shader/vertex.glsl?raw';
 import fsMulchSource from './shader/fragment_mulch.glsl?raw';
 import fsShingleSource from './shader/fragment_shingle.glsl?raw';
 
-// シェーダーをコンパイルしてプログラムをリンク
-const createShader = (
-	gl: WebGLRenderingContext,
-	type: number,
-	source: string
-): WebGLShader | null => {
-	const shader = gl.createShader(type);
-	if (!shader) return null;
-
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error('Shader compilation failed:', gl.getShaderInfoLog(shader));
-		gl.deleteShader(shader);
-		return null;
-	}
-	return shader;
-};
-
-const createProgram = (
-	gl: WebGLRenderingContext,
-	vertexShader: WebGLShader,
-	fragmentShader: WebGLShader
-): WebGLProgram | null => {
-	const program = gl.createProgram();
-	if (!program) return null;
-
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		console.error('Program linking failed:', gl.getProgramInfoLog(program));
-		gl.deleteProgram(program);
-		return null;
-	}
-	return program;
-};
-
 const combineFloatBandsToTexture2DArray = (
 	bands: Float32Array[],
 	width: number,
@@ -110,44 +72,87 @@ const bindTextures = (
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 };
 
+// シェーダーをコンパイルしてプログラムをリンク
+const createShader = (
+	gl: WebGLRenderingContext,
+	type: number,
+	source: string
+): WebGLShader | null => {
+	const shader = gl.createShader(type);
+	if (!shader) return null;
+
+	gl.shaderSource(shader, source);
+	gl.compileShader(shader);
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.error('Shader compilation failed:', gl.getShaderInfoLog(shader));
+		gl.deleteShader(shader);
+		return null;
+	}
+	return shader;
+};
+
+const createProgram = (
+	gl: WebGLRenderingContext,
+	vertexShader: WebGLShader,
+	fragmentShader: WebGLShader
+): WebGLProgram | null => {
+	const program = gl.createProgram();
+	if (!program) return null;
+
+	gl.attachShader(program, vertexShader);
+	gl.attachShader(program, fragmentShader);
+	gl.linkProgram(program);
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		console.error('Program linking failed:', gl.getProgramInfoLog(program));
+		gl.deleteProgram(program);
+		return null;
+	}
+	return program;
+};
+
+let gl: WebGL2RenderingContext | null = null;
+const canvas = new OffscreenCanvas(256, 256);
+
+gl = canvas.getContext('webgl2');
+if (!gl) {
+	throw new Error('WebGL not supported');
+}
+
+const ext = gl.getExtension('EXT_color_buffer_float');
+if (!ext) {
+	console.error('Float texture not supported');
+}
+const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+const fragmentShingleShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
+const fragmentMulchShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
+
+if (!vertexShader || !fragmentShingleShader || !fragmentMulchShader) {
+	throw new Error('Failed to create shaders');
+}
+const programs = {
+	single: createProgram(gl, vertexShader, fragmentShingleShader),
+	multi: createProgram(gl, vertexShader, fragmentMulchShader)
+};
+
 self.onmessage = async (e) => {
 	const { rasters, size, type, min, max, width, height, colorArray } = e.data;
 
-	console.log('rasters', rasters);
-	console.log('size', size);
-	console.log('type', type);
-	console.log('min', min);
-	console.log('max', max);
-	console.log('width', width);
-	console.log('height', height);
+	// サイズ変更したい場合
+	canvas.width = width;
+	canvas.height = height;
+	gl.viewport(0, 0, canvas.width, canvas.height);
 
 	try {
-		const canvas = new OffscreenCanvas(width, height);
-		const gl = canvas.getContext('webgl2');
+		// const canvas = new OffscreenCanvas(width, height);
+		// const gl = canvas.getContext('webgl2');
 		if (!gl) {
 			console.error('WebGL not supported');
-			return new ImageBitmap();
 		}
 
-		const ext = gl.getExtension('EXT_color_buffer_float');
-		if (!ext) {
-			console.error('Float texture not supported');
-		}
-
-		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-		let fragmentShader;
-
-		if (type === 'single') {
-			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
-		} else if (type === 'multi') {
-			fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
-		}
-		if (!vertexShader || !fragmentShader) return new ImageBitmap();
-
-		const program = createProgram(gl, vertexShader, fragmentShader);
-		if (!program) return new ImageBitmap();
+		const program = programs[type];
 
 		gl.useProgram(program);
+		gl.clearColor(0, 0, 0, 0);
 
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 

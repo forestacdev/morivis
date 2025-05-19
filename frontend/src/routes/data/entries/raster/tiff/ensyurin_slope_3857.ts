@@ -25,6 +25,7 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 		type: 'tiff',
 		opacity: 1.0,
 		visualization: {
+			numBands: 1,
 			mode: 'single',
 			uniformsData: {
 				single: {
@@ -40,12 +41,12 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 						max: 255
 					},
 					g: {
-						index: 1,
+						index: 0,
 						min: 0,
 						max: 255
 					},
 					b: {
-						index: 2,
+						index: 0,
 						min: 0,
 						max: 255
 					}

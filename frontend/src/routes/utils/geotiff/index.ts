@@ -2,7 +2,12 @@ import { fromArrayBuffer } from 'geotiff';
 import type { ReadRasterResult } from 'geotiff';
 import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
 import { transformBbox } from '$routes/utils/proj';
-import type { BandTypeKey, ShingleBandData, MultiBandData } from '$routes/data/types/raster';
+import type {
+	BandTypeKey,
+	ShingleBandData,
+	MultiBandData,
+	RasterTiffStyle
+} from '$routes/data/types/raster';
 import { ColorMapManager } from '$routes/utils/colorMapping';
 
 export class GeoTiffCache {
@@ -90,6 +95,10 @@ export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: 
 	return { min, max };
 };
 
+const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+	type: 'module'
+});
+
 export const getRasters = async (
 	rasters: ReadRasterResult,
 	width: number,
@@ -110,10 +119,6 @@ export const getRasters = async (
 				});
 			}
 
-			const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
-				type: 'module'
-			});
-
 			worker.postMessage({
 				rasters,
 				width,
@@ -128,15 +133,12 @@ export const getRasters = async (
 					rastersData: result,
 					size: rasters.length
 				});
-
-				worker.terminate(); // Workerを終了
 			};
 
 			// Added error handling
 			worker.onerror = (error) => {
 				console.error('Worker error:', error);
 				reject(new Error(`Worker error: ${error.message}`));
-				worker.terminate(); // Workerを終了
 			};
 		});
 	} catch (error) {
@@ -150,15 +152,8 @@ const colorMapManager = new ColorMapManager();
 export const loadRasterData = async (
 	id: string,
 	url: string,
-	mode: BandTypeKey,
-	UniformsData: ShingleBandData | MultiBandData
-): Promise<
-	| {
-			url: string;
-			bbox: [number, number, number, number];
-	  }
-	| undefined
-> => {
+	visualization: RasterTiffStyle['visualization']
+): Promise<string | undefined> => {
 	try {
 		const response = await fetch(url);
 		const arrayBuffer = await response.arrayBuffer();
@@ -167,40 +162,40 @@ export const loadRasterData = async (
 		const width = image.getWidth();
 		const height = image.getHeight();
 
-		const geoKeys = image.geoKeys;
-		let epsgCode: string | number | null = null;
-		if (geoKeys) {
-			// ① 明示的な EPSG コードがあるか確認
-			if (geoKeys.ProjectedCSTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey !== 32767) {
-				epsgCode = geoKeys.ProjectedCSTypeGeoKey;
-			} else if (geoKeys.GeographicTypeGeoKey && geoKeys.GeographicTypeGeoKey !== 32767) {
-				epsgCode = geoKeys.GeographicTypeGeoKey;
-			}
-			// ② EPSGコードがなく、GTCitationGeoKey から判別できる場合
-			else if (geoKeys.GTCitationGeoKey) {
-				const citation = geoKeys.GTCitationGeoKey.trim();
+		// const geoKeys = image.geoKeys;
+		// let epsgCode: string | number | null = null;
+		// if (geoKeys) {
+		// 	// ① 明示的な EPSG コードがあるか確認
+		// 	if (geoKeys.ProjectedCSTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey !== 32767) {
+		// 		epsgCode = geoKeys.ProjectedCSTypeGeoKey;
+		// 	} else if (geoKeys.GeographicTypeGeoKey && geoKeys.GeographicTypeGeoKey !== 32767) {
+		// 		epsgCode = geoKeys.GeographicTypeGeoKey;
+		// 	}
+		// 	// ② EPSGコードがなく、GTCitationGeoKey から判別できる場合
+		// 	else if (geoKeys.GTCitationGeoKey) {
+		// 		const citation = geoKeys.GTCitationGeoKey.trim();
 
-				if (citationDict[citation]) {
-					epsgCode = citationDict[citation];
-				} else {
-					console.warn(`Unknown citation string: "${citation}"`);
-				}
-			}
-		} else {
-			console.warn('No geoKeys found in the image.');
-		}
+		// 		if (citationDict[citation]) {
+		// 			epsgCode = citationDict[citation];
+		// 		} else {
+		// 			console.warn(`Unknown citation string: "${citation}"`);
+		// 		}
+		// 	}
+		// } else {
+		// 	console.warn('No geoKeys found in the image.');
+		// }
 
-		let extent;
-		if (!GeoTiffCache.hasBbox(id)) {
-			if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
-				extent = image.getBoundingBox();
-			} else {
-				const prjContent = proj4Dict[epsgCode];
-				extent = transformBbox(image.getBoundingBox(), prjContent); // EPSG:4326に変換
-			}
+		// let extent;
+		// if (!GeoTiffCache.hasBbox(id)) {
+		// 	if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
+		// 		extent = image.getBoundingBox();
+		// 	} else {
+		// 		const prjContent = proj4Dict[epsgCode];
+		// 		extent = transformBbox(image.getBoundingBox(), prjContent); // EPSG:4326に変換
+		// 	}
 
-			GeoTiffCache.setBbox(id, extent as [number, number, number, number]);
-		}
+		// 	GeoTiffCache.setBbox(id, extent as [number, number, number, number]);
+		// }
 
 		let rasters: Float32Array[] = [];
 		let bandCount = 1;
@@ -217,17 +212,18 @@ export const loadRasterData = async (
 		}
 
 		// nodataの取得
-		const nodata =
-			image.fileDirectory.GDAL_NODATA !== undefined
-				? parseFloat(image.fileDirectory.GDAL_NODATA)
-				: null;
+		// const nodata =
+		// 	image.fileDirectory.GDAL_NODATA !== undefined
+		// 		? parseFloat(image.fileDirectory.GDAL_NODATA)
+		// 		: null;
 
-		console.log('UniformsData', UniformsData);
+		// const min = UniformsData.min ?? getMinMax(rasters[UniformsData.index], nodata).min;
+		// const max = UniformsData.max ?? getMinMax(rasters[UniformsData.index], nodata).max;
 
-		const colorArray = colorMapManager.createColorArray(UniformsData.colorMap || 'bone');
+		const mode = visualization.mode;
+		const uniformsData = visualization.uniformsData;
 
-		const min = UniformsData.min ?? getMinMax(rasters[UniformsData.index], nodata).min;
-		const max = UniformsData.max ?? getMinMax(rasters[UniformsData.index], nodata).max;
+		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
 
 		return new Promise((resolve, reject) => {
 			const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {
@@ -238,8 +234,8 @@ export const loadRasterData = async (
 				rasters,
 				size: bandCount,
 				type: mode,
-				min,
-				max,
+				min: uniformsData.single.min,
+				max: uniformsData.single.max,
 				width,
 				height,
 				colorArray
@@ -249,10 +245,7 @@ export const loadRasterData = async (
 			worker.onmessage = async (e) => {
 				const { blob } = e.data;
 
-				resolve({
-					url: URL.createObjectURL(blob),
-					bbox: extent
-				});
+				resolve(URL.createObjectURL(blob));
 
 				worker.terminate(); // Workerを終了
 			};
