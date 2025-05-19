@@ -1,11 +1,11 @@
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-import type { RasterTiffEntry } from '$routes/data/types/raster';
+import type { RasterImageEntry, RasterTiffStyle } from '$routes/data/types/raster';
 
-const entry: RasterTiffEntry = {
+const entry: RasterImageEntry<RasterTiffStyle> = {
 	id: 'ensyurin_slope_3857',
 	type: 'raster',
 	format: {
-		type: 'tiff',
+		type: 'image',
 		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_slope_3857.tif`
 	},
 	metaData: {
@@ -34,12 +34,21 @@ const entry: RasterTiffEntry = {
 					colorMap: 'jet'
 				},
 				multi: {
-					bands: [
-						{ index: 0, min: 0, max: 255 }, // R
-						{ index: 1, min: 0, max: 255 }, // G
-						{ index: 2, min: 0, max: 255 } // B
-					],
-					colorSpace: 'rgb'
+					r: {
+						index: 0,
+						min: 0,
+						max: 255
+					},
+					g: {
+						index: 1,
+						min: 0,
+						max: 255
+					},
+					b: {
+						index: 2,
+						min: 0,
+						max: 255
+					}
 				}
 			}
 		}

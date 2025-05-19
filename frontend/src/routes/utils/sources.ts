@@ -40,10 +40,11 @@ export const createSourcesItems = async (
 
 			switch (type) {
 				case 'raster': {
-					if (format.type === 'tiff') {
+					if (format.type === 'image') {
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
+							const styleID = `${mode}_`;
 							let url;
 							if (GeoTiffCache.hasDataUrl(entry.id)) {
 								url = GeoTiffCache.getDataUrl(entry.id);
@@ -69,9 +70,7 @@ export const createSourcesItems = async (
 									? getBoundingBoxCorners(metaData.bounds)
 									: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
 							} as ImageSourceSpecification;
-						}
-					} else if (format.type === 'image') {
-						if (style.type === 'dem') {
+						} else if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
 							if (mode !== 'default') {

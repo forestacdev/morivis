@@ -182,12 +182,9 @@ export interface ShingleBandData {
 }
 
 export interface MultiBandData {
-	bands: [
-		{ index: number; min: number; max: number }, // R
-		{ index: number; min: number; max: number }, // G
-		{ index: number; min: number; max: number } // B
-	];
-	colorSpace: 'rgb';
+	r: { index: number; min: number; max: number }; // R
+	g: { index: number; min: number; max: number }; // G
+	b: { index: number; min: number; max: number }; // B
 }
 
 export interface RasterTiffStyle {
@@ -236,14 +233,6 @@ export interface RasterPMTilesEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
-export interface RasterTiffEntry extends BaseRasterEntry {
-	format: {
-		type: 'tiff';
-		url: string;
-	};
-	style: RasterTiffStyle;
-}
-
 // TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
@@ -252,4 +241,4 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
-export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T> | RasterTiffEntry;
+export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T>;

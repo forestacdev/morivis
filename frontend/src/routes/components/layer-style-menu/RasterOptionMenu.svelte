@@ -14,14 +14,17 @@
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
 		RasterDemStyle,
-		DemStyleMode
+		RasterTiffStyle
 	} from '$routes/data/types/raster';
 	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 
 	let {
 		layerEntry = $bindable()
-	}: { layerEntry: RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle> } =
-		$props();
+	}: {
+		layerEntry: RasterEntry<
+			RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
+		>;
+	} = $props();
 
 	let style = $derived(layerEntry.style);
 </script>
