@@ -252,4 +252,4 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
-export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T>;
+export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T> | RasterTiffEntry;

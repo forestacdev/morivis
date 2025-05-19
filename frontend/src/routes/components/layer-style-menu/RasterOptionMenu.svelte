@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 
 	import DemOption from './raster-option/DemOption.svelte';
+	import TiffOption from './raster-option/TiffOption.svelte';
 
 	import CheckBox from '$routes/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/components/atoms/RangeSlider.svelte';
@@ -23,8 +24,6 @@
 		$props();
 
 	let style = $derived(layerEntry.style);
-
-	onMount(() => {});
 </script>
 
 {#if layerEntry && layerEntry.type === 'raster' && style}
@@ -85,6 +84,8 @@
 		{/if}
 	{:else if style.type === 'dem'}
 		<DemOption bind:style />
+	{:else if style.type === 'tiff'}
+		<TiffOption bind:style />
 	{/if}
 {/if}
 

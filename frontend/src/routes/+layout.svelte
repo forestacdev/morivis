@@ -4,15 +4,15 @@
 	let { children } = $props();
 
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
 
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
+	import { beforeNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/store';
 	import { checkLocalStorage } from '$routes/utils/localStorage';
 	import { isPc } from '$routes/utils/ui';
-	import { beforeNavigate } from '$app/navigation';
 
 	type Device = 'mobile' | 'pc' | '';
 

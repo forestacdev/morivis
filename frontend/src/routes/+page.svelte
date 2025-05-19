@@ -35,7 +35,6 @@
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import type { DrawGeojsonData } from '$routes/types/draw';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
@@ -62,10 +61,11 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isSideMenuType } from '$routes/store/ui';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit } from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
+	import { isSideMenuType } from '$routes/store/ui';
+	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
 	import { getFgbToGeojson } from '$routes/utils/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
