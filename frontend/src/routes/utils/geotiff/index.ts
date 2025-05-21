@@ -23,6 +23,13 @@ export class GeoTiffCache {
 			height: number;
 		}
 	> = new Map();
+	private static blobCache: Map<
+		string,
+		{
+			blob: Blob;
+			url: string;
+		}
+	> = new Map();
 
 	static setDataUrl(key: string, url: string) {
 		this.dataUrlCache.set(key, url);
@@ -42,6 +49,10 @@ export class GeoTiffCache {
 
 	static setNumBands(key: string, numBands: number) {
 		this.numBandsCache.set(key, numBands);
+	}
+
+	static setBlob(key: string, blob: Blob, url: string) {
+		this.blobCache.set(key, { blob, url });
 	}
 
 	static getDataUrl(key: string): string | undefined {
@@ -64,6 +75,10 @@ export class GeoTiffCache {
 		return this.numBandsCache.get(key);
 	}
 
+	static getBlobUrl(id: string): string | undefined {
+		return this.blobCache.get(id)?.url;
+	}
+
 	static removeDataUrl(key: string): void {
 		this.dataUrlCache.delete(key);
 	}
@@ -82,12 +97,21 @@ export class GeoTiffCache {
 		this.numBandsCache.delete(key);
 	}
 
+	static revokeBlob(id: string): void {
+		const entry = this.blobCache.get(id);
+		if (entry) {
+			URL.revokeObjectURL(entry.url);
+			this.blobCache.delete(id);
+		}
+	}
+
 	static clear(): void {
 		this.dataUrlCache.clear();
 		this.rastersCache.clear();
 		this.bboxCache.clear();
 		this.sizeCache.clear();
 		this.numBandsCache.clear();
+		this.blobCache.clear();
 	}
 	static hasDataUrl(key: string): boolean {
 		return this.dataUrlCache.has(key);
@@ -100,6 +124,32 @@ export class GeoTiffCache {
 	}
 	static hasSize(key: string): boolean {
 		return this.sizeCache.has(key);
+	}
+	static hasNumBands(key: string): boolean {
+		return this.numBandsCache.has(key);
+	}
+	static hasBlob(key: string): boolean {
+		return this.blobCache.has(key);
+	}
+}
+
+export class ImageCache {
+	private static cache = new Map<string, Blob>();
+
+	static set(key: string, blob: Blob) {
+		this.cache.set(key, blob);
+	}
+	static get(key: string): Blob | undefined {
+		return this.cache.get(key);
+	}
+	static has(key: string): boolean {
+		return this.cache.has(key);
+	}
+	static remove(key: string): void {
+		this.cache.delete(key);
+	}
+	static clear(): void {
+		this.cache.clear();
 	}
 }
 
@@ -124,7 +174,9 @@ export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: 
 
 	return { min, max };
 };
-
+const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+	type: 'module'
+});
 export const getRasters = async (
 	rasters: ReadRasterResult,
 	width: number,
@@ -144,10 +196,6 @@ export const getRasters = async (
 					size: 1
 				});
 			}
-
-			const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
-				type: 'module'
-			});
 
 			worker.postMessage({
 				rasters,
@@ -179,6 +227,10 @@ export const getRasters = async (
 		console.error(`Error processing image`, error);
 	}
 };
+
+const rebderWorker = new Worker(new URL('./render-worker.ts', import.meta.url), {
+	type: 'module'
+});
 
 const colorMapManager = new ColorMapManager();
 
@@ -229,7 +281,6 @@ export const loadRasterData = async (
 		let rasters: Float32Array[] = [];
 		let bandCount = 1;
 		if (GeoTiffCache.hasRasters(id)) {
-			console.log('rasters cache hit');
 			rasters = GeoTiffCache.getRasters(id) as Float32Array[];
 			width = GeoTiffCache.getSize(id)?.width ?? 0;
 			height = GeoTiffCache.getSize(id)?.height ?? 0;
@@ -266,11 +317,7 @@ export const loadRasterData = async (
 		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
 
 		return new Promise((resolve, reject) => {
-			const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {
-				type: 'module'
-			});
-
-			worker.postMessage({
+			rebderWorker.postMessage({
 				rasters,
 				size: bandCount,
 				type: mode,
@@ -282,19 +329,24 @@ export const loadRasterData = async (
 			});
 
 			// Define message handler once
-			worker.onmessage = async (e) => {
+			rebderWorker.onmessage = async (e) => {
 				const { blob } = e.data;
 
-				resolve(URL.createObjectURL(blob));
+				const existingUrl = GeoTiffCache.getBlobUrl(id);
+				if (existingUrl) {
+					URL.revokeObjectURL(existingUrl); // ✅ 古いURLを明示的に解放
+				}
 
-				worker.terminate(); // Workerを終了
+				const url = URL.createObjectURL(blob);
+				GeoTiffCache.setBlob(id, blob, url);
+
+				resolve(url);
 			};
 
 			// Added error handling
-			worker.onerror = (error) => {
+			rebderWorker.onerror = (error) => {
 				console.error('Worker error:', error);
 				reject(new Error(`Worker error: ${error.message}`));
-				worker.terminate(); // Workerを終了
 			};
 		});
 	} catch (error) {
