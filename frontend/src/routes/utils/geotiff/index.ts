@@ -12,19 +12,36 @@ import { ColorMapManager } from '$routes/utils/colorMapping';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();
-	private static rasterCache: Map<string, Float32Array[]> = new Map();
+	private static rastersCache: Map<string, Float32Array[]> = new Map();
 	private static bboxCache: Map<string, [number, number, number, number]> = new Map();
+	private static numBandsCache: Map<string, number> = new Map();
+
+	private static sizeCache: Map<
+		string,
+		{
+			width: number;
+			height: number;
+		}
+	> = new Map();
 
 	static setDataUrl(key: string, url: string) {
 		this.dataUrlCache.set(key, url);
 	}
 
 	static setRasters(key: string, rasters: Float32Array[]) {
-		this.rasterCache.set(key, rasters);
+		this.rastersCache.set(key, rasters);
 	}
 
 	static setBbox(key: string, bbox: [number, number, number, number]) {
 		this.bboxCache.set(key, bbox);
+	}
+
+	static setSize(key: string, width: number, height: number) {
+		this.sizeCache.set(key, { width, height });
+	}
+
+	static setNumBands(key: string, numBands: number) {
+		this.numBandsCache.set(key, numBands);
 	}
 
 	static getDataUrl(key: string): string | undefined {
@@ -32,44 +49,57 @@ export class GeoTiffCache {
 	}
 
 	static getRasters(key: string): Float32Array[] | undefined {
-		return this.rasterCache.get(key);
+		return this.rastersCache.get(key);
 	}
 
 	static getBbox(key: string): [number, number, number, number] | undefined {
 		return this.bboxCache.get(key);
 	}
 
+	static getSize(key: string): { width: number; height: number } | undefined {
+		return this.sizeCache.get(key);
+	}
+
+	static getNumBands(key: string): number | undefined {
+		return this.numBandsCache.get(key);
+	}
+
 	static removeDataUrl(key: string): void {
 		this.dataUrlCache.delete(key);
 	}
 	static removeRasters(key: string): void {
-		this.rasterCache.delete(key);
+		this.rastersCache.delete(key);
 	}
 	static removeBbox(key: string): void {
 		this.bboxCache.delete(key);
 	}
+
+	static removeSize(key: string): void {
+		this.sizeCache.delete(key);
+	}
+
+	static removeNumBands(key: string): void {
+		this.numBandsCache.delete(key);
+	}
+
 	static clear(): void {
 		this.dataUrlCache.clear();
-		this.rasterCache.clear();
+		this.rastersCache.clear();
 		this.bboxCache.clear();
+		this.sizeCache.clear();
+		this.numBandsCache.clear();
 	}
 	static hasDataUrl(key: string): boolean {
 		return this.dataUrlCache.has(key);
 	}
 	static hasRasters(key: string): boolean {
-		return this.rasterCache.has(key);
+		return this.rastersCache.has(key);
 	}
 	static hasBbox(key: string): boolean {
 		return this.bboxCache.has(key);
 	}
-	static keysDataUrl(): IterableIterator<string> {
-		return this.dataUrlCache.keys();
-	}
-	static keysRasters(): IterableIterator<string> {
-		return this.rasterCache.keys();
-	}
-	static keysBbox(): IterableIterator<string> {
-		return this.bboxCache.keys();
+	static hasSize(key: string): boolean {
+		return this.sizeCache.has(key);
 	}
 }
 
@@ -95,10 +125,6 @@ export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: 
 	return { min, max };
 };
 
-const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
-	type: 'module'
-});
-
 export const getRasters = async (
 	rasters: ReadRasterResult,
 	width: number,
@@ -119,6 +145,10 @@ export const getRasters = async (
 				});
 			}
 
+			const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+				type: 'module'
+			});
+
 			worker.postMessage({
 				rasters,
 				width,
@@ -133,6 +163,8 @@ export const getRasters = async (
 					rastersData: result,
 					size: rasters.length
 				});
+
+				worker.terminate(); // Workerを終了
 			};
 
 			// Added error handling
@@ -140,6 +172,8 @@ export const getRasters = async (
 				console.error('Worker error:', error);
 				reject(new Error(`Worker error: ${error.message}`));
 			};
+
+			worker.terminate(); // Workerを終了
 		});
 	} catch (error) {
 		console.error(`Error processing image`, error);
@@ -155,13 +189,6 @@ export const loadRasterData = async (
 	visualization: RasterTiffStyle['visualization']
 ): Promise<string | undefined> => {
 	try {
-		const response = await fetch(url);
-		const arrayBuffer = await response.arrayBuffer();
-		const tiff = await fromArrayBuffer(arrayBuffer);
-		const image = await tiff.getImage();
-		const width = image.getWidth();
-		const height = image.getHeight();
-
 		// const geoKeys = image.geoKeys;
 		// let epsgCode: string | number | null = null;
 		// if (geoKeys) {
@@ -197,18 +224,32 @@ export const loadRasterData = async (
 		// 	GeoTiffCache.setBbox(id, extent as [number, number, number, number]);
 		// }
 
+		let width;
+		let height;
 		let rasters: Float32Array[] = [];
 		let bandCount = 1;
 		if (GeoTiffCache.hasRasters(id)) {
-			const cachedRasters = GeoTiffCache.getRasters(id);
-			if (cachedRasters) {
-				rasters = cachedRasters;
-			}
+			console.log('rasters cache hit');
+			rasters = GeoTiffCache.getRasters(id) as Float32Array[];
+			width = GeoTiffCache.getSize(id)?.width ?? 0;
+			height = GeoTiffCache.getSize(id)?.height ?? 0;
+			bandCount = GeoTiffCache.getNumBands(id) ?? 1;
 		} else {
+			const response = await fetch(url);
+			const arrayBuffer = await response.arrayBuffer();
+
+			const tiff = await fromArrayBuffer(arrayBuffer);
+			const image = await tiff.getImage();
+			width = image.getWidth();
+			height = image.getHeight();
 			const rasterData = await image.readRasters({ interleave: false });
+			// const rgb = await image.readRGB();
 			const { rastersData, size } = await getRasters(rasterData, width, height);
 			rasters = rastersData as Float32Array[];
 			bandCount = size;
+			GeoTiffCache.setRasters(id, rasters);
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, bandCount);
 		}
 
 		// nodataの取得
@@ -222,7 +263,6 @@ export const loadRasterData = async (
 
 		const mode = visualization.mode;
 		const uniformsData = visualization.uniformsData;
-
 		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
 
 		return new Promise((resolve, reject) => {

@@ -109,45 +109,50 @@ const createProgram = (
 	}
 	return program;
 };
-
 let gl: WebGL2RenderingContext | null = null;
 const canvas = new OffscreenCanvas(256, 256);
+let programs: { single: WebGLProgram; multi: WebGLProgram } | null = null;
+const initWebGL = (canvas: OffscreenCanvas) => {
+	gl = canvas.getContext('webgl2');
+	if (!gl) {
+		throw new Error('WebGL not supported');
+	}
 
-gl = canvas.getContext('webgl2');
-if (!gl) {
-	throw new Error('WebGL not supported');
-}
+	const ext = gl.getExtension('EXT_color_buffer_float');
+	if (!ext) {
+		console.error('Float texture not supported');
+	}
+	const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+	const fragmentShingleShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
+	const fragmentMulchShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
 
-const ext = gl.getExtension('EXT_color_buffer_float');
-if (!ext) {
-	console.error('Float texture not supported');
-}
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-const fragmentShingleShader = createShader(gl, gl.FRAGMENT_SHADER, fsShingleSource);
-const fragmentMulchShader = createShader(gl, gl.FRAGMENT_SHADER, fsMulchSource);
-
-if (!vertexShader || !fragmentShingleShader || !fragmentMulchShader) {
-	throw new Error('Failed to create shaders');
-}
-const programs = {
-	single: createProgram(gl, vertexShader, fragmentShingleShader),
-	multi: createProgram(gl, vertexShader, fragmentMulchShader)
+	if (!vertexShader || !fragmentShingleShader || !fragmentMulchShader) {
+		throw new Error('Failed to create shaders');
+	}
+	programs = {
+		single: createProgram(gl, vertexShader, fragmentShingleShader) as WebGLProgram,
+		multi: createProgram(gl, vertexShader, fragmentMulchShader) as WebGLProgram
+	};
 };
 
 self.onmessage = async (e) => {
 	const { rasters, size, type, min, max, width, height, colorArray } = e.data;
 
-	// サイズ変更したい場合
-	canvas.width = width;
-	canvas.height = height;
-	gl.viewport(0, 0, canvas.width, canvas.height);
-
 	try {
 		// const canvas = new OffscreenCanvas(width, height);
 		// const gl = canvas.getContext('webgl2');
 		if (!gl) {
-			console.error('WebGL not supported');
+			initWebGL(canvas);
 		}
+
+		if (!gl) {
+			throw new Error('WebGL initialization failed');
+		}
+
+		// サイズ変更したい場合
+		canvas.width = width;
+		canvas.height = height;
+		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		const program = programs[type];
 
