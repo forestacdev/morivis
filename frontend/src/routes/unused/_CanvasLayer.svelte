@@ -20,7 +20,7 @@
 	import vertexShaderSource from '$routes/CanvasLayer/shader/vertex.glsl?raw';
 	import { selectedHighlightData, type SelectedHighlightData } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/utils/geojson';
+	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/utils/file/geojson';
 
 	let element = $state<HTMLCanvasElement | null>(null);
 	let { canvasSource = $bindable() }: { canvasSource: CanvasSourceSpecification } = $props();

@@ -14,8 +14,8 @@ import { get } from 'svelte/store';
 import { layerAttributions } from '$routes/store';
 import { type AttributionKey } from '$routes/data/attribution';
 
-import { GeojsonCache, getGeojson } from '$routes/utils/geojson';
-import { getFgbToGeojson } from '$routes/utils/geojson';
+import { GeojsonCache, getGeojson } from '$routes/utils/file/geojson';
+import { getFgbToGeojson } from '$routes/utils/file/geojson';
 
 import { objectToUrlParams } from '$routes/utils/params';
 

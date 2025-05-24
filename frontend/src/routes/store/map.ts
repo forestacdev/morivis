@@ -33,7 +33,7 @@ import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
 import { DEBUG_MODE, isTerrain3d } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
-import { GeojsonCache } from '$routes/utils/geojson';
+import { GeojsonCache } from '$routes/utils/file/geojson';
 import { get } from 'svelte/store';
 
 import { isBBoxOverlapping } from '$routes/utils/map';
@@ -47,7 +47,6 @@ import { demEntry, type DemEntry } from '$routes/data/dem';
 import { handleStyleImageMissing } from '$routes/utils/icon';
 import { isStyleEdit } from './index';
 import { on } from 'svelte/events';
-
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -72,8 +71,8 @@ const createMapStore = () => {
 	const rotateEvent = writable<number | null>(null);
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
-    const isLoadingEvent = writable<boolean>(true);
-    const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
+	const isLoadingEvent = writable<boolean>(true);
+	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 
@@ -118,12 +117,12 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-        map.once('style.load', () => {
+		map.once('style.load', () => {
 			isStyleLoadEvent.set(map);
-        });
-        
-        // map.on('style.load', () => {
-        //     console.log(map);
+		});
+
+		// map.on('style.load', () => {
+		//     console.log(map);
 		// 	isStyleLoadEvent.set(map);
 		// });
 
@@ -306,8 +305,6 @@ const createMapStore = () => {
 		map.fitBounds(bbox);
 	};
 
-
-
 	const getMapBbox = (): [number, number, number, number] => {
 		if (!map) {
 			console.warn('Map is not ready yet.');
@@ -442,9 +439,9 @@ const createMapStore = () => {
 		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
 		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
 		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
-        onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
-        onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
-        onStyleLoad: isStyleLoadEvent.subscribe, // スタイルロードイベントの購読用メソッド
+		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
+		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
+		onStyleLoad: isStyleLoadEvent.subscribe, // スタイルロードイベントの購読用メソッド
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド

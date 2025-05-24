@@ -37,7 +37,7 @@
 	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
 	import type { DrawGeojsonData } from '$routes/types/draw';
@@ -289,16 +289,12 @@
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
-        console.log('Map style updated', mapStyle);
+		console.log('Map style updated', mapStyle);
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
 	}, 100);
 
-
-
-
-
-    	// レイヤーの更新を監視
+	// レイヤーの更新を監視
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
@@ -309,12 +305,12 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-    // ストリートビューの表示
-    showStreetViewLayer.subscribe(() => {
-        setStyleDebounce(layerEntries as GeoDataEntry[]);
-    });
+	// ストリートビューの表示
+	showStreetViewLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 
-    	// 書き込みデータの更新を監視
+	// 書き込みデータの更新を監視
 	$effect(() => {
 		$state.snapshot(drawGeojsonData);
 		if (!maplibreMap) return;

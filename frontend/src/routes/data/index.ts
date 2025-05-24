@@ -8,7 +8,7 @@ import type {
 } from '$routes/data/types/vector';
 import turfBbox, { bbox } from '@turf/bbox';
 import { getUniquePropertyKeys } from '$routes/utils/properties';
-import { GeojsonCache } from '$routes/utils/geojson';
+import { GeojsonCache } from '$routes/utils/file/geojson';
 import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
 	DEFAULT_RASTER_BASEMAP_INTERACTION

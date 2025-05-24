@@ -9,8 +9,8 @@
 	import { getLocationBbox } from '$routes/data/locationBbox';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import { GeojsonCache } from '$routes/utils/geojson';
-	import { getGeojson, getFgbToGeojson } from '$routes/utils/geojson';
+	import { GeojsonCache } from '$routes/utils/file/geojson';
+	import { getGeojson, getFgbToGeojson } from '$routes/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/utils/map';
 
 	interface Props {

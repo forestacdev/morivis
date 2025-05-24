@@ -14,7 +14,10 @@
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
-	import { mapGeoJSONFeatureToSidePopupData, type FeatureMenuData } from '$routes/utils/geojson';
+	import {
+		mapGeoJSONFeatureToSidePopupData,
+		type FeatureMenuData
+	} from '$routes/utils/file/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 

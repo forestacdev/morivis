@@ -18,7 +18,7 @@
 
 	import { mapStore } from '$routes/store/map';
 	import type { ResultData } from '$routes/utils/feature';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 	interface Props {
 		layerEntries: GeoDataEntry[];

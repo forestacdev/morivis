@@ -10,9 +10,9 @@
 	import type { LayerType } from '$routes/store/layers';
 	import { groupedLayerStore } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
-	import { csvFileToGeojson } from '$routes/utils/csv';
+	import { csvFileToGeojson } from '$routes/utils/file/csv';
 	import { fgbFileToGeojson } from '$routes/utils/fgb';
-	import { geoJsonFileToGeoJson } from '$routes/utils/geojson';
+	import { geoJsonFileToGeoJson } from '$routes/utils/file/geojson';
 	import { shpFileToGeojson } from '$routes/utils/shp';
 
 	interface Props {

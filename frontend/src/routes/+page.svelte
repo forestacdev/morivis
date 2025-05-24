@@ -66,8 +66,8 @@
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { getFgbToGeojson } from '$routes/utils/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
+	import { getFgbToGeojson } from '$routes/utils/file/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 
 	type NodeConnections = Record<string, string[]>;

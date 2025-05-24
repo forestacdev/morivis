@@ -6,7 +6,7 @@
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import type { FeatureMenuData } from '$routes/utils/geojson';
+	import type { FeatureMenuData } from '$routes/utils/file/geojson';
 	import { generatePopupTitle } from '$routes/utils/properties';
 
 	let {

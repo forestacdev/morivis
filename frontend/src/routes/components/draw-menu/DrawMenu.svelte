@@ -4,7 +4,7 @@
 
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { isSideMenuType } from '$routes/store/ui';
-	import { downloadGeojson } from '$routes/utils/geojson';
+	import { downloadGeojson } from '$routes/utils/file/geojson';
 
 	import { mapStore } from '$routes/store/map';
 	import Icon from '@iconify/svelte';
