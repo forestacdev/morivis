@@ -20,7 +20,7 @@ import { getFgbToGeojson } from '$routes/utils/geojson';
 import { objectToUrlParams } from '$routes/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/utils/map';
-import { loadRasterData, GeoTiffImageCache } from '$routes/utils/geotiff';
+import { loadRasterData, GeoTiffImageCache } from '$routes/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
