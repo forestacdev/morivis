@@ -4,6 +4,7 @@
 	import { geometryTypeToEntryType } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { notificationMessage, showNotification } from '$routes/store/notification';
+	import { loadRasterData, loadToGeotiffFile } from '$routes/utils/file/geotiff';
 	import { gpxFileToGeojson } from '$routes/utils/file/gpx';
 
 	interface Props {
@@ -23,7 +24,8 @@
 	const setFile = async (file: File) => {
 		const fileName = file.name.toLowerCase();
 		setFileName = fileName;
-		console.log('fileName', fileName);
+		const id = `${file.name}_${file.size}_${file.lastModified}`;
+		const hoge = await loadToGeotiffFile(id, file);
 	};
 	$effect(() => {
 		if (dropFile) {

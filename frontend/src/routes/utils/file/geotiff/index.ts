@@ -234,6 +234,24 @@ const rebderWorker = new Worker(new URL('./render-worker.ts', import.meta.url), 
 
 const colorMapManager = new ColorMapManager();
 
+export const loadToGeotiffFile = async (id: string, file: File): Promise<void> => {
+	const arrayBuffer = await file.arrayBuffer();
+	const tiff = await fromArrayBuffer(arrayBuffer);
+	const image = await tiff.getImage();
+
+	const width = image.getWidth();
+	const height = image.getHeight();
+	const rasterData = await image.readRasters({ interleave: false });
+	// const rgb = await image.readRGB();
+	const { rastersData, size } = await getRasters(rasterData, width, height);
+	const rasters = rastersData as Float32Array[];
+	const bandCount = size;
+
+	GeoTiffCache.setRasters(id, rastersData);
+	GeoTiffCache.setSize(id, width, height);
+	GeoTiffCache.setNumBands(id, size);
+};
+
 // ラスターデータの読み込み
 export const loadRasterData = async (
 	id: string,
