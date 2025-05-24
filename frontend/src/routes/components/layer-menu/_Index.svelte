@@ -8,7 +8,7 @@
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
-	import { typeBreakIndices } from '$routes/store/layers';
+	import { showHillshadeLayer, typeBreakIndices } from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
 	import { isSideMenuType } from '$routes/store/ui';
 
@@ -61,6 +61,7 @@
 			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
 		>
 			<Switch label="ラベル表示" bind:value={$showLabelLayer} />
+			<Switch label="陰影表示" bind:value={$showHillshadeLayer} />
 
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>

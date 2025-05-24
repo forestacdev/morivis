@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
-
-	import type { DialogType } from '$routes/+page.svelte';
-
 	import {
 		type StyleSpecification,
 		type MapGeoJSONFeature,
@@ -14,6 +11,9 @@
 		type Marker,
 		type LngLat
 	} from 'maplibre-gl';
+
+	import type { DialogType } from '$routes/+page.svelte';
+
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
@@ -35,12 +35,13 @@
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
 	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
+	import { showHillshadeLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
+	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
-	import type { DrawGeojsonData } from '$routes/types/draw';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -302,6 +303,11 @@
 
 	// ラベルの表示
 	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	// 陰影の表示
+	showHillshadeLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

@@ -18,9 +18,10 @@ import type {
 } from 'maplibre-gl';
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/utils/layers/street-view';
+import { hillshadeLayer } from '$routes/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
-import { showStreetViewLayer } from '$routes/store/layers';
+import { showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -780,15 +781,23 @@ export const createLayersItems = (
 	clickableVectorIds.set(clickableVecter);
 	clickableRasterIds.set(clickableRaster);
 
+	// ストリートビューのレイヤーを追加
 	const streetViewLayers =
 		get(showStreetViewLayer) && _type === 'main'
 			? [streetViewLineLayer, streetViewCircleLayer]
 			: [];
 
-	console.log('streetViewLayers', streetViewLayers);
+	// 陰影
+	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
-	return [...layerItems, ...streetViewLayers, ...mapLabelItems, ...symbolLayerItems];
+	return [
+		...layerItems,
+		...streetViewLayers,
+		...hillshadeItem,
+		...mapLabelItems,
+		...symbolLayerItems
+	];
 };

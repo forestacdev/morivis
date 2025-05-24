@@ -1,5 +1,4 @@
 type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap } };
-import colormap from 'colormap';
 
 // タイル画像の処理
 export class TileImageManager {

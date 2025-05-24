@@ -106,6 +106,9 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 
+/** 陰影レイヤー */
+export const showHillshadeLayer = writable<boolean>(true);
+
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);
 
