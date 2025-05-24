@@ -133,7 +133,7 @@
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;
 
-		const clickLayerIds = ['@street_view_circle_layer', ...$clickableVectorIds];
+		const clickLayerIds = [...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});

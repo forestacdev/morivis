@@ -19,12 +19,8 @@ import type {
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/utils/layers/street-view';
 
-import {
-	clickableVectorIds,
-	clickableRasterIds,
-	isStreetView,
-	type SelectedHighlightData
-} from '$routes/store';
+import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
+import { showStreetViewLayer } from '$routes/store/layers';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -775,15 +771,24 @@ export const createLayersItems = (
 			}
 		});
 
+	// ストリートビューレイヤー表示がオンの時
+	if (get(showStreetViewLayer)) {
+		clickableVecter.push('@street_view_circle_layer');
+	}
+
 	// クリックイベントを有効にするレイヤーIDをstoreに保存
 	clickableVectorIds.set(clickableVecter);
 	clickableRasterIds.set(clickableRaster);
 
-	const streetViewLayer =
-		get(isStreetView) && _type === 'main' ? [...streetViewLineLayer, ...streetViewCircleLayer] : [];
+	const streetViewLayers =
+		get(showStreetViewLayer) && _type === 'main'
+			? [streetViewLineLayer, streetViewCircleLayer]
+			: [];
+
+	console.log('streetViewLayers', streetViewLayers);
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
-	return [...layerItems, ...mapLabelItems, ...symbolLayerItems];
+	return [...layerItems, ...streetViewLayers, ...mapLabelItems, ...symbolLayerItems];
 };

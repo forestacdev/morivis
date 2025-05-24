@@ -103,7 +103,11 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 	return breaks;
 });
 
+/** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
+
+/** ストリートビューレイヤー */
+export const showStreetViewLayer = writable<boolean>(false);
 
 /** レイヤータイプの取得 */
 export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {

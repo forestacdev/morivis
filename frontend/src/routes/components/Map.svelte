@@ -34,7 +34,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
-	import { showLabelLayer } from '$routes/store/layers';
+	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
@@ -289,17 +289,32 @@
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
+        console.log('Map style updated', mapStyle);
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
 	}, 100);
 
-	// レイヤーの更新を監視
+
+
+
+
+    	// レイヤーの更新を監視
 	$effect(() => {
 		const currentEntries = $state.snapshot(layerEntries);
 		setStyleDebounce(currentEntries as GeoDataEntry[]);
 	});
 
-	// 書き込みデータの更新を監視
+	// ラベルの表示
+	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+    // ストリートビューの表示
+    showStreetViewLayer.subscribe(() => {
+        setStyleDebounce(layerEntries as GeoDataEntry[]);
+    });
+
+    	// 書き込みデータの更新を監視
 	$effect(() => {
 		$state.snapshot(drawGeojsonData);
 		if (!maplibreMap) return;
@@ -314,11 +329,6 @@
 		if (showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
-	});
-
-	// ラベルの表示
-	showLabelLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
 	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {

@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	import { showStreetViewLayer } from '$routes/store';
+	import { showStreetViewLayer } from '$routes/store/layers';
 
 	const toggleLayer = () => {
 		showStreetViewLayer.set(!$showStreetViewLayer);

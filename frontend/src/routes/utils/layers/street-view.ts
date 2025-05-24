@@ -13,7 +13,6 @@ export const streetViewLineLayer: LineLayerSpecification = {
 		'line-blur': 0.5
 	},
 	layout: {
-		visibility: 'none',
 		'line-cap': 'round',
 		'line-join': 'round'
 	}
@@ -26,9 +25,7 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 	source: 'street_view_sources',
 	'source-layer': 'THETA360',
 	minzoom: 15,
-	layout: {
-		visibility: 'none'
-	},
+
 	paint: {
 		'circle-color': [
 			'case',

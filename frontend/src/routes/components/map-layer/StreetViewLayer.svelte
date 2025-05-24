@@ -12,7 +12,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 
-	import { showStreetViewLayer } from '$routes/store';
+	import { showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 
 	interface Props {
@@ -56,18 +56,11 @@
 	};
 
 	showStreetViewLayer.subscribe((value) => {
-		if (!map.getLayer('@street_view_line_layer') || !map.getLayer('@street_view_circle_layer'))
-			return;
 		if (value) {
-			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'visible');
-			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'visible');
 			// 登録
 			map.on('mousemove', '@street_view_circle_layer', onMouseMove);
 			map.on('mouseleave', '@street_view_circle_layer', onMouseLeave);
 		} else {
-			map.setLayoutProperty('@street_view_line_layer', 'visibility', 'none');
-			map.setLayoutProperty('@street_view_circle_layer', 'visibility', 'none');
-
 			// 解除
 			map.off('mousemove', '@street_view_circle_layer', onMouseMove);
 			map.off('mouseleave', '@street_view_circle_layer', onMouseLeave);
