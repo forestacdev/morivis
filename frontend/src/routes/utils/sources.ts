@@ -20,7 +20,7 @@ import { getFgbToGeojson } from '$routes/utils/geojson';
 import { objectToUrlParams } from '$routes/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/utils/map';
-import { loadRasterData, GeoTiffCache } from '$routes/utils/geotiff';
+import { loadRasterData, GeoTiffImageCache } from '$routes/utils/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
@@ -44,17 +44,35 @@ export const createSourcesItems = async (
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							const styleID = `${mode}_`;
 
-							const imageData = await loadRasterData(entry.id, format.url, visualization);
+							let styleID;
+							if (mode === 'single') {
+								const uniformsData = visualization.uniformsData[mode];
+								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}`;
+							} else if (mode === 'multi') {
+								const uniformsData = visualization.uniformsData[mode];
+								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}`;
+							}
 
-							items[sourceId] = {
-								type: 'image',
-								url: imageData,
-								coordinates: metaData.bounds
-									? getBoundingBoxCorners(metaData.bounds)
-									: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
-							} as ImageSourceSpecification;
+							let imageData: string | undefined;
+							if (GeoTiffImageCache.has(styleID as string)) {
+								imageData = GeoTiffImageCache.get(styleID as string);
+							} else {
+								imageData = await loadRasterData(entry.id, format.url, visualization);
+							}
+
+							if (imageData) {
+								GeoTiffImageCache.set(styleID as string, imageData);
+								console.log('imageData', getBoundingBoxCorners(metaData.bounds));
+
+								items[sourceId] = {
+									type: 'image',
+									url: imageData,
+									coordinates: metaData.bounds
+										? getBoundingBoxCorners(metaData.bounds)
+										: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
+								} as ImageSourceSpecification;
+							}
 						} else if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;

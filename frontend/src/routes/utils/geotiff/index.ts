@@ -133,13 +133,13 @@ export class GeoTiffCache {
 	}
 }
 
-export class ImageCache {
-	private static cache = new Map<string, Blob>();
+export class GeoTiffImageCache {
+	private static cache = new Map<string, string>();
 
-	static set(key: string, blob: Blob) {
-		this.cache.set(key, blob);
+	static set(key: string, url: string) {
+		this.cache.set(key, url);
 	}
-	static get(key: string): Blob | undefined {
+	static get(key: string): string | undefined {
 		return this.cache.get(key);
 	}
 	static has(key: string): boolean {
