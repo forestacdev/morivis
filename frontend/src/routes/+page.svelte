@@ -243,9 +243,8 @@
 		const elevation = map.queryTerrainElevation(lngLat);
 
 		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0); // 例: 高度400mの地点をターゲットとする
+		map.setCenterElevation(elevation ?? 0); 
 
-		console.warn('elevation', elevation);
 		map._elevationStart = map._elevationTarget;
 	};
 
