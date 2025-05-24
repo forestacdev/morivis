@@ -305,15 +305,6 @@
 	});
 
 	// レイヤーの追加、削除、並び替えを行う
-	// orderedLayerIds.subscribe((ids) => {
-	// 	layerEntries = layerEntriesData
-	// 		.filter((entry) => ids.includes(entry.id))
-	// 		.sort((a, b) => {
-	// 			return ids.indexOf(a.id) - ids.indexOf(b.id);
-	// 		});
-	// });
-
-	// レイヤーの追加、削除、並び替えを行う
 	orderedLayerIds.subscribe((newOrderedIds) => {
 		const currentLayerEntries = [...layerEntries];
 
@@ -334,16 +325,13 @@
 				layer = layerEntriesData.find((entry) => entry.id === id);
 				if (layer) {
 					// layerEntriesData から取得したオブジェクトを、初期状態として追加
-					// 必要であれば、ここでオブジェクトをディープコピーして、元の layerEntriesData に影響を与えないようにすることも検討できます。
-					// 例: newLayerEntries.push(JSON.parse(JSON.stringify(layer)));
+
 					newLayerEntries.push(layer);
 				}
-				// else: orderedLayerIds にあるが layerEntriesData に存在しないIDは無視
 			}
 		}
 
-		// layerEntries ストアを新しいソート・フィルターされたリストで更新
-		// これにより、Svelteコンポーネントは新しいデータで再レンダリングされます。
+		// 新しいデータで再レンダリング。
 		layerEntries = newLayerEntries;
 	});
 </script>
