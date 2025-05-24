@@ -8,7 +8,13 @@
 	import LayerSlot from '$routes/components/layer-menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
-	import { showHillshadeLayer, typeBreakIndices } from '$routes/store/layers';
+	import {
+		getLayerType,
+		groupedLayerStore,
+		showHillshadeLayer,
+		typeBreakIndices,
+		type LayerType
+	} from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
 	import { isSideMenuType } from '$routes/store/ui';
 
@@ -48,7 +54,30 @@
 		}
 	});
 
-	onMount(() => {});
+	// const groupByType = (entries: GeoDataEntry[]) => {
+	// 	const groups: { type: LayerType; entries: GeoDataEntry[] }[] = [];
+
+	// 	let currentType: LayerType | undefined = undefined;
+	// 	let currentGroup: { type: LayerType; entries: GeoDataEntry[] } | undefined = undefined;
+
+	// 	for (const entry of entries) {
+	// 		const type = groupedLayerStore.getType(entry.id); // ← ここで辞書逆引き
+
+	// 		if (type !== currentType) {
+	// 			currentType = type;
+	// 			currentGroup = { type, entries: [] };
+	// 			groups.push(currentGroup);
+	// 		}
+
+	// 		currentGroup?.entries.push(entry);
+	// 	}
+
+	// 	return groups;
+	// };
+
+	// let groupedEntries = $derived.by(() => {
+	// 	return groupByType(layerEntries);
+	// });
 </script>
 
 <!-- レイヤーメニュー -->

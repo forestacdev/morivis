@@ -1,5 +1,5 @@
 import type { GeoDataEntry } from '$routes/data/types';
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/utils/file/geojson';
 
 // 配列を自動ソートする ラスターが下になるように
@@ -28,7 +28,8 @@ const createLayerStore = () => {
 		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
 	};
 
-	const { subscribe, update, set } = writable<GroupedLayers>({ ...initialState });
+	const store = writable<GroupedLayers>({ ...initialState });
+	const { subscribe, update, set } = store;
 
 	return {
 		subscribe,
@@ -41,6 +42,15 @@ const createLayerStore = () => {
 				}
 				return { ...layers };
 			}),
+		getType: (id: string): LayerType | undefined => {
+			const layers = get(store); // ✅ ストアの現在値を取得
+			for (const type of TYPE_ORDER) {
+				if (layers[type].includes(id)) {
+					return type;
+				}
+			}
+			return undefined;
+		},
 
 		// 削除
 		remove: (id: string) =>
