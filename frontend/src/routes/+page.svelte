@@ -338,12 +338,12 @@
 
 <div class="relative flex h-full w-full grow">
 	<!-- マップのオフセット調整用 -->
-	{#if $isSideMenuType}
+	<!-- {#if $isSideMenuType}
 		<div
 			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
 			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
 		></div>
-	{/if}
+	{/if} -->
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<SearchMenu
 		bind:featureMenuData

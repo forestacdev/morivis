@@ -83,8 +83,8 @@
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'layer'}
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		in:fly={{ duration: 300, x: -100, opacity: 0 }}
+		class="bg-main w-side-menu flex h-full flex-col gap-2 pt-[70px]"
 	>
 		<div
 			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"

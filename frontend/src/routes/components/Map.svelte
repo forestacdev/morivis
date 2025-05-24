@@ -11,14 +11,15 @@
 		type Marker,
 		type LngLat
 	} from 'maplibre-gl';
+	import maplibregl from 'maplibre-gl';
+	import { onMount } from 'svelte';
 
 	import type { DialogType } from '$routes/+page.svelte';
 
-	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { onMount } from 'svelte';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
+	import WebGLScreen from '$routes/components/effect/WebGLScreen.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
@@ -38,6 +39,7 @@
 	import { showHillshadeLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
+	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
@@ -285,14 +287,115 @@
 		if (!mapStyle || !mapContainer) return;
 
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
+
+		function startRepaintLoop(map: maplibregl.Map) {
+			let frame: number;
+			function loop() {
+				map.triggerRepaint(); // ← カスタムレイヤーの render() が呼ばれる
+				frame = requestAnimationFrame(loop);
+			}
+			loop();
+
+			// 停止関数（必要なら）
+			return () => cancelAnimationFrame(frame);
+		}
+
+		// 例：マップ初期化後
+		const stopRepaint = startRepaintLoop(maplibreMap);
 	});
 
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
-		console.log('Map style updated', mapStyle);
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
+
+		maplibreMap.addLayer({
+			id: 'screen-shader-layer',
+			type: 'custom',
+			renderingMode: '2d',
+			onAdd(map, gl) {
+				// 頂点データ：NDCで四角形を構成（-1〜1の範囲）
+				const vertices = new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0]);
+
+				const vertexBuffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+				// 頂点シェーダー
+				const vertexShaderSource = `
+                        attribute vec2 a_position;
+                        varying vec2 v_uv;
+                        void main() {
+                            v_uv = a_position * 0.5 + 0.5;
+                            gl_Position = vec4(a_position, 0.0, 1.0);
+                        }
+                        `;
+
+				// フラグメントシェーダー（ここに任意のエフェクトを入れる）
+				const fragmentShaderSource = `
+                        precision mediump float;
+                        varying vec2 v_uv;
+                        uniform float u_time;
+                        void main() {
+                            vec3 color = vec3(0.5 + 0.5 * sin(u_time + v_uv.xyx * 10.0));
+                            gl_FragColor = vec4(color, 0.1);
+                        }
+                        `;
+
+				function compileShader(type: number, source: string): WebGLShader {
+					const shader = gl.createShader(type)!;
+					gl.shaderSource(shader, source);
+					gl.compileShader(shader);
+					if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+						throw new Error('Shader compile error: ' + gl.getShaderInfoLog(shader));
+					}
+					return shader;
+				}
+
+				const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+				const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+				const program = gl.createProgram()!;
+				gl.attachShader(program, vertexShader);
+				gl.attachShader(program, fragmentShader);
+				gl.linkProgram(program);
+
+				if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+					throw new Error('Program link error: ' + gl.getProgramInfoLog(program));
+				}
+
+				const a_position = gl.getAttribLocation(program, 'a_position');
+				const u_time = gl.getUniformLocation(program, 'u_time');
+
+				// 保持しておく
+				(this as any)._gl = gl;
+				(this as any)._program = program;
+				(this as any)._a_position = a_position;
+				(this as any)._u_time = u_time;
+				(this as any)._vertexBuffer = vertexBuffer;
+				(this as any)._start = performance.now();
+			},
+
+			render(gl, matrix) {
+				const now = performance.now();
+				const time = (now - (this as any)._start) / 1000;
+
+				gl.useProgram((this as any)._program);
+				gl.disable(gl.DEPTH_TEST);
+				gl.enable(gl.BLEND); // ✅ ブレンドを有効化
+				gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // ✅ 通常のアルファブレンド
+				gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, (this as any)._vertexBuffer);
+				gl.enableVertexAttribArray((this as any)._a_position);
+				gl.vertexAttribPointer((this as any)._a_position, 2, gl.FLOAT, false, 0, 0);
+
+				gl.uniform1f((this as any)._u_time, time);
+
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			}
+		});
 	}, 100);
 
 	// レイヤーの更新を監視
@@ -386,17 +489,34 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="relative h-full w-full"
+	class="bg-main relative flex h-full w-full grow items-center justify-center {$isSideMenuType
+		? 'overflow-hidden'
+		: ''}"
 >
-	<div
+	<!-- <div
 		bind:this={mapContainer}
-		class="c-map-satellite absolute grow bg-black transition-opacity duration-500 {!showMapCanvas &&
+		class="absolute grow bg-black transition-opacity duration-500 {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'
 				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
 				: 'bottom-0 left-0 h-full w-full opacity-100'}"
+	></div> -->
+
+	<div
+		bind:this={mapContainer}
+		class="absolute h-full w-full bg-black transition-all duration-200"
 	></div>
+
+	<!-- <div
+		bind:this={mapContainer}
+		class="absolute bg-black transition-all duration-200 {$isSideMenuType
+			? 'h-[calc(100%-100px)] w-[calc(100%-100px)] overflow-hidden rounded-lg'
+			: 'h-full w-full'}"
+	></div> -->
+	<!-- <WebGLScreen /> -->
+	<!-- <ThreeScreen /> -->
+
 	<MapControl />
 	<MapStatePane />
 	<SelectionPopup
@@ -453,10 +573,5 @@
 	/* maplibreのデフォルトの出典表記を非表示 */
 	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
 		display: none !important;
-	}
-
-	/* TODO:マップの調整 */
-	.c-map-satellite {
-		filter: saturate(100%);
 	}
 </style>
