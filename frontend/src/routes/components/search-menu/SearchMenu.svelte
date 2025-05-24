@@ -163,7 +163,7 @@
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'search'}
 	<div
-		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
+		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
 		<div class="flex items-center justify-between p-2">

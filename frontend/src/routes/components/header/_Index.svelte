@@ -92,7 +92,7 @@
 			</button>
 			{#if $isSideMenuType === 'search'}
 				<div
-					transition:slide={{ duration: 200, axis: 'x' }}
+					transition:slide={{ duration: 300, axis: 'x' }}
 					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
 				>
 					検索
@@ -109,7 +109,7 @@
 			</button>
 			{#if $isSideMenuType === 'layer'}
 				<div
-					transition:slide={{ duration: 200, axis: 'x' }}
+					transition:slide={{ duration: 300, axis: 'x' }}
 					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
 				>
 					レイヤー
@@ -126,7 +126,7 @@
 			</button>
 			{#if $isSideMenuType === 'draw'}
 				<div
-					transition:slide={{ duration: 200, axis: 'x' }}
+					transition:slide={{ duration: 300, axis: 'x' }}
 					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
 				>
 					描画ツール

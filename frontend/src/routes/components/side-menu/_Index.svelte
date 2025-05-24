@@ -58,7 +58,7 @@
 
 {#if $showSideMenu}
 	<div
-		transition:fade={{ duration: 200 }}
+		transition:fade={{ duration: 300 }}
 		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50"
 		role="button"
 		tabindex="0"
@@ -70,7 +70,7 @@
 		}}
 	></div>
 	<div
-		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
+		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
 	>
 		<div class="flex items-center justify-between">
