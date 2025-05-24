@@ -13,7 +13,7 @@
 	import { csvFileToGeojson } from '$routes/utils/file/csv';
 	import { fgbFileToGeojson } from '$routes/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/utils/file/geojson';
-	import { shpFileToGeojson } from '$routes/utils/shp';
+	import { shpFileToGeojson } from '$routes/utils/file/shp';
 
 	interface Props {
 		map: maplibregl.Map;
