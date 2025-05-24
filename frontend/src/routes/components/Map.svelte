@@ -20,7 +20,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import { screenShaderLayer } from '$routes/components/effect/screen-layer';
+	import { screenShaderLayer } from '$routes/components/effect/screen/screen-layer';
 	import WebGLScreen from '$routes/components/effect/WebGLScreen.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
