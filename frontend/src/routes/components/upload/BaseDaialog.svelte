@@ -2,6 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import type { DialogType } from '$routes/+page.svelte';
+	import GeoTiffForm from '$routes/components/upload/form/GeoTiffForm.svelte';
 	import GpxForm from '$routes/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/components/upload/form/ShapeFileForm.svelte';
@@ -38,6 +39,9 @@
 			{/if} -->
 			{#if showDialogType === 'raster'}
 				<RasterForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'tiff'}
+				<GeoTiffForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />

@@ -61,6 +61,10 @@
 				case 'prj':
 					showDialogType = 'shp';
 					return;
+				case 'tiff':
+				case 'tif':
+					showDialogType = 'tiff';
+					return;
 
 				default:
 					showNotification('対応していないファイル形式です', 'error');

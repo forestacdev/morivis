@@ -21,7 +21,7 @@
 		features: StreetViewPoint[];
 	}
 
-	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | null;
+	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | null;
 </script>
 
 <script lang="ts">
@@ -243,7 +243,7 @@
 		const elevation = map.queryTerrainElevation(lngLat);
 
 		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0); 
+		map.setCenterElevation(elevation ?? 0);
 
 		map._elevationStart = map._elevationTarget;
 	};
