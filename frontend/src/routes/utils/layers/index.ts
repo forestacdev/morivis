@@ -648,10 +648,12 @@ export const createLayersItems = (
 	_dataEntries: GeoDataEntry[],
 	_type: 'main' | 'preview' = 'main'
 ) => {
-	const layerItems: LayerSpecification[] = [];
 	const symbolLayerItems: LayerSpecification[] = [];
-	const pointItems: LayerSpecification[] = [];
-	const lineItems: LayerSpecification[] = [];
+	const circleLayerItems: LayerSpecification[] = [];
+	const lineLayerItems: LayerSpecification[] = [];
+	const fillLayerItems: LayerSpecification[] = [];
+	const rasterLayerItems: LayerSpecification[] = [];
+	const vectorLayerItems: LayerSpecification[] = [];
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
@@ -684,7 +686,7 @@ export const createLayersItems = (
 					if (interaction.clickable) clickableRaster.push(layerId);
 
 					if (style.type === 'basemap') {
-						layerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -697,7 +699,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'categorical') {
-						layerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -705,7 +707,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'dem') {
-						layerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -713,7 +715,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'tiff') {
-						layerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -746,13 +748,13 @@ export const createLayersItems = (
 
 					const vectorLayer = createVectorLayer(layer, style);
 					if (vectorLayer) {
-						layerItems.push(vectorLayer);
+						vectorLayerItems.push(vectorLayer);
 					}
 
 					// ポリゴンのアウトライン
 					if (style.type === 'fill' && style.outline.show) {
 						const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
-						layerItems.push(lineLayer);
+						vectorLayerItems.push(lineLayer);
 					}
 
 					if (
@@ -794,8 +796,9 @@ export const createLayersItems = (
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
 	return [
-		...layerItems,
+		...rasterLayerItems,
 		...hillshadeItem,
+		...vectorLayerItems,
 		...streetViewLayers,
 		...mapLabelItems,
 		...symbolLayerItems
