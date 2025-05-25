@@ -17,7 +17,7 @@
 
 <style>
 	.c-fog {
-		--base-color: #212121; /* ベースカラーの定義 */
+		--base-color: #000000; /* ベースカラーの定義 */
 		background-image: linear-gradient(
 			to top,
 			color-mix(in srgb, var(--base-color) 90%, transparent),

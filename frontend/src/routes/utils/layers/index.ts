@@ -795,8 +795,8 @@ export const createLayersItems = (
 
 	return [
 		...layerItems,
-		...streetViewLayers,
 		...hillshadeItem,
+		...streetViewLayers,
 		...mapLabelItems,
 		...symbolLayerItems
 	];

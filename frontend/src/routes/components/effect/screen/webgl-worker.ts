@@ -1,37 +1,19 @@
-let texture: WebGLTexture | null = null;
-let lastTextureCanvas: OffscreenCanvas | null = null;
+import fragmentShaderSource from '$routes/components/effect/screen/shaders/fragment.glsl?raw';
+import vertexShaderSource from '$routes/components/effect/screen/shaders/vertex.glsl?raw';
+
 let startTime: number;
 let gl: WebGLRenderingContext | null = null;
-let timeUniformLocation: WebGLUniformLocation | null = null;
 let program: WebGLProgram | null = null;
+let time: WebGLUniformLocation | null = null;
+let texture: WebGLTexture | null = null;
+let resolution: WebGLUniformLocation | null = null;
 
-// 頂点シェーダー
-const vertexShaderSource = `
-    attribute vec4 a_position;
-    varying vec2 v_texcoord;
-    void main() {
-      gl_Position = a_position;
-    }
-  `;
-
-// 時間によって色が変わるフラグメントシェーダー
-const fragmentShaderSource = `
-    precision mediump float;
-    uniform float u_time;
-    uniform sampler2D u_texture;
-    varying vec2 v_texcoord;
-    void main() {
-      vec4 texColor = texture2D(u_texture, v_texcoord);
-      float r = abs(sin(u_time));
-      float g = abs(sin(u_time + 2.0));
-      float b = abs(sin(u_time + 4.0));
-      gl_FragColor = texColor;
-    gl_FragColor = vec4(r, g, b, 1.0);
-    }
-  `;
-
-function createShader(gl, type, source) {
+const createShader = (gl: WebGLRenderingContext, type: GLenum, source: string) => {
 	const shader = gl.createShader(type);
+	if (!shader) {
+		console.error('Failed to create shader');
+		return null;
+	}
 	gl.shaderSource(shader, source);
 	gl.compileShader(shader);
 	const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
@@ -41,9 +23,13 @@ function createShader(gl, type, source) {
 		return null;
 	}
 	return shader;
-}
+};
 
-function createProgram(gl, vertexShader, fragmentShader) {
+const createProgram = (
+	gl: WebGLRenderingContext,
+	vertexShader: WebGLShader,
+	fragmentShader: WebGLShader
+) => {
 	const program = gl.createProgram();
 	gl.attachShader(program, vertexShader);
 	gl.attachShader(program, fragmentShader);
@@ -55,14 +41,15 @@ function createProgram(gl, vertexShader, fragmentShader) {
 		return null;
 	}
 	return program;
-}
+};
 
-self.onmessage = function (e) {
+self.onmessage = (e) => {
 	const startTime = performance.now();
 	const { type, canvas } = e.data;
 
 	if (type === 'init') {
-		gl = canvas.getContext('webgl');
+		gl = canvas.getContext('webgl2');
+
 		if (!gl) {
 			console.error('WebGL context not available');
 			return;
@@ -70,10 +57,22 @@ self.onmessage = function (e) {
 
 		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 		const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+		if (!vertexShader || !fragmentShader) {
+			console.error('Failed to create shaders');
+			return;
+		}
 		program = createProgram(gl, vertexShader, fragmentShader);
 
+		if (!program) {
+			console.error('Failed to create shader program');
+			return;
+		}
+
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-		timeUniformLocation = gl.getUniformLocation(program, 'u_time');
+		time = gl.getUniformLocation(program, 'u_time');
+
+		resolution = gl.getUniformLocation(program, 'u_resolution');
 
 		const positionBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -94,12 +93,18 @@ self.onmessage = function (e) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-	} else if (type === 'updateTexture') {
-		const { canvas } = e.data;
-		lastTextureCanvas = canvas;
+	} else if (type === 'resize') {
+		const { width, height } = e.data;
+		if (!gl) {
+			console.error('WebGL context not available');
+			return;
+		}
+		gl.canvas.width = width;
+		gl.canvas.height = height;
+		gl.viewport(0, 0, width, height);
 	}
 
-	function draw() {
+	const draw = () => {
 		const now = performance.now();
 		const elapsed = (now - startTime) / 1000;
 
@@ -112,17 +117,18 @@ self.onmessage = function (e) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		gl.useProgram(program);
-		gl.uniform1f(timeUniformLocation, elapsed);
+		// gl.disable(gl.DEPTH_TEST);
+		// gl.enable(gl.BLEND); // ✅ ブレンドを有効化
+		// gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // ✅ 通常のアルファブレンド
 
-		if (texture && lastTextureCanvas) {
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lastTextureCanvas);
-		}
+		gl.uniform1f(time, elapsed);
+		gl.uniform2f(resolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 		// 次フレームを予約
 		self.requestAnimationFrame(draw);
-	}
+	};
 
 	// 初回呼び出し
 	self.requestAnimationFrame(draw);

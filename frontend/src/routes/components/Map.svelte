@@ -20,8 +20,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import LockOnScreen from '$routes/components/effect/LockOnScreen.svelte';
-	import { screenShaderLayer } from '$routes/components/effect/screen/screen-layer';
-	import WebGLScreen from '$routes/components/effect/WebGLScreen.svelte';
+	import WebGLScreen from '$routes/components/effect/screen/WebGLScreen.svelte';
 	import MapControl from '$routes/components/map-control/_Index.svelte';
 	import MapStatePane from '$routes/components/map-control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/components/map-layer/StreetViewLayer.svelte';
@@ -289,21 +288,6 @@
 		if (!mapStyle || !mapContainer) return;
 
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
-
-		function startRepaintLoop(map: maplibregl.Map) {
-			let frame: number;
-			function loop() {
-				map.triggerRepaint(); // ← カスタムレイヤーの render() が呼ばれる
-				frame = requestAnimationFrame(loop);
-			}
-			loop();
-
-			// 停止関数（必要なら）
-			return () => cancelAnimationFrame(frame);
-		}
-
-		// 例：マップ初期化後
-		const stopRepaint = startRepaintLoop(maplibreMap);
 	});
 
 	// マップのスタイルの更新
@@ -313,8 +297,6 @@
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
-
-		maplibreMap.addLayer(screenShaderLayer as AddLayerObject); // スクリーンシェーダーレイヤーを追加
 	}, 100);
 
 	// レイヤーの更新を監視

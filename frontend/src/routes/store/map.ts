@@ -74,6 +74,7 @@ const createMapStore = () => {
 	const isLoadingEvent = writable<boolean>(true);
 	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
+	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
@@ -128,6 +129,10 @@ const createMapStore = () => {
 
 		map.on('click', (e) => {
 			clickEvent.set(e);
+		});
+
+		map.on('resize', (e) => {
+			resizeEvent.set(e);
 		});
 		map.on('data', function (e) {
 			//your code here
@@ -431,8 +436,10 @@ const createMapStore = () => {
 		focusLayer,
 		focusFeature,
 		onSetStyle: setStyleEvent.subscribe,
+		onResize: resizeEvent.subscribe, // リサイズイベントの購読用メソッド
 		getTerrain: () => map?.getTerrain(),
 		getMapBbox: getMapBbox,
+		getCanvas: () => map?.getCanvas(),
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onMouseover: mouseoverEvent.subscribe, // マウスオーバーイベントの購読用メソッド
 		onMouseout: mouseoutEvent.subscribe, // マウスアウトイベントの購読用メソッド

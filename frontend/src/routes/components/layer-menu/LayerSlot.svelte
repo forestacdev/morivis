@@ -160,7 +160,7 @@
 	class="relative flex flex-col rounded-[2.1rem] transition-colors {dragEnterType !== null &&
 	dragEnterType !== layerType
 		? 'opacity-50'
-		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-sub' : ''}"
+		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-base/50' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
@@ -173,7 +173,7 @@
 >
 	<button
 		id={layerEntry.id}
-		class=" c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? ''
 			: ''} {showLegend ? 'bg-base' : 'bg-sub'}"
