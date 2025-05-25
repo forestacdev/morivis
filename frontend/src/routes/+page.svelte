@@ -34,7 +34,7 @@
 	import maplibregl from 'maplibre-gl';
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount, mount } from 'svelte';
-	import { slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
@@ -344,6 +344,14 @@
 			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
 		></div>
 	{/if} -->
+
+	<!-- メニューの背景 -->
+	{#if $isSideMenuType}
+		<div
+			transition:fade={{ duration: 300 }}
+			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[800px] flex-col gap-2"
+		></div>
+	{/if}
 	<LayerMenu bind:layerEntries bind:tempLayerEntries />
 	<SearchMenu
 		bind:featureMenuData

@@ -173,7 +173,7 @@
 >
 	<button
 		id={layerEntry.id}
-		class="c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left transition-colors duration-100 {$selectedLayerId ===
+		class="c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-100 {$selectedLayerId ===
 		layerEntry.id
 			? ''
 			: ''} {showLegend ? 'bg-base' : 'bg-sub'}"
@@ -243,6 +243,9 @@
 			</label>
 		</div>
 	</button>
+	<!-- <div
+		class="border-accent pointer-events-none absolute z-20 h-full w-full rounded-full border-2 p-2"
+	></div> -->
 	{#if showLegend}
 		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
 			<!-- <div class="w-[2px] items-stretch bg-gray-500"></div> -->

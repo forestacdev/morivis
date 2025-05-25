@@ -1,16 +1,8 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
-	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/types/draw';
-
-	import type { GeoDataEntry } from '$routes/data/types';
-	import { isSideMenuType } from '$routes/store/ui';
-	import { downloadGeojson } from '$routes/utils/file/geojson';
-
-	import { mapStore } from '$routes/store/map';
 	import Icon from '@iconify/svelte';
-
+	import { hex } from 'chroma-js';
+	import { fly } from 'svelte/transition';
 	import ColorPicker, { ChromeVariant } from 'svelte-awesome-color-picker';
-
 	import {
 		TerraDraw,
 		TerraDrawAngledRectangleMode,
@@ -26,7 +18,12 @@
 		TerraDrawSensorMode
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
-	import { hex } from 'chroma-js';
+
+	import type { GeoDataEntry } from '$routes/data/types';
+	import { mapStore } from '$routes/store/map';
+	import { isSideMenuType } from '$routes/store/ui';
+	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/types/draw';
+	import { downloadGeojson } from '$routes/utils/file/geojson';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -274,7 +271,7 @@
 {#if $isSideMenuType === 'draw'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
 		<div class="c-color-picker [&_label]:w-full">
 			<ColorPicker

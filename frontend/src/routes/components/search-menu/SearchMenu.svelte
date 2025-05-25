@@ -14,9 +14,8 @@
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showSearchMenu } from '$routes/store';
-	import { isSideMenuType } from '$routes/store/ui';
-
 	import { mapStore } from '$routes/store/map';
+	import { isSideMenuType } from '$routes/store/ui';
 	import type { ResultData } from '$routes/utils/feature';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
@@ -164,7 +163,7 @@
 {#if $isSideMenuType === 'search'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
 		<div class="flex items-center justify-between p-2">
 			<Geocoder
@@ -227,9 +226,9 @@
 				<div class="h-[200px] w-full shrink-0"></div>
 			</div>
 		{/if}
-		<div
+		<!-- <div
 			class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
-		></div>
+		></div> -->
 	</div>
 {/if}
 
