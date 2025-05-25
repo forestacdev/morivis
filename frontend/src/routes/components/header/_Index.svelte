@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { slide } from 'svelte/transition';
 
 	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
@@ -13,7 +14,6 @@
 		showTerrainMenu
 	} from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
-	import { slide } from 'svelte/transition';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -57,9 +57,9 @@
 			isSideMenuType.set('draw');
 		}
 	};
-	const toggleTerrainMenu = () => {
-		showTerrainMenu.set(!$showTerrainMenu);
-	};
+	// const toggleTerrainMenu = () => {
+	// 	showTerrainMenu.set(!$showTerrainMenu);
+	// };
 </script>
 
 <div
@@ -68,7 +68,7 @@
 	<div
 		class="flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
 			? 'bg-base text-main pr-1'
-			: 'bg-main pr-2 text-white'}"
+			: 'bg-main  pr-2 text-white'}"
 	>
 		<div class="relative">
 			<button
@@ -81,66 +81,76 @@
 		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
 
 		<div class="flex w-full items-center justify-between">
-			<button
-				onclick={toggleSearchMenu}
-				class="hover:text-accent transition-text pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-				'search'
-					? 'text-accent scale-120'
-					: ''}"
-			>
-				<Icon icon="stash:search-solid" class="h-7 w-7" />
-			</button>
+			{#if $isSideMenuType === 'search' || !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					onclick={toggleSearchMenu}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'search'
+						? 'text-accent scale-120'
+						: ''}"
+				>
+					<Icon icon="stash:search-solid" class="h-7 w-7" />
+				</button>
+			{/if}
 			{#if $isSideMenuType === 'search'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
 				>
 					検索
 				</div>
 			{/if}
-			<button
-				class="hover:text-accent transition-text pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-				'layer'
-					? 'text-accent scale-120'
-					: ''}"
-				onclick={toggleLayerMenu}
-			>
-				<Icon icon="ic:round-layers" class="h-7 w-7" />
-			</button>
+			{#if $isSideMenuType === 'layer' || !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'layer'
+						? 'text-accent scale-120'
+						: ''}"
+					onclick={toggleLayerMenu}
+				>
+					<Icon icon="ic:round-layers" class="h-7 w-7" />
+				</button>
+			{/if}
 			{#if $isSideMenuType === 'layer'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
 				>
 					レイヤー
 				</div>
 			{/if}
-			<button
-				class="hover:text-accent pointer-events-auto flex w-full cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
-				'draw'
-					? 'text-accent scale-120'
-					: ''}"
-				onclick={toggleDrawMenu}
-			>
-				<Icon icon="fa6-solid:pen" class="h-5 w-5" />
-			</button>
+			{#if $isSideMenuType === 'draw' || !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
+					'draw'
+						? 'text-accent scale-120'
+						: ''}"
+					onclick={toggleDrawMenu}
+				>
+					<Icon icon="fa6-solid:pen" class="h-5 w-5" />
+				</button>
+			{/if}
 			{#if $isSideMenuType === 'draw'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-[120px] shrink-0 text-nowrap text-center text-lg"
+					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
 				>
 					描画ツール
 				</div>
 			{/if}
+			{#if $isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+					onclick={() => isSideMenuType.set(null)}
+				>
+					<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
+				</button>
+			{/if}
 		</div>
-		{#if $isSideMenuType}
-			<button
-				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-				onclick={() => isSideMenuType.set(null)}
-			>
-				<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
-			</button>
-		{/if}
 	</div>
 	<li class="flex">
 		<button
@@ -160,5 +170,9 @@
 <style>
 	.c-bg-blur {
 		backdrop-filter: blur(10px);
+	}
+
+	.w-title-bar {
+		@apply w-[250px];
 	}
 </style>

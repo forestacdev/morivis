@@ -53,7 +53,8 @@
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
 	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
-	import TerrainMenu from '$routes/components/terrain-menu/TerrainMenu.svelte';
+	// import TerrainMenu from '$routes/components/terrain-menu/TerrainMenu.svelte';
+
 	import Tooltip from '$routes/components/Tooltip.svelte';
 	import UploadDaialog from '$routes/components/upload/BaseDaialog.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
@@ -385,7 +386,6 @@
 	<FeatureMenu bind:featureMenuData {layerEntries} />
 	<PreviewMenu bind:showDataEntry />
 
-	<TerrainMenu />
 	{#if !showDataEntry}
 		<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
 	{/if}

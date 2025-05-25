@@ -176,7 +176,6 @@ const createMapStore = () => {
 			const origin = window.location.origin;
 			// mapページのときに有効
 			if (url.startsWith(`${origin}/map`)) {
-				console.log(origin);
 				const center = map.getCenter();
 				setMapParams({
 					center: [center.lng, center.lat],

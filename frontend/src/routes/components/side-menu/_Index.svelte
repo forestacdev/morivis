@@ -10,10 +10,9 @@
 		showInfoDialog,
 		showTermsDialog
 	} from '$routes/store';
-	import { isSideMenuType } from '$routes/store/ui';
-
 	import { mapStore } from '$routes/store/map';
 	import { showNotification } from '$routes/store/notification';
+	import { isSideMenuType } from '$routes/store/ui';
 	import { isProcessing } from '$routes/store/ui';
 	import { imageExport, exportPDF } from '$routes/utils/map';
 
@@ -158,6 +157,12 @@
 				rel="noopener noreferrer"
 				><Icon icon="mdi:web" class="h-8 w-8" />
 				<span>森林文化アカデミーHP</span></a
+			>
+			<a
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				href="/"
+				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
+				<span>トップページへ</span></a
 			>
 		</ui>
 		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>

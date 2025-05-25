@@ -12,7 +12,7 @@
 	import { demLayers, demEntry, type DemData } from '$routes/data/dem';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showTerrainMenu, isTerrain3d } from '$routes/store';
+	import { isTerrain3d, showTerrainMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import type { ResultData } from '$routes/utils/feature';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
