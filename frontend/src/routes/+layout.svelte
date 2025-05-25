@@ -14,6 +14,17 @@
 	import { checkLocalStorage } from '$routes/utils/localStorage';
 	import { isPc } from '$routes/utils/ui';
 
+	// onNavigate((navigation) => {
+	// 	if (!document.startViewTransition) return;
+
+	// 	return new Promise((resolve) => {
+	// 		document.startViewTransition(async () => {
+	// 			resolve();
+	// 			await navigation.complete;
+	// 		});
+	// 	});
+	// });
+
 	type Device = 'mobile' | 'pc' | '';
 
 	let isDevice = $state<Device>('');

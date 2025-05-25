@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { fromArrayBuffer } from 'geotiff';
 	import gsap from 'gsap';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 	import fragmentShader from './shader/fragment.glsl?raw';
 	import vertexShader from './shader/vertex.glsl?raw';
+
+	import { goto } from '$app/navigation';
 
 	// ラスターデータの読み込み
 	const loadRasterData = async (url: string) => {
@@ -45,7 +47,6 @@
 		vertexShader,
 		fragmentShader,
 		transparent: true
-		// wireframe: true
 	});
 
 	const imageToflatArray = async (
@@ -178,36 +179,6 @@
 			return [a, b, c, b, d, c];
 		}).flat();
 
-		// UV座標の計算とセット
-		// UV座標とインデックスの計算
-		// const indices = [];
-		// const uvs = [];
-
-		// for (let i = 0; i < newHeight - 1; i++) {
-		// 	for (let j = 0; j < newWidth - 1; j++) {
-		// 		// 現在のセルの頂点インデックス
-		// 		const a = i * newWidth + j; // 左上
-		// 		const b = (i + 1) * newWidth + j; // 左下
-		// 		const c = i * newWidth + (j + 1); // 右上
-		// 		const d = (i + 1) * newWidth + (j + 1); // 右下
-
-		// 		// インデックスを追加（2つの三角形で1セルを構成）
-		// 		indices.push(a, b, c, b, d, c);
-
-		// 		// UV座標を追加（各四角形ごとに0〜1の範囲でUVを設定）
-		// 		uvs.push(
-		// 			0,
-		// 			1, // 左上
-		// 			0,
-		// 			0, // 左下
-		// 			1,
-		// 			1, // 右上
-		// 			1,
-		// 			0 // 右下
-		// 		);
-		// 	}
-		// }
-
 		const uvsFloat32Array = new Float32Array(uvs);
 		geometry.setAttribute('uv', new THREE.BufferAttribute(uvsFloat32Array, 2)); // UV属性を追加
 
@@ -307,7 +278,8 @@
 			.timeline({
 				onComplete: () => {
 					if (isMapView) {
-						window.location.href = '/map';
+						// goto('/');
+						window.location.href = '/';
 					}
 				}
 			})
@@ -316,7 +288,7 @@
 			.add(fovAnim, '-=1.0');
 	};
 
-	onMount(async () => {
+	onMount(() => {
 		if (!canvas) return;
 		// シーンの作成
 		scene = new THREE.Scene();
@@ -409,6 +381,16 @@
 			camera.updateProjectionMatrix();
 		};
 		window.addEventListener('resize', onResize);
+
+		return () => {
+			// クリーンアップ
+			orbitControls.dispose();
+			zoomControls.dispose();
+			// イベントリスナーの削除
+
+			window.removeEventListener('resize', onResize);
+			renderer.dispose();
+		};
 	});
 </script>
 
@@ -417,9 +399,7 @@
 
 	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
 		<div class="flex h-full w-full flex-col items-center justify-center">
-			<span class="text-[30px] font-bold text-white [text-shadow:_0px_0px_10px_#000]"
-				>ENSHURIN MAP VIEW</span
-			>
+			<span class="text-[90px] font-bold text-white">morivis</span>
 			<button
 				class="pointer-events-auto text-[30px] font-bold text-white"
 				onclick={() => toggleView(isMapView)}>Let's take a look at the map.</button

@@ -33,11 +33,11 @@ void main(){
     float intensity = pow(coefficient + dot(cameraToVertex, normalize(vNormal)), power);
 
     // 等高線
-    float contourInterval = 10.0; // 等高線の間隔
-    float lineWidth = 1.0; // 等高線の線の幅
-    float edgeWidth = 0.9; // 等高線の境界の幅（スムージング用）
+    float contourInterval = 30.0; // 等高線の間隔
+    float lineWidth = 6.0; // 等高線の線の幅
+    float edgeWidth = 8.0; // 等高線の境界の幅（スムージング用）
 
-    float t = uTime * 10.0;
+    float t = uTime * 5.0;
 
     // 時間に基づいた変動を加えたY位置
     float yPos = vPosition.y - t;
