@@ -30,14 +30,15 @@ class WorkerProtocol {
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
 		const baseUrl = url.origin + url.pathname;
-		const tileId = `${baseUrl}_${entryId}`;
+		const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
+		const formatType = url.searchParams.get('formatType') || 'image'; // デフォルト値を設定
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 		const mode = url.searchParams.get('mode');
 
 		let image: ImageBitmap;
 		if (mode === 'evolution') {
-			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller);
+			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller, formatType);
 			const elevationColorArray = this.colorMapCache.createColorArray(
 				url.searchParams.get('colorMap') || 'bone'
 			);
@@ -57,7 +58,7 @@ class WorkerProtocol {
 				});
 			});
 		} else {
-			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller);
+			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller, formatType);
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(tileId, { resolve, reject, controller });
 

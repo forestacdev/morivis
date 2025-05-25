@@ -1,3 +1,4 @@
+import { PMTiles } from 'pmtiles';
 type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap } };
 
 // タイル画像の処理
@@ -19,6 +20,36 @@ export class TileImageManager {
 			TileImageManager.instance = new TileImageManager(cacheSizeLimit);
 		}
 		return TileImageManager.instance;
+	}
+
+	public async loadImagePmtiles(
+		src: string,
+		tile: { x: number; y: number; z: number },
+		signal: AbortSignal
+	): Promise<ImageBitmap> {
+		try {
+			const pmtiles = new PMTiles(src);
+
+			// タイルデータを取得
+			const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y, signal);
+			if (!tileData || !tileData.data) {
+				throw new Error('Tile data not found');
+			}
+
+			// Blob を生成
+			const blob = new Blob([tileData.data], { type: 'image/png' });
+
+			// ImageBitmap に変換して返す
+			return await createImageBitmap(blob);
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				// リクエストがキャンセルされた場合はエラーをスロー
+				throw error;
+			} else {
+				// 他のエラー時には空の画像を返す
+				return await createImageBitmap(new ImageData(1, 1));
+			}
+		}
 	}
 
 	public async loadImage(src: string, signal: AbortSignal): Promise<ImageBitmap> {
@@ -43,29 +74,42 @@ export class TileImageManager {
 		y: number,
 		z: number,
 		baseurl: string,
-		controller: AbortController
+		controller: AbortController,
+		formatType: 'image' | 'pmtiles'
 	): Promise<ImageBitmap> {
+		const id = `${baseurl}_${x}_${y}_${z}_${formatType}`;
 		const imageUrl = baseurl
 			.replace('{x}', x.toString())
 			.replace('{y}', y.toString())
 			.replace('{z}', z.toString());
 
-		if (this.cache.has(imageUrl)) {
-			const cachedImage = this.cache.get(imageUrl)!; // `has()`で存在を確認済みなので`!`でアサーション
-			this.add(imageUrl, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
+		if (this.cache.has(id)) {
+			const cachedImage = this.cache.get(id)!; // `has()`で存在を確認済みなので`!`でアサーション
+			this.add(id, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
 			return cachedImage;
 		}
 
 		try {
-			const imageBitmap = await this.loadImage(imageUrl, controller.signal);
-			this.add(imageUrl, imageBitmap);
+			let imageBitmap: ImageBitmap | undefined = undefined;
+			if (formatType === 'image') {
+				imageBitmap = await this.loadImage(imageUrl, controller.signal);
+			} else if (formatType === 'pmtiles') {
+				const tile = { x, y, z };
+				imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
+			}
+
+			if (!imageBitmap) {
+				throw new Error(`Failed to load image for ${id}`);
+			}
+
+			this.add(id, imageBitmap);
 			return imageBitmap;
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				throw error;
 			}
 
-			console.error(`Error in getSingleTileImage for ${imageUrl}:`, error);
+			console.error(`Error in getSingleTileImage for ${id}:`, error);
 			return await createImageBitmap(new ImageData(1, 1)); // エラー時にも1x1画像を返す
 		}
 	}

@@ -61,7 +61,7 @@ class WorkerProtocol {
 			request.resolve({ data: buffer });
 			this.pendingRequests.delete(id);
 		} else {
-			console.warn(`No pending request found for tile ${id}`);
+			// console.warn(`No pending request found for tile ${id}`);
 		}
 	};
 

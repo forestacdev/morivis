@@ -30,6 +30,7 @@ export const getImagePmtiles = async (
 		reader.onloadend = () => {
 			if (reader.result) {
 				// Base64データを返す
+				// TODO blobobject URL を使用しても良いかもしれない
 				resolve(reader.result.toString());
 			} else {
 				reject(new Error('Failed to convert blob to Base64'));

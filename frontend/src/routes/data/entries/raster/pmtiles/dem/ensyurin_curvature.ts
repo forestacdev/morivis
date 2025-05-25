@@ -3,16 +3,16 @@ import { DEFAULT_RASTER_DEM_STYLE } from '$routes/data/style';
 import { ENTRY_PMTILES_RASTER_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterDemStyle> = {
-	id: 'ensyurin_dem',
+	id: 'ensyurin_curvature',
 	type: 'raster',
 	format: {
 		type: 'pmtiles',
 
-		url: `${ENTRY_PMTILES_RASTER_PATH}/ensyurin_dem.pmtiles`
+		url: `${ENTRY_PMTILES_RASTER_PATH}/ensyurin_curvature.pmtiles`
 	},
 	metaData: {
-		name: '演習林 標高図',
-		description: '森林文化アカデミー演習林の地形の標高値を数値化したもの',
+		name: '演習林 曲率図',
+		description: '森林文化アカデミー演習林の地形の曲率を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		minZoom: 14,
@@ -32,9 +32,9 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 				evolution: {
-					max: 424,
-					min: 80,
-					colorMap: 'autumn'
+					max: 5,
+					min: -5,
+					colorMap: 'hot'
 				}
 			}
 		}
