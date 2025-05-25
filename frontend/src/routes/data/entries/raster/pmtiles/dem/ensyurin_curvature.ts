@@ -34,7 +34,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 				evolution: {
 					max: 5,
 					min: -5,
-					colorMap: 'hot'
+					colorMap: 'rdbu'
 				}
 			}
 		}

@@ -34,7 +34,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 				evolution: {
 					max: 424,
 					min: 80,
-					colorMap: 'autumn'
+					colorMap: 'greys'
 				}
 			}
 		}
