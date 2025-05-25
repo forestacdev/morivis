@@ -18,7 +18,7 @@ float edgeFactor(vec2 p){
 }
 void main(){
 
-     float a = edgeFactor(vUv);
+    //  float a = edgeFactor(vUv);
 
     //  フォッグの割合を計算 (線形補間)
     float fade = mod(uTime, 1.0); // u_timeを0〜1に正規化
@@ -60,7 +60,16 @@ void main(){
 
 
     // gl_FragColor = vec4(color, fog_alpha - 1.0)  * intensity;
-    gl_FragColor = vec4(color, fog_alpha)  * intensity;
+    gl_FragColor = vec4(color, fog_alpha) * intensity;
+
+    // 法線ベクトルと「真上」方向（0,1,0）との角度を使って傾斜を検出
+    float slope = 1.0 - dot(normalize(vNormal), vec3(0.0, 1.0, 0.0)); // 0 = 上向き, 1 = 横向き
+
+    // 傾斜に応じたカラー補正（エッジが赤みを帯びるなど）
+    vec3 slopeColor = mix(color2, vec3(0.0, 1.0, 0.898), pow(slope, .5)); // 傾斜が急なほどオレンジに近づく
+
+    // fog + glow + contour + 傾斜
+    gl_FragColor = vec4(slopeColor, fog_alpha) * intensity;
     // gl_FragColor = vec4(color, a);
     // gl_FragColor = vec4(vec2(vUv), 0.0, 1.0);
 

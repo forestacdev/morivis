@@ -1,0 +1,10 @@
+<PAMDataset>
+  <SRS dataAxisToSRSAxisMapping="1,2">LOCAL_CS["JGD2011 / Japan Plane Rectangular CS VII",UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH]]</SRS>
+  <GeoTransform> -2.4096446100000001e+04,  5.4088886486486496e+00,  0.0000000000000000e+00, -4.7783160700000000e+04,  0.0000000000000000e+00, -5.4088886486486443e+00</GeoTransform>
+  <Metadata>
+    <MDI key="AREA_OR_POINT">Area</MDI>
+  </Metadata>
+  <Metadata domain="IMAGE_STRUCTURE">
+    <MDI key="INTERLEAVE">PIXEL</MDI>
+  </Metadata>
+</PAMDataset>
