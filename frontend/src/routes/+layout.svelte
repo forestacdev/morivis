@@ -7,7 +7,7 @@
 
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/store';

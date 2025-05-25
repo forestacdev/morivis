@@ -2,7 +2,7 @@
 	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 
-	import type { DialogType } from '$routes/+page.svelte';
+	import type { DialogType } from '$routes/map/+page.svelte';
 	import { createGeoJsonEntry } from '$routes/data';
 	import { geometryTypeToEntryType } from '$routes/data';
 	import type { GeoDataEntry } from '$routes/data/types';

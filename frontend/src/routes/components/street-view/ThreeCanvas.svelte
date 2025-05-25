@@ -10,7 +10,7 @@
 	import vs from './shader/vertex.glsl?raw';
 	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
-	import type { NextPointData, StreetViewPoint } from '$routes/+page.svelte';
+	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';

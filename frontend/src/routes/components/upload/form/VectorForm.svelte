@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/+page.svelte';
+	import type { DialogType } from '$routes/map/+page.svelte';
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/components/atoms/TextForm.svelte';
 	import { createVectorTileEntry } from '$routes/data';
@@ -12,14 +12,9 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
-
 	}
 
-	let {
-		showDataEntry = $bindable(),
-		showDialogType = $bindable(),
-
-	}: Props = $props();
+	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
 
 	const rasterValidation = yup.object().shape({
 		name: yup.string().required('データ名を入力してください。'),

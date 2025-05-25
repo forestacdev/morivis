@@ -172,13 +172,19 @@ const createMapStore = () => {
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
-			const center = map.getCenter();
-			setMapParams({
-				center: [center.lng, center.lat],
-				zoom: map.getZoom(),
-				pitch: map.getPitch(),
-				bearing: map.getBearing()
-			});
+			const url = window.location.href;
+			const origin = window.location.origin;
+			// mapページのときに有効
+			if (url.startsWith(`${origin}/map`)) {
+				console.log(origin);
+				const center = map.getCenter();
+				setMapParams({
+					center: [center.lng, center.lat],
+					zoom: map.getZoom(),
+					pitch: map.getPitch(),
+					bearing: map.getBearing()
+				});
+			}
 			mooveEndEvent.set(e);
 
 			// const zoom = map.getZoom();

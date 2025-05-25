@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
-	import type { DialogType } from '$routes/+page.svelte';
+	import type { DialogType } from '$routes/map/+page.svelte';
 	import HorizontalSelectBox from '$routes/components/atoms/HorizontalSelectBox.svelte';
 	import DataSlot from '$routes/components/data-menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/components/data-menu/UploadPane.svelte';

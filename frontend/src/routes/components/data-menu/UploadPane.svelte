@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/+page.svelte';
+	import type { DialogType } from '$routes/map/+page.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { showDataMenu } from '$routes/store';
 
@@ -38,7 +38,7 @@
 		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
 		>ベクタータイルの登録
 	</button>
-    <button
+	<button
 		onclick={() => showUploadDialog('wmts')}
 		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
 		>wmstの登録
