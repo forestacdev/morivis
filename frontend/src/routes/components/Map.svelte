@@ -32,6 +32,7 @@
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { demEntry } from '$routes/data/dem';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 	import type { DialogType } from '$routes/map/+page.svelte';
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
@@ -43,9 +44,7 @@
 	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/utils/sources';
-
-	import { map } from 'es-toolkit/compat';
+	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -62,6 +61,7 @@
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
 		drawGeojsonData: DrawGeojsonData;
+		demEntries: RasterEntry<RasterDemStyle>[]; // DEMデータのエントリー
 	}
 
 	let {
@@ -78,7 +78,8 @@
 		selectionMarkerLngLat = $bindable(),
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
-		drawGeojsonData = $bindable()
+		drawGeojsonData = $bindable(),
+		demEntries
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -110,6 +111,8 @@
 		// ソースとレイヤーの作成
 		const sources = await createSourcesItems(_dataEntries);
 		const layers = await createLayersItems(_dataEntries);
+
+		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry) {
@@ -148,15 +151,7 @@
 			glyphs: MAP_FONT_DATA_PATH,
 			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
 			sources: {
-				terrain: {
-					type: 'raster-dem',
-					tiles: [`terrain://${demEntry.url}?x={x}&y={y}&z={z}`],
-					tileSize: 256,
-					minzoom: demEntry.sourceMinZoom,
-					maxzoom: demEntry.sourceMaxZoom,
-					attribution: demEntry.attribution,
-					bounds: demEntry.bbox
-				},
+				...terrainSources,
 				...streetViewSources,
 				...sources,
 				tile_index: {

@@ -3,8 +3,11 @@ import {
 	type VectorSourceSpecification,
 	type RasterSourceSpecification,
 	type GeoJSONSourceSpecification,
-	type ImageSourceSpecification
+	type ImageSourceSpecification,
+	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
+
+import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/data/types';
 import { getLabelSources } from '$routes/utils/label';
@@ -243,4 +246,44 @@ export const createSourcesItems = async (
 	return { ...sourceItems, ...labelSources } as {
 		[_: string]: SourceSpecification;
 	};
+};
+
+export const createTerrainSources = async (
+	_dataEntries: RasterEntry<RasterDemStyle>[],
+	_id: string
+): Promise<{ [_: string]: RasterDEMSourceSpecification }> => {
+	const sourceItems: { [_: string]: RasterDEMSourceSpecification } = {};
+
+	const entry = _dataEntries.find((e) => e.id === _id);
+
+	if (!entry) {
+		console.warn(`Entry with id ${_id} not found.`);
+		return sourceItems;
+	}
+
+	const { id, metaData, format, style } = entry;
+	const demType = style.visualization.demType;
+	if (format.type === 'pmtiles') {
+		sourceItems['terrain'] = {
+			type: 'raster-dem',
+			url: `pmtiles://${format.url}`,
+			maxzoom: metaData.maxZoom,
+			minzoom: metaData.minZoom,
+			tileSize: metaData.tileSize,
+			attribution: metaData.attribution,
+			bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+		};
+	} else if (format.type === 'image') {
+		sourceItems['terrain'] = {
+			type: 'raster-dem',
+			tiles: [`terrain://${format.url}?demType=${demType}&x={x}&y={y}&z={z}`],
+			maxzoom: metaData.maxZoom,
+			minzoom: metaData.minZoom,
+			tileSize: metaData.tileSize,
+			attribution: metaData.attribution,
+			bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+		};
+	}
+
+	return sourceItems;
 };

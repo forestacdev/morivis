@@ -243,17 +243,6 @@ export const demLayers: DemData[] = [
 		bbox: [120, 20, 150, 50],
 		demType: 'gsi'
 	}
-	// {
-	//     id: 'mixed',
-	//     name: '統合DEM',
-	//     tiles: ['https://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png'],
-	//     tileSize: 256,
-	//     minzoom: 0,
-	//     maxzoom: 15,
-	//     attribution: '産総研シームレス標高タイル',
-	//     bbox: [-180, -85.051129, 180, 85.051129],
-	//     demType: 'gsi',
-	// },
 ];
 
 export type DemEntry = {

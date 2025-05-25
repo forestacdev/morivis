@@ -1,6 +1,55 @@
-import { DEM_DATA_TYPE, demEntry } from '$routes/data/dem';
-import type { DemDataTypeKey } from '../../utils';
+import { DEM_DATA_TYPE, demEntry, type DemDataTypeKey } from '$routes/data/dem';
+import { PMTiles } from 'pmtiles';
+
 import { TileImageManager } from '../image';
+
+const loadImagePmtiles = async (
+	src: string,
+	tile: { x: number; y: number; z: number },
+	signal: AbortSignal
+): Promise<ImageBitmap> => {
+	try {
+		const pmtiles = new PMTiles(src);
+
+		// タイルデータを取得
+		const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y, signal);
+		if (!tileData || !tileData.data) {
+			throw new Error('Tile data not found');
+		}
+
+		// Blob を生成
+		const blob = new Blob([tileData.data], { type: 'image/png' });
+
+		// ImageBitmap に変換して返す
+		return await createImageBitmap(blob);
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			// リクエストがキャンセルされた場合はエラーをスロー
+			throw error;
+		} else {
+			// 他のエラー時には空の画像を返す
+			return await createImageBitmap(new ImageData(1, 1));
+		}
+	}
+};
+
+const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
+	try {
+		const response = await fetch(src, { signal });
+		if (!response.ok) {
+			throw new Error('Failed to fetch image');
+		}
+		return await createImageBitmap(await response.blob());
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			// リクエストがキャンセルされた場合はエラーをスロー
+			throw error;
+		} else {
+			// 他のエラー時には空の画像を返す
+			return await createImageBitmap(new ImageData(1, 1));
+		}
+	}
+};
 
 class WorkerProtocol {
 	private worker: Worker;
@@ -22,24 +71,22 @@ class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(imageUrl: string, controller: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array }> {
 		try {
-			const demType = demEntry.demType;
-			let image;
-			if (this.tileCache.has(imageUrl)) {
-				image = this.tileCache.get(imageUrl);
-			} else {
-				image = await this.tileCache.loadImage(imageUrl, controller.signal);
-				this.tileCache.add(imageUrl, image);
-			}
+			const x = parseInt(url.searchParams.get('x') || '0', 10);
+			const y = parseInt(url.searchParams.get('y') || '0', 10);
+			const z = parseInt(url.searchParams.get('z') || '0', 10);
+			const baseUrl = url.origin + url.pathname;
+			const demType = url.searchParams.get('demType'); // デフォルト値を設
+			const image = await loadImage(baseUrl, controller.signal);
 
 			return new Promise((resolve, reject) => {
 				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-				this.pendingRequests.set(imageUrl, { resolve, reject, controller });
-				this.worker.postMessage({ image, demTypeNumber, id: imageUrl });
+				this.pendingRequests.set(baseUrl, { resolve, reject, controller });
+				this.worker.postMessage({ image, demTypeNumber, id: baseUrl });
 
 				controller.signal.addEventListener('abort', () => {
-					this.pendingRequests.delete(imageUrl);
+					this.pendingRequests.delete(baseUrl);
 					reject(new Error('Request aborted'));
 				});
 			});
@@ -97,8 +144,9 @@ export const terrainProtocol = (protocolName: string) => {
 	return {
 		protocolName,
 		request: (params: { url: string }, abortController: AbortController) => {
-			const imageUrl = params.url.replace(`${protocolName}://`, '');
-			return workerProtocol.request(imageUrl, abortController);
+			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
+			const url = new URL(urlWithoutProtocol);
+			return workerProtocol.request(url, abortController);
 		},
 		cancelAllRequests: () => workerProtocol.cancelAllRequests(),
 		clearCache: () => workerProtocol.clearCache()

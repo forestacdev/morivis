@@ -78,6 +78,10 @@
 		return [...geoDataEntries, ...tempLayerEntries];
 	});
 
+	let demEntries = $derived.by(() => {
+		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
+	});
+
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
@@ -373,6 +377,7 @@
 		bind:dropFile
 		bind:showDialogType
 		bind:drawGeojsonData
+		{demEntries}
 		{streetViewLineData}
 		{streetViewPointData}
 		{angleMarker}
