@@ -46,7 +46,6 @@ import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 import { demEntry, type DemEntry } from '$routes/data/dem';
 import { handleStyleImageMissing } from '$routes/utils/icon';
 import { isStyleEdit } from './index';
-import { on } from 'svelte/events';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -275,44 +274,52 @@ const createMapStore = () => {
 
 	const focusLayer = async (entry: GeoDataEntry) => {
 		if (!map) return;
+		let bbox: [number, number, number, number] | undefined;
 		if (entry.format.type === 'fgb') {
 			try {
 				const geojson = GeojsonCache.get(entry.id);
 				if (!geojson) return;
-				const bbox = turfBbox(geojson) as [number, number, number, number];
-				map.fitBounds(bbox, {
-					bearing: map.getBearing(),
-					padding: 100,
-					duration: 500
-				});
+				bbox = turfBbox(geojson) as [number, number, number, number];
 			} catch (error) {
 				console.error(error);
 			}
 		} else if (entry.metaData.bounds) {
-			map.fitBounds(entry.metaData.bounds, {
-				bearing: map.getBearing(),
-				padding: 100,
-				duration: 500
-			});
+			bbox = entry.metaData.bounds as [number, number, number, number];
 		} else if (entry.metaData.location) {
-			const bbox = getLocationBbox(entry.metaData.location);
-			if (bbox) {
-				map.fitBounds(bbox, {
-					bearing: map.getBearing(),
-					padding: 100,
-					duration: 500
-				});
-			}
+			bbox = getLocationBbox(entry.metaData.location) as [number, number, number, number];
 		} else {
 			console.warn('フォーカスの処理に対応してません', entry.id);
 		}
+
+		if (!bbox) return;
+
+		map.fitBounds(bbox, {
+			bearing: map.getBearing(),
+			padding: {
+				left: 400, // サイドバー分の余白を左に確保
+				top: 20,
+				right: 20,
+				bottom: 20
+			},
+			duration: 500
+		});
 	};
 
 	// フィーチャーをフォーカスするメソッド
 	const focusFeature = async (feature: MapGeoJSONFeature) => {
 		if (!map) return;
 		const bbox = turfBbox(feature.geometry) as [number, number, number, number];
-		map.fitBounds(bbox);
+
+		map.fitBounds(bbox, {
+			bearing: map.getBearing(),
+			padding: {
+				left: 400, // サイドバー分の余白を左に確保
+				top: 20,
+				right: 20,
+				bottom: 20
+			},
+			duration: 500
+		});
 	};
 
 	const getMapBbox = (): [number, number, number, number] => {

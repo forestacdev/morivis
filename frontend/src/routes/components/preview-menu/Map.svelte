@@ -11,7 +11,7 @@
 	import { mapStore } from '$routes/store/map';
 	import { GeojsonCache } from '$routes/utils/file/geojson';
 	import { getGeojson, getFgbToGeojson } from '$routes/utils/file/geojson';
-	import { isBBoxOverlapping } from '$routes/utils/map';
+	import { isBBoxOverlapping, isBBoxInside } from '$routes/utils/map';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -147,7 +147,7 @@
 
 						const mapBbox = mapStore.getMapBbox();
 
-						if (!isBBoxOverlapping(data.bbox, mapBbox)) {
+						if (!isBBoxInside(mapBbox, data.bbox)) {
 							mapStore.fitBounds(data.bbox, {
 								bearing: 0,
 								padding: 20,

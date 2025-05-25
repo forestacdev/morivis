@@ -20,10 +20,20 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
 };
 
 type BBox = [number, number, number, number];
+
+/** bbox同士が重なっているか */
 export const isBBoxOverlapping = (bbox1: BBox, bbox2: BBox): boolean => {
 	const [minX1, minY1, maxX1, maxY1] = bbox1;
 	const [minX2, minY2, maxX2, maxY2] = bbox2;
 	return minX1 < maxX2 && maxX1 > minX2 && minY1 < maxY2 && maxY1 > minY2;
+};
+
+/** bbox同士が完全に重なっているか */
+export const isBBoxInside = (inner: BBox, outer: BBox): boolean => {
+	const [minX1, minY1, maxX1, maxY1] = inner;
+	const [minX2, minY2, maxX2, maxY2] = outer;
+
+	return minX1 >= minX2 && maxX1 <= maxX2 && minY1 >= minY2 && maxY1 <= maxY2;
 };
 
 /**

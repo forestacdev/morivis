@@ -86,7 +86,8 @@
 
 		mapStore.easeTo({
 			center: result.point,
-			zoom: 17
+			zoom: 17,
+			padding: { left: 400 }
 		});
 
 		selectionMarkerLngLat = result.point;

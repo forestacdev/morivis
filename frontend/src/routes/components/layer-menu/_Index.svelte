@@ -86,9 +86,7 @@
 		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
 		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<div
-			class="c-scroll-hidden flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4"
-		>
+		<div class="c-scroll flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4">
 			<Switch label="ラベル表示" bind:value={$showLabelLayer} />
 			<Switch label="陰影表示" bind:value={$showHillshadeLayer} />
 

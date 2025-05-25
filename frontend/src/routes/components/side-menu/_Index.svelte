@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import Logo from '$routes/components/side-menu/Logo.svelte';
+	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import {
 		showSideMenu,
 		showDataMenu,
@@ -73,7 +73,9 @@
 		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
 	>
 		<div class="flex items-center justify-between">
-			<Logo />
+			<div class="w-full p-4 [&_path]:fill-white">
+				<FacLogo width={'200'} />
+			</div>
 			<button
 				onclick={() => showSideMenu.set(false)}
 				class="bg-base cursor-pointer rounded-full p-2"

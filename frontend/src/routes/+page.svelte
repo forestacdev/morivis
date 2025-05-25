@@ -183,7 +183,8 @@
 	let isMapView = false;
 
 	const toggleView = (val: boolean) => {
-		goto('/map');
+		window.location.href = '/map';
+		// goto('/map');
 
 		return;
 		orbitControls.autoRotate = val;

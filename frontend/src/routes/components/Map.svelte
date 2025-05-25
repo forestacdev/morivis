@@ -13,9 +13,7 @@
 		type AddLayerObject
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onMount } from 'svelte';
-
-	import type { DialogType } from '$routes/map/+page.svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -34,6 +32,7 @@
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import { demEntry } from '$routes/data/dem';
 	import type { GeoDataEntry } from '$routes/data/types';
+	import type { DialogType } from '$routes/map/+page.svelte';
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
 	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
@@ -45,6 +44,8 @@
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
+
+	import { map } from 'es-toolkit/compat';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -289,6 +290,13 @@
 
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
+
+	// onDestroy(() => {
+	// 	if (maplibreMap) {
+	// 		maplibreMap.remove();
+	// 		maplibreMap = null;
+	// 	}
+	// });
 
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
