@@ -1,8 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-	import gsap from 'gsap';
-	import { onMount } from 'svelte';
-
 	import DemOption from './raster-option/DemOption.svelte';
 	import TiffOption from './raster-option/TiffOption.svelte';
 

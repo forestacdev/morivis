@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import maplibregl, { MapMouseEvent, type LngLatLike } from 'maplibre-gl';
+	import { onMount } from 'svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	interface PointGeoJSON {
@@ -105,8 +105,6 @@
 	// マウスボタンが離されたときの処理（ドラッグ終了時に呼ばれる）
 	// この関数自体が mouseup のリスナーとして登録される
 	const handleMouseUp = () => {
-		console.log('Drag ended'); // デバッグログ
-
 		if (!map) return;
 
 		// カーソルをデフォルトに戻す

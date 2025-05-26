@@ -1,12 +1,8 @@
 <script lang="ts">
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onDestroy, onMount, type Snippet } from 'svelte';
-	import { flip } from 'svelte/animate';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { onDestroy, onMount } from 'svelte';
 
-	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
-	import type { GeoDataEntry } from '$routes/data/types';
 	interface Props {
 		map: maplibregl.Map;
 		lngLat: LngLat | null;

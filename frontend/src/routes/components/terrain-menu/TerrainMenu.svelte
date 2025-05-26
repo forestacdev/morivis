@@ -2,7 +2,6 @@
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import type { Map as MapLibreMap } from 'maplibre-gl';
-	import { onMount } from 'svelte';
 	import { slide, fly } from 'svelte/transition';
 
 	import Switch from '$routes/components/atoms/Switch.svelte';

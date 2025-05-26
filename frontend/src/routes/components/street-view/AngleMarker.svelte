@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Marker } from 'maplibre-gl';
-	import { onMount } from 'svelte';
 
 	import { isStreetView } from '$routes/store';
 
@@ -10,8 +9,6 @@
 	}
 
 	let { cameraBearing, angleMarker }: Props = $props();
-
-	onMount(() => {});
 </script>
 
 {#if $isStreetView}

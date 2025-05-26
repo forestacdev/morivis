@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import maplibregl from 'maplibre-gl';
+	import { onMount } from 'svelte';
+
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { getBoundingBoxCorners } from '$routes/utils/map';
-	import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 	import { loadRasterData } from '$routes/_image';
+	import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
+	import { getBoundingBoxCorners } from '$routes/utils/map';
 
 	let map: maplibregl.Map | null = null;
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ

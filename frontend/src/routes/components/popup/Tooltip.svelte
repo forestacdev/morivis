@@ -2,7 +2,7 @@
 	import gsap from 'gsap';
 	import type { LngLat, MapGeoJSONFeature } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onDestroy, onMount, type Snippet } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	import { generatePopupTitle } from '$routes/utils/properties';
 
