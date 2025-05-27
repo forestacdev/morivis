@@ -1,13 +1,19 @@
 import { DEM_DATA_TYPE, demEntry, type DemDataTypeKey } from '$routes/data/dem';
 import { PMTiles } from 'pmtiles';
 
+const pmCache = new Map<string, PMTiles>();
+
 const loadImagePmtiles = async (
 	src: string,
 	tile: { x: number; y: number; z: number },
 	signal: AbortSignal
 ): Promise<ImageBitmap> => {
 	try {
-		const pmtiles = new PMTiles(src);
+		let pmtiles = pmCache.get(src);
+		if (!pmtiles) {
+			pmtiles = new PMTiles(src);
+			pmCache.set(src, pmtiles);
+		}
 
 		// タイルデータを取得
 		const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y, signal);
@@ -23,7 +29,7 @@ const loadImagePmtiles = async (
 	} catch (error) {
 		if (error instanceof Error && error.name === 'AbortError') {
 			// リクエストがキャンセルされた場合はエラーをスロー
-			throw error;
+			throw new Error('Request aborted');
 		} else {
 			// 他のエラー時には空の画像を返す
 			return await createImageBitmap(new ImageData(1, 1));
@@ -41,7 +47,7 @@ const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap>
 	} catch (error) {
 		if (error instanceof Error && error.name === 'AbortError') {
 			// リクエストがキャンセルされた場合はエラーをスロー
-			throw error;
+			throw new Error('Request aborted');
 		} else {
 			// 他のエラー時には空の画像を返す
 			return await createImageBitmap(new ImageData(1, 1));

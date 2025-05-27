@@ -4,6 +4,7 @@ type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap 
 // タイル画像の処理
 export class TileImageManager {
 	private static instance: TileImageManager;
+	private static pmCache = new Map<string, PMTiles>();
 	private cache: Map<string, ImageBitmap>;
 	private cacheSizeLimit: number;
 	private cacheOrder: string[];
@@ -28,7 +29,11 @@ export class TileImageManager {
 		signal: AbortSignal
 	): Promise<ImageBitmap> {
 		try {
-			const pmtiles = new PMTiles(src);
+			let pmtiles = TileImageManager.pmCache.get(src);
+			if (!pmtiles) {
+				pmtiles = new PMTiles(src);
+				TileImageManager.pmCache.set(src, pmtiles);
+			}
 
 			// タイルデータを取得
 			const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y, signal);
@@ -44,7 +49,7 @@ export class TileImageManager {
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				// リクエストがキャンセルされた場合はエラーをスロー
-				throw error;
+				throw new Error('Request aborted');
 			} else {
 				// 他のエラー時には空の画像を返す
 				return await createImageBitmap(new ImageData(1, 1));
@@ -62,7 +67,7 @@ export class TileImageManager {
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				// リクエストがキャンセルされた場合はエラーをスロー
-				throw error;
+				throw new Error('Request aborted');
 			} else {
 				// 他のエラー時には空の画像を返す
 				return await createImageBitmap(new ImageData(1, 1));
