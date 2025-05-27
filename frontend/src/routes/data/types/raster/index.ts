@@ -162,6 +162,8 @@ export interface RasterDemStyle {
 				altitude: number;
 			};
 			slope: {
+				max: number;
+				min: number;
 				colorMap: ColorMapType;
 			};
 			evolution: {

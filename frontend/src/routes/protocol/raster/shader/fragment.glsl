@@ -237,11 +237,11 @@ void main() {
 
         // 傾斜量を計算
         float slope = computeSlopeHorn(h_mat, ewres, nsres, 1.0, true);
-        if (slope == -9999.0) {
-            // 無効値が含まれている場合はスキップ
-            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
-            return;
-        }
+        // if (slope == -9999.0) {
+        //     // 無効値が含まれている場合はスキップ
+        //     fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        //     return;
+        // }
         // 傾斜量を正規化
         float normalized_slope = clamp((slope - u_min_slope) / (u_max_slope - u_min_slope), 0.0, 1.0);
 

@@ -44,6 +44,8 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 				altitude: 45
 			},
 			slope: {
+				max: 90,
+				min: 0,
 				colorMap: 'salinity'
 			},
 			aspect: {

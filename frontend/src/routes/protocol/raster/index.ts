@@ -87,6 +87,7 @@ class WorkerProtocol {
 			const bottom = images.bottom; // 下のタイル
 			const max = parseFloat(url.searchParams.get('max') || '90');
 			const min = parseFloat(url.searchParams.get('min') || '0');
+
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(tileId, { resolve, reject, controller });
 
