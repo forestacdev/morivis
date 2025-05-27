@@ -4,7 +4,7 @@ type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap 
 // タイル画像の処理
 export class TileImageManager {
 	private static instance: TileImageManager;
-	private static pmCache = new Map<string, PMTiles>();
+	private static pmCache = new Map<string, PMTiles>(); // TODO リミットサイズ, 共有キャッシュ
 	private cache: Map<string, ImageBitmap>;
 	private cacheSizeLimit: number;
 	private cacheOrder: string[];
@@ -142,20 +142,21 @@ export class TileImageManager {
 				const tileX = x + dx;
 				const tileY = y + dy;
 				const id = `${baseurl}_${tileX}_${tileY}_${z}_${formatType}`;
+
 				const imageUrl = baseurl
 					.replace('{x}', tileX.toString())
 					.replace('{y}', tileY.toString())
 					.replace('{z}', z.toString());
 
-				let imageBitmap: ImageBitmap | undefined = undefined;
+				let imageBitmap = this.cache.get(id);
 
-				if (this.cache.has(id)) {
-					imageBitmap = this.cache.get(id)!;
-				} else if (formatType === 'image') {
-					imageBitmap = await this.loadImage(imageUrl, controller.signal);
-				} else if (formatType === 'pmtiles') {
-					const tile = { x: tileX, y: tileY, z };
-					imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
+				if (!imageBitmap) {
+					if (formatType === 'image') {
+						imageBitmap = await this.loadImage(imageUrl, controller.signal);
+					} else if (formatType === 'pmtiles') {
+						const tile = { x: tileX, y: tileY, z };
+						imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
+					}
 				}
 				if (!imageBitmap) return;
 				this.add(id, imageBitmap);

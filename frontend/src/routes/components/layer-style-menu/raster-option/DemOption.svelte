@@ -35,5 +35,26 @@
 	/>
 {/if}
 
+{#if style.visualization.mode === 'slope'}
+	<DemStyleColorMapPulldownBox
+		bind:isColorMap={style.visualization.uniformsData['slope'].colorMap}
+	/>
+	<RangeSlider
+		label="最大傾斜量"
+		bind:value={style.visualization.uniformsData['slope'].max}
+		max={90}
+		min={0}
+		step={0.01}
+	/>
+
+	<RangeSlider
+		label="最小傾斜量"
+		bind:value={style.visualization.uniformsData['slope'].min}
+		max={90}
+		min={0}
+		step={0.01}
+	/>
+{/if}
+
 <style>
 </style>

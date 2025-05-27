@@ -106,7 +106,7 @@ float computeSlopeHorn(mat3 h, float ewres, float nsres, float scale, bool asDeg
 }
 
 
-mat3 calculateTerrainData(vec2 uv) {
+mat3 calculateTerrainData(vec2 uv, float center_h) {
 
 
     // 9マスピクセルのインデックス番号
@@ -161,7 +161,7 @@ mat3 calculateTerrainData(vec2 uv) {
     );
 
     // 中央
-    _h_mat[1][1] = convertToHeight(texture(u_height_map_center, uv));
+    _h_mat[1][1] = center_h;
 
     // 右
     _h_mat[1][2] = convertToHeight(
@@ -200,7 +200,9 @@ mat3 calculateTerrainData(vec2 uv) {
 void main() {
     vec2 uv = v_tex_coord;
 
-    vec4 color = texture(u_height_map_center, uv);
+    vec4 color = texture(u_height_map_bottom, uv);
+    fragColor = color;
+    return;
     if(color.a == 0.0){
         // テクスチャなし、または透明ピクセルの場合
         fragColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -223,7 +225,13 @@ void main() {
     // slope
     }else if(u_mode == 2.0) {
 
-        mat3 h_mat = calculateTerrainData(v_tex_coord);
+        float center_h = convertToHeight(color);
+        if(center_h == -9999.0) {
+            // 無効地の場合
+            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            return;
+        }
+        mat3 h_mat = calculateTerrainData(v_tex_coord, center_h);
 
         // 南北方向の地上解像度（nsres）
         float nsres = getResolution(u_tile_z);
@@ -236,11 +244,7 @@ void main() {
 
         // 傾斜量を計算
         float slope = computeSlopeHorn(h_mat, ewres, nsres, 1.0, true);
-        // if (slope == -9999.0) {
-        //     // 無効値が含まれている場合はスキップ
-        //     fragColor = vec4(0.0, 0.0, 0.0, 0.0);
-        //     return;
-        // }
+   
         // 傾斜量を正規化
         float normalized_slope = clamp((slope - u_min_slope) / (u_max_slope - u_min_slope), 0.0, 1.0);
 

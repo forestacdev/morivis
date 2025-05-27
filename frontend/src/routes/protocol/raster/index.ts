@@ -75,6 +75,7 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
+
 			const elevationColorArray = this.colorMapCache.createColorArray(
 				url.searchParams.get('colorMap') || 'bone'
 			);
