@@ -31,7 +31,7 @@ class WorkerProtocol {
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
 		const baseUrl = url.origin + url.pathname;
-		const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
+		const tileId = `${entryId}_${x}_${y}_${z}`;
 		const formatType = url.searchParams.get('formatType') as 'image' | 'pmtiles';
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
@@ -40,6 +40,7 @@ class WorkerProtocol {
 
 		if (mode === 'evolution') {
 			const image = await this.tileCache.getSingleTileImage(
+				tileId,
 				x,
 				y,
 				z,
@@ -68,6 +69,7 @@ class WorkerProtocol {
 			});
 		} else if (mode === 'slope') {
 			const images = await this.tileCache.getAdjacentTilesWithImages(
+				entryId,
 				x,
 				y,
 				z,
@@ -110,6 +112,7 @@ class WorkerProtocol {
 			});
 		} else {
 			const image = await this.tileCache.getSingleTileImage(
+				entryId,
 				x,
 				y,
 				z,

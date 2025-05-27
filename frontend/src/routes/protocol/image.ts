@@ -5,6 +5,7 @@ type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap 
 export class TileImageManager {
 	private static instance: TileImageManager;
 	private static pmCache = new Map<string, PMTiles>(); // TODO リミットサイズ, 共有キャッシュ
+	private imageBaseUrlCache = new Map<string, string>(); // TODO リミットサイズ, 共有キャッシュ
 	private cache: Map<string, ImageBitmap>;
 	private cacheSizeLimit: number;
 	private cacheOrder: string[];
@@ -13,6 +14,7 @@ export class TileImageManager {
 		this.cache = new Map();
 		this.cacheSizeLimit = cacheSizeLimit;
 		this.cacheOrder = [];
+		this.imageBaseUrlCache = new Map();
 	}
 
 	// TileImageManager のインスタンスを取得する静的メソッド
@@ -75,6 +77,7 @@ export class TileImageManager {
 		}
 	}
 	public async getSingleTileImage(
+		tileId: string,
 		x: number,
 		y: number,
 		z: number,
@@ -82,15 +85,14 @@ export class TileImageManager {
 		formatType: 'image' | 'pmtiles',
 		controller: AbortController
 	): Promise<ImageBitmap> {
-		const id = `${baseurl}_${x}_${y}_${z}_${formatType}`;
 		const imageUrl = baseurl
 			.replace('{x}', x.toString())
 			.replace('{y}', y.toString())
 			.replace('{z}', z.toString());
 
-		if (this.cache.has(id)) {
-			const cachedImage = this.cache.get(id)!;
-			this.add(id, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
+		if (this.cache.has(tileId)) {
+			const cachedImage = this.cache.get(tileId)!;
+			this.add(tileId, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
 			return cachedImage;
 		}
 
@@ -104,26 +106,27 @@ export class TileImageManager {
 			}
 
 			if (!imageBitmap) {
-				throw new Error(`Failed to load image for ${id}`);
+				throw new Error(`Failed to load image for ${tileId}`);
 			}
 
-			this.add(id, imageBitmap);
+			this.add(tileId, imageBitmap);
 			return imageBitmap;
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				throw error;
 			}
 
-			console.error(`Error in getSingleTileImage for ${id}:`, error);
+			console.error(`Error in getSingleTileImage for ${tileId}:`, error);
 			return await createImageBitmap(new ImageData(1, 1)); // エラー時にも1x1画像を返す
 		}
 	}
 
 	public async getAdjacentTilesWithImages(
+		entryId: string,
 		x: number,
 		y: number,
 		z: number,
-		baseurl: string,
+		centerurl: string,
 		formatType: 'image' | 'pmtiles',
 		controller: AbortController
 	): Promise<TileImageData> {
@@ -141,9 +144,11 @@ export class TileImageManager {
 			positions.map(async ({ position, dx, dy }) => {
 				const tileX = x + dx;
 				const tileY = y + dy;
-				const id = `${baseurl}_${tileX}_${tileY}_${z}_${formatType}`;
+				const id = `${entryId}_${tileX}_${tileY}_${z}`;
 
-				const imageUrl = baseurl
+				const baseurl2 = this.imageBaseUrlCache.get(entryId) || centerurl;
+
+				const imageUrl = baseurl2
 					.replace('{x}', tileX.toString())
 					.replace('{y}', tileY.toString())
 					.replace('{z}', z.toString());
@@ -196,5 +201,17 @@ export class TileImageManager {
 	clear(): void {
 		this.cache.clear();
 		this.cacheOrder = [];
+	}
+
+	getUrlcache(id: string): string | undefined {
+		return this.imageBaseUrlCache.get(id);
+	}
+
+	addUrlcache(id: string, url: string): void {
+		this.imageBaseUrlCache.set(id, url);
+	}
+
+	deleteUrlcache(id: string): void {
+		this.imageBaseUrlCache.delete(id);
 	}
 }

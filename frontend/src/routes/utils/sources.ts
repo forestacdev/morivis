@@ -7,6 +7,8 @@ import {
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
 
+import { TileImageManager } from '$routes/protocol/image';
+
 import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/data/types';
@@ -29,6 +31,8 @@ import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
 };
+
+const demUrlCache = TileImageManager.getInstance();
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[],
@@ -81,6 +85,7 @@ export const createSourcesItems = async (
 							if (mode !== 'default') {
 								const demType = visualization.demType;
 								const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+								demUrlCache.addUrlcache(entry.id, format.url); // TODO 消す処理
 
 								items[sourceId] = {
 									type: 'raster',

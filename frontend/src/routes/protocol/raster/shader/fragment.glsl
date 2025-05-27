@@ -199,10 +199,7 @@ mat3 calculateTerrainData(vec2 uv, float center_h) {
 
 void main() {
     vec2 uv = v_tex_coord;
-
-    vec4 color = texture(u_height_map_bottom, uv);
-    fragColor = color;
-    return;
+    vec4 color = texture(u_height_map_center, uv);
     if(color.a == 0.0){
         // テクスチャなし、または透明ピクセルの場合
         fragColor = vec4(0.0, 0.0, 0.0, 0.0);
