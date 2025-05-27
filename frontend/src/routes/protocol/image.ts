@@ -136,7 +136,7 @@ export class TileImageManager {
 			positions.map(async ({ position, dx, dy }) => {
 				const tileX = x + dx;
 				const tileY = y + dy;
-				const id = `${baseurl}_${x}_${y}_${z}_${formatType}`;
+				const id = `${baseurl}_${tileX}_${tileY}_${z}_${formatType}`;
 				const imageUrl = baseurl
 					.replace('{x}', tileX.toString())
 					.replace('{y}', tileY.toString())
@@ -149,7 +149,7 @@ export class TileImageManager {
 				} else if (formatType === 'image') {
 					imageBitmap = await this.loadImage(imageUrl, controller.signal);
 				} else if (formatType === 'pmtiles') {
-					const tile = { x, y, z };
+					const tile = { x: tileX, y: tileY, z };
 					imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
 				}
 				if (!imageBitmap) return;

@@ -1,7 +1,5 @@
 import * as tilebelt from '@mapbox/tilebelt';
 
-import { get } from 'svelte/store';
-
 import type { FeatureCollection } from 'geojson';
 import bboxPolygon from '@turf/bbox-polygon';
 
@@ -28,8 +26,6 @@ export class WorkerProtocol {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
 			const z = parseInt(url.searchParams.get('z') || '0', 10);
-			const bbox = tilebelt.tileToBBOX([x, y, z]);
-			const hoge = bboxPolygon(bbox);
 
 			const tiles = tilebelt.getSiblings([x, y, z]);
 
@@ -50,8 +46,6 @@ export class WorkerProtocol {
 					};
 				})
 			};
-
-			console.log(geojson);
 
 			const { signal } = abortController;
 
@@ -107,7 +101,6 @@ export const tileIndexProtocol = (protocolName: 'tile_index') => {
 		protocolName,
 		request: (params: { url: string }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
-			console.log('urlWithoutProtocol', urlWithoutProtocol);
 			const url = new URL(urlWithoutProtocol);
 			return workerProtocol.request(url, abortController);
 		}

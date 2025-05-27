@@ -80,8 +80,8 @@ float computeSlopeHorn(mat3 h, float ewres, float nsres, float scale, bool asDeg
     // 無効値チェック（9999.0 が1つでも含まれていたらスキップ）
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (h[i][j] >= -9999.0) {
-                return -9999.0;
+            if (h[i][j] == -9999.0) {
+                return -1.0;
             }
         }
     }
@@ -206,7 +206,6 @@ void main() {
         fragColor = vec4(0.0, 0.0, 0.0, 0.0);
         return;
     }
-
     // elevation
     if(u_mode == 1.0) {
         float h = convertToHeight(color);
