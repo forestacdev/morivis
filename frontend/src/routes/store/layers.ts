@@ -25,7 +25,7 @@ const createLayerStore = () => {
 		point: [],
 		line: [],
 		polygon: [],
-		raster: ['dem_10b']
+		raster: ['ensyurin_dem']
 	};
 
 	// const initialState: GroupedLayers = {

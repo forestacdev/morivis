@@ -26,7 +26,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
-			mode: 'slope',
 			demType: 'gsi'
 		}
 	}
