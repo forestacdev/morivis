@@ -1,8 +1,6 @@
 import { DEM_DATA_TYPE, demEntry, type DemDataTypeKey } from '$routes/data/dem';
 import { PMTiles } from 'pmtiles';
 
-import { TileImageManager } from '../image';
-
 const loadImagePmtiles = async (
 	src: string,
 	tile: { x: number; y: number; z: number },
@@ -61,12 +59,11 @@ class WorkerProtocol {
 			controller: AbortController;
 		}
 	>;
-	private tileCache: TileImageManager;
 
 	constructor(worker: Worker) {
 		this.worker = worker;
 		this.pendingRequests = new Map();
-		this.tileCache = TileImageManager.getInstance(); // シングルトンインスタンスの取得
+
 		this.worker.addEventListener('message', this.handleMessage);
 		this.worker.addEventListener('error', this.handleError);
 	}
@@ -77,16 +74,24 @@ class WorkerProtocol {
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
 			const z = parseInt(url.searchParams.get('z') || '0', 10);
 			const baseUrl = url.origin + url.pathname;
-			const demType = url.searchParams.get('demType'); // デフォルト値を設
-			const image = await loadImage(baseUrl, controller.signal);
+			const entryId = url.searchParams.get('entryId') || '';
+			const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
+			const formatType = url.searchParams.get('formatType') || 'image'; // デフォルト値を設定
+			const demType = url.searchParams.get('demType') || 'mapbox'; // デフォルト値を設定
+			let image: ImageBitmap;
+			if (formatType === 'pmtiles') {
+				image = await loadImagePmtiles(baseUrl, { x, y, z }, controller.signal);
+			} else if (formatType === 'image') {
+				image = await loadImage(baseUrl, controller.signal);
+			}
 
 			return new Promise((resolve, reject) => {
 				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-				this.pendingRequests.set(baseUrl, { resolve, reject, controller });
-				this.worker.postMessage({ image, demTypeNumber, id: baseUrl });
+				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.worker.postMessage({ image, demTypeNumber, id: tileId });
 
 				controller.signal.addEventListener('abort', () => {
-					this.pendingRequests.delete(baseUrl);
+					this.pendingRequests.delete(tileId);
 					reject(new Error('Request aborted'));
 				});
 			});
@@ -119,22 +124,6 @@ class WorkerProtocol {
 		});
 		this.pendingRequests.clear();
 	};
-
-	// タイルキャッシュをクリア
-	clearCache() {
-		this.tileCache.clear();
-	}
-
-	// 全てのリクエストをキャンセル;
-	cancelAllRequests = () => {
-		if (this.pendingRequests.size > 0) {
-			this.pendingRequests.forEach(({ reject, controller }) => {
-				controller.abort(); // AbortControllerをキャンセル
-				reject(new Error('Request cancelled'));
-			});
-		}
-		this.pendingRequests.clear();
-	};
 }
 
 const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
@@ -147,8 +136,6 @@ export const terrainProtocol = (protocolName: string) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return workerProtocol.request(url, abortController);
-		},
-		cancelAllRequests: () => workerProtocol.cancelAllRequests(),
-		clearCache: () => workerProtocol.clearCache()
+		}
 	};
 };

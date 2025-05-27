@@ -15,8 +15,8 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		description: '森林文化アカデミー演習林の地形の標高値を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		minZoom: 14,
-		maxZoom: 17,
+		minZoom: 10,
+		maxZoom: 18,
 		tileSize: 256,
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_16, // 画像タイルのXYZ座標
 		bounds: [136.91683974376355, 35.540611389073774, 136.9346116207808, 35.55838201305548]
@@ -28,7 +28,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
-			demType: 'mapbox',
+			demType: 'terrarium',
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 				evolution: {

@@ -263,27 +263,18 @@ export const createTerrainSources = async (
 
 	const { id, metaData, format, style } = entry;
 	const demType = style.visualization.demType;
-	if (format.type === 'pmtiles') {
-		sourceItems['terrain'] = {
-			type: 'raster-dem',
-			url: `pmtiles://${format.url}`,
-			maxzoom: metaData.maxZoom,
-			minzoom: metaData.minZoom,
-			tileSize: metaData.tileSize,
-			attribution: metaData.attribution,
-			bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-		};
-	} else if (format.type === 'image') {
-		sourceItems['terrain'] = {
-			type: 'raster-dem',
-			tiles: [`terrain://${format.url}?demType=${demType}&x={x}&y={y}&z={z}`],
-			maxzoom: metaData.maxZoom,
-			minzoom: metaData.minZoom,
-			tileSize: metaData.tileSize,
-			attribution: metaData.attribution,
-			bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
-		};
-	}
+
+	sourceItems['terrain'] = {
+		type: 'raster-dem',
+		tiles: [
+			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&x={x}&y={y}&z={z}`
+		],
+		maxzoom: metaData.maxZoom,
+		minzoom: metaData.minZoom,
+		tileSize: metaData.tileSize,
+		attribution: metaData.attribution,
+		bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+	};
 
 	return sourceItems;
 };
