@@ -137,7 +137,17 @@ export const COLOR_MAP_TYPE = [
 
 export type ColorMapType = (typeof COLOR_MAP_TYPE)[number];
 
-export type DemStyleMode = 'evolution' | 'shadow' | 'slope' | 'aspect' | 'curvature' | 'default';
+export const DEM_STYLE_TYPE = {
+	default: 0.0,
+	evolution: 1.0,
+	slope: 2.0,
+	aspect: 3.0,
+	curvature: 4.0,
+	shadow: 5.0
+} as const;
+
+export type DemStyleMode = keyof typeof DEM_STYLE_TYPE;
+export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYPE];
 
 export interface RasterDemStyle {
 	type: 'dem';

@@ -1,6 +1,7 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
 import { TileImageManager } from '../image';
 import { ColorMapManager } from '$routes/utils/colorMapping';
+import { DEM_STYLE_TYPE } from '$routes/data/types/raster';
 
 class WorkerProtocol {
 	private worker: Worker;
@@ -31,14 +32,21 @@ class WorkerProtocol {
 		const entryId = url.searchParams.get('entryId') || '';
 		const baseUrl = url.origin + url.pathname;
 		const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
-		const formatType = url.searchParams.get('formatType') || 'image'; // デフォルト値を設定
+		const formatType = url.searchParams.get('formatType') as 'image' | 'pmtiles';
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-		const mode = url.searchParams.get('mode');
+		const mode = url.searchParams.get('mode') || 'default'; // デフォルト値を設定
+		const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
 
-		let image: ImageBitmap;
 		if (mode === 'evolution') {
-			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller, formatType);
+			const image = await this.tileCache.getSingleTileImage(
+				x,
+				y,
+				z,
+				baseUrl,
+				formatType,
+				controller
+			);
 			const elevationColorArray = this.colorMapCache.createColorArray(
 				url.searchParams.get('colorMap') || 'bone'
 			);
@@ -51,14 +59,63 @@ class WorkerProtocol {
 					tileId,
 					center: image,
 					demTypeNumber,
+					modeNumber,
 					mode,
 					elevationColorArray,
 					max,
 					min
 				});
 			});
+		} else if (mode === 'slope') {
+			const images = await this.tileCache.getAdjacentTilesWithImages(
+				x,
+				y,
+				z,
+				baseUrl,
+				formatType,
+				controller
+			);
+			const elevationColorArray = this.colorMapCache.createColorArray(
+				url.searchParams.get('colorMap') || 'bone'
+			);
+
+			const center = images.center; // 中央のタイル
+			const tileId = center.tileId; // ワーカー用ID
+			const left = images.left; // 左のタイル
+			const right = images.right; // 右のタイル
+			const top = images.top; // 上のタイル
+			const bottom = images.bottom; // 下のタイル
+			const max = parseFloat(url.searchParams.get('max') || '90');
+			const min = parseFloat(url.searchParams.get('min') || '0');
+			return new Promise((resolve, reject) => {
+				this.pendingRequests.set(tileId, { resolve, reject, controller });
+
+				this.worker.postMessage({
+					tileId,
+					center: center.image,
+					left: left.image,
+					right: right.image,
+					top: top.image,
+					bottom: bottom.image,
+					demTypeNumber,
+					modeNumber,
+					mode,
+					elevationColorArray,
+					max,
+					min,
+					tile: { x, y, z }
+				});
+			});
 		} else {
-			image = await this.tileCache.getSingleTileImage(x, y, z, baseUrl, controller, formatType);
+			const image = await this.tileCache.getSingleTileImage(
+				x,
+				y,
+				z,
+				baseUrl,
+				formatType,
+				controller
+			);
+
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(tileId, { resolve, reject, controller });
 

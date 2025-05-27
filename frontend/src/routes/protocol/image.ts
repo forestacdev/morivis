@@ -74,8 +74,8 @@ export class TileImageManager {
 		y: number,
 		z: number,
 		baseurl: string,
-		controller: AbortController,
-		formatType: 'image' | 'pmtiles'
+		formatType: 'image' | 'pmtiles',
+		controller: AbortController
 	): Promise<ImageBitmap> {
 		const id = `${baseurl}_${x}_${y}_${z}_${formatType}`;
 		const imageUrl = baseurl
@@ -84,7 +84,7 @@ export class TileImageManager {
 			.replace('{z}', z.toString());
 
 		if (this.cache.has(id)) {
-			const cachedImage = this.cache.get(id)!; // `has()`で存在を確認済みなので`!`でアサーション
+			const cachedImage = this.cache.get(id)!;
 			this.add(id, cachedImage); // `add`メソッドが順序更新とサイズ制限を処理
 			return cachedImage;
 		}
@@ -119,6 +119,7 @@ export class TileImageManager {
 		y: number,
 		z: number,
 		baseurl: string,
+		formatType: 'image' | 'pmtiles',
 		controller: AbortController
 	): Promise<TileImageData> {
 		const positions = [
@@ -135,19 +136,26 @@ export class TileImageManager {
 			positions.map(async ({ position, dx, dy }) => {
 				const tileX = x + dx;
 				const tileY = y + dy;
+				const id = `${baseurl}_${x}_${y}_${z}_${formatType}`;
 				const imageUrl = baseurl
 					.replace('{x}', tileX.toString())
 					.replace('{y}', tileY.toString())
 					.replace('{z}', z.toString());
 
-				// キャッシュにタイル画像があればそれを使う。なければ新たにリクエストを送る
-				const imageBitmap = this.cache.has(imageUrl)
-					? this.cache.get(imageUrl)
-					: await this.loadImage(imageUrl, controller.signal);
-				if (!imageBitmap) return;
-				this.add(imageUrl, imageBitmap);
+				let imageBitmap: ImageBitmap | undefined = undefined;
 
-				result[position] = { tileId: imageUrl, image: imageBitmap };
+				if (this.cache.has(id)) {
+					imageBitmap = this.cache.get(id)!;
+				} else if (formatType === 'image') {
+					imageBitmap = await this.loadImage(imageUrl, controller.signal);
+				} else if (formatType === 'pmtiles') {
+					const tile = { x, y, z };
+					imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
+				}
+				if (!imageBitmap) return;
+				this.add(id, imageBitmap);
+
+				result[position] = { tileId: id, image: imageBitmap };
 			})
 		);
 

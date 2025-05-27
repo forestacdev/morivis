@@ -20,8 +20,6 @@ out vec4 fragColor;
 
 void main() {
     vec2 uv = v_tex_coord;
-    vec4 final_color = vec4(0.0, 0.0,0.0,0.0);
-
 
     vec4 color = texture(u_height_map_center, uv);
      if(color.a == 0.0){

@@ -14,6 +14,7 @@
 	}
 	let demStyleModes = $state<DemStyleModeOptions[]>([
 		{ key: 'evolution', name: '標高' },
+		{ key: 'slope', name: '傾斜量' },
 		{ key: 'default', name: '生データ' }
 		// { key: 'shadow', name: '陰影' },
 		// { key: 'slope', name: '傾斜量' },

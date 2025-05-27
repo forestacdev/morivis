@@ -7,6 +7,7 @@ export const DEM_DATA_TYPE = {
 export type DemDataType = typeof DEM_DATA_TYPE;
 export type DemDataTypeKey = keyof DemDataType;
 
+// TODO:廃止
 export type DemData = {
 	id: string;
 	name: string;

@@ -112,7 +112,7 @@
 		const sources = await createSourcesItems(_dataEntries);
 		const layers = await createLayersItems(_dataEntries);
 
-		const terrainSources = await createTerrainSources(demEntries, 'ensyurin_dem');
+		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry) {

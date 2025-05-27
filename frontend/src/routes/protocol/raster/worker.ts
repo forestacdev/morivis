@@ -1,6 +1,5 @@
-import fsElevationSource from './shader/fragment_elevation.glsl?raw';
+import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
-import fsUtilsSource from './shader/utils.glsl?raw';
 
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
@@ -14,7 +13,7 @@ const loadAndCombineShaders = (
 	// 2. 各モジュールファイルを読み込み、結合する文字列を生成
 	let combinedModuleCode = '';
 	for (const moduleSource of moduleSourceList) {
-		combinedModuleCode += moduleSource + '\n'; // 各モモジュールの後に改行を追加
+		combinedModuleCode += moduleSource + '\n';
 	}
 
 	// 3. メインのシェーダーソース内のプレースホルダーを、結合したモジュールコードで置き換える
@@ -23,7 +22,6 @@ const loadAndCombineShaders = (
 	return finalShaderSource;
 };
 
-// 使用例
 const PLACEHOLDER = '// === INSERT_SHADER_MODULES_HERE === //';
 
 const initWebGL = (canvas: OffscreenCanvas) => {
@@ -53,15 +51,8 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 		return shader;
 	};
 
-	// シェーダーソースを結合して取得
-	const fragmentShaderSource = loadAndCombineShaders(
-		fsElevationSource,
-		[fsUtilsSource],
-		PLACEHOLDER
-	);
-
 	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 	if (!vertexShader || !fragmentShader) {
 		throw new Error('Failed to load shaders');
 	}
@@ -170,7 +161,21 @@ const calculateLightDirection = (azimuth: number, altitude: number) => {
 const canvas = new OffscreenCanvas(256, 256);
 
 self.onmessage = async (e) => {
-	const { tileId, center, demTypeNumber, mode, max, min, elevationColorArray } = e.data;
+	const {
+		tileId,
+		center,
+		left,
+		right,
+		top,
+		bottom,
+		demTypeNumber,
+		modeNumber,
+		mode,
+		max,
+		min,
+		elevationColorArray,
+		tile
+	} = e.data;
 
 	try {
 		if (!gl) {
@@ -181,9 +186,13 @@ self.onmessage = async (e) => {
 			throw new Error('WebGL initialization failed');
 		}
 
+		// シェーダーを別のもにする
+		gl.useProgram(program);
+
 		if (mode === 'evolution') {
 			const uniforms: Uniforms = {
 				u_dem_type: { type: '1f', value: demTypeNumber },
+				u_mode: { type: '1f', value: modeNumber },
 				u_max_height: { type: '1f', value: max },
 				u_min_height: { type: '1f', value: min }
 			};
@@ -193,7 +202,28 @@ self.onmessage = async (e) => {
 			// テクスチャ
 			bindTextures(gl, program, {
 				u_height_map_center: { image: center, type: 'height' },
-				u_elevationMap: { image: elevationColorArray, type: 'colormap' }
+				u_color_map: { image: elevationColorArray, type: 'colormap' }
+			});
+		} else if (mode === 'slope') {
+			const uniforms: Uniforms = {
+				u_dem_type: { type: '1f', value: demTypeNumber },
+				u_mode: { type: '1f', value: modeNumber },
+				u_max_slope: { type: '1f', value: max },
+				u_min_slope: { type: '1f', value: min },
+				u_tile_y: { type: '1f', value: tile.y },
+				u_tile_z: { type: '1f', value: tile.z }
+			};
+
+			setUniforms(gl, program, uniforms);
+
+			// テクスチャ
+			bindTextures(gl, program, {
+				u_height_map_center: { image: center, type: 'height' },
+				u_height_map_left: { image: left, type: 'height' },
+				u_height_map_right: { image: right, type: 'height' },
+				u_height_map_top: { image: top, type: 'height' },
+				u_height_map_bottom: { image: bottom, type: 'height' },
+				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
 		}
 
