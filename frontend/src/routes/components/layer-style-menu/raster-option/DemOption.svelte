@@ -56,5 +56,12 @@
 	/>
 {/if}
 
+{#if style.visualization.mode === 'curvature'}
+	<DemStyleColorMapPulldownBox
+		bind:isColorMap={style.visualization.uniformsData['curvature'].colorMap}
+	/>
+
+{/if}
+
 <style>
 </style>

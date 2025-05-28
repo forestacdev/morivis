@@ -67,7 +67,7 @@ class WorkerProtocol {
 					min
 				});
 			});
-		} else if (mode === 'slope') {
+		} else if (mode === 'slope' || 'curvature') {
 			const images = await this.tileCache.getAdjacentTilesWithImages(
 				entryId,
 				x,

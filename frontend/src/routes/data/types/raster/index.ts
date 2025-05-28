@@ -179,6 +179,7 @@ export interface RasterDemStyle {
 				valleyThreshold: number;
 				ridgeColor: string;
 				valleyColor: string;
+				colorMap: ColorMapType;
 			};
 		};
 	};

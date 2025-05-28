@@ -204,7 +204,7 @@ self.onmessage = async (e) => {
 				u_height_map_center: { image: center, type: 'height' },
 				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
-		} else if (mode === 'slope') {
+		} else if (mode === 'slope' || mode === 'curvature') {
 			const uniforms: Uniforms = {
 				u_dem_type: { type: '1f', value: demTypeNumber },
 				u_mode: { type: '1f', value: modeNumber },
