@@ -2,27 +2,27 @@ import type { RasterImageEntry, RasterDemStyle } from '$routes/data/types/raster
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/data/style';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'tochigi_dem',
+	id: 'dem_tokyo',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://tiles.gsj.jp/tiles/elev/tochigi/{z}/{y}/{x}.png'
+		url: 'https://tiles.gsj.jp/tiles/elev/tokyo/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '栃木県 数値標高モデル(DEM)0.5m',
+		name: '東京都 数値標高モデル 0.01m',
 		description: '',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
+		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#h_tokyo',
 		attribution: '産総研シームレス標高タイル',
-		location: '栃木県',
+		location: '東京都',
 		minZoom: 2,
-		maxZoom: 18,
+		maxZoom: 19,
 		tileSize: 256,
+		bounds: [138.942922, 32.440258, 139.861054, 35.898368],
 		xyzImageTile: {
-			x: 3635,
-			y: 1597,
+			x: 3631,
+			y: 1612,
 			z: 12
-		},
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039]
+		}
 	},
 	interaction: {
 		clickable: true

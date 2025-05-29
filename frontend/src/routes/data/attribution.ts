@@ -5,6 +5,7 @@ export type AttributionKey =
 	| '岐阜県森林研究所'
 	| 'エコリス地図タイル'
 	| '産総研地質調査総合センター'
+	| '産総研シームレス標高タイル'
 	| 'Q地図タイル'
 	| 'OSM'
 	| '株式会社アドイン研究所'
@@ -44,7 +45,12 @@ const attributionData: Attribution[] = [
 	{
 		key: '産総研地質調査総合センター',
 		name: '産総研地質調査総合センター',
-		url: 'https://gbank.gsj.jp/seamless/index.html?lang=ja&'
+		url: 'https://gbank.gsj.jp/seamless/index.html?lang=ja'
+	},
+	{
+		key: '産総研シームレス標高タイル',
+		name: '産総研シームレス標高タイル',
+		url: 'https://gbank.gsj.jp/seamless/elev/'
 	},
 	{
 		key: 'Q地図タイル',
