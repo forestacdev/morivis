@@ -282,13 +282,13 @@
 				isDialog={true}
 			/>
 		</div>
-		<div class="grid grid-cols-3 gap-2 p-2">
+		<div class="grid grid-cols-3 gap-4 p-2">
 			{#each DRAW_MODE_TYPE as { type, name, icon }}
 				<label
-					class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg p-2 transition-colors duration-150 {isDrawMode ===
+					class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md p-2 drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-150 {isDrawMode ===
 					type
 						? 'bg-base text-black'
-						: 'bg-sub text-white'}"
+						: 'bg-main text-white'}"
 				>
 					<Icon {icon} class="h-6 w-6" />
 					<span class="text-sm">{name}</span>

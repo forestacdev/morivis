@@ -71,7 +71,7 @@
 </script>
 
 <div
-	class="pointer-events-auto relative grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden"
+	class="pointer-events-auto relative grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden drop-shadow-lg"
 	bind:this={controlContainer}
 >
 	<Icon

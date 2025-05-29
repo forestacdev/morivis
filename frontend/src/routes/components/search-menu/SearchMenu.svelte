@@ -183,11 +183,11 @@
 			</div>
 		{:else if !results}
 			<div
-				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden px-2 pb-4"
+				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden p-2 pb-4"
 			>
 				{#each searchWards as searchWard}
 					<button
-						class="c-btn-sub"
+						class="bg-main cursor-pointer rounded-full px-4 py-2 text-base drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]"
 						onclick={() => {
 							inputSearchWord = searchWard;
 							searchFeature(inputSearchWord);

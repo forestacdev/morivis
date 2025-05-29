@@ -154,7 +154,7 @@
 	</div>
 	<li class="flex">
 		<button
-			class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 {$showDataMenu
+			class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg {$showDataMenu
 				? 'text-accent'
 				: ''}"
 			onclick={toggleDataMenu}
