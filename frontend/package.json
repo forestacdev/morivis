@@ -84,6 +84,7 @@
 		"dompurify": "^3.2.5",
 		"earcut": "^3.0.1",
 		"es-toolkit": "^1.31.0",
+		"fast-xml-parser": "^5.2.3",
 		"flatgeobuf": "^3.36.0",
 		"fuse.js": "^7.0.0",
 		"geojson-vt": "^4.0.2",
