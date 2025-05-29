@@ -29,7 +29,7 @@ import { propData } from '$routes/data/propData';
 
 import { getLocationBbox } from '$routes/data/locationBbox';
 
-import turfBbox from '@turf/bbox';
+import turfBbox, { bbox } from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
 import { DEBUG_MODE, isTerrain3d } from '$routes/store';
 import type { GeoDataEntry } from '$routes/data/types';
@@ -43,7 +43,6 @@ import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/protocol/terrain';
 
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
-import { demEntry, type DemEntry } from '$routes/data/dem';
 import { handleStyleImageMissing } from '$routes/utils/icon';
 import { isStyleEdit } from './index';
 
@@ -377,48 +376,38 @@ const createMapStore = () => {
 	};
 
 	const resetDem = () => {
+		// TODO
 		if (!map) return;
 		map.setTerrain(null);
 		map.removeSource('terrain');
 
-		terrain.cancelAllRequests();
-
-		map.addSource('terrain', {
-			type: 'raster-dem',
-			tiles: [`${terrain.protocolName}://${demEntry.url}?demType=${demEntry.demType}`],
-			tileSize: 256,
-			minzoom: demEntry.sourceMinZoom,
-			maxzoom: demEntry.sourceMaxZoom,
-			attribution: demEntry.attribution,
-			bounds: demEntry.bbox
-		});
+		// map.addSource('terrain', {
+		// 	type: 'raster-dem',
+		// 	tiles: [`${terrain.protocolName}://${demEntry.url}?demType=${demEntry.demType}`],
+		// 	tileSize: 256,
+		// 	minzoom: demEntry.sourceMinZoom,
+		// 	maxzoom: demEntry.sourceMaxZoom,
+		// 	attribution: demEntry.attribution,
+		// 	bounds: demEntry.bbox
+		// });
 
 		map.setTerrain({
 			source: 'terrain',
 			exaggeration: 1
 		});
 
-		const bbox = demEntry.bbox;
-		if (!bbox) return;
+		// const bbox = demEntry.bbox;
+		// if (!bbox) return;
 
 		const bounds = map.getBounds().toArray();
 
 		const zoom = map.getZoom();
 
-		if (
-			!isBBoxOverlapping(demEntry.bbox, [...bounds[0], ...bounds[1]] as [
-				number,
-				number,
-				number,
-				number
-			])
-		) {
-			map.fitBounds(bbox, {
-				padding: 100,
-				duration: 300,
-				bearing: map.getBearing()
-			});
-		}
+		// map.fitBounds(bbox, {
+		// 	padding: 100,
+		// 	duration: 300,
+		// 	bearing: map.getBearing()
+		// });
 
 		// if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
 		// 	map.setZoom(demEntry.sourceMaxZoom - 1.5);

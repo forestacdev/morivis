@@ -30,7 +30,6 @@
 	import Tooltip from '$routes/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/components/upload/FileManager.svelte';
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
-	import { demEntry } from '$routes/data/dem';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 	import type { DialogType } from '$routes/map/+page.svelte';

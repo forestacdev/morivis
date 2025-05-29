@@ -24,7 +24,6 @@ import { getRandomCommonColor } from '$routes/utils/colorMapping';
 import { createLabelsExpressions } from '$routes/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/data/types/raster';
-import { demEntry } from './dem';
 
 // 共通の初期化処理
 // visible を true にする
