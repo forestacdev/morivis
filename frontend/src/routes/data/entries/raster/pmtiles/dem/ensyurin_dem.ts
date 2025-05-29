@@ -29,7 +29,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
 			demType: 'terrarium',
-			mode: 'curvature',
+			mode: 'relief',
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 
