@@ -45,6 +45,7 @@
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
+	import { drawLayers } from '$routes/utils/layers/draw';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -160,13 +161,11 @@
 
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
 				},
-
 				draw_source: {
 					type: 'geojson',
 					data: drawGeojsonData as FeatureCollection,
 					promoteId: 'id'
 				},
-
 				...previewSources
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -181,39 +180,7 @@
 					}
 				},
 				...previewLayers,
-				{
-					id: '@draw_fill_layer',
-					type: 'fill',
-					source: 'draw_source',
-					paint: {
-						'fill-color': ['get', 'color'],
-						'fill-opacity': ['get', 'opacity'],
-						'fill-outline-color': 'transparent'
-					},
-					filter: ['==', '$type', 'Polygon']
-				},
-				{
-					id: '@draw_line_layer',
-					type: 'line',
-					source: 'draw_source',
-					paint: {
-						'line-color': ['get', 'color'],
-						'line-opacity': ['get', 'opacity'],
-						'line-width': 5
-					},
-					filter: ['==', '$type', 'LineString']
-				},
-				{
-					id: '@draw_circle_layer',
-					type: 'circle',
-					source: 'draw_source',
-					paint: {
-						'circle-color': ['get', 'color'],
-						'circle-opacity': ['get', 'opacity'],
-						'circle-radius': 7
-					},
-					filter: ['==', '$type', 'Point']
-				}
+				...drawLayers
 
 				// {
 				// 	id: '@webgl_canvas_layer',
