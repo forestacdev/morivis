@@ -51,7 +51,7 @@ export class TileImageManager {
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				// リクエストがキャンセルされた場合はエラーをスロー
-				throw new Error('Request aborted');
+				throw error;
 			} else {
 				// 他のエラー時には空の画像を返す
 				return await createImageBitmap(new ImageData(1, 1));
@@ -69,7 +69,7 @@ export class TileImageManager {
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
 				// リクエストがキャンセルされた場合はエラーをスロー
-				throw new Error('Request aborted');
+				throw error;
 			} else {
 				// 他のエラー時には空の画像を返す
 				return await createImageBitmap(new ImageData(1, 1));

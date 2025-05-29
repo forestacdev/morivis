@@ -13,9 +13,9 @@
 		name: string;
 	}
 	let demStyleModes = $state<DemStyleModeOptions[]>([
-		{ key: 'evolution', name: '標高' },
+		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
-        { key: 'curvature', name: '曲率' },
+		{ key: 'curvature', name: '曲率' },
 		{ key: 'default', name: 'なし' }
 		// { key: 'shadow', name: '陰影' },
 		// { key: 'slope', name: '傾斜量' },

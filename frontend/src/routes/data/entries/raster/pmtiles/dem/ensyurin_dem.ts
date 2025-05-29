@@ -33,7 +33,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 
-				evolution: {
+				relief: {
 					max: 424,
 					min: 80,
 					colorMap: 'greys'

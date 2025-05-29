@@ -139,7 +139,7 @@ export type ColorMapType = (typeof COLOR_MAP_TYPE)[number];
 
 export const DEM_STYLE_TYPE = {
 	default: 0.0,
-	evolution: 1.0,
+	relief: 1.0,
 	slope: 2.0,
 	aspect: 3.0,
 	curvature: 4.0,
@@ -166,7 +166,7 @@ export interface RasterDemStyle {
 				min: number;
 				colorMap: ColorMapType;
 			};
-			evolution: {
+			relief: {
 				max: number;
 				min: number;
 				colorMap: ColorMapType;

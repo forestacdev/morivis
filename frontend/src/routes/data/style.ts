@@ -32,9 +32,9 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 	opacity: 1.0,
 	visualization: {
 		demType: 'gsi',
-		mode: 'evolution',
+		mode: 'relief',
 		uniformsData: {
-			evolution: {
+			relief: {
 				max: 4000,
 				min: 0,
 				colorMap: 'greys'

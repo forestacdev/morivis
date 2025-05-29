@@ -189,7 +189,7 @@ self.onmessage = async (e) => {
 		// シェーダーを別のもにする
 		gl.useProgram(program);
 
-		if (mode === 'evolution') {
+		if (mode === 'relief') {
 			const uniforms: Uniforms = {
 				u_dem_type: { type: '1f', value: demTypeNumber },
 				u_mode: { type: '1f', value: modeNumber },

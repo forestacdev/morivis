@@ -14,21 +14,21 @@
 <RangeSlider label="不透明度" bind:value={style.opacity} min={0} max={1} step={0.01} />
 
 <DemStyleModePulldownBox bind:isMode={style.visualization.mode} />
-{#if style.visualization.mode === 'evolution'}
+{#if style.visualization.mode === 'relief'}
 	<DemStyleColorMapPulldownBox
-		bind:isColorMap={style.visualization.uniformsData['evolution'].colorMap}
+		bind:isColorMap={style.visualization.uniformsData['relief'].colorMap}
 	/>
 	<RangeSlider
-		label="最大標高"
-		bind:value={style.visualization.uniformsData['evolution'].max}
+		label="最大値"
+		bind:value={style.visualization.uniformsData['relief'].max}
 		max={5000}
 		min={0}
 		step={0.01}
 	/>
 
 	<RangeSlider
-		label="最小標高"
-		bind:value={style.visualization.uniformsData['evolution'].min}
+		label="最小値"
+		bind:value={style.visualization.uniformsData['relief'].min}
 		max={5000}
 		min={0}
 		step={0.01}
@@ -60,7 +60,6 @@
 	<DemStyleColorMapPulldownBox
 		bind:isColorMap={style.visualization.uniformsData['curvature'].colorMap}
 	/>
-
 {/if}
 
 <style>

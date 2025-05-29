@@ -170,90 +170,110 @@ float computeCurvatureZT(mat3 h, float ewres, float nsres, int curvatureMode) {
 }
 
 
+// mat3 calculateTerrainData(vec2 uv, float center_h) {
+
+
+//     // 9マスピクセルのインデックス番号
+//     // ----------------------------
+//     // | [0][0] | [0][1] | [0][2] |
+//     // ----------------------------
+//     // | [1][0] | [1][1] | [1][2] |
+//     // ----------------------------
+//     // | [2][0] | [2][1] | [2][2] |
+//     // ----------------------------
+
+//     // height_mapの隣接タイル
+//     // ----------------------------
+//     // |        | top    |        |
+//     // ----------------------------
+//     // | left   | center | right  |
+//     // ----------------------------
+//     // |        | bottom |        |
+//     // ----------------------------
+
+//     vec2 pixel_size = vec2(1.0) / 256.0;
+//     mat3 _h_mat = mat3(0.0);
+
+
+//     // 端の場合は隣接テクスチャからサンプル
+//     // 左上
+//     _h_mat[0][0] = convertToHeight(
+//         (uv.x <= pixel_size.x && uv.y <= pixel_size.y) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, 1.0 - pixel_size.y)) :
+//         (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(-pixel_size.x, 1.0 - pixel_size.y)) :
+//         (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, -pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(-pixel_size.x, -pixel_size.y))
+//     );
+
+//     // 上
+//     _h_mat[0][1] = convertToHeight(
+//         (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(0.0, 1.0 - pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(0.0, -pixel_size.y))
+//     );
+
+//     // 右上
+//     _h_mat[0][2] = convertToHeight(
+//         (uv.x >= 1.0 - pixel_size.x && uv.y <= pixel_size.y) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, 1.0 - pixel_size.y)) :
+//         (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(pixel_size.x, 1.0 - pixel_size.y)) :
+//         (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, -pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(pixel_size.x, -pixel_size.y))
+//     );
+
+//     // 左
+//     _h_mat[1][0] = convertToHeight(
+//         (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, 0.0)) :
+//         texture(u_height_map_center, uv + vec2(-pixel_size.x, 0.0))
+//     );
+
+//     // 中央
+//     _h_mat[1][1] = center_h;
+
+//     // 右
+//     _h_mat[1][2] = convertToHeight(
+//         (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, 0.0)) :
+//         texture(u_height_map_center, uv + vec2(pixel_size.x, 0.0))
+//     );
+
+//     // 左下
+//     _h_mat[2][0] = convertToHeight(
+//         (uv.x <= pixel_size.x && uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, -1.0 + pixel_size.y)) :
+//         (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(-pixel_size.x, -1.0 + pixel_size.y)) :
+//         (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(-pixel_size.x, pixel_size.y))
+//     );
+
+//     // 下
+//     _h_mat[2][1] = convertToHeight(
+//         (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(0.0, -1.0 + pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(0.0, pixel_size.y))
+//     );
+
+//     // 右下
+//     _h_mat[2][2] = convertToHeight(
+//         (uv.x >= 1.0 - pixel_size.x && uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, -1.0 + pixel_size.y)) :
+//         (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(pixel_size.x, -1.0 + pixel_size.y)) :
+//         (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, pixel_size.y)) :
+//         texture(u_height_map_center, uv + vec2(pixel_size.x, pixel_size.y))
+//     );
+
+//     return _h_mat;
+// }
+
 mat3 calculateTerrainData(vec2 uv, float center_h) {
-
-
-    // 9マスピクセルのインデックス番号
-    // ----------------------------
-    // | [0][0] | [0][1] | [0][2] |
-    // ----------------------------
-    // | [1][0] | [1][1] | [1][2] |
-    // ----------------------------
-    // | [2][0] | [2][1] | [2][2] |
-    // ----------------------------
-
-    // height_mapの隣接タイル
-    // ----------------------------
-    // |        | top    |        |
-    // ----------------------------
-    // | left   | center | right  |
-    // ----------------------------
-    // |        | bottom |        |
-    // ----------------------------
-
+    // すべてu_height_map_centerのみからサンプリング
     vec2 pixel_size = vec2(1.0) / 256.0;
     mat3 _h_mat = mat3(0.0);
 
+    _h_mat[0][0] = convertToHeight(texture(u_height_map_center, uv + vec2(-pixel_size.x, -pixel_size.y)));
+    _h_mat[0][1] = convertToHeight(texture(u_height_map_center, uv + vec2(0.0, -pixel_size.y)));
+    _h_mat[0][2] = convertToHeight(texture(u_height_map_center, uv + vec2(pixel_size.x, -pixel_size.y)));
 
-    // 端の場合は隣接テクスチャからサンプル
-    // 左上
-    _h_mat[0][0] = convertToHeight(
-        (uv.x <= pixel_size.x && uv.y <= pixel_size.y) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, 1.0 - pixel_size.y)) :
-        (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(-pixel_size.x, 1.0 - pixel_size.y)) :
-        (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, -pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(-pixel_size.x, -pixel_size.y))
-    );
-
-    // 上
-    _h_mat[0][1] = convertToHeight(
-        (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(0.0, 1.0 - pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(0.0, -pixel_size.y))
-    );
-
-    // 右上
-    _h_mat[0][2] = convertToHeight(
-        (uv.x >= 1.0 - pixel_size.x && uv.y <= pixel_size.y) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, 1.0 - pixel_size.y)) :
-        (uv.y <= pixel_size.y) ? texture(u_height_map_top, uv + vec2(pixel_size.x, 1.0 - pixel_size.y)) :
-        (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, -pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(pixel_size.x, -pixel_size.y))
-    );
-
-    // 左
-    _h_mat[1][0] = convertToHeight(
-        (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, 0.0)) :
-        texture(u_height_map_center, uv + vec2(-pixel_size.x, 0.0))
-    );
-
-    // 中央
+    _h_mat[1][0] = convertToHeight(texture(u_height_map_center, uv + vec2(-pixel_size.x, 0.0)));
     _h_mat[1][1] = center_h;
+    _h_mat[1][2] = convertToHeight(texture(u_height_map_center, uv + vec2(pixel_size.x, 0.0)));
 
-    // 右
-    _h_mat[1][2] = convertToHeight(
-        (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, 0.0)) :
-        texture(u_height_map_center, uv + vec2(pixel_size.x, 0.0))
-    );
-
-    // 左下
-    _h_mat[2][0] = convertToHeight(
-        (uv.x <= pixel_size.x && uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, -1.0 + pixel_size.y)) :
-        (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(-pixel_size.x, -1.0 + pixel_size.y)) :
-        (uv.x <= pixel_size.x) ? texture(u_height_map_left, uv + vec2(1.0 - pixel_size.x, pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(-pixel_size.x, pixel_size.y))
-    );
-
-    // 下
-    _h_mat[2][1] = convertToHeight(
-        (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(0.0, -1.0 + pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(0.0, pixel_size.y))
-    );
-
-    // 右下
-    _h_mat[2][2] = convertToHeight(
-        (uv.x >= 1.0 - pixel_size.x && uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, -1.0 + pixel_size.y)) :
-        (uv.y >= 1.0 - pixel_size.y) ? texture(u_height_map_bottom, uv + vec2(pixel_size.x, -1.0 + pixel_size.y)) :
-        (uv.x >= 1.0 - pixel_size.x) ? texture(u_height_map_right, uv + vec2(-1.0 + pixel_size.x, pixel_size.y)) :
-        texture(u_height_map_center, uv + vec2(pixel_size.x, pixel_size.y))
-    );
+    _h_mat[2][0] = convertToHeight(texture(u_height_map_center, uv + vec2(-pixel_size.x, pixel_size.y)));
+    _h_mat[2][1] = convertToHeight(texture(u_height_map_center, uv + vec2(0.0, pixel_size.y)));
+    _h_mat[2][2] = convertToHeight(texture(u_height_map_center, uv + vec2(pixel_size.x, pixel_size.y)));
 
     return _h_mat;
 }
