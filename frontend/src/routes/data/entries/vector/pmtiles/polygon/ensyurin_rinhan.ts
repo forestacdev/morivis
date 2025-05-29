@@ -11,7 +11,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
-		name: '演習林林班',
+		name: '演習林 林班',
 		description: '森林文化アカデミー演習林の林班。',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

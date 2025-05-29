@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://forestgeo.info/opendata/21_gifu/csmap_2023/{z}/{x}/{y}.webp'
 	},
 	metaData: {
-		name: 'CS立体図',
+		name: '岐阜県 CS立体図',
 		description: 'CS立体図',
 		attribution: '岐阜県森林研究所',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-gifu-maptiles',

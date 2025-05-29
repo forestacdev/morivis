@@ -8,7 +8,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu_2021Slpoe_2022_07_25_15_54/MapServer/tile/{z}/{y}/{x}'
 	},
 	metaData: {
-		name: '傾斜区分図',
+		name: '岐阜県 傾斜区分図',
 		description: '岐阜県の傾斜区分図',
 		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/sinrinwebmap.html',
 		attribution: '岐阜県森林研究所',

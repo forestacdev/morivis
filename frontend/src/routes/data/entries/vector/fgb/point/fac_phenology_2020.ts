@@ -10,7 +10,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/fac_phenology_2020.fgb`
 	},
 	metaData: {
-		name: 'フェノロジー調査_2020',
+		name: 'フェノロジー調査 2020年度',
 		description: '森林環境教育専攻のフェノロジー調査のデータ',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

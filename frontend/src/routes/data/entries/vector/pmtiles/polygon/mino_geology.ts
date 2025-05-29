@@ -10,7 +10,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/mino_geology.pmtiles`
 	},
 	metaData: {
-		name: '美濃市地質図',
+		name: '美濃市 地質図',
 		description: '美濃市地質図。',
 		attribution: '産総研地質調査総合センター',
 		location: '美濃市',

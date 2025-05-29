@@ -9,7 +9,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-kochi.geospatial.jp/2023/rinya/tile/fr_mesh20m/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '森林資源量集計メッシュ',
+		name: '高知県 森林資源量集計メッシュ',
 		description: `出典「高知県森林資源データ」`,
 		attribution: '林野庁',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_kochi',

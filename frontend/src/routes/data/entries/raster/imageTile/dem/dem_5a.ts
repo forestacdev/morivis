@@ -1,5 +1,6 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/data/style';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dem_5a',
@@ -17,7 +18,8 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		minZoom: 1,
 		maxZoom: 15,
 		tileSize: 256,
-		bounds: [122.935, 20.425, 153.986, 45.551]
+		bounds: [122.935, 20.425, 153.986, 45.551],
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7 // 画像タイルのXYZ座標
 	},
 	interaction: {
 		clickable: true

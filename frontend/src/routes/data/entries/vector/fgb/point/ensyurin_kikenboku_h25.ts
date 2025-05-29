@@ -10,7 +10,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_kikenboku_h25.fgb`
 	},
 	metaData: {
-		name: '演習林危険木調査 H25',
+		name: '演習林危険木調査 2013年度',
 		description: '',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

@@ -109,7 +109,7 @@
 </script>
 
 <div
-	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-gray-300 p-2"
+	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg p-2"
 	bind:this={container}
 >
 	<button
@@ -126,6 +126,7 @@
 				alt={dataEntry.metaData.name}
 				loading="lazy"
 			/>
+			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
 			<div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
 					? ''
@@ -134,20 +135,20 @@
 				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 			</div>
 
-			<span class="absolute bottom-1 right-0 rounded-l-full bg-black/40 p-2 pl-4 text-xs text-white"
+			<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
 				>{dataEntry.metaData.attribution}</span
 			>
 		{/await}
 	</button>
 
 	<div class="flex w-full flex-col gap-1 py-2">
-		<div class="">{dataEntry.metaData.name}</div>
-		<div class="flex items-center gap-1 text-sm text-gray-600">
+		<div class="text-base">{dataEntry.metaData.name}</div>
+		<div class="flex items-center gap-1 text-sm text-gray-400">
 			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
 		</div>
 	</div>
 
-	<div class=" shrink-0">
+	<div class="shrink-0">
 		{#if isAdded}
 			<button
 				onclick={() => deleteData(dataEntry.id)}
@@ -169,4 +170,12 @@
 </div>
 
 <style>
+	.c-bg {
+		background: radial-gradient(
+			circle,
+			rgba(255, 255, 255, 0) 0%,
+			rgba(255, 255, 255, 0) 60%,
+			rgba(0, 0, 0, 0.5) 100%
+		);
+	}
 </style>
