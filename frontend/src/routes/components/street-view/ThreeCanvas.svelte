@@ -1,53 +1,4 @@
 <script lang="ts">
-	const created360Mesh = async (point: StreetViewPoint) => {
-		// const url = imageUrl.replace('.JPG', '/');
-		// try {
-		// 	// 各画像のURLを直接指定
-		// 	const faceUrls = [
-		// 		`${url}face_1.jpg`,
-		// 		`${url}face_2.jpg`,
-		// 		`${url}face_3.jpg`,
-		// 		`${url}face_4.jpg`,
-		// 		`${url}face_5.jpg`,
-		// 		`${url}face_6.jpg`
-		// 	];
-		// 	const textureLodrer = new THREE.TextureLoader();
-		// 	// 画像を読み込む
-		// 	// テクスチャが読み込まれたらズームブラーを停止
-		// 	// CubeTextureLoader を使用してテクスチャを読み込む
-		// 	const textureCube = new THREE.CubeTextureLoader();
-		// 	textureCube.load(
-		// 		faceUrls,
-		// 		(texture) => {
-		// 			texture.colorSpace = THREE.SRGBColorSpace;
-		// 			if (!angleData) return;
-		// 			geometryBearing.x = angleData.angleX;
-		// 			geometryBearing.y = angleData.angleY;
-		// 			geometryBearing.z = angleData.angleZ;
-		// 			// GUI側のコントロールの値を更新
-		// 			if ($DEBUG_MODE) {
-		// 				controllerX.setValue(geometryBearing.x);
-		// 				controllerY.setValue(geometryBearing.y);
-		// 				controllerZ.setValue(geometryBearing.z);
-		// 			}
-		// 			isLoading = false;
-		// 			// isAnimating = false;
-		// 			uniforms.skybox.value = texture;
-		// 			placeSpheres(nextPointData);
-		// 		},
-		// 		undefined,
-		// 		(error) => {
-		// 			console.error('テクスチャの適用に失敗しました', error);
-		// 			isLoading = false;
-		// 			// isAnimating = false;
-		// 		}
-		// 	);
-		// } catch (error) {
-		// 	console.error('画像の取得に失敗しました', error);
-		// 	isLoading = false;
-		// }
-	};
-
 	import Icon from '@iconify/svelte';
 	import { GUI } from 'lil-gui';
 	import { onMount, tick } from 'svelte';
@@ -82,14 +33,17 @@
 		cameraBearing: number;
 		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showThreeCanvas: boolean;
+		showAngleMarker: boolean; // 角度マーカーを表示するかどうか
 	}
 
 	let {
 		streetViewPoint,
 		nextPointData,
 		cameraBearing = $bindable(),
+
 		setPoint,
-		showThreeCanvas
+		showThreeCanvas,
+		showAngleMarker = $bindable()
 	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);

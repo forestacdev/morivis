@@ -25,6 +25,7 @@
 	import { streetViewSources } from '$routes/components/map-layer/StreetViewLayer.svelte';
 	// import WebGLCanvasLayer from '$routes/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/components/marker/SelectionMarker.svelte';
+	import AngleMarker from '$routes/components/marker/AngleMarker.svelte';
 	import MouseManager from '$routes/components/MouseManager.svelte';
 	import SelectionPopup from '$routes/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/components/popup/Tooltip.svelte';
@@ -57,6 +58,9 @@
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		showAngleMarker: boolean;
+		angleMarkerLngLat: LngLat | null;
+		cameraBearing: number; // カメラの向き
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
@@ -75,7 +79,10 @@
 		streetViewPoint,
 		showMapCanvas,
 		showSelectionMarker = $bindable(),
+		showAngleMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
+		angleMarkerLngLat = $bindable(),
+		cameraBearing = $bindable(),
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
@@ -426,6 +433,15 @@
 			map={maplibreMap}
 			bind:show={showSelectionMarker}
 			bind:lngLat={selectionMarkerLngLat}
+		/>
+	{/key}
+
+	{#key angleMarkerLngLat}
+		<AngleMarker
+			map={maplibreMap}
+			bind:show={showAngleMarker}
+			bind:lngLat={angleMarkerLngLat}
+			bind:rotation={cameraBearing}
 		/>
 	{/key}
 

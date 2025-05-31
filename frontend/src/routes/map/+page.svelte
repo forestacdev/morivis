@@ -33,9 +33,9 @@
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
-	import type { Marker, LngLat } from 'maplibre-gl';
-	import { onMount, mount } from 'svelte';
-	import { fade, slide } from 'svelte/transition';
+	import type { LngLat } from 'maplibre-gl';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
 	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
@@ -52,7 +52,7 @@
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
 	import SideMenu from '$routes/components/side-menu/_Index.svelte';
-	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
+
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
 
 	import Tooltip from '$routes/components/Tooltip.svelte';
@@ -104,7 +104,7 @@
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
 	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
-	let angleMarker = $state<Marker | null>(null); // マーカー
+
 	let streetViewPoint = $state<StreetViewPoint | null>(null);
 	let streetViewPointData = $state<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
@@ -123,19 +123,13 @@
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
 	let selectionMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
+	// ストリートビューのマーカー
+	let showAngleMarker = $state<boolean>(false); // マーカーの表示
+	let angleMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
+
 	let showDialogType = $state<DialogType>(null);
 
-	const markerContainer = document.createElement('div');
-	document.body.appendChild(markerContainer);
-
 	onMount(async () => {
-		mount(AngleMarker, {
-			target: markerContainer,
-			props: {
-				cameraBearing: cameraBearing,
-				angleMarker
-			}
-		});
 		streetViewPointData = (await getFgbToGeojson(
 			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
 		)) as StreetViewPointGeoJson;
@@ -192,42 +186,12 @@
 			});
 		}
 
-		if (angleMarker) {
-			angleMarker.remove();
-		}
-
-		angleMarker = new maplibregl.Marker({
-			element: markerContainer,
-
-			pitchAlignment: 'map',
-			rotationAlignment: 'map',
-			draggable: true,
-			rotation: -cameraBearing + 180
-		})
-			.setLngLat(point.geometry.coordinates)
-
-			.addTo(map);
-
-		angleMarker.togglePopup();
+		angleMarkerLngLat = point.geometry.coordinates as LngLat;
+		showAngleMarker = true;
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
-
-		// マーカーのドラッグ
-		angleMarker?.on('dragend', () => {
-			const lngLat = angleMarker?.getLngLat();
-			if (!lngLat) return;
-			const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
-			setPoint(point as StreetViewPoint);
-		});
 	};
-
-	// マーカーの回転
-	$effect(() => {
-		if (cameraBearing && angleMarker) {
-			angleMarker.setRotation(-cameraBearing + 180);
-		}
-	});
 
 	mapStore.onClick((e) => {
 		if (!e || $mapMode === 'edit') return;
@@ -373,13 +337,15 @@
 		bind:featureMenuData
 		bind:showSelectionMarker
 		bind:selectionMarkerLngLat
+		bind:showAngleMarker
+		bind:angleMarkerLngLat
+		bind:cameraBearing
 		bind:dropFile
 		bind:showDialogType
 		bind:drawGeojsonData
 		{demEntries}
 		{streetViewLineData}
 		{streetViewPointData}
-		{angleMarker}
 		{streetViewPoint}
 		{showMapCanvas}
 	/>
@@ -402,39 +368,13 @@
 		{nextPointData}
 		{showThreeCanvas}
 		bind:cameraBearing
+		bind:showAngleMarker
 		{setPoint}
 	/>
 </div>
 <UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
 
 <Tooltip />
-
-<!-- Mobile -->
-<!-- <div class="relative flex h-full w-full grow flex-col">
-		<LayerMenu bind:layerEntries bind:tempLayerEntries />
-
-		<Map
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:featureMenuData
-			{streetViewLineData}
-			{streetViewPointData}
-			{angleMarker}
-			{streetViewPoint}
-			{showMapCanvas}
-			{showDataEntry}
-		/>
-		<FooterMenu {layerEntries} />
-		<DataMenu {showDataEntry} />
-
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			{setPoint}
-		/>
-	</div> -->
 
 <SideMenu />
 <NotificationMessage />
