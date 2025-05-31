@@ -1,4 +1,53 @@
 <script lang="ts">
+	const created360Mesh = async (point: StreetViewPoint) => {
+		// const url = imageUrl.replace('.JPG', '/');
+		// try {
+		// 	// 各画像のURLを直接指定
+		// 	const faceUrls = [
+		// 		`${url}face_1.jpg`,
+		// 		`${url}face_2.jpg`,
+		// 		`${url}face_3.jpg`,
+		// 		`${url}face_4.jpg`,
+		// 		`${url}face_5.jpg`,
+		// 		`${url}face_6.jpg`
+		// 	];
+		// 	const textureLodrer = new THREE.TextureLoader();
+		// 	// 画像を読み込む
+		// 	// テクスチャが読み込まれたらズームブラーを停止
+		// 	// CubeTextureLoader を使用してテクスチャを読み込む
+		// 	const textureCube = new THREE.CubeTextureLoader();
+		// 	textureCube.load(
+		// 		faceUrls,
+		// 		(texture) => {
+		// 			texture.colorSpace = THREE.SRGBColorSpace;
+		// 			if (!angleData) return;
+		// 			geometryBearing.x = angleData.angleX;
+		// 			geometryBearing.y = angleData.angleY;
+		// 			geometryBearing.z = angleData.angleZ;
+		// 			// GUI側のコントロールの値を更新
+		// 			if ($DEBUG_MODE) {
+		// 				controllerX.setValue(geometryBearing.x);
+		// 				controllerY.setValue(geometryBearing.y);
+		// 				controllerZ.setValue(geometryBearing.z);
+		// 			}
+		// 			isLoading = false;
+		// 			// isAnimating = false;
+		// 			uniforms.skybox.value = texture;
+		// 			placeSpheres(nextPointData);
+		// 		},
+		// 		undefined,
+		// 		(error) => {
+		// 			console.error('テクスチャの適用に失敗しました', error);
+		// 			isLoading = false;
+		// 			// isAnimating = false;
+		// 		}
+		// 	);
+		// } catch (error) {
+		// 	console.error('画像の取得に失敗しました', error);
+		// 	isLoading = false;
+		// }
+	};
+
 	import Icon from '@iconify/svelte';
 	import { GUI } from 'lil-gui';
 	import { onMount, tick } from 'svelte';
@@ -297,55 +346,6 @@
 		}
 	};
 
-	const created360Mesh = async (point: StreetViewPoint) => {
-		// const url = imageUrl.replace('.JPG', '/');
-		// try {
-		// 	// 各画像のURLを直接指定
-		// 	const faceUrls = [
-		// 		`${url}face_1.jpg`,
-		// 		`${url}face_2.jpg`,
-		// 		`${url}face_3.jpg`,
-		// 		`${url}face_4.jpg`,
-		// 		`${url}face_5.jpg`,
-		// 		`${url}face_6.jpg`
-		// 	];
-		// 	const textureLodrer = new THREE.TextureLoader();
-		// 	// 画像を読み込む
-		// 	// テクスチャが読み込まれたらズームブラーを停止
-		// 	// CubeTextureLoader を使用してテクスチャを読み込む
-		// 	const textureCube = new THREE.CubeTextureLoader();
-		// 	textureCube.load(
-		// 		faceUrls,
-		// 		(texture) => {
-		// 			texture.colorSpace = THREE.SRGBColorSpace;
-		// 			if (!angleData) return;
-		// 			geometryBearing.x = angleData.angleX;
-		// 			geometryBearing.y = angleData.angleY;
-		// 			geometryBearing.z = angleData.angleZ;
-		// 			// GUI側のコントロールの値を更新
-		// 			if ($DEBUG_MODE) {
-		// 				controllerX.setValue(geometryBearing.x);
-		// 				controllerY.setValue(geometryBearing.y);
-		// 				controllerZ.setValue(geometryBearing.z);
-		// 			}
-		// 			isLoading = false;
-		// 			// isAnimating = false;
-		// 			uniforms.skybox.value = texture;
-		// 			placeSpheres(nextPointData);
-		// 		},
-		// 		undefined,
-		// 		(error) => {
-		// 			console.error('テクスチャの適用に失敗しました', error);
-		// 			isLoading = false;
-		// 			// isAnimating = false;
-		// 		}
-		// 	);
-		// } catch (error) {
-		// 	console.error('画像の取得に失敗しました', error);
-		// 	isLoading = false;
-		// }
-	};
-
 	// 画面リサイズ時にキャンバスもリサイズ
 	const onResize = () => {
 		// サイズを取得
@@ -496,22 +496,22 @@
 			uniforms.rotationAngles.value = rotationAngles;
 
 			// ズームブラーのアニメーション
-			if (isAnimating) {
-				const speed = 0.5;
-				const elapsedTime = clock.getElapsedTime();
-				uniforms2.zoomBlurStrength.value = (elapsedTime * speed) % 1.0; // 0.0 ～ 1.0 の範囲でループ
-			} else {
-				uniforms2.zoomBlurStrength.value = 0.0; // アニメーション停止時はズームブラーをリセット
-			}
+			// if (isAnimating) {
+			// 	const speed = 0.5;
+			// 	const elapsedTime = clock.getElapsedTime();
+			// 	uniforms2.zoomBlurStrength.value = (elapsedTime * speed) % 1.0; // 0.0 ～ 1.0 の範囲でループ
+			// } else {
+			// 	uniforms2.zoomBlurStrength.value = 0.0; // アニメーション停止時はズームブラーをリセット
+			// }
 
 			const index = nextScenes.findIndex((scene) => scene.id === currentSceneId);
 			if (index !== -1) {
+				scene = nextScenes[index].scene;
 				renderer.setRenderTarget(renderTarget);
-				renderer.render(nextScenes[index].scene, camera);
+				renderer.render(scene, camera);
+
 				renderer.setRenderTarget(null);
 				renderer.render(bufferScene, camera);
-
-				renderer.render(nextScenes[index].scene, camera);
 			}
 		};
 		animate();
@@ -525,7 +525,61 @@
 	};
 
 	// $effect(() => created360Mesh(streetViewPoint));
-	$effect(() => placeScene(nextPointData || []));
+	$effect(() => {
+		if (nextPointData) {
+			// 最初の拡大アニメーション
+			gsap.to(camera, {
+				duration: 0.5, // アニメーションの時間
+				fov: 55, // スケールを大きくしてトンネル効果を演出
+				ease: 'power2.inOut', // イージング
+				onUpdate: () => {
+					camera.updateProjectionMatrix(); // FOVの変更を適用
+				},
+				onComplete: () => {
+					placeScene(nextPointData || []);
+					// 縮小ステップを瞬間的に表示
+					gsap.set(camera, {
+						fov: 90 // 縮小状態
+					});
+					camera.updateProjectionMatrix(); // 瞬間的な変更を適用
+
+					// 縮小状態から元のサイズに戻すアニメーション
+					gsap.to(camera, {
+						duration: 0.5, // アニメーションの時間
+						fov: IN_CAMERA_FOV, // 元のサイズに戻す
+						ease: 'power2.inOut', // イージング
+						onUpdate: () => {
+							camera.updateProjectionMatrix(); // FOVの変更を適用
+						},
+						onComplete: () => {
+							// 次のシーンを配置
+						}
+					});
+				}
+			});
+
+			gsap.to(uniforms2.zoomBlurStrength, {
+				duration: 0.5, // アニメーションの時間
+				value: 0.1, // ズームブラーの強さを設定
+				ease: 'power2.inOut', // イージング
+				onUpdate: () => {
+					// ズームブラーの強さを更新
+					uniforms2.zoomBlurStrength.value = uniforms2.zoomBlurStrength.value;
+				},
+				onComplete: () => {
+					// ズームブラーの強さをリセット
+					gsap.to(uniforms2.zoomBlurStrength, {
+						duration: 0.5, // アニメーションの時間
+						value: 0.0, // ズームブラーの強さをリセット
+						ease: 'power2.inOut', // イージング
+						onUpdate: () => {
+							uniforms2.zoomBlurStrength.value = uniforms2.zoomBlurStrength.value;
+						}
+					});
+				}
+			});
+		}
+	});
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->
