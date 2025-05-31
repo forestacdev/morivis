@@ -4,6 +4,7 @@
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+	import gsap from 'gsap';
 
 	import angleDataJson from './angle.json';
 
@@ -18,6 +19,9 @@
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
+	const IMAGE_URL_SHINGLE =
+		'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
+
 	const IN_CAMERA_FOV = 75;
 	const OUT_CAMERA_FOV = 150;
 	const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
@@ -47,6 +51,8 @@
 	let renderTarget: THREE.WebGLRenderTarget;
 	let bufferScene: THREE.Scene;
 
+	let isAnimating = $state<boolean>(false);
+
 	let postMesh: THREE.Mesh;
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
@@ -55,10 +61,12 @@
 
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
+		shingleTexture: { value: THREE.Texture | null }; // シングルテクスチャの追加
 		rotationAngles: { value: THREE.Vector3 };
 	}
 	const uniforms: Uniforms = {
 		skybox: { value: null },
+		shingleTexture: { value: null }, // シングルテクスチャの追加
 		rotationAngles: { value: new THREE.Vector3() }
 	};
 
@@ -170,9 +178,14 @@
 	// };
 
 	const created360Mesh = async (point: StreetViewPoint) => {
+		// ズームブラーのアニメーションを開始
+
+		// テクスチャが読み込まれたらズームブラーを停止
+
 		if (!point) return;
 		fromPoint = point;
 		isLoading = true;
+		isAnimating = true;
 
 		const imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
 
@@ -183,55 +196,80 @@
 
 		if (!imageUrl) return;
 
-		if (!imageUrl) return;
+		const webp = IMAGE_URL_SHINGLE + point.properties['Name'].replace('.JPG', '.webp');
+		console.log('webp', webp);
+		uniforms.shingleTexture.value = new THREE.TextureLoader().load(
+			webp,
+			(texture) => {
+				texture.colorSpace = THREE.SRGBColorSpace;
+				texture.minFilter = THREE.LinearFilter;
+				texture.magFilter = THREE.LinearFilter;
+				texture.generateMipmaps = false;
+				texture.needsUpdate = true;
+				// シングルテクスチャの読み込みが完了したら、シェーダーに渡す
+				uniforms.shingleTexture.value = texture;
+				isAnimating = false; // シングルテクスチャの読み込みが完了したらズームブラーを停止
+				isLoading = false; // ローディングを終了
+				console.log('シングルテクスチャの読み込みが完了しました');
+				placeSpheres(nextPointData);
+			},
+			undefined,
+			(error) => {}
+		);
+		// try {
+		// 	// 各画像のURLを直接指定
+		// 	const faceUrls = [
+		// 		`${url}face_1.jpg`,
+		// 		`${url}face_2.jpg`,
+		// 		`${url}face_3.jpg`,
+		// 		`${url}face_4.jpg`,
+		// 		`${url}face_5.jpg`,
+		// 		`${url}face_6.jpg`
+		// 	];
 
-		try {
-			// 各画像のURLを直接指定
-			const faceUrls = [
-				`${url}face_1.jpg`,
-				`${url}face_2.jpg`,
-				`${url}face_3.jpg`,
-				`${url}face_4.jpg`,
-				`${url}face_5.jpg`,
-				`${url}face_6.jpg`
-			];
+		// 	const textureLodrer = new THREE.TextureLoader();
+		// 	// 画像を読み込む
 
-			// CubeTextureLoader を使用してテクスチャを読み込む
-			const textureCube = new THREE.CubeTextureLoader();
-			textureCube.load(
-				faceUrls,
-				(texture) => {
-					texture.colorSpace = THREE.SRGBColorSpace;
+		// 	// テクスチャが読み込まれたらズームブラーを停止
 
-					if (!angleData) return;
+		// 	// CubeTextureLoader を使用してテクスチャを読み込む
+		// 	const textureCube = new THREE.CubeTextureLoader();
+		// 	textureCube.load(
+		// 		faceUrls,
+		// 		(texture) => {
+		// 			texture.colorSpace = THREE.SRGBColorSpace;
 
-					geometryBearing.x = angleData.angleX;
-					geometryBearing.y = angleData.angleY;
-					geometryBearing.z = angleData.angleZ;
+		// 			if (!angleData) return;
 
-					// GUI側のコントロールの値を更新
-					if ($DEBUG_MODE) {
-						controllerX.setValue(geometryBearing.x);
-						controllerY.setValue(geometryBearing.y);
-						controllerZ.setValue(geometryBearing.z);
-					}
+		// 			geometryBearing.x = angleData.angleX;
+		// 			geometryBearing.y = angleData.angleY;
+		// 			geometryBearing.z = angleData.angleZ;
 
-					isLoading = false;
+		// 			// GUI側のコントロールの値を更新
+		// 			if ($DEBUG_MODE) {
+		// 				controllerX.setValue(geometryBearing.x);
+		// 				controllerY.setValue(geometryBearing.y);
+		// 				controllerZ.setValue(geometryBearing.z);
+		// 			}
 
-					uniforms.skybox.value = texture;
+		// 			isLoading = false;
+		// 			// isAnimating = false;
 
-					placeSpheres(nextPointData);
-				},
-				undefined,
-				(error) => {
-					console.error('テクスチャの適用に失敗しました', error);
-					isLoading = false;
-				}
-			);
-		} catch (error) {
-			console.error('画像の取得に失敗しました', error);
-			isLoading = false;
-		}
+		// 			uniforms.skybox.value = texture;
+
+		// 			placeSpheres(nextPointData);
+		// 		},
+		// 		undefined,
+		// 		(error) => {
+		// 			console.error('テクスチャの適用に失敗しました', error);
+		// 			isLoading = false;
+		// 			// isAnimating = false;
+		// 		}
+		// 	);
+		// } catch (error) {
+		// 	console.error('画像の取得に失敗しました', error);
+		// 	isLoading = false;
+		// }
 	};
 
 	// 画面リサイズ時にキャンバスもリサイズ
@@ -360,9 +398,12 @@
 		});
 
 		// アニメーション
+
+		// 時間を管理するための Clock を作成
+		const clock = new THREE.Clock();
 		const animate = () => {
 			requestAnimationFrame(animate);
-			if (!isRendering) return;
+			// if (!isRendering) return;
 
 			orbitControls.update();
 
@@ -382,6 +423,20 @@
 				degreesToRadians(geometryBearing.z)
 			);
 			uniforms.rotationAngles.value = rotationAngles;
+
+			// ズームブラーのアニメーション
+			if (isAnimating) {
+				const speed = 0.5;
+				const elapsedTime = clock.getElapsedTime();
+				uniforms2.zoomBlurStrength.value = (elapsedTime * speed) % 1.0; // 0.0 ～ 1.0 の範囲でループ
+			} else {
+				uniforms2.zoomBlurStrength.value = 0.0; // アニメーション停止時はズームブラーをリセット
+			}
+
+			renderer.setRenderTarget(renderTarget);
+			renderer.render(scene, camera);
+			renderer.setRenderTarget(null);
+			renderer.render(bufferScene, camera);
 
 			renderer.setRenderTarget(renderTarget);
 
