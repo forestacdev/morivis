@@ -6,8 +6,12 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 	import angleDataJson from './angle.json';
+
 	import fs from './shader/fragment.glsl?raw';
 	import vs from './shader/vertex.glsl?raw';
+
+	import fragment from './shader/fragmentBuffer.glsl?raw';
+	import vertex from './shader/vertexBuffer.glsl?raw';
 	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
@@ -40,6 +44,10 @@
 	let camera: THREE.PerspectiveCamera;
 	let orbitControls: OrbitControls;
 	let renderer: THREE.WebGLRenderer;
+	let renderTarget: THREE.WebGLRenderTarget;
+	let bufferScene: THREE.Scene;
+
+	let postMesh: THREE.Mesh;
 	let isRendering = true;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
@@ -49,9 +57,25 @@
 		skybox: { value: THREE.CubeTexture | null };
 		rotationAngles: { value: THREE.Vector3 };
 	}
-	const uniforms = {
+	const uniforms: Uniforms = {
 		skybox: { value: null },
 		rotationAngles: { value: new THREE.Vector3() }
+	};
+
+	interface Uniforms2 {
+		screenCenter: { value: THREE.Vector2 };
+		resolution: { value: THREE.Vector2 };
+		screenTexture: { value: THREE.Texture | null };
+		zoomBlurStrength: { value: number }; // ズームブラーの強さ
+	}
+
+	const uniforms2: Uniforms2 = {
+		screenCenter: { value: new THREE.Vector2(0.5, 0.5) },
+		resolution: {
+			value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+		},
+		screenTexture: { value: null },
+		zoomBlurStrength: { value: 0.0 } // ズームブラーの強さ
 	};
 	const skyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
 	const skyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
@@ -124,50 +148,61 @@
 		}
 	};
 
-	const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-		type: 'module'
-	});
+	// スクリーンの中心座標を計算してuniformに渡す関数
+	const updateScreenCenter = () => {
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+
+		uniforms.screenCenter.value.set(width / 2, height / 2);
+	};
+
+	// const updatescreenTexture = () => {
+	// 	// スクリーンの中心座標を更新
+	// 	renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+	// 		magFilter: THREE.NearestFilter,
+	// 		minFilter: THREE.NearestFilter,
+	// 		wrapS: THREE.ClampToEdgeWrapping,
+	// 		wrapT: THREE.ClampToEdgeWrapping
+	// 	});
+	// 	uniforms.screenTexture.value = renderTarget.texture;
+
+	// 	return renderTarget;
+	// };
+
 	const created360Mesh = async (point: StreetViewPoint) => {
 		if (!point) return;
 		fromPoint = point;
 		isLoading = true;
+
 		const imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
-		const id = point.properties.id;
+
+		// TODO: IDの修正
+		const id = point.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
 		const url = imageUrl.replace('.JPG', '/');
 
 		if (!imageUrl) return;
 
-		worker.postMessage({
-			urls: [
+		if (!imageUrl) return;
+
+		try {
+			// 各画像のURLを直接指定
+			const faceUrls = [
 				`${url}face_1.jpg`,
 				`${url}face_2.jpg`,
 				`${url}face_3.jpg`,
 				`${url}face_4.jpg`,
 				`${url}face_5.jpg`,
 				`${url}face_6.jpg`
-			]
-		});
+			];
 
-		// Worker からのメッセージを受け取る
-		worker.onmessage = (event) => {
-			if (event.data.error) {
-				console.error(event.data.error);
-				isLoading = false;
-				return;
-			}
-
-			const { blobUrls } = event.data;
+			// CubeTextureLoader を使用してテクスチャを読み込む
 			const textureCube = new THREE.CubeTextureLoader();
-
 			textureCube.load(
-				blobUrls,
+				faceUrls,
 				(texture) => {
 					texture.colorSpace = THREE.SRGBColorSpace;
 
-					// texture.mapping = THREE.CubeReflectionMapping;
-					// texture.flipY = true;
-					// shaderMaterial.needsUpdate = true;
 					if (!angleData) return;
 
 					geometryBearing.x = angleData.angleX;
@@ -188,9 +223,15 @@
 					placeSpheres(nextPointData);
 				},
 				undefined,
-				(error) => console.error('テクスチャの適用に失敗しました', error)
+				(error) => {
+					console.error('テクスチャの適用に失敗しました', error);
+					isLoading = false;
+				}
 			);
-		};
+		} catch (error) {
+			console.error('画像の取得に失敗しました', error);
+			isLoading = false;
+		}
 	};
 
 	// 画面リサイズ時にキャンバスもリサイズ
@@ -207,6 +248,16 @@
 		// カメラのアスペクト比を正す
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
+
+		uniforms2.resolution.value.set(width, height);
+
+		// フレームバッファのサイズを更新
+		if (!renderTarget) return;
+
+		renderTarget.setSize(width, height);
+
+		// シェーダーの解像度を更新
+		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
 	};
 
 	onMount(async () => {
@@ -222,11 +273,13 @@
 		// カメラ
 		camera = new THREE.PerspectiveCamera(IN_CAMERA_FOV, sizes.width / sizes.height, 0.1, 1000);
 
-		// カメラの初期位置
-
-		camera.position.set(0, 0, 0);
-		camera.rotation.order = 'YXZ';
 		scene.add(camera);
+
+		// フレームバッファ用のシーンとカメラを作成
+		bufferScene = new THREE.Scene();
+
+		// camera.position.set(0, 0, 0);
+		camera.rotation.order = 'YXZ';
 
 		// カメラの設定
 		camera.aspect = sizes.width / sizes.height;
@@ -264,6 +317,28 @@
 			canvas: canvas,
 			alpha: true
 		});
+
+		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
+			depthBuffer: false,
+			stencilBuffer: false,
+			magFilter: THREE.NearestFilter,
+			minFilter: THREE.NearestFilter,
+			wrapS: THREE.ClampToEdgeWrapping,
+			wrapT: THREE.ClampToEdgeWrapping
+		});
+		uniforms2.screenTexture.value = renderTarget.texture as THREE.Texture;
+		// フレームバッファに描画するオブジェクトを追加
+		const postGeometry = new THREE.PlaneGeometry(2, 2);
+		const postMaterial = new THREE.ShaderMaterial({
+			fragmentShader: fragment,
+			vertexShader: vertex,
+			uniforms: uniforms2
+		});
+
+		// sprite.renderOrder = 1;
+		postMesh = new THREE.Mesh(postGeometry, postMaterial);
+		bufferScene.add(postMesh);
+
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -308,7 +383,11 @@
 			);
 			uniforms.rotationAngles.value = rotationAngles;
 
+			renderer.setRenderTarget(renderTarget);
+
 			renderer.render(scene, camera);
+			renderer.setRenderTarget(null);
+			renderer.render(bufferScene, camera);
 		};
 		animate();
 	});
@@ -321,6 +400,10 @@
 	};
 
 	$effect(() => created360Mesh(streetViewPoint));
+
+	$effect(() => {
+		console.log('showThreeCanvas', showThreeCanvas);
+	});
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->

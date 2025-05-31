@@ -1,7 +1,10 @@
+
+
+varying vec4 coords;
+
 uniform samplerCube skybox;	
 uniform vec3 rotationAngles;
 
-varying vec4 coords;
 
 // --- 回転行列を定義 ---
 mat3 rotateY(float angle) {
@@ -34,20 +37,23 @@ mat3 rotateZ(float angle) {
     );
 }
 
+
 void main() {
+
     // X 軸を反転させた座標を基準にする
     vec3 correctedCoords = vec3(-coords.x, coords.y, coords.z);
-    
     // 回転行列を適用（Y → X → Z の順）
     // Y軸から受け取る角度はマイナスにする
     mat3 rotationMatrix = rotateY(-rotationAngles.y) * rotateX(-rotationAngles.x) * rotateZ(-rotationAngles.z);
-    
     // 回転を適用
     vec3 rotatedCoords = rotationMatrix * correctedCoords;
-    
-    // 環境マップのテクスチャを取得
-    gl_FragColor = textureCube(skybox, rotatedCoords);
 
-    #include <tonemapping_fragment>
-    #include <colorspace_fragment>
+    // 環境マップのテクスチャを取得
+    vec4 skyboxScreen = textureCube(skybox, rotatedCoords);
+
+    gl_FragColor = skyboxScreen;
+
+    // トーンマッピングと色空間変換を適用
+    // #include <tonemapping_fragment>
+    // #include <colorspace_fragment>
 }

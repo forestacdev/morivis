@@ -7,7 +7,7 @@
 		};
 		properties: {
 			id: string;
-            ID: string;
+			ID: string;
 			name: string;
 			Name: string;
 		};
@@ -147,8 +147,17 @@
 		);
 
 		const imageId = getStreetViewParams();
+		console.log('imageId', imageId);
 		if (imageId) {
-		
+			const point = streetViewPointData.features.find(
+				(point) => point.properties.id === Number(imageId)
+			);
+			if (point) {
+				setPoint(point as StreetViewPoint);
+				isStreetView.set(true);
+			} else {
+				console.warn(`Street view point with ID ${imageId} not found.`);
+			}
 		}
 	});
 
