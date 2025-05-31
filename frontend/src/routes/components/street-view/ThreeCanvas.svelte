@@ -145,15 +145,6 @@
 		screenTexture: { value: null },
 		zoomBlurStrength: { value: 0.0 } // ズームブラーの強さ
 	};
-	const skyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
-
-	const skyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
-		uniforms: uniforms,
-		vertexShader: vs,
-		fragmentShader: fs,
-		side: THREE.BackSide
-	});
-	let skyMesh: THREE.Mesh;
 
 	let geometryBearing = { x: 0, y: 0, z: 0 };
 	let controllerX;
@@ -545,7 +536,7 @@
 
 					// 縮小状態から元のサイズに戻すアニメーション
 					gsap.to(camera, {
-						duration: 0.5, // アニメーションの時間
+						duration: 1.0, // アニメーションの時間
 						fov: IN_CAMERA_FOV, // 元のサイズに戻す
 						ease: 'power2.inOut', // イージング
 						onUpdate: () => {
@@ -569,7 +560,7 @@
 				onComplete: () => {
 					// ズームブラーの強さをリセット
 					gsap.to(uniforms2.zoomBlurStrength, {
-						duration: 0.5, // アニメーションの時間
+						duration: 1.0, // アニメーションの時間
 						value: 0.0, // ズームブラーの強さをリセット
 						ease: 'power2.inOut', // イージング
 						onUpdate: () => {
