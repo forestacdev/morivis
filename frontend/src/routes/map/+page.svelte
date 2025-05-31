@@ -166,9 +166,14 @@
 		if (!point) return;
 		const pointId = point.properties.id;
 
+		if (!pointId) {
+			console.warn('Point ID is not defined');
+			return;
+		}
+
 		setStreetViewParams(pointId);
 
-		const nextPoints = (nodeConnectionsJson[pointId] || [])
+		const nextPoints = ([pointId, ...nodeConnectionsJson[pointId]] || [])
 			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
@@ -206,7 +211,7 @@
 		angleMarker.togglePopup();
 
 		nextPointData = nextPoints;
-		streetViewPoint = point;
+		streetViewPoint = nextPoints[0]?.featureData || point;
 
 		// マーカーのドラッグ
 		angleMarker?.on('dragend', () => {

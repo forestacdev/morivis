@@ -84,4 +84,7 @@ void main() {
     vec4 texture = texture2D(shingleTexture, uv);
 
     gl_FragColor = texture;
+
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
 }

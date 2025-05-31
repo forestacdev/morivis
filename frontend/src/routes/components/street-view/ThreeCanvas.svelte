@@ -44,14 +44,25 @@
 	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
+	let currentSceneId = $state<string>('');
 	let scene: THREE.Scene;
+	let nextScenes: {
+		id: string;
+		scene: THREE.Scene;
+		angle: {
+			x: number;
+			y: number;
+			z: number;
+		};
+	}[] = []; // 次のポイントのシーンを管理する配列
+	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 	let camera: THREE.PerspectiveCamera;
 	let orbitControls: OrbitControls;
 	let renderer: THREE.WebGLRenderer;
 	let renderTarget: THREE.WebGLRenderTarget;
 	let bufferScene: THREE.Scene;
 
-	let isAnimating = $state<boolean>(false);
+	let isAnimating = $state<boolean>(true);
 
 	let postMesh: THREE.Mesh;
 	let isRendering = true;
@@ -134,8 +145,6 @@
 	// 角度を更新するボタンを追加
 	gui.add(copy, 'copyAngle').name('copy Angle');
 
-	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
-
 	// 球体を配置する関数
 	const placeSpheres = (nextPointData: NextPointData[]) => {
 		// 球体のパラメータ
@@ -174,79 +183,121 @@
 			spheres = []; // 配列を空にする
 		}
 	};
+	const placeScene = async (nextPointData: NextPointData[]) => {
+		// 次のポイントデータが存在しない場合は何もしない
+		if (!nextPointData || nextPointData.length === 0) return;
 
-	// スクリーンの中心座標を計算してuniformに渡す関数
-	const updateScreenCenter = () => {
-		const width = window.innerWidth;
-		const height = window.innerHeight;
+		// シーンをクリア
+		nextScenes = [];
 
-		uniforms.screenCenter.value.set(width / 2, height / 2);
-	};
-
-	// const updatescreenTexture = () => {
-	// 	// スクリーンの中心座標を更新
-	// 	renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-	// 		magFilter: THREE.NearestFilter,
-	// 		minFilter: THREE.NearestFilter,
-	// 		wrapS: THREE.ClampToEdgeWrapping,
-	// 		wrapT: THREE.ClampToEdgeWrapping
-	// 	});
-	// 	uniforms.screenTexture.value = renderTarget.texture;
-
-	// 	return renderTarget;
-	// };
-
-	const created360Mesh = async (point: StreetViewPoint) => {
-		// ズームブラーのアニメーションを開始
-
-		// テクスチャが読み込まれたらズームブラーを停止
-
-		if (!point) return;
-		fromPoint = point;
-		isLoading = true;
-		isAnimating = true;
-
-		const imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
+		// 一番最初のid を設定
+		currentSceneId = nextPointData[0].featureData.properties.id;
 
 		// TODO: IDの修正
-		const id = point.properties['ID'];
-		const angleData = angleDataJson.find((angle) => angle.id === id);
+		const angleId = nextPointData[0].featureData.properties['ID'];
+		const angleData = angleDataJson.find((angle) => angle.id === angleId);
 
-		if (!imageUrl) return;
+		if (!angleData) {
+			console.warn('角度データが見つかりません:', angleId);
+			return;
+		}
 
-		const webp = IMAGE_URL_SHINGLE + point.properties['Name'].replace('.JPG', '.webp');
-		console.log('webp', webp);
-		uniforms.shingleTexture.value = new THREE.TextureLoader().load(
-			webp,
-			(texture) => {
-				if (!angleData) return;
+		geometryBearing.x = angleData.angleX;
+		geometryBearing.y = angleData.angleY;
+		geometryBearing.z = angleData.angleZ;
+		// GUI側のコントロールの値を更新
+		if ($DEBUG_MODE) {
+			controllerX.setValue(geometryBearing.x);
+			controllerY.setValue(geometryBearing.y);
+			controllerZ.setValue(geometryBearing.z);
+		}
 
-				geometryBearing.x = angleData.angleX;
-				geometryBearing.y = angleData.angleY;
-				geometryBearing.z = angleData.angleZ;
+		// テクスチャ読み込みのPromiseを格納する配列
+		const texturePromises = nextPointData.map((pointData) => {
+			return new Promise((resolve, reject) => {
+				const nextScene = new THREE.Scene();
+				nextScene.name = pointData.featureData.properties.id;
 
-				// GUI側のコントロールの値を更新
-				if ($DEBUG_MODE) {
-					controllerX.setValue(geometryBearing.x);
-					controllerY.setValue(geometryBearing.y);
-					controllerZ.setValue(geometryBearing.z);
+				nextScene.add(camera);
+
+				const nextSkyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
+
+				const nextSkyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
+					uniforms: {
+						skybox: { value: null },
+						shingleTexture: { value: null }, // シングルテクスチャの追加
+						rotationAngles: uniforms.rotationAngles
+					},
+					vertexShader: vs,
+					fragmentShader: fs,
+					side: THREE.BackSide
+				});
+
+				const nextSkyMesh: THREE.Mesh = new THREE.Mesh(nextSkyGeometry, nextSkyMaterial);
+				nextSkyMesh.name = pointData.featureData.properties.id;
+
+				nextScene.add(nextSkyMesh);
+
+				const imageUrl = `${IMAGE_URL}${pointData.featureData.properties['Name']}`;
+
+				// TODO: IDの修正
+				const id = pointData.featureData.properties['ID'];
+				const angleData = angleDataJson.find((angle) => angle.id === id);
+
+				if (!imageUrl) {
+					reject(new Error('Image URL is missing'));
+					return;
 				}
-				texture.colorSpace = THREE.SRGBColorSpace;
-				texture.minFilter = THREE.LinearFilter;
-				texture.magFilter = THREE.LinearFilter;
-				texture.generateMipmaps = false;
-				texture.needsUpdate = true;
-				// シングルテクスチャの読み込みが完了したら、シェーダーに渡す
-				uniforms.shingleTexture.value = texture;
-				isAnimating = false; // シングルテクスチャの読み込みが完了したらズームブラーを停止
-				isLoading = false; // ローディングを終了
-				console.log('シングルテクスチャの読み込みが完了しました');
-				placeSpheres(nextPointData);
-			},
-			undefined,
-			(error) => {}
-		);
 
+				const webp =
+					IMAGE_URL_SHINGLE + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
+				console.log('webp', webp);
+
+				// テクスチャを読み込む
+				new THREE.TextureLoader().load(
+					webp,
+					(texture) => {
+						texture.colorSpace = THREE.SRGBColorSpace;
+						texture.minFilter = THREE.LinearFilter;
+						texture.magFilter = THREE.LinearFilter;
+						texture.generateMipmaps = false;
+						texture.needsUpdate = true;
+
+						// シングルテクスチャの読み込みが完了したら、シェーダーに渡す
+						nextSkyMaterial.uniforms.shingleTexture.value = texture;
+
+						// シーンを保存
+						nextScenes.push({
+							id: pointData.featureData.properties.id,
+							scene: nextScene,
+							angle: {
+								x: angleData ? angleData.angleX : 0,
+								y: angleData ? angleData.angleY : 0,
+								z: angleData ? angleData.angleZ : 0
+							}
+						});
+
+						resolve(nextScene); // 読み込み成功
+					},
+					undefined,
+					(error) => {
+						console.error('テクスチャの読み込みに失敗しました:', error);
+						reject(error); // 読み込み失敗
+					}
+				);
+			});
+		});
+
+		try {
+			// すべてのテクスチャ読み込みが完了するのを待つ
+			const loadedScenes = await Promise.all(texturePromises);
+			console.log('すべてのテクスチャが読み込まれました:', loadedScenes);
+		} catch (error) {
+			console.error('いずれかのテクスチャの読み込みに失敗しました:', error);
+		}
+	};
+
+	const created360Mesh = async (point: StreetViewPoint) => {
 		// const url = imageUrl.replace('.JPG', '/');
 		// try {
 		// 	// 各画像のURLを直接指定
@@ -258,37 +309,28 @@
 		// 		`${url}face_5.jpg`,
 		// 		`${url}face_6.jpg`
 		// 	];
-
 		// 	const textureLodrer = new THREE.TextureLoader();
 		// 	// 画像を読み込む
-
 		// 	// テクスチャが読み込まれたらズームブラーを停止
-
 		// 	// CubeTextureLoader を使用してテクスチャを読み込む
 		// 	const textureCube = new THREE.CubeTextureLoader();
 		// 	textureCube.load(
 		// 		faceUrls,
 		// 		(texture) => {
 		// 			texture.colorSpace = THREE.SRGBColorSpace;
-
 		// 			if (!angleData) return;
-
 		// 			geometryBearing.x = angleData.angleX;
 		// 			geometryBearing.y = angleData.angleY;
 		// 			geometryBearing.z = angleData.angleZ;
-
 		// 			// GUI側のコントロールの値を更新
 		// 			if ($DEBUG_MODE) {
 		// 				controllerX.setValue(geometryBearing.x);
 		// 				controllerY.setValue(geometryBearing.y);
 		// 				controllerZ.setValue(geometryBearing.z);
 		// 			}
-
 		// 			isLoading = false;
 		// 			// isAnimating = false;
-
 		// 			uniforms.skybox.value = texture;
-
 		// 			placeSpheres(nextPointData);
 		// 		},
 		// 		undefined,
@@ -369,17 +411,14 @@
 		orbitControls.enableZoom = false;
 		orbitControls.maxZoom = 1;
 
-		skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-		scene.add(skyMesh);
+		// if ($DEBUG_MODE) {
+		// 	// // ヘルパー方向
+		// 	const axesHelper = new THREE.AxesHelper(1000);
+		// 	scene.add(axesHelper);
 
-		if ($DEBUG_MODE) {
-			// // ヘルパー方向
-			const axesHelper = new THREE.AxesHelper(1000);
-			scene.add(axesHelper);
-
-			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-			scene.add(helper);
-		}
+		// 	const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+		// 	scene.add(helper);
+		// }
 
 		// レンダラー
 
@@ -465,16 +504,15 @@
 				uniforms2.zoomBlurStrength.value = 0.0; // アニメーション停止時はズームブラーをリセット
 			}
 
-			renderer.setRenderTarget(renderTarget);
-			renderer.render(scene, camera);
-			renderer.setRenderTarget(null);
-			renderer.render(bufferScene, camera);
+			const index = nextScenes.findIndex((scene) => scene.id === currentSceneId);
+			if (index !== -1) {
+				renderer.setRenderTarget(renderTarget);
+				renderer.render(nextScenes[index].scene, camera);
+				renderer.setRenderTarget(null);
+				renderer.render(bufferScene, camera);
 
-			renderer.setRenderTarget(renderTarget);
-
-			renderer.render(scene, camera);
-			renderer.setRenderTarget(null);
-			renderer.render(bufferScene, camera);
+				renderer.render(nextScenes[index].scene, camera);
+			}
 		};
 		animate();
 	});
@@ -486,11 +524,8 @@
 		setPoint(point);
 	};
 
-	$effect(() => created360Mesh(streetViewPoint));
-
-	$effect(() => {
-		console.log('showThreeCanvas', showThreeCanvas);
-	});
+	// $effect(() => created360Mesh(streetViewPoint));
+	$effect(() => placeScene(nextPointData || []));
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->
@@ -526,21 +561,25 @@
 				<div bind:this={controlDiv} class="css-control">
 					{#if nextPointData}
 						{#each nextPointData as point, index}
-							<button
-								onclick={() => {
-									nextPoint(point.featureData);
-								}}
-								class="css-arrow"
-								style="--angle: {point.bearing}deg; --distance: {showThreeCanvas ? '175' : '64'}px;"
-							>
-								<Icon
-									icon="ep:arrow-up-bold"
-									width={showThreeCanvas ? 128 : 64}
-									height={showThreeCanvas ? 128 : 64}
-									class=""
-									style="transform: rotate({point.bearing}deg);"
-								/>
-							</button>
+							{#if point.featureData.properties.id !== currentSceneId}
+								<button
+									onclick={() => {
+										nextPoint(point.featureData);
+									}}
+									class="css-arrow"
+									style="--angle: {point.bearing}deg; --distance: {showThreeCanvas
+										? '175'
+										: '64'}px;"
+								>
+									<Icon
+										icon="ep:arrow-up-bold"
+										width={showThreeCanvas ? 128 : 64}
+										height={showThreeCanvas ? 128 : 64}
+										class=""
+										style="transform: rotate({point.bearing}deg);"
+									/>
+								</button>
+							{/if}
 						{/each}
 					{/if}
 				</div>
