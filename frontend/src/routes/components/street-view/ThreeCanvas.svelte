@@ -86,12 +86,12 @@
 		zoomBlurStrength: { value: 0.0 } // ズームブラーの強さ
 	};
 	const skyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
+
 	const skyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
 		uniforms: uniforms,
 		vertexShader: vs,
 		fragmentShader: fs,
-		side: THREE.BackSide,
-		wireframe: false
+		side: THREE.BackSide
 	});
 	let skyMesh: THREE.Mesh;
 
@@ -106,14 +106,33 @@
 	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
 	controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
 
-	const submit = {
-		updateAngle: () => {
-			updateAngle(streetViewPoint.properties['ID'], geometryBearing);
+	const copy = {
+		copyAngle: () => {
+			// クリップボードに角度をjson textでコピー
+			const angleX = geometryBearing.x;
+			const angleY = geometryBearing.y;
+			const angleZ = geometryBearing.z;
+			const angleData = {
+				id: streetViewPoint.properties['ID'],
+				angleX: angleX,
+				angleY: angleY,
+				angleZ: angleZ
+			};
+
+			const angleJson = JSON.stringify(angleData, null, 2);
+			navigator.clipboard
+				.writeText(angleJson)
+				.then(() => {
+					console.log('角度データをクリップボードにコピーしました:', angleJson);
+				})
+				.catch((err) => {
+					console.error('クリップボードへのコピーに失敗しました:', err);
+				});
 		}
 	};
 
 	// 角度を更新するボタンを追加
-	gui.add(submit, 'updateAngle').name('Update Angle');
+	gui.add(copy, 'copyAngle').name('copy Angle');
 
 	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 
@@ -192,7 +211,6 @@
 		// TODO: IDの修正
 		const id = point.properties['ID'];
 		const angleData = angleDataJson.find((angle) => angle.id === id);
-		const url = imageUrl.replace('.JPG', '/');
 
 		if (!imageUrl) return;
 
@@ -228,6 +246,8 @@
 			undefined,
 			(error) => {}
 		);
+
+		// const url = imageUrl.replace('.JPG', '/');
 		// try {
 		// 	// 各画像のURLを直接指定
 		// 	const faceUrls = [
@@ -435,12 +455,6 @@
 				degreesToRadians(geometryBearing.z)
 			);
 			uniforms.rotationAngles.value = rotationAngles;
-
-			skyMesh.rotation.set(
-				degreesToRadians(geometryBearing.x),
-				degreesToRadians(geometryBearing.y),
-				degreesToRadians(geometryBearing.z)
-			);
 
 			// ズームブラーのアニメーション
 			if (isAnimating) {

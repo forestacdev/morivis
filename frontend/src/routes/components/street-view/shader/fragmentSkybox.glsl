@@ -2,7 +2,7 @@
 
 varying vec4 coords;
 
-uniform samplerCube skybox;	
+uniform samplerCube skybox;
 
 uniform vec3 rotationAngles;
 
