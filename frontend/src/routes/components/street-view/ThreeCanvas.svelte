@@ -201,6 +201,18 @@
 		uniforms.shingleTexture.value = new THREE.TextureLoader().load(
 			webp,
 			(texture) => {
+				if (!angleData) return;
+
+				geometryBearing.x = angleData.angleX;
+				geometryBearing.y = angleData.angleY;
+				geometryBearing.z = angleData.angleZ;
+
+				// GUI側のコントロールの値を更新
+				if ($DEBUG_MODE) {
+					controllerX.setValue(geometryBearing.x);
+					controllerY.setValue(geometryBearing.y);
+					controllerZ.setValue(geometryBearing.z);
+				}
 				texture.colorSpace = THREE.SRGBColorSpace;
 				texture.minFilter = THREE.LinearFilter;
 				texture.magFilter = THREE.LinearFilter;
@@ -424,6 +436,12 @@
 			);
 			uniforms.rotationAngles.value = rotationAngles;
 
+			skyMesh.rotation.set(
+				degreesToRadians(geometryBearing.x),
+				degreesToRadians(geometryBearing.y),
+				degreesToRadians(geometryBearing.z)
+			);
+
 			// ズームブラーのアニメーション
 			if (isAnimating) {
 				const speed = 0.5;
@@ -520,7 +538,7 @@
 <style>
 	/* NOTE: debug */
 	:global(.lil-gui) {
-		display: none !important;
+		/* display: none !important; */
 	}
 	canvas {
 		background-image: radial-gradient(#000000, #000000);

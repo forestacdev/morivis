@@ -43,29 +43,8 @@ mat3 rotateZ(float angle) {
 
 void main() {
 
-
-
-    // X 軸を反転させた座標を基準にする
-    vec3 correctedCoords = vec3(-coords.x, coords.y, coords.z);
-    // 回転行列を適用（Y → X → Z の順）
-    // Y軸から受け取る角度はマイナスにする
-    mat3 rotationMatrix = rotateY(-rotationAngles.y) * rotateX(-rotationAngles.x) * rotateZ(-rotationAngles.z);
-    // 回転を適用
-    vec3 rotatedCoords = rotationMatrix * correctedCoords;
-    // テクスチャ座標を回転
-    float rotationAngle = rotationAngles.y; // Y軸回転角度
-    vec2 rotatedUv = vec2(
-        cos(rotationAngle) * vUv.x - sin(rotationAngle) * vUv.y,
-        sin(rotationAngle) * vUv.x + cos(rotationAngle) * vUv.y
-    );
-
-    // 環境マップのテクスチャを取得
-    // vec4 skyboxScreen = textureCube(skybox, rotatedCoords);
     vec4 texture = texture2D(shingleTexture, vUv);
 
     gl_FragColor = texture;
-
-    // トーンマッピングと色空間変換を適用
-    // #include <tonemapping_fragment>
-    // #include <colorspace_fragment>
+ 
 }
