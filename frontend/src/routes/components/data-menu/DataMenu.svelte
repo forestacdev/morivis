@@ -75,9 +75,9 @@
 </script>
 
 <div
-	class="pointer-events-none absolute bottom-0 z-10 h-dvh w-full p-8 pl-[120px] pt-[60px] transition-all duration-150 {$showDataMenu
-		? 'opacity-100'
-		: 'opacity-0'}"
+	class="pointer-events-none absolute bottom-0 z-10 h-dvh w-full p-8 pl-[120px] pt-[60px] transition-all duration-300 {$showDataMenu
+		? 'opacity-100 translate-y-0'
+		: 'opacity-0 translate-y-[100px]'}"
 >
 	<div
 		class="bg-main pointer-events-auto relative flex h-full w-full flex-col overflow-hidden rounded-lg p-2 {$showDataMenu

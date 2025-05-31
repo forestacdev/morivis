@@ -2,14 +2,14 @@ import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/data/types/raster';
 
 const entry: RasterImageEntry<RasterTiffStyle> = {
-	id: 'ensyurin_slope_3857',
+	id: 'ensyurin_dem_tiff',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_slope_3857.tif`
+		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_dem.tif`
 	},
 	metaData: {
-		name: '演習林傾斜量図',
+		name: '演習林 標高図',
 		description: '',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
@@ -30,8 +30,8 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 			uniformsData: {
 				single: {
 					index: 0,
-					min: 0,
-					max: 79.4177017211914,
+					min: 80,
+					max: 424,
 					colorMap: 'jet'
 				},
 				multi: {

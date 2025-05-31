@@ -174,9 +174,7 @@ export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: 
 
 	return { min, max };
 };
-const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
-	type: 'module'
-});
+
 export const getRasters = async (
 	rasters: ReadRasterResult,
 	width: number,
@@ -188,6 +186,9 @@ export const getRasters = async (
 	  }
 	| undefined
 > => {
+	const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+		type: 'module'
+	});
 	try {
 		return new Promise((resolve, reject) => {
 			if (rasters.length === 1) {

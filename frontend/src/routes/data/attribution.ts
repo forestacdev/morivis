@@ -13,6 +13,7 @@ export type AttributionKey =
 	| '東京都オープンデータカタログサイト'
 	| '環境省生物多様性センター'
 	| '林野庁'
+	| '森林総合研究所'
 	| '栃木県森林資源データ';
 
 export type Attribution = {
@@ -85,6 +86,11 @@ const attributionData: Attribution[] = [
 	{
 		key: '環境省生物多様性センター',
 		name: '環境省生物多様性センター',
+		url: 'https://www.biodic.go.jp'
+	},
+	{
+		key: '森林総合研究所',
+		name: '森林総合研究所',
 		url: 'https://www.biodic.go.jp'
 	},
 	{

@@ -6,7 +6,8 @@
 			coordinates: [number, number];
 		};
 		properties: {
-			ID: string;
+			id: string;
+            ID: string;
 			name: string;
 			Name: string;
 		};
@@ -147,34 +148,19 @@
 
 		const imageId = getStreetViewParams();
 		if (imageId) {
-			// const targetPoint = streetViewPointData.features.find((point) => {
-			// 	return point.properties['ID'] === imageId;
-			// });
-			// if (targetPoint) {
-			// 	const mapInstance = mapStore.getMap();
-			// 	if (mapInstance) {
-			// 		mapInstance.flyTo({
-			// 			center: targetPoint.geometry.coordinates,
-			// 			zoom: 18,
-			// 			speed: 1.5,
-			// 			curve: 1
-			// 		});
-			// 	}
-			// }
-			// setPoint(targetPoint);
-			// $isStreetView = true;
+		
 		}
 	});
 
 	// ストリートビューのデータの取得
 	const setPoint = async (point: StreetViewPoint) => {
 		if (!point) return;
-		const pointId = point.properties['ID'];
+		const pointId = point.properties.id;
 
 		setStreetViewParams(pointId);
 
 		const nextPoints = (nodeConnectionsJson[pointId] || [])
-			.map((id) => streetViewPointData.features.find((point) => point.properties['ID'] === id))
+			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
 				featureData: nextPoint,

@@ -104,7 +104,7 @@
 
 			const geometry = new THREE.SphereGeometry(sphereRadius, 16, 16);
 			const sphere = new THREE.Mesh(geometry, material);
-			sphere.name = pointData.featureData.properties['ID'];
+			sphere.name = pointData.featureData.properties.id;
 			sphere.position.set(x, 0, z);
 			scene.add(sphere);
 			spheres.push(sphere); // 配列に追加
@@ -132,7 +132,7 @@
 		fromPoint = point;
 		isLoading = true;
 		const imageUrl = `${IMAGE_URL}${point.properties['Name']}`;
-		const id = point.properties['ID'];
+		const id = point.properties.id;
 		const angleData = angleDataJson.find((angle) => angle.id === id);
 		const url = imageUrl.replace('.JPG', '/');
 
