@@ -236,20 +236,12 @@
 
 				nextScene.add(nextSkyMesh);
 
-				const imageUrl = `${IMAGE_URL}${pointData.featureData.properties['Name']}`;
-
 				// TODO: IDの修正
 				const id = pointData.featureData.properties['ID'];
 				const angleData = angleDataJson.find((angle) => angle.id === id);
 
-				if (!imageUrl) {
-					reject(new Error('Image URL is missing'));
-					return;
-				}
-
 				const webp =
 					IMAGE_URL_SHINGLE + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
-				console.log('webp', webp);
 
 				// テクスチャを読み込む
 				new THREE.TextureLoader().load(
@@ -279,7 +271,6 @@
 					},
 					undefined,
 					(error) => {
-						console.error('テクスチャの読み込みに失敗しました:', error);
 						reject(error); // 読み込み失敗
 					}
 				);
@@ -404,7 +395,6 @@
 
 		$effect(() => {
 			if (fov) {
-				console.log('FOV updated:', fov.current);
 				camera.fov = fov.current; // tweened ストアの現在の値をカメラのFOVに設定
 				camera.updateProjectionMatrix();
 			}
@@ -416,24 +406,11 @@
 			const maxFov = 100; // 最大FOV
 			const zoomSpeed = 0.51; // ズーム速度
 
-			// fov.set((camera.fov += event.deltaY * 0.05 * zoomSpeed));
-
 			const newFOV = camera.fov + event.deltaY * 0.05 * zoomSpeed;
-			// FOVの範囲を制限
-			// camera.fov = Math.max(minFov, Math.min(maxFov, newFOV));
-
-			// 変更を適用
 
 			// マウススクロールの方向に応じてFOVを増減
-			// camera.fov += event.deltaY * 0.05 * zoomSpeed;
+
 			fov.set(Math.max(minFov, Math.min(maxFov, newFOV)));
-			// updateFov(event.deltaY * 0.05 * zoomSpeed);
-
-			// FOVの範囲を制限
-			// camera.fov = Math.max(minFov, Math.min(maxFov, camera.fov));
-
-			// // 変更を適用
-			// camera.updateProjectionMatrix();
 		});
 
 		// アニメーション
