@@ -9,6 +9,7 @@
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { getImagePmtiles } from '$routes/utils/raster';
+	import PreviewSlot from '$routes/components/data-menu/PreviewSlot.svelte';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -18,6 +19,8 @@
 	}
 
 	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
+
+	let isHover = $state(false);
 
 	let addedDataIds = $state<string[]>($orderedLayerIds);
 	let isAdded = $derived.by(() => {
@@ -120,20 +123,27 @@
 		{#await promise(dataEntry) then url}
 			<img
 				src={url}
-				class="c-no-drag-icon h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
+				class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
 					? ''
 					: 'hover:scale-110'}"
 				alt={dataEntry.metaData.name}
+				onmouseover={() => (isHover = true)}
+				onmouseleave={() => (isHover = false)}
+				onfocus={() => (isHover = true)}
+				onblur={() => (isHover = false)}
 				loading="lazy"
 			/>
-			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
-			<div
+			{#if isHover}
+				<PreviewSlot {dataEntry} />
+			{/if}
+			<!-- <div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div> -->
+			<!-- <div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
 					? ''
 					: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
 			>
 				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
-			</div>
+			</div> -->
 
 			<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
 				>{dataEntry.metaData.attribution}</span

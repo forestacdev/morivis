@@ -274,7 +274,7 @@ const createMapStore = () => {
 	const focusLayer = async (entry: GeoDataEntry) => {
 		if (!map) return;
 		let bbox: [number, number, number, number] | undefined;
-		if (entry.format.type === 'fgb') {
+		if (entry.format.type === 'fgb' || entry.format.type === 'geojson') {
 			try {
 				const geojson = GeojsonCache.get(entry.id);
 				if (!geojson) return;
