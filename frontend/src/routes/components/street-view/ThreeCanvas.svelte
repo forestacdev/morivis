@@ -17,6 +17,8 @@
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =
@@ -28,7 +30,7 @@
 	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
 	interface Props {
-		streetViewPoint: StreetViewPoint;
+		streetViewPoint: StreetViewPoint | null;
 		nextPointData: NextPointData[] | null;
 		cameraBearing: number;
 		setPoint: (streetViewPoint: StreetViewPoint) => void;
@@ -64,6 +66,7 @@
 	let renderer: THREE.WebGLRenderer;
 	let renderTarget: THREE.WebGLRenderTarget;
 	let bufferScene: THREE.Scene;
+	const fov = new Tween(IN_CAMERA_FOV, { duration: 300, easing: cubicOut });
 
 	let isAnimating = $state<boolean>(true);
 
@@ -214,7 +217,8 @@
 
 				nextScene.add(camera);
 
-				const nextSkyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 16, 16);
+				// const nextSkyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(1000, 16, 16);
+				const nextSkyGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
 
 				const nextSkyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
 					uniforms: {
@@ -397,20 +401,39 @@
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 		canvas.addEventListener('resize', onResize);
+
+		$effect(() => {
+			if (fov) {
+				console.log('FOV updated:', fov.current);
+				camera.fov = fov.current; // tweened ストアの現在の値をカメラのFOVに設定
+				camera.updateProjectionMatrix();
+			}
+		});
+
 		// マウスホイールでFOVを変更するイベントリスナー
 		canvas.addEventListener('wheel', (event) => {
 			const minFov = 20; // 最小FOV
 			const maxFov = 100; // 最大FOV
-			const zoomSpeed = 1; // ズーム速度
+			const zoomSpeed = 0.51; // ズーム速度
 
-			// マウススクロールの方向に応じてFOVを増減
-			camera.fov += event.deltaY * 0.05 * zoomSpeed;
+			// fov.set((camera.fov += event.deltaY * 0.05 * zoomSpeed));
 
+			const newFOV = camera.fov + event.deltaY * 0.05 * zoomSpeed;
 			// FOVの範囲を制限
-			camera.fov = Math.max(minFov, Math.min(maxFov, camera.fov));
+			// camera.fov = Math.max(minFov, Math.min(maxFov, newFOV));
 
 			// 変更を適用
-			camera.updateProjectionMatrix();
+
+			// マウススクロールの方向に応じてFOVを増減
+			// camera.fov += event.deltaY * 0.05 * zoomSpeed;
+			fov.set(Math.max(minFov, Math.min(maxFov, newFOV)));
+			// updateFov(event.deltaY * 0.05 * zoomSpeed);
+
+			// FOVの範囲を制限
+			// camera.fov = Math.max(minFov, Math.min(maxFov, camera.fov));
+
+			// // 変更を適用
+			// camera.updateProjectionMatrix();
 		});
 
 		// アニメーション
@@ -457,6 +480,12 @@
 
 				renderer.setRenderTarget(null);
 				renderer.render(bufferScene, camera);
+
+				// nextScenes.forEach((nextScene, i) => {
+				// 	if (i !== index) {
+				// 		renderer.render(nextScene.scene, camera);
+				// 	}
+				// });
 			}
 		};
 		animate();

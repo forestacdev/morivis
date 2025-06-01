@@ -52,7 +52,8 @@
 		tempLayerEntries: GeoDataEntry[];
 		streetViewLineData: FeatureCollection;
 		streetViewPointData: FeatureCollection;
-		angleMarker: Marker | null;
+		drawGeojsonData: DrawGeojsonData;
+		demEntries: RasterEntry<RasterDemStyle>[]; // DEMデータのエントリー
 		streetViewPoint: any;
 		showMapCanvas: boolean;
 		featureMenuData: FeatureMenuData | null;
@@ -64,8 +65,6 @@
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
-		drawGeojsonData: DrawGeojsonData;
-		demEntries: RasterEntry<RasterDemStyle>[]; // DEMデータのエントリー
 	}
 
 	let {
@@ -75,7 +74,6 @@
 		featureMenuData = $bindable(),
 		streetViewLineData,
 		streetViewPointData,
-		angleMarker,
 		streetViewPoint,
 		showMapCanvas,
 		showSelectionMarker = $bindable(),

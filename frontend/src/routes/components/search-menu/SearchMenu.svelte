@@ -24,7 +24,7 @@
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
-		selectionMarkerLngLat: LngLat;
+		selectionMarkerLngLat: LngLat | null;
 	}
 
 	let {

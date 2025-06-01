@@ -43,7 +43,7 @@
 	import DrawMenu from '$routes/components/draw-menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte';
-	import HeaderMenu from '$routes/components/Header/_Index.svelte';
+	import HeaderMenu from '$routes/components/header/_Index.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/components/Map.svelte';
@@ -70,6 +70,7 @@
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
+	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -80,7 +81,7 @@
 
 	let demEntries = $derived.by(() => {
 		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
-	});
+	}) as RasterEntry<RasterDemStyle>[];
 
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
