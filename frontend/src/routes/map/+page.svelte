@@ -141,19 +141,22 @@
 			(res) => res.json()
 		);
 
-		const imageId = getStreetViewParams();
-		console.log('imageId', imageId);
-		if (imageId) {
-			const point = streetViewPointData.features.find(
-				(point) => point.properties.id === Number(imageId)
-			);
-			if (point) {
-				setPoint(point as StreetViewPoint);
-				isStreetView.set(true);
-			} else {
-				console.warn(`Street view point with ID ${imageId} not found.`);
+		mapStore.onload(() => {
+			const imageId = getStreetViewParams();
+
+			if (imageId) {
+				const point = streetViewPointData.features.find(
+					(point) => point.properties.id === Number(imageId)
+				);
+				if (point) {
+					setPoint(point as StreetViewPoint);
+
+					isStreetView.set(true);
+				} else {
+					console.warn(`Street view point with ID ${imageId} not found.`);
+				}
 			}
-		}
+		});
 	});
 
 	// ストリートビューのデータの取得
@@ -188,7 +191,6 @@
 		}
 
 		angleMarkerLngLat = point.geometry.coordinates as LngLat;
-		showAngleMarker = true;
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
@@ -227,6 +229,8 @@
 	isStreetView.subscribe(async (value) => {
 		const map = mapStore.getMap();
 		if (!map) return;
+
+		showAngleMarker = value;
 
 		if (value) {
 			setCamera(map, streetViewPoint.geometry.coordinates);

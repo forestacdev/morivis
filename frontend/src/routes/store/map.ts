@@ -74,6 +74,7 @@ const createMapStore = () => {
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
+	const onLoadEvent = writable<maplibregl.Map | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -120,10 +121,9 @@ const createMapStore = () => {
 			isStyleLoadEvent.set(map);
 		});
 
-		// map.on('style.load', () => {
-		//     console.log(map);
-		// 	isStyleLoadEvent.set(map);
-		// });
+		map.on('load', () => {
+			onLoadEvent.set(map);
+		});
 
 		map.on('click', (e) => {
 			clickEvent.set(e);
@@ -441,6 +441,7 @@ const createMapStore = () => {
 		getTerrain: () => map?.getTerrain(),
 		getMapBbox: getMapBbox,
 		getCanvas: () => map?.getCanvas(),
+		onload: onLoadEvent.subscribe, // onloadイベントの購読用メソッド
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
 		onMouseover: mouseoverEvent.subscribe, // マウスオーバーイベントの購読用メソッド
 		onMouseout: mouseoutEvent.subscribe, // マウスアウトイベントの購読用メソッド

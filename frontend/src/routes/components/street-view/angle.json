@@ -2797,9 +2797,9 @@
 	},
 	{
 		"id": "f6999525-e1f5-404a-af19-f240cbbf3b0a",
-		"angleX": 357.12,
+		"angleX": 10.08,
 		"angleY": 76.68,
-		"angleZ": 0.0
+		"angleZ": 0
 	},
 	{
 		"id": "ccd28872-8d1b-4cc0-9ef3-64b605433537",
@@ -3037,9 +3037,9 @@
 	},
 	{
 		"id": "4cbdc906-c0a4-44f7-ab00-4785d777b5ff",
-		"angleX": 351.36,
+		"angleX": 6.12,
 		"angleY": 28.08,
-		"angleZ": 0.0
+		"angleZ": 0
 	},
 	{
 		"id": "a71f4e63-9e0f-46b2-8426-1f69920d6326",
@@ -3289,7 +3289,7 @@
 	},
 	{
 		"id": "4e89f410-240e-4c52-bd25-6e2cde156904",
-		"angleX": 0,
+		"angleX": 12.24,
 		"angleY": 103.32,
 		"angleZ": 0
 	},
@@ -3306,9 +3306,9 @@
 		"angleZ": 11.52
 	},
 	{
-		"id": "8fd5ac3a-f31d-4ee0-becf-0c45fba523c0",
-		"angleX": 0,
-		"angleY": 329.04,
+		"id": "3e2e9999-9dd2-454a-ad82-f95ccaf7b3ae",
+		"angleX": 7.92,
+		"angleY": 28.08,
 		"angleZ": 0
 	},
 	{
@@ -3787,7 +3787,7 @@
 	},
 	{
 		"id": "3a9ddf7f-73b4-48d1-bc0b-ac3eab562da2",
-		"angleX": 351.36,
+		"angleX": 6.12,
 		"angleY": 14.76,
 		"angleZ": 3.24
 	},
@@ -4057,9 +4057,9 @@
 	},
 	{
 		"id": "d7acd25b-4b46-4fad-9863-41c70f62c9cc",
-		"angleX": 353.16,
+		"angleX": 10.08,
 		"angleY": 28.08,
-		"angleZ": 0.0
+		"angleZ": 0
 	},
 	{
 		"id": "61ac4a60-ffc2-458a-9641-c4bee7dffbcb",
@@ -6379,7 +6379,7 @@
 	},
 	{
 		"id": "315fcfdb-621a-4080-804b-3b162b32a846",
-		"angleX": 355.68,
+		"angleX": 2.16,
 		"angleY": 324.72,
 		"angleZ": 0
 	},
@@ -6925,7 +6925,7 @@
 	},
 	{
 		"id": "f3b8a9e8-acc0-4dda-a617-1a8f81672827",
-		"angleX": 347.04,
+		"angleX": 360,
 		"angleY": 342.36,
 		"angleZ": 1.44
 	},
@@ -7477,9 +7477,9 @@
 	},
 	{
 		"id": "faef51dc-a11f-44e1-b320-e3c16c57b8a2",
-		"angleX": 349.2,
+		"angleX": 2.16,
 		"angleY": 345.24,
-		"angleZ": 0.0
+		"angleZ": 0
 	},
 	{
 		"id": "6491efb2-b26f-4092-8bb7-600c056b5e87",
@@ -7759,7 +7759,7 @@
 	},
 	{
 		"id": "46f5624e-9841-4749-86e2-85193657857e",
-		"angleX": 355.68,
+		"angleX": 2.16,
 		"angleY": 320.04,
 		"angleZ": 9.36
 	},
@@ -8029,7 +8029,7 @@
 	},
 	{
 		"id": "b229735b-eebc-4ca0-a05d-d03898945a06",
-		"angleX": 355.68,
+		"angleX": 360,
 		"angleY": 346.68,
 		"angleZ": 0
 	},
