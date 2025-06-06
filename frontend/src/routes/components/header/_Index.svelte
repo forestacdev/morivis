@@ -14,6 +14,100 @@
 		showTerrainMenu
 	} from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
+	import type { GeoDataEntry } from '$routes/data/types';
+	import type { FeatureMenuData } from '$routes/utils/file/geojson';
+	import type { LngLat } from 'maplibre-gl';
+
+	import Geocoder from '$routes/components/search-menu/Geocoder.svelte';
+	import type { ResultData } from '$routes/utils/feature';
+	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
+	import Fuse from 'fuse.js';
+
+	let searchData: any = null; // 検索データ
+
+	const LIMIT = 100; // 検索結果の表示上限
+	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
+	let results = $state<ResultData[] | null>([]);
+	let isLoading = $state<boolean>(false);
+
+	interface Props {
+		layerEntries: GeoDataEntry[];
+		inputSearchWord: string;
+		featureMenuData: FeatureMenuData | null;
+		showSelectionMarker: boolean;
+		selectionMarkerLngLat: LngLat | null;
+	}
+
+	let {
+		layerEntries,
+		featureMenuData = $bindable(),
+		inputSearchWord = $bindable(),
+		showSelectionMarker = $bindable(),
+		selectionMarkerLngLat = $bindable()
+	}: Props = $props();
+
+	const searchFeature = async (searchWord: string) => {
+		isLoading = true;
+		try {
+			if (!searchData) {
+				console.error('Search data is not loaded yet.');
+				return;
+			}
+
+			const fuse = new Fuse(searchData, {
+				keys: ['search_values'],
+				threshold: 0.1
+			});
+			// 検索実行
+			const result = fuse.search(searchWord, {
+				limit: LIMIT
+			});
+
+			const resultsData = result.map((item) => {
+				const data = item.item;
+
+				return {
+					name: data.name,
+					location: dict[data.layer_id] || null,
+
+					tile: data.tile_coords,
+					point: data.point,
+					layerId: data.layer_id,
+					featureId: data.feature_id,
+					propId: data.prop_id
+				};
+			});
+
+			let addressSearchData = [];
+
+			// 2文字以上の検索ワードの場合、住所検索を実行
+			if (searchWord.length > 1) {
+				// 住所検索
+
+				const addressSearchResponse = await addressSearch(searchWord);
+
+				addressSearchData = addressSearchResponse
+					.slice(0, LIMIT - result.length)
+					.map(({ geometry: { coordinates: center }, properties }) => {
+						const address = properties.addressCode
+							? addressCodeToAddress(properties.addressCode)
+							: null;
+
+						return {
+							point: center,
+							name: properties.title,
+							location: address
+						};
+					});
+			}
+
+			results = [...resultsData, ...addressSearchData];
+		} catch (error) {
+			console.error('Error searching features:', error);
+		} finally {
+			isLoading = false;
+		}
+	};
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -71,16 +165,38 @@
 			: 'bg-main  pr-2 text-white'}"
 	>
 		<div class="relative">
-			<button
-				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-				onclick={() => showSideMenu.set(true)}
-			>
-				<Icon icon="ic:round-menu" class="h-7 w-7" />
-			</button>
+			{#if $isSideMenuType}
+				<button
+					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+					onclick={() => isSideMenuType.set(null)}
+				>
+					<Icon icon="ep:back" class="h-7 w-7" />
+				</button>
+			{:else}
+				<button
+					class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
+					onclick={() => showSideMenu.set(true)}
+				>
+					<Icon icon="ic:round-menu" class="h-7 w-7" />
+				</button>
+			{/if}
 		</div>
 		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
 
 		<div class="flex w-full items-center justify-between">
+			{#if $isSideMenuType === 'search'}
+				<div
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="w-title-bar text-main pointer-events-auto shrink-0"
+				>
+					<Geocoder
+						{layerEntries}
+						bind:results
+						bind:inputSearchWord
+						searchFeature={(v) => searchFeature(v)}
+					/>
+				</div>
+			{/if}
 			{#if $isSideMenuType === 'search' || !$isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
@@ -93,14 +209,7 @@
 					<Icon icon="stash:search-solid" class="h-7 w-7" />
 				</button>
 			{/if}
-			{#if $isSideMenuType === 'search'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
-				>
-					検索
-				</div>
-			{/if}
+
 			{#if $isSideMenuType === 'layer' || !$isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
@@ -141,7 +250,7 @@
 					描画ツール
 				</div>
 			{/if}
-			{#if $isSideMenuType}
+			<!-- {#if $isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
@@ -149,7 +258,7 @@
 				>
 					<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
 				</button>
-			{/if}
+			{/if} -->
 		</div>
 	</div>
 	<li class="flex">
@@ -173,6 +282,6 @@
 	}
 
 	.w-title-bar {
-		@apply w-[250px];
+		@apply w-[290px];
 	}
 </style>

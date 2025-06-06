@@ -355,7 +355,13 @@
 		{showMapCanvas}
 	/>
 
-	<HeaderMenu />
+	<HeaderMenu
+		bind:featureMenuData
+		bind:inputSearchWord
+		{layerEntries}
+		bind:showSelectionMarker
+		bind:selectionMarkerLngLat
+	/>
 	<FooterMenu {layerEntries} />
 	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 	<FeatureMenu bind:featureMenuData {layerEntries} />

@@ -2,23 +2,23 @@
 	import maplibregl, { MapMouseEvent, type LngLatLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { parseDemXml } from '$routes/utils/file/demxml';
+	// import { parseDemXml } from '$routes/utils/file/demxml';
 
 	let map: maplibregl.Map | null = null;
 	let mapContainer = $state<HTMLDivElement | null>(null);
 
 	// コンポーネントがマウントされたときにマップを初期化
 	onMount(async () => {
-		const xmlData = await fetch('/FG-GML-5336-27-99-DEM5A-20161001.xml')
-			.then((response) => response.text())
-			.catch((error) => {
-				console.error('Error fetching XML:', error);
-				return '';
-			});
+		// const xmlData = await fetch('/FG-GML-5336-27-99-DEM5A-20161001.xml')
+		// 	.then((response) => response.text())
+		// 	.catch((error) => {
+		// 		console.error('Error fetching XML:', error);
+		// 		return '';
+		// 	});
 
-		if (!xmlData) return;
+		// if (!xmlData) return;
 
-		const demContent = await parseDemXml(xmlData);
+		// const demContent = await parseDemXml(xmlData);
 		console.log(demContent);
 
 		// MapLibreマップの初期化

@@ -166,14 +166,14 @@
 		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
 		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<div class="flex items-center justify-between p-2">
+		<!-- <div class="flex items-center justify-between p-2">
 			<Geocoder
 				{layerEntries}
 				bind:results
 				bind:inputSearchWord
 				searchFeature={(v) => searchFeature(v)}
-			></Geocoder>
-		</div>
+			/>
+		</div> -->
 
 		{#if isLoading}
 			<div class="flex w-full items-center justify-center">

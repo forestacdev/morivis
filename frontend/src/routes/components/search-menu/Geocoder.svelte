@@ -6,7 +6,7 @@
 	import type { ResultData } from '$routes/utils/feature';
 	interface Props {
 		layerEntries: GeoDataEntry[];
-		layerEntriesData: GeoDataEntry[];
+
 		results: ResultData[] | null;
 		inputSearchWord: string;
 		searchFeature: (searchWord: string) => Promise<void>;
@@ -14,7 +14,7 @@
 
 	let {
 		layerEntries,
-		layerEntriesData,
+
 		results = $bindable(),
 		inputSearchWord = $bindable(),
 		searchFeature
@@ -49,7 +49,7 @@
 	const resetSearchResult = () => {};
 </script>
 
-<div
+<!-- <div
 	class="duration-15 pointer-events-auto relative flex w-full overflow-hidden rounded-full transition-all"
 >
 	<input
@@ -82,7 +82,21 @@
 	>
 		<Icon icon="stash:search-solid" class="h-6 w-6  text-white" />
 	</button>
-</div>
+</div> -->
+
+<input
+	type="text"
+	class="bg-base focus:outline-hidden placeholder:gray-400 w-full px-4 py-2"
+	bind:value={inputSearchWord}
+	oncompositionstart={() => (isComposing = true)}
+	oncompositionend={() => (isComposing = false)}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' && !isComposing) {
+			search(inputSearchWord);
+		}
+	}}
+	placeholder="施設名/住所"
+/>
 
 <style>
 </style>
