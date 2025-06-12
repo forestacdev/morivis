@@ -454,57 +454,62 @@
 			const { id, angle, featureData, texture } = pointsData[0];
 
 			loadTextureWithFade(texture);
+			uniforms.userDirection.value = angle.angleY;
+
+			geometryBearing.x = angle.angleX;
+			geometryBearing.y = angle.angleY;
+			geometryBearing.z = angle.angleZ;
 
 			// 最初の拡大アニメーション;
-			gsap.to(camera, {
-				duration: 0.5, // アニメーションの時間
-				fov: 55, // スケールを大きくしてトンネル効果を演出
-				ease: 'power2.inOut', // イージング
-				onUpdate: () => {
-					camera.updateProjectionMatrix(); // FOVの変更を適用
-				},
-				onComplete: () => {
-					// 縮小ステップを瞬間的に表示
-					gsap.set(camera, {
-						fov: 90 // 縮小状態
-					});
-					camera.updateProjectionMatrix(); // 瞬間的な変更を適用
+			// gsap.to(camera, {
+			// 	duration: 0.5, // アニメーションの時間
+			// 	fov: 55, // スケールを大きくしてトンネル効果を演出
+			// 	ease: 'power2.inOut', // イージング
+			// 	onUpdate: () => {
+			// 		camera.updateProjectionMatrix(); // FOVの変更を適用
+			// 	},
+			// 	onComplete: () => {
+			// 		// 縮小ステップを瞬間的に表示
+			// 		gsap.set(camera, {
+			// 			fov: 90 // 縮小状態
+			// 		});
+			// 		camera.updateProjectionMatrix(); // 瞬間的な変更を適用
 
-					// 縮小状態から元のサイズに戻すアニメーション
-					gsap.to(camera, {
-						duration: 1.0, // アニメーションの時間
-						fov: IN_CAMERA_FOV, // 元のサイズに戻す
-						ease: 'power2.inOut', // イージング
-						onUpdate: () => {
-							camera.updateProjectionMatrix(); // FOVの変更を適用
-						},
-						onComplete: () => {
-							// 次のシーンを配置
-						}
-					});
-				}
-			});
+			// 		// 縮小状態から元のサイズに戻すアニメーション
+			// 		gsap.to(camera, {
+			// 			duration: 1.0, // アニメーションの時間
+			// 			fov: IN_CAMERA_FOV, // 元のサイズに戻す
+			// 			ease: 'power2.inOut', // イージング
+			// 			onUpdate: () => {
+			// 				camera.updateProjectionMatrix(); // FOVの変更を適用
+			// 			},
+			// 			onComplete: () => {
+			// 				// 次のシーンを配置
+			// 			}
+			// 		});
+			// 	}
+			// });
 
-			gsap.to(buffarUniforms.zoomBlurStrength, {
-				duration: 0.5, // アニメーションの時間
-				value: 0.1, // ズームブラーの強さを設定
-				ease: 'power2.inOut', // イージング
-				onUpdate: () => {
-					// ズームブラーの強さを更新
-					buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
-				},
-				onComplete: () => {
-					// ズームブラーの強さをリセット
-					gsap.to(buffarUniforms.zoomBlurStrength, {
-						duration: 1.0, // アニメーションの時間
-						value: 0.0, // ズームブラーの強さをリセット
-						ease: 'power2.inOut', // イージング
-						onUpdate: () => {
-							buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
-						}
-					});
-				}
-			});
+			// gsap.to(buffarUniforms.zoomBlurStrength, {
+			// 	duration: 0.5, // アニメーションの時間
+			// 	value: 0.1, // ズームブラーの強さを設定
+			// 	ease: 'power2.inOut', // イージング
+			// 	onUpdate: () => {
+			// 		// ズームブラーの強さを更新
+			// 		buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
+			// 	},
+			// 	onComplete: () => {
+			// 		// ズームブラーの強さをリセット
+			// 		gsap.to(buffarUniforms.zoomBlurStrength, {
+			// 			duration: 1.0, // アニメーションの時間
+			// 			value: 0.0, // ズームブラーの強さをリセット
+			// 			ease: 'power2.inOut', // イージング
+			// 			onUpdate: () => {
+			// 				buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
+			// 			}
+			// 		});
+			// 	}
+			// });
 		}
 	});
 </script>
