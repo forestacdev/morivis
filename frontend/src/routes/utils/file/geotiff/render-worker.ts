@@ -181,7 +181,6 @@ self.onmessage = async (e) => {
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-		// unit16array
 		gl.texImage3D(
 			gl.TEXTURE_2D_ARRAY,
 			0,
