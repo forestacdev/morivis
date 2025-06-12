@@ -58,24 +58,24 @@ uniform vec3 rotationAnglesB; // テクスチャBに対応する角度
 
 void main() {
     vec3 samplingDirection = normalize(v_modelPosition);
-
-    // テクスチャAのためのUV計算
+    
+    // テクスチャAのためのUV計算（角度補正済み）
     vec3 rotatedDirectionA = samplingDirection;
     rotatedDirectionA = rotateY(rotatedDirectionA, rotationAnglesA.y);
     rotatedDirectionA = rotateX(rotatedDirectionA, rotationAnglesA.z);
     rotatedDirectionA = rotateZ(rotatedDirectionA, rotationAnglesA.x);
     vec2 uvA = directionToEquirectangularUV(rotatedDirectionA);
     uvA.x = 1.0 - uvA.x; // U座標を反転
-
-    // テクスチャBのためのUV計算
+    
+    // テクスチャBのためのUV計算（角度補正済み）
     vec3 rotatedDirectionB = samplingDirection;
     rotatedDirectionB = rotateY(rotatedDirectionB, rotationAnglesB.y);
     rotatedDirectionB = rotateX(rotatedDirectionB, rotationAnglesB.z);
     rotatedDirectionB = rotateZ(rotatedDirectionB, rotationAnglesB.x);
     vec2 uvB = directionToEquirectangularUV(rotatedDirectionB);
     uvB.x = 1.0 - uvB.x; // U座標を反転
-
-    // 各テクスチャをサンプリング
+    
+    // 各テクスチャをサンプリング（それぞれの角度補正で）
     vec4 colorA = texture2D(textureA, uvA);
     vec4 colorB = texture2D(textureB, uvB);
     
@@ -86,10 +86,11 @@ void main() {
     // スムーズステップでより自然なフェード
     float smoothFade = smoothstep(0.0, 1.0, fadeProgress);
     
-    // フェードが開始されていない場合（fadeStartTime <= 0.0）はAのみ表示
+    // フェードが開始されていない場合（fadeStartTime <= 0.0）はBのみ表示
     float shouldFade = step(0.001, fadeStartTime);
     
-    gl_FragColor = mix(colorA, mix(colorB, colorA, smoothFade), shouldFade);
+    // 角度補正済みのテクスチャ同士をシンプルにフェード
+    gl_FragColor = mix(colorB, colorA, smoothFade * shouldFade);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
