@@ -454,7 +454,6 @@
 			const { id, angle, featureData, texture } = pointsData[0];
 
 			loadTextureWithFade(texture);
-			uniforms.userDirection.value = angle.angleY;
 
 			geometryBearing.x = angle.angleX;
 			geometryBearing.y = angle.angleY;
