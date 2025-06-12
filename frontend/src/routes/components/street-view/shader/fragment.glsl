@@ -1,4 +1,3 @@
-
 const float PI = 3.14159265359;
 const float INV_PI = 1.0 / PI;
 const float INV_TWO_PI = 1.0 / (2.0 * PI);
@@ -39,7 +38,6 @@ vec3 rotateZ(vec3 p, float angle) {
     return rotationMatrix * p;
 }
 
-
 // 3D方向ベクトルをエクイレクタングラーUV座標に変換する関数
 vec2 directionToEquirectangularUV(vec3 dir) {
     dir = normalize(dir);
@@ -48,7 +46,6 @@ vec2 directionToEquirectangularUV(vec3 dir) {
     return vec2(u, v);
 }
 
-
 uniform sampler2D textureA;
 uniform sampler2D textureB;
 uniform float fadeStartTime;
@@ -56,25 +53,31 @@ uniform float fadeSpeed;
 uniform float time;
 varying vec2 vUv;
 varying vec3 v_modelPosition;
-uniform vec3 rotationAngles;
+uniform vec3 rotationAnglesA; // テクスチャAに対応する角度
+uniform vec3 rotationAnglesB; // テクスチャBに対応する角度
 
 void main() {
     vec3 samplingDirection = normalize(v_modelPosition);
 
-            // サンプリング方向ベクトルをY軸周りに回転
+    // テクスチャAのためのUV計算
+    vec3 rotatedDirectionA = samplingDirection;
+    rotatedDirectionA = rotateY(rotatedDirectionA, rotationAnglesA.y);
+    rotatedDirectionA = rotateX(rotatedDirectionA, rotationAnglesA.z);
+    rotatedDirectionA = rotateZ(rotatedDirectionA, rotationAnglesA.x);
+    vec2 uvA = directionToEquirectangularUV(rotatedDirectionA);
+    uvA.x = 1.0 - uvA.x; // U座標を反転
 
-    vec3 rotatedDirection = samplingDirection;
-    rotatedDirection = rotateY(rotatedDirection, rotationAngles.y);
-    rotatedDirection = rotateX(rotatedDirection, rotationAngles.z);
-    rotatedDirection = rotateZ(rotatedDirection, rotationAngles.x);
+    // テクスチャBのためのUV計算
+    vec3 rotatedDirectionB = samplingDirection;
+    rotatedDirectionB = rotateY(rotatedDirectionB, rotationAnglesB.y);
+    rotatedDirectionB = rotateX(rotatedDirectionB, rotationAnglesB.z);
+    rotatedDirectionB = rotateZ(rotatedDirectionB, rotationAnglesB.x);
+    vec2 uvB = directionToEquirectangularUV(rotatedDirectionB);
+    uvB.x = 1.0 - uvB.x; // U座標を反転
 
-
-    // 回転後の方向ベクトルをエクイレクタングラーUV座標に変換
-    vec2 uv = directionToEquirectangularUV(rotatedDirection);
-     // ★★★ U座標をここで反転 ★★★
-    uv.x = 1.0 - uv.x;
-    vec4 colorA = texture2D(textureA, uv);
-    vec4 colorB = texture2D(textureB, uv);
+    // 各テクスチャをサンプリング
+    vec4 colorA = texture2D(textureA, uvA);
+    vec4 colorB = texture2D(textureB, uvB);
     
     // フェード進行度を計算（0.0 = B表示、1.0 = A表示）
     float fadeProgress = (time - fadeStartTime) * fadeSpeed;

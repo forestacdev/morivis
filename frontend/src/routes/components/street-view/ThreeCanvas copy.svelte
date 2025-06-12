@@ -96,7 +96,7 @@
 		textureA: { value: null },
 		textureB: { value: null },
 		fadeStartTime: { value: 0.0 }, // フェード開始時刻
-		fadeSpeed: { value: 1.0 }, // フェード速度（秒）
+		fadeSpeed: { value: 2.0 }, // フェード速度（秒）
 		time: { value: 0.0 } // 現在時刻
 	};
 
@@ -459,6 +459,11 @@
 			currentSceneId = featureData.properties.id;
 
 			// 初期角度を設定
+			uniforms.rotationAnglesA.value = new THREE.Vector3(
+				degreesToRadians(angle.angleX),
+				degreesToRadians(angle.angleY),
+				degreesToRadians(angle.angleZ)
+			);
 
 			loadTextureWithFade(pointsData[0]);
 
