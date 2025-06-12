@@ -1,17 +1,4 @@
 
-
-varying vec4 coords;
-varying vec3 v_modelPosition;
-
-uniform samplerCube skybox;	
-uniform sampler2D shingleTexture;
-uniform vec3 rotationAngles;
-
-varying vec2 vUv;
-
-
-
-
 const float PI = 3.14159265359;
 const float INV_PI = 1.0 / PI;
 const float INV_TWO_PI = 1.0 / (2.0 * PI);
@@ -62,8 +49,14 @@ vec2 directionToEquirectangularUV(vec3 dir) {
 }
 
 
-
-
+uniform sampler2D textureA;
+uniform sampler2D textureB;
+uniform float fadeStartTime;
+uniform float fadeSpeed;
+uniform float time;
+varying vec2 vUv;
+varying vec3 v_modelPosition;
+uniform vec3 rotationAngles;
 
 void main() {
     vec3 samplingDirection = normalize(v_modelPosition);
@@ -80,11 +73,20 @@ void main() {
     vec2 uv = directionToEquirectangularUV(rotatedDirection);
      // ★★★ U座標をここで反転 ★★★
     uv.x = 1.0 - uv.x;
-
-    vec4 texture = texture2D(shingleTexture, uv);
-
-    gl_FragColor = texture;
-
+    vec4 colorA = texture2D(textureA, uv);
+    vec4 colorB = texture2D(textureB, uv);
+    
+    // フェード進行度を計算（0.0 = B表示、1.0 = A表示）
+    float fadeProgress = (time - fadeStartTime) * fadeSpeed;
+    fadeProgress = clamp(fadeProgress, 0.0, 1.0);
+    
+    // スムーズステップでより自然なフェード
+    float smoothFade = smoothstep(0.0, 1.0, fadeProgress);
+    
+    // フェードが開始されていない場合（fadeStartTime <= 0.0）はAのみ表示
+    float shouldFade = step(0.001, fadeStartTime);
+    
+    gl_FragColor = mix(colorA, mix(colorB, colorA, smoothFade), shouldFade);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

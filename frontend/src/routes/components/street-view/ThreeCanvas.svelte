@@ -29,6 +29,9 @@
 	const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
 	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
+	// テクスチャローダーを保持
+	let textureLoader: THREE.TextureLoader;
+
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
 		nextPointData: NextPointData[] | null;
@@ -76,25 +79,41 @@
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let fromPoint = $state<StreetViewPoint | null>(null);
 
+	const textureData = {
+		a: 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/refs/heads/main/webp/R0010026.webp',
+		b: 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/refs/heads/main/webp/R0010027.webp',
+		c: 'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/refs/heads/main/webp/R0010028.webp'
+	};
+
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
 		shingleTexture: { value: THREE.Texture | null }; // シングルテクスチャの追加
 		rotationAngles: { value: THREE.Vector3 };
+		textureA: { value: THREE.Texture | null };
+		textureB: { value: THREE.Texture | null };
+		fadeStartTime: { value: number }; // フェード開始時刻
+		fadeSpeed: { value: number }; // フェード速度（秒）
+		time: { value: number }; // 現在時刻
 	}
 	const uniforms: Uniforms = {
 		skybox: { value: null },
 		shingleTexture: { value: null }, // シングルテクスチャの追加
-		rotationAngles: { value: new THREE.Vector3() }
+		rotationAngles: { value: new THREE.Vector3() },
+		textureA: { value: null },
+		textureB: { value: null },
+		fadeStartTime: { value: 0.0 }, // フェード開始時刻
+		fadeSpeed: { value: 2.0 }, // フェード速度（秒）
+		time: { value: 0.0 } // 現在時刻
 	};
 
-	interface Uniforms2 {
+	interface BuffarUniforms {
 		screenCenter: { value: THREE.Vector2 };
 		resolution: { value: THREE.Vector2 };
 		screenTexture: { value: THREE.Texture | null };
 		zoomBlurStrength: { value: number }; // ズームブラーの強さ
 	}
 
-	const uniforms2: Uniforms2 = {
+	const buffarUniforms: BuffarUniforms = {
 		screenCenter: { value: new THREE.Vector2(0.5, 0.5) },
 		resolution: {
 			value: new THREE.Vector2(window.innerWidth, window.innerHeight)
@@ -180,110 +199,28 @@
 			spheres = []; // 配列を空にする
 		}
 	};
-	const placeScene = async (nextPointData: NextPointData[]) => {
+	const placeScene = (nextPointData: NextPointData[]): {} => {
 		// 次のポイントデータが存在しない場合は何もしない
 		if (!nextPointData || nextPointData.length === 0) return;
 
-		// シーンをクリア
-		nextScenes = [];
-
-		// 一番最初のid を設定
-		currentSceneId = nextPointData[0].featureData.properties.id;
-
-		// TODO: IDの修正
-		const angleId = nextPointData[0].featureData.properties['ID'];
-		const angleData = angleDataJson.find((angle) => angle.id === angleId);
-
-		if (!angleData) {
-			console.warn('角度データが見つかりません:', angleId);
-			return;
-		}
-
-		geometryBearing.x = angleData.angleX;
-		geometryBearing.y = angleData.angleY;
-		geometryBearing.z = angleData.angleZ;
-		// GUI側のコントロールの値を更新
-		if ($DEBUG_MODE) {
-			controllerX.setValue(geometryBearing.x);
-			controllerY.setValue(geometryBearing.y);
-			controllerZ.setValue(geometryBearing.z);
-		}
-
 		// テクスチャ読み込みのPromiseを格納する配列
 		const texturePromises = nextPointData.map((pointData) => {
-			return new Promise((resolve, reject) => {
-				const nextScene = new THREE.Scene();
-				nextScene.name = pointData.featureData.properties.id;
+			// TODO: IDの修正
+			const id = pointData.featureData.properties['ID'];
+			const angleData = angleDataJson.find((angle) => angle.id === id);
 
-				nextScene.add(camera);
+			const webp =
+				IMAGE_URL_SHINGLE + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
 
-				// const nextSkyGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(1000, 16, 16);
-				const nextSkyGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
-
-				const nextSkyMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
-					uniforms: {
-						skybox: { value: null },
-						shingleTexture: { value: null }, // シングルテクスチャの追加
-						rotationAngles: uniforms.rotationAngles
-					},
-					vertexShader: vs,
-					fragmentShader: fs,
-					side: THREE.BackSide
-				});
-
-				const nextSkyMesh: THREE.Mesh = new THREE.Mesh(nextSkyGeometry, nextSkyMaterial);
-				nextSkyMesh.name = pointData.featureData.properties.id;
-
-				nextScene.add(nextSkyMesh);
-
-				// TODO: IDの修正
-				const id = pointData.featureData.properties['ID'];
-				const angleData = angleDataJson.find((angle) => angle.id === id);
-
-				const webp =
-					IMAGE_URL_SHINGLE + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
-
-				// テクスチャを読み込む
-				new THREE.TextureLoader().load(
-					webp,
-					(texture) => {
-						texture.colorSpace = THREE.SRGBColorSpace;
-						texture.minFilter = THREE.LinearFilter;
-						texture.magFilter = THREE.LinearFilter;
-						texture.generateMipmaps = false;
-						texture.needsUpdate = true;
-
-						// シングルテクスチャの読み込みが完了したら、シェーダーに渡す
-						nextSkyMaterial.uniforms.shingleTexture.value = texture;
-
-						// シーンを保存
-						nextScenes.push({
-							id: pointData.featureData.properties.id,
-							scene: nextScene,
-							angle: {
-								x: angleData ? angleData.angleX : 0,
-								y: angleData ? angleData.angleY : 0,
-								z: angleData ? angleData.angleZ : 0
-							}
-						});
-
-						resolve(nextScene); // 読み込み成功
-					},
-					undefined,
-					(error) => {
-						reject(error); // 読み込み失敗
-					}
-				);
-			});
+			return {
+				id: id,
+				angle: angleData,
+				featureData: pointData.featureData,
+				texture: webp
+			};
 		});
 
-		try {
-			// すべてのテクスチャ読み込みが完了するのを待つ
-			const loadedScenes = await Promise.all(texturePromises);
-			console.log('すべてのテクスチャが読み込まれました:', loadedScenes);
-		} catch (error) {
-			console.error('いずれかのテクスチャの読み込みに失敗しました:', error);
-		}
+		return texturePromises;
 	};
 
 	// 画面リサイズ時にキャンバスもリサイズ
@@ -301,7 +238,7 @@
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
 
-		uniforms2.resolution.value.set(width, height);
+		buffarUniforms.resolution.value.set(width, height);
 
 		// フレームバッファのサイズを更新
 		if (!renderTarget) return;
@@ -318,6 +255,9 @@
 			width: canvas.clientWidth,
 			height: canvas.clientHeight
 		};
+
+		// テクスチャローダーを初期化
+		textureLoader = new THREE.TextureLoader();
 
 		// シーンの作成
 		scene = new THREE.Scene();
@@ -351,14 +291,14 @@
 		orbitControls.enableZoom = false;
 		orbitControls.maxZoom = 1;
 
-		// if ($DEBUG_MODE) {
-		// 	// // ヘルパー方向
-		// 	const axesHelper = new THREE.AxesHelper(1000);
-		// 	scene.add(axesHelper);
+		if ($DEBUG_MODE) {
+			// // ヘルパー方向
+			const axesHelper = new THREE.AxesHelper(1000);
+			scene.add(axesHelper);
 
-		// 	const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-		// 	scene.add(helper);
-		// }
+			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+			scene.add(helper);
+		}
 
 		// レンダラー
 
@@ -366,6 +306,18 @@
 			canvas: canvas,
 			alpha: true
 		});
+
+		// 球体
+		const geometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+		// 自動フェード用シェーダー
+		const fadeShaderMaterial = new THREE.ShaderMaterial({
+			side: THREE.BackSide,
+			uniforms: uniforms,
+			fragmentShader: fs,
+			vertexShader: vs
+		});
+		const sphere = new THREE.Mesh(geometry, fadeShaderMaterial);
+		scene.add(sphere);
 
 		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
 			depthBuffer: false,
@@ -375,17 +327,17 @@
 			wrapS: THREE.ClampToEdgeWrapping,
 			wrapT: THREE.ClampToEdgeWrapping
 		});
-		uniforms2.screenTexture.value = renderTarget.texture as THREE.Texture;
+		buffarUniforms.screenTexture.value = renderTarget.texture as THREE.Texture;
 		// フレームバッファに描画するオブジェクトを追加
-		const postGeometry = new THREE.PlaneGeometry(2, 2);
-		const postMaterial = new THREE.ShaderMaterial({
+		const buffarGeometry = new THREE.PlaneGeometry(2, 2);
+		const buffarMaterial = new THREE.ShaderMaterial({
 			fragmentShader: fragment,
 			vertexShader: vertex,
-			uniforms: uniforms2
+			uniforms: buffarUniforms
 		});
 
 		// sprite.renderOrder = 1;
-		postMesh = new THREE.Mesh(postGeometry, postMaterial);
+		postMesh = new THREE.Mesh(buffarGeometry, buffarMaterial);
 		bufferScene.add(postMesh);
 
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
@@ -415,13 +367,12 @@
 
 		// アニメーション
 
-		// 時間を管理するための Clock を作成
-		const clock = new THREE.Clock();
 		const animate = () => {
 			requestAnimationFrame(animate);
 			// if (!isRendering) return;
 
 			orbitControls.update();
+			uniforms.time.value = performance.now() * 0.001; // ミリ秒を秒に変換
 
 			let degrees = THREE.MathUtils.radToDeg(camera.rotation.y);
 			degrees = (degrees + 360) % 360; // 0〜360度の範囲に調整
@@ -440,30 +391,11 @@
 			);
 			uniforms.rotationAngles.value = rotationAngles;
 
-			// ズームブラーのアニメーション
-			// if (isAnimating) {
-			// 	const speed = 0.5;
-			// 	const elapsedTime = clock.getElapsedTime();
-			// 	uniforms2.zoomBlurStrength.value = (elapsedTime * speed) % 1.0; // 0.0 ～ 1.0 の範囲でループ
-			// } else {
-			// 	uniforms2.zoomBlurStrength.value = 0.0; // アニメーション停止時はズームブラーをリセット
-			// }
+			renderer.setRenderTarget(renderTarget);
+			renderer.render(scene, camera);
 
-			const index = nextScenes.findIndex((scene) => scene.id === currentSceneId);
-			if (index !== -1) {
-				scene = nextScenes[index].scene;
-				renderer.setRenderTarget(renderTarget);
-				renderer.render(scene, camera);
-
-				renderer.setRenderTarget(null);
-				renderer.render(bufferScene, camera);
-
-				// nextScenes.forEach((nextScene, i) => {
-				// 	if (i !== index) {
-				// 		renderer.render(nextScene.scene, camera);
-				// 	}
-				// });
-			}
+			renderer.setRenderTarget(null);
+			renderer.render(bufferScene, camera);
 		};
 		animate();
 	});
@@ -475,10 +407,55 @@
 		setPoint(point);
 	};
 
+	// Promise を使った読み込み完了待ち
+	const loadTextureAsync = (url: string): Promise<THREE.Texture> => {
+		return new Promise((resolve, reject) => {
+			textureLoader.load(
+				url,
+				(texture) => {
+					texture.colorSpace = THREE.SRGBColorSpace;
+					texture.minFilter = THREE.LinearFilter;
+					texture.magFilter = THREE.LinearFilter;
+					texture.generateMipmaps = false;
+					texture.needsUpdate = true;
+
+					resolve(texture);
+				},
+				undefined,
+				(error) => {
+					reject(error);
+				}
+			);
+		});
+	};
+
+	const loadTextureWithFade = async (url: string) => {
+		try {
+			const newTexture = await loadTextureAsync(url);
+
+			// 現在のテクスチャをBに移動
+			uniforms.textureB.value = uniforms.textureA.value;
+			uniforms.textureA.value = newTexture;
+
+			// フェード開始時刻を設定（シェーダーが自動的にフェードを開始）
+			uniforms.fadeStartTime.value = performance.now() * 0.001;
+		} catch (error) {
+			console.error('フェード付きテクスチャの読み込みに失敗しました:', error);
+		}
+	};
+
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
-			// 最初の拡大アニメーション
+			// loadTextureWithFade
+
+			const pointsData = placeScene(nextPointData || []);
+
+			const { id, angle, featureData, texture } = pointsData[0];
+
+			loadTextureWithFade(texture);
+
+			// 最初の拡大アニメーション;
 			gsap.to(camera, {
 				duration: 0.5, // アニメーションの時間
 				fov: 55, // スケールを大きくしてトンネル効果を演出
@@ -487,7 +464,6 @@
 					camera.updateProjectionMatrix(); // FOVの変更を適用
 				},
 				onComplete: () => {
-					placeScene(nextPointData || []);
 					// 縮小ステップを瞬間的に表示
 					gsap.set(camera, {
 						fov: 90 // 縮小状態
@@ -509,22 +485,22 @@
 				}
 			});
 
-			gsap.to(uniforms2.zoomBlurStrength, {
+			gsap.to(buffarUniforms.zoomBlurStrength, {
 				duration: 0.5, // アニメーションの時間
 				value: 0.1, // ズームブラーの強さを設定
 				ease: 'power2.inOut', // イージング
 				onUpdate: () => {
 					// ズームブラーの強さを更新
-					uniforms2.zoomBlurStrength.value = uniforms2.zoomBlurStrength.value;
+					buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
 				},
 				onComplete: () => {
 					// ズームブラーの強さをリセット
-					gsap.to(uniforms2.zoomBlurStrength, {
+					gsap.to(buffarUniforms.zoomBlurStrength, {
 						duration: 1.0, // アニメーションの時間
 						value: 0.0, // ズームブラーの強さをリセット
 						ease: 'power2.inOut', // イージング
 						onUpdate: () => {
-							uniforms2.zoomBlurStrength.value = uniforms2.zoomBlurStrength.value;
+							buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
 						}
 					});
 				}
