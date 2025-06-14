@@ -59,6 +59,12 @@ uniform vec3 rotationAnglesB;
 uniform vec3 rotationAnglesC;
 uniform float fromTarget; // フェード元 0=A, 1=B, 2=C
 uniform float toTarget;   // フェード先 0=A, 1=B, 2=C
+uniform float exposure; // JavaScript側で設定
+uniform float gamma;
+uniform float inputGamma;
+uniform float outputGamma;
+uniform float brightness;
+uniform float contrast;
 
 vec4 sampleTexture(sampler2D tex, vec3 rotationAngles) {
     vec3 samplingDirection = normalize(v_modelPosition);
@@ -74,6 +80,31 @@ vec4 sampleTexture(sampler2D tex, vec3 rotationAngles) {
     
     return texture2D(tex, uv);
 }
+
+
+// ガンマ補正関数を修正
+
+
+vec3 sRGBToLinear(vec3 color) {
+    return pow(max(color, vec3(0.0)), vec3(inputGamma));
+}
+
+
+
+vec3 applyBrightnessContrast(vec3 linearColor, float brightness, float contrast) {
+    return pow(linearColor * brightness, vec3(contrast));
+}
+
+vec3 linearToSRGB(vec3 color) {
+    return pow(max(color, vec3(0.0)), vec3(1.0/outputGamma));
+}
+
+
+// 露出調整（リニア空間で行う）
+vec3 adjustExposure(vec3 linearColor, float exposure) {
+    return linearColor * pow(2.0, exposure);
+}
+
 
 void main() {
     // フェード進行度を計算
@@ -106,36 +137,34 @@ void main() {
         toColor = sampleTexture(textureC, rotationAnglesC);
     }
     
-    // フェード元テクスチャが存在するかチェック
-    float hasFromTexture = step(0.1, length(fromColor.rgb));
+  // Step1: sRGBからリニア空間に変換
+    vec3 fromColorLinear = sRGBToLinear(fromColor.rgb);
+    vec3 toColorLinear = sRGBToLinear(toColor.rgb);
     
-    // フェード処理
-    vec4 finalColor;
+    // Step2: 露出調整（リニア空間で）
+    fromColorLinear = adjustExposure(fromColorLinear, exposure);
+    toColorLinear = adjustExposure(toColorLinear, exposure);
+    
+    // Step3: リニア空間でブレンド
+    float hasFromTexture = step(0.1, length(fromColor.rgb));
+    vec3 blendedLinear;
+    
     if (shouldFade > 0.5) {
         if (hasFromTexture > 0.5) {
-            // 両方のテクスチャが存在する場合のクロスフェード
-            // fromColorは完全不透明から完全透明へ
-            // toColorは完全透明から完全不透明へ
-            vec4 fadeOutFrom = fromColor * (1.0 - smoothFade);
-            vec4 fadeInTo = toColor * smoothFade;
-            finalColor = fadeOutFrom + fadeInTo;
+            blendedLinear = mix(fromColorLinear, toColorLinear, smoothFade);
         } else {
-            // fromTextureが存在しない場合（初回など）
-            // toColorを透明から不透明にフェードイン
-            finalColor = toColor * smoothFade;
+            blendedLinear = toColorLinear * smoothFade;
         }
     } else {
-        // フェードしていない状態
-        if (hasFromTexture > 0.5) {
-            // fromTextureを完全に表示（フェード前の状態）
-            finalColor = fromColor;
-        } else {
-            // fromTextureが存在しない場合はtoColorを表示
-            finalColor = toColor;
-        }
+        blendedLinear = hasFromTexture > 0.5 ? fromColorLinear : toColorLinear;
     }
     
+    // Step4: 明度・コントラスト調整（ブレンド後に適用）
+    blendedLinear = applyBrightnessContrast(blendedLinear, brightness, contrast);
+    
+    // Step5: リニアからsRGBに変換
+    vec4 finalColor = vec4(linearToSRGB(blendedLinear), 1.0);
+    
     gl_FragColor = finalColor;
-    #include <tonemapping_fragment>
-    #include <colorspace_fragment>
+
 }

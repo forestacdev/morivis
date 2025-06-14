@@ -85,10 +85,8 @@
 {/if}
 
 <style>
-	/* カメラ角度マーカー */
-	/* 現在地マーカー*/
 	:root {
-		--primary-color: #f6fe00;
+		--primary-color: #07d3c2;
 	}
 	.c-player-marker > svg {
 		transform-origin: center;

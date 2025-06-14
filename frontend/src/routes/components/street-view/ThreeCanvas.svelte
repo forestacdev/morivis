@@ -4,7 +4,6 @@
 	import { onMount, tick } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import gsap from 'gsap';
 
 	import angleDataJson from './angle.json';
 
@@ -81,6 +80,12 @@
 	// Uniforms の型定義を修正
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
+		gamma: { value: number }; // ガンマ補正用
+		exposure: { value: number }; // 明度調整用
+		inputGamma: { value: number }; // 入力ガンマ補正
+		outputGamma: { value: number }; // 出力ガンマ補正
+		brightness: { value: number }; // 明るさ調整用
+		contrast: { value: number }; // コントラスト調整用
 
 		rotationAnglesA: { value: THREE.Vector3 };
 		rotationAnglesB: { value: THREE.Vector3 };
@@ -97,7 +102,12 @@
 
 	const uniforms: Uniforms = {
 		skybox: { value: null },
-
+		exposure: { value: 0.6 }, // 明度調整用
+		gamma: { value: 2.2 }, // ガンマ補正用
+		inputGamma: { value: 2.2 },
+		outputGamma: { value: 2.2 },
+		brightness: { value: 1.5 },
+		contrast: { value: 0.5 },
 		rotationAnglesA: { value: new THREE.Vector3() },
 		rotationAnglesB: { value: new THREE.Vector3() },
 		rotationAnglesC: { value: new THREE.Vector3() },
@@ -394,13 +404,13 @@
 
 			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
 
-			// 度をラジアンに変換してシェーダーに渡す
-			let rotationAngles = new THREE.Vector3(
-				degreesToRadians(geometryBearing.x),
-				degreesToRadians(geometryBearing.y),
-				degreesToRadians(geometryBearing.z)
-			);
-			uniforms.rotationAnglesB.value = rotationAngles;
+			// // 度をラジアンに変換してシェーダーに渡す
+			// let rotationAngles = new THREE.Vector3(
+			// 	degreesToRadians(geometryBearing.x),
+			// 	degreesToRadians(geometryBearing.y),
+			// 	degreesToRadians(geometryBearing.z)
+			// );
+			// uniforms.rotationAnglesB.value = rotationAngles;
 
 			// TODO: フレームバッファ
 			// renderer.setRenderTarget(renderTarget);
@@ -499,63 +509,54 @@
 			// 初期角度を設定
 
 			loadTextureWithFade(pointsData[0]);
-
-			// geometryBearing.x = angle.angleX;
-			// geometryBearing.y = angle.angleY;
-			// geometryBearing.z = angle.angleZ;
-
-			// 最初の拡大アニメーション;
-			// gsap.to(camera, {
-			// 	duration: 0.5, // アニメーションの時間
-			// 	fov: 55, // スケールを大きくしてトンネル効果を演出
-			// 	ease: 'power2.inOut', // イージング
-			// 	onUpdate: () => {
-			// 		camera.updateProjectionMatrix(); // FOVの変更を適用
-			// 	},
-			// 	onComplete: () => {
-			// 		// 縮小ステップを瞬間的に表示
-			// 		gsap.set(camera, {
-			// 			fov: 90 // 縮小状態
-			// 		});
-			// 		camera.updateProjectionMatrix(); // 瞬間的な変更を適用
-
-			// 		// 縮小状態から元のサイズに戻すアニメーション
-			// 		gsap.to(camera, {
-			// 			duration: 1.0, // アニメーションの時間
-			// 			fov: IN_CAMERA_FOV, // 元のサイズに戻す
-			// 			ease: 'power2.inOut', // イージング
-			// 			onUpdate: () => {
-			// 				camera.updateProjectionMatrix(); // FOVの変更を適用
-			// 			},
-			// 			onComplete: () => {
-			// 				// 次のシーンを配置
-			// 			}
-			// 		});
-			// 	}
-			// });
-
-			// gsap.to(buffarUniforms.zoomBlurStrength, {
-			// 	duration: 0.5, // アニメーションの時間
-			// 	value: 0.1, // ズームブラーの強さを設定
-			// 	ease: 'power2.inOut', // イージング
-			// 	onUpdate: () => {
-			// 		// ズームブラーの強さを更新
-			// 		buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
-			// 	},
-			// 	onComplete: () => {
-			// 		// ズームブラーの強さをリセット
-			// 		gsap.to(buffarUniforms.zoomBlurStrength, {
-			// 			duration: 1.0, // アニメーションの時間
-			// 			value: 0.0, // ズームブラーの強さをリセット
-			// 			ease: 'power2.inOut', // イージング
-			// 			onUpdate: () => {
-			// 				buffarUniforms.zoomBlurStrength.value = buffarUniforms.zoomBlurStrength.value;
-			// 			}
-			// 		});
-			// 	}
-			// });
 		}
 	});
+	// デバッグ用
+	// デバッグ用GUI設定
+	const advancedLighting = {
+		inputGamma: 2.2, // 入力画像のガンマ値
+		outputGamma: 2.2, // 出力のガンマ値
+		exposure: 0.6,
+		brightness: 1.5, // 追加の明度調整
+		contrast: 1.5 // コントラスト調整
+	};
+
+	// ガンマ調整（1.8-2.6程度が一般的）
+	gui
+		.add(advancedLighting, 'inputGamma', 1.5, 3.0, 0.1)
+		.onChange((value) => {
+			uniforms.gamma.value = value;
+		})
+		.name('inputGamma');
+	gui
+		.add(advancedLighting, 'outputGamma', 1.5, 3.0, 0.1)
+		.onChange((value) => {
+			uniforms.outputGamma.value = value;
+		})
+		.name('outputGamma');
+
+	// 明るさ調整
+	gui
+		.add(advancedLighting, 'brightness', 0.0, 2.0, 0.1)
+		.onChange((value) => {
+			uniforms.brightness.value = value;
+		})
+		.name('Brightness');
+	// コントラスト調整
+	gui
+		.add(advancedLighting, 'contrast', 0.0, 2.0, 0.1)
+		.onChange((value) => {
+			uniforms.contrast.value = value;
+		})
+		.name('Contrast');
+
+	// 露出調整
+	gui
+		.add(advancedLighting, 'exposure', -1.0, 2.0, 0.1)
+		.onChange((value) => {
+			uniforms.exposure.value = value;
+		})
+		.name('Exposure');
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->
