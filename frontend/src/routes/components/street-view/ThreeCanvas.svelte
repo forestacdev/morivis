@@ -8,12 +8,12 @@
 
 	import angleDataJson from './angle.json';
 
-	import fs from './shader/fragment.glsl?raw';
-	// import fs from './shader/fragment_debug.glsl?raw';
-	import vs from './shader/vertex.glsl?raw';
+	import fs from './shaders/fragment.glsl?raw';
+	// import fs from './shaders/fragment_debug.glsl?raw';
+	import vs from './shaders/vertex.glsl?raw';
 
-	import bufferFragment from './shader/fragmentBuffer.glsl?raw';
-	import bufferVertex from './shader/vertexBuffer.glsl?raw';
+	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
+	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
 	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
