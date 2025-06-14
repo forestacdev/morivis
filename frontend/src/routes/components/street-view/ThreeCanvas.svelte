@@ -321,7 +321,10 @@
 			side: THREE.BackSide,
 			uniforms: uniforms,
 			fragmentShader: fs,
-			vertexShader: vs
+			vertexShader: vs,
+			transparent: false, // 必要に応じてtrueに
+			alphaTest: 0,
+			premultipliedAlpha: false // これも重要
 		});
 		const sphere = new THREE.Mesh(geometry, fadeShaderMaterial);
 		scene.add(sphere);
@@ -398,11 +401,12 @@
 			);
 			uniforms.rotationAnglesB.value = rotationAngles;
 
-			renderer.setRenderTarget(renderTarget);
+			// TODO: フレームバッファ
+			// renderer.setRenderTarget(renderTarget);
 			renderer.render(scene, camera);
 
-			renderer.setRenderTarget(null);
-			renderer.render(bufferScene, camera);
+			// renderer.setRenderTarget(null);
+			// renderer.render(bufferScene, camera);
 		};
 		animate();
 	});
@@ -425,7 +429,7 @@
 					texture.magFilter = THREE.LinearFilter;
 					texture.generateMipmaps = false;
 					texture.needsUpdate = true;
-
+					texture.premultiplyAlpha = false;
 					resolve(texture);
 				},
 				undefined,
