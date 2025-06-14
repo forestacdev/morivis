@@ -111,12 +111,28 @@ void main() {
     
     // フェード処理
     vec4 finalColor;
-    if (shouldFade > 0.5 && hasFromTexture > 0.5) {
-        // フェード中：fromColor → toColor
-        finalColor = mix(fromColor, toColor, smoothFade);
+    if (shouldFade > 0.5) {
+        if (hasFromTexture > 0.5) {
+            // 両方のテクスチャが存在する場合のクロスフェード
+            // fromColorは完全不透明から完全透明へ
+            // toColorは完全透明から完全不透明へ
+            vec4 fadeOutFrom = fromColor * (1.0 - smoothFade);
+            vec4 fadeInTo = toColor * smoothFade;
+            finalColor = fadeOutFrom + fadeInTo;
+        } else {
+            // fromTextureが存在しない場合（初回など）
+            // toColorを透明から不透明にフェードイン
+            finalColor = toColor * smoothFade;
+        }
     } else {
-        // フェードなし：toColorのみ表示
-        finalColor = toColor;
+        // フェードしていない状態
+        if (hasFromTexture > 0.5) {
+            // fromTextureを完全に表示（フェード前の状態）
+            finalColor = fromColor;
+        } else {
+            // fromTextureが存在しない場合はtoColorを表示
+            finalColor = toColor;
+        }
     }
     
     gl_FragColor = finalColor;
