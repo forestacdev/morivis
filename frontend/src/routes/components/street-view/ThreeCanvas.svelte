@@ -9,10 +9,11 @@
 	import angleDataJson from './angle.json';
 
 	import fs from './shader/fragment.glsl?raw';
+	// import fs from './shader/fragment_debug.glsl?raw';
 	import vs from './shader/vertex.glsl?raw';
 
-	import fragment from './shader/fragmentBuffer.glsl?raw';
-	import vertex from './shader/vertexBuffer.glsl?raw';
+	import bufferFragment from './shader/fragmentBuffer.glsl?raw';
+	import bufferVertex from './shader/vertexBuffer.glsl?raw';
 	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
@@ -80,7 +81,7 @@
 	// Uniforms の型定義を修正
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
-		shingleTexture: { value: THREE.Texture | null };
+
 		rotationAnglesA: { value: THREE.Vector3 };
 		rotationAnglesB: { value: THREE.Vector3 };
 		rotationAnglesC: { value: THREE.Vector3 };
@@ -96,7 +97,7 @@
 
 	const uniforms: Uniforms = {
 		skybox: { value: null },
-		shingleTexture: { value: null },
+
 		rotationAnglesA: { value: new THREE.Vector3() },
 		rotationAnglesB: { value: new THREE.Vector3() },
 		rotationAnglesC: { value: new THREE.Vector3() },
@@ -341,8 +342,8 @@
 		// フレームバッファに描画するオブジェクトを追加
 		const buffarGeometry = new THREE.PlaneGeometry(2, 2);
 		const buffarMaterial = new THREE.ShaderMaterial({
-			fragmentShader: fragment,
-			vertexShader: vertex,
+			fragmentShader: bufferFragment,
+			vertexShader: bufferVertex,
 			uniforms: buffarUniforms
 		});
 
@@ -483,10 +484,6 @@
 
 			// インデックスを更新
 			currentTextureIndex = nextIndex;
-
-			console.log(
-				`テクスチャ切り替え: ${['A', 'B', 'C'][uniforms.fromTarget.value]} → ${['A', 'B', 'C'][nextIndex]}`
-			);
 		} catch (error) {
 			console.error('フェード付きテクスチャの読み込みに失敗しました:', error);
 		}
