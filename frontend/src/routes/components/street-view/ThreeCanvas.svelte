@@ -13,14 +13,14 @@
 
 	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
 	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
-	import { getCameraYRotation, updateAngle, degreesToRadians, SmartTextureManager } from './utils';
+	import { getCameraYRotation, updateAngle, degreesToRadians, TextureCache } from './utils';
 	import type { CurrentPointData } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import { setStreetViewParams } from '$routes/utils/params';
+	import { removeStreetViewParams, setStreetViewParams } from '$routes/utils/params';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =
@@ -178,7 +178,7 @@
 		}
 	};
 	// 次のポイントを読み込む
-	const placeScene = (nextPointData: NextPointData[]): CurrentPointData[] => {
+	const placePointData = (nextPointData: NextPointData[]): CurrentPointData[] => {
 		// 次のポイントデータが存在しない場合は何もしない
 		if (!nextPointData || nextPointData.length === 0) {
 			console.warn('次のポイントデータが存在しません。');
@@ -231,8 +231,10 @@
 		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
 	};
 
-	// 既存コードへの統合例
-	let smartTextureManager: SmartTextureManager;
+	// テクスチャローダーを初期化
+	textureLoader = new THREE.TextureLoader();
+
+	const textureCache = new TextureCache(textureLoader);
 
 	onMount(async () => {
 		if (!canvas) return;
@@ -240,12 +242,6 @@
 			width: canvas.clientWidth,
 			height: canvas.clientHeight
 		};
-
-		// テクスチャローダーを初期化
-		textureLoader = new THREE.TextureLoader();
-
-		// スマートテクスチャマネージャーを初期化
-		smartTextureManager = new SmartTextureManager(textureLoader);
 
 		// シーンの作成
 		scene = new THREE.Scene();
@@ -399,34 +395,12 @@
 		setPoint(point);
 	};
 
-	// Promise を使った読み込み完了待ち
-	const loadTextureAsync = (url: string): Promise<THREE.Texture> => {
-		return new Promise((resolve, reject) => {
-			textureLoader.load(
-				url,
-				(texture) => {
-					texture.colorSpace = THREE.SRGBColorSpace;
-					texture.minFilter = THREE.LinearFilter;
-					texture.magFilter = THREE.LinearFilter;
-					texture.generateMipmaps = false;
-					texture.needsUpdate = true;
-					texture.premultiplyAlpha = false;
-					resolve(texture);
-				},
-				undefined,
-				(error) => {
-					reject(error);
-				}
-			);
-		});
-	};
-
 	let currentTextureIndex = 0; // 0=A, 1=B, 2=C
 
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
 			const { id, angle, featureData, texture } = pointsData;
-			const newTexture = await loadTextureAsync(texture);
+			const newTexture = await textureCache.loadTexture(texture);
 
 			// 次のテクスチャスロットを決定
 			const nextIndex = (currentTextureIndex + 1) % 3;
@@ -468,23 +442,36 @@
 			console.error('フェード付きテクスチャの読み込みに失敗しました:', error);
 		}
 	};
+
+	const loadTextures = async (pointsData: CurrentPointData[]) => {
+		if (!pointsData || pointsData.length === 0) return;
+
+		textureCache.preloadTextures(pointsData.map((point) => point.texture));
+	};
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
 			// loadTextureWithFade
-			const pointsData = placeScene(nextPointData || []);
+			const pointsData = placePointData(nextPointData || []);
 			const { id, angle, featureData, texture } = pointsData[0];
 			currentSceneId = featureData.properties.id;
 
 			// 初期角度を設定
 
 			loadTextureWithFade(pointsData[0]);
+			loadTextures(pointsData.slice(1));
 		}
 	});
 
 	$effect(() => {
-		if (currentSceneId) {
+		if (currentSceneId && isStreetView) {
 			setStreetViewParams(currentSceneId);
+		}
+	});
+
+	isStreetView.subscribe((value) => {
+		if (!value) {
+			removeStreetViewParams();
 		}
 	});
 	// デバッグ用

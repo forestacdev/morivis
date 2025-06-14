@@ -76,6 +76,15 @@ export const getStreetViewParams = (): string | null => {
 	return params.imageId as string;
 };
 
+export const removeStreetViewParams = () => {
+	const params = get(queryParameters({}, { pushHistory: false }));
+	if (params.imageId) {
+		delete params.imageId;
+		console.log(params);
+		queryParameters({}, { pushHistory: false }).set(params);
+	}
+};
+
 /** オブジェクトをURLパラメータに変換 */
 export const objectToUrlParams = (obj: Record<string, any>): string => {
 	const params = new URLSearchParams();

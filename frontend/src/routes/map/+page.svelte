@@ -194,17 +194,18 @@
 		streetViewPoint = nextPoints[0]?.featureData || point;
 	};
 
-	mapStore.onClick((e) => {
-		if (!e || $mapMode === 'edit') return;
-		if (streetViewPointData.features.length > 0) {
-			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-			if (distance < 100) {
-				// streetViewPoint = point;
-				setPoint(point as StreetViewPoint);
-			}
-		}
-	});
+	// TODO: ストリートビュー用のクリックイベントを実装する
+	// mapStore.onClick((e) => {
+	// 	if (!e || $mapMode === 'edit') return;
+	// 	if (streetViewPointData.features.length > 0) {
+	// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
+	// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
+	// 		if (distance < 100) {
+	// 			// streetViewPoint = point;
+	// 			setPoint(point as StreetViewPoint);
+	// 		}
+	// 	}
+	// });
 
 	const setCamera = (map: maplibregl.Map, lngLat: maplibregl.LngLat) => {
 		// https://github.com/maplibre/maplibre-gl-js/issues/4688
