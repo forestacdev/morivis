@@ -376,7 +376,9 @@
 			// 	degreesToRadians(geometryBearing.y),
 			// 	degreesToRadians(geometryBearing.z)
 			// );
+			// uniforms.rotationAnglesA.value = rotationAngles;
 			// uniforms.rotationAnglesB.value = rotationAngles;
+			// uniforms.rotationAnglesC.value = rotationAngles;
 
 			// TODO: フレームバッファ
 			// renderer.setRenderTarget(renderTarget);
