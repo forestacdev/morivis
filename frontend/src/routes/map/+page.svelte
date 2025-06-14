@@ -352,6 +352,7 @@
 		{streetViewPointData}
 		{streetViewPoint}
 		{showMapCanvas}
+		{setPoint}
 	/>
 
 	<HeaderMenu

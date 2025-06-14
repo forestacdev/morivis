@@ -20,10 +20,14 @@
 	} from '$routes/utils/file/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
+	import type { FeatureCollection } from 'geojson';
+	import type { StreetViewPoint } from '$routes/map/+page.svelte';
 
 	interface Props {
 		map: maplibregl.Map;
 		markerLngLat: maplibregl.LngLat | null;
+		streetViewPointData: FeatureCollection;
+		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showMarker: boolean;
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
@@ -38,6 +42,8 @@
 		featureMenuData = $bindable(),
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
+		streetViewPointData,
+		setPoint,
 		layerEntries,
 		showDataEntry,
 		toggleTooltip
@@ -190,7 +196,34 @@
 
 		// ストリートビューに切り返る
 		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-			isStreetView.set(true);
+			const features = map.queryRenderedFeatures(e.point, {
+				layers: ['@street_view_circle_layer']
+			});
+
+			if (features.length > 0 && streetViewPointData.features.length > 0) {
+				const feature = features[0];
+				const point = streetViewPointData.features.find(
+					(f) => f.properties.id === feature.properties.id
+				);
+				if (point) {
+					setPoint(point as StreetViewPoint);
+					isStreetView.set(true);
+				}
+
+			
+			}
+			// TODO: ストリートビュー用のクリックイベントを実装する
+			// mapStore.onClick((e) => {
+			// 	if (!e || $mapMode === 'edit') return;
+			// 	if (streetViewPointData.features.length > 0) {
+			// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
+			// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
+			// 		if (distance < 100) {
+			// 			// streetViewPoint = point;
+			// 			setPoint(point as StreetViewPoint);
+			// 		}
+			// 	}
+			// });
 			return;
 		}
 

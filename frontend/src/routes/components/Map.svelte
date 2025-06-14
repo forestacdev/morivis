@@ -33,7 +33,7 @@
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
-	import type { DialogType } from '$routes/map/+page.svelte';
+	import type { DialogType, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
 	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
@@ -65,6 +65,7 @@
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
 	}
 
 	let {
@@ -84,7 +85,8 @@
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
-		demEntries
+		demEntries,
+		setPoint
 	}: Props = $props();
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
@@ -423,6 +425,8 @@
 		bind:featureMenuData
 		bind:showMarker={showSelectionMarker}
 		bind:clickedLayerIds
+		{streetViewPointData}
+		{setPoint}
 		{layerEntries}
 		{toggleTooltip}
 	/>
