@@ -48,49 +48,78 @@ vec2 directionToEquirectangularUV(vec3 dir) {
 
 uniform sampler2D textureA;
 uniform sampler2D textureB;
+uniform sampler2D textureC;
 uniform float fadeStartTime;
 uniform float fadeSpeed;
 uniform float time;
 varying vec2 vUv;
 varying vec3 v_modelPosition;
-uniform vec3 rotationAnglesA; // テクスチャAに対応する角度
-uniform vec3 rotationAnglesB; // テクスチャBに対応する角度
+uniform vec3 rotationAnglesA;
+uniform vec3 rotationAnglesB;
+uniform vec3 rotationAnglesC;
+uniform float fromTarget; // フェード元 0=A, 1=B, 2=C
+uniform float toTarget;   // フェード先 0=A, 1=B, 2=C
 
-void main() {
+vec4 sampleTexture(sampler2D tex, vec3 rotationAngles) {
     vec3 samplingDirection = normalize(v_modelPosition);
     
-    // テクスチャAのためのUV計算（角度補正済み）
-    vec3 rotatedDirectionA = samplingDirection;
-    rotatedDirectionA = rotateY(rotatedDirectionA, rotationAnglesA.y);
-    rotatedDirectionA = rotateX(rotatedDirectionA, rotationAnglesA.z);
-    rotatedDirectionA = rotateZ(rotatedDirectionA, rotationAnglesA.x);
-    vec2 uvA = directionToEquirectangularUV(rotatedDirectionA);
-    uvA.x = 1.0 - uvA.x; // U座標を反転
+    // 角度補正
+    vec3 rotatedDirection = samplingDirection;
+    rotatedDirection = rotateY(rotatedDirection, rotationAngles.y);
+    rotatedDirection = rotateX(rotatedDirection, rotationAngles.z);
+    rotatedDirection = rotateZ(rotatedDirection, rotationAngles.x);
     
-    // テクスチャBのためのUV計算（角度補正済み）
-    vec3 rotatedDirectionB = samplingDirection;
-    rotatedDirectionB = rotateY(rotatedDirectionB, rotationAnglesB.y);
-    rotatedDirectionB = rotateX(rotatedDirectionB, rotationAnglesB.z);
-    rotatedDirectionB = rotateZ(rotatedDirectionB, rotationAnglesB.x);
-    vec2 uvB = directionToEquirectangularUV(rotatedDirectionB);
-    uvB.x = 1.0 - uvB.x; // U座標を反転
+    vec2 uv = directionToEquirectangularUV(rotatedDirection);
+    uv.x = 1.0 - uv.x;
     
-    // 各テクスチャをサンプリング（それぞれの角度補正で）
-    vec4 colorA = texture2D(textureA, uvA);
-    vec4 colorB = texture2D(textureB, uvB);
-    
-    // フェード進行度を計算（0.0 = B表示、1.0 = A表示）
+    return texture2D(tex, uv);
+}
+
+void main() {
+    // フェード進行度を計算
     float fadeProgress = (time - fadeStartTime) * fadeSpeed;
     fadeProgress = clamp(fadeProgress, 0.0, 1.0);
-    
-    // スムーズステップでより自然なフェード
     float smoothFade = smoothstep(0.0, 1.0, fadeProgress);
     
-    // フェードが開始されていない場合（fadeStartTime <= 0.0）はBのみ表示
+    // フェードが開始されているかチェック
     float shouldFade = step(0.001, fadeStartTime);
     
-    // 角度補正済みのテクスチャ同士をシンプルにフェード
-    gl_FragColor = mix(colorB, colorA, smoothFade * shouldFade);
+    // fromTargetとtoTargetに基づいて正確にテクスチャを選択
+    vec4 fromColor;
+    vec4 toColor;
+    
+    // フェード元テクスチャを決定
+    if (fromTarget < 0.5) {
+        fromColor = sampleTexture(textureA, rotationAnglesA);
+    } else if (fromTarget < 1.5) {
+        fromColor = sampleTexture(textureB, rotationAnglesB);
+    } else {
+        fromColor = sampleTexture(textureC, rotationAnglesC);
+    }
+    
+    // フェード先テクスチャを決定
+    if (toTarget < 0.5) {
+        toColor = sampleTexture(textureA, rotationAnglesA);
+    } else if (toTarget < 1.5) {
+        toColor = sampleTexture(textureB, rotationAnglesB);
+    } else {
+        toColor = sampleTexture(textureC, rotationAnglesC);
+    }
+    
+    // フェード元テクスチャが存在するかチェック
+    float hasFromTexture = step(0.1, length(fromColor.rgb));
+    
+    // フェード処理
+    vec4 finalColor;
+    if (shouldFade > 0.5 && hasFromTexture > 0.5) {
+        // フェード中：fromColor → toColor
+        finalColor = mix(fromColor, toColor, smoothFade);
+    } else {
+        // フェードなし：toColorのみ表示
+        finalColor = toColor;
+    }
+    
+    gl_FragColor = finalColor;
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

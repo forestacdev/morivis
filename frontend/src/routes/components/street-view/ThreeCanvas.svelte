@@ -77,27 +77,37 @@
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
 
+	// Uniforms の型定義を修正
 	interface Uniforms {
 		skybox: { value: THREE.CubeTexture | null };
-		shingleTexture: { value: THREE.Texture | null }; // シングルテクスチャの追加
+		shingleTexture: { value: THREE.Texture | null };
 		rotationAnglesA: { value: THREE.Vector3 };
 		rotationAnglesB: { value: THREE.Vector3 };
+		rotationAnglesC: { value: THREE.Vector3 };
 		textureA: { value: THREE.Texture | null };
 		textureB: { value: THREE.Texture | null };
-		fadeStartTime: { value: number }; // フェード開始時刻
-		fadeSpeed: { value: number }; // フェード速度（秒）
-		time: { value: number }; // 現在時刻
+		textureC: { value: THREE.Texture | null };
+		fadeStartTime: { value: number };
+		fadeSpeed: { value: number };
+		time: { value: number };
+		fromTarget: { value: number }; // フェード元 0=A, 1=B, 2=C
+		toTarget: { value: number }; // フェード先 0=A, 1=B, 2=C
 	}
+
 	const uniforms: Uniforms = {
 		skybox: { value: null },
-		shingleTexture: { value: null }, // シングルテクスチャの追加
+		shingleTexture: { value: null },
 		rotationAnglesA: { value: new THREE.Vector3() },
 		rotationAnglesB: { value: new THREE.Vector3() },
+		rotationAnglesC: { value: new THREE.Vector3() },
 		textureA: { value: null },
 		textureB: { value: null },
-		fadeStartTime: { value: 0.0 }, // フェード開始時刻
-		fadeSpeed: { value: 1.0 }, // フェード速度（秒）
-		time: { value: 0.0 } // 現在時刻
+		textureC: { value: null },
+		fadeStartTime: { value: 0.0 },
+		fadeSpeed: { value: 1.0 },
+		time: { value: 0.0 },
+		fromTarget: { value: 0 }, // フェード元
+		toTarget: { value: 0 } // フェード先
 	};
 
 	interface BuffarUniforms {
@@ -426,30 +436,57 @@
 		});
 	};
 
+	let currentTextureIndex = 0; // 0=A, 1=B, 2=C
+
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
 			const { id, angle, featureData, texture } = pointsData;
 			const newTexture = await loadTextureAsync(texture);
 
-			// 現在のテクスチャと角度をBに移動
-			uniforms.textureB.value = uniforms.textureA.value;
-			uniforms.rotationAnglesB.value = new THREE.Vector3().copy(uniforms.rotationAnglesA.value);
+			// 次のテクスチャスロットを決定
+			const nextIndex = (currentTextureIndex + 1) % 3;
 
-			// 新しいテクスチャと角度をAに設定
-			uniforms.textureA.value = newTexture;
-			uniforms.rotationAnglesA.value = new THREE.Vector3(
-				degreesToRadians(angle.angleX),
-				degreesToRadians(angle.angleY),
-				degreesToRadians(angle.angleZ)
-			);
+			// フェード情報を設定（現在→次へ）
+			uniforms.fromTarget.value = currentTextureIndex;
+			uniforms.toTarget.value = nextIndex;
+
+			// 新しいテクスチャと角度を次のスロットに設定
+			if (nextIndex === 0) {
+				uniforms.textureA.value = newTexture;
+				uniforms.rotationAnglesA.value = new THREE.Vector3(
+					degreesToRadians(angle.angleX),
+					degreesToRadians(angle.angleY),
+					degreesToRadians(angle.angleZ)
+				);
+			} else if (nextIndex === 1) {
+				uniforms.textureB.value = newTexture;
+				uniforms.rotationAnglesB.value = new THREE.Vector3(
+					degreesToRadians(angle.angleX),
+					degreesToRadians(angle.angleY),
+					degreesToRadians(angle.angleZ)
+				);
+			} else {
+				uniforms.textureC.value = newTexture;
+				uniforms.rotationAnglesC.value = new THREE.Vector3(
+					degreesToRadians(angle.angleX),
+					degreesToRadians(angle.angleY),
+					degreesToRadians(angle.angleZ)
+				);
+			}
 
 			// フェード開始時刻を設定
 			uniforms.fadeStartTime.value = performance.now() * 0.001;
+
+			// インデックスを更新
+			currentTextureIndex = nextIndex;
+
+			console.log(
+				`テクスチャ切り替え: ${['A', 'B', 'C'][uniforms.fromTarget.value]} → ${['A', 'B', 'C'][nextIndex]}`
+			);
 		} catch (error) {
 			console.error('フェード付きテクスチャの読み込みに失敗しました:', error);
 		}
 	};
-
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
