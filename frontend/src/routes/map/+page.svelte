@@ -169,8 +169,6 @@
 			return;
 		}
 
-		setStreetViewParams(pointId);
-
 		const nextPoints = ([pointId, ...nodeConnectionsJson[pointId]] || [])
 			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)

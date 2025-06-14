@@ -13,12 +13,14 @@
 
 	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
 	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
-	import { getCameraYRotation, updateAngle, degreesToRadians } from './utils';
+	import { getCameraYRotation, updateAngle, degreesToRadians, SmartTextureManager } from './utils';
+	import type { CurrentPointData } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
+	import { setStreetViewParams } from '$routes/utils/params';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =
@@ -39,17 +41,6 @@
 		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showThreeCanvas: boolean;
 		showAngleMarker: boolean; // 角度マーカーを表示するかどうか
-	}
-
-	interface CurrentPointData {
-		id: string;
-		angle: {
-			angleX: number;
-			angleY: number;
-			angleZ: number;
-		};
-		featureData: NextPointData['featureData'];
-		texture: string;
 	}
 
 	let {
@@ -115,7 +106,7 @@
 		textureB: { value: null },
 		textureC: { value: null },
 		fadeStartTime: { value: 0.0 },
-		fadeSpeed: { value: 1.0 },
+		fadeSpeed: { value: 3.0 },
 		time: { value: 0.0 },
 		fromTarget: { value: 0 }, // フェード元
 		toTarget: { value: 0 } // フェード先
@@ -176,34 +167,6 @@
 	// 角度を更新するボタンを追加
 	gui.add(copy, 'copyAngle').name('copy Angle');
 
-	// 球体を配置する関数
-	const placeSpheres = (nextPointData: NextPointData[]) => {
-		// 球体のパラメータ
-		const radius = 5; // 球体を配置する半径
-		const sphereRadius = 0.3; // 球体の大きさ
-		const material = new THREE.MeshBasicMaterial({
-			color: 0xff0000,
-			visible: $DEBUG_MODE ? true : false
-		});
-
-		removeSpheres(); // 既存の球体を削除
-
-		nextPointData.forEach((pointData) => {
-			const angleRad = THREE.MathUtils.degToRad(pointData.bearing);
-			const x = radius * Math.sin(angleRad);
-			const z = -radius * Math.cos(angleRad);
-
-			const geometry = new THREE.SphereGeometry(sphereRadius, 16, 16);
-			const sphere = new THREE.Mesh(geometry, material);
-			sphere.name = pointData.featureData.properties.id;
-			sphere.position.set(x, 0, z);
-			scene.add(sphere);
-			spheres.push(sphere); // 配列に追加
-		});
-
-		// lookAtSphere(spheres[0]);
-	};
-
 	// 球体を削除する関数
 	const removeSpheres = () => {
 		if (spheres.length > 0) {
@@ -214,6 +177,7 @@
 			spheres = []; // 配列を空にする
 		}
 	};
+	// 次のポイントを読み込む
 	const placeScene = (nextPointData: NextPointData[]): CurrentPointData[] => {
 		// 次のポイントデータが存在しない場合は何もしない
 		if (!nextPointData || nextPointData.length === 0) {
@@ -267,6 +231,9 @@
 		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
 	};
 
+	// 既存コードへの統合例
+	let smartTextureManager: SmartTextureManager;
+
 	onMount(async () => {
 		if (!canvas) return;
 		const sizes = {
@@ -276,6 +243,9 @@
 
 		// テクスチャローダーを初期化
 		textureLoader = new THREE.TextureLoader();
+
+		// スマートテクスチャマネージャーを初期化
+		smartTextureManager = new SmartTextureManager(textureLoader);
 
 		// シーンの作成
 		scene = new THREE.Scene();
@@ -511,52 +481,58 @@
 			loadTextureWithFade(pointsData[0]);
 		}
 	});
+
+	$effect(() => {
+		if (currentSceneId) {
+			setStreetViewParams(currentSceneId);
+		}
+	});
 	// デバッグ用
 	// デバッグ用GUI設定
-	const advancedLighting = {
-		inputGamma: 2.2, // 入力画像のガンマ値
-		outputGamma: 2.2, // 出力のガンマ値
-		exposure: 0.6,
-		brightness: 1.5, // 追加の明度調整
-		contrast: 1.5 // コントラスト調整
-	};
+	// const advancedLighting = {
+	// 	inputGamma: 2.2, // 入力画像のガンマ値
+	// 	outputGamma: 2.2, // 出力のガンマ値
+	// 	exposure: 0.6,
+	// 	brightness: 1.5, // 追加の明度調整
+	// 	contrast: 1.5 // コントラスト調整
+	// };
 
-	// ガンマ調整（1.8-2.6程度が一般的）
-	gui
-		.add(advancedLighting, 'inputGamma', 1.5, 3.0, 0.1)
-		.onChange((value) => {
-			uniforms.gamma.value = value;
-		})
-		.name('inputGamma');
-	gui
-		.add(advancedLighting, 'outputGamma', 1.5, 3.0, 0.1)
-		.onChange((value) => {
-			uniforms.outputGamma.value = value;
-		})
-		.name('outputGamma');
+	// // ガンマ調整（1.8-2.6程度が一般的）
+	// gui
+	// 	.add(advancedLighting, 'inputGamma', 1.5, 3.0, 0.1)
+	// 	.onChange((value) => {
+	// 		uniforms.gamma.value = value;
+	// 	})
+	// 	.name('inputGamma');
+	// gui
+	// 	.add(advancedLighting, 'outputGamma', 1.5, 3.0, 0.1)
+	// 	.onChange((value) => {
+	// 		uniforms.outputGamma.value = value;
+	// 	})
+	// 	.name('outputGamma');
 
-	// 明るさ調整
-	gui
-		.add(advancedLighting, 'brightness', 0.0, 2.0, 0.1)
-		.onChange((value) => {
-			uniforms.brightness.value = value;
-		})
-		.name('Brightness');
-	// コントラスト調整
-	gui
-		.add(advancedLighting, 'contrast', 0.0, 2.0, 0.1)
-		.onChange((value) => {
-			uniforms.contrast.value = value;
-		})
-		.name('Contrast');
+	// // 明るさ調整
+	// gui
+	// 	.add(advancedLighting, 'brightness', 0.0, 2.0, 0.1)
+	// 	.onChange((value) => {
+	// 		uniforms.brightness.value = value;
+	// 	})
+	// 	.name('Brightness');
+	// // コントラスト調整
+	// gui
+	// 	.add(advancedLighting, 'contrast', 0.0, 2.0, 0.1)
+	// 	.onChange((value) => {
+	// 		uniforms.contrast.value = value;
+	// 	})
+	// 	.name('Contrast');
 
-	// 露出調整
-	gui
-		.add(advancedLighting, 'exposure', -1.0, 2.0, 0.1)
-		.onChange((value) => {
-			uniforms.exposure.value = value;
-		})
-		.name('Exposure');
+	// // 露出調整
+	// gui
+	// 	.add(advancedLighting, 'exposure', -1.0, 2.0, 0.1)
+	// 	.onChange((value) => {
+	// 		uniforms.exposure.value = value;
+	// 	})
+	// 	.name('Exposure');
 </script>
 
 <!-- <div class="css-canvas-back"></div> -->
