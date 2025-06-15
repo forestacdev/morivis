@@ -98,18 +98,15 @@ export class TextureCache {
 	async loadTexture(url: string): Promise<THREE.Texture> {
 		// 既にキャッシュにある場合
 		if (this.cache.has(url)) {
-			console.log(`キャッシュから取得: ${url}`);
 			return this.cache.get(url)!;
 		}
 
 		// 既に読み込み中の場合
 		if (this.loadingPromises.has(url)) {
-			console.log(`読み込み中を待機: ${url}`);
 			return this.loadingPromises.get(url)!;
 		}
 
 		// 新しく読み込み開始
-		console.log(`新規読み込み開始: ${url}`);
 		const loadPromise = this.createLoadPromise(url);
 		this.loadingPromises.set(url, loadPromise);
 
@@ -148,13 +145,11 @@ export class TextureCache {
 			const oldTexture = this.cache.get(firstKey);
 			if (oldTexture) {
 				oldTexture.dispose();
-				console.log(`古いテクスチャを削除: ${firstKey}`);
 			}
 			this.cache.delete(firstKey);
 		}
 
 		this.cache.set(url, texture);
-		console.log(`キャッシュに追加: ${url} (総数: ${this.cache.size})`);
 	}
 
 	// バックグラウンドプリロード
@@ -170,7 +165,6 @@ export class TextureCache {
 	async preloadTextures(urls: string[]): Promise<void> {
 		const promises = urls.map((url) => this.preloadTexture(url));
 		await Promise.allSettled(promises);
-		console.log(`プリロード完了: ${urls.length}個のテクスチャ`);
 	}
 
 	getCacheStatus() {
