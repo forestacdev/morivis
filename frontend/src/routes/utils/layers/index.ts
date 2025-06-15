@@ -570,7 +570,7 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 };
 
 // symbolレイヤーの作成
-const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpecification => {
+const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
 	const symbolLayer: SymbolLayerSpecification = {
@@ -583,14 +583,14 @@ const createSymbolLayer = (layer: LayerItem, style: LabelStyle): SymbolLayerSpec
 			'text-color': '#000000',
 			'text-halo-color': '#FFFFFF',
 			'text-halo-width': 2,
-			...(defaultStyle ? defaultStyle.symbol.paint : {})
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
 		},
 		layout: {
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Light'],
-			...(defaultStyle ? defaultStyle.symbol.layout : {})
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
