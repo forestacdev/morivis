@@ -22,7 +22,8 @@ import type {
 	SymbolLayerSpecification,
 	RasterSourceSpecification,
 	RasterTileSource,
-	LngLatBounds
+	LngLatBounds,
+	LngLatBoundsLike
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { propData } from '$routes/data/propData';
@@ -431,7 +432,7 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		setBearing: (bearing: number) => map?.setBearing(bearing),
-		fitBounds: (bounds: LngLatBounds, options?: maplibregl.FitBoundsOptions) =>
+		fitBounds: (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) =>
 			map?.fitBounds(bounds, options),
 		panTo,
 		easeTo: (options: EaseToOptions) => easeTo(options),

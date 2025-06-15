@@ -33,7 +33,7 @@
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
-	import type { LngLat } from 'maplibre-gl';
+	import type { LngLat, LngLatBoundsLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
@@ -200,7 +200,12 @@
 	const resetlayerEntries = () => {
 		layerEntries = [];
 		groupedLayerStore.reset();
-		selectedLayerId.set(null);
+		selectedLayerId.set('');
+		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		mapStore.fitBounds(bounds, {
+			padding: 20,
+			animate: true
+		});
 	};
 
 	// TODO: ストリートビュー用のクリックイベントを実装する

@@ -15,6 +15,12 @@
 			handleCancel();
 		}
 	};
+
+	window.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape' && $confirmationDialog) {
+			handleCancel();
+		}
+	});
 </script>
 
 {#if $confirmationDialog}
