@@ -1,6 +1,7 @@
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
 
 import { queryParameters, ssp } from 'sveltekit-search-params';
+import { isStreetView } from '$routes/store';
 import { get } from 'svelte/store';
 
 /* urlパラメーターの取得 **/
@@ -60,6 +61,11 @@ export const setMapParams = (option: MapPosition) => {
 	params.z = option.zoom.toFixed(1);
 	params.p = option.pitch.toFixed(0);
 	params.b = option.bearing.toFixed(0);
+
+	if (!get(isStreetView)) {
+		params.imageId = '-1';
+	}
+
 	queryParameters({}, { pushHistory: false }).set(params);
 };
 
@@ -74,15 +80,6 @@ export const setStreetViewParams = (imageId: string) => {
 export const getStreetViewParams = (): string | null => {
 	const params = get(queryParameters({}, { pushHistory: false }));
 	return params.imageId as string;
-};
-
-export const removeStreetViewParams = () => {
-	const params = get(queryParameters({}, { pushHistory: false }));
-	if (params.imageId) {
-		delete params.imageId;
-		console.log(params);
-		queryParameters({}, { pushHistory: false }).set(params);
-	}
 };
 
 export const removeUrlParams = (paramName: string) => {

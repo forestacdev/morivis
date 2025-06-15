@@ -492,12 +492,6 @@
 		}
 	});
 
-	isStreetView.subscribe((value) => {
-		if (!value) {
-			removeUrlParams('imageId');
-		}
-	});
-
 	// デバッグ用
 	// デバッグ用GUI設定
 	// const advancedLighting = {
