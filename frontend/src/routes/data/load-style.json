@@ -348,7 +348,7 @@
 					["==", ["get", "vt_lvorder"], 0],
 					["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
 				],
-				17,
+				22,
 				[
 					"all",
 					["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
@@ -357,6 +357,7 @@
 			],
 			"layout": {
 				"line-join": "round",
+				"line-cap": "round",
 				"line-round-limit": 1.57,
 				"line-sort-key": ["get", "vt_drworder"]
 			},
@@ -560,7 +561,7 @@
 		{
 			"id": "道路中心線ククリ橋0",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -700,7 +701,7 @@
 		{
 			"id": "道路中心線色橋0",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -914,7 +915,7 @@
 		{
 			"id": "道路中心線ククリ1",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -1068,7 +1069,7 @@
 		{
 			"id": "道路中心線色1",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -1282,7 +1283,7 @@
 		{
 			"id": "道路中心線ククリ橋1",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -1422,7 +1423,7 @@
 		{
 			"id": "道路中心線色橋1",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -1636,7 +1637,7 @@
 		{
 			"id": "道路中心線ククリ2",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -1790,7 +1791,7 @@
 		{
 			"id": "道路中心線色2",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2004,7 +2005,7 @@
 		{
 			"id": "道路中心線ククリ橋2",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2144,7 +2145,7 @@
 		{
 			"id": "道路中心線色橋2",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2358,7 +2359,7 @@
 		{
 			"id": "道路中心線ククリ3",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2512,7 +2513,7 @@
 		{
 			"id": "道路中心線色3",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2726,7 +2727,7 @@
 		{
 			"id": "道路中心線ククリ橋3",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -2866,7 +2867,7 @@
 		{
 			"id": "道路中心線色橋3",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -3080,7 +3081,7 @@
 		{
 			"id": "道路中心線ククリ4",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -3234,7 +3235,7 @@
 		{
 			"id": "道路中心線色4",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -3448,7 +3449,7 @@
 		{
 			"id": "道路中心線ククリ橋4",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -3588,7 +3589,7 @@
 		{
 			"id": "道路中心線色橋4",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
@@ -3872,7 +3873,7 @@
 		{
 			"id": "道路中心線階段",
 			"minzoom": 11,
-			"maxzoom": 17,
+			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",

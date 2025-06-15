@@ -139,6 +139,11 @@
 
 	map.on('click', (e) => {
 		// プレビューモードの時は、クリックイベントを無視する
+
+		if ($DEBUG_MODE) {
+			const features = map.queryRenderedFeatures(e.point);
+			console.warn('Clicked features:', features);
+		}
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;
 
@@ -209,8 +214,6 @@
 					setPoint(point as StreetViewPoint);
 					isStreetView.set(true);
 				}
-
-			
 			}
 			// TODO: ストリートビュー用のクリックイベントを実装する
 			// mapStore.onClick((e) => {
