@@ -15,8 +15,8 @@
 			return;
 		}
 
-		(styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'RdCL')), // 背景レイヤーを除外
-			console.log('Filtered styleJson:', styleJson);
+		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'RdCL')), // 背景レイヤーを除外
+		// 	console.log('Filtered styleJson:', styleJson);
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({
 			container: mapContainer,
