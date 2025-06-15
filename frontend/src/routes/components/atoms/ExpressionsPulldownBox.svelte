@@ -78,10 +78,10 @@
 	<!-- 色分け選択 -->
 	<div class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pt-2">
 		{#if expressionType === 'color'}
-			<ColorExpressionsOption setExpression={setExpression as ColorsExpression} />
+			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} />
 		{/if}
 		{#if expressionType === 'number'}
-			<NumberExpressionsOption setExpression={setExpression as NumbersExpression} />
+			<NumberExpressionsOption bind:setExpression={setExpression as NumbersExpression} />
 		{/if}
 	</div>
 {/if}

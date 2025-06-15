@@ -10,6 +10,7 @@
 	let { setExpression = $bindable() }: Props = $props();
 	// step用のパレットを生成
 	let stepPallet = $derived.by(() => {
+		// TODO: step
 		if (setExpression && setExpression.type === 'step') {
 			return generateNumberToNumberMap(setExpression.mapping);
 		}
