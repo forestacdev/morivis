@@ -63,7 +63,7 @@
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit } from '$routes/store';
-	import { orderedLayerIds } from '$routes/store/layers';
+	import { orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
@@ -149,6 +149,7 @@
 					(point) => point.properties.id === Number(imageId)
 				);
 				if (point) {
+					showStreetViewLayer.set(true);
 					setPoint(point as StreetViewPoint);
 
 					isStreetView.set(true);
