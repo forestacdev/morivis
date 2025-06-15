@@ -62,14 +62,14 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit } from '$routes/store';
+	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isTerrain3d } from '$routes/store';
 	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
-	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
+	import { setStreetViewParams, getStreetViewParams, get3dParams } from '$routes/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 	import ConfirmationDialog from '$routes/components/dialog/ConfirmationDialog.svelte';
 
@@ -157,6 +157,11 @@
 				} else {
 					console.warn(`Street view point with ID ${imageId} not found.`);
 				}
+			}
+
+			const terrain3d = get3dParams();
+			if (terrain3d === '1') {
+				isTerrain3d.set(true);
 			}
 		});
 	});

@@ -1,7 +1,7 @@
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
 
 import { queryParameters, ssp } from 'sveltekit-search-params';
-import { isStreetView } from '$routes/store';
+import { isStreetView, isTerrain3d } from '$routes/store';
 import { get } from 'svelte/store';
 
 /* urlパラメーターの取得 **/
@@ -66,6 +66,10 @@ export const setMapParams = (option: MapPosition) => {
 		params.imageId = '-1';
 	}
 
+	if (!get(isTerrain3d)) {
+		params['3d'] = '0';
+	}
+
 	queryParameters({}, { pushHistory: false }).set(params);
 };
 
@@ -76,10 +80,23 @@ export const setStreetViewParams = (imageId: string) => {
 	queryParameters({}, { pushHistory: false }).set(params);
 };
 
-/** street view用のURLパラメータの取得 */
+/** streetview用のURLパラメータの取得 */
 export const getStreetViewParams = (): string | null => {
 	const params = get(queryParameters({}, { pushHistory: false }));
 	return params.imageId as string;
+};
+
+/** 3d用のURLパラメータのセット */
+export const set3dParams = (numString: '0' | '1') => {
+	const params = get(queryParameters({}));
+	params['3d'] = numString;
+	queryParameters({}, { pushHistory: false }).set(params);
+};
+
+/** 3d用のURLパラメータの取得 */
+export const get3dParams = (): string | null => {
+	const params = get(queryParameters({}, { pushHistory: false }));
+	return params['3d'] as string;
 };
 
 export const removeUrlParams = (paramName: string) => {

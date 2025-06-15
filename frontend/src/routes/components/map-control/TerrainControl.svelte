@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
+	import { set3dParams } from '$routes/utils/params';
 	import type {
 		Map,
 		StyleSpecification,
@@ -27,6 +28,7 @@
 				source: 'terrain',
 				exaggeration: 1.0
 			});
+			set3dParams('1');
 			map.easeTo({ pitch: 60 });
 		} else {
 			map.setTerrain(null);
