@@ -17,13 +17,19 @@
 	} from '$routes/store/layers';
 	import { showLabelLayer } from '$routes/store/layers';
 	import { isSideMenuType } from '$routes/store/ui';
+	import { resetLayersConfirm, showConfirmDialog } from '$routes/store/confirmation';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
+		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
-	let { layerEntries = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+	let {
+		layerEntries = $bindable(),
+		tempLayerEntries = $bindable(),
+		resetlayerEntries
+	}: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 	let dragEnterType = $state(null); // ドラッグ中のレイヤーのタイプ
@@ -53,6 +59,15 @@
 			layerEntry = layerEntries.find((entry) => entry.id === id);
 		}
 	});
+
+	// レイヤーのリセット処理
+	const resetLayers = async () => {
+		const result = await resetLayersConfirm();
+
+		if (result) {
+			resetlayerEntries();
+		}
+	};
 
 	// const groupByType = (entries: GeoDataEntry[]) => {
 	// 	const groups: { type: LayerType; entries: GeoDataEntry[] }[] = [];
@@ -117,9 +132,15 @@
 		</div>
 		{#if !$isStyleEdit}
 			<div
-				class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
+				class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
 			>
 				{#if !dragEnterType && !$showDataMenu}
+					<button
+						onclick={resetLayers}
+						class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
+					>
+						<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
+					</button>
 					<button
 						onclick={() => showDataMenu.set(true)}
 						class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"

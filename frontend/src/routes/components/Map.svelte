@@ -36,7 +36,12 @@
 	import type { DialogType, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
-	import { showLabelLayer, showStreetViewLayer } from '$routes/store/layers';
+	import {
+		getLayersGroup,
+		groupedLayerStore,
+		showLabelLayer,
+		showStreetViewLayer
+	} from '$routes/store/layers';
 	import { showHillshadeLayer } from '$routes/store/layers';
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
@@ -46,6 +51,7 @@
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
 	import { drawLayers } from '$routes/utils/layers/draw';
+	import { getLayerEntries, saveToLayerEntries } from '$routes/utils/localStorage';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -253,6 +259,14 @@
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
+		const localEntries = getLayerEntries();
+
+		// ローカルストレージからのレイヤーエントリーが存在する場合はそれを使用
+		if (localEntries && localEntries.length > 0) {
+			layerEntries = localEntries;
+			const layersGroup = getLayersGroup(layerEntries);
+			groupedLayerStore.setLayers(layersGroup);
+		}
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
 
@@ -271,6 +285,8 @@
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
+
+		saveToLayerEntries(entries as GeoDataEntry[]);
 
 		if (!maplibreMap) return;
 	}, 100);

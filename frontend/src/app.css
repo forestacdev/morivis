@@ -35,18 +35,13 @@
 }
 
 @utility c-btn-sub {
-	/* 決定ボタンスタイル */
+	/* サブボタンスタイル */
 	@apply border-sub bg-sub hover:text-main hover:bg-base hover:border-base cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150;
-}
-
-@utility c-btn-delete {
-	/* 削除ボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-red-500 bg-red-500 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-red-400;
 }
 
 @utility c-btn-cancel {
 	/* キャンセルボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-gray-400 bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
+	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
 }
 
 @utility c-form-field {

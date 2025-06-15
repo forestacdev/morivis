@@ -63,7 +63,7 @@
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit } from '$routes/store';
-	import { orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
+	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
@@ -71,6 +71,7 @@
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
 	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
+	import ConfirmationDialog from '$routes/components/dialog/ConfirmationDialog.svelte';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -193,6 +194,13 @@
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
+	};
+
+	// レイヤーエントリーをリセット
+	const resetlayerEntries = () => {
+		layerEntries = [];
+		groupedLayerStore.reset();
+		selectedLayerId.set(null);
 	};
 
 	// TODO: ストリートビュー用のクリックイベントを実装する
@@ -325,7 +333,7 @@
 			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[800px] flex-col gap-2"
 		></div>
 	{/if}
-	<LayerMenu bind:layerEntries bind:tempLayerEntries />
+	<LayerMenu bind:layerEntries bind:tempLayerEntries {resetlayerEntries} />
 	<SearchMenu
 		bind:featureMenuData
 		bind:inputSearchWord
@@ -387,15 +395,13 @@
 <UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
 
 <Tooltip />
-
 <SideMenu />
 <NotificationMessage />
 <InfoDialog />
 <TermsOfServiceDialog />
-
 <ProcessingScreen />
-
 <SplashScreen />
+<ConfirmationDialog />
 
 <style>
 </style>

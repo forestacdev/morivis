@@ -42,6 +42,13 @@ const createLayerStore = () => {
 	return {
 		subscribe,
 
+		setLayers: (layers: GroupedLayers) => {
+			// GeojsonCacheの初期化
+			GeojsonCache.clear();
+			// ストアの値を更新
+			set({ ...layers }); // または set((state) => ({ ...state, layers }))
+		},
+
 		// 追加
 		add: (id: string, type: LayerType) =>
 			update((layers) => {
@@ -147,4 +154,23 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 	} else {
 		throw new Error(`Unknown layer type: ${_dataEntry.id}`);
 	}
+};
+
+export const getLayersGroup = (layerEntries: GeoDataEntry[]): GroupedLayers => {
+	const grouped: GroupedLayers = {
+		label: [],
+		point: [],
+		line: [],
+		polygon: [],
+		raster: []
+	};
+
+	for (const entry of layerEntries) {
+		const type = getLayerType(entry);
+		if (type) {
+			grouped[type].push(entry.id);
+		}
+	}
+
+	return grouped;
 };

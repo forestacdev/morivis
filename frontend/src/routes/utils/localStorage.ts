@@ -1,3 +1,5 @@
+import type { GeoDataEntry } from '$routes/data/types';
+
 // localストレージにデータを保存する関数
 export const saveToTermsAccepted = () => {
 	const data = {
@@ -29,4 +31,18 @@ export const checkToTermsAccepted = () => {
 		return true;
 	}
 	return false;
+};
+
+/** レイヤーエントリをlocalStorageに保存する関数 */
+export const saveToLayerEntries = (entries: GeoDataEntry[]) => {
+	localStorage.setItem('layerEntries', JSON.stringify(entries));
+};
+
+/** localStorageからレイヤーエントリを取得する関数 */
+export const getLayerEntries = (): GeoDataEntry[] | null => {
+	const entries = localStorage.getItem('layerEntries');
+	if (entries && entries !== 'undefined' && entries !== 'null' && entries !== '[]') {
+		return JSON.parse(entries);
+	}
+	return null;
 };
