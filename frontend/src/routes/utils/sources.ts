@@ -13,7 +13,12 @@ import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/data/types';
 import { getLabelSources } from '$routes/utils/layers/label';
-import { showLabelLayer, showLoadLayer } from '$routes/store/layers';
+import {
+	showBoundaryLayer,
+	showLabelLayer,
+	showLoadLayer,
+	showContourLayer
+} from '$routes/store/layers';
 import { get } from 'svelte/store';
 
 import { layerAttributions } from '$routes/store';
@@ -247,10 +252,22 @@ export const createSourcesItems = async (
 
 	// ラベルのソースを追加
 
-	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
-	const loadSources = get(showLoadLayer) ? await getLoadSources() : {};
+	const isGsiSource =
+		get(showLabelLayer) || get(showLoadLayer) || get(showBoundaryLayer) || get(showContourLayer);
 
-	return { ...sourceItems, ...labelSources, ...loadSources } as {
+	const gsiSources = isGsiSource
+		? {
+				v: {
+					type: 'vector',
+					minzoom: 4,
+					maxzoom: 16,
+					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+					attribution: '国土地理院最適化ベクトルタイル'
+				}
+			}
+		: {};
+
+	return { ...sourceItems, ...gsiSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

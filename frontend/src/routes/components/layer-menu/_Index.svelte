@@ -12,6 +12,7 @@
 		getLayerType,
 		groupedLayerStore,
 		showBoundaryLayer,
+		showContourLayer,
 		showHillshadeLayer,
 		showLoadLayer,
 		typeBreakIndices,
@@ -105,10 +106,11 @@
 	>
 		<div class="c-scroll flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4">
 			<div class="elative flex flex-col">
-				<Switch label="ラベル表示" bind:value={$showLabelLayer} />
-				<Switch label="道路表示" bind:value={$showLoadLayer} />
-				<Switch label="行政区域境界表示" bind:value={$showBoundaryLayer} />
-				<Switch label="陰影表示" bind:value={$showHillshadeLayer} />
+				<Switch label="ラベル" bind:value={$showLabelLayer} />
+				<Switch label="道路" bind:value={$showLoadLayer} />
+				<Switch label="等高線" bind:value={$showContourLayer} />
+				<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
+				<Switch label="陰影" bind:value={$showHillshadeLayer} />
 			</div>
 
 			{#each layerEntries as layerEntry, i (layerEntry.id)}

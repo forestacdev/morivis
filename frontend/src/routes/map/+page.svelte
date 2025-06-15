@@ -263,6 +263,7 @@
 
 			map.setBearing(0);
 			map.setPitch(0);
+			map.setZoom(18);
 			$mapMode = 'small';
 		} else {
 			map.easeTo({

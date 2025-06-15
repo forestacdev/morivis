@@ -40,6 +40,7 @@
 		getLayersGroup,
 		groupedLayerStore,
 		showBoundaryLayer,
+		showContourLayer,
 		showLabelLayer,
 		showLoadLayer,
 		showStreetViewLayer
@@ -311,6 +312,11 @@
 
 	// 行政境界の表示
 	showBoundaryLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	// 等高線の表示
+	showContourLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

@@ -134,6 +134,9 @@ export const showLoadLayer = writable<boolean>(true);
 /** 行政境界レイヤー */
 export const showBoundaryLayer = writable<boolean>(true);
 
+/** 等高線レイヤー */
+export const showContourLayer = writable<boolean>(true);
+
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 

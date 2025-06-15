@@ -47,12 +47,13 @@ import type {
 
 import { FeatureStateManager } from '$routes/utils/featureState';
 import { getLabelLayers } from '$routes/utils/layers/label';
-import { showLabelLayer, showLoadLayer } from '$routes/store/layers';
+import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
 import { getLoadLayers } from './load';
 import { getBoundaryLayers } from './boundary';
+import { getContourLabelLayers, getContourLineLayers } from './contour';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -797,6 +798,10 @@ export const createLayersItems = (
 	// 行政境界
 	const boundaryLayer = get(showBoundaryLayer) && _type === 'main' ? getBoundaryLayers() : [];
 
+	const contourLineLayer = get(showContourLayer) && _type === 'main' ? getContourLineLayers() : [];
+	const contourLabelLayer =
+		get(showContourLayer) && _type === 'main' ? getContourLabelLayers() : [];
+
 	// 陰影
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
 
@@ -808,8 +813,10 @@ export const createLayersItems = (
 		...hillshadeItem,
 		...boundaryLayer,
 		...loadLayers,
+		...contourLineLayer,
 		...vectorLayerItems,
 		...streetViewLayers,
+		...contourLabelLayer,
 		...mapLabelItems,
 		...symbolLayerItems
 	];

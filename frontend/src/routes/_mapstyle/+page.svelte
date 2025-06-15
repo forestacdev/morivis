@@ -15,7 +15,7 @@
 			return;
 		}
 
-		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'RdCL')), // 背景レイヤーを除外
+		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'Cntr')), // 背景レイヤーを除外
 		// 	console.log('Filtered styleJson:', styleJson);
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({
@@ -23,6 +23,17 @@
 			style: styleJson, // スタイルJSONを適用
 			center: [134.35, 34.67] as LngLatLike, // 初期表示の中心座標
 			zoom: 9 // 初期ズームレベル
+		});
+
+		map.on('click', (event: MapMouseEvent) => {
+			const features = map?.queryRenderedFeatures(event.point);
+			if (features && features.length > 0) {
+				console.log('Features at clicked point:', features);
+				const feature = features[0];
+				console.log('Clicked feature:', feature);
+			} else {
+				console.log('No features found at this point.');
+			}
 		});
 	});
 
