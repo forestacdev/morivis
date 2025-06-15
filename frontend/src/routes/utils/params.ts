@@ -67,7 +67,7 @@ export const setMapParams = (option: MapPosition) => {
 export const setStreetViewParams = (imageId: string) => {
 	const params = get(queryParameters({}));
 	params.imageId = imageId;
-	queryParameters({}, { pushHistory: false }).set(params);
+	queryParameters({}, { pushHistory: true }).set(params);
 };
 
 /** street view用のURLパラメータの取得 */
@@ -83,6 +83,13 @@ export const removeStreetViewParams = () => {
 		console.log(params);
 		queryParameters({}, { pushHistory: false }).set(params);
 	}
+};
+
+export const removeUrlParams = (paramName: string) => {
+	const url = window.location.href;
+	const urlObj = new URL(url);
+	urlObj.searchParams.delete(paramName);
+	window.history.replaceState({}, '', urlObj.toString());
 };
 
 /** オブジェクトをURLパラメータに変換 */
