@@ -1,5 +1,5 @@
 // localストレージにデータを保存する関数
-export const saveToLocalStorage = (key: 'userData') => {
+export const saveToLocalStorage = (key: 'isTermsAccepted') => {
 	const data = {
 		timestamp: Date.now() // 現在の時刻を保存
 	};
@@ -7,7 +7,7 @@ export const saveToLocalStorage = (key: 'userData') => {
 };
 
 // 24時間経過しているかどうかを判定する関数
-const has24HoursPassed = (key: 'userData') => {
+const has24HoursPassed = (key: 'isTermsAccepted') => {
 	const storedData = localStorage.getItem(key);
 
 	if (!storedData) {
@@ -24,7 +24,7 @@ const has24HoursPassed = (key: 'userData') => {
 	return hasPassed;
 };
 
-export const checkLocalStorage = (key: 'userData') => {
+export const checkLocalStorage = (key: 'isTermsAccepted') => {
 	if (has24HoursPassed(key)) {
 		return true;
 	}

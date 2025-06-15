@@ -87,7 +87,7 @@
 				<button
 					onclick={() => {
 						showTermsDialog.set(false);
-						saveToLocalStorage('userData');
+						saveToLocalStorage('isTermsAccepted');
 					}}
 					class="c-btn-confirm px-12 py-6 text-lg"
 				>

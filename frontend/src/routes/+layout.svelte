@@ -77,7 +77,7 @@
 			isDevice = 'mobile';
 		}
 
-		if (checkLocalStorage('userData')) {
+		if (checkLocalStorage('isTermsAccepted')) {
 			showTermsDialog.set(true);
 		}
 	});
