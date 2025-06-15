@@ -2,7 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import { showTermsDialog } from '$routes/store';
-	import { saveToLocalStorage } from '$routes/utils/localStorage';
+	import { saveToTermsAccepted } from '$routes/utils/localStorage';
 </script>
 
 {#if $showTermsDialog}
@@ -87,7 +87,7 @@
 				<button
 					onclick={() => {
 						showTermsDialog.set(false);
-						saveToLocalStorage('isTermsAccepted');
+						saveToTermsAccepted();
 					}}
 					class="c-btn-confirm px-12 py-6 text-lg"
 				>

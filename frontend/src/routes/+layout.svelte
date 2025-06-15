@@ -11,7 +11,7 @@
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/store';
-	import { checkLocalStorage } from '$routes/utils/localStorage';
+	import { checkToTermsAccepted } from '$routes/utils/localStorage';
 	import { isPc } from '$routes/utils/ui';
 
 	// onNavigate((navigation) => {
@@ -77,7 +77,7 @@
 			isDevice = 'mobile';
 		}
 
-		if (checkLocalStorage('isTermsAccepted')) {
+		if (checkToTermsAccepted()) {
 			showTermsDialog.set(true);
 		}
 	});
