@@ -3,9 +3,24 @@
 	import { onMount } from 'svelte';
 
 	import { showStreetViewLayer } from '$routes/store/layers';
+	import { mapStore } from '$routes/store/map';
+	import { isBBoxInside } from '$routes/utils/map';
+	import type { LngLatBoundsLike } from 'maplibre-gl';
 
 	const toggleLayer = () => {
 		showStreetViewLayer.set(!$showStreetViewLayer);
+
+		if ($showStreetViewLayer) {
+			const bounds = mapStore.getMapBounds();
+			const defaultBounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+
+			if (!isBBoxInside(bounds, defaultBounds)) {
+				mapStore.fitBounds(defaultBounds, {
+					padding: 20,
+					animate: true
+				});
+			}
+		}
 	};
 
 	let element = $state<HTMLButtonElement | null>(null);

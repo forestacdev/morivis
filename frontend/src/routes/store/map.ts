@@ -323,7 +323,7 @@ const createMapStore = () => {
 		});
 	};
 
-	const getMapBbox = (): [number, number, number, number] => {
+	const getMapBounds = (): [number, number, number, number] => {
 		if (!map) {
 			console.warn('Map is not ready yet.');
 			return [0, 0, 0, 0];
@@ -441,7 +441,7 @@ const createMapStore = () => {
 		onSetStyle: setStyleEvent.subscribe,
 		onResize: resizeEvent.subscribe, // リサイズイベントの購読用メソッド
 		getTerrain: () => map?.getTerrain(),
-		getMapBbox: getMapBbox,
+		getMapBounds: getMapBounds,
 		getCanvas: () => map?.getCanvas(),
 		onload: onLoadEvent.subscribe, // onloadイベントの購読用メソッド
 		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド

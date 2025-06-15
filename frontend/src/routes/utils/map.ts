@@ -1,4 +1,4 @@
-import type { LngLat } from 'maplibre-gl';
+import type { LngLat, LngLatBoundsLike } from 'maplibre-gl';
 import type { Map as MaplibreMap } from 'maplibre-gl';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -19,7 +19,7 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
 	return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
 };
 
-type BBox = [number, number, number, number];
+type BBox = LngLatBoundsLike;
 
 /** bbox同士が重なっているか */
 export const isBBoxOverlapping = (bbox1: BBox, bbox2: BBox): boolean => {

@@ -145,7 +145,7 @@
 							duration: 0
 						});
 
-						const mapBbox = mapStore.getMapBbox();
+						const mapBbox = mapStore.getMapBounds();
 
 						if (!isBBoxInside(mapBbox, data.bbox)) {
 							mapStore.fitBounds(data.bbox, {
