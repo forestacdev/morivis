@@ -12,8 +12,8 @@ import { TileImageManager } from '$routes/protocol/image';
 import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/data/types';
-import { getLabelSources } from '$routes/utils/label';
-import { showLabelLayer } from '$routes/store/layers';
+import { getLabelSources } from '$routes/utils/layers/label';
+import { showLabelLayer, showLoadLayer } from '$routes/store/layers';
 import { get } from 'svelte/store';
 
 import { layerAttributions } from '$routes/store';
@@ -27,6 +27,7 @@ import { objectToUrlParams } from '$routes/utils/params';
 import { getBoundingBoxCorners } from '$routes/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
+import { getLoadSources } from './layers/load';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -247,8 +248,9 @@ export const createSourcesItems = async (
 	// ラベルのソースを追加
 
 	const labelSources = get(showLabelLayer) ? getLabelSources() : {};
+	const loadSources = get(showLoadLayer) ? await getLoadSources() : {};
 
-	return { ...sourceItems, ...labelSources } as {
+	return { ...sourceItems, ...labelSources, ...loadSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

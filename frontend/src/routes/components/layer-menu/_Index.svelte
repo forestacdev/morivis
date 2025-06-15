@@ -12,6 +12,7 @@
 		getLayerType,
 		groupedLayerStore,
 		showHillshadeLayer,
+		showLoadLayer,
 		typeBreakIndices,
 		type LayerType
 	} from '$routes/store/layers';
@@ -104,6 +105,7 @@
 		<div class="c-scroll flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4">
 			<div class="elative flex flex-col">
 				<Switch label="ラベル表示" bind:value={$showLabelLayer} />
+				<Switch label="道路表示" bind:value={$showLoadLayer} />
 				<Switch label="陰影表示" bind:value={$showHillshadeLayer} />
 			</div>
 

@@ -40,6 +40,7 @@
 		getLayersGroup,
 		groupedLayerStore,
 		showLabelLayer,
+		showLoadLayer,
 		showStreetViewLayer
 	} from '$routes/store/layers';
 	import { showHillshadeLayer } from '$routes/store/layers';
@@ -299,6 +300,11 @@
 
 	// ラベルの表示
 	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	// 道路の表示
+	showLoadLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

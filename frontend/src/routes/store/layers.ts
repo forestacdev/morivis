@@ -31,9 +31,9 @@ const createLayerStore = () => {
 	const initialState: GroupedLayers = {
 		label: [],
 		point: ['fac_ziriki_point', 'fac_building_point', 'fac_poi'],
-		line: ['ensyurin_road2', 'gsi_road'],
+		line: ['ensyurin_road2'],
 		polygon: ['ensyurin_rinhan'],
-		raster: ['ensyurin_dem', 'gsi_rinya_m', 'gsi_seamlessphoto']
+		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
 	};
 
 	const store = writable<GroupedLayers>({ ...initialState });
@@ -127,6 +127,9 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 
 	return breaks;
 });
+
+/** 道路レイヤー */
+export const showLoadLayer = writable<boolean>(true);
 
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);

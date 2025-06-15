@@ -46,11 +46,12 @@ import type {
 } from '$routes/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/utils/featureState';
-import { getLabelLayers } from '$routes/utils/label';
-import { showLabelLayer } from '$routes/store/layers';
+import { getLabelLayers } from '$routes/utils/layers/label';
+import { showLabelLayer, showLoadLayer } from '$routes/store/layers';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
+import { getLoadLayers } from './load';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -788,6 +789,7 @@ export const createLayersItems = (
 		get(showStreetViewLayer) && _type === 'main'
 			? [streetViewLineLayer, streetViewCircleLayer]
 			: [];
+	const loadLayers = get(showLoadLayer) && _type === 'main' ? getLoadLayers() : [];
 
 	// 陰影
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
@@ -798,6 +800,7 @@ export const createLayersItems = (
 	return [
 		...rasterLayerItems,
 		...hillshadeItem,
+		...loadLayers,
 		...vectorLayerItems,
 		...streetViewLayers,
 		...mapLabelItems,
