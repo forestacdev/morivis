@@ -275,15 +275,6 @@
 		orbitControls.enableZoom = false;
 		orbitControls.maxZoom = 1;
 
-		if ($DEBUG_MODE) {
-			// // ヘルパー方向
-			const axesHelper = new THREE.AxesHelper(1000);
-			scene.add(axesHelper);
-
-			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-			scene.add(helper);
-		}
-
 		// レンダラー
 
 		renderer = new THREE.WebGLRenderer({
@@ -305,6 +296,28 @@
 		});
 		const sphere = new THREE.Mesh(geometry, fadeShaderMaterial);
 		scene.add(sphere);
+
+		if ($DEBUG_MODE) {
+			console.log('ThreeCanvas mounted');
+			// // ヘルパー方向
+			const axesHelper = new THREE.AxesHelper(1000);
+			scene.add(axesHelper);
+
+			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+			scene.add(helper);
+
+			const geometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900);
+			const wireframeMaterial = new THREE.MeshBasicMaterial({
+				color: 0xffffff,
+				wireframe: true,
+
+				side: THREE.DoubleSide,
+				opacity: 1.0
+			});
+
+			const wireframeCube = new THREE.Mesh(geometry, wireframeMaterial);
+			scene.add(wireframeCube);
+		}
 
 		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
 			depthBuffer: false,
@@ -371,14 +384,19 @@
 			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
 
 			// // 度をラジアンに変換してシェーダーに渡す
-			// let rotationAngles = new THREE.Vector3(
-			// 	degreesToRadians(geometryBearing.x),
-			// 	degreesToRadians(geometryBearing.y),
-			// 	degreesToRadians(geometryBearing.z)
-			// );
-			// uniforms.rotationAnglesA.value = rotationAngles;
-			// uniforms.rotationAnglesB.value = rotationAngles;
-			// uniforms.rotationAnglesC.value = rotationAngles;
+			let rotationAngles = new THREE.Vector3(
+				degreesToRadians(geometryBearing.x),
+				degreesToRadians(geometryBearing.y),
+				degreesToRadians(geometryBearing.z)
+			);
+
+			if (currentTextureIndex === 0) {
+				uniforms.rotationAnglesA.value = rotationAngles;
+			} else if (currentTextureIndex === 1) {
+				uniforms.rotationAnglesB.value = rotationAngles;
+			} else if (currentTextureIndex === 2) {
+				uniforms.rotationAnglesC.value = rotationAngles;
+			}
 
 			// TODO: フレームバッファ
 			// renderer.setRenderTarget(renderTarget);
@@ -397,7 +415,7 @@
 		setPoint(point);
 	};
 
-	let currentTextureIndex = 0; // 0=A, 1=B, 2=C
+	let currentTextureIndex = $state<number>(0); // 0=A, 1=B, 2=C
 
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
@@ -435,6 +453,10 @@
 				);
 			}
 
+			geometryBearing.x = angle.angleX;
+			geometryBearing.y = angle.angleY;
+			geometryBearing.z = angle.angleZ;
+
 			// フェード開始時刻を設定
 			uniforms.fadeStartTime.value = performance.now() * 0.001;
 
@@ -459,7 +481,6 @@
 			currentSceneId = featureData.properties.id;
 
 			// 初期角度を設定
-
 			loadTextureWithFade(pointsData[0]);
 			loadTextures(pointsData.slice(1));
 		}
