@@ -12,7 +12,5 @@ export const getLoadSources = (): {
 
 /** ラベルのレイヤーを取得 */
 export const getLoadLayers = (): LineLayerSpecification[] => {
-	return loadStyleJson.layers.filter((layer) => {
-		return layer.type === 'line';
-	}) as LineLayerSpecification[];
+	return loadStyleJson.layers as LineLayerSpecification[];
 };

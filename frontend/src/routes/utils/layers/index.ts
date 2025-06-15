@@ -21,7 +21,7 @@ import { streetViewCircleLayer, streetViewLineLayer } from '$routes/utils/layers
 import { hillshadeLayer } from '$routes/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
-import { showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
+import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -52,6 +52,7 @@ import { showLabelLayer, showLoadLayer } from '$routes/store/layers';
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
 import { getLoadLayers } from './load';
+import { getBoundaryLayers } from './boundary';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -789,7 +790,12 @@ export const createLayersItems = (
 		get(showStreetViewLayer) && _type === 'main'
 			? [streetViewLineLayer, streetViewCircleLayer]
 			: [];
+
+	// 道路
 	const loadLayers = get(showLoadLayer) && _type === 'main' ? getLoadLayers() : [];
+
+	// 行政境界
+	const boundaryLayer = get(showBoundaryLayer) && _type === 'main' ? getBoundaryLayers() : [];
 
 	// 陰影
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
@@ -800,6 +806,7 @@ export const createLayersItems = (
 	return [
 		...rasterLayerItems,
 		...hillshadeItem,
+		...boundaryLayer,
 		...loadLayers,
 		...vectorLayerItems,
 		...streetViewLayers,

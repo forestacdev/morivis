@@ -39,6 +39,7 @@
 	import {
 		getLayersGroup,
 		groupedLayerStore,
+		showBoundaryLayer,
 		showLabelLayer,
 		showLoadLayer,
 		showStreetViewLayer
@@ -305,6 +306,11 @@
 
 	// 道路の表示
 	showLoadLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	// 行政境界の表示
+	showBoundaryLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

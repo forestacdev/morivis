@@ -12,7 +12,5 @@ export const getLabelSources = (): {
 
 /** ラベルのレイヤーを取得 */
 export const getLabelLayers = (): SymbolLayerSpecification[] => {
-	return labelStyleJson.layers.filter((layer) => {
-		return layer.type === 'symbol';
-	}) as SymbolLayerSpecification[];
+	return labelStyleJson.layers as SymbolLayerSpecification[];
 };

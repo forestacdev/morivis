@@ -11,6 +11,7 @@
 	import {
 		getLayerType,
 		groupedLayerStore,
+		showBoundaryLayer,
 		showHillshadeLayer,
 		showLoadLayer,
 		typeBreakIndices,
@@ -106,6 +107,7 @@
 			<div class="elative flex flex-col">
 				<Switch label="ラベル表示" bind:value={$showLabelLayer} />
 				<Switch label="道路表示" bind:value={$showLoadLayer} />
+				<Switch label="行政区域境界表示" bind:value={$showBoundaryLayer} />
 				<Switch label="陰影表示" bind:value={$showHillshadeLayer} />
 			</div>
 
