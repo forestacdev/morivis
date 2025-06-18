@@ -128,6 +128,14 @@
 		zoomBlurStrength: { value: 0.0 } // ズームブラーの強さ
 	};
 
+	const debugBoxMaterial = new THREE.MeshBasicMaterial({
+		color: 0xffffff,
+		wireframe: true,
+		side: THREE.DoubleSide,
+		opacity: 1.0,
+		visible: true
+	});
+
 	let geometryBearing = { x: 0, y: 0, z: 0 };
 	let controllerX;
 	let controllerY;
@@ -283,7 +291,7 @@
 		});
 
 		// 球体
-		const geometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+		const skyBoxGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
 		// 自動フェード用シェーダー
 		const fadeShaderMaterial = new THREE.ShaderMaterial({
 			side: THREE.BackSide,
@@ -294,30 +302,21 @@
 			alphaTest: 0,
 			premultipliedAlpha: false // これも重要
 		});
-		const sphere = new THREE.Mesh(geometry, fadeShaderMaterial);
+		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
 		scene.add(sphere);
 
-		if ($DEBUG_MODE) {
-			console.log('ThreeCanvas mounted');
-			// // ヘルパー方向
-			const axesHelper = new THREE.AxesHelper(1000);
-			scene.add(axesHelper);
+		console.log('ThreeCanvas mounted');
+		// // ヘルパー方向
+		// const axesHelper = new THREE.AxesHelper(1000);
+		// scene.add(axesHelper);
 
-			const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-			scene.add(helper);
+		// const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
+		// scene.add(helper);
 
-			const geometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900);
-			const wireframeMaterial = new THREE.MeshBasicMaterial({
-				color: 0xffffff,
-				wireframe: true,
+		const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
 
-				side: THREE.DoubleSide,
-				opacity: 1.0
-			});
-
-			const wireframeCube = new THREE.Mesh(geometry, wireframeMaterial);
-			scene.add(wireframeCube);
-		}
+		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
+		scene.add(wireframeCube);
 
 		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
 			depthBuffer: false,
@@ -491,6 +490,8 @@
 			setStreetViewParams(currentSceneId);
 		}
 	});
+
+	gui.add(debugBoxMaterial, 'visible').name('Wireframe');
 
 	// デバッグ用
 	// デバッグ用GUI設定
