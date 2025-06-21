@@ -17,14 +17,14 @@ export const poiLayers: SymbolLayerSpecification[] = [
 		...LAYER_BASE
 	},
 	{
-		id: 'poi_building_layer',
-		'source-layer': 'fac_building_point',
-
+		id: 'poi_ziriki_layer',
+		'source-layer': 'fac_ziriki_point',
 		...LAYER_BASE
 	},
 	{
-		id: 'poi_ziriki_layer',
-		'source-layer': 'fac_ziriki_point',
+		id: 'poi_building_layer',
+		'source-layer': 'fac_building_point',
+
 		...LAYER_BASE
 	}
 ];

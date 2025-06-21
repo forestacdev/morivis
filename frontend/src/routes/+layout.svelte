@@ -30,6 +30,7 @@
 
 	let isDevice = $state<Device>('');
 	let deviceWidth = $state<number>(window.innerWidth);
+	let isInitialized = $state<boolean>(false);
 
 	// 環境ごとのファビコンの設定
 	type EnvMode = 'development';
@@ -82,9 +83,13 @@
 			showTermsDialog.set(true);
 		}
 	});
+
+	const initialized = () => {
+		isInitialized = true;
+	};
 </script>
 
-<WebGLScreen />
+<WebGLScreen {initialized} />
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
@@ -96,5 +101,7 @@
 </svelte:head>
 
 <div class="absolute h-full w-full">
-	{@render children()}
+	{#if isInitialized}
+		{@render children()}
+	{/if}
 </div>

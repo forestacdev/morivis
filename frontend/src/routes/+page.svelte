@@ -6,12 +6,14 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+	import { transitionPageScreen } from '$routes/store/effect';
 
 	import fragmentShader from './shader/fragment.glsl?raw';
 	import vertexShader from './shader/vertex.glsl?raw';
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import { delay } from 'es-toolkit';
 
 	// ラスターデータの読み込み
 	const loadRasterData = async (url: string) => {
@@ -184,7 +186,11 @@
 
 	const toggleView = (val: boolean) => {
 		// window.location.href = '/map';
-		goto('/map');
+		transitionPageScreen.set(1);
+		delay(1000).then(() => {
+			goto('/map');
+			transitionPageScreen.set(-1);
+		});
 
 		return;
 		orbitControls.autoRotate = val;

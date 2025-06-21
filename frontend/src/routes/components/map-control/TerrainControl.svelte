@@ -21,7 +21,6 @@
 	};
 
 	isTerrain3d.subscribe((is3d) => {
-		console.log('isTerrain3d changed:', is3d);
 		const map = mapStore.getMap();
 		if (!map || !map.loaded()) return;
 		try {

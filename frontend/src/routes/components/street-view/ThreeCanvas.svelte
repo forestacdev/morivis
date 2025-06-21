@@ -305,7 +305,6 @@
 		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
 		scene.add(sphere);
 
-		console.log('ThreeCanvas mounted');
 		// // ヘルパー方向
 		// const axesHelper = new THREE.AxesHelper(1000);
 		// scene.add(axesHelper);

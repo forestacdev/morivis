@@ -4,6 +4,12 @@
 	import { mapStore } from '$routes/store/map';
 	import { transitionPageScreen } from '$routes/store/effect';
 
+	interface props {
+		initialized(): void;
+	}
+
+	let { initialized }: props = $props();
+
 	let canvas = $state<HTMLCanvasElement | null>(null);
 
 	onMount(() => {
@@ -21,7 +27,19 @@
 			[offscreen]
 		);
 
-		transitionPageScreen.subscribe((transition: boolean) => {
+		worker.onmessage = (event) => {
+			const data = event.data;
+			if (data.type === 'initialized') {
+				initialized();
+			} else if (data.type === 'log') {
+				console.log('WebGL worker log:', data.message);
+			}
+		};
+		worker.onerror = (error) => {
+			console.error('WebGL worker error:', error);
+		};
+
+		transitionPageScreen.subscribe((transition) => {
 			worker.postMessage({
 				type: 'transition',
 				animationFlag: transition

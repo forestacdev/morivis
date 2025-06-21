@@ -99,6 +99,8 @@ self.onmessage = (e) => {
 		gl.canvas.width = width;
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
+
+		self.postMessage({ type: 'initialized' });
 	} else if (type === 'resize') {
 		const { width, height } = e.data;
 		if (!gl) {
@@ -115,7 +117,7 @@ self.onmessage = (e) => {
 			return;
 		}
 		gl.useProgram(program);
-		gl.uniform1f(animationFlagUniformLocation, animationFlag ? 1.0 : -1.0);
+		gl.uniform1f(animationFlagUniformLocation, animationFlag);
 	}
 
 	const draw = () => {

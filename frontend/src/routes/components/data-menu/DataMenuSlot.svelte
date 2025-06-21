@@ -133,17 +133,17 @@
 				onblur={() => (isHover = false)}
 				loading="lazy"
 			/>
-			{#if isHover}
+			<!-- {#if isHover}
 				<PreviewSlot {dataEntry} />
-			{/if}
-			<!-- <div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div> -->
-			<!-- <div
+			{/if} -->
+			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
+			<div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
 					? ''
 					: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
 			>
 				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
-			</div> -->
+			</div>
 
 			<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
 				>{dataEntry.metaData.attribution}</span

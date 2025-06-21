@@ -15,6 +15,9 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import { isProcessing } from '$routes/store/ui';
 	import { imageExport, exportPDF } from '$routes/utils/map';
+	import { goto } from '$app/navigation';
+	import { transitionPageScreen } from '$routes/store/effect';
+	import { delay } from 'es-toolkit';
 
 	const toggleLayerMenu = () => {
 		showSideMenu.set(false);
@@ -49,6 +52,15 @@
 		await imageExport(map);
 		isProcessing.set(false);
 		showNotification('地図を.pngでエクスポートしました', 'success');
+	};
+
+	const goHome = async () => {
+		// window.location.href = '/map';
+		transitionPageScreen.set(1);
+		await delay(1000);
+
+		goto('/');
+		transitionPageScreen.set(-1);
 	};
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
@@ -160,12 +172,19 @@
 				><Icon icon="mdi:web" class="h-8 w-8" />
 				<span>森林文化アカデミーHP</span></a
 			>
-			<a
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={goHome}
+			>
+				<Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
+				<span class="select-none">トップページへ</span>
+			</button>
+			<!-- <a
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				href="/"
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></a
-			>
+			> -->
 		</ui>
 		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>
 	</div>

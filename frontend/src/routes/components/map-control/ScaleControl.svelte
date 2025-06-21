@@ -38,8 +38,6 @@
 	});
 
 	onDestroy(() => {
-		console.log('ScaleControl component destroyed');
-
 		if (scaleControl) {
 			try {
 				scaleControl.onRemove();
