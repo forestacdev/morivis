@@ -3,13 +3,351 @@
 	import { onMount } from 'svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import type { FeatureCollection } from 'geojson';
-	import turfHexGrid from '@turf/hex-grid';
-	import turfBbox from '@turf/bbox';
-	import turfCollect from '@turf/collect';
-	import turfCentroid from '@turf/centroid';
+
+	import { optimizedGridThinning } from './utils';
 
 	let map: maplibregl.Map | null = null;
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
+	let currentZoom = $state<number>(0); // 現在のズームレベル
+
+	let geojson: FeatureCollection;
+	let markerManager; // 追加
+
+	// 空間ハッシュによる衝突判定マネージャー
+	class SpatialHashCollisionManager {
+		constructor(cellSize = 100) {
+			this.cellSize = cellSize;
+			this.grid = new Map();
+			this.markers = new Map();
+		}
+
+		getGridKeys(bounds) {
+			const keys = [];
+			const startX = Math.floor(bounds.x / this.cellSize);
+			const endX = Math.floor((bounds.x + bounds.width) / this.cellSize);
+			const startY = Math.floor(bounds.y / this.cellSize);
+			const endY = Math.floor((bounds.y + bounds.height) / this.cellSize);
+
+			for (let x = startX; x <= endX; x++) {
+				for (let y = startY; y <= endY; y++) {
+					keys.push(`${x},${y}`);
+				}
+			}
+			return keys;
+		}
+
+		addMarker(id, element, priority = 0) {
+			const rect = element.getBoundingClientRect();
+			const bounds = {
+				x: rect.left,
+				y: rect.top,
+				width: rect.width,
+				height: rect.height
+			};
+
+			this.markers.set(id, {
+				element: element,
+				bounds: bounds,
+				priority: priority,
+				visible: true
+			});
+		}
+
+		updateCollisions() {
+			// グリッドをクリア
+			this.grid.clear();
+
+			// 現在の位置でマーカーを更新
+			this.markers.forEach((marker, id) => {
+				const rect = marker.element.getBoundingClientRect();
+				marker.bounds = {
+					x: rect.left,
+					y: rect.top,
+					width: rect.width,
+					height: rect.height
+				};
+			});
+
+			// 優先度順にソート
+			const sortedMarkers = Array.from(this.markers.entries()).sort(
+				([idA, markerA], [idB, markerB]) => markerA.priority - markerB.priority
+			);
+
+			const processed = new Set();
+
+			sortedMarkers.forEach(([id, marker]) => {
+				if (processed.has(id)) return;
+
+				const keys = this.getGridKeys(marker.bounds);
+				let hasCollision = false;
+
+				// 衝突チェック
+				keys.forEach((key) => {
+					if (this.grid.has(key)) {
+						this.grid.get(key).forEach((existingId) => {
+							const existingMarker = this.markers.get(existingId);
+							if (this.checkBoundsOverlap(marker.bounds, existingMarker.bounds)) {
+								hasCollision = true;
+							}
+						});
+					}
+				});
+
+				if (!hasCollision) {
+					// 衝突なし - 表示してグリッドに追加
+					marker.element.style.display = 'block';
+					marker.visible = true;
+
+					keys.forEach((key) => {
+						if (!this.grid.has(key)) {
+							this.grid.set(key, new Set());
+						}
+						this.grid.get(key).add(id);
+					});
+				} else {
+					// 衝突あり - 非表示
+					marker.element.style.display = 'none';
+					marker.visible = false;
+				}
+
+				processed.add(id);
+			});
+		}
+
+		checkBoundsOverlap(a, b) {
+			return !(
+				a.x + a.width < b.x ||
+				b.x + b.width < a.x ||
+				a.y + a.height < b.y ||
+				b.y + b.height < a.y
+			);
+		}
+
+		removeMarker(id) {
+			this.markers.delete(id);
+		}
+
+		clear() {
+			this.grid.clear();
+			this.markers.clear();
+		}
+	}
+
+	// MapLibre用マーカーマネージャー
+	class MapMarkerManager {
+		constructor(mapInstance) {
+			this.map = mapInstance;
+			this.collisionManager = new SpatialHashCollisionManager(80); // 80pxグリッド
+			this.markers = new Map();
+			this.debounceTimer = null;
+			this.isProcessing = false;
+
+			// マップイベントリスナーを設定
+			this.setupEventListeners();
+		}
+
+		setupEventListeners() {
+			// マップの移動・ズーム終了時に衝突判定を実行
+			this.map.on('moveend', () => this.onMapChange());
+			this.map.on('zoomend', () => this.onMapChange());
+			this.map.on('resize', () => this.onMapChange());
+		}
+
+		// マーカーを追加（DOM要素として）
+		addDOMMarker(id, lngLat, content, priority = 0, className = 'custom-marker') {
+			// DOM要素を作成
+			const markerElement = document.createElement('div');
+			markerElement.className = className;
+			markerElement.innerHTML = content;
+			markerElement.style.position = 'absolute';
+			markerElement.style.zIndex = 1000 - priority; // 優先度が高いほど前面に
+
+			// MapLibre Markerを作成
+			const maplibreMarker = new maplibregl.Marker({
+				element: markerElement,
+				anchor: 'bottom'
+			})
+				.setLngLat(lngLat)
+				.addTo(this.map);
+
+			// 内部管理用に保存
+			this.markers.set(id, {
+				maplibreMarker: maplibreMarker,
+				element: markerElement,
+				lngLat: lngLat,
+				priority: priority,
+				content: content
+			});
+
+			// 衝突管理に追加
+			this.collisionManager.addMarker(id, markerElement, priority);
+
+			return maplibreMarker;
+		}
+
+		// ポップアップ付きマーカーを追加
+		addPopupMarker(id, lngLat, markerContent, popupContent, priority = 0) {
+			const markerElement = document.createElement('div');
+			markerElement.className = 'popup-marker';
+			markerElement.innerHTML = markerContent;
+			markerElement.style.cursor = 'pointer';
+
+			// ポップアップを作成
+			const popup = new maplibregl.Popup({
+				offset: 25,
+				closeButton: false,
+				closeOnClick: false
+			}).setHTML(popupContent);
+
+			const maplibreMarker = new maplibregl.Marker({
+				element: markerElement,
+				anchor: 'bottom'
+			})
+				.setLngLat(lngLat)
+				.setPopup(popup)
+				.addTo(this.map);
+
+			// マーカークリックでポップアップ表示
+			markerElement.addEventListener('click', () => {
+				popup.addTo(this.map);
+			});
+
+			this.markers.set(id, {
+				maplibreMarker: maplibreMarker,
+				element: markerElement,
+				popup: popup,
+				lngLat: lngLat,
+				priority: priority
+			});
+
+			this.collisionManager.addMarker(id, markerElement, priority);
+
+			return maplibreMarker;
+		}
+
+		// GeoJSONデータから一括でマーカーを作成
+		addMarkersFromGeoJSON(geojson, options = {}) {
+			const {
+				getContent = (feature) => `<div class="marker-pin"></div>`,
+				getPriority = (feature) => feature.properties.priority || 0,
+				getPopupContent = null,
+				markerClass = 'geojson-marker'
+			} = options;
+
+			geojson.features.forEach((feature, index) => {
+				if (feature.geometry.type === 'Point') {
+					const id = feature.properties.id || `marker-${index}`;
+					const lngLat = feature.geometry.coordinates;
+					const content = getContent(feature);
+					const priority = getPriority(feature);
+
+					if (getPopupContent) {
+						const popupContent = getPopupContent(feature);
+						this.addPopupMarker(id, lngLat, content, popupContent, priority);
+					} else {
+						this.addDOMMarker(id, lngLat, content, priority, markerClass);
+					}
+				}
+			});
+
+			// 初回衝突判定
+			this.updateMarkerVisibility();
+		}
+
+		// マーカーを削除
+		removeMarker(id) {
+			const marker = this.markers.get(id);
+			if (marker) {
+				marker.maplibreMarker.remove();
+				this.markers.delete(id);
+				this.collisionManager.removeMarker(id);
+			}
+		}
+
+		// 全マーカーをクリア
+		clearAllMarkers() {
+			this.markers.forEach((marker, id) => {
+				marker.maplibreMarker.remove();
+			});
+			this.markers.clear();
+			this.collisionManager.clear();
+		}
+
+		// マップ変更時の処理
+		onMapChange() {
+			if (this.isProcessing) return;
+
+			// デバウンス処理
+			if (this.debounceTimer) {
+				clearTimeout(this.debounceTimer);
+			}
+
+			this.debounceTimer = setTimeout(() => {
+				this.updateMarkerVisibility();
+			}, 150); // 150ms後に実行
+		}
+
+		// マーカー表示状態を更新
+		updateMarkerVisibility() {
+			if (this.isProcessing) return;
+
+			this.isProcessing = true;
+
+			try {
+				// 画面外のマーカーを事前に非表示
+				this.hideOffscreenMarkers();
+
+				// 衝突判定を実行
+				this.collisionManager.updateCollisions();
+			} catch (error) {
+				console.error('Error updating marker visibility:', error);
+			} finally {
+				this.isProcessing = false;
+			}
+		}
+
+		// 画面外マーカーの非表示処理
+		hideOffscreenMarkers() {
+			const bounds = this.map.getBounds();
+
+			this.markers.forEach((marker, id) => {
+				const [lng, lat] = marker.lngLat;
+				const isVisible = bounds.contains([lng, lat]);
+
+				if (!isVisible) {
+					marker.element.style.display = 'none';
+				} else {
+					marker.element.style.display = 'block';
+				}
+			});
+		}
+
+		// 優先度を更新
+		updateMarkerPriority(id, newPriority) {
+			const marker = this.markers.get(id);
+			if (marker) {
+				marker.priority = newPriority;
+				marker.element.style.zIndex = 1000 - newPriority;
+				this.collisionManager.markers.get(id).priority = newPriority;
+				this.updateMarkerVisibility();
+			}
+		}
+
+		// 統計情報を取得
+		getStats() {
+			const totalMarkers = this.markers.size;
+			const visibleMarkers = Array.from(this.markers.values()).filter(
+				(marker) => marker.element.style.display !== 'none'
+			).length;
+
+			return {
+				total: totalMarkers,
+				visible: visibleMarkers,
+				hidden: totalMarkers - visibleMarkers,
+				hiddenPercentage: (((totalMarkers - visibleMarkers) / totalMarkers) * 100).toFixed(1)
+			};
+		}
+	}
 
 	// コンポーネントがマウントされたときにマップを初期化
 	onMount(async () => {
@@ -18,9 +356,7 @@
 			return;
 		}
 
-		const geojson = (await fetch('./merge_poi.geojson').then((res) =>
-			res.json()
-		)) as FeatureCollection;
+		geojson = (await fetch('./merge_poi.geojson').then((res) => res.json())) as FeatureCollection;
 
 		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'Cntr')), // 背景レイヤーを除外
 		// 	console.log('Filtered styleJson:', styleJson);
@@ -66,40 +402,50 @@
 							'fill-opacity': 0.5 // フィルの不透明度
 						}
 					},
+
 					{
 						id: 'poi_layer', // レイヤーのID
 						source: 'poi', // ソースのID
-						type: 'circle',
+						type: 'symbol', // データタイプはサークルを指定
 						paint: {
-							'circle-color': '#ff0000', // 円の色
-							'circle-radius': 5, // 円の半径
-							'circle-opacity': 0.8 // 円の不透明度
+							'text-color': '#000', // テキストの色
+							'text-halo-color': '#fff', // テキストのハロー色
+							'text-halo-width': 1 // ハローの幅
+						},
+						layout: {
+							'icon-image': 'poi-icon', // アイコンの画像名
+							'icon-size': 1.5, // アイコンのサイズ
+							'text-field': 'AA', // テキストフィールド
+							'text-size': 12, // テキストサイズ
+							'text-anchor': 'center', // テキストのアンカー位置
+							'text-offset': [0, 0.5] // テキストのオフセット
 						}
 					}
-					// {
-					// 	id: 'poi_layer', // レイヤーのID
-					// 	source: 'poi', // ソースのID
-					// 	type: 'symbol', // データタイプはサークルを指定
-					// 	paint: {
-					// 		'text-color': '#000', // テキストの色
-					// 		'text-halo-color': '#fff', // テキストのハロー色
-					// 		'text-halo-width': 1 // ハローの幅
-					// 	},
-					// 	layout: {
-					// 		'icon-image': 'poi-icon', // アイコンの画像名
-					// 		'icon-size': 1.5, // アイコンのサイズ
-					// 		'text-field': 'AA', // テキストフィールド
-					// 		'text-size': 12, // テキストサイズ
-					// 		'text-anchor': 'center', // テキストのアンカー位置
-					// 		'text-offset': [0, 0.5] // テキストのオフセット
-					// 	}
-					// }
 				]
 			},
 			center: [136.926011, 35.551299] as LngLatLike, // 初期表示の中心座標
 			zoom: 15.36, // 初期ズームレベル
 			hash: true // URLハッシュを使用してマップの状態を管理
 		});
+
+		// extract the color from the id
+		const rgb = [255, 0, 0]; // 赤色のRGB値
+
+		const width = 32; // The image will be 64 pixels square
+		const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+		const data = new Uint8Array(width * width * bytesPerPixel);
+
+		for (let x = 0; x < width; x++) {
+			for (let y = 0; y < width; y++) {
+				const offset = (y * width + x) * bytesPerPixel;
+				data[offset + 0] = rgb[0]; // red
+				data[offset + 1] = rgb[1]; // green
+				data[offset + 2] = rgb[2]; // blue
+				data[offset + 3] = 255; // alpha
+			}
+		}
+
+		map.addImage('poi-icon', { width, height: width, data });
 
 		map.on('click', (event: MapMouseEvent) => {
 			const features = map?.queryRenderedFeatures(event.point);
@@ -112,193 +458,121 @@
 			}
 		});
 
-		function calculateCellSize(zoom) {
-			const baseSize = 10; // km
-			return baseSize / Math.pow(2, Math.max(0, zoom - 8));
+		const markers = {};
+		let markersOnScreen = {};
+
+		function updateMarkers() {
+			const newMarkers = {};
+			const features = map.queryRenderedFeatures({ layers: ['poi_layer'] });
+
+			// 現在表示されているフィーチャーのIDを収集
+			const visibleIds = new Set();
+
+			// for every feature on the screen, create an HTML marker for it (if we didn't yet),
+			// and add it to the map if it's not there already
+			for (let i = 0; i < features.length; i++) {
+				const coords = features[i].geometry.coordinates;
+				const props = features[i].properties;
+
+				const id = props._prop_id;
+				visibleIds.add(id); // 表示されているIDを記録
+
+				let marker = markers[id];
+
+				if (!marker && id) {
+					marker = new maplibregl.Marker({}).setLngLat(coords);
+
+					markers[id] = marker; // markersオブジェクトにも保存
+				}
+
+				if (marker) {
+					newMarkers[id] = marker;
+					if (!markersOnScreen[id]) {
+						marker.addTo(map);
+					}
+				}
+			}
+
+			// 表示されていないマーカーを削除
+			for (const id in markersOnScreen) {
+				if (!visibleIds.has(id)) {
+					markersOnScreen[id].remove();
+					// markersオブジェクトからも削除（メモリリークを防ぐ）
+					delete markers[id];
+				}
+			}
+
+			markersOnScreen = newMarkers;
 		}
 
-		function selectBestPoint(pointsInCell) {
-			if (!pointsInCell || pointsInCell.length === 0) {
-				return null;
-			}
+		map.on('move', updateMarkers);
 
-			if (pointsInCell.length === 1) {
-				return pointsInCell[0];
-			}
-
-			// 最初のポイントを返す（シンプルな選択）
-			return pointsInCell[0];
-
-			// またはランダム選択
-			// return pointsInCell[Math.floor(Math.random() * pointsInCell.length)];
-		}
-
-		function optimizedGridThinning(points, zoomLevel) {
-			try {
-				// より厳密な入力検証
-				console.log('Input validation - points:', points);
-
-				if (!points) {
-					console.error('Points is null or undefined');
-					return { type: 'FeatureCollection', features: [] };
-				}
-
-				if (!points.features) {
-					console.error('Points.features is null or undefined');
-					return { type: 'FeatureCollection', features: [] };
-				}
-
-				if (!Array.isArray(points.features)) {
-					console.error('Points.features is not an array:', typeof points.features);
-					return { type: 'FeatureCollection', features: [] };
-				}
-
-				if (points.features.length === 0) {
-					console.log('No points to thin');
-					return points;
-				}
-
-				console.log('Input points:', points.features.length);
-
-				const cellSize = calculateCellSize(zoomLevel);
-				console.log('Cell size:', cellSize, 'km at zoom', zoomLevel);
-
-				const bbox = map?.getBounds();
-				const bboxCoords = bbox
-					? [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()]
-					: null;
-				console.log('Bounding box:', bbox);
-
-				const hexGrid = turfHexGrid(bboxCoords, cellSize, { units: 'kilometers' });
-				console.log('Hex grid cells:', hexGrid.features.length);
-
-				const hexSource = map?.getSource('hex') as maplibregl.GeoJSONSource;
-				if (hexSource) {
-					hexSource.setData(hexGrid);
-				} else {
-					console.error('Source "hex" not found');
-				}
-
-				// より安全なポイント処理
-				const pointsWithId = {
-					type: 'FeatureCollection',
-					features: points.features
-						.map((point, index) => {
-							// ポイントの構造を確認
-							if (!point || !point.geometry) {
-								console.warn('Invalid point at index', index, point);
-								return null;
-							}
-
-							return {
-								...point,
-								properties: {
-									...(point.properties || {}),
-									_tempId: index
-								}
-							};
-						})
-						.filter((point) => point !== null) // 無効なポイントを除外
-				};
-
-				console.log('Points with ID:', pointsWithId.features.length);
-
-				// turf.collectを実行
-				const collected = turfCollect(hexGrid, pointsWithId, '_tempId', 'pointIds');
-				console.log('Collected result:', collected);
-
-				// 結果の検証
-				if (!collected || !collected.features || !Array.isArray(collected.features)) {
-					console.error('Invalid collected result:', collected);
-					return points;
-				}
-
-				const thinnedFeatures = collected.features
-					.filter((hex) => {
-						// より安全なフィルタリング
-						return (
-							hex &&
-							hex.properties &&
-							hex.properties.pointIds &&
-							Array.isArray(hex.properties.pointIds) &&
-							hex.properties.pointIds.length > 0
-						);
-					})
-					.map((hex) => {
-						try {
-							// 正しいプロパティ名を使用
-							const pointIds = hex.properties.pointIds; // .id ではなく .pointIds
-
-							console.log('Point IDs in hex:', pointIds);
-
-							// IDから実際のポイントを取得
-							const pointsInHex = pointIds
-								.filter(
-									(id) => typeof id === 'number' && id >= 0 && id < pointsWithId.features.length
-								)
-								.map((id) => pointsWithId.features[id])
-								.filter((point) => point !== null && point !== undefined);
-
-							console.log('Points in this hex:', pointsInHex.length);
-
-							if (pointsInHex.length === 0) {
-								return null;
-							}
-
-							const bestPoint = selectBestPoint(pointsInHex);
-
-							if (!bestPoint) {
-								return null;
-							}
-
-							return {
-								type: 'Feature',
-								geometry: bestPoint.geometry,
-								properties: bestPoint.properties || {}
-							};
-						} catch (hexError) {
-							console.error('Error processing hex:', hexError, hex);
-							return null;
-						}
-					})
-					.filter((feature) => feature !== null);
-
-				const thinnedGeoJSON = {
-					type: 'FeatureCollection',
-					features: thinnedFeatures
-				};
-
-				console.log(`元のポイント数: ${points.features.length}`);
-				console.log(`間引き後のポイント数: ${thinnedFeatures.length}`);
-
-				if (points.features.length > 0) {
-					console.log(
-						'間引き率:',
-						(1 - thinnedFeatures.length / points.features.length) * 100 + '%'
-					);
-				}
-
-				return thinnedGeoJSON;
-			} catch (error) {
-				console.error('Error in optimizedGridThinning:', error);
-				console.error('Stack trace:', error.stack);
-				// エラー時は元のデータを返す
-				return points || { type: 'FeatureCollection', features: [] };
-			}
-		}
-
-		map.on('moveend', () => {
-			// マップがロードされた後に実行される処理
-			const data = optimizedGridThinning(geojson, map?.getZoom());
-
-			const source = map?.getSource('poi') as maplibregl.GeoJSONSource;
-			if (source) {
-				source.setData(data);
-			} else {
-				console.error('Source "poi" not found');
-			}
+		map.on('load', async () => {
+			// マーカーマネージャーを初期化
+			// markerManager = new MapMarkerManager(map);
+			// try {
+			// 	// GeoJSONデータを読み込み
+			// 	// 既存の間引き処理の代わりにマーカーマネージャーを使用
+			// 	markerManager.addMarkersFromGeoJSON(geojson, {
+			// 		getContent: (feature) => {
+			// 			// マーカーの見た目をカスタマイズ
+			// 			const name = feature.properties.name || 'POI';
+			// 			return `<div class="poi-marker">
+			// 			<div class="marker-pin"></div>
+			// 			<div class="marker-label">${name}</div>
+			// 		</div>`;
+			// 		},
+			// 		getPriority: (feature) => {
+			// 			// 優先度ロジック（数値が小さいほど高優先度）
+			// 			if (feature.properties.category === 'station') return 0;
+			// 			if (feature.properties.category === 'landmark') return 1;
+			// 			return feature.properties.priority || 5;
+			// 		},
+			// 		getPopupContent: (feature) => {
+			// 			// ポップアップ内容
+			// 			return `
+			// 			<h3>${feature.properties.name || 'POI'}</h3>
+			// 			<p>${feature.properties.description || ''}</p>
+			// 			<small>カテゴリ: ${feature.properties.category || 'その他'}</small>
+			// 		`;
+			// 		},
+			// 		markerClass: 'custom-poi-marker'
+			// 	});
+			// 	// 統計情報を表示
+			// 	console.log('マーカー統計:', markerManager.getStats());
+			// } catch (error) {
+			// 	console.error('GeoJSONの読み込みに失敗:', error);
+			// }
 		});
 	});
+
+	// map.on('moveend', () => {
+	// 	// マップがロードされた後に実行される処理
+	// 	const data = optimizedGridThinning(geojson, map?.getZoom(), map);
+
+	// 	const source = map?.getSource('poi') as maplibregl.GeoJSONSource;
+	// 	if (source) {
+	// 		source.setData(data);
+	// 	} else {
+	// 		console.error('Source "poi" not found');
+	// 	}
+	// });
+
+	// map.on('zoom', () => {
+	// 	currentZoom = Math.floor(map?.getZoom() || 0); // 小数点以下切り捨て
+	// });
+
+	// $effect(() => {
+	// 	if (currentZoom) {
+	// 		const data = optimizedGridThinning(geojson, map?.getZoom(), map);
+	// 		const source = map?.getSource('poi') as maplibregl.GeoJSONSource;
+	// 		if (source) {
+	// 			source.setData(data);
+	// 		} else {
+	// 			console.error('Source "hex" not found');
+	// 		}
+	// 	}
+	// });
 
 	// // 例として東京タワーの地理座標
 	// const tokyoTowerLngLat = [139.7454, 35.6586]; // [経度, 緯度]
@@ -311,3 +585,7 @@
 </script>
 
 <div bind:this={mapContainer} class="w-hull h-full"></div>
+
+<style>
+	/* マーカー用のCSS */
+</style>
