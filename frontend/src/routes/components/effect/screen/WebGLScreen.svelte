@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import { mapStore } from '$routes/store/map';
+	import { transitionPageScreen } from '$routes/store/effect';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 
@@ -15,7 +16,17 @@
 			type: 'module'
 		});
 
-		worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen]);
+		worker.postMessage(
+			{ type: 'init', canvas: offscreen, width: window.innerWidth, height: window.innerHeight },
+			[offscreen]
+		);
+
+		transitionPageScreen.subscribe((transition: boolean) => {
+			worker.postMessage({
+				type: 'transition',
+				animationFlag: transition
+			});
+		});
 
 		window.addEventListener('resize', (event) => {
 			worker.postMessage({

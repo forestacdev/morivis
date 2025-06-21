@@ -7,6 +7,7 @@ let program: WebGLProgram | null = null;
 let time: WebGLUniformLocation | null = null;
 let texture: WebGLTexture | null = null;
 let resolution: WebGLUniformLocation | null = null;
+let animationFlagUniformLocation: WebGLUniformLocation | null = null;
 
 const createShader = (gl: WebGLRenderingContext, type: GLenum, source: string) => {
 	const shader = gl.createShader(type);
@@ -45,10 +46,10 @@ const createProgram = (
 
 self.onmessage = (e) => {
 	const startTime = performance.now();
-	const { type, canvas } = e.data;
+	const { type, canvas, width, height } = e.data;
 
 	if (type === 'init') {
-		gl = canvas.getContext('webgl2');
+		gl = canvas.getContext('webgl');
 
 		if (!gl) {
 			console.error('WebGL context not available');
@@ -71,8 +72,9 @@ self.onmessage = (e) => {
 
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 		time = gl.getUniformLocation(program, 'time');
-
 		resolution = gl.getUniformLocation(program, 'resolution');
+		animationFlagUniformLocation = gl.getUniformLocation(program, 'animationFlag');
+		gl.uniform1f(animationFlagUniformLocation, 0.0);
 
 		const positionBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -93,6 +95,10 @@ self.onmessage = (e) => {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+		gl.canvas.width = width;
+		gl.canvas.height = height;
+		gl.viewport(0, 0, width, height);
 	} else if (type === 'resize') {
 		const { width, height } = e.data;
 		if (!gl) {
@@ -102,6 +108,14 @@ self.onmessage = (e) => {
 		gl.canvas.width = width;
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
+	} else if (type === 'transition') {
+		const { animationFlag } = e.data;
+		if (!gl || !animationFlagUniformLocation) {
+			console.error('WebGL context or uniform location not available');
+			return;
+		}
+		gl.useProgram(program);
+		gl.uniform1f(animationFlagUniformLocation, animationFlag ? 1.0 : -1.0);
 	}
 
 	const draw = () => {
