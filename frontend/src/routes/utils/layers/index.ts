@@ -48,6 +48,7 @@ import type {
 import { FeatureStateManager } from '$routes/utils/featureState';
 import { getLabelLayers } from '$routes/utils/layers/label';
 import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
+import { poiLayers } from '$routes/utils/layers/poi';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
@@ -818,6 +819,7 @@ export const createLayersItems = (
 		...streetViewLayers,
 		...contourLabelLayer,
 		...mapLabelItems,
-		...symbolLayerItems
+		...symbolLayerItems,
+		...poiLayers
 	];
 };

@@ -30,7 +30,7 @@ const createLayerStore = () => {
 
 	const initialState: GroupedLayers = {
 		label: [],
-		point: ['fac_ziriki_point', 'fac_building_point', 'fac_poi'],
+		point: [],
 		line: ['ensyurin_road2'],
 		polygon: ['ensyurin_rinhan'],
 		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']

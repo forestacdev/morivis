@@ -22,6 +22,7 @@
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/+page.svelte';
+	import { poiLayersIds } from '$routes/utils/layers/poi';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -284,6 +285,60 @@
 		}
 	});
 
+	type MarkerMap = { [id: string]: maplibregl.Marker };
+
+	let markers: MarkerMap = {};
+	let markersOnScreen: MarkerMap = {};
+
+	// マーカーオブジェクトの型を定義
+
+	const updateMarkers = () => {
+		const newMarkers: MarkerMap = {};
+		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
+
+		// 現在表示されているフィーチャーのIDを収集
+		const visibleIds = new Set<string>();
+
+		for (let i = 0; i < features.length; i++) {
+			const feature = features[i];
+			const props = feature.properties;
+
+			// Point geometryかどうかをチェック
+			if (feature.geometry.type !== 'Point') {
+				continue;
+			}
+
+			const coords = feature.geometry.coordinates as [number, number];
+			const id = props._prop_id;
+
+			if (id) {
+				visibleIds.add(id);
+
+				let marker = markers[id];
+
+				if (!marker) {
+					marker = new maplibregl.Marker({}).setLngLat(coords);
+					markers[id] = marker;
+				}
+
+				newMarkers[id] = marker;
+				if (!markersOnScreen[id]) {
+					marker.addTo(map);
+				}
+			}
+		}
+
+		// 表示されていないマーカーを削除
+		for (const id in markersOnScreen) {
+			if (!visibleIds.has(id)) {
+				markersOnScreen[id].remove();
+				delete markers[id];
+			}
+		}
+
+		markersOnScreen = newMarkers;
+	};
+
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	map.on('load', () => {
 		map.on('mousemove', (e) => {
@@ -301,22 +356,24 @@
 			}
 		});
 
-        map.on('mousedown', (e) => {
+		map.on('mousedown', (e) => {
+			const clickLayerIds = [...$clickableVectorIds];
+			const features = map.queryRenderedFeatures(e.point, {
+				layers: clickLayerIds
+			});
 
-            const clickLayerIds = [...$clickableVectorIds];
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: clickLayerIds
-            });
-
-            if (features.length > 0) {
-            } else {
-                map.getCanvas().style.cursor = 'move';
-            }
+			if (features.length > 0) {
+			} else {
+				map.getCanvas().style.cursor = 'move';
+			}
 		});
 
-        map.on('mouseup', (e) => {
-            map.getCanvas().style.cursor = 'default';
-        });
+		map.on('mouseup', (e) => {
+			map.getCanvas().style.cursor = 'default';
+		});
+
+		map.on('move', updateMarkers);
+		updateMarkers();
 	});
 
 	// // マウスカーソルの変更

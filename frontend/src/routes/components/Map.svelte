@@ -276,12 +276,12 @@
 		mapStore.init(mapContainer, mapStyle as StyleSpecification);
 	});
 
-	// onDestroy(() => {
-	// 	if (maplibreMap) {
-	// 		maplibreMap.remove();
-	// 		maplibreMap = null;
-	// 	}
-	// });
+	onDestroy(() => {
+		if (maplibreMap) {
+			maplibreMap.remove();
+			maplibreMap = null;
+		}
+	});
 
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {

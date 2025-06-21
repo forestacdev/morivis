@@ -6,6 +6,7 @@ import {
 	type ImageSourceSpecification,
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 import { TileImageManager } from '$routes/protocol/image';
 
@@ -251,7 +252,6 @@ export const createSourcesItems = async (
 	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
 	// ラベルのソースを追加
-
 	const isGsiSource =
 		get(showLabelLayer) || get(showLoadLayer) || get(showBoundaryLayer) || get(showContourLayer);
 
@@ -267,7 +267,18 @@ export const createSourcesItems = async (
 			}
 		: {};
 
-	return { ...sourceItems, ...gsiSources } as {
+	// POIのソースを追加
+	const poiSources = {
+		poi: {
+			type: 'vector',
+			url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
+			maxzoom: 14,
+			minzoom: 1,
+			bounds: [-180, -85.051129, 180, 85.051129]
+		}
+	};
+
+	return { ...sourceItems, ...gsiSources, ...poiSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

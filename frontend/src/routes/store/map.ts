@@ -118,6 +118,25 @@ const createMapStore = () => {
 
 		if (!map) return;
 
+		// extract the color from the id
+		const rgb = [255, 0, 0]; // 赤色のRGB値
+
+		const width = 32; // The image will be 64 pixels square
+		const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+		const data = new Uint8Array(width * width * bytesPerPixel);
+
+		for (let x = 0; x < width; x++) {
+			for (let y = 0; y < width; y++) {
+				const offset = (y * width + x) * bytesPerPixel;
+				data[offset + 0] = rgb[0]; // red
+				data[offset + 1] = rgb[1]; // green
+				data[offset + 2] = rgb[2]; // blue
+				data[offset + 3] = 255; // alpha
+			}
+		}
+
+		map.addImage('poi-icon', { width, height: width, data });
+
 		map.once('style.load', () => {
 			isStyleLoadEvent.set(map);
 		});
