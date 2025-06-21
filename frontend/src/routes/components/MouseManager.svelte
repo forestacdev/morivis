@@ -300,6 +300,23 @@
 				toggleTooltip();
 			}
 		});
+
+        map.on('mousedown', (e) => {
+
+            const clickLayerIds = [...$clickableVectorIds];
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: clickLayerIds
+            });
+
+            if (features.length > 0) {
+            } else {
+                map.getCanvas().style.cursor = 'move';
+            }
+		});
+
+        map.on('mouseup', (e) => {
+            map.getCanvas().style.cursor = 'default';
+        });
 	});
 
 	// // マウスカーソルの変更
