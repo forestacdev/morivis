@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import WebGLScreen from '$routes/components/effect/screen/WebGLScreen.svelte';
 
 	let { children } = $props();
 
@@ -82,6 +83,8 @@
 		}
 	});
 </script>
+
+<WebGLScreen />
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />

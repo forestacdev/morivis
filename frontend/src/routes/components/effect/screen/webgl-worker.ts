@@ -70,9 +70,9 @@ self.onmessage = (e) => {
 		}
 
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-		time = gl.getUniformLocation(program, 'u_time');
+		time = gl.getUniformLocation(program, 'time');
 
-		resolution = gl.getUniformLocation(program, 'u_resolution');
+		resolution = gl.getUniformLocation(program, 'resolution');
 
 		const positionBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);

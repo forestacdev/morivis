@@ -34,7 +34,7 @@
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, LngLatBoundsLike } from 'maplibre-gl';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
@@ -248,7 +248,7 @@
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		const map = mapStore.getMap();
-		if (!map) return;
+		if (!map || !map.loaded()) return;
 
 		showAngleMarker = value;
 

@@ -17,22 +17,17 @@
 
 		worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen]);
 
-		mapStore.onResize((e) => {
-			const mapCanvas = mapStore.getCanvas();
-			if (!mapCanvas) {
-				console.error('Map canvas not found');
-				return;
-			}
+		window.addEventListener('resize', (event) => {
 			worker.postMessage({
 				type: 'resize',
-				width: mapCanvas.clientWidth,
-				height: mapCanvas.clientHeight
+				width: window.innerWidth,
+				height: window.innerHeight
 			});
 		});
 	});
 </script>
 
-<canvas bind:this={canvas} class="pointer-events-none absolute h-full w-full"></canvas>
+<canvas bind:this={canvas} class="pointer-events-none absolute z-50 h-full w-full"></canvas>
 
 <style>
 </style>

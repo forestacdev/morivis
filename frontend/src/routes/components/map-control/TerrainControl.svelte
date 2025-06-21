@@ -21,18 +21,27 @@
 	};
 
 	isTerrain3d.subscribe((is3d) => {
+		console.log('isTerrain3d changed:', is3d);
 		const map = mapStore.getMap();
-		if (!map) return;
-		if (is3d) {
-			map.setTerrain({
-				source: 'terrain',
-				exaggeration: 1.0
-			});
-			set3dParams('1');
-			map.easeTo({ pitch: 60 });
-		} else {
-			map.setTerrain(null);
-			map.easeTo({ pitch: 0 });
+		if (!map || !map.loaded()) return;
+		try {
+			if (is3d) {
+				if (map.getSource('terrain')) {
+					map.setTerrain({
+						source: 'terrain',
+						exaggeration: 1.0
+					});
+					set3dParams('1');
+					map.easeTo({ pitch: 60 });
+				}
+			} else {
+				if (map.getTerrain()) {
+					map.setTerrain(null);
+				}
+				map.easeTo({ pitch: 0 });
+			}
+		} catch (error) {
+			console.error('Terrain control error:', error);
 		}
 	});
 

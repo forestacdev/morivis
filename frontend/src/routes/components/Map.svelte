@@ -55,6 +55,7 @@
 	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
 	import { drawLayers } from '$routes/utils/layers/draw';
 	import { getLayerEntries, saveToLayerEntries } from '$routes/utils/localStorage';
+	import PoiManager from '$routes/components/PoiManager.svelte';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -332,8 +333,8 @@
 
 	// 書き込みデータの更新を監視
 	$effect(() => {
-		$state.snapshot(drawGeojsonData);
-		if (!maplibreMap) return;
+		if (!maplibreMap || !maplibreMap.loaded()) return;
+
 		const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
 		if (source) {
 			source.setData(drawGeojsonData as FeatureCollection);
@@ -451,6 +452,7 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
+	<PoiManager map={maplibreMap} />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		map={maplibreMap}

@@ -2,14 +2,17 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
+	import { propData } from '$routes/data/propData';
 
 	interface Props {
 		map: maplibregl.Map;
 		lngLat: LngLat | null;
+		properties: { [key: string]: any };
 	}
-	let { lngLat = $bindable(), map }: Props = $props();
+	let { lngLat = $bindable(), map, properties }: Props = $props();
 	let container = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
+	let imageUrl: string | null = $state.raw(null);
 
 	onMount(() => {
 		if (container && lngLat) {
@@ -21,62 +24,44 @@
 				.setLngLat(lngLat)
 				.addTo(map);
 		}
+
+		const id = properties._prop_id;
+		imageUrl = propData[id].image;
 	});
 
-	$effect(() => {
-		if (marker && lngLat && container) {
-			marker = new maplibregl.Marker({
-				element: container,
-				anchor: 'center',
-				offset: [0, 0]
-			})
-				.setLngLat(lngLat)
-				.addTo(map);
-		}
-	});
+	// $effect(() => {
+	// 	if (marker && lngLat && container) {
+	// 		marker = new maplibregl.Marker({
+	// 			element: container,
+	// 			anchor: 'center',
+	// 			offset: [0, 0]
+	// 		})
+	// 			.setLngLat(lngLat)
+	// 			.addTo(map);
+	// 	}
+	// });
 
 	onDestroy(() => {
 		marker?.remove();
 	});
+
+	const click = () => {};
 </script>
 
-<div
+<button
 	bind:this={container}
-	class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
+	class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
+	onclick={click}
 >
-	<div class="css-ripple-effect"></div>
-	<div class="border-main absolute h-[12px] w-[12px] rounded-full border-[2px] bg-white"></div>
-
-	<div class="border-main absolute h-[24px] w-[24px] rounded-full border-2"></div>
-	<div class="border-base absolute h-[20px] w-[20px] rounded-full border-2"></div>
-</div>
+	{#if imageUrl}
+		<img
+			class="border-base drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
+			src={imageUrl}
+			alt={properties.name || 'Marker Image'}
+			crossOrigin="anonymous"
+		/>
+	{/if}
+</button>
 
 <style>
-	/* エフェクト要素 */
-	.css-ripple-effect {
-		width: 70px;
-		height: 70px;
-		position: absolute;
-		border-radius: 100%;
-		pointer-events: none;
-		opacity: 0;
-		animation: ripple 1.5s ease-out infinite;
-		background-color: var(--color-base);
-	}
-
-	/* アニメーションの定義 */
-	@keyframes ripple {
-		0% {
-			opacity: 0.5;
-			scale: 0;
-		}
-		60% {
-			scale: 1.5;
-			opacity: 0;
-		}
-		100% {
-			scale: 1.5;
-			opacity: 0;
-		}
-	}
 </style>

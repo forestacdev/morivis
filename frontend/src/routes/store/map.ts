@@ -46,6 +46,7 @@ import { terrainProtocol } from '$routes/protocol/terrain';
 import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 import { handleStyleImageMissing } from '$routes/utils/icon';
 import { isStyleEdit } from './index';
+import { remove } from 'jszip';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -118,23 +119,10 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-		// extract the color from the id
-		const rgb = [255, 0, 0]; // 赤色のRGB値
-
-		const width = 32; // The image will be 64 pixels square
-		const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+		// poi用の透明アイコンを追加
+		const width = 16;
+		const bytesPerPixel = 4;
 		const data = new Uint8Array(width * width * bytesPerPixel);
-
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < width; y++) {
-				const offset = (y * width + x) * bytesPerPixel;
-				data[offset + 0] = rgb[0]; // red
-				data[offset + 1] = rgb[1]; // green
-				data[offset + 2] = rgb[2]; // blue
-				data[offset + 3] = 255; // alpha
-			}
-		}
-
 		map.addImage('poi-icon', { width, height: width, data });
 
 		map.once('style.load', () => {
@@ -224,6 +212,26 @@ const createMapStore = () => {
 		map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		initEvent.set(map);
+	};
+
+	const remove = () => {
+		if (!map) return;
+		map.remove();
+		map = null;
+		set(null);
+		clickEvent.set(null);
+		mouseoverEvent.set(null);
+		mouseoutEvent.set(null);
+		rotateEvent.set(null);
+		zoomEvent.set(null);
+		setStyleEvent.set(null);
+		isLoadingEvent.set(true);
+		isStyleLoadEvent.set(null);
+		mooveEndEvent.set(null);
+		resizeEvent.set(null);
+		initEvent.set(null);
+		onLoadEvent.set(null);
+		lockOnMarker = null;
 	};
 
 	// Method for setting map style
@@ -440,6 +448,7 @@ const createMapStore = () => {
 	return {
 		subscribe,
 		init,
+		remove,
 		setStyle,
 		addLockonMarker,
 		removeLockonMarker,

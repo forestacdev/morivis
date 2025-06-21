@@ -2,8 +2,8 @@
 precision highp float;
 
 in vec2 v_uv;
-uniform vec2 u_resolution;
-uniform float u_time;
+uniform vec2 resolution;
+uniform float time;
 
 out vec4 outColor;
 
@@ -12,8 +12,8 @@ void main() {
 
     // アスペクト補正してから中心との距離を算出
     vec2 delta = (v_uv - center);
-    delta.x *= u_resolution.x / u_resolution.y;
-    vec2 r = u_resolution;
+    delta.x *= resolution.x / resolution.y;
+    vec2 r = resolution;
     vec2 p = (gl_FragCoord.xy *2. -r) / min(r.x,r.y);
     // float dist = length(p);
     float dist = length(delta);
@@ -21,11 +21,21 @@ void main() {
     // グラデーション：中心が明るく、外側が暗い
     float gradient = smoothstep(0.5, 0.9, dist); // 0 → 1 に滑らかに変化
 
-    // 最終色（背景色が白なら暗く見える）
-    vec3 color = vec3(0.0); // 黒
-    float alpha = gradient * 0.8; // 外側だけ強く見える
 
-    outColor = vec4(color, alpha);
+
+    vec2 position = ( gl_FragCoord.xy / resolution.xy ) / 4.0;
+
+	float color = 0.0;
+	color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
+	color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
+	color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
+	color *= sin( time / 10.0 ) * 0.5;
+
+    // 画面全体に色を適用
+    outColor = vec4(vec3(color), 0.7);
+
+
+   
 }
 
 // void main(){

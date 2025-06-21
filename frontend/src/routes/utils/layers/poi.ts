@@ -5,7 +5,7 @@ const LAYER_BASE = {
 	type: 'symbol', // データタイプはサークルを指定
 	layout: {
 		'icon-image': 'poi-icon', // アイコンの画像名
-		'icon-size': 1.5 // アイコンのサイズ
+		'icon-size': 3 // アイコンのサイズ
 	}
 } as const;
 

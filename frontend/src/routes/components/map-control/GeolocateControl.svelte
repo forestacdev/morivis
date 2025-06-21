@@ -5,9 +5,9 @@
 
 	import { mapStore } from '$routes/store/map';
 
-	let controlContainer: HTMLDivElement;
+	let controlContainer = $state<HTMLDivElement | null>(null);
 	let observer;
-	let state: string = '';
+	let controlState: string = '';
 
 	const handleClassChange = (mutations: MutationRecord[]) => {
 		const mutation = mutations[0];
@@ -16,24 +16,24 @@
 			const target = mutation.target as HTMLElement;
 			if (target.classList.contains('maplibregl-ctrl-geolocate-waiting')) {
 				// 処理中
-				state = 'waiting';
+				controlState = 'waiting';
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-active') ||
 				target.classList.contains('maplibregl-ctrl-geolocate-background')
 			) {
 				// 現在位置表示中
-				state = 'active';
+				controlState = 'active';
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-error') ||
 				target.classList.contains('maplibregl-ctrl-geolocate-background-error')
 			) {
-				state = 'error';
+				controlState = 'error';
 				return;
 			} else {
 				// 現在位置表示していない
-				state = '';
+				controlState = '';
 			}
 		}
 	};
@@ -50,10 +50,10 @@
 					trackUserLocation: true,
 					showUserLocation: true
 				});
-				controlContainer.appendChild(geolocateControl.onAdd(map));
 
 				// MutationObserver の設定
 				if (controlContainer) {
+					controlContainer.appendChild(geolocateControl.onAdd(map));
 					observer = new MutationObserver(handleClassChange);
 					observer.observe(geolocateControl._container.children[0], {
 						attributes: true,
@@ -76,11 +76,11 @@
 >
 	<Icon
 		icon="streamline:location-target-1-solid"
-		class="absolute h-6 w-6 {state === 'waiting'
+		class="absolute h-6 w-6 {controlState === 'waiting'
 			? 'css-rotate text-accent'
-			: state === 'active'
+			: controlState === 'active'
 				? 'text-accent'
-				: state === 'error'
+				: controlState === 'error'
 					? 'text-red-500'
 					: 'text-base'}"
 	/>
