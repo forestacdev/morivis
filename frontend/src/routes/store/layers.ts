@@ -33,7 +33,7 @@ const createLayerStore = () => {
 		point: [],
 		line: ['ensyurin_road2'],
 		polygon: ['ensyurin_rinhan'],
-		raster: ['gsi_rinya_m', 'gsi_seamlessphoto']
+		raster: ['ensyurin_photo', 'gsi_seamlessphoto', 'usgs_imagery_only']
 	};
 
 	const store = writable<GroupedLayers>({ ...initialState });

@@ -167,6 +167,9 @@
 			version: 8,
 			glyphs: MAP_FONT_DATA_PATH,
 			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
+			projection: {
+				type: 'globe'
+			},
 			sources: {
 				...terrainSources,
 				...streetViewSources,
@@ -256,6 +259,8 @@
 			},
 			terrain: $isTerrain3d ? terrain : undefined
 		};
+
+		console.log('mapStyle', mapStyle);
 
 		return mapStyle;
 	};
