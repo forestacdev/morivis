@@ -185,12 +185,13 @@
 	let isMapView = false;
 
 	const toggleView = (val: boolean) => {
+		goto('/map');
 		// window.location.href = '/map';
-		transitionPageScreen.set(1);
-		delay(1000).then(() => {
-			goto('/map');
-			transitionPageScreen.set(-1);
-		});
+		// transitionPageScreen.set(1);
+		// delay(1000).then(() => {
+		// 	goto('/map');
+		// 	transitionPageScreen.set(-1);
+		// });
 
 		return;
 		orbitControls.autoRotate = val;

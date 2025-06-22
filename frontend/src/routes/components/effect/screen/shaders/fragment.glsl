@@ -34,16 +34,16 @@ vec4 hexCoords(vec2 uv) {
 void main(void) {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    float baseScale = 6.0;
+    float baseScale = 10.0;
     uv *= baseScale;
 
     vec4 hc = hexCoords(uv);
     vec2 gv = hc.xy;
     vec2 id = hc.zw;
 
-    float distFromBottomRight = length(id - vec2(5.0, -5.0));
+    float distFromBottomRight = length(id - vec2(0.0, 0.0));
 
-    float animationSpeed = 2.0;
+    float animationSpeed = 2.5;
     float delayPerUnitDist = 0.1;
     float appearDuration = 1.0;
     float disappearDuration = 1.0;

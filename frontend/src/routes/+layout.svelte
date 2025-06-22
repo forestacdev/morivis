@@ -14,12 +14,26 @@
 	import { showTermsDialog } from '$routes/store';
 	import { checkToTermsAccepted } from '$routes/utils/localStorage';
 	import { isPc } from '$routes/utils/ui';
+	import { delay } from 'es-toolkit';
+	import { transitionPageScreen } from '$routes/store/effect';
 
-	// onNavigate((navigation) => {
-	// 	return new Promise((resolve) => {
-	// 		resolve();
-	// 	});
-	// });
+	onNavigate((navigation) => {
+		// NOTE: URLパラメータの変更のみ無効
+		if (navigation.from && navigation.to && navigation.from.route.id === navigation.to.route.id) {
+			return;
+		}
+		return new Promise((resolve) => {
+			// ページ遷移のアニメーションを制御
+			transitionPageScreen.set(1);
+			delay(1000).then(() => {
+				resolve();
+				navigation.complete;
+				delay(300).then(() => {
+					transitionPageScreen.set(-1);
+				});
+			});
+		});
+	});
 
 	type Device = 'mobile' | 'pc' | '';
 
