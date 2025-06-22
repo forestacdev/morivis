@@ -104,7 +104,6 @@
 					<img
 						in:fade
 						class="block aspect-square h-full w-full rounded-lg object-cover"
-						crossOrigin="anonymous"
 						alt="画像"
 						src={srcData}
 					/>

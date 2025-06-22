@@ -8,7 +8,7 @@
 
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/store';
@@ -16,13 +16,8 @@
 	import { isPc } from '$routes/utils/ui';
 
 	// onNavigate((navigation) => {
-	// 	if (!document.startViewTransition) return;
-
 	// 	return new Promise((resolve) => {
-	// 		document.startViewTransition(async () => {
-	// 			resolve();
-	// 			await navigation.complete;
-	// 		});
+	// 		resolve();
 	// 	});
 	// });
 

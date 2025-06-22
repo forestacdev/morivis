@@ -110,6 +110,7 @@ self.onmessage = (e) => {
 		gl.canvas.width = width;
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
+		gl.uniform1f(animationFlagUniformLocation, 0);
 	} else if (type === 'transition') {
 		const { animationFlag } = e.data;
 		if (!gl || !animationFlagUniformLocation) {

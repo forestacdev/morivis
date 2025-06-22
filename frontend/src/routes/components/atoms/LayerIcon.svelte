@@ -76,7 +76,6 @@
 				<img
 					transition:fade
 					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-					crossOrigin="anonymous"
 					alt={layerEntry.metaData.name}
 					src={url}
 					onerror={() => {
@@ -90,7 +89,6 @@
 			{#await promise then url}
 				<img
 					transition:fade
-					crossOrigin="anonymous"
 					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
 					alt={layerEntry.metaData.name}
 					src={url}
@@ -110,7 +108,6 @@
 		{#await promise then url}
 			<img
 				transition:fade
-				crossOrigin="anonymous"
 				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
 				alt={layerEntry.metaData.name}
 				src={url}

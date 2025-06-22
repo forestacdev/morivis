@@ -19,7 +19,6 @@ export const createSVGPattern = (colors, size = 20) => {
 export const svgToPng = async (svgString, width, height) => {
 	return new Promise((resolve, reject) => {
 		const img = new Image();
-		img.crossOrigin = 'Anonymous'; // クロスオリジンリソースを扱うための設定
 		img.onload = () => {
 			try {
 				const canvas = document.createElement('canvas');

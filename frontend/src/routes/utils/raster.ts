@@ -83,7 +83,6 @@ export const getPixelColor = async (
 
 		// タイル画像を読み込み
 		const img = new Image();
-		img.crossOrigin = 'anonymous';
 		img.src = src;
 
 		return await new Promise((resolve, reject) => {

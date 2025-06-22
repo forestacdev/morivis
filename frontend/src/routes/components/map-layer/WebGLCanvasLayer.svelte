@@ -106,7 +106,6 @@
 
 			const texture = gl.createTexture();
 			const image = new Image();
-			image.crossOrigin = 'anonymous';
 			image.src = 'https://cyberjapandata.gsi.go.jp/xyz/std/16/58200/25803.png';
 			await image.decode();
 

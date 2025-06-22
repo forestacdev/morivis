@@ -58,7 +58,6 @@
 			class="border-base drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
 			src={imageUrl}
 			alt={properties.name || 'Marker Image'}
-			crossOrigin="anonymous"
 		/>
 	{/if}
 </button>
