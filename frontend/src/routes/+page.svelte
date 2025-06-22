@@ -14,6 +14,76 @@
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { delay } from 'es-toolkit';
+	import type { text } from '@sveltejs/kit';
+	import type { color } from 'd3-color';
+	import type { fontFamily } from 'html2canvas/dist/types/css/property-descriptors/font-family';
+
+	const nextPowerOfTwo = (value: number) => {
+		return Math.pow(2, Math.ceil(Math.log2(value)));
+	};
+
+	// 文字テクスチャを生成
+	const generateTexture = (
+		text = 'morivis',
+		fontSize = 128,
+		color = '#ffffff',
+		fontFamily = 'Arial, sans-serif'
+	) => {
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d');
+
+		if (!ctx) {
+			throw new Error('Failed to get canvas context');
+		}
+		// フォント設定
+		ctx.font = `${fontSize}px ${fontFamily}`;
+		ctx.textAlign = 'left';
+		ctx.textBaseline = 'top';
+
+		// テキストサイズを測定
+		const metrics = ctx.measureText(text);
+		const width = Math.ceil(metrics.width) + 20; // パディング
+		const height = fontSize + 20; // パディング
+
+		// 2の累乗に調整（GPU最適化）
+		const textureWidth = nextPowerOfTwo(width);
+		const textureHeight = nextPowerOfTwo(height);
+
+		// キャンバスサイズ設定
+		canvas.width = textureWidth;
+		canvas.height = textureHeight;
+
+		// 背景をクリア（透明）
+		ctx.clearRect(0, 0, textureWidth, textureHeight);
+
+		// 背景を塗りつぶす（オプション）
+		// ctx.fillStyle = 'rgba(1.0, 0, 0, 1.0)'; // 透明
+
+		// フォント再設定（キャンバスサイズ変更でリセットされる）
+		ctx.font = `${fontSize}px ${fontFamily}`;
+		ctx.textAlign = 'left';
+		ctx.textBaseline = 'top';
+		ctx.fillStyle = color;
+
+		// アンチエイリアシング設定
+		// ctx.textRenderingOptimization = 'optimizeQuality';
+
+		// テキスト描画
+		ctx.fillText(text, 10, 10);
+
+		const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+		// デバックでダウンロード
+		// const dataUrl = canvas.toDataURL('image/png');
+		// const link = document.createElement('a');
+		// link.href = dataUrl;
+		// link.download = 'text_texture.png';
+		// document.body.appendChild(link);
+		// link.click();
+		// document.body.removeChild(link);
+
+		return canvas;
+	};
 
 	// ラスターデータの読み込み
 	const loadRasterData = async (url: string) => {
@@ -38,15 +108,29 @@
 	let renderer: THREE.WebGLRenderer;
 	let orbitControls: OrbitControls;
 
-	const material2uniforms = {
-		uTime: { value: 0 },
+	const uniforms = {
+		time: { value: 0 },
 		uColor: { value: new THREE.Color('rgb(252, 252, 252)') },
-		uColor2: { value: new THREE.Color('rgb(0, 194, 36)') }
+		uColor2: { value: new THREE.Color('rgb(0, 194, 36)') },
+		uTexture: {
+			// value: new THREE.CanvasTexture(generateTexture())
+			value: new THREE.TextureLoader().load(
+				'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmLRqJERpCe_a9JDwjDxjeWNu5IfQH32XOfg&s',
+				(texture) => {
+					// texture.minFilter = THREE.LinearFilter; // ミップマップを使用しない
+					// texture.magFilter = THREE.LinearFilter; // ミップマップを使用しない
+					texture.needsUpdate = true; // テクスチャの更新を通知
+				}
+			)
+		},
+		resolution: {
+			value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+		},
+		uTextureResolution: { value: new THREE.Vector2(1000, 750) }
 	};
 
-	const material2 = new THREE.ShaderMaterial({
-		uniforms: material2uniforms,
-		// 頂点シェーダー
+	const material = new THREE.ShaderMaterial({
+		uniforms: uniforms,
 		vertexShader,
 		fragmentShader,
 		transparent: true
@@ -168,7 +252,7 @@
 		geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 
 		// メッシュの作成とシーンへの追加
-		const mesh = new THREE.Mesh(geometry, material2);
+		const mesh = new THREE.Mesh(geometry, material);
 		const obj = scene.getObjectByName('dem');
 		if (obj) {
 			scene.remove(obj);
@@ -347,7 +431,7 @@
 			orbitControls.update();
 			zoomControls.update();
 
-			material2uniforms.uTime.value = clock.getElapsedTime();
+			uniforms.time.value = clock.getElapsedTime();
 
 			renderer.render(scene, camera);
 		};
@@ -359,6 +443,8 @@
 			const width = window.innerWidth;
 			const height = window.innerHeight;
 
+			uniforms.resolution.value.set(width, height);
+
 			// レンダラーのサイズを調整する
 			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setSize(width, height);
@@ -367,8 +453,10 @@
 			camera.aspect = width / height;
 			camera.updateProjectionMatrix();
 		};
-		window.addEventListener('resize', onResize);
 
+		window.addEventListener('resize', onResize);
+		// 初期化
+		onResize();
 		return () => {
 			// クリーンアップ
 			orbitControls.dispose();
