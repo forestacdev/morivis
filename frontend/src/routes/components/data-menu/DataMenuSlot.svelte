@@ -10,6 +10,7 @@
 	import { showNotification } from '$routes/store/notification';
 	import { getImagePmtiles } from '$routes/utils/raster';
 	import PreviewSlot from '$routes/components/data-menu/PreviewSlot.svelte';
+	import { convertTmsToXyz } from '$routes/utils/sources';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -70,7 +71,7 @@
 
 		// URLを生成して Promise として返す
 		return Promise.resolve(
-			_layerEntry.format.url
+			convertTmsToXyz(_layerEntry.format.url)
 				.replace('{z}', tile.z.toString())
 				.replace('{x}', tile.x.toString())
 				.replace('{y}', tile.y.toString())

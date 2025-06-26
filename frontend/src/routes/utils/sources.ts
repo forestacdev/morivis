@@ -40,6 +40,10 @@ const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
 };
 
+export const convertTmsToXyz = (url: string): string => {
+	return url.replace('{-y}', '{y}');
+};
+
 const demUrlCache = TileImageManager.getInstance();
 
 export const createSourcesItems = async (
@@ -120,7 +124,7 @@ export const createSourcesItems = async (
 						} else {
 							items[sourceId] = {
 								type: 'raster',
-								tiles: [format.url],
+								tiles: [convertTmsToXyz(format.url)],
 								maxzoom: metaData.maxZoom,
 								minzoom: metaData.minZoom,
 								scheme: detectTileScheme(format.url),

@@ -5,6 +5,7 @@
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { getImagePmtiles } from '$routes/utils/raster';
+	import { convertTmsToXyz } from '$routes/utils/sources';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
@@ -24,7 +25,7 @@
 
 		// URLを生成して Promise として返す
 		return Promise.resolve(
-			_layerEntry.format.url
+			convertTmsToXyz(_layerEntry.format.url)
 				.replace('{z}', tile.z.toString())
 				.replace('{x}', tile.x.toString())
 				.replace('{y}', tile.y.toString())

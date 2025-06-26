@@ -14,6 +14,7 @@ export type AttributionKey =
 	| '環境省生物多様性センター'
 	| '林野庁'
 	| '森林総合研究所'
+	| '愛媛県森林資源データ'
 	| '栃木県森林資源データ';
 
 export type Attribution = {
@@ -92,6 +93,11 @@ const attributionData: Attribution[] = [
 		key: '森林総合研究所',
 		name: '森林総合研究所',
 		url: 'https://www.biodic.go.jp'
+	},
+	{
+		key: '愛媛県森林資源データ',
+		name: '愛媛県森林資源データ',
+		url: 'https://www.geospatial.jp/ckan/organization/ehime-ringyou'
 	},
 	{
 		key: '栃木県森林資源データ',

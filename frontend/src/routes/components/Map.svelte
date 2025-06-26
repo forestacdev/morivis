@@ -238,9 +238,10 @@
 						'text-opacity': 1
 					},
 					layout: {
-						'text-field': ['to-string', ['get', 'z']],
+						'text-field': ['to-string', ['get', 'index']],
 						'text-max-width': 12,
-						'text-size': 12,
+						'text-font': ['Noto Sans JP Light'],
+						'text-size': 24,
 						'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 						'text-radial-offset': 0.5,
 						'text-justify': 'auto'
