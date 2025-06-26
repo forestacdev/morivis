@@ -22,6 +22,8 @@ import { hillshadeLayer } from '$routes/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
+import { BaseMapStyleJson } from '$routes/utils/layers/base-map';
+
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
 import type {
@@ -48,7 +50,7 @@ import type {
 import { FeatureStateManager } from '$routes/utils/featureState';
 import { getLabelLayers } from '$routes/utils/layers/label';
 import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
-import { poiLayers } from '$routes/utils/layers/poi';
+import { poiStyleJson } from '$routes/utils/layers/poi';
 
 import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
 import { get } from 'svelte/store';
@@ -799,6 +801,7 @@ export const createLayersItems = (
 	// 行政境界
 	const boundaryLayer = get(showBoundaryLayer) && _type === 'main' ? getBoundaryLayers() : [];
 
+	// 等高線
 	const contourLineLayer = get(showContourLayer) && _type === 'main' ? getContourLineLayers() : [];
 	const contourLabelLayer =
 		get(showContourLayer) && _type === 'main' ? getContourLabelLayers() : [];
@@ -806,10 +809,16 @@ export const createLayersItems = (
 	// 陰影
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
 
+	// ベースマップ
+	const rasterBaseMap = BaseMapStyleJson.layers;
+
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
+	const poiLayers = poiStyleJson.layers;
+
 	return [
+		...rasterBaseMap,
 		...rasterLayerItems,
 		...hillshadeItem,
 		...boundaryLayer,

@@ -6,7 +6,6 @@ import {
 	type ImageSourceSpecification,
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 import { TileImageManager } from '$routes/protocol/image';
 
@@ -34,6 +33,8 @@ import { getBoundingBoxCorners } from '$routes/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 import { getLoadSources } from './layers/load';
+import { BaseMapStyleJson } from '$routes/utils/layers/base-map';
+import { poiStyleJson } from '$routes/utils/layers/poi';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -268,17 +269,12 @@ export const createSourcesItems = async (
 		: {};
 
 	// POIのソースを追加
-	const poiSources = {
-		poi: {
-			type: 'vector',
-			url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-			maxzoom: 14,
-			minzoom: 1,
-			bounds: [-180, -85.051129, 180, 85.051129]
-		}
-	};
+	const poiSources = poiStyleJson.sources;
 
-	return { ...sourceItems, ...gsiSources, ...poiSources } as {
+	// ベースマップのソースを追加
+	const baseMapSources = BaseMapStyleJson.sources;
+
+	return { ...sourceItems, ...gsiSources, ...poiSources, ...baseMapSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

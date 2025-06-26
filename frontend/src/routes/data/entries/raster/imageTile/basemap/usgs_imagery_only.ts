@@ -9,7 +9,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}?blankTile=false'
+		url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
 	},
 	metaData: {
 		name: 'USGS Imagery Only',

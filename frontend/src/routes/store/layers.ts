@@ -33,7 +33,7 @@ const createLayerStore = () => {
 		point: [],
 		line: ['ensyurin_road2'],
 		polygon: ['ensyurin_rinhan'],
-		raster: ['ensyurin_photo', 'gsi_seamlessphoto', 'usgs_imagery_only']
+		raster: ['ensyurin_photo']
 	};
 
 	const store = writable<GroupedLayers>({ ...initialState });
@@ -135,7 +135,7 @@ export const showLoadLayer = writable<boolean>(true);
 export const showBoundaryLayer = writable<boolean>(true);
 
 /** 等高線レイヤー */
-export const showContourLayer = writable<boolean>(true);
+export const showContourLayer = writable<boolean>(false);
 
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
