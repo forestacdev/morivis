@@ -247,6 +247,18 @@ const createMapStore = () => {
 		lockOnMarker = new maplibregl.Marker({ element }).setLngLat(lngLat).addTo(map);
 	};
 
+	// 森林文化アカデミーへジャンプするメソッド
+	const jumpToFac = () => {
+		if (!map) return;
+		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		map.fitBounds(bounds, {
+			padding: 20,
+			bearing: map.getBearing(),
+			duration: 1000,
+			animate: true
+		});
+	};
+
 	const getMapContainer = async () => {
 		if (!map) return;
 		const canvas = map.getCanvasContainer();
@@ -484,7 +496,8 @@ const createMapStore = () => {
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
-		getMapContainer: getMapContainer // マップコンテナを取得するメソッド
+		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
+		jumpToFac: jumpToFac
 	};
 };
 

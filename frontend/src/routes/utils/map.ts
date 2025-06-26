@@ -477,5 +477,3 @@ export const getFieldDictJson = async (url: string): Promise<{ [key: string]: st
 	}
 	return await response.json();
 };
-
-/** bbox */

@@ -4,7 +4,7 @@ import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 const LAYER_BASE = {
 	source: 'poi',
 	type: 'symbol',
-	minzoom: 10,
+	minzoom: 11,
 	layout: {
 		'icon-image': 'poi-icon', // アイコンの画像名
 		'icon-size': 3 // アイコンのサイズ
@@ -19,7 +19,27 @@ export const poiStyleJson = {
 			maxzoom: 14,
 			minzoom: 1,
 			bounds: [-180, -85.051129, 180, 85.051129]
-		} as SourceSpecification
+		} as SourceSpecification,
+		fac_top: {
+			type: 'geojson',
+			data: {
+				type: 'FeatureCollection',
+				features: [
+					{
+						type: 'Feature',
+						properties: {
+							name: '森林文化アカデミー',
+							image: './mapicon.png',
+							_prop_id: 'fac_top'
+						},
+						geometry: {
+							type: 'Point',
+							coordinates: [136.918564, 35.554467]
+						}
+					}
+				]
+			}
+		}
 	},
 	layers: [
 		{
@@ -37,6 +57,16 @@ export const poiStyleJson = {
 			'source-layer': 'fac_building_point',
 
 			...LAYER_BASE
+		} as SymbolLayerSpecification,
+		{
+			id: 'poi_top_layer',
+			type: 'symbol',
+			source: 'fac_top',
+			maxzoom: 12,
+			layout: {
+				'icon-image': 'poi-icon',
+				'icon-size': 3
+			}
 		} as SymbolLayerSpecification
 	]
 };

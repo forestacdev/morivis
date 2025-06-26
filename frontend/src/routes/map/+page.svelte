@@ -208,11 +208,7 @@
 		layerEntries = [];
 		groupedLayerStore.reset();
 		selectedLayerId.set('');
-		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
-		mapStore.fitBounds(bounds, {
-			padding: 20,
-			animate: true
-		});
+		mapStore.jumpToFac();
 	};
 
 	// TODO: ストリートビュー用のクリックイベントを実装する

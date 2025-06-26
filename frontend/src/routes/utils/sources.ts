@@ -256,6 +256,9 @@ export const createSourcesItems = async (
 	const isGsiSource =
 		get(showLabelLayer) || get(showLoadLayer) || get(showBoundaryLayer) || get(showContourLayer);
 
+	// POIのソースを追加
+	const poiSources = get(showLabelLayer) ? poiStyleJson.sources : {};
+
 	const gsiSources = isGsiSource
 		? {
 				v: {
@@ -267,9 +270,6 @@ export const createSourcesItems = async (
 				}
 			}
 		: {};
-
-	// POIのソースを追加
-	const poiSources = poiStyleJson.sources;
 
 	// ベースマップのソースを追加
 	const baseMapSources = BaseMapStyleJson.sources;

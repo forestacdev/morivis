@@ -70,6 +70,13 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
+			line: {
+				paint: {},
+				layout: {
+					'line-cap': 'round',
+					'line-join': 'round'
+				}
+			},
 			symbol: {
 				paint: {},
 				layout: {

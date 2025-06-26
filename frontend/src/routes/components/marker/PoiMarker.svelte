@@ -3,6 +3,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/data/propData';
+	import { mapStore } from '$routes/store/map';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -26,7 +27,13 @@
 		}
 
 		const id = properties._prop_id;
-		imageUrl = propData[id].image;
+
+		// TODO: 整理
+		if (id === 'fac_top') {
+			imageUrl = properties.image;
+		} else {
+			imageUrl = propData[id].image;
+		}
 	});
 
 	// $effect(() => {
@@ -46,21 +53,41 @@
 	});
 
 	const click = () => {};
+
+	const jumpToFac = () => {
+		mapStore.jumpToFac();
+	};
 </script>
 
-<button
-	bind:this={container}
-	class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
-	onclick={click}
->
-	{#if imageUrl}
-		<img
-			class="border-base drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
-			src={imageUrl}
-			alt={properties.name || 'Marker Image'}
-		/>
-	{/if}
-</button>
+{#if properties._prop_id === 'fac_top'}
+	<button
+		bind:this={container}
+		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
+		onclick={jumpToFac}
+	>
+		{#if imageUrl}
+			<img
+				class="drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full object-cover transition-all duration-150 hover:scale-110"
+				src={imageUrl}
+				alt={properties.name}
+			/>
+		{/if}
+	</button>
+{:else}
+	<button
+		bind:this={container}
+		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
+		onclick={click}
+	>
+		{#if imageUrl}
+			<img
+				class="border-base drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
+				src={imageUrl}
+				alt={properties.name || 'Marker Image'}
+			/>
+		{/if}
+	</button>
+{/if}
 
 <style>
 </style>

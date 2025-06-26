@@ -4,6 +4,7 @@
 	import { onDestroy } from 'svelte';
 
 	import { mapStore } from '$routes/store/map';
+	import { showLabelLayer } from '$routes/store/layers';
 
 	import { poiLayersIds } from '$routes/utils/layers/poi';
 	import PoiMarker from '$routes/components/marker/PoiMarker.svelte';
@@ -25,6 +26,7 @@
 	};
 
 	const updateMarkers = () => {
+		if (!$showLabelLayer) return;
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 		const featureDataArray: FeatureData[] = [];
 
@@ -54,8 +56,8 @@
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	map.on('load', () => {
-		map.on('move', updateMarkers);
 		updateMarkers();
+		map.on('move', updateMarkers);
 	});
 
 	onDestroy(() => {
@@ -64,13 +66,15 @@
 	});
 </script>
 
-{#each poiDatas as poiData (poiData.id)}
-	<PoiMarker
-		{map}
-		lngLat={new maplibregl.LngLat(poiData.coordinates[0], poiData.coordinates[1])}
-		properties={poiData.properties}
-	/>
-{/each}
+{#if $showLabelLayer}
+	{#each poiDatas as poiData (poiData.id)}
+		<PoiMarker
+			{map}
+			lngLat={new maplibregl.LngLat(poiData.coordinates[0], poiData.coordinates[1])}
+			properties={poiData.properties}
+		/>
+	{/each}
+{/if}
 
 <style>
 </style>

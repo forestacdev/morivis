@@ -815,7 +815,8 @@ export const createLayersItems = (
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
 
-	const poiLayers = poiStyleJson.layers;
+	// POIレイヤーの表示
+	const poiLayers = get(showLabelLayer) && _type === 'main' ? poiStyleJson.layers : [];
 
 	return [
 		...rasterBaseMap,
