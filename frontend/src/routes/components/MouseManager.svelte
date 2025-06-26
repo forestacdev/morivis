@@ -148,7 +148,7 @@
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;
 
-		const clickLayerIds = [...$clickableVectorIds, '@tile_index_layer'];
+		const clickLayerIds = [...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
 			layers: clickLayerIds
 		});
