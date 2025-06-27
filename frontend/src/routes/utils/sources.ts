@@ -35,6 +35,7 @@ import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 import { getLoadSources } from './layers/load';
 import { BaseMapStyleJson } from '$routes/utils/layers/base-map';
 import { poiStyleJson } from '$routes/utils/layers/poi';
+import { cloudStyleJson } from '$routes/utils/layers/cloud';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -277,8 +278,9 @@ export const createSourcesItems = async (
 
 	// ベースマップのソースを追加
 	const baseMapSources = BaseMapStyleJson.sources;
+	const cloudSources = cloudStyleJson.sources;
 
-	return { ...sourceItems, ...gsiSources, ...poiSources, ...baseMapSources } as {
+	return { ...sourceItems, ...gsiSources, ...poiSources, ...baseMapSources, ...cloudSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

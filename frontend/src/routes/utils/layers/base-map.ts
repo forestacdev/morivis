@@ -7,8 +7,6 @@ export const BaseMapStyleJson = {
 			tiles: [
 				'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
 			],
-			minZoom: 1,
-			maxZoom: 22,
 			tileSize: 256,
 			attribution: 'USGS'
 		} as RasterSourceSpecification,
@@ -36,7 +34,6 @@ export const BaseMapStyleJson = {
 			id: 'base-map-layer',
 			type: 'raster',
 			source: 'base_usgs_imagery_only',
-			minzoom: 1,
 			maxzoom: 8.5,
 			paint: {
 				'raster-opacity': [

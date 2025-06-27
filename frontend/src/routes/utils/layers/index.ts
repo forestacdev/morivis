@@ -57,6 +57,7 @@ import { get } from 'svelte/store';
 import { getLoadLayers } from './load';
 import { getBoundaryLayers } from './boundary';
 import { getContourLabelLayers, getContourLineLayers } from './contour';
+import { cloudStyleJson } from './cloud';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -818,6 +819,8 @@ export const createLayersItems = (
 	// POIレイヤーの表示
 	const poiLayers = get(showLabelLayer) && _type === 'main' ? poiStyleJson.layers : [];
 
+	const cloudLayer = _type === 'main' ? cloudStyleJson.layers : [];
+
 	return [
 		...rasterBaseMap,
 		...rasterLayerItems,
@@ -827,6 +830,7 @@ export const createLayersItems = (
 		...contourLineLayer,
 		...vectorLayerItems,
 		...streetViewLayers,
+		...cloudLayer,
 		...contourLabelLayer,
 		...mapLabelItems,
 		...symbolLayerItems,
