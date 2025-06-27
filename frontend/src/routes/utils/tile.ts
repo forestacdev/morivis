@@ -1,3 +1,5 @@
+import type { TileXYZ } from '$routes/data/types/raster';
+
 /**
  * 経度・緯度 → タイル座標 (z/x/y) に変換
  * @param lon 経度（-180 〜 180）
@@ -17,4 +19,23 @@ export const lonLatToTileCoords = (
 	const y = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n);
 
 	return { x, y, z: zoom };
+};
+
+/**
+ * タイル座標 (z/x/y) → WMS タイル座標 (z/x/y) に変換
+ * WMSではY座標が左上原点であるため、通常のタイル座標とは異なる
+ * @param tile タイル座標 { x, y, z }
+ * @returns WMS タイル座標 { x, y, z }
+ */
+export const xyzToWMSXYZ = (tile: TileXYZ): TileXYZ => {
+	const { x, y, z } = tile;
+
+	// WMSのY座標は通常、左上原点なので反転
+	const wmsY = Math.pow(2, z) - 1 - y;
+
+	return {
+		x: x,
+		y: wmsY,
+		z: z
+	};
 };

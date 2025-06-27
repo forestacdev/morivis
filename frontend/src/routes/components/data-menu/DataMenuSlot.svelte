@@ -11,6 +11,7 @@
 	import { getImagePmtiles } from '$routes/utils/raster';
 	import PreviewSlot from '$routes/components/data-menu/PreviewSlot.svelte';
 	import { convertTmsToXyz } from '$routes/utils/sources';
+	import { xyzToWMSXYZ } from '$routes/utils/tile';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -65,9 +66,14 @@
 			return Promise.resolve(undefined);
 		}
 		// xyz タイル情報を取得
-		const tile = _layerEntry.metaData.xyzImageTile
+		let tile = _layerEntry.metaData.xyzImageTile
 			? _layerEntry.metaData.xyzImageTile
 			: IMAGE_TILE_XYZ;
+
+		// urlに{-y} が含まれている場合は、タイル座標を WMS タイル座標に変換
+		if (_layerEntry.format.url.includes('{-y}')) {
+			tile = xyzToWMSXYZ(tile);
+		}
 
 		// URLを生成して Promise として返す
 		return Promise.resolve(

@@ -6,11 +6,11 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { getImagePmtiles } from '$routes/utils/raster';
 	import { convertTmsToXyz } from '$routes/utils/sources';
+	import { xyzToWMSXYZ } from '$routes/utils/tile';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
 	}
-
 	let { layerEntry }: Props = $props();
 
 	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
@@ -18,10 +18,16 @@
 			// raster タイプ以外の場合は undefined を返す
 			return Promise.resolve(undefined);
 		}
+
 		// xyz タイル情報を取得
-		const tile = _layerEntry.metaData.xyzImageTile
+		let tile = _layerEntry.metaData.xyzImageTile
 			? _layerEntry.metaData.xyzImageTile
 			: IMAGE_TILE_XYZ;
+
+		// urlに{-y} が含まれている場合は、タイル座標を WMS タイル座標に変換
+		if (_layerEntry.format.url.includes('{-y}')) {
+			tile = xyzToWMSXYZ(tile);
+		}
 
 		// URLを生成して Promise として返す
 		return Promise.resolve(

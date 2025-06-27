@@ -21,10 +21,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
+		bounds: [132.017257, 32.901919, 133.692787, 34.299619],
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_ehime',
 		xyzImageTile: {
 			x: 227730,
-			y: 157017,
+			y: 105126,
 			z: 18
 		}
 	},
