@@ -67,7 +67,7 @@
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/types';
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
 	import { setStreetViewParams, getStreetViewParams, get3dParams } from '$routes/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';

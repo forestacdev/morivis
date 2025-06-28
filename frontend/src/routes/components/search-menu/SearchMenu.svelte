@@ -6,17 +6,16 @@
 	import { onMount } from 'svelte';
 	import { slide, fly } from 'svelte/transition';
 
-	import Geocoder from '$routes/components/search-menu/Geocoder.svelte';
 	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/data';
 	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import { showSearchMenu } from '$routes/store';
+
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
+	import { type FeatureMenuData } from '$routes/types';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 	import type { ResultData } from '$routes/utils/feature';
 	interface Props {

@@ -9,7 +9,7 @@
 	import { lonLatToAddress } from '$routes/data/api';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/types';
 
 	interface Props {
 		clickedLayerIds: string[];

@@ -60,19 +60,6 @@ export const getFgbToGeojson = async (url: string, index?: number): Promise<Feat
 	}
 };
 
-export interface ClickedLayerFeaturesData {
-	layerEntry: GeoDataEntry;
-	feature: MapGeoJSONFeature;
-	featureId: number;
-}
-
-export interface FeatureMenuData {
-	point: [number, number];
-	properties: { [key: string]: string | number | null | undefined } | null;
-	featureId: number;
-	layerId: string;
-}
-
 export const mapGeoJSONFeatureToSidePopupData = (
 	feature: MapGeoJSONFeature,
 	point: [number, number]
