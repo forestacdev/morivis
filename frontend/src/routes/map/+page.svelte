@@ -43,7 +43,7 @@
 	import DrawMenu from '$routes/components/draw-menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
 	import FooterMenu from '$routes/components/footer/_Index.svelte';
-	import HeaderMenu from '$routes/components/header/_Index.svelte';
+	import HeaderMenu from '$routes/components/Header.svelte';
 	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
 	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/components/Map.svelte';
