@@ -811,7 +811,7 @@ export const createLayersItems = (
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
 
 	// ベースマップ
-	const rasterBaseMap = BaseMapStyleJson.layers;
+	const rasterBaseMap = _type === 'main' ? BaseMapStyleJson.layers : [];
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];

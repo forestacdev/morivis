@@ -141,7 +141,7 @@ export const showContourLayer = writable<boolean>(false);
 export const showLabelLayer = writable<boolean>(true);
 
 /** 陰影レイヤー */
-export const showHillshadeLayer = writable<boolean>(true);
+export const showHillshadeLayer = writable<boolean>(false);
 
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

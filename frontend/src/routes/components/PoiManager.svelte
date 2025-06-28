@@ -10,10 +10,12 @@
 	import PoiMarker from '$routes/components/marker/PoiMarker.svelte';
 	import type { FeatureMenuData } from '$routes/types';
 	import { throttle } from 'es-toolkit';
+	import type { GeoDataEntry } from '$routes/data/types';
 
 	interface Props {
 		map: maplibregl.Map;
 		featureMenuData: FeatureMenuData | null;
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	interface PoiData {
@@ -25,7 +27,7 @@
 		};
 	}
 
-	let { map, featureMenuData = $bindable() }: Props = $props();
+	let { map, featureMenuData = $bindable(), showDataEntry }: Props = $props();
 
 	let poiDatas = $state<PoiData[]>([]);
 	let clickId = $state<number | null>(null); // クリックされたPOIのID
@@ -83,6 +85,12 @@
 		mapStore.panToPoi(new maplibregl.LngLat(coordinates[0], coordinates[1]));
 	};
 
+	$effect(() => {
+		if (!featureMenuData) {
+			clickId = null;
+		}
+	});
+
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
@@ -96,7 +104,7 @@
 	});
 </script>
 
-{#if $showLabelLayer}
+{#if $showLabelLayer && !showDataEntry}
 	{#each poiDatas as poiData (poiData.propId)}
 		<PoiMarker
 			{map}

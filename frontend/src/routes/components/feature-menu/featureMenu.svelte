@@ -48,16 +48,6 @@
 		}
 		return null;
 	});
-
-	$effect(() => {
-		if (featureMenuData) {
-			const map = mapStore.getMap();
-			if (!map) return;
-			const layer = map.getLayer(featureMenuData.layerId);
-			if (!layer) return;
-			const type: string = layer.type;
-		}
-	});
 </script>
 
 {#if featureMenuData}
