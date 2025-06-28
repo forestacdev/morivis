@@ -26,16 +26,13 @@
 		return null;
 	});
 
-	// let options = $derived.by(() => {
-	// 	if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
-	// 		return [
-	// 			{ label: '概要', value: 'metadata' },
-	// 			{ label: '詳細データ', value: 'attributes' }
-	// 		];
-	// 	} else {
-	// 		return [{ label: '詳細データ', value: 'attributes' }];
-	// 	}
-	// });
+	let propId = $derived.by(() => {
+		if (featureMenuData && featureMenuData.properties) {
+			return featureMenuData.properties._prop_id;
+		} else {
+			return null;
+		}
+	});
 
 	let data = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
@@ -46,11 +43,8 @@
 	});
 
 	let srcData = $derived.by(() => {
-		if (featureMenuData) {
-			const layer = layerEntries.find(
-				(entry) => featureMenuData && entry.id === featureMenuData.layerId
-			);
-			if (layer && layer.type === 'vector' && data && data.image) {
+		if (data) {
+			if (data.image) {
 				return data.image;
 			}
 		}
@@ -98,7 +92,9 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
+
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
+			<!-- 画像 -->
 			<div class="relative w-full p-2">
 				{#if srcData}
 					<img
@@ -108,33 +104,38 @@
 						src={srcData}
 					/>
 				{:else}
+					<!-- !タイトルが長い場合 -->
 					<div
 						in:fade
-						class="bg-sub grid aspect-square h-full w-full shrink-0 grow place-items-center overflow-hidden rounded-lg"
-					>
-						<Icon icon="material-symbols:photo" class="h-16 w-16 text-gray-400" />
-					</div>
+						class="bg-sub aspect-3/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden rounded-lg"
+					></div>
 				{/if}
 				<div
 					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
 				>
-					<span class="text-[22px] font-bold"
-						>{targetLayer &&
-						targetLayer.type === 'vector' &&
-						targetLayer.properties.titles.length &&
-						featureMenuData.properties
-							? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-							: targetLayer?.metaData.name}</span
-					>
-					<span class="text-[14px] text-gray-300"
-						>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
-					>
+					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
+						<!-- poiタイトル -->
+						<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
+						<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
+					{:else}
+						<!-- その他 -->
+						<span class="text-[22px] font-bold"
+							>{targetLayer &&
+							targetLayer.type === 'vector' &&
+							targetLayer.properties.titles.length &&
+							featureMenuData.properties
+								? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+								: targetLayer?.metaData.name}</span
+						>
+						<span class="text-[14px] text-gray-300"
+							>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
+						>
+					{/if}
 				</div>
 			</div>
 
 			<div class="pl-2">
 				<!-- 詳細情報 -->
-
 				<div class="flex h-full w-full flex-col gap-2">
 					<div class="flex w-full justify-start gap-2">
 						<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
@@ -159,23 +160,23 @@
 					{#if data}
 						{#if data.description}
 							<span class="my-2 text-base">{data.description}</span>
-							<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
 						{/if}
 					{/if}
 				</div>
 
-				<!-- 属性情報 -->
-
-				<div class="mb-56 flex h-full w-full flex-col gap-2">
-					<div class="my-4 text-base text-lg">属性情報</div>
-					{#if featureMenuData.properties}
-						{#each Object.entries(featureMenuData.properties) as [key, value]}
-							{#if key !== '_prop_id' && value}
-								<AttributeItem {key} {value} />
-							{/if}
-						{/each}
-					{/if}
-				</div>
+				<!-- 通常の地物の属性情報 -->
+				{#if !propId}
+					<div class="mb-56 flex h-full w-full flex-col gap-2">
+						<div class="my-4 text-base text-lg">属性情報</div>
+						{#if featureMenuData.properties}
+							{#each Object.entries(featureMenuData.properties) as [key, value]}
+								{#if key !== '_prop_id' && value}
+									<AttributeItem {key} {value} />
+								{/if}
+							{/each}
+						{/if}
+					</div>
+				{/if}
 
 				<!-- <button
 				onclick={edit}

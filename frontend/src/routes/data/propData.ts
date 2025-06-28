@@ -338,22 +338,25 @@ export const propData: PropData = {
 	morinoiriguti: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/morinoiriguti.webp`,
 		description: '',
-		url: null
+		url: 'https://morinos.net/what-is-morinos/'
 	},
 	nagamenoiwa: {
+		// 眺めの岩
 		image: `${FEATURE_IMAGE_BASE_PATH}/nagamenoiwa.webp`,
 		description: '',
 		url: null
 	},
 	oosugi: {
+		// 大杉
 		image: `${FEATURE_IMAGE_BASE_PATH}/oosugi.webp`,
 		description: '',
 		url: null
 	},
 	sumiyakigoya: {
+		// 炭焼き小屋
 		image: `${FEATURE_IMAGE_BASE_PATH}/sumiyakigoya.webp`,
 		description: '',
-		url: null
+		url: 'https://www.forest.ac.jp/academy-archives/%E5%8F%AA%E4%BB%8A%E3%80%81%E7%82%AD%E7%84%BC%E3%81%8D%E3%82%84%E3%81%A3%E3%81%A6%E3%81%BE%E3%81%99%EF%BC%81%E3%80%80%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E7%A7%912%E5%B9%B4%E3%80%8C%E6%9C%A8/'
 	},
 	toilet: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/toilet.webp`,

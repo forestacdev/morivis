@@ -9,6 +9,7 @@
 	import { poiLayersIds } from '$routes/utils/layers/poi';
 	import PoiMarker from '$routes/components/marker/PoiMarker.svelte';
 	import type { FeatureMenuData } from '$routes/types';
+	import { throttle } from 'es-toolkit';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -61,13 +62,17 @@
 		poiDatas = featureDataArray;
 	};
 
-	const onClick = (featureId: string) => {
+	const updateThrottle = throttle(() => {
+		updateMarkers();
+	}, 100);
+
+	const onClick = (featureId: number) => {
 		const poiData = poiDatas.find((data) => data.featureId === featureId);
 		if (!poiData) return;
 		const { coordinates, properties } = poiData;
 		featureMenuData = {
 			layerId: 'fac_poi',
-			featureId: properties._prop_id,
+			featureId: featureId,
 			properties: properties,
 			point: coordinates
 		};
@@ -76,8 +81,8 @@
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
-			updateMarkers();
-			map.on('move', updateMarkers);
+			updateThrottle();
+			map.on('move', updateThrottle);
 		});
 	});
 

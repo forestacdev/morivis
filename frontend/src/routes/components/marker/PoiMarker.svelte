@@ -4,27 +4,44 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/data/propData';
 	import { mapStore, isHoverPoiMarker } from '$routes/store/map';
-	import type { FeatureMenuData } from '$routes/types';
+	import { fade, fly } from 'svelte/transition';
 
 	interface Props {
 		map: maplibregl.Map;
-		featureId: string;
+		featureId: number;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
-		onClick: (featureId: string) => void;
+		onClick: (featureId: number) => void;
 	}
 
 	let { lngLat = $bindable(), map, properties, featureId, onClick }: Props = $props();
-	let container = $state<HTMLElement | null>(null);
+	let markerContainer = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
+	let name: maplibregl.Marker | null = $state.raw(null);
+	let nameContainer: HTMLElement | null = $state.raw(null);
 	let imageUrl: string | null = $state.raw(null);
+	let isReady = $state(false); // マーカーの準備完了フラグ
+
+	let isHover = $state(false);
 
 	onMount(() => {
-		if (container && lngLat) {
+		if (properties._prop_id === 'ziriki_11')
+			console.log('Ziriki5 marker mounted', properties, lngLat);
+		if (markerContainer && lngLat) {
 			marker = new maplibregl.Marker({
-				element: container,
+				element: markerContainer,
 				anchor: 'center',
 				offset: [0, 0]
+			})
+				.setLngLat(lngLat)
+				.addTo(map);
+		}
+
+		if (nameContainer && lngLat) {
+			name = new maplibregl.Marker({
+				element: nameContainer,
+				anchor: 'center',
+				offset: [0, 40]
 			})
 				.setLngLat(lngLat)
 				.addTo(map);
@@ -38,10 +55,18 @@
 		} else {
 			imageUrl = propData[id].image;
 		}
+
+		// 準備完了フラグを設定
+		isReady = true;
 	});
 
 	const jumpToFac = () => {
 		mapStore.jumpToFac();
+	};
+
+	const onHover = (val: boolean) => {
+		isHoverPoiMarker.set(val);
+		isHover = val;
 	};
 
 	const click = () => {
@@ -62,18 +87,21 @@
 
 	onDestroy(() => {
 		marker?.remove();
+		name?.remove();
+		marker = null;
+		name = null;
 	});
 </script>
 
 {#if properties._prop_id === 'fac_top'}
 	<button
-		bind:this={container}
+		bind:this={markerContainer}
 		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
 		onclick={jumpToFac}
-		onfocus={() => isHoverPoiMarker.set(true)}
-		onblur={() => isHoverPoiMarker.set(false)}
-		onmouseover={() => isHoverPoiMarker.set(true)}
-		onmouseleave={() => isHoverPoiMarker.set(false)}
+		onfocus={() => onHover(true)}
+		onblur={() => onHover(false)}
+		onmouseover={() => onHover(true)}
+		onmouseleave={() => onHover(false)}
 	>
 		{#if imageUrl}
 			<img
@@ -84,23 +112,43 @@
 		{/if}
 	</button>
 {:else}
-	<button
-		bind:this={container}
-		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
-		onclick={click}
-		onfocus={() => isHoverPoiMarker.set(true)}
-		onblur={() => isHoverPoiMarker.set(false)}
-		onmouseover={() => isHoverPoiMarker.set(true)}
-		onmouseleave={() => isHoverPoiMarker.set(false)}
+	<div
+		bind:this={markerContainer}
+		class="pointer-events-none relative grid w-[150px] place-items-center"
 	>
-		{#if imageUrl}
-			<img
-				class="border-base drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
-				src={imageUrl}
-				alt={properties.name || 'Marker Image'}
-			/>
+		{#if isReady}
+			<button
+				class="peer pointer-events-auto relative z-0 grid h-[60px] w-[60px] cursor-pointer place-items-center"
+				onclick={click}
+				onfocus={() => onHover(true)}
+				onblur={() => onHover(false)}
+				onmouseover={() => onHover(true)}
+				onmouseleave={() => onHover(false)}
+			>
+				{#if imageUrl}
+					<img
+						class="border-base drop-shadow-purple-50 absolute h-full w-full rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
+						src={imageUrl}
+						alt={properties.name || 'Marker Image'}
+					/>
+				{/if}
+			</button>
 		{/if}
-	</button>
+	</div>
+
+	<div
+		bind:this={nameContainer}
+		class="items-top pointer-events-none relative z-10 flex w-[150px] justify-center"
+	>
+		{#if isHover}
+			<div
+				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
+				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
+			>
+				{properties.name}
+			</div>
+		{/if}
+	</div>
 {/if}
 
 <style>

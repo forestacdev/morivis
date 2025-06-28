@@ -41,7 +41,8 @@ export const poiStyleJson = {
 			layout: {
 				'icon-image': 'poi-icon', // アイコンの画像名
 				'icon-size': 4 // アイコンのサイズ
-			}
+			},
+			paint: {}
 		} as SymbolLayerSpecification,
 		{
 			id: 'poi_top',

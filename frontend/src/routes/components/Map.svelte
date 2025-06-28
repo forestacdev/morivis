@@ -257,6 +257,7 @@
 				'fog-ground-blend': 0.5,
 				'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
 			},
+			transition: { duration: 0, delay: 0 },
 			terrain: $isTerrain3d ? terrain : undefined
 		};
 
