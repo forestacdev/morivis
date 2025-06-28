@@ -33,7 +33,7 @@ export const poiStyleJson = {
 	},
 	layers: [
 		{
-			id: 'fac_poi_layer',
+			id: 'fac_poi',
 			'source-layer': 'fac_poi',
 			source: 'fac_poi',
 			type: 'symbol',
@@ -44,7 +44,7 @@ export const poiStyleJson = {
 			}
 		} as SymbolLayerSpecification,
 		{
-			id: 'poi_top_layer',
+			id: 'poi_top',
 			type: 'symbol',
 			source: 'fac_top',
 			maxzoom: 12,

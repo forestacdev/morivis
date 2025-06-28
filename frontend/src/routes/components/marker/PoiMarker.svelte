@@ -4,14 +4,17 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/data/propData';
 	import { mapStore, isHoverPoiMarker } from '$routes/store/map';
-	import { fade } from 'svelte/transition';
+	import type { FeatureMenuData } from '$routes/types';
 
 	interface Props {
 		map: maplibregl.Map;
+		featureId: string;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
+		onClick: (featureId: string) => void;
 	}
-	let { lngLat = $bindable(), map, properties }: Props = $props();
+
+	let { lngLat = $bindable(), map, properties, featureId, onClick }: Props = $props();
 	let container = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
 	let imageUrl: string | null = $state.raw(null);
@@ -37,12 +40,12 @@
 		}
 	});
 
-	const click = () => {
-		console.log('Marker clicked:', properties);
-	};
-
 	const jumpToFac = () => {
 		mapStore.jumpToFac();
+	};
+
+	const click = () => {
+		onClick(featureId);
 	};
 
 	// $effect(() => {

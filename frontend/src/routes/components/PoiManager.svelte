@@ -8,29 +8,32 @@
 
 	import { poiLayersIds } from '$routes/utils/layers/poi';
 	import PoiMarker from '$routes/components/marker/PoiMarker.svelte';
+	import type { FeatureMenuData } from '$routes/types';
 
 	interface Props {
 		map: maplibregl.Map;
+		featureMenuData: FeatureMenuData | null;
 	}
 
-	let { map }: Props = $props();
-
-	let poiDatas = $state<FeatureData[]>([]);
-
-	type FeatureData = {
-		id: string;
+	interface PoiData {
+		featureId: string;
+		propId: string;
 		coordinates: [number, number];
 		properties: {
 			[name: string]: any;
 		};
-	};
+	}
+
+	let { map, featureMenuData = $bindable() }: Props = $props();
+
+	let poiDatas = $state<PoiData[]>([]);
 
 	const updateMarkers = () => {
 		if (!$showLabelLayer || !map.getLayer(poiLayersIds[0])) return;
 
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
-		const featureDataArray: FeatureData[] = [];
+		const featureDataArray: PoiData[] = [];
 
 		for (let i = 0; i < features.length; i++) {
 			const feature = features[i];
@@ -42,11 +45,13 @@
 			}
 
 			const coords = feature.geometry.coordinates as [number, number];
-			const id = props._prop_id;
+			const propId = props._prop_id;
+			const featureId = feature.id as string;
 
-			if (id) {
+			if (propId) {
 				featureDataArray.push({
-					id: id,
+					featureId: featureId,
+					propId: propId,
 					coordinates: coords,
 					properties: props
 				});
@@ -54,6 +59,18 @@
 		}
 
 		poiDatas = featureDataArray;
+	};
+
+	const onClick = (featureId: string) => {
+		const poiData = poiDatas.find((data) => data.featureId === featureId);
+		if (!poiData) return;
+		const { coordinates, properties } = poiData;
+		featureMenuData = {
+			layerId: 'fac_poi',
+			featureId: properties._prop_id,
+			properties: properties,
+			point: coordinates
+		};
 	};
 
 	onMount(() => {
@@ -70,11 +87,13 @@
 </script>
 
 {#if $showLabelLayer}
-	{#each poiDatas as poiData (poiData.id)}
+	{#each poiDatas as poiData (poiData.propId)}
 		<PoiMarker
 			{map}
 			lngLat={new maplibregl.LngLat(poiData.coordinates[0], poiData.coordinates[1])}
 			properties={poiData.properties}
+			featureId={poiData.featureId}
+			onClick={(featureId) => onClick(featureId)}
 		/>
 	{/each}
 {/if}

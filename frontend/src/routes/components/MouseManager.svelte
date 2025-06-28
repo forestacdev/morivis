@@ -14,15 +14,13 @@
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
-	import {
-		mapGeoJSONFeatureToSidePopupData,
-		type FeatureMenuData
-	} from '$routes/utils/file/geojson';
+	import { mapGeoJSONFeatureToSidePopupData } from '$routes/utils/file/geojson';
 	import { isPointInBbox } from '$routes/utils/map';
 	import { getPixelColor, getGuide } from '$routes/utils/raster';
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/+page.svelte';
 	import { poiLayersIds } from '$routes/utils/layers/poi';
+	import type { FeatureMenuData } from '$routes/types';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -295,28 +293,22 @@
 			});
 
 			if (features.length > 0) {
-				map.getCanvas().style.cursor = 'pointer';
-				toggleTooltip(e, features[0]);
+				mapStore.setCursor('pointer');
+
+				// TODO: ツールチップの表示
+				// toggleTooltip(e, features[0]);
 			} else {
-				map.getCanvas().style.cursor = 'default';
-				toggleTooltip();
+				mapStore.setCursor('default');
+				// toggleTooltip();
 			}
 		});
 
 		map.on('mousedown', (e) => {
-			const clickLayerIds = [...$clickableVectorIds];
-			const features = map.queryRenderedFeatures(e.point, {
-				layers: clickLayerIds
-			});
-
-			if (features.length > 0) {
-			} else {
-				map.getCanvas().style.cursor = 'move';
-			}
+			mapStore.setCursor('move');
 		});
 
 		map.on('mouseup', (e) => {
-			map.getCanvas().style.cursor = 'default';
+			mapStore.setCursor('default');
 		});
 	});
 

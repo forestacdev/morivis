@@ -14,6 +14,7 @@ import type {
 	LngLatBoundsLike
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
+import type { CSSCursor } from '$routes/types';
 
 import { getLocationBbox } from '$routes/data/locationBbox';
 
@@ -428,6 +429,14 @@ const createMapStore = () => {
 		terrainReload();
 	};
 
+	const setCursor = (cursor: CSSCursor) => {
+		if (!map) return;
+		const canvas = map.getCanvas();
+		if (canvas) {
+			canvas.style.cursor = cursor;
+		}
+	};
+
 	// インスタンス削除
 	const remove = () => {
 		if (!map) return;
@@ -462,6 +471,7 @@ const createMapStore = () => {
 		init,
 		remove,
 		setStyle,
+		setCursor,
 		addLockonMarker,
 		removeLockonMarker,
 		getLockonMarker: () => lockOnMarker,

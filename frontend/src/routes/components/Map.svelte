@@ -457,7 +457,7 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
-	<PoiManager map={maplibreMap} />
+	<PoiManager map={maplibreMap} bind:featureMenuData />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		{showDataEntry}

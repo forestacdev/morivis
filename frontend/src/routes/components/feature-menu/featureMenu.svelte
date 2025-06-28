@@ -6,7 +6,7 @@
 	import { propData } from '$routes/data/propData';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
-	import type { FeatureMenuData } from '$routes/utils/file/geojson';
+	import type { FeatureMenuData } from '$routes/types';
 	import { generatePopupTitle } from '$routes/utils/properties';
 
 	let {
@@ -26,16 +26,16 @@
 		return null;
 	});
 
-	let options = $derived.by(() => {
-		if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
-			return [
-				{ label: '概要', value: 'metadata' },
-				{ label: '詳細データ', value: 'attributes' }
-			];
-		} else {
-			return [{ label: '詳細データ', value: 'attributes' }];
-		}
-	});
+	// let options = $derived.by(() => {
+	// 	if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
+	// 		return [
+	// 			{ label: '概要', value: 'metadata' },
+	// 			{ label: '詳細データ', value: 'attributes' }
+	// 		];
+	// 	} else {
+	// 		return [{ label: '詳細データ', value: 'attributes' }];
+	// 	}
+	// });
 
 	let data = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
