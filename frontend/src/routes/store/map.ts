@@ -1,4 +1,3 @@
-// stores/mapStore.js
 import { writable, type Writable } from 'svelte/store';
 import maplibregl from 'maplibre-gl';
 import type {
@@ -6,27 +5,15 @@ import type {
 	LngLat,
 	AnimationOptions,
 	EaseToOptions,
-	SourceSpecification,
-	LayerSpecification,
-	TerrainSpecification,
-	Popup,
 	PointLike,
 	Marker,
 	MapMouseEvent,
 	MapLibreEvent,
 	QueryRenderedFeaturesOptions,
 	MapGeoJSONFeature,
-	CircleLayerSpecification,
-	FillLayerSpecification,
-	LineLayerSpecification,
-	SymbolLayerSpecification,
-	RasterSourceSpecification,
-	RasterTileSource,
-	LngLatBounds,
 	LngLatBoundsLike
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import { propData } from '$routes/data/propData';
 
 import { getLocationBbox } from '$routes/data/locationBbox';
 
@@ -37,17 +24,9 @@ import type { GeoDataEntry } from '$routes/data/types';
 import { GeojsonCache } from '$routes/utils/file/geojson';
 import { get } from 'svelte/store';
 
-import { isBBoxOverlapping } from '$routes/utils/map';
-
 import { demProtocol } from '$routes/protocol/raster';
 import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/protocol/terrain';
-
-import { downloadImageBitmapAsPNG } from '$routes/utils/image';
-import { handleStyleImageMissing } from '$routes/utils/icon';
-import { isStyleEdit } from './index';
-import { remove } from 'jszip';
-import { map } from 'es-toolkit/compat';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
