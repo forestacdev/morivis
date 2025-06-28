@@ -57,12 +57,7 @@
 	});
 
 	const selectedLayer = () => {
-		if (isHovered || $isStyleEdit) return;
-		if ($selectedLayerId === layerEntry.id) {
-			selectedLayerId.set('');
-		} else {
-			selectedLayerId.set(layerEntry.id);
-		}
+		selectedLayerId.set(layerEntry.id);
 	};
 
 	const toggleChecked = (id: string) => {
@@ -113,6 +108,7 @@
 	};
 
 	const infoLayer = () => {
+		toggleChecked(layerEntry.id);
 		if (!layerEntry) return;
 	};
 
@@ -157,8 +153,8 @@
 </script>
 
 <div
-	class="relative flex flex-col rounded-[2.1rem] transition-colors {dragEnterType !== null &&
-	dragEnterType !== layerType
+	class="relative flex flex-col
+		rounded-[2.1rem] transition-colors {dragEnterType !== null && dragEnterType !== layerType
 		? 'opacity-50'
 		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-base/50' : ''}"
 	draggable={draggingEnabled}
@@ -171,27 +167,28 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
-	<button
+	<div
 		id={layerEntry.id}
-		class="c-dragging-style relative z-10 cursor-move select-none flex-col overflow-clip text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-100 {$selectedLayerId ===
-		layerEntry.id
-			? ''
-			: ''} {showLegend ? 'bg-base' : 'bg-main'}"
-		onclick={selectedLayer}
+		class="bg-main c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left transition-transform duration-100 {$isStyleEdit
+			? 'w-[65px]'
+			: ''} {$selectedLayerId === layerEntry.id
+			? 'drop-shadow-[0_0_2px_rgba(30,230,20,0.8)]'
+			: 'drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
+		onmouseenter={() => (isHovered = true)}
+		onmouseleave={() => (isHovered = false)}
+		role="button"
+		tabindex="0"
 	>
-		<div class="flex items-center justify-start gap-2">
+		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->
-			<label
-				class="relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base"
-				onmouseenter={() => (isHovered = true)}
-				onmouseleave={() => (isHovered = false)}
+			<button
+				onclick={selectedLayer}
+				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
 			>
-				<input type="checkbox" class="hidden" bind:checked={layerEntry.style.visible} />
-				{#if layerEntry.style.visible}
-					<LayerIcon {layerEntry} />
-				{/if}
+				<LayerIcon {layerEntry} />
+
 				<!-- 表示トグル -->
-				{#if isHovered || !layerEntry.style.visible}
+				<!-- {#if isHovered || !layerEntry.style.visible}
 					<div
 						transition:fade={{ duration: 100 }}
 						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50"
@@ -207,25 +204,58 @@
 							width={30}
 						/>
 					</div>
+				{/if} -->
+			</button>
+
+			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
+				{#if !isHovered}
+					<div transition:slide={{ duration: 200 }} class="flex flex-col">
+						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
+							>{layerEntry.metaData.name}</span
+						>
+						<span class="truncate text-xs text-gray-400"
+							>{layerEntry.metaData.location ?? '---'}</span
+						>
+					</div>
 				{/if}
-			</label>
 
-			<div class="flex flex-col items-start gap-[2px] overflow-hidden">
-				<span
-					class="truncate text-base {$selectedLayerId === layerEntry.id ? '' : ''} {showLegend
-						? 'text-main'
-						: 'text-base'}">{layerEntry.metaData.name}</span
-				>
-				<span class="truncate text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span>
+				{#if isHovered}
+					<div transition:slide={{ duration: 200 }} class="flex gap-4 text-gray-100">
+						<button
+							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							class="cursor-pointer"
+						>
+							<Icon
+								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
+								class="h-8 w-8"
+							/>
+						</button>
 
-				<!-- {#if $selectedLayerId === layerEntry.id && !$isStyleEdit}
-						<div transition:slide={{ duration: 200 }} id={layerEntry.id} class=""></div>
-					{/if} -->
+						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+							<button class="cursor-pointer" onclick={focusLayer}>
+								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+							</button>
+						{/if}
+
+						<!-- <button onclick={copyLayer}>
+                                            <Icon icon="lucide:copy" />
+                                        </button> -->
+						<button onclick={editLayer} class="cursor-pointer">
+							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
+						</button>
+						<button onclick={infoLayer} class="cursor-pointer">
+							<Icon icon="akar-icons:info" class="h-8 w-8" />
+						</button>
+						<button onclick={removeLayer} class="cursor-pointer">
+							<Icon icon="bx:trash" class="h-8 w-8" />
+						</button>
+					</div>
+				{/if}
 			</div>
 
 			<!-- トグル -->
-			<label
-				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
+			<!-- <label
+				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full"
 			>
 				<input
 					type="checkbox"
@@ -240,49 +270,17 @@
 						? 'text-main -rotate-90'
 						: 'rotate-90 text-base'}"
 				/>
-			</label>
+			</label> -->
 		</div>
-	</button>
+	</div>
 	<div
 		class="border-main bg-base pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm"
 	>
 		{layerEntry.metaData.maxZoom}
 	</div>
-	{#if showLegend}
+	<!-- {#if showLegend}
 		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
-			<!-- <div class="w-[2px] items-stretch bg-gray-500"></div> -->
-
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">
-				<div class="flex gap-4 text-gray-100">
-					<!-- <button
-						onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
-						class="cursor-pointer"
-					>
-						<Icon
-							icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-							class="h-8 w-8"
-						/>
-					</button> -->
-
-					{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
-						<button class="cursor-pointer" onclick={focusLayer}>
-							<Icon icon="hugeicons:target-03" class="h-8 w-8" />
-						</button>
-					{/if}
-
-					<!-- <button onclick={copyLayer}>
-									<Icon icon="lucide:copy" />
-								</button> -->
-					<button onclick={editLayer} class="cursor-pointer">
-						<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
-					</button>
-					<!-- <button onclick={infoLayer}>
-						<Icon icon="akar-icons:info" class="h-8 w-8" />
-					</button> -->
-					<button onclick={removeLayer} class="cursor-pointer">
-						<Icon icon="bx:trash" class="h-8 w-8" />
-					</button>
-				</div>
 				<div
 					class="w-full"
 					onmousedown={() => (draggingEnabled = false)}
@@ -295,7 +293,7 @@
 				<Legend {layerEntry} />
 			</div>
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style>
@@ -303,16 +301,6 @@
 		syntax: '<angle>';
 		inherits: true;
 		initial-value: 0deg;
-	}
-
-	:root {
-		--color1: #06ad22;
-		--color2: #004b54;
-	}
-
-	.css-gradient {
-		background: linear-gradient(-90deg, var(--color1), var(--color2));
-		color: white;
 	}
 
 	.c-rounded {

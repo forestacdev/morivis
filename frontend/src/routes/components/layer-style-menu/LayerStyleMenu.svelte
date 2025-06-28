@@ -30,11 +30,10 @@
 
 {#if layerEntry}
 	<div
-		transition:fly={{ duration: 200, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
+		transition:fly={{ duration: 200, x: -100, opacity: 0, delay: 200 }}
+		class="bg-main w-side-menu pt-18 absolute top-0 flex h-full flex-col gap-2 overflow-hidden pl-[90px]"
 	>
 		<div class="flex w-full cursor-pointer items-center gap-4 pb-2">
-			<span class="text-base">スタイルの編集</span>
 			<button
 				onclick={() => ($isStyleEdit = false)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2"
@@ -45,7 +44,7 @@
 
 		<div class="flex h-full flex-col gap-2 overflow-auto">
 			<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-			<div class="flex items-center gap-2 border-t p-2 text-base"></div>
+			<div class="flex items-center gap-2 border-t text-base"></div>
 			<div class="c-scroll h-full grow overflow-x-hidden">
 				{#if layerEntry.type === 'vector'}
 					<VectorOptionMenu bind:layerEntry />

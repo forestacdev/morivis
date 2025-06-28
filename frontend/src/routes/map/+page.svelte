@@ -337,10 +337,10 @@
 
 	<!-- メニューの背景 -->
 	{#if $isSideMenuType}
-		<div
+		<!-- <div
 			transition:fade={{ duration: 300 }}
-			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[800px] flex-col gap-2"
-		></div>
+			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[400px] flex-col gap-2"
+		></div> -->
 	{/if}
 	<LayerMenu bind:layerEntries bind:tempLayerEntries {resetlayerEntries} />
 	<SearchMenu

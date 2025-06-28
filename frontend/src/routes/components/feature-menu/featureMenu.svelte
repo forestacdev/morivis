@@ -110,7 +110,7 @@
 				<div class="flex h-full w-full flex-col gap-2">
 					<div class="flex w-full justify-start gap-2">
 						<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
-						<span class="text-accent"
+						<span class="text-main-accent"
 							>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 						>
 					</div>
@@ -123,7 +123,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
-								<span class="text-accent">{data.url}</span></a
+								<span class="text-main-accent">{data.url}</span></a
 							>
 						{/if}
 					{/if}

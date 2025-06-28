@@ -22,6 +22,8 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/store/confirmation';
 
+	import { gsap } from 'gsap';
+
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
@@ -36,6 +38,7 @@
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 	let dragEnterType = $state(null); // ドラッグ中のレイヤーのタイプ
+	let container = $state<HTMLElement | null>(null); // コンテナ要素
 
 	const TYPE_LABELS = {
 		label: 'ラベル',
@@ -72,6 +75,24 @@
 		}
 	};
 
+	onMount(() => {
+		// 初期化時にコンテナの幅を設定
+		if (container) {
+			gsap.set(container, { width: '400px' });
+		}
+	});
+
+	isStyleEdit.subscribe((value) => {
+		if (container) {
+			gsap.to(container, {
+				width: value ? '85px' : '400px',
+				duration: 0.2,
+				delay: value ? 0.2 : 0,
+				ease: 'power2.inOut'
+			});
+		}
+	});
+
 	// const groupByType = (entries: GeoDataEntry[]) => {
 	// 	const groups: { type: LayerType; entries: GeoDataEntry[] }[] = [];
 
@@ -101,29 +122,32 @@
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'layer'}
 	<div
+		bind:this={container}
 		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150"
 	>
-		<div class="c-scroll flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden px-2 pb-4">
-			<div class="elative flex flex-col">
-				<Switch label="ラベル" bind:value={$showLabelLayer} />
-				<Switch label="道路" bind:value={$showLoadLayer} />
-				<Switch label="等高線" bind:value={$showContourLayer} />
-				<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
-				<Switch label="陰影" bind:value={$showHillshadeLayer} />
-			</div>
-
+		<div
+			class="flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden pb-4 pl-2 {$isStyleEdit
+				? 'c-scroll-hidden '
+				: 'c-scroll '}"
+		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					{#if $typeBreakIndices[i]}
 						<!-- この index はタイプの切り替え地点 -->
-						<div class="mb-1 mt-4 flex items-center gap-2 border-t p-2 text-base">
+						<div class="mb-1 mt-2 flex items-center gap-2 border-t border-gray-400 p-2 text-base">
 							<Icon
 								icon={TYPE_ICONS[$typeBreakIndices[i]]}
 								class="pointer-events-none"
 								width={20}
 							/>
-							<span class="">{TYPE_LABELS[$typeBreakIndices[i]]}</span>
+							{#if !$isStyleEdit}
+								<span
+									in:slide={{ duration: 200, delay: 200, axis: 'x' }}
+									out:slide={{ duration: 200, axis: 'x' }}
+									class="h-[20px]">{TYPE_LABELS[$typeBreakIndices[i]]}</span
+								>
+							{/if}
 						</div>
 					{/if}
 					<LayerSlot
@@ -134,6 +158,15 @@
 					/>
 				</div>
 			{/each}
+			{#if !$isStyleEdit}
+				<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
+					<Switch label="ラベル" bind:value={$showLabelLayer} />
+					<Switch label="道路" bind:value={$showLoadLayer} />
+					<Switch label="等高線" bind:value={$showContourLayer} />
+					<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
+					<Switch label="陰影" bind:value={$showHillshadeLayer} />
+				</div>
+			{/if}
 			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
 		{#if !$isStyleEdit}
