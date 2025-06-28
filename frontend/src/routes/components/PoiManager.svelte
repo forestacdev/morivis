@@ -1,7 +1,7 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/store/map';
 	import { showLabelLayer } from '$routes/store/layers';
@@ -26,8 +26,10 @@
 	};
 
 	const updateMarkers = () => {
-		if (!$showLabelLayer) return;
+		if (!$showLabelLayer || !map.getLayer(poiLayersIds[0])) return;
+
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
+
 		const featureDataArray: FeatureData[] = [];
 
 		for (let i = 0; i < features.length; i++) {
@@ -54,14 +56,15 @@
 		poiDatas = featureDataArray;
 	};
 
-	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
-	map.on('load', () => {
-		updateMarkers();
-		map.on('move', updateMarkers);
+	onMount(() => {
+		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
+		mapStore.onload((e) => {
+			updateMarkers();
+			map.on('move', updateMarkers);
+		});
 	});
 
 	onDestroy(() => {
-		const map = mapStore.getMap();
 		if (!map) return;
 	});
 </script>

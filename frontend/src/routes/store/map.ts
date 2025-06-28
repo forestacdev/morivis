@@ -76,7 +76,7 @@ const createMapStore = () => {
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
-	const onLoadEvent = writable<maplibregl.Map | null>(null);
+	const onLoadEvent = writable<MapLibreEvent | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -129,8 +129,8 @@ const createMapStore = () => {
 			isStyleLoadEvent.set(map);
 		});
 
-		map.on('load', () => {
-			onLoadEvent.set(map);
+		map.on('load', (e) => {
+			onLoadEvent.set(e);
 		});
 
 		map.on('click', (e) => {

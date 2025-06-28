@@ -1,19 +1,9 @@
 import type { SymbolLayerSpecification, SourceSpecification } from 'maplibre-gl';
 import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
-const LAYER_BASE = {
-	source: 'poi',
-	type: 'symbol',
-	minzoom: 11,
-	layout: {
-		'icon-image': 'poi-icon', // アイコンの画像名
-		'icon-size': 3 // アイコンのサイズ
-	}
-} as const;
-
 export const poiStyleJson = {
 	sources: {
-		poi: {
+		fac_poi: {
 			type: 'vector',
 			url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
 			maxzoom: 14,
@@ -45,7 +35,13 @@ export const poiStyleJson = {
 		{
 			id: 'fac_poi_layer',
 			'source-layer': 'fac_poi',
-			...LAYER_BASE
+			source: 'fac_poi',
+			type: 'symbol',
+			minzoom: 11,
+			layout: {
+				'icon-image': 'poi-icon', // アイコンの画像名
+				'icon-size': 3 // アイコンのサイズ
+			}
 		} as SymbolLayerSpecification
 	]
 };
