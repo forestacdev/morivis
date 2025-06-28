@@ -208,8 +208,8 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
-		// Process for generating missing icons
-		map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
+		// TODO: 使用してない
+		// map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		initEvent.set(map);
 	};

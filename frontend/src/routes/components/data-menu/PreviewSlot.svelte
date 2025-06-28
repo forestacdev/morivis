@@ -96,7 +96,8 @@
 			bounds: bbox
 		});
 
-		map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
+		// TODO: 使用してない
+		// map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		// function rotateCamera(timestamp) {
 		// 	// clamp the rotation between 0 -360 degrees
