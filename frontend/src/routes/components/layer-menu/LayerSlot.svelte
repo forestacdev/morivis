@@ -23,13 +23,15 @@
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		dragEnterType: LayerType | null;
+		isSmall: boolean; // レイヤースロットのサイズを小さくするかどうか
 	}
 
 	let {
 		layerEntry = $bindable(),
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
-		dragEnterType = $bindable()
+		dragEnterType = $bindable(),
+		isSmall
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
@@ -169,7 +171,7 @@
 >
 	<div
 		id={layerEntry.id}
-		class="bg-main c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left transition-transform duration-100 {$isStyleEdit
+		class="bg-main c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left transition-transform duration-100 {isSmall
 			? 'w-[65px]'
 			: ''} {$selectedLayerId === layerEntry.id
 			? 'drop-shadow-[0_0_2px_rgba(30,230,20,0.8)]'

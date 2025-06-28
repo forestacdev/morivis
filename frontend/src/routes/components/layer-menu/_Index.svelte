@@ -78,19 +78,32 @@
 	const resizeMenu = () => {
 		if (container) {
 			gsap.to(container, {
-				width: $isStyleEdit ? '85px' : '400px',
+				width: isSmall ? '85px' : '400px',
 				duration: 0.2,
 				ease: 'power2.inOut'
 			});
 		}
 	};
 
-	isStyleEdit.subscribe((value) => {
-		resizeMenu();
+	let isSmall = $derived.by(() => {
+		if ($isStyleEdit || $showDataMenu) {
+			return true;
+		}
+		return false;
 	});
 
 	$effect(() => {
-		resizeMenu();
+		if (isSmall) resizeMenu();
+	});
+
+	$effect(() => {
+		if (container) resizeMenu();
+	});
+
+	showDataMenu.subscribe((value) => {
+		if (value) {
+			isSideMenuType.set('layer');
+		}
 	});
 
 	// const groupByType = (entries: GeoDataEntry[]) => {
@@ -127,7 +140,7 @@
 		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150"
 	>
 		<div
-			class="flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden pb-4 pl-2 {$isStyleEdit
+			class="flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
 				? 'c-scroll-hidden '
 				: 'c-scroll'}"
 		>
@@ -141,7 +154,7 @@
 								class="pointer-events-none"
 								width={20}
 							/>
-							{#if !$isStyleEdit}
+							{#if !isSmall}
 								<span
 									in:slide={{ duration: 200, delay: 200, axis: 'x' }}
 									out:slide={{ duration: 200, axis: 'x' }}
@@ -151,6 +164,7 @@
 						</div>
 					{/if}
 					<LayerSlot
+						{isSmall}
 						bind:layerEntry={layerEntries[i]}
 						bind:tempLayerEntries
 						bind:enableFlip
@@ -158,7 +172,7 @@
 					/>
 				</div>
 			{/each}
-			{#if !$isStyleEdit}
+			{#if !isSmall}
 				<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
 					<Switch label="ラベル" bind:value={$showLabelLayer} />
 					<Switch label="道路" bind:value={$showLoadLayer} />
@@ -169,7 +183,7 @@
 			{/if}
 			<div class="h-[200px] w-full shrink-0"></div>
 		</div>
-		{#if !$isStyleEdit}
+		{#if !isSmall}
 			<div
 				class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
 			>

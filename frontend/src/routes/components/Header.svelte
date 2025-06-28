@@ -159,98 +159,105 @@
 </script>
 
 <div
-	class="pointer-events-none absolute left-0 top-0 z-10 flex w-full justify-between gap-2 p-2 text-base"
+	class="absolute left-2 top-2 z-10 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
+		? 'bg-base text-main pr-1'
+		: 'bg-main  pr-2 text-white'}"
 >
-	<div
-		class="flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
-			? 'bg-base text-main pr-1'
-			: 'bg-main  pr-2 text-white'}"
-	>
-		<div class="relative">
-			{#if $isSideMenuType}
-				<button
-					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-					onclick={() => isSideMenuType.set(null)}
-				>
-					<Icon icon="ep:back" class="h-7 w-7" />
-				</button>
-			{:else}
-				<button
-					class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-					onclick={() => showSideMenu.set(true)}
-				>
-					<Icon icon="ic:round-menu" class="h-7 w-7" />
-				</button>
-			{/if}
-		</div>
-		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+	<div class="relative">
+		{#if $isSideMenuType}
+			<button
+				class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+				onclick={() => {
+					isSideMenuType.set(null);
+					showDataMenu.set(false);
+					isStyleEdit.set(false);
+				}}
+			>
+				<Icon icon="ep:back" class="h-7 w-7" />
+			</button>
+		{:else}
+			<button
+				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
+				onclick={() => showSideMenu.set(true)}
+			>
+				<Icon icon="ic:round-menu" class="h-7 w-7" />
+			</button>
+		{/if}
+	</div>
+	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
 
-		<div class="flex w-full items-center justify-between">
-			{#if $isSideMenuType === 'search'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar text-main pointer-events-auto shrink-0"
-				>
-					<Geocoder
-						{layerEntries}
-						bind:results
-						bind:inputSearchWord
-						searchFeature={(v) => searchFeature(v)}
-					/>
-				</div>
-			{/if}
-			{#if $isSideMenuType === 'search' || !$isSideMenuType}
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					onclick={toggleSearchMenu}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'search'
-						? 'text-accent scale-120'
-						: ''}"
-				>
-					<Icon icon="stash:search-solid" class="h-7 w-7" />
-				</button>
-			{/if}
+	<div class="flex w-full items-center justify-between">
+		{#if $isSideMenuType === 'search'}
+			<div
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="w-title-bar text-main pointer-events-auto shrink-0"
+			>
+				<Geocoder
+					{layerEntries}
+					bind:results
+					bind:inputSearchWord
+					searchFeature={(v) => searchFeature(v)}
+				/>
+			</div>
+		{/if}
+		{#if $isSideMenuType === 'search' || !$isSideMenuType}
+			<button
+				transition:slide={{ duration: 300, axis: 'x' }}
+				onclick={toggleSearchMenu}
+				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'search'
+					? 'text-accent scale-120'
+					: ''}"
+			>
+				<Icon icon="stash:search-solid" class="h-7 w-7" />
+			</button>
+		{/if}
 
-			{#if $isSideMenuType === 'layer' || !$isSideMenuType}
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'layer'
-						? 'text-accent scale-120'
-						: ''}"
-					onclick={toggleLayerMenu}
-				>
-					<Icon icon="ic:round-layers" class="h-7 w-7" />
-				</button>
-			{/if}
-			{#if !$isSideMenuType}
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'layer'
-						? 'text-accent scale-120'
-						: ''}"
-					onclick={toggleDataMenu}
-				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
-				</button>
-			{/if}
-			{#if $isSideMenuType === 'layer'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar text-l flex shrink-0 items-center justify-center text-nowrap text-center"
-				>
-					<div>データ</div>
-					{#if !$isStyleEdit}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
-					{/if}
-					{#if $isStyleEdit}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
-					{/if}
-				</div>
-			{/if}
-			<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
+		{#if $isSideMenuType === 'layer' || !$isSideMenuType}
+			<button
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'layer'
+					? 'text-accent scale-120'
+					: ''}"
+				onclick={toggleLayerMenu}
+			>
+				<Icon icon="ic:round-layers" class="h-7 w-7" />
+			</button>
+		{/if}
+		{#if !$isSideMenuType}
+			<button
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+				'layer'
+					? 'text-accent scale-120'
+					: ''}"
+				onclick={toggleDataMenu}
+			>
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
+			</button>
+		{/if}
+		{#if $isSideMenuType === 'layer'}
+			<div
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="w-title-bar text-l flex shrink-0 items-center justify-center text-nowrap text-center"
+			>
+				{#if !$isStyleEdit && !$showDataMenu}
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
+				{/if}
+				<div>データ</div>
+				{#if !$isStyleEdit && !$showDataMenu}
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
+				{/if}
+				{#if $isStyleEdit}
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
+				{/if}
+				{#if $showDataMenu}
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>
+				{/if}
+			</div>
+		{/if}
+		<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
@@ -262,39 +269,41 @@
 					<Icon icon="fa6-solid:pen" class="h-5 w-5" />
 				</button>
 			{/if} -->
-			{#if $isSideMenuType === 'draw'}
+		<!-- {#if $isSideMenuType === 'draw'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
 				>
 					描画ツール
 				</div>
-			{/if}
-			{#if $isStyleEdit}
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-					onclick={() => isStyleEdit.set(false)}
-				>
-					<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
-				</button>
-			{/if}
-		</div>
+			{/if} -->
+		{#if $isStyleEdit || $showDataMenu}
+			<button
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+				onclick={() => {
+					isStyleEdit.set(false);
+					showDataMenu.set(false);
+				}}
+			>
+				<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
+			</button>
+		{/if}
 	</div>
-	<li class="flex">
-		<button
-			class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg {$showDataMenu
-				? 'text-accent'
-				: ''}"
-			onclick={toggleDataMenu}
-		>
-			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-		</button>
-		<StreetViewControl />
-		<TerrainControl />
-		<GeolocateControl />
-	</li>
 </div>
+<li class="absolute right-0 top-0 flex">
+	<button
+		class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg {$showDataMenu
+			? 'text-accent'
+			: ''}"
+		onclick={toggleDataMenu}
+	>
+		<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+	</button>
+	<StreetViewControl />
+	<TerrainControl />
+	<GeolocateControl />
+</li>
 
 <style>
 	.c-bg-blur {
