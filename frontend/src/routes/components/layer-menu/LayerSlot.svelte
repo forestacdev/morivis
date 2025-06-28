@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { slide } from 'svelte/transition';
+	import { fly, slide } from 'svelte/transition';
 	import { fade } from 'svelte/transition';
 
 	import Legend from './Legend.svelte';
@@ -208,19 +208,19 @@
 			</button>
 
 			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
-				{#if !isHovered}
-					<div transition:slide={{ duration: 200 }} class="flex flex-col">
-						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
-							>{layerEntry.metaData.name}</span
-						>
-						<span class="truncate text-xs text-gray-400"
-							>{layerEntry.metaData.location ?? '---'}</span
-						>
-					</div>
-				{/if}
+				<div class="flex flex-col">
+					<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
+						>{layerEntry.metaData.name}</span
+					>
+					<span class="truncate text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span
+					>
+				</div>
 
 				{#if isHovered}
-					<div transition:slide={{ duration: 200 }} class="flex gap-4 text-gray-100">
+					<div
+						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
+						class="bg-main absolute flex h-full w-full gap-4 text-gray-100"
+					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
 							class="cursor-pointer"

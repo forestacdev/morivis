@@ -75,22 +75,22 @@
 		}
 	};
 
-	onMount(() => {
-		// 初期化時にコンテナの幅を設定
-		if (container) {
-			gsap.set(container, { width: '400px' });
-		}
-	});
-
-	isStyleEdit.subscribe((value) => {
+	const resizeMenu = () => {
 		if (container) {
 			gsap.to(container, {
-				width: value ? '85px' : '400px',
+				width: $isStyleEdit ? '85px' : '400px',
 				duration: 0.2,
-				delay: value ? 0.2 : 0,
 				ease: 'power2.inOut'
 			});
 		}
+	};
+
+	isStyleEdit.subscribe((value) => {
+		resizeMenu();
+	});
+
+	$effect(() => {
+		resizeMenu();
 	});
 
 	// const groupByType = (entries: GeoDataEntry[]) => {
@@ -129,7 +129,7 @@
 		<div
 			class="flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden pb-4 pl-2 {$isStyleEdit
 				? 'c-scroll-hidden '
-				: 'c-scroll '}"
+				: 'c-scroll'}"
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>

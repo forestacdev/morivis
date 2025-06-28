@@ -93,6 +93,11 @@
 	@apply w-[400px];
 }
 
+@utility w-style-menu {
+	/* スタイルメニューの幅 */
+	@apply w-[450px];
+}
+
 @utility c-scroll {
 	/* スクロールバー */
 	-webkit-overflow-scrolling: touch;

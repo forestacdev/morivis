@@ -8,6 +8,8 @@
 	import { mapStore } from '$routes/store/map';
 	import type { FeatureMenuData } from '$routes/types';
 	import { generatePopupTitle } from '$routes/utils/properties';
+	import { selectedLayerId, isStyleEdit } from '$routes/store';
+	import { isSideMenuType } from '$routes/store/ui';
 
 	let {
 		featureMenuData = $bindable(),
@@ -48,6 +50,16 @@
 		}
 		return null;
 	});
+
+	const edit = () => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			$isSideMenuType = 'layer';
+
+			selectedLayerId.set(targetLayer.id);
+			isStyleEdit.set(true);
+			featureMenuData = null; // Close the feature menu after editing
+		}
+	};
 </script>
 
 {#if featureMenuData}
@@ -149,13 +161,13 @@
 					</div>
 				{/if}
 
-				<!-- <button
-				onclick={edit}
-				class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
-			>
-				<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
-				<span class="">レイヤーを編集</span>
-			</button> -->
+				<button
+					onclick={edit}
+					class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
+				>
+					<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
+					<span class="">レイヤーを編集</span>
+				</button>
 			</div>
 		</div>
 	</div>

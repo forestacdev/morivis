@@ -7,15 +7,17 @@
 	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
 	import {
 		showSideMenu,
-		showDataMenu,
 		mapMode,
 		showInfoDialog,
 		showTermsDialog,
-		showTerrainMenu
+		showTerrainMenu,
+		selectedLayerId,
+		isStyleEdit,
+		showDataMenu
 	} from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { GeoDataEntry } from '$routes/data/types';
-	import type { FeatureMenuData } from '$routes/utils/file/geojson';
+	import type { FeatureMenuData } from '$routes/types';
 	import type { LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/components/search-menu/Geocoder.svelte';
@@ -222,12 +224,30 @@
 					<Icon icon="ic:round-layers" class="h-7 w-7" />
 				</button>
 			{/if}
+			{#if !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'layer'
+						? 'text-accent scale-120'
+						: ''}"
+					onclick={toggleDataMenu}
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
+				</button>
+			{/if}
 			{#if $isSideMenuType === 'layer'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
+					class="w-title-bar text-l flex shrink-0 items-center justify-center text-nowrap text-center"
 				>
-					レイヤー
+					<div>データ</div>
+					{#if !$isStyleEdit}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
+					{/if}
+					{#if $isStyleEdit}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
+					{/if}
 				</div>
 			{/if}
 			<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
@@ -250,15 +270,15 @@
 					描画ツール
 				</div>
 			{/if}
-			<!-- {#if $isSideMenuType}
+			{#if $isStyleEdit}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-					onclick={() => isSideMenuType.set(null)}
+					onclick={() => isStyleEdit.set(false)}
 				>
 					<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
 				</button>
-			{/if} -->
+			{/if}
 		</div>
 	</div>
 	<li class="flex">
