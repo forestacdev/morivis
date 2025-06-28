@@ -277,6 +277,26 @@ const createMapStore = () => {
 		map.panTo(lngLat, option);
 	};
 
+	const panToPoi = (
+		lngLat:
+			| [number, number]
+			| {
+					lng: number;
+					lat: number;
+			  }
+	) => {
+		if (!map) return;
+		map.panTo(lngLat, {
+			duration: 300,
+			padding: {
+				left: 400, // サイドバー分の余白を左に確保
+				top: 20,
+				right: 20,
+				bottom: 20
+			}
+		});
+	};
+
 	const easeTo = (options: EaseToOptions) => {
 		if (!map) return;
 		map.easeTo(options);
@@ -485,6 +505,7 @@ const createMapStore = () => {
 		fitBounds: (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) =>
 			map?.fitBounds(bounds, options),
 		panTo,
+		panToPoi,
 		easeTo: (options: EaseToOptions) => easeTo(options),
 		focusLayer,
 		focusFeature,

@@ -11,10 +11,11 @@
 		featureId: number;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
+		clickId: number | null; // クリックされたPOIのID
 		onClick: (featureId: number) => void;
 	}
 
-	let { lngLat = $bindable(), map, properties, featureId, onClick }: Props = $props();
+	let { lngLat = $bindable(), map, properties, featureId, onClick, clickId }: Props = $props();
 	let markerContainer = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
 	let name: maplibregl.Marker | null = $state.raw(null);
@@ -25,8 +26,6 @@
 	let isHover = $state(false);
 
 	onMount(() => {
-		if (properties._prop_id === 'ziriki_11')
-			console.log('Ziriki5 marker mounted', properties, lngLat);
 		if (markerContainer && lngLat) {
 			marker = new maplibregl.Marker({
 				element: markerContainer,
@@ -127,7 +126,10 @@
 			>
 				{#if imageUrl}
 					<img
-						class="border-base drop-shadow-purple-50 absolute h-full w-full rounded-full border-4 object-cover transition-all duration-150 hover:scale-110"
+						class="border-base drop-shadow-purple-50 absolute h-full w-full rounded-full border-4 object-cover transition-all duration-150 {isHover ||
+						clickId === featureId
+							? 'scale-110'
+							: ''}"
 						src={imageUrl}
 						alt={properties.name || 'Marker Image'}
 					/>
@@ -140,7 +142,7 @@
 		bind:this={nameContainer}
 		class="items-top pointer-events-none relative z-10 flex w-[150px] justify-center"
 	>
-		{#if isHover}
+		{#if isHover || clickId === featureId}
 			<div
 				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
 				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"

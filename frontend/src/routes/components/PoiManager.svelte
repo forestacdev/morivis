@@ -28,6 +28,7 @@
 	let { map, featureMenuData = $bindable() }: Props = $props();
 
 	let poiDatas = $state<PoiData[]>([]);
+	let clickId = $state<number | null>(null); // クリックされたPOIのID
 
 	const updateMarkers = () => {
 		if (!$showLabelLayer || !map.getLayer(poiLayersIds[0])) return;
@@ -76,6 +77,10 @@
 			properties: properties,
 			point: coordinates
 		};
+
+		clickId = featureId;
+
+		mapStore.panToPoi(new maplibregl.LngLat(coordinates[0], coordinates[1]));
 	};
 
 	onMount(() => {
@@ -99,6 +104,7 @@
 			properties={poiData.properties}
 			featureId={poiData.featureId}
 			onClick={(featureId) => onClick(featureId)}
+			{clickId}
 		/>
 	{/each}
 {/if}

@@ -14,8 +14,6 @@
 		layerEntries
 	}: { featureMenuData: FeatureMenuData | null; layerEntries: GeoDataEntry[] } = $props();
 
-	let showProp = $state<'metadata' | 'attributes'>('metadata');
-
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {
 			const layer = layerEntries.find(
@@ -58,23 +56,6 @@
 			const layer = map.getLayer(featureMenuData.layerId);
 			if (!layer) return;
 			const type: string = layer.type;
-			if (
-				type === 'raster' ||
-				!featureMenuData.properties ||
-				!featureMenuData.properties._prop_id
-			) {
-				showProp = 'metadata';
-			} else {
-				showProp = 'attributes';
-			}
-		}
-	});
-
-	$effect(() => {
-		if (featureMenuData && featureMenuData.properties && featureMenuData.properties._prop_id) {
-			showProp = 'metadata';
-		} else {
-			showProp = 'attributes';
 		}
 	});
 </script>
