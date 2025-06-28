@@ -603,7 +603,7 @@
 <style>
 	/* NOTE: debug */
 	:global(.lil-gui) {
-		/* display: none !important; */
+		display: none !important;
 	}
 	canvas {
 		background-image: radial-gradient(#000000, #000000);

@@ -230,7 +230,7 @@
 					レイヤー
 				</div>
 			{/if}
-			{#if $isSideMenuType === 'draw' || !$isSideMenuType}
+			<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
@@ -241,7 +241,7 @@
 				>
 					<Icon icon="fa6-solid:pen" class="h-5 w-5" />
 				</button>
-			{/if}
+			{/if} -->
 			{#if $isSideMenuType === 'draw'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
