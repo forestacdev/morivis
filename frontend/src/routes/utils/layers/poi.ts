@@ -40,7 +40,17 @@ export const poiStyleJson = {
 			minzoom: 11,
 			layout: {
 				'icon-image': 'poi-icon', // アイコンの画像名
-				'icon-size': 3 // アイコンのサイズ
+				'icon-size': 4 // アイコンのサイズ
+			}
+		} as SymbolLayerSpecification,
+		{
+			id: 'poi_top_layer',
+			type: 'symbol',
+			source: 'fac_top',
+			maxzoom: 12,
+			layout: {
+				'icon-image': 'poi-icon',
+				'icon-size': 3
 			}
 		} as SymbolLayerSpecification
 	]

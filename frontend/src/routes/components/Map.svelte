@@ -460,7 +460,6 @@
 	<PoiManager map={maplibreMap} />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
-		map={maplibreMap}
 		{showDataEntry}
 		bind:markerLngLat={selectionMarkerLngLat}
 		bind:featureMenuData

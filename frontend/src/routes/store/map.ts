@@ -1,5 +1,5 @@
 // stores/mapStore.js
-import { writable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 import maplibregl from 'maplibre-gl';
 import type {
 	StyleSpecification,
@@ -65,18 +65,23 @@ const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
-	const clickEvent = writable<MapMouseEvent | null>(null);
-	const mouseoverEvent = writable<MapMouseEvent | null>(null);
-	const mouseoutEvent = writable<MapMouseEvent | null>(null);
-	const rotateEvent = writable<number | null>(null);
-	const zoomEvent = writable<number | null>(null);
-	const setStyleEvent = writable<StyleSpecification | null>(null);
+
+	// maplibre-glのイベントを管理するストア
+	const clickEvent = writable<MapMouseEvent | undefined>(undefined);
+	const mouseoverEvent = writable<MapMouseEvent | undefined>(undefined);
+	const mouseoutEvent = writable<MapMouseEvent | undefined>(undefined);
+	const rotateEvent = writable<number | undefined>(undefined);
+	const zoomEvent = writable<number | undefined>(undefined);
+	const setStyleEvent = writable<StyleSpecification | undefined>(undefined);
+	const isStyleLoadEvent = writable<maplibregl.Map | undefined>(undefined);
+	const mooveEndEvent = writable<MapLibreEvent | undefined>(undefined);
+	const resizeEvent = writable<MapLibreEvent | undefined>(undefined);
+	const initEvent = writable<maplibregl.Map | undefined>(undefined);
+	const onLoadEvent = writable<MapLibreEvent | undefined>(undefined);
+
+	// カスタムイベント
 	const isLoadingEvent = writable<boolean>(true);
-	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
-	const mooveEndEvent = writable<MapLibreEvent | null>(null);
-	const resizeEvent = writable<MapLibreEvent | null>(null);
-	const initEvent = writable<maplibregl.Map | null>(null);
-	const onLoadEvent = writable<MapLibreEvent | null>(null);
+	const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -129,11 +134,11 @@ const createMapStore = () => {
 			isStyleLoadEvent.set(map);
 		});
 
-		map.on('load', (e) => {
+		map.on('load', (e: MapLibreEvent) => {
 			onLoadEvent.set(e);
 		});
 
-		map.on('click', (e) => {
+		map.on('click', (e: MapMouseEvent) => {
 			clickEvent.set(e);
 		});
 
@@ -219,18 +224,18 @@ const createMapStore = () => {
 		map.remove();
 		map = null;
 		set(null);
-		clickEvent.set(null);
-		mouseoverEvent.set(null);
-		mouseoutEvent.set(null);
-		rotateEvent.set(null);
-		zoomEvent.set(null);
-		setStyleEvent.set(null);
+
+		mouseoverEvent.set(undefined);
+		mouseoutEvent.set(undefined);
+		rotateEvent.set(undefined);
+		zoomEvent.set(undefined);
+		setStyleEvent.set(undefined);
 		isLoadingEvent.set(true);
-		isStyleLoadEvent.set(null);
-		mooveEndEvent.set(null);
-		resizeEvent.set(null);
-		initEvent.set(null);
-		onLoadEvent.set(null);
+		isStyleLoadEvent.set(undefined);
+		mooveEndEvent.set(undefined);
+		resizeEvent.set(undefined);
+		initEvent.set(undefined);
+		onLoadEvent.set(undefined);
 		lockOnMarker = null;
 	};
 
@@ -457,6 +462,14 @@ const createMapStore = () => {
 		terrainReload();
 	};
 
+	const createEventSubscriber = <T>(store: Writable<T | undefined | null>) => {
+		return (callback: (event: T) => void) => {
+			return store.subscribe((event) => {
+				if (event) callback(event);
+			});
+		};
+	};
+
 	return {
 		subscribe,
 		init,
@@ -478,26 +491,27 @@ const createMapStore = () => {
 		easeTo: (options: EaseToOptions) => easeTo(options),
 		focusLayer,
 		focusFeature,
-		onSetStyle: setStyleEvent.subscribe,
-		onResize: resizeEvent.subscribe, // リサイズイベントの購読用メソッド
 		getTerrain: () => map?.getTerrain(),
 		getMapBounds: getMapBounds,
 		getCanvas: () => map?.getCanvas(),
-		onload: onLoadEvent.subscribe, // onloadイベントの購読用メソッド
-		onClick: clickEvent.subscribe, // クリックイベントの購読用メソッド
-		onMouseover: mouseoverEvent.subscribe, // マウスオーバーイベントの購読用メソッド
-		onMouseout: mouseoutEvent.subscribe, // マウスアウトイベントの購読用メソッド
-		onRotate: rotateEvent.subscribe, // 回転イベントの購読用メソッド
-		onZoom: zoomEvent.subscribe, // ズームイベントの購読用メソッド
-		onMooveEnd: mooveEndEvent.subscribe, // マップ移動イベントの購読用メソッド
-		onLoading: isLoadingEvent.subscribe, // ローディングイベントの購読用メソッド
-		onInitialized: initEvent.subscribe, // 初期化イベントの購読用メソッド
-		onStyleLoad: isStyleLoadEvent.subscribe, // スタイルロードイベントの購読用メソッド
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
 		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
-		jumpToFac: jumpToFac
+		jumpToFac: jumpToFac,
+		// リスナー
+		onSetStyle: createEventSubscriber(setStyleEvent), // スタイル設定イベントの購読用メソッド
+		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
+		onload: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
+		onClick: createEventSubscriber(clickEvent), // クリックイベント
+		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド
+		onMouseout: createEventSubscriber(mouseoutEvent), // マウスアウトイベントの購読用メソッド
+		onRotate: createEventSubscriber(rotateEvent), // 回転イベントの購読用メソッド
+		onZoom: createEventSubscriber(zoomEvent), // ズームイベントの購読用メソッド
+		onMooveEnd: createEventSubscriber(mooveEndEvent), // マップ移動イベントの購読用メソッド
+		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
+		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
+		onStyleLoad: createEventSubscriber(isStyleLoadEvent) // スタイルロードイベントの購読用メソッド
 	};
 };
 

@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/data/propData';
 	import { mapStore } from '$routes/store/map';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -36,6 +37,14 @@
 		}
 	});
 
+	const click = () => {
+		console.log('Marker clicked:', properties);
+	};
+
+	const jumpToFac = () => {
+		mapStore.jumpToFac();
+	};
+
 	// $effect(() => {
 	// 	if (marker && lngLat && container) {
 	// 		marker = new maplibregl.Marker({
@@ -51,12 +60,6 @@
 	onDestroy(() => {
 		marker?.remove();
 	});
-
-	const click = () => {};
-
-	const jumpToFac = () => {
-		mapStore.jumpToFac();
-	};
 </script>
 
 {#if properties._prop_id === 'fac_top'}

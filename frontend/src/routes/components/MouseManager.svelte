@@ -25,7 +25,6 @@
 	import { poiLayersIds } from '$routes/utils/layers/poi';
 
 	interface Props {
-		map: maplibregl.Map;
 		markerLngLat: maplibregl.LngLat | null;
 		streetViewPointData: FeatureCollection;
 		setPoint: (streetViewPoint: StreetViewPoint) => void;
@@ -38,7 +37,6 @@
 	}
 
 	let {
-		map,
 		markerLngLat = $bindable(),
 		featureMenuData = $bindable(),
 		showMarker = $bindable(),
@@ -138,8 +136,9 @@
 		}
 	};
 
-	map.on('click', (e) => {
-		// プレビューモードの時は、クリックイベントを無視する
+	mapStore.onClick((e: MapMouseEvent) => {
+		const map = mapStore.getMap();
+		if (!map) return;
 
 		if ($DEBUG_MODE) {
 			const features = map.queryRenderedFeatures(e.point);
@@ -286,7 +285,9 @@
 	});
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
-	map.on('load', () => {
+	mapStore.onload((e) => {
+		const map = mapStore.getMap();
+		if (!map) return;
 		map.on('mousemove', (e) => {
 			const clickLayerIds = [...$clickableVectorIds];
 			const features = map.queryRenderedFeatures(e.point, {
@@ -350,6 +351,8 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			if (hoveredId !== null && hoveredFeatureState !== null) {
+				const map = mapStore.getMap();
+				if (!map) return;
 				map.setFeatureState(
 					{
 						...hoveredFeatureState,
