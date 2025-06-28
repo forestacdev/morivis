@@ -37,7 +37,6 @@ interface Address {
 	};
 }
 
-import { json } from '@sveltejs/kit';
 import { GSI } from './muni';
 
 // 国土地理院APIの変換表を使って住所コードを住所に変換
@@ -305,6 +304,7 @@ const searchDataset = async (
 	return dataset;
 };
 
+// Himawariの衛星画像の取得
 export const getHimawariSatimgTimes = async () => {
 	try {
 		const response = await fetch(

@@ -3,7 +3,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/data/propData';
-	import { mapStore } from '$routes/store/map';
+	import { mapStore, isHoverPoiMarker } from '$routes/store/map';
 	import { fade } from 'svelte/transition';
 
 	interface Props {
@@ -67,6 +67,10 @@
 		bind:this={container}
 		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
 		onclick={jumpToFac}
+		onfocus={() => isHoverPoiMarker.set(true)}
+		onblur={() => isHoverPoiMarker.set(false)}
+		onmouseover={() => isHoverPoiMarker.set(true)}
+		onmouseleave={() => isHoverPoiMarker.set(false)}
 	>
 		{#if imageUrl}
 			<img
@@ -81,6 +85,10 @@
 		bind:this={container}
 		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
 		onclick={click}
+		onfocus={() => isHoverPoiMarker.set(true)}
+		onblur={() => isHoverPoiMarker.set(false)}
+		onmouseover={() => isHoverPoiMarker.set(true)}
+		onmouseleave={() => isHoverPoiMarker.set(false)}
 	>
 		{#if imageUrl}
 			<img

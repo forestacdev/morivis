@@ -47,6 +47,7 @@ import { downloadImageBitmapAsPNG } from '$routes/utils/image';
 import { handleStyleImageMissing } from '$routes/utils/icon';
 import { isStyleEdit } from './index';
 import { remove } from 'jszip';
+import { map } from 'es-toolkit/compat';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -60,6 +61,10 @@ maplibregl.addProtocol(terrain.protocolName, terrain.request);
 const tileIndex = tileIndexProtocol('tile_index');
 maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 
+export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
+
+export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
+
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
@@ -67,21 +72,17 @@ const createMapStore = () => {
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
 	// maplibre-glのイベントを管理するストア
-	const clickEvent = writable<MapMouseEvent | undefined>(undefined);
-	const mouseoverEvent = writable<MapMouseEvent | undefined>(undefined);
-	const mouseoutEvent = writable<MapMouseEvent | undefined>(undefined);
-	const rotateEvent = writable<number | undefined>(undefined);
-	const zoomEvent = writable<number | undefined>(undefined);
-	const setStyleEvent = writable<StyleSpecification | undefined>(undefined);
-	const isStyleLoadEvent = writable<maplibregl.Map | undefined>(undefined);
-	const mooveEndEvent = writable<MapLibreEvent | undefined>(undefined);
-	const resizeEvent = writable<MapLibreEvent | undefined>(undefined);
-	const initEvent = writable<maplibregl.Map | undefined>(undefined);
-	const onLoadEvent = writable<MapLibreEvent | undefined>(undefined);
-
-	// カスタムイベント
-	const isLoadingEvent = writable<boolean>(true);
-	const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
+	const clickEvent = writable<MapMouseEvent | null>(null);
+	const mouseoverEvent = writable<MapMouseEvent | null>(null);
+	const mouseoutEvent = writable<MapMouseEvent | null>(null);
+	const rotateEvent = writable<number | null>(null);
+	const zoomEvent = writable<number | null>(null);
+	const setStyleEvent = writable<StyleSpecification | null>(null);
+	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
+	const mooveEndEvent = writable<MapLibreEvent | null>(null);
+	const resizeEvent = writable<MapLibreEvent | null>(null);
+	const initEvent = writable<maplibregl.Map | null>(null);
+	const onLoadEvent = writable<MapLibreEvent | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const params = getParams(location.search);
@@ -139,18 +140,22 @@ const createMapStore = () => {
 		});
 
 		map.on('click', (e: MapMouseEvent) => {
+			if (get(isHoverPoiMarker)) {
+				// POIマーカーにホバーしている場合はクリックイベントを無視
+				return;
+			}
 			clickEvent.set(e);
 		});
 
 		map.on('resize', (e) => {
 			resizeEvent.set(e);
 		});
-		map.on('data', function (e) {
+		map.on('data', (e) => {
 			//your code here
 			isLoadingEvent.set(true);
 			// console.log(e);
 		});
-		map.on('idle', function (e) {
+		map.on('idle', (e) => {
 			//your code here
 			isLoadingEvent.set(false);
 			// console.log(e);
@@ -217,26 +222,6 @@ const createMapStore = () => {
 		// map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		initEvent.set(map);
-	};
-
-	const remove = () => {
-		if (!map) return;
-		map.remove();
-		map = null;
-		set(null);
-
-		mouseoverEvent.set(undefined);
-		mouseoutEvent.set(undefined);
-		rotateEvent.set(undefined);
-		zoomEvent.set(undefined);
-		setStyleEvent.set(undefined);
-		isLoadingEvent.set(true);
-		isStyleLoadEvent.set(undefined);
-		mooveEndEvent.set(undefined);
-		resizeEvent.set(undefined);
-		initEvent.set(undefined);
-		onLoadEvent.set(undefined);
-		lockOnMarker = null;
 	};
 
 	// Method for setting map style
@@ -376,6 +361,7 @@ const createMapStore = () => {
 		return [_sw.lng, _sw.lat, _ne.lng, _ne.lat];
 	};
 
+	// ソースとレイヤーをすべてリセットするメソッド
 	const resetAllSourcesAndLayers = () => {
 		if (!map) {
 			console.warn('Map is not ready yet.');
@@ -421,6 +407,7 @@ const createMapStore = () => {
 		}
 	};
 
+	// 地形をリセットするメソッド
 	const resetDem = () => {
 		// TODO
 		if (!map) return;
@@ -460,6 +447,27 @@ const createMapStore = () => {
 		// }
 		resetAllSourcesAndLayers();
 		terrainReload();
+	};
+
+	// インスタンス削除
+	const remove = () => {
+		if (!map) return;
+		map.remove();
+		map = null;
+		set(null);
+
+		mouseoverEvent.set(null);
+		mouseoutEvent.set(null);
+		rotateEvent.set(null);
+		zoomEvent.set(null);
+		setStyleEvent.set(null);
+		isLoadingEvent.set(true);
+		isStyleLoadEvent.set(null);
+		mooveEndEvent.set(null);
+		resizeEvent.set(null);
+		initEvent.set(null);
+		onLoadEvent.set(null);
+		lockOnMarker = null;
 	};
 
 	const createEventSubscriber = <T>(store: Writable<T | undefined | null>) => {
