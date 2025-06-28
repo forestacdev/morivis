@@ -51,7 +51,7 @@
 	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
-	import SideMenu from '$routes/components/side-menu/_Index.svelte';
+	import SideMenu from '$routes/components/SideMenu.svelte';
 
 	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
 
