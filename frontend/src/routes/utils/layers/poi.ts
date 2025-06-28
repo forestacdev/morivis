@@ -43,30 +43,9 @@ export const poiStyleJson = {
 	},
 	layers: [
 		{
-			id: 'poi_other_layer',
+			id: 'fac_poi_layer',
 			'source-layer': 'fac_poi',
 			...LAYER_BASE
-		} as SymbolLayerSpecification,
-		{
-			id: 'poi_ziriki_layer',
-			'source-layer': 'fac_ziriki_point',
-			...LAYER_BASE
-		} as SymbolLayerSpecification,
-		{
-			id: 'poi_building_layer',
-			'source-layer': 'fac_building_point',
-
-			...LAYER_BASE
-		} as SymbolLayerSpecification,
-		{
-			id: 'poi_top_layer',
-			type: 'symbol',
-			source: 'fac_top',
-			maxzoom: 12,
-			layout: {
-				'icon-image': 'poi-icon',
-				'icon-size': 3
-			}
 		} as SymbolLayerSpecification
 	]
 };

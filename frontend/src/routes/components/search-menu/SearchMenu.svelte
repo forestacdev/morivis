@@ -16,9 +16,9 @@
 	import { showSearchMenu } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
-	import type { ResultData } from '$routes/utils/feature';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/file/geojson';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
+	import type { ResultData } from '$routes/utils/feature';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
@@ -35,7 +35,22 @@
 		selectionMarkerLngLat = $bindable()
 	}: Props = $props();
 
-	let searchData: any = null; // 検索データ
+	interface SearchData {
+		layer_id: string;
+		name: string;
+		search_values: string[];
+		feature_id: number;
+		point: [number, number];
+		tile_coords: {
+			x: number;
+			y: number;
+			z: number;
+		};
+		prop_id?: string | null;
+		path: string;
+	}
+
+	let searchData: SearchData[]; // 検索データ
 
 	const LIMIT = 100; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
