@@ -2,7 +2,6 @@ import type { LngLat, LngLatBoundsLike, Coordinates } from 'maplibre-gl';
 import type { Map as MaplibreMap } from 'maplibre-gl';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import bbox from '@turf/bbox';
 
 const WEB_MERCATOR_WORLD_BBOX = [-180, -85.051128779807, 180, 85.051128779807];
 export const WEB_MERCATOR_MAX_LAT = 85.051128779807;
@@ -10,13 +9,15 @@ export const WEB_MERCATOR_MIN_LAT = -85.051128779807;
 export const WEB_MERCATOR_MAX_LNG = 180;
 export const WEB_MERCATOR_MIN_LNG = -180;
 
+type BBox = [number, number, number, number];
+
 /**
  * Check if a point is inside a bounding box.
  * @param point - The point as maplibregl.LngLat.
  * @param bbox - The bounding box as [minLng, minLat, maxLng, maxLat].
  * @returns true if the point is inside the bbox, false otherwise.
  */
-export const isPointInBbox = (point: LngLat, bbox: [number, number, number, number]): boolean => {
+export const isPointInBbox = (point: LngLat, bbox: BBox): boolean => {
 	const [minLng, minLat, maxLng, maxLat] = bbox;
 
 	const lng = point.lng;
@@ -24,8 +25,6 @@ export const isPointInBbox = (point: LngLat, bbox: [number, number, number, numb
 
 	return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
 };
-
-type BBox = LngLatBoundsLike;
 
 /** bbox同士が重なっているか */
 export const isBBoxOverlapping = (bbox1: BBox, bbox2: BBox): boolean => {
