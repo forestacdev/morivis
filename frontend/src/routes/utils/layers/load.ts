@@ -1,16 +1,10 @@
-import loadStyleJson from '$routes/data/load-style.json';
-import type { LineLayerSpecification, SourceSpecification } from 'maplibre-gl';
+import satelliteStyleJson from '$routes/utils/layers/satellite_style.json';
 
-/** ラベルのソースを取得 */
-export const getLoadSources = (): {
-	[_: string]: SourceSpecification;
-} => {
-	return loadStyleJson.sources as {
-		[_: string]: SourceSpecification;
-	};
-};
+import type { LineLayerSpecification, SourceSpecification } from 'maplibre-gl';
 
 /** ラベルのレイヤーを取得 */
 export const getLoadLayers = (): LineLayerSpecification[] => {
-	return loadStyleJson.layers as LineLayerSpecification[];
+	return satelliteStyleJson.layers.filter(
+		(layer) => layer.type === 'line'
+	) as LineLayerSpecification[];
 };

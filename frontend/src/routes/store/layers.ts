@@ -132,7 +132,7 @@ export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
 export const showLoadLayer = writable<boolean>(true);
 
 /** 行政境界レイヤー */
-export const showBoundaryLayer = writable<boolean>(true);
+export const showBoundaryLayer = writable<boolean>(false);
 
 /** 等高線レイヤー */
 export const showContourLayer = writable<boolean>(false);

@@ -12,7 +12,6 @@ import { TileImageManager } from '$routes/protocol/image';
 import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/data/types';
-import { getLabelSources } from '$routes/utils/layers/label';
 import {
 	showBoundaryLayer,
 	showLabelLayer,
@@ -32,10 +31,9 @@ import { objectToUrlParams } from '$routes/utils/params';
 import { getBoundingBoxCorners } from '$routes/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-import { getLoadSources } from './layers/load';
-import { BaseMapStyleJson } from '$routes/utils/layers/base-map';
 import { poiStyleJson } from '$routes/utils/layers/poi';
 import { cloudStyleJson } from '$routes/utils/layers/cloud';
+import { getBaseMapSources } from './layers/base-map';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -266,6 +264,18 @@ export const createSourcesItems = async (
 
 	const gsiSources = isGsiSource
 		? {
+				openmaptiles: {
+					type: 'vector',
+					url: 'https://tile.openstreetmap.jp/data/planet.json'
+				},
+				takeshima: {
+					type: 'vector',
+					url: 'https://tile.openstreetmap.jp/data/takeshima.json'
+				},
+				hoppo: {
+					type: 'vector',
+					url: 'https://tile.openstreetmap.jp/data/hoppo.json'
+				},
 				v: {
 					type: 'vector',
 					minzoom: 4,
@@ -276,11 +286,10 @@ export const createSourcesItems = async (
 			}
 		: {};
 
-	// ベースマップのソースを追加
-	const baseMapSources = BaseMapStyleJson.sources;
 	const cloudSources = cloudStyleJson.sources;
+	const baseSources = getBaseMapSources();
 
-	return { ...sourceItems, ...gsiSources, ...poiSources, ...baseMapSources, ...cloudSources } as {
+	return { ...sourceItems, ...gsiSources, ...poiSources, ...cloudSources, ...baseSources } as {
 		[_: string]: SourceSpecification;
 	};
 };

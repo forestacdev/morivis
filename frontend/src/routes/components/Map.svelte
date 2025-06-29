@@ -166,8 +166,9 @@
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
-			glyphs: MAP_FONT_DATA_PATH,
 			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
+			glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
+			// glyphs: MAP_FONT_DATA_PATH,
 			projection: {
 				type: 'globe'
 			},

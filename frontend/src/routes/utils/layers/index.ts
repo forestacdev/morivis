@@ -22,7 +22,6 @@ import { hillshadeLayer } from '$routes/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
-import { BaseMapStyleJson } from '$routes/utils/layers/base-map';
 
 import { geoDataEntries } from '$routes/data';
 import type { GeoDataEntry } from '$routes/data/types';
@@ -58,6 +57,7 @@ import { getLoadLayers } from './load';
 import { getBoundaryLayers } from './boundary';
 import { getContourLabelLayers, getContourLineLayers } from './contour';
 import { cloudStyleJson } from './cloud';
+import { getBaseMapLayers } from './base-map';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -811,7 +811,7 @@ export const createLayersItems = (
 	const hillshadeItem = get(showHillshadeLayer) && _type === 'main' ? [hillshadeLayer] : [];
 
 	// ベースマップ
-	const rasterBaseMap = _type === 'main' ? BaseMapStyleJson.layers : [];
+	const rasterBaseMap = _type === 'main' ? getBaseMapLayers() : [];
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
