@@ -5,54 +5,10 @@ import { jsPDF } from 'jspdf';
 import bbox from '@turf/bbox';
 
 const WEB_MERCATOR_WORLD_BBOX = [-180, -85.051128779807, 180, 85.051128779807];
-const WEB_MERCATOR_MAX_LAT = 85.051128779807;
-const WEB_MERCATOR_MIN_LAT = -85.051128779807;
-const WEB_MERCATOR_MAX_LNG = 180;
-const WEB_MERCATOR_MIN_LNG = -180;
-
-/**
- * Get the bounding box of the map in Web Mercator coordinates.
- * @param map - The Maplibre map instance.
- * @returns An object containing the bounding box and coordinates of the corners.
- */
-export const getMapBounds = (map: MaplibreMap) => {
-	// 緯度をWebメルカトル（EPSG:3857）の制限範囲内にクランプする関数
-	const clampLatitude = (lat: number): number => {
-		return Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, lat));
-	};
-
-	// 経度を正規化する関数（-180 ~ 180の範囲に収める）
-	const normalizeLongitude = (lng: number): number => {
-		// 経度を-180から180の範囲に正規化
-		lng = lng % 360;
-		if (lng > 180) {
-			lng -= 360;
-		} else if (lng < -180) {
-			lng += 360;
-		}
-		return lng;
-	};
-	const bounds = map.getBounds();
-
-	// 緯度を制限範囲内にクランプ
-	const swLat = clampLatitude(bounds._sw.lat);
-	const neLat = clampLatitude(bounds._ne.lat);
-
-	// 経度を正規化
-	let swLng = normalizeLongitude(bounds._sw.lng);
-	let neLng = normalizeLongitude(bounds._ne.lng);
-
-	// 180度線をまたぐ場合の処理
-	if (swLng > neLng) {
-		// 地図が180度線をまたいでいる場合は、西側の境界を使用
-		swLng = WEB_MERCATOR_MIN_LNG;
-		neLng = WEB_MERCATOR_MAX_LNG;
-	}
-
-	const bbox = [swLng, swLat, neLng, neLat] as [number, number, number, number];
-
-	return bbox;
-};
+export const WEB_MERCATOR_MAX_LAT = 85.051128779807;
+export const WEB_MERCATOR_MIN_LAT = -85.051128779807;
+export const WEB_MERCATOR_MAX_LNG = 180;
+export const WEB_MERCATOR_MIN_LNG = -180;
 
 /**
  * Check if a point is inside a bounding box.

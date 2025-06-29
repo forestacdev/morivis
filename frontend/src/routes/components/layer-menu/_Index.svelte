@@ -26,6 +26,7 @@
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
+		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
@@ -33,6 +34,7 @@
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
+		showDataEntry = $bindable(), // データメニューの表示状態
 		resetlayerEntries
 	}: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
@@ -166,6 +168,7 @@
 					<LayerSlot
 						{isSmall}
 						bind:layerEntry={layerEntries[i]}
+						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:dragEnterType

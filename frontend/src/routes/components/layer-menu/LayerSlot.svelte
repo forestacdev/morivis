@@ -1,10 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fly, slide } from 'svelte/transition';
-	import { fade } from 'svelte/transition';
 
 	import Legend from './Legend.svelte';
-
+	import turfBbox, { bbox } from '@turf/bbox';
 	import LayerIcon from '$routes/components/atoms/LayerIcon.svelte';
 	import OpacityRangeSlider from '$routes/components/layer-menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/data/types';
@@ -13,13 +12,19 @@
 	import {
 		orderedLayerIds,
 		groupedLayerStore,
+		getLayerType,
 		reorderStatus,
 		type LayerType
 	} from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
+	import { mapStore, type MapState } from '$routes/store/map';
+	import { getLocationBbox } from '$routes/data/locationBbox';
+	import { GeojsonCache } from '$routes/utils/file/geojson';
+	import { isBBoxOverlapping } from '$routes/utils/map';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
+		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		dragEnterType: LayerType | null;
@@ -28,6 +33,7 @@
 
 	let {
 		layerEntry = $bindable(),
+		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
 		dragEnterType = $bindable(),
@@ -39,6 +45,7 @@
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
+	let isLayerInRange = $state(false);
 
 	let layerType = $derived.by((): LayerType | unknown => {
 		if (layerEntry) {
@@ -56,6 +63,15 @@
 				}
 			}
 		}
+	});
+
+	let LayerBbox = $derived.by(() => {
+		if (layerEntry && layerEntry.metaData.bounds) {
+			return layerEntry.metaData.bounds as [number, number, number, number];
+		} else if (layerEntry && layerEntry.metaData.location) {
+			return getLocationBbox(layerEntry.metaData.location) as [number, number, number, number];
+		}
+		return null;
 	});
 
 	const selectedLayer = () => {
@@ -76,18 +92,20 @@
 	});
 
 	// TODO: レイヤーのコピー
-	// const copyLayer = () => {
-	// 	if (!layerEntry) return;
-	// 	$isStyleEdit = false;
-	// 	const uuid = crypto.randomUUID();
-	// 	const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+	const copyLayer = () => {
+		if (!layerEntry) return;
+		$isStyleEdit = false;
+		const uuid = crypto.randomUUID();
+		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
-	// 	copy.id = uuid;
-	// 	copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
+		copy.id = uuid;
+		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
-	// 	tempLayerEntries = [...tempLayerEntries, copy];
-	// 	orderedLayerIds.addLayer(uuid);
-	// };
+		tempLayerEntries = [...tempLayerEntries, copy];
+		const type = getLayerType(copy);
+		if (!type) return;
+		groupedLayerStore.add(uuid, type);
+	};
 
 	// レイヤーの削除
 	const removeLayer = () => {
@@ -109,9 +127,17 @@
 		$isStyleEdit = !$isStyleEdit;
 	};
 
+	// TODO: レイヤーのコピー
 	const infoLayer = () => {
-		toggleChecked(layerEntry.id);
 		if (!layerEntry) return;
+		$isStyleEdit = false;
+		const uuid = crypto.randomUUID();
+		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+
+		copy.id = uuid;
+		copy.metaData.name = `${layerEntry.metaData.name}`;
+
+		showDataEntry = copy; // データメニューを表示
 	};
 
 	let dragOffsetX = 0;
@@ -152,6 +178,50 @@
 		dragEnterType = null;
 		reorderStatus.set('idle');
 	};
+
+	// レイヤー表示範囲をチェック
+	// TODO: bboxがないデータの場合
+	const checkRange = (_state: MapState) => {
+		let z = _state.zoom;
+
+		if (
+			layerEntry.type === 'raster' ||
+			(layerEntry.type === 'vector' &&
+				layerEntry.format.type !== 'geojson' &&
+				layerEntry.format.type !== 'fgb')
+		) {
+			if (layerEntry.metaData.tileSize && layerEntry.metaData.tileSize === 256) {
+				z = z + 1.5; // タイルサイズが256の場合はズームレベルを1.5加算
+			}
+			isLayerInRange = z >= layerEntry.metaData.minZoom;
+		}
+
+		if (!isLayerInRange) {
+			return;
+		}
+
+		if (!LayerBbox) {
+			isLayerInRange = false;
+			return;
+		}
+
+		const mapBbox = _state.bbox;
+
+		if (isBBoxOverlapping(LayerBbox, mapBbox)) {
+			isLayerInRange = true;
+		} else {
+			isLayerInRange = false;
+		}
+	};
+
+	onMount(() => {
+		const state = mapStore.getState();
+		checkRange(state);
+	});
+
+	mapStore.onStateChange((state) => {
+		checkRange(state);
+	});
 </script>
 
 <div
@@ -171,7 +241,7 @@
 >
 	<div
 		id={layerEntry.id}
-		class="bg-main c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left transition-transform duration-100 {isSmall
+		class="c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left transition-transform duration-100 {isSmall
 			? 'w-[65px]'
 			: ''} {$selectedLayerId === layerEntry.id
 			? 'drop-shadow-[0_0_2px_rgba(30,230,20,0.8)]'
@@ -221,7 +291,7 @@
 				{#if isHovered}
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="bg-main absolute flex h-full w-full gap-4 text-gray-100"
+						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
@@ -233,6 +303,10 @@
 							/>
 						</button>
 
+						<button onclick={removeLayer} class="cursor-pointer">
+							<Icon icon="bx:trash" class="h-8 w-8" />
+						</button>
+
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
 								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
@@ -240,17 +314,14 @@
 						{/if}
 
 						<!-- <button onclick={copyLayer}>
-                                            <Icon icon="lucide:copy" />
-                                        </button> -->
-						<button onclick={editLayer} class="cursor-pointer">
+							<Icon icon="lucide:copy" />
+						</button> -->
+						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
 							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
 						</button>
-						<button onclick={infoLayer} class="cursor-pointer">
+						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
-						</button>
-						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon="bx:trash" class="h-8 w-8" />
-						</button>
+						</button> -->
 					</div>
 				{/if}
 			</div>
@@ -276,10 +347,10 @@
 		</div>
 	</div>
 	<div
-		class="border-main bg-base pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm"
-	>
-		{layerEntry.metaData.maxZoom}
-	</div>
+		class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {isLayerInRange
+			? 'bg-green-500'
+			: 'bg-red-500'}"
+	></div>
 	<!-- {#if showLegend}
 		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
 			<div class="flex w-full flex-col gap-4 px-2 pt-2">

@@ -9,10 +9,8 @@
 	let zoom = $state(0);
 	let isHover = $state(false);
 
-	mapStore.onZoom((z) => {
-		if (z) {
-			zoom = z;
-		}
+	mapStore.onStateChange((state) => {
+		zoom = state.zoom;
 	});
 
 	mapStore.onInitialized((map) => {

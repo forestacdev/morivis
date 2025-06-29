@@ -342,7 +342,7 @@
 			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[400px] flex-col gap-2"
 		></div> -->
 	{/if}
-	<LayerMenu bind:layerEntries bind:tempLayerEntries {resetlayerEntries} />
+	<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 	<SearchMenu
 		bind:featureMenuData
 		bind:inputSearchWord

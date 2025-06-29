@@ -28,6 +28,12 @@ import { get } from 'svelte/store';
 import { demProtocol } from '$routes/protocol/raster';
 import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/protocol/terrain';
+import {
+	WEB_MERCATOR_MIN_LAT,
+	WEB_MERCATOR_MAX_LAT,
+	WEB_MERCATOR_MIN_LNG,
+	WEB_MERCATOR_MAX_LNG
+} from '$routes/utils/map';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -45,11 +51,27 @@ export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーに�
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
+export interface MapState {
+	bbox: [number, number, number, number];
+	zoom: number;
+	center: [number, number];
+	pitch: number;
+	bearing: number;
+}
+
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
+
+	const state = writable<MapState>({
+		bbox: [0, 0, 0, 0],
+		zoom: 0,
+		center: [0, 0],
+		pitch: 0,
+		bearing: 0
+	});
 
 	// maplibre-glのイベントを管理するストア
 	const clickEvent = writable<MapMouseEvent | null>(null);
@@ -171,25 +193,30 @@ const createMapStore = () => {
 			const url = window.location.href;
 			const origin = window.location.origin;
 
+			const zoom = map.getZoom();
+			// 地図の中心座標を取得
+			const center = map.getCenter();
+			// 地図のピッチとベアリングを取得
+			const bearing = map.getBearing();
+			const pitch = map.getPitch();
+
 			// mapページのときに有効
 			if (url.startsWith(`${origin}/map`)) {
-				const center = map.getCenter();
 				setMapParams({
 					center: [center.lng, center.lat],
-					zoom: map.getZoom(),
-					pitch: map.getPitch(),
-					bearing: map.getBearing()
+					zoom,
+					pitch,
+					bearing
 				});
 			}
+			state.set({
+				bbox: getMapBounds(),
+				zoom: map.getZoom(),
+				center: [map.getCenter().lng, map.getCenter().lat],
+				pitch: map.getPitch(),
+				bearing: map.getBearing()
+			});
 			mooveEndEvent.set(e);
-
-			// const zoom = map.getZoom();
-
-			// if (zoom < 11) {
-			// 	map.setProjection({ type: 'globe' });
-			// } else {
-			// 	map.setProjection({ type: 'mercator' });
-			// }
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
@@ -352,13 +379,49 @@ const createMapStore = () => {
 		});
 	};
 
+	// TODO: サイドバーの分をオフセット
 	const getMapBounds = (): [number, number, number, number] => {
 		if (!map) {
 			console.warn('Map is not ready yet.');
 			return [0, 0, 0, 0];
 		}
-		const { _sw, _ne } = map.getBounds();
-		return [_sw.lng, _sw.lat, _ne.lng, _ne.lat];
+
+		// 緯度をWebメルカトル（EPSG:3857）の制限範囲内にクランプする関数
+		const clampLatitude = (lat: number): number => {
+			return Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, lat));
+		};
+
+		// 経度を正規化する関数（-180 ~ 180の範囲に収める）
+		const normalizeLongitude = (lng: number): number => {
+			// 経度を-180から180の範囲に正規化
+			lng = lng % 360;
+			if (lng > 180) {
+				lng -= 360;
+			} else if (lng < -180) {
+				lng += 360;
+			}
+			return lng;
+		};
+		const bounds = map.getBounds();
+
+		// 緯度を制限範囲内にクランプ
+		const swLat = clampLatitude(bounds._sw.lat);
+		const neLat = clampLatitude(bounds._ne.lat);
+
+		// 経度を正規化
+		let swLng = normalizeLongitude(bounds._sw.lng);
+		let neLng = normalizeLongitude(bounds._ne.lng);
+
+		// 180度線をまたぐ場合の処理
+		if (swLng > neLng) {
+			// 地図が180度線をまたいでいる場合は、西側の境界を使用
+			swLng = WEB_MERCATOR_MIN_LNG;
+			neLng = WEB_MERCATOR_MAX_LNG;
+		}
+
+		const bbox = [swLng, swLat, neLng, neLat] as [number, number, number, number];
+
+		return bbox;
 	};
 
 	// ソースとレイヤーをすべてリセットするメソッド
@@ -510,7 +573,7 @@ const createMapStore = () => {
 		focusLayer,
 		focusFeature,
 		getTerrain: () => map?.getTerrain(),
-		getMapBounds: getMapBounds,
+		getMapBounds,
 		getCanvas: () => map?.getCanvas(),
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		resetDem: resetDem, // 地形をリセットするメソッド
@@ -529,7 +592,11 @@ const createMapStore = () => {
 		onMooveEnd: createEventSubscriber(mooveEndEvent), // マップ移動イベントの購読用メソッド
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
-		onStyleLoad: createEventSubscriber(isStyleLoadEvent) // スタイルロードイベントの購読用メソッド
+		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
+		onStateChange: state.subscribe, // マップの状態を購読するメソッド
+		getState: () => {
+			return get(state);
+		}
 	};
 };
 

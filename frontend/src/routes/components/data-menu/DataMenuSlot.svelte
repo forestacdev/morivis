@@ -38,16 +38,18 @@
 	};
 
 	onMount(() => {
-		if (container && index === 0) {
+		window?.addEventListener('resize', () => {
+			if (container) {
+				const h = container.clientHeight;
+				updateItemHeight(h);
+			}
+		});
+	});
+
+	$effect(() => {
+		if (container) {
 			const h = container.clientHeight;
 			updateItemHeight(h);
-
-			window?.addEventListener('resize', () => {
-				if (container) {
-					const h = container.clientHeight;
-					updateItemHeight(h);
-				}
-			});
 		}
 	});
 
@@ -119,7 +121,7 @@
 </script>
 
 <div
-	class="relative mb-4 flex shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg p-2"
+	class="relative mb-4 flex aspect-square shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2"
 	bind:this={container}
 >
 	<button
@@ -157,14 +159,6 @@
 			>
 		{/await}
 	</button>
-
-	<div class="flex w-full flex-col gap-1 py-2">
-		<div class="text-base">{dataEntry.metaData.name}</div>
-		<div class="flex items-center gap-1 text-sm text-gray-400">
-			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
-		</div>
-	</div>
-
 	<div class="shrink-0">
 		{#if isAdded}
 			<button
@@ -172,7 +166,6 @@
 				class="c-btn-cancel flex items-center gap-2 px-4"
 			>
 				<Icon icon="ic:round-minus" class=" h-8 w-8" />
-				<div>地図から削除</div>
 			</button>
 		{:else}
 			<button
@@ -180,9 +173,15 @@
 				class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
 			>
 				<Icon icon="material-symbols:add" class=" h-8 w-8" />
-				<div>地図に追加</div>
 			</button>
 		{/if}
+	</div>
+
+	<div class="flex w-full flex-col gap-1 py-2">
+		<div class="text-base">{dataEntry.metaData.name}</div>
+		<div class="flex items-center gap-1 text-sm text-gray-400">
+			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
+		</div>
 	</div>
 </div>
 
