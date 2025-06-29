@@ -50,7 +50,8 @@
 					'openmaptiles:mapbox:owner': 'openmaptiles',
 					'openmaptiles:mapbox:source:url': 'mapbox://openmaptiles.4qljc88t'
 				},
-				sprite: 'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/sprite',
+				// sprite: 'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/sprite',
+				sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // 国土地理院
 				glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
 				sources: {
 					...style.sources, // スタイルのソースを適用

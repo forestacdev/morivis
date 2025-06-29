@@ -24,6 +24,13 @@ export const style = {
 		hoppo: {
 			type: 'vector',
 			url: 'https://tile.openstreetmap.jp/data/hoppo.json'
+		},
+		v: {
+			type: 'vector',
+			minzoom: 4,
+			maxzoom: 16,
+			tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+			attribution: '国土地理院最適化ベクトルタイル'
 		}
 	},
 	sprite: 'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/sprite',
@@ -888,6 +895,84 @@ export const style = {
 				'text-color': '#333',
 				'text-halo-color': 'rgba(255, 255, 255, 0.8)',
 				'text-halo-width': 1.2
+			}
+		},
+		{
+			id: '注記道路番号',
+			type: 'symbol',
+			source: 'v',
+			'source-layer': 'Anno',
+			filter: [
+				'step',
+				['zoom'],
+				[
+					'all',
+					['==', ['geometry-type'], 'Point'],
+					['in', ['get', 'vt_code'], ['literal', [2901, 2903, 2904, 7701]]]
+				],
+				16,
+				[
+					'all',
+					['==', ['geometry-type'], 'Point'],
+					['in', ['get', 'vt_flag17'], ['literal', [0, 1]]],
+					['in', ['get', 'vt_code'], ['literal', [2901, 2903, 2904, 7701]]]
+				],
+				17,
+				[
+					'all',
+					['==', ['geometry-type'], 'Point'],
+					['in', ['get', 'vt_flag17'], ['literal', [1, 2]]],
+					['in', ['get', 'vt_code'], ['literal', [2901, 2903, 2904, 7701]]]
+				]
+			],
+			layout: {
+				'icon-allow-overlap': true,
+				'icon-image': [
+					'match',
+					['get', 'vt_code'],
+					2901,
+					'国道番号-20',
+					2903,
+					'都市高速道路番号-20',
+					2904,
+					'高速道路番号-20',
+					7701,
+					'水面標高-20',
+					''
+				],
+				'icon-size': [
+					'let',
+					'size',
+					['match', ['get', 'vt_code'], 7701, 0.7, 0.5],
+					['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, ['var', 'size']]]
+				],
+				'symbol-sort-key': [
+					'match',
+					['get', 'vt_code'],
+					2901,
+					88,
+					2903,
+					50,
+					2904,
+					49,
+					7701,
+					111,
+					0
+				],
+				'text-allow-overlap': false,
+				'text-font': ['migu1c-regular'],
+				'text-justify': 'auto',
+				'text-size': [
+					'let',
+					'size',
+					['match', ['get', 'vt_code'], 2901, 10, 7701, 12, 8],
+					['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, ['var', 'size']]]
+				],
+				'text-field': ['get', 'vt_text'],
+				'text-max-width': 100
+			},
+			paint: {
+				'text-color': ['match', ['get', 'vt_code'], 7701, 'rgba(0,0,0,1)', 'rgba(255,255,255,1)']
 			}
 		}
 	]
