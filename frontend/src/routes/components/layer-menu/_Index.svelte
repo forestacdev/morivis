@@ -21,6 +21,7 @@
 	import { showLabelLayer } from '$routes/store/layers';
 	import { isSideMenuType } from '$routes/store/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/store/confirmation';
+	import { isTerrain3d } from '$routes/store';
 
 	import { gsap } from 'gsap';
 
@@ -182,6 +183,7 @@
 					<Switch label="等高線" bind:value={$showContourLayer} />
 					<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
 					<Switch label="陰影" bind:value={$showHillshadeLayer} />
+					<Switch label="3D" bind:value={$isTerrain3d} />
 				</div>
 			{/if}
 			<div class="h-[200px] w-full shrink-0"></div>

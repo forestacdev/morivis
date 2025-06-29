@@ -291,7 +291,8 @@
 		{/if}
 	</div>
 </div>
-<li class="absolute right-0 top-0 flex">
+
+<!-- <li class="absolute right-0 top-0 flex">
 	<button
 		class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg {$showDataMenu
 			? 'text-accent'
@@ -303,7 +304,7 @@
 	<StreetViewControl />
 	<TerrainControl />
 	<GeolocateControl />
-</li>
+</li> -->
 
 <style>
 	.c-bg-blur {

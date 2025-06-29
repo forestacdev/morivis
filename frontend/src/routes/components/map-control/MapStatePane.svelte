@@ -27,7 +27,7 @@
 </div> -->
 
 <div
-	class="bg-main absolute bottom-12 right-0 flex h-auto w-[250px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
+	class="bg-main absolute bottom-12 right-0 flex h-auto w-[200px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
 		? 'opacity-100'
 		: 'opacity-80'}"
 	onmouseenter={() => (isHover = true)}
@@ -36,8 +36,11 @@
 	tabindex="0"
 >
 	<Compass bind:isHover />
-	<div class="flex flex-col gap-2">
+	<div class="flex gap-2">
 		<!-- <div class="text-base font-bold">{$displayingArea}</div> -->
+		<StreetViewControl />
+		<!-- <TerrainControl /> -->
+		<GeolocateControl />
 	</div>
 </div>
 
