@@ -15,15 +15,10 @@
 			return;
 		}
 
-		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'Cntr')), // 背景レイヤーを除外
+		// (styleJson.layers = styleJson.layers.filter(
+		// 	(layer) => layer['source-layer'] === 'RailCL' && layer.type === 'line'
+		// )),
 		// 	console.log('Filtered styleJson:', styleJson);
-		// MapLibreマップの初期化
-		// map = new maplibregl.Map({
-		// 	container: mapContainer,
-		// 	style: styleJson, // スタイルJSONを適用
-		// 	center: [134.35, 34.67] as LngLatLike, // 初期表示の中心座標
-		// 	zoom: 9 // 初期ズームレベル
-		// });
 
 		map = new maplibregl.Map({
 			container: mapContainer,

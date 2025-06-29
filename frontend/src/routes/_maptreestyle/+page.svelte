@@ -87,20 +87,7 @@
 						source: 'tree_species',
 						maxzoom: 24,
 						minzoom: 0,
-						metadata: {
-							name: '栃木県 樹種ポリゴン',
-							location: '栃木県',
-							titles: [
-								{
-									conditions: ['樹種'],
-									template: '{樹種}'
-								},
-								{
-									conditions: [],
-									template: '栃木県の樹種ポリゴン'
-								}
-							]
-						},
+
 						'source-layer': 'tree_species_tochigi',
 						type: 'fill',
 						paint: {
@@ -152,6 +139,19 @@
 						layout: {}
 					},
 					{
+						id: 'tree_species_tochigi_lone',
+						source: 'tree_species',
+						maxzoom: 24,
+						minzoom: 0,
+
+						'source-layer': 'tree_species_tochigi',
+						type: 'line',
+						paint: {
+							'line-color': '#000'
+						},
+						layout: {}
+					},
+					{
 						id: 'tree_species_tochigi_label',
 						source: 'tree_species',
 						'source-layer': 'tree_species_tochigi',
@@ -160,13 +160,57 @@
 							'text-field': ['get', '樹種'],
 							'text-size': 12,
 							'text-anchor': 'left',
-							'text-offset': [1.5, 0],
+							'text-offset': [1.2, 0],
 							'icon-image': 'tree-icon', // アイコンを設定
-							'icon-size': 0.5
+							'icon-size': 0.4
 						},
 						paint: {
 							'text-color': '#000000',
-							'icon-color': '#228B22' // 森林緑
+							'icon-color': [
+								'case',
+								['boolean', ['feature-state', 'selected'], false],
+								'#00d4fe',
+								[
+									'match',
+									['get', '解析樹種ID'],
+									'01',
+									'#00cc66',
+									'02',
+									'#99ff66',
+									'03',
+									'#cc0000',
+									'04',
+									'#ff9966',
+									'05',
+									'#ffcc99',
+									'06',
+									'#cc6600',
+									'07',
+									'#cc00cc',
+									'08',
+									'#ffff99',
+									'09',
+									'#ff9933',
+									'10',
+									'#cc9900',
+									'11',
+									'#ffff00',
+									'12',
+									'#8000ff',
+									'96',
+									'#8db3e2',
+									'97',
+									'#ccff99',
+									'98',
+									'#ff80ff',
+									'99',
+									'#bfbfbf',
+									'#00000000'
+								]
+							],
+
+							'icon-halo-width': 1.5,
+							'icon-halo-blur': 1.5
 						}
 					}
 					// {

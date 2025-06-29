@@ -29,24 +29,27 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if layerEntry}
-	<div
-		transition:fly={{ duration: 200, x: -100, opacity: 0, delay: 200 }}
-		class="bg-main w-style-menu pt-18 absolute top-0 flex h-full flex-col gap-2 overflow-hidden pl-[90px]"
-	>
-		<div class="flex h-full flex-col gap-2 overflow-auto">
-			<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-			<div class="flex items-center gap-2 border-t text-base"></div>
-			<div class="c-scroll h-full grow overflow-x-hidden">
-				{#if layerEntry.type === 'vector'}
-					<VectorOptionMenu bind:layerEntry />
-				{/if}
+	{#key layerEntry.id}
+		<div
+			in:fly={{ duration: 300, opacity: 0 }}
+			out:fly={{ duration: 300, opacity: 0 }}
+			class="bg-main w-style-menu pt-18 absolute top-0 flex h-full flex-col gap-2 overflow-hidden pl-[90px]"
+		>
+			<div class="flex h-full flex-col gap-2 overflow-auto">
+				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
+				<div class="flex items-center gap-2 border-t text-base"></div>
+				<div class="c-scroll h-full grow overflow-x-hidden">
+					{#if layerEntry.type === 'vector'}
+						<VectorOptionMenu bind:layerEntry />
+					{/if}
 
-				{#if layerEntry.type === 'raster'}
-					<RasterOptionMenu bind:layerEntry />
-				{/if}
+					{#if layerEntry.type === 'raster'}
+						<RasterOptionMenu bind:layerEntry />
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
+	{/key}
 {/if}
 
 <style>

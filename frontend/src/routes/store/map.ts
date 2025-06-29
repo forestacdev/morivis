@@ -148,7 +148,7 @@ const createMapStore = () => {
 		});
 
 		if (get(DEBUG_MODE)) {
-			map.showTileBoundaries = true; // タイルの境界を表示
+			// map.showTileBoundaries = true; // タイルの境界を表示
 		}
 		// map.scrollZoom.setWheelZoomRate(1 / 800);
 
@@ -392,8 +392,11 @@ const createMapStore = () => {
 				right: 20,
 				bottom: 20
 			},
-			duration: 500
+			duration: 0
 		});
+
+		if (entry.metaData.minZoom && map.getZoom() + 1.5 < entry.metaData.minZoom)
+			map.setZoom(entry.metaData.minZoom); // ズームを少し下げる
 	};
 
 	// フィーチャーをフォーカスするメソッド

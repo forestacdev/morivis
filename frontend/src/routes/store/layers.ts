@@ -32,7 +32,7 @@ const createLayerStore = () => {
 		label: [],
 		point: [],
 		line: ['ensyurin_road2'],
-		polygon: ['ensyurin_rinhan'],
+		polygon: ['fr_mesh20m_hyogo', 'ensyurin_rinhan', 'tree_species_tochigi'],
 		raster: ['ensyurin_photo']
 	};
 

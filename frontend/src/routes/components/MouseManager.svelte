@@ -140,7 +140,29 @@
 
 		if ($DEBUG_MODE) {
 			const features = map.queryRenderedFeatures(e.point);
+
+			if (features.length === 0) {
+				console.warn('No features found at clicked point.');
+				return;
+			}
 			console.warn('Clicked features:', features);
+
+			const prop = features[0].properties;
+
+			// keyを配列で取得
+			const keys = Object.keys(prop);
+			console.warn(keys);
+
+			// expressions配列を作成
+			const expressions = keys.map((key) => {
+				return {
+					key: key,
+					name: key,
+					value: `{${key}}`
+				};
+			});
+
+			console.warn(expressions);
 		}
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;

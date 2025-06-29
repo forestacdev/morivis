@@ -76,6 +76,8 @@
 
 	const selectedLayer = () => {
 		selectedLayerId.set(layerEntry.id);
+
+		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
 	};
 
 	const toggleChecked = (id: string) => {

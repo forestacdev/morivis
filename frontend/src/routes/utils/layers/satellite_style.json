@@ -35,7 +35,7 @@
 				"https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
 			],
 			"tileSize": 256,
-			"maxzoom": 10,
+			"maxzoom": 11,
 			"attribution": "USGS"
 		},
 		"base_seamlessphoto": {
@@ -55,7 +55,12 @@
 			"id": "base-map-layer",
 			"type": "raster",
 			"source": "base_usgs_imagery_only",
-			"maxzoom": 22
+			"maxzoom": 22,
+			"paint": {
+				"raster-saturation": -0.2,
+				"raster-brightness-min": 0,
+				"raster-hue-rotate": 10
+			}
 		},
 		{
 			"id": "base_seamlessphoto_layer",
@@ -64,7 +69,6 @@
 			"minzoom": 8,
 			"maxzoom": 22
 		},
-
 		{
 			"id": "housenumber",
 			"type": "symbol",
@@ -82,10 +86,10 @@
 		},
 		{
 			"id": "道路中心線ZL4-10国道",
-			"maxzoom": 11,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"maxzoom": 11,
 			"filter": [
 				"in",
 				["get", "vt_rdctg"],
@@ -187,10 +191,10 @@
 		},
 		{
 			"id": "道路中心線ZL4-10高速",
-			"maxzoom": 11,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"maxzoom": 11,
 			"filter": ["==", ["get", "vt_rdctg"], "高速自動車国道等"],
 			"layout": {
 				"line-cap": "round",
@@ -249,11 +253,11 @@
 		},
 		{
 			"id": "道路中心線ククリ0",
-			"minzoom": 11,
-			"maxzoom": 17,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 24,
 			"filter": [
 				"step",
 				["zoom"],
@@ -403,10 +407,10 @@
 		},
 		{
 			"id": "道路中心線色0",
-			"minzoom": 11,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
 			"filter": [
 				"step",
 				["zoom"],
@@ -627,11 +631,11 @@
 		},
 		{
 			"id": "道路中心線ククリ橋0",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -767,11 +771,11 @@
 		},
 		{
 			"id": "道路中心線色橋0",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 0],
@@ -981,11 +985,11 @@
 		},
 		{
 			"id": "道路中心線ククリ1",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -1135,11 +1139,11 @@
 		},
 		{
 			"id": "道路中心線色1",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 1],
@@ -1349,11 +1353,11 @@
 		},
 		{
 			"id": "道路中心線ククリ橋1",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -1489,11 +1493,11 @@
 		},
 		{
 			"id": "道路中心線色橋1",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 1],
@@ -1703,11 +1707,11 @@
 		},
 		{
 			"id": "道路中心線ククリ2",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -1857,11 +1861,11 @@
 		},
 		{
 			"id": "道路中心線色2",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 2],
@@ -2071,11 +2075,11 @@
 		},
 		{
 			"id": "道路中心線ククリ橋2",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -2211,11 +2215,11 @@
 		},
 		{
 			"id": "道路中心線色橋2",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 2],
@@ -2425,11 +2429,11 @@
 		},
 		{
 			"id": "道路中心線ククリ3",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -2579,11 +2583,11 @@
 		},
 		{
 			"id": "道路中心線色3",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 3],
@@ -2793,11 +2797,11 @@
 		},
 		{
 			"id": "道路中心線ククリ橋3",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -2933,11 +2937,11 @@
 		},
 		{
 			"id": "道路中心線色橋3",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				["==", ["get", "vt_lvorder"], 3],
@@ -3147,11 +3151,11 @@
 		},
 		{
 			"id": "道路中心線ククリ4",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -3301,11 +3305,11 @@
 		},
 		{
 			"id": "道路中心線色4",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				[">=", ["get", "vt_lvorder"], 4],
@@ -3515,11 +3519,11 @@
 		},
 		{
 			"id": "道路中心線ククリ橋4",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"step",
 				["zoom"],
@@ -3655,11 +3659,11 @@
 		},
 		{
 			"id": "道路中心線色橋4",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": [
 				"all",
 				[">=", ["get", "vt_lvorder"], 4],
@@ -3869,10 +3873,10 @@
 		},
 		{
 			"id": "道路中心線破線",
-			"minzoom": 11,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
 			"filter": [
 				"step",
 				["zoom"],
@@ -3939,11 +3943,11 @@
 		},
 		{
 			"id": "道路中心線階段",
-			"minzoom": 11,
-			"maxzoom": 22,
 			"type": "line",
 			"source": "v",
 			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
 			"filter": ["in", ["get", "vt_code"], ["literal", [2731, 2732, 2733, 2734]]],
 			"paint": {
 				"line-color": "rgba(100,100,100,1)",
@@ -3999,7 +4003,10 @@
 			"source-layer": "boundary",
 			"filter": ["in", "admin_level", 4, 6, 8],
 			"layout": { "visibility": "visible" },
-			"paint": { "line-color": "hsla(0, 0%, 60%, 0.5)", "line-dasharray": [2, 1] }
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 0.5)",
+				"line-dasharray": [2, 1]
+			}
 		},
 		{
 			"id": "admin_country_z0-4",
@@ -4112,7 +4119,6 @@
 			"source": "openmaptiles",
 			"source-layer": "transportation_name",
 			"minzoom": 13,
-
 			"filter": [
 				"all",
 				["!=", "name", "森林文化アカデミー演習林歩道"],
