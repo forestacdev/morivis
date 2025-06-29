@@ -30,196 +30,6 @@ export const style = {
 	glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
 	layers: [
 		{
-			id: 'background',
-			type: 'background',
-			paint: {
-				'background-color': 'hsl(47, 26%, 88%)'
-			}
-		},
-		{
-			id: 'landuse-residential',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landuse',
-			filter: [
-				'all',
-				['==', '$type', 'Polygon'],
-				['in', 'class', 'residential', 'suburb', 'neighbourhood']
-			],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'hsl(47, 13%, 86%)',
-				'fill-opacity': 0.7
-			}
-		},
-		{
-			id: 'landcover_grass',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['==', 'class', 'grass'],
-			paint: {
-				'fill-color': 'hsl(82, 100%, 21%)',
-				'fill-opacity': 0.45
-			}
-		},
-		{
-			id: 'landcover_wood',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['==', 'class', 'wood'],
-			paint: {
-				'fill-color': 'hsl(82, 46%, 72%)',
-				'fill-opacity': {
-					base: 1,
-					stops: [
-						[8, 0.6],
-						[22, 1]
-					]
-				}
-			}
-		},
-		{
-			id: 'water',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'water',
-			filter: [
-				'all',
-				['==', '$type', 'Polygon'],
-				['!=', 'intermittent', 1],
-				['!=', 'brunnel', 'tunnel']
-			],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'hsl(205, 56%, 73%)'
-			}
-		},
-		{
-			id: 'water_intermittent',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'water',
-			filter: ['all', ['==', '$type', 'Polygon'], ['==', 'intermittent', 1]],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'hsl(205, 56%, 73%)',
-				'fill-opacity': 0.7
-			}
-		},
-		{
-			id: 'landcover-ice-shelf',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['==', 'subclass', 'ice_shelf'],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'hsl(47, 26%, 88%)',
-				'fill-opacity': 0.8
-			}
-		},
-		{
-			id: 'landcover-glacier',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['==', 'subclass', 'glacier'],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'hsl(47, 22%, 94%)',
-				'fill-opacity': {
-					base: 1,
-					stops: [
-						[0, 1],
-						[8, 0.5]
-					]
-				}
-			}
-		},
-		{
-			id: 'landcover_sand',
-			type: 'fill',
-			metadata: {},
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['all', ['in', 'class', 'sand']],
-			paint: {
-				'fill-antialias': false,
-				'fill-color': 'rgba(232, 214, 38, 1)',
-				'fill-opacity': 0.3
-			}
-		},
-		{
-			id: 'landuse',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landuse',
-			filter: ['==', 'class', 'agriculture'],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': '#eae0d0'
-			}
-		},
-		{
-			id: 'landuse_overlay_national_park',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'landcover',
-			filter: ['==', 'class', 'national_park'],
-			paint: {
-				'fill-color': '#E1EBB0',
-				'fill-opacity': {
-					base: 1,
-					stops: [
-						[5, 0],
-						[9, 0.75]
-					]
-				}
-			}
-		},
-		{
-			id: 'waterway-tunnel',
-			type: 'line',
-			source: 'openmaptiles',
-			'source-layer': 'waterway',
-			filter: ['all', ['==', '$type', 'LineString'], ['==', 'brunnel', 'tunnel']],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'line-color': 'hsl(205, 56%, 73%)',
-				'line-dasharray': [3, 3],
-				'line-gap-width': {
-					stops: [
-						[12, 0],
-						[20, 6]
-					]
-				},
-				'line-opacity': 1,
-				'line-width': {
-					base: 1.4,
-					stops: [
-						[8, 1],
-						[20, 2]
-					]
-				}
-			}
-		},
-		{
 			id: 'waterway',
 			type: 'line',
 			source: 'openmaptiles',
@@ -300,29 +110,7 @@ export const style = {
 				}
 			}
 		},
-		{
-			id: 'building',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'building',
-			paint: {
-				'fill-antialias': true,
-				'fill-color': 'rgba(222, 211, 190, 1)',
-				'fill-opacity': {
-					base: 1,
-					stops: [
-						[13, 0],
-						[15, 1]
-					]
-				},
-				'fill-outline-color': {
-					stops: [
-						[15, 'rgba(212, 177, 146, 0)'],
-						[16, 'rgba(212, 177, 146, 0.5)']
-					]
-				}
-			}
-		},
+
 		{
 			id: 'housenumber',
 			type: 'symbol',
@@ -339,21 +127,7 @@ export const style = {
 				'text-color': 'rgba(212, 177, 146, 1)'
 			}
 		},
-		{
-			id: 'road_area_pier',
-			type: 'fill',
-			metadata: {},
-			source: 'openmaptiles',
-			'source-layer': 'transportation',
-			filter: ['all', ['==', '$type', 'Polygon'], ['==', 'class', 'pier']],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-antialias': true,
-				'fill-color': 'hsl(47, 26%, 88%)'
-			}
-		},
+
 		{
 			id: 'road_pier',
 			type: 'line',
@@ -376,18 +150,7 @@ export const style = {
 				}
 			}
 		},
-		{
-			id: 'road_bridge_area',
-			type: 'fill',
-			source: 'openmaptiles',
-			'source-layer': 'transportation',
-			filter: ['all', ['==', '$type', 'Polygon'], ['in', 'brunnel', 'bridge']],
-			layout: {},
-			paint: {
-				'fill-color': 'hsl(47, 26%, 88%)',
-				'fill-opacity': 0.5
-			}
-		},
+
 		{
 			id: 'road_path',
 			type: 'line',
@@ -486,30 +249,7 @@ export const style = {
 				}
 			}
 		},
-		{
-			id: 'aeroway-area',
-			type: 'fill',
-			metadata: {
-				'mapbox:group': '1444849345966.4436'
-			},
-			source: 'openmaptiles',
-			'source-layer': 'aeroway',
-			minzoom: 4,
-			filter: ['all', ['==', '$type', 'Polygon'], ['in', 'class', 'runway', 'taxiway']],
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': 'rgba(255, 255, 255, 1)',
-				'fill-opacity': {
-					base: 1,
-					stops: [
-						[13, 0],
-						[14, 1]
-					]
-				}
-			}
-		},
+
 		{
 			id: 'aeroway-taxiway',
 			type: 'line',
@@ -1087,23 +827,7 @@ export const style = {
 				'text-halo-width': 2
 			}
 		},
-		{
-			id: 'island-hoppo',
-			type: 'fill',
-			metadata: {
-				'mapbox:group': '1444849388993.3071'
-			},
-			source: 'hoppo',
-			'source-layer': 'island',
-			minzoom: 0,
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': '#fff',
-				'fill-opacity': 1
-			}
-		},
+
 		{
 			id: 'island-hoppo-name',
 			type: 'symbol',
@@ -1124,23 +848,7 @@ export const style = {
 				'text-halo-width': 1.2
 			}
 		},
-		{
-			id: 'island-takeshima',
-			type: 'fill',
-			metadata: {
-				'mapbox:group': '1444849388993.3071'
-			},
-			source: 'takeshima',
-			'source-layer': 'island',
-			minzoom: 0,
-			layout: {
-				visibility: 'visible'
-			},
-			paint: {
-				'fill-color': '#fff',
-				'fill-opacity': 1
-			}
-		},
+
 		{
 			id: 'island-takeshima-name',
 			type: 'symbol',
