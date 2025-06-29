@@ -4,19 +4,19 @@
 	import GeolocateControl from '$routes/components/map-control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/components/map-control/StreetViewControl.svelte';
 	import TerrainControl from '$routes/components/map-control/TerrainControl.svelte';
-	import { mapStore } from '$routes/store/map';
+	import { mapStore, displayingArea } from '$routes/store/map';
 
 	let zoom = $state(0);
 	let isHover = $state(false);
 
-	mapStore.onStateChange((state) => {
-		zoom = state.zoom;
-	});
+	// mapStore.onStateChange((state) => {
+	// 	zoom = state.zoom;
+	// });
 
-	mapStore.onInitialized((map) => {
-		if (!map) return;
-		zoom = map.getZoom();
-	});
+	// mapStore.onInitialized((map) => {
+	// 	if (!map) return;
+	// 	zoom = map.getZoom();
+	// });
 </script>
 
 <!-- PC -->
@@ -27,7 +27,7 @@
 </div> -->
 
 <div
-	class="bg-main absolute bottom-12 right-0 flex h-auto w-[150px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
+	class="bg-main absolute bottom-12 right-0 flex h-auto w-[250px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
 		? 'opacity-100'
 		: 'opacity-80'}"
 	onmouseenter={() => (isHover = true)}
@@ -37,7 +37,7 @@
 >
 	<Compass bind:isHover />
 	<div class="flex flex-col gap-2">
-		<div class="text-base font-bold">{zoom.toFixed(1)}</div>
+		<!-- <div class="text-base font-bold">{$displayingArea}</div> -->
 	</div>
 </div>
 

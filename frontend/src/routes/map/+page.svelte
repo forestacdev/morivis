@@ -62,14 +62,26 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isTerrain3d } from '$routes/store';
+	import {
+		isStreetView,
+		mapMode,
+		selectedLayerId,
+		isStyleEdit,
+		isTerrain3d,
+		DEBUG_MODE
+	} from '$routes/store';
 	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/types';
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
-	import { setStreetViewParams, getStreetViewParams, get3dParams } from '$routes/utils/params';
+	import {
+		setStreetViewParams,
+		getStreetViewParams,
+		get3dParams,
+		getParams
+	} from '$routes/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 	import ConfirmationDialog from '$routes/components/dialog/ConfirmationDialog.svelte';
 
@@ -131,7 +143,19 @@
 
 	let showDialogType = $state<DialogType>(null);
 
+	// 初期化完了のフラグ
+	let isInitialized = $state<boolean>(false);
+
 	onMount(async () => {
+		const params = getParams(location.search);
+
+		if (params) {
+			if (params.debug && params.debug === '1') {
+				DEBUG_MODE.set(true);
+			}
+		}
+
+		isInitialized = true;
 		streetViewPointData = (await getFgbToGeojson(
 			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
 		)) as StreetViewPointGeoJson;
@@ -324,83 +348,90 @@
 		// 新しいデータで再レンダリング。
 		layerEntries = newLayerEntries;
 	});
+
+	onDestroy(() => {
+		// コンポーネントが破棄されるときに、スト
+		isInitialized = false;
+	});
 </script>
 
-<div class="relative flex h-full w-full grow">
-	<!-- マップのオフセット調整用 -->
-	<!-- {#if $isSideMenuType}
+{#if isInitialized}
+	<div class="relative flex h-full w-full grow">
+		<!-- マップのオフセット調整用 -->
+		<!-- {#if $isSideMenuType}
 		<div
 			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
 			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
 		></div>
 	{/if} -->
 
-	<!-- メニューの背景 -->
-	{#if $isSideMenuType}
-		<!-- <div
+		<!-- メニューの背景 -->
+		{#if $isSideMenuType}
+			<!-- <div
 			transition:fade={{ duration: 300 }}
 			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[400px] flex-col gap-2"
 		></div> -->
-	{/if}
-	<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
-	<SearchMenu
-		bind:featureMenuData
-		bind:inputSearchWord
-		{layerEntries}
-		bind:showSelectionMarker
-		bind:selectionMarkerLngLat
-	/>
-	<DrawMenu bind:layerEntries bind:drawGeojsonData />
+		{/if}
+		<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+		<SearchMenu
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/>
+		<DrawMenu bind:layerEntries bind:drawGeojsonData />
 
-	<MapLibreMap
-		bind:layerEntries
-		bind:tempLayerEntries
-		bind:showDataEntry
-		bind:featureMenuData
-		bind:showSelectionMarker
-		bind:selectionMarkerLngLat
-		bind:showAngleMarker
-		bind:angleMarkerLngLat
-		bind:cameraBearing
-		bind:dropFile
-		bind:showDialogType
-		bind:drawGeojsonData
-		{demEntries}
-		{streetViewLineData}
-		{streetViewPointData}
-		{streetViewPoint}
-		{showMapCanvas}
-		{setPoint}
-	/>
+		<MapLibreMap
+			bind:layerEntries
+			bind:tempLayerEntries
+			bind:showDataEntry
+			bind:featureMenuData
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+			bind:showAngleMarker
+			bind:angleMarkerLngLat
+			bind:cameraBearing
+			bind:dropFile
+			bind:showDialogType
+			bind:drawGeojsonData
+			{demEntries}
+			{streetViewLineData}
+			{streetViewPointData}
+			{streetViewPoint}
+			{showMapCanvas}
+			{setPoint}
+		/>
 
-	<HeaderMenu
-		bind:featureMenuData
-		bind:inputSearchWord
-		{layerEntries}
-		bind:showSelectionMarker
-		bind:selectionMarkerLngLat
-	/>
-	<FooterMenu {layerEntries} />
-	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-	<FeatureMenu bind:featureMenuData {layerEntries} />
-	<PreviewMenu bind:showDataEntry />
+		<HeaderMenu
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/>
+		<FooterMenu {layerEntries} />
+		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
+		<FeatureMenu bind:featureMenuData {layerEntries} />
+		<PreviewMenu bind:showDataEntry />
 
-	{#if !showDataEntry}
-		<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
-	{/if}
-	{#if showDataEntry}
-		<DataPreview bind:showDataEntry bind:tempLayerEntries />
-	{/if}
+		{#if !showDataEntry}
+			<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
+		{/if}
+		{#if showDataEntry}
+			<DataPreview bind:showDataEntry bind:tempLayerEntries />
+		{/if}
 
-	<StreetViewCanvas
-		{streetViewPoint}
-		{nextPointData}
-		{showThreeCanvas}
-		bind:cameraBearing
-		bind:showAngleMarker
-		{setPoint}
-	/>
-</div>
+		<StreetViewCanvas
+			{streetViewPoint}
+			{nextPointData}
+			{showThreeCanvas}
+			bind:cameraBearing
+			bind:showAngleMarker
+			{setPoint}
+		/>
+	</div>
+{/if}
 <UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
 
 <Tooltip />

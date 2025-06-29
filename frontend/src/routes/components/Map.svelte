@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce } from 'es-toolkit';
+	import { debounce, delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -10,7 +10,8 @@
 		type MapMouseEvent,
 		type Marker,
 		type LngLat,
-		type AddLayerObject
+		type AddLayerObject,
+		format
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
@@ -34,7 +35,7 @@
 	import type { GeoDataEntry } from '$routes/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
 	import type { DialogType, StreetViewPoint } from '$routes/map/+page.svelte';
-	import { isStreetView } from '$routes/store';
+	import { DEBUG_MODE, isStreetView } from '$routes/store';
 	import { mapMode, isTerrain3d } from '$routes/store';
 	import {
 		getLayersGroup,
@@ -54,7 +55,7 @@
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
 	import { drawLayers } from '$routes/utils/layers/draw';
-	import { getLayerEntries, saveToLayerEntries } from '$routes/utils/localStorage';
+	import { loadLayerEntries, saveToLayerEntries } from '$routes/utils/localStorage';
 	import PoiManager from '$routes/components/PoiManager.svelte';
 
 	interface Props {
@@ -184,6 +185,12 @@
 					data: drawGeojsonData as FeatureCollection,
 					promoteId: 'id'
 				},
+				// prefecture: {
+				// 	type: 'vector',
+				// 	url: 'pmtiles://./prefecture.pmtiles',
+				// 	maxzoom: 14
+				// },
+
 				...previewSources
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -199,6 +206,19 @@
 				},
 				...previewLayers,
 				...drawLayers
+
+				// {
+				// 	id: 'municipalities',
+				// 	type: 'fill',
+				// 	source: 'prefecture',
+				// 	'source-layer': 'municipalities',
+
+				// 	maxzoom: 22,
+				// 	paint: {
+				// 		'fill-color': '#ffffff',
+				// 		'fill-opacity': 0.6
+				// 	}
+				// }
 
 				// {
 				// 	id: '@webgl_canvas_layer',
@@ -269,14 +289,18 @@
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
-		const localEntries = getLayerEntries();
 
-		// ローカルストレージからのレイヤーエントリーが存在する場合はそれを使用
-		if (localEntries && localEntries.length > 0) {
-			layerEntries = localEntries;
-			const layersGroup = getLayersGroup(layerEntries);
-			groupedLayerStore.setLayers(layersGroup);
+		if (!$DEBUG_MODE) {
+			const localEntries = loadLayerEntries();
+
+			// ローカルストレージからのレイヤーエントリーが存在する場合はそれを使用
+			if (localEntries && localEntries.length > 0) {
+				layerEntries = localEntries;
+				const layersGroup = getLayersGroup(layerEntries);
+				groupedLayerStore.setLayers(layersGroup);
+			}
 		}
+
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
 
@@ -337,15 +361,15 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-	// 書き込みデータの更新を監視
-	$effect(() => {
-		if (!maplibreMap || !maplibreMap.loaded()) return;
+	// TODO:書き込みデータの更新を監視
+	// $effect(() => {
+	// 	if (!maplibreMap || !maplibreMap.loaded()) return;
 
-		const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
-		if (source) {
-			source.setData(drawGeojsonData as FeatureCollection);
-		}
-	});
+	// 	const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
+	// 	if (source) {
+	// 		source.setData(drawGeojsonData as FeatureCollection);
+	// 	}
+	// });
 
 	// データプレビュー
 	$effect(() => {

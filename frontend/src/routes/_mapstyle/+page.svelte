@@ -18,9 +18,90 @@
 		// (styleJson.layers = styleJson.layers.filter((layer) => layer['source-layer'] === 'Cntr')), // 背景レイヤーを除外
 		// 	console.log('Filtered styleJson:', styleJson);
 		// MapLibreマップの初期化
+		// map = new maplibregl.Map({
+		// 	container: mapContainer,
+		// 	style: styleJson, // スタイルJSONを適用
+		// 	center: [134.35, 34.67] as LngLatLike, // 初期表示の中心座標
+		// 	zoom: 9 // 初期ズームレベル
+		// });
+
 		map = new maplibregl.Map({
 			container: mapContainer,
-			style: styleJson, // スタイルJSONを適用
+			style: {
+				projection: {
+					type: 'globe'
+				},
+				version: 8,
+				glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+				sources: {
+					base: {
+						type: 'raster',
+						tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'], // タイルのURL
+						tileSize: 256,
+
+						attribution: ''
+					},
+					v: {
+						type: 'vector',
+						minzoom: 4,
+						maxzoom: 16,
+						tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+						attribution: '国土地理院最適化ベクトルタイル(標準地図風スタイル)'
+					},
+
+					openmaptiles: {
+						type: 'vector',
+						tiles: ['https://tile.openstreetmap.jp/data/planet/{z}/{x}/{y}.pbf'],
+						attribution:
+							'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>',
+						maxzoom: 14
+					}
+				},
+				layers: [
+					{
+						id: 'base',
+						source: 'base',
+						type: 'raster'
+					},
+					{
+						id: '行政区画',
+						type: 'fill',
+						source: 'v',
+						'source-layer': 'AdmArea',
+						paint: {
+							'fill-color': 'rgba(255,255,255,0.6)'
+						}
+					},
+
+					{
+						id: 'place',
+						type: 'symbol',
+						source: 'openmaptiles',
+						'source-layer': 'place',
+						filter: ['all', ['==', 'class', 'country']],
+						layout: {
+							'text-field': ['get', 'name:ja'],
+
+							'text-size': 12,
+							'text-anchor': 'center'
+						},
+						paint: {
+							'text-color': '#000000',
+							'text-halo-color': '#ffffff',
+							'text-halo-width': 1
+						}
+					}
+					// {
+					//     id: 'background',
+					//     type: 'background',
+					//     paint: {
+					//         'background-color': '#fff266', // 背景色を黒に設定
+					//         'background-opacity': 0.3, // 背景の不透明度を1に設定
+					//     },
+					// },
+				]
+			},
+
 			center: [134.35, 34.67] as LngLatLike, // 初期表示の中心座標
 			zoom: 9 // 初期ズームレベル
 		});

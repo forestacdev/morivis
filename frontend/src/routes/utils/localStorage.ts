@@ -39,7 +39,7 @@ export const saveToLayerEntries = (entries: GeoDataEntry[]) => {
 };
 
 /** localStorageからレイヤーエントリを取得する関数 */
-export const getLayerEntries = (): GeoDataEntry[] | null => {
+export const loadLayerEntries = (): GeoDataEntry[] | null => {
 	const entries = localStorage.getItem('layerEntries');
 	if (entries && entries !== 'undefined' && entries !== 'null' && entries !== '[]') {
 		return JSON.parse(entries);

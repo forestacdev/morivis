@@ -225,10 +225,12 @@
 </script>
 
 <div
-	class="relative flex flex-col
-		rounded-[2.1rem] transition-colors {dragEnterType !== null && dragEnterType !== layerType
+	class="relative flex flex-col p-2
+		transition-colors {dragEnterType !== null && dragEnterType !== layerType
 		? 'opacity-50'
-		: ''} {isDragging ? 'c-dragging-style' : ''} {showLegend ? 'bg-base/50' : ''}"
+		: ''} {isDragging ? 'c-dragging-style' : ''} {$selectedLayerId === layerEntry.id && isSmall
+		? 'c-fog'
+		: ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
@@ -239,13 +241,14 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
+	{#if $selectedLayerId === layerEntry.id && isSmall}
+		<div class="bg-accent absolute left-0 top-0 h-full w-[4px]"></div>
+	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style c-shadow relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left transition-transform duration-100 {isSmall
+		class="c-dragging-style relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100 {isSmall
 			? 'w-[65px]'
-			: ''} {$selectedLayerId === layerEntry.id
-			? 'drop-shadow-[0_0_2px_rgba(30,230,20,0.8)]'
-			: 'drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
+			: ''}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
@@ -347,9 +350,12 @@
 		</div>
 	</div>
 	<div
-		class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {isLayerInRange
-			? 'bg-green-500'
-			: 'bg-red-500'}"
+		class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {!layerEntry
+			.style.visible
+			? 'bg-gray-500'
+			: isLayerInRange
+				? 'bg-green-500'
+				: 'bg-red-500'}"
 	></div>
 	<!-- {#if showLegend}
 		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
@@ -370,13 +376,8 @@
 </div>
 
 <style>
-	@property --angle {
-		syntax: '<angle>';
-		inherits: true;
-		initial-value: 0deg;
-	}
-
-	.c-rounded {
-		border-radius: 9999px 9999px 9999px 9999px;
+	.c-fog {
+		background: rgb(233, 233, 233);
+		background: linear-gradient(90deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
 	}
 </style>

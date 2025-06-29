@@ -142,7 +142,7 @@
 		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150"
 	>
 		<div
-			class="flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
+			class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
 				? 'c-scroll-hidden '
 				: 'c-scroll'}"
 		>

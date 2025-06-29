@@ -28,6 +28,7 @@ import { get } from 'svelte/store';
 import { demProtocol } from '$routes/protocol/raster';
 import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/protocol/terrain';
+
 import {
 	WEB_MERCATOR_MIN_LAT,
 	WEB_MERCATOR_MAX_LAT,
@@ -51,6 +52,45 @@ export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーに�
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
+export const displayingArea = writable<string | null>(null); // 現在の位を管理するストア
+
+//prefecture, municipalities
+const updateSisplayingArea = async (
+	lng: number,
+	lat: number,
+	zoom: number,
+	map: maplibregl.Map
+) => {
+	const layerName = 'municipalities'; // ズームレベルが8未満の場合は8にする
+
+	console.log(layerName);
+	if (zoom <= 9) {
+		return;
+	}
+	const features = map.queryRenderedFeatures([lng, lat], {
+		layers: [layerName]
+	});
+
+	console.log(features);
+
+	console.log(features);
+
+	if (features.length > 0) {
+		const feature = features[0] as MapGeoJSONFeature;
+
+		console.log('Displaying area feature:', feature.properties);
+
+		let name;
+
+		if (zoom + 1.5 >= 8) {
+			name = feature.properties['N03_001'] + feature.properties['N03_004']; // 都道府県名
+		} else {
+			name = feature.properties['N03_001']; // 都道府県名
+		}
+
+		displayingArea.set(name);
+	}
+};
 export interface MapState {
 	bbox: [number, number, number, number];
 	zoom: number;
@@ -87,21 +127,13 @@ const createMapStore = () => {
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
-		const params = getParams(location.search);
-
-		if (params) {
-			if (params.debug && params.debug === '1') {
-				DEBUG_MODE.set(true);
-			}
-		}
-
 		const mapPosition = getMapParams();
 
 		map = new maplibregl.Map({
 			...mapPosition,
 			container: mapContainer,
 			style: mapStyle,
-			fadeDuration: 50, // フェードアニメーションの時間
+			fadeDuration: 0, // フェードアニメーションの時間
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
@@ -199,6 +231,8 @@ const createMapStore = () => {
 			// 地図のピッチとベアリングを取得
 			const bearing = map.getBearing();
 			const pitch = map.getPitch();
+
+			// updateSisplayingArea(center.lng, center.lat, zoom, map);
 
 			// mapページのときに有効
 			if (url.startsWith(`${origin}/map`)) {
