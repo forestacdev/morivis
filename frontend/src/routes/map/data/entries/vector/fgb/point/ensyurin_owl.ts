@@ -14,6 +14,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		description: '林業専攻-OWL利用研修立木計測データ',
 		attribution: '株式会社アドイン研究所',
 		location: '森林文化アカデミー',
+		minZoom: 10,
 		maxZoom: 22,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
 	},

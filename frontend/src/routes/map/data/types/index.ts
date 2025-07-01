@@ -19,6 +19,7 @@ export interface BaseMetaData {
 	attribution: AttributionKey;
 	location: Region;
 	maxZoom: number;
+	minZoom: number;
 	bounds?: [number, number, number, number];
 	coverImage?: string;
 }

@@ -153,7 +153,7 @@ export const createHighlightLayer = (
 		id: layerId,
 		source: sourceId,
 		maxzoom: 24,
-		minzoom: 0
+		minzoom: metaData.minZoom ?? 1
 	};
 
 	// case 'vector': {

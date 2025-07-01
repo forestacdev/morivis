@@ -14,6 +14,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		description: '森林環境教育専攻のフェノロジー調査のデータ',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		minZoom: 10,
 		maxZoom: 22,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/phenology_2020.webp`
 	},

@@ -29,7 +29,6 @@ export interface VectorInteraction {
 }
 
 export interface TileMetaData extends BaseMetaData {
-	minZoom: number;
 	promoteId?: string;
 	sourceLayer: string;
 }
