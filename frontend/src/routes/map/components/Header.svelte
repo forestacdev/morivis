@@ -17,7 +17,7 @@
 	} from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/types';
+	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/map/components/search-menu/Geocoder.svelte';

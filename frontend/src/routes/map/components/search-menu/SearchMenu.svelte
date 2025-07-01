@@ -15,7 +15,7 @@
 
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
-	import { type FeatureMenuData } from '$routes/types';
+	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
 	import type { ResultData } from '$routes/utils/feature';
 	interface Props {

@@ -73,8 +73,8 @@
 	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
-	import type { DrawGeojsonData } from '$routes/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/types';
+	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/utils/file/geojson';
 	import {
 		setStreetViewParams,

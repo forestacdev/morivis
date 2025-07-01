@@ -8,7 +8,7 @@
 
 	import { poiLayersIds } from '$routes/utils/layers/poi';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
-	import type { FeatureMenuData } from '$routes/types';
+	import type { FeatureMenuData } from '$routes/map/types';
 	import { throttle } from 'es-toolkit';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 

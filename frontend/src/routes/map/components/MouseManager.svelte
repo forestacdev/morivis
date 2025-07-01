@@ -20,7 +20,7 @@
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/+page.svelte';
 	import { poiLayersIds } from '$routes/utils/layers/poi';
-	import type { FeatureMenuData } from '$routes/types';
+	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;

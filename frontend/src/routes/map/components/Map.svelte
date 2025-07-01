@@ -50,8 +50,8 @@
 	import { orderedLayerIds } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
-	import type { DrawGeojsonData } from '$routes/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/types';
+	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
 	import { drawLayers } from '$routes/utils/layers/draw';
