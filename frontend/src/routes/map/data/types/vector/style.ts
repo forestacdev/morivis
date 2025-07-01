@@ -91,7 +91,7 @@ export interface ColorStepExpression {
 	mapping: {
 		range: [number, number]; // min, max
 		divisions: number;
-		values: string[];
+		values: [string, string];
 	};
 }
 

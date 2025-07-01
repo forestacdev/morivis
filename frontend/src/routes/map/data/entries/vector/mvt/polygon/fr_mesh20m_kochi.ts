@@ -20,8 +20,21 @@ const entry: VectorEntry<TileMetaData> = {
 		bounds: [132.479888, 32.702505, 134.31367, 33.882997]
 	},
 	properties: {
-		keys: [],
-
+		keys: [
+			'面積_ha',
+			'立木本数',
+			'立木密度',
+			'合計材積',
+			'ha材積',
+			'収量比数',
+			'相対幹距比',
+			'平均傾斜',
+			'最大傾斜',
+			'最小傾斜',
+			'最頻傾斜',
+			'県code',
+			'市町村code'
+		],
 		titles: [
 			{
 				conditions: ['樹種'],
@@ -38,7 +51,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.5,
+		opacity: 0.7,
 		colors: {
 			key: '単色',
 			show: true,
@@ -50,13 +63,23 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#349f1c'
 					}
+				},
+				{
+					type: 'step',
+					key: '立木本数',
+					name: '立木本数による色分け',
+					mapping: {
+						range: [1, 100],
+						divisions: 5,
+						values: ['#e6f2ff', '#ff00dd']
+					}
 				}
 			]
 		},
 		outline: {
 			show: true,
-			color: '#000000',
-			width: 1,
+			color: '#5f5f5f',
+			width: 0.5,
 			lineStyle: 'solid'
 		},
 		labels: {
@@ -64,9 +87,69 @@ const entry: VectorEntry<TileMetaData> = {
 			show: false,
 			expressions: [
 				{
-					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					key: '面積_ha',
+					name: '面積_ha',
+					value: '{面積_ha}'
+				},
+				{
+					key: '立木本数',
+					name: '立木本数',
+					value: '{立木本数}'
+				},
+				{
+					key: '立木密度',
+					name: '立木密度',
+					value: '{立木密度}'
+				},
+				{
+					key: '合計材積',
+					name: '合計材積',
+					value: '{合計材積}'
+				},
+				{
+					key: 'ha材積',
+					name: 'ha材積',
+					value: '{ha材積}'
+				},
+				{
+					key: '収量比数',
+					name: '収量比数',
+					value: '{収量比数}'
+				},
+				{
+					key: '相対幹距比',
+					name: '相対幹距比',
+					value: '{相対幹距比}'
+				},
+				{
+					key: '平均傾斜',
+					name: '平均傾斜',
+					value: '{平均傾斜}'
+				},
+				{
+					key: '最大傾斜',
+					name: '最大傾斜',
+					value: '{最大傾斜}'
+				},
+				{
+					key: '最小傾斜',
+					name: '最小傾斜',
+					value: '{最小傾斜}'
+				},
+				{
+					key: '最頻傾斜',
+					name: '最頻傾斜',
+					value: '{最頻傾斜}'
+				},
+				{
+					key: '県code',
+					name: '県code',
+					value: '{県code}'
+				},
+				{
+					key: '市町村code',
+					name: '市町村code',
+					value: '{市町村code}'
 				}
 			]
 		},

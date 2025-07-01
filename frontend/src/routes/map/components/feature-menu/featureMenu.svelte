@@ -161,13 +161,15 @@
 					</div>
 				{/if}
 
-				<button
-					onclick={edit}
-					class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
-				>
-					<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
-					<span class="">レイヤーを編集</span>
-				</button>
+				{#if featureMenuData.layerId !== 'fac_poi'}
+					<button
+						onclick={edit}
+						class="c-btn-confirm absolute bottom-2 right-2 z-10 flex items-center justify-center gap-2"
+					>
+						<Icon icon="ic:baseline-mode-edit-outline" class="h-6 w-6" />
+						<span class="">レイヤーを編集{featureMenuData}</span>
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>

@@ -65,9 +65,9 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.5,
+		opacity: 0.7,
 		colors: {
-			key: '単色',
+			key: '最大樹冠高',
 			show: true,
 			expressions: [
 				{
@@ -77,13 +77,66 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#349f1c'
 					}
+				},
+				{
+					type: 'match',
+					key: '解析樹種',
+					name: '樹種による色分け',
+					mapping: {
+						categories: [
+							'スギ',
+							'ヒノキ類',
+							'マツ類',
+							'カラマツ',
+							'トドマツ',
+							'エゾマツ',
+							'その他Ｎ',
+							'クヌギ',
+							'ナラ類',
+							'ブナ',
+							'その他L',
+							'タケ',
+							'針広混交林',
+							'新植地',
+							'伐採跡地',
+							'その他'
+						],
+						values: [
+							'#00cc66',
+							'#99ff66',
+							'#cc0000',
+							'#ff9966',
+							'#ffcc99',
+							'#cc6600',
+							'#cc00cc',
+							'#ffff99',
+							'#ff9933',
+							'#cc9900',
+							'#ffff00',
+							'#8000ff',
+							'#8db3e2',
+							'#ccff99',
+							'#ff80ff',
+							'#bfbfbf'
+						]
+					}
+				},
+				{
+					type: 'step',
+					key: '最大樹冠高',
+					name: '最大樹冠高による色分け',
+					mapping: {
+						range: [1.0, 50],
+						divisions: 5,
+						values: ['#e6f2ff', '#ff00dd']
+					}
 				}
 			]
 		},
 		outline: {
 			show: true,
 			color: '#000000',
-			width: 1,
+			width: 0.1,
 			lineStyle: 'solid'
 		},
 		labels: {
