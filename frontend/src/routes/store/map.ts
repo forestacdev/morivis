@@ -132,8 +132,17 @@ const createMapStore = () => {
 		map = new maplibregl.Map({
 			...mapPosition,
 			container: mapContainer,
+			// canvasContextAttributes: {
+			// 	// WebGLのコンテキスト属性を設定
+			// 	antialias: true, // アンチエイリアスを有効にする
+			// 	depth: true, // 深度バッファを有効にする
+			// 	stencil: true, // ステンシルバッファを有効にする
+			// 	alpha: true, // アルファチャンネルを有効にする
+			// 	preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
+			// },
+			centerClampedToGround: true, // 地図の中心を地面にクランプする
 			style: mapStyle,
-			fadeDuration: 0, // フェードアニメーションの時間
+			fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
@@ -145,10 +154,26 @@ const createMapStore = () => {
 			// transformRequest: (url, resourceType) => {
 			// 	return { url };
 			// }
+
+			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
 		});
 
 		if (get(DEBUG_MODE)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
+			// データ読み込みイベントを監視
+			map.on('data', (e) => {
+				// resourceTimingプロパティにタイミング情報が含まれる
+				if (e.resourceTiming) {
+					console.log('リソースタイミング情報:', e.resourceTiming);
+
+					// 各タイミングの詳細
+					const timing = e.resourceTiming;
+					console.log('DNS解決時間:', timing.domainLookupEnd - timing.domainLookupStart);
+					console.log('接続時間:', timing.connectEnd - timing.connectStart);
+					console.log('ダウンロード時間:', timing.responseEnd - timing.responseStart);
+					console.log('総時間:', timing.responseEnd - timing.fetchStart);
+				}
+			});
 		}
 		// map.scrollZoom.setWheelZoomRate(1 / 800);
 
