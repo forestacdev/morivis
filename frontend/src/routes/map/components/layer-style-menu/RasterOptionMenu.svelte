@@ -12,7 +12,7 @@
 		RasterDemStyle,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
+	import { generateNumberAndColorMap } from '$routes/map/utils/colorMapping';
 
 	let {
 		layerEntry = $bindable()

@@ -5,7 +5,7 @@
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { notificationMessage, showNotification } from '$routes/store/notification';
-	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/utils/file/gpx';
+	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/file/gpx';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

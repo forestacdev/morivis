@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
+	import { generateNumberAndColorMap } from '$routes/map/utils/colorMapping';
 
 	interface Props {
 		layerEntry: GeoDataEntry;

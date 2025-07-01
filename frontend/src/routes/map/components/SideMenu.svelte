@@ -14,7 +14,7 @@
 	import { showNotification } from '$routes/store/notification';
 	import { isSideMenuType } from '$routes/store/ui';
 	import { isProcessing } from '$routes/store/ui';
-	import { imageExport, exportPDF } from '$routes/utils/map';
+	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
 	import { transitionPageScreen } from '$routes/store/effect';
 	import { delay } from 'es-toolkit';

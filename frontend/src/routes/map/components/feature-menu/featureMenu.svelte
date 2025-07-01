@@ -7,7 +7,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/store/map';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { generatePopupTitle } from '$routes/utils/properties';
+	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import { selectedLayerId, isStyleEdit } from '$routes/store';
 	import { isSideMenuType } from '$routes/store/ui';
 

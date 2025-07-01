@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
-	import { set3dParams } from '$routes/utils/params';
+	import { set3dParams } from '$routes/map/utils/params';
 	import type {
 		Map,
 		StyleSpecification,

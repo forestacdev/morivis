@@ -75,13 +75,13 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
-	import { getFgbToGeojson } from '$routes/utils/file/geojson';
+	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 	import {
 		setStreetViewParams,
 		getStreetViewParams,
 		get3dParams,
 		getParams
-	} from '$routes/utils/params';
+	} from '$routes/map/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 

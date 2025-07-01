@@ -5,13 +5,13 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems } from '$routes/utils/sources';
+	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createSourcesItems } from '$routes/map/utils/sources';
 
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
-	import { GeojsonCache } from '$routes/utils/file/geojson';
+	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import turfBbox from '@turf/bbox';
-	import { handleStyleImageMissing } from '$routes/utils/icon';
+	import { handleStyleImageMissing } from '$routes/map/utils/icon';
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 
 	interface Props {

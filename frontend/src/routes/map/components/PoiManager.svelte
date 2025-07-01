@@ -6,7 +6,7 @@
 	import { mapStore } from '$routes/store/map';
 	import { showLabelLayer } from '$routes/store/layers';
 
-	import { poiLayersIds } from '$routes/utils/layers/poi';
+	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { throttle } from 'es-toolkit';

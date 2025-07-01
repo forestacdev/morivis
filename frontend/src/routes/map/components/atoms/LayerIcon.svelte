@@ -4,9 +4,9 @@
 
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { getImagePmtiles } from '$routes/utils/raster';
-	import { convertTmsToXyz } from '$routes/utils/sources';
-	import { xyzToWMSXYZ } from '$routes/utils/tile';
+	import { getImagePmtiles } from '$routes/map/utils/raster';
+	import { convertTmsToXyz } from '$routes/map/utils/sources';
+	import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 	interface Props {
 		layerEntry: GeoDataEntry;

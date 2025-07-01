@@ -8,7 +8,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showNotification } from '$routes/store/notification';
 	import { isProcessing } from '$routes/store/ui';
-	import { shpFileToGeojson } from '$routes/utils/file/shp';
+	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

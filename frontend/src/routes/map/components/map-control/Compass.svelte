@@ -5,7 +5,7 @@
 
 	import { isStreetView } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { isPc } from '$routes/utils/ui';
+	import { isPc } from '$routes/map/utils/ui';
 	interface Props {
 		isHover: boolean;
 	}

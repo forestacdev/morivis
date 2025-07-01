@@ -52,10 +52,10 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
-	import { createLayersItems } from '$routes/utils/layers';
-	import { createSourcesItems, createTerrainSources } from '$routes/utils/sources';
-	import { drawLayers } from '$routes/utils/layers/draw';
-	import { loadLayerEntries, saveToLayerEntries } from '$routes/utils/localStorage';
+	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
+	import { drawLayers } from '$routes/map/utils/layers/draw';
+	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/localStorage';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 
 	interface Props {

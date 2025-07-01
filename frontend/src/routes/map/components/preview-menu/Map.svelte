@@ -9,9 +9,9 @@
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/store/map';
-	import { GeojsonCache } from '$routes/utils/file/geojson';
-	import { getGeojson, getFgbToGeojson } from '$routes/utils/file/geojson';
-	import { isBBoxOverlapping, isBBoxInside } from '$routes/utils/map';
+	import { GeojsonCache } from '$routes/map/utils/file/geojson';
+	import { getGeojson, getFgbToGeojson } from '$routes/map/utils/file/geojson';
+	import { isBBoxOverlapping, isBBoxInside } from '$routes/map/utils/map';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

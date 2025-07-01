@@ -21,7 +21,7 @@
 	import type { LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/map/components/search-menu/Geocoder.svelte';
-	import type { ResultData } from '$routes/utils/feature';
+	import type { ResultData } from '$routes/map/utils/feature';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/data/api';
 	import Fuse from 'fuse.js';
 

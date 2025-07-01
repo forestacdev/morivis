@@ -13,13 +13,13 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { FeatureStateManager, type FeatureStateData } from '$routes/utils/featureState';
-	import { mapGeoJSONFeatureToSidePopupData } from '$routes/utils/file/geojson';
-	import { isPointInBbox } from '$routes/utils/map';
-	import { getPixelColor, getGuide } from '$routes/utils/raster';
+	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/featureState';
+	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
+	import { isPointInBbox } from '$routes/map/utils/map';
+	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/+page.svelte';
-	import { poiLayersIds } from '$routes/utils/layers/poi';
+	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {

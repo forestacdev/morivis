@@ -10,10 +10,10 @@
 	import type { LayerType } from '$routes/store/layers';
 	import { groupedLayerStore } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
-	import { csvFileToGeojson } from '$routes/utils/file/csv';
-	import { fgbFileToGeojson } from '$routes/utils/file/fgb';
-	import { geoJsonFileToGeoJson } from '$routes/utils/file/geojson';
-	import { shpFileToGeojson } from '$routes/utils/file/shp';
+	import { csvFileToGeojson } from '$routes/map/utils/file/csv';
+	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
+	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
+	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 
 	interface Props {
 		map: maplibregl.Map;

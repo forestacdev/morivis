@@ -5,7 +5,7 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { parseWmtsCapabilities } from '$routes/utils/file/wmts';
+	import { parseWmtsCapabilities } from '$routes/map/utils/file/wmts';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

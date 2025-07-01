@@ -4,8 +4,8 @@
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { notificationMessage, showNotification } from '$routes/store/notification';
-	import { loadRasterData, loadToGeotiffFile } from '$routes/utils/file/geotiff';
-	import { gpxFileToGeojson } from '$routes/utils/file/gpx';
+	import { loadRasterData, loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
+	import { gpxFileToGeojson } from '$routes/map/utils/file/gpx';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

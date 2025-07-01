@@ -20,7 +20,7 @@
 	import { isStreetView, DEBUG_MODE } from '$routes/store';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import { removeUrlParams, setStreetViewParams } from '$routes/utils/params';
+	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =

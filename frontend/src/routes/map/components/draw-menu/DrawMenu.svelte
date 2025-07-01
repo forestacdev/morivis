@@ -23,7 +23,7 @@
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
-	import { downloadGeojson } from '$routes/utils/file/geojson';
+	import { downloadGeojson } from '$routes/map/utils/file/geojson';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

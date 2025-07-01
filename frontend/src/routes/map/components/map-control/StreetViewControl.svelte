@@ -4,7 +4,7 @@
 
 	import { showStreetViewLayer } from '$routes/store/layers';
 	import { mapStore } from '$routes/store/map';
-	import { isBBoxInside } from '$routes/utils/map';
+	import { isBBoxInside } from '$routes/map/utils/map';
 	import type { LngLatBoundsLike } from 'maplibre-gl';
 
 	const toggleLayer = () => {

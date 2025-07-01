@@ -3,7 +3,7 @@
 	import type { Marker, LngLatLike } from 'maplibre-gl';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { ResultData } from '$routes/utils/feature';
+	import type { ResultData } from '$routes/map/utils/feature';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 

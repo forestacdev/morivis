@@ -12,7 +12,7 @@
 		NumbersStyle,
 		ExpressionType
 	} from '$routes/map/data/types/vector/style';
-	import { getIconStyle } from '$routes/utils/ui';
+	import { getIconStyle } from '$routes/map/utils/ui';
 
 	interface Props {
 		style: ColorsStyle | NumbersStyle;

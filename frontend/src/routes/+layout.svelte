@@ -12,8 +12,8 @@
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/store';
-	import { checkToTermsAccepted } from '$routes/utils/localStorage';
-	import { isPc } from '$routes/utils/ui';
+	import { checkToTermsAccepted } from '$routes/map/utils/localStorage';
+	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/store/effect';
 

@@ -16,8 +16,8 @@
 	import { mapStore } from '$routes/store/map';
 	import { isSideMenuType } from '$routes/store/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
-	import { getPropertiesFromPMTiles } from '$routes/utils/pmtiles';
-	import type { ResultData } from '$routes/utils/feature';
+	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
+	import type { ResultData } from '$routes/map/utils/feature';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;

@@ -5,7 +5,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { loadRasterData } from '$routes/_image';
 	import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-	import { getBoundingBoxCorners } from '$routes/utils/map';
+	import { getBoundingBoxCorners } from '$routes/map/utils/map';
 
 	let map: maplibregl.Map | null = null;
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ

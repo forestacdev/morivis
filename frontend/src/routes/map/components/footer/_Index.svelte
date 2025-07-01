@@ -2,7 +2,7 @@
 	import Attribution from '$routes/map/components/footer/Attribution.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/store/map';
-	import { isPc } from '$routes/utils/ui';
+	import { isPc } from '$routes/map/utils/ui';
 
 	let {
 		layerEntries

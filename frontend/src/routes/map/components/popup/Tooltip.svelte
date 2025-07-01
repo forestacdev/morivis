@@ -4,7 +4,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { generatePopupTitle } from '$routes/utils/properties';
+	import { generatePopupTitle } from '$routes/map/utils/properties';
 
 	interface Props {
 		map: maplibregl.Map;
