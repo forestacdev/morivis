@@ -163,16 +163,6 @@ const createMapStore = () => {
 			// データ読み込みイベントを監視
 			map.on('data', (e) => {
 				// resourceTimingプロパティにタイミング情報が含まれる
-				if (e.resourceTiming) {
-					console.log('リソースタイミング情報:', e.resourceTiming);
-
-					// 各タイミングの詳細
-					const timing = e.resourceTiming;
-					console.log('DNS解決時間:', timing.domainLookupEnd - timing.domainLookupStart);
-					console.log('接続時間:', timing.connectEnd - timing.connectStart);
-					console.log('ダウンロード時間:', timing.responseEnd - timing.responseStart);
-					console.log('総時間:', timing.responseEnd - timing.fetchStart);
-				}
 			});
 		}
 		// map.scrollZoom.setWheelZoomRate(1 / 800);
