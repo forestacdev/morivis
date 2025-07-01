@@ -7,7 +7,7 @@ import {
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
 
-import { TileImageManager } from '$routes/protocol/image';
+import { TileImageManager } from '$routes/map/protocol/image';
 
 import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 

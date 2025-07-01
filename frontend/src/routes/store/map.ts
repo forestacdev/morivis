@@ -25,9 +25,9 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/utils/file/geojson';
 import { get } from 'svelte/store';
 
-import { demProtocol } from '$routes/protocol/raster';
-import { tileIndexProtocol } from '$routes/protocol/vector/tileindex';
-import { terrainProtocol } from '$routes/protocol/terrain';
+import { demProtocol } from '$routes/map/protocol/raster';
+import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
+import { terrainProtocol } from '$routes/map/protocol/terrain';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
