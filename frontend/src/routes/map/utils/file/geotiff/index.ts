@@ -1,14 +1,14 @@
 import { fromArrayBuffer } from 'geotiff';
 import type { ReadRasterResult } from 'geotiff';
-import { proj4Dict, citationDict } from '$routes/utils/proj/dict';
-import { transformBbox } from '$routes/utils/proj';
+import { proj4Dict, citationDict } from '$routes/map/utils/proj/dict';
+import { transformBbox } from '$routes/map/utils/proj';
 import type {
 	BandTypeKey,
 	ShingleBandData,
 	MultiBandData,
 	RasterTiffStyle
 } from '$routes/map/data/types/raster';
-import { ColorMapManager } from '$routes/utils/colorMapping';
+import { ColorMapManager } from '$routes/map/utils/colorMapping';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();

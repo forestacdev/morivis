@@ -17,8 +17,8 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-import { streetViewCircleLayer, streetViewLineLayer } from '$routes/utils/layers/street-view';
-import { hillshadeLayer } from '$routes/utils/layers/hillshade';
+import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street-view';
+import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
@@ -46,12 +46,12 @@ import type {
 	PolygonOutLine
 } from '$routes/map/data/types/vector/style';
 
-import { FeatureStateManager } from '$routes/utils/featureState';
-import { getLabelLayers } from '$routes/utils/layers/label';
+import { FeatureStateManager } from '$routes/map/utils/featureState';
+import { getLabelLayers } from '$routes/map/utils/layers/label';
 import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
-import { poiStyleJson } from '$routes/utils/layers/poi';
+import { poiStyleJson } from '$routes/map/utils/layers/poi';
 
-import { generateNumberAndColorMap } from '$routes/utils/colorMapping';
+import { generateNumberAndColorMap } from '$routes/map/utils/colorMapping';
 import { get } from 'svelte/store';
 import { getLoadLayers } from './load';
 import { getBoundaryLayers } from './boundary';

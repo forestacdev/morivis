@@ -1,6 +1,6 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { writable, derived, get } from 'svelte/store';
-import { GeojsonCache } from '$routes/utils/file/geojson';
+import { GeojsonCache } from '$routes/map/utils/file/geojson';
 
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'label' | 'point' | 'line' | 'polygon' | 'raster';

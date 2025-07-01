@@ -4,7 +4,7 @@ import { orderedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-import type { FeatureMenuData } from '$routes/types';
+import type { FeatureMenuData } from '$routes/map/types';
 
 export type GeoJSONGeometryType =
 	| 'Point'

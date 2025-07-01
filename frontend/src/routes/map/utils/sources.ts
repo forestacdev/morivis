@@ -23,16 +23,16 @@ import { get } from 'svelte/store';
 import { layerAttributions } from '$routes/store';
 import { type AttributionKey } from '$routes/map/data/attribution';
 
-import { GeojsonCache, getGeojson } from '$routes/utils/file/geojson';
-import { getFgbToGeojson } from '$routes/utils/file/geojson';
+import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
+import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
-import { objectToUrlParams } from '$routes/utils/params';
+import { objectToUrlParams } from '$routes/map/utils/params';
 
-import { getBoundingBoxCorners } from '$routes/utils/map';
-import { loadRasterData, GeoTiffImageCache } from '$routes/utils/file/geotiff';
+import { getBoundingBoxCorners } from '$routes/map/utils/map';
+import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-import { poiStyleJson } from '$routes/utils/layers/poi';
-import { cloudStyleJson } from '$routes/utils/layers/cloud';
+import { poiStyleJson } from '$routes/map/utils/layers/poi';
+import { cloudStyleJson } from '$routes/map/utils/layers/cloud';
 import { getBaseMapSources } from './layers/base-map';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {

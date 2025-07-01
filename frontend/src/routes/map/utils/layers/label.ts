@@ -1,4 +1,4 @@
-import satelliteStyleJson from '$routes/utils/layers/satellite_style.json';
+import satelliteStyleJson from '$routes/map/utils/layers/satellite_style.json';
 import type { SymbolLayerSpecification, SourceSpecification } from 'maplibre-gl';
 
 /** ラベルのレイヤーを取得 */

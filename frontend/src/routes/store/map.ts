@@ -14,15 +14,15 @@ import type {
 	LngLatBoundsLike
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import type { CSSCursor } from '$routes/types';
+import type { CSSCursor } from '$routes/map/types';
 
 import { getLocationBbox } from '$routes/map/data/location_bbox';
 
 import turfBbox, { bbox } from '@turf/bbox';
-import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
+import { setMapParams, getMapParams, getParams } from '$routes/map/utils/params';
 import { DEBUG_MODE, isTerrain3d } from '$routes/store';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { GeojsonCache } from '$routes/utils/file/geojson';
+import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';
 
 import { demProtocol } from '$routes/map/protocol/raster';
@@ -34,7 +34,7 @@ import {
 	WEB_MERCATOR_MAX_LAT,
 	WEB_MERCATOR_MIN_LNG,
 	WEB_MERCATOR_MAX_LNG
-} from '$routes/utils/map';
+} from '$routes/map/utils/map';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);

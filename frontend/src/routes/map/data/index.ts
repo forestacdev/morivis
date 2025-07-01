@@ -7,8 +7,8 @@ import type {
 	TileMetaData
 } from '$routes/map/data/types/vector';
 import turfBbox, { bbox } from '@turf/bbox';
-import { getUniquePropertyKeys } from '$routes/utils/properties';
-import { GeojsonCache } from '$routes/utils/file/geojson';
+import { getUniquePropertyKeys } from '$routes/map/utils/properties';
+import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
 	DEFAULT_RASTER_BASEMAP_INTERACTION
@@ -20,7 +20,7 @@ import {
 	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/style';
 
-import { getRandomCommonColor } from '$routes/utils/colorMapping';
+import { getRandomCommonColor } from '$routes/map/utils/colorMapping';
 import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
