@@ -6,7 +6,7 @@
 	import { onMount, onDestroy } from 'svelte';
 
 	import { MAP_FONT_DATA_PATH, MAP_POSITION } from '$routes/constants';
-	import { getLocationBbox } from '$routes/data/locationBbox';
+	import { getLocationBbox } from '$routes/data/location_bbox';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
 	import { GeojsonCache } from '$routes/utils/file/geojson';

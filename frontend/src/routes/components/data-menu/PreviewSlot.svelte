@@ -8,7 +8,7 @@
 	import { createLayersItems } from '$routes/utils/layers';
 	import { createSourcesItems } from '$routes/utils/sources';
 
-	import { getLocationBbox } from '$routes/data/locationBbox';
+	import { getLocationBbox } from '$routes/data/location_bbox';
 	import { GeojsonCache } from '$routes/utils/file/geojson';
 	import turfBbox from '@turf/bbox';
 	import { handleStyleImageMissing } from '$routes/utils/icon';

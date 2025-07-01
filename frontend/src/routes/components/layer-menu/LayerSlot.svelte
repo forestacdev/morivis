@@ -17,7 +17,7 @@
 		type LayerType
 	} from '$routes/store/layers';
 	import { mapStore, type MapState } from '$routes/store/map';
-	import { getLocationBbox } from '$routes/data/locationBbox';
+	import { getLocationBbox } from '$routes/data/location_bbox';
 	import { GeojsonCache } from '$routes/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/utils/map';
 	import { onMount } from 'svelte';
