@@ -1,7 +1,7 @@
-import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
+import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
 import { TileImageManager } from '../image';
 import { ColorMapManager } from '$routes/utils/colorMapping';
-import { DEM_STYLE_TYPE } from '$routes/data/types/raster';
+import { DEM_STYLE_TYPE } from '$routes/map/data/types/raster';
 
 class WorkerProtocol {
 	private worker: Worker;

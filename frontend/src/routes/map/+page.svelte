@@ -37,29 +37,29 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
-	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
-	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
-	import DrawMenu from '$routes/components/draw-menu/DrawMenu.svelte';
-	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
-	import FooterMenu from '$routes/components/footer/_Index.svelte';
-	import HeaderMenu from '$routes/components/Header.svelte';
-	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
-	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
-	import MapLibreMap from '$routes/components/Map.svelte';
-	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
-	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
-	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
-	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
-	import SideMenu from '$routes/components/SideMenu.svelte';
+	import DataMenu from '$routes/map/components/data-menu/DataMenu.svelte';
+	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
+	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
+	import DrawMenu from '$routes/map/components/draw-menu/DrawMenu.svelte';
+	import FeatureMenu from '$routes/map/components/feature-menu/featureMenu.svelte';
+	import FooterMenu from '$routes/map/components/footer/_Index.svelte';
+	import HeaderMenu from '$routes/map/components/Header.svelte';
+	import LayerMenu from '$routes/map/components/layer-menu/_Index.svelte';
+	import LayerStyleMenu from '$routes/map/components/layer-style-menu/LayerStyleMenu.svelte';
+	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
+	import DataPreview from '$routes/map/components/preview-menu/DataPreview.svelte';
+	import PreviewMenu from '$routes/map/components/preview-menu/PreviewMenu.svelte';
+	import SearchMenu from '$routes/map/components/search-menu/SearchMenu.svelte';
+	import SideMenu from '$routes/map/components/SideMenu.svelte';
 
-	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
+	import StreetViewCanvas from '$routes/map/components/street-view/ThreeCanvas.svelte';
 
-	import Tooltip from '$routes/components/Tooltip.svelte';
-	import UploadDaialog from '$routes/components/upload/BaseDaialog.svelte';
+	import Tooltip from '$routes/map/components/Tooltip.svelte';
+	import UploadDaialog from '$routes/map/components/upload/BaseDaialog.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
-	import { geoDataEntries } from '$routes/data';
-	import type { GeoDataEntry } from '$routes/data/types';
+	import { geoDataEntries } from '$routes/map/data';
+	import type { GeoDataEntry } from '$routes/map/data/types';
 	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
 	import SplashScreen from '$routes/SplashScreen.svelte';
 	import {
@@ -82,8 +82,8 @@
 		get3dParams,
 		getParams
 	} from '$routes/utils/params';
-	import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
-	import ConfirmationDialog from '$routes/components/dialog/ConfirmationDialog.svelte';
+	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ

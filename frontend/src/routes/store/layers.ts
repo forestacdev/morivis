@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/utils/file/geojson';
 

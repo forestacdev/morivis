@@ -23,8 +23,8 @@ import { hillshadeLayer } from '$routes/utils/layers/hillshade';
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
 import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
 
-import { geoDataEntries } from '$routes/data';
-import type { GeoDataEntry } from '$routes/data/types';
+import { geoDataEntries } from '$routes/map/data';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import type {
 	Labels,
 	VectorStyle,
@@ -44,7 +44,7 @@ import type {
 	LineStringStyle,
 	LabelStyle,
 	PolygonOutLine
-} from '$routes/data/types/vector/style';
+} from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/utils/featureState';
 import { getLabelLayers } from '$routes/utils/layers/label';

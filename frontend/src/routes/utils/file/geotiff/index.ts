@@ -7,7 +7,7 @@ import type {
 	ShingleBandData,
 	MultiBandData,
 	RasterTiffStyle
-} from '$routes/data/types/raster';
+} from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/utils/colorMapping';
 
 export class GeoTiffCache {

@@ -1,4 +1,4 @@
-import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/data/dem';
+import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
 import { PMTiles } from 'pmtiles';
 
 const pmCache = new Map<string, PMTiles>();

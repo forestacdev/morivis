@@ -1,5 +1,5 @@
 import { MOBILE_WIDTH } from '$routes/constants';
-import type { ExpressionType } from '$routes/data/types/vector/style';
+import type { ExpressionType } from '$routes/map/data/types/vector/style';
 
 /**
  * PC画面かどうかを判定する

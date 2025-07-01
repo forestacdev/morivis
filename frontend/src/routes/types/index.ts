@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 export type CSSCursor =

@@ -2,8 +2,8 @@ import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'ge
 import { geojson as fgb } from 'flatgeobuf';
 import { orderedLayerIds } from '$routes/store/layers';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
-import type { GeoDataEntry } from '$routes/data/types';
-import type { VectorEntryGeometryType } from '$routes/data/types/vector';
+import type { GeoDataEntry } from '$routes/map/data/types';
+import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureMenuData } from '$routes/types';
 
 export type GeoJSONGeometryType =

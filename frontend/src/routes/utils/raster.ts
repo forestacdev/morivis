@@ -4,7 +4,7 @@ import type {
 	ZoomLevel,
 	CategoryLegend,
 	RasterFormatType
-} from '$routes/data/types/raster';
+} from '$routes/map/data/types/raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import type { LngLat } from 'maplibre-gl';
 import chroma from 'chroma-js';

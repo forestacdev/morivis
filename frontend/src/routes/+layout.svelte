@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import WebGLScreen from '$routes/components/effect/screen/WebGLScreen.svelte';
+	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 
 	let { children } = $props();
 

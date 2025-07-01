@@ -9,9 +9,9 @@ import {
 
 import { TileImageManager } from '$routes/protocol/image';
 
-import type { RasterEntry, RasterDemStyle } from '$routes/data/types/raster';
+import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import {
 	showBoundaryLayer,
 	showLabelLayer,
@@ -21,7 +21,7 @@ import {
 import { get } from 'svelte/store';
 
 import { layerAttributions } from '$routes/store';
-import { type AttributionKey } from '$routes/data/attribution';
+import { type AttributionKey } from '$routes/map/data/attribution';
 
 import { GeojsonCache, getGeojson } from '$routes/utils/file/geojson';
 import { getFgbToGeojson } from '$routes/utils/file/geojson';

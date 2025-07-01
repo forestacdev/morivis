@@ -16,12 +16,12 @@ import type {
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/types';
 
-import { getLocationBbox } from '$routes/data/locationBbox';
+import { getLocationBbox } from '$routes/map/data/location_bbox';
 
 import turfBbox, { bbox } from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/utils/params';
 import { DEBUG_MODE, isTerrain3d } from '$routes/store';
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/utils/file/geojson';
 import { get } from 'svelte/store';
 

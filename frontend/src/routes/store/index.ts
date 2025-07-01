@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 
-import { geoDataEntries } from '$routes/data';
+import { geoDataEntries } from '$routes/map/data';
 import type { FeatureCollection, Feature } from 'geojson';
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { Side } from 'three';
 

@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/data/types';
+import type { GeoDataEntry } from '$routes/map/data/types';
 
 // localストレージにデータを保存する関数
 export const saveToTermsAccepted = () => {

@@ -1,4 +1,4 @@
-import { propData } from '$routes/data/propData';
+import { propData } from '$routes/map/data/prop_data';
 import type { Map, MapStyleImageMissingEvent } from 'maplibre-gl';
 
 let mapLibreMap: Map | null = null;

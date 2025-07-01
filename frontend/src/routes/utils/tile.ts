@@ -1,4 +1,4 @@
-import type { TileXYZ } from '$routes/data/types/raster';
+import type { TileXYZ } from '$routes/map/data/types/raster';
 
 /**
  * 経度・緯度 → タイル座標 (z/x/y) に変換

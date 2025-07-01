@@ -1,7 +1,7 @@
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
 
-import type { Title } from '$routes/data/types/vector';
+import type { Title } from '$routes/map/data/types/vector';
 
 /** ポップアップ用のタイトルを生成 */
 export const generatePopupTitle = (prop: { [key: string]: any }, titles: Title[]): string => {

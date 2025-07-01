@@ -1,5 +1,5 @@
 import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
-import type { TileXYZ } from '$routes/data/types/raster';
+import type { TileXYZ } from '$routes/map/data/types/raster';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';

@@ -1,5 +1,5 @@
 import type { SymbolLayerSpecification, LineLayerSpecification } from 'maplibre-gl';
-import ContourStyleJson from '$routes/data/contour-style.json';
+import ContourStyleJson from '$routes/map/data/contour-style.json';
 
 /** ラベルのレイヤーを取得 */
 export const getContourLineLayers = (): LineLayerSpecification[] => {
