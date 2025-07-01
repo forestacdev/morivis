@@ -2,7 +2,7 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { propData } from '$routes/data/propData';
+	import { propData } from '$routes/data/prop_data';
 	import { mapStore, isHoverPoiMarker } from '$routes/store/map';
 	import { fade, fly } from 'svelte/transition';
 

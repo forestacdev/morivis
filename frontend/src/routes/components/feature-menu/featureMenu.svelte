@@ -3,7 +3,7 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import AttributeItem from '$routes/components/feature-menu/AttributeItem.svelte';
-	import { propData } from '$routes/data/propData';
+	import { propData } from '$routes/data/prop_data';
 	import type { GeoDataEntry } from '$routes/data/types';
 	import { mapStore } from '$routes/store/map';
 	import type { FeatureMenuData } from '$routes/types';

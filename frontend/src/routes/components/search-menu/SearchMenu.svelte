@@ -10,7 +10,7 @@
 	import { DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/data';
 	import { addressSearch, addressCodeToAddress } from '$routes/data/api';
-	import { propData } from '$routes/data/propData';
+	import { propData } from '$routes/data/prop_data';
 	import type { GeoDataEntry } from '$routes/data/types';
 
 	import { mapStore } from '$routes/store/map';
