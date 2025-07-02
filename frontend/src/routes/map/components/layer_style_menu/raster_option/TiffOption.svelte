@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import DemStyleColorMapPulldownBox from '$routes/map/components/layer-style-menu/raster-option/DemStyleColorMapPulldownBox.svelte';
-	import TiffStyleModePulldownBox from '$routes/map/components/layer-style-menu/raster-option/TiffStyleModePulldownBox.svelte';
+	import DemStyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleColorMapPulldownBox.svelte';
+	import TiffStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/TiffStyleModePulldownBox.svelte';
 	import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 
 	interface Props {

@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import AttributeItem from '$routes/map/components/feature-menu/AttributeItem.svelte';
+	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/store/map';

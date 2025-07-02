@@ -5,7 +5,7 @@
 	import { slide, fly, fade } from 'svelte/transition';
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import LayerSlot from '$routes/map/components/layer-menu/LayerSlot.svelte';
+	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
 	import {
@@ -212,5 +212,3 @@
 		{/if}
 	</div>
 {/if}
-
-

@@ -20,7 +20,7 @@ import {
 	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/style';
 
-import { getRandomCommonColor } from '$routes/map/utils/colorMapping';
+import { getRandomCommonColor } from '$routes/map/utils/color_mapping';
 import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';

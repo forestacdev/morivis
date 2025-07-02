@@ -2,8 +2,8 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import ColorExpressionsOption from '$routes/map/components/layer-style-menu/extension-menu/ColorExpressionsOption.svelte';
-	import NumberExpressionsOption from '$routes/map/components/layer-style-menu/extension-menu/NumberExpressionsOption.svelte';
+	import ColorExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/ColorExpressionsOption.svelte';
+	import NumberExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/NumberExpressionsOption.svelte';
 	import type {
 		ColorsExpression,
 		NumbersExpression,

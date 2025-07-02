@@ -4,9 +4,9 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/map/components/layer-style-menu/ColorOption.svelte';
-	import LabelOption from '$routes/map/components/layer-style-menu/LabelOption.svelte';
-	import NumberOption from '$routes/map/components/layer-style-menu/NumberOption.svelte';
+	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
+	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
+	import NumberOption from '$routes/map/components/layer_style_menu/NumberOption.svelte';
 	import type {
 		VectorEntryGeometryType,
 		LineStringEntry,

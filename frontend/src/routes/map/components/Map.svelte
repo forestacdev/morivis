@@ -20,10 +20,10 @@
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
-	import MapControl from '$routes/map/components/map-control/_Index.svelte';
-	import MapStatePane from '$routes/map/components/map-control/MapStatePane.svelte';
-	import StreetViewLayer from '$routes/map/components/map-layer/StreetViewLayer.svelte';
-	import { streetViewSources } from '$routes/map/components/map-layer/StreetViewLayer.svelte';
+	import MapControl from '$routes/map/components/map_control/_Index.svelte';
+	import MapStatePane from '$routes/map/components/map_control/MapStatePane.svelte';
+	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
+	import { streetViewSources } from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
@@ -55,7 +55,7 @@
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
 	import { drawLayers } from '$routes/map/utils/layers/draw';
-	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/localStorage';
+	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/local_storage';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 
 	interface Props {

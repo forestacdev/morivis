@@ -4,9 +4,9 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import LayerSlot from '$routes/map/components/layer-menu/LayerSlot.svelte';
-	import RasterOptionMenu from '$routes/map/components/layer-style-menu/RasterOptionMenu.svelte';
-	import VectorOptionMenu from '$routes/map/components/layer-style-menu/VectorOptionMenu.svelte';
+	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
+	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit } from '$routes/store';
 	import { orderedLayerIds } from '$routes/store/layers';

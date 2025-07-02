@@ -9,7 +9,7 @@
 	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
 	import { showNotification } from '$routes/store/notification';
 	import { getImagePmtiles } from '$routes/map/utils/raster';
-	import PreviewSlot from '$routes/map/components/data-menu/PreviewSlot.svelte';
+	import PreviewSlot from '$routes/map/components/data_menu/PreviewSlot.svelte';
 	import { convertTmsToXyz } from '$routes/map/utils/sources';
 	import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 

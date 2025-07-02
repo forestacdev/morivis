@@ -5,7 +5,7 @@
 	import Legend from './Legend.svelte';
 	import turfBbox, { bbox } from '@turf/bbox';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import OpacityRangeSlider from '$routes/map/components/layer-menu/OpacityRangeSlider.svelte';
+	import OpacityRangeSlider from '$routes/map/components/layer_menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';

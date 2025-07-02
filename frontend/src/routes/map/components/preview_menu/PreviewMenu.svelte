@@ -3,7 +3,7 @@
 	import DOMPurify from 'dompurify';
 	import { fade, fly } from 'svelte/transition';
 
-	import MapPane from '$routes/map/components/preview-menu/Map.svelte';
+	import MapPane from '$routes/map/components/preview_menu/Map.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	interface Props {

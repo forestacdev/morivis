@@ -17,7 +17,7 @@ import type {
 	ColorSpecification
 } from 'maplibre-gl';
 
-import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street-view';
+import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
 import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
@@ -46,18 +46,18 @@ import type {
 	PolygonOutLine
 } from '$routes/map/data/types/vector/style';
 
-import { FeatureStateManager } from '$routes/map/utils/featureState';
+import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { getLabelLayers } from '$routes/map/utils/layers/label';
 import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
 import { poiStyleJson } from '$routes/map/utils/layers/poi';
 
-import { generateNumberAndColorMap } from '$routes/map/utils/colorMapping';
+import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 import { get } from 'svelte/store';
 import { getLoadLayers } from './load';
 import { getBoundaryLayers } from './boundary';
 import { getContourLabelLayers, getContourLineLayers } from './contour';
 import { cloudStyleJson } from './cloud';
-import { getBaseMapLayers } from './base-map';
+import { getBaseMapLayers } from './base_map';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);

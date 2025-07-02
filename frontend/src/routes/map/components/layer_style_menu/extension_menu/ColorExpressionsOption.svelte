@@ -9,7 +9,7 @@
 		ColorSingleExpression,
 		NumbersStyle
 	} from '$routes/map/data/types/vector/style';
-	import { generateNumberAndColorMap, generateColorPalette } from '$routes/map/utils/colorMapping';
+	import { generateNumberAndColorMap, generateColorPalette } from '$routes/map/utils/color_mapping';
 
 	interface Props {
 		setExpression: ColorsExpression;

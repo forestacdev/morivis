@@ -7,7 +7,7 @@
 	import LabelPulldownBox from '$routes/map/components/atoms/LabelPulldownBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/map/components/layer-style-menu/ColorOption.svelte';
+	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import type {
 		VectorEntryGeometryType,
 		LabelEntry,
@@ -15,17 +15,18 @@
 		TileMetaData,
 		VectorEntry
 	} from '$routes/map/data/types/vector';
-	import {
-		type VectorLayerType,
-		type ColorsExpression,
-		type LabelsExpressions
+	import type {
+		VectorLayerType,
+		ColorsExpression,
+		LabelsExpressions,
+		Labels
 	} from '$routes/map/data/types/vector/style';
 
 	interface Props {
-		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		labels: Labels;
 	}
 
-	let { layerEntry = $bindable() }: Props = $props();
+	let { labels = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	// ラベルのキーの取得
@@ -35,8 +36,8 @@
 </script>
 
 <Accordion label={'ラベル'} bind:value={showLabelOption}>
-	<Switch label={'表示'} bind:value={layerEntry.style.labels.show} />
-	<LabelPulldownBox bind:labels={layerEntry.style.labels} icon={'ci:font'} />
+	<Switch label={'表示'} bind:value={labels.show} />
+	<LabelPulldownBox bind:labels icon={'ci:font'} />
 
 	<!-- <div class="flex grow flex-col gap-2">
 		{#each getlabelKeys(layerEntry.style.labels.expressions) as labelType (labelType.key)}

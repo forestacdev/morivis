@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DemOption from './raster-option/DemOption.svelte';
-	import TiffOption from './raster-option/TiffOption.svelte';
+	import DemOption from './raster_option/DemOption.svelte';
+	import TiffOption from './raster_option/TiffOption.svelte';
 
 	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
@@ -12,7 +12,7 @@
 		RasterDemStyle,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { generateNumberAndColorMap } from '$routes/map/utils/colorMapping';
+	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 
 	let {
 		layerEntry = $bindable()

@@ -2,9 +2,9 @@
 	import Icon from '@iconify/svelte';
 	import { slide } from 'svelte/transition';
 
-	import GeolocateControl from '$routes/map/components/map-control/GeolocateControl.svelte';
-	import StreetViewControl from '$routes/map/components/map-control/StreetViewControl.svelte';
-	import TerrainControl from '$routes/map/components/map-control/TerrainControl.svelte';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
+	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import {
 		showSideMenu,
 		mapMode,
@@ -20,7 +20,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';
 
-	import Geocoder from '$routes/map/components/search-menu/Geocoder.svelte';
+	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/data/api';
 	import Fuse from 'fuse.js';

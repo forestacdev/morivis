@@ -8,7 +8,7 @@ import type {
 	MultiBandData,
 	RasterTiffStyle
 } from '$routes/map/data/types/raster';
-import { ColorMapManager } from '$routes/map/utils/colorMapping';
+import { ColorMapManager } from '$routes/map/utils/color_mapping';
 
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();

@@ -4,8 +4,8 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/map/components/layer-style-menu/ColorOption.svelte';
-	import LabelOption from '$routes/map/components/layer-style-menu/LabelOption.svelte';
+	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
+	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
 	import type {
 		VectorEntryGeometryType,
 		PolygonEntry,

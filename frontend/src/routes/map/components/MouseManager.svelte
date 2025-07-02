@@ -13,7 +13,7 @@
 	import { isSideMenuType } from '$routes/store/ui';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
 	import { mapStore } from '$routes/store/map';
-	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/featureState';
+	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';

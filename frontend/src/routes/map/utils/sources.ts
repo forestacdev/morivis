@@ -33,7 +33,7 @@ import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotif
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
 import { poiStyleJson } from '$routes/map/utils/layers/poi';
 import { cloudStyleJson } from '$routes/map/utils/layers/cloud';
-import { getBaseMapSources } from './layers/base-map';
+import { getBaseMapSources } from './layers/base_map';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';

@@ -37,23 +37,23 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import DataMenu from '$routes/map/components/data-menu/DataMenu.svelte';
+	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
 	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
-	import DrawMenu from '$routes/map/components/draw-menu/DrawMenu.svelte';
-	import FeatureMenu from '$routes/map/components/feature-menu/featureMenu.svelte';
+	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
+	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import FooterMenu from '$routes/map/components/footer/_Index.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
-	import LayerMenu from '$routes/map/components/layer-menu/_Index.svelte';
-	import LayerStyleMenu from '$routes/map/components/layer-style-menu/LayerStyleMenu.svelte';
+	import LayerMenu from '$routes/map/components/layer_menu/_Index.svelte';
+	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
-	import DataPreview from '$routes/map/components/preview-menu/DataPreview.svelte';
-	import PreviewMenu from '$routes/map/components/preview-menu/PreviewMenu.svelte';
-	import SearchMenu from '$routes/map/components/search-menu/SearchMenu.svelte';
+	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
+	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
+	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import SideMenu from '$routes/map/components/SideMenu.svelte';
 
-	import StreetViewCanvas from '$routes/map/components/street-view/ThreeCanvas.svelte';
+	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDaialog from '$routes/map/components/upload/BaseDaialog.svelte';

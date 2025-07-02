@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Compass from './Compass.svelte';
 
-	import GeolocateControl from '$routes/map/components/map-control/GeolocateControl.svelte';
-	import StreetViewControl from '$routes/map/components/map-control/StreetViewControl.svelte';
-	import TerrainControl from '$routes/map/components/map-control/TerrainControl.svelte';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
+	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import { mapStore, displayingArea } from '$routes/store/map';
 
 	let zoom = $state(0);

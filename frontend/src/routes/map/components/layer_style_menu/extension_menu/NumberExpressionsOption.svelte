@@ -2,7 +2,7 @@
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { NumbersStyle, NumbersExpression } from '$routes/map/data/types/vector/style';
-	import { generateNumberToNumberMap } from '$routes/map/utils/numberMapping';
+	import { generateNumberToNumberMap } from '$routes/map/utils/number_mapping';
 
 	interface Props {
 		setExpression: NumbersExpression;
