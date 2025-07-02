@@ -20,7 +20,7 @@
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
-	import MapControl from '$routes/map/components/map_control/_Index.svelte';
+	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
 	import MapStatePane from '$routes/map/components/map_control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 	import { streetViewSources } from '$routes/map/components/map_layer/StreetViewLayer.svelte';

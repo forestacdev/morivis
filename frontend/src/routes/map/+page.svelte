@@ -44,7 +44,7 @@
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
-	import LayerMenu from '$routes/map/components/layer_menu/_Index.svelte';
+	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
