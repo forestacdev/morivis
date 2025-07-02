@@ -6,7 +6,7 @@
 		type AttributionKey,
 		type Attribution
 	} from '$routes/map/data/attribution';
-	import { layerAttributions } from '$routes/store';
+	import { layerAttributions } from '$routes/stores';
 
 	let attributions = $state<Attribution[]>([]);
 

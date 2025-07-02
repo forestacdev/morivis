@@ -35,8 +35,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import type { DialogType, StreetViewPoint } from '$routes/map/+page.svelte';
-	import { DEBUG_MODE, isStreetView } from '$routes/store';
-	import { mapMode, isTerrain3d } from '$routes/store';
+	import { DEBUG_MODE, isStreetView } from '$routes/stores';
+	import { mapMode, isTerrain3d } from '$routes/stores';
 	import {
 		getLayersGroup,
 		groupedLayerStore,
@@ -45,11 +45,11 @@
 		showLabelLayer,
 		showLoadLayer,
 		showStreetViewLayer
-	} from '$routes/store/layers';
-	import { showHillshadeLayer } from '$routes/store/layers';
-	import { orderedLayerIds } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
-	import { isSideMenuType } from '$routes/store/ui';
+	} from '$routes/stores/layers';
+	import { showHillshadeLayer } from '$routes/stores/layers';
+	import { orderedLayerIds } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
+	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';

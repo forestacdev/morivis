@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { isProcessing } from '$routes/store/ui';
+	import { isProcessing } from '$routes/stores/ui';
 
 	let container = $state<HTMLElement | null>(null);
 

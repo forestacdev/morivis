@@ -8,15 +8,15 @@
 	import OpacityRangeSlider from '$routes/map/components/layer_menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
-	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
 	import {
 		orderedLayerIds,
 		groupedLayerStore,
 		getLayerType,
 		reorderStatus,
 		type LayerType
-	} from '$routes/store/layers';
-	import { mapStore, type MapState } from '$routes/store/map';
+	} from '$routes/stores/layers';
+	import { mapStore, type MapState } from '$routes/stores/map';
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';

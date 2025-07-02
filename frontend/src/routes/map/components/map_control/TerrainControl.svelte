@@ -13,8 +13,8 @@
 	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import { isTerrain3d } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
+	import { isTerrain3d } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 
 	const toggle3d = (e: any) => {
 		isTerrain3d.set(!$isTerrain3d);

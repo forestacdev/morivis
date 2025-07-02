@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { DialogType } from '$routes/map/+page.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/store';
+	import { showDataMenu } from '$routes/stores';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

@@ -5,9 +5,9 @@
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { getLayerType } from '$routes/store/layers';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
-	import { showNotification } from '$routes/store/notification';
+	import { getLayerType } from '$routes/stores/layers';
+	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/stores/layers';
+	import { showNotification } from '$routes/stores/notification';
 	import { getImagePmtiles } from '$routes/map/utils/raster';
 	import PreviewSlot from '$routes/map/components/data_menu/PreviewSlot.svelte';
 	import { convertTmsToXyz } from '$routes/map/utils/sources';

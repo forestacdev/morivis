@@ -3,8 +3,8 @@
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
-	import { isStreetView } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
+	import { isStreetView } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 	import { isPc } from '$routes/map/utils/ui';
 	interface Props {
 		isHover: boolean;

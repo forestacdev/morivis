@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
 
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let mapCanvas: HTMLCanvasElement | null = null;

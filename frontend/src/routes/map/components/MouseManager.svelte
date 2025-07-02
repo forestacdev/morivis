@@ -9,10 +9,10 @@
 	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { CategoryLegend, GradientLegend, ZoomLevel } from '$routes/map/data/types/raster';
-	import { isStreetView, clickableVectorIds, clickableRasterIds } from '$routes/store';
-	import { isSideMenuType } from '$routes/store/ui';
-	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
+	import { isStreetView, clickableVectorIds, clickableRasterIds } from '$routes/stores';
+	import { isSideMenuType } from '$routes/stores/ui';
+	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';

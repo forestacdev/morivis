@@ -20,8 +20,8 @@
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/store/map';
-	import { isSideMenuType } from '$routes/store/ui';
+	import { mapStore } from '$routes/stores/map';
+	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
 	import { downloadGeojson } from '$routes/map/utils/file/geojson';
 

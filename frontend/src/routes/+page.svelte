@@ -6,7 +6,7 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
-	import { transitionPageScreen } from '$routes/store/effect';
+	import { transitionPageScreen } from '$routes/stores/effect';
 
 	import fragmentShader from './shaders/fragment.glsl?raw';
 	import vertexShader from './shaders/vertex.glsl?raw';

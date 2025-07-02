@@ -20,8 +20,8 @@ import type {
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
 import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
 
-import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/store';
-import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/store/layers';
+import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
+import { showBoundaryLayer, showHillshadeLayer, showStreetViewLayer } from '$routes/stores/layers';
 
 import { geoDataEntries } from '$routes/map/data';
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -48,7 +48,7 @@ import type {
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { getLabelLayers } from '$routes/map/utils/layers/label';
-import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/store/layers';
+import { showLabelLayer, showLoadLayer, showContourLayer } from '$routes/stores/layers';
 import { poiStyleJson } from '$routes/map/utils/layers/poi';
 
 import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';

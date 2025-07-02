@@ -13,8 +13,8 @@
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
-	import { mapStore } from '$routes/store/map';
-	import { isSideMenuType } from '$routes/store/ui';
+	import { mapStore } from '$routes/stores/map';
+	import { isSideMenuType } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
@@ -246,5 +246,3 @@
 		></div> -->
 	</div>
 {/if}
-
-

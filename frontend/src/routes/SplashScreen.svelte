@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { mapStore } from './store/map';
+	import { mapStore } from './stores/map';
 
 	let show = $state<boolean>(false);
 	let container = $state<HTMLElement | null>(null);

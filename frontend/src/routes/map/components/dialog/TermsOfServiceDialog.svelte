@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
-	import { showTermsDialog } from '$routes/store';
+	import { showTermsDialog } from '$routes/stores';
 	import { saveToTermsAccepted } from '$routes/map/utils/local_storage';
 </script>
 

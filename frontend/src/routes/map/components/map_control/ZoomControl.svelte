@@ -4,7 +4,7 @@
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 
 	let container: HTMLElement;
 	let value: number = $state(1);

@@ -1,7 +1,7 @@
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import * as shapefile from 'shapefile';
 import { readPrjFileContent, isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
-import { showNotification } from '$routes/store/notification';
+import { showNotification } from '$routes/stores/notification';
 
 const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
 	return new Promise((resolve) => {

@@ -5,10 +5,10 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/store';
-	import { getLayerType } from '$routes/store/layers';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/store/layers';
-	import { showNotification } from '$routes/store/notification';
+	import { showDataMenu } from '$routes/stores';
+	import { getLayerType } from '$routes/stores/layers';
+	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/stores/layers';
+	import { showNotification } from '$routes/stores/notification';
 
 	let addedDataIds = $state<string[]>($orderedLayerIds);
 

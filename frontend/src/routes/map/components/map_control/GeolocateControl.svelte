@@ -3,7 +3,7 @@
 	import { GeolocateControl, Marker } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let observer;

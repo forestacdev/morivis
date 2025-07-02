@@ -3,7 +3,7 @@
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { notificationMessage, showNotification } from '$routes/store/notification';
+	import { notificationMessage, showNotification } from '$routes/stores/notification';
 	import { loadRasterData, loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
 	import { gpxFileToGeojson } from '$routes/map/utils/file/gpx';
 

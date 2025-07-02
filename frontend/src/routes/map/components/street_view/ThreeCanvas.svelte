@@ -17,7 +17,7 @@
 	import type { CurrentPointData } from './utils';
 
 	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
-	import { isStreetView, DEBUG_MODE } from '$routes/store';
+	import { isStreetView, DEBUG_MODE } from '$routes/stores';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';

@@ -20,7 +20,7 @@ import { getLocationBbox } from '$routes/map/data/location_bbox';
 
 import turfBbox, { bbox } from '@turf/bbox';
 import { setMapParams, getMapParams, getParams } from '$routes/map/utils/params';
-import { DEBUG_MODE, isTerrain3d } from '$routes/store';
+import { DEBUG_MODE, isTerrain3d } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';

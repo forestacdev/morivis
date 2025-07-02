@@ -3,8 +3,8 @@
 	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { mapStore } from '$routes/store/map';
-	import { showLabelLayer } from '$routes/store/layers';
+	import { mapStore } from '$routes/stores/map';
+	import { showLabelLayer } from '$routes/stores/layers';
 
 	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';

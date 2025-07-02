@@ -2,7 +2,7 @@
 	import { ScaleControl } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleControl: ScaleControl | null = null;

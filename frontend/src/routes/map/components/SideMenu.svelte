@@ -9,14 +9,14 @@
 		mapMode,
 		showInfoDialog,
 		showTermsDialog
-	} from '$routes/store';
-	import { mapStore } from '$routes/store/map';
-	import { showNotification } from '$routes/store/notification';
-	import { isSideMenuType } from '$routes/store/ui';
-	import { isProcessing } from '$routes/store/ui';
+	} from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
+	import { isSideMenuType } from '$routes/stores/ui';
+	import { isProcessing } from '$routes/stores/ui';
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
-	import { transitionPageScreen } from '$routes/store/effect';
+	import { transitionPageScreen } from '$routes/stores/effect';
 	import { delay } from 'es-toolkit';
 
 	const toggleLayerMenu = () => {

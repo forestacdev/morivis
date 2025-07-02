@@ -17,10 +17,10 @@ import {
 	showLabelLayer,
 	showLoadLayer,
 	showContourLayer
-} from '$routes/store/layers';
+} from '$routes/stores/layers';
 import { get } from 'svelte/store';
 
-import { layerAttributions } from '$routes/store';
+import { layerAttributions } from '$routes/stores';
 import { type AttributionKey } from '$routes/map/data/attribution';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';

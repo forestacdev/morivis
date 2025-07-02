@@ -5,11 +5,11 @@
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
-	import { selectedLayerId, isStyleEdit } from '$routes/store';
-	import { isSideMenuType } from '$routes/store/ui';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { isSideMenuType } from '$routes/stores/ui';
 
 	let {
 		featureMenuData = $bindable(),

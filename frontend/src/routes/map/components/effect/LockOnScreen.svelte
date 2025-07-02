@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { showLockOnScreen } from '$routes/store/effect';
+	import { showLockOnScreen } from '$routes/stores/effect';
 </script>
 
 {#if $showLockOnScreen}

@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 
 import type { ParseResult } from 'papaparse';
-import { showNotification } from '$routes/store/notification';
+import { showNotification } from '$routes/stores/notification';
 
 /**
  * CSVファイルから読み込んだデータをGeoJSON形式に変換する

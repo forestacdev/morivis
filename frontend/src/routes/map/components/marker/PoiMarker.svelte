@@ -3,7 +3,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/map/data/prop_data';
-	import { mapStore, isHoverPoiMarker } from '$routes/store/map';
+	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
 	import { fade, fly } from 'svelte/transition';
 
 	interface Props {

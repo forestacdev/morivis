@@ -18,8 +18,8 @@
 
 	import fragmentShaderSource from '$routes/CanvasLayer/shader/fragment.glsl?raw';
 	import vertexShaderSource from '$routes/CanvasLayer/shader/vertex.glsl?raw';
-	import { selectedHighlightData, type SelectedHighlightData } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
+	import { selectedHighlightData, type SelectedHighlightData } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/file/geojson';
 
 	let element = $state<HTMLCanvasElement | null>(null);

@@ -7,7 +7,7 @@
 	import { createVectorTileEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import { showDataMenu } from '$routes/store';
+	import { showDataMenu } from '$routes/stores';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

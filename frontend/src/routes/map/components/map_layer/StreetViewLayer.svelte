@@ -12,8 +12,8 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 
-	import { showStreetViewLayer } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
+	import { showStreetViewLayer } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		map: maplibregl.Map;

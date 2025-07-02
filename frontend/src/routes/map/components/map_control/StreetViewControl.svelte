@@ -2,8 +2,8 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	import { showStreetViewLayer } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
+	import { showStreetViewLayer } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import type { LngLatBoundsLike } from 'maplibre-gl';
 

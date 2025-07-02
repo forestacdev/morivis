@@ -14,8 +14,8 @@
 		selectedLayerId,
 		isStyleEdit,
 		showDataMenu
-	} from '$routes/store';
-	import { isSideMenuType } from '$routes/store/ui';
+	} from '$routes/stores';
+	import { isSideMenuType } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';

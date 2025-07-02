@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import { notificationMessage } from '$routes/store/notification';
+	import { notificationMessage } from '$routes/stores/notification';
 
 	let timeoutId: ReturnType<typeof setTimeout>;
 	let bgcolor = $state<string>('');

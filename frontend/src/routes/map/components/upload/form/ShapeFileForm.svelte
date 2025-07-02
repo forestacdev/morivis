@@ -6,8 +6,8 @@
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showNotification } from '$routes/store/notification';
-	import { isProcessing } from '$routes/store/ui';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 
 	interface Props {

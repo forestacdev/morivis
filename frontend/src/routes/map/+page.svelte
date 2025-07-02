@@ -69,10 +69,10 @@
 		isStyleEdit,
 		isTerrain3d,
 		DEBUG_MODE
-	} from '$routes/store';
-	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
-	import { isSideMenuType } from '$routes/store/ui';
+	} from '$routes/stores';
+	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
+	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';

@@ -7,7 +7,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/store';
+	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
 	import {
 		getLayerType,
 		groupedLayerStore,
@@ -17,11 +17,11 @@
 		showLoadLayer,
 		typeBreakIndices,
 		type LayerType
-	} from '$routes/store/layers';
-	import { showLabelLayer } from '$routes/store/layers';
-	import { isSideMenuType } from '$routes/store/ui';
-	import { resetLayersConfirm, showConfirmDialog } from '$routes/store/confirmation';
-	import { isTerrain3d } from '$routes/store';
+	} from '$routes/stores/layers';
+	import { showLabelLayer } from '$routes/stores/layers';
+	import { isSideMenuType } from '$routes/stores/ui';
+	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
+	import { isTerrain3d } from '$routes/stores';
 
 	import { gsap } from 'gsap';
 

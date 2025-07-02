@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { mapStore } from '$routes/store/map';
-	import { transitionPageScreen } from '$routes/store/effect';
+	import { mapStore } from '$routes/stores/map';
+	import { transitionPageScreen } from '$routes/stores/effect';
 
 	interface props {
 		initialized(): void;

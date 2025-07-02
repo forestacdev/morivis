@@ -8,7 +8,7 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/store';
+	import { showDataMenu } from '$routes/stores';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

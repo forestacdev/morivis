@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import { showNotification } from '$routes/store/notification';
+	import { showNotification } from '$routes/stores/notification';
 	let { key, value } = $props();
 
 	let isHover = $state<boolean>(false);

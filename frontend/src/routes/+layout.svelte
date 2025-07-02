@@ -11,11 +11,11 @@
 	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
-	import { showTermsDialog } from '$routes/store';
+	import { showTermsDialog } from '$routes/stores';
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
-	import { transitionPageScreen } from '$routes/store/effect';
+	import { transitionPageScreen } from '$routes/stores/effect';
 
 	onNavigate((navigation) => {
 		// NOTE: URLパラメータの変更のみ無効

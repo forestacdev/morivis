@@ -8,7 +8,7 @@
 	import { MAP_FONT_DATA_PATH, MAP_POSITION } from '$routes/constants';
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/store/map';
+	import { mapStore } from '$routes/stores/map';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { getGeojson, getFgbToGeojson } from '$routes/map/utils/file/geojson';
 	import { isBBoxOverlapping, isBBoxInside } from '$routes/map/utils/map';

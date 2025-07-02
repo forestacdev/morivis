@@ -1,5 +1,5 @@
 <script>
-	import { tooltip } from '$routes/store/tooltip';
+	import { tooltip } from '$routes/stores/tooltip';
 </script>
 
 {#if $tooltip.visible}

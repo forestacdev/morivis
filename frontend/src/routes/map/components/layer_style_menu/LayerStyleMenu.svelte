@@ -8,9 +8,9 @@
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit } from '$routes/store';
-	import { orderedLayerIds } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { orderedLayerIds } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
