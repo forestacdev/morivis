@@ -42,7 +42,7 @@
 	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
 	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
-	import FooterMenu from '$routes/map/components/footer/_Index.svelte';
+	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/_Index.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
