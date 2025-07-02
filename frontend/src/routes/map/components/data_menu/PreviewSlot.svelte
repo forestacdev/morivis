@@ -11,7 +11,7 @@
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import turfBbox from '@turf/bbox';
-	import { handleStyleImageMissing } from '$routes/map/utils/icon';
+
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 
 	interface Props {
@@ -95,9 +95,6 @@
 
 			bounds: bbox
 		});
-
-		// TODO: 使用してない
-		// map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
 
 		// function rotateCamera(timestamp) {
 		// 	// clamp the rotation between 0 -360 degrees

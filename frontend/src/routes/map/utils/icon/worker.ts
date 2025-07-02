@@ -1,5 +1,5 @@
-import vertexShaderSource from './shader/vertex.glsl?raw';
-import fragmentShaderSource from './shader/fragment.glsl?raw';
+import vertexShaderSource from './shaders/vertex.glsl?raw';
+import fragmentShaderSource from './shaders/fragment.glsl?raw';
 
 // シェーダーをコンパイルしてプログラムをリンク
 const createShader = (

@@ -186,7 +186,7 @@ export const getRasters = async (
 	  }
 	| undefined
 > => {
-	const worker = new Worker(new URL('./convert-worker.ts', import.meta.url), {
+	const worker = new Worker(new URL('./convert.worker.ts', import.meta.url), {
 		type: 'module'
 	});
 	try {
@@ -229,7 +229,7 @@ export const getRasters = async (
 	}
 };
 
-const rebderWorker = new Worker(new URL('./render-worker.ts', import.meta.url), {
+const rebderWorker = new Worker(new URL('./render.worker.ts', import.meta.url), {
 	type: 'module'
 });
 

@@ -274,9 +274,6 @@ const createMapStore = () => {
 			zoomEvent.set(zoom);
 		});
 
-		// TODO: 使用してない
-		// map.on('styleimagemissing', (e) => handleStyleImageMissing(e, map));
-
 		initEvent.set(map);
 	};
 

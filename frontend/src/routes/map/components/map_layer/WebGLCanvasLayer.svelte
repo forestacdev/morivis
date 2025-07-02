@@ -1,28 +1,13 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-	import turfBbox from '@turf/bbox';
-	import turfDissolve from '@turf/dissolve';
-	import turfUnion from '@turf/union';
 	import earcut from 'earcut'; // earcutをインポート
-	import { set } from 'es-toolkit/compat';
 	import type { FeatureCollection, Feature } from 'geojson';
 	import { mat4 } from 'gl-matrix';
-	import type {
-		CanvasSourceSpecification,
-		CanvasSource,
-		MapGeoJSONFeature,
-		LngLatLike,
-		LngLatBounds,
-		Map as MapLibreMap
-	} from 'maplibre-gl';
+	import type { CanvasSourceSpecification, CanvasSource, Map as MapLibreMap } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import fragmentShaderSource from './shader/fragment.glsl?raw';
-	import vertexShaderSource from './shader/vertex.glsl?raw';
-
-	import { selectedHighlightData, type SelectedHighlightData } from '$routes/store';
-	import { mapStore } from '$routes/store/map';
+	import fragmentShaderSource from './shaders/fragment.glsl?raw';
+	import vertexShaderSource from './shaders/vertex.glsl?raw';
 
 	interface Props {
 		map: MapLibreMap | null;

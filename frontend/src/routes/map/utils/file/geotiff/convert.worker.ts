@@ -1,5 +1,3 @@
-// convert-worker.ts
-
 self.onmessage = (e) => {
 	const { rasters, width, height } = e.data as {
 		rasters: (Uint8Array | Uint16Array | Float32Array)[];

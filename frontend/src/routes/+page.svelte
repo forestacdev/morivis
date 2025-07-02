@@ -8,8 +8,8 @@
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 	import { transitionPageScreen } from '$routes/store/effect';
 
-	import fragmentShader from './shader/fragment.glsl?raw';
-	import vertexShader from './shader/vertex.glsl?raw';
+	import fragmentShader from './shaders/fragment.glsl?raw';
+	import vertexShader from './shaders/vertex.glsl?raw';
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';

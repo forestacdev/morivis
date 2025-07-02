@@ -1,6 +1,6 @@
-import vertexShaderSource from './shader/vertex.glsl?raw';
-import fsMulchSource from './shader/fragment_mulch.glsl?raw';
-import fsShingleSource from './shader/fragment_shingle.glsl?raw';
+import vertexShaderSource from './shaders/vertex.glsl?raw';
+import fsMulchSource from './shaders/fragment_mulch.glsl?raw';
+import fsShingleSource from './shaders/fragment_shingle.glsl?raw';
 
 const combineFloatBandsToTexture2DArray = (
 	bands: Float32Array[],

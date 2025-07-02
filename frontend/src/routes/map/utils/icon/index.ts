@@ -32,6 +32,7 @@ const loadImage = async (src: string): Promise<ImageBitmap> => {
 	return await createImageBitmap(blob);
 };
 
+// TODO: 使用していない
 export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
 	if (!map) return;
 	mapLibreMap = map;
