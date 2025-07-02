@@ -7,7 +7,7 @@
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let observer;
-	let controlState: string = '';
+	let controlState = $state<string>('');
 
 	const handleClassChange = (mutations: MutationRecord[]) => {
 		const mutation = mutations[0];

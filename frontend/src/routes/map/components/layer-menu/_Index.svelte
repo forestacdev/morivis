@@ -213,9 +213,4 @@
 	</div>
 {/if}
 
-<style>
-	.c-fog {
-		background: rgb(233, 233, 233);
-		background: linear-gradient(0deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
-	}
-</style>
+

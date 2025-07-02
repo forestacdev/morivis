@@ -121,7 +121,7 @@
 </script>
 
 <div
-	class="relative mb-4 flex aspect-square shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2"
+	class="relative mb-4 flex aspect-square shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2 transition-all duration-150 hover:z-10 hover:rotate-2 hover:scale-110 hover:bg-amber-50 hover:shadow-lg"
 	bind:this={container}
 >
 	<button
