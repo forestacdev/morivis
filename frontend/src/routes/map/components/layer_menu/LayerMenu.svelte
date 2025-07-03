@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
@@ -149,8 +148,9 @@
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<!-- この index はタイプの切り替え地点 -->
+
 					{#if $typeBreakIndices[i]}
-						<!-- この index はタイプの切り替え地点 -->
 						<div class="mb-1 mt-2 flex items-center gap-2 border-t border-gray-400 p-2 text-base">
 							<Icon
 								icon={TYPE_ICONS[$typeBreakIndices[i]]}
@@ -166,6 +166,7 @@
 							{/if}
 						</div>
 					{/if}
+
 					<LayerSlot
 						{isSmall}
 						bind:layerEntry={layerEntries[i]}

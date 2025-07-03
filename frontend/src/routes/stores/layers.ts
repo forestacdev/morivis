@@ -161,7 +161,7 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 			return 'polygon';
 		}
 	} else {
-		throw new Error(`Unknown layer type: ${_dataEntry.id}`);
+		throw new Error(`Unknown layer type: ${_dataEntry}`);
 	}
 };
 
