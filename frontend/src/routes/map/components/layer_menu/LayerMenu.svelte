@@ -105,61 +105,63 @@
 </script>
 
 <!-- レイヤーメニュー -->
-{#if $isSideMenuType === 'layer'}
+
+<div
+	bind:this={container}
+	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
+	class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150 {$isSideMenuType ===
+	'layer'
+		? 'translate-x-0'
+		: '-translate-x-[400px]'}"
+>
 	<div
-		bind:this={container}
-		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150"
+		class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
+			? 'c-scroll-hidden '
+			: 'c-scroll'}"
 	>
-		<div
-			class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
-				? 'c-scroll-hidden '
-				: 'c-scroll'}"
-		>
-			{#each layerEntries as layerEntry, i (layerEntry.id)}
-				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-					<LayerSlot
-						{isSmall}
-						bind:layerEntry={layerEntries[i]}
-						bind:showDataEntry
-						bind:tempLayerEntries
-						bind:enableFlip
-					/>
-				</div>
-			{/each}
-			{#if !isSmall}
-				<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
-					<Switch label="ラベル" bind:value={$showLabelLayer} />
-					<Switch label="道路" bind:value={$showLoadLayer} />
-					<Switch label="等高線" bind:value={$showContourLayer} />
-					<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
-					<Switch label="陰影" bind:value={$showHillshadeLayer} />
-					<Switch label="3D" bind:value={$isTerrain3d} />
-				</div>
-			{/if}
-			<div class="h-[200px] w-full shrink-0"></div>
-		</div>
+		{#each layerEntries as layerEntry, i (layerEntry.id)}
+			<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+				<LayerSlot
+					{isSmall}
+					bind:layerEntry={layerEntries[i]}
+					bind:showDataEntry
+					bind:tempLayerEntries
+					bind:enableFlip
+				/>
+			</div>
+		{/each}
 		{#if !isSmall}
-			<div
-				class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
-			>
-				{#if !$showDataMenu}
-					<button
-						onclick={resetLayers}
-						class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
-					>
-						<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
-					</button>
-					<button
-						onclick={() => showDataMenu.set(true)}
-						class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"
-					>
-						<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
-							>データの追加</span
-						>
-					</button>
-				{/if}
+			<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
+				<Switch label="ラベル" bind:value={$showLabelLayer} />
+				<Switch label="道路" bind:value={$showLoadLayer} />
+				<Switch label="等高線" bind:value={$showContourLayer} />
+				<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
+				<Switch label="陰影" bind:value={$showHillshadeLayer} />
+				<Switch label="3D" bind:value={$isTerrain3d} />
 			</div>
 		{/if}
+		<div class="h-[200px] w-full shrink-0"></div>
 	</div>
-{/if}
+	{#if !isSmall}
+		<div
+			class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
+		>
+			{#if !$showDataMenu}
+				<button
+					onclick={resetLayers}
+					class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
+				>
+					<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
+				</button>
+				<button
+					onclick={() => showDataMenu.set(true)}
+					class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
+						>データの追加</span
+					>
+				</button>
+			{/if}
+		</div>
+	{/if}
+</div>

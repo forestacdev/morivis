@@ -16,9 +16,6 @@ export const clickableVectorIds = writable<string[]>([]);
 /* クリックイベントを発火するラスターレイヤーID */
 export const clickableRasterIds = writable<string[]>([]);
 
-/**  レイヤーの出典表示 */
-export const layerAttributions = writable<string[]>([]);
-
 /**  デバッグモード */
 export const DEBUG_MODE = writable<boolean>(false);
 

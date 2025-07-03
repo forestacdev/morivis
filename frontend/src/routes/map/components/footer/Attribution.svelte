@@ -6,14 +6,16 @@
 		type AttributionKey,
 		type Attribution
 	} from '$routes/map/data/attribution';
-	import { layerAttributions } from '$routes/stores';
+	import { layerAttributions } from '$routes/stores/attributions';
+	import { update } from 'es-toolkit/compat';
+	import { debounce } from 'es-toolkit';
 
 	let attributions = $state<Attribution[]>([]);
 
-	layerAttributions.subscribe((layerAttributions) => {
-		const newAttributions = layerAttributions
-			.map((attribution) => {
-				const atl = attributionMap.get(attribution);
+	const updateAttributions = debounce((items: AttributionKey[]) => {
+		const newAttributions = items
+			.map((item) => {
+				const atl = attributionMap.get(item);
 				if (atl) return atl; // `atl` が存在する場合のみ `name` を返す
 				return undefined; // 明示的に `undefined` を返す（型推論のため）
 			})
@@ -22,7 +24,34 @@
 		if (newAttributions.length > 0) {
 			attributions = newAttributions;
 		}
+	}, 100);
+
+	// 基本的な関数
+	const extractUniqueKeys = (data: { id: string; key: string }[]): AttributionKey[] => {
+		return [...new Set(data.map((item) => item.key))] as AttributionKey[];
+	};
+
+	layerAttributions.subscribe((items) => {
+		console.log('Attributions updated:', items);
+
+		updateAttributions(extractUniqueKeys(items));
 	});
+
+	// layerAttributions.subscribe((layerAttributions) => {
+	// 	const newAttributions = layerAttributions
+	// 		.map((attribution) => {
+	// 			const atl = attributionMap.get(attribution.key);
+	// 			if (atl) return atl; // `atl` が存在する場合のみ `name` を返す
+	// 			return undefined; // 明示的に `undefined` を返す（型推論のため）
+	// 		})
+	// 		.filter((atl): atl is Attribution => atl !== undefined); // `undefined` を除外
+
+	// 	if (newAttributions.length > 0) {
+	// 		attributions = newAttributions;
+	// 	}
+
+	// 	console.log('Attributions updated:', attributions);
+	// });
 </script>
 
 {#if attributions}

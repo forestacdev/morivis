@@ -20,9 +20,6 @@ import {
 } from '$routes/stores/layers';
 import { get } from 'svelte/store';
 
-import { layerAttributions } from '$routes/stores';
-import { type AttributionKey } from '$routes/map/data/attribution';
-
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
 import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
@@ -232,28 +229,15 @@ export const createSourcesItems = async (
 		})
 	);
 
-	// 出典表示のための Set
-	const attributions: Set<AttributionKey> = new Set();
-
 	// インデックス順に並び替え
 	const sortedItems = sourceItemsArray
 		.sort((a, b) => a.index - b.index) // インデックス順にソート
 		.map((item) => {
-			const sourceId = Object.keys(item.items)[0];
-			// NOTE: attributionは必須なので存在することを前提とする
-			const source = item.items[sourceId] as RasterSourceSpecification;
-			const attributionKey = source.attribution as AttributionKey;
-
-			attributions.add(attributionKey);
-
 			return item.items;
 		}); // items だけを抽出
 
 	// 配列をオブジェクトに統合
 	const sourceItems = Object.assign({}, ...sortedItems);
-
-	// 出典表示を store に保存
-	if (attributions.size > 0) layerAttributions.set(Array.from(attributions));
 
 	// ラベルのソースを追加
 	const isGsiSource =

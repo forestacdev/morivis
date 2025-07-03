@@ -50,7 +50,7 @@
 	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
 		>キャンセル
 	</button>
-	{#if showDataEntry && activeLayerIdsStore.has(showDataEntry.id)}
+	{#if showDataEntry}
 		<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
 			>地図に追加
 		</button>

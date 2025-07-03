@@ -15,6 +15,7 @@
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
+	import { layerAttributions } from '$routes/stores/attributions';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
@@ -191,8 +192,21 @@
 		}
 	};
 
+	$effect(() => {
+		if (isLayerInRange) {
+			const attributionItem = {
+				id: layerEntry.id,
+				key: layerEntry.metaData.attribution
+			};
+			layerAttributions.add(attributionItem);
+		} else {
+			layerAttributions.remove(layerEntry.id);
+		}
+	});
+
 	onMount(() => {
 		const state = mapStore.getState();
+
 		checkRange(state);
 	});
 
