@@ -8,14 +8,10 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
 	import {
-		getLayerType,
-		groupedLayerStore,
 		showBoundaryLayer,
 		showContourLayer,
 		showHillshadeLayer,
-		showLoadLayer,
-		typeBreakIndices,
-		type LayerType
+		showLoadLayer
 	} from '$routes/stores/layers';
 	import { showLabelLayer } from '$routes/stores/layers';
 	import { isSideMenuType } from '$routes/stores/ui';
@@ -39,7 +35,6 @@
 	}: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
-	let dragEnterType = $state(null); // ドラッグ中のレイヤーのタイプ
 	let container = $state<HTMLElement | null>(null); // コンテナ要素
 
 	const TYPE_LABELS = {
@@ -107,31 +102,6 @@
 			isSideMenuType.set('layer');
 		}
 	});
-
-	// const groupByType = (entries: GeoDataEntry[]) => {
-	// 	const groups: { type: LayerType; entries: GeoDataEntry[] }[] = [];
-
-	// 	let currentType: LayerType | undefined = undefined;
-	// 	let currentGroup: { type: LayerType; entries: GeoDataEntry[] } | undefined = undefined;
-
-	// 	for (const entry of entries) {
-	// 		const type = groupedLayerStore.getType(entry.id); // ← ここで辞書逆引き
-
-	// 		if (type !== currentType) {
-	// 			currentType = type;
-	// 			currentGroup = { type, entries: [] };
-	// 			groups.push(currentGroup);
-	// 		}
-
-	// 		currentGroup?.entries.push(entry);
-	// 	}
-
-	// 	return groups;
-	// };
-
-	// let groupedEntries = $derived.by(() => {
-	// 	return groupByType(layerEntries);
-	// });
 </script>
 
 <!-- レイヤーメニュー -->
@@ -148,32 +118,12 @@
 		>
 			{#each layerEntries as layerEntry, i (layerEntry.id)}
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-					<!-- この index はタイプの切り替え地点 -->
-
-					{#if $typeBreakIndices[i]}
-						<div class="mb-1 mt-2 flex items-center gap-2 border-t border-gray-400 p-2 text-base">
-							<Icon
-								icon={TYPE_ICONS[$typeBreakIndices[i]]}
-								class="pointer-events-none"
-								width={20}
-							/>
-							{#if !isSmall}
-								<span
-									in:slide={{ duration: 200, delay: 200, axis: 'x' }}
-									out:slide={{ duration: 200, axis: 'x' }}
-									class="h-[20px]">{TYPE_LABELS[$typeBreakIndices[i]]}</span
-								>
-							{/if}
-						</div>
-					{/if}
-
 					<LayerSlot
 						{isSmall}
 						bind:layerEntry={layerEntries[i]}
 						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
-						bind:dragEnterType
 					/>
 				</div>
 			{/each}
@@ -193,7 +143,7 @@
 			<div
 				class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
 			>
-				{#if !dragEnterType && !$showDataMenu}
+				{#if !$showDataMenu}
 					<button
 						onclick={resetLayers}
 						class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"

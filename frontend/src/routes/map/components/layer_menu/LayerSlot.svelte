@@ -9,13 +9,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
-	import {
-		orderedLayerIds,
-		groupedLayerStore,
-		getLayerType,
-		reorderStatus,
-		type LayerType
-	} from '$routes/stores/layers';
+	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { getLocationBbox } from '$routes/map/data/location_bbox';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
@@ -27,7 +21,7 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
-		dragEnterType: LayerType | null;
+
 		isSmall: boolean; // レイヤースロットのサイズを小さくするかどうか
 	}
 
@@ -36,7 +30,7 @@
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
-		dragEnterType = $bindable(),
+
 		isSmall
 	}: Props = $props();
 	let showLegend = $state(false);
@@ -46,24 +40,6 @@
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
 	let isLayerInRange = $state(false);
-
-	let layerType = $derived.by((): LayerType | unknown => {
-		if (layerEntry) {
-			if (layerEntry.type === 'raster') {
-				return 'raster';
-			} else if (layerEntry.type === 'vector') {
-				if (layerEntry.format.geometryType === 'Label') {
-					return 'label';
-				} else if (layerEntry.format.geometryType === 'Point') {
-					return 'point';
-				} else if (layerEntry.format.geometryType === 'LineString') {
-					return 'line';
-				} else if (layerEntry.format.geometryType === 'Polygon') {
-					return 'polygon';
-				}
-			}
-		}
-	});
 
 	let LayerBbox = $derived.by(() => {
 		if (layerEntry && layerEntry.metaData.bounds) {
@@ -104,16 +80,15 @@
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
 		tempLayerEntries = [...tempLayerEntries, copy];
-		const type = getLayerType(copy);
-		if (!type) return;
-		groupedLayerStore.add(uuid, type);
+
+		activeLayerIdsStore.add(uuid);
 	};
 
 	// レイヤーの削除
 	const removeLayer = () => {
 		$isStyleEdit = false;
 		if (!layerEntry) return;
-		groupedLayerStore.remove(layerEntry.id);
+		activeLayerIdsStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
 
@@ -162,14 +137,14 @@
 		isDragging = true;
 		enableFlip = false;
 		showLegend = false;
-		dragEnterType = layerType as LayerType;
+
 		selectedLayerId.set(layerId);
 	};
 
 	// ドラッグ中のレイヤーを取得
 	const dragEnter = (layerId: string) => {
 		if (layerId && $selectedLayerId !== layerId) {
-			groupedLayerStore.reorderWithinTypeById(layerType as LayerType, $selectedLayerId, layerId);
+			activeLayerIdsStore.reorder($selectedLayerId, layerId);
 		}
 	};
 
@@ -177,7 +152,7 @@
 	const dragEnd = () => {
 		isDragging = false;
 		enableFlip = true;
-		dragEnterType = null;
+
 		reorderStatus.set('idle');
 	};
 
@@ -228,9 +203,8 @@
 
 <div
 	class="relative flex flex-col p-2
-		transition-colors {dragEnterType !== null && dragEnterType !== layerType
-		? 'opacity-50'
-		: ''} {isDragging ? 'c-dragging-style' : ''} {$selectedLayerId === layerEntry.id && isSmall
+		transition-colors {isDragging ? 'c-dragging-style' : ''} {$selectedLayerId === layerEntry.id &&
+	isSmall
 		? 'c-fog'
 		: ''}"
 	draggable={draggingEnabled}

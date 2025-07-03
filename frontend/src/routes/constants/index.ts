@@ -81,7 +81,6 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 /** クリックさせないlayerのid */
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
-// TODO: 使用していない
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
@@ -93,10 +92,11 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_road2',
 	// 'gsi_road',
 	'ensyurin_rinhan',
+	'ensyurin_photo'
 	// 'dem_5a',
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
-	'gsi_rinya_m',
-	'gsi_seamlessphoto'
+	// 'gsi_rinya_m',
+	// 'gsi_seamlessphoto'
 	// 'gsi_std'
 ];

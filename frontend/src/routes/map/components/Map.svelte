@@ -38,8 +38,8 @@
 	import { DEBUG_MODE, isStreetView } from '$routes/stores';
 	import { mapMode, isTerrain3d } from '$routes/stores';
 	import {
-		getLayersGroup,
-		groupedLayerStore,
+		activeLayerIdsStore,
+		getEntryIds,
 		showBoundaryLayer,
 		showContourLayer,
 		showLabelLayer,
@@ -47,7 +47,7 @@
 		showStreetViewLayer
 	} from '$routes/stores/layers';
 	import { showHillshadeLayer } from '$routes/stores/layers';
-	import { orderedLayerIds } from '$routes/stores/layers';
+
 	import { mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -297,8 +297,8 @@
 			// ローカルストレージからのレイヤーエントリーが存在する場合はそれを使用
 			if (localEntries && localEntries.length > 0) {
 				layerEntries = localEntries;
-				const layersGroup = getLayersGroup(layerEntries);
-				groupedLayerStore.setLayers(layersGroup);
+				const ids = getEntryIds(layerEntries);
+				activeLayerIdsStore.setLayers(ids);
 			}
 		}
 

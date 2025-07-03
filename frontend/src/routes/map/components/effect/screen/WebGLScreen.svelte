@@ -18,7 +18,7 @@
 			return;
 		}
 		const offscreen = canvas.transferControlToOffscreen();
-		const worker = new Worker(new URL('./webgl-worker.ts', import.meta.url), {
+		const worker = new Worker(new URL('./webgl.worker.ts', import.meta.url), {
 			type: 'module'
 		});
 

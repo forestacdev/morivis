@@ -56,7 +56,7 @@
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import UploadDaialog from '$routes/map/components/upload/BaseDaialog.svelte';
+	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -69,7 +69,7 @@
 		isTerrain3d,
 		DEBUG_MODE
 	} from '$routes/stores';
-	import { groupedLayerStore, orderedLayerIds, showStreetViewLayer } from '$routes/stores/layers';
+	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -229,7 +229,7 @@
 	// レイヤーエントリーをリセット
 	const resetlayerEntries = () => {
 		layerEntries = [];
-		groupedLayerStore.reset();
+		activeLayerIdsStore.reset();
 		selectedLayerId.set('');
 		mapStore.jumpToFac();
 	};
@@ -318,7 +318,7 @@
 	});
 
 	// レイヤーの追加、削除、並び替えを行う
-	orderedLayerIds.subscribe((newOrderedIds) => {
+	activeLayerIdsStore.subscribe((newOrderedIds) => {
 		const currentLayerEntries = [...layerEntries];
 
 		// 現在の layerEntries をIDをキーとしたマップに変換し、既存のレイヤーオブジェクトを素早く参照できるようにする
@@ -331,11 +331,12 @@
 
 			if (layer) {
 				// 既存の layerEntries にそのレイヤーがあれば、そのオブジェクトをそのまま利用する
-				// これにより、そのレイヤーオブジェクトに対するプロパティの変更（例: active: false など）が保持されます。
+				// そのレイヤーオブジェクトに対するプロパティの変更が保持される
 				newLayerEntries.push(layer);
 			} else {
 				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
 				layer = layerEntriesData.find((entry) => entry.id === id);
+
 				if (layer) {
 					// layerEntriesData から取得したオブジェクトを、初期状態として追加
 
@@ -431,7 +432,7 @@
 		/>
 	</div>
 {/if}
-<UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
+<UploadDialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
 
 <Tooltip />
 <SideMenu />

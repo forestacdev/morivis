@@ -5,13 +5,13 @@
 	import { IMAGE_TILE_XYZ } from '$routes/constants';
 	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { getLayerType } from '$routes/stores/layers';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
 	import { getImagePmtiles } from '$routes/map/utils/raster';
 	import PreviewSlot from '$routes/map/components/data_menu/PreviewSlot.svelte';
 	import { convertTmsToXyz } from '$routes/map/utils/sources';
 	import { xyzToWMSXYZ } from '$routes/map/utils/tile';
+
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -24,12 +24,8 @@
 
 	let isHover = $state(false);
 
-	let addedDataIds = $state<string[]>($orderedLayerIds);
 	let isAdded = $derived.by(() => {
-		if (addedDataIds) {
-			return addedDataIds.includes(dataEntry.id);
-		}
-		return false;
+		return $activeLayerIdsStore.includes(dataEntry.id);
 	});
 	let container = $state<HTMLElement | null>(null);
 
@@ -53,15 +49,6 @@
 		}
 	});
 
-	let layerType = $derived.by((): LayerType | unknown => {
-		if (dataEntry) {
-			return getLayerType(dataEntry);
-		}
-	});
-
-	orderedLayerIds.subscribe((value) => {
-		addedDataIds = value;
-	});
 	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
 		if (_layerEntry.type !== 'raster') {
 			// raster タイプ以外の場合は undefined を返す
@@ -111,12 +98,11 @@
 	};
 
 	const addData = (id: string) => {
-		if (!layerType) return;
-		groupedLayerStore.add(id, layerType as LayerType);
+		activeLayerIdsStore.add(id);
 		showNotification(`${dataEntry.metaData.name}を追加しました`, 'success');
 	};
 	const deleteData = (id: string) => {
-		groupedLayerStore.remove(id);
+		activeLayerIdsStore.remove(id);
 	};
 </script>
 

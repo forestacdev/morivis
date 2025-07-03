@@ -1,10 +1,11 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { geojson as fgb } from 'flatgeobuf';
-import { orderedLayerIds } from '$routes/stores/layers';
+
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureMenuData } from '$routes/map/types';
+import { activeLayerIdsStore } from '$routes/stores/layers';
 
 export type GeoJSONGeometryType =
 	| 'Point'
@@ -167,7 +168,7 @@ export class GeojsonCache {
 }
 
 // レイヤーメニューから削除されたgeojsonデータを削除
-orderedLayerIds.subscribe((ids) => {
+activeLayerIdsStore.subscribe((ids) => {
 	// GeojsonCacheからidsに含まれていないものを削除
 	for (const id of GeojsonCache.keys()) {
 		if (!ids.includes(id)) {

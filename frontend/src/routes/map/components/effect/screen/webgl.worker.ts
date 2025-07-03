@@ -1,7 +1,6 @@
 import fragmentShaderSource from '$routes/map/components/effect/screen/shaders/fragment.glsl?raw';
 import vertexShaderSource from '$routes/map/components/effect/screen/shaders/vertex.glsl?raw';
 
-let startTime: number;
 let gl: WebGLRenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let time: WebGLUniformLocation | null = null;

@@ -1,132 +1,82 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
-
-// 配列を自動ソートする ラスターが下になるように
-export type LayerType = 'label' | 'point' | 'line' | 'polygon' | 'raster';
-
-const TYPE_ORDER: LayerType[] = ['label', 'point', 'line', 'polygon', 'raster'];
-
-interface GroupedLayers {
-	label: string[];
-	point: string[];
-	line: string[];
-	polygon: string[];
-	raster: string[];
-}
+import { INT_ADD_LAYER_IDS } from '$routes/constants';
+import type { LayerType } from './_layers_group';
+import { has } from 'es-toolkit/compat';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
 export const reorderStatus = writable<ReorderStatus>('idle');
 
 const createLayerStore = () => {
-	// const initialState: GroupedLayers = {
-	// 	label: [],
-	// 	point: [],
-	// 	line: [],
-	// 	polygon: [],
-	// 	raster: ['ensyurin_dem']
-	// };
-
-	const initialState: GroupedLayers = {
-		label: [],
-		point: [],
-		line: ['ensyurin_road2'],
-		polygon: ['fr_mesh20m_hyogo', 'ensyurin_rinhan', 'tree_species_tochigi'],
-		raster: ['ensyurin_photo']
-	};
-
-	const store = writable<GroupedLayers>({ ...initialState });
+	const store = writable<string[]>([...INT_ADD_LAYER_IDS]);
 	const { subscribe, update, set } = store;
 
 	return {
 		subscribe,
 
-		setLayers: (layers: GroupedLayers) => {
+		setLayers: (layers: string[]) => {
 			// GeojsonCacheの初期化
 			GeojsonCache.clear();
 			// ストアの値を更新
-			set({ ...layers }); // または set((state) => ({ ...state, layers }))
+			set(layers); // または set((state) => ({ ...state, layers }))
 		},
 
 		// 追加
-		add: (id: string, type: LayerType) =>
+		add: (id: string) =>
 			update((layers) => {
-				if (!layers[type].includes(id)) {
-					layers[type] = [id, ...layers[type]];
+				if (!layers.includes(id)) {
+					layers = [id, ...layers];
 				}
-				return { ...layers };
+				return layers;
 			}),
-		getType: (id: string): LayerType | undefined => {
-			const layers = get(store); // ✅ ストアの現在値を取得
-			for (const type of TYPE_ORDER) {
-				if (layers[type].includes(id)) {
-					return type;
-				}
-			}
-			return undefined;
+		has: (id: string) => {
+			// IDがストアに存在するかチェック
+			return get(store).includes(id);
 		},
 
 		// 削除
 		remove: (id: string) =>
 			update((layers) => {
-				for (const type of TYPE_ORDER) {
-					layers[type] = layers[type].filter((l) => l !== id);
-				}
-
+				const newLayers = layers.filter((layerId) => layerId !== id);
+				// GeojsonCacheからも削除
 				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
 
-				return { ...layers };
+				return newLayers;
 			}),
 
 		// 並び替え（タイプ内）
-		reorderWithinTypeById: (type: LayerType, fromId: string, toId: string) =>
+		reorder: (fromId: string, toId: string) =>
 			update((layers) => {
-				const list = [...layers[type]];
-				const fromIndex = list.indexOf(fromId);
-				const toIndex = list.indexOf(toId);
+				const fromIndex = layers.indexOf(fromId);
+				const toIndex = layers.indexOf(toId);
 
 				// 両方存在し、かつ違う位置でなければ無視
 				if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
 					reorderStatus.set('invalid');
-					return { ...layers };
+					return layers;
 				}
 
-				const item = list.splice(fromIndex, 1)[0];
-				list.splice(toIndex, 0, item);
+				const newLayers = [...layers];
+				const item = newLayers.splice(fromIndex, 1)[0];
+				newLayers.splice(toIndex, 0, item);
 
-				layers[type] = list;
 				reorderStatus.set('success');
-				return { ...layers };
+				return newLayers;
 			}),
 
 		// 完全リセット
-		reset: () => set({ ...initialState })
+		reset: () => set([...INT_ADD_LAYER_IDS])
 	};
 };
 
-export const groupedLayerStore = createLayerStore();
+/** 表示中レイヤーのIDを管理するストア */
+export const activeLayerIdsStore = createLayerStore();
 
-/** レイヤーidリスト Flat */
-export const orderedLayerIds = derived(groupedLayerStore, ($layers) =>
-	TYPE_ORDER.flatMap((type) => $layers[type])
-);
-
-/** レイヤータイプごとの区切りのインデックス */
-export const typeBreakIndices = derived(groupedLayerStore, ($layers) => {
-	const breaks: { [index: number]: LayerType } = {};
-	let index = 0;
-
-	for (const type of TYPE_ORDER) {
-		const items = $layers[type];
-		if (items.length > 0) {
-			breaks[index] = type;
-			index += items.length;
-		}
-	}
-
-	return breaks;
-});
+export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
+	return layerEntries.map((entry) => entry.id);
+};
 
 /** 道路レイヤー */
 export const showLoadLayer = writable<boolean>(true);
@@ -145,41 +95,3 @@ export const showHillshadeLayer = writable<boolean>(false);
 
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);
-
-/** レイヤータイプの取得 */
-export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
-	if (_dataEntry.type === 'raster') {
-		return 'raster';
-	} else if (_dataEntry.type === 'vector') {
-		if (_dataEntry.format.geometryType === 'Label') {
-			return 'label';
-		} else if (_dataEntry.format.geometryType === 'Point') {
-			return 'point';
-		} else if (_dataEntry.format.geometryType === 'LineString') {
-			return 'line';
-		} else if (_dataEntry.format.geometryType === 'Polygon') {
-			return 'polygon';
-		}
-	} else {
-		throw new Error(`Unknown layer type: ${_dataEntry}`);
-	}
-};
-
-export const getLayersGroup = (layerEntries: GeoDataEntry[]): GroupedLayers => {
-	const grouped: GroupedLayers = {
-		label: [],
-		point: [],
-		line: [],
-		polygon: [],
-		raster: []
-	};
-
-	for (const entry of layerEntries) {
-		const type = getLayerType(entry);
-		if (type) {
-			grouped[type].push(entry.id);
-		}
-	}
-
-	return grouped;
-};

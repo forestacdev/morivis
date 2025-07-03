@@ -7,8 +7,7 @@
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import type { LayerType } from '$routes/stores/layers';
-	import { groupedLayerStore } from '$routes/stores/layers';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
 	import { csvFileToGeojson } from '$routes/map/utils/file/csv';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';

@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	// formatDescription.ts
-
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showDataMenu } from '$routes/stores';
-	import { getLayerType } from '$routes/stores/layers';
-	import { orderedLayerIds, groupedLayerStore, type LayerType } from '$routes/stores/layers';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
-
-	let addedDataIds = $state<string[]>($orderedLayerIds);
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -27,16 +22,14 @@
 				tempLayerEntries = [...tempLayerEntries, copy];
 			}
 
-			const layerType = getLayerType(copy);
-
-			groupedLayerStore.add(copy.id, layerType as LayerType);
+			activeLayerIdsStore.add(copy.id);
 			showNotification(`${copy.metaData.name}を追加しました`, 'success');
 			showDataMenu.set(false);
 		}
 	};
 	const deleteData = () => {
 		if (showDataEntry) {
-			groupedLayerStore.remove(showDataEntry.id);
+			activeLayerIdsStore.remove(showDataEntry.id);
 			showDataEntry = null;
 		}
 	};
@@ -57,7 +50,7 @@
 	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
 		>キャンセル
 	</button>
-	{#if showDataEntry && !addedDataIds.includes(showDataEntry.id)}
+	{#if showDataEntry && activeLayerIdsStore.has(showDataEntry.id)}
 		<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
 			>地図に追加
 		</button>
