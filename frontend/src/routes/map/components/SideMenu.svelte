@@ -16,8 +16,8 @@
 	import { isProcessing } from '$routes/stores/ui';
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
-	import { transitionPageScreen } from '$routes/stores/effect';
-	import { delay } from 'es-toolkit';
+
+	import { isBlocked } from '$routes/stores/ui';
 
 	const toggleLayerMenu = () => {
 		showSideMenu.set(false);
@@ -55,12 +55,8 @@
 	};
 
 	const goHome = async () => {
-		// window.location.href = '/map';
-		transitionPageScreen.set(1);
-		await delay(1000);
-
+		showSideMenu.set(false);
 		goto('/');
-		transitionPageScreen.set(-1);
 	};
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
@@ -179,11 +175,12 @@
 				<Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span class="select-none">トップページへ</span>
 			</button> -->
-			<a
+			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				href="/"
+				onclick={goHome}
+				disabled={$isBlocked}
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
-				<span>トップページへ</span></a
+				<span>トップページへ</span></button
 			>
 		</ui>
 		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>

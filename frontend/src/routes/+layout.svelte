@@ -16,6 +16,7 @@
 	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
+	import { isBlocked } from '$routes/stores/ui';
 
 	onNavigate((navigation) => {
 		// NOTE: URLパラメータの変更のみ無効
@@ -23,6 +24,7 @@
 			return;
 		}
 		return new Promise((resolve) => {
+			isBlocked.set(true);
 			// ページ遷移のアニメーションを制御
 			transitionPageScreen.set(1);
 			delay(1000).then(() => {
@@ -30,6 +32,10 @@
 				navigation.complete;
 				delay(300).then(() => {
 					transitionPageScreen.set(-1);
+
+					delay(1000).then(() => {
+						isBlocked.set(false);
+					});
 				});
 			});
 		});

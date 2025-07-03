@@ -60,8 +60,7 @@
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
-	import SplashScreen from '$routes/SplashScreen.svelte';
+	import ScreenGuard from '$routes/ScreenGuard.svelte';
 	import {
 		isStreetView,
 		mapMode,
@@ -439,8 +438,8 @@
 <NotificationMessage />
 <InfoDialog />
 <TermsOfServiceDialog />
-<ProcessingScreen />
-<SplashScreen />
+<ScreenGuard />
+
 <ConfirmationDialog />
 
 <style>

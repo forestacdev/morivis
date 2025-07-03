@@ -6,360 +6,47 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
-	import { transitionPageScreen } from '$routes/stores/effect';
-
-	import fragmentShader from './shaders/fragment.glsl?raw';
-	import vertexShader from './shaders/vertex.glsl?raw';
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-	import { delay } from 'es-toolkit';
-	import type { text } from '@sveltejs/kit';
-	import type { color } from 'd3-color';
-	import type { fontFamily } from 'html2canvas/dist/types/css/property-descriptors/font-family';
 
-	const nextPowerOfTwo = (value: number) => {
-		return Math.pow(2, Math.ceil(Math.log2(value)));
-	};
+	import { isBlocked } from '$routes/stores/ui';
+	import { fade, fly, scale } from 'svelte/transition';
 
-	// 文字テクスチャを生成
-	const generateTexture = (
-		text = 'morivis',
-		fontSize = 128,
-		color = '#ffffff',
-		fontFamily = 'Arial, sans-serif'
-	) => {
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('2d');
+	import { createdDemMesh, uniforms } from './utils';
 
-		if (!ctx) {
-			throw new Error('Failed to get canvas context');
-		}
-		// フォント設定
-		ctx.font = `${fontSize}px ${fontFamily}`;
-		ctx.textAlign = 'left';
-		ctx.textBaseline = 'top';
-
-		// テキストサイズを測定
-		const metrics = ctx.measureText(text);
-		const width = Math.ceil(metrics.width) + 20; // パディング
-		const height = fontSize + 20; // パディング
-
-		// 2の累乗に調整（GPU最適化）
-		const textureWidth = nextPowerOfTwo(width);
-		const textureHeight = nextPowerOfTwo(height);
-
-		// キャンバスサイズ設定
-		canvas.width = textureWidth;
-		canvas.height = textureHeight;
-
-		// 背景をクリア（透明）
-		ctx.clearRect(0, 0, textureWidth, textureHeight);
-
-		// 背景を塗りつぶす（オプション）
-		// ctx.fillStyle = 'rgba(1.0, 0, 0, 1.0)'; // 透明
-
-		// フォント再設定（キャンバスサイズ変更でリセットされる）
-		ctx.font = `${fontSize}px ${fontFamily}`;
-		ctx.textAlign = 'left';
-		ctx.textBaseline = 'top';
-		ctx.fillStyle = color;
-
-		// アンチエイリアシング設定
-		// ctx.textRenderingOptimization = 'optimizeQuality';
-
-		// テキスト描画
-		ctx.fillText(text, 10, 10);
-
-		const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-		// デバックでダウンロード
-		// const dataUrl = canvas.toDataURL('image/png');
-		// const link = document.createElement('a');
-		// link.href = dataUrl;
-		// link.download = 'text_texture.png';
-		// document.body.appendChild(link);
-		// link.click();
-		// document.body.removeChild(link);
-
-		return canvas;
-	};
-
-	// ラスターデータの読み込み
-	const loadRasterData = async (url: string) => {
-		const response = await fetch(url);
-		const arrayBuffer = await response.arrayBuffer();
-		const tiff = await fromArrayBuffer(arrayBuffer);
-		const image = await tiff.getImage();
-
-		// ラスターデータを取得
-		const rasters = await image.readRasters();
-		const data = rasters[0];
-
-		// ラスターの高さと幅を取得
-		const width = image.getWidth();
-		const height = image.getHeight();
-
-		return { data, width, height };
-	};
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
 	let renderer: THREE.WebGLRenderer;
 	let orbitControls: OrbitControls;
+	let zoomControls: TrackballControls;
+	let showButton = $state<boolean>(true);
 
-	const uniforms = {
-		time: { value: 0 },
-		uColor: { value: new THREE.Color('rgb(252, 252, 252)') },
-		uColor2: { value: new THREE.Color('rgb(0, 194, 36)') },
-		uTexture: {
-			// value: new THREE.CanvasTexture(generateTexture())
-			value: new THREE.TextureLoader().load(
-				'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmLRqJERpCe_a9JDwjDxjeWNu5IfQH32XOfg&s',
-				(texture) => {
-					// texture.minFilter = THREE.LinearFilter; // ミップマップを使用しない
-					// texture.magFilter = THREE.LinearFilter; // ミップマップを使用しない
-					texture.needsUpdate = true; // テクスチャの更新を通知
-				}
-			)
-		},
-		resolution: {
-			value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-		},
-		uTextureResolution: { value: new THREE.Vector2(1000, 750) }
-	};
-
-	const material = new THREE.ShaderMaterial({
-		uniforms: uniforms,
-		vertexShader,
-		fragmentShader,
-		transparent: true
-	});
-
-	const imageToElevationArray = async (
-		url: string,
-		scale: number = 0.1
-	): Promise<{
-		width: number;
-		height: number;
-		data: Float32Array; // ← 高さ(m)配列として返す
-	}> => {
-		const response = await fetch(url);
-		const blob = await response.blob();
-		const img = new Image();
-		img.src = URL.createObjectURL(blob);
-		await new Promise((resolve, reject) => {
-			img.onload = resolve;
-			img.onerror = reject;
-		});
-
-		const canvas = document.createElement('canvas');
-		canvas.width = img.width;
-		canvas.height = img.height;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) throw new Error('Failed to get canvas context');
-
-		ctx.drawImage(img, 0, 0);
-
-		const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-		const pixelCount = (rgba.length / 4) | 0;
-		const elevationArray = new Float32Array(pixelCount);
-
-		for (let i = 0, j = 0; i < rgba.length; i += 4, j++) {
-			const r = rgba[i];
-			const g = rgba[i + 1];
-			const b = rgba[i + 2];
-			// Mapbox Terrain-RGB → 高さ(m)
-			const h = (-10000 + (r * 256 * 256 + g * 256 + b) * 0.1) * scale;
-			elevationArray[j] = h;
-		}
-
-		return {
-			width: canvas.width,
-			height: canvas.height,
-			data: elevationArray
-		};
-	};
-
-	const createdDemMesh = async () => {
-		const { data, width, height } = await imageToElevationArray('./terrainrgb.png', 0.15);
-
-		// return;
-
-		// ピクセル解像度
-		const dx = 1;
-		const dy = 1;
-
-		// Geometryの作成
-		const geometry = new THREE.BufferGeometry();
-
-		// ラスターの中心座標を原点にするためのオフセット
-		const xOffset = (width * dx) / 2;
-		const zOffset = (height * dy) / 2;
-
-		// 頂点座標の計算
-		const vertices = new Float32Array(width * height * 3);
-		for (let i = 0; i < height; i++) {
-			for (let j = 0; j < width; j++) {
-				const index = i * width + j;
-				const x = j * dx - xOffset;
-				const y = data[index];
-				const z = i * dy - zOffset;
-				const k = index * 3;
-				vertices[k] = x;
-				vertices[k + 1] = y;
-				vertices[k + 2] = z;
-			}
-		}
-		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-
-		// UV座標の計算とセット
-		const uvs = new Float32Array(width * height * 2);
-		for (let i = 0; i < height; i++) {
-			for (let j = 0; j < width; j++) {
-				const index = i * width + j;
-				const u = j / (width - 1);
-				const v = i / (height - 1);
-				const k = index * 2;
-				uvs[k] = u;
-				uvs[k + 1] = v;
-			}
-		}
-		geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-
-		const quadCount = (width - 1) * (height - 1);
-		const indices = new Uint32Array(quadCount * 6);
-		let p = 0;
-		for (let i = 0; i < height - 1; i++) {
-			for (let j = 0; j < width - 1; j++) {
-				const a = i * width + j;
-				const b = a + width;
-				const c = a + 1;
-				const d = b + 1;
-
-				// 三角形1: a, b, c
-				indices[p++] = a;
-				indices[p++] = b;
-				indices[p++] = c;
-
-				// 三角形2: b, d, c
-				indices[p++] = b;
-				indices[p++] = d;
-				indices[p++] = c;
-			}
-		}
-		geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-
-		// メッシュの作成とシーンへの追加
-		const mesh = new THREE.Mesh(geometry, material);
-		const obj = scene.getObjectByName('dem');
-		if (obj) {
-			scene.remove(obj);
-		}
-		mesh.name = 'dem';
-		geometry.computeVertexNormals(); // 法線の計算
-
-		const matrix = new THREE.Matrix4().makeRotationY(Math.PI / -2);
-		geometry.applyMatrix4(matrix);
-
-		scene.add(mesh);
-	};
-
-	let isMapView = false;
-
-	const toggleView = (val: boolean) => {
+	const goMap = () => {
+		showButton = false;
 		goto('/map');
-		// window.location.href = '/map';
-		// transitionPageScreen.set(1);
-		// delay(1000).then(() => {
-		// 	goto('/map');
-		// 	transitionPageScreen.set(-1);
-		// });
 
 		return;
-		orbitControls.autoRotate = val;
-
-		isMapView = !isMapView;
-
-		let rot = 180;
-		const radian = (rot * Math.PI) / 180;
-		const distance = 180;
-		// 角度に応じてカメラの位置を設定
-		camera.position.x = distance * Math.sin(radian);
-		camera.position.z = distance * Math.cos(radian);
-
-		// カメラの近距離と遠距離の設定
-		// const closeView = { position: camera.position.clone(), lookAt: { x: 0, y: 0, z: 0 } };
-		const closeView = { position: camera.position.clone(), lookAt: { x: 0, y: 0, z: 0 } };
-		const farView = {
-			position: { x: distance * Math.cos(radian), y: 400, z: 0 },
-			lookAt: { x: 0, y: 0, z: 0 }
-		};
-		if (isMapView) {
-			closeView.position = camera.position.clone();
-
-			const target = orbitControls.target;
-			closeView.lookAt = { x: target.x, y: target.y, z: target.z };
-		} else {
-			farView.position = camera.position.clone();
-			const target = orbitControls.target;
-			farView.lookAt = { x: target.x, y: target.y, z: target.z };
-		}
-
-		const targetView = isMapView ? farView : closeView;
-
-		// カメラ位置のアニメーション
-		const cameraPositionAnim = gsap.to(camera.position, {
-			x: targetView.position.x,
-			y: targetView.position.y,
-			z: targetView.position.z,
-			duration: 1.0,
-			ease: 'power1',
-			onUpdate: () => {
-				camera.up.set(0, 1, 0); // カメラの「上方向」を y 軸に固定
-				camera.lookAt(targetView.lookAt.x, targetView.lookAt.y, targetView.lookAt.z);
-			}
-		});
-
-		// ターゲットのアニメーション
-		const targetAnim = gsap.to(orbitControls.target, {
-			x: targetView.lookAt.x,
-			y: targetView.lookAt.y,
-			z: targetView.lookAt.z,
-			duration: 1.0,
-			ease: 'power1',
-			onUpdate: () => {
-				camera.lookAt(orbitControls.target.x, orbitControls.target.y, orbitControls.target.z);
-			}
-		});
-
-		// `camera.fov` のスムーズなアニメーション
-		const fovAnim = gsap.to(camera, {
-			fov: isMapView ? 45 : 75, // 目標視野角
-			duration: 1.0,
-			ease: 'power1',
-			onUpdate: () => {
-				camera.updateProjectionMatrix(); // 投影行列の更新が必須
-			}
-		});
-
-		// すべてのアニメーションの完了を待つ
-		gsap
-			.timeline({
-				onComplete: () => {
-					if (isMapView) {
-						// goto('/');
-						window.location.href = '/map';
-					}
-				}
-			})
-			.add(cameraPositionAnim)
-			.add(targetAnim, '-=1.0')
-			.add(fovAnim, '-=1.0');
 	};
 
-	onMount(() => {
+	const onResize = () => {
+		// サイズを取得
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+
+		uniforms.resolution.value.set(width, height);
+
+		// レンダラーのサイズを調整する
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(width, height);
+
+		// カメラのアスペクト比を正す
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+	};
+
+	onMount(async () => {
 		if (!canvas) return;
 		// シーンの作成
 		scene = new THREE.Scene();
@@ -367,13 +54,14 @@
 		// カメラ
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
-		let rot = -40;
+		let rot = -170;
 		const radian = (rot * Math.PI) / 180;
 		const distance = 180;
+
 		// 角度に応じてカメラの位置を設定
 		camera.position.x = distance * Math.sin(radian);
 		camera.position.z = distance * Math.cos(radian);
-		camera.position.y = 100;
+		camera.position.y = 90;
 
 		// camera.position.set(100, 100, 100);
 		scene.add(camera);
@@ -389,7 +77,7 @@
 		orbitControls.autoRotateSpeed = 0.5;
 		orbitControls.autoRotate = true;
 
-		const zoomControls = new TrackballControls(camera, canvas);
+		zoomControls = new TrackballControls(camera, canvas);
 		zoomControls.noPan = true;
 		zoomControls.noRotate = true;
 		zoomControls.zoomSpeed = 0.2;
@@ -420,7 +108,12 @@
 		// const axesHelper = new THREE.AxesHelper(100);
 		// scene.add(axesHelper);
 
-		createdDemMesh();
+		const mesh = await createdDemMesh();
+		if (mesh) {
+			scene.add(mesh);
+		} else {
+			console.error('Failed to create DEM mesh');
+		}
 
 		const clock = new THREE.Clock();
 
@@ -438,35 +131,21 @@
 		animate();
 
 		// 画面リサイズ時にキャンバスもリサイズ
-		const onResize = () => {
-			// サイズを取得
-			const width = window.innerWidth;
-			const height = window.innerHeight;
-
-			uniforms.resolution.value.set(width, height);
-
-			// レンダラーのサイズを調整する
-			renderer.setPixelRatio(window.devicePixelRatio);
-			renderer.setSize(width, height);
-
-			// カメラのアスペクト比を正す
-			camera.aspect = width / height;
-			camera.updateProjectionMatrix();
-		};
 
 		window.addEventListener('resize', onResize);
 		// 初期化
 		onResize();
-		return () => {
-			// クリーンアップ
-			orbitControls.dispose();
-			zoomControls.dispose();
-			scene.clear(); // シーン内のオブジェクトを削除
-			renderer.dispose();
-			// イベントリスナーの削除
+	});
 
-			window.removeEventListener('resize', onResize);
-		};
+	onDestroy(() => {
+		// クリーンアップ
+		orbitControls.dispose();
+		zoomControls.dispose();
+		scene.clear(); // シーン内のオブジェクトを削除
+		renderer.dispose();
+		// イベントリスナーの削除
+
+		window.removeEventListener('resize', onResize);
 	});
 </script>
 
@@ -477,18 +156,18 @@
 		<div class="flex h-full w-full flex-col items-center justify-center gap-6">
 			<span class="text-[100px] font-bold text-white">morivis</span>
 
-			<button
-				class="bg-base pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl"
-				onclick={() => toggleView(isMapView)}
-				>クリックでマップを見る
-			</button>
-			<!-- <a class="pointer-events-auto cursor-pointer" href="/map">
-				<div class="flex h-full w-full items-center justify-center">
-					<span class="text-[30px] font-bold text-white [text-shadow:_0px_0px_10px_#000]"
-						>Let's take a look at the map.</span
-					>
-				</div>
-			</a> -->
+			{#if !$isBlocked}
+				<button
+					transition:scale={{ duration: 300, opacity: 0.5 }}
+					class="bg-base pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl {$isBlocked
+						? 'pointer-events-none'
+						: 'pointer-events-auto'}"
+					onclick={goMap}
+					disabled={$isBlocked}
+					>クリックでマップを見る
+				</button>
+			{/if}
+
 			<div class="absolute bottom-8 [&_path]:fill-white">
 				<FacLogo width={'300'} />
 			</div>
