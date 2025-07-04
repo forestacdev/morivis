@@ -21,7 +21,7 @@ export const cloudStyleJson = {
 					4,
 					1.0, // ズーム0で不透明度1.0（完全不透明）
 					5,
-					0.1
+					0
 				]
 			}
 		} as RasterLayerSpecification
