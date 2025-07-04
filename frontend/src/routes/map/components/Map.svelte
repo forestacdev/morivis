@@ -10,8 +10,7 @@
 		type MapMouseEvent,
 		type Marker,
 		type LngLat,
-		type AddLayerObject,
-		format
+		type AddLayerObject
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
@@ -34,7 +33,7 @@
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import type { DialogType, StreetViewPoint } from '$routes/map/+page.svelte';
+
 	import { DEBUG_MODE, isStreetView } from '$routes/stores';
 	import { mapMode, isTerrain3d } from '$routes/stores';
 	import {
@@ -51,12 +50,18 @@
 	import { mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
+	import {
+		type FeatureMenuData,
+		type ClickedLayerFeaturesData,
+		type DialogType
+	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
 	import { drawLayers } from '$routes/map/utils/layers/draw';
-	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/local_storage';
+
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
+	import type { StreetViewPoint } from '$routes/map/types/street-view';
+	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/session_storage';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -294,7 +299,7 @@
 		if (!$DEBUG_MODE) {
 			const localEntries = loadLayerEntries();
 
-			// ローカルストレージからのレイヤーエントリーが存在する場合はそれを使用
+			// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
 			if (localEntries && localEntries.length > 0) {
 				layerEntries = localEntries;
 				const ids = getEntryIds(layerEntries);
