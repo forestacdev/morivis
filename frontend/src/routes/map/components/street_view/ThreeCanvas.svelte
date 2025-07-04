@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { GUI } from 'lil-gui';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -16,11 +16,11 @@
 	import { getCameraYRotation, updateAngle, degreesToRadians, TextureCache } from './utils';
 	import type { CurrentPointData } from './utils';
 
-	import type { NextPointData, StreetViewPoint } from '$routes/map/+page.svelte';
 	import { isStreetView, DEBUG_MODE } from '$routes/stores';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
+	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =
@@ -54,7 +54,7 @@
 	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
-	let currentSceneId = $state<string>('');
+	let currentSceneId = $state<number>();
 	let scene: THREE.Scene;
 	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 	let camera: THREE.PerspectiveCamera;
@@ -77,7 +77,6 @@
 		outputGamma: { value: number }; // 出力ガンマ補正
 		brightness: { value: number }; // 明るさ調整用
 		contrast: { value: number }; // コントラスト調整用
-
 		rotationAnglesA: { value: THREE.Vector3 };
 		rotationAnglesB: { value: THREE.Vector3 };
 		rotationAnglesC: { value: THREE.Vector3 };
@@ -149,6 +148,7 @@
 
 	const copy = {
 		copyAngle: () => {
+			if (!streetViewPoint) return;
 			// クリップボードに角度をjson textでコピー
 			const angleX = geometryBearing.x;
 			const angleY = geometryBearing.y;
@@ -295,7 +295,7 @@
 		// 自動フェード用シェーダー
 		const fadeShaderMaterial = new THREE.ShaderMaterial({
 			side: THREE.BackSide,
-			uniforms: uniforms,
+			uniforms: uniforms as any, // 型の互換性のためにanyを使用
 			fragmentShader: fs,
 			vertexShader: vs,
 			transparent: false, // 必要に応じてtrueに
@@ -331,7 +331,7 @@
 		const buffarMaterial = new THREE.ShaderMaterial({
 			fragmentShader: bufferFragment,
 			vertexShader: bufferVertex,
-			uniforms: buffarUniforms
+			uniforms: buffarUniforms as any // 型の互換性のためにanyを使用
 		});
 
 		// sprite.renderOrder = 1;
@@ -409,9 +409,6 @@
 	isStreetView.subscribe(async (value) => {
 		onResize();
 	});
-	const nextPoint = (point) => {
-		setPoint(point);
-	};
 
 	let currentTextureIndex = $state<number>(0); // 0=A, 1=B, 2=C
 
@@ -559,7 +556,7 @@
 				<button class="cursor-pointer rounded-md p-2" onclick={() => ($isStreetView = false)}
 					><Icon icon="ep:back" class="h-4 w-4" />
 				</button>
-				<span>撮影日:{streetViewPoint.properties['Date']}<span> </span></span>
+				<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
 			</div>
 		{/if}
 
@@ -576,7 +573,7 @@
 							{#if point.featureData.properties.id !== currentSceneId}
 								<button
 									onclick={() => {
-										nextPoint(point.featureData);
+										setPoint(point.featureData);
 									}}
 									class="css-arrow"
 									style="--angle: {point.bearing}deg; --distance: {showThreeCanvas

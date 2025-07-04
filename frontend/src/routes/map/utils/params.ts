@@ -74,7 +74,7 @@ export const setMapParams = (option: MapPosition) => {
 };
 
 /** street view用のURLパラメータのセット */
-export const setStreetViewParams = (imageId: string) => {
+export const setStreetViewParams = (imageId: number) => {
 	const params = get(queryParameters({}));
 	params.imageId = imageId;
 	queryParameters({}, { pushHistory: false }).set(params);

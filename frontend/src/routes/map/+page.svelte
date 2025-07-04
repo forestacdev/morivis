@@ -1,41 +1,11 @@
-<script lang="ts" module>
-	export interface StreetViewPoint {
-		type: 'Feature';
-		geometry: {
-			type: 'Point';
-			coordinates: [number, number];
-		};
-		properties: {
-			id: string;
-			ID: string;
-			name: string;
-			Name: string;
-		};
-	}
-	export interface NextPointData {
-		featureData: StreetViewPoint;
-		bearing: number;
-	}
-
-	export interface StreetViewPointGeoJson {
-		type: 'FeatureCollection';
-		features: StreetViewPoint[];
-	}
-
-	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | null;
-</script>
-
 <script lang="ts">
 	import turfBearing from '@turf/bearing';
-	import turfDistance from '@turf/distance';
-	import turfNearestPoint from '@turf/nearest-point';
-	import { debounce } from 'es-toolkit';
+
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
-	import type { LngLat, LngLatBoundsLike } from 'maplibre-gl';
+	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import { fade } from 'svelte/transition';
 
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
@@ -73,16 +43,12 @@
 	import { mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
+	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import {
-		setStreetViewParams,
-		getStreetViewParams,
-		get3dParams,
-		getParams
-	} from '$routes/map/utils/params';
+	import { getStreetViewParams, get3dParams, getParams } from '$routes/map/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
+	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -201,7 +167,7 @@
 
 		const linkPoints = nodeConnectionsJson[pointId] || [];
 
-		const nextPoints = ([pointId, ...linkPoints] || [])
+		const nextPoints = [pointId, ...linkPoints]
 			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
@@ -212,15 +178,20 @@
 
 		if (!map) return;
 
+		const pointLngLat = new maplibregl.LngLat(
+			point.geometry.coordinates[0],
+			point.geometry.coordinates[1]
+		);
+
 		if ($isStreetView) {
-			setCamera(map, point.geometry.coordinates);
+			setCamera(map, pointLngLat);
 			map.panTo(point.geometry.coordinates, {
 				duration: 1000,
 				animate: true
 			});
 		}
 
-		angleMarkerLngLat = point.geometry.coordinates as LngLat;
+		angleMarkerLngLat = pointLngLat;
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
@@ -267,12 +238,17 @@
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		const map = mapStore.getMap();
-		if (!map || !map.loaded()) return;
+		if (!map || !map.loaded() || !streetViewPoint) return;
 
 		showAngleMarker = value;
 
+		const pointLngLat = new maplibregl.LngLat(
+			streetViewPoint.geometry.coordinates[0],
+			streetViewPoint.geometry.coordinates[1]
+		);
+
 		if (value) {
-			setCamera(map, streetViewPoint.geometry.coordinates);
+			setCamera(map, pointLngLat);
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,

@@ -44,6 +44,9 @@ export type CSSCursor =
 	| 'no-drop'
 	| 'all-scroll';
 
+// アップロードのダイアログのタイプ
+export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | null;
+
 // 選択ポップアップ
 // TODO 使用していない
 export interface ClickedLayerFeaturesData {

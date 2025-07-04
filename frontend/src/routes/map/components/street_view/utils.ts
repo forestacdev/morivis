@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import { SCENE_CENTER_COORDS } from './constants';
-import type { NextPointData } from '$routes/map/+page.svelte';
+import type { NextPointData } from '$routes/map/types/street-view';
 
 /**
  * カメラの Y 軸回転角度を取得し、0〜360度の範囲に正規化する
@@ -142,6 +142,7 @@ export class TextureCache {
 		// キャッシュサイズ制限（LRU）
 		if (this.cache.size >= this.maxCacheSize) {
 			const firstKey = this.cache.keys().next().value;
+			if (!firstKey) return;
 			const oldTexture = this.cache.get(firstKey);
 			if (oldTexture) {
 				oldTexture.dispose();
