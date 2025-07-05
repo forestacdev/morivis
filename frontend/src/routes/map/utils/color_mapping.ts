@@ -82,6 +82,7 @@ export const generateColorPalette = (rows: number, cols: number): string[][] => 
 	return palette;
 };
 
+// TODO 適切なカラーパレット
 export const commonColors = [
 	'#FF0000', // 赤
 	'#00FF00', // 緑
@@ -102,6 +103,58 @@ export const commonColors = [
 export const getRandomCommonColor = (): string => {
 	const randomIndex = Math.floor(Math.random() * commonColors.length);
 	return commonColors[randomIndex];
+};
+
+/** ランダムなHEXカラーを生成する関数 */
+const generateRandomHexColors = (count: number): string[] => {
+	const colors: string[] = [];
+
+	for (let i = 0; i < count; i++) {
+		// 0から255までのランダムな値を3つ生成してRGBにする
+		const r = Math.floor(Math.random() * 256);
+		const g = Math.floor(Math.random() * 256);
+		const b = Math.floor(Math.random() * 256);
+
+		// 各値を16進数に変換して2桁にパディング
+		const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+		colors.push(hex);
+	}
+
+	return colors;
+};
+
+/**  事前定義された色のパレットから選択する関数 */
+const generatePresetHexColors = (count: number): string[] => {
+	const presetColors = [
+		'#FF6B6B',
+		'#4ECDC4',
+		'#45B7D1',
+		'#96CEB4',
+		'#FECA57',
+		'#FF9FF3',
+		'#54A0FF',
+		'#5F27CD',
+		'#00D2D3',
+		'#FF9F43',
+		'#10AC84',
+		'#EE5A24',
+		'#0652DD',
+		'#9C88FF',
+		'#FFC312',
+		'#C4E538',
+		'#12CBC4',
+		'#FDA7DF',
+		'#ED4C67',
+		'#F79F1F'
+	];
+
+	const colors: string[] = [];
+
+	for (let i = 0; i < count; i++) {
+		colors.push(presetColors[i % presetColors.length]);
+	}
+
+	return colors;
 };
 
 // HSLからRGBへの変換ヘルパー関数
