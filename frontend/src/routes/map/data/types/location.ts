@@ -26,7 +26,7 @@ type Kyushu = '福岡県' | '佐賀県' | '長崎県' | '熊本県' | '大分県
 
 type Okinawa = '沖縄県';
 
-type LocationOther = '森林文化アカデミー' | '美濃市' | 'その他';
+type LocationOther = '森林文化アカデミー' | '岐阜県美濃市' | 'その他';
 // 全都道府県型
 export type Region =
 	| Hokkaido
