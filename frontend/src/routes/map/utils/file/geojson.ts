@@ -167,16 +167,6 @@ export class GeojsonCache {
 	}
 }
 
-// レイヤーメニューから削除されたgeojsonデータを削除
-activeLayerIdsStore.subscribe((ids) => {
-	// GeojsonCacheからidsに含まれていないものを削除
-	for (const id of GeojsonCache.keys()) {
-		if (!ids.includes(id)) {
-			GeojsonCache.remove(id);
-		}
-	}
-});
-
 export const geoJsonFileToGeoJson = async (
 	file: File
 ): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {

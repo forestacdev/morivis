@@ -2,8 +2,6 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
-import type { LayerType } from './_layers_group';
-import { has } from 'es-toolkit/compat';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -67,7 +65,13 @@ const createLayerStore = () => {
 			}),
 
 		// 完全リセット
-		reset: () => set([...INT_ADD_LAYER_IDS])
+		reset: () => {
+			for (const id of GeojsonCache.keys()) {
+				GeojsonCache.remove(id);
+			}
+
+			set([...INT_ADD_LAYER_IDS]);
+		}
 	};
 };
 
