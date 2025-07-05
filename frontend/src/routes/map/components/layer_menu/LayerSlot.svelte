@@ -236,7 +236,7 @@
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100 {isSmall
+		class="c-dragging-style translate-z-0 relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100 {isSmall
 			? 'w-[65px]'
 			: ''}"
 		onmouseenter={() => (isHovered = true)}

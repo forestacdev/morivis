@@ -45,15 +45,18 @@
 		}
 	});
 
-	const promise = (() => {
+	let promise = $state<Promise<string | undefined>>();
+
+	$effect(() => {
 		try {
-			return getLayerImage(dataEntry);
+			promise = getLayerImage(dataEntry);
+			isImageError = false;
 		} catch (error) {
 			isImageError = true;
 			console.error('Error generating icon image:', error);
-			return Promise.resolve(undefined);
+			promise = Promise.resolve(undefined);
 		}
-	})();
+	});
 
 	const addData = (id: string) => {
 		activeLayerIdsStore.add(id);
