@@ -13,6 +13,7 @@ const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 		description: '岐阜県スギ人工林冠雪害危険度マップ',
 		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/kansetsugaimap.html',
 		attribution: '岐阜県森林研究所',
+		tags: ['森林'],
 		location: '岐阜県',
 		minZoom: 6,
 		maxZoom: 10,

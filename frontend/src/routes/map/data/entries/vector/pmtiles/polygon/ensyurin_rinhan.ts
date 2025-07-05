@@ -15,8 +15,9 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '森林文化アカデミー演習林の林班。',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: ['林班図', '森林'],
 		maxZoom: 14,
-		minZoom: 1,
+		minZoom: 8,
 		sourceLayer: 'ensyurin_rinhan',
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`

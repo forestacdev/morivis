@@ -14,6 +14,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		description: '',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
 		attribution: '国土地理院',
+		tags: ['DEM', '地形'],
 		location: '全国',
 		minZoom: 1,
 		maxZoom: 15,

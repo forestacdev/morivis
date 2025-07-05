@@ -16,6 +16,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		location: '森林文化アカデミー',
 		minZoom: 10,
 		maxZoom: 22,
+		tags: ['フェノロジー'],
 		bounds: [136.918075, 35.554408333333335, 136.9268, 35.55841111111111],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/phenology_2020.webp`
 	},

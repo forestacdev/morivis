@@ -14,7 +14,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		description:
 			'第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したもの',
 		attribution: 'エコリス地図タイル',
-		downloadUrl: 'https://map.ecoris.info/#contents',
+		tags: ['植生図'],
 		location: '全国',
 		minZoom: 5,
 		maxZoom: 15,

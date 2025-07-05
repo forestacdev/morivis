@@ -20,6 +20,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 0,
 		maxZoom: 22,
 		tileSize: 256,
+		tags: [],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {

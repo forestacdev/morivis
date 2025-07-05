@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '林野庁',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_kochi',
 		location: '高知県',
+		tags: ['森林', 'メッシュ'],
 		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_kochi',

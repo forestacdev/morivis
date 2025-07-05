@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '自力建設',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: ['建物'],
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'fac_ziriki_point',

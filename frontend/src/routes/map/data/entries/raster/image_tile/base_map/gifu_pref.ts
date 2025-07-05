@@ -16,6 +16,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		description: '',
 		attribution: 'Q地図タイル',
 		location: '岐阜県',
+		tags: ['基本図'],
 		minZoom: 5,
 		maxZoom: 18,
 		tileSize: 256,

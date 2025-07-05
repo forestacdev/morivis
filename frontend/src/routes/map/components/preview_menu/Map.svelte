@@ -124,13 +124,8 @@
 						});
 
 						const mapBbox = mapStore.getMapBounds();
-
 						if (!isBBoxInside(mapBbox, data.bbox)) {
-							mapStore.fitBounds(data.bbox, {
-								bearing: 0,
-								padding: 20,
-								duration: 1000
-							});
+							mapStore.focusLayer(showDataEntry);
 						}
 					} else {
 						hasBbox = false;

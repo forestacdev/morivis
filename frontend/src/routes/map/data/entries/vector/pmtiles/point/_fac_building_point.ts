@@ -13,6 +13,7 @@ const entry: VectorEntry<TileMetaData> = {
 		name: 'アカデミー施設',
 		description: '森林文化アカデミーの施設',
 		attribution: '森林文化アカデミー',
+		tags: ['建物'],
 		location: '森林文化アカデミー',
 		maxZoom: 14,
 		minZoom: 1,

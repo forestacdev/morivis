@@ -17,6 +17,7 @@ const entry: RasterPMTilesEntry<RasterBaseMapStyle> = {
 		name: '演習林 空中写真',
 		description: '演習林周辺の空中写真',
 		attribution: '森林文化アカデミー',
+		tags: ['森林', '写真'],
 		location: '森林文化アカデミー',
 		minZoom: 12,
 		maxZoom: 17,

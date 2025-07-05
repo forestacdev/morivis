@@ -11,13 +11,14 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '演習林 歩道',
-		description: '演習林林道',
+		description: '演習林',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: ['森林歩道'],
 		maxZoom: 14,
-		minZoom: 1,
+		minZoom: 8,
 		sourceLayer: 'ensyurin_road2',
-		bounds: [136.919181, 35.546981, 136.92684, 35.555131],
+		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`
 	},
 	properties: {

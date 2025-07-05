@@ -1,3 +1,4 @@
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -13,6 +14,8 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '国土地理院の道路データ',
 		attribution: '国土地理院',
 		location: '全国',
+		tags: ['道路'],
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		maxZoom: 16,
 		minZoom: 4,
 		sourceLayer: 'RdCL',

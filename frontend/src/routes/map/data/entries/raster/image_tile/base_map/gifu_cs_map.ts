@@ -17,6 +17,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		attribution: '岐阜県森林研究所',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-gifu-maptiles',
 		location: '岐阜県',
+		tags: ['地形', '微地形図'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,

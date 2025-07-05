@@ -18,6 +18,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
              （G空間情報センター引用）`,
 		attribution: '愛媛県森林資源データ',
 		location: '愛媛県',
+		tags: ['林相図', '森林'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,

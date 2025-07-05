@@ -17,6 +17,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		description: '',
 		downloadUrl: 'https://gbank.gsj.jp/seamless/v2/api/1.3.1/#tiles',
 		attribution: '産総研地質調査総合センター',
+		tags: ['地質図'],
 		location: '全国',
 		minZoom: 0,
 		maxZoom: 13,

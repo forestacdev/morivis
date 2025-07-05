@@ -14,6 +14,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
 		attribution: '産総研シームレス標高タイル',
 		location: '栃木県',
+		tags: ['DEM', '地形'],
 		minZoom: 2,
 		maxZoom: 18,
 		tileSize: 256,

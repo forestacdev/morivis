@@ -16,6 +16,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		location: '森林文化アカデミー',
 		minZoom: 10,
 		maxZoom: 22,
+		tags: ['森林', '単木'],
 		bounds: [136.920923, 35.548695, 136.921198, 35.548997],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
 	},

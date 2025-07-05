@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		description: 'その他施設・林内ランドマーク',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: [],
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'fac_poi',

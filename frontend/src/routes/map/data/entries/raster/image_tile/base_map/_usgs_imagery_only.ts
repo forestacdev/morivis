@@ -16,6 +16,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		name: 'USGS Imagery Only',
 		description: '',
 		attribution: 'USGS',
+		tags: ['写真'],
 		downloadUrl: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer',
 		location: '世界',
 		minZoom: 1,

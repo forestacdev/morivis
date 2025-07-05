@@ -18,6 +18,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#std',
 		location: '全国',
+		tags: ['基本図'],
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,

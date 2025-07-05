@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '栃木県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
 		location: '栃木県',
+		tags: ['森林', '林班図'],
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_tochigi',

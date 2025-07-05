@@ -14,6 +14,7 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tileSize: 256,
+		tags: ['DEM', '地形'],
 		maxZoom: 22,
 		minZoom: 1,
 		bounds: [136.91683974376355, 35.540611389073774, 136.9346116207808, 35.55838201305548]

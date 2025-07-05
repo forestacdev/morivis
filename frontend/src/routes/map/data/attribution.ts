@@ -16,7 +16,8 @@ export type AttributionKey =
 	| '森林総合研究所'
 	| '愛媛県森林資源データ'
 	| 'USGS'
-	| '栃木県森林資源データ';
+	| '栃木県森林資源データ'
+	| '大阪府（林野庁加工）';
 
 export type Attribution = {
 	key: AttributionKey;
@@ -109,6 +110,11 @@ const attributionData: Attribution[] = [
 		key: '栃木県森林資源データ',
 		name: '栃木県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
+	},
+	{
+		key: '大阪府（林野庁加工）',
+		name: '大阪府（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya'
 	}
 ] as const;
 

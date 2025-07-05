@@ -17,6 +17,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		description: '',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#trinya',
 		attribution: '国土地理院',
+		tags: ['森林', '写真'],
 		location: '全国',
 		minZoom: 14,
 		maxZoom: 18,

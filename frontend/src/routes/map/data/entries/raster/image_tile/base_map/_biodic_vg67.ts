@@ -20,6 +20,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 22,
 		tileSize: 256,
+		tags: ['植生図'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {

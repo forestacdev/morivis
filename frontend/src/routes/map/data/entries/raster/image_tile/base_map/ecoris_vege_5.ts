@@ -22,6 +22,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 5,
 		maxZoom: 15,
 		tileSize: 256,
+		tags: ['植生図'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: {
 			x: 7211,

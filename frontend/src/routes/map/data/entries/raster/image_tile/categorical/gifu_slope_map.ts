@@ -13,6 +13,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/sinrinwebmap.html',
 		attribution: '岐阜県森林研究所',
 		location: '岐阜県',
+		tags: ['傾斜区分図', '地形'],
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,

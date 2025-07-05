@@ -15,6 +15,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		description: '福岡県の地形湿潤指標（TWI）の10mメッシュデータ',
 		attribution: '森林総合研究所',
 		location: '福岡県',
+		tags: ['地形', 'TWI'],
 		minZoom: 8,
 		maxZoom: 13,
 		tileSize: 256,

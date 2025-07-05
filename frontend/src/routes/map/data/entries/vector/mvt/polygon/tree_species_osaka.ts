@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '大阪府（林野庁加工）',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-osaka',
 		location: '大阪府',
+		tags: ['森林', '林班図'],
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: '樹種ポリゴン_大阪府',

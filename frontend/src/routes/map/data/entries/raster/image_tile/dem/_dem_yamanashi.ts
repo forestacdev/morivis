@@ -14,6 +14,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-yamanashi-maptiles',
 		attribution: '林野庁',
 		location: '山梨県',
+		tags: ['DEM', '地形'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,

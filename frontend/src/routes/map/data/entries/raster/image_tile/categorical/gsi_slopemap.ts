@@ -14,6 +14,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#slopemap',
 		location: '全国',
+		tags: ['傾斜量図', '地形'],
 		minZoom: 3,
 		maxZoom: 15,
 		tileSize: 256,

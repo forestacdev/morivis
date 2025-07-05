@@ -17,6 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
             データ提供元：東京都
             ライセンス：東京都オープンデータ利用規約（https://portal.data.metro.tokyo.lg.jp/terms/）`,
 		attribution: '東京都オープンデータカタログサイト',
+		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',
 		minZoom: 1,

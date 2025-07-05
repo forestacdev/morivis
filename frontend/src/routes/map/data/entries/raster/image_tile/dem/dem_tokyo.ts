@@ -13,6 +13,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		description: '',
 		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#h_tokyo',
 		attribution: '産総研シームレス標高タイル',
+		tags: ['DEM', '地形'],
 		location: '東京都',
 		minZoom: 2,
 		maxZoom: 19,

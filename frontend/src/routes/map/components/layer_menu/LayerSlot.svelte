@@ -173,10 +173,6 @@
 			isLayerInRange = z >= layerEntry.metaData.minZoom;
 		}
 
-		if (!isLayerInRange) {
-			return;
-		}
-
 		if (!LayerBbox) {
 			isLayerInRange = false;
 			return;

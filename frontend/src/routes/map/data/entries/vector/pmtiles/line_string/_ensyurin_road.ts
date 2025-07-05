@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '演習林の道',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: ['森林歩道'],
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'ensyurin_road',

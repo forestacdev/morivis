@@ -14,6 +14,7 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '美濃市地質図。',
 		attribution: '産総研地質調査総合センター',
 		location: '岐阜県美濃市',
+		tags: ['地質図'],
 		minZoom: 0,
 		maxZoom: 14,
 		sourceLayer: 'geo_A',

@@ -15,6 +15,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		description: '森林文化アカデミー演習林の地形の標高値を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
+		tags: ['DEM', '地形'],
 		minZoom: 14,
 		maxZoom: 16,
 		tileSize: 256,
