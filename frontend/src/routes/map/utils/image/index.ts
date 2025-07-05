@@ -156,7 +156,6 @@ export const generateDemCoverImage = async (
 
 			worker.onmessage = (e) => {
 				const { responseId, blob, error } = e.data;
-				console.log('Worker response:', e.data);
 				if (responseId === id) {
 					if (error) {
 						reject(new Error(error));

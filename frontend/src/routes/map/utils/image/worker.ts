@@ -144,8 +144,6 @@ self.onmessage = async (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-		console.log('WebGL rendering completed');
-
 		const blob = await canvas.convertToBlob();
 		if (!blob) {
 			throw new Error('Failed to convert canvas to blob');

@@ -32,26 +32,8 @@
 	};
 
 	layerAttributions.subscribe((items) => {
-		console.log('Attributions updated:', items);
-
 		updateAttributions(extractUniqueKeys(items));
 	});
-
-	// layerAttributions.subscribe((layerAttributions) => {
-	// 	const newAttributions = layerAttributions
-	// 		.map((attribution) => {
-	// 			const atl = attributionMap.get(attribution.key);
-	// 			if (atl) return atl; // `atl` が存在する場合のみ `name` を返す
-	// 			return undefined; // 明示的に `undefined` を返す（型推論のため）
-	// 		})
-	// 		.filter((atl): atl is Attribution => atl !== undefined); // `undefined` を除外
-
-	// 	if (newAttributions.length > 0) {
-	// 		attributions = newAttributions;
-	// 	}
-
-	// 	console.log('Attributions updated:', attributions);
-	// });
 </script>
 
 {#if attributions}
