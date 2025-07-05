@@ -60,7 +60,6 @@
 	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
-	import { drawLayers } from '$routes/map/utils/layers/draw';
 
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
@@ -108,6 +107,16 @@
 		demEntries,
 		setPoint
 	}: Props = $props();
+
+	// 監視用のデータを保持
+	let layerWatchTargets = $derived.by(() => {
+		return layerEntries.map((entry) => {
+			return {
+				id: entry.id,
+				style: entry.style
+			};
+		});
+	});
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
 	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
@@ -337,8 +346,8 @@
 
 	// レイヤーの更新を監視
 	$effect(() => {
-		const currentEntries = $state.snapshot(layerEntries);
-		setStyleDebounce(currentEntries as GeoDataEntry[]);
+		$state.snapshot(layerWatchTargets);
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
 	// ラベルの表示

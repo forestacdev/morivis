@@ -13,6 +13,7 @@
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
 	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
+	import Accordion from '../atoms/Accordion.svelte';
 
 	let {
 		layerEntry = $bindable()
@@ -23,29 +24,41 @@
 	} = $props();
 
 	let style = $derived(layerEntry.style);
+
+	let showOption = $state<boolean>(false);
 </script>
 
 {#if layerEntry && layerEntry.type === 'raster' && style}
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}
 		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
-		<RangeSlider
-			label={'明るさ-最小輝度'}
-			bind:value={style.brightnessMin}
-			min={0}
-			max={1}
-			step={0.01}
-		/>
-		<RangeSlider
-			label={'明るさ-最大輝度'}
-			bind:value={style.brightnessMax}
-			min={0}
-			max={1}
-			step={0.01}
-		/>
-		<RangeSlider label={'コントラスト'} bind:value={style.contrast} min={-1} max={1} step={0.01} />
-		<RangeSlider label={'色相'} bind:value={style.hueRotate} min={-360} max={360} step={0.1} />
-		<RangeSlider label={'彩度'} bind:value={style.saturation} min={-1} max={1} step={0.01} />
+		<Accordion label={'詳細設定'} bind:value={showOption}>
+			<div class="flex w-full flex-col gap-2">
+				<RangeSlider
+					label={'明るさ-最小輝度'}
+					bind:value={style.brightnessMin}
+					min={0}
+					max={1}
+					step={0.01}
+				/>
+				<RangeSlider
+					label={'明るさ-最大輝度'}
+					bind:value={style.brightnessMax}
+					min={0}
+					max={1}
+					step={0.01}
+				/>
+				<RangeSlider
+					label={'コントラスト'}
+					bind:value={style.contrast}
+					min={-1}
+					max={1}
+					step={0.01}
+				/>
+				<RangeSlider label={'色相'} bind:value={style.hueRotate} min={-360} max={360} step={0.1} />
+				<RangeSlider label={'彩度'} bind:value={style.saturation} min={-1} max={1} step={0.01} />
+			</div>
+		</Accordion>
 	{:else if style.type === 'categorical'}
 		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
 
