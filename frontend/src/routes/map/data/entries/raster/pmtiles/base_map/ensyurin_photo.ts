@@ -20,7 +20,8 @@ const entry: RasterPMTilesEntry<RasterBaseMapStyle> = {
 		location: '森林文化アカデミー',
 		minZoom: 12,
 		maxZoom: 17,
-		tileSize: 512
+		tileSize: 512,
+		bounds: [136.9099297801910495, 35.5364170136519988, 136.9431222919548929, 35.5702843101185593]
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

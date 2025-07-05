@@ -1,3 +1,4 @@
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
@@ -19,7 +20,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		location: '全国',
 		minZoom: 14,
 		maxZoom: 18,
-		tileSize: 256
+		tileSize: 256,
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

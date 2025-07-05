@@ -82,9 +82,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'image',
 									url: imageData,
-									coordinates: metaData.bounds
-										? getBoundingBoxCorners(metaData.bounds)
-										: getBoundingBoxCorners([-180, -85.051129, 180, 85.051129])
+									coordinates: getBoundingBoxCorners(metaData.bounds)
 								} as ImageSourceSpecification;
 							}
 						} else if (style.type === 'dem') {
@@ -104,7 +102,7 @@ export const createSourcesItems = async (
 									minzoom: metaData.minZoom,
 									tileSize: metaData.tileSize,
 									attribution: metaData.attribution,
-									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+									bounds: metaData.bounds
 								} as RasterSourceSpecification;
 							} else {
 								items[sourceId] = {
@@ -114,7 +112,7 @@ export const createSourcesItems = async (
 									minzoom: metaData.minZoom,
 									tileSize: metaData.tileSize,
 									attribution: metaData.attribution,
-									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+									bounds: metaData.bounds
 								} as RasterSourceSpecification;
 							}
 						} else {
@@ -126,7 +124,7 @@ export const createSourcesItems = async (
 								scheme: detectTileScheme(format.url),
 								tileSize: metaData.tileSize,
 								attribution: metaData.attribution,
-								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								bounds: metaData.bounds
 							} as RasterSourceSpecification;
 						}
 					} else if (format.type === 'pmtiles') {
@@ -146,7 +144,7 @@ export const createSourcesItems = async (
 									minzoom: metaData.minZoom,
 									tileSize: metaData.tileSize,
 									attribution: metaData.attribution,
-									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+									bounds: metaData.bounds
 								} as RasterSourceSpecification;
 							} else {
 								items[sourceId] = {
@@ -156,7 +154,7 @@ export const createSourcesItems = async (
 									minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 									tileSize: metaData.tileSize,
 									attribution: metaData.attribution,
-									bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+									bounds: metaData.bounds
 								} as RasterSourceSpecification;
 							}
 						} else {
@@ -167,7 +165,7 @@ export const createSourcesItems = async (
 								minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 								tileSize: metaData.tileSize,
 								attribution: metaData.attribution,
-								bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+								bounds: metaData.bounds
 							} as RasterSourceSpecification;
 						}
 					}
@@ -175,7 +173,7 @@ export const createSourcesItems = async (
 				}
 				case 'vector': {
 					if (format.type === 'geojson' || format.type === 'fgb') {
-						let geojson: GeoJSON.GeoJSON | string = '';
+						let geojson: GeoJSON.GeoJSON | undefined;
 						if (GeojsonCache.has(entry.id)) {
 							geojson = GeojsonCache.get(entry.id);
 						} else if (format.type === 'fgb') {
@@ -205,7 +203,7 @@ export const createSourcesItems = async (
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
 							attribution: metaData.attribution,
-							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'pmtiles') {
 						items[sourceId] = {
@@ -215,7 +213,7 @@ export const createSourcesItems = async (
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
 							attribution: metaData.attribution,
-							bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					}
 					break;
@@ -303,7 +301,7 @@ export const createTerrainSources = async (
 		minzoom: metaData.minZoom,
 		tileSize: metaData.tileSize,
 		attribution: metaData.attribution,
-		bounds: metaData.bounds ?? [-180, -85.051129, 180, 85.051129]
+		bounds: metaData.bounds
 	};
 
 	return sourceItems;

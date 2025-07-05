@@ -4,6 +4,7 @@ import {
 } from '$routes/map/data/style';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gsi_seamlessphoto',
@@ -22,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15'],
-		bounds: [122.933755, 24.045713, 153.986895, 45.556277]
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

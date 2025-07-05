@@ -141,7 +141,7 @@ export const createHighlightLayer = (
 	| undefined => {
 	if (!_selectedHighlightData) return undefined;
 	const entry = _selectedHighlightData.layerEntry;
-	const { format, style, metaData, properties, interaction, type } = entry;
+	const { format, style, metaData, type } = entry;
 
 	if (entry.type === 'raster') return undefined;
 	const layerId = `@highlight_${entry.id}`;

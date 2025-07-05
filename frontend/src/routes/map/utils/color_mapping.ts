@@ -4,7 +4,7 @@ import type {
 	ColorsExpression,
 	LabelsExpressions,
 	ColorStepExpression
-} from '$routes/map/data/vector/style';
+} from '$routes/map/data/types/vector/style';
 import colormap from 'colormap';
 
 import { scaleLinear } from 'd3-scale';

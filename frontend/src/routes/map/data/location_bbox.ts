@@ -1,3 +1,13 @@
+export const WEB_MERCATOR_WORLD_BBOX: [number, number, number, number] = [
+	-180, -85.051128779807, 180, 85.051128779807
+];
+export const WEB_MERCATOR_MAX_LAT = 85.051128779807;
+export const WEB_MERCATOR_MIN_LAT = -85.051128779807;
+export const WEB_MERCATOR_MAX_LNG = 180;
+export const WEB_MERCATOR_MIN_LNG = -180;
+export const WEB_MERCATOR_JAPAN_BOUNDS: [number, number, number, number] = [
+	122.933755, 24.045713, 153.986895, 45.556277
+];
 type LocationBbox = {
 	name: string;
 	bbox: [number, number, number, number];
@@ -201,7 +211,11 @@ export const locationBboxData: LocationBbox[] = [
 	},
 	{
 		name: '全国',
-		bbox: [122.933755, 24.045713, 153.986895, 45.556277]
+		bbox: WEB_MERCATOR_JAPAN_BOUNDS
+	},
+	{
+		name: '世界',
+		bbox: WEB_MERCATOR_WORLD_BBOX
 	},
 	{
 		name: '森林文化アカデミー',
@@ -219,6 +233,6 @@ export const getLocationBbox = (location: string): [number, number, number, numb
 		return bbox;
 	} else {
 		console.warn('getLocationBbox: not found', location);
-		return null;
+		return WEB_MERCATOR_WORLD_BBOX; // デフォルトの世界のバウンディングボックスを返す
 	}
 };

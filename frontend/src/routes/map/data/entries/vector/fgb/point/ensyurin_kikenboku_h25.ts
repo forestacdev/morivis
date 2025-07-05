@@ -16,6 +16,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		location: '森林文化アカデミー',
 		minZoom: 10,
 		maxZoom: 22,
+		bounds: [136.919727, 35.547376, 136.92669, 35.554887],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_kikenboku_h25.webp`
 	},
 	properties: {

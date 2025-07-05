@@ -18,7 +18,7 @@
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
 	import type { FeatureCollection } from 'geojson';
-	import type { StreetViewPoint } from '$routes/map/+page.svelte';
+	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import type { FeatureMenuData } from '$routes/map/types';
 
@@ -212,7 +212,7 @@
 				if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
 					if (entry.metaData.location === '全国') {
 						return true;
-					} else if (entry.metaData.bounds && isPointInBbox(e.lngLat, entry.metaData.bounds)) {
+					} else if (isPointInBbox(e.lngLat, entry.metaData.bounds)) {
 						return true;
 					}
 				}

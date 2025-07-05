@@ -34,7 +34,7 @@ import {
 	WEB_MERCATOR_MAX_LAT,
 	WEB_MERCATOR_MIN_LNG,
 	WEB_MERCATOR_MAX_LNG
-} from '$routes/map/utils/map';
+} from '$routes/map/data/location_bbox';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -73,8 +73,6 @@ const updateSisplayingArea = async (
 	const features = map.queryRenderedFeatures([lng, lat], {
 		layers: [layerName]
 	});
-
-	console.log(features);
 
 	console.log(features);
 
@@ -355,7 +353,7 @@ const createMapStore = () => {
 
 	const toggleTerrain = (is3d: boolean) => {
 		if (!map) return;
-		if (!map || !map.loaded()) return;
+
 		try {
 			if (is3d) {
 				if (map.getSource('terrain')) {
@@ -423,26 +421,9 @@ const createMapStore = () => {
 		map.easeTo(options);
 	};
 
-	const focusLayer = async (entry: GeoDataEntry) => {
+	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map) return;
-		let bbox: [number, number, number, number] | undefined;
-		if (entry.format.type === 'fgb' || entry.format.type === 'geojson') {
-			try {
-				const geojson = GeojsonCache.get(entry.id);
-				if (!geojson) return;
-				bbox = turfBbox(geojson) as [number, number, number, number];
-			} catch (error) {
-				console.error(error);
-			}
-		} else if (entry.metaData.bounds) {
-			bbox = entry.metaData.bounds as [number, number, number, number];
-		} else if (entry.metaData.location) {
-			bbox = getLocationBbox(entry.metaData.location) as [number, number, number, number];
-		} else {
-			console.warn('フォーカスの処理に対応してません', entry.id);
-		}
-
-		if (!bbox) return;
+		const bbox = _entry.metaData.bounds;
 
 		map.fitBounds(bbox, {
 			bearing: map.getBearing(),
@@ -455,8 +436,8 @@ const createMapStore = () => {
 			duration: 0
 		});
 
-		if (entry.metaData.minZoom && map.getZoom() + 1.5 < entry.metaData.minZoom)
-			map.setZoom(entry.metaData.minZoom); // ズームを少し下げる
+		if (_entry.metaData.minZoom && map.getZoom() + 1.5 < _entry.metaData.minZoom)
+			map.setZoom(_entry.metaData.minZoom); // ズームを少し下げる
 	};
 
 	// フィーチャーをフォーカスするメソッド

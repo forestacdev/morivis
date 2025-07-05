@@ -1,8 +1,6 @@
 import type { RasterImageEntry, RasterCategoricalStyle } from '$routes/map/data/types/raster';
-import {
-	DEFAULT_RASTER_BASEMAP_INTERACTION,
-	DEFAULT_RASTER_BASEMAP_STYLE
-} from '$routes/map/data/style';
+
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ecoris_sugihinoki',
@@ -21,6 +19,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		minZoom: 5,
 		maxZoom: 15,
 		tileSize: 256,
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: {
 			x: 450,
 			y: 201,

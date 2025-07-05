@@ -3,12 +3,6 @@ import type { Map as MaplibreMap } from 'maplibre-gl';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
-const WEB_MERCATOR_WORLD_BBOX = [-180, -85.051128779807, 180, 85.051128779807];
-export const WEB_MERCATOR_MAX_LAT = 85.051128779807;
-export const WEB_MERCATOR_MIN_LAT = -85.051128779807;
-export const WEB_MERCATOR_MAX_LNG = 180;
-export const WEB_MERCATOR_MIN_LNG = -180;
-
 type BBox = [number, number, number, number];
 
 /**
@@ -141,8 +135,11 @@ export const imageExport = (map: MaplibreMap): Promise<void> => {
 							(imgResolve, imgReject) => {
 								const img = new Image();
 								img.onload = () => imgResolve(img);
-								img.onerror = (e) =>
-									imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+								img.onerror = (e) => {
+									if (e instanceof Error)
+										imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+								};
+
 								img.src = './images/map_connpass.png'; // 画像パスを確認
 							}
 						);
@@ -211,7 +208,9 @@ export const imageExport = (map: MaplibreMap): Promise<void> => {
 				};
 				// mapImageのロードエラーハンドリング
 				image.onerror = (e) => {
-					reject(new Error(`地図画像のロードに失敗しました: ${e.message || e}`));
+					if (e instanceof Error) {
+						reject(new Error(`地図画像のロードに失敗しました: ${e.message || e}`));
+					}
 				};
 				image.src = mapImage;
 			} catch (outerError) {
@@ -276,8 +275,10 @@ export const exportPDF = async (map: MaplibreMap): Promise<void> => {
 							(imgResolve, imgReject) => {
 								const img = new Image();
 								img.onload = () => imgResolve(img);
-								img.onerror = (e) =>
-									imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+								img.onerror = (e) => {
+									if (e instanceof Error)
+										imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+								};
 								img.src = './images/map_connpass.png'; // 画像パスを確認
 							}
 						);
@@ -346,7 +347,9 @@ export const exportPDF = async (map: MaplibreMap): Promise<void> => {
 				};
 				// mapImageのロードエラーハンドリング
 				image.onerror = (e) => {
-					reject(new Error(`地図画像のロードに失敗しました: ${e.message || e}`));
+					if (e instanceof Error) {
+						reject(new Error(`地図画像のロードに失敗しました: ${e.message || e}`));
+					}
 				};
 				image.src = mapImage;
 			} catch (outerError) {
@@ -405,7 +408,7 @@ const EARTH_CIRCUMFERENCE = 40075016.686; // 約40,075km
 const TILE_SIZE = 256;
 
 // 与えられたズームレベルでの1ピクセルあたりの地上距離を計算する関数
-const distancePerPixel = (zoomLevel) => {
+const distancePerPixel = (zoomLevel: number) => {
 	// ズームレベルに基づいて、1ピクセルあたりのメートル数を計算
 	return EARTH_CIRCUMFERENCE / Math.pow(2, zoomLevel) / TILE_SIZE;
 };
@@ -415,7 +418,7 @@ const zoomLevel = 14; // 任意のズームレベル
 const pixelDistance = distancePerPixel(zoomLevel);
 
 // タイル内の高さデータをスケーリングする
-const scaleHeightToZoomLevel = (heightValue, zoomLevel) => {
+const scaleHeightToZoomLevel = (heightValue: number, zoomLevel: number) => {
 	const pixelDistance = distancePerPixel(zoomLevel);
 
 	// 高さのスケールは通常標高タイルのデータ（例えばcm単位など）に依存するので、

@@ -43,12 +43,7 @@
 	let isLayerInRange = $state(false);
 
 	let LayerBbox = $derived.by(() => {
-		if (layerEntry && layerEntry.metaData.bounds) {
-			return layerEntry.metaData.bounds as [number, number, number, number];
-		} else if (layerEntry && layerEntry.metaData.location) {
-			return getLocationBbox(layerEntry.metaData.location) as [number, number, number, number];
-		}
-		return null;
+		return layerEntry.metaData.bounds;
 	});
 
 	const selectedLayer = () => {

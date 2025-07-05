@@ -20,8 +20,9 @@ export interface BaseMetaData {
 	location: Region;
 	maxZoom: number;
 	minZoom: number;
-	bounds?: [number, number, number, number];
+	bounds: [number, number, number, number];
 	coverImage?: string;
+	center?: [number, number];
 }
 
 export type AnyRasterEntry = RasterEntry<

@@ -2,6 +2,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
 	DEFAULT_RASTER_BASEMAP_INTERACTION
 } from '$routes/map/data/style';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
@@ -20,6 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 22,
 		tileSize: 256,
+		bounds: WEB_MERCATOR_WORLD_BBOX,
 		xyzImageTile: {
 			x: 1,
 			y: 1,

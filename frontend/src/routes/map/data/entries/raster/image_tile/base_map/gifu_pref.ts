@@ -3,24 +3,23 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: 'biodic_vg67',
+	id: 'gifu_pref',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://gis.biodic.go.jp/webgis/files/vg67/tile/vg67/{z}/{x}/{y}.png'
+		url: 'https://mapdata.qchizu.xyz/gifu_pref_00/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '植生図',
-		description: '植生図',
-		attribution: '環境省生物多様性センター',
-		location: '全国',
-		minZoom: 1,
-		maxZoom: 22,
+		name: '岐阜県共有空間データ',
+		description: '',
+		attribution: 'Q地図タイル',
+		location: '岐阜県',
+		minZoom: 5,
+		maxZoom: 18,
 		tileSize: 256,
-		bounds: WEB_MERCATOR_JAPAN_BOUNDS
+		bounds: [136.276225, 35.133729, 137.651936, 36.465031]
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

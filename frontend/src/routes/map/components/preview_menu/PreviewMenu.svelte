@@ -54,6 +54,7 @@
 				<span>最大ズームレベル{showDataEntry?.metaData.maxZoom}</span>
 
 				<div class="font-bold">データ範囲</div>
+				<div>{showDataEntry?.metaData.bounds}</div>
 				{#if showDataEntry}
 					<MapPane bind:showDataEntry />
 				{/if}

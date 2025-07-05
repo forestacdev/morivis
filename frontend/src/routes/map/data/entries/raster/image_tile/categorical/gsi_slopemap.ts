@@ -1,3 +1,4 @@
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
@@ -15,7 +16,8 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		location: '全国',
 		minZoom: 3,
 		maxZoom: 15,
-		tileSize: 256
+		tileSize: 256,
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {
 		clickable: true

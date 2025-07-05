@@ -3,6 +3,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gbank_seamless',
@@ -20,6 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 0,
 		maxZoom: 13,
 		tileSize: 256,
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: {
 			x: 1827,
 			y: 777,

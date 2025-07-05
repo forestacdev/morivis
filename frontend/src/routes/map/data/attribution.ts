@@ -15,6 +15,7 @@ export type AttributionKey =
 	| '林野庁'
 	| '森林総合研究所'
 	| '愛媛県森林資源データ'
+	| 'USGS'
 	| '栃木県森林資源データ';
 
 export type Attribution = {
@@ -65,6 +66,11 @@ const attributionData: Attribution[] = [
 		url: 'http://osm.org/copyright'
 	},
 	{
+		key: 'USGS',
+		name: 'USGS',
+		url: 'https://www.usgs.gov/'
+	},
+	{
 		key: 'Esri',
 		name: 'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
@@ -104,7 +110,7 @@ const attributionData: Attribution[] = [
 		name: '栃木県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
 	}
-];
+] as const;
 
 // Map を作成
 export const attributionMap: Map<string, Attribution> = new Map(

@@ -24,6 +24,7 @@ import { getRandomCommonColor } from '$routes/map/utils/color_mapping';
 import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
+import { WEB_MERCATOR_WORLD_BBOX } from './location_bbox';
 
 // 共通の初期化処理
 // visible を true にする
@@ -106,7 +107,7 @@ export const createGeoJsonEntry = (
 		attribution: 'カスタムデータ',
 		location: '不明',
 		maxZoom: 22,
-		bounds: bbox ? (bbox as [number, number, number, number]) : undefined
+		bounds: bbox ? (bbox as [number, number, number, number]) : WEB_MERCATOR_WORLD_BBOX
 	};
 
 	let style;
