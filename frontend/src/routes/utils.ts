@@ -2,23 +2,106 @@ import * as THREE from 'three';
 import fragmentShader from './shaders/fragment.glsl?raw';
 import vertexShader from './shaders/vertex.glsl?raw';
 
+const nextPowerOfTwo = (value: number) => {
+	return Math.pow(2, Math.ceil(Math.log2(value)));
+};
+// 文字テクスチャを生成
+export const generateTexture = (
+	text = 'morivis',
+	fontSize = 1280,
+	color = '#ffffff',
+	fontFamily = 'Arial, sans-serif'
+) => {
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+
+	if (!ctx) {
+		throw new Error('Failed to get canvas context');
+	}
+	// フォント設定
+	ctx.font = `${fontSize}px ${fontFamily}`;
+	ctx.textAlign = 'left';
+	ctx.textBaseline = 'top';
+
+	// テキストサイズを測定
+	const metrics = ctx.measureText(text);
+	const width = Math.ceil(metrics.width) + 20; // パディング
+	const height = fontSize + 20; // パディング
+
+	// 2の累乗に調整（GPU最適化）
+	const textureWidth = nextPowerOfTwo(width);
+	const textureHeight = nextPowerOfTwo(height);
+
+	// キャンバスサイズ設定
+	canvas.width = textureWidth;
+	canvas.height = textureHeight;
+
+	// 背景をクリア（透明）
+	ctx.clearRect(0, 0, textureWidth, textureHeight);
+
+	// 背景を塗りつぶす（オプション）
+	// ctx.fillStyle = 'rgba(1.0, 0, 0, 1.0)'; // 透明
+
+	// フォント再設定（キャンバスサイズ変更でリセットされる）
+	ctx.font = `${fontSize}px ${fontFamily}`;
+	ctx.textAlign = 'left';
+	ctx.textBaseline = 'top';
+	ctx.fillStyle = color;
+
+	// アンチエイリアシング設定
+	// ctx.textRenderingOptimization = 'optimizeQuality';
+
+	// テキスト描画
+	ctx.fillText(text, 10, 10);
+
+	const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+	// デバックでダウンロード
+	// const dataUrl = canvas.toDataURL('image/png');
+	// const link = document.createElement('a');
+	// link.href = dataUrl;
+	// link.download = 'text_texture.png';
+	// document.body.appendChild(link);
+	// link.click();
+	// document.body.removeChild(link);
+
+	return canvas;
+};
+
 export const uniforms = {
 	time: { value: 0 },
 	uColor: { value: new THREE.Color('rgb(252, 252, 252)') },
 	uColor2: { value: new THREE.Color('rgb(0, 194, 36)') },
-	uTexture: {
-		// value: new THREE.CanvasTexture(generateTexture())
-		value: new THREE.TextureLoader().load(
-			'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmLRqJERpCe_a9JDwjDxjeWNu5IfQH32XOfg&s',
-			(texture) => {
-				// texture.minFilter = THREE.LinearFilter; // ミップマップを使用しない
-				// texture.magFilter = THREE.LinearFilter; // ミップマップを使用しない
-				texture.needsUpdate = true; // テクスチャの更新を通知
-			}
-		)
-	},
+
 	resolution: {
 		value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+	}
+};
+
+interface BuffarUniforms {
+	screenCenter: { value: THREE.Vector2 };
+	resolution: { value: THREE.Vector2 };
+	screenTexture: { value: THREE.Texture | null };
+	uTexture: { value: THREE.Texture };
+	uTextureResolution: { value: THREE.Vector2 };
+}
+
+export const buffarUniforms: BuffarUniforms = {
+	screenCenter: { value: new THREE.Vector2(0.5, 0.5) },
+	resolution: {
+		value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+	},
+	screenTexture: { value: null },
+	uTexture: {
+		value: new THREE.CanvasTexture(generateTexture())
+		// value: new THREE.TextureLoader().load(
+		// 	'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmLRqJERpCe_a9JDwjDxjeWNu5IfQH32XOfg&s',
+		// 	(texture) => {
+		// 		// texture.minFilter = THREE.LinearFilter; // ミップマップを使用しない
+		// 		// texture.magFilter = THREE.LinearFilter; // ミップマップを使用しない
+		// 		texture.needsUpdate = true; // テクスチャの更新を通知
+		// 	}
+		// )
 	},
 	uTextureResolution: { value: new THREE.Vector2(1000, 750) }
 };
@@ -153,69 +236,4 @@ export const createdDemMesh = async (): Promise<THREE.Mesh> => {
 	geometry.applyMatrix4(matrix);
 
 	return mesh;
-};
-const nextPowerOfTwo = (value: number) => {
-	return Math.pow(2, Math.ceil(Math.log2(value)));
-};
-// 文字テクスチャを生成
-export const generateTexture = (
-	text = 'morivis',
-	fontSize = 128,
-	color = '#ffffff',
-	fontFamily = 'Arial, sans-serif'
-) => {
-	const canvas = document.createElement('canvas');
-	const ctx = canvas.getContext('2d');
-
-	if (!ctx) {
-		throw new Error('Failed to get canvas context');
-	}
-	// フォント設定
-	ctx.font = `${fontSize}px ${fontFamily}`;
-	ctx.textAlign = 'left';
-	ctx.textBaseline = 'top';
-
-	// テキストサイズを測定
-	const metrics = ctx.measureText(text);
-	const width = Math.ceil(metrics.width) + 20; // パディング
-	const height = fontSize + 20; // パディング
-
-	// 2の累乗に調整（GPU最適化）
-	const textureWidth = nextPowerOfTwo(width);
-	const textureHeight = nextPowerOfTwo(height);
-
-	// キャンバスサイズ設定
-	canvas.width = textureWidth;
-	canvas.height = textureHeight;
-
-	// 背景をクリア（透明）
-	ctx.clearRect(0, 0, textureWidth, textureHeight);
-
-	// 背景を塗りつぶす（オプション）
-	// ctx.fillStyle = 'rgba(1.0, 0, 0, 1.0)'; // 透明
-
-	// フォント再設定（キャンバスサイズ変更でリセットされる）
-	ctx.font = `${fontSize}px ${fontFamily}`;
-	ctx.textAlign = 'left';
-	ctx.textBaseline = 'top';
-	ctx.fillStyle = color;
-
-	// アンチエイリアシング設定
-	// ctx.textRenderingOptimization = 'optimizeQuality';
-
-	// テキスト描画
-	ctx.fillText(text, 10, 10);
-
-	const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-	// デバックでダウンロード
-	// const dataUrl = canvas.toDataURL('image/png');
-	// const link = document.createElement('a');
-	// link.href = dataUrl;
-	// link.download = 'text_texture.png';
-	// document.body.appendChild(link);
-	// link.click();
-	// document.body.removeChild(link);
-
-	return canvas;
 };

@@ -6,14 +6,15 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
-
+	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
+	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
 	import { fade, fly, scale } from 'svelte/transition';
 
-	import { createdDemMesh, uniforms } from './utils';
+	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -22,6 +23,12 @@
 	let orbitControls: OrbitControls;
 	let zoomControls: TrackballControls;
 	let showButton = $state<boolean>(true);
+	let renderTarget: THREE.WebGLRenderTarget;
+	let bufferScene: THREE.Scene;
+
+	let postMesh: THREE.Mesh;
+	let isLoading = $state<boolean>(false);
+	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
 		showButton = false;
@@ -44,10 +51,26 @@
 		// カメラのアスペクト比を正す
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
+
+		buffarUniforms.resolution.value.set(width, height);
+
+		// フレームバッファのサイズを更新
+		if (!renderTarget) return;
+
+		renderTarget.setSize(width, height);
+
+		// シェーダーの解像度を更新
+		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
 	};
 
 	onMount(async () => {
 		if (!canvas) return;
+
+		if (!canvas) return;
+		const sizes = {
+			width: window.innerWidth,
+			height: window.innerHeight
+		};
 		// シーンの作成
 		scene = new THREE.Scene();
 
@@ -66,6 +89,9 @@
 		// camera.position.set(100, 100, 100);
 		scene.add(camera);
 
+		// フレームバッファ用のシーンとカメラを作成
+		bufferScene = new THREE.Scene();
+
 		// キャンバス
 		const context = canvas.getContext('webgl2') as WebGL2RenderingContext;
 
@@ -82,6 +108,26 @@
 		zoomControls.noRotate = true;
 		zoomControls.zoomSpeed = 0.2;
 
+		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
+			depthBuffer: false,
+			stencilBuffer: false,
+			magFilter: THREE.NearestFilter,
+			minFilter: THREE.NearestFilter,
+			wrapS: THREE.ClampToEdgeWrapping,
+			wrapT: THREE.ClampToEdgeWrapping
+		});
+		buffarUniforms.screenTexture.value = renderTarget.texture as THREE.Texture;
+		// フレームバッファに描画するオブジェクトを追加
+		const buffarGeometry = new THREE.PlaneGeometry(2, 2);
+		const buffarMaterial = new THREE.ShaderMaterial({
+			fragmentShader: bufferFragment,
+			vertexShader: bufferVertex,
+			uniforms: buffarUniforms as any // 型の互換性のためにanyを使用
+		});
+
+		postMesh = new THREE.Mesh(buffarGeometry, buffarMaterial);
+		bufferScene.add(postMesh);
+
 		// レンダラー
 		renderer = new THREE.WebGLRenderer({
 			canvas,
@@ -90,6 +136,9 @@
 		});
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+		// renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+		// renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 		// ヘルパーグリッド
 		// const gridHelper = new THREE.GridHelper(200, 100);
@@ -126,14 +175,17 @@
 
 			uniforms.time.value = clock.getElapsedTime();
 
+			// フレームバッファ;
+			renderer.setRenderTarget(renderTarget);
 			renderer.render(scene, camera);
+
+			renderer.setRenderTarget(null);
+			renderer.render(bufferScene, camera);
 		};
 		animate();
 
 		// 画面リサイズ時にキャンバスもリサイズ
-
 		window.addEventListener('resize', onResize);
-		// 初期化
 		onResize();
 	});
 
@@ -143,6 +195,8 @@
 		zoomControls.dispose();
 		scene.clear(); // シーン内のオブジェクトを削除
 		renderer.dispose();
+		renderTarget.dispose(); // フレームバッファの解放
+		postMesh.geometry.dispose(); // メッシュのジオメトリを解放
 		// イベントリスナーの削除
 
 		window.removeEventListener('resize', onResize);
