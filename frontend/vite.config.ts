@@ -47,9 +47,15 @@ export default defineConfig({
 	ssr: {
 		noExternal: ['svelte-hero-icons']
 	},
-	// server: {
-	// 	host: true
-	// }
+	server: {
+		proxy: {
+			'/api/gsj': {
+				target: 'https://tiles.gsj.jp',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/gsj/, '')
+			}
+		}
+	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	}

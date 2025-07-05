@@ -4,9 +4,26 @@ import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
+import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
+
+export class TileProxy {
+	static toProxyUrl(originalUrl: string): string {
+		if (import.meta.env.PROD) return originalUrl;
+
+		try {
+			const url = new URL(originalUrl);
+			if (url.hostname === 'tiles.gsj.jp') {
+				return `/api/gsj${url.pathname}`;
+			}
+		} catch (error) {
+			console.warn('Invalid URL:', originalUrl);
+		}
+		return originalUrl;
+	}
+}
 
 // raster + image タイプの処理
-const getRasterImageUrl = async (_layerEntry: AnyRasterEntry): Promise<string> => {
+const getRasterImageUrl = async (_layerEntry: AnyRasterEntry): Promise<string | undefined> => {
 	// xyz タイル情報を取得
 	let tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
 
@@ -15,11 +32,25 @@ const getRasterImageUrl = async (_layerEntry: AnyRasterEntry): Promise<string> =
 		tile = xyzToWMSXYZ(tile);
 	}
 
-	// URLを生成して返す
-	return convertTmsToXyz(_layerEntry.format.url)
+	// URLを生成
+	const url = convertTmsToXyz(_layerEntry.format.url)
 		.replace('{z}', tile.z.toString())
 		.replace('{x}', tile.x.toString())
 		.replace('{y}', tile.y.toString());
+
+	// URLを生成して返す
+
+	if (_layerEntry.style.type === 'dem') {
+		const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
+
+		if (demType) {
+			const convertUrl = await generateDemCoverImage(url, demType);
+
+			return convertUrl;
+		}
+	} else {
+		return url;
+	}
 };
 
 const generatePmtilesImageUrl = async (
@@ -43,7 +74,7 @@ export const getLayerImage = async (_layerEntry: GeoDataEntry): Promise<string |
 		// タイプとフォーマットによる分岐
 		if (_layerEntry.type === 'raster') {
 			if (_layerEntry.metaData.coverImage) {
-				getCoverImageUrl(_layerEntry);
+				return getCoverImageUrl(_layerEntry);
 			} else if (_layerEntry.format.type === 'image') {
 				return await getRasterImageUrl(_layerEntry);
 			} else if (_layerEntry.format.type === 'pmtiles') {
@@ -85,4 +116,59 @@ export const downloadImageBitmapAsPNG = (imageBitmap: ImageBitmap, filename: str
 		// クリーンアップ
 		URL.revokeObjectURL(url);
 	}, 'image/png');
+};
+
+const loadImageToBitmap = async (imageUrl: string): Promise<ImageBitmap> => {
+	try {
+		const finalUrl = TileProxy.toProxyUrl(imageUrl);
+		const response = await fetch(finalUrl);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch image: ${response.statusText}`);
+		}
+		const blob = await response.blob();
+		return await createImageBitmap(blob);
+	} catch (error) {
+		console.error('Error loading image to bitmap:', error);
+		throw error; // エラーを再投げして呼び出し元で処
+	}
+};
+
+// demデータ用のカバー画像を作成
+export const generateDemCoverImage = async (
+	imageUrl: string,
+	demType: DemDataTypeKey
+): Promise<string> => {
+	const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
+	const id = crypto.randomUUID();
+
+	try {
+		// Promiseを解決してからWorkerに送信
+		const image = await loadImageToBitmap(imageUrl);
+		const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+
+		return new Promise((resolve, reject) => {
+			worker.postMessage({
+				id,
+				image, // ← 今度はImageBitmapオブジェクト
+				demTypeNumber
+			});
+
+			worker.onmessage = (e) => {
+				const { responseId, blob, error } = e.data;
+				console.log('Worker response:', e.data);
+				if (responseId === id) {
+					if (error) {
+						reject(new Error(error));
+					} else {
+						resolve(URL.createObjectURL(blob));
+					}
+				}
+
+				worker.terminate(); // Workerを終了
+			};
+		});
+	} catch (error) {
+		throw new Error(`Failed to load image: ${error}`);
+	}
 };
