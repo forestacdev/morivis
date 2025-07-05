@@ -15,5 +15,17 @@ declare module 'path';
 declare module '@zumer/orbit/dist/orbit.js';
 declare module 'shapefile';
 
+declare module 'virtual:pwa-info' {
+	export interface PWAInfo {
+		pwaInDevEnvironment: boolean;
+		webManifest: {
+			href: string;
+			useCredentials: boolean;
+			linkTag: string;
+		};
+	}
+
+	export const pwaInfo: PWAInfo | undefined;
+}
 
 export {};

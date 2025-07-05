@@ -1,8 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
-
-	let { children } = $props();
+	import { pwaInfo } from 'virtual:pwa-info';
 
 	import { onMount } from 'svelte';
 
@@ -17,6 +16,10 @@
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import { isBlocked } from '$routes/stores/ui';
+
+	let { children } = $props();
+
+	const webManifestLink = pwaInfo?.webManifest?.linkTag || '';
 
 	onNavigate((navigation) => {
 		// NOTE: URLパラメータの変更のみ無効
@@ -113,6 +116,7 @@
 
 <svelte:head>
 	<link rel="icon" href={faviconHref} />
+	{@html webManifestLink}
 </svelte:head>
 
 <div class="absolute h-full w-full">
