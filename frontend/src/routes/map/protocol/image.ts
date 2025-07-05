@@ -59,7 +59,6 @@ export class TileImageManager {
 		}
 	}
 
-	// TODO
 	public async loadImage(src: string, signal: AbortSignal): Promise<ImageBitmap> {
 		try {
 			const response = await fetch(src, { signal });

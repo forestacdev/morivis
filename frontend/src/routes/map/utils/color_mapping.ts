@@ -145,6 +145,25 @@ export class ColorMapManager {
 		return pixels;
 	}
 
+	public createSimpleCSSGradient(
+		colorMapName: string,
+		steps: number = 30,
+		direction: string = 'to right'
+	): string {
+		// オプションオブジェクトを作成
+		const options = {
+			colormap: colorMapName,
+			nshades: steps, // ステップ数を指定
+			format: 'hex', // RGBAからRGBに変更
+			alpha: 1
+		};
+
+		let colors = colormap(options as any);
+
+		const gradient = `linear-gradient(${direction}, ${colors.join(', ')})`;
+		return gradient;
+	}
+
 	add(cacheKey: string, pixels: Uint8Array): void {
 		this.cache.set(cacheKey, pixels);
 	}

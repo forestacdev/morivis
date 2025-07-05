@@ -52,6 +52,10 @@
 	});
 
 	const selectedLayer = () => {
+		if ($selectedLayerId === layerEntry.id) {
+			$isStyleEdit = !$isStyleEdit;
+			return;
+		}
 		selectedLayerId.set(layerEntry.id);
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);

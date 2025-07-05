@@ -121,6 +121,7 @@ const createMapStore = () => {
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
+	const onStyleDataEvent = writable<MapLibreEvent | null>(null);
 	const mooveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
@@ -189,6 +190,18 @@ const createMapStore = () => {
 
 		map.once('style.load', () => {
 			isStyleLoadEvent.set(map);
+		});
+
+		map.on('styledata', (e) => {
+			if (!map) return;
+			state.set({
+				bbox: getMapBounds(),
+				zoom: map.getZoom(),
+				center: [map.getCenter().lng, map.getCenter().lat],
+				pitch: map.getPitch(),
+				bearing: map.getBearing()
+			});
+			onStyleDataEvent.set(e);
 		});
 
 		map.on('load', (e: MapLibreEvent) => {

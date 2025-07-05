@@ -4,6 +4,7 @@
 
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
 	import type { ColorMapType } from '$routes/map/data/types/raster';
+	import ColorScale from './ColorScale.svelte';
 
 	interface Props {
 		isColorMap: ColorMapType;
@@ -56,6 +57,8 @@
 			{/each}
 		</div>
 	{/if}
+
+	<ColorScale {isColorMap} />
 </div>
 
 <style>
