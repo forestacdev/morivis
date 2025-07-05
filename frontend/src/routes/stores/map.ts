@@ -19,8 +19,8 @@ import type { CSSCursor } from '$routes/map/types';
 import { getLocationBbox } from '$routes/map/data/location_bbox';
 
 import turfBbox, { bbox } from '@turf/bbox';
-import { setMapParams, getMapParams, getParams } from '$routes/map/utils/params';
-import { DEBUG_MODE, isTerrain3d } from '$routes/stores';
+import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
+import { DEBUG_MODE } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';
@@ -52,7 +52,10 @@ export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーに�
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
-export const displayingArea = writable<string | null>(null); // 現在の位を管理するストア
+export const displayingArea = writable<string | null>(null); // 現在のエリア名を管理するストア
+
+/**  3D地形 */
+export const isTerrain3d = writable<boolean>(false); // 3D地形の表示状態を管理するストア
 
 //prefecture, municipalities
 const updateSisplayingArea = async (
@@ -350,6 +353,31 @@ const createMapStore = () => {
 		}, 200);
 	};
 
+	const toggleTerrain = (is3d: boolean) => {
+		if (!map) return;
+		if (!map || !map.loaded()) return;
+		try {
+			if (is3d) {
+				if (map.getSource('terrain')) {
+					map.setTerrain({
+						source: 'terrain',
+						exaggeration: 1.0
+					});
+					set3dParams('1');
+					map.easeTo({ pitch: 60 });
+				}
+			} else {
+				if (map.getTerrain()) {
+					map.setTerrain(null);
+				}
+				set3dParams('0');
+				map.easeTo({ pitch: 0 });
+			}
+		} catch (error) {
+			console.error('Terrain control error:', error);
+		}
+	};
+
 	const queryRenderedFeatures = (
 		geometryOrOptions?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesOptions,
 		options?: QueryRenderedFeaturesOptions
@@ -645,6 +673,7 @@ const createMapStore = () => {
 		getMapBounds,
 		getCanvas: () => map?.getCanvas(),
 		terrainReload: terrainReload, // 地形をリロードするメソッド
+		toggleTerrain,
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
 		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド

@@ -38,7 +38,7 @@
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
 	import { DEBUG_MODE, isStreetView } from '$routes/stores';
-	import { mapMode, isTerrain3d } from '$routes/stores';
+	import { mapMode } from '$routes/stores';
 	import {
 		activeLayerIdsStore,
 		getEntryIds,
@@ -50,7 +50,7 @@
 	} from '$routes/stores/layers';
 	import { showHillshadeLayer } from '$routes/stores/layers';
 
-	import { mapStore } from '$routes/stores/map';
+	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import {

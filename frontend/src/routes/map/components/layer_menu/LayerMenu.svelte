@@ -16,7 +16,7 @@
 	import { showLabelLayer } from '$routes/stores/layers';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
-	import { isTerrain3d } from '$routes/stores';
+	import { isTerrain3d, mapStore } from '$routes/stores/map';
 
 	import { gsap } from 'gsap';
 
@@ -102,6 +102,11 @@
 			isSideMenuType.set('layer');
 		}
 	});
+
+	let is3d = $state<boolean>(false);
+	$effect(() => {
+		mapStore.toggleTerrain(is3d);
+	});
 </script>
 
 <!-- レイヤーメニュー -->
@@ -137,7 +142,7 @@
 				<Switch label="等高線" bind:value={$showContourLayer} />
 				<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
 				<Switch label="陰影" bind:value={$showHillshadeLayer} />
-				<Switch label="3D" bind:value={$isTerrain3d} />
+				<Switch label="3D" bind:value={is3d} />
 			</div>
 		{/if}
 		<div class="h-[200px] w-full shrink-0"></div>

@@ -31,14 +31,7 @@
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import ScreenGuard from '$routes/ScreenGuard.svelte';
-	import {
-		isStreetView,
-		mapMode,
-		selectedLayerId,
-		isStyleEdit,
-		isTerrain3d,
-		DEBUG_MODE
-	} from '$routes/stores';
+	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
@@ -49,6 +42,7 @@
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
+	import { map } from 'es-toolkit/compat';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -150,7 +144,8 @@
 
 			const terrain3d = get3dParams();
 			if (terrain3d === '1') {
-				isTerrain3d.set(true);
+				mapStore.toggleTerrain(true);
+				// isTerrain3d.set(true);
 			}
 		});
 	});

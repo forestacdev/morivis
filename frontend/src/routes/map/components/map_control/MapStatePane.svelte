@@ -3,7 +3,6 @@
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import { mapStore, displayingArea } from '$routes/stores/map';
 
 	let zoom = $state(0);

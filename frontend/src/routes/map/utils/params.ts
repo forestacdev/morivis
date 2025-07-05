@@ -1,8 +1,9 @@
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
 
 import { queryParameters, ssp } from 'sveltekit-search-params';
-import { isStreetView, isTerrain3d } from '$routes/stores';
+import { isStreetView } from '$routes/stores';
 import { get } from 'svelte/store';
+import { isTerrain3d } from '$routes/stores/map';
 
 /* urlパラメーターの取得 **/
 export const getParams = (params: string): { [key: string]: string } => {

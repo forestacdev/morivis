@@ -4,7 +4,6 @@
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import {
 		showSideMenu,
 		mapMode,
