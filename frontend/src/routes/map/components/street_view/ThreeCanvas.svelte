@@ -11,8 +11,6 @@
 	// import fs from './shaders/fragment_debug.glsl?raw';
 	import vs from './shaders/vertex.glsl?raw';
 
-	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
-	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
 	import { getCameraYRotation, updateAngle, degreesToRadians, TextureCache } from './utils';
 	import type { CurrentPointData } from './utils';
 
@@ -21,6 +19,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
+	import type { buffarUniforms } from '$routes/utils';
 
 	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
 	const IMAGE_URL_SHINGLE =
@@ -109,22 +108,6 @@
 		time: { value: 0.0 },
 		fromTarget: { value: 0 }, // フェード元
 		toTarget: { value: 0 } // フェード先
-	};
-
-	interface BuffarUniforms {
-		screenCenter: { value: THREE.Vector2 };
-		resolution: { value: THREE.Vector2 };
-		screenTexture: { value: THREE.Texture | null };
-		zoomBlurStrength: { value: number }; // ズームブラーの強さ
-	}
-
-	const buffarUniforms: BuffarUniforms = {
-		screenCenter: { value: new THREE.Vector2(0.5, 0.5) },
-		resolution: {
-			value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-		},
-		screenTexture: { value: null },
-		zoomBlurStrength: { value: 0.0 } // ズームブラーの強さ
 	};
 
 	const debugBoxMaterial = new THREE.MeshBasicMaterial({
@@ -227,16 +210,6 @@
 		// カメラのアスペクト比を正す
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
-
-		buffarUniforms.resolution.value.set(width, height);
-
-		// フレームバッファのサイズを更新
-		if (!renderTarget) return;
-
-		renderTarget.setSize(width, height);
-
-		// シェーダーの解像度を更新
-		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
 	};
 
 	// テクスチャローダーを初期化
@@ -305,38 +278,9 @@
 		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
 		scene.add(sphere);
 
-		// // ヘルパー方向
-		// const axesHelper = new THREE.AxesHelper(1000);
-		// scene.add(axesHelper);
-
-		// const helper = new THREE.PolarGridHelper(10, 16, 10, 64);
-		// scene.add(helper);
-
-		const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
-
-		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
-		scene.add(wireframeCube);
-
-		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
-			depthBuffer: false,
-			stencilBuffer: false,
-			magFilter: THREE.NearestFilter,
-			minFilter: THREE.NearestFilter,
-			wrapS: THREE.ClampToEdgeWrapping,
-			wrapT: THREE.ClampToEdgeWrapping
-		});
-		buffarUniforms.screenTexture.value = renderTarget.texture as THREE.Texture;
-		// フレームバッファに描画するオブジェクトを追加
-		const buffarGeometry = new THREE.PlaneGeometry(2, 2);
-		const buffarMaterial = new THREE.ShaderMaterial({
-			fragmentShader: bufferFragment,
-			vertexShader: bufferVertex,
-			uniforms: buffarUniforms as any // 型の互換性のためにanyを使用
-		});
-
-		// sprite.renderOrder = 1;
-		postMesh = new THREE.Mesh(buffarGeometry, buffarMaterial);
-		bufferScene.add(postMesh);
+		// const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
+		// const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
+		// scene.add(wireframeCube);
 
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -396,12 +340,7 @@
 				uniforms.rotationAnglesC.value = rotationAngles;
 			}
 
-			// TODO: フレームバッファ
-			// renderer.setRenderTarget(renderTarget);
 			renderer.render(scene, camera);
-
-			// renderer.setRenderTarget(null);
-			// renderer.render(bufferScene, camera);
 		};
 		animate();
 	});

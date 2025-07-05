@@ -181,6 +181,12 @@
 
 			renderer.setRenderTarget(null);
 			renderer.render(bufferScene, camera);
+
+			// シェーダーの解像度を更新
+			(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(
+				window.innerWidth,
+				window.innerHeight
+			);
 		};
 		animate();
 
