@@ -138,20 +138,20 @@
 		const map = mapStore.getMap();
 		if (!map) return;
 
-		if ($DEBUG_MODE) {
+		if (import.meta.env.MODE === 'development') {
 			const features = map.queryRenderedFeatures(e.point);
 
 			if (features.length === 0) {
 				console.warn('No features found at clicked point.');
 				return;
 			}
-			console.warn('Clicked features:', features);
+			console.log('Clicked features:', features);
 
 			const prop = features[0].properties;
 
 			// keyを配列で取得
 			const keys = Object.keys(prop);
-			console.warn(keys);
+			console.log(keys);
 
 			// expressions配列を作成
 			const expressions = keys.map((key) => {
@@ -162,7 +162,7 @@
 				};
 			});
 
-			console.warn(expressions);
+			console.log(expressions);
 		}
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;
