@@ -222,29 +222,29 @@
 			// }
 		});
 
-		_map.on('click', (e) => {
-			if (isDrawMode !== 'select') return;
-			if (terraDraw && terraDraw.enabled) {
-				terraDraw.clear();
-				selectedFeatureId = null;
-			}
-			const feature = _map.queryRenderedFeatures(e.point, {
-				layers: ['@draw_fill_layer', '@draw_line_layer', '@draw_circle_layer']
-			});
+		// _map.on('click', (e) => {
+		// 	if (isDrawMode !== 'select') return;
+		// 	if (terraDraw && terraDraw.enabled) {
+		// 		terraDraw.clear();
+		// 		selectedFeatureId = null;
+		// 	}
+		// 	const feature = _map.queryRenderedFeatures(e.point, {
+		// 		layers: ['@draw_fill_layer', '@draw_line_layer', '@draw_circle_layer']
+		// 	});
 
-			if (feature.length > 0) {
-				const clickedFeature = feature[0];
-				const clickedFeatureId = clickedFeature.properties.id;
+		// 	if (feature.length > 0) {
+		// 		const clickedFeature = feature[0];
+		// 		const clickedFeatureId = clickedFeature.properties.id;
 
-				const targetFeature = drawGeojsonData.features.find(
-					(f) => f.properties.id === clickedFeatureId
-				) as DrawGeojsonFeature;
+		// 		const targetFeature = drawGeojsonData.features.find(
+		// 			(f) => f.properties.id === clickedFeatureId
+		// 		) as DrawGeojsonFeature;
 
-				terraDraw?.addFeatures([targetFeature]);
-				color = targetFeature.properties.color;
-				selectedFeatureId = clickedFeatureId;
-			}
-		});
+		// 		terraDraw?.addFeatures([targetFeature]);
+		// 		color = targetFeature.properties.color;
+		// 		selectedFeatureId = clickedFeatureId;
+		// 	}
+		// });
 	});
 
 	const handleKeydown = (e: KeyboardEvent) => {
