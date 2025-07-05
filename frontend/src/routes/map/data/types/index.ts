@@ -24,6 +24,10 @@ export interface BaseMetaData {
 	coverImage?: string;
 }
 
-export type GeoDataEntry =
-	| VectorEntry<GeoJsonMetaData | TileMetaData>
-	| RasterEntry<RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle>;
+export type AnyRasterEntry = RasterEntry<
+	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
+>;
+
+export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
+
+export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry;

@@ -1,147 +1,66 @@
-// WebGLコンテキストの取得とキャンバス設定
-const canvas = document.createElement('canvas');
-canvas.width = 512;
-canvas.height = 512;
+import { getImagePmtiles } from '$routes/map/utils/raster';
+import { convertTmsToXyz } from '$routes/map/utils/sources';
+import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
-// シェーダーコード
-const vertexShaderSource = `
-    attribute vec4 a_position;
-    void main() {
-        gl_Position = a_position;
-    }
-`;
+import { IMAGE_TILE_XYZ } from '$routes/constants';
+import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 
-const fragmentShaderSource = `
-#ifdef GL_ES
-precision mediump float;
-#endif
+// raster + image タイプの処理
+const getRasterImageUrl = async (_layerEntry: AnyRasterEntry): Promise<string> => {
+	// xyz タイル情報を取得
+	let tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
 
-uniform vec2 u_resolution;
-uniform float u_time;
-
-float circle(in vec2 _st, in float _radius){
-    vec2 l = _st-vec2(0.5);
-    return 1.-smoothstep(_radius-(_radius*0.01),
-                         _radius+(_radius*0.01),
-                         dot(l,l)*4.0);
-}
-
-void main() {
-	vec2 st = gl_FragCoord.xy/u_resolution;
-    vec3 color = vec3(0.0);
-
-    st *= 500.0;      // Scale up the space by 3
-    st = fract(st); // Wrap around 1.0
-
-    // Now we have 9 spaces that go from 0-1
-
-    color = vec3(st,0.0);
-    color = vec3(circle(st,0.5));
-
-	gl_FragColor = vec4(color,1.0);
-}
-`;
-
-const gl = canvas.getContext('webgl');
-if (!gl) {
-	console.error('WebGL not supported');
-}
-
-// シェーダーをコンパイルしてプログラムをリンク
-const createShader = (
-	gl: WebGLRenderingContext,
-	type: number,
-	source: string
-): WebGLShader | null => {
-	const shader = gl.createShader(type);
-	if (!shader) return null;
-
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error('Shader compilation failed:', gl.getShaderInfoLog(shader));
-		gl.deleteShader(shader);
-		return null;
-	}
-	return shader;
-};
-
-const createProgram = (
-	gl: WebGLRenderingContext,
-	vertexShader: WebGLShader,
-	fragmentShader: WebGLShader
-): WebGLProgram | null => {
-	const program = gl.createProgram();
-	if (!program) return null;
-
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		console.error('Program linking failed:', gl.getProgramInfoLog(program));
-		gl.deleteProgram(program);
-		return null;
-	}
-	return program;
-};
-
-export const webglToPng = async (number: number): Promise<string> => {
-	const gl = canvas.getContext('webgl');
-	if (!gl) {
-		console.error('WebGL not supported');
-		return '';
+	// urlに{-y} が含まれている場合は、タイル座標を WMS タイル座標に変換
+	if (_layerEntry.format.url.includes('{-y}')) {
+		tile = xyzToWMSXYZ(tile);
 	}
 
-	const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-	const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	if (!vertexShader || !fragmentShader) return '';
-
-	const program = createProgram(gl, vertexShader, fragmentShader);
-	if (!program) return '';
-
-	gl.useProgram(program);
-
-	const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-	const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-	const numberLocation = gl.getUniformLocation(program, 'u_number');
-
-	const positionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-	gl.bufferData(
-		gl.ARRAY_BUFFER,
-		new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]),
-		gl.STATIC_DRAW
-	);
-
-	gl.enableVertexAttribArray(positionAttributeLocation);
-	gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-	gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
-	const floatNumber = parseFloat(String(number));
-	gl.uniform1f(numberLocation, floatNumber);
-
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-	const outputCanvas = document.createElement('canvas');
-	outputCanvas.width = canvas.width;
-	outputCanvas.height = canvas.height;
-	const outputContext = outputCanvas.getContext('2d');
-	if (!outputContext) return '';
-
-	const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-	gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-	const imageData = outputContext.createImageData(canvas.width, canvas.height);
-	imageData.data.set(pixels);
-
-	outputContext.putImageData(imageData, 0, 0);
-
-	// bitmap形式で返す
-
-	return outputCanvas.toDataURL('image/png');
+	// URLを生成して返す
+	return convertTmsToXyz(_layerEntry.format.url)
+		.replace('{z}', tile.z.toString())
+		.replace('{x}', tile.x.toString())
+		.replace('{y}', tile.y.toString());
 };
 
-// 画像をPNG形式でダウンロードする関数
+const generatePmtilesImageUrl = async (
+	_layerEntry: AnyRasterEntry
+): Promise<string | undefined> => {
+	const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
+	return await getImagePmtiles(_layerEntry.format.url, tile);
+};
+
+const getCoverImageUrl = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
+	return _layerEntry.metaData.coverImage;
+};
+
+/**
+ * レイヤーの画像URLを取得する関数
+ * @param _layerEntry - レイヤーエントリ
+ * @returns 画像URLまたはundefined
+ */
+export const getLayerImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
+	try {
+		// タイプとフォーマットによる分岐
+		if (_layerEntry.type === 'raster') {
+			if (_layerEntry.metaData.coverImage) {
+				getCoverImageUrl(_layerEntry);
+			} else if (_layerEntry.format.type === 'image') {
+				return await getRasterImageUrl(_layerEntry);
+			} else if (_layerEntry.format.type === 'pmtiles') {
+				return await generatePmtilesImageUrl(_layerEntry);
+			}
+		} else if (_layerEntry.type === 'vector') {
+			return await getCoverImageUrl(_layerEntry);
+		}
+
+		return undefined;
+	} catch (error) {
+		console.error('Error getting layer image:', error);
+		throw error; // エラーを再投げして呼び出し元で処理
+	}
+};
+
+// ImageBitmapをPNG形式でダウンロードする関数 ImageBitmap
 export const downloadImageBitmapAsPNG = (imageBitmap: ImageBitmap, filename: string) => {
 	// 1. canvasに描画
 	const canvas = document.createElement('canvas');

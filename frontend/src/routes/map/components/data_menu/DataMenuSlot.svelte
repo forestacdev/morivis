@@ -2,16 +2,11 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	import { IMAGE_TILE_XYZ } from '$routes/constants';
-	import { COVER_NO_IMAGE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showNotification } from '$routes/stores/notification';
-	import { getImagePmtiles } from '$routes/map/utils/raster';
-	import PreviewSlot from '$routes/map/components/data_menu/PreviewSlot.svelte';
-	import { convertTmsToXyz } from '$routes/map/utils/sources';
-	import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { getLayerImage } from '$routes/map/utils/image';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -23,6 +18,7 @@
 	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
 
 	let isHover = $state(false);
+	let isImageError = $state(false);
 
 	let isAdded = $derived.by(() => {
 		return $activeLayerIdsStore.includes(dataEntry.id);
@@ -49,53 +45,15 @@
 		}
 	});
 
-	const generateIconImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
-		if (_layerEntry.type !== 'raster') {
-			// raster タイプ以外の場合は undefined を返す
+	const promise = (() => {
+		try {
+			return getLayerImage(dataEntry);
+		} catch (error) {
+			isImageError = true;
+			console.error('Error generating icon image:', error);
 			return Promise.resolve(undefined);
 		}
-		// xyz タイル情報を取得
-		let tile = _layerEntry.metaData.xyzImageTile
-			? _layerEntry.metaData.xyzImageTile
-			: IMAGE_TILE_XYZ;
-
-		// urlに{-y} が含まれている場合は、タイル座標を WMS タイル座標に変換
-		if (_layerEntry.format.url.includes('{-y}')) {
-			tile = xyzToWMSXYZ(tile);
-		}
-
-		// URLを生成して Promise として返す
-		return Promise.resolve(
-			convertTmsToXyz(_layerEntry.format.url)
-				.replace('{z}', tile.z.toString())
-				.replace('{x}', tile.x.toString())
-				.replace('{y}', tile.y.toString())
-		);
-	};
-
-	// 非同期で画像URLを取得
-	const fetchTileImage = async (_layerEntry: GeoDataEntry) => {
-		try {
-			if (_layerEntry.type !== 'raster' || _layerEntry.format.type !== 'pmtiles') return;
-			const tile = _layerEntry.metaData.xyzImageTile
-				? _layerEntry.metaData.xyzImageTile
-				: IMAGE_TILE_XYZ;
-			return await getImagePmtiles(_layerEntry.format.url, tile);
-		} catch (e) {
-			console.error('Error fetching tile image:', e);
-		}
-	};
-	const promise = async (layerEntry: GeoDataEntry) => {
-		if (layerEntry.type === 'raster') {
-			if (layerEntry.format.type === 'image') {
-				return generateIconImage(layerEntry);
-			} else if (layerEntry.format.type === 'pmtiles') {
-				return fetchTileImage(layerEntry);
-			}
-		} else if (layerEntry.type === 'vector') {
-			return layerEntry.metaData.coverImage ?? COVER_NO_IMAGE_PATH;
-		}
-	};
+	})();
 
 	const addData = (id: string) => {
 		activeLayerIdsStore.add(id);
@@ -115,7 +73,7 @@
 		disabled={isAdded}
 		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
-		{#await promise(dataEntry) then url}
+		{#await promise then url}
 			<img
 				src={url}
 				class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
