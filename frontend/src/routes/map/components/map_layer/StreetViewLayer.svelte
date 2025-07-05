@@ -1,13 +1,3 @@
-<script module lang="ts">
-	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
-	export const streetViewSources = {
-		street_view_sources: {
-			type: 'vector',
-			url: `pmtiles://${STREET_VIEW_DATA_PATH}/THETA360.pmtiles`
-		}
-	};
-</script>
-
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy } from 'svelte';

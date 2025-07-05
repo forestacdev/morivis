@@ -3,6 +3,9 @@
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
+		type SourceSpecification,
+		type BackgroundLayerSpecification,
+		type LayerSpecification,
 		type MapGeoJSONFeature,
 		type CanvasSourceSpecification,
 		type CanvasSource,
@@ -18,11 +21,11 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
-	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
+
 	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
 	import MapStatePane from '$routes/map/components/map_control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
-	import { streetViewSources } from '$routes/map/components/map_layer/StreetViewLayer.svelte';
+
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
@@ -62,6 +65,7 @@
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/session_storage';
+	import { streetViewSources } from '$routes/map/components/map_layer';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -185,12 +189,12 @@
 					type: 'vector',
 					maxzoom: 22,
 					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
-				},
+				} as SourceSpecification,
 				draw_source: {
 					type: 'geojson',
 					data: drawGeojsonData as FeatureCollection,
 					promoteId: 'id'
-				},
+				} as SourceSpecification,
 				// prefecture: {
 				// 	type: 'vector',
 				// 	url: 'pmtiles://./prefecture.pmtiles',
@@ -209,10 +213,10 @@
 						'background-color': '#000000',
 						'background-opacity': showDataEntry ? 0.7 : 0
 					}
-				},
-				...previewLayers,
-				...drawLayers
-
+				} as BackgroundLayerSpecification,
+				...previewLayers
+				// TODO: 描画レイヤー
+				// ...drawLayers
 				// {
 				// 	id: 'municipalities',
 				// 	type: 'fill',
