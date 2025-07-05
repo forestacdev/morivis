@@ -152,7 +152,14 @@ const createMapStore = () => {
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 			// transformRequest: (url, resourceType) => {
-			// 	return { url };
+			// 	if (import.meta.env.PROD) return { url };
+
+			// 	// 兵庫県森林情報のURLを変換
+			// 	if (url.includes('rinya-hyogo.geospatial.jp')) {
+			// 		const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', '/api/rinya');
+			// 		console.log('Transformed URL:', newUrl);
+			// 		return { url: newUrl };
+			// 	}
 			// }
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
