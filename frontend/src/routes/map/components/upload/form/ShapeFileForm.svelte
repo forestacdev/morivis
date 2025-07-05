@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/map/+page.svelte';
+	import type { DialogType } from '$routes/map/types';
 	import FileForm from '$routes/map/components/atoms/FileForm.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';

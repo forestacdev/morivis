@@ -300,7 +300,9 @@
 			terrain: $isTerrain3d ? terrain : undefined
 		};
 
-		console.log('mapStyle', mapStyle);
+		if (import.meta.env.MODE === 'development') {
+			console.log('mapStyle', mapStyle);
+		}
 
 		return mapStyle;
 	};

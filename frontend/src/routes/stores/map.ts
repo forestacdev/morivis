@@ -423,21 +423,35 @@ const createMapStore = () => {
 
 	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map) return;
-		const bbox = _entry.metaData.bounds;
 
-		map.fitBounds(bbox, {
-			bearing: map.getBearing(),
-			padding: {
-				left: 400, // サイドバー分の余白を左に確保
-				top: 20,
-				right: 20,
-				bottom: 20
-			},
-			duration: 0
-		});
-
-		if (_entry.metaData.minZoom && map.getZoom() + 1.5 < _entry.metaData.minZoom)
-			map.setZoom(_entry.metaData.minZoom); // ズームを少し下げる
+		if (_entry.metaData.center) {
+			// 中心座標が指定されている場合は、中心にズーム
+			map.easeTo({
+				center: _entry.metaData.center,
+				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
+				bearing: map.getBearing(),
+				pitch: map.getPitch(),
+				padding: {
+					left: 400, // サイドバー分の余白を左に確保
+					top: 20,
+					right: 20,
+					bottom: 20
+				},
+				duration: 500
+			});
+			return;
+		} else {
+			map.fitBounds(_entry.metaData.bounds, {
+				bearing: map.getBearing(),
+				padding: {
+					left: 400, // サイドバー分の余白を左に確保
+					top: 20,
+					right: 20,
+					bottom: 20
+				},
+				duration: 500
+			});
+		}
 	};
 
 	// フィーチャーをフォーカスするメソッド

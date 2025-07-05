@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/map/+page.svelte';
+	import type { DialogType } from '$routes/map/types';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';

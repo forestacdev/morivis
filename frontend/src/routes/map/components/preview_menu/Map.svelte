@@ -31,28 +31,6 @@
 		let bbox: [number, number, number, number] | null = null;
 		if (_showDataEntry.metaData.bounds) {
 			bbox = _showDataEntry.metaData.bounds;
-		} else if (_showDataEntry.format.type === 'fgb' || _showDataEntry.format.type === 'geojson') {
-			try {
-				let geojson;
-				if (GeojsonCache.has(_showDataEntry.id)) {
-					geojson = GeojsonCache.get(_showDataEntry.id);
-				} else if (_showDataEntry.format.type === 'fgb') {
-					geojson = await getFgbToGeojson(_showDataEntry.format.url);
-					GeojsonCache.set(_showDataEntry.id, geojson);
-				} else {
-					geojson = await getGeojson(_showDataEntry.format.url);
-					GeojsonCache.set(_showDataEntry.id, geojson);
-				}
-
-				if (!geojson) {
-					throw new Error('GeoJSON not found in cache');
-				}
-				bbox = turfBbox(geojson) as [number, number, number, number];
-			} catch (error) {
-				console.error(error);
-			}
-		} else if (_showDataEntry.metaData.location) {
-			bbox = getLocationBbox(_showDataEntry.metaData.location);
 		} else {
 			console.warn('データ範囲を取得できません', _showDataEntry.id);
 		}

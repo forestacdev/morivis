@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/map/+page.svelte';
+	import type { DialogType } from '$routes/map/types';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
