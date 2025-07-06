@@ -81,6 +81,7 @@
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
 	}
 
@@ -103,6 +104,7 @@
 		drawGeojsonData = $bindable(),
 		demEntries,
 		showZoneForm = $bindable(),
+		focusBbox = $bindable(),
 		setPoint
 	}: Props = $props();
 
@@ -538,6 +540,8 @@
 		bind:tempLayerEntries
 		bind:showDataEntry
 		bind:showDialogType
+		bind:showZoneForm
+		bind:focusBbox
 	/>
 
 	<StreetViewLayer map={maplibreMap} />

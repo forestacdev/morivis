@@ -104,7 +104,7 @@
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
-	let selectedEpsgCode = $state<EpsgCode>('4326'); // 初期値はWGS84
+	let selectedEpsgCode = $state<EpsgCode>('3857'); // 初期値はWGS84
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 
 	// 初期化完了のフラグ
@@ -372,6 +372,7 @@
 			bind:showDialogType
 			bind:drawGeojsonData
 			bind:showZoneForm
+			bind:focusBbox
 			{demEntries}
 			{streetViewLineData}
 			{streetViewPointData}

@@ -18,7 +18,8 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_hyogo',
-		bounds: [134.252809, 34.156129, 135.468591, 35.674667]
+		bounds: [134.252809, 34.156129, 135.468591, 35.674667],
+		center: [134.651168, 34.897842]
 	},
 	properties: {
 		keys: [

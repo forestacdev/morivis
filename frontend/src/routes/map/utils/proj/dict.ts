@@ -142,8 +142,7 @@ export const epsgNameDict: EpsgNameDict = {
 	'6687': '日本測地系2011 / 平面直角座標系第19系'
 };
 
-export const epsgPrefDict: Record<EpsgCode, string> = {
-	'4326': '世界',
+export const epsgPrefDict: Record<Exclude<EpsgCode, '4326'>, string> = {
 	'3857': '世界',
 	'6669': '長崎県', // 1系
 	'6670': '福岡県、佐賀県、熊本県、大分県、宮崎県、鹿児島県', // 2系

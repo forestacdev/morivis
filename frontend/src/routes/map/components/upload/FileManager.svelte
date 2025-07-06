@@ -13,6 +13,10 @@
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import turfBbox from '@turf/bbox';
+	import { proj4Dict } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -21,6 +25,8 @@
 		tempLayerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+		showZoneForm: boolean; // 座標系フォームの表示状態
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
@@ -29,7 +35,9 @@
 		dropFile = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
-		showDialogType = $bindable()
+		showDialogType = $bindable(),
+		showZoneForm = $bindable(),
+		focusBbox = $bindable()
 	}: Props = $props();
 
 	let fileName = $state<string>('');
@@ -74,6 +82,7 @@
 			let shpFile: File | undefined;
 			let dbfFile: File | undefined;
 			let prjFile: File | undefined;
+			let shxFile: File | undefined;
 
 			// .shp .dbf .prj のファイルを探して File オブジェクトを取得
 			for (let i = 0; i < file.length; i++) {
@@ -84,13 +93,43 @@
 					dbfFile = f;
 				} else if (f.name.endsWith('.prj')) {
 					prjFile = f;
+				} else if (f.name.endsWith('.shx')) {
+					shxFile = f;
 				}
 			}
 
-			if (shpFile && dbfFile && prjFile) {
-				geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjFile);
+			if (shpFile && dbfFile && prjFile && shxFile) {
+				const prjContent = await readPrjFileContent(prjFile);
+				geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjContent);
+				if (!geojsonData) {
+					showNotification('シェープファイルの読み込みに失敗しました', 'error');
+					return;
+				}
 				fileName = shpFile.name;
-			} else if (shpFile || dbfFile || prjFile) {
+			} else if (shpFile && dbfFile && shxFile && !prjFile) {
+				const tempGeojsonData = await shpFileToGeojson(shpFile as File);
+				if (!tempGeojsonData) {
+					showNotification('シェープファイルの読み込みに失敗しました', 'error');
+					return;
+				}
+				const bbox = turfBbox(tempGeojsonData);
+
+				if (!isBboxValid(bbox as [number, number, number, number])) {
+					focusBbox = bbox as [number, number, number, number];
+					showDialogType = 'shp';
+					showZoneForm = true;
+					return;
+				} else {
+					// bboxが有効な場合は、座標系フォームを表示せずにエントリを作成
+					const prjContent = proj4Dict['4326']; // 世界測地系のプロジェクションを使用
+					geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjContent);
+					if (!geojsonData) {
+						showNotification('シェープファイルの読み込みに失敗しました', 'error');
+						return;
+					}
+					fileName = shpFile.name;
+				}
+			} else if (shpFile || dbfFile || prjFile || shxFile) {
 				showDialogType = 'shp';
 				return;
 			} else {

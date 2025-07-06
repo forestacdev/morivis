@@ -2,7 +2,7 @@
 	import * as yup from 'yup';
 
 	import type { DialogType } from '$routes/map/types';
-	import FileForm from '$routes/map/components/atoms/FileForm.svelte';
+	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -14,6 +14,13 @@
 	import turfBbox from '@turf/bbox';
 
 	import type { UseEventTriggerType } from '$routes/map/types/ui';
+	import { fade } from 'svelte/transition';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import FileForm from '$routes/map/components/atoms/FileForm.svelte';
+
+	import gsap from 'gsap';
+
+	import * as THREE from 'three';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -21,7 +28,6 @@
 		dropFile: File | FileList | null;
 		showZoneForm: boolean; // 座標系フォームの表示状態
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
-		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
@@ -29,8 +35,7 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
-		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		selectedEpsgCode = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -208,7 +213,7 @@
 		if (!forms.shpFile || !forms.dbfFile || !forms.shxFile) return;
 
 		if (!forms.prjFile) {
-			// .prjファイルがない場合は座標系フォームを表示
+			// 世界測地系かどうかを確認
 			const geojsonData = await shpFileToGeojson(forms.shpFile as File);
 			if (!geojsonData) {
 				showNotification('シェープファイルの読み込みに失敗しました', 'error');
@@ -216,11 +221,18 @@
 			}
 			const bbox = turfBbox(geojsonData);
 
-			focusBbox = bbox as [number, number, number, number];
+			if (!isBboxValid(bbox as [number, number, number, number])) {
+				showZoneForm = true;
+				return;
+			}
 
-			showZoneForm = true;
+			// bboxが有効な場合は、座標系フォームを表示せずにエントリを作成
+			const prjContent = proj4Dict['4326'];
+
+			setEntryData(prjContent);
 			return;
 		}
+
 		const prjContent = await readPrjFileContent(forms.prjFile as File);
 		setEntryData(prjContent);
 	};
@@ -238,55 +250,106 @@
 			}
 		}
 	});
+
+	let distance = $state<number>(0); // 円の半径
+
+	$effect(() => {
+		if (showDialogType === 'shp') {
+			// ダイアログが表示されるときに距離を更新
+			distance = 300; // 必要に応じて調整
+		} else {
+			distance = 0; // ダイアログが非表示のときは距離をリセット
+		}
+	});
+
+	const clock = new THREE.Clock();
+
+	const animate = () => {
+		requestAnimationFrame(animate);
+		const elapsedTime = clock.getElapsedTime();
+		const loadingItems = document.querySelectorAll('.loading-item');
+		loadingItems.forEach((item, index) => {
+			distance = 300 + Math.sin(elapsedTime + index) * 50; // 距離をアニメーションで変化させる
+		});
+		// ここで必要なアニメーション処理を追加
+	};
+	animate();
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">シェープファイルの登録</span>
-</div>
-
-<div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
->
-	<FileForm
-		label=".shp"
-		bind:file={forms.shpFile}
-		accept=".shp"
-		error={errors.shpFile}
-		bind:name={forms.shpName}
-	/>
-	<FileForm
-		label=".dbf"
-		bind:file={forms.dbfFile}
-		accept=".dbf"
-		error={errors.dbfFile}
-		bind:name={forms.dbfName}
-	/>
-	<FileForm
-		label=".shx"
-		bind:file={forms.shxFile}
-		accept=".shx"
-		error={errors.shxFile}
-		bind:name={forms.shxName}
-	/>
-	<FileForm
-		label=".prj(任意)"
-		bind:file={forms.prjFile}
-		accept=".prj"
-		error={errors.prjFile}
-		bind:name={forms.prjName}
-	/>
-</div>
-
-{hasFilenameMatchError}
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
-	<button
-		onclick={registration}
-		disabled={isDisabled}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
-			? 'cursor-not-allowed opacity-50'
-			: 'cursor-pointer'}"
+{#if showDialogType && showDialogType === 'shp'}
+	<div
+		transition:fade={{ duration: 200 }}
+		class="absolute bottom-0 z-30 flex h-full w-full flex-col items-center justify-center bg-black/50 text-white
+         {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 	>
-		決定
-	</button>
-</div>
+		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+			<span class="text-2xl font-bold">シェープファイルの登録</span>
+		</div>
+
+		<div class="relative h-full w-full" style="--distance: {distance}px;">
+			<div class="loading-item" style="--index: 0;">
+				<ShapeFileFormInput
+					label=".shp"
+					bind:file={forms.shpFile}
+					accept=".shp"
+					error={errors.shpFile}
+					bind:name={forms.shpName}
+				/>
+			</div>
+			<div class="loading-item" style="--index: 1;">
+				<ShapeFileFormInput
+					label=".dbf"
+					bind:file={forms.dbfFile}
+					accept=".dbf"
+					error={errors.dbfFile}
+					bind:name={forms.dbfName}
+				/>
+			</div>
+			<div class="loading-item" style="--index: 2;">
+				<ShapeFileFormInput
+					label=".shx"
+					bind:file={forms.shxFile}
+					accept=".shx"
+					error={errors.shxFile}
+					bind:name={forms.shxName}
+				/>
+			</div>
+		</div>
+		<FileForm
+			label=".prj(任意)"
+			bind:file={forms.prjFile}
+			accept=".prj"
+			error={errors.prjFile}
+			bind:name={forms.prjName}
+		/>
+		{hasFilenameMatchError}
+		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+			<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
+			<button
+				onclick={registration}
+				disabled={isDisabled}
+				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
+					? 'cursor-not-allowed opacity-50'
+					: 'cursor-pointer'}"
+			>
+				決定
+			</button>
+		</div>
+	</div>
+{/if}
+
+<style>
+	.loading-item {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		/** ---省略--- */
+		translate: -50% -50%;
+		/** ---省略--- */
+		--angle: calc(360deg / 3 * var(--index) - 90deg);
+
+		--x: calc(cos(var(--angle)) * var(--distance));
+		--y: calc(sin(var(--angle)) * var(--distance));
+		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);
+	}
+</style>

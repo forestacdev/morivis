@@ -32,7 +32,7 @@
 	}: Props = $props();
 </script>
 
-{#if showDialogType}
+{#if showDialogType && showDialogType !== 'shp'}
 	<div
 		transition:fade={{ duration: 200 }}
 		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {showZoneForm
@@ -55,22 +55,20 @@
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />
 			{/if}
-			{#if showDialogType === 'shp'}
-				<ShapeFileForm
-					bind:showDataEntry
-					bind:showDialogType
-					bind:dropFile
-					bind:showZoneForm
-					bind:focusBbox
-					{selectedEpsgCode}
-				/>
-			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 		</div>
 	</div>
 {/if}
+
+<ShapeFileForm
+	bind:showDataEntry
+	bind:showDialogType
+	bind:dropFile
+	bind:showZoneForm
+	{selectedEpsgCode}
+/>
 
 <style>
 </style>
