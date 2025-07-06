@@ -358,16 +358,17 @@
 	onMount(async () => {
 		if (!layerEntries) return;
 
-		if (!$DEBUG_MODE) {
-			const localEntries = loadLayerEntries();
+		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
+		// if (!$DEBUG_MODE) {
+		// 	const localEntries = loadLayerEntries();
 
-			// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
-			if (localEntries && localEntries.length > 0) {
-				layerEntries = localEntries;
-				const ids = getEntryIds(layerEntries);
-				activeLayerIdsStore.setLayers(ids);
-			}
-		}
+		// 	// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
+		// 	if (localEntries && localEntries.length > 0) {
+		// 		layerEntries = localEntries;
+		// 		const ids = getEntryIds(layerEntries);
+		// 		activeLayerIdsStore.setLayers(ids);
+		// 	}
+		// }
 
 		const mapStyle = await createMapStyle(layerEntries);
 		if (!mapStyle || !mapContainer) return;
