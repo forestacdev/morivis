@@ -24,7 +24,6 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		keys: ['活用内容', '活用期間', '番号'],
-
 		titles: [
 			{
 				conditions: ['活用内容', '活用期間'],

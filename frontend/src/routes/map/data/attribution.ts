@@ -3,6 +3,7 @@ export type AttributionKey =
 	| '森林文化アカデミー'
 	| '国土地理院'
 	| '岐阜県森林研究所'
+	| '国土数値情報'
 	| 'エコリス地図タイル'
 	| '産総研地質調査総合センター'
 	| '産総研シームレス標高タイル'
@@ -50,6 +51,11 @@ const attributionData: Attribution[] = [
 		key: '産総研地質調査総合センター',
 		name: '産総研地質調査総合センター',
 		url: 'https://gbank.gsj.jp/seamless/index.html?lang=ja'
+	},
+	{
+		key: '国土数値情報',
+		name: '国土数値情報',
+		url: 'https://nlftp.mlit.go.jp/'
 	},
 	{
 		key: '産総研シームレス標高タイル',
