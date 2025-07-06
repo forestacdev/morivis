@@ -7,12 +7,7 @@
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
-	import {
-		showBoundaryLayer,
-		showContourLayer,
-		showHillshadeLayer,
-		showLoadLayer
-	} from '$routes/stores/layers';
+
 	import { showLabelLayer } from '$routes/stores/layers';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
@@ -138,10 +133,6 @@
 		{#if !isSmall}
 			<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
 				<Switch label="ラベル" bind:value={$showLabelLayer} />
-				<Switch label="道路" bind:value={$showLoadLayer} />
-				<Switch label="等高線" bind:value={$showContourLayer} />
-				<Switch label="行政区域境界" bind:value={$showBoundaryLayer} />
-				<Switch label="陰影" bind:value={$showHillshadeLayer} />
 				<Switch label="3D" bind:value={is3d} />
 			</div>
 		{/if}

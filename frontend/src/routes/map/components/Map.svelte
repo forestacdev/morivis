@@ -42,13 +42,9 @@
 	import {
 		activeLayerIdsStore,
 		getEntryIds,
-		showBoundaryLayer,
-		showContourLayer,
 		showLabelLayer,
-		showLoadLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
-	import { showHillshadeLayer } from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { isSideMenuType } from '$routes/stores/ui';
@@ -354,26 +350,6 @@
 
 	// ラベルの表示
 	showLabelLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-
-	// 道路の表示
-	showLoadLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-
-	// 行政境界の表示
-	showBoundaryLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-
-	// 等高線の表示
-	showContourLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-
-	// 陰影の表示
-	showHillshadeLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

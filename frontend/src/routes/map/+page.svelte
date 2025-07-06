@@ -100,6 +100,7 @@
 	let angleMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
 	let showDialogType = $state<DialogType>(null);
+	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
 
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
@@ -412,6 +413,14 @@
 <ScreenGuard />
 
 <ConfirmationDialog />
+
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'F3') {
+			DEBUG_MODE.set(!$DEBUG_MODE);
+		}
+	}}
+/>
 
 <style>
 </style>

@@ -12,12 +12,7 @@ import { TileImageManager } from '$routes/map/protocol/image';
 import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
-import {
-	showBoundaryLayer,
-	showLabelLayer,
-	showLoadLayer,
-	showContourLayer
-} from '$routes/stores/layers';
+import { showLabelLayer } from '$routes/stores/layers';
 import { get } from 'svelte/store';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
@@ -238,8 +233,7 @@ export const createSourcesItems = async (
 	const sourceItems = Object.assign({}, ...sortedItems);
 
 	// ラベルのソースを追加
-	const isGsiSource =
-		get(showLabelLayer) || get(showLoadLayer) || get(showBoundaryLayer) || get(showContourLayer);
+	const isGsiSource = get(showLabelLayer);
 
 	// POIのソースを追加
 	const poiSources = get(showLabelLayer) ? poiStyleJson.sources : {};

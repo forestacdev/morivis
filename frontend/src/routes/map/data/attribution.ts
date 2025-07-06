@@ -63,7 +63,7 @@ const attributionData: Attribution[] = [
 	},
 	{
 		key: 'OSM',
-		name: '&copy; OpenStreetMap contributors',
+		name: '© OpenStreetMap contributors',
 		url: 'http://osm.org/copyright'
 	},
 	{

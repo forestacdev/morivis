@@ -37,6 +37,7 @@ export const MAP_POSITION: MapPosition = {
 	zoom: 16,
 	pitch: 0,
 	bearing: 0
+
 	// bounds: [136.91278, 35.543576, 136.92986, 35.556704]
 };
 

@@ -2,6 +2,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
+import { layerAttributions } from './attributions';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -40,7 +41,7 @@ const createLayerStore = () => {
 				const newLayers = layers.filter((layerId) => layerId !== id);
 				// GeojsonCacheからも削除
 				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
-
+				layerAttributions.remove(id);
 				return newLayers;
 			}),
 
@@ -82,20 +83,8 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 	return layerEntries.map((entry) => entry.id);
 };
 
-/** 道路レイヤー */
-export const showLoadLayer = writable<boolean>(true);
-
-/** 行政境界レイヤー */
-export const showBoundaryLayer = writable<boolean>(false);
-
-/** 等高線レイヤー */
-export const showContourLayer = writable<boolean>(false);
-
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
-
-/** 陰影レイヤー */
-export const showHillshadeLayer = writable<boolean>(false);
 
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);
