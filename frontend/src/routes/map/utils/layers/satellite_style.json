@@ -71,7 +71,7 @@
       "type": "raster",
       "source": "base_seamlessphoto",
       "minzoom": 8,
-      "maxzoom": 22
+      "maxzoom": 24
     },
     {
       "id": "housenumber",

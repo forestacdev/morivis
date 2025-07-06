@@ -18,6 +18,7 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
@@ -26,7 +27,8 @@
 		tempLayerEntries = $bindable(),
 		showZoneForm = $bindable(),
 		selectedEpsgCode,
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		focusBbox = $bindable()
 	}: Props = $props();
 </script>
 
@@ -59,6 +61,7 @@
 					bind:showDialogType
 					bind:dropFile
 					bind:showZoneForm
+					bind:focusBbox
 					{selectedEpsgCode}
 				/>
 			{/if}

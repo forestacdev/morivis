@@ -116,6 +116,18 @@ export const getBoundingBoxCorners = (bbox: BBox): Coordinates => {
 	return corners;
 };
 
+export const bboxToPolygonCoordinates = (bbox: BBox): number[][][] => {
+	return [
+		[
+			[bbox[0], bbox[1]],
+			[bbox[2], bbox[1]],
+			[bbox[2], bbox[3]],
+			[bbox[0], bbox[3]],
+			[bbox[0], bbox[1]]
+		]
+	];
+};
+
 /**
  * Detect the longitude domain based on the first and last longitude values.
  *

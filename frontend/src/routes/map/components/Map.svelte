@@ -234,7 +234,18 @@
 				// 	maxzoom: 14
 				// },
 				...zoneSources,
-				...previewSources
+				...previewSources,
+				focus_bbox: {
+					type: 'geojson',
+					data: {
+						type: 'Feature',
+						geometry: {
+							type: 'Polygon',
+							coordinates: []
+						},
+						properties: {}
+					}
+				}
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
@@ -244,11 +255,21 @@
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
-						'background-opacity': showDataEntry || showZoneForm ? 0.7 : 0
+						'background-opacity': showDataEntry || showZoneForm ? 0.5 : 0
 					}
 				} as BackgroundLayerSpecification,
 				...previewLayers,
-				...zoneLayers
+				...zoneLayers,
+				{
+					id: '@focus_bbox',
+					type: 'fill',
+					source: 'focus_bbox',
+					paint: {
+						'fill-color': '#00fafa',
+						'fill-opacity': 0.5,
+						'fill-outline-color': 'white'
+					}
+				}
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {

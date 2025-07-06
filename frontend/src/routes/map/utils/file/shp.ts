@@ -19,16 +19,22 @@ const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
 
 export const shpFileToGeojson = async (
 	shp: File,
-	dbf: File,
-	prjContent: string
+	dbf?: File,
+	prjContent?: string
 ): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
-	const [shpData, dbfData] = await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)]);
+	const [shpData, dbfData] =
+		shp && dbf
+			? await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)])
+			: await Promise.all([loadBinaryFile(shp), null]);
 
-	const geojson = await shapefile.read(shpData, dbfData, {
-		encoding: 'shift-jis'
-	});
+	const geojson =
+		prjContent && dbf
+			? await shapefile.read(shpData, dbfData, {
+					encoding: 'shift-jis'
+				})
+			: await shapefile.read(shpData);
 
-	if (isWgs84Prj(prjContent)) {
+	if (!prjContent || !dbf || isWgs84Prj(prjContent)) {
 		return geojson;
 	}
 

@@ -11,7 +11,8 @@ import type {
 	MapLibreEvent,
 	QueryRenderedFeaturesOptions,
 	MapGeoJSONFeature,
-	LngLatBoundsLike
+	LngLatBoundsLike,
+	GeoJSONSource
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -35,6 +36,7 @@ import {
 	WEB_MERCATOR_MIN_LNG,
 	WEB_MERCATOR_MAX_LNG
 } from '$routes/map/data/location_bbox';
+import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -642,6 +644,24 @@ const createMapStore = () => {
 		};
 	};
 
+	const setData = (
+		sourceId: string,
+		geojsonData:
+			| Feature<Geometry, GeoJsonProperties>
+			| FeatureCollection<Geometry, GeoJsonProperties>
+	) => {
+		if (!map) return;
+		const source = map.getSource(sourceId) as GeoJSONSource;
+		if (source) {
+			source.setData(geojsonData);
+		}
+	};
+
+	const fitBounds = (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) => {
+		if (!map) return;
+		map.fitBounds(bounds, options);
+	};
+
 	return {
 		subscribe,
 		init,
@@ -657,9 +677,9 @@ const createMapStore = () => {
 		getCenter: () => map?.getCenter(),
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
+		setData,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
-		fitBounds: (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) =>
-			map?.fitBounds(bounds, options),
+		fitBounds,
 		panTo,
 		panToPoi,
 		easeTo: (options: EaseToOptions) => easeTo(options),

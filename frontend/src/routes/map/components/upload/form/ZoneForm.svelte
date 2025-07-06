@@ -1,15 +1,28 @@
 <script lang="ts">
-	import { epsgPrefDict, epsgBboxDict, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import { transformBbox } from '$routes/map/utils/proj';
+	import {
+		epsgPrefDict,
+		epsgBboxDict,
+		type EpsgCode,
+		proj4Dict
+	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
+	import type { Geometry, GeoJsonProperties, Feature } from 'geojson';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	interface Props {
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
-	let { showZoneForm = $bindable(), selectedEpsgCode = $bindable() }: Props = $props();
+	let {
+		showZoneForm = $bindable(),
+		selectedEpsgCode = $bindable(),
+		focusBbox = $bindable()
+	}: Props = $props();
 
 	const registration = () => {
 		showZoneForm = false;
@@ -17,19 +30,56 @@
 
 		// 選択されたEPSGコードを使用して何らかの処理を行う
 	};
+	let originalBbox = $derived.by(() => {
+		if (selectedEpsgCode) {
+			const prjContent = proj4Dict[selectedEpsgCode];
+			if (focusBbox) {
+				return transformBbox(focusBbox, prjContent);
+			}
+		}
+		return null;
+	});
 
 	$effect(() => {
-		// 初期化や他の処理が必要な場合はここに記述
-
-		const bbox = epsgBboxDict[selectedEpsgCode].bbox;
-		const map = mapStore.getMap();
-
-		if (map) {
-			map.setFilter('zone', ['==', ['get', 'zone'], epsgBboxDict[selectedEpsgCode].zone]);
-			map.fitBounds(bbox, {
-				padding: { top: 20, bottom: 100, left: 20, right: 20 },
-				maxZoom: 10 // ズームレベルの制限
+		if (originalBbox && isBboxValid(originalBbox)) {
+			mapStore.fitBounds(originalBbox, {
+				padding: 200,
+				duration: 1500
 			});
+
+			const bboxFeature = {
+				type: 'Feature',
+				geometry: {
+					type: 'Polygon',
+					coordinates: [
+						[
+							[originalBbox[0], originalBbox[1]],
+							[originalBbox[2], originalBbox[1]],
+							[originalBbox[2], originalBbox[3]],
+							[originalBbox[0], originalBbox[3]],
+							[originalBbox[0], originalBbox[1]]
+						]
+					]
+				},
+				properties: {
+					name: 'focus_bbox',
+					description: 'Focus bounding box'
+				}
+			};
+
+			mapStore.setData('focus_bbox', bboxFeature as Feature<Geometry, GeoJsonProperties>);
+		} else {
+			// フォーカスバウンディングボックスが無効な場合、レイヤーのスタイルを更新
+			const bboxFeature = {
+				type: 'Feature',
+				geometry: {
+					type: 'Polygon',
+					coordinates: [[]]
+				},
+				properties: {}
+			};
+
+			mapStore.setData('focus_bbox', bboxFeature as Feature<Geometry, GeoJsonProperties>);
 		}
 	});
 </script>

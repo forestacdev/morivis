@@ -9,8 +9,9 @@
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { epsgBboxDict, type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
+	import { readPrjFileContent, transformBbox } from '$routes/map/utils/proj';
+	import turfBbox from '@turf/bbox';
 
 	import type { UseEventTriggerType } from '$routes/map/types/ui';
 
@@ -20,6 +21,7 @@
 		dropFile: File | FileList | null;
 		showZoneForm: boolean; // 座標系フォームの表示状態
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
@@ -27,7 +29,8 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
-		selectedEpsgCode = $bindable()
+		selectedEpsgCode = $bindable(),
+		focusBbox = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -206,6 +209,15 @@
 
 		if (!forms.prjFile) {
 			// .prjファイルがない場合は座標系フォームを表示
+			const geojsonData = await shpFileToGeojson(forms.shpFile as File);
+			if (!geojsonData) {
+				showNotification('シェープファイルの読み込みに失敗しました', 'error');
+				return;
+			}
+			const bbox = turfBbox(geojsonData);
+
+			focusBbox = bbox as [number, number, number, number];
+
 			showZoneForm = true;
 			return;
 		}
