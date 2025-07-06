@@ -25,6 +25,8 @@ import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 import { WEB_MERCATOR_WORLD_BBOX } from './location_bbox';
+import { isBboxValid } from '$routes/map/utils/map';
+import { showNotification } from '$routes/stores/notification';
 
 // 共通の初期化処理
 // visible を true にする
@@ -101,6 +103,11 @@ export const createGeoJsonEntry = (
 	color: string = getRandomCommonColor()
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const bbox = turfBbox(data);
+
+	if (!bbox || !isBboxValid(bbox)) {
+		showNotification('座標値が不正なデータです', 'error');
+		return;
+	}
 	const metaData: GeoJsonMetaData = {
 		name,
 		description: 'ユーザーがアップロードしたカスタムデータ',

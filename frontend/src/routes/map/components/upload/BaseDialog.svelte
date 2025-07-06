@@ -9,11 +9,14 @@
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { epsgPrefDict, epsgBboxDict, type EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		showDialogType: DialogType;
 		tempLayerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
+		showZoneForm: boolean;
+		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
 	}
 
@@ -21,6 +24,8 @@
 		showDialogType = $bindable(),
 		showDataEntry = $bindable(),
 		tempLayerEntries = $bindable(),
+		showZoneForm = $bindable(),
+		selectedEpsgCode,
 		dropFile = $bindable()
 	}: Props = $props();
 </script>
@@ -28,7 +33,9 @@
 {#if showDialogType}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {showZoneForm
+			? 'pointer-events-none opacity-0'
+			: ''}"
 	>
 		<div
 			transition:scale={{ duration: 300 }}
@@ -47,7 +54,13 @@
 				<VectorForm bind:showDataEntry bind:showDialogType />
 			{/if}
 			{#if showDialogType === 'shp'}
-				<ShapeFileForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<ShapeFileForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />

@@ -7,19 +7,27 @@
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
+	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+
+	import type { UseEventTriggerType } from '$routes/map/types/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
+		showZoneForm: boolean; // 座標系フォームの表示状態
+		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		showZoneForm = $bindable(),
+		selectedEpsgCode = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -45,8 +53,9 @@
 				}),
 			prjFile: yup
 				.mixed()
-				.required('ファイルを選択してください')
+				.optional()
 				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
+					console.log(value);
 					if (value instanceof File) {
 						return value.name.endsWith('.prj');
 					}
@@ -63,8 +72,8 @@
 				}),
 			shpName: yup.string().required('ファイル名が検出できません'),
 			dbfName: yup.string().required('ファイル名が検出できません'),
-			prjName: yup.string().required('ファイル名が検出できません'),
-			shxName: yup.string().required('ファイル名が検出できません')
+			shxName: yup.string().required('ファイル名が検出できません'),
+			prjName: yup.string().optional()
 		})
 		.test(
 			'filenames-match', // テスト名
@@ -90,12 +99,12 @@
 	let forms = $state<ShpFormSchema>({
 		shpFile: null,
 		dbfFile: null,
-		prjFile: null,
 		shxFile: null,
+		prjFile: '',
 		shpName: '',
 		dbfName: '',
-		prjName: '',
-		shxName: ''
+		shxName: '',
+		prjName: ''
 	});
 
 	const setFiles = (dropFile: File | FileList | null) => {
@@ -168,16 +177,14 @@
 			});
 	});
 
-	const registration = async () => {
-		// NOTE: .shxファイルは仕様必須であるが、この処理では使用しないため、バリデーションから除外
-		if (!forms.shpFile || !forms.dbfFile || !forms.prjFile) return;
+	const setEntryData = async (_prjContent: string) => {
 		isProcessing.set(true);
 		const geojsonData = await shpFileToGeojson(
 			forms.shpFile as File,
 			forms.dbfFile as File,
-			forms.prjFile as File
+			_prjContent
 		);
-
+		// フォームのデータをエントリに設定
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 
 		if (!entryGeometryType) {
@@ -185,8 +192,7 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpFile.name);
-
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpName);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -194,9 +200,32 @@
 		isProcessing.set(false);
 	};
 
+	const registration = async () => {
+		// NOTE: .shxファイルは仕様必須であるが、この処理では使用しないため、バリデーションから除外
+		if (!forms.shpFile || !forms.dbfFile || !forms.shxFile) return;
+
+		if (!forms.prjFile) {
+			// .prjファイルがない場合は座標系フォームを表示
+			showZoneForm = true;
+			return;
+		}
+		const prjContent = await readPrjFileContent(forms.prjFile as File);
+		setEntryData(prjContent);
+	};
+
 	const cancel = () => {
 		showDialogType = null;
 	};
+
+	useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
+		if (eventName === 'setZone') {
+			// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
+			const prjContent = proj4Dict[selectedEpsgCode];
+			if (prjContent) {
+				setEntryData(prjContent);
+			}
+		}
+	});
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
@@ -221,21 +250,21 @@
 		bind:name={forms.dbfName}
 	/>
 	<FileForm
-		label=".prj"
-		bind:file={forms.prjFile}
-		accept=".prj"
-		error={errors.prjFile}
-		bind:name={forms.prjName}
-	/>
-	<FileForm
 		label=".shx"
 		bind:file={forms.shxFile}
 		accept=".shx"
 		error={errors.shxFile}
 		bind:name={forms.shxName}
 	/>
+	<FileForm
+		label=".prj(任意)"
+		bind:file={forms.prjFile}
+		accept=".prj"
+		error={errors.prjFile}
+		bind:name={forms.prjName}
+	/>
 </div>
-<div></div>
+
 {hasFilenameMatchError}
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>

@@ -1,6 +1,6 @@
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import * as shapefile from 'shapefile';
-import { readPrjFileContent, isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
+import { isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { showNotification } from '$routes/stores/notification';
 
 const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
@@ -20,24 +20,15 @@ const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
 export const shpFileToGeojson = async (
 	shp: File,
 	dbf: File,
-	prj: File
+	prjContent: string
 ): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
-	const [shpData, dbfData, prjContent] = await Promise.all([
-		loadBinaryFile(shp),
-		loadBinaryFile(dbf),
-		readPrjFileContent(prj)
-	]);
+	const [shpData, dbfData] = await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)]);
 
 	const geojson = await shapefile.read(shpData, dbfData, {
 		encoding: 'shift-jis'
 	});
 
-	if (!prjContent) {
-		showNotification('.prj ファイルに座標系情報が含まれていません。', 'info');
-		return geojson;
-	}
-
-	if (!prjContent || isWgs84Prj(prjContent)) {
+	if (isWgs84Prj(prjContent)) {
 		return geojson;
 	}
 

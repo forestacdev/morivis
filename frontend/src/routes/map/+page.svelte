@@ -42,6 +42,8 @@
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
+	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
+	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -101,6 +103,8 @@
 
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
+	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
+	let selectedEpsgCode = $state<EpsgCode>('4326'); // 初期値はWGS84
 
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
@@ -366,6 +370,7 @@
 			bind:dropFile
 			bind:showDialogType
 			bind:drawGeojsonData
+			bind:showZoneForm
 			{demEntries}
 			{streetViewLineData}
 			{streetViewPointData}
@@ -386,7 +391,7 @@
 		<FeatureMenu bind:featureMenuData {layerEntries} />
 		<PreviewMenu bind:showDataEntry />
 
-		{#if !showDataEntry}
+		{#if !showDataEntry && !showZoneForm}
 			<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
 		{/if}
 		{#if showDataEntry}
@@ -403,7 +408,15 @@
 		/>
 	</div>
 {/if}
-<UploadDialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
+<UploadDialog
+	bind:showDialogType
+	bind:showDataEntry
+	bind:tempLayerEntries
+	bind:dropFile
+	bind:showZoneForm
+	{selectedEpsgCode}
+/>
+<ZoneForm bind:showZoneForm bind:selectedEpsgCode />
 
 <Tooltip />
 <SideMenu />

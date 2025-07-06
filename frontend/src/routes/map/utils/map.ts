@@ -3,6 +3,14 @@ import type { Map as MaplibreMap } from 'maplibre-gl';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
+import {
+	WEB_MERCATOR_MIN_LAT,
+	WEB_MERCATOR_MAX_LAT,
+	WEB_MERCATOR_MIN_LNG,
+	WEB_MERCATOR_MAX_LNG
+} from '$routes/map/data/location_bbox';
+import { map } from 'es-toolkit/compat';
+
 type BBox = [number, number, number, number];
 
 /**
@@ -33,6 +41,52 @@ export const isBBoxInside = (inner: BBox, outer: BBox): boolean => {
 	const [minX2, minY2, maxX2, maxY2] = outer;
 
 	return minX1 >= minX2 && maxX1 <= maxX2 && minY1 >= minY2 && maxY1 <= maxY2;
+};
+
+/**
+ * Check if a bounding box is valid.
+ * @param bbox - The bounding box as [minLng, minLat, maxLng, maxLat].
+ * @returns true if the bbox is valid, false otherwise.
+ */
+export const isBboxValid = (bbox: [number, number, number, number]): boolean => {
+	const [minLng, minLat, maxLng, maxLat] = bbox;
+
+	// 緯度が制限範囲内にあるかチェック
+	const isLatitudeValid = (lat: number): boolean => {
+		return lat >= WEB_MERCATOR_MIN_LAT && lat <= WEB_MERCATOR_MAX_LAT;
+	};
+
+	// 経度が制限範囲内にあるかチェック（-180 ~ 180の範囲）
+	const isLongitudeValid = (lng: number): boolean => {
+		return lng >= -180 && lng <= 180;
+	};
+
+	// すべての境界が有効範囲内にあるかチェック
+	const minLatValid = isLatitudeValid(minLat);
+	const maxLatValid = isLatitudeValid(maxLat);
+	const minLngValid = isLongitudeValid(minLng);
+	const maxLngValid = isLongitudeValid(maxLng);
+
+	// bbox内で最小値が最大値より小さいかチェック
+	const latOrderValid = minLat <= maxLat;
+	const lngOrderValid = minLng <= maxLng;
+
+	// NaNや無限大でないかチェック
+	const isFiniteNumber = (num: number): boolean => {
+		return isFinite(num) && !isNaN(num);
+	};
+
+	const allFinite = [minLng, minLat, maxLng, maxLat].every(isFiniteNumber);
+
+	return (
+		minLatValid &&
+		maxLatValid &&
+		minLngValid &&
+		maxLngValid &&
+		latOrderValid &&
+		lngOrderValid &&
+		allFinite
+	);
 };
 
 /**

@@ -80,6 +80,7 @@
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
 	}
 
@@ -101,6 +102,7 @@
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
 		demEntries,
+		showZoneForm = $bindable(),
 		setPoint
 	}: Props = $props();
 
@@ -147,7 +149,7 @@
 		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
-		if (showDataEntry) {
+		if (showDataEntry || showZoneForm) {
 			previewSources = {
 				...previewSources,
 				tile_grid: {
@@ -157,9 +159,8 @@
 				}
 			};
 		}
-
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
-		if (showDataEntry) {
+		if (showDataEntry || showZoneForm) {
 			previewLayers = [
 				{
 					id: 'tile_grid',
@@ -172,6 +173,33 @@
 				...previewLayers
 			];
 		}
+
+		const zoneSources = showZoneForm
+			? {
+					zone: {
+						type: 'vector',
+						url: `pmtiles://./zone.pmtiles`,
+						maxzoom: 22
+					} as SourceSpecification
+				}
+			: {};
+
+		const zoneLayers = showZoneForm
+			? [
+					{
+						id: 'zone',
+						type: 'fill',
+						source: 'zone',
+						'source-layer': 'zone',
+						maxzoom: 22,
+						filter: ['==', ['get', 'zone'], '0'],
+						paint: {
+							'fill-color': 'red',
+							'fill-opacity': 0.6
+						}
+					} as LayerSpecification
+				]
+			: [];
 
 		const terrain = {
 			source: 'terrain',
@@ -205,7 +233,7 @@
 				// 	url: 'pmtiles://./prefecture.pmtiles',
 				// 	maxzoom: 14
 				// },
-
+				...zoneSources,
 				...previewSources
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -216,10 +244,11 @@
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
-						'background-opacity': showDataEntry ? 0.7 : 0
+						'background-opacity': showDataEntry || showZoneForm ? 0.7 : 0
 					}
 				} as BackgroundLayerSpecification,
-				...previewLayers
+				...previewLayers,
+				...zoneLayers
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {
@@ -234,6 +263,7 @@
 				// 		'fill-opacity': 0.6
 				// 	}
 				// }
+				// ...drawLayers
 
 				// {
 				// 	id: '@webgl_canvas_layer',
@@ -371,6 +401,16 @@
 	// データプレビュー
 	$effect(() => {
 		if (showDataEntry) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
+	});
+
+	// 座標系選択
+	$effect(() => {
+		if (showZoneForm) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		} else {
+			// 座標系選択ダイアログが閉じられた場合、レイヤーのスタイルを更新
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
