@@ -654,6 +654,8 @@ const createMapStore = () => {
 		const source = map.getSource(sourceId) as GeoJSONSource;
 		if (source) {
 			source.setData(geojsonData);
+		} else {
+			console.warn(`Source with ID ${sourceId} does not exist.`);
 		}
 	};
 

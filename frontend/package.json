@@ -70,6 +70,7 @@
 		"@turf/boolean-point-in-polygon": "^7.2.0",
 		"@turf/boolean-point-on-line": "^7.2.0",
 		"@turf/buffer": "^7.2.0",
+		"@turf/center": "^7.2.0",
 		"@turf/centroid": "^7.2.0",
 		"@turf/collect": "^7.2.0",
 		"@turf/dissolve": "^7.2.0",
@@ -116,5 +117,5 @@
 		"wkt-parser": "^1.4.0",
 		"yup": "^1.6.1"
 	},
-	"packageManager": "pnpm@10.10.0"
+	"packageManager": "pnpm@10.12.4+sha256.cadfd9e6c9fcc2cb76fe7c0779a5250b632898aea5f53d833a73690c77a778d9"
 }

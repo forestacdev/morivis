@@ -1,6 +1,5 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
-	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
@@ -19,7 +18,7 @@
 	}
 
 	interface PoiData {
-		featureId: string;
+		featureId: number;
 		propId: string;
 		coordinates: [number, number];
 		properties: {

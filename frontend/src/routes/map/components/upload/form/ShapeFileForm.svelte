@@ -28,6 +28,7 @@
 		dropFile: File | FileList | null;
 		showZoneForm: boolean; // 座標系フォームの表示状態
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
+		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
-		selectedEpsgCode = $bindable()
+		selectedEpsgCode = $bindable(),
+		focusBbox = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -234,6 +236,7 @@
 
 			if (!isBboxValid(bbox as [number, number, number, number])) {
 				showZoneForm = true;
+				focusBbox = bbox as [number, number, number, number];
 				return;
 			}
 

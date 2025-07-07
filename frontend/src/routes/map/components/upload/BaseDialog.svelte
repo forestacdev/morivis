@@ -67,6 +67,7 @@
 	bind:showDialogType
 	bind:dropFile
 	bind:showZoneForm
+	bind:focusBbox
 	{selectedEpsgCode}
 />
 

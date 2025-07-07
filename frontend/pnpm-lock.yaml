@@ -41,6 +41,9 @@ importers:
       '@turf/buffer':
         specifier: ^7.2.0
         version: 7.2.0
+      '@turf/center':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@turf/centroid':
         specifier: ^7.2.0
         version: 7.2.0

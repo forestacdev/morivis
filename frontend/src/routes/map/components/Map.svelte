@@ -239,14 +239,7 @@
 				...previewSources,
 				focus_bbox: {
 					type: 'geojson',
-					data: {
-						type: 'Feature',
-						geometry: {
-							type: 'Polygon',
-							coordinates: []
-						},
-						properties: {}
-					}
+					data: { type: 'FeatureCollection', features: [] }
 				}
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -266,10 +259,43 @@
 					id: '@focus_bbox',
 					type: 'fill',
 					source: 'focus_bbox',
+					filter: ['==', '$type', 'Polygon'],
 					paint: {
 						'fill-color': '#00fafa',
 						'fill-opacity': 0.5,
 						'fill-outline-color': 'white'
+					}
+				},
+				{
+					id: '@focus_bbox_point',
+					type: 'circle',
+					source: 'focus_bbox',
+					filter: ['==', '$type', 'Point'],
+					paint: {
+						'circle-radius': 8,
+						'circle-color': '#00fafa',
+						'circle-stroke-width': 2,
+						'circle-stroke-color': 'white',
+						'circle-opacity': 0.8
+					}
+				},
+				{
+					id: '@focus_bbox_label',
+					type: 'symbol',
+					source: 'focus_bbox',
+					filter: ['==', '$type', 'Point'],
+					paint: {
+						'text-color': '#000000',
+						'text-halo-color': '#FFFFFF',
+						'text-halo-width': 1,
+						'text-opacity': 1
+					},
+					layout: {
+						'text-field': '{name}系',
+						'text-font': ['migu1c-regular'],
+						'text-max-width': 12,
+						'text-size': 24,
+						'text-offset': [0, 0.5]
 					}
 				}
 				// TODO: 描画レイヤー
@@ -328,7 +354,6 @@
 				// 	layout: {
 				// 		'text-field': ['to-string', ['get', 'index']],
 				// 		'text-max-width': 12,
-				// 		'text-font': ['Noto Sans JP Light'],
 				// 		'text-size': 24,
 				// 		'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 				// 		'text-radial-offset': 0.5,

@@ -9,8 +9,9 @@
 	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
-	import type { Geometry, GeoJsonProperties, Feature } from 'geojson';
+	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
 	import { fade, fly, scale } from 'svelte/transition';
+	import turfCenter from '@turf/center';
 
 	interface Props {
 		showZoneForm: boolean;
@@ -31,102 +32,134 @@
 		// 選択されたEPSGコードを使用して何らかの処理を行う
 	};
 	let originalBbox = $derived.by(() => {
-		if (selectedEpsgCode) {
-			const prjContent = proj4Dict[selectedEpsgCode];
-			if (focusBbox) {
-				return transformBbox(focusBbox, prjContent);
-			}
+		if (focusBbox) {
+			console.log('focusBbox:', focusBbox);
+			return focusBbox;
 		}
 		return null;
 	});
 
+	let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> = {
+		type: 'FeatureCollection',
+		features: []
+	};
+
 	$effect(() => {
-		if (originalBbox && isBboxValid(originalBbox)) {
-			mapStore.fitBounds(originalBbox, {
-				padding: 200,
-				duration: 1500
-			});
+		if (originalBbox) {
+			geojsonData = {
+				type: 'FeatureCollection',
+				features: Object.entries(epsgBboxDict)
+					.flatMap(([code, v]) => {
+						if (code !== '4326' && code !== '3857') {
+							const prj = proj4Dict[code];
+							const transformedBbox = transformBbox(originalBbox, prj);
 
-			const bboxFeature = {
-				type: 'Feature',
-				geometry: {
-					type: 'Polygon',
-					coordinates: [
-						[
-							[originalBbox[0], originalBbox[1]],
-							[originalBbox[2], originalBbox[1]],
-							[originalBbox[2], originalBbox[3]],
-							[originalBbox[0], originalBbox[3]],
-							[originalBbox[0], originalBbox[1]]
-						]
-					]
-				},
-				properties: {
-					name: 'focus_bbox',
-					description: 'Focus bounding box'
-				}
+							if (isBboxValid(transformedBbox)) {
+								// ポリゴンフィーチャーを作成
+								const polygonFeature: Feature<Polygon, GeoJsonProperties> = {
+									type: 'Feature',
+									geometry: {
+										type: 'Polygon',
+										coordinates: [
+											[
+												[transformedBbox[0], transformedBbox[1]],
+												[transformedBbox[2], transformedBbox[1]],
+												[transformedBbox[2], transformedBbox[3]],
+												[transformedBbox[0], transformedBbox[3]],
+												[transformedBbox[0], transformedBbox[1]]
+											]
+										]
+									},
+									bbox: transformedBbox,
+									properties: {
+										name: v.zone,
+										code: code,
+										type: 'polygon'
+									}
+								};
+
+								// 中心ポイントを計算
+								const centerPoint = turfCenter(polygonFeature);
+								centerPoint.properties = {
+									name: v.zone,
+									code: code,
+									type: 'center'
+								};
+
+								// ポリゴンと中心ポイントの両方を返す
+								return [polygonFeature, centerPoint];
+							}
+						}
+						return [];
+					})
+					.filter((feature) => feature !== undefined)
 			};
 
-			mapStore.setData('focus_bbox', bboxFeature as Feature<Geometry, GeoJsonProperties>);
-		} else {
-			// フォーカスバウンディングボックスが無効な場合、レイヤーのスタイルを更新
-			const bboxFeature = {
-				type: 'Feature',
-				geometry: {
-					type: 'Polygon',
-					coordinates: [[]]
-				},
-				properties: {}
-			};
+			console.log('geojsonData:', geojsonData);
+			setTimeout(() => {
+				mapStore.setData(
+					'focus_bbox',
+					geojsonData as FeatureCollection<Geometry, GeoJsonProperties>
+				);
+			}, 500); // 1秒後にデータを設定
+		}
+	});
 
-			mapStore.setData('focus_bbox', bboxFeature as Feature<Geometry, GeoJsonProperties>);
+	$effect(() => {
+		if (selectedEpsgCode) {
+			const feature = geojsonData.features.find(
+				(feature) =>
+					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
+			);
+
+			if (feature) {
+				mapStore.fitBounds(feature.bbox as [number, number, number, number], {
+					padding: 100,
+					maxZoom: 10,
+					duration: 500
+				});
+			}
 		}
 	});
 </script>
 
 {#if showZoneForm}
 	<div
-		transition:fly={{ duration: 300, y: -20 }}
-		class="pointer-events-none absolute bottom-4 z-30 flex w-full items-center justify-center"
+		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
+		class="w-side-menu bg-main absolute left-0 top-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
+		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+			<span class="text-2xl font-bold">投影法の選択</span>
+		</div>
+
 		<div
-			class="bg-opacity-8 bg-main pointer-events-auto flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
+			class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
 		>
-			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-				<span class="text-2xl font-bold">投影法の選択</span>
+			{#each Object.entries(epsgPrefDict) as [code, name]}
+				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
+					<input type="radio" bind:group={selectedEpsgCode} value={code} class="hidden" />
+					<span
+						class="select-none transition-colors duration-200 {code === selectedEpsgCode
+							? 'text-black'
+							: ''}"
+						>{name}
+					</span>
+				</label>
+			{/each}
+			<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
+				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
-
-			<div
-				class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+		</div>
+		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+			<button
+				onclick={() => (showZoneForm = false)}
+				class="c-btn-cancel cursor-pointer p-4 text-lg"
 			>
-				<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
-					<label for="epsg-select" class="text-lg">EPSGコードを選択してください</label>
-					<select
-						id="epsg-select"
-						bind:value={selectedEpsgCode}
-						class="w-full rounded-md border border-gray-300 p-2"
-					>
-						{#each Object.entries(epsgPrefDict) as [code, name]}
-							<option value={code}>{name} ({code})</option>
-						{/each}
-					</select>
-				</div>
-
-				<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
-					<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
-				</div>
-			</div>
-			<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-				<button
-					onclick={() => (showZoneForm = false)}
-					class="c-btn-cancel cursor-pointer p-4 text-lg"
-				>
-					キャンセル
-				</button>
-				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
-					決定
-				</button>
-			</div>
+				キャンセル
+			</button>
+			<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
+				決定
+			</button>
 		</div>
 	</div>
 {/if}
