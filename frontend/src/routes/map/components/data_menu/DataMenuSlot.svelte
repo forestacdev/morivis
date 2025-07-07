@@ -7,6 +7,7 @@
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { getLayerImage } from '$routes/map/utils/image';
+	import type { ImageResult } from '$routes/map/utils/image';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -18,7 +19,16 @@
 	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
 
 	let isHover = $state(false);
-	let isImageError = $state(false);
+	// Blob URLとクリーンアップ関数を管理するための状態
+
+	let isImageError = $state<boolean>(false);
+
+	// 画像読み込み完了後のクリーンアップ
+	const handleImageLoad = (_imageResult: ImageResult) => {
+		if (_imageResult.cleanup) {
+			_imageResult.cleanup();
+		}
+	};
 
 	let isAdded = $derived.by(() => {
 		return $activeLayerIdsStore.includes(dataEntry.id);
@@ -45,12 +55,11 @@
 		}
 	});
 
-	let promise = $state<Promise<string | undefined>>();
+	let promise = $state<Promise<ImageResult | undefined>>();
 
 	$effect(() => {
 		try {
 			promise = getLayerImage(dataEntry);
-			isImageError = false;
 		} catch (error) {
 			isImageError = true;
 			console.error('Error generating icon image:', error);
@@ -76,35 +85,40 @@
 		disabled={isAdded}
 		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
-		{#await promise then url}
-			<img
-				src={url}
-				class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
-					? ''
-					: 'hover:scale-110'}"
-				alt={dataEntry.metaData.name}
-				onmouseover={() => (isHover = true)}
-				onmouseleave={() => (isHover = false)}
-				onfocus={() => (isHover = true)}
-				onblur={() => (isHover = false)}
-				loading="lazy"
-			/>
-			<!-- {#if isHover}
-				<PreviewSlot {dataEntry} />
-			{/if} -->
-			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
-			<div
-				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
-					? ''
-					: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
-			>
-				<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
-			</div>
-
-			<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
-				>{dataEntry.metaData.attribution}</span
-			>
+		{#await promise then imageResult}
+			{#if imageResult}
+				<img
+					src={imageResult.url}
+					class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
+						? ''
+						: 'hover:scale-110'}"
+					alt={dataEntry.metaData.name}
+					onload={() => handleImageLoad(imageResult)}
+					onmouseover={() => (isHover = true)}
+					onmouseleave={() => (isHover = false)}
+					onfocus={() => (isHover = true)}
+					onblur={() => (isHover = false)}
+					loading="lazy"
+					onerror={() => {
+						isImageError = true;
+					}}
+				/>
+			{/if}
+		{:catch}
+			<div>画像の取得に失敗</div>
 		{/await}
+		<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
+		<div
+			class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
+				? ''
+				: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
+		>
+			<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
+		</div>
+
+		<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
+			>{dataEntry.metaData.attribution}</span
+		>
 	</button>
 	<div class="shrink-0">
 		{#if isAdded}

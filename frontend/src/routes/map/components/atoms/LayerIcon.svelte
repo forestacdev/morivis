@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
+	import type { ImageResult } from '$routes/map/utils/image';
 
 	import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 
@@ -11,7 +12,15 @@
 	}
 	let { layerEntry }: Props = $props();
 
-	// メイン処理
+	let isImageError = $state<boolean>(false);
+
+	// 画像読み込み完了後のクリーンアップ
+	const handleImageLoad = (_imageResult: ImageResult) => {
+		if (_imageResult.cleanup) {
+			_imageResult.cleanup();
+		}
+	};
+
 	const promise = (() => {
 		try {
 			return getLayerImage(layerEntry);
@@ -21,63 +30,37 @@
 			return Promise.resolve(undefined);
 		}
 	})();
-
-	let isImageError = $state<boolean>(false);
 </script>
 
-{#if layerEntry.type === 'raster'}
-	{#if !isImageError}
-		{#if layerEntry.format.type === 'image'}
-			{#await promise then url}
-				<img
-					transition:fade
-					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-					alt={layerEntry.metaData.name}
-					src={url}
-					onerror={() => {
-						isImageError = true;
-					}}
-				/>
-			{:catch}
-				<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
-			{/await}
-		{:else if layerEntry.format.type === 'pmtiles'}
-			{#await promise then url}
-				<img
-					transition:fade
-					class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-					alt={layerEntry.metaData.name}
-					src={url}
-					onerror={() => {
-						isImageError = true;
-					}}
-				/>
-			{:catch}
-				<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
-			{/await}
-		{/if}
-	{:else}
-		<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
-	{/if}
-{:else if layerEntry.type === 'vector'}
-	{#if layerEntry.metaData.coverImage}
-		{#await promise then url}
+{#if !isImageError}
+	{#await promise then imageResult}
+		{#if imageResult}
 			<img
 				transition:fade
 				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
 				alt={layerEntry.metaData.name}
-				src={url}
+				src={imageResult.url}
+				onload={() => handleImageLoad(imageResult)}
+				onerror={() => {
+					isImageError = true;
+				}}
 			/>
-		{/await}
-	{:else if layerEntry.format.geometryType === 'Point'}
-		<Icon icon="ic:baseline-mode-standby" class="pointer-events-none" width={30} />
-	{:else if layerEntry.format.geometryType === 'LineString'}
-		<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
-	{:else if layerEntry.format.geometryType === 'Polygon'}
-		<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
-	{:else if layerEntry.format.geometryType === 'Label'}
-		<Icon icon="mynaui:label-solid" class="pointer-events-none" width={30} />
-	{/if}
+		{/if}
+	{:catch}
+		{#if layerEntry.type === 'raster'}
+			<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
+		{:else if layerEntry.type === 'vector'}
+			{#if layerEntry.format.geometryType === 'Point'}
+				<Icon icon="ic:baseline-mode-standby" class="pointer-events-none" width={30} />
+			{:else if layerEntry.format.geometryType === 'LineString'}
+				<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
+			{:else if layerEntry.format.geometryType === 'Polygon'}
+				<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
+			{:else if layerEntry.format.geometryType === 'Label'}
+				<Icon icon="mynaui:label-solid" class="pointer-events-none" width={30} />
+			{/if}
+		{/if}
+	{/await}
 {/if}
 
 <style>

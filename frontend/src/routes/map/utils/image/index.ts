@@ -6,7 +6,7 @@ import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
 import { createLayersItems } from '$routes/map/utils/layers';
-import { generateMapImageDOM, type MapImageOptions } from './vector';
+import { generateMapImageDOM, type MapImageOptions, type MapImageResult } from './vector';
 
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
@@ -24,6 +24,7 @@ export class TileProxy {
 	}
 }
 
+// TODO クリーンアップ
 // raster + image タイプの処理
 const getRasterImageUrl = async (_layerEntry: AnyRasterEntry): Promise<string | undefined> => {
 	// xyz タイル情報を取得
@@ -62,80 +63,102 @@ const generatePmtilesImageUrl = async (
 	return await getImagePmtiles(_layerEntry.format.url, tile);
 };
 
-const getCoverImageUrl = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
-	return _layerEntry.metaData.coverImage;
+const getCoverImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
+	return _layerEntry.metaData.coverImage ?? undefined;
 };
+
+// getLayerImage関数の修正版
+export interface ImageResult {
+	url: string;
+	cleanup?: () => void;
+}
 
 /**
  * レイヤーの画像URLを取得する関数
  * @param _layerEntry - レイヤーエントリ
  * @returns 画像URLまたはundefined
  */
-export const getLayerImage = async (_layerEntry: GeoDataEntry): Promise<string | undefined> => {
+export const getLayerImage = async (
+	_layerEntry: GeoDataEntry
+): Promise<ImageResult | undefined> => {
 	try {
-		// タイプとフォーマットによる分岐
-		if (_layerEntry.type === 'raster') {
-			if (_layerEntry.metaData.coverImage) {
-				return getCoverImageUrl(_layerEntry);
-			} else if (_layerEntry.format.type === 'image') {
-				return await getRasterImageUrl(_layerEntry);
+		if (_layerEntry.metaData.coverImage) {
+			// カバー画像が指定されている場合はそれを使用
+			const url = getCoverImageUrl(_layerEntry);
+			return url ? { url } : undefined;
+		} else if (_layerEntry.type === 'raster') {
+			// タイプとフォーマットによる分岐
+			if (_layerEntry.format.type === 'image') {
+				// TODO クリーンアップ
+				const url = await getRasterImageUrl(_layerEntry);
+				return url ? { url } : undefined;
 			} else if (_layerEntry.format.type === 'pmtiles') {
-				return await generatePmtilesImageUrl(_layerEntry);
+				// TODO クリーンアップ
+				const url = await generatePmtilesImageUrl(_layerEntry);
+				return url ? { url } : undefined;
 			}
 		} else if (_layerEntry.type === 'vector') {
-			if (_layerEntry.metaData.coverImage) {
-				return await getCoverImageUrl(_layerEntry);
-			} else {
-				const sources = await createSourcesItems([_layerEntry], 'preview');
-				const layers = await createLayersItems([_layerEntry], 'preview');
+			// Blob URL生成（クリーンアップが必要）
+			const sources = await createSourcesItems([_layerEntry], 'preview');
+			const layers = await createLayersItems([_layerEntry], 'preview');
 
-				const style: maplibregl.StyleSpecification = {
-					version: 8,
-					sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std',
-					glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
-					sources: {
-						osm: {
-							type: 'raster',
-							tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-							tileSize: 256,
-							attribution: '© OpenStreetMap contributors'
-						},
-						...sources
+			const style: maplibregl.StyleSpecification = {
+				version: 8,
+				sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std',
+				glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
+				sources: {
+					mierune_mono: {
+						type: 'raster',
+						tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+						tileSize: 256,
+						minzoom: 0,
+						maxzoom: 18,
+						attribution:
+							'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
 					},
-					layers: [
-						{
-							id: 'osm',
-							type: 'raster',
-							source: 'osm'
-						},
-						...layers
-					]
-				};
+					...sources
+				},
+				layers: [
+					{
+						id: 'mierune_mono',
+						type: 'raster',
+						source: 'mierune_mono'
+					},
+					...layers
+				]
+			};
 
-				const options: MapImageOptions = {
-					width: 512,
-					height: 512,
-					bearing: 0,
-					pitch: 0,
-					timeout: 5000 // タイムアウト設定
-				};
+			const options: MapImageOptions = {
+				name: _layerEntry.id,
+				width: 512,
+				height: 512,
+				bearing: 0,
+				pitch: 0,
+				timeout: 5000
+			};
 
-				if (_layerEntry.metaData.center) {
-					options.center = _layerEntry.metaData.center;
-					options.zoom = _layerEntry.metaData.minZoom;
-				} else {
-					options.bounds = _layerEntry.metaData.bounds;
-				}
-				const url = await generateMapImageDOM(style, options);
-
-				return url;
+			if (_layerEntry.metaData.center) {
+				options.center = _layerEntry.metaData.center;
+				options.zoom = _layerEntry.metaData.minZoom;
+			} else {
+				options.bounds = _layerEntry.metaData.bounds;
 			}
-		}
 
-		return undefined;
+			const result = await generateMapImageDOM(style, options);
+
+			// Blob URLとクリーンアップ関数を返す
+			return {
+				url: result.blobUrl,
+				cleanup: result.revokeBlobUrl
+			};
+		} else {
+			// それ以外のタイプは未対応
+			console.warn(`Unsupported layer type: ${_layerEntry.type}`);
+			return undefined;
+		}
 	} catch (error) {
 		console.error('Error getting layer image:', error);
-		throw error; // エラーを再投げして呼び出し元で処理
+		throw error;
 	}
 };
 
