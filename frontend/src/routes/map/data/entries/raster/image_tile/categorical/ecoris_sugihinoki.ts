@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	metaData: {
 		name: 'スギ・ヒノキ・サワラ植林',
 		description:
-			'第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したもの',
+			'第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したものです。',
 		attribution: 'エコリス地図タイル',
 		tags: ['植生図'],
 		location: '全国',
@@ -20,6 +20,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		maxZoom: 15,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		downloadUrl: 'https://map.ecoris.info/#contents',
 		xyzImageTile: {
 			x: 450,
 			y: 201,
@@ -31,7 +32,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	style: {
 		type: 'categorical',
-		opacity: 0.6,
+		opacity: 0.8,
 		legend: {
 			type: 'category',
 			name: '植林',
