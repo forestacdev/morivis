@@ -189,7 +189,7 @@
 		{#if $isSideMenuType === 'search'}
 			<div
 				transition:slide={{ duration: 300, axis: 'x' }}
-				class="w-title-bar text-main pointer-events-auto shrink-0"
+				class="w-title-bar text-main pointer-events-auto relative shrink-0"
 			>
 				<Geocoder
 					{layerEntries}

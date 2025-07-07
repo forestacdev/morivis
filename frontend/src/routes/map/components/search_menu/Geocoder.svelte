@@ -49,41 +49,6 @@
 	const resetSearchResult = () => {};
 </script>
 
-<!-- <div
-	class="duration-15 pointer-events-auto relative flex w-full overflow-hidden rounded-full transition-all"
->
-	<input
-		type="text"
-		class="bg-base focus:outline-hidden w-full px-4 py-2"
-		bind:value={inputSearchWord}
-		oncompositionstart={() => (isComposing = true)}
-		oncompositionend={() => (isComposing = false)}
-		onkeydown={(e) => {
-			if (e.key === 'Enter' && !isComposing) {
-				search(inputSearchWord);
-			}
-		}}
-		placeholder="施設名/住所"
-	/>
-	{#if inputSearchWord}
-		<button
-			onclick={() => (inputSearchWord = '')}
-			disabled={!inputSearchWord}
-			class="absolute right-[60px] grid h-full cursor-pointer place-items-center"
-		>
-			<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
-		</button>
-	{/if}
-
-	<button
-		onclick={() => search(inputSearchWord)}
-		disabled={inputSearchWord.trim().length < 2}
-		class="bg-accent pointer-events-auto grid h-full shrink-0 cursor-pointer place-items-center px-4 py-2"
-	>
-		<Icon icon="stash:search-solid" class="h-6 w-6  text-white" />
-	</button>
-</div> -->
-
 <input
 	type="text"
 	class="bg-base focus:outline-hidden placeholder:gray-400 w-full px-4 py-2"
@@ -97,6 +62,16 @@
 	}}
 	placeholder="施設名/住所"
 />
+
+{#if inputSearchWord}
+	<button
+		onclick={() => (inputSearchWord = '')}
+		disabled={!inputSearchWord}
+		class="absolute right-0 top-0 grid h-full cursor-pointer place-items-center"
+	>
+		<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
+	</button>
+{/if}
 
 <style>
 </style>

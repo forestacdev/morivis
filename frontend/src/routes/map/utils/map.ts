@@ -163,11 +163,6 @@ export const imageExport = (map: MaplibreMap): Promise<void> => {
 				// 地図画像のロードが完了したら次の処理へ
 				image.onload = async () => {
 					try {
-						const scaleDiv = document.querySelector('.maplibregl-ctrl-scale') as HTMLElement;
-						if (!scaleDiv) {
-							throw new Error('スケールバー要素が見つかりません。');
-						}
-
 						const finalCanvas = document.createElement('canvas');
 						finalCanvas.width = mapCanvas.width;
 						finalCanvas.height = mapCanvas.height;
@@ -176,50 +171,55 @@ export const imageExport = (map: MaplibreMap): Promise<void> => {
 						// 地図の画像を描画
 						ctx.drawImage(image, 0, 0);
 
+						// const scaleDiv = document.querySelector('.maplibregl-ctrl-scale') as HTMLElement;
+						// if (!scaleDiv) {
+						// 	throw new Error('スケールバー要素が見つかりません。');
+						// }
+
 						// スケールバーの画像をキャプチャ
 						// html2canvasはPromiseを返すのでawaitで待機
-						const scaleCanvas = await html2canvas(scaleDiv);
+						// const scaleCanvas = await html2canvas(scaleDiv);
 
-						// スケールバーの画像を左下に描画
-						const scaleWidth = scaleCanvas.width;
-						const scaleHeight = scaleCanvas.height;
-						const scaleMargin = 10;
+						// // スケールバーの画像を左下に描画
+						// const scaleWidth = scaleCanvas.width;
+						// const scaleHeight = scaleCanvas.height;
+						// const scaleMargin = 10;
 
-						// 透過度を設定
-						ctx.globalAlpha = 0.7;
-						ctx.drawImage(
-							scaleCanvas,
-							scaleMargin,
-							finalCanvas.height - scaleHeight - scaleMargin,
-							scaleWidth,
-							scaleHeight
-						);
-						ctx.globalAlpha = 1.0; // 透過度をリセット
+						// // 透過度を設定
+						// ctx.globalAlpha = 0.7;
+						// ctx.drawImage(
+						// 	scaleCanvas,
+						// 	scaleMargin,
+						// 	finalCanvas.height - scaleHeight - scaleMargin,
+						// 	scaleWidth,
+						// 	scaleHeight
+						// );
+						// ctx.globalAlpha = 1.0; // 透過度をリセット
 
 						// 方位の画像を取得
-						const connpassImageElement = await new Promise<HTMLImageElement>(
-							(imgResolve, imgReject) => {
-								const img = new Image();
-								img.onload = () => imgResolve(img);
-								img.onerror = (e) => {
-									if (e instanceof Error)
-										imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
-								};
+						// const connpassImageElement = await new Promise<HTMLImageElement>(
+						// 	(imgResolve, imgReject) => {
+						// 		const img = new Image();
+						// 		img.onload = () => imgResolve(img);
+						// 		img.onerror = (e) => {
+						// 			if (e instanceof Error)
+						// 				imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+						// 		};
 
-								img.src = './images/map_connpass.png'; // 画像パスを確認
-							}
-						);
+						// 		img.src = './images/map_connpass.png'; // 画像パスを確認
+						// 	}
+						// );
 
-						// 余白
-						const connpassMargin = 20;
+						// // 余白
+						// const connpassMargin = 20;
 
-						// コンパス画像のサイズ
-						const connpassWidth = connpassImageElement.width;
-						const connpassHeight = connpassImageElement.height;
+						// // コンパス画像のサイズ
+						// const connpassWidth = connpassImageElement.width;
+						// const connpassHeight = connpassImageElement.height;
 
-						// 回転の中心を指定（例: 画像の中央）
-						const centerX = finalCanvas.width - connpassWidth / 2 - connpassMargin;
-						const centerY = connpassMargin + connpassHeight / 2;
+						// // 回転の中心を指定（例: 画像の中央）
+						// const centerX = finalCanvas.width - connpassWidth / 2 - connpassMargin;
+						// const centerY = connpassMargin + connpassHeight / 2;
 
 						// キャンバスの状態を保存
 						ctx.save();

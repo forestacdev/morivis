@@ -115,6 +115,17 @@
 		prjName: ''
 	});
 
+	const resetForms = () => {
+		forms.shpFile = null;
+		forms.dbfFile = null;
+		forms.shxFile = null;
+		forms.prjFile = null;
+		forms.shpName = '';
+		forms.dbfName = '';
+		forms.shxName = '';
+		forms.prjName = '';
+	};
+
 	const setFiles = (dropFile: File | FileList | null) => {
 		if (!dropFile) return;
 
@@ -274,6 +285,13 @@
 		// ここで必要なアニメーション処理を追加
 	};
 	animate();
+
+	$effect(() => {
+		if (showDialogType !== 'shp') {
+			// ダイアログが非表示になったときにアニメーションを停止
+			resetForms();
+		}
+	});
 </script>
 
 {#if showDialogType && showDialogType === 'shp'}
@@ -343,11 +361,8 @@
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		/** ---省略--- */
 		translate: -50% -50%;
-		/** ---省略--- */
 		--angle: calc(360deg / 3 * var(--index) - 90deg);
-
 		--x: calc(cos(var(--angle)) * var(--distance));
 		--y: calc(sin(var(--angle)) * var(--distance));
 		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);

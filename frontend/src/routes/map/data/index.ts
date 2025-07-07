@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { BaseMetaData, GeoDataEntry } from '$routes/map/data/types';
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import type {
 	VectorEntry,
@@ -96,6 +96,17 @@ export const geometryTypeToEntryType = (
 	}
 };
 
+const defaultCustomMetaData: BaseMetaData = {
+	name: 'カスタムデータ',
+	description: 'ユーザーがアップロードしたデータ',
+	attribution: 'カスタムデータ',
+	location: '不明',
+	maxZoom: 24,
+	minZoom: 0,
+	tags: [],
+	bounds: WEB_MERCATOR_WORLD_BBOX
+};
+
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
@@ -109,11 +120,8 @@ export const createGeoJsonEntry = (
 		return;
 	}
 	const metaData: GeoJsonMetaData = {
+		...defaultCustomMetaData,
 		name,
-		description: 'ユーザーがアップロードしたカスタムデータ',
-		attribution: 'カスタムデータ',
-		location: '不明',
-		maxZoom: 22,
 		bounds: bbox ? (bbox as [number, number, number, number]) : WEB_MERCATOR_WORLD_BBOX
 	};
 
@@ -196,13 +204,9 @@ export const createVectorTileEntry = (
 	color: string = getRandomCommonColor()
 ): VectorEntry<TileMetaData> | undefined => {
 	const metaData: TileMetaData = {
+		...defaultCustomMetaData,
 		name,
-		sourceLayer,
-		description: 'ユーザーがアップロードしたカスタムデータ',
-		attribution: 'カスタムデータ',
-		location: '不明',
-		minZoom: 0,
-		maxZoom: 22
+		sourceLayer
 	};
 
 	let style;
@@ -272,6 +276,7 @@ export const createVectorTileEntry = (
 	return entry;
 };
 
+// TODO: タイルサイズ指定
 export const createRasterEntry = (name: string, url: string): RasterEntry<RasterBaseMapStyle> => {
 	const entry: RasterEntry<RasterBaseMapStyle> = {
 		id: 'raster_' + crypto.randomUUID(),
@@ -281,13 +286,10 @@ export const createRasterEntry = (name: string, url: string): RasterEntry<Raster
 			url
 		},
 		metaData: {
+			...defaultCustomMetaData,
 			name,
-			description: 'ユーザーがアップロードしたカスタムデータ',
-			attribution: 'カスタムデータ',
-			location: '不明',
-			maxZoom: 22,
-			minZoom: 0,
-			tileSize: 256
+			tileSize: 256,
+			bounds: WEB_MERCATOR_WORLD_BBOX
 		},
 		interaction: {
 			...DEFAULT_RASTER_BASEMAP_INTERACTION

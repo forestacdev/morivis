@@ -1,5 +1,6 @@
 export type AttributionKey =
 	| 'カスタムデータ'
+	| 'MIERUNE'
 	| '森林文化アカデミー'
 	| '国土地理院'
 	| '岐阜県森林研究所'
@@ -9,6 +10,7 @@ export type AttributionKey =
 	| '産総研シームレス標高タイル'
 	| 'Q地図タイル'
 	| 'OSM'
+	| 'OpenMapTiles'
 	| '株式会社アドイン研究所'
 	| 'Esri'
 	| '東京都オープンデータカタログサイト'
@@ -17,6 +19,7 @@ export type AttributionKey =
 	| '森林総合研究所'
 	| '愛媛県森林資源データ'
 	| 'USGS'
+	| 'NASA'
 	| '栃木県森林資源データ'
 	| '大阪府（林野庁加工）';
 
@@ -33,9 +36,19 @@ const attributionData: Attribution[] = [
 		url: 'https://www.forest.ac.jp/'
 	},
 	{
+		key: 'MIERUNE',
+		name: 'MIERUNE Inc.',
+		url: 'https://mierune.co.jp/'
+	},
+	{
 		key: '国土地理院',
 		name: '国土地理院',
 		url: 'https://maps.gsi.go.jp/development/ichiran.html'
+	},
+	{
+		key: 'NASA',
+		name: 'NASA/Goddard Space Flight Center/Reto Stöckli',
+		url: 'https://earthdata.nasa.gov/'
 	},
 	{
 		key: '岐阜県森林研究所',
@@ -70,16 +83,21 @@ const attributionData: Attribution[] = [
 	{
 		key: 'OSM',
 		name: '© OpenStreetMap contributors',
-		url: 'http://osm.org/copyright'
+		url: 'https://www.openstreetmap.org/copyright'
+	},
+	{
+		key: 'OpenMapTiles',
+		name: '© OpenMapTiles',
+		url: 'https://openmaptiles.org/'
 	},
 	{
 		key: 'USGS',
-		name: 'USGS',
+		name: '© U.S. Geological Survey',
 		url: 'https://www.usgs.gov/'
 	},
 	{
 		key: 'Esri',
-		name: 'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
+		name: '© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
 	},
 	{

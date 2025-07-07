@@ -18,6 +18,7 @@
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
+	import { debounce } from 'es-toolkit';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
@@ -50,6 +51,7 @@
 	}
 
 	let searchData: SearchData[]; // 検索データ
+	let isClickedSearch = $state<boolean>(false);
 
 	const LIMIT = 100; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
@@ -68,8 +70,8 @@
 		searchData.forEach((data) => {
 			const layerId = data.layer_id;
 
-			const layer = geoDataEntries.find((entry) => entry.id === layerId);
-			const location = layer ? layer.metaData.location : null;
+			// TODO: location
+			const location = '森林文化アカデミー';
 			if (location) {
 				// レイヤー名が存在する場合のみ辞書に追加
 				dict[layerId] = location;
@@ -110,6 +112,7 @@
 
 	const searchFeature = async (searchWord: string) => {
 		isLoading = true;
+		isClickedSearch = true;
 		try {
 			if (!searchData) {
 				console.error('Search data is not loaded yet.');
@@ -131,7 +134,6 @@
 				return {
 					name: data.name,
 					location: dict[data.layer_id] || null,
-
 					tile: data.tile_coords,
 					point: data.point,
 					layerId: data.layer_id,
@@ -172,23 +174,41 @@
 	};
 
 	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
+
+	const debounceSearch = debounce((searchWord: string) => {
+		if (isClickedSearch) {
+			isClickedSearch = false;
+			return;
+		}
+		if (!searchWord) {
+			results = null;
+			return;
+		}
+		searchFeature(searchWord);
+	}, 500);
+
+	$effect(() => {
+		if (inputSearchWord) {
+			debounceSearch(inputSearchWord);
+		} else {
+			results = null;
+		}
+	});
+
+	$effect(() => {
+		if ($isSideMenuType !== 'search') {
+			results = null;
+			inputSearchWord = '';
+		}
+	});
 </script>
 
 <!-- レイヤーメニュー -->
 {#if $isSideMenuType === 'search'}
 	<div
-		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		transition:fly={{ duration: 200, x: -100, opacity: 0, delay: 100 }}
+		class="w-side-menu bg-main absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
 	>
-		<!-- <div class="flex items-center justify-between p-2">
-			<Geocoder
-				{layerEntries}
-				bind:results
-				bind:inputSearchWord
-				searchFeature={(v) => searchFeature(v)}
-			/>
-		</div> -->
-
 		{#if isLoading}
 			<div class="flex w-full items-center justify-center">
 				<div

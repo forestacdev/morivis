@@ -1,10 +1,12 @@
 import { getImagePmtiles } from '$routes/map/utils/raster';
-import { convertTmsToXyz } from '$routes/map/utils/sources';
+import { convertTmsToXyz, createSourcesItems } from '$routes/map/utils/sources';
 import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
+import { createLayersItems } from '$routes/map/utils/layers';
+import { generateMapImageDOM, type MapImageOptions } from './vector';
 
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
@@ -81,7 +83,53 @@ export const getLayerImage = async (_layerEntry: GeoDataEntry): Promise<string |
 				return await generatePmtilesImageUrl(_layerEntry);
 			}
 		} else if (_layerEntry.type === 'vector') {
-			return await getCoverImageUrl(_layerEntry);
+			if (_layerEntry.metaData.coverImage) {
+				return await getCoverImageUrl(_layerEntry);
+			} else {
+				const sources = await createSourcesItems([_layerEntry], 'preview');
+				const layers = await createLayersItems([_layerEntry], 'preview');
+
+				const style: maplibregl.StyleSpecification = {
+					version: 8,
+					sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std',
+					glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
+					sources: {
+						osm: {
+							type: 'raster',
+							tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+							tileSize: 256,
+							attribution: '© OpenStreetMap contributors'
+						},
+						...sources
+					},
+					layers: [
+						{
+							id: 'osm',
+							type: 'raster',
+							source: 'osm'
+						},
+						...layers
+					]
+				};
+
+				const options: MapImageOptions = {
+					width: 512,
+					height: 512,
+					bearing: 0,
+					pitch: 0,
+					timeout: 5000 // タイムアウト設定
+				};
+
+				if (_layerEntry.metaData.center) {
+					options.center = _layerEntry.metaData.center;
+					options.zoom = _layerEntry.metaData.minZoom;
+				} else {
+					options.bounds = _layerEntry.metaData.bounds;
+				}
+				const url = await generateMapImageDOM(style, options);
+
+				return url;
+			}
 		}
 
 		return undefined;
