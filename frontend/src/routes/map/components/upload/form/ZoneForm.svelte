@@ -115,7 +115,7 @@
 					properties: feature.properties || {}
 				}));
 
-			console.log('geojsonData:', geojsonData);
+			// TODO
 			setTimeout(() => {
 				mapStore.setData(
 					'focus_bbox',
@@ -195,7 +195,7 @@
 			lngLat={new maplibregl.LngLat(poi.coordinates[0] as number, poi.coordinates[1] as number)}
 			properties={poi.properties}
 			onClick={(code) => onClick(code)}
-			clickId={selectedEpsgCode}
+			{selectedEpsgCode}
 		/>
 	{/each}
 {/if}

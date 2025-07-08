@@ -2,19 +2,24 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { propData } from '$routes/map/data/prop_data';
-	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
-	import { fade, fly } from 'svelte/transition';
+	import { isHoverPoiMarker } from '$routes/stores/map';
+	import { fly } from 'svelte/transition';
+	import {
+		epsgPrefDict,
+		epsgBboxDict,
+		type EpsgCode,
+		proj4Dict
+	} from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		map: maplibregl.Map;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
-		clickCode: string; // クリックされたPOIのID
-		onClick: (code: string) => void;
+		selectedEpsgCode: EpsgCode; // クリックされたPOIのID
+		onClick: (code: EpsgCode) => void;
 	}
 
-	let { lngLat = $bindable(), map, properties, onClick, clickCode }: Props = $props();
+	let { lngLat = $bindable(), map, properties, onClick, selectedEpsgCode }: Props = $props();
 	let markerContainer = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
 	let name: maplibregl.Marker | null = $state.raw(null);
@@ -48,17 +53,9 @@
 				.addTo(map);
 		}
 
-		console.log('properties:', properties);
-
-		const code = properties.code;
-
 		// 準備完了フラグを設定
 		isReady = true;
 	});
-
-	const jumpToFac = () => {
-		mapStore.jumpToFac();
-	};
 
 	const onHover = (val: boolean) => {
 		isHoverPoiMarker.set(val);
@@ -99,7 +96,7 @@
 	bind:this={nameContainer}
 	class="items-top pointer-events-none relative z-10 flex w-[150px] justify-center"
 >
-	{#if isHover || clickCode === properties.code}
+	{#if isHover || selectedEpsgCode === properties.code}
 		<div
 			transition:fly={{ duration: 200, y: -10, opacity: 0 }}
 			class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
