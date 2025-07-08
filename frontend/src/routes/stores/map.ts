@@ -301,6 +301,41 @@ const createMapStore = () => {
 		initEvent.set(map);
 	};
 
+	// TODO
+	const setStylePreservation = (style: StyleSpecification) => {
+		if (!map) {
+			console.warn('Map is not initialized');
+			return;
+		}
+
+		if (!style) {
+			map.setStyle(null);
+			return;
+		}
+
+		// 即座にsetStyleを実行（MapLibre GLが前回の処理を自動キャンセル）
+		map.setStyle(style, {
+			transformStyle: (previous, next) => {
+				// ベーススタイルの情報を保存
+				const baseLight = next.light;
+				const baseProjection = next.projection;
+				const baseSky = next.sky;
+				const baseTerrain = next.terrain;
+
+				return {
+					...next,
+					light: baseLight,
+					projection: baseProjection,
+					sky: baseSky,
+					terrain: baseTerrain
+				};
+			}
+		});
+
+		// スタイル変更イベントを発火
+		setStyleEvent.set(style);
+	};
+
 	// Method for setting map style
 	const setStyle = (style: StyleSpecification) => {
 		if (!map) return;
