@@ -270,7 +270,7 @@
 	$effect(() => {
 		if (showDialogType === 'shp') {
 			// ダイアログが表示されるときに距離を更新
-			distance = 300; // 必要に応じて調整
+			distance = 100; // 必要に応じて調整
 		} else {
 			distance = 0; // ダイアログが非表示のときは距離をリセット
 		}
@@ -278,16 +278,16 @@
 
 	const clock = new THREE.Clock();
 
-	const animate = () => {
-		requestAnimationFrame(animate);
-		const elapsedTime = clock.getElapsedTime();
-		const loadingItems = document.querySelectorAll('.loading-item');
-		loadingItems.forEach((item, index) => {
-			distance = 300 + Math.sin(elapsedTime + index) * 50; // 距離をアニメーションで変化させる
-		});
-		// ここで必要なアニメーション処理を追加
-	};
-	animate();
+	// const animate = () => {
+	// 	requestAnimationFrame(animate);
+	// 	const elapsedTime = clock.getElapsedTime();
+	// 	const loadingItems = document.querySelectorAll('.loading-item');
+	// 	loadingItems.forEach((item, index) => {
+	// 		distance = 300 + Math.sin(elapsedTime + index) * 50; // 距離をアニメーションで変化させる
+	// 	});
+	// 	// ここで必要なアニメーション処理を追加
+	// };
+	// animate();
 
 	$effect(() => {
 		if (showDialogType !== 'shp') {
@@ -364,6 +364,7 @@
 		position: absolute;
 		top: 50%;
 		left: 50%;
+
 		translate: -50% -50%;
 		--angle: calc(360deg / 3 * var(--index) - 90deg);
 		--x: calc(cos(var(--angle)) * var(--distance));

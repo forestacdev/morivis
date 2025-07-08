@@ -384,7 +384,7 @@
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
 
-		saveToLayerEntries(entries as GeoDataEntry[]);
+		// saveToLayerEntries(entries as GeoDataEntry[]);
 
 		if (!maplibreMap) return;
 	}, 100);
