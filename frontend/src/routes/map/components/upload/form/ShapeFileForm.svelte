@@ -9,7 +9,7 @@
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { epsgBboxDict, type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
+	import { type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
 	import { readPrjFileContent, transformBbox } from '$routes/map/utils/proj';
 	import turfBbox from '@turf/bbox';
 

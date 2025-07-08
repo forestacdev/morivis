@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
-	import {
-		epsgPrefDict,
-		epsgBboxDict,
-		type EpsgCode,
-		proj4Dict
-	} from '$routes/map/utils/proj/dict';
+	import { epsgPrefDict, getEpsgInfoArray, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
@@ -14,6 +9,7 @@
 	import turfCenter from '@turf/center';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
 	import maplibregl from 'maplibre-gl';
+	import { filter } from 'es-toolkit/compat';
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
@@ -62,48 +58,46 @@
 		if (originalBbox) {
 			geojsonData = {
 				type: 'FeatureCollection',
-				features: Object.entries(epsgBboxDict)
-					.flatMap(([code, v]) => {
-						if (code !== '4326' && code !== '3857') {
-							const prj = proj4Dict[code];
-							const transformedBbox = transformBbox(originalBbox, prj);
+				features: getEpsgInfoArray({
+					exclude4326: true
+				})
+					.flatMap((info) => {
+						const code = info.code;
 
-							if (isBboxValid(transformedBbox)) {
-								// ポリゴンフィーチャーを作成
-								const polygonFeature: Feature<Polygon, GeoJsonProperties> = {
-									type: 'Feature',
-									geometry: {
-										type: 'Polygon',
-										coordinates: [
-											[
-												[transformedBbox[0], transformedBbox[1]],
-												[transformedBbox[2], transformedBbox[1]],
-												[transformedBbox[2], transformedBbox[3]],
-												[transformedBbox[0], transformedBbox[3]],
-												[transformedBbox[0], transformedBbox[1]]
-											]
+						const prj = info.projContext;
+						const transformedBbox = transformBbox(originalBbox, prj);
+
+						if (isBboxValid(transformedBbox)) {
+							// ポリゴンフィーチャーを作成
+							const polygonFeature: Feature<Polygon, GeoJsonProperties> = {
+								type: 'Feature',
+								geometry: {
+									type: 'Polygon',
+									coordinates: [
+										[
+											[transformedBbox[0], transformedBbox[1]],
+											[transformedBbox[2], transformedBbox[1]],
+											[transformedBbox[2], transformedBbox[3]],
+											[transformedBbox[0], transformedBbox[3]],
+											[transformedBbox[0], transformedBbox[1]]
 										]
-									},
-									bbox: transformedBbox,
-									properties: {
-										name: v.zone,
-										code: code,
-										type: 'polygon'
-									}
-								};
+									]
+								},
+								bbox: transformedBbox,
+								properties: {
+									...info
+								}
+							};
 
-								// 中心ポイントを計算
-								const centerPoint = turfCenter(polygonFeature);
-								centerPoint.properties = {
-									name: v.zone,
-									code: code
-								};
+							// 中心ポイントを計算
+							const centerPoint = turfCenter(polygonFeature);
+							centerPoint.properties = {
+								...info
+							};
 
-								// ポリゴンと中心ポイントの両方を返す
-								return [polygonFeature, centerPoint];
-							}
+							// ポリゴンと中心ポイントの両方を返す
+							return [polygonFeature, centerPoint];
 						}
-						return [];
 					})
 					.filter((feature) => feature !== undefined)
 			};
@@ -159,14 +153,14 @@
 		<div
 			class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
 		>
-			{#each Object.entries(epsgPrefDict) as [code, name]}
+			{#each getEpsgInfoArray({ exclude4326: true }) as info}
 				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
-					<input type="radio" bind:group={selectedEpsgCode} value={code} class="hidden" />
+					<input type="radio" bind:group={selectedEpsgCode} value={info.code} class="hidden" />
 					<span
-						class="select-none transition-colors duration-200 {code === selectedEpsgCode
+						class="select-none transition-colors duration-200 {info.code === selectedEpsgCode
 							? 'text-black'
 							: ''}"
-						>{name}
+						>{info.name}
 					</span>
 				</label>
 			{/each}

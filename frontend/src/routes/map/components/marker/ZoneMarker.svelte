@@ -4,12 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { isHoverPoiMarker } from '$routes/stores/map';
 	import { fly } from 'svelte/transition';
-	import {
-		epsgPrefDict,
-		epsgBboxDict,
-		type EpsgCode,
-		proj4Dict
-	} from '$routes/map/utils/proj/dict';
+	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		map: maplibregl.Map;

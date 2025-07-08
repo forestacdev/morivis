@@ -9,7 +9,7 @@
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { epsgPrefDict, epsgBboxDict, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		showDialogType: DialogType;
