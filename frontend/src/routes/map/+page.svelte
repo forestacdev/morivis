@@ -45,6 +45,8 @@
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
+	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
+
 	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 
@@ -359,6 +361,7 @@
 		<DrawMenu bind:layerEntries bind:drawGeojsonData />
 
 		<MapLibreMap
+			bind:maplibreMap={map}
 			bind:layerEntries
 			bind:tempLayerEntries
 			bind:showDataEntry
@@ -419,7 +422,10 @@
 	bind:focusBbox
 	{selectedEpsgCode}
 />
-<ZoneForm bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
+
+{#if map}
+	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
+{/if}
 
 <Tooltip />
 <SideMenu />

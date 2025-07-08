@@ -63,6 +63,7 @@
 	import { streetViewSources } from '$routes/map/components/map_layer';
 
 	interface Props {
+		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
 		streetViewLineData: FeatureCollection;
@@ -86,6 +87,7 @@
 	}
 
 	let {
+		maplibreMap = $bindable(),
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
@@ -119,7 +121,6 @@
 	});
 
 	let mapContainer = $state<HTMLDivElement | null>(null); // Mapコンテナ
-	let maplibreMap = $state<maplibregl.Map | null>(null); // Maplibreのインスタンス
 
 	let clickedLayerIds = $state<string[]>([]); // 選択ポップアップ
 	let clickedLngLat = $state<LngLat | null>(null); // 選択ポップアップ
@@ -257,45 +258,12 @@
 				...zoneLayers,
 				{
 					id: '@focus_bbox',
-					type: 'fill',
+					type: 'line',
 					source: 'focus_bbox',
 					filter: ['==', '$type', 'Polygon'],
 					paint: {
-						'fill-color': '#00fafa',
-						'fill-opacity': 0.5,
-						'fill-outline-color': 'white'
-					}
-				},
-				{
-					id: '@focus_bbox_point',
-					type: 'circle',
-					source: 'focus_bbox',
-					filter: ['==', '$type', 'Point'],
-					paint: {
-						'circle-radius': 8,
-						'circle-color': '#00fafa',
-						'circle-stroke-width': 2,
-						'circle-stroke-color': 'white',
-						'circle-opacity': 0.8
-					}
-				},
-				{
-					id: '@focus_bbox_label',
-					type: 'symbol',
-					source: 'focus_bbox',
-					filter: ['==', '$type', 'Point'],
-					paint: {
-						'text-color': '#000000',
-						'text-halo-color': '#FFFFFF',
-						'text-halo-width': 1,
-						'text-opacity': 1
-					},
-					layout: {
-						'text-field': '{name}系',
-						'text-font': ['migu1c-regular'],
-						'text-max-width': 12,
-						'text-size': 24,
-						'text-offset': [0, 0.5]
+						'line-color': 'white',
+						'line-width': 1.3
 					}
 				}
 				// TODO: 描画レイヤー

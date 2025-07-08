@@ -12,14 +12,18 @@
 	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
 	import { fade, fly, scale } from 'svelte/transition';
 	import turfCenter from '@turf/center';
+	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
+	import maplibregl from 'maplibre-gl';
 
 	interface Props {
+		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 	}
 
 	let {
+		map,
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable()
@@ -43,6 +47,16 @@
 		type: 'FeatureCollection',
 		features: []
 	};
+
+	interface PoiData {
+		coordinates: [number, number];
+		properties: {
+			name: string;
+			code: EpsgCode;
+		};
+	}
+
+	let poiData = $state<PoiData[]>([]);
 
 	$effect(() => {
 		if (originalBbox) {
@@ -82,8 +96,7 @@
 								const centerPoint = turfCenter(polygonFeature);
 								centerPoint.properties = {
 									name: v.zone,
-									code: code,
-									type: 'center'
+									code: code
 								};
 
 								// ポリゴンと中心ポイントの両方を返す
@@ -94,6 +107,13 @@
 					})
 					.filter((feature) => feature !== undefined)
 			};
+
+			poiData = geojsonData.features
+				.filter((feature) => feature.geometry.type === 'Point')
+				.map((feature) => ({
+					coordinates: feature.geometry.coordinates as [number, number],
+					properties: feature.properties || {}
+				}));
 
 			console.log('geojsonData:', geojsonData);
 			setTimeout(() => {
@@ -121,6 +141,10 @@
 			}
 		}
 	});
+
+	const onClick = (code: EpsgCode) => {
+		selectedEpsgCode = code;
+	};
 </script>
 
 {#if showZoneForm}
@@ -162,4 +186,16 @@
 			</button>
 		</div>
 	</div>
+{/if}
+
+{#if showZoneForm}
+	{#each poiData as poi (poi.properties.code)}
+		<ZoneMarker
+			{map}
+			lngLat={new maplibregl.LngLat(poi.coordinates[0] as number, poi.coordinates[1] as number)}
+			properties={poi.properties}
+			onClick={(code) => onClick(code)}
+			clickId={selectedEpsgCode}
+		/>
+	{/each}
 {/if}
