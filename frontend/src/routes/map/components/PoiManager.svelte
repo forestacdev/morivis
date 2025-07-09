@@ -15,7 +15,10 @@
 		map: maplibregl.Map;
 		featureMenuData: FeatureMenuData | null;
 		showDataEntry: GeoDataEntry | null;
+		showZoneForm: boolean; // ゾーンフォームを表示するかどうか
 	}
+
+	let { map, featureMenuData = $bindable(), showDataEntry, showZoneForm }: Props = $props();
 
 	interface PoiData {
 		featureId: number;
@@ -25,8 +28,6 @@
 			[name: string]: any;
 		};
 	}
-
-	let { map, featureMenuData = $bindable(), showDataEntry }: Props = $props();
 
 	let poiDatas = $state<PoiData[]>([]);
 	let clickId = $state<number | null>(null); // クリックされたPOIのID
@@ -103,7 +104,7 @@
 	});
 </script>
 
-{#if $showLabelLayer && !showDataEntry}
+{#if $showLabelLayer && !showDataEntry && !showZoneForm}
 	{#each poiDatas as poiData (poiData.propId)}
 		<PoiMarker
 			{map}

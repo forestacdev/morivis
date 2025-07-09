@@ -61,6 +61,7 @@
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/session_storage';
 	import { streetViewSources } from '$routes/map/components/map_layer';
+	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -83,6 +84,7 @@
 		showDialogType: DialogType;
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
 	}
 
@@ -107,6 +109,7 @@
 		demEntries,
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
+		selectedEpsgCode,
 		setPoint
 	}: Props = $props();
 
@@ -238,7 +241,7 @@
 				// },
 				...zoneSources,
 				...previewSources,
-				focus_bbox: {
+				zone_bbox: {
 					type: 'geojson',
 					data: { type: 'FeatureCollection', features: [] }
 				}
@@ -257,13 +260,27 @@
 				...previewLayers,
 				...zoneLayers,
 				{
-					id: '@focus_bbox',
+					id: '@zone_bbox_select',
+					type: 'fill',
+					source: 'zone_bbox',
+					filter: [
+						'all',
+						['==', '$type', 'Polygon'],
+						['==', 'code', selectedEpsgCode] // 最もシンプルで確実な方法
+					],
+					paint: {
+						'fill-color': 'red',
+						'fill-opacity': 0.5
+					}
+				},
+				{
+					id: '@zone_bbox',
 					type: 'line',
-					source: 'focus_bbox',
+					source: 'zone_bbox',
 					filter: ['==', '$type', 'Polygon'],
 					paint: {
 						'line-color': 'white',
-						'line-width': 1.3
+						'line-width': 1
 					}
 				}
 				// TODO: 描画レイヤー
@@ -538,7 +555,7 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
-	<PoiManager map={maplibreMap} bind:featureMenuData {showDataEntry} />
+	<PoiManager map={maplibreMap} bind:featureMenuData {showDataEntry} {showZoneForm} />
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		{showDataEntry}

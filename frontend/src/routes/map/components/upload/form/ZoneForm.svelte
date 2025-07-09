@@ -112,7 +112,7 @@
 			// TODO
 			setTimeout(() => {
 				mapStore.setData(
-					'focus_bbox',
+					'zone_bbox',
 					geojsonData as FeatureCollection<Geometry, GeoJsonProperties>
 				);
 			}, 500); // 1秒後にデータを設定
@@ -133,6 +133,12 @@
 					duration: 500
 				});
 			}
+
+			mapStore.setFilter('@zone_bbox_select', [
+				'all',
+				['==', '$type', 'Polygon'],
+				['==', 'code', selectedEpsgCode]
+			]);
 		}
 	});
 

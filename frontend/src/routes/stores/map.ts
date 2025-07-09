@@ -12,7 +12,8 @@ import type {
 	QueryRenderedFeaturesOptions,
 	MapGeoJSONFeature,
 	LngLatBoundsLike,
-	GeoJSONSource
+	GeoJSONSource,
+	FilterSpecification
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -341,6 +342,16 @@ const createMapStore = () => {
 		if (!map) return;
 		setStyleEvent.set(style);
 		map.setStyle(style);
+	};
+
+	const setFilter = (layerId: string, filter: FilterSpecification) => {
+		if (!map) return;
+		const layer = map.getLayer(layerId);
+		if (layer) {
+			map.setFilter(layerId, filter);
+		} else {
+			console.warn(`Layer with ID ${layerId} does not exist.`);
+		}
 	};
 
 	// クリックマーカーを追加するメソッド
@@ -715,6 +726,7 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		setData,
+		setFilter,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		fitBounds,
 		panTo,

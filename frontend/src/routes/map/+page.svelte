@@ -376,6 +376,7 @@
 			bind:drawGeojsonData
 			bind:showZoneForm
 			bind:focusBbox
+			{selectedEpsgCode}
 			{demEntries}
 			{streetViewLineData}
 			{streetViewPointData}
