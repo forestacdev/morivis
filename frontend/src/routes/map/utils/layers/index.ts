@@ -659,6 +659,7 @@ export const createLayersItems = (
 	const fillLayerItems: LayerSpecification[] = [];
 	const rasterLayerItems: LayerSpecification[] = [];
 	const vectorLayerItems: LayerSpecification[] = [];
+	const rasterAndVectorLayerItems: LayerSpecification[] = [];
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
@@ -691,7 +692,7 @@ export const createLayersItems = (
 					if (interaction.clickable) clickableRaster.push(layerId);
 
 					if (style.type === 'basemap') {
-						rasterLayerItems.push({
+						rasterAndVectorLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -704,7 +705,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'categorical') {
-						rasterLayerItems.push({
+						rasterAndVectorLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -712,7 +713,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'dem') {
-						rasterLayerItems.push({
+						rasterAndVectorLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -720,7 +721,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'tiff') {
-						rasterLayerItems.push({
+						rasterAndVectorLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -753,13 +754,13 @@ export const createLayersItems = (
 
 					const vectorLayer = createVectorLayer(layer, style);
 					if (vectorLayer) {
-						vectorLayerItems.push(vectorLayer);
+						rasterAndVectorLayerItems.push(vectorLayer);
 					}
 
 					// ポリゴンのアウトライン
 					if (style.type === 'fill' && style.outline.show) {
 						const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
-						vectorLayerItems.push(lineLayer);
+						rasterAndVectorLayerItems.push(lineLayer);
 					}
 
 					if (
@@ -795,7 +796,7 @@ export const createLayersItems = (
 			: [];
 
 	// ベースマップ
-	const rasterBaseMap = _type === 'main' ? getBaseMapLayers() : [];
+	const baseMap = _type === 'main' ? getBaseMapLayers() : [];
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
@@ -807,10 +808,9 @@ export const createLayersItems = (
 	const cloudLayer = _type === 'main' ? cloudStyleJson.layers : [];
 
 	return [
-		...rasterBaseMap,
-		...rasterLayerItems,
+		...baseMap,
 		...mapLineItems,
-		...vectorLayerItems,
+		...rasterAndVectorLayerItems,
 		...streetViewLayers,
 		...cloudLayer,
 		...mapLabelItems,
