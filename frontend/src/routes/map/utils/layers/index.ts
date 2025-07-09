@@ -515,7 +515,6 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
-			'text-font': ['Noto Sans JP Light'],
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
@@ -543,8 +542,7 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 	const labelLayout = {
 		'text-field': textField,
 		'text-size': 12,
-		'text-max-width': 12,
-		'text-font': ['Noto Sans JP Light']
+		'text-max-width': 12
 	};
 
 	const symbolLayer: SymbolLayerSpecification = {
@@ -576,6 +574,7 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 };
 
 // symbolレイヤーの作成
+// TODO: フォント
 const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
 	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
@@ -595,7 +594,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
-			'text-font': ['Noto Sans JP Light'],
+			// 'text-font': ['Noto Sans JP Light'],
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
