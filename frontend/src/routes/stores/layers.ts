@@ -86,5 +86,8 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 
+/** タイル座標レイヤー */
+export const showXYZTileLayer = writable<boolean>(false);
+
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

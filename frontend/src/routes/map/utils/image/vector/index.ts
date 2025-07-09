@@ -1,3 +1,5 @@
+import type { TileXYZ } from '$routes/map/data/types/raster';
+import * as tilebelt from '@mapbox/tilebelt';
 import maplibregl from 'maplibre-gl';
 
 export interface MapImageOptions {
@@ -9,6 +11,7 @@ export interface MapImageOptions {
 	bearing?: number;
 	pitch?: number;
 	bounds?: maplibregl.LngLatBoundsLike; // nullを許容
+	xyz?: TileXYZ;
 	timeout?: number;
 }
 
@@ -34,6 +37,7 @@ export async function generateMapImageDOM(
 		bearing = 0,
 		pitch = 0,
 		bounds,
+		xyz,
 		timeout = 10000
 	} = options;
 
@@ -52,15 +56,17 @@ export async function generateMapImageDOM(
 			reject(new Error('Map image generation timed out'));
 		}, timeout);
 
+		const mapBounds = xyz
+			? tilebelt.tileToBBOX(Object.values(xyz) as [number, number, number])
+			: bounds;
+
 		// Mapインスタンスを作成
 		const map = new maplibregl.Map({
 			container,
 			style,
-			...(center ? { center } : {}),
 			bearing,
 			pitch,
-			...(center ? { zoom: options.zoom } : {}),
-			...(!center ? { bounds: options.bounds } : {}),
+			bounds: mapBounds,
 			interactive: false,
 			attributionControl: false
 		});

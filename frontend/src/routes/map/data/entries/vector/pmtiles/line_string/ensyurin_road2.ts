@@ -19,7 +19,8 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 8,
 		sourceLayer: 'ensyurin_road2',
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
+		xyzImageTile: { x: 115388, y: 51671, z: 17 }
 	},
 	properties: {
 		keys: [],

@@ -43,7 +43,8 @@
 		activeLayerIdsStore,
 		getEntryIds,
 		showLabelLayer,
-		showStreetViewLayer
+		showStreetViewLayer,
+		showXYZTileLayer
 	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
@@ -180,6 +181,59 @@
 			];
 		}
 
+		let xyzTileSources = $showXYZTileLayer
+			? {
+					tile_index: {
+						type: 'vector',
+						maxzoom: 22,
+						tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
+					} as SourceSpecification
+				}
+			: {};
+		let xyzTileLayer: LayerSpecification[] = $showXYZTileLayer
+			? [
+					{
+						id: '@tile_index_layer',
+						type: 'fill',
+						source: 'tile_index',
+						'source-layer': 'geojsonLayer',
+						maxzoom: 22,
+						paint: {
+							'fill-color': '#000000',
+							'fill-opacity': 0
+						}
+					},
+					{
+						id: '@tile_index_line_layer',
+						type: 'line',
+						source: 'tile_index',
+						'source-layer': 'geojsonLayer',
+						paint: {
+							'line-color': '#000000',
+							'line-width': 2
+						}
+					},
+					{
+						id: 'tile_index_line_label',
+						type: 'symbol',
+						source: 'tile_index',
+						'source-layer': 'geojsonLayer',
+						paint: {
+							'text-color': '#000000',
+							'text-halo-color': '#FFFFFF',
+							'text-halo-width': 1,
+							'text-opacity': 1
+						},
+						layout: {
+							'text-field': ['to-string', ['get', 'index']],
+							'text-max-width': 12,
+							'text-size': 24,
+							'text-justify': 'auto'
+						}
+					}
+				]
+			: [];
+
 		const zoneSources = showZoneForm
 			? {
 					zone: {
@@ -223,12 +277,8 @@
 			sources: {
 				...terrainSources,
 				...streetViewSources,
+				...xyzTileSources,
 				...sources,
-				tile_index: {
-					type: 'vector',
-					maxzoom: 22,
-					tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
-				} as SourceSpecification,
 				draw_source: {
 					type: 'geojson',
 					data: drawGeojsonData as FeatureCollection,
@@ -249,6 +299,7 @@
 			},
 			layers: [
 				...layers,
+				...xyzTileLayer,
 				{
 					id: '@overlay_layer',
 					type: 'background',
@@ -303,47 +354,6 @@
 				// 	id: '@webgl_canvas_layer',
 				// 	type: 'raster',
 				// 	source: 'webgl_canvas'
-				// }
-				// {
-				// 	id: '@tile_index_layer',
-				// 	type: 'fill',
-				// 	source: 'tile_index',
-				// 	'source-layer': 'geojsonLayer',
-				// 	maxzoom: 22,
-				// 	paint: {
-				// 		'fill-color': '#000000',
-				// 		'fill-opacity': 0.4
-				// 	}
-				// },
-				// {
-				// 	id: '@tile_index_line_layer',
-				// 	type: 'line',
-				// 	source: 'tile_index',
-				// 	'source-layer': 'geojsonLayer',
-				// 	paint: {
-				// 		'line-color': '#000000',
-				// 		'line-width': 2
-				// 	}
-				// },
-				// {
-				// 	id: 'tile_index_line_label',
-				// 	type: 'symbol',
-				// 	source: 'tile_index',
-				// 	'source-layer': 'geojsonLayer',
-				// 	paint: {
-				// 		'text-color': '#000000',
-				// 		'text-halo-color': '#FFFFFF',
-				// 		'text-halo-width': 1,
-				// 		'text-opacity': 1
-				// 	},
-				// 	layout: {
-				// 		'text-field': ['to-string', ['get', 'index']],
-				// 		'text-max-width': 12,
-				// 		'text-size': 24,
-				// 		'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-				// 		'text-radial-offset': 0.5,
-				// 		'text-justify': 'auto'
-				// 	}
 				// }
 			],
 			sky: {
@@ -414,6 +424,10 @@
 
 	// ラベルの表示
 	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	showXYZTileLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 

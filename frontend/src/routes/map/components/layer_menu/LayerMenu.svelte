@@ -8,7 +8,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
 
-	import { showLabelLayer } from '$routes/stores/layers';
+	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
@@ -131,9 +131,10 @@
 			</div>
 		{/each}
 		{#if !isSmall}
-			<div transition:slide={{ duration: 200 }} class="elative flex h-[200px] flex-col">
+			<div transition:slide={{ duration: 200 }} class="relative flex flex-col">
 				<Switch label="ラベル" bind:value={$showLabelLayer} />
 				<Switch label="3D" bind:value={is3d} />
+				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			</div>
 		{/if}
 		<div class="h-[200px] w-full shrink-0"></div>

@@ -44,6 +44,7 @@
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import Processing from './Processing.svelte';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -434,6 +435,7 @@
 <InfoDialog />
 <TermsOfServiceDialog />
 <ScreenGuard />
+<Processing />
 
 <ConfirmationDialog />
 

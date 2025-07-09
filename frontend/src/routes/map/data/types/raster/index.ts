@@ -217,7 +217,6 @@ export interface RasterTiffStyle {
 interface RasterMetaData extends BaseMetaData {
 	minZoom: number;
 	tileSize: TileSize;
-	xyzImageTile?: TileXYZ;
 }
 
 export interface RasterInteraction {

@@ -10,6 +10,7 @@
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDialogType: DialogType;
@@ -62,14 +63,16 @@
 	</div>
 {/if}
 
-<ShapeFileForm
-	bind:showDataEntry
-	bind:showDialogType
-	bind:dropFile
-	bind:showZoneForm
-	bind:focusBbox
-	{selectedEpsgCode}
-/>
+{#if !$isProcessing}
+	<ShapeFileForm
+		bind:showDataEntry
+		bind:showDialogType
+		bind:dropFile
+		bind:showZoneForm
+		bind:focusBbox
+		{selectedEpsgCode}
+	/>
+{/if}
 
 <style>
 </style>

@@ -19,6 +19,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_kochi',
 		bounds: [132.479888, 32.702505, 134.31367, 33.882997],
+		xyzImageTile: { x: 57075, y: 26263, z: 16 },
 		center: [133.49424, 33.636878]
 	},
 	properties: {

@@ -20,7 +20,8 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 1,
 		tags: ['鳥獣保護区'],
 		sourceLayer: 'ksj_tmplt_a15',
-		bounds: [123.00744367, 24.19197, 153.99083742, 45.45090445]
+		bounds: [123.00744367, 24.19197, 153.99083742, 45.45090445],
+		xyzImageTile: { x: 903, y: 400, z: 10 }
 	},
 	properties: {
 		keys: [
@@ -49,7 +50,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.5, // 透過率
 		colors: {
-			key: '単色',
+			key: '保護区分',
 			show: true,
 			expressions: [
 				{
@@ -58,6 +59,15 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '単色',
 					mapping: {
 						value: '#33f543'
+					}
+				},
+				{
+					type: 'match',
+					key: '保護区分',
+					name: '保護区分',
+					mapping: {
+						categories: ['鳥獣保護区', '特別保護地区', '休猟区', '特例休猟区'],
+						values: ['#f55b23', '#f5d133', '#00b4fb', '#50e3c2']
 					}
 				}
 			]

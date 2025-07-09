@@ -18,7 +18,8 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_tochigi',
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039]
+		bounds: [139.326731, 36.199924, 140.291983, 37.155039],
+		xyzImageTile: { x: 29096, y: 12791, z: 15 }
 	},
 	properties: {
 		keys: [

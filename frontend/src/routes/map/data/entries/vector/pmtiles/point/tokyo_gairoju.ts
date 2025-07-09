@@ -24,7 +24,8 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 10,
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
-		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772]
+		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
+		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
 		keys: [

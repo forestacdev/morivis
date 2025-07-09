@@ -28,11 +28,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		tags: ['田んぼ'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		downloadUrl: 'https://map.ecoris.info/#contents',
-		xyzImageTile: {
-			x: 450,
-			y: 201,
-			z: 9
-		}
+		xyzImageTile: { x: 3605, y: 1615, z: 12 }
 	},
 	interaction: {
 		clickable: true

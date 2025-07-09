@@ -5,7 +5,8 @@ import type {
 	RasterCategoricalStyle,
 	RasterBaseMapStyle,
 	RasterDemStyle,
-	RasterTiffStyle
+	RasterTiffStyle,
+	TileXYZ
 } from '$routes/map/data/types/raster';
 import type { AttributionKey } from '../attribution';
 import type { Region } from './location';
@@ -24,6 +25,7 @@ export interface BaseMetaData {
 	minZoom: number;
 	bounds: [number, number, number, number];
 	coverImage?: string;
+	xyzImageTile?: TileXYZ;
 	center?: [number, number];
 }
 

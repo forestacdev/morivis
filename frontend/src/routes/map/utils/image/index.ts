@@ -5,6 +5,8 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { generateMapImageDOM, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
+import { style } from '$routes/_development/maptreestyle/style';
+import { result } from 'es-toolkit/compat';
 
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
@@ -93,14 +95,12 @@ export const getLayerImage = async (
 				height: 512,
 				bearing: 0,
 				pitch: 0,
+				bounds: _layerEntry.metaData.bounds,
 				timeout: 5000
 			};
 
-			if (_layerEntry.metaData.center) {
-				options.center = _layerEntry.metaData.center;
-				options.zoom = _layerEntry.metaData.minZoom;
-			} else {
-				options.bounds = _layerEntry.metaData.bounds;
+			if (_layerEntry.metaData.xyzImageTile) {
+				options.xyz = _layerEntry.metaData.xyzImageTile;
 			}
 
 			const result = await generateMapImageDOM(style, options);

@@ -163,6 +163,18 @@
 			});
 
 			console.log(expressions);
+
+			if (features[0].layer.id === '@tile_index_layer') {
+				const xyz = {
+					x: prop.x,
+					y: prop.y,
+					z: prop.z
+				};
+
+				console.log(xyz);
+
+				//クリップボードにコピー
+			}
 		}
 		if (showDataEntry) return;
 		if ($isSideMenuType === 'draw') return;

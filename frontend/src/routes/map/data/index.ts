@@ -187,7 +187,7 @@ export const createGeoJsonEntry = (
 			titles: [
 				{
 					conditions: [],
-					template: 'カスタムデータ'
+					template: name
 				}
 			]
 		},
@@ -266,7 +266,7 @@ export const createVectorTileEntry = (
 			titles: [
 				{
 					conditions: [],
-					template: 'カスタムデータ'
+					template: name
 				}
 			]
 		},

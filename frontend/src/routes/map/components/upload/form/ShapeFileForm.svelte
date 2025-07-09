@@ -121,7 +121,7 @@
 		forms.shpFile = null;
 		forms.dbfFile = null;
 		forms.shxFile = null;
-		forms.prjFile = null;
+		forms.prjFile = '';
 		forms.shpName = '';
 		forms.dbfName = '';
 		forms.shxName = '';
