@@ -9,7 +9,7 @@
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { type EpsgCode, proj4Dict } from '$routes/map/utils/proj/dict';
+	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { readPrjFileContent, transformBbox } from '$routes/map/utils/proj';
 	import turfBbox from '@turf/bbox';
 
@@ -241,7 +241,7 @@
 			}
 
 			// bboxが有効な場合は、座標系フォームを表示せずにエントリを作成
-			const prjContent = proj4Dict['4326'];
+			const prjContent = getProjContext('4326');
 
 			setEntryData(prjContent);
 			return;
@@ -258,7 +258,7 @@
 	useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
 		if (eventName === 'setZone') {
 			// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
-			const prjContent = proj4Dict[selectedEpsgCode];
+			const prjContent = getProjContext(selectedEpsgCode);
 			if (prjContent) {
 				setEntryData(prjContent);
 			}

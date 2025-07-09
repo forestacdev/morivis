@@ -1,7 +1,6 @@
 import { fromArrayBuffer } from 'geotiff';
 import type { ReadRasterResult } from 'geotiff';
-import { proj4Dict, citationDict } from '$routes/map/utils/proj/dict';
-import { transformBbox } from '$routes/map/utils/proj';
+
 import type {
 	BandTypeKey,
 	ShingleBandData,
@@ -260,41 +259,6 @@ export const loadRasterData = async (
 	visualization: RasterTiffStyle['visualization']
 ): Promise<string | undefined> => {
 	try {
-		// const geoKeys = image.geoKeys;
-		// let epsgCode: string | number | null = null;
-		// if (geoKeys) {
-		// 	// ① 明示的な EPSG コードがあるか確認
-		// 	if (geoKeys.ProjectedCSTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey !== 32767) {
-		// 		epsgCode = geoKeys.ProjectedCSTypeGeoKey;
-		// 	} else if (geoKeys.GeographicTypeGeoKey && geoKeys.GeographicTypeGeoKey !== 32767) {
-		// 		epsgCode = geoKeys.GeographicTypeGeoKey;
-		// 	}
-		// 	// ② EPSGコードがなく、GTCitationGeoKey から判別できる場合
-		// 	else if (geoKeys.GTCitationGeoKey) {
-		// 		const citation = geoKeys.GTCitationGeoKey.trim();
-
-		// 		if (citationDict[citation]) {
-		// 			epsgCode = citationDict[citation];
-		// 		} else {
-		// 			console.warn(`Unknown citation string: "${citation}"`);
-		// 		}
-		// 	}
-		// } else {
-		// 	console.warn('No geoKeys found in the image.');
-		// }
-
-		// let extent;
-		// if (!GeoTiffCache.hasBbox(id)) {
-		// 	if (epsgCode === '4326' || epsgCode === 4326 || epsgCode === null) {
-		// 		extent = image.getBoundingBox();
-		// 	} else {
-		// 		const prjContent = proj4Dict[epsgCode];
-		// 		extent = transformBbox(image.getBoundingBox(), prjContent); // EPSG:4326に変換
-		// 	}
-
-		// 	GeoTiffCache.setBbox(id, extent as [number, number, number, number]);
-		// }
-
 		let width;
 		let height;
 		let rasters: Float32Array[] = [];

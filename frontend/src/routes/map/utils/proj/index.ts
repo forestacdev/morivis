@@ -54,6 +54,7 @@ export const isWgs84Prj = (prjContent: string): boolean => {
 	return false;
 };
 
+// TODO
 export const isWgs84Crs = (crs: any): boolean => {
 	if (!crs) {
 		return false; // CRS 情報がない場合

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
-	import { epsgPrefDict, getEpsgInfoArray, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getEpsgInfoArray, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
@@ -9,7 +9,6 @@
 	import turfCenter from '@turf/center';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
 	import maplibregl from 'maplibre-gl';
-	import { filter } from 'es-toolkit/compat';
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス

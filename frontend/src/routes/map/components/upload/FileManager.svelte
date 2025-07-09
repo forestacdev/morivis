@@ -16,7 +16,7 @@
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import turfBbox from '@turf/bbox';
-	import { proj4Dict } from '$routes/map/utils/proj/dict';
+	import { getProjContext } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -121,7 +121,7 @@
 					return;
 				} else {
 					// bboxが有効な場合は、座標系フォームを表示せずにエントリを作成
-					const prjContent = proj4Dict['4326']; // 世界測地系のプロジェクションを使用
+					const prjContent = getProjContext('4326'); // 世界測地系のプロジェクションを使用
 					geojsonData = await shpFileToGeojson(shpFile, dbfFile, prjContent);
 					if (!geojsonData) {
 						showNotification('シェープファイルの読み込みに失敗しました', 'error');
