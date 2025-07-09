@@ -3,7 +3,8 @@ import type {
 	TileSize,
 	ZoomLevel,
 	CategoryLegend,
-	RasterFormatType
+	RasterFormatType,
+	RasterBaseMapStyle
 } from '$routes/map/data/types/raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import type { LngLat } from 'maplibre-gl';
@@ -159,3 +160,245 @@ export const getTileUrl = (lng: number, lat: number, zoom: number, tileUrl: stri
 		.replace('{x}', tile[0].toString())
 		.replace('{y}', tile[1].toString());
 };
+
+/**
+ * MapLibreのラスタープロパティをCSSスタイルに変換する関数
+ * @param rasterStyle - MapLibreのラスタースタイル設定
+ * @returns CSSスタイルオブジェクト
+ */
+export function rasterToCSSStyle(rasterStyle: RasterStylePresetParameters): {
+	filter: string;
+} {
+	const { hueRotate, brightnessMin, brightnessMax, saturation, contrast } = rasterStyle;
+
+	// brightnessの計算: MapLibreのmin/maxをCSSの単一値に変換
+	// 中間値を使用するか、maxを優先
+	const brightness = (brightnessMin + brightnessMax) / 2;
+
+	// saturationの変換: MapLibreの[-1, 1]をCSSの[0, 2]に変換
+	const cssSaturation = saturation + 1;
+
+	// contrastの変換: MapLibreの[-1, 1]をCSSの[0, 2]に変換
+	const cssContrast = contrast + 1;
+
+	// フィルター文字列を構築
+	const filters: string[] = [];
+
+	if (hueRotate !== 0) {
+		filters.push(`hue-rotate(${hueRotate}deg)`);
+	}
+
+	if (brightness !== 1) {
+		filters.push(`brightness(${brightness})`);
+	}
+
+	if (cssSaturation !== 1) {
+		filters.push(`saturate(${cssSaturation})`);
+	}
+
+	if (cssContrast !== 1) {
+		filters.push(`contrast(${cssContrast})`);
+	}
+
+	return {
+		filter: filters.length > 0 ? filters.join(' ') : 'none'
+	};
+}
+
+/**
+ * CSSクラス文字列を生成する関数
+ * @param rasterStyle - MapLibreのラスタースタイル設定
+ * @returns CSS文字列
+ */
+export function rasterToCSSString(rasterStyle: RasterBaseMapStyle): string {
+	const cssStyle = rasterToCSSStyle(rasterStyle);
+
+	let cssString = '';
+
+	if (cssStyle.filter && cssStyle.filter !== 'none') {
+		cssString += `filter: ${cssStyle.filter};`;
+	}
+
+	return cssString;
+}
+
+/**
+ * 事前定義されたスタイルプリセット
+ */
+export type RasterStylePreset =
+	| 'default'
+	| 'sepia'
+	| 'grayscale'
+	| 'vintage'
+	| 'cool'
+	| 'warm'
+	| 'vivid'
+	| 'soft'
+	| 'dramatic'
+	| 'night'
+	| 'sunset'
+	| 'blueprint';
+
+export interface RasterStylePresetParameters {
+	hueRotate: number;
+	brightnessMin: number;
+	brightnessMax: number;
+	saturation: number;
+	contrast: number;
+}
+
+/**
+ * プリセットスタイル定義
+ */
+export const RASTER_STYLE_PRESETS: Record<RasterStylePreset, RasterStylePresetParameters> = {
+	// デフォルト（変更なし）
+	default: {
+		hueRotate: 0,
+		brightnessMin: 0,
+		brightnessMax: 1,
+		saturation: 0,
+		contrast: 0
+	},
+
+	// セピア調（古い写真風）
+	sepia: {
+		hueRotate: 35,
+		brightnessMin: 0.1,
+		brightnessMax: 0.9,
+		saturation: -0.3,
+		contrast: 0.2
+	},
+
+	// グレースケール（白黒）
+	grayscale: {
+		hueRotate: 0,
+		brightnessMin: 0,
+		brightnessMax: 1,
+		saturation: -1,
+		contrast: 0.1
+	},
+
+	// ビンテージ（レトロ風）
+	vintage: {
+		hueRotate: 20,
+		brightnessMin: 0.2,
+		brightnessMax: 0.8,
+		saturation: -0.2,
+		contrast: 0.3
+	},
+
+	// クール（青みがかった）
+	cool: {
+		hueRotate: 180,
+		brightnessMin: 0.1,
+		brightnessMax: 1,
+		saturation: 0.2,
+		contrast: 0.1
+	},
+
+	// ウォーム（暖色系）
+	warm: {
+		hueRotate: 30,
+		brightnessMin: 0.1,
+		brightnessMax: 1,
+		saturation: 0.3,
+		contrast: 0.2
+	},
+
+	// ビビッド（鮮やか）
+	vivid: {
+		hueRotate: 0,
+		brightnessMin: 0.1,
+		brightnessMax: 1,
+		saturation: 0.5,
+		contrast: 0.4
+	},
+
+	// ソフト（柔らかい）
+	soft: {
+		hueRotate: 0,
+		brightnessMin: 0.2,
+		brightnessMax: 0.9,
+		saturation: -0.1,
+		contrast: -0.2
+	},
+
+	// ドラマチック（高コントラスト）
+	dramatic: {
+		hueRotate: 0,
+		brightnessMin: 0,
+		brightnessMax: 1,
+		saturation: 0.2,
+		contrast: 0.6
+	},
+
+	// ナイト（夜のような暗い雰囲気）
+	night: {
+		hueRotate: 240,
+		brightnessMin: 0,
+		brightnessMax: 0.6,
+		saturation: -0.3,
+		contrast: 0.3
+	},
+
+	// サンセット（夕日のような）
+	sunset: {
+		hueRotate: 15,
+		brightnessMin: 0.3,
+		brightnessMax: 0.9,
+		saturation: 0.4,
+		contrast: 0.2
+	},
+
+	// ブループリント（青写真風）
+	blueprint: {
+		hueRotate: 200,
+		brightnessMin: 0.2,
+		brightnessMax: 0.8,
+		saturation: 0.3,
+		contrast: 0.5
+	}
+};
+
+/**
+ * プリセット名からラスタースタイルを取得する関数
+ * @param preset - プリセット名
+ * @returns ラスタースタイル
+ */
+export function getRasterStylePreset(preset: RasterStylePreset): RasterStylePresetParameters {
+	return RASTER_STYLE_PRESETS[preset];
+}
+
+/**
+ * プリセット名からCSSスタイルを直接取得する関数
+ * @param preset - プリセット名
+ * @returns CSSスタイルオブジェクト
+ */
+export function getPresetCSSStyle(preset: RasterStylePreset): {
+	filter: string;
+} {
+	return rasterToCSSStyle(getRasterStylePreset(preset));
+}
+
+// 使用例
+const exampleStyle: RasterBaseMapStyle = {
+	type: 'basemap',
+	visible: true,
+	preset: 'default',
+	opacity: 0.8,
+	hueRotate: 45,
+	brightnessMin: 0.2,
+	brightnessMax: 0.8,
+	saturation: 0.5,
+	contrast: 0.3
+};
+
+// CSS スタイルオブジェクトを取得
+const cssStyleObject = rasterToCSSStyle(exampleStyle);
+console.log('CSS Style Object:', cssStyleObject);
+// 出力例: { filter: 'opacity(0.8) hue-rotate(45deg) brightness(0.5) saturate(1.5) contrast(1.3)', opacity: 0.8 }
+
+// CSS文字列を取得
+const cssString = rasterToCSSString(exampleStyle);
+console.log('CSS String:', cssString);
+// 出力例: "filter: opacity(0.8) hue-rotate(45deg) brightness(0.5) saturate(1.5) contrast(1.3); opacity: 0.8;"

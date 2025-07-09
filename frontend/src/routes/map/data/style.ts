@@ -5,21 +5,13 @@ import type {
 	LabelStyle,
 	Labels
 } from '$routes/map/data/types/vector/style';
-import type { RasterDemStyle } from '$routes/map/data/types/raster';
+import type { RasterBaseMapStyle, RasterDemStyle } from '$routes/map/data/types/raster';
 
-export const DEFAULT_RASTER_BASEMAP_STYLE: {
-	type: 'basemap';
-	visible: boolean;
-	opacity: number;
-	hueRotate: number;
-	brightnessMin: number;
-	brightnessMax: number;
-	saturation: number;
-	contrast: number;
-} = {
+export const DEFAULT_RASTER_BASEMAP_STYLE: RasterBaseMapStyle = {
 	type: 'basemap',
 	opacity: 1.0,
 	visible: true,
+	preset: 'default',
 	hueRotate: 0,
 	brightnessMin: 0,
 	brightnessMax: 1,

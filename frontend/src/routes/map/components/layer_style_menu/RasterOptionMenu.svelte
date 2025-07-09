@@ -4,6 +4,7 @@
 
 	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPulldownBox.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type {
 		RasterEntry,
@@ -14,6 +15,7 @@
 	} from '$routes/map/data/types/raster';
 	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 	import Accordion from '../atoms/Accordion.svelte';
+	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 
 	let {
 		layerEntry = $bindable()
@@ -26,12 +28,30 @@
 	let style = $derived(layerEntry.style);
 
 	let showOption = $state<boolean>(false);
+
+	let preset = $derived(style.preset);
+	let previousPreset: RasterStylePreset | undefined = undefined;
+
+	$effect(() => {
+		if (preset && preset !== previousPreset) {
+			if (style.type === 'basemap') {
+				layerEntry.style = {
+					...style,
+					...getRasterStylePreset(preset as RasterStylePreset)
+				};
+			}
+			previousPreset = preset;
+		}
+	});
 </script>
 
 {#if layerEntry && layerEntry.type === 'raster' && style}
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}
 		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
+
+		<RasterPresetPulldownBox bind:preset={style.preset} />
+
 		<Accordion label={'詳細設定'} bind:value={showOption}>
 			<div class="flex w-full flex-col gap-2">
 				<RangeSlider

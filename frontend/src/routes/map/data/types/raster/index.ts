@@ -1,5 +1,6 @@
 import type { DemDataTypeKey } from '$routes/map/data/dem';
 import type { BaseMetaData } from '$routes/map/data/types';
+import type { RasterStylePreset } from '$routes/map/utils/raster';
 export interface CategoryLegend {
 	type: 'category';
 	name: string;
@@ -55,6 +56,7 @@ export interface RasterBaseMapStyle {
 	type: 'basemap';
 	opacity: number;
 	visible?: boolean;
+	preset: RasterStylePreset;
 	hueRotate: number;
 	brightnessMin: number;
 	brightnessMax: number;

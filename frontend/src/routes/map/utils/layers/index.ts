@@ -785,9 +785,11 @@ export const createLayersItems = (
 		clickableVecter.push('@street_view_circle_layer');
 	}
 
-	// クリックイベントを有効にするレイヤーIDをstoreに保存
-	clickableVectorIds.set(clickableVecter);
-	clickableRasterIds.set(clickableRaster);
+	if (_type === 'main') {
+		// クリックイベントを有効にするレイヤーIDをstoreに保存
+		clickableVectorIds.set(clickableVecter);
+		clickableRasterIds.set(clickableRaster);
+	}
 
 	// ストリートビューのレイヤーを追加
 	const streetViewLayers =

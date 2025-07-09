@@ -5,8 +5,74 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { generateMapImageDOM, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
-import { style } from '$routes/_development/maptreestyle/style';
-import { result } from 'es-toolkit/compat';
+
+/**   画像の管理クラス */
+class CoverImageManager {
+	private static readonly MAX_SIZE = 100;
+	private static images: Map<string, string> = new Map();
+
+	static add(id: string, url: string): void {
+		if (this.images.has(id)) {
+			console.warn(`Image with id ${id} already exists. Overwriting.`);
+			// 既存のエントリを削除して最新の位置に移動
+			this.images.delete(id);
+		}
+
+		// サイズ制限チェック
+		if (this.images.size >= this.MAX_SIZE) {
+			// 最も古いエントリ（最初のエントリ）を削除
+			const oldestKey = this.images.keys().next().value;
+			if (oldestKey) {
+				const oldestUrl = this.images.get(oldestKey); // 先に取得
+				this.images.delete(oldestKey); // 削除
+				if (oldestUrl) {
+					URL.revokeObjectURL(oldestUrl); // クリーンアップ
+				}
+			}
+		}
+
+		this.images.set(id, url);
+	}
+
+	static get(id: string): string | undefined {
+		const url = this.images.get(id);
+		if (url) {
+			// LRU: アクセスされたアイテムを最新位置に移動
+			this.images.delete(id);
+			this.images.set(id, url);
+		}
+		return url;
+	}
+
+	static has(id: string): boolean {
+		return this.images.has(id);
+	}
+
+	static remove(id: string): void {
+		if (this.images.has(id)) {
+			this.images.delete(id);
+		} else {
+			console.warn(`Image with id ${id} does not exist.`);
+		}
+	}
+
+	static clear(): void {
+		// 全てのBlobURLをクリーンアップ
+		this.images.forEach((url) => {
+			URL.revokeObjectURL(url);
+		});
+		this.images.clear();
+	}
+
+	// 追加のユーティリティメソッド
+	static size(): number {
+		return this.images.size;
+	}
+
+	static getAll(): Map<string, string> {
+		return new Map(this.images);
+	}
+}
 
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
@@ -28,7 +94,8 @@ const getCoverImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
 	return _layerEntry.metaData.coverImage ?? undefined;
 };
 
-// getLayerImage関数の修正版
+// getLayerImage関数
+// TODO: クリーンアップ関数不要？
 export interface ImageResult {
 	url: string;
 	cleanup?: () => void;
@@ -59,6 +126,10 @@ export const getLayerImage = async (
 				return url ? { url } : undefined;
 			}
 		} else if (_layerEntry.type === 'vector') {
+			const url = CoverImageManager.get(_layerEntry.id);
+			if (url) {
+				return { url };
+			}
 			// Blob URL生成（クリーンアップが必要）
 			const sources = await createSourcesItems([_layerEntry], 'preview');
 			const layers = await createLayersItems([_layerEntry], 'preview');
@@ -105,10 +176,11 @@ export const getLayerImage = async (
 
 			const result = await generateMapImageDOM(style, options);
 
+			CoverImageManager.add(_layerEntry.id, result.blobUrl);
+
 			// Blob URLとクリーンアップ関数を返す
 			return {
-				url: result.blobUrl,
-				cleanup: result.revokeBlobUrl
+				url: result.blobUrl
 			};
 		} else {
 			// それ以外のタイプは未対応
