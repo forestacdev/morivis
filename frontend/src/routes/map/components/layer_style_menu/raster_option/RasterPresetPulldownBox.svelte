@@ -1,13 +1,14 @@
 <script lang="ts">
-	import type { DemStyleMode } from '$routes/map/data/types/raster';
 	import type { RasterStylePreset } from '$routes/map/utils/raster';
+	import { getPresetCSSStyle } from '$routes/map/utils/raster';
 	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	interface Props {
 		preset: RasterStylePreset;
+		src: string;
 	}
-	let { preset = $bindable() }: Props = $props();
+	let { preset = $bindable(), src }: Props = $props();
 	interface RasterStylePresetOptions {
 		key: RasterStylePreset;
 		name: string;
@@ -63,8 +64,14 @@
 						class="hidden"
 						onchange={() => (showPullDown = false)}
 					/>
-					<div class="flex items-center gap-2">
-						<Icon icon={'ic:round-terrain'} width={20} />
+					<div>
+						{getPresetCSSStyle(key).filter}
+						<img
+							{src}
+							alt={name}
+							class="aspect-square w-full rounded object-cover"
+							style="filter:{getPresetCSSStyle(key).filter};"
+						/>
 						<span class="select-none">{name}</span>
 					</div>
 				</label>

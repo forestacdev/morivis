@@ -16,6 +16,7 @@
 	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 	import Accordion from '../atoms/Accordion.svelte';
 	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
+	import { getLayerImage } from '$routes/map/utils/image';
 
 	let {
 		layerEntry = $bindable()
@@ -31,6 +32,15 @@
 
 	let preset = $derived(style.preset);
 	let previousPreset: RasterStylePreset | undefined = undefined;
+
+	const promise = (() => {
+		try {
+			return getLayerImage(layerEntry);
+		} catch (error) {
+			console.error('Error generating icon image:', error);
+			return Promise.resolve(undefined);
+		}
+	})();
 
 	$effect(() => {
 		if (preset && preset !== previousPreset) {
@@ -50,7 +60,11 @@
 	{#if style.type === 'basemap'}
 		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
 
-		<RasterPresetPulldownBox bind:preset={style.preset} />
+		{#await promise then imageResult}
+			{#if imageResult}
+				<RasterPresetPulldownBox bind:preset={style.preset} src={imageResult.url} />
+			{/if}
+		{/await}
 
 		<Accordion label={'詳細設定'} bind:value={showOption}>
 			<div class="flex w-full flex-col gap-2">

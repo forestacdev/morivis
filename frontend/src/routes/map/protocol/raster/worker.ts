@@ -174,7 +174,8 @@ self.onmessage = async (e) => {
 		max,
 		min,
 		elevationColorArray,
-		tile
+		tile,
+		encodeType
 	} = e.data;
 
 	try {
@@ -235,8 +236,12 @@ self.onmessage = async (e) => {
 			throw new Error('Failed to convert canvas to blob');
 		}
 
-		const buffer = await blob.arrayBuffer();
-		self.postMessage({ id: tileId, buffer });
+		if (encodeType === 'buffar') {
+			const buffer = await blob.arrayBuffer();
+			self.postMessage({ id: tileId, buffer });
+		} else if (encodeType === 'blob') {
+			self.postMessage({ id: tileId, blob });
+		}
 	} catch (error) {
 		if (error instanceof Error) {
 			self.postMessage({ id: tileId, error: error.message });

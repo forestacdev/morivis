@@ -37,6 +37,7 @@ class WorkerProtocol {
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 		const mode = url.searchParams.get('mode') || 'default'; // デフォルト値を設定
 		const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
+		const encodeType: 'buffar' | 'blob' = 'buffar';
 
 		if (mode === 'relief') {
 			const image = await this.tileCache.getSingleTileImage(
@@ -64,7 +65,8 @@ class WorkerProtocol {
 					mode,
 					elevationColorArray,
 					max,
-					min
+					min,
+					encodeType
 				});
 			});
 		} else if (mode === 'slope' || 'curvature') {

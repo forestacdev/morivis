@@ -5,7 +5,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { generateMapImageDOM, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
-
+import * as tilebelt from '@mapbox/tilebelt';
 /**   画像の管理クラス */
 class CoverImageManager {
 	private static readonly MAX_SIZE = 100;
@@ -130,9 +130,22 @@ export const getLayerImage = async (
 			if (url) {
 				return { url };
 			}
+
+			const minimumEntry = {
+				..._layerEntry,
+				metaData: {
+					..._layerEntry.metaData,
+					bounds: _layerEntry.metaData.xyzImageTile
+						? tilebelt.tileToBBOX(
+								Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
+							)
+						: _layerEntry.metaData.bounds,
+					maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
+				}
+			} as GeoDataEntry;
 			// Blob URL生成（クリーンアップが必要）
-			const sources = await createSourcesItems([_layerEntry], 'preview');
-			const layers = await createLayersItems([_layerEntry], 'preview');
+			let sources = await createSourcesItems([minimumEntry], 'preview');
+			const layers = await createLayersItems([minimumEntry], 'preview');
 
 			const style: maplibregl.StyleSpecification = {
 				version: 8,
@@ -144,7 +157,8 @@ export const getLayerImage = async (
 						tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
 						tileSize: 256,
 						minzoom: 0,
-						maxzoom: 18,
+						maxzoom: minimumEntry.metaData.maxZoom ?? 18,
+						bounds: minimumEntry.metaData.bounds,
 						attribution:
 							'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
 					},
