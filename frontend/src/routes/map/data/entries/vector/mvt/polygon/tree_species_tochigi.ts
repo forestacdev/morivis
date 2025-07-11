@@ -1,3 +1,4 @@
+import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -18,7 +19,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_tochigi',
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039],
+		bounds: TOCHIGI_BBOX,
 		xyzImageTile: { x: 29096, y: 12791, z: 15 }
 	},
 	properties: {

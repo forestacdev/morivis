@@ -6,7 +6,7 @@
 
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-	import { lonLatToAddress } from '$routes/map/data/api';
+	import { lonLatToAddress } from '$routes/map/api/address';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/stores/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';

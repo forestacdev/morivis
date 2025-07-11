@@ -18,8 +18,6 @@ import type {
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
-import { getLocationBbox } from '$routes/map/data/location_bbox';
-
 import turfBbox, { bbox } from '@turf/bbox';
 import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
 import { DEBUG_MODE } from '$routes/stores';
@@ -397,7 +395,7 @@ const createMapStore = () => {
 		if (!map || !map.getTerrain()) return;
 		setTimeout(() => {
 			if (map) map.terrain.sourceCache.sourceCache.reload();
-		}, 200);
+        }, 200);
 	};
 
 	const toggleTerrain = (is3d: boolean) => {
@@ -661,27 +659,6 @@ const createMapStore = () => {
 		}
 	};
 
-	// インスタンス削除
-	const remove = () => {
-		if (!map) return;
-		map.remove();
-		map = null;
-		set(null);
-
-		mouseoverEvent.set(null);
-		mouseoutEvent.set(null);
-		rotateEvent.set(null);
-		zoomEvent.set(null);
-		setStyleEvent.set(null);
-		isLoadingEvent.set(true);
-		isStyleLoadEvent.set(null);
-		mooveEndEvent.set(null);
-		resizeEvent.set(null);
-		initEvent.set(null);
-		onLoadEvent.set(null);
-		lockOnMarker = null;
-	};
-
 	const createEventSubscriber = <T>(store: Writable<T | undefined | null>) => {
 		return (callback: (event: T) => void) => {
 			return store.subscribe((event) => {
@@ -708,41 +685,73 @@ const createMapStore = () => {
 	const fitBounds = (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) => {
 		if (!map) return;
 		map.fitBounds(bounds, options);
+    };
+
+    const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
+        if (!map) return;
+        map.flyTo({ center: lngLat, ...options });
+    };
+    
+    	// インスタンス削除
+	const remove = () => {
+		if (!map) return;
+		map.remove();
+		map = null;
+		set(null);
+
+		mouseoverEvent.set(null);
+		mouseoutEvent.set(null);
+		rotateEvent.set(null);
+		zoomEvent.set(null);
+		setStyleEvent.set(null);
+		isLoadingEvent.set(true);
+		isStyleLoadEvent.set(null);
+		mooveEndEvent.set(null);
+		resizeEvent.set(null);
+		initEvent.set(null);
+		onLoadEvent.set(null);
+		lockOnMarker = null;
 	};
 
 	return {
-		subscribe,
+        subscribe,
+        // 処理
 		init,
 		remove,
-		setStyle,
-		setCursor,
 		addLockonMarker,
 		removeLockonMarker,
-		getLockonMarker: () => lockOnMarker,
-		getMap: () => map,
-		queryRenderedFeatures,
-		getZoom: () => map?.getZoom(),
-		getCenter: () => map?.getCenter(),
-		getPitch: () => map?.getPitch(),
-		getBearing: () => map?.getBearing(),
-		setData,
+        queryRenderedFeatures,
+        setCursor,
+        setData,
+        setStyle,
 		setFilter,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		fitBounds,
 		panTo,
-		panToPoi,
+        panToPoi,
+        flyTo,
 		easeTo: (options: EaseToOptions) => easeTo(options),
 		focusLayer,
-		focusFeature,
-		getTerrain: () => map?.getTerrain(),
-		getMapBounds,
-		getCanvas: () => map?.getCanvas(),
-		terrainReload: terrainReload, // 地形をリロードするメソッド
+        focusFeature,
+        jumpToFac: jumpToFac,
+        terrainReload: terrainReload, // 地形をリロードするメソッド
 		toggleTerrain,
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
-		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
-		jumpToFac: jumpToFac,
+
+        // 取得
+        getLockonMarker: () => lockOnMarker,
+        getMap: () => map,
+		getZoom: () => map?.getZoom(),
+		getCenter: () => map?.getCenter(),
+		getPitch: () => map?.getPitch(),
+		getBearing: () => map?.getBearing(),
+        getTerrain: () => map?.getTerrain(),
+        getState: () => get(state),
+		getMapBounds,
+        getCanvas: () => map?.getCanvas(),
+        getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
+
 		// リスナー
 		onSetStyle: createEventSubscriber(setStyleEvent), // スタイル設定イベントの購読用メソッド
 		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
@@ -757,9 +766,6 @@ const createMapStore = () => {
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
 		onStateChange: state.subscribe, // マップの状態を購読するメソッド
-		getState: () => {
-			return get(state);
-		}
 	};
 };
 

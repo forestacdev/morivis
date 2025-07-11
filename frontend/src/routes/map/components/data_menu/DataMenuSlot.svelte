@@ -8,6 +8,8 @@
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import type { ImageResult } from '$routes/map/utils/image';
+	import { getPrefectureCode } from '$routes/map/data/pref';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -85,6 +87,7 @@
 		disabled={isAdded}
 		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
 	>
+		<PrefectureIcon width="100%" />
 		{#await promise then imageResult}
 			{#if imageResult}
 				<img

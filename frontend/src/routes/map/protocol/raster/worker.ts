@@ -5,25 +5,6 @@ let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
 let positionBuffer: WebGLBuffer | null = null;
 
-const loadAndCombineShaders = (
-	mainShaderSource: string,
-	moduleSourceList: string[],
-	placeholder: string
-) => {
-	// 2. 各モジュールファイルを読み込み、結合する文字列を生成
-	let combinedModuleCode = '';
-	for (const moduleSource of moduleSourceList) {
-		combinedModuleCode += moduleSource + '\n';
-	}
-
-	// 3. メインのシェーダーソース内のプレースホルダーを、結合したモジュールコードで置き換える
-	const finalShaderSource = mainShaderSource.replace(placeholder, combinedModuleCode);
-
-	return finalShaderSource;
-};
-
-const PLACEHOLDER = '// === INSERT_SHADER_MODULES_HERE === //';
-
 const initWebGL = (canvas: OffscreenCanvas) => {
 	gl = canvas.getContext('webgl2');
 	if (!gl) {

@@ -21,7 +21,7 @@
 
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { ResultData } from '$routes/map/utils/feature';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/data/api';
+	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import Fuse from 'fuse.js';
 
 	let searchData: any = null; // 検索データ

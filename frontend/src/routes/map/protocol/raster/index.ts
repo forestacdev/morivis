@@ -109,7 +109,8 @@ class WorkerProtocol {
 					elevationColorArray,
 					max,
 					min,
-					tile: { x, y, z }
+					tile: { x, y, z },
+					encodeType
 				});
 			});
 		} else {
@@ -138,6 +139,7 @@ class WorkerProtocol {
 
 	private handleMessage = (e: MessageEvent) => {
 		const { id, buffer, error } = e.data;
+
 		const request = this.pendingRequests.get(id);
 		if (error) {
 			console.error(`Error processing tile ${id}:`, error);

@@ -9,7 +9,7 @@
 	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/data/api';
+	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 

@@ -8,10 +8,6 @@
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 
-	import { getLocationBbox } from '$routes/map/data/location_bbox';
-	import { GeojsonCache } from '$routes/map/utils/file/geojson';
-	import turfBbox from '@turf/bbox';
-
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 
 	interface Props {
@@ -41,14 +37,7 @@
 
 		// TODO: 共通化
 
-		let bbox: [number, number, number, number] | undefined;
-		if (dataEntry.metaData.bounds) {
-			bbox = dataEntry.metaData.bounds as [number, number, number, number];
-		} else if (dataEntry.metaData.location) {
-			bbox = getLocationBbox(dataEntry.metaData.location) as [number, number, number, number];
-		} else {
-			console.warn('フォーカスの処理に対応してません', dataEntry.id);
-		}
+		const bbox = dataEntry.metaData.bounds as [number, number, number, number];
 
 		// MapLibreマップの初期化
 		map = new maplibregl.Map({

@@ -11,8 +11,6 @@
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
-	import { getLocationBbox } from '$routes/map/data/location_bbox';
-	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';

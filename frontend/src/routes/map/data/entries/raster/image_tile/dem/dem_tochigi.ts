@@ -1,5 +1,6 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
+import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'tochigi_dem',
@@ -23,7 +24,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 			y: 1597,
 			z: 12
 		},
-		bounds: [139.326731, 36.199924, 140.291983, 37.155039]
+		bounds: TOCHIGI_BBOX
 	},
 	interaction: {
 		clickable: true
