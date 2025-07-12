@@ -10,7 +10,7 @@ export interface MapImageOptions {
 	zoom?: number;
 	bearing?: number;
 	pitch?: number;
-	bounds?: maplibregl.LngLatBoundsLike; // nullを許容
+	bounds?: maplibregl.LngLatBoundsLike;
 	xyz?: TileXYZ;
 	timeout?: number;
 }
@@ -21,84 +21,194 @@ export interface MapImageResult {
 	revokeBlobUrl: () => void;
 }
 
-// TODO : OffscreenCanvasを使用したMapLibre画像生成関数の実装
+interface QueueItem {
+	style: maplibregl.StyleSpecification | string;
+	options: MapImageOptions;
+	resolve: (result: MapImageResult) => void;
+	reject: (error: Error) => void;
+}
+
 /**
- * DOM使用のMapLibre画像生成関数
+ * キューシステム付きMapImageGenerator
  */
-export async function generateMapImageDOM(
-	style: maplibregl.StyleSpecification | string,
-	options = {} as MapImageOptions
-): Promise<MapImageResult> {
-	const {
-		name,
-		width = 256,
-		height = 256,
-		center,
-		bearing = 0,
-		pitch = 0,
-		bounds,
-		xyz,
-		timeout = 10000
-	} = options;
+class MapImageGenerator {
+	private map: maplibregl.Map | null = null;
+	private container: HTMLDivElement | null = null;
+	private currentStyle: string | maplibregl.StyleSpecification | null = null;
+	private isProcessing = false;
+	private queue: QueueItem[] = [];
 
-	return new Promise((resolve, reject) => {
-		const container = document.createElement('div');
-		container.style.width = `${width}px`;
-		container.style.height = `${height}px`;
-		container.style.position = 'absolute';
-		container.style.top = '-9999px';
-		container.style.left = '-9999px';
-		document.body.appendChild(container);
+	/**
+	 * Mapインスタンスを初期化
+	 */
+	private initMap(
+		style: maplibregl.StyleSpecification | string,
+		width: number,
+		height: number
+	): maplibregl.Map {
+		// 既存のコンテナがあれば削除
+		if (this.container && this.container.parentNode) {
+			this.container.parentNode.removeChild(this.container);
+		}
 
-		// タイムアウト設定
-		const timeoutId = setTimeout(() => {
-			cleanup();
-			reject(new Error('Map image generation timed out'));
-		}, timeout);
-
-		const mapBounds = xyz
-			? tilebelt.tileToBBOX(Object.values(xyz) as [number, number, number])
-			: bounds;
+		// 新しいコンテナを作成
+		this.container = document.createElement('div');
+		this.container.style.width = `${width}px`;
+		this.container.style.height = `${height}px`;
+		this.container.style.position = 'absolute';
+		this.container.style.top = '-9999px';
+		this.container.style.left = '-9999px';
+		document.body.appendChild(this.container);
 
 		// Mapインスタンスを作成
-		const map = new maplibregl.Map({
-			container,
+		this.map = new maplibregl.Map({
+			container: this.container,
 			style,
-			bearing,
-			pitch,
-			bounds: mapBounds,
 			interactive: false,
-			attributionControl: false
+			attributionControl: false,
+			fadeDuration: 0 // アニメーションを無効化して高速化
 		});
 
-		// クリーンアップ関数
-		const cleanup = () => {
-			clearTimeout(timeoutId);
-			if (map && !map._removed) {
-				map.remove();
-			}
-			if (container && container.parentNode) {
-				container.parentNode.removeChild(container);
-			}
-		};
+		this.currentStyle = style;
+		return this.map;
+	}
 
-		// エラーハンドリング
-		map.on('error', (error) => {
-			cleanup();
-			reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
+	/**
+	 * Mapのサイズを更新
+	 */
+	private updateMapSize(width: number, height: number): void {
+		if (!this.map || !this.container) return;
+
+		this.container.style.width = `${width}px`;
+		this.container.style.height = `${height}px`;
+		this.map.getCanvas().style.width = `${width}px`;
+		this.map.getCanvas().style.height = `${height}px`;
+		this.map.resize();
+	}
+
+	/**
+	 * スタイルが変更されたかチェック
+	 */
+	private isStyleChanged(style: maplibregl.StyleSpecification | string): boolean {
+		if (typeof style === 'string' && typeof this.currentStyle === 'string') {
+			return style !== this.currentStyle;
+		}
+		if (typeof style === 'object' && typeof this.currentStyle === 'object') {
+			return JSON.stringify(style) !== JSON.stringify(this.currentStyle);
+		}
+		return true;
+	}
+
+	/**
+	 * キューに追加して処理を開始
+	 */
+	async generateImage(
+		style: maplibregl.StyleSpecification | string,
+		options: MapImageOptions
+	): Promise<MapImageResult> {
+		return new Promise((resolve, reject) => {
+			// キューに追加
+			this.queue.push({ style, options, resolve, reject });
+
+			// 処理中でなければ開始
+			if (!this.isProcessing) {
+				this.processQueue();
+			}
 		});
+	}
 
-		// マップが完全に読み込まれたら画像を生成
-		map.on('load', () => {
+	/**
+	 * キューを順次処理
+	 */
+	private async processQueue(): Promise<void> {
+		if (this.isProcessing || this.queue.length === 0) {
+			return;
+		}
+
+		this.isProcessing = true;
+
+		while (this.queue.length > 0) {
+			const item = this.queue.shift();
+			if (!item) break;
+
 			try {
-				setTimeout(() => {
+				const result = await this.processSingleImage(item.style, item.options);
+				item.resolve(result);
+			} catch (error) {
+				item.reject(error as Error);
+			}
+		}
+
+		this.isProcessing = false;
+	}
+
+	/**
+	 * 単一の画像を処理
+	 */
+	private async processSingleImage(
+		style: maplibregl.StyleSpecification | string,
+		options: MapImageOptions
+	): Promise<MapImageResult> {
+		const {
+			name,
+			width = 256,
+			height = 256,
+			bearing = 0,
+			pitch = 0,
+			bounds,
+			xyz,
+			timeout = 10000
+		} = options;
+
+		return new Promise((resolve, reject) => {
+			const timeoutId = setTimeout(() => {
+				reject(new Error('Map image generation timed out'));
+			}, timeout);
+
+			try {
+				// Mapインスタンスがないか、スタイルが変更された場合は初期化
+				if (!this.map || this.isStyleChanged(style)) {
+					if (this.map) {
+						this.map.remove();
+					}
+					this.map = this.initMap(style, width, height);
+				} else {
+					// サイズが変更された場合は更新
+					this.updateMapSize(width, height);
+				}
+
+				const mapBounds = xyz
+					? tilebelt.tileToBBOX(Object.values(xyz) as [number, number, number])
+					: bounds;
+
+				// Mapの設定を更新
+				const updateMapView = () => {
+					if (!this.map) return;
+
+					this.map.setBearing(bearing);
+					this.map.setPitch(pitch);
+
+					if (mapBounds) {
+						this.map.fitBounds(mapBounds as maplibregl.LngLatBoundsLike, {
+							padding: 0,
+							duration: 0
+						});
+					}
+				};
+
+				// 画像生成処理
+				const generateImageFromCanvas = () => {
 					try {
-						const canvas = map.getCanvas();
+						if (!this.map) {
+							throw new Error('Map instance not found');
+						}
+
+						const canvas = this.map.getCanvas();
 						if (!canvas) {
 							throw new Error('Canvas not found');
 						}
 
-						// キャンバスをクローンして返す
+						// キャンバスをクローン
 						const clonedCanvas = document.createElement('canvas');
 						const ctx = clonedCanvas.getContext('2d');
 						if (!ctx) {
@@ -112,45 +222,152 @@ export async function generateMapImageDOM(
 						// Blobを生成
 						clonedCanvas.toBlob(
 							(blob) => {
+								clearTimeout(timeoutId);
+
 								if (!blob) {
-									cleanup();
 									reject(new Error('Failed to generate blob'));
 									return;
 								}
 
-								// ファイル名を生成（.jpg拡張子付き）
 								const fileName = `${name}.jpg`;
-
-								// Blob URLを作成（img srcに使用するため）
 								const blobUrl = URL.createObjectURL(blob);
+								const revokeBlobUrl = () => URL.revokeObjectURL(blobUrl);
 
-								// Blob URLをクリーンアップする関数
-								const revokeBlobUrl = () => {
-									URL.revokeObjectURL(blobUrl);
-								};
-
-								const result: MapImageResult = {
+								resolve({
 									blobUrl,
 									fileName,
-
 									revokeBlobUrl
-								};
-
-								cleanup();
-								resolve(result);
+								});
 							},
 							'image/jpeg',
-							1.0 // JPEGの品質を最大に設定
+							1.0
 						);
 					} catch (error) {
-						cleanup();
+						clearTimeout(timeoutId);
 						reject(error);
 					}
-				}, 1000);
+				};
+
+				// エラーハンドリング
+				const onError = (error: any) => {
+					clearTimeout(timeoutId);
+					reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
+				};
+
+				// レンダリング完了を待つ
+				const waitForRender = () => {
+					if (!this.map) return;
+
+					// idle状態になるまで待つ
+					if (this.map && this.map.areTilesLoaded()) {
+						// さらに少し待ってレンダリング完了を確実にする
+						setTimeout(generateImageFromCanvas, 200);
+					} else {
+						this.map.once('idle', () => {
+							setTimeout(generateImageFromCanvas, 200);
+						});
+					}
+				};
+
+				// イベントリスナーの設定
+				if (this.map.isStyleLoaded()) {
+					updateMapView();
+					waitForRender();
+				} else {
+					this.map.once('style.load', () => {
+						updateMapView();
+						waitForRender();
+					});
+				}
+
+				this.map.once('error', onError);
 			} catch (error) {
-				cleanup();
+				clearTimeout(timeoutId);
 				reject(error);
 			}
 		});
-	});
+	}
+
+	/**
+	 * キューをクリア
+	 */
+	clearQueue(): void {
+		this.queue.forEach((item) => {
+			item.reject(new Error('Queue cleared'));
+		});
+		this.queue = [];
+	}
+
+	/**
+	 * リソースをクリーンアップ
+	 */
+	dispose(): void {
+		this.clearQueue();
+
+		if (this.map) {
+			this.map.remove();
+		}
+		if (this.container && this.container.parentNode) {
+			this.container.parentNode.removeChild(this.container);
+		}
+
+		this.map = null;
+		this.container = null;
+		this.currentStyle = null;
+		this.isProcessing = false;
+	}
 }
+
+// シングルトンインスタンス
+let mapImageGenerator: MapImageGenerator | null = null;
+
+/**
+ * キューシステム付きの画像生成関数
+ */
+export async function generateMapImageOptimized(
+	style: maplibregl.StyleSpecification | string,
+	options: MapImageOptions
+): Promise<MapImageResult> {
+	if (!mapImageGenerator) {
+		mapImageGenerator = new MapImageGenerator();
+	}
+
+	return mapImageGenerator.generateImage(style, options);
+}
+
+/**
+ * 元の関数（後方互換性のため）
+ */
+export async function generateMapImageDOM(
+	style: maplibregl.StyleSpecification | string,
+	options: MapImageOptions
+): Promise<MapImageResult> {
+	return generateMapImageOptimized(style, options);
+}
+
+/**
+ * キューをクリア
+ */
+export function clearImageQueue(): void {
+	if (mapImageGenerator) {
+		mapImageGenerator.clearQueue();
+	}
+}
+
+/**
+ * リソースをクリーンアップ
+ */
+export function cleanupMapImageGenerator(): void {
+	if (mapImageGenerator) {
+		mapImageGenerator.dispose();
+		mapImageGenerator = null;
+	}
+}
+
+/*
+// キューをクリアしたい場合
+clearImageQueue();
+
+// アプリケーション終了時
+cleanupMapImageGenerator();
+*/
