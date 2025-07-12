@@ -82,26 +82,26 @@ const entry: VectorEntry<TileMetaData> = {
 							'ブナ',
 							'その他L', // 広葉樹
 							'タケ',
+
 							'針広混交林',
 							'新植地',
 							'伐採跡地',
 							'その他'
 						],
 						values: [
-							'#33a02c', // スギ
-							'#b2df8a', // ヒノキ類
-							'#a6cee3', // マツ類
-							'#1f78b4', // カラマツ
-							'#fb9a99', // トドマツ
-							'#e31a1c', // エゾマツ
-							'#fdbf6f', // その他Ｎ
-							'#ff7f00', // クヌギ
-							'#cab2d6', // ナラ類
-							'#6a3d9a', // ブナ
-							'#ffff99', // その他L
-							'#b15928', // タケ
+							'#33a02c',
+							'#b2df8a',
+							'#a6cee3',
+							'#1f78b4',
+							'#fb9a99',
+							'#e31a1c',
+							'#fdbf6f',
+							'#ffff99',
+							'#cab2d6',
+							'#6a3d9a',
+							'#ff7f00',
+							'#b15928',
 
-							// 追加の色（Set3から借用）
 							'#33a02c', // 針広混交林
 							'#b2df8a', // 新植地
 							'#a6cee3', // 伐採跡地
@@ -121,10 +121,10 @@ const entry: VectorEntry<TileMetaData> = {
 							null,
 							null,
 							null,
-							'tmpoly-circle-alt-medium-200-black',
-							'tmpoly-circle-alt-medium-200-black',
-							'tmpoly-circle-alt-medium-200-black',
-							'tmpoly-circle-alt-medium-200-black'
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black'
 						]
 					}
 				},
