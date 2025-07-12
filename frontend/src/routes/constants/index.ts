@@ -15,7 +15,9 @@ export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
 export const FONT_DATA_PATH = DATA_PATH + '/font';
-export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
+// export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
+export const MAP_FONT_DATA_PATH = 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf';
+export const MAP_SPRITE_DATA_PATH = DATA_PATH + '/sprite/sprite';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
 
@@ -96,6 +98,7 @@ export const INT_ADD_LAYER_IDS = [
 	// 'gsi_road',
 	'ensyurin_rinhan',
 	// 'ensyurin_photo',
+	'tochigi_tree_species',
 	'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',

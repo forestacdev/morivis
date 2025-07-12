@@ -8,6 +8,7 @@ import type {
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification
 } from 'maplibre-gl';
+import type { SpritePatternId } from './pattern';
 
 interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];
@@ -81,6 +82,7 @@ export interface ColorMatchExpression {
 	mapping: {
 		categories: string[] | number[];
 		values: string[];
+		patterns: (SpritePatternId | null)[]; // Optional for patterns
 	};
 }
 

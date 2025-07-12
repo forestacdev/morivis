@@ -1,6 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import chroma from 'chroma-js';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'ensyurin_rinhan',
@@ -73,7 +74,8 @@ const entry: VectorEntry<TileMetaData> = {
 							'草地',
 							'その他岩石'
 						],
-						values: ['#399210', '#4ADDA5', '#DD2B2B', '#B720BF', '#EBBC22', '#2351E5', '#D98F34']
+						values: ['#33a02c', '#b2df8a', '#e31a1c', '#1f78b4', '#fdbf6f', '#a6cee3', '#fb9a99'],
+						patterns: [null, null, null, null, null, null, null]
 					}
 				},
 				{
@@ -82,7 +84,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '林班ごとの色分け',
 					mapping: {
 						categories: [1, 2, 3],
-						values: ['#ff0000', '#059854', '#9d00ff']
+						values: ['#fbb4ae', '#b3cde3', '#ccebc5']
 					}
 				},
 				{
@@ -92,7 +94,7 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						range: [0, 100],
 						divisions: 5,
-						values: ['#ffffff', '#059854']
+						values: ['#e5f5f9', '#2ca25f']
 					}
 				},
 				{
@@ -102,7 +104,7 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						range: [0, 1],
 						divisions: 5,
-						values: ['#ffffff', '#ff0000']
+						values: ['#fee8c8', '#e34a33']
 					}
 				}
 			]

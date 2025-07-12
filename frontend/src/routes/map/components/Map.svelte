@@ -33,7 +33,7 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
-	import { MAP_FONT_DATA_PATH } from '$routes/constants';
+	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
@@ -268,8 +268,9 @@
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
-			sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
-			glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
+			// sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
+			sprite: MAP_SPRITE_DATA_PATH,
+			glyphs: MAP_FONT_DATA_PATH,
 			// glyphs: MAP_FONT_DATA_PATH,
 			projection: {
 				type: 'globe'

@@ -6,6 +6,7 @@ import { createLayersItems } from '$routes/map/utils/layers';
 import { generateMapImageDOM, generateMapImageOptimized, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
 import * as tilebelt from '@mapbox/tilebelt';
+import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 /**   画像の管理クラス */
 class CoverImageManager {
 	private static readonly MAX_SIZE = 100;
@@ -149,8 +150,8 @@ export const getLayerImage = async (
 
 			const style: maplibregl.StyleSpecification = {
 				version: 8,
-				sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std',
-				glyphs: 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf',
+				sprite: MAP_SPRITE_DATA_PATH,
+				glyphs: MAP_FONT_DATA_PATH,
 				sources: {
 					mierune_mono: {
 						type: 'raster',

@@ -284,6 +284,40 @@ const getColorExpression = (colors: ColorsStyle) => {
 	}
 };
 
+const getPatternMatchExpression = (colors: ColorsStyle) => {
+	const key = colors.key;
+	const expressionData = colors.expressions.find((expression) => expression.key === key);
+	if (!expressionData) {
+		console.warn(`パターン設定が見つかりません: ${key}`);
+		return '';
+	}
+	if (expressionData.type !== 'match') {
+		console.warn(`パターン設定は'match'タイプである必要があります: ${key}`);
+		return '';
+	}
+
+	const { categories, patterns } = expressionData.mapping;
+
+	const patternFilter = patterns.filter((item) => item !== null);
+
+	if (!patternFilter.length) {
+		console.warn(`パターンが見つかりません: ${key}`);
+		return '';
+	}
+
+	const expression: (string | string[] | null)[] = ['match', ['get', key]];
+
+	for (let i = 0; i < categories.length; i++) {
+		if (patterns[i] !== null) expression.push(categories[i] as string, patterns[i]);
+	}
+
+	expression.push(''); // デフォルト値
+
+	console.log('パターン式の生成:', expression);
+
+	return expression as DataDrivenPropertyValueSpecification<string | null>;
+};
+
 const generateNumberMatchExpression = (
 	expressionData: NumberMatchExpression
 ): DataDrivenPropertyValueSpecification<number> => {
@@ -426,6 +460,55 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 	return fillLayer;
 };
 
+// ポリゴンのパターンレイヤーの作成
+const createFillPatternLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
+	const defaultStyle = style.default;
+	const patternExpression = getPatternMatchExpression(style.colors);
+	const opacity = getSelectedOpacityExpression(style.opacity);
+	// const fillLayer: FillLayerSpecification = {
+	// 	...layer,
+	// 	type: 'fill',
+	// 	paint: {
+	// 		'fill-opacity': opacity,
+	// 		'fill-outline-color': '#00000000',
+	// 		'fill-color': style.colors.show ? colorExpression : '#00000000',
+	// 		...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})
+	// 	},
+	// 	layout: {
+	// 		...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
+	// 	}
+	// };
+
+	const fillPatternLayer: FillLayerSpecification = {
+		...layer,
+		id: `${layer.id}_fill_pattern`,
+		type: 'fill',
+		paint: {
+			'fill-pattern': patternExpression,
+			'fill-opacity': style.opacity
+		},
+		layout: {}
+	};
+
+	return fillPatternLayer;
+};
+
+// ポリゴンのアウトラインレイヤーの作成
+const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: number) => {
+	const outlineLayer: LineLayerSpecification = {
+		...layer,
+		id: `${layer.id}_outline`,
+		type: 'line',
+		paint: {
+			'line-color': outline.color,
+			'line-width': outline.width,
+			'line-opacity': opacity,
+			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
+		}
+	};
+	return outlineLayer;
+};
+
 // lineレイヤーの作成
 const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
 	const defaultStyle = style.default;
@@ -449,22 +532,6 @@ const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpe
 
 	// TODO width line-gradient
 	return lineLayer;
-};
-
-// ポリゴンのアウトラインレイヤーの作成
-const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: number) => {
-	const outlineLayer: LineLayerSpecification = {
-		...layer,
-		id: `${layer.id}_outline`,
-		type: 'line',
-		paint: {
-			'line-color': outline.color,
-			'line-width': outline.width,
-			'line-opacity': opacity,
-			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
-		}
-	};
-	return outlineLayer;
 };
 
 // pointレイヤーの作成
@@ -755,6 +822,12 @@ export const createLayersItems = (
 					const vectorLayer = createVectorLayer(layer, style);
 					if (vectorLayer) {
 						rasterAndVectorLayerItems.push(vectorLayer);
+					}
+
+					// ポリゴンの塗りつぶしパターン
+					if (style.type === 'fill') {
+						const fillPatternLayer = createFillPatternLayer(layer, style);
+						rasterAndVectorLayerItems.push(fillPatternLayer);
 					}
 
 					// ポリゴンのアウトライン

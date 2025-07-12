@@ -2,7 +2,7 @@ import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'tree_species_tochigi',
+	id: 'tochigi_tree_species',
 	type: 'vector',
 	format: {
 		type: 'mvt',
@@ -76,11 +76,11 @@ const entry: VectorEntry<TileMetaData> = {
 							'カラマツ',
 							'トドマツ',
 							'エゾマツ',
-							'その他Ｎ',
+							'その他Ｎ', // 針葉樹
 							'クヌギ',
 							'ナラ類',
 							'ブナ',
-							'その他L',
+							'その他L', // 広葉樹
 							'タケ',
 							'針広混交林',
 							'新植地',
@@ -88,68 +88,47 @@ const entry: VectorEntry<TileMetaData> = {
 							'その他'
 						],
 						values: [
-							'#00cc66',
-							'#99ff66',
-							'#cc0000',
-							'#ff9966',
-							'#ffcc99',
-							'#cc6600',
-							'#cc00cc',
-							'#ffff99',
-							'#ff9933',
-							'#cc9900',
-							'#ffff00',
-							'#8000ff',
-							'#8db3e2',
-							'#ccff99',
-							'#ff80ff',
-							'#bfbfbf'
+							'#33a02c', // スギ
+							'#b2df8a', // ヒノキ類
+							'#a6cee3', // マツ類
+							'#1f78b4', // カラマツ
+							'#fb9a99', // トドマツ
+							'#e31a1c', // エゾマツ
+							'#fdbf6f', // その他Ｎ
+							'#ff7f00', // クヌギ
+							'#cab2d6', // ナラ類
+							'#6a3d9a', // ブナ
+							'#ffff99', // その他L
+							'#b15928', // タケ
+
+							// 追加の色（Set3から借用）
+							'#33a02c', // 針広混交林
+							'#b2df8a', // 新植地
+							'#a6cee3', // 伐採跡地
+							'#1f78b4' // その他（グレー）
+						],
+						// パターン情報（新規追加）
+						patterns: [
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							'tmpoly-circle-alt-medium-200-black',
+							'tmpoly-circle-alt-medium-200-black',
+							'tmpoly-circle-alt-medium-200-black',
+							'tmpoly-circle-alt-medium-200-black'
 						]
 					}
 				},
-				// {
-				// 	type: 'match',
-				// 	key: '解析樹種ID',
-				// 	name: '解析樹種IDごとの色分け',
-				// 	mapping: {
-				// 		categories: [
-				// 			'01',
-				// 			'02',
-				// 			'03',
-				// 			'04',
-				// 			'05',
-				// 			'06',
-				// 			'07',
-				// 			'08',
-				// 			'09',
-				// 			'10',
-				// 			'11',
-				// 			'12',
-				// 			'96',
-				// 			'97',
-				// 			'98',
-				// 			'99'
-				// 		],
-				// 		values: [
-				// 			'#00cc66',
-				// 			'#99ff66',
-				// 			'#cc0000',
-				// 			'#ff9966',
-				// 			'#ffcc99',
-				// 			'#cc6600',
-				// 			'#cc00cc',
-				// 			'#ffff99',
-				// 			'#ff9933',
-				// 			'#cc9900',
-				// 			'#ffff00',
-				// 			'#8000ff',
-				// 			'#8db3e2',
-				// 			'#ccff99',
-				// 			'#ff80ff',
-				// 			'#bfbfbf'
-				// 		]
-				// 	}
-				// },
+
 				{
 					type: 'step',
 					key: '面積_ha',

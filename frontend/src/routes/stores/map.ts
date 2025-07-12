@@ -395,7 +395,7 @@ const createMapStore = () => {
 		if (!map || !map.getTerrain()) return;
 		setTimeout(() => {
 			if (map) map.terrain.sourceCache.sourceCache.reload();
-        }, 200);
+		}, 200);
 	};
 
 	const toggleTerrain = (is3d: boolean) => {
@@ -516,6 +516,15 @@ const createMapStore = () => {
 			},
 			duration: 500
 		});
+	};
+
+	const getSprite = (): {
+		id: string;
+		url: string;
+	}[] => {
+		if (!map) return [];
+		const sprite = map.getSprite();
+		return sprite;
 	};
 
 	// TODO: サイドバーの分をオフセット
@@ -685,14 +694,14 @@ const createMapStore = () => {
 	const fitBounds = (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) => {
 		if (!map) return;
 		map.fitBounds(bounds, options);
-    };
+	};
 
-    const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
-        if (!map) return;
-        map.flyTo({ center: lngLat, ...options });
-    };
-    
-    	// インスタンス削除
+	const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
+		if (!map) return;
+		map.flyTo({ center: lngLat, ...options });
+	};
+
+	// インスタンス削除
 	const remove = () => {
 		if (!map) return;
 		map.remove();
@@ -714,43 +723,44 @@ const createMapStore = () => {
 	};
 
 	return {
-        subscribe,
-        // 処理
+		subscribe,
+		// 処理
 		init,
 		remove,
 		addLockonMarker,
 		removeLockonMarker,
-        queryRenderedFeatures,
-        setCursor,
-        setData,
-        setStyle,
+		queryRenderedFeatures,
+		setCursor,
+		setData,
+		setStyle,
 		setFilter,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		fitBounds,
 		panTo,
-        panToPoi,
-        flyTo,
+		panToPoi,
+		flyTo,
 		easeTo: (options: EaseToOptions) => easeTo(options),
 		focusLayer,
-        focusFeature,
-        jumpToFac: jumpToFac,
-        terrainReload: terrainReload, // 地形をリロードするメソッド
+		focusFeature,
+		jumpToFac: jumpToFac,
+		terrainReload: terrainReload, // 地形をリロードするメソッド
 		toggleTerrain,
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
 
-        // 取得
-        getLockonMarker: () => lockOnMarker,
-        getMap: () => map,
+		// 取得
+		getLockonMarker: () => lockOnMarker,
+		getMap: () => map,
 		getZoom: () => map?.getZoom(),
 		getCenter: () => map?.getCenter(),
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
-        getTerrain: () => map?.getTerrain(),
-        getState: () => get(state),
+		getTerrain: () => map?.getTerrain(),
+		getState: () => get(state),
 		getMapBounds,
-        getCanvas: () => map?.getCanvas(),
-        getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
+		getSprite,
+		getCanvas: () => map?.getCanvas(),
+		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
 
 		// リスナー
 		onSetStyle: createEventSubscriber(setStyleEvent), // スタイル設定イベントの購読用メソッド
@@ -765,7 +775,7 @@ const createMapStore = () => {
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
-		onStateChange: state.subscribe, // マップの状態を購読するメソッド
+		onStateChange: state.subscribe // マップの状態を購読するメソッド
 	};
 };
 
