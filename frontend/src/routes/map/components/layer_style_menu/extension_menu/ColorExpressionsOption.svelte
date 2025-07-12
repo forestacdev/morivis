@@ -10,6 +10,7 @@
 		NumbersStyle
 	} from '$routes/map/data/types/vector/style';
 	import { generateNumberAndColorMap, generateColorPalette } from '$routes/map/utils/color_mapping';
+	import ColorPatternPicker from './ColorPatternPicker.svelte';
 
 	interface Props {
 		setExpression: ColorsExpression;
@@ -27,7 +28,7 @@
 	<ColorPicker label="全体の色" bind:value={setExpression.mapping.value as string} />
 {:else if setExpression.type === 'match'}
 	{#each setExpression.mapping.categories as _, index}
-		<ColorPicker
+		<ColorPatternPicker
 			label={setExpression.mapping.categories[index] as string}
 			bind:value={setExpression.mapping.values[index] as string}
 		/>

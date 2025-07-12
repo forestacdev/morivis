@@ -1,6 +1,9 @@
 <script lang="ts">
-	export let label: string | null = null;
-	export let value: string;
+	interface Props {
+		label?: string | null;
+		value: string;
+	}
+	let { label, value = $bindable() }: Props = $props();
 </script>
 
 <label

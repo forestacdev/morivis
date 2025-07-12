@@ -171,17 +171,18 @@ export function rasterToCSSStyle(rasterStyle: RasterStylePresetParameters): {
 } {
 	const { hueRotate, brightnessMin, brightnessMax, saturation, contrast } = rasterStyle;
 
-	// brightnessの計算: MapLibreのmin/maxをCSSの単一値に変換
-	// 中間値を使用するか、maxを優先
-	const brightness = (brightnessMin + brightnessMax) / 2;
+	// ネガポジの特別処理
+	if (brightnessMin === 1 && brightnessMax === 0) {
+		return {
+			filter: 'invert(1)'
+		};
+	}
 
-	// saturationの変換: MapLibreの[-1, 1]をCSSの[0, 2]に変換
+	// 通常の処理
+	const brightness = brightnessMax;
 	const cssSaturation = saturation + 1;
-
-	// contrastの変換: MapLibreの[-1, 1]をCSSの[0, 2]に変換
 	const cssContrast = contrast + 1;
 
-	// フィルター文字列を構築
 	const filters: string[] = [];
 
 	if (hueRotate !== 0) {
@@ -237,7 +238,8 @@ export type RasterStylePreset =
 	| 'dramatic'
 	| 'night'
 	| 'sunset'
-	| 'blueprint';
+	| 'blueprint'
+	| 'negative';
 
 export interface RasterStylePresetParameters {
 	hueRotate: number;
@@ -357,6 +359,15 @@ export const RASTER_STYLE_PRESETS: Record<RasterStylePreset, RasterStylePresetPa
 		brightnessMax: 0.8,
 		saturation: 0.3,
 		contrast: 0.5
+	},
+
+	// ネガポジ
+	negative: {
+		hueRotate: 0,
+		brightnessMin: 1,
+		brightnessMax: 0,
+		saturation: 0,
+		contrast: 0
 	}
 };
 

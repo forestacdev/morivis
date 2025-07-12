@@ -518,13 +518,24 @@ const createMapStore = () => {
 		});
 	};
 
-	const getSprite = (): {
-		id: string;
-		url: string;
-	}[] => {
-		if (!map) return [];
+	const getSpriteUrl = (id: string): string | undefined => {
+		if (!map) return undefined;
 		const sprite = map.getSprite();
-		return sprite;
+
+		if (!sprite) {
+			console.warn('Sprite is not available yet.');
+			undefined;
+		}
+
+		const target = sprite.find((s) => s.id === id);
+
+		if (target) {
+			const url = target.url;
+			return url;
+		} else {
+			console.warn(`Sprite with id ${id} not found.`);
+			return undefined;
+		}
 	};
 
 	// TODO: サイドバーの分をオフセット
@@ -757,8 +768,9 @@ const createMapStore = () => {
 		getBearing: () => map?.getBearing(),
 		getTerrain: () => map?.getTerrain(),
 		getState: () => get(state),
+		getImage: (id: string) => map?.getImage(id),
 		getMapBounds,
-		getSprite,
+		getSpriteUrl,
 		getCanvas: () => map?.getCanvas(),
 		getMapContainer: getMapContainer, // マップコンテナを取得するメソッド
 

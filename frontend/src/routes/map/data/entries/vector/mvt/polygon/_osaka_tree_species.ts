@@ -1,7 +1,7 @@
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'tree_species_osaka',
+	id: 'osaka_tree_species',
 	type: 'vector',
 	format: {
 		type: 'mvt',

@@ -26,7 +26,8 @@
 		{ key: 'dramatic', name: 'ダイナミック' },
 		{ key: 'night', name: 'ナイト' },
 		{ key: 'sunset', name: 'サンセット' },
-		{ key: 'blueprint', name: '青焼き' }
+		{ key: 'blueprint', name: '青焼き' },
+		{ key: 'negative', name: 'ネガポジ' }
 	]);
 
 	let showPullDown = $state<boolean>(false);
