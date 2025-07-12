@@ -284,22 +284,25 @@ const getColorExpression = (colors: ColorsStyle) => {
 	}
 };
 
-const getPatternMatchExpression = (colors: ColorsStyle) => {
+const getPatternMatchExpression = (
+	colors: ColorsStyle
+): DataDrivenPropertyValueSpecification<ColorSpecification> | undefined => {
 	const key = colors.key;
 	const expressionData = colors.expressions.find((expression) => expression.key === key);
 	if (!expressionData) {
-		return '';
+		return undefined;
 	}
 	if (expressionData.type !== 'match') {
-		return '';
+		return undefined;
 	}
 
 	const { categories, patterns } = expressionData.mapping;
+	console.warn('getPatternMatchExpression', categories, patterns);
 
 	const patternFilter = patterns.filter((item) => item !== null);
 
 	if (!patternFilter.length) {
-		return '';
+		return undefined;
 	}
 
 	const expression: (string | string[] | null)[] = ['match', ['get', key]];
@@ -310,7 +313,7 @@ const getPatternMatchExpression = (colors: ColorsStyle) => {
 
 	expression.push(''); // デフォルト値
 
-	return expression as DataDrivenPropertyValueSpecification<string | null>;
+	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
 const generateNumberMatchExpression = (
@@ -460,25 +463,11 @@ const createFillPatternLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
 ): FillLayerSpecification | undefined => {
-	const defaultStyle = style.default;
 	const patternExpression = getPatternMatchExpression(style.colors);
 	if (!patternExpression) {
 		return undefined;
 	}
 	const opacity = getSelectedOpacityExpression(style.opacity);
-	// const fillLayer: FillLayerSpecification = {
-	// 	...layer,
-	// 	type: 'fill',
-	// 	paint: {
-	// 		'fill-opacity': opacity,
-	// 		'fill-outline-color': '#00000000',
-	// 		'fill-color': style.colors.show ? colorExpression : '#00000000',
-	// 		...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})
-	// 	},
-	// 	layout: {
-	// 		...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
-	// 	}
-	// };
 
 	const fillPatternLayer: FillLayerSpecification = {
 		...layer,
@@ -486,7 +475,7 @@ const createFillPatternLayer = (
 		type: 'fill',
 		paint: {
 			'fill-pattern': patternExpression,
-			'fill-opacity': style.opacity
+			'fill-opacity': opacity
 		},
 		layout: {}
 	};

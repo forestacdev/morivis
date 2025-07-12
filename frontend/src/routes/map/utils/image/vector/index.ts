@@ -56,8 +56,8 @@ class MapImageGenerator {
 		this.container.style.width = `${width}px`;
 		this.container.style.height = `${height}px`;
 		this.container.style.position = 'absolute';
-		this.container.style.top = '-9999px';
-		this.container.style.left = '-9999px';
+		// this.container.style.top = '-9999px';
+		// this.container.style.left = '-9999px';
 		document.body.appendChild(this.container);
 
 		// Mapインスタンスを作成
