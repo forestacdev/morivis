@@ -35,9 +35,9 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 
 				relief: {
+					...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData.relief,
 					max: 424,
-					min: 80,
-					colorMap: 'greys'
+					min: 80
 				}
 			}
 		}

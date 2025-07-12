@@ -29,7 +29,7 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			relief: {
 				max: 4000,
 				min: 0,
-				colorMap: 'greys'
+				colorMap: 'jet'
 			},
 			shadow: {
 				azimuth: 180,

@@ -95,8 +95,8 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_road2',
 	// 'gsi_road',
 	'ensyurin_rinhan',
-	'ensyurin_photo'
-	// 'dem_5a',
+	// 'ensyurin_photo',
+	'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
 	// 'gsi_rinya_m',

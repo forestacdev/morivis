@@ -9,15 +9,16 @@
 	}: { label: string; value: boolean | undefined; children: Snippet } = $props();
 </script>
 
-<label class="group flex grow cursor-pointer items-center justify-start gap-2 pb-2 pt-4">
-	<Icon
-		icon="weui:arrow-filled"
-		class="h-6 w-6 text-base transition-transform duration-150 {value ? 'rotate-90' : 'rotate-0'}"
-	/>
+<label class="group flex grow cursor-pointer items-center justify-between gap-2 pb-2 pt-4">
 	<span
 		class="group-hover:text-accent select-none text-base font-bold transition-colors duration-100"
 		>{label}</span
 	>
+	<Icon
+		icon="iconamoon:arrow-up-2-duotone"
+		class="h-8 w-8 text-base transition-transform duration-150 {value ? 'rotate-0' : 'rotate-180'}"
+	/>
+
 	<input type="checkbox" class="hidden" bind:checked={value} />
 </label>
 

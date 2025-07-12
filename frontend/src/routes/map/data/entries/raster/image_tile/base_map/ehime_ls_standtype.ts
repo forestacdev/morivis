@@ -3,6 +3,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
+import { EHIME_BBOX } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'ehime_ls_standtype',
@@ -22,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: [132.017257, 32.901919, 133.692787, 34.299619],
+		bounds: EHIME_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_ehime',
 		xyzImageTile: {
 			x: 227730,
