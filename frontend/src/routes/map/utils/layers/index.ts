@@ -288,11 +288,9 @@ const getPatternMatchExpression = (colors: ColorsStyle) => {
 	const key = colors.key;
 	const expressionData = colors.expressions.find((expression) => expression.key === key);
 	if (!expressionData) {
-		console.warn(`パターン設定が見つかりません: ${key}`);
 		return '';
 	}
 	if (expressionData.type !== 'match') {
-		console.warn(`パターン設定は'match'タイプである必要があります: ${key}`);
 		return '';
 	}
 
@@ -301,7 +299,6 @@ const getPatternMatchExpression = (colors: ColorsStyle) => {
 	const patternFilter = patterns.filter((item) => item !== null);
 
 	if (!patternFilter.length) {
-		console.warn(`パターンが見つかりません: ${key}`);
 		return '';
 	}
 
@@ -312,8 +309,6 @@ const getPatternMatchExpression = (colors: ColorsStyle) => {
 	}
 
 	expression.push(''); // デフォルト値
-
-	console.log('パターン式の生成:', expression);
 
 	return expression as DataDrivenPropertyValueSpecification<string | null>;
 };

@@ -1,22 +1,4 @@
-export const createSVGPattern = (colors, size = 20) => {
-	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-	svg.setAttribute('width', size);
-	svg.setAttribute('height', size);
-
-	colors.forEach((color, index) => {
-		const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-		rect.setAttribute('x', 0);
-		rect.setAttribute('y', (index * size) / colors.length);
-		rect.setAttribute('width', size);
-		rect.setAttribute('height', size / colors.length);
-		rect.setAttribute('fill', color);
-		svg.appendChild(rect);
-	});
-
-	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.outerHTML)}`;
-};
-
-export const svgToPng = async (svgString, width, height) => {
+export const svgToPng = async (svgString: string, width: number, height: number) => {
 	return new Promise((resolve, reject) => {
 		const img = new Image();
 		img.onload = () => {
@@ -25,12 +7,18 @@ export const svgToPng = async (svgString, width, height) => {
 				canvas.width = width;
 				canvas.height = height;
 				const ctx = canvas.getContext('2d');
+				if (!ctx) {
+					reject('Failed to get canvas context.');
+					return;
+				}
 				ctx.drawImage(img, 0, 0, width, height);
 
 				// PNGデータURLを返す
 				resolve(canvas.toDataURL('image/png'));
 			} catch (error) {
-				reject(`Failed to convert SVG to PNG: ${error.message}`);
+				if (error instanceof Error) {
+					reject(`Failed to convert SVG to PNG: ${error.message}`);
+				}
 			}
 		};
 		img.onerror = () => reject('Failed to load SVG image.');
