@@ -7,8 +7,9 @@
 	interface Props {
 		preset: RasterStylePreset;
 		src: string;
+		disabled?: boolean; // プルダウンを無効にするかどうか
 	}
-	let { preset = $bindable(), src }: Props = $props();
+	let { preset = $bindable(), src, disabled = false }: Props = $props();
 	interface RasterStylePresetOptions {
 		key: RasterStylePreset;
 		name: string;
@@ -29,33 +30,57 @@
 	]);
 
 	let showPullDown = $state<boolean>(false);
+	let containerRef = $state<HTMLElement>();
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showPullDown && containerRef && !containerRef.contains(event.target as Node)) {
+				showPullDown = false;
+			}
+		};
+
+		if (showPullDown) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
-<h2 class="text-base">描画モード</h2>
-<div class="relative py-2">
-	<button
-		onclick={() => (showPullDown = !showPullDown)}
-		class="c-select flex w-full justify-between"
-	>
-		<div class="flex items-center gap-2">
-			<Icon icon={'ic:round-terrain'} width={20} />
+<div class="mt-4 flex gap-1 text-base">
+	<Icon icon={'mdi:magic'} width={20} /><span>描画モード</span>
+</div>
 
-			<span>{presetOptions.find((option) => option.key === preset)?.name}</span>
-		</div>
-		<Icon icon="bi:chevron-down" class="h-6 w-6" />
+<div bind:this={containerRef} class="relative py-2">
+	<button
+		{disabled}
+		onclick={() => (showPullDown = !showPullDown)}
+		class="flex w-full items-center justify-between gap-2 rounded-md bg-black p-2 px-4 text-base {disabled
+			? 'cursor-not-allowed opacity-50'
+			: 'cursor-pointer'}"
+	>
+		<span>{presetOptions.find((option) => option.key === preset)?.name}</span>
+		<img
+			{src}
+			alt={presetOptions.find((option) => option.key === preset)?.name}
+			class="aspect-square h-24 rounded border-2 border-white bg-black object-cover"
+			style="filter:{getPresetCSSStyle(preset).filter};"
+		/>
 	</button>
 
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
+			class="bg-sub absolute left-0 top-[130px] z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
 		>
 			{#each presetOptions as { key, name } (key)}
 				<label
-					class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {preset ===
+					class="group flex w-full cursor-pointer flex-col items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {preset ===
 					key
-						? 'bg-base text-main'
-						: 'hover:text-accent text-white'}"
+						? ''
+						: ''}"
 				>
 					<input
 						type="radio"
@@ -64,16 +89,16 @@
 						class="hidden"
 						onchange={() => (showPullDown = false)}
 					/>
-					<div>
-						{getPresetCSSStyle(key).filter}
-						<img
-							{src}
-							alt={name}
-							class="aspect-square w-full rounded object-cover"
-							style="filter:{getPresetCSSStyle(key).filter};"
-						/>
-						<span class="select-none">{name}</span>
-					</div>
+
+					<img
+						{src}
+						alt={name}
+						class="aspect-square w-full rounded border-2 bg-black object-cover {preset === key
+							? 'border-accent'
+							: 'border-white'}"
+						style="filter:{getPresetCSSStyle(key).filter};"
+					/>
+					<span class="select-none text-sm">{name}</span>
 				</label>
 			{/each}
 		</div>

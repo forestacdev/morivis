@@ -1,21 +1,28 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	interface Props {
 		label?: string;
 		value: number;
 		min: number;
 		max: number;
 		step: number;
+		icon?: string;
 	}
-	let { label, value = $bindable(), min = 0, max = 1, step = 0.01 }: Props = $props();
+	let { label, value = $bindable(), min = 0, max = 1, step = 0.01, icon }: Props = $props();
 
 	// TODO: animation
 	let rangeElement = $state<HTMLDivElement | null>(null);
 </script>
 
 <div class="flex flex-col gap-2 pb-4 text-base">
-	<span class="select-none">{label ? `${label}: ` : ''}{value.toFixed(2)}</span>
-	<input class="css-range" type="range" bind:value {min} {max} {step} />
+	<div class="flex items-center gap-1">
+		{#if icon}
+			<Icon {icon} width={20} />
+		{/if}
+		<span class="select-none"> {label ? `${label}: ` : ''}{value.toFixed(2)}</span>
+	</div>
 
+	<input class="css-range" type="range" bind:value {min} {max} {step} />
 	<!-- <div bind:this={rangeElement}>{1900000}</div> -->
 </div>
 

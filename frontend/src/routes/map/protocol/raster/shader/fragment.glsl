@@ -12,8 +12,8 @@ uniform sampler2D u_height_map_right;
 uniform sampler2D u_height_map_top;
 uniform sampler2D u_height_map_bottom;
 
-uniform float u_dem_type; // 0:mapbox, 1:gsi, 2:terrarium
-uniform float u_mode; // 0:default, 1:elevation, 2:slope 4:curvature
+uniform float u_dem_type; // 0.0:mapbox, 1.0:gsi, 2.0:terrarium
+uniform float u_mode; // 0.0:default, 1.0:elevation, 2.0:slope, 3:aspect 4.0:curvature
 
 uniform sampler2D u_color_map;
 
@@ -27,6 +27,9 @@ uniform float u_tile_y;
 uniform float u_max_slope;
 uniform float u_min_slope;
 
+// aspect
+uniform float u_max_aspect;
+uniform float u_min_aspect;
 
 
 in vec2 v_tex_coord ;
@@ -171,6 +174,48 @@ float computeCurvatureZT(mat3 h, float ewres, float nsres, int curvatureMode) {
 
     // GDALの出力に合わせて100倍する
     return curvatureVal * 100.0;
+}
+
+// 傾斜方位を計算する関数
+float computeAspectHorn(mat3 h, float ewres, float nsres) {
+    // 無効値チェック
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (h[i][j] == -9999.0) {
+                return -9999.0; // 無効値を返す
+            }
+        }
+    }
+
+    // Horn法による勾配の計算
+    float dx = (
+        (h[0][0] + 2.0 * h[1][0] + h[2][0]) -
+        (h[0][2] + 2.0 * h[1][2] + h[2][2])
+    ) / (8.0 * ewres);
+
+    float dy = (
+        (h[2][0] + 2.0 * h[2][1] + h[2][2]) -
+        (h[0][0] + 2.0 * h[0][1] + h[0][2])
+    ) / (8.0 * nsres);
+
+    // 傾斜方位を計算（atan2を使用）
+    float aspect_rad = atan(dy, dx);
+    
+    // ラジアンから度に変換
+    float aspect_deg = degrees(aspect_rad);
+    
+    // 0-360度の範囲に正規化
+    if (aspect_deg < 0.0) {
+        aspect_deg += 360.0;
+    }
+    
+    // 地理的な方位に変換（北を0度とする）
+    aspect_deg = 90.0 - aspect_deg;
+    if (aspect_deg < 0.0) {
+        aspect_deg += 360.0;
+    }
+    
+    return aspect_deg;
 }
 
 
@@ -345,6 +390,42 @@ void main() {
         return;
 
     }
+
+  if(u_mode == 3.0) {
+    float center_h = convertToHeight(color);
+    if(center_h == -9999.0) {
+        // 無効地の場合
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+    mat3 h_mat = calculateTerrainData(v_tex_coord, center_h);
+
+    // 南北方向の解像度 (nsres)
+    float nsres = getResolution(u_tile_z);
+
+    // タイルのY座標とuv座標から緯度を取得
+    float latitude_deg = getLatitudeFromTileUV(u_tile_y, uv.y, u_tile_z);
+
+    // 東西方向の解像度 (ewres)
+    float ewres = getEwRes(u_tile_z, latitude_deg);
+
+    // 傾斜方位を計算
+    float aspect = computeAspectHorn(h_mat, ewres, nsres);
+    
+    if(aspect == -9999.0) {
+        // 無効値の場合
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+
+    // 傾斜方位を正規化（0-360度を0-1に）
+    float normalized_aspect = aspect / 360.0;
+
+    vec4 aspect_color = getColorFromMap(u_color_map, normalized_aspect);
+
+    fragColor = aspect_color;
+    return;
+}
 
     // curvature
     if(u_mode == 4.0) {

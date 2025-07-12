@@ -207,6 +207,27 @@ self.onmessage = async (e) => {
 				u_height_map_bottom: { image: bottom, type: 'height' },
 				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
+		} else if (mode === 'aspect') {
+			const uniforms: Uniforms = {
+				u_dem_type: { type: '1f', value: demTypeNumber },
+				u_mode: { type: '1f', value: modeNumber },
+				u_max_aspect: { type: '1f', value: max },
+				u_min_aspect: { type: '1f', value: min },
+				u_tile_y: { type: '1f', value: tile.y },
+				u_tile_z: { type: '1f', value: tile.z }
+			};
+
+			setUniforms(gl, program, uniforms);
+
+			// テクスチャ
+			bindTextures(gl, program, {
+				u_height_map_center: { image: center, type: 'height' },
+				u_height_map_left: { image: left, type: 'height' },
+				u_height_map_right: { image: right, type: 'height' },
+				u_height_map_top: { image: top, type: 'height' },
+				u_height_map_bottom: { image: bottom, type: 'height' },
+				u_color_map: { image: elevationColorArray, type: 'colormap' }
+			});
 		}
 
 		gl.clear(gl.COLOR_BUFFER_BIT);

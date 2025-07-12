@@ -15,11 +15,10 @@
 	let demStyleModes = $state<DemStyleModeOptions[]>([
 		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
-		{ key: 'curvature', name: '曲率' },
+		{ key: 'aspect', name: '傾斜方位' },
 		{ key: 'default', name: 'なし' }
+		// { key: 'curvature', name: '曲率' },
 		// { key: 'shadow', name: '陰影' },
-		// { key: 'slope', name: '傾斜量' },
-		// { key: 'curvature', name: '曲率' }
 	]);
 
 	let showPullDown = $state<boolean>(false);
