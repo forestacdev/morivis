@@ -3,7 +3,7 @@ import { createSourcesItems } from '$routes/map/utils/sources';
 import type { GeoDataEntry } from '$routes/map/data/types';
 
 import { createLayersItems } from '$routes/map/utils/layers';
-import { generateMapImageDOM, generateMapImageOptimized, type MapImageOptions } from './vector';
+import { generateMapImageDOM, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
@@ -159,7 +159,7 @@ export const getLayerImage = async (
 						tileSize: 256,
 						minzoom: 0,
 						maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-						// bounds: minimumEntry.metaData.bounds,
+						bounds: minimumEntry.metaData.bounds,
 						attribution:
 							'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
 					},
@@ -169,10 +169,7 @@ export const getLayerImage = async (
 					{
 						id: 'mierune_mono',
 						type: 'raster',
-						source: 'mierune_mono',
-						paint: {
-							'raster-opacity': 0.6
-						}
+						source: 'mierune_mono'
 					},
 					...layers
 				]
@@ -192,7 +189,7 @@ export const getLayerImage = async (
 				options.xyz = _layerEntry.metaData.xyzImageTile;
 			}
 
-			const result = await generateMapImageOptimized(style, options);
+			const result = await generateMapImageDOM(style, options);
 
 			CoverImageManager.add(_layerEntry.id, result.blobUrl);
 
