@@ -84,7 +84,8 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '林班ごとの色分け',
 					mapping: {
 						categories: [1, 2, 3],
-						values: ['#fbb4ae', '#b3cde3', '#ccebc5']
+						values: ['#7fc97f', '#beaed4', '#fdc086'],
+						patterns: [null, null, null]
 					}
 				},
 				{
@@ -123,6 +124,11 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '小林班ID',
 					name: '小林班IDのラベル',
 					value: '{小林班ID}'
+				},
+				{
+					key: '林班',
+					name: '林班のラベル',
+					value: '{林班}林班'
 				},
 				{
 					key: '林齢',

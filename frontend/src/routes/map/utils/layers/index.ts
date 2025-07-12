@@ -461,9 +461,15 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 };
 
 // ポリゴンのパターンレイヤーの作成
-const createFillPatternLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
+const createFillPatternLayer = (
+	layer: LayerItem,
+	style: PolygonStyle
+): FillLayerSpecification | undefined => {
 	const defaultStyle = style.default;
 	const patternExpression = getPatternMatchExpression(style.colors);
+	if (!patternExpression) {
+		return undefined;
+	}
 	const opacity = getSelectedOpacityExpression(style.opacity);
 	// const fillLayer: FillLayerSpecification = {
 	// 	...layer,
@@ -827,7 +833,9 @@ export const createLayersItems = (
 					// ポリゴンの塗りつぶしパターン
 					if (style.type === 'fill') {
 						const fillPatternLayer = createFillPatternLayer(layer, style);
-						rasterAndVectorLayerItems.push(fillPatternLayer);
+						if (fillPatternLayer) {
+							rasterAndVectorLayerItems.push(fillPatternLayer);
+						}
 					}
 
 					// ポリゴンのアウトライン
