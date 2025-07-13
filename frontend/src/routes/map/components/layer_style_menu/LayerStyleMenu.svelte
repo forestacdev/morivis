@@ -32,15 +32,19 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if layerEntry}
-	{#key layerEntry.id}
-		<div
-			in:fly={{ duration: 300, opacity: 0 }}
-			out:fly={{ duration: 300, opacity: 0 }}
-			class="bg-main w-style-menu pt-18 absolute top-0 flex h-full flex-col gap-2 overflow-hidden pl-[90px]"
-		>
-			<div class="flex h-full flex-col gap-2 overflow-auto">
-				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-				<div class="flex items-center gap-2 border-t text-base"></div>
+	<div
+		in:fly={{ duration: 300, opacity: 0, x: -100 }}
+		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
+		class="bg-main w-side-menu pt-18 absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
+	>
+		{#key layerEntry.id}
+			<div
+				in:fly={{ duration: 300, opacity: 10, x: -10 }}
+				out:fly={{ duration: 300, opacity: 0, x: -10 }}
+				class="absolute flex h-full w-full flex-col gap-2"
+			>
+				<!-- <div class="text-2xl text-base">{layerEntry.metaData.name}</div>
+				<div class="flex items-center gap-2 border-t text-base"></div> -->
 				<div class="c-scroll h-full grow overflow-x-hidden">
 					<Switch
 						label="表示"
@@ -64,8 +68,8 @@
 					{/if}
 				</div>
 			</div>
-		</div>
-	{/key}
+		{/key}
+	</div>
 {/if}
 
 <style>

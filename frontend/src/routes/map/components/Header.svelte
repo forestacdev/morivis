@@ -152,39 +152,55 @@
 			isSideMenuType.set('draw');
 		}
 	};
-	// const toggleTerrainMenu = () => {
-	// 	showTerrainMenu.set(!$showTerrainMenu);
-	// };
+	let isEditLayerName = $derived.by(() => {
+		if ($isStyleEdit && $selectedLayerId) {
+			const layerEntry = layerEntries.find((layer) => layer.id === $selectedLayerId);
+			return layerEntry ? layerEntry.metaData.name : '';
+		}
+	});
 </script>
 
 <div
-	class="absolute left-2 top-2 z-10 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
+	class="absolute left-2 top-2 z-20 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
 		? 'bg-base text-main pr-1'
 		: 'bg-main  pr-2 text-white'}"
 >
-	<div class="relative">
-		{#if $isSideMenuType}
-			<button
-				class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-				onclick={() => {
-					isSideMenuType.set(null);
-					showDataMenu.set(false);
-					isStyleEdit.set(false);
-				}}
-			>
-				<Icon icon="ep:back" class="h-7 w-7" />
-			</button>
-		{:else}
-			<button
-				class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-				onclick={() => showSideMenu.set(true)}
-			>
-				<Icon icon="ic:round-menu" class="h-7 w-7" />
-			</button>
-		{/if}
-	</div>
-	<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
-
+	{#if $isStyleEdit}
+		<button
+			class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+			onclick={() => {
+				isSideMenuType.set(null);
+				showDataMenu.set(false);
+				isStyleEdit.set(false);
+			}}
+		>
+			<Icon icon="mdi:paint-outline" class="h-7 w-7" />
+		</button>
+	{/if}
+	{#if !$isStyleEdit}
+		<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
+			{#if $isSideMenuType}
+				<button
+					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+					onclick={() => {
+						isSideMenuType.set(null);
+						showDataMenu.set(false);
+						isStyleEdit.set(false);
+					}}
+				>
+					<Icon icon="ep:back" class="h-7 w-7" />
+				</button>
+			{:else}
+				<button
+					class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
+					onclick={() => showSideMenu.set(true)}
+				>
+					<Icon icon="ic:round-menu" class="h-7 w-7" />
+				</button>
+			{/if}
+		</div>
+		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+	{/if}
 	<div class="flex w-full items-center justify-between">
 		{#if $isSideMenuType === 'search'}
 			<div
@@ -239,20 +255,34 @@
 		{#if $isSideMenuType === 'layer'}
 			<div
 				transition:slide={{ duration: 300, axis: 'x' }}
-				class="w-title-bar text-l flex shrink-0 items-center justify-center text-nowrap text-center"
+				class="w-title-bar flex shrink-0 items-center justify-center text-nowrap text-center text-lg"
 			>
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
 				{/if}
-				<div>データ</div>
+				{#if !$isStyleEdit}
+					<div>データ</div>
+				{/if}
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
 				{/if}
 				{#if $isStyleEdit}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">{isEditLayerName}</div>
 				{/if}
 				{#if $showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>
+				{/if}
+				{#if $isStyleEdit || $showDataMenu}
+					<button
+						transition:slide={{ duration: 300, axis: 'x' }}
+						class="hover:text-accent pointer-events-auto absolute right-2 flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+						onclick={() => {
+							isStyleEdit.set(false);
+							showDataMenu.set(false);
+						}}
+					>
+						<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
+					</button>
 				{/if}
 			</div>
 		{/if}
@@ -276,18 +306,6 @@
 					描画ツール
 				</div>
 			{/if} -->
-		{#if $isStyleEdit || $showDataMenu}
-			<button
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-				onclick={() => {
-					isStyleEdit.set(false);
-					showDataMenu.set(false);
-				}}
-			>
-				<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
-			</button>
-		{/if}
 	</div>
 </div>
 

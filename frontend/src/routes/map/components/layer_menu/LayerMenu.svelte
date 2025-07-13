@@ -70,7 +70,7 @@
 	const resizeMenu = () => {
 		if (container) {
 			gsap.to(container, {
-				width: isSmall ? '85px' : '400px',
+				width: isSmall ? '400px' : '400px',
 				duration: 0.2,
 				ease: 'power2.inOut'
 			});
@@ -109,13 +109,15 @@
 <div
 	bind:this={container}
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="bg-main absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-150 {$isSideMenuType ===
+	class=" absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-200 {$isSideMenuType ===
 	'layer'
 		? 'translate-x-0'
-		: '-translate-x-[400px]'}"
+		: '-translate-x-[400px]'} {isSmall
+		? 'der translate-x-[75px] bg-transparent delay-150'
+		: 'bg-main'}"
 >
 	<div
-		class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
+		class="flex grow flex-col gap-1 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
@@ -131,7 +133,7 @@
 			</div>
 		{/each}
 		{#if !isSmall}
-			<div transition:slide={{ duration: 200 }} class="relative flex flex-col">
+			<div transition:fade={{ duration: 200 }} class="relative flex flex-col">
 				<Switch label="ラベル" bind:value={$showLabelLayer} />
 				<Switch label="3D" bind:value={is3d} />
 				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />

@@ -20,7 +20,6 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
-
 		isSmall: boolean; // レイヤースロットのサイズを小さくするかどうか
 	}
 
@@ -29,7 +28,6 @@
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
-
 		isSmall
 	}: Props = $props();
 	let showLegend = $state(false);
@@ -45,10 +43,11 @@
 	});
 
 	const selectedLayer = () => {
-		if ($selectedLayerId === layerEntry.id) {
-			$isStyleEdit = !$isStyleEdit;
-			return;
-		}
+		console.log('selectedLayer', layerEntry.id);
+		// if ($selectedLayerId === layerEntry.id) {
+		// 	$isStyleEdit = !$isStyleEdit;
+		// 	return;
+		// }
 		selectedLayerId.set(layerEntry.id);
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
@@ -224,14 +223,13 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
-	{#if $selectedLayerId === layerEntry.id && isSmall}
+	<!-- {#if $selectedLayerId === layerEntry.id && isSmall}
 		<div class="bg-accent absolute left-0 top-0 h-full w-[4px]"></div>
-	{/if}
+	{/if} -->
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative z-10 cursor-move select-none text-clip text-nowrap rounded-full bg-black p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100 {isSmall
-			? 'w-[65px]'
-			: ''}"
+		class="c-dragging-style translate-z-0 relative cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100
+			{$selectedLayerId === layerEntry.id && isSmall ? 'bg-main' : 'bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
@@ -241,7 +239,9 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base"
+				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform {isSmall
+					? 'translate-x-[309px]'
+					: ''}"
 			>
 				<LayerIcon {layerEntry} />
 
@@ -274,7 +274,7 @@
 					>
 				</div>
 
-				{#if isHovered}
+				{#if isHovered && !isSmall}
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
 						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
