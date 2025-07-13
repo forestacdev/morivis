@@ -13,7 +13,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/csmap/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '栃木県 CS立体図',
+		name: 'CS立体図',
 		description:
 			'令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「微地形図（CS立体図）」です。（引用:G空間情報センター）',
 		attribution: '栃木県森林資源データ',

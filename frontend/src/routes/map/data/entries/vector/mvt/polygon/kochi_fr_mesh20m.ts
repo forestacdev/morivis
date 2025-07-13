@@ -9,9 +9,10 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-kochi.geospatial.jp/2023/rinya/tile/fr_mesh20m/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '高知県 森林資源量集計メッシュ',
-		description: `出典「高知県森林資源データ」`,
-		attribution: '林野庁',
+		name: '森林資源量集計メッシュ',
+		description: `平成30年度に林野庁が実施した航空レーザ測量データを基に、高知県が作成した「森林資源量集計メッシュ」です。
+「森林資源量集計メッシュ」は、森林GISフォーラムが運用する”森林資源データ解析・管理標準仕様書ver.2.0”に則し作成したデータで、20mメッシュ単位で次に記載する森林資源量を集計しています。（G空間情報センター引用）`,
+		attribution: '高知県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_kochi',
 		location: '高知県',
 		tags: ['森林', 'メッシュ'],

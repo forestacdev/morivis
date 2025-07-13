@@ -21,6 +21,8 @@ export type AttributionKey =
 	| 'USGS'
 	| 'NASA'
 	| '栃木県森林資源データ'
+	| '高知県森林資源データ'
+	| '兵庫県森林資源データ'
 	| '大阪府（林野庁加工）';
 
 export type Attribution = {
@@ -134,6 +136,16 @@ const attributionData: Attribution[] = [
 		key: '栃木県森林資源データ',
 		name: '栃木県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
+	},
+	{
+		key: '高知県森林資源データ',
+		name: '高知県森林資源データ',
+		url: 'https://www.geospatial.jp/ckan/organization/kochipref-mori'
+	},
+	{
+		key: '兵庫県森林資源データ',
+		name: '兵庫県森林資源データ',
+		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
 	},
 	{
 		key: '大阪府（林野庁加工）',

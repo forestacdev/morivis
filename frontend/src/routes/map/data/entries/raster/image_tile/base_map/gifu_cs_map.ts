@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://forestgeo.info/opendata/21_gifu/csmap_2023/{z}/{x}/{y}.webp'
 	},
 	metaData: {
-		name: '岐阜県 CS立体図',
+		name: 'CS立体図',
 		description:
 			'岐阜県森林研究所が整備し、公開した微地形表現図（CS立体図）をマップタイル化したものです。（引用:G空間情報センター）',
 		attribution: '岐阜県森林研究所',

@@ -11,7 +11,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/tokyo_gairoju.pmtiles`
 	},
 	metaData: {
-		name: '東京都23区 街路樹',
+		name: '街路樹 東京都23区',
 		description: `
             本データは「東京都オープンデータカタログサイト」（https://catalog.data.metro.tokyo.lg.jp/）において公開されているデータをもとに作成しています。
             データセット名：「都道の街路樹」
@@ -48,7 +48,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '東京都23区 街路樹'
+				template: '街路樹 東京都23区'
 			}
 		]
 	},

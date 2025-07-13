@@ -10,7 +10,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '栃木県 樹種ポリゴン',
+		name: '樹種ポリゴン',
 		description: ``,
 		attribution: '栃木県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
