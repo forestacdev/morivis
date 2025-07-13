@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { generateColorPalette } from '$routes/map/utils/color_mapping';
 	import { mapStore } from '$routes/stores/map';
 	import type { StyleImage } from 'maplibre-gl';
 	import chroma from 'chroma-js';

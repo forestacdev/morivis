@@ -25,7 +25,9 @@
 </script>
 
 {#if setExpression.type === 'single'}
-	{#if setExpression.mapping.pattern}
+	<!-- NOTE: プロパティが存在するかどうか -->
+	<!-- TODO: ポイント、ラインの対応 -->
+	{#if 'pattern' in setExpression.mapping}
 		<ColorPatternPicker
 			label="全体の色"
 			bind:value={setExpression.mapping.value as string}

@@ -61,7 +61,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#349f1c'
+						value: '#349f1c',
+						pattern: null
 					}
 				},
 				{
@@ -126,6 +127,10 @@ const entry: VectorEntry<TileMetaData> = {
 							'tmpoly-grid-light-200-black',
 							'tmpoly-grid-light-200-black'
 						]
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				},
 
@@ -214,7 +219,6 @@ const entry: VectorEntry<TileMetaData> = {
 				layout: {
 					'text-max-width': 12,
 					'text-size': 12,
-
 					'text-padding': 10
 				}
 			}
