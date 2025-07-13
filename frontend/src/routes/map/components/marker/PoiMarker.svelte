@@ -95,7 +95,7 @@
 {#if properties._prop_id === 'fac_top'}
 	<button
 		bind:this={markerContainer}
-		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center"
+		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
 		onclick={jumpToFac}
 		onfocus={() => onHover(true)}
 		onblur={() => onHover(false)}
@@ -104,7 +104,7 @@
 	>
 		{#if imageUrl}
 			<img
-				class="drop-shadow-purple-50 absolute h-[60px] w-[60px] rounded-full object-cover transition-all duration-150 hover:scale-110"
+				class=" absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
 				src={imageUrl}
 				alt={properties.name}
 			/>
@@ -117,7 +117,7 @@
 	>
 		{#if isReady}
 			<button
-				class="peer pointer-events-auto relative z-0 grid h-[60px] w-[60px] cursor-pointer place-items-center"
+				class="peer pointer-events-auto relative z-0 grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md"
 				onclick={click}
 				onfocus={() => onHover(true)}
 				onblur={() => onHover(false)}
@@ -126,7 +126,7 @@
 			>
 				{#if imageUrl}
 					<img
-						class="border-base drop-shadow-purple-50 absolute h-full w-full rounded-full border-4 object-cover transition-all duration-150 {isHover ||
+						class="border-base absolute h-full w-full rounded-full border-2 object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-110'
 							: ''}"

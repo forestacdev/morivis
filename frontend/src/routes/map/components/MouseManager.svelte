@@ -9,7 +9,12 @@
 	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { CategoryLegend, GradientLegend, ZoomLevel } from '$routes/map/data/types/raster';
-	import { isStreetView, clickableVectorIds, clickableRasterIds } from '$routes/stores';
+	import {
+		isStreetView,
+		clickableVectorIds,
+		clickableRasterIds,
+		isStyleEdit
+	} from '$routes/stores';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
@@ -209,13 +214,16 @@
 			return;
 		}
 
-		if ($mapMode === 'edit') {
+		if ($isStyleEdit) {
 			// 編集モードの時は、クリックしたレイヤーを編集対象にする
 			const clickedLayer = features[0].layer.id;
+			console.log('Clicked layer:', clickedLayer);
 			const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
 			if (clickedLayerEntry) {
 				selectedLayerId.set(clickedLayerEntry.id);
 			}
+
+			return;
 		}
 
 		const selectedVecterLayersId = features.map((feature) => feature.layer.id);

@@ -20,7 +20,7 @@ export const clickableRasterIds = writable<string[]>([]);
 export const DEBUG_MODE = writable<boolean>(false);
 
 /**  地図のモード */
-export const mapMode = writable<'view' | 'edit' | 'analysis' | 'small'>('view');
+export const mapMode = writable<'view' | 'small'>('view');
 
 /** サイドメニューの表示状態 */
 export const showSideMenu = writable<boolean>(false);

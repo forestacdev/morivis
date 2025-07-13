@@ -10,6 +10,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { throttle } from 'es-toolkit';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -104,7 +105,7 @@
 	});
 </script>
 
-{#if $showLabelLayer && !showDataEntry && !showZoneForm}
+{#if $showLabelLayer && !showDataEntry && !showZoneForm && !$isStyleEdit}
 	{#each poiDatas as poiData (poiData.propId)}
 		<PoiMarker
 			{map}

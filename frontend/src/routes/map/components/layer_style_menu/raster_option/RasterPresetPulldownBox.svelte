@@ -66,7 +66,7 @@
 		<img
 			{src}
 			alt={presetOptions.find((option) => option.key === preset)?.name}
-			class="aspect-square h-24 rounded border-2 border-white bg-black object-cover"
+			class="aspect-square h-24 rounded bg-black object-cover"
 			style="filter:{getPresetCSSStyle(preset).filter};"
 		/>
 	</button>
@@ -91,14 +91,18 @@
 						onchange={() => (showPullDown = false)}
 					/>
 
-					<img
-						{src}
-						alt={name}
-						class="aspect-square w-full rounded border-2 bg-black object-cover {preset === key
+					<div
+						class="border-3 overflow-hidden rounded-md {preset === key
 							? 'border-accent'
-							: 'border-white'}"
-						style="filter:{getPresetCSSStyle(key).filter};"
-					/>
+							: 'border-transparent'}"
+					>
+						<img
+							{src}
+							alt={name}
+							class="aspect-square w-full bg-black object-cover"
+							style="filter:{getPresetCSSStyle(key).filter};"
+						/>
+					</div>
 					<span class="select-none text-sm">{name}</span>
 				</label>
 			{/each}
