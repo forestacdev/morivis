@@ -11,6 +11,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { fade, fly } from 'svelte/transition';
+	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -146,7 +147,7 @@
 	{/if}
 
 	<div class="flex w-full flex-col gap-2 py-2">
-		<div class="text-base">{dataEntry.metaData.name}</div>
+		<div class="text-left text-base">{dataEntry.metaData.name}</div>
 		<!-- <div class="flex items-center gap-1 text-sm text-gray-400">
 			<Icon icon="lucide:map-pin" class="h-5 w-5" />
 		</div> -->
@@ -157,12 +158,24 @@
 		</div>
 	</div>
 	{#if prefCode}
-		<div class="absolute bottom-2 right-2 grid place-items-center">
-			<div class="[&_path]:fill-accent">
-				<PrefectureIcon width={'60px'} code={prefCode} />
+		<div class="absolute bottom-0 right-0 grid place-items-center">
+			<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
+				<PrefectureIcon width={'70px'} code={prefCode} />
 			</div>
-			<span class="absolute text-base text-sm">{dataEntry.metaData.location}</span>
+			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
 		</div>
+	{/if}
+	{#if dataEntry.metaData.location === '森林文化アカデミー'}
+		<div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
+			<FacLogo width={'150px'} />
+		</div>
+		<!-- <div class="absolute bottom-0 right-0 grid place-items-center">
+			<img
+				class="h-[50px] w-[50px] rounded-full object-cover"
+				src="./mapicon.png"
+				alt={'森林文化アカデミー'}
+			/>
+		</div> -->
 	{/if}
 </button>
 

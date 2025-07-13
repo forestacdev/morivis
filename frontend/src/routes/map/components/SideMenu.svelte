@@ -82,7 +82,7 @@
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">
-				<FacLogo width={'200'} />
+				<FacLogo width={'250px'} />
 			</div>
 			<button
 				onclick={() => showSideMenu.set(false)}
