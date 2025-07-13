@@ -205,35 +205,38 @@
 					aria-label="Select color "
 				></button>
 			</div>
-			<div class="bg-base h-[1px] w-full"></div>
-			<div class="grid grid-cols-8 gap-2 p-2">
-				<button
-					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
-					onclick={() => {
-						pattern = null;
-						showColorPallet = false;
-					}}
-					aria-label="Remove pattern"
-				>
-				</button>
-				{#each patternList as _pattern}
+			<!-- NOTE:patternが存在するかどうか -->
+			{#if pattern || pattern === null}
+				<div class="bg-base h-[1px] w-full"></div>
+				<div class="grid grid-cols-8 gap-2 p-2">
 					<button
 						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
 						onclick={() => {
-							pattern = _pattern;
+							pattern = null;
 							showColorPallet = false;
 						}}
+						aria-label="Remove pattern"
 					>
-						{#if _pattern}
-							<img
-								src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
-								alt="pattern"
-								class="absolute h-full"
-							/>
-						{/if}</button
-					>
-				{/each}
-			</div>
+					</button>
+					{#each patternList as _pattern}
+						<button
+							class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
+							onclick={() => {
+								pattern = _pattern;
+								showColorPallet = false;
+							}}
+						>
+							{#if _pattern}
+								<img
+									src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
+									alt="pattern"
+									class="absolute h-full"
+								/>
+							{/if}</button
+						>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
