@@ -87,7 +87,7 @@ export interface ColorMatchExpression {
 	};
 	noData: {
 		values: string;
-		pattern: SpritePatternId | null;
+		pattern?: SpritePatternId | null;
 	};
 }
 
