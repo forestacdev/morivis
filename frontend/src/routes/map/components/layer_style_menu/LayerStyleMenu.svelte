@@ -14,6 +14,7 @@
 	import { style } from '$routes/_development/maptreestyle/style';
 	import { showLabelLayer } from '$routes/stores/layers';
 	import Switch from '../atoms/Switch.svelte';
+	import Accordion from '../atoms/Accordion.svelte';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -21,6 +22,8 @@
 	}
 
 	let { layerEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+	let showVisibleOption = $state<boolean>(false);
+	let showColorOption = $state<boolean>(false);
 
 	const handleKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
@@ -43,24 +46,26 @@
 				out:fly={{ duration: 300, opacity: 0, x: -10 }}
 				class="absolute flex h-full w-full flex-col gap-2"
 			>
-				<!-- <div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-				<div class="flex items-center gap-2 border-t text-base"></div> -->
+				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
+				<div class="flex items-center gap-2 border-t text-base"></div>
 				<div class="c-scroll h-full grow overflow-x-hidden">
-					<Switch
-						label="表示"
-						bind:value={layerEntry.style.visible as boolean}
-						icon={'akar-icons:eye'}
-					/>
-					<RangeSlider
-						label={'不透明度'}
-						bind:value={layerEntry.style.opacity}
-						min={0.1}
-						max={1}
-						step={0.01}
-						icon={'mdi:circle-opacity'}
-					/>
+					<Accordion label={'表示制御'} bind:value={showVisibleOption}>
+						<Switch
+							label="表示"
+							bind:value={layerEntry.style.visible as boolean}
+							icon={'akar-icons:eye'}
+						/>
+						<RangeSlider
+							label={'不透明度'}
+							bind:value={layerEntry.style.opacity}
+							min={0.1}
+							max={1}
+							step={0.01}
+							icon={'mdi:circle-opacity'}
+						/>
+					</Accordion>
 					{#if layerEntry.type === 'vector'}
-						<VectorOptionMenu bind:layerEntry />
+						<VectorOptionMenu bind:layerEntry bind:showColorOption />
 					{/if}
 
 					{#if layerEntry.type === 'raster'}

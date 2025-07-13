@@ -16,16 +16,17 @@
 
 	interface Props {
 		layerEntry: LineStringEntry<GeoJsonMetaData | TileMetaData>;
+		showColorOption: boolean;
 	}
 
-	let { layerEntry = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	let showLineOption = $state<boolean>(false);
 </script>
 
 <!-- 色 -->
-<ColorOption bind:colorStyle={layerEntry.style.colors} />
+<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
 <NumberOption label={'ライン幅'} bind:numberStyle={layerEntry.style.width} />
 <Accordion label={'スタイル'} bind:value={showLineOption}>
 	<HorizontalSelectBox

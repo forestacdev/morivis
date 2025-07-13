@@ -17,9 +17,10 @@
 
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;
+		showColorOption: boolean;
 	}
 
-	let { layerEntry = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
 	let showTypeOption = $state<boolean>(false);
 	let showOutlineOption = $state<boolean>(false);
@@ -39,7 +40,7 @@
 
 {#if layerEntry.style.markerType === 'circle'}
 	<!-- 色 -->
-	<ColorOption bind:colorStyle={layerEntry.style.colors} />
+	<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
 
 	<NumberOption label={'円の半径'} bind:numberStyle={layerEntry.style.radius} />
 

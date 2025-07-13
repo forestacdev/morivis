@@ -5,11 +5,10 @@
 	import type { ColorsStyle } from '$routes/map/data/types/vector/style';
 	interface Props {
 		colorStyle: ColorsStyle;
+		showColorOption: boolean;
 	}
 
-	let { colorStyle = $bindable() }: Props = $props();
-
-	let showColorOption = $state<boolean>(false);
+	let { colorStyle = $bindable(), showColorOption = $bindable() }: Props = $props();
 </script>
 
 <Accordion label={'色の調整'} bind:value={showColorOption}>

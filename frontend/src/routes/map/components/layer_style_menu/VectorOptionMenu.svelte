@@ -15,28 +15,40 @@
 	import { style } from '$routes/_development/maptreestyle/style';
 	import RangeSlider from '../atoms/RangeSlider.svelte';
 
-	let { layerEntry = $bindable() }: { layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData> } =
-		$props();
+	interface Props {
+		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		showColorOption: boolean;
+	}
+
+	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 </script>
 
 {#if layerEntry && layerEntry.type === 'vector'}
 	{#if layerEntry.format.geometryType === 'Point'}
-		<PointOption bind:layerEntry={layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>} />
+		<PointOption
+			bind:layerEntry={layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>}
+			bind:showColorOption
+		/>
 	{/if}
 
 	{#if layerEntry.format.geometryType === 'LineString'}
 		<LineStringOption
 			bind:layerEntry={layerEntry as LineStringEntry<GeoJsonMetaData | TileMetaData>}
+			bind:showColorOption
 		/>
 	{/if}
 
 	{#if layerEntry.format.geometryType === 'Polygon'}
-		<PolygonOption bind:layerEntry={layerEntry as PolygonEntry<GeoJsonMetaData | TileMetaData>} />
+		<PolygonOption
+			bind:layerEntry={layerEntry as PolygonEntry<GeoJsonMetaData | TileMetaData>}
+			bind:showColorOption
+		/>
 	{/if}
 
-	{#if layerEntry.format.geometryType === 'Label'}
+	<!-- TODO:ラベルオプション -->
+	<!-- {#if layerEntry.format.geometryType === 'Label'}
 		<LabelLayerOption bind:layerEntry />
-	{/if}
+	{/if} -->
 {/if}
 
 <style>

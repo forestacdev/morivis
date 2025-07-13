@@ -259,14 +259,14 @@
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
 				{/if}
-				{#if !$isStyleEdit}
-					<div>データ</div>
-				{/if}
+
+				<div>データ</div>
+
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
 				{/if}
 				{#if $isStyleEdit}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">{isEditLayerName}</div>
+					<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
 				{/if}
 				{#if $showDataMenu}
 					<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>

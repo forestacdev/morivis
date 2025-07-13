@@ -15,15 +15,16 @@
 
 	interface Props {
 		layerEntry: PolygonEntry<GeoJsonMetaData | TileMetaData>;
+		showColorOption: boolean;
 	}
 
-	let { layerEntry = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
 	let showOutlineOption = $state<boolean>(false);
 </script>
 
 <!-- 色 -->
-<ColorOption bind:colorStyle={layerEntry.style.colors} />
+<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
 
 <Accordion label={'アウトライン'} bind:value={showOutlineOption}>
 	<Switch label={'表示'} bind:value={layerEntry.style.outline.show} />
