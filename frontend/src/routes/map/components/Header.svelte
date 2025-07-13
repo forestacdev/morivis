@@ -166,16 +166,12 @@
 		: 'bg-main  pr-2 text-white'}"
 >
 	{#if $isStyleEdit}
-		<button
-			class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-			onclick={() => {
-				isSideMenuType.set(null);
-				showDataMenu.set(false);
-				isStyleEdit.set(false);
-			}}
+		<div
+			transition:slide={{ duration: 300, axis: 'x' }}
+			class="text-accent pointer-events-auto flex w-[80px] cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
 		>
-			<Icon icon="mdi:paint-outline" class="h-7 w-7" />
-		</button>
+			<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
+		</div>
 	{/if}
 	{#if !$isStyleEdit}
 		<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
@@ -199,7 +195,10 @@
 				</button>
 			{/if}
 		</div>
-		<div class="h-hull w-[1px] rounded-full bg-gray-400"></div>
+		<div
+			transition:slide={{ duration: 300, axis: 'x' }}
+			class="h-hull w-[1px] rounded-full bg-gray-400"
+		></div>
 	{/if}
 	<div class="flex w-full items-center justify-between">
 		{#if $isSideMenuType === 'search'}
@@ -228,7 +227,7 @@
 			</button>
 		{/if}
 
-		{#if $isSideMenuType === 'layer' || !$isSideMenuType}
+		{#if ($isSideMenuType === 'layer' && !$isStyleEdit) || !$isSideMenuType}
 			<button
 				transition:slide={{ duration: 300, axis: 'x' }}
 				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
