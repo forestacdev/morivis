@@ -10,6 +10,7 @@
 	import type { ImageResult } from '$routes/map/utils/image';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -76,18 +77,23 @@
 	const deleteData = (id: string) => {
 		activeLayerIdsStore.remove(id);
 	};
+
+	let prefCode = $derived.by(() => {
+		return getPrefectureCode(dataEntry.metaData.location);
+	});
 </script>
 
-<div
-	class="relative mb-4 flex aspect-square shrink-0 grow flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2 transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
+<button
+	onmouseover={() => (isHover = true)}
+	onmouseleave={() => (isHover = false)}
+	onfocus={() => (isHover = true)}
+	onblur={() => (isHover = false)}
+	onclick={() => (showDataEntry = dataEntry)}
+	disabled={isAdded}
+	class="relative mb-4 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2 transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
 	bind:this={container}
 >
-	<button
-		onclick={() => (showDataEntry = dataEntry)}
-		disabled={isAdded}
-		class="group relative flex aspect-video w-full shrink-0 cursor-pointer overflow-hidden"
-	>
-		<PrefectureIcon width="100%" />
+	<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
 		{#await promise then imageResult}
 			{#if imageResult}
 				<img
@@ -97,10 +103,6 @@
 						: 'hover:scale-110'}"
 					alt={dataEntry.metaData.name}
 					onload={() => handleImageLoad(imageResult)}
-					onmouseover={() => (isHover = true)}
-					onmouseleave={() => (isHover = false)}
-					onfocus={() => (isHover = true)}
-					onblur={() => (isHover = false)}
 					loading="lazy"
 					onerror={() => {
 						isImageError = true;
@@ -122,32 +124,47 @@
 		<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
 			>{dataEntry.metaData.attribution}</span
 		>
-	</button>
-	<div class="shrink-0">
-		{#if isAdded}
-			<button
-				onclick={() => deleteData(dataEntry.id)}
-				class="c-btn-cancel flex items-center gap-2 px-4"
-			>
-				<Icon icon="ic:round-minus" class=" h-8 w-8" />
-			</button>
-		{:else}
-			<button
-				onclick={() => addData(dataEntry.id)}
-				class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
-			>
-				<Icon icon="material-symbols:add" class=" h-8 w-8" />
-			</button>
-		{/if}
 	</div>
+	{#if isHover}
+		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 shrink-0">
+			{#if isAdded}
+				<button
+					onclick={() => deleteData(dataEntry.id)}
+					class="c-btn-cancel flex items-center gap-2 px-4"
+				>
+					<Icon icon="ic:round-minus" class=" h-8 w-8" />
+				</button>
+			{:else}
+				<button
+					onclick={() => addData(dataEntry.id)}
+					class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
+				>
+					<Icon icon="material-symbols:add" class=" h-8 w-8" />
+				</button>
+			{/if}
+		</div>
+	{/if}
 
-	<div class="flex w-full flex-col gap-1 py-2">
+	<div class="flex w-full flex-col gap-2 py-2">
 		<div class="text-base">{dataEntry.metaData.name}</div>
+		<!-- <div class="flex items-center gap-1 text-sm text-gray-400">
+			<Icon icon="lucide:map-pin" class="h-5 w-5" />
+		</div> -->
 		<div class="flex items-center gap-1 text-sm text-gray-400">
-			<Icon icon="lucide:map-pin" class="h-5 w-5" /><span>{dataEntry.metaData.location}</span>
+			{#each dataEntry.metaData.tags as tag}
+				<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
+			{/each}
 		</div>
 	</div>
-</div>
+	{#if prefCode}
+		<div class="absolute bottom-2 right-2 grid place-items-center">
+			<div class="[&_path]:fill-accent">
+				<PrefectureIcon width={'60px'} code={prefCode} />
+			</div>
+			<span class="absolute text-base text-sm">{dataEntry.metaData.location}</span>
+		</div>
+	{/if}
+</button>
 
 <style>
 	.c-bg {

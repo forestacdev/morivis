@@ -1,4 +1,5 @@
-
+import { locationBboxData } from './location_bbox';
+import type { Region } from './types/location';
 export const prefCodeDict = {
 	'01': '北海道',
 	'02': '青森県',
@@ -50,8 +51,8 @@ export const prefCodeDict = {
 } as const;
 
 const prefCodeReversedDict = Object.fromEntries(
-    Object.entries(prefCodeDict).map(([key, value]) => [value, key])
-);
+	Object.entries(prefCodeDict).map(([key, value]) => [value, key])
+) as Record<PrefectureCode, keyof typeof prefCodeDict>;
 
 export type PrefectureCode = keyof typeof prefCodeDict;
 
@@ -63,9 +64,9 @@ const prefCodes = Object.keys(prefCodeDict) as PrefectureCode[];
  * @returns The code of the prefecture.
  * @throws Will throw an error if the prefecture name is not valid.
  */
-export const getPrefectureCode = (name: string): string | undefined => {
-	if (name) {
-		return prefCodeReversedDict[name];
+export const getPrefectureCode = (location: Region): PrefectureCode | undefined => {
+	if (location) {
+		return prefCodeReversedDict[location];
 	} else {
 		return undefined;
 	}

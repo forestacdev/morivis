@@ -9,6 +9,8 @@
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showDataMenu } from '$routes/stores';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -26,6 +28,7 @@
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
+	let showAddedData = $state<boolean>(true); // データ追加の状態
 
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
@@ -35,7 +38,11 @@
 			);
 		} else {
 			// 検索ワードが空の場合、全てのデータを表示
-			filterDataEntries = dataEntries;
+			if (!showAddedData) {
+				filterDataEntries = dataEntries.filter((data) => !$activeLayerIdsStore.includes(data.id));
+			} else {
+				filterDataEntries = dataEntries;
+			}
 		}
 	});
 
@@ -75,7 +82,7 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 pl-[80px] transition-all duration-300 {$showDataMenu
+	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 pl-[100px] transition-all duration-300 {$showDataMenu
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
@@ -101,6 +108,12 @@
 
 		<div class="w-[300px] shrink-0">
 			<HorizontalSelectBox bind:group={selected} bind:options />
+		</div>
+	</div>
+
+	<div class="flex grow items-center justify-end gap-4 p-2">
+		<div>
+			<Switch label="追加済みデータの表示" bind:value={showAddedData} />
 		</div>
 	</div>
 
