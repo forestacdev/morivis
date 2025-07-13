@@ -223,9 +223,6 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
-	<!-- {#if $selectedLayerId === layerEntry.id && isSmall}
-		<div class="bg-accent absolute left-0 top-0 h-full w-[4px]"></div>
-	{/if} -->
 	<div
 		id={layerEntry.id}
 		class="c-dragging-style translate-z-0 relative cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100
@@ -239,42 +236,26 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform {isSmall
-					? 'translate-x-[309px]'
+				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
+					? 'translate-x-[305px]'
 					: ''}"
 			>
 				<LayerIcon {layerEntry} />
-
-				<!-- 表示トグル -->
-				<!-- {#if isHovered || !layerEntry.style.visible}
-					<div
-						transition:fade={{ duration: 100 }}
-						class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50"
-					></div>
-					<div
-						transition:fade={{ duration: 100 }}
-						class="pointer-events-none absolute {layerEntry.style.visible
-							? 'text-accent'
-							: 'text-neutral-200'}"
-					>
-						<Icon
-							icon={layerEntry.style.visible ? 'akar-icons:eye-open' : 'akar-icons:eye-slashed'}
-							width={30}
-						/>
-					</div>
-				{/if} -->
 			</button>
 
 			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
-				<div class="flex flex-col">
-					<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
-						>{layerEntry.metaData.name}</span
-					>
-					<span class="truncate text-xs text-gray-400">{layerEntry.metaData.location ?? '---'}</span
-					>
-				</div>
+				{#if !$isStyleEdit}
+					<div class="flex flex-col">
+						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
+							>{layerEntry.metaData.name}</span
+						>
+						<span class="truncate text-xs text-gray-400"
+							>{layerEntry.metaData.location ?? '---'}</span
+						>
+					</div>
+				{/if}
 
-				{#if isHovered && !isSmall}
+				{#if isHovered && !$isStyleEdit}
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
 						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
@@ -311,25 +292,6 @@
 					</div>
 				{/if}
 			</div>
-
-			<!-- トグル -->
-			<!-- <label
-				class="relative ml-auto mr-2 grid shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full"
-			>
-				<input
-					type="checkbox"
-					class="hidden"
-					oninput={() => {
-						toggleChecked(layerEntry.id);
-					}}
-				/>
-				<Icon
-					icon="weui:arrow-filled"
-					class="h-8 w-8 transition-transform duration-150 {showLegend
-						? 'text-main -rotate-90'
-						: 'rotate-90 text-base'}"
-				/>
-			</label> -->
 		</div>
 	</div>
 	<div
@@ -340,22 +302,6 @@
 				? 'bg-green-500'
 				: 'bg-red-500'}"
 	></div>
-	<!-- {#if showLegend}
-		<div transition:slide={{ duration: 200 }} class="flex pb-4 pl-[20px]">
-			<div class="flex w-full flex-col gap-4 px-2 pt-2">
-				<div
-					class="w-full"
-					onmousedown={() => (draggingEnabled = false)}
-					onmouseup={() => (draggingEnabled = true)}
-					role="button"
-					tabindex="0"
-				>
-					<OpacityRangeSlider min={0} max={1} step={0.01} bind:value={layerEntry.style.opacity} />
-				</div>
-				<Legend {layerEntry} />
-			</div>
-		</div>
-	{/if} -->
 </div>
 
 <style>

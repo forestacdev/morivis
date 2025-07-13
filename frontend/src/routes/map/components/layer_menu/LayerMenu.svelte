@@ -67,34 +67,24 @@
 		}
 	};
 
-	const resizeMenu = () => {
-		if (container) {
-			gsap.to(container, {
-				width: isSmall ? '400px' : '400px',
-				duration: 0.2,
-				ease: 'power2.inOut'
-			});
-		}
-	};
-
 	let isSmall = $derived.by(() => {
-		if ($isStyleEdit || $showDataMenu) {
+		if ($showDataMenu) {
 			return true;
 		}
 		return false;
 	});
 
-	$effect(() => {
-		if (isSmall) resizeMenu();
-	});
-
-	$effect(() => {
-		if (container) resizeMenu();
-	});
-
 	showDataMenu.subscribe((value) => {
 		if (value) {
 			isSideMenuType.set('layer');
+		}
+	});
+
+	isStyleEdit.subscribe((value) => {
+		if (value) {
+			isSideMenuType.set('layer');
+		} else {
+			isSideMenuType.set(null);
 		}
 	});
 
@@ -107,14 +97,14 @@
 <!-- レイヤーメニュー -->
 
 <div
-	bind:this={container}
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class=" absolute z-10 flex h-full w-[400px] flex-col gap-2 pt-[70px] transition-transform duration-200 {$isSideMenuType ===
+	class="absolute z-10 flex h-full flex-col gap-2 pt-[70px] duration-200 {$isSideMenuType ===
 	'layer'
 		? 'translate-x-0'
-		: '-translate-x-[400px]'} {isSmall
-		? 'der translate-x-[75px] bg-transparent delay-150'
+		: '-translate-x-[400px]'} {$isStyleEdit
+		? 'translate-x-[75px] bg-transparent delay-150'
 		: 'bg-main'}"
+	style={`width: ${isSmall ? '90px' : '400px'};transition: width transform, translate, scale, rotate 0.2s ease-in-out;`}
 >
 	<div
 		class="flex grow flex-col gap-1 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
@@ -132,20 +122,13 @@
 				/>
 			</div>
 		{/each}
-		{#if !isSmall}
-			<div transition:fade={{ duration: 200 }} class="relative flex flex-col">
+		{#if !$isStyleEdit && !$showDataMenu}
+			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
 				<Switch label="ラベル" bind:value={$showLabelLayer} />
 				<Switch label="3D" bind:value={is3d} />
 				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			</div>
-		{/if}
-		<div class="h-[200px] w-full shrink-0"></div>
-	</div>
-	{#if !isSmall}
-		<div
-			class="pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center gap-2 pb-8"
-		>
-			{#if !$showDataMenu}
+			<div class="flex gap-4 p-2">
 				<button
 					onclick={resetLayers}
 					class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
@@ -160,7 +143,8 @@
 						>データの追加</span
 					>
 				</button>
-			{/if}
-		</div>
-	{/if}
+			</div>
+		{/if}
+		<div class="h-[200px] w-full shrink-0"></div>
+	</div>
 </div>
