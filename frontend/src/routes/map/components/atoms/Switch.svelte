@@ -1,15 +1,22 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+
 	interface Props {
 		label: string;
 		value: boolean;
+		icon?: string;
 	}
-	let { label, value = $bindable() }: Props = $props();
+	let { label, value = $bindable(), icon }: Props = $props();
 </script>
 
 <label
-	class="hover:text-main-accent flex grow cursor-pointer items-start justify-between gap-2 py-2 text-base transition-colors duration-100"
->
-	<span class="select-none font-bold">{label}</span>
+	class="hover:text-main-accent flex grow cursor-pointer items-start justify-between gap-2 py-2 pr-4 text-base transition-colors duration-100"
+	><div class="flex items-center gap-1">
+		{#if icon}
+			<Icon icon={'akar-icons:eye'} class="h-6 w-6" />
+		{/if}
+		<span class="select-none font-bold">{label}</span>
+	</div>
 	<input type="checkbox" class="hidden" bind:checked={value} />
 	<div
 		class="relative flex h-[30px] w-[60px] items-center rounded-full {value

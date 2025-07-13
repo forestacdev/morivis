@@ -24,8 +24,6 @@
 	let showLineOption = $state<boolean>(false);
 </script>
 
-<RangeSlider label="不透明度" bind:value={layerEntry.style.opacity} min={0} max={1} step={0.01} />
-
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerEntry.style.colors} />
 <NumberOption label={'ライン幅'} bind:numberStyle={layerEntry.style.width} />

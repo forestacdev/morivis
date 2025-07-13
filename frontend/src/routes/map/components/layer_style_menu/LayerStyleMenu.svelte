@@ -11,6 +11,9 @@
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	import { mapStore } from '$routes/stores/map';
+	import { style } from '$routes/_development/maptreestyle/style';
+	import { showLabelLayer } from '$routes/stores/layers';
+	import Switch from '../atoms/Switch.svelte';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -39,6 +42,19 @@
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
 				<div class="c-scroll h-full grow overflow-x-hidden">
+					<Switch
+						label="表示"
+						bind:value={layerEntry.style.visible as boolean}
+						icon={'akar-icons:eye'}
+					/>
+					<RangeSlider
+						label={'不透明度'}
+						bind:value={layerEntry.style.opacity}
+						min={0.1}
+						max={1}
+						step={0.01}
+						icon={'mdi:circle-opacity'}
+					/>
 					{#if layerEntry.type === 'vector'}
 						<VectorOptionMenu bind:layerEntry />
 					{/if}

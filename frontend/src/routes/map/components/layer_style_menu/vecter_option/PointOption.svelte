@@ -26,8 +26,6 @@
 	let showIconOption = $state<boolean>(false);
 </script>
 
-<RangeSlider label="不透明度" bind:value={layerEntry.style.opacity} min={0} max={1} step={0.01} />
-
 {#if layerEntry.style.icon}
 	<HorizontalSelectBox
 		label={'ポイントのスタイル'}

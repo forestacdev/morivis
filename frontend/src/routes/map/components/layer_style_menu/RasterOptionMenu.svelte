@@ -58,15 +58,6 @@
 {#if layerEntry && layerEntry.type === 'raster' && style}
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}
-		<RangeSlider
-			label={'不透明度'}
-			bind:value={style.opacity}
-			min={0}
-			max={1}
-			step={0.01}
-			icon={'mdi:circle-opacity'}
-		/>
-
 		{#await promise then imageResult}
 			{#if imageResult}
 				<RasterPresetPulldownBox
@@ -105,8 +96,6 @@
 			</div>
 		</Accordion> -->
 	{:else if style.type === 'categorical'}
-		<RangeSlider label={'不透明度'} bind:value={style.opacity} min={0} max={1} step={0.01} />
-
 		<h1 class="text-base">凡例</h1>
 		{#if style.legend.type === 'category'}
 			<h2 class="text-base">{style.legend.name}</h2>
