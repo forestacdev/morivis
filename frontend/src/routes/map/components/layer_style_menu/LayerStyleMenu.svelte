@@ -69,7 +69,7 @@
 					{/if}
 
 					{#if layerEntry.type === 'raster'}
-						<RasterOptionMenu bind:layerEntry />
+						<RasterOptionMenu bind:layerEntry bind:showColorOption />
 					{/if}
 				</div>
 			</div>

@@ -18,13 +18,14 @@
 	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
 
-	let {
-		layerEntry = $bindable()
-	}: {
+	interface Props {
 		layerEntry: RasterEntry<
 			RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
 		>;
-	} = $props();
+		showColorOption: boolean;
+	}
+
+	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
 	let style = $derived(layerEntry.style);
 
@@ -129,7 +130,7 @@
 			</div>
 		{/if}
 	{:else if style.type === 'dem'}
-		<DemOption bind:style />
+		<DemOption bind:style bind:showColorOption />
 	{:else if style.type === 'tiff'}
 		<TiffOption bind:style />
 	{/if}
