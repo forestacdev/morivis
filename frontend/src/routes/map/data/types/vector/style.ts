@@ -72,6 +72,7 @@ export interface ColorSingleExpression {
 	name: string;
 	mapping: {
 		value: string;
+		pattern?: SpritePatternId | null;
 	};
 }
 
@@ -82,7 +83,11 @@ export interface ColorMatchExpression {
 	mapping: {
 		categories: string[] | number[];
 		values: string[];
-		patterns: (SpritePatternId | null)[]; // Optional for patterns
+		patterns?: (SpritePatternId | null)[];
+	};
+	noData: {
+		values: string;
+		pattern: SpritePatternId | null;
 	};
 }
 

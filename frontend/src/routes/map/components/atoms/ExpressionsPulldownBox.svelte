@@ -94,7 +94,7 @@
 		{/if}
 	</div>
 	<!-- 色分け選択 -->
-	<div class="flex grow flex-col gap-2 overflow-y-auto overflow-x-hidden pt-2">
+	<div class="flex grow flex-col gap-2 overflow-visible pt-2">
 		{#if expressionType === 'color'}
 			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} />
 		{/if}

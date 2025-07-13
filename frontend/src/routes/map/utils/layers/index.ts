@@ -13,8 +13,9 @@ import type {
 	HillshadeLayerSpecification,
 	BackgroundLayerSpecification,
 	FilterSpecification,
+	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
-	ColorSpecification
+	ResolvedImageSpecification
 } from 'maplibre-gl';
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
@@ -284,7 +285,7 @@ const getColorExpression = (colors: ColorsStyle) => {
 	}
 };
 
-const getPatternMatchExpression = (
+const getPatternSingleExpression = (
 	colors: ColorsStyle
 ): DataDrivenPropertyValueSpecification<ColorSpecification> | undefined => {
 	const key = colors.key;
@@ -292,17 +293,28 @@ const getPatternMatchExpression = (
 	if (!expressionData) {
 		return undefined;
 	}
-	if (expressionData.type !== 'match') {
-		return undefined;
+
+	if (expressionData.type === 'single') {
+		console.warn(expressionData.mapping.pattern);
+		if (!expressionData.mapping.pattern) {
+			return undefined;
+		}
+		return ['get', expressionData.mapping.pattern];
 	}
+};
+
+const getPatternMatchExpression = (
+	expressionData: ColorMatchExpression
+): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
+	const key = expressionData.key;
 
 	const { categories, patterns } = expressionData.mapping;
-	console.warn('getPatternMatchExpression', categories, patterns);
+	if (!patterns) return null;
 
 	const patternFilter = patterns.filter((item) => item !== null);
 
 	if (!patternFilter.length) {
-		return undefined;
+		return null;
 	}
 
 	const expression: (string | string[] | null)[] = ['match', ['get', key]];
@@ -314,6 +326,23 @@ const getPatternMatchExpression = (
 	expression.push(''); // デフォルト値
 
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
+};
+
+const getPatternExpression = (colors: ColorsStyle) => {
+	const key = colors.key;
+	const expressionData = colors.expressions.find((expression) => expression.key === key);
+	if (!expressionData) {
+		return null;
+	}
+
+	switch (expressionData.type) {
+		case 'single':
+			return expressionData.mapping.pattern;
+		case 'match':
+			return getPatternMatchExpression(expressionData);
+		default:
+			return null;
+	}
 };
 
 const generateNumberMatchExpression = (
@@ -463,7 +492,7 @@ const createFillPatternLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
 ): FillLayerSpecification | undefined => {
-	const patternExpression = getPatternMatchExpression(style.colors);
+	const patternExpression = getPatternExpression(style.colors);
 	if (!patternExpression) {
 		return undefined;
 	}
@@ -485,6 +514,19 @@ const createFillPatternLayer = (
 
 // ポリゴンのアウトラインレイヤーの作成
 const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: number) => {
+	// TODO ライン幅固定関数
+	const _createExponentialLineWidth = (baseWidth: number, baseZoom: number) => {
+		return [
+			'interpolate',
+			['exponential', 2],
+			['zoom'],
+			0,
+			baseWidth * Math.pow(2, 0 - baseZoom),
+			24,
+			baseWidth * Math.pow(2, 24 - baseZoom)
+		];
+	};
+
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,

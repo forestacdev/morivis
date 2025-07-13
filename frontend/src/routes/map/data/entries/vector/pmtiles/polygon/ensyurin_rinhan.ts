@@ -57,7 +57,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#00ff00'
+						value: '#00ff00',
+						pattern: null
 					}
 				},
 				{
@@ -76,6 +77,10 @@ const entry: VectorEntry<TileMetaData> = {
 						],
 						values: ['#33a02c', '#b2df8a', '#e31a1c', '#1f78b4', '#fdbf6f', '#a6cee3', '#fb9a99'],
 						patterns: [null, null, null, null, null, null, null]
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				},
 				{
@@ -86,6 +91,10 @@ const entry: VectorEntry<TileMetaData> = {
 						categories: [1, 2, 3],
 						values: ['#7fc97f', '#beaed4', '#fdc086'],
 						patterns: [null, null, null]
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				},
 				{

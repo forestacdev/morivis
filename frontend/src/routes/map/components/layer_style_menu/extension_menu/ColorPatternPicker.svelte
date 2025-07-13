@@ -1,24 +1,44 @@
 <script lang="ts">
-	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import { generateColorPalette } from '$routes/map/utils/color_mapping';
 	import { mapStore } from '$routes/stores/map';
 	import type { StyleImage } from 'maplibre-gl';
+	import chroma from 'chroma-js';
+	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import { fly } from 'svelte/transition';
 
 	interface Props {
 		label?: string | null;
 		value: string;
-		pattern?: SpritePatternId; // Optional patterns for the color picker
+		pattern?: SpritePatternId | null;
 	}
 	let { label, value = $bindable(), pattern = $bindable() }: Props = $props();
 
-	interface MapLibreImageData {
-		data: {
-			width: number;
-			height: number;
-			data: Record<string, number>;
-		};
-		pixelRatio: number;
-		spriteData: any;
-	}
+	const patternList: SpritePatternId[] = [
+		'tmpoly-caret-200-black',
+		'tmpoly-circle-alt-light-200-black',
+		'tmpoly-circle-alt-medium-200-black',
+		'tmpoly-circle-bold-200-black',
+		'tmpoly-circle-heavy-200-black',
+		'tmpoly-circle-light-200-black',
+		'tmpoly-circle-medium-200-black',
+		'tmpoly-crosshatch-light-200-black',
+		'tmpoly-crosshatch-medium-200-black',
+		'tmpoly-grid-light-200-black',
+		'tmpoly-grid-medium-200-black',
+		'tmpoly-line-horizontal-light-200-black',
+		'tmpoly-line-horizontal-medium-200-black',
+		'tmpoly-line-vertical-down-light-200-black',
+		'tmpoly-line-vertical-down-medium-200-black',
+		'tmpoly-line-vertical-light-200-black',
+		'tmpoly-line-vertical-medium-200-black',
+		'tmpoly-line-vertical-up-light-200-black',
+		'tmpoly-line-vertical-up-medium-200-black',
+		'tmpoly-minus-200-black',
+		'tmpoly-plus-200-black',
+		'tmpoly-slash-back-200-black',
+		'tmpoly-slash-forward-200-black',
+		'tmpoly-square-200-black'
+	];
 
 	interface TileOptions {
 		tileCount?: number;
@@ -30,14 +50,14 @@
 	}
 
 	/**
-	 * MapLibreのImageDataから4つ並べたパターン画像を生成
+	 * MapLibreのImageDataから4つ並べたパターン画像を生成 TODO: 最適化
 	 */
 	function createTiledPatternImage(
 		imageData: StyleImage,
 		options: TileOptions = {}
 	): string | null {
 		try {
-			const { tileCount = 16, spacing = 0, backgroundColor = 'transparent' } = options;
+			const { tileCount = 25, spacing = 0, backgroundColor = 'transparent' } = options;
 
 			const { width, height, data } = imageData.data;
 
@@ -48,7 +68,7 @@
 			// 元画像のUint8ClampedArrayを作成
 			const sourceArray = new Uint8ClampedArray(width * height * 4);
 			for (let i = 0; i < width * height * 4; i++) {
-				sourceArray[i] = data[i.toString()] || 0;
+				sourceArray[i] = data[i] || 0;
 			}
 
 			// 元のImageDataオブジェクトを作成
@@ -120,24 +140,104 @@
 		// 画像データを取得してパターン画像を生成
 		return createTiledPatternImage(image);
 	});
+
+	let showColorPallet = $state<boolean>(false);
+	let containerRef = $state<HTMLElement>();
+	// if (label === 'スギ') showColorPallet = true; // デバッグ用
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showColorPallet && containerRef && !containerRef.contains(event.target as Node)) {
+				showColorPallet = false;
+			}
+		};
+
+		if (showColorPallet) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
-<label
-	class="hover:text-accent flex cursor-pointer items-center justify-between transition-colors duration-100"
->
-	{#if label}
-		<span class="select-none text-base">{label}</span>
-	{/if}
-	<div
-		class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full"
-		style="background-color: {value}"
+<div bind:this={containerRef} class="relative">
+	<label
+		class="group flex cursor-pointer items-center justify-between pr-2 transition-colors duration-100"
 	>
-		{#if imageSrc}
-			<img src={imageSrc} alt="pattern" class="absolute h-full" />
+		{#if label}
+			<span class="group-hover:text-accent select-none text-base">{label}</span>
 		{/if}
-		<input type="color" class="custom-color invisible" bind:value />
-	</div>
-</label>
+		<div
+			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full"
+			style="background-color: {value}"
+		>
+			{#if imageSrc}
+				<img src={imageSrc} alt="pattern" class="absolute h-full" />
+			{/if}
+			<!-- <input type="color" class="invisible" bind:value /> -->
+			<input type="checkbox" class="invisible" bind:checked={showColorPallet} />
+		</div>
+	</label>
+	{#if showColorPallet}
+		<div
+			transition:fly={{ duration: 200, y: -20 }}
+			class="bg-sub absolute z-10 mt-2 grid w-full rounded-lg shadow-lg"
+		>
+			<div class="grid grid-cols-8 gap-2 p-2">
+				{#each [...chroma.brewer.Paired, ...chroma.brewer.Set3] as color}
+					<button
+						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
+						style="background-color: {color}"
+						onclick={() => {
+							value = color;
+							showColorPallet = false;
+						}}
+						aria-label="Select color {color}"
+					></button>
+				{/each}
+				<button
+					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-amber-100"
+					onclick={() => {
+						value = 'transparent';
+						showColorPallet = false;
+					}}
+					aria-label="Select color "
+				></button>
+			</div>
+			<div class="bg-base h-[1px] w-full"></div>
+			<div class="grid grid-cols-8 gap-2 p-2">
+				<button
+					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
+					onclick={() => {
+						pattern = null;
+						showColorPallet = false;
+					}}
+					aria-label="Remove pattern"
+				>
+				</button>
+				{#each patternList as _pattern}
+					<button
+						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
+						onclick={() => {
+							pattern = _pattern;
+							showColorPallet = false;
+						}}
+					>
+						{#if _pattern}
+							<img
+								src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
+								alt="pattern"
+								class="absolute h-full"
+							/>
+						{/if}</button
+					>
+				{/each}
+			</div>
+		</div>
+	{/if}
+</div>
 
 <style>
 </style>

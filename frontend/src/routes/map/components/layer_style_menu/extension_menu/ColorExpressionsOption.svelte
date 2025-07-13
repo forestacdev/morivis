@@ -25,16 +25,32 @@
 </script>
 
 {#if setExpression.type === 'single'}
-	<ColorPicker label="全体の色" bind:value={setExpression.mapping.value as string} />
+	{#if setExpression.mapping.pattern}
+		<ColorPatternPicker
+			label="全体の色"
+			bind:value={setExpression.mapping.value as string}
+			bind:pattern={setExpression.mapping.pattern}
+		/>
+	{:else}
+		<ColorPatternPicker label="全体の色" bind:value={setExpression.mapping.value as string} />
+	{/if}
 {:else if setExpression.type === 'match'}
 	{#each setExpression.mapping.categories as _, index}
-		<ColorPatternPicker
-			label={setExpression.mapping.categories[index] as string}
-			bind:value={setExpression.mapping.values[index] as string}
-		/>
+		{#if setExpression.mapping.patterns}
+			<ColorPatternPicker
+				label={setExpression.mapping.categories[index] as string}
+				bind:pattern={setExpression.mapping.patterns[index]}
+				bind:value={setExpression.mapping.values[index] as string}
+			/>
+		{:else}
+			<ColorPatternPicker
+				label={setExpression.mapping.categories[index] as string}
+				bind:value={setExpression.mapping.values[index] as string}
+			/>
+		{/if}
 	{/each}
 {:else if setExpression.type === 'step'}
-	<div class="flex-between flex w-full gap-2 text-base">
+	<div class="flex-between flex w-full text-base">
 		{#each setExpression.mapping.values as _, index}
 			<span>{index === 0 ? '最小' : '最大'}</span>
 			<ColorPicker bind:value={setExpression.mapping.values[index]} />
