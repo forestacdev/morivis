@@ -33,13 +33,14 @@
 </script>
 
 <label
-	class="bg-sub relative flex aspect-square w-[120px] cursor-pointer flex-col items-center gap-2 rounded-full p-4"
-	><span>{label}</span>
+	class="relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full p-4"
+	><span class="absolute">{label}</span>
 	{#if name}
-		<span class="text-sm">{name}</span>
+		<span class="absolute text-sm">{name}</span>
 	{/if}
+	<div class="rounded-full bg-white p-12 duration-150 {file ? 'translate-y-[90px]' : ''}"></div>
 
-	<span class="absolute bottom-0 text-red-500">{error ? error : ''}</span>
+	<!-- <span class="absolute bottom-0 text-red-500">{error ? error : ''}</span> -->
 	<input type="file" {accept} class="hidden" onchange={(e) => inputFile(e)} />
 </label>
 

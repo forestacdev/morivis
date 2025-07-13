@@ -295,20 +295,40 @@
 			resetForms();
 		}
 	});
+
+	$effect(() => {
+		if (
+			forms.shpFile &&
+			forms.dbfFile &&
+			forms.shxFile &&
+			forms.shpName &&
+			forms.dbfName &&
+			forms.shxName &&
+			forms.prjFile &&
+			forms.prjName
+		) {
+			if (hasFilenameMatchError) return;
+			registration();
+		}
+	});
 </script>
 
 {#if showDialogType && showDialogType === 'shp'}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full flex-col items-center justify-center bg-black/50 text-white
+		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/50
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 	>
-		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4 pt-8">
 			<span class="text-2xl font-bold">シェープファイルの登録</span>
 		</div>
 
-		<div class="relative h-full w-full" style="--distance: {distance}px;">
-			<div class="loading-item" style="--index: 0;">
+		<div
+			class="c-main relative m-0 grid aspect-square h-[400px] place-items-center"
+			style="--distance: 100px;"
+		>
+			<div class="c-triangle"></div>
+			<div class="c-file-item" style="--index: 0;">
 				<ShapeFileFormInput
 					label=".shp"
 					bind:file={forms.shpFile}
@@ -317,7 +337,7 @@
 					bind:name={forms.shpName}
 				/>
 			</div>
-			<div class="loading-item" style="--index: 1;">
+			<div class="c-file-item" style="--index: 1;">
 				<ShapeFileFormInput
 					label=".dbf"
 					bind:file={forms.dbfFile}
@@ -326,7 +346,7 @@
 					bind:name={forms.dbfName}
 				/>
 			</div>
-			<div class="loading-item" style="--index: 2;">
+			<div class="c-file-item" style="--index: 2;">
 				<ShapeFileFormInput
 					label=".shx"
 					bind:file={forms.shxFile}
@@ -335,40 +355,73 @@
 					bind:name={forms.shxName}
 				/>
 			</div>
+			<div class="absolute" style="--index: 2;">
+				<ShapeFileFormInput
+					label=".prj(任意)"
+					bind:file={forms.prjFile}
+					accept=".prj"
+					error={errors.prjFile}
+					bind:name={forms.prjName}
+				/>
+			</div>
 		</div>
-		<FileForm
-			label=".prj(任意)"
-			bind:file={forms.prjFile}
-			accept=".prj"
-			error={errors.prjFile}
-			bind:name={forms.prjName}
-		/>
-		{hasFilenameMatchError}
-		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-			<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
-			<button
-				onclick={registration}
-				disabled={isDisabled}
-				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
-					? 'cursor-not-allowed opacity-50'
-					: 'cursor-pointer'}"
-			>
-				決定
-			</button>
-		</div>
+
+		<!-- {hasFilenameMatchError} -->
+	</div>
+	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+		<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
+		<button
+			onclick={registration}
+			disabled={isDisabled}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
+				? 'cursor-not-allowed opacity-50'
+				: 'cursor-pointer'}"
+		>
+			決定
+		</button>
 	</div>
 {/if}
 
 <style>
-	.loading-item {
-		position: absolute;
-		top: 50%;
-		left: 50%;
+	.c-main {
+		animation: spin 0.3s;
+		transform-origin: center center;
+	}
 
-		translate: -50% -50%;
+	@keyframes spin {
+		0% {
+			/* rotate: 0deg; */
+			scale: 0.5;
+			opacity: 0; /* アニメーションの開始時に透明にする */
+		}
+		100% {
+			/* rotate: 360deg; */
+			scale: 1; /* アニメーションの終わりで元のサイズに戻す */
+		}
+	}
+	.c-triangle {
+		--size: 320px;
+		background: var(--color-main);
+		border-radius: 9999px;
+		/* clip-path: polygon(50% 0, 100% 100%, 0 100%); */
+		width: var(--size);
+		aspect-ratio: 1 / 1;
+		/* translate: 0 -30px; */
+	}
+
+	.c-file-item {
+		padding: 0;
+		margin-top: 0;
+		position: absolute;
+		height: 200px;
+
+		width: 130px;
+		background: var(--color-main);
+		border-radius: 9999px;
 		--angle: calc(360deg / 3 * var(--index) - 90deg);
-		--x: calc(cos(var(--angle)) * var(--distance));
-		--y: calc(sin(var(--angle)) * var(--distance));
-		translate: calc(var(--x) - 50%) calc(var(--y) - 50%);
+		--x: calc(cos(var(--angle)) * 100px);
+		--y: calc(sin(var(--angle)) * 100px);
+		translate: calc(var(--x)) calc(var(--y));
+		rotate: calc(var(--angle) + 90deg);
 	}
 </style>
