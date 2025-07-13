@@ -142,8 +142,28 @@
 </div>
 
 <style>
-	.c-list :global(.virtual-list-wrapper) {
+	.c-list:global(.virtual-list-wrapper) {
 		height: 100%;
+	}
+
+	:global(.virtual-list-wrapper) {
+		/* スクロールバー */
+		-webkit-overflow-scrolling: touch;
+		scrollbar-gutter: stable;
+	}
+
+	:global(.virtual-list-wrapper::-webkit-scrollbar) {
+		width: 5px;
+		height: 5px;
+	}
+
+	:global(.virtual-list-wrapper::-webkit-scrollbar-track) {
+		background: transparent;
+	}
+
+	:global(.virtual-list-wrapper::-webkit-scrollbar-thumb) {
+		background: var(--color-accent);
+		border-radius: 9999px;
 	}
 
 	.row {
