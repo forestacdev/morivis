@@ -1,5 +1,4 @@
 <script lang="ts">
-	import LabelLayerOption from './vecter_option/LabelLayerOption.svelte';
 	import LineStringOption from './vecter_option/LineStringOption.svelte';
 	import PointOption from './vecter_option/PointOption.svelte';
 	import PolygonOption from './vecter_option/PolygonOption.svelte';
@@ -44,11 +43,6 @@
 			bind:showColorOption
 		/>
 	{/if}
-
-	<!-- TODO:ラベルオプション -->
-	<!-- {#if layerEntry.format.geometryType === 'Label'}
-		<LabelLayerOption bind:layerEntry />
-	{/if} -->
 {/if}
 
 <style>

@@ -20,7 +20,7 @@ import {
 	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/style';
 
-import { getRandomCommonColor } from '$routes/map/utils/color_mapping';
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
@@ -111,7 +111,7 @@ export const createGeoJsonEntry = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
-	color: string = getRandomCommonColor()
+	color: string = getRandomColor()
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const bbox = turfBbox(data);
 
@@ -201,7 +201,7 @@ export const createVectorTileEntry = (
 	url: string,
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
-	color: string = getRandomCommonColor()
+	color: string = getRandomColor()
 ): VectorEntry<TileMetaData> | undefined => {
 	const metaData: TileMetaData = {
 		...defaultCustomMetaData,

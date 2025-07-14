@@ -10,7 +10,6 @@
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import type {
 		VectorEntryGeometryType,
-		LabelEntry,
 		GeoJsonMetaData,
 		TileMetaData,
 		VectorEntry

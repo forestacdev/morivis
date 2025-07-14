@@ -75,6 +75,7 @@ export interface PointEntry<T> extends BaseVectorEntry {
 	style: PointStyle;
 }
 
+// TODO:使用していない
 export interface LabelEntry<T> extends BaseVectorEntry {
 	metaData: T;
 	format: {
@@ -86,4 +87,4 @@ export interface LabelEntry<T> extends BaseVectorEntry {
 	style: LabelStyle;
 }
 
-export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T> | LabelEntry<T>;
+export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>

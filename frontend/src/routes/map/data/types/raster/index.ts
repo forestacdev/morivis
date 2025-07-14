@@ -176,13 +176,13 @@ export interface RasterDemStyle {
 			aspect: {
 				colorMap: ColorMapType;
 			};
-			curvature: {
-				ridgeThreshold: number;
-				valleyThreshold: number;
-				ridgeColor: string;
-				valleyColor: string;
-				colorMap: ColorMapType;
-			};
+			// curvature: {
+			// 	ridgeThreshold: number;
+			// 	valleyThreshold: number;
+			// 	ridgeColor: string;
+			// 	valleyColor: string;
+			// 	colorMap: ColorMapType;
+			// };
 		};
 	};
 }
