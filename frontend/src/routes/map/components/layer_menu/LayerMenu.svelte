@@ -80,14 +80,6 @@
 		}
 	});
 
-	isStyleEdit.subscribe((value) => {
-		if (value) {
-			isSideMenuType.set('layer');
-		} else {
-			isSideMenuType.set(null);
-		}
-	});
-
 	let is3d = $state<boolean>(false);
 	$effect(() => {
 		mapStore.toggleTerrain(is3d);
