@@ -12,7 +12,8 @@
 		showTerrainMenu,
 		selectedLayerId,
 		isStyleEdit,
-		showDataMenu
+		showDataMenu,
+		isStreetView
 	} from '$routes/stores';
 	import { isSideMenuType } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -160,132 +161,133 @@
 	});
 </script>
 
-<div
-	class="absolute left-2 top-2 z-20 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
-		? 'bg-base text-main pr-1'
-		: 'bg-main  pr-2 text-white'}"
->
-	{#if $isStyleEdit}
-		<div
-			transition:slide={{ duration: 300, axis: 'x' }}
-			class="text-accent pointer-events-auto flex w-[80px] cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-		>
-			<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-		</div>
-	{/if}
-	{#if !$isStyleEdit}
-		<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
-			{#if $isSideMenuType}
-				<button
-					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-					onclick={() => {
-						isSideMenuType.set(null);
-						showDataMenu.set(false);
-						isStyleEdit.set(false);
-					}}
-				>
-					<Icon icon="ep:back" class="h-7 w-7" />
-				</button>
-			{:else}
-				<button
-					class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-					onclick={() => showSideMenu.set(true)}
-				>
-					<Icon icon="ic:round-menu" class="h-7 w-7" />
-				</button>
-			{/if}
-		</div>
-		<div
-			transition:slide={{ duration: 300, axis: 'x' }}
-			class="h-hull w-[1px] rounded-full bg-gray-400"
-		></div>
-	{/if}
-	<div class="flex w-full items-center justify-between">
-		{#if $isSideMenuType === 'search'}
+{#if !$isStreetView}
+	<div
+		class="absolute left-2 top-2 z-20 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
+			? 'bg-base text-main pr-1'
+			: 'bg-main  pr-2 text-white'}"
+	>
+		{#if $isStyleEdit}
 			<div
 				transition:slide={{ duration: 300, axis: 'x' }}
-				class="w-title-bar text-main pointer-events-auto relative shrink-0"
+				class="text-accent pointer-events-auto flex w-[80px] cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
 			>
-				<Geocoder
-					{layerEntries}
-					bind:results
-					bind:inputSearchWord
-					searchFeature={(v) => searchFeature(v)}
-				/>
+				<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
 			</div>
 		{/if}
-		{#if $isSideMenuType === 'search' || !$isSideMenuType}
-			<button
-				transition:slide={{ duration: 300, axis: 'x' }}
-				onclick={toggleSearchMenu}
-				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-				'search'
-					? 'text-accent scale-120'
-					: ''}"
-			>
-				<Icon icon="stash:search-solid" class="h-7 w-7" />
-			</button>
-		{/if}
-
-		{#if ($isSideMenuType === 'layer' && !$isStyleEdit) || !$isSideMenuType}
-			<button
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-				'layer'
-					? 'text-accent scale-120'
-					: ''}"
-				onclick={toggleLayerMenu}
-			>
-				<Icon icon="ic:round-layers" class="h-7 w-7" />
-			</button>
-		{/if}
-		{#if !$isSideMenuType}
-			<button
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-				'layer'
-					? 'text-accent scale-120'
-					: ''}"
-				onclick={toggleDataMenu}
-			>
-				<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
-			</button>
-		{/if}
-		{#if $isSideMenuType === 'layer'}
-			<div
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="w-title-bar flex shrink-0 items-center justify-center text-nowrap text-center text-lg"
-			>
-				{#if !$isStyleEdit && !$showDataMenu}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
-				{/if}
-
-				<div>データ</div>
-
-				{#if !$isStyleEdit && !$showDataMenu}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
-				{/if}
-				{#if $isStyleEdit}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
-				{/if}
-				{#if $showDataMenu}
-					<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>
-				{/if}
-				{#if $isStyleEdit || $showDataMenu}
+		{#if !$isStyleEdit}
+			<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
+				{#if $isSideMenuType}
 					<button
-						transition:slide={{ duration: 300, axis: 'x' }}
-						class="hover:text-accent pointer-events-auto absolute right-2 flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+						class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
 						onclick={() => {
-							isStyleEdit.set(false);
+							isSideMenuType.set(null);
 							showDataMenu.set(false);
+							isStyleEdit.set(false);
 						}}
 					>
-						<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
+						<Icon icon="ep:back" class="h-7 w-7" />
+					</button>
+				{:else}
+					<button
+						class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
+						onclick={() => showSideMenu.set(true)}
+					>
+						<Icon icon="ic:round-menu" class="h-7 w-7" />
 					</button>
 				{/if}
 			</div>
+			<div
+				transition:slide={{ duration: 300, axis: 'x' }}
+				class="h-hull w-[1px] rounded-full bg-gray-400"
+			></div>
 		{/if}
-		<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
+		<div class="flex w-full items-center justify-between">
+			{#if $isSideMenuType === 'search'}
+				<div
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="w-title-bar text-main pointer-events-auto relative shrink-0"
+				>
+					<Geocoder
+						{layerEntries}
+						bind:results
+						bind:inputSearchWord
+						searchFeature={(v) => searchFeature(v)}
+					/>
+				</div>
+			{/if}
+			{#if $isSideMenuType === 'search' || !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					onclick={toggleSearchMenu}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'search'
+						? 'text-accent scale-120'
+						: ''}"
+				>
+					<Icon icon="stash:search-solid" class="h-7 w-7" />
+				</button>
+			{/if}
+
+			{#if ($isSideMenuType === 'layer' && !$isStyleEdit) || !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'layer'
+						? 'text-accent scale-120'
+						: ''}"
+					onclick={toggleLayerMenu}
+				>
+					<Icon icon="ic:round-layers" class="h-7 w-7" />
+				</button>
+			{/if}
+			{#if !$isSideMenuType}
+				<button
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					'layer'
+						? 'text-accent scale-120'
+						: ''}"
+					onclick={toggleDataMenu}
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
+				</button>
+			{/if}
+			{#if $isSideMenuType === 'layer'}
+				<div
+					transition:slide={{ duration: 300, axis: 'x' }}
+					class="w-title-bar flex shrink-0 items-center justify-center text-nowrap text-center text-lg"
+				>
+					{#if !$isStyleEdit && !$showDataMenu}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
+					{/if}
+
+					<div>データ</div>
+
+					{#if !$isStyleEdit && !$showDataMenu}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
+					{/if}
+					{#if $isStyleEdit}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
+					{/if}
+					{#if $showDataMenu}
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>
+					{/if}
+					{#if $isStyleEdit || $showDataMenu}
+						<button
+							transition:slide={{ duration: 300, axis: 'x' }}
+							class="hover:text-accent pointer-events-auto absolute right-2 flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+							onclick={() => {
+								isStyleEdit.set(false);
+								showDataMenu.set(false);
+							}}
+						>
+							<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
+						</button>
+					{/if}
+				</div>
+			{/if}
+			<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
@@ -297,7 +299,7 @@
 					<Icon icon="fa6-solid:pen" class="h-5 w-5" />
 				</button>
 			{/if} -->
-		<!-- {#if $isSideMenuType === 'draw'}
+			<!-- {#if $isSideMenuType === 'draw'}
 				<div
 					transition:slide={{ duration: 300, axis: 'x' }}
 					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
@@ -305,8 +307,9 @@
 					描画ツール
 				</div>
 			{/if} -->
+		</div>
 	</div>
-</div>
+{/if}
 
 <!-- <li class="absolute right-0 top-0 flex">
 	<button

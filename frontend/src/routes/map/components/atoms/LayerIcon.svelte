@@ -56,8 +56,6 @@
 				<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
 			{:else if layerEntry.format.geometryType === 'Polygon'}
 				<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
-			{:else if layerEntry.format.geometryType === 'Label'}
-				<Icon icon="mynaui:label-solid" class="pointer-events-none" width={30} />
 			{/if}
 		{/if}
 	{/await}

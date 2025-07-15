@@ -14,6 +14,7 @@
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 
 	import { gsap } from 'gsap';
+	import { getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -84,6 +85,22 @@
 	$effect(() => {
 		mapStore.toggleTerrain(is3d);
 	});
+
+	let pointEntries = $derived.by(() => {
+		return layerEntries.filter((layer) => getLayerType(layer) === 'point');
+	});
+
+	let lineEntries = $derived.by(() => {
+		return layerEntries.filter((layer) => getLayerType(layer) === 'line');
+	});
+
+	let polygonEntries = $derived.by(() => {
+		return layerEntries.filter((layer) => getLayerType(layer) === 'polygon');
+	});
+
+	let rasterEntries = $derived.by(() => {
+		return layerEntries.filter((layer) => getLayerType(layer) === 'raster');
+	});
 </script>
 
 <!-- レイヤーメニュー -->
@@ -99,25 +116,74 @@
 	style={`width: ${isSmall ? '90px' : '400px'};transition: width transform, translate, scale, rotate 0.2s ease-in-out;`}
 >
 	<div
-		class="flex grow flex-col gap-1 overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
+		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
-		{#each layerEntries as layerEntry, i (layerEntry.id)}
-			<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-				<LayerSlot
-					{isSmall}
-					bind:layerEntry={layerEntries[i]}
-					bind:showDataEntry
-					bind:tempLayerEntries
-					bind:enableFlip
-				/>
-			</div>
-		{/each}
+		{#if pointEntries.length > 0}
+			{#each pointEntries as layerEntry, i (layerEntry.id)}
+				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<LayerSlot
+						index={i}
+						layerType={'point'}
+						{isSmall}
+						bind:layerEntry={pointEntries[i]}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+					/>
+				</div>
+			{/each}
+		{/if}
+		{#if lineEntries.length > 0}
+			{#each lineEntries as layerEntry, i (layerEntry.id)}
+				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<LayerSlot
+						index={i}
+						layerType={'line'}
+						{isSmall}
+						bind:layerEntry={lineEntries[i]}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+					/>
+				</div>
+			{/each}
+		{/if}
+		{#if polygonEntries.length > 0}
+			{#each polygonEntries as layerEntry, i (layerEntry.id)}
+				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<LayerSlot
+						index={i}
+						layerType={'polygon'}
+						{isSmall}
+						bind:layerEntry={polygonEntries[i]}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+					/>
+				</div>
+			{/each}
+		{/if}
+		{#if rasterEntries.length > 0}
+			{#each rasterEntries as layerEntry, i (layerEntry.id)}
+				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+					<LayerSlot
+						index={i}
+						layerType={'raster'}
+						{isSmall}
+						bind:layerEntry={rasterEntries[i]}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+					/>
+				</div>
+			{/each}
+		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
 			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
 				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
-				<Switch label="3D" bind:value={is3d} />
+				<Switch label="3D地形" bind:value={is3d} />
 				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			</div>
 			<div class="flex gap-4 p-2">

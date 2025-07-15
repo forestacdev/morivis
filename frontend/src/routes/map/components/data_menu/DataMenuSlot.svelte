@@ -130,14 +130,20 @@
 		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 shrink-0">
 			{#if isAdded}
 				<button
-					onclick={() => deleteData(dataEntry.id)}
+					onclick={(e) => {
+						e.stopPropagation();
+						deleteData(dataEntry.id);
+					}}
 					class="c-btn-cancel flex items-center gap-2 px-4"
 				>
 					<Icon icon="ic:round-minus" class=" h-8 w-8" />
 				</button>
 			{:else}
 				<button
-					onclick={() => addData(dataEntry.id)}
+					onclick={(e) => {
+						e.stopPropagation();
+						addData(dataEntry.id);
+					}}
 					class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
 				>
 					<Icon icon="material-symbols:add" class=" h-8 w-8" />

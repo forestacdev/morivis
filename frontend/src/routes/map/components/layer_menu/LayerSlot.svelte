@@ -14,8 +14,11 @@
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
+	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 
 	interface Props {
+		index: number;
+		layerType: LayerType;
 		layerEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
@@ -24,6 +27,8 @@
 	}
 
 	let {
+		index,
+		layerType,
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
@@ -156,6 +161,7 @@
 	// レイヤー表示範囲をチェック
 	// TODO: bboxがないデータの場合
 	const checkRange = (_state: MapState) => {
+		if (!layerEntry) return;
 		let z = _state.zoom;
 
 		if (
@@ -208,7 +214,7 @@
 </script>
 
 <div
-	class="relative flex flex-col p-2
+	class="relative flex h-[80px] w-full items-center gap-2
 		transition-colors {isDragging ? 'c-dragging-style' : ''} {$selectedLayerId === layerEntry.id &&
 	isSmall
 		? 'c-fog'
@@ -223,10 +229,24 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
+	{#if !$isStyleEdit && !$showDataMenu}
+		{#if index === 0}
+			<div class="relative grid h-full w-[50px] place-items-center">
+				<div class="bounded-full absolute aspect-square rounded-full bg-white p-2">
+					<Icon icon={getLayerIcon(layerType)} class="h-8 w-8" />
+				</div>
+				<div class="h-full w-[2px] bg-white"></div>
+			</div>
+		{:else}
+			<div class="relative grid h-full w-[50px] place-items-center">
+				<div class="h-full w-[2px] bg-white"></div>
+			</div>
+		{/if}
+	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative cursor-move select-none text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100
-			{$selectedLayerId === layerEntry.id && isSmall ? 'bg-main' : 'bg-black'}"
+		class="c-dragging-style translate-z-0 relative grow cursor-move select-none text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100
+			{$selectedLayerId === layerEntry.id && $isStyleEdit ? 'bg-main h-full' : 'bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
@@ -293,15 +313,15 @@
 				{/if}
 			</div>
 		</div>
+		<div
+			class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {!layerEntry
+				.style.visible
+				? 'bg-gray-500'
+				: isLayerInRange
+					? 'bg-green-500'
+					: 'bg-red-500'}"
+		></div>
 	</div>
-	<div
-		class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {!layerEntry
-			.style.visible
-			? 'bg-gray-500'
-			: isLayerInRange
-				? 'bg-green-500'
-				: 'bg-red-500'}"
-	></div>
 </div>
 
 <style>
