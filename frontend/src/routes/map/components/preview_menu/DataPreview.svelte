@@ -6,6 +6,8 @@
 	import { showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
+	import { get } from 'svelte/store';
+	import { getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -21,7 +23,12 @@
 			if (!geoDataEntries.some((entry) => entry.id === copy.id)) {
 				tempLayerEntries = [...tempLayerEntries, copy];
 			}
-
+			const layerType = getLayerType(copy);
+			if (!layerType) {
+				showNotification(`レイヤータイプが不明です: ${copy.id}`, 'error');
+				return;
+			}
+			activeLayerIdsStore.addType(copy.id, layerType);
 			activeLayerIdsStore.add(copy.id);
 			showNotification(`${copy.metaData.name}を追加しました`, 'success');
 			showDataMenu.set(false);

@@ -72,6 +72,7 @@ export const geoDataEntries = (() => {
 	return initData(entries);
 })();
 
+// TODO カスタムデータの削除処理
 export class EntryIdToTypeMap {
 	private static map: Map<string, LayerType> = new Map(
 		entries.map((geoDataEntries) => [geoDataEntries.id, getLayerType(geoDataEntries) ?? 'raster'])
@@ -83,6 +84,12 @@ export class EntryIdToTypeMap {
 
 	static has(id: string): boolean {
 		return this.map.has(id);
+	}
+
+	static add(id: string, type: LayerType): void {
+		if (!this.map.has(id)) {
+			this.map.set(id, type);
+		}
 	}
 
 	static keys(): string[] {

@@ -14,6 +14,9 @@ const TYPE_ORDER: LayerType[] = ['point', 'line', 'polygon', 'raster'];
 
 const sortLayerIds = (ids: string[]): string[] => {
 	return ids.sort((a, b) => {
+		if (!EntryIdToTypeMap.has(a) || !EntryIdToTypeMap.has(b)) {
+			console.warn(`EntryIdToTypeMap does not have entry for ${a} or ${b}`);
+		}
 		const typeA = EntryIdToTypeMap.get(a) || 'raster';
 		const typeB = EntryIdToTypeMap.get(b) || 'raster';
 
@@ -49,6 +52,10 @@ const createLayerStore = () => {
 		has: (id: string) => {
 			// IDがストアに存在するかチェック
 			return get(store).includes(id);
+		},
+
+		addType: (id: string, type: LayerType) => {
+			EntryIdToTypeMap.add(id, type);
 		},
 
 		// 削除
