@@ -1,6 +1,84 @@
+import { MAP_SPRITE_DATA_PATH, MAP_FONT_DATA_PATH } from '$routes/constants';
+import type { GeoDataEntry } from '$routes/map/data/types';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import maplibregl from 'maplibre-gl';
+import { createLayersItems } from '$routes/map/utils/layers';
+import { createSourcesItems } from '$routes/map/utils/sources';
+import { CoverImageManager } from '../index';
+
+export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
+	const url = CoverImageManager.get(_layerEntry.id);
+	if (url) {
+		return { url };
+	}
+
+	const minimumEntry = {
+		..._layerEntry,
+		metaData: {
+			..._layerEntry.metaData,
+			bounds: _layerEntry.metaData.xyzImageTile
+				? tilebelt.tileToBBOX(
+						Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
+					)
+				: _layerEntry.metaData.bounds,
+			maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
+		}
+	} as GeoDataEntry;
+	// Blob URL生成（クリーンアップが必要）
+	let sources = await createSourcesItems([minimumEntry], 'preview');
+	const layers = await createLayersItems([minimumEntry], 'preview');
+
+	const style: maplibregl.StyleSpecification = {
+		version: 8,
+		sprite: MAP_SPRITE_DATA_PATH,
+		glyphs: MAP_FONT_DATA_PATH,
+		sources: {
+			mierune_mono: {
+				type: 'raster',
+				tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+				tileSize: 256,
+				minzoom: 0,
+				maxzoom: minimumEntry.metaData.maxZoom ?? 18,
+				bounds: minimumEntry.metaData.bounds,
+				attribution:
+					'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+			},
+			...sources
+		},
+		layers: [
+			{
+				id: 'mierune_mono',
+				type: 'raster',
+				source: 'mierune_mono'
+			},
+			...layers
+		]
+	};
+
+	const options: MapImageOptions = {
+		name: _layerEntry.id,
+		width: 512,
+		height: 512,
+		bearing: 0,
+		pitch: 0,
+		bounds: _layerEntry.metaData.bounds,
+		timeout: 5000
+	};
+
+	if (_layerEntry.metaData.xyzImageTile) {
+		options.xyz = _layerEntry.metaData.xyzImageTile;
+	}
+
+	const result = await generateMapImageDOM(style, options);
+
+	CoverImageManager.add(_layerEntry.id, result.blobUrl);
+
+	// Blob URLとクリーンアップ関数を返す
+	return {
+		url: result.blobUrl
+	};
+};
 
 export interface MapImageOptions {
 	name: string;
@@ -21,6 +99,31 @@ export interface MapImageResult {
 	revokeBlobUrl: () => void;
 }
 
+const container = document.createElement('div');
+container.style.width = `512px`;
+container.style.height = `512px`;
+container.style.position = 'absolute';
+container.style.top = '-9999px';
+container.style.left = '-9999px';
+container.style.top = '0px';
+container.style.left = '0px';
+container.style.zIndex = '1000'; // 背景に配置
+container.style.pointerEvents = 'none'; // クリックイベントを無視
+document.body.appendChild(container);
+
+// Mapインスタンスを作成
+const map = new maplibregl.Map({
+	container,
+	style: {
+		version: 8,
+		sources: {},
+		layers: []
+	},
+	zoom: 0,
+	interactive: false,
+	attributionControl: false
+});
+
 // TODO : OffscreenCanvasを使用したMapLibre画像生成関数の実装
 /**
  * DOM使用のMapLibre画像生成関数
@@ -31,8 +134,8 @@ export async function generateMapImageDOM(
 ): Promise<MapImageResult> {
 	const {
 		name,
-		width = 256,
-		height = 256,
+		width = 512,
+		height = 512,
 		center,
 		bearing = 0,
 		pitch = 0,
@@ -42,89 +145,65 @@ export async function generateMapImageDOM(
 	} = options;
 
 	return new Promise((resolve, reject) => {
-		const container = document.createElement('div');
-		container.style.width = `${width}px`;
-		container.style.height = `${height}px`;
-		container.style.position = 'absolute';
-		container.style.top = '-9999px';
-		container.style.left = '-9999px';
-		document.body.appendChild(container);
-
 		// タイムアウト設定
-		const timeoutId = setTimeout(() => {
-			cleanup();
-			reject(new Error('Map image generation timed out'));
-		}, timeout);
 
 		const mapBounds = xyz
 			? tilebelt.tileToBBOX(Object.values(xyz) as [number, number, number])
 			: bounds;
 
-		// Mapインスタンスを作成
-		const map = new maplibregl.Map({
-			container,
-			style,
-			bearing,
-			pitch,
-			bounds: mapBounds,
-			interactive: false,
-			attributionControl: false
+		map.setBearing(bearing);
+
+		map.setPitch(pitch);
+
+		map.fitBounds(mapBounds, {
+			duration: 0 // アニメーションなし
 		});
 
-		// クリーンアップ関数
-		const cleanup = () => {
-			clearTimeout(timeoutId);
-			if (map && !map._removed) {
-				map.remove();
-			}
-			if (container && container.parentNode) {
-				container.parentNode.removeChild(container);
-			}
+		// Mapの設定
+		map.setStyle(style);
+		map.resize();
+
+		// エラーハンドリング
+		const errorHandler = (error: any) => {
+			reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
 		};
 
 		// エラーハンドリング
 		map.on('error', (error) => {
-			cleanup();
 			reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
 		});
 
 		// マップが完全に読み込まれたら画像を生成
-		map.on('load', () => {
+		map.on('styledata', () => {
 			try {
-				setTimeout(() => {
+				map.setBearing(bearing);
+				map.setPitch(pitch);
+				map.fitBounds(mapBounds, {
+					duration: 0
+				});
+
+				// idle イベントで画像生成（すべてのタイルが読み込まれるまで待つ）
+				const generateImage = () => {
 					try {
 						const canvas = map.getCanvas();
 						if (!canvas) {
 							throw new Error('Canvas not found');
 						}
 
-						// キャンバスをクローンして返す
-						const clonedCanvas = document.createElement('canvas');
-						const ctx = clonedCanvas.getContext('2d');
-						if (!ctx) {
-							throw new Error('Could not get 2D context');
-						}
-
-						clonedCanvas.width = canvas.width;
-						clonedCanvas.height = canvas.height;
-						ctx.drawImage(canvas, 0, 0);
-
-						// Blobを生成
-						clonedCanvas.toBlob(
+						// 直接キャンバスから画像を生成
+						canvas.toBlob(
 							(blob) => {
+								map.off('error', errorHandler);
+								map.off('idle', generateImage);
+
 								if (!blob) {
-									cleanup();
 									reject(new Error('Failed to generate blob'));
 									return;
 								}
 
-								// ファイル名を生成（.jpg拡張子付き）
 								const fileName = `${name}.jpg`;
-
-								// Blob URLを作成（img srcに使用するため）
 								const blobUrl = URL.createObjectURL(blob);
 
-								// Blob URLをクリーンアップする関数
 								const revokeBlobUrl = () => {
 									URL.revokeObjectURL(blobUrl);
 								};
@@ -135,21 +214,26 @@ export async function generateMapImageDOM(
 									revokeBlobUrl
 								};
 
-								cleanup();
 								resolve(result);
 							},
 							'image/jpeg',
-							1.0 // JPEGの品質を最大に設定
+							1.0
 						);
 					} catch (error) {
-						cleanup();
+						map.off('error', errorHandler);
+						map.off('idle', generateImage);
 						reject(error);
 					}
-				}, 1000);
+				};
+
+				// idle イベントで画像生成をトリガー
+				map.on('idle', generateImage);
 			} catch (error) {
-				cleanup();
 				reject(error);
 			}
 		});
+
+		// Maplibre GL JS のレンダリングをトリガー
+		map.triggerRepaint();
 	});
 }

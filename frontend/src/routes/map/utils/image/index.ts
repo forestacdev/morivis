@@ -3,12 +3,12 @@ import { createSourcesItems } from '$routes/map/utils/sources';
 import type { GeoDataEntry } from '$routes/map/data/types';
 
 import { createLayersItems } from '$routes/map/utils/layers';
-import { generateMapImageDOM, type MapImageOptions } from './vector';
+import { generateMapImageDOM, generateVectorImageUrl, type MapImageOptions } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 /**   画像の管理クラス */
-class CoverImageManager {
+export class CoverImageManager {
 	private static readonly MAX_SIZE = 100;
 	private static images: Map<string, string> = new Map();
 
@@ -127,76 +127,8 @@ export const getLayerImage = async (
 				return url ? { url } : undefined;
 			}
 		} else if (_layerEntry.type === 'vector') {
-			const url = CoverImageManager.get(_layerEntry.id);
-			if (url) {
-				return { url };
-			}
-
-			const minimumEntry = {
-				..._layerEntry,
-				metaData: {
-					..._layerEntry.metaData,
-					bounds: _layerEntry.metaData.xyzImageTile
-						? tilebelt.tileToBBOX(
-								Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
-							)
-						: _layerEntry.metaData.bounds,
-					maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
-				}
-			} as GeoDataEntry;
-			// Blob URL生成（クリーンアップが必要）
-			let sources = await createSourcesItems([minimumEntry], 'preview');
-			const layers = await createLayersItems([minimumEntry], 'preview');
-
-			const style: maplibregl.StyleSpecification = {
-				version: 8,
-				sprite: MAP_SPRITE_DATA_PATH,
-				glyphs: MAP_FONT_DATA_PATH,
-				sources: {
-					mierune_mono: {
-						type: 'raster',
-						tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-						tileSize: 256,
-						minzoom: 0,
-						maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-						bounds: minimumEntry.metaData.bounds,
-						attribution:
-							'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-					},
-					...sources
-				},
-				layers: [
-					{
-						id: 'mierune_mono',
-						type: 'raster',
-						source: 'mierune_mono'
-					},
-					...layers
-				]
-			};
-
-			const options: MapImageOptions = {
-				name: _layerEntry.id,
-				width: 512,
-				height: 512,
-				bearing: 0,
-				pitch: 0,
-				bounds: _layerEntry.metaData.bounds,
-				timeout: 5000
-			};
-
-			if (_layerEntry.metaData.xyzImageTile) {
-				options.xyz = _layerEntry.metaData.xyzImageTile;
-			}
-
-			const result = await generateMapImageDOM(style, options);
-
-			CoverImageManager.add(_layerEntry.id, result.blobUrl);
-
-			// Blob URLとクリーンアップ関数を返す
-			return {
-				url: result.blobUrl
-			};
+			const url = await generateVectorImageUrl(_layerEntry);
+			return url ? { url } : undefined;
 		} else {
 			// それ以外のタイプは未対応
 			console.warn(`Unsupported layer type: ${_layerEntry.type}`);
