@@ -124,7 +124,7 @@
 		{/each}
 		{#if !$isStyleEdit && !$showDataMenu}
 			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
-				<Switch label="ラベル" bind:value={$showLabelLayer} />
+				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
 				<Switch label="3D" bind:value={is3d} />
 				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			</div>
