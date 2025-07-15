@@ -27,6 +27,8 @@ import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/ras
 import { WEB_MERCATOR_WORLD_BBOX } from './location_bbox';
 import { isBboxValid } from '$routes/map/utils/map';
 import { showNotification } from '$routes/stores/notification';
+import type { LayerType } from '$routes/map/utils/entries';
+import { getLayerType } from '$routes/map/utils/entries';
 
 // 共通の初期化処理
 // visible を true にする
@@ -69,6 +71,14 @@ export const geoDataEntries = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
+
+export const GeoDataLayerIdToTypeDict: Record<string, LayerType> = geoDataEntries
+	.map((entry) => {
+		return {
+			[entry.id]: getLayerType(entry) ?? 'raster'
+		};
+	})
+	.reduce((acc, cur) => ({ ...acc, ...cur }), {});
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (

@@ -627,6 +627,7 @@ const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpec
 };
 
 // ポイントのicon用レイヤーの作成
+// TODO: 廃止予定
 const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerSpecification => {
 	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
@@ -757,7 +758,7 @@ export const createLayersItems = (
 	const lineLayerItems: LayerSpecification[] = [];
 	const fillLayerItems: LayerSpecification[] = [];
 	const rasterLayerItems: LayerSpecification[] = [];
-	const vectorLayerItems: LayerSpecification[] = [];
+	// const vectorLayerItems: LayerSpecification[] = [];
 	const rasterAndVectorLayerItems: LayerSpecification[] = [];
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
@@ -791,7 +792,7 @@ export const createLayersItems = (
 					if (interaction.clickable) clickableRaster.push(layerId);
 
 					if (style.type === 'basemap') {
-						rasterAndVectorLayerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -804,7 +805,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'categorical') {
-						rasterAndVectorLayerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -812,7 +813,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'dem') {
-						rasterAndVectorLayerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -820,7 +821,7 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'tiff') {
-						rasterAndVectorLayerItems.push({
+						rasterLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {
@@ -852,24 +853,36 @@ export const createLayersItems = (
 					}
 
 					const vectorLayer = createVectorLayer(layer, style);
-					if (vectorLayer) {
-						rasterAndVectorLayerItems.push(vectorLayer);
-					}
+					if (!vectorLayer) return;
 
-					// ポリゴンの塗りつぶしパターン
+					// ポリゴン
 					if (style.type === 'fill') {
+						fillLayerItems.push(vectorLayer);
+						// ポリゴンの塗りつぶしパターン
 						const fillPatternLayer = createFillPatternLayer(layer, style);
 						if (fillPatternLayer) {
-							rasterAndVectorLayerItems.push(fillPatternLayer);
+							fillLayerItems.push(fillPatternLayer);
+						}
+
+						// ポリゴンのアウトライン
+						if (style.outline.show) {
+							const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
+							fillLayerItems.push(lineLayer);
 						}
 					}
 
-					// ポリゴンのアウトライン
-					if (style.type === 'fill' && style.outline.show) {
-						const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
-						rasterAndVectorLayerItems.push(lineLayer);
+					// ライン
+					if (style.type === 'line') {
+						lineLayerItems.push(vectorLayer);
 					}
 
+					// ポイント
+					if (style.type === 'circle') {
+						console.log('circle style', style);
+						circleLayerItems.push(vectorLayer);
+					}
+
+					// TODO マーカータイプの廃止
 					if (
 						style.labels.show &&
 						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
@@ -919,7 +932,10 @@ export const createLayersItems = (
 	return [
 		...baseMap,
 		...mapLineItems,
-		...rasterAndVectorLayerItems,
+		...rasterLayerItems,
+		...fillLayerItems,
+		...lineLayerItems,
+		...circleLayerItems,
 		...streetViewLayers,
 		...cloudLayer,
 		...mapLabelItems,
