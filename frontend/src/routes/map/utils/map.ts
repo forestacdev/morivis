@@ -116,6 +116,7 @@ export const getBoundingBoxCorners = (bbox: BBox): Coordinates => {
 	return corners;
 };
 
+/** bboxをポリゴンの座標に変換 */
 export const bboxToPolygonCoordinates = (bbox: BBox): number[][][] => {
 	return [
 		[
@@ -144,6 +145,51 @@ export const detectLongitudeDomain = (
 	if (first < 0 || last < 0) return '180';
 	if (first > 180 || last > 180) return '360';
 	return 'indeterminate'; // 両方 0〜180 の場合
+};
+
+/**
+ * bboxを正規化する
+ * @param bounds - The bounds as [minLng, minLat, maxLng, maxLat].
+ * @returns Normalized bounds as [minLng, minLat, maxLng, maxLat].
+ */
+export const normalizeBounds = (
+	bounds: [number, number, number, number]
+): [number, number, number, number] => {
+	// 緯度をWebメルカトル（EPSG:3857）の制限範囲内にクランプする関数
+	const clampLatitude = (lat: number): number => {
+		return Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, lat));
+	};
+
+	// 経度を正規化する関数（-180 ~ 180の範囲に収める）
+	const normalizeLongitude = (lng: number): number => {
+		// 経度を-180から180の範囲に正規化
+		lng = lng % 360;
+		if (lng > 180) {
+			lng -= 360;
+		} else if (lng < -180) {
+			lng += 360;
+		}
+		return lng;
+	};
+
+	// 緯度を制限範囲内にクランプ
+	const swLat = clampLatitude(bounds[1]);
+	const neLat = clampLatitude(bounds[3]);
+
+	// 経度を正規化
+	let swLng = normalizeLongitude(bounds[0]);
+	let neLng = normalizeLongitude(bounds[2]);
+
+	// 180度線をまたぐ場合の処理
+	if (swLng > neLng) {
+		// 地図が180度線をまたいでいる場合は、西側の境界を使用
+		swLng = WEB_MERCATOR_MIN_LNG;
+		neLng = WEB_MERCATOR_MAX_LNG;
+	}
+
+	const bbox = [swLng, swLat, neLng, neLat] as [number, number, number, number];
+
+	return bbox;
 };
 
 /**
