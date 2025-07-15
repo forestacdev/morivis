@@ -72,13 +72,23 @@ export const geoDataEntries = (() => {
 	return initData(entries);
 })();
 
-export const GeoDataLayerIdToTypeDict: Record<string, LayerType> = geoDataEntries
-	.map((entry) => {
-		return {
-			[entry.id]: getLayerType(entry) ?? 'raster'
-		};
-	})
-	.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+export class EntryIdToTypeMap {
+	private static map: Map<string, LayerType> = new Map(
+		entries.map((geoDataEntries) => [geoDataEntries.id, getLayerType(geoDataEntries) ?? 'raster'])
+	);
+
+	static get(id: string): LayerType | undefined {
+		return this.map.get(id);
+	}
+
+	static has(id: string): boolean {
+		return this.map.has(id);
+	}
+
+	static keys(): string[] {
+		return Array.from(this.map.keys());
+	}
+}
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (

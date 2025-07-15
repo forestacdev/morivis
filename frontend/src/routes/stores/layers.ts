@@ -1,5 +1,5 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { GeoDataLayerIdToTypeDict } from '$routes/map/data';
+import { EntryIdToTypeMap } from '$routes/map/data';
 import { writable, derived, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
@@ -14,8 +14,8 @@ const TYPE_ORDER: LayerType[] = ['point', 'line', 'polygon', 'raster'];
 
 const sortLayerIds = (ids: string[]): string[] => {
 	return ids.sort((a, b) => {
-		const typeA = GeoDataLayerIdToTypeDict[a] || 'raster';
-		const typeB = GeoDataLayerIdToTypeDict[b] || 'raster';
+		const typeA = EntryIdToTypeMap.get(a) || 'raster';
+		const typeB = EntryIdToTypeMap.get(b) || 'raster';
 
 		const indexA = TYPE_ORDER.indexOf(typeA);
 		const indexB = TYPE_ORDER.indexOf(typeB);
