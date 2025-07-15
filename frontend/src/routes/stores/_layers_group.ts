@@ -151,9 +151,7 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 	if (_dataEntry.type === 'raster') {
 		return 'raster';
 	} else if (_dataEntry.type === 'vector') {
-		if (_dataEntry.format.geometryType === 'Label') {
-			return 'label';
-		} else if (_dataEntry.format.geometryType === 'Point') {
+		if (_dataEntry.format.geometryType === 'Point') {
 			return 'point';
 		} else if (_dataEntry.format.geometryType === 'LineString') {
 			return 'line';
