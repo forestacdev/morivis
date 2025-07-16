@@ -26,10 +26,84 @@ export interface MapImageResult {
 	revokeBlobUrl: () => void;
 }
 
-// シンプルなキュー管理
-class SimpleQueue {
+// 複数のMapインスタンスを管理するクラス
+class MapInstancePool {
+	private instances: maplibregl.Map[] = [];
+	private availableInstances: maplibregl.Map[] = [];
+	private readonly maxInstances: number;
+
+	constructor(maxInstances: number = 2) {
+		this.maxInstances = maxInstances;
+		this.initializeInstances();
+	}
+
+	private initializeInstances() {
+		for (let i = 0; i < this.maxInstances; i++) {
+			const container = document.createElement('div');
+			container.style.width = '512px';
+			container.style.height = '512px';
+			container.style.position = 'absolute';
+			container.style.top = '-9999px';
+			container.style.left = '-9999px';
+			container.id = `map-instance-${i}`;
+			document.body.appendChild(container);
+
+			const map = new maplibregl.Map({
+				container,
+				style: {
+					version: 8,
+					sources: {},
+					layers: []
+				},
+				zoom: 0,
+				interactive: false,
+				attributionControl: false
+			});
+
+			this.instances.push(map);
+			this.availableInstances.push(map);
+		}
+	}
+
+	async acquireInstance(): Promise<maplibregl.Map> {
+		return new Promise((resolve) => {
+			const checkAvailable = () => {
+				if (this.availableInstances.length > 0) {
+					const instance = this.availableInstances.pop()!;
+					resolve(instance);
+				} else {
+					// 100ms後に再チェック
+					setTimeout(checkAvailable, 100);
+				}
+			};
+			checkAvailable();
+		});
+	}
+
+	releaseInstance(instance: maplibregl.Map) {
+		this.availableInstances.push(instance);
+	}
+
+	destroy() {
+		this.instances.forEach((instance) => {
+			const container = instance.getContainer();
+			instance.remove();
+			container.remove();
+		});
+		this.instances = [];
+		this.availableInstances = [];
+	}
+}
+
+// 並列処理対応のキュー管理
+class ParallelQueue {
 	private queue: (() => Promise<any>)[] = [];
-	private isProcessing = false;
+	private activeCount = 0;
+	private readonly maxConcurrency: number;
+
+	constructor(maxConcurrency: number = 2) {
+		this.maxConcurrency = maxConcurrency;
+	}
 
 	async add<T>(task: () => Promise<T>): Promise<T> {
 		return new Promise((resolve, reject) => {
@@ -46,11 +120,11 @@ class SimpleQueue {
 	}
 
 	private async processNext() {
-		if (this.isProcessing || this.queue.length === 0) {
+		if (this.activeCount >= this.maxConcurrency || this.queue.length === 0) {
 			return;
 		}
 
-		this.isProcessing = true;
+		this.activeCount++;
 		const task = this.queue.shift()!;
 
 		try {
@@ -59,43 +133,19 @@ class SimpleQueue {
 			console.error('Queue task error:', error);
 		}
 
-		this.isProcessing = false;
+		this.activeCount--;
 		this.processNext(); // 次のタスクを処理
 	}
 }
 
-// キューインスタンス
-const imageQueue = new SimpleQueue();
-
-const container = document.createElement('div');
-container.style.width = `512px`;
-container.style.height = `512px`;
-container.style.position = 'absolute';
-container.style.top = '-9999px';
-container.style.left = '-9999px';
-// container.style.top = '0px';
-// container.style.left = '0px';
-// container.style.zIndex = '1000';
-// container.style.pointerEvents = 'none';
-document.body.appendChild(container);
-
-// Mapインスタンスを作成
-const map = new maplibregl.Map({
-	container,
-	style: {
-		version: 8,
-		sources: {},
-		layers: []
-	},
-	zoom: 0,
-	interactive: false,
-	attributionControl: false
-});
+// インスタンスプールとキューを初期化
+const mapPool = new MapInstancePool(2); // 2つのMapインスタンス
+const parallelQueue = new ParallelQueue(2); // 最大2つの並列処理
 
 /**
- * DOM使用のMapLibre画像生成関数（内部実装）
+ * 並列処理対応のMapLibre画像生成関数（内部実装）
  */
-async function _generateMapImageDOM(
+async function _generateMapImageParallel(
 	style: maplibregl.StyleSpecification | string,
 	options = {} as MapImageOptions
 ): Promise<MapImageResult> {
@@ -110,6 +160,9 @@ async function _generateMapImageDOM(
 		xyz,
 		timeout = 10000
 	} = options;
+
+	// プールからMapインスタンスを取得
+	const map = await mapPool.acquireInstance();
 
 	return new Promise((resolve, reject) => {
 		const mapBounds = xyz
@@ -129,6 +182,7 @@ async function _generateMapImageDOM(
 		// エラーハンドリング
 		const errorHandler = (error: any) => {
 			cleanup();
+			mapPool.releaseInstance(map); // インスタンスを解放
 			reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
 		};
 
@@ -149,6 +203,7 @@ async function _generateMapImageDOM(
 				canvas.toBlob(
 					(blob) => {
 						cleanup();
+						mapPool.releaseInstance(map); // インスタンスを解放
 
 						if (!blob) {
 							reject(new Error('Failed to generate blob'));
@@ -175,6 +230,7 @@ async function _generateMapImageDOM(
 				);
 			} catch (error) {
 				cleanup();
+				mapPool.releaseInstance(map); // インスタンスを解放
 				reject(error);
 			}
 		};
@@ -191,6 +247,7 @@ async function _generateMapImageDOM(
 				map.on('idle', generateImage);
 			} catch (error) {
 				cleanup();
+				mapPool.releaseInstance(map); // インスタンスを解放
 				reject(error);
 			}
 		};
@@ -203,13 +260,13 @@ async function _generateMapImageDOM(
 }
 
 /**
- * キュー管理付きのDOM使用MapLibre画像生成関数
+ * 並列処理対応のMapLibre画像生成関数
  */
 export async function generateMapImageDOM(
 	style: maplibregl.StyleSpecification | string,
 	options = {} as MapImageOptions
 ): Promise<MapImageResult> {
-	return imageQueue.add(() => _generateMapImageDOM(style, options));
+	return parallelQueue.add(() => _generateMapImageParallel(style, options));
 }
 
 export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
@@ -279,3 +336,8 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 	return result.blobUrl;
 };
+
+// クリーンアップ関数（必要に応じて呼び出す）
+export function destroyMapPool() {
+	mapPool.destroy();
+}
