@@ -108,10 +108,11 @@ export interface ImageResult {
  * @returns 画像URLまたはundefined
  */
 export const getLayerImage = async (
-	_layerEntry: GeoDataEntry
+	_layerEntry: GeoDataEntry,
+	option?: 'layer'
 ): Promise<ImageResult | undefined> => {
 	try {
-		if (_layerEntry.metaData.coverImage) {
+		if (_layerEntry.metaData.coverImage && option !== 'layer') {
 			// カバー画像が指定されている場合はそれを使用
 			const url = getCoverImageUrl(_layerEntry);
 			return url ? { url } : undefined;

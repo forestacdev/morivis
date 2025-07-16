@@ -16,6 +16,8 @@
 	import Switch from '../atoms/Switch.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
 
+	import { getLayerImage } from '$routes/map/utils/image';
+
 	interface Props {
 		layerEntry: GeoDataEntry | null;
 		tempLayerEntries: GeoDataEntry[];
@@ -30,6 +32,59 @@
 			layerEntry = null;
 		}
 	};
+	interface OpacityButton {
+		label: string;
+		value: number;
+	}
+
+	const opacityButtons: OpacityButton[] = [
+		{ label: '0%', value: 0 },
+		{
+			label: '25%',
+			value: 0.25
+		},
+		{
+			label: '50%',
+			value: 0.5
+		},
+
+		{
+			label: '75%',
+			value: 0.75
+		},
+		{
+			label: '100%',
+			value: 1
+		}
+	];
+
+	// const promise = (() => {
+	// 	try {
+	// 		if (layerEntry === null) {
+	// 			return Promise.resolve(undefined);
+	// 		}
+	// 		return getLayerImage(layerEntry);
+	// 	} catch (error) {
+	// 		console.error('Error generating icon image:', error);
+	// 		return Promise.resolve(undefined);
+	// 	}
+	// })();
+	let src = $state<string | undefined>(undefined);
+	const getImage = async (_layerEntry: GeoDataEntry) => {
+		try {
+			const imageResult = await getLayerImage(_layerEntry, 'layer');
+			src = imageResult ? imageResult.url : undefined;
+		} catch (error) {
+			console.error('Error generating icon image:', error);
+			return undefined;
+		}
+	};
+
+	$effect(() => {
+		if (layerEntry) {
+			getImage(layerEntry);
+		}
+	});
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -49,8 +104,30 @@
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
 				<div class="c-scroll h-full grow overflow-x-hidden">
-					<Accordion label={'表示制御'} bind:value={showVisibleOption}>
-						<Switch
+					<div class="flex gap-2">
+						{#if src}
+							{#each opacityButtons as item (item.label)}
+								<button
+									class="hover:bg-accent aspect-square w-1/5 cursor-pointer justify-start rounded-md bg-black p-2 text-left text-sm"
+									onclick={() => {
+										if (layerEntry) {
+											layerEntry.style.opacity = item.value;
+										}
+									}}
+								>
+									<img
+										alt={item.label}
+										{src}
+										class="aspect-square rounded object-cover"
+										style="opacity: {item.value};"
+									/>
+									<span class="text-base text-sm">{item.label}</span>
+								</button>
+							{/each}
+						{/if}
+					</div>
+
+					<!-- <Switch
 							label="表示"
 							bind:value={layerEntry.style.visible as boolean}
 							icon={'akar-icons:eye'}
@@ -62,8 +139,7 @@
 							max={1}
 							step={0.01}
 							icon={'mdi:circle-opacity'}
-						/>
-					</Accordion>
+						/> -->
 					{#if layerEntry.type === 'vector'}
 						<VectorOptionMenu bind:layerEntry bind:showColorOption />
 					{/if}

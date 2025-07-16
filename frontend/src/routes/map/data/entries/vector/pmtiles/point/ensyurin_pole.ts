@@ -15,7 +15,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['看板'],
-		maxZoom: 14,
+		maxZoom: 17,
 		minZoom: 1,
 		sourceLayer: 'ensyurin_pole',
 		bounds: [136.919359, 35.549761, 136.926759, 35.557836],

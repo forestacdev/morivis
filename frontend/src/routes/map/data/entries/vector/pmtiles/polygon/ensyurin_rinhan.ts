@@ -17,11 +17,12 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['林班図', '森林'],
-		maxZoom: 14,
+		maxZoom: 17,
 		minZoom: 8,
 		sourceLayer: 'ensyurin_rinhan',
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`,
+		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
 		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
