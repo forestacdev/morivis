@@ -68,13 +68,6 @@
 		}
 	};
 
-	let isSmall = $derived.by(() => {
-		if ($showDataMenu) {
-			return true;
-		}
-		return false;
-	});
-
 	showDataMenu.subscribe((value) => {
 		if (value) {
 			isSideMenuType.set('layer');
@@ -113,10 +106,10 @@
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'
 		: 'bg-main'}"
-	style={`width: ${isSmall ? '90px' : '400px'};transition: width transform, translate, scale, rotate 0.2s ease-in-out;`}
+	style={`width: ${$showDataMenu ? '90px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 >
 	<div
-		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {isSmall
+		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
@@ -126,7 +119,6 @@
 					<LayerSlot
 						index={i}
 						layerType={'point'}
-						{isSmall}
 						bind:layerEntry={pointEntries[i]}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -141,7 +133,6 @@
 					<LayerSlot
 						index={i}
 						layerType={'line'}
-						{isSmall}
 						bind:layerEntry={lineEntries[i]}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -156,7 +147,6 @@
 					<LayerSlot
 						index={i}
 						layerType={'polygon'}
-						{isSmall}
 						bind:layerEntry={polygonEntries[i]}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -171,7 +161,6 @@
 					<LayerSlot
 						index={i}
 						layerType={'raster'}
-						{isSmall}
 						bind:layerEntry={rasterEntries[i]}
 						bind:showDataEntry
 						bind:tempLayerEntries

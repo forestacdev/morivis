@@ -23,7 +23,6 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
-		isSmall: boolean; // レイヤースロットのサイズを小さくするかどうか
 	}
 
 	let {
@@ -32,8 +31,7 @@
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
-		enableFlip = $bindable(),
-		isSmall
+		enableFlip = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
@@ -215,10 +213,7 @@
 
 <div
 	class="relative flex h-[80px] w-full items-center gap-2
-		transition-colors {isDragging ? 'c-dragging-style' : ''} {$selectedLayerId === layerEntry.id &&
-	isSmall
-		? 'c-fog'
-		: ''}"
+		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
@@ -230,34 +225,36 @@
 	aria-label="レイヤー"
 >
 	{#if !$isStyleEdit && !$showDataMenu}
-		{#if index === 0}
-			<div class="relative grid h-full w-[50px] place-items-center">
+		<div
+			transition:slide={{ duration: 200, axis: 'x' }}
+			class="relative grid h-full w-[50px] place-items-center"
+		>
+			{#if index === 0}
 				<div class="bounded-full absolute aspect-square rounded-full bg-white p-2">
 					<Icon icon={getLayerIcon(layerType)} class="h-8 w-8" />
 				</div>
 				<div class="h-full w-[2px] bg-white"></div>
-			</div>
-		{:else}
-			<div class="relative grid h-full w-[50px] place-items-center">
+			{:else}
 				<div class="h-full w-[2px] bg-white"></div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative grow cursor-move select-none text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-transform duration-100
+		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
 			{$selectedLayerId === layerEntry.id && $isStyleEdit ? 'bg-main h-full' : 'bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
+		style={`width: ${$showDataMenu ? '65px' : '400px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
 				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
-					? 'translate-x-[305px]'
+					? 'translate-x-[320px]'
 					: ''}"
 			>
 				<LayerIcon {layerEntry} />
@@ -265,6 +262,7 @@
 
 			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
 				{#if !$isStyleEdit}
+					<!-- レイヤー名 -->
 					<div class="flex flex-col">
 						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
 							>{layerEntry.metaData.name}</span
@@ -276,6 +274,7 @@
 				{/if}
 
 				{#if isHovered && !$isStyleEdit}
+					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
 						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
@@ -313,14 +312,17 @@
 				{/if}
 			</div>
 		</div>
-		<div
-			class="border-main pointer-events-none absolute bottom-0 z-10 grid h-6 w-6 place-items-center rounded-full border-2 text-sm transition-colors duration-300 {!layerEntry
-				.style.visible
-				? 'bg-gray-500'
-				: isLayerInRange
-					? 'bg-green-500'
-					: 'bg-red-500'}"
-		></div>
+		<!-- ステータス -->
+		{#if !$showDataMenu}
+			<div
+				class="pointer-events-none absolute bottom-[5px] left-[40px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
+					.style.visible
+					? 'bg-gray-500'
+					: isLayerInRange
+						? 'bg-green-500'
+						: 'bg-red-500'}"
+			></div>
+		{/if}
 	</div>
 </div>
 
