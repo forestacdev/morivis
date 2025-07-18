@@ -22,6 +22,14 @@ check:
 	cd frontend && \
 	pnpm run check
 
+proj:
+	cd scripts && \
+	uv sync && \
+	source .venv/bin/activate && \
+	uv run proj.py && \
+	deactivate
+
+
 
 
 

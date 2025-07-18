@@ -96,7 +96,7 @@
 			transition:fly={{ duration: 200, y: -10, opacity: 0 }}
 			class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
 		>
-			{properties.name}
+			{properties.name_ja}
 		</div>
 	{/if}
 </div>

@@ -1,263 +1,111 @@
-export type AttributionKey =
-	| 'カスタムデータ'
-	| 'MIERUNE'
-	| '森林文化アカデミー'
-	| '国土地理院'
-	| '岐阜県森林研究所'
-	| '国土数値情報'
-	| 'エコリス地図タイル'
-	| '産総研地質調査総合センター'
-	| '産総研シームレス標高タイル'
-	| 'Q地図タイル'
-	| 'OSM'
-	| 'OpenMapTiles'
-	| '株式会社アドイン研究所'
-	| 'Esri'
-	| '東京都オープンデータカタログサイト'
-	| '環境省生物多様性センター'
-	| '林野庁'
-	| '森林総合研究所'
-	| '愛媛県森林資源データ'
-	| 'USGS'
-	| 'NASA'
-	| '栃木県森林資源データ'
-	| '高知県森林資源データ'
-	| '兵庫県森林資源データ'
-	| '大阪府（林野庁加工）';
-
 export type Attribution = {
-	key: AttributionKey;
 	name: string;
 	url: string;
 };
 
-const attributionData: Attribution[] = [
-	{
-		key: '森林文化アカデミー',
+//TODO: キー名が日本語のものは、英語に変換する必要があるかも
+const attributionData = {
+	森林文化アカデミー: {
 		name: '森林文化アカデミー',
 		url: 'https://www.forest.ac.jp/'
 	},
-	{
-		key: 'MIERUNE',
+	MIERUNE: {
 		name: 'MIERUNE Inc.',
 		url: 'https://mierune.co.jp/'
 	},
-	{
-		key: '国土地理院',
+	国土地理院: {
 		name: '国土地理院',
 		url: 'https://maps.gsi.go.jp/development/ichiran.html'
 	},
-	{
-		key: 'NASA',
+	NASA: {
 		name: 'NASA/Goddard Space Flight Center/Reto Stöckli',
 		url: 'https://earthdata.nasa.gov/'
 	},
-	{
-		key: '岐阜県森林研究所',
+	岐阜県森林研究所: {
 		name: '岐阜県森林研究所',
 		url: 'https://www.forest.rd.pref.gifu.lg.jp/index.html'
 	},
-	{
-		key: 'エコリス地図タイル',
+	エコリス地図タイル: {
 		name: 'エコリス地図タイル',
 		url: 'https://map.ecoris.info/#contents'
 	},
-	{
-		key: '産総研地質調査総合センター',
+	産総研地質調査総合センター: {
 		name: '産総研地質調査総合センター',
 		url: 'https://gbank.gsj.jp/seamless/index.html?lang=ja'
 	},
-	{
-		key: '国土数値情報',
+	国土数値情報: {
 		name: '国土数値情報',
 		url: 'https://nlftp.mlit.go.jp/'
 	},
-	{
-		key: '産総研シームレス標高タイル',
+	産総研シームレス標高タイル: {
 		name: '産総研シームレス標高タイル',
 		url: 'https://gbank.gsj.jp/seamless/elev/'
 	},
-	{
-		key: 'Q地図タイル',
+	Q地図タイル: {
 		name: 'Q地図タイル',
 		url: 'https://info.qchizu.xyz/qchizu/reprint/'
 	},
-	{
-		key: 'OSM',
+	OSM: {
 		name: '© OpenStreetMap contributors',
 		url: 'https://www.openstreetmap.org/copyright'
 	},
-	{
-		key: 'OpenMapTiles',
+	OpenMapTiles: {
 		name: '© OpenMapTiles',
 		url: 'https://openmaptiles.org/'
 	},
-	{
-		key: 'USGS',
+	USGS: {
 		name: '© U.S. Geological Survey',
 		url: 'https://www.usgs.gov/'
 	},
-	{
-		key: 'Esri',
+	Esri: {
 		name: '© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
 	},
-	{
-		key: '株式会社アドイン研究所',
+	株式会社アドイン研究所: {
 		name: '株式会社アドイン研究所',
 		url: 'https://www.owl-sys.com/'
 	},
-	{
-		key: '林野庁',
+	林野庁: {
 		name: '林野庁',
 		url: 'https://www.rinya.maff.go.jp/index.html'
 	},
-	{
-		key: '東京都オープンデータカタログサイト',
+	東京都オープンデータカタログサイト: {
 		name: '東京都オープンデータカタログサイト',
 		url: 'https://portal.data.metro.tokyo.lg.jp/'
 	},
-	{
-		key: '環境省生物多様性センター',
+	環境省生物多様性センター: {
 		name: '環境省生物多様性センター',
 		url: 'https://www.biodic.go.jp'
 	},
-	{
-		key: '森林総合研究所',
+	森林総合研究所: {
 		name: '森林総合研究所',
 		url: 'https://www.biodic.go.jp'
 	},
-	{
-		key: '愛媛県森林資源データ',
+	愛媛県森林資源データ: {
 		name: '愛媛県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/ehime-ringyou'
 	},
-	{
-		key: '栃木県森林資源データ',
+	栃木県森林資源データ: {
 		name: '栃木県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
 	},
-	{
-		key: '高知県森林資源データ',
+	高知県森林資源データ: {
 		name: '高知県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/kochipref-mori'
 	},
-	{
-		key: '兵庫県森林資源データ',
+	兵庫県森林資源データ: {
 		name: '兵庫県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
 	},
-	{
-		key: '大阪府（林野庁加工）',
+	'大阪府（林野庁加工）': {
 		name: '大阪府（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya'
 	}
-] as const;
+} as const;
+
+export type AttributionKey = keyof typeof attributionData;
 
 // Map を作成
 export const attributionMap: Map<string, Attribution> = new Map(
-	attributionData.map((entry) => [entry.key, entry])
+	Object.entries(attributionData).map(([key, value]) => [key, value])
 );
-
-//TODO: キー名が日本語のものは、英語に変換する必要があるかも
-// const attributionData = {
-// 	森林文化アカデミー: {
-// 		name: '森林文化アカデミー',
-// 		url: 'https://www.forest.ac.jp/'
-// 	},
-// 	MIERUNE: {
-// 		name: 'MIERUNE Inc.',
-// 		url: 'https://mierune.co.jp/'
-// 	},
-// 	国土地理院: {
-// 		name: '国土地理院',
-// 		url: 'https://maps.gsi.go.jp/development/ichiran.html'
-// 	},
-// 	NASA: {
-// 		name: 'NASA/Goddard Space Flight Center/Reto Stöckli',
-// 		url: 'https://earthdata.nasa.gov/'
-// 	},
-// 	岐阜県森林研究所: {
-// 		name: '岐阜県森林研究所',
-// 		url: 'https://www.forest.rd.pref.gifu.lg.jp/index.html'
-// 	},
-// 	エコリス地図タイル: {
-// 		name: 'エコリス地図タイル',
-// 		url: 'https://map.ecoris.info/#contents'
-// 	},
-// 	産総研地質調査総合センター: {
-// 		name: '産総研地質調査総合センター',
-// 		url: 'https://gbank.gsj.jp/seamless/index.html?lang=ja'
-// 	},
-// 	国土数値情報: {
-// 		name: '国土数値情報',
-// 		url: 'https://nlftp.mlit.go.jp/'
-// 	},
-// 	産総研シームレス標高タイル: {
-// 		name: '産総研シームレス標高タイル',
-// 		url: 'https://gbank.gsj.jp/seamless/elev/'
-// 	},
-// 	Q地図タイル: {
-// 		name: 'Q地図タイル',
-// 		url: 'https://info.qchizu.xyz/qchizu/reprint/'
-// 	},
-// 	OSM: {
-// 		name: '© OpenStreetMap contributors',
-// 		url: 'https://www.openstreetmap.org/copyright'
-// 	},
-// 	OpenMapTiles: {
-// 		name: '© OpenMapTiles',
-// 		url: 'https://openmaptiles.org/'
-// 	},
-// 	USGS: {
-// 		name: '© U.S. Geological Survey',
-// 		url: 'https://www.usgs.gov/'
-// 	},
-// 	Esri: {
-// 		name: '© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
-// 		url: ''
-// 	},
-// 	株式会社アドイン研究所: {
-// 		name: '株式会社アドイン研究所',
-// 		url: 'https://www.owl-sys.com/'
-// 	},
-// 	林野庁: {
-// 		name: '林野庁',
-// 		url: 'https://www.rinya.maff.go.jp/index.html'
-// 	},
-// 	東京都オープンデータカタログサイト: {
-// 		name: '東京都オープンデータカタログサイト',
-// 		url: 'https://portal.data.metro.tokyo.lg.jp/'
-// 	},
-// 	環境省生物多様性センター: {
-// 		name: '環境省生物多様性センター',
-// 		url: 'https://www.biodic.go.jp'
-// 	},
-// 	森林総合研究所: {
-// 		name: '森林総合研究所',
-// 		url: 'https://www.biodic.go.jp'
-// 	},
-// 	愛媛県森林資源データ: {
-// 		name: '愛媛県森林資源データ',
-// 		url: 'https://www.geospatial.jp/ckan/organization/ehime-ringyou'
-// 	},
-// 	栃木県森林資源データ: {
-// 		name: '栃木県森林資源データ',
-// 		url: 'https://www.geospatial.jp/ckan/organization/tochigipref-shinrin-seibi'
-// 	},
-// 	高知県森林資源データ: {
-// 		name: '高知県森林資源データ',
-// 		url: 'https://www.geospatial.jp/ckan/organization/kochipref-mori'
-// 	},
-// 	兵庫県森林資源データ: {
-// 		name: '兵庫県森林資源データ',
-// 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
-// 	},
-// 	'大阪府（林野庁加工）': {
-// 		name: '大阪府（林野庁加工）',
-// 		url: 'https://www.geospatial.jp/ckan/organization/rinya'
-// 	}
-// } as const;
-
-// export type AttributionData = typeof attributionData;
-// export type AttributionKey = keyof AttributionData;

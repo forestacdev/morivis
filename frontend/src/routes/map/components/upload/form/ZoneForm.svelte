@@ -63,7 +63,7 @@
 					.flatMap((info) => {
 						const code = info.code;
 
-						const prj = info.projContext;
+						const prj = info.proj_context;
 						const transformedBbox = transformBbox(originalBbox, prj);
 
 						if (isBboxValid(transformedBbox)) {
@@ -165,7 +165,7 @@
 						class="select-none transition-colors duration-200 {info.code === selectedEpsgCode
 							? 'text-black'
 							: ''}"
-						>{info.name}
+						>{info.name_ja}
 					</span>
 				</label>
 			{/each}
