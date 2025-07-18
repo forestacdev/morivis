@@ -86,14 +86,12 @@
 			if (shouldScroll) {
 				// スクロール開始時に位置をリセット
 				position = 0;
-				console.log('スクロール開始 - トラック幅:', trackWidth, '利用可能幅:', availableWidth);
 			} else {
 				// スクロール停止時に位置をリセット
 				position = 0;
 				if (track) {
 					track.style.transform = 'translateX(0px)';
 				}
-				console.log('スクロール停止 - コンテンツが収まります');
 			}
 		}
 	}
