@@ -104,15 +104,12 @@
 	};
 
 	showTermsDialog.subscribe(async (value) => {
+		if (!isInitialized) return;
 		if (!value && page.route.id === '/') {
 			await goto('/map');
 		}
 	});
 </script>
-
-<TermsOfServiceDialog />
-<WebGLScreen {initialized} />
-<ScreenGuard />
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
@@ -129,3 +126,7 @@
 		{@render children()}
 	{/if}
 </div>
+
+<TermsOfServiceDialog />
+<WebGLScreen {initialized} />
+<ScreenGuard />

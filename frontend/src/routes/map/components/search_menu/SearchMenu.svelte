@@ -219,9 +219,9 @@
 			<div
 				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden p-2 pb-4"
 			>
-				{#each searchWards as searchWard}
+				{#each searchWards as searchWard (searchWard)}
 					<button
-						class="bg-main cursor-pointer rounded-full px-4 py-2 text-base drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]"
+						class="cursor-pointer rounded-lg bg-black px-4 py-2 text-base drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]"
 						onclick={() => {
 							inputSearchWord = searchWard;
 							searchFeature(inputSearchWord);
@@ -238,7 +238,7 @@
 			<div
 				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
-				{#each results as result}
+				{#each results as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
 						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
