@@ -4,7 +4,7 @@ import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
-import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/dem';
+import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
 import { TileProxy } from '$routes/map/utils/image';
 import {
 	type RasterDemStyle,

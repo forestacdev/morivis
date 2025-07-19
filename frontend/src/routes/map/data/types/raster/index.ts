@@ -1,6 +1,14 @@
-import type { DemDataTypeKey } from '$routes/map/data/dem';
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/raster';
+
+export const DEM_DATA_TYPE = {
+	mapbox: 0.0,
+	gsi: 1.0,
+	terrarium: 2.0
+} as const;
+
+export type DemDataType = typeof DEM_DATA_TYPE;
+export type DemDataTypeKey = keyof DemDataType;
 export interface CategoryLegend {
 	type: 'category';
 	name: string;
