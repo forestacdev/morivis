@@ -15,7 +15,7 @@
 <style>
 	.loader {
 		border: 8px solid #f3f3f3; /* Light grey */
-		border-top: 8px solid #3498db; /* Blue */
+		border-top: 8px solid var(--color-accent); /* Blue */
 		border-radius: 50%;
 		width: 100px;
 		height: 100px;
