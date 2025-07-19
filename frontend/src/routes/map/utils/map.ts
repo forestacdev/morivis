@@ -271,22 +271,22 @@ export const imageExport = (map: MaplibreMap): Promise<void> => {
 						ctx.save();
 
 						// 透過度を設定
-						ctx.globalAlpha = 0.7;
+						// ctx.globalAlpha = 0.7;
 
-						// 回転
-						const bearing360 = (Number(map.getBearing().toFixed(1)) + 360) % 360;
-						ctx.translate(centerX, centerY);
-						const angleInRadians = (bearing360 * Math.PI) / -180;
-						ctx.rotate(angleInRadians);
+						// // 回転
+						// const bearing360 = (Number(map.getBearing().toFixed(1)) + 360) % 360;
+						// ctx.translate(centerX, centerY);
+						// const angleInRadians = (bearing360 * Math.PI) / -180;
+						// ctx.rotate(angleInRadians);
 
-						// 画像を描画（回転の中心に戻して描画するため、位置を調整）
-						ctx.drawImage(
-							connpassImageElement,
-							-connpassWidth / 2,
-							-connpassHeight / 2,
-							connpassWidth,
-							connpassHeight
-						);
+						// // 画像を描画（回転の中心に戻して描画するため、位置を調整）
+						// ctx.drawImage(
+						// 	connpassImageElement,
+						// 	-connpassWidth / 2,
+						// 	-connpassHeight / 2,
+						// 	connpassWidth,
+						// 	connpassHeight
+						// );
 
 						// キャンバスの状態を復元
 						ctx.restore();
