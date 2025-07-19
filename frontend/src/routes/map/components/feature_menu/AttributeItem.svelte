@@ -26,7 +26,7 @@
 			onmouseleave={() => (isHover = false)}
 			onfocus={() => (isHover = true)}
 			onblur={() => (isHover = false)}
-			class="text-main-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-gray-700 p-2 pl-4 text-left transition-colors duration-150"
+			class="text-main-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-black p-2 pl-4 text-left transition-colors duration-150"
 			><span>{value}</span>
 			{#if isHover}
 				<div transition:fade={{ duration: 100 }} class="absolute right-0 grid place-items-center">

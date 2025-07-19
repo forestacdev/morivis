@@ -4,13 +4,14 @@
 
 	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import RasterPresetPullDownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPullDownBox.svelte';
+	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPulldownBox.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
 		RasterDemStyle,
+		RasterDemEntry,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
 	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
@@ -31,7 +32,13 @@
 
 	let showOption = $state<boolean>(false);
 
-	let preset = $derived(style.preset);
+	let preset = $derived.by(() => {
+		if (style.type === 'basemap') {
+			return style.preset;
+		} else {
+			return undefined;
+		}
+	});
 	let previousPreset: RasterStylePreset | undefined = undefined;
 
 	const promise = (() => {
@@ -61,7 +68,7 @@
 	{#if style.type === 'basemap'}
 		{#await promise then imageResult}
 			{#if imageResult}
-				<RasterPresetPullDownBox
+				<RasterPresetPulldownBox
 					bind:preset={style.preset}
 					src={imageResult.url}
 					disabled={showOption}
@@ -130,7 +137,7 @@
 			</div>
 		{/if}
 	{:else if style.type === 'dem'}
-		<DemOption bind:style bind:showColorOption />
+		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
 		<TiffOption bind:style />
 	{/if}

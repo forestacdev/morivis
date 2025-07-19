@@ -154,6 +154,7 @@ export const generateDemCoverImage = async (
 		const worker = new Worker(new URL('../../../protocol/raster/worker', import.meta.url), {
 			type: 'module'
 		});
+
 		if (mode === 'relief') {
 			const elevationColorArray = colorMapCache.createColorArray(
 				visualization.uniformsData.relief.colorMap || 'bone'
@@ -186,33 +187,37 @@ export const generateDemCoverImage = async (
 					worker.terminate(); // Workerを終了
 				};
 			});
-		} else if (mode === 'slope' || 'curvature') {
+		} else if (mode === 'slope' || mode === 'aspect') {
 			const elevationColorArray = colorMapCache.createColorArray(
-				visualization.uniformsData.slope.colorMap || 'bone'
+				visualization.uniformsData[mode].colorMap || 'bone'
 			);
 
 			let min = 0;
 			let max = 0;
 
+			const emptyImage = await createImageBitmap(new ImageData(1, 1));
+
 			if (mode === 'slope') {
 				min = visualization.uniformsData.slope.min;
 				max = visualization.uniformsData.slope.max;
-			} else if (mode === 'curvature') {
-				min = visualization.uniformsData.curvature.valleyThreshold;
-				max = visualization.uniformsData.curvature.ridgeThreshold;
 			}
 
 			return new Promise((resolve, reject) => {
 				worker.postMessage({
 					tileId,
 					center: image,
+					left: emptyImage,
+					right: emptyImage,
+					top: emptyImage,
+					bottom: emptyImage,
 					demTypeNumber,
 					modeNumber,
 					mode,
 					elevationColorArray,
 					max,
 					min,
-					tile: { x, y, z }
+					tile: { x, y, z },
+					encodeType
 				});
 
 				worker.onmessage = (e) => {

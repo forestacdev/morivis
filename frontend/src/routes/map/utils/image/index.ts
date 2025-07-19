@@ -119,11 +119,9 @@ export const getLayerImage = async (
 		} else if (_layerEntry.type === 'raster') {
 			// タイプとフォーマットによる分岐
 			if (_layerEntry.format.type === 'image') {
-				// TODO クリーンアップ
 				const url = await getRasterImageUrl(_layerEntry);
 				return url ? { url } : undefined;
 			} else if (_layerEntry.format.type === 'pmtiles') {
-				// TODO クリーンアップ
 				const url = await generatePmtilesImageUrl(_layerEntry);
 				return url ? { url } : undefined;
 			}

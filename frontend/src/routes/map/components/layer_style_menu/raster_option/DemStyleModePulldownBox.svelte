@@ -2,12 +2,16 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import type { DemStyleMode } from '$routes/map/data/types/raster';
+	import type { DemStyleMode, RasterDemEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import src from 'gsap/src';
+	import { getLayerImage } from '$routes/map/utils/image';
+	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
 
 	interface Props {
 		isMode: DemStyleMode;
+		layerEntry: RasterDemEntry;
 	}
-	let { isMode = $bindable() }: Props = $props();
+	let { isMode = $bindable(), layerEntry }: Props = $props();
 	interface DemStyleModeOptions {
 		key: DemStyleMode;
 		name: string;
@@ -15,8 +19,8 @@
 	let demStyleModes = $state.raw<DemStyleModeOptions[]>([
 		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
-		{ key: 'aspect', name: '傾斜方位' },
-		{ key: 'default', name: 'なし' }
+		{ key: 'aspect', name: '傾斜方位' }
+		// { key: 'default', name: 'なし' }
 		// { key: 'curvature', name: '曲率' },
 		// { key: 'shadow', name: '陰影' },
 	]);
@@ -55,7 +59,7 @@
 	</button>
 
 	{#if showPullDown}
-		<div
+		<!-- <div
 			transition:fly={{ duration: 200, y: -20 }}
 			class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg bg-black shadow-md"
 		>
@@ -78,6 +82,21 @@
 						<span class="select-none">{name}</span>
 					</div>
 				</label>
+			{/each}
+		</div> -->
+
+		<div
+			transition:fly={{ duration: 200, y: -20 }}
+			class="bg-sub absolute left-0 top-[130px] z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+		>
+			{#each demStyleModes as { key, name } (key)}
+				<DemStyleModePulldownBoxImage
+					bind:isMode
+					mode={key}
+					{name}
+					bind:showPullDown
+					{layerEntry}
+				/>
 			{/each}
 		</div>
 	{/if}

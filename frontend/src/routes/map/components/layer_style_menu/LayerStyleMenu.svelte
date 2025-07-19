@@ -39,19 +39,19 @@
 
 	const opacityButtons: OpacityButton[] = [
 		{
-			label: '薄め',
+			label: '30％',
 			value: 0.3
 		},
 		{
-			label: 'ちょい薄',
+			label: '50％',
 			value: 0.5
 		},
 		{
-			label: '普通',
+			label: '70％',
 			value: 0.7
 		},
 		{
-			label: '濃いめ',
+			label: '100％',
 			value: 1
 		}
 	];

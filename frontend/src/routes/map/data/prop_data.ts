@@ -322,12 +322,12 @@ export const propData: PropData = {
 	},
 	kezikaboraike: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/kezikaboraike.webp`,
-		description: '',
+		description: '岐阜県美濃市内に所在する農業用ため池',
 		url: null
 	},
 	miharasiiwa: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/miharasiiwa.webp`,
-		description: '',
+		description: '美濃市の街中を一望することができる岩場',
 		url: null
 	},
 	mokudou: {
@@ -349,7 +349,7 @@ export const propData: PropData = {
 	oosugi: {
 		// 大杉
 		image: `${FEATURE_IMAGE_BASE_PATH}/oosugi.webp`,
-		description: '',
+		description: '樹齢約100年のヒノキ林に混在する大径のスギ。このスギにオオタカが毎年営巣する。',
 		url: null
 	},
 	sumiyakigoya: {
