@@ -4,9 +4,9 @@
 
 @theme {
 	--color-base: #f1f1f1;
-	--color-main: #0C221D;
-	--color-sub: #495A54;
-	--color-accent: #59B68E;
+	--color-main: #0c221d;
+	--color-sub: #495a54;
+	--color-accent: #59b68e;
 	--color-main-accent: #166345;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
@@ -52,12 +52,7 @@
 
 @utility c-select {
 	/* プルダウンスタイル */
-	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
-}
-
-@utility c-option {
-	/* プルダウンスタイル */
-	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
+	@apply border-sub cursor-pointer rounded-lg border-1 bg-black p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
 }
 
 /* @utility bg-side-menu {

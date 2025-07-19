@@ -120,7 +120,7 @@
 								<Icon icon={'material-symbols:disabled-visible'} class="h-6 w-6 text-base" />
 							</div>
 
-							<span class="text-base text-sm">隠す</span>
+							<span class="select-none text-base text-sm">隠す</span>
 						</button>
 						{#each opacityButtons as item (item.label)}
 							<button
@@ -147,7 +147,7 @@
 										/>
 									</div>
 								{/if}
-								<span class="text-base text-sm">{item.label}</span>
+								<span class="select-none text-base text-sm">{item.label}</span>
 							</button>
 						{/each}
 					</div>

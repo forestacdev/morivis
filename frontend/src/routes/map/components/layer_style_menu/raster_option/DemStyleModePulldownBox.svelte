@@ -31,17 +31,15 @@
 		class="c-select flex w-full justify-between"
 	>
 		<div class="flex items-center gap-2">
-			<Icon icon={'ic:round-terrain'} width={20} />
-
 			<span>{demStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 		</div>
-		<Icon icon="bi:chevron-down" class="h-6 w-6" />
+		<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
 	</button>
 
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
+			class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg bg-black shadow-md"
 		>
 			{#each demStyleModes as { key, name } (key)}
 				<label

@@ -22,12 +22,11 @@
 		onclick={() => (showPullDown = !showPullDown)}
 		class="c-select flex w-full justify-between"
 	>
-		<div class="flex items-center gap-2">
-			<Icon icon={'bxs:color-fill'} width={20} />
-
-			<span>{isColorMap}</span>
+		<div class="flex w-full items-center justify-center gap-2">
+			<span class="w-[200px] select-none">{isColorMap}</span>
+			<ColorScale {isColorMap} />
 		</div>
-		<Icon icon="bi:chevron-down" class="h-6 w-6" />
+		<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
 	</button>
 
 	{#if showPullDown}
@@ -49,16 +48,14 @@
 						class="hidden"
 						onchange={() => (showPullDown = false)}
 					/>
-					<div class="flex items-center gap-2">
-						<Icon icon={'bxs:color-fill'} width={20} />
-						<span class="select-none">{key}</span>
+					<div class="flex w-full items-center justify-center gap-2">
+						<span class="w-[200px] select-none">{key}</span>
+						<ColorScale isColorMap={key} />
 					</div>
 				</label>
 			{/each}
 		</div>
 	{/if}
-
-	<ColorScale {isColorMap} />
 </div>
 
 <style>
