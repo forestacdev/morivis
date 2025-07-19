@@ -96,7 +96,7 @@
 					<!-- !タイトルが長い場合 -->
 					<div
 						in:fade
-						class="bg-sub aspect-3/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden rounded-lg"
+						class="bg-sub aspect-2/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden"
 					></div>
 				{/if}
 				<div
