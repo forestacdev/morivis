@@ -14,10 +14,28 @@
 	let mutableColorMapType = $state<ColorMapType[]>([...COLOR_MAP_TYPE]);
 
 	let showPullDown = $state<boolean>(false);
+
+	let containerRef = $state<HTMLElement>();
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showPullDown && containerRef && !containerRef.contains(event.target as Node)) {
+				showPullDown = false;
+			}
+		};
+
+		if (showPullDown) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
 <h2 class="text-base">カラーランプ</h2>
-<div class="relative py-2">
+<div class="relative py-2" bind:this={containerRef}>
 	<button
 		onclick={() => (showPullDown = !showPullDown)}
 		class="c-select flex w-full justify-between"

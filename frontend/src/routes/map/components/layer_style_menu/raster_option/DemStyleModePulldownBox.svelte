@@ -12,7 +12,7 @@
 		key: DemStyleMode;
 		name: string;
 	}
-	let demStyleModes = $state<DemStyleModeOptions[]>([
+	let demStyleModes = $state.raw<DemStyleModeOptions[]>([
 		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
 		{ key: 'aspect', name: '傾斜方位' },
@@ -22,10 +22,28 @@
 	]);
 
 	let showPullDown = $state<boolean>(false);
+
+	let containerRef = $state<HTMLElement>();
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showPullDown && containerRef && !containerRef.contains(event.target as Node)) {
+				showPullDown = false;
+			}
+		};
+
+		if (showPullDown) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
 <h2 class="text-base">描画モード</h2>
-<div class="relative py-2">
+<div class="relative py-2" bind:this={containerRef}>
 	<button
 		onclick={() => (showPullDown = !showPullDown)}
 		class="c-select flex w-full justify-between"
