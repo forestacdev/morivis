@@ -1,10 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import type { DemStyleMode, RasterDemEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import src from 'gsap/src';
-	import { getLayerImage } from '$routes/map/utils/image';
+	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
 
 	interface Props {
@@ -44,47 +42,44 @@
 			document.removeEventListener('click', handleClickOutside);
 		};
 	});
+
+	let promise = $state<Promise<ImageResult | undefined>>();
+	let isImageError = $state<boolean>(false);
+
+	$effect(() => {
+		try {
+			promise = getLayerImage(layerEntry);
+		} catch (error) {
+			isImageError = true;
+			console.error('Error generating icon image:', error);
+			promise = Promise.resolve(undefined);
+		}
+	});
 </script>
 
 <h2 class="text-base">描画モード</h2>
 <div class="relative py-2" bind:this={containerRef}>
 	<button
 		onclick={() => (showPullDown = !showPullDown)}
-		class="c-select flex w-full justify-between"
+		class="c-select flex h-28 w-full justify-between"
 	>
 		<div class="flex items-center gap-2">
 			<span>{demStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 		</div>
-		<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
+		{#await promise then imageResult}
+			{#if imageResult}
+				<img
+					src={imageResult.url}
+					alt={demStyleModes.find((mode) => mode.key === isMode)?.name}
+					class="aspect-square h-24 rounded bg-black object-cover"
+				/>
+			{/if}
+		{:catch}
+			<div>画像の取得に失敗</div>
+		{/await}
 	</button>
 
 	{#if showPullDown}
-		<!-- <div
-			transition:fly={{ duration: 200, y: -20 }}
-			class="absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg bg-black shadow-md"
-		>
-			{#each demStyleModes as { key, name } (key)}
-				<label
-					class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {isMode ===
-					key
-						? 'bg-base text-main'
-						: 'hover:text-accent text-white'}"
-				>
-					<input
-						type="radio"
-						bind:group={isMode}
-						value={key}
-						class="hidden"
-						onchange={() => (showPullDown = false)}
-					/>
-					<div class="flex items-center gap-2">
-						<Icon icon={'ic:round-terrain'} width={20} />
-						<span class="select-none">{name}</span>
-					</div>
-				</label>
-			{/each}
-		</div> -->
-
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
 			class="bg-sub absolute left-0 top-[130px] z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"

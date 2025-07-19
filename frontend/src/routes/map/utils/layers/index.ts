@@ -931,8 +931,8 @@ export const createLayersItems = (
 
 	return [
 		...baseMap,
-		...mapLineItems,
 		...rasterLayerItems,
+		...mapLineItems,
 		...fillLayerItems,
 		...lineLayerItems,
 		...circleLayerItems,
