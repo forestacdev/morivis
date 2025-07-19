@@ -41,7 +41,7 @@
 	{#if setExpression.type === 'linear'}
 		{#each setExpression.mapping.range as _, index}
 			<div class="flex w-full select-none flex-col gap-2">
-				<div class="">
+				<div class="text-base">
 					<span>{index === 0 ? '最小' : '最大'}値: {setExpression.mapping.range[index]}</span>
 				</div>
 

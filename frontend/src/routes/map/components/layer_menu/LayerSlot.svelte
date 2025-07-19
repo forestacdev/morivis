@@ -18,6 +18,7 @@
 
 	interface Props {
 		index: number;
+		length: number;
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
@@ -27,6 +28,7 @@
 
 	let {
 		index,
+		length,
 		layerType,
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
@@ -212,7 +214,7 @@
 </script>
 
 <div
-	class="relative flex h-[80px] w-full items-center gap-2
+	class="relative flex h-[75px] w-full items-center gap-2
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
@@ -230,24 +232,34 @@
 			class="relative grid h-full w-[50px] place-items-center"
 		>
 			{#if index === 0}
-				<div class="bounded-full absolute aspect-square rounded-full bg-white p-2">
-					<Icon icon={getLayerIcon(layerType)} class="h-8 w-8" />
+				<div class="bounded-full bg-base absolute aspect-square rounded-full p-2">
+					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
 				</div>
-				<div class="h-full w-[2px] bg-white"></div>
 			{:else}
-				<div class="h-full w-[2px] bg-white"></div>
+				<div class="bounded-full bg-base absolute aspect-square rounded-full p-1"></div>
 			{/if}
+			<div
+				class=" h-full w-[2px] {index + 1 === length && layerType === 'raster'
+					? 'bg-linear-to-b from-base to-main'
+					: index === 0 && layerType === 'point'
+						? 'bg-linear-to-b from-main to-base'
+						: 'bg-base'}"
+			></div>
 		</div>
 	{/if}
 	<div
 		id={layerEntry.id}
 		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
-			{$selectedLayerId === layerEntry.id && $isStyleEdit ? 'bg-main h-full' : 'bg-black'}"
+			{$selectedLayerId !== layerEntry.id && $isStyleEdit
+			? 'bg-black/50'
+			: $isStyleEdit
+				? 'bg-main'
+				: 'bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '65px' : '400px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+		style={`width: ${$showDataMenu ? '65px' : $isStyleEdit ? '400px' : '320px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->
@@ -255,7 +267,7 @@
 				onclick={selectedLayer}
 				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
 					? 'translate-x-[320px]'
-					: ''}"
+					: ''} {$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'opacity-50' : 'opacity-100'}"
 			>
 				<LayerIcon {layerEntry} />
 			</button>

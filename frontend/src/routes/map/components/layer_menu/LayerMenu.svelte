@@ -118,6 +118,7 @@
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					<LayerSlot
 						index={i}
+						length={pointEntries.length}
 						layerType={'point'}
 						bind:layerEntry={pointEntries[i]}
 						bind:showDataEntry
@@ -132,6 +133,7 @@
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					<LayerSlot
 						index={i}
+						length={lineEntries.length}
 						layerType={'line'}
 						bind:layerEntry={lineEntries[i]}
 						bind:showDataEntry
@@ -146,6 +148,7 @@
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					<LayerSlot
 						index={i}
+						length={polygonEntries.length}
 						layerType={'polygon'}
 						bind:layerEntry={polygonEntries[i]}
 						bind:showDataEntry
@@ -160,6 +163,7 @@
 				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 					<LayerSlot
 						index={i}
+						length={rasterEntries.length}
 						layerType={'raster'}
 						bind:layerEntry={rasterEntries[i]}
 						bind:showDataEntry
