@@ -337,7 +337,7 @@ export const propData: PropData = {
 	},
 	morinoiriguti: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/morinoiriguti.webp`,
-		description: '',
+		description: 'コナラの木に設置された森の入り口の看板',
 		url: 'https://morinos.net/what-is-morinos/'
 	},
 	nagamenoiwa: {
