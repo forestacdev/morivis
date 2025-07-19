@@ -5,7 +5,11 @@ import type {
 	LabelStyle,
 	Labels
 } from '$routes/map/data/types/vector/style';
-import type { RasterBaseMapStyle, RasterDemStyle } from '$routes/map/data/types/raster';
+import type {
+	RasterBaseMapStyle,
+	RasterCategoricalStyle,
+	RasterDemStyle
+} from '$routes/map/data/types/raster';
 
 export const DEFAULT_RASTER_BASEMAP_STYLE: RasterBaseMapStyle = {
 	type: 'basemap',
@@ -17,6 +21,18 @@ export const DEFAULT_RASTER_BASEMAP_STYLE: RasterBaseMapStyle = {
 	brightnessMax: 1,
 	saturation: 0,
 	contrast: 0
+};
+
+export const DEFAULT_RASTER_CATEGORICAL_STYLE: RasterCategoricalStyle = {
+	type: 'categorical',
+	opacity: 0.7,
+	visible: true,
+	legend: {
+		type: 'category',
+		name: '',
+		colors: [''],
+		labels: ['']
+	}
 };
 
 export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {

@@ -4,7 +4,7 @@ import type {
 	RasterCategoricalStyle
 } from '$routes/map/data/types/raster';
 import {
-	DEFAULT_RASTER_BASEMAP_INTERACTION,
+	DEFAULT_RASTER_CATEGORICAL_STYLE,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
@@ -34,8 +34,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		clickable: true
 	},
 	style: {
-		type: 'categorical',
-		opacity: 0.8,
+		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
 			name: '',

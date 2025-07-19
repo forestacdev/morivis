@@ -1,6 +1,7 @@
 import type { RasterImageEntry, RasterCategoricalStyle } from '$routes/map/data/types/raster';
 
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ecoris_sugihinoki',
@@ -31,8 +32,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		clickable: true
 	},
 	style: {
-		type: 'categorical',
-		opacity: 0.8,
+		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
 			name: '植林',

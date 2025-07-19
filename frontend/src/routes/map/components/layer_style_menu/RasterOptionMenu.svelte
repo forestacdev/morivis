@@ -120,16 +120,16 @@
 			</ul>
 		{:else if style.legend.type === 'gradient'}
 			<h2 class="text-base">{style.legend.name}</h2>
-			<div class="flex h-[200px] gap-2 text-base">
-				<div class="h-full py-[10px]">
+			<div class="flex h-[200px] flex-col text-base">
+				<div class="w-full py-[10px]">
 					<div
-						class="h-full w-[30px]"
-						style="background: linear-gradient(0deg, {style.legend.colors[0]} 0%, {style.legend
+						class="h-[30px] w-full rounded-lg"
+						style="background: linear-gradient(90deg, {style.legend.colors[0]} 0%, {style.legend
 							.colors[1]} 100%);"
 					></div>
 				</div>
 
-				<div class="flex flex-col justify-between text-base">
+				<div class="flex justify-between text-base">
 					{#each style.legend.range.slice().reverse() as value}
 						<span>{value} {style.legend.unit}</span>
 					{/each}

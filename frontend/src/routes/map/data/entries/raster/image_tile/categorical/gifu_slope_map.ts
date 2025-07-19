@@ -1,3 +1,4 @@
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
@@ -23,8 +24,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		clickable: true
 	},
 	style: {
-		type: 'categorical',
-		opacity: 0.6,
+		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
 			name: '傾斜',

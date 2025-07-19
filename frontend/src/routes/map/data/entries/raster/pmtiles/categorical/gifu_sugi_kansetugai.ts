@@ -1,5 +1,6 @@
 import type { RasterCategoricalStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 
 const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 	id: 'gifu_sugi_kansetugai',
@@ -26,8 +27,7 @@ const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 		clickable: true
 	},
 	style: {
-		type: 'categorical',
-		opacity: 0.6,
+		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
 			name: '20冬期中の危険日判定数',
