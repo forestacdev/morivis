@@ -5,16 +5,62 @@
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/stores/map';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { isSideMenuType } from '$routes/stores/ui';
+	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
+	import emblaCarouselSvelte from 'embla-carousel-svelte';
 
 	let {
 		featureMenuData = $bindable(),
 		layerEntries
 	}: { featureMenuData: FeatureMenuData | null; layerEntries: GeoDataEntry[] } = $props();
+
+	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
+	let emblaMainCarouselOptions: EmblaOptionsType = {
+		loop: true,
+		dragFree: false
+	};
+	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
+
+	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
+	let emblaThumbnailCarouselOptions: EmblaOptionsType = {
+		loop: true,
+		containScroll: 'keepSnaps',
+		dragFree: true
+	};
+	let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
+	let selectedIndex = $state(0);
+
+	function onThumbnailClick(index: number) {
+		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+		emblaMainCarousel.scrollTo(index);
+	}
+
+	function onSelect() {
+		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+		selectedIndex = emblaMainCarousel.selectedScrollSnap();
+		emblaThumbnailCarousel.scrollTo(selectedIndex);
+	}
+
+	function onInitEmblaMainCarousel(event: CustomEvent<EmblaCarouselType>) {
+		emblaMainCarousel = event.detail;
+		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
+	}
+
+	function onInitEmblaThumbnailCarousel(event: CustomEvent<EmblaCarouselType>) {
+		emblaThumbnailCarousel = event.detail;
+	}
+
+	function onClickNext() {
+		if (!emblaMainCarousel) return;
+		emblaMainCarousel.scrollNext();
+	}
+	function onClickPrev() {
+		if (!emblaMainCarousel) return;
+		emblaMainCarousel.scrollPrev();
+	}
 
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {
@@ -85,13 +131,51 @@
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
 			<!-- 画像 -->
 			<div class="relative w-full">
-				{#if srcData}
+				{#if srcData && data && !data.medias}
 					<img
 						in:fade
 						class="block aspect-square h-full w-full object-cover"
 						alt="画像"
 						src={srcData}
 					/>
+				{:else if data && data.medias && data.medias.length > 0}}
+					<div
+						use:emblaCarouselSvelte={{
+							plugins: emblaMainCarouselPlugins,
+							options: emblaMainCarouselOptions
+						}}
+						class="overflow-hidden"
+						onemblaInit={onInitEmblaMainCarousel}
+					>
+						<div class="flex">
+							<img
+								in:fade
+								class="block aspect-video h-full w-full object-cover"
+								alt="画像"
+								src={srcData}
+							/>
+							{#each data.medias as media (media.url)}
+								{#if media.type === 'image'}
+									<img
+										src={media.url}
+										width={1920}
+										height={1080}
+										class="ml-2 aspect-video min-w-0 flex-[0_0_100%] object-cover"
+									/>
+								{:else if media.type === 'youtube'}
+									<iframe
+										class="ml-2 aspect-video min-w-0 flex-[0_0_100%]"
+										src={`${media.url}?mute=0&controls=1`}
+										title="YouTube video player"
+										frameborder="0"
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+										referrerpolicy="strict-origin-when-cross-origin"
+										allowfullscreen
+									></iframe>
+								{/if}
+							{/each}
+						</div>
+					</div>
 				{:else}
 					<!-- !タイトルが長い場合 -->
 					<div
@@ -99,28 +183,30 @@
 						class="bg-sub aspect-2/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden"
 					></div>
 				{/if}
-				<div
-					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
-				>
-					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
-						<!-- poiタイトル -->
-						<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
-						<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
-					{:else}
-						<!-- その他 -->
-						<span class="text-[22px] font-bold"
-							>{targetLayer &&
-							targetLayer.type === 'vector' &&
-							targetLayer.properties.titles.length &&
-							featureMenuData.properties
-								? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-								: targetLayer?.metaData.name}</span
-						>
-						<span class="text-[14px] text-gray-300"
-							>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
-						>
-					{/if}
-				</div>
+				{#if srcData && data && !data.medias}
+					<div
+						class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
+					>
+						{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
+							<!-- poiタイトル -->
+							<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
+							<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
+						{:else}
+							<!-- その他 -->
+							<span class="text-[22px] font-bold"
+								>{targetLayer &&
+								targetLayer.type === 'vector' &&
+								targetLayer.properties.titles.length &&
+								featureMenuData.properties
+									? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+									: targetLayer?.metaData.name}</span
+							>
+							<span class="text-[14px] text-gray-300"
+								>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
+							>
+						{/if}
+					</div>
+				{/if}
 			</div>
 
 			<div class="pl-2">
