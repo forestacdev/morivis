@@ -126,7 +126,7 @@
 			>
 				{#if imageUrl}
 					<img
-						class="border-base absolute h-full w-full rounded-full border-2 object-cover transition-all duration-150 {isHover ||
+						class="border-base border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-110'
 							: ''}"

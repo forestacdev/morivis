@@ -60,6 +60,12 @@
 			featureMenuData = null; // Close the feature menu after editing
 		}
 	};
+
+	// URLを省略する関数
+	const truncateUrl = (url: string, maxLength = 50) => {
+		if (url.length <= maxLength) return url;
+		return url.substring(0, maxLength) + '...';
+	};
 </script>
 
 {#if featureMenuData}
@@ -78,11 +84,11 @@
 
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
 			<!-- 画像 -->
-			<div class="relative w-full p-2">
+			<div class="relative w-full">
 				{#if srcData}
 					<img
 						in:fade
-						class="block aspect-square h-full w-full rounded-lg object-cover"
+						class="block aspect-square h-full w-full object-cover"
 						alt="画像"
 						src={srcData}
 					/>
@@ -119,27 +125,28 @@
 
 			<div class="pl-2">
 				<!-- 詳細情報 -->
-				<div class="flex h-full w-full flex-col gap-2">
-					<div class="flex w-full justify-start gap-2">
-						<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
-						<span class="text-main-accent"
-							>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
-						>
-					</div>
-
-					{#if data}
-						{#if data.url}
-							<a
-								class="flex w-full items-center justify-start gap-2"
-								href={data.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
-								<span class="text-main-accent">{data.url}</span></a
+				<div class="flex h-full w-full flex-col gap-2 p-2">
+					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
+						<div class="flex w-full justify-start gap-2">
+							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+							<span class="text-accent"
+								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 							>
+						</div>
+
+						{#if data}
+							{#if data.url}
+								<a
+									class="flex w-full items-start justify-start gap-2 break-all"
+									href={data.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
+									<span class="text-accent text-ellipsis">{truncateUrl(data.url)}</span></a
+								>
+							{/if}
 						{/if}
-					{/if}
-					<div class="w-hull h-[1px] rounded-full bg-gray-400"></div>
+					</div>
 					{#if data}
 						{#if data.description}
 							<span class="my-2 text-base">{data.description}</span>
@@ -179,7 +186,7 @@
 	.c-gradient {
 		background: linear-gradient(
 			0deg,
-			rgb(30, 30, 30) 0%,
+			var(--color-main) 0%,
 			rgba(233, 233, 233, 0) 60%,
 			rgba(233, 233, 233, 0) 100%
 		);
