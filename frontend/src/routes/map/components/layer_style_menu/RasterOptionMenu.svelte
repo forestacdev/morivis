@@ -4,7 +4,7 @@
 
 	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPulldownBox.svelte';
+	import RasterPresetPullDownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPullDownBox.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type {
 		RasterEntry,
@@ -61,7 +61,7 @@
 	{#if style.type === 'basemap'}
 		{#await promise then imageResult}
 			{#if imageResult}
-				<RasterPresetPulldownBox
+				<RasterPresetPullDownBox
 					bind:preset={style.preset}
 					src={imageResult.url}
 					disabled={showOption}
