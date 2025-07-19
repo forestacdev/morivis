@@ -50,9 +50,9 @@
 	});
 </script>
 
-<div class="mt-4 flex gap-1 text-base">
+<!-- <div class="mt-4 flex gap-1 text-base">
 	<Icon icon={'mdi:magic'} width={20} /><span>描画モード</span>
-</div>
+</div> -->
 
 <div bind:this={containerRef} class="relative py-2">
 	<button

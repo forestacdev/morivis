@@ -68,11 +68,17 @@
 	{#if style.type === 'basemap'}
 		{#await promise then imageResult}
 			{#if imageResult}
-				<RasterPresetPulldownBox
-					bind:preset={style.preset}
-					src={imageResult.url}
-					disabled={showOption}
-				/>
+				<Accordion
+					label={'描画の調整'}
+					icon={'material-symbols:image'}
+					bind:value={showColorOption}
+				>
+					<RasterPresetPulldownBox
+						bind:preset={style.preset}
+						src={imageResult.url}
+						disabled={showOption}
+					/>
+				</Accordion>
 			{/if}
 		{/await}
 
