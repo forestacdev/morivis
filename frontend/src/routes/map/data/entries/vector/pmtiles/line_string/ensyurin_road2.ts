@@ -31,7 +31,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'line',
-		opacity: 0.8,
+		opacity: 0.7,
 		colors: {
 			show: true,
 			key: '単色',

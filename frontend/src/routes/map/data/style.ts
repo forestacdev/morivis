@@ -77,7 +77,7 @@ export const DEFAULT_RASTER_BASEMAP_INTERACTION: {
 
 export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 	type: 'circle',
-	opacity: 0.8,
+	opacity: 0.7,
 	visible: true,
 	markerType: 'circle',
 	colors: {
@@ -127,7 +127,7 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 
 export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 	type: 'line',
-	opacity: 0.5,
+	opacity: 0.7,
 	visible: true,
 	colors: {
 		show: true,
@@ -172,7 +172,7 @@ export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 
 export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 	type: 'fill',
-	opacity: 0.5,
+	opacity: 0.7,
 	visible: true,
 	colors: {
 		key: '単色',

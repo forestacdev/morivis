@@ -13,6 +13,7 @@ import type { Region } from './location';
 import type { Tag } from './tags';
 
 export type GeoDataType = 'raster' | 'vector' | '3d';
+export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 
 export interface BaseMetaData {
 	name: string;

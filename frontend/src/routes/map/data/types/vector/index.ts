@@ -87,4 +87,4 @@ export interface LabelEntry<T> extends BaseVectorEntry {
 	style: LabelStyle;
 }
 
-export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>
+export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>;

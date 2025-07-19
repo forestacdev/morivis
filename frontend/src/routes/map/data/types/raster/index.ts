@@ -1,5 +1,5 @@
 import type { DemDataTypeKey } from '$routes/map/data/dem';
-import type { BaseMetaData } from '$routes/map/data/types';
+import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/raster';
 export interface CategoryLegend {
 	type: 'category';
@@ -54,7 +54,7 @@ export type TileSize = 512 | 256;
 
 export interface RasterBaseMapStyle {
 	type: 'basemap';
-	opacity: number;
+	opacity: Opacity;
 	visible?: boolean;
 	preset: RasterStylePreset;
 	hueRotate: number;
@@ -67,7 +67,7 @@ export interface RasterBaseMapStyle {
 // TODO: グループ化したスタイルの型を定義する
 export interface RasterBaseGroupMapStyle {
 	type: 'basemap';
-	opacity: number;
+	opacity: Opacity;
 	visible?: boolean;
 	hueRotate: number;
 	brightnessMin: number;
@@ -86,7 +86,7 @@ export interface RasterBaseGroupMapStyle {
 
 export interface RasterCategoricalStyle {
 	type: 'categorical';
-	opacity: number;
+	opacity: Opacity;
 	visible?: boolean;
 	legend: CategoryLegend | GradientLegend;
 }
@@ -153,7 +153,7 @@ export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYP
 
 export interface RasterDemStyle {
 	type: 'dem';
-	opacity: number;
+	opacity: Opacity;
 	visible?: boolean;
 	visualization: {
 		demType: DemDataTypeKey;
@@ -204,7 +204,7 @@ export interface MultiBandData {
 
 export interface RasterTiffStyle {
 	type: 'tiff';
-	opacity: number;
+	opacity: Opacity;
 	visible?: boolean;
 	visualization: {
 		numBands: number;
