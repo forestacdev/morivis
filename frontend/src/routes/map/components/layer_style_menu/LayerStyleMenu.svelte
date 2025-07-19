@@ -97,7 +97,7 @@
 			<div
 				in:fly={{ duration: 300, opacity: 10, x: -10 }}
 				out:fly={{ duration: 300, opacity: 0, x: -10 }}
-				class="absolute flex h-full w-full flex-col gap-2"
+				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
