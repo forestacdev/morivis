@@ -490,12 +490,15 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white"
+				class="bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 px-4 text-white"
 			>
-				<button class="cursor-pointer rounded-md p-2" onclick={() => ($isStreetView = false)}
-					><Icon icon="ep:back" class="h-4 w-4" />
+				<button class="cursor-pointer rounded-md" onclick={() => ($isStreetView = false)}
+					><Icon icon="ep:back" class="h-7 w-7" />
 				</button>
-				<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
+				<div class="flex flex-col gap-2">
+					<span class="text-lg">{streetViewPoint ? streetViewPoint.properties['name'] : ''}</span>
+					<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
+				</div>
 			</div>
 		{/if}
 

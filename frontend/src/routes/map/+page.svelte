@@ -268,6 +268,7 @@
 			map.setPitch(0);
 			map.setZoom(18);
 			$mapMode = 'small';
+			map.resize();
 		} else {
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
@@ -291,6 +292,7 @@
 				pitch: 0,
 				duration: 750
 			});
+			map.resize();
 		}
 	});
 
