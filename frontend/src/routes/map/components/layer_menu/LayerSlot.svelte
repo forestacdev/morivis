@@ -48,7 +48,6 @@
 	});
 
 	const selectedLayer = () => {
-		console.log('selectedLayer', layerEntry.id);
 		// if ($selectedLayerId === layerEntry.id) {
 		// 	$isStyleEdit = !$isStyleEdit;
 		// 	return;
@@ -227,6 +226,7 @@
 	aria-label="レイヤー"
 >
 	{#if !$isStyleEdit && !$showDataMenu}
+		<!-- レイヤーの種類 -->
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
 			class="relative grid h-full w-[50px] place-items-center"

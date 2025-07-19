@@ -12,6 +12,7 @@
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { fade, fly } from 'svelte/transition';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -26,6 +27,10 @@
 	// Blob URLとクリーンアップ関数を管理するための状態
 
 	let isImageError = $state<boolean>(false);
+
+	let layertype = $derived.by(() => {
+		return getLayerType(dataEntry);
+	});
 
 	// 画像読み込み完了後のクリーンアップ
 	const handleImageLoad = (_imageResult: ImageResult) => {
@@ -91,7 +96,7 @@
 	onblur={() => (isHover = false)}
 	onclick={() => (showDataEntry = dataEntry)}
 	disabled={isAdded}
-	class="relative mb-4 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-black p-2 transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
+	class="relative mb-4 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
 	bind:this={container}
 >
 	<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
@@ -99,7 +104,7 @@
 			{#if imageResult}
 				<img
 					src={imageResult.url}
-					class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150"
+					class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
 					alt={dataEntry.metaData.name}
 					onload={() => handleImageLoad(imageResult)}
 					loading="lazy"
@@ -120,9 +125,17 @@
 			<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 		</div>
 
-		<span class="absolute bottom-0 right-0 rounded-ss-lg bg-black/40 p-2 pl-4 text-xs text-white"
+		<!-- 出典 -->
+		<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white"
 			>{dataEntry.metaData.attribution}</span
 		>
+		{#if layertype}
+			<div
+				class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
+			>
+				<Icon icon={getLayerIcon(layertype)} class="h-6 w-6" />
+			</div>
+		{/if}
 	</div>
 	<!-- 追加ボタン -->
 	{#if isHover}
@@ -151,7 +164,7 @@
 		</div>
 	{/if}
 
-	<div class="flex w-full flex-col gap-2 py-2">
+	<div class="flex w-full flex-col gap-2 p-2">
 		<div class="text-left text-base">{dataEntry.metaData.name}</div>
 		<!-- <div class="flex items-center gap-1 text-sm text-gray-400">
 			<Icon icon="lucide:map-pin" class="h-5 w-5" />
