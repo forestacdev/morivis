@@ -96,7 +96,7 @@
 	onblur={() => (isHover = false)}
 	onclick={() => (showDataEntry = dataEntry)}
 	disabled={isAdded}
-	class="relative mb-4 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
+	class="relative m-2 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
 	bind:this={container}
 >
 	<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
