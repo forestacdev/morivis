@@ -103,7 +103,7 @@
 			>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
-				<div class="c-scroll h-full grow overflow-x-hidden">
+				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
 					<div class="flex gap-2">
 						{#if src}
 							{#each opacityButtons as item (item.label)}

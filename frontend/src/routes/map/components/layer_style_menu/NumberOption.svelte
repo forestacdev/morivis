@@ -5,14 +5,15 @@
 
 	interface Props {
 		label: string;
+		icon: string;
 		numberStyle: NumbersStyle;
 	}
 
-	let { label, numberStyle = $bindable() }: Props = $props();
+	let { label, numberStyle = $bindable(), icon }: Props = $props();
 
 	let showNumberOption = $state<boolean>(false);
 </script>
 
-<Accordion {label} bind:value={showNumberOption}>
+<Accordion {label} {icon} bind:value={showNumberOption}>
 	<ExpressionsPulldownBox bind:style={numberStyle} expressionType={'number'} />
 </Accordion>

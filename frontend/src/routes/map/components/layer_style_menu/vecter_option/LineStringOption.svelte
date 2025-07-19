@@ -27,8 +27,12 @@
 
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
-<NumberOption label={'ライン幅'} bind:numberStyle={layerEntry.style.width} />
-<Accordion label={'スタイル'} bind:value={showLineOption}>
+<NumberOption
+	label={'ライン幅'}
+	icon={'mingcute:line-fill'}
+	bind:numberStyle={layerEntry.style.width}
+/>
+<Accordion label={'スタイル'} icon={'fluent:line-dashes-32-filled'} bind:value={showLineOption}>
 	<HorizontalSelectBox
 		label={'ラインのスタイル'}
 		bind:group={layerEntry.style.lineStyle}

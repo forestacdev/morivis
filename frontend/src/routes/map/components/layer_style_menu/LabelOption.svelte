@@ -34,7 +34,7 @@
 	};
 </script>
 
-<Accordion label={'ラベル'} bind:value={showLabelOption}>
+<Accordion label={'ラベル'} icon={'ci:font'} bind:value={showLabelOption}>
 	<Switch label={'表示'} bind:value={labels.show} />
 	<LabelPulldownBox bind:labels icon={'ci:font'} />
 

@@ -27,6 +27,7 @@
 	let showIconOption = $state<boolean>(false);
 </script>
 
+<!-- TODO: 不要 -->
 {#if layerEntry.style.icon}
 	<HorizontalSelectBox
 		label={'ポイントのスタイル'}
@@ -42,9 +43,9 @@
 	<!-- 色 -->
 	<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
 
-	<NumberOption label={'円の半径'} bind:numberStyle={layerEntry.style.radius} />
+	<NumberOption label={'円の半径'} icon={'mdi:radius'} bind:numberStyle={layerEntry.style.radius} />
 
-	<Accordion label={'縁'} bind:value={showOutlineOption}>
+	<Accordion label={'縁'} icon={'material-symbols:line-curve'} bind:value={showOutlineOption}>
 		<Switch label={'表示'} bind:value={layerEntry.style.outline.show} />
 		<RangeSlider
 			label="縁の幅"

@@ -5,16 +5,22 @@
 	interface Props {
 		label: string;
 		value?: boolean;
+		icon?: string;
 		children: Snippet;
 	}
-	let { label, value = $bindable(), children }: Props = $props();
+	let { label, value = $bindable(), icon, children }: Props = $props();
 </script>
 
-<label class="group flex grow cursor-pointer items-center justify-between gap-2 pb-2 pt-4">
-	<span
-		class="group-hover:text-accent select-none text-base font-bold transition-colors duration-100"
-		>{label}</span
-	>
+<label class="group flex grow cursor-pointer items-center justify-between gap-2 pb-2 pr-2 pt-4">
+	<div class="flex items-center gap-2">
+		{#if icon}
+			<Icon {icon} class=" h-7 w-7 text-base transition-transform duration-100" />
+		{/if}
+		<span
+			class="group-hover:text-accent select-none text-base font-bold transition-colors duration-100"
+			>{label}</span
+		>
+	</div>
 	<Icon
 		icon="iconamoon:arrow-up-2-duotone"
 		class="h-8 w-8 text-base transition-transform duration-150 {value ? 'rotate-0' : 'rotate-180'}"

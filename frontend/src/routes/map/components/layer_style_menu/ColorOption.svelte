@@ -11,7 +11,7 @@
 	let { colorStyle = $bindable(), showColorOption = $bindable() }: Props = $props();
 </script>
 
-<Accordion label={'色の調整'} bind:value={showColorOption}>
+<Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
 	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
 	<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} />
 </Accordion>

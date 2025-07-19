@@ -26,7 +26,11 @@
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
 
-<Accordion label={'アウトライン'} bind:value={showOutlineOption}>
+<Accordion
+	label={'アウトライン'}
+	icon={'material-symbols:pentagon-outline-rounded'}
+	bind:value={showOutlineOption}
+>
 	<Switch label={'表示'} bind:value={layerEntry.style.outline.show} />
 
 	<RangeSlider
@@ -36,9 +40,8 @@
 		max={10}
 		step={0.01}
 	/>
-	<div class="flex flex-col gap-2 pb-2">
-		<ColorPicker label="ラインの色" bind:value={layerEntry.style.outline.color} />
-	</div>
+
+	<ColorPicker label="ラインの色" bind:value={layerEntry.style.outline.color} />
 
 	<HorizontalSelectBox
 		label={'ラインのスタイル'}
