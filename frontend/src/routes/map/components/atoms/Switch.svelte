@@ -10,7 +10,7 @@
 </script>
 
 <label
-	class="hover:text-main-accent flex grow cursor-pointer items-start justify-between gap-2 py-2 pr-4 text-base transition-colors duration-100"
+	class="hover:text-accent flex grow cursor-pointer items-start justify-between gap-2 py-2 pr-4 text-base transition-colors duration-100"
 	><div class="flex items-center gap-1">
 		{#if icon}
 			<Icon icon={'akar-icons:eye'} class="h-6 w-6" />

@@ -53,7 +53,7 @@
 
 				<span> {labelsList.find((label) => label.key === setLabel.key)?.name}</span>
 			</div>
-			<Icon icon="bi:chevron-down" class="h-6 w-6" />
+			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
 		</button>
 		{#if showPullDown}
 			<div

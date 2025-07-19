@@ -99,9 +99,7 @@
 			{#if imageResult}
 				<img
 					src={imageResult.url}
-					class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150 {isAdded
-						? ''
-						: 'hover:scale-110'}"
+					class="c-no-drag-icon absolute h-full w-full rounded-md object-cover transition-transform duration-150"
 					alt={dataEntry.metaData.name}
 					onload={() => handleImageLoad(imageResult)}
 					loading="lazy"
@@ -117,7 +115,7 @@
 		<div
 			class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
 				? ''
-				: 'opacity-0 transition-opacity duration-150  group-hover:opacity-100'}"
+				: 'opacity-0 transition-opacity'}"
 		>
 			<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
 		</div>
@@ -126,6 +124,7 @@
 			>{dataEntry.metaData.attribution}</span
 		>
 	</div>
+	<!-- 追加ボタン -->
 	{#if isHover}
 		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 shrink-0">
 			{#if isAdded}

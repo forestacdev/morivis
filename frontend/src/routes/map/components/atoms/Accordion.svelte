@@ -2,11 +2,12 @@
 	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
-	let {
-		label,
-		value = $bindable(),
-		children
-	}: { label: string; value: boolean | undefined; children: Snippet } = $props();
+	interface Props {
+		label: string;
+		value?: boolean;
+		children: Snippet;
+	}
+	let { label, value = $bindable(), children }: Props = $props();
 </script>
 
 <label class="group flex grow cursor-pointer items-center justify-between gap-2 pb-2 pt-4">
