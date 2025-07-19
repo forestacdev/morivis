@@ -3,6 +3,7 @@
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 
 	import { onMount } from 'svelte';
 
@@ -111,6 +112,7 @@
 
 <TermsOfServiceDialog />
 <WebGLScreen {initialized} />
+<ScreenGuard />
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
