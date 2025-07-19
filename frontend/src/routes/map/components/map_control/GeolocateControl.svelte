@@ -75,7 +75,7 @@
 	bind:this={controlContainer}
 >
 	<Icon
-		icon="streamline:location-target-1-solid"
+		icon="f7:location-fill"
 		class="absolute h-6 w-6 {controlState === 'waiting'
 			? 'css-rotate text-accent'
 			: controlState === 'active'
@@ -88,14 +88,14 @@
 
 <style>
 	:global(.css-rotate) {
-		animation: spin 2s linear infinite;
+		animation: scale 2s linear infinite;
 	}
-	@keyframes spin {
+	@keyframes scale {
 		from {
-			transform: rotate(0deg);
+			transform: scale(1);
 		}
 		to {
-			transform: rotate(360deg);
+			transform: scale(1.5);
 		}
 	}
 	:global(.maplibregl-ctrl-group) {
