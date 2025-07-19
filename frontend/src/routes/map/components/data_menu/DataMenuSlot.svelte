@@ -165,11 +165,9 @@
 	{/if}
 
 	<div class="flex w-full flex-col gap-2 p-2">
-		<div class="text-left text-base">{dataEntry.metaData.name}</div>
-		<!-- <div class="flex items-center gap-1 text-sm text-gray-400">
-			<Icon icon="lucide:map-pin" class="h-5 w-5" />
-		</div> -->
-		<div class="flex items-center gap-1 text-sm text-gray-400">
+		<!-- タイトル -->
+		<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
+		<div class="flex items-center gap-1 text-sm text-gray-300">
 			{#each dataEntry.metaData.tags as tag}
 				<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
 			{/each}
@@ -194,6 +192,18 @@
 				alt={'森林文化アカデミー'}
 			/>
 		</div> -->
+	{/if}
+	{#if dataEntry.metaData.location === '全国'}
+		<div class="absolute bottom-2 right-2 grid place-items-center">
+			<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-20 w-20" />
+			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+		</div>
+	{/if}
+	{#if dataEntry.metaData.location === '世界'}
+		<div class="absolute bottom-0 right-2 grid place-items-center">
+			<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
+			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+		</div>
 	{/if}
 </button>
 
