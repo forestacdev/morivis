@@ -2,6 +2,7 @@
 	import '../app.css';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { pwaInfo } from 'virtual:pwa-info';
+	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 
 	import { onMount } from 'svelte';
 
@@ -11,7 +12,6 @@
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/stores';
-	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
@@ -96,23 +96,26 @@
 		} else {
 			isDevice = 'mobile';
 		}
-
-		if (checkToTermsAccepted()) {
-			showTermsDialog.set(true);
-		}
 	});
 
 	const initialized = () => {
 		isInitialized = true;
 	};
+
+	showTermsDialog.subscribe(async (value) => {
+		if (!value && page.route.id === '/') {
+			await goto('/map');
+		}
+	});
 </script>
 
+<TermsOfServiceDialog />
 <WebGLScreen {initialized} />
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
 
-<svelte:window on:resize={() => (deviceWidth = window.innerWidth)} />
+<svelte:window onresize={() => (deviceWidth = window.innerWidth)} />
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->

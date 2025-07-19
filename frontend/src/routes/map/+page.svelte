@@ -9,7 +9,6 @@
 
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
-	import TermsOfServiceDialog from '$routes/map/components/dialog/TermsOfServiceDialog.svelte';
 	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
@@ -208,7 +207,7 @@
 		mapStore.jumpToFac();
 	};
 
-	// TODO: ストリートビュー用のクリックイベントを実装する
+	// TODO: ストリートビュー用のクリックイベント
 	// mapStore.onClick((e) => {
 	// 	if (!e || $mapMode === 'edit') return;
 	// 	if (streetViewPointData.features.length > 0) {
@@ -433,7 +432,6 @@
 <SideMenu />
 <NotificationMessage />
 <InfoDialog />
-<TermsOfServiceDialog />
 <ScreenGuard />
 <Processing />
 

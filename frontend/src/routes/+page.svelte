@@ -13,8 +13,10 @@
 
 	import { isBlocked } from '$routes/stores/ui';
 	import { fade, fly, scale } from 'svelte/transition';
+	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
+	import { showTermsDialog } from './stores';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -31,6 +33,10 @@
 	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
+		if (!checkToTermsAccepted()) {
+			showTermsDialog.set(true);
+			return;
+		}
 		showButton = false;
 		goto('/map');
 
