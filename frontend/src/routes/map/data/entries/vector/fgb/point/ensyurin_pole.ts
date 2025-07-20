@@ -1,13 +1,13 @@
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
-import { FEATURE_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import { FEATURE_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: VectorEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_pole',
 	type: 'vector',
 	format: {
-		type: 'pmtiles',
+		type: 'fgb',
 		geometryType: 'Point',
-		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
+		url: `${ENTRY_FGB_PATH}/ensyurin_pole.fgb`
 	},
 	metaData: {
 		name: 'サインポール',
@@ -17,7 +17,6 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['看板'],
 		maxZoom: 17,
 		minZoom: 1,
-		sourceLayer: 'ensyurin_pole',
 		bounds: [136.919359, 35.549761, 136.926759, 35.557836],
 		coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`
 	},
