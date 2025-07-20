@@ -108,6 +108,9 @@
 		orbitControls.enableZoom = false;
 		orbitControls.autoRotateSpeed = 0.5;
 		orbitControls.autoRotate = true;
+		orbitControls.minDistance = 100;
+		orbitControls.maxDistance = 500;
+		orbitControls.maxPolarAngle = Math.PI / 2 - 0.35;
 
 		zoomControls = new TrackballControls(camera, canvas);
 		zoomControls.noPan = true;
@@ -225,7 +228,7 @@
 			{#if !$isBlocked}
 				<button
 					transition:scale={{ duration: 300, opacity: 0.5 }}
-					class="bg-base pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl {$isBlocked
+					class="bg-base hover:bg-main pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl transition-all duration-200 hover:text-white {$isBlocked
 						? 'pointer-events-none'
 						: 'pointer-events-auto'}"
 					onclick={goMap}
