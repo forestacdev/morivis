@@ -336,15 +336,26 @@ const createMapStore = () => {
 		setStyleEvent.set(style);
 	};
 
+	// マップの初期化判定
+	const isMapValid = (_map: any): boolean => {
+		return (
+			_map &&
+			typeof _map === 'object' &&
+			typeof _map.getLayer === 'function' &&
+			typeof _map.setLayoutProperty === 'function' &&
+			!_map._removed
+		); // マップが削除されていないかチェック
+	};
+
 	// Method for setting map style
 	const setStyle = (style: StyleSpecification) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
 		map.setStyle(style);
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
 		if (layer) {
 			map.setFilter(layerId, filter);
@@ -355,13 +366,13 @@ const createMapStore = () => {
 
 	// クリックマーカーを追加するメソッド
 	const addLockonMarker = (element: HTMLElement, lngLat: LngLat) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		lockOnMarker = new maplibregl.Marker({ element }).setLngLat(lngLat).addTo(map);
 	};
 
 	// 森林文化アカデミーへジャンプするメソッド
 	const jumpToFac = () => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
 		map.fitBounds(bounds, {
 			padding: 20,
@@ -372,7 +383,7 @@ const createMapStore = () => {
 	};
 
 	const getMapContainer = async () => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const canvas = map.getCanvasContainer();
 		const witdh = canvas.clientWidth;
 		const height = canvas.clientHeight;
@@ -386,21 +397,23 @@ const createMapStore = () => {
 
 	// クリックマーカーを削除するメソッド
 	const removeLockonMarker = () => {
-		if (!map || !lockOnMarker) return;
+		if (!map || !isMapValid(map)) return;
+		if (!lockOnMarker) return;
 		lockOnMarker.remove();
 	};
 
 	// 地形をリロードするメソッド
 	// https://github.com/maplibre/maplibre-gl-js/issues/3001
 	const terrainReload = () => {
-		if (!map || !map.getTerrain()) return;
+		if (!map || !isMapValid(map)) return;
+		if (!map.getTerrain()) return;
 		setTimeout(() => {
 			if (map) map.terrain.sourceCache.sourceCache.reload();
 		}, 200);
 	};
 
 	const toggleTerrain = (is3d: boolean) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 
 		try {
 			if (is3d) {
@@ -440,7 +453,7 @@ const createMapStore = () => {
 			  },
 		option?: AnimationOptions
 	) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.panTo(lngLat, option);
 	};
 
@@ -452,7 +465,7 @@ const createMapStore = () => {
 					lat: number;
 			  }
 	) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.panTo(lngLat, {
 			duration: 300,
 			padding: {
@@ -465,12 +478,12 @@ const createMapStore = () => {
 	};
 
 	const easeTo = (options: EaseToOptions) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.easeTo(options);
 	};
 
 	const focusLayer = async (_entry: GeoDataEntry) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 
 		if (_entry.metaData.center) {
 			// 中心座標が指定されている場合は、中心にズーム
@@ -504,7 +517,7 @@ const createMapStore = () => {
 
 	// フィーチャーをフォーカスするメソッド
 	const focusFeature = async (feature: MapGeoJSONFeature) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const bbox = turfBbox(feature.geometry) as [number, number, number, number];
 
 		map.fitBounds(bbox, {
@@ -520,7 +533,8 @@ const createMapStore = () => {
 	};
 
 	const getSpriteUrl = (id: string): string | undefined => {
-		if (!map) return undefined;
+		if (!map || !isMapValid(map)) return;
+		undefined;
 		const sprite = map.getSprite();
 
 		if (!sprite) {
@@ -541,7 +555,7 @@ const createMapStore = () => {
 
 	// TODO: サイドバーの分をオフセット
 	const getMapBounds = (): [number, number, number, number] => {
-		if (!map) {
+		if (!map || !isMapValid(map)) {
 			console.warn('Map is not ready yet.');
 			return [0, 0, 0, 0];
 		}
@@ -586,7 +600,7 @@ const createMapStore = () => {
 
 	// ソースとレイヤーをすべてリセットするメソッド
 	const resetAllSourcesAndLayers = () => {
-		if (!map) {
+		if (!map || !isMapValid(map)) {
 			console.warn('Map is not ready yet.');
 			return;
 		}
@@ -633,7 +647,7 @@ const createMapStore = () => {
 	// 地形をリセットするメソッド
 	const resetDem = () => {
 		// TODO
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.setTerrain(null);
 		map.removeSource('terrain');
 
@@ -673,7 +687,7 @@ const createMapStore = () => {
 	};
 
 	const setCursor = (cursor: CSSCursor) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const canvas = map.getCanvas();
 		if (canvas) {
 			canvas.style.cursor = cursor;
@@ -694,7 +708,7 @@ const createMapStore = () => {
 			| Feature<Geometry, GeoJsonProperties>
 			| FeatureCollection<Geometry, GeoJsonProperties>
 	) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		const source = map.getSource(sourceId) as GeoJSONSource;
 		if (source) {
 			source.setData(geojsonData);
@@ -704,18 +718,18 @@ const createMapStore = () => {
 	};
 
 	const fitBounds = (bounds: LngLatBoundsLike, options?: maplibregl.FitBoundsOptions) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.fitBounds(bounds, options);
 	};
 
 	const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.flyTo({ center: lngLat, ...options });
 	};
 
 	// インスタンス削除
 	const remove = () => {
-		if (!map) return;
+		if (!map || !isMapValid(map)) return;
 		map.remove();
 		map = null;
 		set(null);
@@ -740,18 +754,28 @@ const createMapStore = () => {
 		value: any,
 		options?: StyleSetterOptions
 	) => {
-		if (!map) return;
-		if (map.getLayer(layerId)) {
-			map.setLayoutProperty(layerId, name, value, options);
-		} else {
-			console.warn(`Layer with ID ${layerId} does not exist.`);
+		if (!map || !isMapValid(map)) return;
+		try {
+			if (map.getLayer(layerId)) {
+				map.setLayoutProperty(layerId, name, value, options);
+			} else {
+				console.warn(`Layer with ID ${layerId} does not exist.`);
+			}
+		} catch (error) {
+			console.error(`Error setting layout property for layer ${layerId}:`, error);
 		}
+	};
+
+	const getLayer = (layerId: string) => {
+		if (!map || !isMapValid(map)) return undefined;
+		return map.getLayer(layerId);
 	};
 
 	return {
 		subscribe,
 		// 処理
 		init,
+		isInitialized: () => get(initEvent),
 		remove,
 		addLockonMarker,
 		removeLockonMarker,
@@ -783,6 +807,7 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		getTerrain: () => map?.getTerrain(),
+		getLayer,
 		getState: () => get(state),
 		getImage: (id: string) => map?.getImage(id),
 		getMapBounds,

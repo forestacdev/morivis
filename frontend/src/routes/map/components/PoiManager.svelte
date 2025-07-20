@@ -34,7 +34,8 @@
 	let clickId = $state<number | null>(null); // クリックされたPOIのID
 
 	const updateMarkers = () => {
-		if (!$showLabelLayer || !map.getLayer(poiLayersIds[0])) return;
+		if (!map || !mapStore.isInitialized()) return;
+		if (!$showLabelLayer || !mapStore.getLayer(poiLayersIds[0])) return;
 
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
