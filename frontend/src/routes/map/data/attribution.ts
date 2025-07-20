@@ -77,10 +77,6 @@ const attributionData = {
 		name: '環境省生物多様性センター',
 		url: 'https://www.biodic.go.jp'
 	},
-	森林総合研究所: {
-		name: '森林総合研究所',
-		url: 'https://www.biodic.go.jp'
-	},
 	愛媛県森林資源データ: {
 		name: '愛媛県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/ehime-ringyou'
@@ -100,10 +96,14 @@ const attributionData = {
 	'大阪府（林野庁加工）': {
 		name: '大阪府（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya'
+	},
+	森林総合研究所: {
+		name: '森林総合研究所',
+		url: 'https://www.ffpri.go.jp/ffpri.html'
 	}
 } as const;
 
-export type AttributionKey = keyof typeof attributionData;
+export type AttributionKey = keyof typeof attributionData & 'カスタムデータ';
 
 // Map を作成
 export const attributionMap: Map<string, Attribution> = new Map(

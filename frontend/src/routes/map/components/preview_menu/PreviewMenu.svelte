@@ -38,45 +38,64 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
 	>
-		<div class="flex w-full cursor-pointer justify-between pb-2">
+		<!-- <div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
 			<button
 				onclick={() => (showDataEntry = null)}
-				class="bg-base mr-auto cursor-pointer rounded-full p-2"
+				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
-				<Icon icon="ep:back" class="text-main h-4 w-4" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
-		</div>
-		<div class="flex h-full flex-col gap-2 overflow-auto">
-			<!-- タイトル -->
+		</div> -->
+		<div class="c-scroll flex h-full flex-col gap-2 overflow-y-auto overflow-x-hidden">
 			<div class="flex shrink-0 grow flex-col gap-1 text-base">
-				<div class="text-lg">{showDataEntry?.metaData.name}</div>
-				<div>{showDataEntry?.metaData.location}</div>
-				<span>最大ズームレベル{showDataEntry?.metaData.maxZoom}</span>
+				<!-- タイトル -->
+				<div class="flex flex-col gap-1 py-2 pb-4">
+					<div class="text-2xl">{showDataEntry?.metaData.name}</div>
+					<div>{showDataEntry?.metaData.location}</div>
+				</div>
 
-				<div class="font-bold">データ範囲</div>
-				<div>{showDataEntry?.metaData.bounds}</div>
-				{#if showDataEntry}
-					<MapPane bind:showDataEntry />
+				<div class="flex flex-col gap-1 py-2 pb-4">
+					<div class="flex gap-1">
+						<Icon icon="carbon:area" class="h-6 w-6" />
+						<span class="font-bold">データ範囲</span>
+					</div>
+
+					{#if showDataEntry}
+						<MapPane bind:showDataEntry />
+					{/if}
+				</div>
+
+				{#if showDataEntry?.metaData.attribution !== 'カスタムデータ'}
+					<div class="flex gap-1">
+						<Icon icon="lets-icons:info-alt-fill" class="h-6 w-6" />
+						<span class="font-bold">データ出典元</span>
+					</div>
+					<div class="mb-2 rounded-lg bg-black p-2">
+						<span>{showDataEntry?.metaData.attribution}</span>
+						{#if showDataEntry?.metaData.downloadUrl}
+							<a
+								class="text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150 hover:underline"
+								href={showDataEntry?.metaData.downloadUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								><Icon icon="el:download" class="h-6 w-6" />
+								<span>データ提供元サイトを開く</span></a
+							>
+						{/if}
+					</div>
 				{/if}
 
-				<div class="font-bold">データ出典元</div>
-				<div>{showDataEntry?.metaData.attribution}</div>
-
-				{#if showDataEntry?.metaData.downloadUrl}
-					<a
-						class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-						href={showDataEntry?.metaData.downloadUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						><Icon icon="el:download" class="h-8 w-8" />
-						<span>提供元からダウンロード</span></a
-					>
-				{/if}
-
-				<div class="font-bold">概要</div>
-				{#if showDataEntry}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<div>{@html formatDescription(showDataEntry?.metaData.description)}</div>
+				{#if showDataEntry.metaData.description}
+					<div class="flex gap-1">
+						<Icon icon="openmoji:overview" class="h-6 w-6" />
+						<span class="font-bold">概要</span>
+					</div>
+					{#if showDataEntry}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<div class="rounded-lg bg-black p-2">
+							{@html formatDescription(showDataEntry?.metaData.description)}
+						</div>
+					{/if}
 				{/if}
 			</div>
 			<!-- 切り替えタブ -->

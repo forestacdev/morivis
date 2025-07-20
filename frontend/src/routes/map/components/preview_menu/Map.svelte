@@ -112,12 +112,15 @@
 							container: mapContainer as HTMLElement, // 地図を表示する要素
 							style: data.style, // スタイル設定
 							pitch: 0,
-							bearing: 0
+							bearing: 0,
+							interactive: false,
+							attributionControl: false,
+							renderWorldCopies: false
 						});
 
 						map.fitBounds(data.bbox, {
 							bearing: 0,
-							padding: 30,
+							padding: 40,
 							duration: 0
 						});
 
@@ -142,7 +145,11 @@
 </script>
 
 {#if hasBbox}
-	<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}></div>
+	<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}>
+		<div class="absolute bottom-0 right-0 z-10 bg-black/70 p-1">
+			{showDataEntry?.metaData.bounds}
+		</div>
+	</div>
 {/if}
 
 <style>

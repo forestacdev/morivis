@@ -52,7 +52,7 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="pointer-events-none absolute bottom-4 z-10 flex w-full items-center justify-center gap-4 p-4"
+	class="pointer-events-none absolute bottom-4 z-20 flex w-full items-center justify-center gap-4 p-4"
 >
 	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
 		>キャンセル
