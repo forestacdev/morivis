@@ -13,7 +13,8 @@ import type {
 	MapGeoJSONFeature,
 	LngLatBoundsLike,
 	GeoJSONSource,
-	FilterSpecification
+	FilterSpecification,
+	StyleSetterOptions
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -733,6 +734,20 @@ const createMapStore = () => {
 		lockOnMarker = null;
 	};
 
+	const setLayoutProperty = (
+		layerId: string,
+		name: string,
+		value: any,
+		options?: StyleSetterOptions
+	) => {
+		if (!map) return;
+		if (map.getLayer(layerId)) {
+			map.setLayoutProperty(layerId, name, value, options);
+		} else {
+			console.warn(`Layer with ID ${layerId} does not exist.`);
+		}
+	};
+
 	return {
 		subscribe,
 		// 処理
@@ -745,6 +760,7 @@ const createMapStore = () => {
 		setData,
 		setStyle,
 		setFilter,
+		setLayoutProperty,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		fitBounds,
 		panTo,

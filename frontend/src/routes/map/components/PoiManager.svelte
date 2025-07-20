@@ -89,6 +89,22 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			clickId = null;
+			console.warn('Feature menu data is null, resetting clickId.');
+			mapStore.setLayoutProperty('fac_poi', 'symbol-sort-key', 1);
+		}
+	});
+
+	$effect(() => {
+		if (featureMenuData && featureMenuData.layerId === 'fac_poi') {
+			mapStore.setLayoutProperty('fac_poi', 'symbol-sort-key', [
+				'case',
+				// 特定の1つのfeature_idを最優先
+				['==', ['id'], featureMenuData.featureId],
+				0, // 最優先
+				1 // 通常優先度
+			]);
+
+			clickId = featureMenuData.featureId;
 		}
 	});
 

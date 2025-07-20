@@ -19,6 +19,7 @@
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { debounce } from 'es-toolkit';
+	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
@@ -41,11 +42,6 @@
 		search_values: string[];
 		feature_id: number;
 		point: [number, number];
-		tile_coords: {
-			x: number;
-			y: number;
-			z: number;
-		};
 		prop_id?: string | null;
 		path: string;
 	}
@@ -84,9 +80,14 @@
 
 	const focusFeature = async (result: ResultData) => {
 		if (result.propId) {
+			const tileCoords = lonLatToTileCoords(
+				result.point[0],
+				result.point[1],
+				14 // ズームレベル
+			);
 			const prop = await getPropertiesFromPMTiles(
 				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-				result.tile,
+				tileCoords,
 				result.layerId,
 				result.featureId
 			);
@@ -110,7 +111,7 @@
 		showSelectionMarker = true;
 	};
 
-	const searchFeature = async (searchWord: string) => {
+	const searchFeature = async (searchWord: string, isAddressSearch: boolean = true) => {
 		isLoading = true;
 		isClickedSearch = true;
 		try {
@@ -145,7 +146,7 @@
 			let addressSearchData = [];
 
 			// 2文字以上の検索ワードの場合、住所検索を実行
-			if (searchWord.length > 1) {
+			if (searchWord.length > 1 && isAddressSearch) {
 				// 住所検索
 
 				const addressSearchResponse = await addressSearch(searchWord);
@@ -196,9 +197,10 @@
 	});
 
 	$effect(() => {
-		if ($isSideMenuType !== 'search') {
+		if (inputSearchWord) {
+			debounceSearch(inputSearchWord);
+		} else {
 			results = null;
-			inputSearchWord = '';
 		}
 	});
 </script>
@@ -224,7 +226,7 @@
 						class="cursor-pointer rounded-lg bg-black px-4 py-2 text-base drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]"
 						onclick={() => {
 							inputSearchWord = searchWard;
-							searchFeature(inputSearchWord);
+							searchFeature(inputSearchWord, false);
 						}}
 						>{searchWard}
 					</button>
@@ -244,12 +246,16 @@
 						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
 					>
 						<div class="grid shrink-0 place-items-center">
-							{#if result.propId && propData[result.propId]}
+							{#if result.propId && propData[result.propId] && propData[result.propId].image}
 								<img
 									src={propData[result.propId].image}
 									alt="Icon"
-									class="h-8 w-8 rounded-full object-cover"
+									class="h-12 w-12 rounded-full object-cover"
 								/>
+							{:else}
+								<div class="grid h-12 w-12 place-items-center">
+									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+								</div>
 							{/if}
 						</div>
 						<div class="flex w-full flex-col justify-center gap-[1px]">

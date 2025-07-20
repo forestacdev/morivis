@@ -155,6 +155,7 @@
 								src={srcData}
 							/>
 							{#each data.medias as media (media.url)}
+								<!--TODO: メディア表示-->
 								{#if media.type === 'image'}
 									<img
 										src={media.url}
