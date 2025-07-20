@@ -140,7 +140,7 @@
 
 	<div
 		bind:this={nameContainer}
-		class="items-top pointer-events-none relative z-10 flex w-[150px] justify-center"
+		class="items-top pointer-events-none relative z-10 flex w-[170px] justify-center"
 	>
 		{#if isHover || clickId === featureId}
 			<div

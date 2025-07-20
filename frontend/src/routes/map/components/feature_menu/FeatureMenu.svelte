@@ -138,7 +138,7 @@
 						alt="画像"
 						src={srcData}
 					/>
-				{:else if data && data.medias && data.medias.length > 0}}
+				{:else if data && data.medias && data.medias.length > 0}
 					<div
 						use:emblaCarouselSvelte={{
 							plugins: emblaMainCarouselPlugins,
@@ -184,30 +184,29 @@
 						class="bg-sub aspect-2/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden"
 					></div>
 				{/if}
-				{#if srcData && data && !data.medias}
-					<div
-						class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
-					>
-						{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
-							<!-- poiタイトル -->
-							<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
-							<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
-						{:else}
-							<!-- その他 -->
-							<span class="text-[22px] font-bold"
-								>{targetLayer &&
-								targetLayer.type === 'vector' &&
-								targetLayer.properties.titles.length &&
-								featureMenuData.properties
-									? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
-									: targetLayer?.metaData.name}</span
-							>
-							<span class="text-[14px] text-gray-300"
-								>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
-							>
-						{/if}
-					</div>
-				{/if}
+
+				<div
+					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
+				>
+					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
+						<!-- poiタイトル -->
+						<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
+						<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
+					{:else}
+						<!-- その他 -->
+						<span class="text-[22px] font-bold"
+							>{targetLayer &&
+							targetLayer.type === 'vector' &&
+							targetLayer.properties.titles.length &&
+							featureMenuData.properties
+								? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+								: targetLayer?.metaData.name}</span
+						>
+						<span class="text-[14px] text-gray-300"
+							>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
+						>
+					{/if}
+				</div>
 			</div>
 
 			<div class="pl-2">

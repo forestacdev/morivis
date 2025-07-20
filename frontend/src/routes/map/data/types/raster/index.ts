@@ -167,23 +167,24 @@ export interface RasterDemStyle {
 		demType: DemDataTypeKey;
 		mode: DemStyleMode;
 		uniformsData: {
-			shadow: {
-				azimuth: number;
-				altitude: number;
-			};
-			slope: {
-				max: number;
-				min: number;
-				colorMap: ColorMapType;
-			};
 			relief: {
 				max: number;
 				min: number;
 				colorMap: ColorMapType;
 			};
-			aspect: {
+			slope?: {
+				max: number;
+				min: number;
 				colorMap: ColorMapType;
 			};
+			aspect?: {
+				colorMap: ColorMapType;
+			};
+			// shadow: {
+			// 	azimuth: number;
+			// 	altitude: number;
+			// };
+
 			// curvature: {
 			// 	ridgeThreshold: number;
 			// 	valleyThreshold: number;

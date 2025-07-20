@@ -12,6 +12,9 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+
+	const rangeMax = $state.raw(layerEntry.style.visualization.uniformsData['relief'].max);
+	const rangeMin = $state.raw(layerEntry.style.visualization.uniformsData['relief'].min);
 </script>
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
@@ -23,21 +26,21 @@
 		<RangeSlider
 			label="最大値"
 			bind:value={layerEntry.style.visualization.uniformsData['relief'].max}
-			max={5000}
-			min={0}
+			max={rangeMax}
+			min={rangeMin}
 			step={0.01}
 		/>
 
 		<RangeSlider
 			label="最小値"
 			bind:value={layerEntry.style.visualization.uniformsData['relief'].min}
-			max={5000}
-			min={0}
+			max={rangeMax}
+			min={rangeMin}
 			step={0.01}
 		/>
 	{/if}
 
-	{#if layerEntry.style.visualization.mode === 'slope'}
+	{#if layerEntry.style?.visualization.uniformsData['slope'] && layerEntry.style.visualization.mode === 'slope'}
 		<DemStyleColorMapPulldownBox
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['slope'].colorMap}
 		/>
@@ -58,7 +61,7 @@
 		/>
 	{/if}
 
-	{#if layerEntry.style.visualization.mode === 'aspect'}
+	{#if layerEntry.style?.visualization.uniformsData['aspect'] && layerEntry.style.visualization.mode === 'aspect'}
 		<DemStyleColorMapPulldownBox
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['aspect'].colorMap}
 		/>

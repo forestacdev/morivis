@@ -38,8 +38,6 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			demType: 'mapbox',
 			mode: 'relief',
 			uniformsData: {
-				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
-
 				relief: {
 					max: 29,
 					min: 0,

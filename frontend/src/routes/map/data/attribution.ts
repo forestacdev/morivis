@@ -103,7 +103,9 @@ const attributionData = {
 	}
 } as const;
 
-export type AttributionKey = keyof typeof attributionData & 'カスタムデータ';
+export type AttributionData = typeof attributionData;
+
+export type AttributionKey = keyof typeof attributionData | 'カスタムデータ';
 
 // Map を作成
 export const attributionMap: Map<string, Attribution> = new Map(
