@@ -174,7 +174,7 @@
 					type: 'raster',
 					source: 'tile_grid',
 					paint: {
-						'raster-opacity': 0.5
+						'raster-opacity': 0.3
 					}
 				},
 				...previewLayers
@@ -306,7 +306,7 @@
 					type: 'background',
 					paint: {
 						'background-color': '#000000',
-						'background-opacity': showDataEntry || showZoneForm ? 0.8 : 0
+						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
 					}
 				} as BackgroundLayerSpecification,
 				...previewLayers,

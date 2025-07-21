@@ -156,33 +156,40 @@
 		</div>
 
 		<div
-			class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+			class="c-scroll flex h-full w-full grow flex-col items-center overflow-y-auto overflow-x-hidden"
 		>
 			{#each getEpsgInfoArray({ exclude4326: true }) as info}
-				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
+				<label
+					class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info.code ===
+					selectedEpsgCode
+						? 'bg-accent '
+						: 'text-white'}"
+				>
 					<input type="radio" bind:group={selectedEpsgCode} value={info.code} class="hidden" />
-					<span
-						class="select-none transition-colors duration-200 {info.code === selectedEpsgCode
-							? 'text-black'
-							: ''}"
-						>{info.name_ja}
-					</span>
+					<div class="flex flex-col">
+						<span class="select-none transition-colors duration-200">{info.name_ja} </span>
+						<span class="text select-none text-xs text-gray-300 transition-colors duration-200"
+							>{info.prefecture}
+						</span>
+					</div>
 				</label>
 			{/each}
+		</div>
+		<div class="flex shrink-0 flex-col justify-center gap-4 overflow-auto pt-2">
 			<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
-		</div>
-		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-			<button
-				onclick={() => (showZoneForm = false)}
-				class="c-btn-cancel cursor-pointer p-4 text-lg"
-			>
-				キャンセル
-			</button>
-			<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
-				決定
-			</button>
+			<div class="flex gap-2">
+				<button
+					onclick={() => (showZoneForm = false)}
+					class="c-btn-cancel cursor-pointer p-4 text-lg"
+				>
+					キャンセル
+				</button>
+				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
+					決定
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}

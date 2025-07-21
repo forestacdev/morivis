@@ -102,7 +102,7 @@
 	let showAngleMarker = $state<boolean>(false); // マーカーの表示
 	let angleMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
 
-	let showDialogType = $state<DialogType>('shp');
+	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //

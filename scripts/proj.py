@@ -3,10 +3,18 @@ import json
 
 # 統合されたEPSG情報辞書
 EPSG_INFO_MAP = {
-    4326: {"name_ja": "WGS84 / 地理座標系", "prefecture": None, "zone": None},
+    4326: {"name_ja": "WGS84 / 地理座標系", "prefecture": "世界", "zone": None},
     3857: {"name_ja": "Web メルカトル座標系", "prefecture": "世界", "zone": None},
-    4612: {"name_ja": "日本測地系2000 / 地理座標系", "prefecture": None, "zone": None},
-    6668: {"name_ja": "日本測地系2011 / 地理座標系", "prefecture": None, "zone": None},
+    4612: {
+        "name_ja": "日本測地系2000 / 地理座標系",
+        "prefecture": "全国",
+        "zone": None,
+    },
+    6668: {
+        "name_ja": "日本測地系2011 / 地理座標系",
+        "prefecture": "全国",
+        "zone": None,
+    },
     6669: {
         "name_ja": "日本測地系2011 / 平面直角座標系第1系",
         "prefecture": "長崎県",
@@ -101,11 +109,6 @@ EPSG_INFO_MAP = {
         "name_ja": "日本測地系2011 / 平面直角座標系第19系",
         "prefecture": "東京都（南鳥島）",
         "zone": "19",
-    },
-    2443: {
-        "name_ja": "日本測地系2011 / 北海道測地系",
-        "prefecture": "北海道",
-        "zone": None,
     },
 }
 
