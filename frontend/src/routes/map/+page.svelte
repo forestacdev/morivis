@@ -433,9 +433,7 @@
 <SideMenu />
 <NotificationMessage />
 <InfoDialog />
-
 <Processing />
-
 <ConfirmationDialog />
 
 <svelte:window

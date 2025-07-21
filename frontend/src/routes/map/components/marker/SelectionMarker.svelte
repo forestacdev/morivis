@@ -13,7 +13,7 @@
 	let marker: maplibregl.Marker | null = $state.raw(null);
 
 	onMount(() => {
-		if (container && show) {
+		if (container && show && lngLat) {
 			marker = new maplibregl.Marker({
 				element: container,
 				anchor: 'center',
@@ -31,7 +31,7 @@
 				marker = null;
 			}
 		} else {
-			if (marker) {
+			if (marker && lngLat) {
 				marker.setLngLat(lngLat);
 			} else {
 				marker = new maplibregl.Marker({

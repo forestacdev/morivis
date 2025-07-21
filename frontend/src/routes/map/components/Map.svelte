@@ -570,7 +570,13 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
-	<PoiManager map={maplibreMap} bind:featureMenuData {showDataEntry} {showZoneForm} />
+	<PoiManager
+		map={maplibreMap}
+		bind:featureMenuData
+		{showDataEntry}
+		{showZoneForm}
+		bind:showSelectionMarker
+	/>
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		{showDataEntry}

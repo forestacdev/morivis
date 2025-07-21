@@ -17,9 +17,16 @@
 		featureMenuData: FeatureMenuData | null;
 		showDataEntry: GeoDataEntry | null;
 		showZoneForm: boolean; // ゾーンフォームを表示するかどうか
+		showSelectionMarker: boolean; // 選択マーカーを表示するかどうか
 	}
 
-	let { map, featureMenuData = $bindable(), showDataEntry, showZoneForm }: Props = $props();
+	let {
+		map,
+		featureMenuData = $bindable(),
+		showDataEntry,
+		showZoneForm,
+		showSelectionMarker = $bindable()
+	}: Props = $props();
 
 	interface PoiData {
 		featureId: number;
@@ -91,7 +98,7 @@
 		if (!featureMenuData) {
 			clickId = null;
 			console.warn('Feature menu data is null, resetting clickId.');
-			mapStore.setLayoutProperty('fac_poi', 'symbol-sort-key', 1);
+			// mapStore.setLayoutProperty('fac_poi', 'symbol-sort-key', 1);
 		}
 	});
 
@@ -106,6 +113,10 @@
 			]);
 
 			clickId = featureMenuData.featureId;
+			showSelectionMarker = false;
+		} else {
+			clickId = null;
+			// mapStore.setLayoutProperty('fac_poi', 'symbol-sort-key', 1);
 		}
 	});
 
