@@ -14,8 +14,8 @@ export default defineConfig({
 			manifest: {
 				name: 'morivis',
 				short_name: 'morivis',
-				description: '森林文化アカデミー演習林の地図アプリです。',
-				theme_color: '#369c00',
+				description: '森林文化アカデミー演習林WebGIS',
+				theme_color: '#0C221D',
 				lang: 'ja',
 				icons: [
 					{

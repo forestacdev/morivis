@@ -68,7 +68,7 @@
 
 		// 行き先の先頭時が_なら、ホームに遷移
 		if (import.meta.env.MODE === 'production' && toPage.startsWith('/_')) {
-			window.location.href = '/';
+			window.location.href = '/morivis';
 			return;
 		}
 	};
@@ -82,7 +82,7 @@
 		if (import.meta.env.MODE === 'production' && toPage.startsWith('/_')) {
 			cancel();
 
-			return { path: '/' };
+			return { path: '/morivis' };
 		}
 	});
 

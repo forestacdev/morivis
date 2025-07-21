@@ -38,7 +38,11 @@
 			return;
 		}
 		showButton = false;
-		goto('/map');
+		if (import.meta.env.MODE === 'production') {
+			goto('/morivis/map');
+		} else {
+			goto('/map');
+		}
 
 		return;
 	};

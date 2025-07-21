@@ -51,12 +51,16 @@
 		if (!map) return;
 		await imageExport(map);
 		isProcessing.set(false);
-		showNotification('地図を.pngでエクスポートしました', 'success');
+		showNotification('地図をPNG画像でエクスポートしました', 'success');
 	};
 
 	const goHome = async () => {
 		showSideMenu.set(false);
-		goto('/');
+		if (import.meta.env.MODE === 'production') {
+			goto('/morivis');
+		} else {
+			goto('/');
+		}
 	};
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
