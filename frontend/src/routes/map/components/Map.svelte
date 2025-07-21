@@ -17,6 +17,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -503,7 +504,7 @@
 				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
 				: 'bottom-0 left-0 h-full w-full opacity-100'}"
 	></div>
-
+	<FooterMenu {layerEntries} />
 	<!-- <div
 		bind:this={mapContainer}
 		class="absolute h-full w-full bg-black transition-all duration-200"

@@ -11,7 +11,6 @@
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
 	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
-	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
@@ -43,6 +42,7 @@
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import Processing from './Processing.svelte';
+	import { slide } from 'svelte/transition';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -343,20 +343,13 @@
 {#if isInitialized}
 	<div class="relative flex h-full w-full grow">
 		<!-- マップのオフセット調整用 -->
-		<!-- {#if $isSideMenuType}
-		<div
-			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
-		></div>
-	{/if} -->
-
-		<!-- メニューの背景 -->
 		{#if $isSideMenuType}
-			<!-- <div
-			transition:fade={{ duration: 300 }}
-			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[400px] flex-col gap-2"
-		></div> -->
+			<div
+				in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+				class="bg-main w-side-menu flex h-full shrink-0 flex-col"
+			></div>
 		{/if}
+
 		<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 		<SearchMenu
 			bind:featureMenuData
@@ -399,7 +392,7 @@
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 		/>
-		<FooterMenu {layerEntries} />
+
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} />
 		<PreviewMenu bind:showDataEntry />

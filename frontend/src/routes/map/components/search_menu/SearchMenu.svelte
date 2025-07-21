@@ -101,10 +101,11 @@
 			featureMenuData = data;
 		}
 
+		// TODO
+		//github.com/maplibre/maplibre-gl-js/issues/4891
 		mapStore.easeTo({
 			center: result.point,
-			zoom: 17,
-			padding: { left: 400 }
+			zoom: 17
 		});
 
 		selectionMarkerLngLat = result.point;

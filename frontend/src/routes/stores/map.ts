@@ -466,14 +466,11 @@ const createMapStore = () => {
 			  }
 	) => {
 		if (!map || !isMapValid(map)) return;
+
+		// TODO
+		//github.com/maplibre/maplibre-gl-js/issues/4891
 		map.panTo(lngLat, {
-			duration: 300,
-			padding: {
-				left: 400, // サイドバー分の余白を左に確保
-				top: 20,
-				right: 20,
-				bottom: 20
-			}
+			duration: 300
 		});
 	};
 
@@ -493,7 +490,7 @@ const createMapStore = () => {
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				padding: {
-					left: 400, // サイドバー分の余白を左に確保
+					left: 20,
 					top: 20,
 					right: 20,
 					bottom: 20
@@ -505,7 +502,7 @@ const createMapStore = () => {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
 				padding: {
-					left: 400, // サイドバー分の余白を左に確保
+					left: 20,
 					top: 20,
 					right: 20,
 					bottom: 20
@@ -523,7 +520,7 @@ const createMapStore = () => {
 		map.fitBounds(bbox, {
 			bearing: map.getBearing(),
 			padding: {
-				left: 400, // サイドバー分の余白を左に確保
+				left: 20, // サイドバー分の余白を左に確保
 				top: 20,
 				right: 20,
 				bottom: 20

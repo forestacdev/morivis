@@ -47,7 +47,7 @@
 					element.style.transform = `rotate(0deg)`;
 				}
 				this.rotation = 0;
-				this.update(); // 内部状態を反映（これが重要！）
+				this.update();
 			},
 			onDragEnd: function () {
 				const bearing = mapStore.getBearing();
