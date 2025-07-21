@@ -1,446 +1,245 @@
-<script lang="ts" module>
-	export interface StreetViewPoint {
-		type: 'Feature';
-		geometry: {
-			type: 'Point';
-			coordinates: [number, number];
-		};
-		properties: {
-			ID: string;
-			name: string;
-			Name: string;
-		};
-	}
-	export interface NextPointData {
-		featureData: StreetViewPoint;
-		bearing: number;
-	}
-
-	export interface StreetViewPointGeoJson {
-		type: 'FeatureCollection';
-		features: StreetViewPoint[];
-	}
-
-	export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | null;
-</script>
-
 <script lang="ts">
-	import turfBearing from '@turf/bearing';
-	import turfDistance from '@turf/distance';
-	import turfNearestPoint from '@turf/nearest-point';
-	import { debounce } from 'es-toolkit';
-	import { delay } from 'es-toolkit';
-	import type { FeatureCollection } from 'geojson';
-	import maplibregl from 'maplibre-gl';
-	import type { Marker, LngLat } from 'maplibre-gl';
-	import { onMount, mount } from 'svelte';
-	import { slide } from 'svelte/transition';
+	import { fromArrayBuffer, rgb } from 'geotiff';
+	import gsap from 'gsap';
+	import { onMount, onDestroy } from 'svelte';
+	import * as THREE from 'three';
+	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
+	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
+	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
+	import { goto } from '$app/navigation';
+	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 
-	import DataMenu from '$routes/components/data-menu/DataMenu.svelte';
-	import InfoDialog from '$routes/components/dialog/InfoDialog.svelte';
-	import TermsOfServiceDialog from '$routes/components/dialog/TermsOfServiceDialog.svelte';
-	import FeatureMenu from '$routes/components/feature-menu/featureMenu.svelte';
-	import FooterMenu from '$routes/components/footer/_Index.svelte';
-	import HeaderMenu from '$routes/components/Header/_Index.svelte';
-	import LayerMenu from '$routes/components/layer-menu/_Index.svelte';
-	import LayerStyleMenu from '$routes/components/layer-style-menu/LayerStyleMenu.svelte';
-	import MapLibreMap from '$routes/components/Map.svelte';
-	import NotificationMessage from '$routes/components/NotificationMessage.svelte';
-	import DataPreview from '$routes/components/preview-menu/DataPreview.svelte';
-	import PreviewMenu from '$routes/components/preview-menu/PreviewMenu.svelte';
-	import SearchMenu from '$routes/components/search-menu/SearchMenu.svelte';
-	import SideMenu from '$routes/components/side-menu/_Index.svelte';
-	import AngleMarker from '$routes/components/street-view/AngleMarker.svelte';
-	import StreetViewCanvas from '$routes/components/street-view/ThreeCanvas.svelte';
-	import TerrainMenu from '$routes/components/terrain-menu/TerrainMenu.svelte';
-	import Tooltip from '$routes/components/Tooltip.svelte';
-	import UploadDaialog from '$routes/components/upload/BaseDaialog.svelte';
-	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
-	import { geoDataEntries } from '$routes/data';
-	import type { GeoDataEntry } from '$routes/data/types';
-	import ProcessingScreen from '$routes/ProcessingScreen.svelte';
-	import SplashScreen from '$routes/SplashScreen.svelte';
-	import {
-		isSideMenuType,
-		isStreetView,
-		mapMode,
-		selectedLayerId,
-		isStyleEdit
-	} from '$routes/store';
-	import { orderedLayerIds } from '$routes/store/layers';
-	import { mapStore } from '$routes/store/map';
-	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/utils/geojson';
-	import { getFgbToGeojson } from '$routes/utils/geojson';
-	import { setStreetViewParams, getStreetViewParams } from '$routes/utils/params';
+	import { isBlocked } from '$routes/stores/ui';
+	import { fade, fly, scale } from 'svelte/transition';
+	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
-	type NodeConnections = Record<string, string[]>;
-	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
+	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
+	import { showTermsDialog } from './stores';
 
-	let layerEntriesData = $derived.by(() => {
-		return [...geoDataEntries, ...tempLayerEntries];
-	});
+	let canvas = $state<HTMLCanvasElement | null>(null);
+	let scene: THREE.Scene;
+	let camera: THREE.PerspectiveCamera;
+	let renderer: THREE.WebGLRenderer;
+	let orbitControls: OrbitControls;
+	let zoomControls: TrackballControls;
+	let showButton = $state<boolean>(true);
+	let renderTarget: THREE.WebGLRenderTarget;
+	let bufferScene: THREE.Scene;
 
-	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
-	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
-	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
+	let postMesh: THREE.Mesh;
+	let isLoading = $state<boolean>(false);
+	let controlDiv = $state<HTMLDivElement | null>(null);
 
-	let isStyleEditEntry = $derived.by(() => {
-		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);
-		if (targetEntry && $isStyleEdit) {
-			return targetEntry;
-		} else {
-			return null;
+	const goMap = () => {
+		if (!checkToTermsAccepted()) {
+			showTermsDialog.set(true);
+			return;
 		}
-	});
-	let inputSearchWord = $state<string>(''); // 検索ワード
+		showButton = false;
+		goto('/map');
 
-	// ストリートビューのデータ
-	let nextPointData = $state<NextPointData[] | null>(null);
-	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
-	let angleMarker = $state<Marker | null>(null); // マーカー
-	let streetViewPoint = $state<StreetViewPoint | null>(null);
-	let streetViewPointData = $state<StreetViewPointGeoJson>({
-		type: 'FeatureCollection',
-		features: []
-	});
-	let streetViewLineData = $state<FeatureCollection>({
-		type: 'FeatureCollection',
-		features: []
-	});
-	let cameraBearing = $state<number>(0);
-	let showMapCanvas = $state<boolean>(true);
-	let showThreeCanvas = $state<boolean>(false);
-	let featureMenuData = $state<FeatureMenuData | null>(null);
+		return;
+	};
 
-	// 選択マーカー
-	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
-	let selectionMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
+	const onResize = () => {
+		// サイズを取得
+		const width = window.innerWidth;
+		const height = window.innerHeight;
 
-	let showDialogType = $state<DialogType>(null);
+		uniforms.resolution.value.set(width, height);
 
-	const markerContainer = document.createElement('div');
-	document.body.appendChild(markerContainer);
+		// レンダラーのサイズを調整する
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(width, height);
+
+		// カメラのアスペクト比を正す
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+
+		buffarUniforms.resolution.value.set(width, height);
+
+		// フレームバッファのサイズを更新
+		if (!renderTarget) return;
+
+		renderTarget.setSize(width, height);
+
+		// シェーダーの解像度を更新
+		(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(width, height);
+	};
 
 	onMount(async () => {
-		mount(AngleMarker, {
-			target: markerContainer,
-			props: {
-				cameraBearing: cameraBearing,
-				angleMarker
-			}
+		if (!canvas) return;
+
+		if (!canvas) return;
+		const sizes = {
+			width: window.innerWidth,
+			height: window.innerHeight
+		};
+		// シーンの作成
+		scene = new THREE.Scene();
+
+		// カメラ
+		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+
+		let rot = -170;
+		const radian = (rot * Math.PI) / 180;
+		const distance = 180;
+
+		// 角度に応じてカメラの位置を設定
+		camera.position.x = distance * Math.sin(radian);
+		camera.position.z = distance * Math.cos(radian);
+		camera.position.y = 90;
+
+		// camera.position.set(100, 100, 100);
+		scene.add(camera);
+
+		// フレームバッファ用のシーンとカメラを作成
+		bufferScene = new THREE.Scene();
+
+		// キャンバス
+		const context = canvas.getContext('webgl2') as WebGL2RenderingContext;
+
+		// コントロール
+		orbitControls = new OrbitControls(camera, canvas);
+		orbitControls.enableDamping = true;
+		orbitControls.enablePan = false;
+		orbitControls.enableZoom = false;
+		orbitControls.autoRotateSpeed = 0.5;
+		orbitControls.autoRotate = true;
+		orbitControls.minDistance = 100;
+		orbitControls.maxDistance = 500;
+		orbitControls.maxPolarAngle = Math.PI / 2 - 0.35;
+
+		zoomControls = new TrackballControls(camera, canvas);
+		zoomControls.noPan = true;
+		zoomControls.noRotate = true;
+		zoomControls.zoomSpeed = 0.2;
+
+		renderTarget = new THREE.WebGLRenderTarget(sizes.width, sizes.height, {
+			depthBuffer: false,
+			stencilBuffer: false,
+			magFilter: THREE.NearestFilter,
+			minFilter: THREE.NearestFilter,
+			wrapS: THREE.ClampToEdgeWrapping,
+			wrapT: THREE.ClampToEdgeWrapping
 		});
-		streetViewPointData = (await getFgbToGeojson(
-			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
-		)) as StreetViewPointGeoJson;
-
-		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
-
-		nodeConnectionsJson = await fetch(`${STREET_VIEW_DATA_PATH}/node_connections.json`).then(
-			(res) => res.json()
-		);
-
-		const imageId = getStreetViewParams();
-		if (imageId) {
-			// const targetPoint = streetViewPointData.features.find((point) => {
-			// 	return point.properties['ID'] === imageId;
-			// });
-			// if (targetPoint) {
-			// 	const mapInstance = mapStore.getMap();
-			// 	if (mapInstance) {
-			// 		mapInstance.flyTo({
-			// 			center: targetPoint.geometry.coordinates,
-			// 			zoom: 18,
-			// 			speed: 1.5,
-			// 			curve: 1
-			// 		});
-			// 	}
-			// }
-			// setPoint(targetPoint);
-			// $isStreetView = true;
-		}
-	});
-
-	// ストリートビューのデータの取得
-	const setPoint = async (point: StreetViewPoint) => {
-		if (!point) return;
-		const pointId = point.properties['ID'];
-
-		setStreetViewParams(pointId);
-
-		const nextPoints = (nodeConnectionsJson[pointId] || [])
-			.map((id) => streetViewPointData.features.find((point) => point.properties['ID'] === id))
-			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
-			.map((nextPoint) => ({
-				featureData: nextPoint,
-				bearing: turfBearing(point, nextPoint)
-			}));
-		const map = mapStore.getMap();
-
-		if (!map) return;
-
-		if ($isStreetView) {
-			setCamera(map, point.geometry.coordinates);
-			map.panTo(point.geometry.coordinates, {
-				duration: 1000,
-				animate: true
-			});
-		}
-
-		if (angleMarker) {
-			angleMarker.remove();
-		}
-
-		angleMarker = new maplibregl.Marker({
-			element: markerContainer,
-
-			pitchAlignment: 'map',
-			rotationAlignment: 'map',
-			draggable: true,
-			rotation: -cameraBearing + 180
-		})
-			.setLngLat(point.geometry.coordinates)
-
-			.addTo(map);
-
-		angleMarker.togglePopup();
-
-		nextPointData = nextPoints;
-		streetViewPoint = point;
-
-		// マーカーのドラッグ
-		angleMarker?.on('dragend', () => {
-			const lngLat = angleMarker?.getLngLat();
-			if (!lngLat) return;
-			const point = turfNearestPoint([lngLat.lng, lngLat.lat], streetViewPointData);
-			setPoint(point as StreetViewPoint);
+		buffarUniforms.screenTexture.value = renderTarget.texture as THREE.Texture;
+		// フレームバッファに描画するオブジェクトを追加
+		const buffarGeometry = new THREE.PlaneGeometry(2, 2);
+		const buffarMaterial = new THREE.ShaderMaterial({
+			fragmentShader: bufferFragment,
+			vertexShader: bufferVertex,
+			uniforms: buffarUniforms as any // 型の互換性のためにanyを使用
 		});
-	};
 
-	// マーカーの回転
-	$effect(() => {
-		if (cameraBearing && angleMarker) {
-			angleMarker.setRotation(-cameraBearing + 180);
-		}
-	});
+		postMesh = new THREE.Mesh(buffarGeometry, buffarMaterial);
+		bufferScene.add(postMesh);
 
-	mapStore.onClick((e) => {
-		if (!e || $mapMode === 'edit') return;
-		if (streetViewPointData.features.length > 0) {
-			const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-			const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-			if (distance < 100) {
-				// streetViewPoint = point;
-				setPoint(point as StreetViewPoint);
-			}
-		}
-	});
+		// レンダラー
+		renderer = new THREE.WebGLRenderer({
+			canvas,
+			context,
+			alpha: true
+		});
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-	const setCamera = (map: maplibregl.Map, lngLat: maplibregl.LngLat) => {
-		// https://github.com/maplibre/maplibre-gl-js/issues/4688
+		// renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+		// renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-		const elevation = map.queryTerrainElevation(lngLat);
+		// ヘルパーグリッド
+		// const gridHelper = new THREE.GridHelper(200, 100);
+		// scene.add(gridHelper);
+		// gridHelper.position.y = -5;
 
-		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0); // 例: 高度400mの地点をターゲットとする
+		// const radius = 10;
+		// const sectors = 16;
+		// const rings = 80;
+		// const divisions = 64;
 
-		console.warn('elevation', elevation);
-		map._elevationStart = map._elevationTarget;
-	};
+		// const helper = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+		// scene.add(helper);
 
-	const resetCamera = (map: maplibregl.Map) => {
-		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
-		map.setCenterElevation(0);
-		map._elevationStart = map._elevationTarget;
-	};
+		// // ヘルパー方向
+		// const axesHelper = new THREE.AxesHelper(100);
+		// scene.add(axesHelper);
 
-	// streetビューの表示切り替え時
-	isStreetView.subscribe(async (value) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-
-		if (value) {
-			setCamera(map, streetViewPoint.geometry.coordinates);
-			map.easeTo({
-				center: streetViewPoint.geometry.coordinates,
-				zoom: 20,
-				duration: 750,
-				bearing: -cameraBearing + 180,
-				pitch: 65
-			});
-
-			await delay(750);
-			showMapCanvas = false;
-			showThreeCanvas = true;
-
-			await delay(500);
-
-			map.setBearing(0);
-			map.setPitch(0);
-			$mapMode = 'small';
+		const mesh = await createdDemMesh();
+		if (mesh) {
+			scene.add(mesh);
 		} else {
-			map.easeTo({
-				center: streetViewPoint.geometry.coordinates,
-				zoom: 20,
-				duration: 0,
-				bearing: -cameraBearing + 180,
-				pitch: 65
-			});
-
-			$mapMode = 'view';
-			showMapCanvas = true;
-			showThreeCanvas = false;
-			resetCamera(map);
-
-			await delay(300);
-
-			// マップを移動
-			map.easeTo({
-				zoom: 17,
-				bearing: 0,
-				pitch: 0,
-				duration: 750
-			});
+			console.error('Failed to create DEM mesh');
 		}
+
+		const clock = new THREE.Clock();
+
+		// アニメーション
+		const animate = () => {
+			requestAnimationFrame(animate);
+
+			orbitControls.update();
+			zoomControls.update();
+
+			uniforms.time.value = clock.getElapsedTime();
+
+			// フレームバッファ;
+			renderer.setRenderTarget(renderTarget);
+			renderer.render(scene, camera);
+
+			renderer.setRenderTarget(null);
+			renderer.render(bufferScene, camera);
+
+			// シェーダーの解像度を更新
+			(postMesh.material as THREE.ShaderMaterial).uniforms.resolution.value.set(
+				window.innerWidth,
+				window.innerHeight
+			);
+		};
+		animate();
+
+		// 画面リサイズ時にキャンバスもリサイズ
+		window.addEventListener('resize', onResize);
+		onResize();
 	});
 
-	// レイヤーの追加、削除、並び替えを行う
-	// orderedLayerIds.subscribe((ids) => {
-	// 	layerEntries = layerEntriesData
-	// 		.filter((entry) => ids.includes(entry.id))
-	// 		.sort((a, b) => {
-	// 			return ids.indexOf(a.id) - ids.indexOf(b.id);
-	// 		});
-	// });
+	onDestroy(() => {
+		// クリーンアップ
+		orbitControls.dispose();
+		zoomControls.dispose();
+		scene.clear(); // シーン内のオブジェクトを削除
+		renderer.dispose();
+		renderTarget.dispose(); // フレームバッファの解放
+		postMesh.geometry.dispose(); // メッシュのジオメトリを解放
+		// イベントリスナーの削除
 
-	// レイヤーの追加、削除、並び替えを行う
-	orderedLayerIds.subscribe((newOrderedIds) => {
-		const currentLayerEntries = [...layerEntries];
-
-		// 現在の layerEntries をIDをキーとしたマップに変換し、既存のレイヤーオブジェクトを素早く参照できるようにする
-		const currentLayersMap = new Map(currentLayerEntries.map((entry) => [entry.id, entry]));
-
-		const newLayerEntries = []; // 新しい layerEntries の内容を格納する配列
-
-		for (const id of newOrderedIds) {
-			let layer = currentLayersMap.get(id); // 現在のマップからレイヤーを検索
-
-			if (layer) {
-				// 既存の layerEntries にそのレイヤーがあれば、そのオブジェクトをそのまま利用する
-				// これにより、そのレイヤーオブジェクトに対するプロパティの変更（例: active: false など）が保持されます。
-				newLayerEntries.push(layer);
-			} else {
-				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
-				layer = layerEntriesData.find((entry) => entry.id === id);
-				if (layer) {
-					// layerEntriesData から取得したオブジェクトを、初期状態として追加
-					// 必要であれば、ここでオブジェクトをディープコピーして、元の layerEntriesData に影響を与えないようにすることも検討できます。
-					// 例: newLayerEntries.push(JSON.parse(JSON.stringify(layer)));
-					newLayerEntries.push(layer);
-				}
-				// else: orderedLayerIds にあるが layerEntriesData に存在しないIDは無視
-			}
-		}
-
-		// layerEntries ストアを新しいソート・フィルターされたリストで更新
-		// これにより、Svelteコンポーネントは新しいデータで再レンダリングされます。
-		layerEntries = newLayerEntries;
+		window.removeEventListener('resize', onResize);
 	});
 </script>
 
-<div class="relative flex h-full w-full grow">
-	<!-- マップのオフセット調整用 -->
-	{#if $isSideMenuType}
-		<div
-			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
-		></div>
-	{/if}
-	<LayerMenu bind:layerEntries bind:tempLayerEntries />
-	<SearchMenu
-		bind:featureMenuData
-		bind:inputSearchWord
-		{layerEntries}
-		bind:showSelectionMarker
-		bind:selectionMarkerLngLat
-	/>
+<div class="app relative flex h-screen w-screen">
+	<canvas class="h-screen w-full bg-gray-900" bind:this={canvas}></canvas>
 
-	<MapLibreMap
-		bind:layerEntries
-		bind:tempLayerEntries
-		bind:showDataEntry
-		bind:featureMenuData
-		bind:showSelectionMarker
-		bind:selectionMarkerLngLat
-		bind:dropFile
-		bind:showDialogType
-		{streetViewLineData}
-		{streetViewPointData}
-		{angleMarker}
-		{streetViewPoint}
-		{showMapCanvas}
-	/>
+	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
+		<div class="flex h-full w-full flex-col items-center justify-center gap-6">
+			<span class="text-[100px] font-bold text-white">morivis</span>
 
-	<HeaderMenu />
-	<FooterMenu {layerEntries} />
-	<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-	<FeatureMenu bind:featureMenuData {layerEntries} />
-	<PreviewMenu bind:showDataEntry />
+			{#if !$isBlocked}
+				<button
+					transition:scale={{ duration: 300, opacity: 0.5 }}
+					class="bg-base hover:bg-main pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl transition-all duration-200 hover:text-white {$isBlocked
+						? 'pointer-events-none'
+						: 'pointer-events-auto'}"
+					onclick={goMap}
+					disabled={$isBlocked}
+					>クリックでマップを見る
+				</button>
+			{/if}
 
-	<TerrainMenu />
-	{#if !showDataEntry}
-		<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
-	{/if}
-	{#if showDataEntry}
-		<DataPreview bind:showDataEntry bind:tempLayerEntries />
-	{/if}
-
-	<StreetViewCanvas
-		{streetViewPoint}
-		{nextPointData}
-		{showThreeCanvas}
-		bind:cameraBearing
-		{setPoint}
-	/>
+			<div class="absolute bottom-8 [&_path]:fill-white">
+				<FacLogo width={'300'} />
+			</div>
+		</div>
+	</div>
 </div>
-<UploadDaialog bind:showDialogType bind:showDataEntry bind:tempLayerEntries bind:dropFile />
-
-<Tooltip />
-
-<!-- Mobile -->
-<!-- <div class="relative flex h-full w-full grow flex-col">
-		<LayerMenu bind:layerEntries bind:tempLayerEntries />
-
-		<Map
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:featureMenuData
-			{streetViewLineData}
-			{streetViewPointData}
-			{angleMarker}
-			{streetViewPoint}
-			{showMapCanvas}
-			{showDataEntry}
-		/>
-		<FooterMenu {layerEntries} />
-		<DataMenu {showDataEntry} />
-
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			{setPoint}
-		/>
-	</div> -->
-
-<SideMenu />
-<NotificationMessage />
-<InfoDialog />
-<TermsOfServiceDialog />
-
-<ProcessingScreen />
-
-<SplashScreen />
-
-<style>
-</style>

@@ -4,9 +4,11 @@
 
 @theme {
 	--color-base: #f1f1f1;
-	--color-main: #1c1e20;
-	--color-sub: #3c3c3c;
-	--color-accent: #23a209;
+	--color-main: #0c221d;
+	--color-sub: #495a54;
+	--color-sub-dark: #1e2124;
+	--color-accent: #59b68e;
+	--color-main-accent: #166345;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
 }
@@ -35,18 +37,13 @@
 }
 
 @utility c-btn-sub {
-	/* 決定ボタンスタイル */
+	/* サブボタンスタイル */
 	@apply border-sub bg-sub hover:text-main hover:bg-base hover:border-base cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150;
-}
-
-@utility c-btn-delete {
-	/* 削除ボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-red-500 bg-red-500 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-red-400;
 }
 
 @utility c-btn-cancel {
 	/* キャンセルボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-gray-400 bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
+	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
 }
 
 @utility c-form-field {
@@ -56,26 +53,55 @@
 
 @utility c-select {
 	/* プルダウンスタイル */
-	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
+	@apply border-sub cursor-pointer rounded-lg border-1 bg-black p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
 }
 
-@utility c-option {
-	/* プルダウンスタイル */
-	@apply border-sub bg-sub cursor-pointer rounded-lg border-2 p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black;
+/* @utility bg-side-menu {
+	--base-color: #000000;
+	background-image: linear-gradient(
+		to right,
+		color-mix(in srgb, var(--base-color) 90%, transparent),
+		color-mix(in srgb, var(--base-color) 89%, transparent) 8%,
+		color-mix(in srgb, var(--base-color) 86%, transparent) 15.4%,
+		color-mix(in srgb, var(--base-color) 80%, transparent) 22.3%,
+		color-mix(in srgb, var(--base-color) 74%, transparent) 28.7%,
+		color-mix(in srgb, var(--base-color) 67%, transparent) 34.8%,
+		color-mix(in srgb, var(--base-color) 59%, transparent) 40.7%,
+		color-mix(in srgb, var(--base-color) 50%, transparent),
+		color-mix(in srgb, var(--base-color) 41%, transparent) 52.1%,
+		color-mix(in srgb, var(--base-color) 33%, transparent) 57.9%,
+		color-mix(in srgb, var(--base-color) 24%, transparent) 63.9%,
+		color-mix(in srgb, var(--base-color) 16%, transparent) 70.1%,
+		color-mix(in srgb, var(--base-color) 10%, transparent) 76.7%,
+		color-mix(in srgb, var(--base-color) 5%, transparent) 83.9%,
+		color-mix(in srgb, var(--base-color) 2%, transparent) 91.6%,
+		color-mix(in srgb, var(--base-color) 0%, transparent)
+	);
+} */
+
+@utility bg-side-menu {
+	background: rgba(0, 0, 0, 0.7);
+	backdrop-filter: blur(20px);
 }
 
 @utility w-side-menu {
 	/* サイドメニューの幅 */
-	@apply w-[360px];
+	@apply w-[400px];
+}
+
+@utility w-style-menu {
+	/* スタイルメニューの幅 */
+	@apply w-[450px];
 }
 
 @utility c-scroll {
 	/* スクロールバー */
+	-webkit-overflow-scrolling: touch;
 	scrollbar-gutter: stable;
 
 	&::-webkit-scrollbar {
-		width: 7px;
-		height: 7px;
+		width: 5px;
+		height: 5px;
 	}
 	&::-webkit-scrollbar-track {
 		background: transparent;
