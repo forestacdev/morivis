@@ -47,10 +47,7 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 				min: 0,
 				colorMap: 'jet'
 			},
-			shadow: {
-				azimuth: 180,
-				altitude: 45
-			},
+
 			slope: {
 				max: 90,
 				min: 0,
@@ -59,6 +56,10 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			aspect: {
 				colorMap: 'rainbow-soft'
 			}
+			// shadow: {
+			// 	azimuth: 180,
+			// 	altitude: 45
+			// },
 			// curvature: {
 			// 	ridgeThreshold: 0.7,
 			// 	valleyThreshold: 0.3,
