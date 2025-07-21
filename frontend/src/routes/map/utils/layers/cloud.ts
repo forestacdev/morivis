@@ -5,7 +5,7 @@ export const cloudStyleJson = {
 	sources: {
 		cloud: {
 			type: 'raster',
-			url: `${ENTRY_PMTILES_RASTER_PATH}/cloud.pmtiles`,
+			url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/cloud.pmtiles`,
 			attribution: ''
 		} as RasterSourceSpecification
 	},
