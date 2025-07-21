@@ -6,6 +6,7 @@ import maplibregl from 'maplibre-gl';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 
 export interface MapImageOptions {
 	name: string;
@@ -330,13 +331,16 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		sprite: MAP_SPRITE_DATA_PATH,
 		glyphs: MAP_FONT_DATA_PATH,
 		sources: {
+			// TODO 背景地図のみ処理を分離
 			mierune_mono: {
 				type: 'raster',
 				tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
 				tileSize: 256,
 				minzoom: 0,
 				maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-				bounds: minimumEntry.metaData.bounds,
+				bounds: _layerEntry.metaData.xyzImageTile
+					? minimumEntry.metaData.bounds
+					: WEB_MERCATOR_WORLD_BBOX,
 				attribution:
 					'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenStreetMap contributors</a>'
 			},
