@@ -178,6 +178,7 @@
 		{#if !$isStyleEdit}
 			<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
 				{#if $isSideMenuType}
+					<!-- バックボタン -->
 					<button
 						class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
 						onclick={() => {

@@ -15,7 +15,10 @@
 		>
 			<div class="flex shrink-0 items-center justify-between pb-4">
 				<span class="text-2xl font-bold">morivis（モリビス） について</span>
-				<button onclick={() => showInfoDialog.set(false)} class="bg-base rounded-full p-2">
+				<button
+					onclick={() => showInfoDialog.set(false)}
+					class="bg-base cursor-pointer rounded-full p-2"
+				>
 					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 				</button>
 			</div>
