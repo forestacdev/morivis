@@ -32,17 +32,24 @@
 	});
 </script>
 
-<label
-	class="relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full p-4"
-	><span class="absolute">{label}</span>
-	{#if name}
-		<span class="absolute text-sm">{name}</span>
-	{/if}
-	<div class="rounded-full bg-white p-12 duration-150 {file ? 'translate-y-[90px]' : ''}"></div>
+<div class="relative">
+	<label
+		class="relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg bg-white p-4"
+		><span class="absolute">{label}</span>
 
-	<!-- <span class="absolute bottom-0 text-red-500">{error ? error : ''}</span> -->
-	<input type="file" {accept} class="hidden" onchange={(e) => inputFile(e)} />
-</label>
+		<div class="p-12 {file ? '' : ''}"></div>
+
+		<span class="absolute bottom-0 text-sm text-red-500">{error ? error : ''}</span>
+		<input type="file" {accept} class="hidden" onchange={(e) => inputFile(e)} />
+		{#if name}
+			<div
+				class="pointer-events-none absolute grid place-items-center overflow-clip rounded-lg bg-white p-2 text-sm text-gray-500"
+			>
+				<span class="text-sm">{name}</span>
+			</div>
+		{/if}
+	</label>
+</div>
 
 <style>
 </style>

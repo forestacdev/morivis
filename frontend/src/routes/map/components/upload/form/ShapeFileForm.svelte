@@ -316,13 +316,15 @@
 {#if showDialogType && showDialogType === 'shp'}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/50
+		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/70
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 	>
 		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4 pt-8">
-			<span class="text-2xl font-bold">シェープファイルの登録</span>
+			<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
 		</div>
 
+		<!-- TODO 表現方法 -->
+		<!-- 
 		<div
 			class="c-main relative m-0 grid aspect-square h-[400px] place-items-center"
 			style="--distance: 100px;"
@@ -364,21 +366,54 @@
 					bind:name={forms.prjName}
 				/>
 			</div>
+		</div> -->
+		<div class="flex gap-2">
+			<ShapeFileFormInput
+				label=".shp"
+				bind:file={forms.shpFile}
+				accept=".shp"
+				error={errors.shpFile}
+				bind:name={forms.shpName}
+			/>
+
+			<ShapeFileFormInput
+				label=".dbf"
+				bind:file={forms.dbfFile}
+				accept=".dbf"
+				error={errors.dbfFile}
+				bind:name={forms.dbfName}
+			/>
+
+			<ShapeFileFormInput
+				label=".shx"
+				bind:file={forms.shxFile}
+				accept=".shx"
+				error={errors.shxFile}
+				bind:name={forms.shxName}
+			/>
+
+			<ShapeFileFormInput
+				label=".prj(任意)"
+				bind:file={forms.prjFile}
+				accept=".prj"
+				error={errors.prjFile}
+				bind:name={forms.prjName}
+			/>
+			{hasFilenameMatchError ? 'ファイル名が一致しません' : ''}
 		</div>
 
-		<!-- {hasFilenameMatchError} -->
-	</div>
-	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-		<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
-		<button
-			onclick={registration}
-			disabled={isDisabled}
-			class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
-				? 'cursor-not-allowed opacity-50'
-				: 'cursor-pointer'}"
-		>
-			決定
-		</button>
+		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+			<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
+			<button
+				onclick={registration}
+				disabled={isDisabled}
+				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
+					? 'cursor-not-allowed opacity-50'
+					: 'cursor-pointer'}"
+			>
+				決定
+			</button>
+		</div>
 	</div>
 {/if}
 
