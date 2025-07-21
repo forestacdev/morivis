@@ -32,7 +32,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isSideMenuType } from '$routes/stores/ui';
+	import { isBlocked, isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -240,6 +240,7 @@
 	isStreetView.subscribe(async (value) => {
 		const map = mapStore.getMap();
 		if (!map || !map.loaded() || !streetViewPoint) return;
+		isBlocked.set(true);
 
 		showAngleMarker = value;
 
@@ -269,6 +270,7 @@
 			map.setZoom(18);
 			$mapMode = 'small';
 			map.resize();
+			isBlocked.set(false);
 		} else {
 			map.easeTo({
 				center: streetViewPoint.geometry.coordinates,
@@ -293,6 +295,8 @@
 				duration: 750
 			});
 			map.resize();
+			await delay(750);
+			isBlocked.set(false);
 		}
 	});
 
@@ -436,13 +440,14 @@
 <Processing />
 <ConfirmationDialog />
 
-<svelte:window
+<!-- TODO -->
+<!-- <svelte:window
 	onkeydown={(e) => {
 		if (e.key === 'F3') {
 			DEBUG_MODE.set(!$DEBUG_MODE);
 		}
 	}}
-/>
+/> -->
 
 <style>
 </style>
