@@ -112,8 +112,13 @@
 	};
 
 	const toggleDataMenu = () => {
-		showSideMenu.set(false);
-		showDataMenu.set(!$showDataMenu);
+		if (!$showDataMenu) {
+			showDataMenu.set(true);
+			isSideMenuType.set('layer');
+		} else {
+			showDataMenu.set(false);
+			isSideMenuType.set(null);
+		}
 	};
 
 	const toggleInfoDialog = () => {
@@ -132,7 +137,7 @@
 
 	const toggleSearchMenu = () => {
 		if ($isSideMenuType === 'search') {
-			isSideMenuType.set(null);
+			// isSideMenuType.set(null);
 		} else {
 			isSideMenuType.set('search');
 		}
@@ -140,7 +145,7 @@
 
 	const toggleLayerMenu = () => {
 		if ($isSideMenuType === 'layer') {
-			isSideMenuType.set(null);
+			// isSideMenuType.set(null);
 		} else {
 			isSideMenuType.set('layer');
 		}
@@ -218,37 +223,40 @@
 				</div>
 			{/if}
 			{#if $isSideMenuType === 'search' || !$isSideMenuType}
+				<!-- 検索メニューボタン -->
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
 					onclick={toggleSearchMenu}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
 					'search'
 						? 'text-accent scale-120'
-						: ''}"
+						: 'cursor-pointer'}"
 				>
 					<Icon icon="stash:search-solid" class="h-7 w-7" />
 				</button>
 			{/if}
 
-			{#if ($isSideMenuType === 'layer' && !$isStyleEdit) || !$isSideMenuType}
+			{#if ($isSideMenuType === 'layer' && !$isStyleEdit && !$showDataMenu) || !$isSideMenuType}
+				<!-- レイヤーメニューボタン -->
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
 					'layer'
 						? 'text-accent scale-120'
-						: ''}"
+						: 'cursor-pointer'}"
 					onclick={toggleLayerMenu}
 				>
 					<Icon icon="ic:round-layers" class="h-7 w-7" />
 				</button>
 			{/if}
-			{#if !$isSideMenuType}
+			{#if !$isSideMenuType || ($isSideMenuType === 'layer' && $showDataMenu)}
+				<!-- データメニューボタン -->
 				<button
 					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
+					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
 					'layer'
 						? 'text-accent scale-120'
-						: ''}"
+						: 'cursor-pointer'}"
 					onclick={toggleDataMenu}
 				>
 					<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
@@ -260,19 +268,21 @@
 					class="w-title-bar flex shrink-0 items-center justify-center text-nowrap text-center text-lg"
 				>
 					{#if !$isStyleEdit && !$showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">地図上の</div>
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">地図上の</div>
 					{/if}
 
-					<div>データ</div>
+					<div class="select-none">データ</div>
 
 					{#if !$isStyleEdit && !$showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">項目</div>
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">項目</div>
 					{/if}
 					{#if $isStyleEdit}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">のカスタマイズ</div>
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">
+							のカスタマイズ
+						</div>
 					{/if}
 					{#if $showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="">カタログ</div>
+						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">カタログ</div>
 					{/if}
 					{#if $isStyleEdit || $showDataMenu}
 						<button
