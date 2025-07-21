@@ -17,6 +17,10 @@ const attributionData = {
 		name: '国土地理院',
 		url: 'https://maps.gsi.go.jp/development/ichiran.html'
 	},
+	国土地理院最適化ベクトルタイル: {
+		name: '国土地理院最適化ベクトルタイル',
+		url: 'https://github.com/gsi-cyberjapan/optimal_bvmap'
+	},
 	NASA: {
 		name: 'NASA/Goddard Space Flight Center/Reto Stöckli',
 		url: 'https://earthdata.nasa.gov/'

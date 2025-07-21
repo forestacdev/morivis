@@ -37,7 +37,7 @@
 >
 	<Icon
 		icon="fa6-solid:street-view"
-		class="h-7 w-7 {$showStreetViewLayer ? 'text-main-accent' : 'text-base'}"
+		class="h-7 w-7 {$showStreetViewLayer ? 'text-accent' : 'text-base'}"
 	/>
 </button>
 

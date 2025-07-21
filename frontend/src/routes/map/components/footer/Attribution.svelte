@@ -7,7 +7,6 @@
 		type Attribution
 	} from '$routes/map/data/attribution';
 	import { layerAttributions } from '$routes/stores/attributions';
-	import { update } from 'es-toolkit/compat';
 	import { debounce } from 'es-toolkit';
 	import { mapStore } from '$routes/stores/map';
 
@@ -17,7 +16,12 @@
 
 	let attributions = $state<Attribution[]>([]);
 	let baseMapAttributionsKeys2 = $state<AttributionKey>([]);
-	const baseMapAttributionsKeys: AttributionKey[] = ['OpenMapTiles', 'MIERUNE', 'OSM'];
+	const baseMapAttributionsKeys: AttributionKey[] = [
+		'OpenMapTiles',
+		'MIERUNE',
+		'OSM',
+		'国土地理院最適化ベクトルタイル'
+	];
 
 	const updateAttributions = debounce((items: AttributionKey[]) => {
 		const newAttributions = [...items, ...baseMapAttributionsKeys, ...baseMapAttributionsKeys2]
@@ -46,9 +50,11 @@
 			// ズームレベルに応じて表示するアトリビューションを更新
 			const zoom = state.zoom;
 			const keys = [];
-			if (zoom >= 4) {
-				keys.push('国土地理院');
-			}
+
+			// TODO かぶるキーは除外
+			// if (zoom >= 4) {
+			// 	keys.push('国土地理院');
+			// }
 			if (zoom <= 5) {
 				keys.push('NASA');
 			}
@@ -63,9 +69,9 @@
 	let container = $state<HTMLDivElement | null>(null);
 	let track = $state<HTMLDivElement | null>(null);
 	let position = 0;
-	let speed = 2.1; // スクロール速度
+	let speed = 0.7; // スクロール速度
 	let direction = -1; // -1: 左から右, 1: 右から左
-	let shouldScroll = false; // スクロールが必要かどうか
+	let shouldScroll = $state<boolean>(false); // スクロールが必要かどうか
 	let isInitialized = false; // 初期化完了フラグ
 
 	// サイズ変更を監視してスクロール必要性を判定
@@ -74,7 +80,7 @@
 
 		const trackWidth = track.scrollWidth;
 		const containerWidth = container.offsetWidth;
-		const iconWidth = 40; // アイコン分の幅を考慮
+		const iconWidth = 0; // アイコン分の幅を考慮
 
 		// トラックが親要素（アイコン分を除く）より大きい場合にスクロール開始
 		const availableWidth = containerWidth - iconWidth;
@@ -108,7 +114,7 @@
 		if (direction === -1 && position <= -(trackWidth / 2)) {
 			position = 0;
 		} else if (direction === 1 && position >= 0) {
-			position = -(trackWidth / 2);
+			position = -trackWidth / 2;
 		}
 
 		track.style.transform = `translateX(${position}px)`;
@@ -148,15 +154,15 @@
 {#if attributions}
 	<div
 		bind:this={container}
-		class="pointer-events-none absolute bottom-[4px] right-0 z-10 flex w-full shrink-0 justify-end gap-2 text-nowrap px-2 text-white"
+		class="pointer-events-none absolute bottom-0 right-0 flex w-full shrink-0 gap-2 text-nowrap bg-black/50 p-1 px-2 text-gray-300 {shouldScroll
+			? 'justify-start'
+			: 'justify-end'}"
 	>
 		<!-- スクロールが必要な場合は複製、不要な場合は単一表示 -->
-		<div
-			bind:this={track}
-			class="flex gap-2 {shouldScroll ? 'overflow-hidden' : ''}"
-			style="transition: transform 0.1s ease-out;"
-		>
+		<div bind:this={track} class="flex gap-2" style="">
 			<!-- 通常時：1回のみ表示 -->
+
+			<!-- スクロール時：複製表示 -->
 			{#each attributions as atl}
 				<a
 					class="pointer-events-auto grid flex-shrink-0 grow cursor-pointer select-none place-items-center rounded-full text-xs"
@@ -167,12 +173,24 @@
 					<span>{atl.name}</span>
 				</a>
 			{/each}
+			{#if shouldScroll}
+				{#each attributions as atl}
+					<a
+						class="pointer-events-auto grid flex-shrink-0 grow cursor-pointer select-none place-items-center rounded-full text-xs"
+						href={atl.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<span>{atl.name}</span>
+					</a>
+				{/each}
+			{:else}{/if}
 		</div>
 
 		<!-- 情報アイコン（常に表示） -->
-		<span class="grid flex-shrink-0 place-items-center rounded-full">
+		<!-- <span class="grid flex-shrink-0 place-items-center rounded-full">
 			<Icon icon="lets-icons:info-alt-fill" class="h-6 w-6" />
-		</span>
+		</span> -->
 	</div>
 {/if}
 
