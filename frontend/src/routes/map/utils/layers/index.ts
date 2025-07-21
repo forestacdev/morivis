@@ -878,7 +878,6 @@ export const createLayersItems = (
 
 					// ポイント
 					if (style.type === 'circle') {
-						console.log('circle style', style);
 						circleLayerItems.push(vectorLayer);
 					}
 

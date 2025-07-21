@@ -403,13 +403,3 @@ const exampleStyle: RasterBaseMapStyle = {
 	saturation: 0.5,
 	contrast: 0.3
 };
-
-// CSS スタイルオブジェクトを取得
-const cssStyleObject = rasterToCSSStyle(exampleStyle);
-console.log('CSS Style Object:', cssStyleObject);
-// 出力例: { filter: 'opacity(0.8) hue-rotate(45deg) brightness(0.5) saturate(1.5) contrast(1.3)', opacity: 0.8 }
-
-// CSS文字列を取得
-const cssString = rasterToCSSString(exampleStyle);
-console.log('CSS String:', cssString);
-// 出力例: "filter: opacity(0.8) hue-rotate(45deg) brightness(0.5) saturate(1.5) contrast(1.3); opacity: 0.8;"

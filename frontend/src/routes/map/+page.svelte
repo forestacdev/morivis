@@ -131,23 +131,25 @@
 			(res) => res.json()
 		);
 
+		// TODO ストリートビューのパラメータを取得
+
+		// const imageId = getStreetViewParams();
+
+		// if (imageId) {
+		// 	const point = streetViewPointData.features.find(
+		// 		(point) => point.properties.id === Number(imageId)
+		// 	);
+		// 	if (point) {
+		// 		showStreetViewLayer.set(true);
+		// 		setPoint(point as StreetViewPoint);
+
+		// 		isStreetView.set(true);
+		// 	} else {
+		// 		console.warn(`Street view point with ID ${imageId} not found.`);
+		// 	}
+		// }
+
 		mapStore.onload(() => {
-			const imageId = getStreetViewParams();
-
-			if (imageId) {
-				const point = streetViewPointData.features.find(
-					(point) => point.properties.id === Number(imageId)
-				);
-				if (point) {
-					showStreetViewLayer.set(true);
-					setPoint(point as StreetViewPoint);
-
-					isStreetView.set(true);
-				} else {
-					console.warn(`Street view point with ID ${imageId} not found.`);
-				}
-			}
-
 			const terrain3d = get3dParams();
 			if (terrain3d === '1') {
 				mapStore.toggleTerrain(true);

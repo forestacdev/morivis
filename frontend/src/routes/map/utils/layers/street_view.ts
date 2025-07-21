@@ -24,8 +24,7 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 	type: 'circle',
 	source: 'street_view_sources',
 	'source-layer': 'THETA360',
-	minzoom: 15,
-
+	minzoom: 10,
 	paint: {
 		'circle-color': [
 			'case',
@@ -33,7 +32,15 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 			'#00fad0', // ホバー中
 			'#08fa00' // 通常時
 		],
-		'circle-radius': ['case', ['boolean', ['feature-state', 'hover'], false], 20, 12],
+		'circle-radius': [
+			'interpolate',
+			['linear'],
+			['zoom'],
+			10,
+			1, // At zoom level 5, radius is 6
+			15,
+			12 // At zoom level 15, radius is 12
+		],
 		'circle-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.8, 0.6],
 		'circle-stroke-width': 2,
 		'circle-stroke-color': '#ffffff',

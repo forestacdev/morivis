@@ -242,7 +242,7 @@
 			{/if}
 
 			<div class="absolute bottom-8 [&_path]:fill-white">
-				<FacLogo width={'300'} />
+				<FacLogo width={'250'} />
 			</div>
 		</div>
 	</div>

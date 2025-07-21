@@ -288,10 +288,6 @@
 			// });
 		}
 
-		if ($DEBUG_MODE) {
-			console.warn(features);
-		}
-
 		const feature = features[0]; // 一番上のfeature
 		const id = feature.id;
 		const featureStateData = FeatureStateManager.get(feature.layer.id);

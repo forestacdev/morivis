@@ -234,33 +234,6 @@
 				]
 			: [];
 
-		const zoneSources = showZoneForm
-			? {
-					zone: {
-						type: 'vector',
-						url: `pmtiles://./zone.pmtiles`,
-						maxzoom: 22
-					} as SourceSpecification
-				}
-			: {};
-
-		const zoneLayers = showZoneForm
-			? [
-					{
-						id: 'zone',
-						type: 'fill',
-						source: 'zone',
-						'source-layer': 'zone',
-						maxzoom: 22,
-						filter: ['==', ['get', 'zone'], '0'],
-						paint: {
-							'fill-color': 'red',
-							'fill-opacity': 0.6
-						}
-					} as LayerSpecification
-				]
-			: [];
-
 		const terrain = {
 			source: 'terrain',
 			exaggeration: 1
@@ -290,7 +263,7 @@
 				// 	url: 'pmtiles://./prefecture.pmtiles',
 				// 	maxzoom: 14
 				// },
-				...zoneSources,
+
 				...previewSources,
 				zone_bbox: {
 					type: 'geojson',
@@ -310,7 +283,7 @@
 					}
 				} as BackgroundLayerSpecification,
 				...previewLayers,
-				...zoneLayers,
+
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
