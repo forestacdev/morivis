@@ -338,7 +338,7 @@ export const propData: PropData = {
 		url: null
 	},
 	miharasiiwa: {
-		image: `${FEATURE_IMAGE_BASE_PATH}/miharasiiwa.webp`,
+		image: `${FEATURE_IMAGE_BASE_PATH}/miharasiiwa2.webp`,
 		description: '美濃市の街中を一望することができる岩場',
 		url: null
 	},
@@ -354,7 +354,7 @@ export const propData: PropData = {
 	},
 	nagamenoiwa: {
 		// 眺めの岩
-		image: `${FEATURE_IMAGE_BASE_PATH}/nagamenoiwa.webp`,
+		image: `${FEATURE_IMAGE_BASE_PATH}/nagamenoiwa2.webp`,
 		description: '',
 		url: null
 	},

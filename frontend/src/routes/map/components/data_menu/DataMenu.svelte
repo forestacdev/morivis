@@ -79,6 +79,15 @@
 	]);
 
 	let selected = $state<string>('system');
+
+	// 閉じられたときの処理
+	showDataMenu.subscribe((value) => {
+		if (!value) {
+			selected = 'system';
+			showDataEntry = null;
+			searchWord = '';
+		}
+	});
 </script>
 
 <div

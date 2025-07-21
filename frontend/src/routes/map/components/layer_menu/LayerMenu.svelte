@@ -177,7 +177,9 @@
 			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
 				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
 				<Switch label="3D地形" bind:value={is3d} />
-				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+				{#if import.meta.env.MODE === 'development'}
+					<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+				{/if}
 			</div>
 			<div class="flex gap-4 p-2">
 				<button
