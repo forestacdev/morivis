@@ -1,1 +1,0 @@
-(function(){"use strict";self.onmessage=async e=>{const{urls:t}=e.data;try{const s=await Promise.all(t.map(async a=>{const o=await(await fetch(a)).blob();return URL.createObjectURL(o)}));self.postMessage({blobUrls:s})}catch{self.postMessage({error:"テクスチャのロードに失敗しました"})}}})();

@@ -1,0 +1,1 @@
+(function(){"use strict";self.onmessage=l=>{const{rasters:a,width:c,height:h}=l.data;try{const t=a.length,s=c*h,n=new Float32Array(s*t);for(let e=0;e<t;++e){const o=a[e];if(o.length!==s)throw new Error(`Band ${e} has incorrect length: ${o.length}`);for(let r=0;r<s;++r)n[e*s+r]=o[r]}self.postMessage({result:n},[n.buffer])}catch(t){self.postMessage({error:t.message})}}})();
