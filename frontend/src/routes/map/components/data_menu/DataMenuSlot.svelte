@@ -89,64 +89,26 @@
 	});
 </script>
 
-<button
+<div
+	class="relative m-2 flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
+	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
 	onfocus={() => (isHover = true)}
 	onblur={() => (isHover = false)}
-	onclick={() => (showDataEntry = dataEntry)}
-	disabled={isAdded}
-	class="relative m-2 flex aspect-square shrink-0 grow cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
-	bind:this={container}
+	tabindex="0"
+	role="button"
 >
-	<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
-		{#await promise then imageResult}
-			{#if imageResult}
-				<img
-					src={imageResult.url}
-					class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
-					alt={dataEntry.metaData.name}
-					onload={() => handleImageLoad(imageResult)}
-					loading="lazy"
-					onerror={() => {
-						isImageError = true;
-					}}
-				/>
-			{/if}
-		{:catch}
-			<div>画像の取得に失敗</div>
-		{/await}
-		<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
-		<div
-			class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 {isAdded
-				? ''
-				: 'opacity-0 transition-opacity'}"
-		>
-			<span class="text-lg text-white">{isAdded ? '地図に追加済み' : 'プレビュー'}</span>
-		</div>
-
-		<!-- 出典 -->
-		<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white"
-			>{dataEntry.metaData.attribution}</span
-		>
-		{#if layertype}
-			<div
-				class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
-			>
-				<Icon icon={getLayerIcon(layertype)} class="h-6 w-6" />
-			</div>
-		{/if}
-	</div>
 	<!-- 追加ボタン -->
 	{#if isHover}
-		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 shrink-0">
+		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
 					onclick={(e) => {
 						e.stopPropagation();
 						deleteData(dataEntry.id);
 					}}
-					class="c-btn-cancel flex items-center gap-2 px-4"
+					class="c-btn-cancel grid place-items-center p-2"
 				>
 					<Icon icon="ic:round-minus" class=" h-8 w-8" />
 				</button>
@@ -156,56 +118,106 @@
 						e.stopPropagation();
 						addData(dataEntry.id);
 					}}
-					class="c-btn-confirm flex shrink-0 grow items-center gap-2 px-4"
+					class="c-btn-confirm grid place-items-center p-2"
 				>
 					<Icon icon="material-symbols:add" class=" h-8 w-8" />
 				</button>
 			{/if}
 		</div>
 	{/if}
-
-	<div class="flex w-full flex-col gap-2 p-2">
-		<!-- タイトル -->
-		<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
-		<div class="flex items-center gap-1 text-sm text-gray-300">
-			{#each dataEntry.metaData.tags as tag}
-				<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
-			{/each}
-		</div>
-	</div>
-	{#if prefCode}
-		<div class="absolute bottom-0 right-0 grid place-items-center">
-			<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
-				<PrefectureIcon width={'70px'} code={prefCode} />
+	<button
+		onclick={() => {
+			if (!isAdded) showDataEntry = dataEntry;
+		}}
+		class="flex h-full w-full cursor-pointer flex-col"
+	>
+		<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
+			{#await promise then imageResult}
+				{#if imageResult}
+					<img
+						src={imageResult.url}
+						class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+						alt={dataEntry.metaData.name}
+						onload={() => handleImageLoad(imageResult)}
+						loading="lazy"
+						onerror={() => {
+							isImageError = true;
+						}}
+					/>
+				{/if}
+			{:catch}
+				<div>画像の取得に失敗</div>
+			{/await}
+			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
+			<div
+				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
+				isHover
+					? 'opacity-100'
+					: 'opacity-0'}"
+			>
+				{#if isAdded}
+					<span class="z-10 text-lg text-white">地図に追加済み</span>
+				{:else if isHover}
+					<span class="z-10 text-lg text-white">プレビュー</span>
+				{/if}
 			</div>
-			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+
+			<!-- 出典 -->
+			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white"
+				>{dataEntry.metaData.attribution}</span
+			>
+			{#if layertype}
+				<div
+					class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
+				>
+					<Icon icon={getLayerIcon(layertype)} class="h-6 w-6" />
+				</div>
+			{/if}
 		</div>
-	{/if}
-	{#if dataEntry.metaData.location === '森林文化アカデミー'}
-		<div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
-			<FacLogo width={'150px'} />
+
+		<div class="flex w-full flex-col gap-2 p-2">
+			<!-- タイトル -->
+			<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
+			<div class="flex items-center gap-1 text-sm text-gray-300">
+				{#each dataEntry.metaData.tags as tag}
+					<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
+				{/each}
+			</div>
 		</div>
-		<!-- <div class="absolute bottom-0 right-0 grid place-items-center">
+		{#if prefCode}
+			<div class="absolute bottom-0 right-0 grid place-items-center">
+				<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
+					<PrefectureIcon width={'70px'} code={prefCode} />
+				</div>
+				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+			</div>
+		{/if}
+		{#if dataEntry.metaData.location === '森林文化アカデミー'}
+			<div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
+				<FacLogo width={'150px'} />
+			</div>
+			<!-- <div class="absolute bottom-0 right-0 grid place-items-center">
 			<img
 				class="h-[50px] w-[50px] rounded-full object-cover"
 				src="./mapicon.png"
 				alt={'森林文化アカデミー'}
 			/>
 		</div> -->
-	{/if}
-	{#if dataEntry.metaData.location === '全国'}
-		<div class="absolute bottom-2 right-2 grid place-items-center">
-			<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-20 w-20" />
-			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
-		</div>
-	{/if}
-	{#if dataEntry.metaData.location === '世界'}
-		<div class="absolute bottom-0 right-2 grid place-items-center">
-			<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
-			<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
-		</div>
-	{/if}
-</button>
+		{/if}
+		{#if dataEntry.metaData.location === '全国'}
+			<div class="absolute bottom-2 right-2 grid place-items-center">
+				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-20 w-20" />
+				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+			</div>
+		{/if}
+		{#if dataEntry.metaData.location === '世界'}
+			<div class="absolute bottom-0 right-2 grid place-items-center">
+				<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
+				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+			</div>
+		{/if}
+	</button>
+</div>
 
 <style>
 	.c-bg {
