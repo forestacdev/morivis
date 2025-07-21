@@ -132,23 +132,41 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '小林班ID',
-					name: '小林班IDのラベル',
+					name: '小林班ID',
 					value: '{小林班ID}'
 				},
 				{
 					key: '林班',
-					name: '林班のラベル',
+					name: '林班',
 					value: '{林班}林班'
 				},
 				{
 					key: '林齢',
-					name: '林齢のラベル',
-					value: '{林齢}年生'
+					name: '林齢',
+					value: [
+						'case',
+						['all', ['has', '林齢'], ['!=', ['get', '林齢'], '']],
+						['concat', ['get', '林齢'], '年生'],
+						''
+					]
 				},
 				{
 					key: '樹種',
-					name: '樹種のラベル',
-					value: '{樹種}林'
+					name: '樹種',
+					value: [
+						'case',
+						['!', ['has', '樹種']],
+						'', // プロパティが存在しない場合
+						['==', ['get', '樹種'], ''],
+						'', // 空文字の場合
+						[
+							'match',
+							['get', '樹種'],
+							['草地', 'その他', '岩石'],
+							['get', '樹種'],
+							['concat', ['get', '樹種'], '林']
+						]
+					]
 				}
 			]
 		}
