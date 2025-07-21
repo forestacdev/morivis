@@ -23,6 +23,14 @@
 		'国土地理院最適化ベクトルタイル'
 	];
 
+	let container = $state<HTMLDivElement | null>(null);
+	let track = $state<HTMLDivElement | null>(null);
+	let position = 0;
+	let speed = 0.7; // スクロール速度
+	let direction = -1; // -1: 左から右, 1: 右から左
+	let shouldScroll = $state<boolean>(false); // スクロールが必要かどうか
+	let isInitialized = false; // 初期化完了フラグ
+
 	// サイズ変更を監視してスクロール必要性を判定
 	const checkScrollNeed = () => {
 		if (!track || !container) return;
@@ -89,17 +97,11 @@
 			}
 
 			baseMapAttributionsKeys2 = keys;
-			checkScrollNeed();
+			if (container && track && isInitialized) {
+				checkScrollNeed();
+			}
 		}
 	});
-
-	let container = $state<HTMLDivElement | null>(null);
-	let track = $state<HTMLDivElement | null>(null);
-	let position = 0;
-	let speed = 0.7; // スクロール速度
-	let direction = -1; // -1: 左から右, 1: 右から左
-	let shouldScroll = $state<boolean>(false); // スクロールが必要かどうか
-	let isInitialized = false; // 初期化完了フラグ
 
 	// アニメーション処理
 	const animation = useAnimation('attribution-scroll', (deltaTime) => {
@@ -128,13 +130,13 @@
 	});
 
 	$effect(() => {
-		if (container && track) {
+		if (container && track && isInitialized) {
 			checkScrollNeed();
 		}
 	});
 
 	window.addEventListener('resize', () => {
-		if (isInitialized) {
+		if (isInitialized && container && track) {
 			checkScrollNeed();
 		}
 	});
