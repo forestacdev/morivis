@@ -273,6 +273,42 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 	const url = CoverImageManager.get(_layerEntry.id);
 	if (url) return url;
 
+	if (_layerEntry.metaData.xyzImageTile && _layerEntry.format.type === 'mvt') {
+		const checkUrl = _layerEntry.format.url
+			.replace('{z}', _layerEntry.metaData.xyzImageTile.z.toString())
+			.replace('{x}', _layerEntry.metaData.xyzImageTile.x.toString())
+			.replace('{y}', _layerEntry.metaData.xyzImageTile.y.toString());
+
+		try {
+			if (checkUrl) {
+				const response = await fetch(checkUrl, {
+					method: 'HEAD',
+					mode: 'cors', // 明示的にCORSモードを指定
+					headers: {
+						Accept: '*/*'
+					}
+				});
+
+				if (!response.ok) {
+					throw new Error(`Tile URL fetch failed: ${response.status} - ${checkUrl}`);
+				}
+				console.log('Tile URL check successful:', checkUrl);
+			} else {
+				throw new Error('Invalid tile URL');
+			}
+		} catch (error) {
+			console.error('Tile URL fetch failed:', error);
+			// CORSエラーの場合は、タイルが存在すると仮定するか、
+			// 別の検証方法を使用することを検討
+			if (error.name === 'TypeError' && error.message.includes('CORS')) {
+				console.warn('CORS error detected, skipping tile validation');
+				// 必要に応じてここで代替処理
+			} else {
+				throw new Error(`Tile URL fetch failed: ${checkUrl} - ${error.message}`);
+			}
+		}
+	}
+
 	const minimumEntry = {
 		..._layerEntry,
 		metaData: {

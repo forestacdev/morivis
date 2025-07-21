@@ -102,7 +102,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'#6a3d9a',
 							'#ff7f00',
 							'#b15928',
-
 							'#33a02c', // 針広混交林
 							'#b2df8a', // 新植地
 							'#a6cee3', // 伐採跡地
@@ -133,7 +132,6 @@ const entry: VectorEntry<TileMetaData> = {
 						pattern: null
 					}
 				},
-
 				{
 					type: 'step',
 					key: '面積_ha',

@@ -23,10 +23,11 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'fr_mesh20m_tochigi',
 		bounds: TOCHIGI_BBOX,
 		xyzImageTile: {
-			x: 3635,
-			y: 1597,
-			z: 12
-		}
+			x: 58222,
+			y: 25571,
+			z: 16
+		},
+		center: [139.833104, 36.723743]
 	},
 	properties: {
 		keys: [
@@ -35,16 +36,6 @@ const entry: VectorEntry<TileMetaData> = {
 			'樹種ID',
 			'樹種',
 			'面積_ha',
-			'立木本数',
-			'立木密度',
-			'平均樹高',
-			'平均直径',
-			'合計材積',
-			'ha材積',
-			'収量比数',
-			'相対幹距比',
-			'形状比',
-			'樹冠長率',
 			'森林計測年',
 			'森林計測法',
 			'平均傾斜',
@@ -53,9 +44,11 @@ const entry: VectorEntry<TileMetaData> = {
 			'最頻傾斜',
 			'県code',
 			'市町村code',
-			'ID',
-			'樹冠高90',
-			'最大樹冠高'
+			'メッシュID',
+			'平均標高',
+			'道から距離',
+			'Shape_Length',
+			'Shape_Area'
 		],
 
 		titles: [
@@ -76,7 +69,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.7,
 		colors: {
-			key: '最大樹冠高',
+			key: '解析樹種',
 			show: true,
 			expressions: [
 				{
@@ -84,13 +77,14 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#349f1c'
+						value: '#349f1c',
+						pattern: null
 					}
 				},
 				{
 					type: 'match',
 					key: '解析樹種',
-					name: '樹種による色分け',
+					name: '樹種ごとの色分け',
 					mapping: {
 						categories: [
 							'スギ',
@@ -99,45 +93,59 @@ const entry: VectorEntry<TileMetaData> = {
 							'カラマツ',
 							'トドマツ',
 							'エゾマツ',
-							'その他Ｎ',
+							'その他Ｎ', // 針葉樹
 							'クヌギ',
 							'ナラ類',
 							'ブナ',
-							'その他L',
+							'その他L', // 広葉樹
 							'タケ',
+
 							'針広混交林',
 							'新植地',
 							'伐採跡地',
 							'その他'
 						],
 						values: [
-							'#00cc66',
-							'#99ff66',
-							'#cc0000',
-							'#ff9966',
-							'#ffcc99',
-							'#cc6600',
-							'#cc00cc',
+							'#33a02c',
+							'#b2df8a',
+							'#a6cee3',
+							'#1f78b4',
+							'#fb9a99',
+							'#e31a1c',
+							'#fdbf6f',
 							'#ffff99',
-							'#ff9933',
-							'#cc9900',
-							'#ffff00',
-							'#8000ff',
-							'#8db3e2',
-							'#ccff99',
-							'#ff80ff',
-							'#bfbfbf'
+							'#cab2d6',
+							'#6a3d9a',
+							'#ff7f00',
+							'#b15928',
+							'#33a02c', // 針広混交林
+							'#b2df8a', // 新植地
+							'#a6cee3', // 伐採跡地
+							'#1f78b4' // その他（グレー）
+						],
+						// パターン情報（新規追加）
+						patterns: [
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black'
 						]
-					}
-				},
-				{
-					type: 'step',
-					key: '最大樹冠高',
-					name: '最大樹冠高による色分け',
-					mapping: {
-						range: [1.0, 50],
-						divisions: 5,
-						values: ['#ffffff', '#00ff80']
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				}
 			]
@@ -176,56 +184,6 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '面積_ha',
 					name: '面積_ha',
 					value: '{面積_ha}'
-				},
-				{
-					key: '立木本数',
-					name: '立木本数',
-					value: '{立木本数}'
-				},
-				{
-					key: '立木密度',
-					name: '立木密度',
-					value: '{立木密度}'
-				},
-				{
-					key: '平均樹高',
-					name: '平均樹高',
-					value: '{平均樹高}'
-				},
-				{
-					key: '平均直径',
-					name: '平均直径',
-					value: '{平均直径}'
-				},
-				{
-					key: '合計材積',
-					name: '合計材積',
-					value: '{合計材積}'
-				},
-				{
-					key: 'ha材積',
-					name: 'ha材積',
-					value: '{ha材積}'
-				},
-				{
-					key: '収量比数',
-					name: '収量比数',
-					value: '{収量比数}'
-				},
-				{
-					key: '相対幹距比',
-					name: '相対幹距比',
-					value: '{相対幹距比}'
-				},
-				{
-					key: '形状比',
-					name: '形状比',
-					value: '{形状比}'
-				},
-				{
-					key: '樹冠長率',
-					name: '樹冠長率',
-					value: '{樹冠長率}'
 				},
 				{
 					key: '森林計測年',
@@ -268,19 +226,29 @@ const entry: VectorEntry<TileMetaData> = {
 					value: '{市町村code}'
 				},
 				{
-					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					key: 'メッシュID',
+					name: 'メッシュID',
+					value: '{メッシュID}'
 				},
 				{
-					key: '樹冠高90',
-					name: '樹冠高90',
-					value: '{樹冠高90}'
+					key: '平均標高',
+					name: '平均標高',
+					value: '{平均標高}'
 				},
 				{
-					key: '最大樹冠高',
-					name: '最大樹冠高',
-					value: '{最大樹冠高}'
+					key: '道から距離',
+					name: '道から距離',
+					value: '{道から距離}'
+				},
+				{
+					key: 'Shape_Length',
+					name: 'Shape_Length',
+					value: '{Shape_Length}'
+				},
+				{
+					key: 'Shape_Area',
+					name: 'Shape_Area',
+					value: '{Shape_Area}'
 				}
 			]
 		},

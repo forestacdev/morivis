@@ -141,12 +141,13 @@
 						onload={() => handleImageLoad(imageResult)}
 						loading="lazy"
 						onerror={() => {
+							console.error('Image loading failed:', dataEntry.metaData.name);
 							isImageError = true;
 						}}
 					/>
 				{/if}
 			{:catch}
-				<div>画像の取得に失敗</div>
+				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
 			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
 			<div
