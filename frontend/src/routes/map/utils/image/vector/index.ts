@@ -102,7 +102,7 @@ class ParallelQueue {
 	private activeCount = 0;
 	private readonly maxConcurrency: number;
 
-	constructor(maxConcurrency: number = 2) {
+	constructor(maxConcurrency: number = 1) {
 		this.maxConcurrency = maxConcurrency;
 	}
 
@@ -140,8 +140,8 @@ class ParallelQueue {
 }
 
 // インスタンスプールとキューを初期化
-const mapPool = new MapInstancePool(2); // 2つのMapインスタンス
-const parallelQueue = new ParallelQueue(2); // 最大2つの並列処理
+const mapPool = new MapInstancePool(1); // 2つのMapインスタンス
+const parallelQueue = new ParallelQueue(1); // 最大2つの並列処理
 
 /**
  * 並列処理対応のMapLibre画像生成関数（内部実装）
