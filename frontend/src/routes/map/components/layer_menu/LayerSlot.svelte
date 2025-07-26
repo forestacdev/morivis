@@ -249,7 +249,7 @@
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
+		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit
 			? 'bg-black/50'
 			: $isStyleEdit
@@ -259,7 +259,7 @@
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '65px' : $isStyleEdit ? '400px' : '320px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+		style={`width: ${$showDataMenu ? '65px' : $isStyleEdit ? '400px' : '330px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->

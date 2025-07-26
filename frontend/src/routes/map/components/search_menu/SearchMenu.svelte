@@ -14,18 +14,20 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { isSideMenuType } from '$routes/stores/ui';
+	import { isSideMenuType, showSearchMenu } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { debounce } from 'es-toolkit';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
+	import turfBbox from '@turf/bbox';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		results: ResultData[] | null;
 	}
 
 	let {
@@ -33,7 +35,8 @@
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		results = $bindable()
 	}: Props = $props();
 
 	interface SearchData {
@@ -75,7 +78,6 @@
 		});
 	});
 
-	let results = $state<ResultData[] | null>([]);
 	let isLoading = $state<boolean>(false);
 
 	const focusFeature = async (result: ResultData) => {
@@ -112,140 +114,66 @@
 		showSelectionMarker = true;
 	};
 
-	const searchFeature = async (searchWord: string, isAddressSearch: boolean = true) => {
-		if (!searchWord) {
-			results = null;
-			return;
-		}
-		isLoading = true;
-		isClickedSearch = true;
-		try {
-			if (!searchData) {
-				console.error('Search data is not loaded yet.');
-				return;
-			}
-
-			const fuse = new Fuse(searchData, {
-				keys: ['search_values'],
-				threshold: 0.1
-			});
-			// 検索実行
-			const result = fuse.search(searchWord, {
-				limit: LIMIT
-			});
-
-			const resultsData = result.map((item) => {
-				const data = item.item;
-
-				return {
-					name: data.name,
-					location: dict[data.layer_id] || null,
-					point: data.point,
-					layerId: data.layer_id,
-					featureId: data.feature_id,
-					propId: data.prop_id
-				};
-			});
-
-			let addressSearchData = [];
-
-			// 2文字以上の検索ワードの場合、住所検索を実行
-			if (searchWord.length > 1 && isAddressSearch) {
-				// 住所検索
-
-				const addressSearchResponse = await addressSearch(searchWord);
-
-				addressSearchData = addressSearchResponse
-					.slice(0, LIMIT - result.length)
-					.map(({ geometry: { coordinates: center }, properties }) => {
-						const address = properties.addressCode
-							? addressCodeToAddress(properties.addressCode)
-							: null;
-
-						return {
-							point: center,
-							name: properties.title,
-							location: address
-						};
-					});
-			}
-
-			results = [...resultsData, ...addressSearchData];
-		} catch (error) {
-			console.error('Error searching features:', error);
-		} finally {
-			isLoading = false;
-		}
+	const closeSearchMenu = () => {
+		$showSearchMenu = false;
+		results = null;
+		mapStore.setData('search_result', {
+			type: 'FeatureCollection',
+			features: []
+		});
 	};
 
-	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
-
-	const debounceSearch = debounce((searchWord: string) => {
-		if (isClickedSearch) {
-			isClickedSearch = false;
-			return;
-		}
-		if (!searchWord) {
-			results = null;
-			return;
-		}
-		searchFeature(searchWord);
-	}, 500);
-
 	$effect(() => {
-		if (inputSearchWord) {
-			debounceSearch(inputSearchWord);
-		} else {
-			results = null;
-		}
-	});
+		if (results) {
+			console.log('Search results updated:', results);
+			const geojson = {
+				type: 'FeatureCollection',
+				features: results.map((result) => ({
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: result.point
+					},
+					properties: {
+						name: result.name,
+						location: result.location,
+						layerId: result.layerId,
+						featureId: result.featureId,
+						propId: result.propId
+					}
+				}))
+			};
+			mapStore.setData('search_result', geojson);
 
-	$effect(() => {
-		if (inputSearchWord) {
-			debounceSearch(inputSearchWord);
+			const bbox = turfBbox(geojson);
+			mapStore.fitBounds(bbox, {
+				duration: 500,
+				padding: 20
+			});
 		} else {
-			results = null;
+			closeSearchMenu();
 		}
 	});
 </script>
 
 <!-- レイヤーメニュー -->
-{#if $isSideMenuType === 'search'}
+{#if $showSearchMenu}
 	<div
 		transition:fly={{ duration: 200, x: -100, opacity: 0, delay: 100 }}
-		class="w-side-menu bg-main absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+		class="w-side-menu bg-main absolute z-10 flex h-full flex-col gap-2"
 	>
-		{#if isLoading}
-			<div class="flex w-full items-center justify-center">
-				<div
-					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
-				></div>
-			</div>
-		{:else if !results}
-			<div
-				class="c-scroll-hidden flex grow flex-col gap-4 overflow-y-auto overflow-x-hidden p-2 pb-4"
+		<div class="flex w-full items-center p-4 text-base">
+			<span class="text-2xl">検索結果</span>
+			<button
+				onclick={closeSearchMenu}
+				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
-				{#each searchWards as searchWard (searchWard)}
-					<button
-						class="cursor-pointer rounded-lg bg-black px-4 py-2 text-base drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]"
-						onclick={() => {
-							inputSearchWord = searchWard;
-							searchFeature(inputSearchWord, false);
-						}}
-						>{searchWard}
-					</button>
-				{/each}
-			</div>
-		{:else if results && results.length === 0}
-			<div class="flex h-full w-full items-center justify-center">
-				<div class="flex flex-col items-center gap-4">
-					<Icon icon="streamline:sad-face" class="h-16 w-16 text-gray-500 opacity-95" />
-					<span class="text-2xl text-gray-500">データが見つかりません</span>
-				</div>
-			</div>
-		{:else if results}
+				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+			</button>
+		</div>
+		{#if results}
 			<div
-				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
+				class="c-scroll flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
 				{#each results as result (result)}
 					<button

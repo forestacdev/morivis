@@ -31,9 +31,6 @@ export const isStyleEdit = writable<boolean>(false);
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
 
-/** 検索ーメニューの表示 */
-export const showSearchMenu = writable<boolean>(false);
-
 /** 地形メニュー */
 export const showTerrainMenu = writable<boolean>(false);
 

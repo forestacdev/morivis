@@ -4,6 +4,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ResultData } from '$routes/map/utils/feature';
+	import { showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 
@@ -33,6 +34,7 @@
 
 		isLoading = true;
 		try {
+			console.log('Searching for:', _searchWord);
 			await searchFeature(_searchWord);
 		} catch (e) {
 			console.error(e);
@@ -51,7 +53,7 @@
 
 <input
 	type="text"
-	class="bg-base focus:outline-hidden placeholder:gray-400 text-main w-full px-4 py-2"
+	class="bg-base focus:outline-hidden placeholder:gray-400 text-main w-full rounded-l-full px-4 py-2 outline-0"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}
@@ -61,13 +63,14 @@
 		}
 	}}
 	placeholder="施設名/住所"
+	onfocus={() => showSearchSuggest.set(true)}
 />
 
 {#if inputSearchWord}
 	<button
 		onclick={() => (inputSearchWord = '')}
 		disabled={!inputSearchWord}
-		class="absolute right-0 top-0 grid h-full cursor-pointer place-items-center"
+		class="absolute right-11 top-0 grid h-full cursor-pointer place-items-center"
 	>
 		<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
 	</button>

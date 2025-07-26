@@ -15,6 +15,7 @@
 
 	import { gsap } from 'gsap';
 	import { getLayerType } from '$routes/map/utils/entries';
+	import ContourSvg from '$lib/components/svgs/contour.svelte';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -100,7 +101,8 @@
 
 <div
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 duration-200 {$isSideMenuType === 'layer'
+	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$isSideMenuType ===
+	'layer'
 		? 'translate-x-0'
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'
@@ -187,16 +189,19 @@
 				>
 					<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
 				</button>
-				<button
+				<!-- <button
 					onclick={() => showDataMenu.set(true)}
 					class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"
 				>
 					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
 						>データの追加</span
 					>
-				</button>
+				</button> -->
 			</div>
 		{/if}
 		<div class="h-[200px] w-full shrink-0"></div>
 	</div>
+	<!-- <div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
+		<ContourSvg width={'1000'} strokeWidth={'0.5'} />
+	</div> -->
 </div>

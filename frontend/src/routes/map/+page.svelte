@@ -12,7 +12,6 @@
 	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
-	import HeaderMenu2 from '$routes/map/components/Header2.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
@@ -20,6 +19,7 @@
 	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
+	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import SideMenu from '$routes/map/components/SideMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
@@ -44,6 +44,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import Processing from './Processing.svelte';
 	import { slide } from 'svelte/transition';
+	import type { ResultData } from './utils/feature';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -110,6 +111,7 @@
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
+	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
 		const params = getParams(location.search);
@@ -342,9 +344,10 @@
 
 {#if isInitialized}
 	<div class="flex h-dvh w-full flex-col">
-		<HeaderMenu2
+		<HeaderMenu
 			bind:featureMenuData
 			bind:inputSearchWord
+			bind:results
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
@@ -359,13 +362,7 @@
 			{/if}
 
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
-			<SearchMenu
-				bind:featureMenuData
-				bind:inputSearchWord
-				{layerEntries}
-				bind:showSelectionMarker
-				bind:selectionMarkerLngLat
-			/>
+
 			<DrawMenu bind:layerEntries bind:drawGeojsonData />
 
 			<MapLibreMap
@@ -401,6 +398,22 @@
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 		/> -->
+		<SearchMenu
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+			bind:results
+		/>
+
+		<SearchSuggest
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} />

@@ -12,6 +12,12 @@ export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | '
 /** 表示中のサイドメニューの種類 */
 export const isSideMenuType = writable<SideMenuType>('layer');
 
+/** 検索ーメニューの表示 */
+export const showSearchMenu = writable<boolean>(false);
+
+/** 検索メニューのサジェスト */
+export const showSearchSuggest = writable<boolean>(false);
+
 /** 外部コンポーネントからイベントを発火させるストア */
 const eventStore = () => {
 	const { subscribe, set } = writable<UseEventTriggerType>('');

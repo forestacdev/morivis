@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/map/protocol/terrain';
+import markerPngIcon from '$lib/icons/marker.png';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -193,6 +194,15 @@ const createMapStore = () => {
 		const bytesPerPixel = 4;
 		const data = new Uint8Array(width * width * bytesPerPixel);
 		map.addImage('poi-icon', { width, height: width, data });
+
+		fetch(markerPngIcon, { mode: 'cors' }).then(async (response) => {
+			if (!response.ok) {
+				throw new Error(`Failed to fetch image: ${response.statusText}`);
+			}
+			const image = await createImageBitmap(await response.blob());
+			if (!map) return;
+			map.addImage('marker_png', image);
+		});
 
 		map.once('style.load', () => {
 			isStyleLoadEvent.set(map);

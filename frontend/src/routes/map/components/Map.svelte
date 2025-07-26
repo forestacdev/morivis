@@ -269,6 +269,10 @@
 				zone_bbox: {
 					type: 'geojson',
 					data: { type: 'FeatureCollection', features: [] }
+				},
+				search_result: {
+					type: 'geojson',
+					data: { type: 'FeatureCollection', features: [] }
 				}
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -308,7 +312,22 @@
 						'line-color': 'white',
 						'line-width': 1
 					}
+				},
+				{
+					id: '@search_result',
+					type: 'symbol',
+					source: 'search_result',
+
+					layout: {
+						'text-allow-overlap': true, // テキストの重複を許可
+						'text-ignore-placement': true, // 他の要素への配置影響を無視
+						'icon-allow-overlap': true, // アイコンの重複を許可
+						'icon-ignore-placement': true,
+						'icon-image': 'marker_png',
+						'icon-anchor': 'bottom'
+					}
 				}
+
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {
