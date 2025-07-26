@@ -26,9 +26,9 @@
 </div> -->
 
 <div
-	class="bg-main absolute bottom-8 right-0 flex h-auto w-[200px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
+	class="bg-main absolute bottom-0 right-0 flex h-auto w-full gap-2 p-2 text-sm text-white transition-opacity duration-200 {isHover
 		? 'opacity-100'
-		: 'opacity-80'}"
+		: 'opacity-70'}"
 	onmouseenter={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
 	role="button"

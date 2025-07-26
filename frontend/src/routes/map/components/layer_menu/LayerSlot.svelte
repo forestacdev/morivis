@@ -279,9 +279,12 @@
 						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
 							>{layerEntry.metaData.name}</span
 						>
-						<span class="truncate text-xs text-gray-400"
-							>{layerEntry.metaData.location ?? '---'}</span
-						>
+						<div class="flex items-center">
+							<Icon icon="lets-icons:info-alt-fill" class="h-5 w-5 text-gray-500" />
+							<span class="truncate text-xs text-gray-400"
+								>{layerEntry.metaData.attribution ?? '---'}</span
+							>
+						</div>
 					</div>
 				{/if}
 

@@ -151,6 +151,8 @@ const createMapStore = () => {
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
+			// maplibreLogo: true // MapLibreのロゴを表示
+			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映

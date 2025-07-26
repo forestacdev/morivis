@@ -491,14 +491,13 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="bg-main relative flex h-full w-full grow items-center justify-center {$isSideMenuType
+	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center px-2 pb-3 {$isSideMenuType
 		? 'overflow-hidden'
 		: ''}"
 >
 	<div
 		bind:this={mapContainer}
-		class="absolute grow bg-black transition-opacity duration-500 {!showMapCanvas &&
-		$mapMode === 'view'
+		class="w-full rounded-lg bg-black {!showMapCanvas && $mapMode === 'view'
 			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
 			: $isStreetView && $mapMode === 'small'
 				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
