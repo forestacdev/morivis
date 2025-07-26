@@ -8,7 +8,6 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 
@@ -99,8 +98,6 @@
 
 	const edit = () => {
 		if (targetLayer && targetLayer.type === 'vector') {
-			$isSideMenuType = 'layer';
-
 			selectedLayerId.set(targetLayer.id);
 			isStyleEdit.set(true);
 			featureMenuData = null; // Close the feature menu after editing

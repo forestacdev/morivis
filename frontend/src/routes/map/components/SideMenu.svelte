@@ -12,22 +12,11 @@
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import { isProcessing } from '$routes/stores/ui';
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
 
 	import { isBlocked } from '$routes/stores/ui';
-
-	const toggleLayerMenu = () => {
-		showSideMenu.set(false);
-		isSideMenuType.set('layer');
-	};
-
-	const togleSearchMenu = () => {
-		showSideMenu.set(false);
-		isSideMenuType.set('search');
-	};
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);

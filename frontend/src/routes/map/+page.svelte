@@ -9,7 +9,7 @@
 
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
-	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
+	// import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
@@ -32,7 +32,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, isSideMenuType } from '$routes/stores/ui';
+	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -354,7 +354,7 @@
 		/>
 		<div class="flex w-full flex-1">
 			<!-- マップのオフセット調整用 -->
-			{#if $isSideMenuType}
+			{#if $showLayerMenu}
 				<div
 					in:slide={{ duration: 1, delay: 200, axis: 'x' }}
 					class="bg-main w-side-menu flex h-full shrink-0 flex-col"
@@ -363,7 +363,7 @@
 
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
-			<DrawMenu bind:layerEntries bind:drawGeojsonData />
+			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
 
 			<MapLibreMap
 				bind:maplibreMap={map}

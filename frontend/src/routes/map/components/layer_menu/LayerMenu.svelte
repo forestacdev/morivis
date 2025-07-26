@@ -7,9 +7,9 @@
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
+	import { showLayerMenu } from '$routes/stores/ui';
 
 	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 
@@ -69,12 +69,6 @@
 		}
 	};
 
-	showDataMenu.subscribe((value) => {
-		if (value) {
-			isSideMenuType.set('layer');
-		}
-	});
-
 	let is3d = $state<boolean>(false);
 	$effect(() => {
 		mapStore.toggleTerrain(is3d);
@@ -101,8 +95,7 @@
 
 <div
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$isSideMenuType ===
-	'layer'
+	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
 		? 'translate-x-0'
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'

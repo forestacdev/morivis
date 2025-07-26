@@ -14,7 +14,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { isSideMenuType, showSearchMenu } from '$routes/stores/ui';
+	import { showSearchMenu } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';

@@ -15,7 +15,7 @@
 		clickableRasterIds,
 		isStyleEdit
 	} from '$routes/stores';
-	import { isSideMenuType } from '$routes/stores/ui';
+
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
@@ -182,7 +182,6 @@
 			}
 		}
 		if (showDataEntry) return;
-		if ($isSideMenuType === 'draw') return;
 
 		const clickLayerIds = [...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {

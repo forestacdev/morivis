@@ -49,7 +49,6 @@
 	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import {
 		type FeatureMenuData,
@@ -510,9 +509,7 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center pb-4 pr-4 {$isSideMenuType
-		? 'overflow-hidden'
-		: ''}"
+	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center overflow-hidden pb-4 pr-4"
 >
 	<div
 		bind:this={mapContainer}
@@ -523,17 +520,7 @@
 				: 'bottom-0 left-0 h-full w-full opacity-100'}"
 	></div>
 	<FooterMenu {layerEntries} />
-	<!-- <div
-		bind:this={mapContainer}
-		class="absolute h-full w-full bg-black transition-all duration-200"
-	></div> -->
 
-	<!-- <div
-		bind:this={mapContainer}
-		class="absolute bg-black transition-all duration-200 {$isSideMenuType
-			? 'h-[calc(100%-100px)] w-[calc(100%-100px)] overflow-hidden rounded-lg'
-			: 'h-full w-full'}"
-	></div> -->
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 

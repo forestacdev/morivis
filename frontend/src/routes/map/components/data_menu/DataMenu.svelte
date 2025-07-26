@@ -11,7 +11,6 @@
 	import { isStyleEdit, showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import { isSideMenuType } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

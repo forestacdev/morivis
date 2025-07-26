@@ -7,10 +7,8 @@ export const isProcessing = writable<boolean>(false);
 /** スクリーンガードの状態 */
 export const isBlocked = writable<boolean>(false);
 
-export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | 'draw' | null;
-
-/** 表示中のサイドメニューの種類 */
-export const isSideMenuType = writable<SideMenuType>('layer');
+/** レイヤーメニューの表示 */
+export const showLayerMenu = writable<boolean>(true);
 
 /** 検索ーメニューの表示 */
 export const showSearchMenu = writable<boolean>(false);
