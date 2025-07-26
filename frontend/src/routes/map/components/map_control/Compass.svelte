@@ -6,10 +6,6 @@
 	import { isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { isPc } from '$routes/map/utils/ui';
-	interface Props {
-		isHover: boolean;
-	}
-	let { isHover = $bindable() }: Props = $props();
 
 	gsap.registerPlugin(Draggable);
 
@@ -80,25 +76,5 @@
 	</div>
 </div>
 
-<!-- Mobile -->
-<!-- <div class="pointer-events-none absolute bottom-0 flex w-full items-center justify-center">
-		<div
-			bind:this={element}
-			class="bg-main pointer-events-auto grid h-[100px] w-[100px] place-items-center overflow-hidden rounded-full"
-		>
-			<svg
-				class="h-full w-full scale-50"
-				xmlns="http://www.w3.org/2000/svg"
-				width="132"
-				height="132"
-				viewBox="0 0 132 132"
-			>
-				<g transform="translate(47,0)">
-					<path fill="#000" d="m19 0 16.455 66H2.545L19 0Z" />
-					<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
-				</g>
-			</svg>
-		</div>
-	</div> -->
 <style>
 </style>

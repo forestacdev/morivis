@@ -34,6 +34,7 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
+	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
@@ -509,23 +510,30 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center overflow-hidden pb-4 pr-4"
+	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
+	$mapMode === 'small'
+		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white hover:h-[400px] hover:w-[600px] hover:transition-all hover:duration-300'
+		: 'relative h-full w-full grow pb-4 pr-4'}"
 >
 	<div
 		bind:this={mapContainer}
-		class="w-full rounded-lg bg-black {!showMapCanvas && $mapMode === 'view'
-			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
+		class="h-full w-full overflow-hidden bg-black transition-opacity {!showMapCanvas &&
+		$mapMode === 'view'
+			? 'opacity-0'
 			: $isStreetView && $mapMode === 'small'
-				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
-				: 'bottom-0 left-0 h-full w-full opacity-100'}"
+				? ''
+				: 'opacity-100'}"
 	></div>
-	<FooterMenu {layerEntries} />
+	<!-- <FooterMenu {layerEntries} /> -->
 
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 
 	<MapControl />
-	<MapStatePane />
+	{#if !$isStreetView}
+		<Compass />
+	{/if}
+	<!-- <MapStatePane /> -->
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:featureMenuData
@@ -599,5 +607,10 @@
 	/* maplibreのデフォルトの出典表記を非表示 */
 	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
 		display: none !important;
+	}
+
+	:global(.maplibregl-canvas) {
+		border-radius: 0.5rem !important;
+		overflow: hidden !important;
 	}
 </style>
