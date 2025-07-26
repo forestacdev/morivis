@@ -176,7 +176,7 @@
 		</button>
 	</div>
 	<!-- 中央 -->
-	<div class="relative flex max-w-[300px] flex-1 items-center justify-between overflow-hidden">
+	<div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
 		<Geocoder
 			{layerEntries}
 			bind:results

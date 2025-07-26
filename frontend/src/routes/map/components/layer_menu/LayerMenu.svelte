@@ -107,7 +107,7 @@
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'
 		: 'bg-main'}"
-	style={`width: ${$showDataMenu ? '90px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+	style={`width: ${$showDataMenu ? '80px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 >
 	<div
 		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu

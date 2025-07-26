@@ -10,20 +10,20 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
-		name: '演習林の道',
-		description: '演習林の道',
+		name: '演習林 歩道',
+		description: '演習林',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['森林歩道'],
-		maxZoom: 14,
-		minZoom: 1,
+		maxZoom: 17,
+		minZoom: 8,
 		sourceLayer: 'ensyurin_road',
-		bounds: [136.919181, 35.546981, 136.92684, 35.555131],
+		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
-		xyzImageTile: { x: 115388, y: 51671, z: 17 }
+		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
-		keys: ['種類'],
+		keys: [],
 		titles: []
 	},
 	interaction: {
@@ -31,26 +31,29 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'line',
-		opacity: 0.8,
+		opacity: 0.7,
 		colors: {
 			show: true,
-			key: '種類',
+			key: '単色',
 			expressions: [
 				{
 					type: 'single',
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#dd9c1b'
+						value: '#cacaca'
 					}
 				},
 				{
 					type: 'match',
 					key: '種類',
-					name: '歩道と林道の色分け',
+					name: '歩道と林道',
 					mapping: {
 						categories: ['林道', '歩道'],
 						values: ['#ffec42', '#e0e0e0']
+					},
+					noData: {
+						values: 'transparent'
 					}
 				}
 			]
@@ -69,7 +72,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'match',
 					key: '種類',
-					name: '歩道と林道の太さ分け',
+					name: '歩道と林道',
 					mapping: {
 						categories: ['林道', '歩道'],
 						values: [10, 5]
@@ -90,6 +93,13 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
+			line: {
+				paint: {},
+				layout: {
+					'line-cap': 'round',
+					'line-join': 'round'
+				}
+			},
 			symbol: {
 				paint: {},
 				layout: {

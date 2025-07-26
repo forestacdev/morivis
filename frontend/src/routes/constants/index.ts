@@ -94,7 +94,7 @@ export const INT_ADD_LAYER_IDS = [
 	// 'fac_ziriki_point',
 	// 'fac_building_point',
 	// 'fac_poi',
-	'ensyurin_road2',
+	'ensyurin_road',
 	// 'gsi_road',
 	'ensyurin_rinhan',
 	'ensyurin_photo'
