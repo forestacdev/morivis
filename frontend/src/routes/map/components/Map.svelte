@@ -523,7 +523,17 @@
 			: $isStreetView && $mapMode === 'small'
 				? ''
 				: 'opacity-100'}"
-	></div>
+	>
+		{#if maplibreMap}
+			<PoiManager
+				map={maplibreMap}
+				bind:featureMenuData
+				{showDataEntry}
+				{showZoneForm}
+				bind:showSelectionMarker
+			/>
+		{/if}
+	</div>
 	<!-- <FooterMenu {layerEntries} /> -->
 
 	<!-- <WebGLScreen /> -->
@@ -557,13 +567,7 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
-	<PoiManager
-		map={maplibreMap}
-		bind:featureMenuData
-		{showDataEntry}
-		{showZoneForm}
-		bind:showSelectionMarker
-	/>
+
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		{showDataEntry}
