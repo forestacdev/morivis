@@ -12,6 +12,7 @@
 	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
+	import HeaderMenu2 from '$routes/map/components/Header2.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
@@ -107,7 +108,6 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
-
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
 
@@ -341,57 +341,66 @@
 </script>
 
 {#if isInitialized}
-	<div class="relative flex h-full w-full grow">
-		<!-- マップのオフセット調整用 -->
-		{#if $isSideMenuType}
-			<div
-				in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-				class="bg-main w-side-menu flex h-full shrink-0 flex-col"
-			></div>
-		{/if}
-
-		<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
-		<SearchMenu
+	<div class="flex h-dvh w-full flex-col">
+		<HeaderMenu2
 			bind:featureMenuData
 			bind:inputSearchWord
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 		/>
-		<DrawMenu bind:layerEntries bind:drawGeojsonData />
+		<div class="flex w-full flex-1">
+			<!-- マップのオフセット調整用 -->
+			{#if $isSideMenuType}
+				<div
+					in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+					class="bg-main w-side-menu flex h-full shrink-0 flex-col"
+				></div>
+			{/if}
 
-		<MapLibreMap
-			bind:maplibreMap={map}
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:showDataEntry
-			bind:featureMenuData
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-			bind:showAngleMarker
-			bind:angleMarkerLngLat
-			bind:cameraBearing
-			bind:dropFile
-			bind:showDialogType
-			bind:drawGeojsonData
-			bind:showZoneForm
-			bind:focusBbox
-			{selectedEpsgCode}
-			{demEntries}
-			{streetViewLineData}
-			{streetViewPointData}
-			{streetViewPoint}
-			{showMapCanvas}
-			{setPoint}
-		/>
+			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+			<SearchMenu
+				bind:featureMenuData
+				bind:inputSearchWord
+				{layerEntries}
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+			/>
+			<DrawMenu bind:layerEntries bind:drawGeojsonData />
 
-		<HeaderMenu
+			<MapLibreMap
+				bind:maplibreMap={map}
+				bind:layerEntries
+				bind:tempLayerEntries
+				bind:showDataEntry
+				bind:featureMenuData
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+				bind:showAngleMarker
+				bind:angleMarkerLngLat
+				bind:cameraBearing
+				bind:dropFile
+				bind:showDialogType
+				bind:drawGeojsonData
+				bind:showZoneForm
+				bind:focusBbox
+				{selectedEpsgCode}
+				{demEntries}
+				{streetViewLineData}
+				{streetViewPointData}
+				{streetViewPoint}
+				{showMapCanvas}
+				{setPoint}
+			/>
+		</div>
+
+		<!-- <HeaderMenu
 			bind:featureMenuData
 			bind:inputSearchWord
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-		/>
+		/> -->
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} />
