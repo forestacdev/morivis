@@ -81,8 +81,8 @@
 		}}
 	></div>
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
+		transition:fly={{ duration: 300, x: 100, opacity: 0 }}
+		class="bg-main absolute right-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">
@@ -96,7 +96,7 @@
 			</button>
 		</div>
 		<ui>
-			<button
+			<!-- <button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={togleSearchMenu}
 			>
@@ -109,7 +109,7 @@
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
 				<span class="select-none">レイヤー</span>
-			</button>
+			</button> -->
 
 			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"

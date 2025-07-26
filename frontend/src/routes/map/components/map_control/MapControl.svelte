@@ -4,7 +4,7 @@
 	import { isStreetView } from '$routes/stores';
 </script>
 
-<ScaleControl />
+<!-- <ScaleControl /> -->
 
 <style>
 </style>

@@ -510,7 +510,7 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center px-2 pb-3 {$isSideMenuType
+	class="bg-main relative flex h-full w-full flex-1 grow items-center justify-center pb-4 pr-4 {$isSideMenuType
 		? 'overflow-hidden'
 		: ''}"
 >

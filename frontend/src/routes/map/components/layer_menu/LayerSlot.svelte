@@ -229,7 +229,7 @@
 		<!-- レイヤーの種類 -->
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
-			class="relative grid h-full w-[50px] place-items-center"
+			class="relative grid h-full w-[50px] shrink-0 place-items-center"
 		>
 			{#if index === 0}
 				<div class="bounded-full bg-base absolute aspect-square rounded-full p-2">
@@ -238,28 +238,22 @@
 			{:else}
 				<div class="bounded-full bg-base absolute aspect-square rounded-full p-1"></div>
 			{/if}
-			<div
-				class=" h-full w-[2px] {index + 1 === length && layerType === 'raster'
-					? 'bg-linear-to-b from-base to-main'
-					: index === 0 && layerType === 'point'
-						? 'bg-linear-to-b from-main to-base'
-						: 'bg-base'}"
-			></div>
+			<div class=" bg-base h-full w-[2px]"></div>
 		</div>
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
+		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit
-			? 'bg-black/50'
+			? 'rounded-lg bg-black/50'
 			: $isStyleEdit
-				? 'bg-main'
-				: 'bg-black'}"
+				? 'bg-main rounded-lg'
+				: 'rounded-full bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '65px' : $isStyleEdit ? '400px' : '330px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+		style={`width: ${$showDataMenu ? '66px' : $isStyleEdit ? '400px' : '320px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->

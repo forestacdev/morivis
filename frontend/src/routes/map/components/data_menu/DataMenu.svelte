@@ -8,9 +8,10 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/stores';
+	import { isStyleEdit, showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { isSideMenuType } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -95,7 +96,20 @@
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
-	<div class="flex grow items-center justify-end gap-4 p-2">
+	<button
+		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150"
+		onclick={() => {
+			showDataMenu.set(false);
+		}}
+	>
+		<Icon icon="ep:back" class="h-7 w-7" />
+	</button>
+	<div class="flex grow items-center justify-between gap-4 p-2">
+		<div class="flex items-center gap-2 text-base">
+			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
+			<span class="select-none text-lg">データカタログ</span>
+		</div>
+
 		<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
 			<input
 				class="c-search-form tex grid w-full text-left text-gray-500"

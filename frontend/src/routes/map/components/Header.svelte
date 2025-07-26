@@ -162,12 +162,8 @@
 <div class="bg-main flex items-center justify-between p-2 pb-4 text-base">
 	<!-- 左側 -->
 	<div class="flex items-center gap-4 pl-1">
-		<!-- ハンバーガーメニュー -->
-		<button
-			class="hover:text-accent cursor-pointer p-2 text-left duration-150"
-			onclick={() => showSideMenu.set(true)}
-		>
-			<Icon icon="ic:round-menu" class="h-7 w-7" />
+		<button class="hover:text-accent cursor-pointer text-left duration-150">
+			<Icon icon="ic:round-layers" class="h-10 w-10" />
 		</button>
 		<div class="flex select-none items-center justify-center">
 			<span class="-translate-y-1 text-4xl">morivis</span>
@@ -201,5 +197,12 @@
 		<StreetViewControl />
 		<!-- <TerrainControl /> -->
 		<GeolocateControl />
+		<!-- ハンバーガーメニュー -->
+		<button
+			class="hover:text-accent cursor-pointer p-2 text-left duration-150"
+			onclick={() => showSideMenu.set(true)}
+		>
+			<Icon icon="ic:round-menu" class="h-7 w-7" />
+		</button>
 	</div>
 </div>

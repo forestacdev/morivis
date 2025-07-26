@@ -91,7 +91,7 @@
 	<div
 		in:fly={{ duration: 300, opacity: 0, x: -100 }}
 		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
-		class="bg-main w-side-menu pt-18 absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
+		class="bg-main w-side-menu absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
 	>
 		{#key layerEntry.id}
 			<div
@@ -99,6 +99,19 @@
 				out:fly={{ duration: 300, opacity: 0, x: -10 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
+				<div class="flex h-[80px] items-center gap-2 text-base">
+					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
+					<span class="select-none text-lg">データカのカスタマイズ</span>
+					<button
+						onclick={() => {
+							isStyleEdit.set(false);
+							selectedLayerId.set('');
+						}}
+						class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
+					>
+						<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+					</button>
+				</div>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
 				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
