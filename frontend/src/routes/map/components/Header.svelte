@@ -15,7 +15,7 @@
 		showDataMenu,
 		isStreetView
 	} from '$routes/stores';
-	import { showSearchMenu } from '$routes/stores/ui';
+	import { showLayerMenu, showSearchMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';
@@ -157,14 +157,20 @@
 	const toggleSearchMenu = () => {
 		showSearchMenu.set(true);
 	};
+
+	const toggleLayerMenu = () => {
+		showLayerMenu.set(!$showLayerMenu);
+	};
 </script>
 
-<div class="bg-main flex items-center justify-between p-2 pb-4 text-base">
+<div class="bg-main flex items-center justify-between p-2 pb-6 text-base">
 	<!-- 左側 -->
-	<div class="flex items-center gap-4 pl-1">
-		<button class="hover:text-accent cursor-pointer text-left duration-150">
-			<Icon icon="ic:round-layers" class="h-10 w-10" />
-		</button>
+	<div class="flex items-center gap-4 pl-2">
+		<!-- <button
+			class="hover:text-accent bg-base text-main cursor-pointer rounded-full p-1 text-left duration-150"
+		>
+			<Icon icon="ic:round-layers" class="h-8 w-8" />
+		</button> -->
 		<div class="flex select-none items-center justify-center">
 			<span class="-translate-y-1 text-4xl">morivis</span>
 		</div>
@@ -193,16 +199,16 @@
 	</div>
 
 	<!-- 右側 -->
-	<div class="flex items-center">
+	<div class="flex items-center pr-2">
 		<StreetViewControl />
 		<!-- <TerrainControl /> -->
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer p-2 text-left duration-150"
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-150"
 			onclick={() => showSideMenu.set(true)}
 		>
-			<Icon icon="ic:round-menu" class="h-7 w-7" />
+			<Icon icon="ic:round-menu" class="h-8 w-8" />
 		</button>
 	</div>
 </div>

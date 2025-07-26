@@ -213,7 +213,7 @@
 </script>
 
 <div
-	class="relative flex h-[75px] w-full items-center gap-2
+	class="relative flex h-[75px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
@@ -232,13 +232,14 @@
 			class="relative grid h-full w-[50px] shrink-0 place-items-center"
 		>
 			{#if index === 0}
-				<div class="bounded-full bg-base absolute aspect-square rounded-full p-2">
+				<div class="bg-base absolute aspect-square rounded-full p-2">
 					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
 				</div>
 			{:else}
-				<div class="bounded-full bg-base absolute aspect-square rounded-full p-1"></div>
+				<div class="bg-base absolute aspect-square rounded-full p-1"></div>
 			{/if}
-			<div class=" bg-base h-full w-[2px]"></div>
+			<div class="bg-base/60 h-full w-[2px]"></div>
+			<div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div>
 		</div>
 	{/if}
 	<div
@@ -253,7 +254,7 @@
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '66px' : $isStyleEdit ? '400px' : '320px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+		style={`width: ${$showDataMenu ? '66px' : $isStyleEdit ? '400px' : '330px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->
@@ -324,13 +325,21 @@
 		<!-- ステータス -->
 		{#if !$showDataMenu}
 			<div
-				class="pointer-events-none absolute bottom-[5px] left-[40px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
+				class="pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
 						? 'bg-green-500'
 						: 'bg-red-500'}"
 			></div>
+		{/if}
+		<!-- ステータス -->
+		{#if $showDataMenu}
+			<div
+				class="bg-base pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
+			>
+				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
+			</div>
 		{/if}
 	</div>
 </div>
