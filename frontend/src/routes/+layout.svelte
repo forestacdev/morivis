@@ -106,7 +106,12 @@
 	showTermsDialog.subscribe(async (value) => {
 		if (!isInitialized) return;
 		if (!value && page.route.id === '/') {
-			await goto('/map');
+			// TODO
+			if (import.meta.env.MODE === 'production') {
+				await goto('/morivis/map');
+			} else {
+				await goto('/map');
+			}
 		}
 	});
 </script>
