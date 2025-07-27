@@ -18,6 +18,7 @@
 	import Accordion from '../atoms/Accordion.svelte';
 	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
+	import Icon from '@iconify/svelte';
 
 	interface Props {
 		layerEntry: RasterEntry<
@@ -110,7 +111,9 @@
 			</div>
 		</Accordion> -->
 	{:else if style.type === 'categorical'}
-		<h1 class="mt-4 text-base text-lg">凡例</h1>
+		<div class="mt-8 flex items-center gap-1 text-base text-lg">
+			<Icon icon="lsicon:data-filled" class="h-6 w-6" /><span>凡例</span>
+		</div>
 		{#if style.legend.type === 'category'}
 			<h2 class="text-base">{style.legend.name}</h2>
 			<ul class="text-base">

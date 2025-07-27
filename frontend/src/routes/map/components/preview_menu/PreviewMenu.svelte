@@ -92,7 +92,7 @@
 					</div>
 					{#if showDataEntry}
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="rounded-lg bg-black p-2">
+						<div class="rounded-lg bg-black p-2 text-sm">
 							{@html formatDescription(showDataEntry?.metaData.description)}
 						</div>
 					{/if}
