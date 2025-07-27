@@ -7,7 +7,6 @@
 	import { showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
 		layerEntries: GeoDataEntry[];
-
 		results: ResultData[] | null;
 		inputSearchWord: string;
 		searchFeature: (searchWord: string) => Promise<void>;
@@ -34,7 +33,6 @@
 
 		isLoading = true;
 		try {
-			console.log('Searching for:', _searchWord);
 			await searchFeature(_searchWord);
 		} catch (e) {
 			console.error(e);
@@ -70,7 +68,7 @@
 	<button
 		onclick={() => (inputSearchWord = '')}
 		disabled={!inputSearchWord}
-		class="absolute right-11 top-0 grid h-full cursor-pointer place-items-center"
+		class="absolute right-14 top-0 grid h-full cursor-pointer place-items-center"
 	>
 		<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
 	</button>

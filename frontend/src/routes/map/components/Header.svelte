@@ -27,6 +27,7 @@
 	import { DATA_PATH } from '$routes/constants';
 	import { onMount } from 'svelte';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface SearchData {
 		layer_id: string;
@@ -151,6 +152,9 @@
 			isProcessing.set(false);
 			if (results && results.length > 0) {
 				showSearchMenu.set(true);
+			} else {
+				showSearchMenu.set(false);
+				showNotification('該当するデータが見つかりませんでした。', 'info');
 			}
 		}
 	};
@@ -158,14 +162,6 @@
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
 	});
-
-	const toggleSearchMenu = () => {
-		showSearchMenu.set(true);
-	};
-
-	const toggleLayerMenu = () => {
-		showLayerMenu.set(!$showLayerMenu);
-	};
 
 	// レイヤーのリセット処理
 	const resetLayers = async () => {
@@ -211,8 +207,11 @@
 		/>
 		<button
 			transition:slide={{ duration: 300, axis: 'x' }}
-			onclick={toggleSearchMenu}
-			class="bg-sub flex items-center justify-start gap-2 rounded-r-full p-2 text-white"
+			onclick={() => searchFeature(inputSearchWord)}
+			disabled={$isProcessing || !inputSearchWord}
+			class="flex items-center justify-start gap-2 rounded-r-full p-2 px-4 text-white {inputSearchWord
+				? 'bg-accent cursor-pointer'
+				: 'bg-sub cursor-not-allowed'}"
 		>
 			<Icon icon="stash:search-solid" class="h-6 w-6" />
 		</button>

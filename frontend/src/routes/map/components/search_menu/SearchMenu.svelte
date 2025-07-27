@@ -124,7 +124,7 @@
 	};
 
 	$effect(() => {
-		if (results) {
+		if (results && results.length > 0) {
 			const geojson = {
 				type: 'FeatureCollection',
 				features: results.map((result) => ({
