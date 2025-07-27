@@ -52,10 +52,12 @@
 		{/if}
 	{/each}
 {:else if setExpression.type === 'step'}
-	<div class="flex-between flex w-full text-base">
+	<div class="flex-between flex w-full items-center gap-2 text-base">
 		{#each setExpression.mapping.values as _, index}
-			<span>{index === 0 ? '最小' : '最大'}</span>
-			<ColorPicker bind:value={setExpression.mapping.values[index]} />
+			<div class="flex items-center">
+				<span>{index === 0 ? '最小' : '最大'}</span>
+				<ColorPicker bind:value={setExpression.mapping.values[index]} />
+			</div>
 		{/each}
 	</div>
 

@@ -95,13 +95,13 @@
 	>
 		{#key layerEntry.id}
 			<div
-				in:fly={{ duration: 300, opacity: 10, x: -10 }}
-				out:fly={{ duration: 300, opacity: 0, x: -10 }}
+				in:fly={{ duration: 300, opacity: 10 }}
+				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
 				<div class="flex h-[80px] items-center gap-2 text-base">
 					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-					<span class="select-none text-lg">データカのカスタマイズ</span>
+					<span class="select-none text-lg">データのカスタマイズ</span>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);
