@@ -145,7 +145,18 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, fileName);
+		const bbox = turfBbox(geojsonData);
+
+		if (!bbox || !isBboxValid(bbox)) {
+			// TODO: 座標系対応
+			// focusBbox = bbox as [number, number, number, number];
+			// showDialogType = 'shp';
+			// showZoneForm = true;
+			showNotification('対応していない座標系データです', 'error');
+			return;
+		}
+
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, fileName, bbox);
 
 		if (!entry) {
 			showNotification('データが不正です', 'error');

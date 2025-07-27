@@ -124,10 +124,7 @@
 							duration: 0
 						});
 
-						const mapBbox = mapStore.getMapBounds();
-						if (!isBBoxInside(mapBbox, data.bbox)) {
-							mapStore.focusLayer(showDataEntry);
-						}
+						mapStore.focusLayer(showDataEntry);
 					} else {
 						hasBbox = false;
 					}

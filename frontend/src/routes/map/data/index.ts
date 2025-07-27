@@ -138,18 +138,13 @@ export const createGeoJsonEntry = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
+	bbox: [number, number, number, number],
 	color: string = getRandomColor()
 ): VectorEntry<GeoJsonMetaData> | undefined => {
-	const bbox = turfBbox(data);
-
-	if (!bbox || !isBboxValid(bbox)) {
-		showNotification('座標値が不正なデータです', 'error');
-		return;
-	}
 	const metaData: GeoJsonMetaData = {
 		...defaultCustomMetaData,
 		name,
-		bounds: bbox ? (bbox as [number, number, number, number]) : WEB_MERCATOR_WORLD_BBOX
+		bounds: bbox
 	};
 
 	let style;

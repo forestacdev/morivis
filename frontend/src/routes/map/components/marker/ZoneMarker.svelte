@@ -75,14 +75,15 @@
 >
 	{#if isReady}
 		<button
-			class="peer pointer-events-auto relative z-0 grid h-[60px] w-[60px] cursor-pointer place-items-center rounded-full bg-white p-2"
+			class="peer pointer-events-auto relative z-0 flex h-[60px] w-[60px] cursor-pointer flex-col items-center justify-center rounded-full bg-white"
 			onclick={click}
 			onfocus={() => onHover(true)}
 			onblur={() => onHover(false)}
 			onmouseover={() => onHover(true)}
 			onmouseleave={() => onHover(false)}
 		>
-			{properties.code}
+			<span class="text-xs text-gray-600">EPSG</span>
+			<span class="text-sm">{properties.code}</span>
 		</button>
 	{/if}
 </div>
@@ -94,7 +95,7 @@
 	{#if isHover || selectedEpsgCode === properties.code}
 		<div
 			transition:fly={{ duration: 200, y: -10, opacity: 0 }}
-			class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
+			class="pointer-none wrap-nowrap bg-base absolute rounded-lg p-1 px-2 text-center text-xs text-gray-800"
 		>
 			{properties.name_ja}
 		</div>

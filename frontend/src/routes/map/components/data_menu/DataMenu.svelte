@@ -11,6 +11,7 @@
 	import { isStyleEdit, showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { TAG_LIST } from '$routes/map/data/types/tags';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -133,7 +134,12 @@
 		</div>
 	</div>
 
-	<div class="flex grow items-center justify-end gap-4 p-2">
+	<div class="flex w-full grow items-center justify-between gap-4 p-2">
+		<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
+			{#each TAG_LIST as tag}
+				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
+			{/each}
+		</div> -->
 		<div>
 			<Switch label="追加済みデータの表示" bind:value={showAddedData} />
 		</div>
