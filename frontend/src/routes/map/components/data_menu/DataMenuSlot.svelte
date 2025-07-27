@@ -13,6 +13,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import { attributionMap } from '$routes/map/data/attribution';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -164,8 +165,8 @@
 			</div>
 
 			<!-- 出典 -->
-			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white"
-				>{dataEntry.metaData.attribution}</span
+			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white">
+				{attributionMap.get(dataEntry.metaData.attribution)?.name}</span
 			>
 			{#if layertype}
 				<div
