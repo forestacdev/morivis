@@ -184,18 +184,22 @@
 		<div class="flex select-none items-center justify-center">
 			<span class="-translate-y-1 text-4xl">morivis</span>
 		</div>
-		<button
-			onclick={() => showDataMenu.set(true)}
-			class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
-		>
-			<Icon icon="material-symbols:add" class="h-7 w-7" /><span>データ追加</span>
-		</button>
-		<button
-			onclick={resetLayers}
-			class="bg-sub pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-2"
-		>
-			<span>リセット</span>
-		</button>
+		<div class="flex gap-2">
+			<button
+				onclick={() => showDataMenu.set(true)}
+				class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
+			>
+				<Icon icon="material-symbols:add" class="h-7 w-7 text-black" /><span class="text-black"
+					>データ追加</span
+				>
+			</button>
+			<button
+				onclick={resetLayers}
+				class="bg-sub pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-1 px-4"
+			>
+				<span>リセット</span>
+			</button>
+		</div>
 	</div>
 	<!-- 中央 -->
 	<div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">

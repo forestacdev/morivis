@@ -57,7 +57,7 @@
 	<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
 		<span class="w-full text-center text-base">このデータを追加しますか？</span>
 		<div class="flex gap-4">
-			<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
+			<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}
 				>キャンセル
 			</button>
 			{#if showDataEntry}

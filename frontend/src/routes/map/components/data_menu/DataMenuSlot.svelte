@@ -109,9 +109,9 @@
 						e.stopPropagation();
 						deleteData(dataEntry.id);
 					}}
-					class="c-btn-cancel grid place-items-center p-2"
+					class="c-btn-cancel grid place-items-center p-1"
 				>
-					<Icon icon="ic:round-minus" class=" h-8 w-8" />
+					<Icon icon="ic:round-minus" class=" h-6 w-6" />
 				</button>
 			{:else}
 				<button
@@ -119,9 +119,9 @@
 						e.stopPropagation();
 						addData(dataEntry.id);
 					}}
-					class="c-btn-confirm grid place-items-center p-2"
+					class="c-btn-confirm grid place-items-center p-1"
 				>
-					<Icon icon="material-symbols:add" class=" h-8 w-8" />
+					<Icon icon="material-symbols:add" class=" h-6 w-6" />
 				</button>
 			{/if}
 		</div>
@@ -189,7 +189,7 @@
 		</div>
 		{#if prefCode}
 			<div class="absolute bottom-0 right-0 grid place-items-center">
-				<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
+				<div class="[&_path]:fill-sub grid aspect-square h-[90px] place-items-center p-1">
 					<PrefectureIcon width={'60px'} code={prefCode} />
 				</div>
 				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
