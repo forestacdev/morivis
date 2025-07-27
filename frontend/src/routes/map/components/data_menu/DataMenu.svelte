@@ -110,40 +110,43 @@
 			<span class="select-none text-lg">データカタログ</span>
 		</div>
 
-		<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
-			<input
-				class="c-search-form tex grid w-full text-left text-gray-500"
-				type="text"
-				placeholder="検索"
-				disabled={selected === 'user'}
-				bind:value={searchWord}
-			/>
-			{#if searchWord}
-				<button
-					onclick={() => (searchWord = '')}
-					disabled={!searchWord}
-					class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
-				>
-					<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
-				</button>
-			{/if}
-		</div>
+		{#if selected === 'system'}
+			<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
+				<input
+					class="c-search-form tex grid w-full text-left text-gray-500"
+					type="text"
+					placeholder="検索"
+					disabled={selected === 'user'}
+					bind:value={searchWord}
+				/>
+				{#if searchWord}
+					<button
+						onclick={() => (searchWord = '')}
+						disabled={!searchWord}
+						class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
+					>
+						<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
+					</button>
+				{/if}
+			</div>
+		{/if}
 
 		<div class="w-[300px] shrink-0">
 			<HorizontalSelectBox bind:group={selected} bind:options />
 		</div>
 	</div>
-
-	<div class="flex w-full grow items-center justify-between gap-4 p-2">
-		<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
+	{#if selected === 'system'}
+		<div class="flex w-full grow items-center justify-between gap-4 p-2">
+			<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
 			{#each TAG_LIST as tag}
 				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
 			{/each}
 		</div> -->
-		<div>
-			<Switch label="追加済みデータの表示" bind:value={showAddedData} />
+			<div>
+				<Switch label="追加済みデータの表示" bind:value={showAddedData} />
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	{#if selected === 'system'}
 		{#if filterDataEntries.length}
