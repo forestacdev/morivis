@@ -20,6 +20,8 @@
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { debounce } from 'es-toolkit';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
+	import { detectCoordinateOrder } from './search';
+
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
@@ -126,6 +128,25 @@
 				console.error('Search data is not loaded yet.');
 				return;
 			}
+
+			// TODO:座標検索
+			// const hoge = detectCoordinateOrder(searchWord);
+			// console.log('hoge', hoge);
+			// if (hoge.isCoordinate) {
+			// 	const point = [hoge.lat, hoge.lng];
+			// 	const map = mapStore.getMap();
+			// 	map?.panTo([point[1], point[0]]);
+			// 	results = [
+			// 		{
+			// 			name: searchWord,
+			// 			location: null,
+			// 			point: point,
+			// 			layerId: null,
+			// 			featureId: null
+			// 		}
+			// 	];
+			// 	return;
+			// }
 
 			const fuse = new Fuse(searchData, {
 				keys: ['search_values'],

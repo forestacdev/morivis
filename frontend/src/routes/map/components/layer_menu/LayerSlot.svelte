@@ -14,7 +14,7 @@
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
-	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		index: number;
@@ -232,8 +232,13 @@
 			class="relative grid h-full w-[50px] shrink-0 place-items-center"
 		>
 			{#if index === 0}
-				<div class="bg-base absolute aspect-square rounded-full p-2">
+				<div class="bg-base peer absolute aspect-square rounded-full p-2">
 					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
+				</div>
+				<div
+					class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
+				>
+					{TYPE_LABELS[layerType]}
 				</div>
 			{:else}
 				<div class="bg-base absolute aspect-square rounded-full p-1"></div>

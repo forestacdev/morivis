@@ -345,6 +345,7 @@
 {#if isInitialized}
 	<div class="flex h-dvh w-full flex-col">
 		<HeaderMenu
+			{resetlayerEntries}
 			bind:featureMenuData
 			bind:inputSearchWord
 			bind:results

@@ -103,7 +103,8 @@
 	style={`width: ${$showDataMenu ? '80px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 >
 	<div
-		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu
+		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu ||
+		$isStyleEdit
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
@@ -168,7 +169,10 @@
 			{/each}
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
-			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
+			<div
+				transition:fade={{ duration: 100 }}
+				class="relative mr-2 mt-2 flex flex-col rounded-lg bg-black p-2"
+			>
 				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
 				<Switch label="3D地形" bind:value={is3d} />
 				{#if import.meta.env.MODE === 'development'}
@@ -176,12 +180,12 @@
 				{/if}
 			</div>
 			<div class="flex gap-4 p-2">
-				<button
+				<!-- <button
 					onclick={resetLayers}
 					class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
 				>
 					<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
-				</button>
+				</button> -->
 				<!-- <button
 					onclick={() => showDataMenu.set(true)}
 					class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"

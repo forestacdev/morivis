@@ -26,6 +26,7 @@
 	import Fuse from 'fuse.js';
 	import { DATA_PATH } from '$routes/constants';
 	import { onMount } from 'svelte';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
 
 	interface SearchData {
 		layer_id: string;
@@ -73,6 +74,7 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		results: ResultData[] | null;
+		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
 	let {
@@ -81,7 +83,8 @@
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
-		results = $bindable()
+		results = $bindable(),
+		resetlayerEntries
 	}: Props = $props();
 
 	const searchFeature = async (searchWord: string) => {
@@ -161,6 +164,15 @@
 	const toggleLayerMenu = () => {
 		showLayerMenu.set(!$showLayerMenu);
 	};
+
+	// レイヤーのリセット処理
+	const resetLayers = async () => {
+		const result = await resetLayersConfirm();
+
+		if (result) {
+			resetlayerEntries();
+		}
+	};
 </script>
 
 <div class="bg-main flex items-center justify-between p-2 pb-6 text-base">
@@ -176,9 +188,15 @@
 		</div>
 		<button
 			onclick={() => showDataMenu.set(true)}
-			class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-1 pl-2 pr-4"
+			class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
 		>
 			<Icon icon="material-symbols:add" class="h-7 w-7" /><span>データ追加</span>
+		</button>
+		<button
+			onclick={resetLayers}
+			class="bg-sub pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-2"
+		>
+			<span>リセット</span>
 		</button>
 	</div>
 	<!-- 中央 -->
