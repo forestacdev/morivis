@@ -179,16 +179,17 @@
 		<div class="flex w-full flex-col gap-2 p-2">
 			<!-- タイトル -->
 			<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
-			<div class="flex items-center gap-1 text-sm text-gray-300">
+			<!-- タグ -->
+			<div class="flex items-center gap-1 text-gray-300">
 				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
+					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
 				{/each}
 			</div>
 		</div>
 		{#if prefCode}
 			<div class="absolute bottom-0 right-0 grid place-items-center">
 				<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
-					<PrefectureIcon width={'70px'} code={prefCode} />
+					<PrefectureIcon width={'60px'} code={prefCode} />
 				</div>
 				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
 			</div>
@@ -207,7 +208,7 @@
 		{/if}
 		{#if dataEntry.metaData.location === '全国'}
 			<div class="absolute bottom-2 right-2 grid place-items-center">
-				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-20 w-20" />
+				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-18 w-18" />
 				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
 			</div>
 		{/if}

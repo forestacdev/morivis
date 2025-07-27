@@ -34,22 +34,6 @@
 	let enableFlip = $state(true); // アニメーションの状態
 	let container = $state<HTMLElement | null>(null); // コンテナ要素
 
-	const TYPE_LABELS = {
-		label: 'ラベル',
-		point: 'ポイント',
-		line: 'ライン',
-		polygon: 'ポリゴン',
-		raster: 'ラスター'
-	};
-
-	const TYPE_ICONS = {
-		label: 'mynaui:label-solid',
-		point: 'ic:baseline-mode-standby',
-		line: 'ic:baseline-polymer',
-		polygon: 'ic:baseline-pentagon',
-		raster: 'mdi:raster'
-	};
-
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
 		if (!id) {

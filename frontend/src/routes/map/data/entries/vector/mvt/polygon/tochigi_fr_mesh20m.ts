@@ -10,7 +10,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/fr_mesh20m/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '森林資源量集計メッシュ',
+		name: '栃木県 森林資源量集計メッシュ',
 		description: `令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「森林資源量集計メッシュ」です。
             「森林資源量集計メッシュ」は、森林GISフォーラムが運用する”森林資源データ解析・管理標準仕様書ver.2.0”に則し作成したデータで、20mメッシュ単位で次に記載する森林資源量を集計しています。
              （G空間情報センター引用）`,
