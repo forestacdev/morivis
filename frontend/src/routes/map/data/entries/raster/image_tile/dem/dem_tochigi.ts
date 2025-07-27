@@ -10,12 +10,12 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://tiles.gsj.jp/tiles/elev/tochigi/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '栃木県 数値標高モデル(DEM)0.5m',
+		name: '栃木県 数値標高モデル',
 		description: '',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
 		attribution: '産総研シームレス標高タイル',
 		location: '栃木県',
-		tags: ['DEM', '地形'],
+		tags: ['DEM', '地形', '0.5m解像度'],
 		minZoom: 2,
 		maxZoom: 18,
 		tileSize: 256,

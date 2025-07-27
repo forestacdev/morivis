@@ -9,11 +9,11 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://tiles.gsj.jp/tiles/elev/tokyo/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '東京都 数値標高モデル 0.01m',
+		name: '東京都 数値標高モデル',
 		description: '',
 		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#h_tokyo',
 		attribution: '産総研シームレス標高タイル',
-		tags: ['DEM', '地形'],
+		tags: ['DEM', '地形', '0.25m解像度'],
 		location: '東京都',
 		minZoom: 2,
 		maxZoom: 19,
