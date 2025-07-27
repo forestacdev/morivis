@@ -148,7 +148,7 @@
 					<div class="flex flex-col gap-2">
 						{#each category.urls as url, j}
 							<li class="flex items-center gap-2">
-								<div class="w-20 shrink-0 rounded-lg bg-white p-2">
+								<div class="grid h-20 w-20 shrink-0 place-items-center rounded-lg bg-white p-2">
 									<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
 								</div>
 								<span class="text-sm">{category.labels[j]} </span>

@@ -38,7 +38,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			type: 'image',
 			categories: [
 				{
-					name: '滑落産と側方産',
+					name: '輪郭構造 滑落産と側方産',
 					urls: [
 						`${IMG}/0.webp`,
 						`${IMG}/1.webp`,
@@ -61,7 +61,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 					]
 				},
 				{
-					name: '移動体の輪郭・境界',
+					name: '輪郭構造 移動体の輪郭・境界',
 					urls: [
 						`${IMG}/8.webp`,
 						`${IMG}/9.webp`,
@@ -80,15 +80,44 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 					]
 				},
 				{
-					name: '移動体の輪郭・境界',
+					name: '内部構造',
 					urls: [
-						`${IMG}/9.webp`,
-						`${IMG}/10.webp`,
-						`${IMG}/11.webp`,
-						`${IMG}/12.webp`,
-						`${IMG}/13.webp`
+						`${IMG}/14.webp`,
+						`${IMG}/15.webp`,
+						`${IMG}/16.webp`,
+						`${IMG}/17.webp`,
+						`${IMG}/18.webp`,
+						`${IMG}/19.webp`,
+						`${IMG}/20.webp`
 					],
-					labels: ['', '', '', '', '', '', '', '', '', '']
+					labels: [
+						'二次・小滑落崖、崖線の解析程度に応じて輪郭構造の場合と同様に表わす',
+						'サブユニットの境界、内部（二次）移動体輪郭',
+						'移動体内の小尾根',
+						'幅の広い溝状凹地、亀裂',
+						'幅の狭い溝状凹地、亀裂',
+						'雁行亀裂',
+						'線状窪地・小谷底線'
+					]
+				},
+				{
+					name: '移動体の主移動方向',
+					urls: [
+						`${IMG}/21.webp`,
+						`${IMG}/22.webp`,
+						`${IMG}/23.webp`,
+						`${IMG}/24.webp`,
+						`${IMG}/25.webp`,
+						`${IMG}/26.webp`
+					],
+					labels: [
+						'すべり',
+						'クリープ（匍行）',
+						'流れ・押出し',
+						'落石',
+						'前方への傾動または傾動を伴う移動とその方向',
+						'元の斜面傾斜と逆方向へ傾動した斜面の傾斜方向'
+					]
 				}
 			]
 		}
