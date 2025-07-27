@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/slopemap/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '傾斜区分図',
+		name: '栃木県 傾斜区分図',
 		description:
 			'令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「傾斜区分図」です。（引用:G空間情報センター）',
 		attribution: '栃木県森林資源データ',

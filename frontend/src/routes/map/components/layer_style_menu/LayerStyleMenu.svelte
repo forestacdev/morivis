@@ -91,20 +91,34 @@
 	<div
 		in:fly={{ duration: 300, opacity: 0, x: -100 }}
 		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
-		class="bg-main w-side-menu pt-18 absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
+		class="bg-main w-side-menu absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
 	>
 		{#key layerEntry.id}
 			<div
-				in:fly={{ duration: 300, opacity: 10, x: -10 }}
-				out:fly={{ duration: 300, opacity: 0, x: -10 }}
+				in:fly={{ duration: 300, opacity: 10 }}
+				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
+				<div class="flex h-[80px] items-center gap-2 text-base">
+					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
+					<span class="select-none text-lg">データのカスタマイズ</span>
+					<button
+						onclick={() => {
+							isStyleEdit.set(false);
+							selectedLayerId.set('');
+						}}
+						class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
+					>
+						<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+					</button>
+				</div>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 				<div class="flex items-center gap-2 border-t text-base"></div>
 				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
 					<div class="flex w-full justify-center gap-2">
+						<!-- 表示 -->
 						<button
-							class="flex aspect-square w-1/6 flex-col items-center gap-2"
+							class="flex aspect-square w-1/6 flex-col items-center gap-1"
 							onclick={() => {
 								if (layerEntry) {
 									layerEntry.style.visible = false;
@@ -117,14 +131,20 @@
 									? 'bg-accent'
 									: ''}"
 							>
-								<Icon icon={'material-symbols:disabled-visible'} class="h-6 w-6 text-base" />
+								<Icon icon={'akar-icons:eye-slashed'} class="h-8 w-8 text-base" />
 							</div>
 
-							<span class="select-none text-base text-sm">隠す</span>
+							<span
+								class="select-none rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 {!layerEntry
+									.style.visible
+									? 'bg-accent text-black'
+									: 'border-base'}">隠す</span
+							>
 						</button>
+						<!-- 不透明度 -->
 						{#each opacityButtons as item (item.label)}
 							<button
-								class="flex aspect-square w-1/6 flex-col items-center gap-2"
+								class="flex aspect-square w-1/6 flex-col items-center gap-1"
 								onclick={() => {
 									if (layerEntry) {
 										layerEntry.style.visible = true;
@@ -142,12 +162,17 @@
 										<img
 											{src}
 											alt={layerEntry.metaData.name}
-											class="hover:bg-accent aspect-square cursor-pointer rounded-full object-cover text-left text-sm"
+											class="hover:bg-accent c-no-drag-icon aspect-square cursor-pointer rounded-full object-cover text-left text-sm"
 											style="opacity: {item.value};"
 										/>
 									</div>
 								{/if}
-								<span class="select-none text-base text-sm">{item.label}</span>
+								<span
+									class="select-none rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 {layerEntry
+										.style.opacity === item.value && layerEntry.style.visible
+										? 'bg-accent text-black'
+										: 'border-base'}">{item.label}</span
+								>
 							</button>
 						{/each}
 					</div>

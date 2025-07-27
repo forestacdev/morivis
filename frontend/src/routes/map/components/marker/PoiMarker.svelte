@@ -104,7 +104,7 @@
 	>
 		{#if imageUrl}
 			<img
-				class=" absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
+				class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
 				src={imageUrl}
 				alt={properties.name}
 			/>
@@ -117,7 +117,7 @@
 	>
 		{#if isReady}
 			<button
-				class="peer pointer-events-auto relative z-0 grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md"
+				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md"
 				onclick={click}
 				onfocus={() => onHover(true)}
 				onblur={() => onHover(false)}

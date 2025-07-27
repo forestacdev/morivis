@@ -14,7 +14,7 @@
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
-	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		index: number;
@@ -213,7 +213,7 @@
 </script>
 
 <div
-	class="relative flex h-[75px] w-full items-center gap-2
+	class="relative flex h-[75px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
@@ -229,37 +229,37 @@
 		<!-- レイヤーの種類 -->
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
-			class="relative grid h-full w-[50px] place-items-center"
+			class="relative grid h-full w-[50px] shrink-0 place-items-center"
 		>
 			{#if index === 0}
-				<div class="bounded-full bg-base absolute aspect-square rounded-full p-2">
+				<div class="bg-base peer absolute aspect-square rounded-full p-2">
 					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
 				</div>
+				<div
+					class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
+				>
+					{TYPE_LABELS[layerType]}
+				</div>
 			{:else}
-				<div class="bounded-full bg-base absolute aspect-square rounded-full p-1"></div>
+				<div class="bg-base absolute aspect-square rounded-full p-1"></div>
 			{/if}
-			<div
-				class=" h-full w-[2px] {index + 1 === length && layerType === 'raster'
-					? 'bg-linear-to-b from-base to-main'
-					: index === 0 && layerType === 'point'
-						? 'bg-linear-to-b from-main to-base'
-						: 'bg-base'}"
-			></div>
+			<div class="bg-base/60 h-full w-[2px]"></div>
+			<div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div>
 		</div>
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-lg p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
+		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit
-			? 'bg-black/50'
+			? 'rounded-lg bg-black/50'
 			: $isStyleEdit
-				? 'bg-main'
-				: 'bg-black'}"
+				? 'bg-main rounded-lg'
+				: 'rounded-full bg-black'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '65px' : $isStyleEdit ? '400px' : '320px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+		style={`width: ${$showDataMenu ? '66px' : $isStyleEdit ? '400px' : '330px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->
@@ -279,9 +279,12 @@
 						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
 							>{layerEntry.metaData.name}</span
 						>
-						<span class="truncate text-xs text-gray-400"
-							>{layerEntry.metaData.location ?? '---'}</span
-						>
+						<div class="flex items-center">
+							<Icon icon="lets-icons:info-alt-fill" class="h-5 w-5 text-gray-500" />
+							<span class="truncate text-xs text-gray-400"
+								>{layerEntry.metaData.attribution ?? '---'}</span
+							>
+						</div>
 					</div>
 				{/if}
 
@@ -327,13 +330,21 @@
 		<!-- ステータス -->
 		{#if !$showDataMenu}
 			<div
-				class="pointer-events-none absolute bottom-[5px] left-[40px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
+				class="pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
 						? 'bg-green-500'
 						: 'bg-red-500'}"
 			></div>
+		{/if}
+		<!-- ステータス -->
+		{#if $showDataMenu}
+			<div
+				class="bg-base pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
+			>
+				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
+			</div>
 		{/if}
 	</div>
 </div>

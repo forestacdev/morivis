@@ -3,6 +3,7 @@ import type { TileXYZ } from '$routes/map/data/types/raster';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';
+export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
 export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
@@ -37,7 +38,7 @@ export const MOBILE_WIDTH = 1024;
 
 /** マップの初期位置 */
 export const MAP_POSITION: MapPosition = {
-	center: [136.923004009, 35.5509525769706],
+	center: [136.921382, 35.55356],
 	zoom: 16,
 	pitch: 0,
 	bearing: 0
@@ -94,15 +95,16 @@ export const INT_ADD_LAYER_IDS = [
 	// 'fac_ziriki_point',
 	// 'fac_building_point',
 	// 'fac_poi',
-	'ensyurin_road2',
+	'ensyurin_road',
 	// 'gsi_road',
 	'ensyurin_rinhan',
-	'ensyurin_photo'
+	// 'ensyurin_photo'
 	// 'tochigi_tree_species'
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
-	// 'gsi_rinya_m',
+	'gsi_rinya_m'
+
 	// 'gsi_seamlessphoto'
 	// 'gsi_std'
 ];

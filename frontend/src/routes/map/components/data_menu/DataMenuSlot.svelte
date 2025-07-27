@@ -13,6 +13,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import { attributionMap } from '$routes/map/data/attribution';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -108,9 +109,9 @@
 						e.stopPropagation();
 						deleteData(dataEntry.id);
 					}}
-					class="c-btn-cancel grid place-items-center p-2"
+					class="c-btn-cancel grid place-items-center p-1"
 				>
-					<Icon icon="ic:round-minus" class=" h-8 w-8" />
+					<Icon icon="ic:round-minus" class=" h-6 w-6" />
 				</button>
 			{:else}
 				<button
@@ -118,9 +119,9 @@
 						e.stopPropagation();
 						addData(dataEntry.id);
 					}}
-					class="c-btn-confirm grid place-items-center p-2"
+					class="c-btn-confirm grid place-items-center p-1"
 				>
-					<Icon icon="material-symbols:add" class=" h-8 w-8" />
+					<Icon icon="material-symbols:add" class=" h-6 w-6" />
 				</button>
 			{/if}
 		</div>
@@ -141,12 +142,13 @@
 						onload={() => handleImageLoad(imageResult)}
 						loading="lazy"
 						onerror={() => {
+							console.error('Image loading failed:', dataEntry.metaData.name);
 							isImageError = true;
 						}}
 					/>
 				{/if}
 			{:catch}
-				<div>画像の取得に失敗</div>
+				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
 			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
 			<div
@@ -163,8 +165,8 @@
 			</div>
 
 			<!-- 出典 -->
-			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white"
-				>{dataEntry.metaData.attribution}</span
+			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white">
+				{attributionMap.get(dataEntry.metaData.attribution)?.name}</span
 			>
 			{#if layertype}
 				<div
@@ -178,16 +180,17 @@
 		<div class="flex w-full flex-col gap-2 p-2">
 			<!-- タイトル -->
 			<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
-			<div class="flex items-center gap-1 text-sm text-gray-300">
+			<!-- タグ -->
+			<div class="flex items-center gap-1 text-gray-300">
 				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2">{tag}</span>
+					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
 				{/each}
 			</div>
 		</div>
 		{#if prefCode}
 			<div class="absolute bottom-0 right-0 grid place-items-center">
-				<div class="[&_path]:fill-sub grid aspect-square h-[100px] place-items-center">
-					<PrefectureIcon width={'70px'} code={prefCode} />
+				<div class="[&_path]:fill-sub grid aspect-square h-[90px] place-items-center p-1">
+					<PrefectureIcon width={'60px'} code={prefCode} />
 				</div>
 				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
 			</div>
@@ -206,7 +209,7 @@
 		{/if}
 		{#if dataEntry.metaData.location === '全国'}
 			<div class="absolute bottom-2 right-2 grid place-items-center">
-				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-20 w-20" />
+				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-18 w-18" />
 				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
 			</div>
 		{/if}

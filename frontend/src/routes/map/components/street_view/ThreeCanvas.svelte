@@ -250,7 +250,7 @@
 		orbitControls.dampingFactor = 0.1;
 
 		// マウスドラッグの反転
-		orbitControls.rotateSpeed *= -1;
+		orbitControls.rotateSpeed *= -0.3;
 		orbitControls.enableDamping = true;
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;

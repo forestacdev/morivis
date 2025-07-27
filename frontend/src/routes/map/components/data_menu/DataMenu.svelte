@@ -8,9 +8,10 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/stores';
+	import { isStyleEdit, showDataMenu } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { TAG_LIST } from '$routes/map/data/types/tags';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -95,36 +96,57 @@
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
-	<div class="flex grow items-center justify-end gap-4 p-2">
-		<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
-			<input
-				class="c-search-form tex grid w-full text-left text-gray-500"
-				type="text"
-				placeholder="検索"
-				disabled={selected === 'user'}
-				bind:value={searchWord}
-			/>
-			{#if searchWord}
-				<button
-					onclick={() => (searchWord = '')}
-					disabled={!searchWord}
-					class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
-				>
-					<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
-				</button>
-			{/if}
+	<button
+		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150"
+		onclick={() => {
+			showDataMenu.set(false);
+		}}
+	>
+		<Icon icon="ep:back" class="h-7 w-7" />
+	</button>
+	<div class="flex grow items-center justify-between gap-4 p-2">
+		<div class="flex items-center gap-2 text-base">
+			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
+			<span class="select-none text-lg">データカタログ</span>
 		</div>
+
+		{#if selected === 'system'}
+			<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
+				<input
+					class="c-search-form tex grid w-full text-left text-gray-500"
+					type="text"
+					placeholder="検索"
+					disabled={selected === 'user'}
+					bind:value={searchWord}
+				/>
+				{#if searchWord}
+					<button
+						onclick={() => (searchWord = '')}
+						disabled={!searchWord}
+						class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
+					>
+						<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
+					</button>
+				{/if}
+			</div>
+		{/if}
 
 		<div class="w-[300px] shrink-0">
 			<HorizontalSelectBox bind:group={selected} bind:options />
 		</div>
 	</div>
-
-	<div class="flex grow items-center justify-end gap-4 p-2">
-		<div>
-			<Switch label="追加済みデータの表示" bind:value={showAddedData} />
+	{#if selected === 'system'}
+		<div class="flex w-full grow items-center justify-between gap-4 p-2">
+			<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
+			{#each TAG_LIST as tag}
+				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
+			{/each}
+		</div> -->
+			<div>
+				<Switch label="追加済みデータの表示" bind:value={showAddedData} />
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	{#if selected === 'system'}
 		{#if filterDataEntries.length}

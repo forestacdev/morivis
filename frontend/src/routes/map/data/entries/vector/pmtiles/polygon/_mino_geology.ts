@@ -185,7 +185,7 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'Symbol',
-					name: 'Symbolのラベル',
+					name: 'Symbol',
 					value: '{Symbol}'
 				}
 			]

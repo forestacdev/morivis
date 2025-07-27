@@ -33,3 +33,10 @@ export const getLayerIcon = (layerType: LayerType): string => {
 			throw new Error(`Unknown layer type: ${layerType}`);
 	}
 };
+
+export const TYPE_LABELS = {
+	point: 'ポイント',
+	line: 'ライン',
+	polygon: 'ポリゴン',
+	raster: 'ラスター'
+};

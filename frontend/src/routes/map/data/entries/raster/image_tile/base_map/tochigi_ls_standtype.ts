@@ -13,7 +13,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/ls_standtype/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'レーザ林相図',
+		name: '栃木県 レーザ林相図',
 		description:
 			'令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「レーザ林相図」です。「レーザ林相図」は、航空レーザ測量で取得した樹冠高や樹冠形状、レーザパルスの反射強度に基づき、樹種や樹冠形状の特徴を図示した画像です。（引用:G空間情報センター）',
 		attribution: '栃木県森林資源データ',

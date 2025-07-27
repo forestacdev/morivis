@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 0,
 		maxZoom: 22,
 		tileSize: 256,
-		tags: ['基本図'],
+		tags: ['背景地図'],
 		bounds: WEB_MERCATOR_WORLD_BBOX
 	},
 	interaction: {

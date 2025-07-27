@@ -26,7 +26,7 @@
 {#if $confirmationDialog}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
+		class="bg-main/70 absolute bottom-0 z-30 flex h-full w-full items-center justify-center"
 		onclick={handleBackdropClick}
 		aria-label="Confirmation Dialog"
 		role="button"
@@ -39,7 +39,7 @@
 	>
 		<div
 			transition:scale={{ duration: 300 }}
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
+			class="bg-opacity-8 flex max-h-[600px] max-w-[600px] grow flex-col rounded-md bg-black p-4 text-base"
 		>
 			<div class="p-2">
 				<p>{$confirmationDialog.message}</p>

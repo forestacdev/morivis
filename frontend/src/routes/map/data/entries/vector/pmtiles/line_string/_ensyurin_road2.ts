@@ -2,7 +2,7 @@ import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/consta
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'ensyurin_road2',
+	id: 'ensyurin_road',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
@@ -10,20 +10,20 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
-		name: '演習林 歩道',
-		description: '演習林',
+		name: '演習林の道',
+		description: '演習林の道',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['森林歩道'],
-		maxZoom: 17,
-		minZoom: 8,
-		sourceLayer: 'ensyurin_road2',
-		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
+		maxZoom: 14,
+		minZoom: 1,
+		sourceLayer: 'ensyurin_road',
+		bounds: [136.919181, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
-		xyzImageTile: { x: 115387, y: 51670, z: 17 }
+		xyzImageTile: { x: 115388, y: 51671, z: 17 }
 	},
 	properties: {
-		keys: [],
+		keys: ['種類'],
 		titles: []
 	},
 	interaction: {
@@ -31,23 +31,35 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'line',
-		opacity: 0.7,
+		opacity: 0.8,
 		colors: {
 			show: true,
-			key: '単色',
+			key: '種類',
 			expressions: [
 				{
 					type: 'single',
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#cacaca'
+						value: '#dd9c1b'
+					}
+				},
+				{
+					type: 'match',
+					key: '種類',
+					name: '歩道と林道の色分け',
+					mapping: {
+						categories: ['林道', '歩道'],
+						values: ['#ffec42', '#e0e0e0']
+					},
+					noData: {
+						values: 'transparent'
 					}
 				}
 			]
 		},
 		width: {
-			key: '単一',
+			key: '種類',
 			expressions: [
 				{
 					type: 'single',
@@ -55,6 +67,15 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '単一',
 					mapping: {
 						value: 5
+					}
+				},
+				{
+					type: 'match',
+					key: '種類',
+					name: '歩道と林道の太さ分け',
+					mapping: {
+						categories: ['林道', '歩道'],
+						values: [10, 5]
 					}
 				}
 			]
@@ -72,13 +93,6 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
-			line: {
-				paint: {},
-				layout: {
-					'line-cap': 'round',
-					'line-join': 'round'
-				}
-			},
 			symbol: {
 				paint: {},
 				layout: {

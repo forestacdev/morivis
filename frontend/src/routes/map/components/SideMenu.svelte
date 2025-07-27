@@ -12,22 +12,11 @@
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import { isProcessing } from '$routes/stores/ui';
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
 
 	import { isBlocked } from '$routes/stores/ui';
-
-	const toggleLayerMenu = () => {
-		showSideMenu.set(false);
-		isSideMenuType.set('layer');
-	};
-
-	const togleSearchMenu = () => {
-		showSideMenu.set(false);
-		isSideMenuType.set('search');
-	};
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -81,8 +70,8 @@
 		}}
 	></div>
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main absolute left-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
+		transition:fly={{ duration: 300, x: 100, opacity: 0 }}
+		class="bg-main absolute right-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">
@@ -96,7 +85,7 @@
 			</button>
 		</div>
 		<ui>
-			<button
+			<!-- <button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={togleSearchMenu}
 			>
@@ -109,7 +98,7 @@
 			>
 				<Icon icon="ic:round-layers" class="h-8 w-8" />
 				<span class="select-none">レイヤー</span>
-			</button>
+			</button> -->
 
 			<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
@@ -139,7 +128,7 @@
 				<span class="select-none">地図をエクスポート</span>
 			</button>
 		</ui>
-		<div class="w-hull bg-base h-[1px] rounded-full"></div>
+		<div class="w-hull bg-base h-[1px] rounded-full opacity-60"></div>
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
@@ -187,7 +176,7 @@
 				<span>トップページへ</span></button
 			>
 		</ui>
-		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>
+		<ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui>
 	</div>
 {/if}
 

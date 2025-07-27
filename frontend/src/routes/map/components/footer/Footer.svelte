@@ -11,9 +11,9 @@
 	} = $props();
 </script>
 
-<div class="pointer-events-none absolute bottom-0 left-0 h-[90px] w-full">
+<!-- <div class="pointer-events-none absolute bottom-0 left-0 h-[90px] w-full">
 	<Attribution />
-</div>
+</div> -->
 
 <style>
 	.c-fog {

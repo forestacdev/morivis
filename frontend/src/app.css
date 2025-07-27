@@ -33,7 +33,7 @@
 
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
-	@apply border-accent bg-accent hover:text-accent hover:border-base hover:bg-base cursor-pointer rounded-full border-2 p-2 text-white transition-colors duration-150;
+	@apply border-accent bg-accent hover:text-accent hover:border-base hover:bg-base cursor-pointer rounded-full border-2 p-2 text-black transition-colors duration-150;
 }
 
 @utility c-btn-sub {
@@ -43,7 +43,7 @@
 
 @utility c-btn-cancel {
 	/* キャンセルボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 font-bold text-gray-400 transition-colors duration-150 lg:hover:bg-gray-200;
+	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 font-bold text-gray-500 transition-colors duration-150 lg:hover:bg-gray-200;
 }
 
 @utility c-form-field {

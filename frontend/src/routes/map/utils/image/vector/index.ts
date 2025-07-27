@@ -6,6 +6,7 @@ import maplibregl from 'maplibre-gl';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 
 export interface MapImageOptions {
 	name: string;
@@ -101,7 +102,7 @@ class ParallelQueue {
 	private activeCount = 0;
 	private readonly maxConcurrency: number;
 
-	constructor(maxConcurrency: number = 2) {
+	constructor(maxConcurrency: number = 1) {
 		this.maxConcurrency = maxConcurrency;
 	}
 
@@ -139,8 +140,8 @@ class ParallelQueue {
 }
 
 // インスタンスプールとキューを初期化
-const mapPool = new MapInstancePool(2); // 2つのMapインスタンス
-const parallelQueue = new ParallelQueue(2); // 最大2つの並列処理
+const mapPool = new MapInstancePool(1); // 2つのMapインスタンス
+const parallelQueue = new ParallelQueue(1); // 最大2つの並列処理
 
 /**
  * 並列処理対応のMapLibre画像生成関数（内部実装）
@@ -273,6 +274,42 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 	const url = CoverImageManager.get(_layerEntry.id);
 	if (url) return url;
 
+	if (_layerEntry.metaData.xyzImageTile && _layerEntry.format.type === 'mvt') {
+		const checkUrl = _layerEntry.format.url
+			.replace('{z}', _layerEntry.metaData.xyzImageTile.z.toString())
+			.replace('{x}', _layerEntry.metaData.xyzImageTile.x.toString())
+			.replace('{y}', _layerEntry.metaData.xyzImageTile.y.toString());
+
+		try {
+			if (checkUrl) {
+				const response = await fetch(checkUrl, {
+					method: 'HEAD',
+					mode: 'cors', // 明示的にCORSモードを指定
+					headers: {
+						Accept: '*/*'
+					}
+				});
+
+				if (!response.ok) {
+					throw new Error(`Tile URL fetch failed: ${response.status} - ${checkUrl}`);
+				}
+				console.log('Tile URL check successful:', checkUrl);
+			} else {
+				throw new Error('Invalid tile URL');
+			}
+		} catch (error) {
+			console.error('Tile URL fetch failed:', error);
+			// CORSエラーの場合は、タイルが存在すると仮定するか、
+			// 別の検証方法を使用することを検討
+			if (error.name === 'TypeError' && error.message.includes('CORS')) {
+				console.warn('CORS error detected, skipping tile validation');
+				// 必要に応じてここで代替処理
+			} else {
+				throw new Error(`Tile URL fetch failed: ${checkUrl} - ${error.message}`);
+			}
+		}
+	}
+
 	const minimumEntry = {
 		..._layerEntry,
 		metaData: {
@@ -294,13 +331,16 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		sprite: MAP_SPRITE_DATA_PATH,
 		glyphs: MAP_FONT_DATA_PATH,
 		sources: {
+			// TODO 背景地図のみ処理を分離
 			mierune_mono: {
 				type: 'raster',
 				tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
 				tileSize: 256,
 				minzoom: 0,
 				maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-				bounds: minimumEntry.metaData.bounds,
+				bounds: _layerEntry.metaData.xyzImageTile
+					? minimumEntry.metaData.bounds
+					: WEB_MERCATOR_WORLD_BBOX,
 				attribution:
 					'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenStreetMap contributors</a>'
 			},

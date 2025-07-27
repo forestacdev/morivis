@@ -73,6 +73,7 @@ export const poiStyleJson = {
 			type: 'symbol',
 			source: 'fac_top',
 			maxzoom: 12,
+			minzoom: 4,
 			layout: {
 				'icon-image': 'poi-icon',
 				'icon-size': 3

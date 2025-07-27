@@ -12,7 +12,7 @@
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
@@ -222,28 +222,33 @@
 	});
 </script>
 
-<div class="app relative flex h-screen w-screen">
-	<canvas class="h-screen w-full bg-gray-900" bind:this={canvas}></canvas>
+<div class="app relative flex h-dvh w-dvw">
+	<canvas class="h-full w-full bg-gray-900" bind:this={canvas}></canvas>
 
 	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
-		<div class="flex h-full w-full flex-col items-center justify-center gap-6">
-			<span class="text-[100px] font-bold text-white">morivis</span>
-
+		<div class="flex h-full w-full flex-col items-center justify-center">
+			<span class="c-text-shadow text-[100px] font-bold text-white">morivis</span>
 			{#if !$isBlocked}
 				<button
-					transition:scale={{ duration: 300, opacity: 0.5 }}
-					class="bg-base hover:bg-main pointer-events-auto cursor-pointer rounded-full p-4 px-8 text-2xl transition-all duration-200 hover:text-white {$isBlocked
+					transition:slide={{ duration: 300, axis: 'y' }}
+					class="bg-base hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 text-2xl transition-all duration-200 hover:text-white {$isBlocked
 						? 'pointer-events-none'
 						: 'pointer-events-auto'}"
 					onclick={goMap}
 					disabled={$isBlocked}
-					>クリックでマップを見る
+					>マップを見る
 				</button>
 			{/if}
 
 			<div class="absolute bottom-8 [&_path]:fill-white">
-				<FacLogo width={'250'} />
+				<FacLogo width={'230'} />
 			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	.c-text-shadow {
+		text-shadow: rgb(0, 50, 24) 1px 0 10px;
+	}
+</style>

@@ -13,8 +13,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/rinya_m/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '森林（民有林）の空中写真',
-		description: '',
+		name: '民有林の空中写真',
+		description: `都道府県が2013年以降に整備した森林（民有林）の空中写真をウェブ上で閲覧できるように加工したものです。（引用：地理院タイル）`,
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#trinya',
 		attribution: '国土地理院',
 		tags: ['森林', '写真'],

@@ -7,14 +7,15 @@
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
+	import { showLayerMenu } from '$routes/stores/ui';
 
 	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 
 	import { gsap } from 'gsap';
 	import { getLayerType } from '$routes/map/utils/entries';
+	import ContourSvg from '$lib/components/svgs/contour.svelte';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -32,22 +33,6 @@
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
 	let container = $state<HTMLElement | null>(null); // コンテナ要素
-
-	const TYPE_LABELS = {
-		label: 'ラベル',
-		point: 'ポイント',
-		line: 'ライン',
-		polygon: 'ポリゴン',
-		raster: 'ラスター'
-	};
-
-	const TYPE_ICONS = {
-		label: 'mynaui:label-solid',
-		point: 'ic:baseline-mode-standby',
-		line: 'ic:baseline-polymer',
-		polygon: 'ic:baseline-pentagon',
-		raster: 'mdi:raster'
-	};
 
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
@@ -67,12 +52,6 @@
 			resetlayerEntries();
 		}
 	};
-
-	showDataMenu.subscribe((value) => {
-		if (value) {
-			isSideMenuType.set('layer');
-		}
-	});
 
 	let is3d = $state<boolean>(false);
 	$effect(() => {
@@ -100,16 +79,16 @@
 
 <div
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 pt-[70px] duration-200 {$isSideMenuType ===
-	'layer'
+	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
 		? 'translate-x-0'
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'
 		: 'bg-main'}"
-	style={`width: ${$showDataMenu ? '90px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
+	style={`width: ${$showDataMenu ? '80px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 >
 	<div
-		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu
+		class="flex grow flex-col overflow-y-auto overflow-x-hidden pb-4 pl-2 {$showDataMenu ||
+		$isStyleEdit
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
@@ -174,7 +153,10 @@
 			{/each}
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
-			<div transition:fade={{ duration: 100 }} class="relative flex flex-col">
+			<div
+				transition:fade={{ duration: 100 }}
+				class="relative mr-2 mt-2 flex flex-col rounded-lg bg-black p-2"
+			>
 				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
 				<Switch label="3D地形" bind:value={is3d} />
 				{#if import.meta.env.MODE === 'development'}
@@ -182,22 +164,25 @@
 				{/if}
 			</div>
 			<div class="flex gap-4 p-2">
-				<button
+				<!-- <button
 					onclick={resetLayers}
 					class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
 				>
 					<Icon icon="carbon:reset" class="h-8 w-8" /><span>リセット</span>
-				</button>
-				<button
+				</button> -->
+				<!-- <button
 					onclick={() => showDataMenu.set(true)}
 					class="c-btn-confirm pointer-events-auto flex shrink items-center justify-center gap-2"
 				>
 					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" /><span
 						>データの追加</span
 					>
-				</button>
+				</button> -->
 			</div>
 		{/if}
 		<div class="h-[200px] w-full shrink-0"></div>
 	</div>
+	<!-- <div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
+		<ContourSvg width={'1000'} strokeWidth={'0.5'} />
+	</div> -->
 </div>

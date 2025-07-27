@@ -21,7 +21,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/stores/map';
-	import { isSideMenuType } from '$routes/stores/ui';
+
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
 	import { downloadGeojson } from '$routes/map/utils/file/geojson';
 
@@ -105,20 +105,6 @@
 	let selectedFeatureId = $state<string | null>(null);
 	let selectedFeature = $state<DrawGeojsonFeature | null>(null);
 	let color = $state<string>('#ff0000');
-
-	isSideMenuType.subscribe((value) => {
-		if (value === 'draw') {
-			if (!terraDraw) return;
-			if (terraDraw.enabled) return;
-			terraDraw.start();
-			terraDraw.setMode(isDrawMode);
-		} else {
-			if (!terraDraw) return;
-			if (terraDraw.enabled) {
-				terraDraw.stop();
-			}
-		}
-	});
 
 	$effect(() => {
 		if (isDrawMode) {
@@ -267,55 +253,46 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<!-- レイヤーメニュー -->
-{#if $isSideMenuType === 'draw'}
-	<div
-		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
-	>
-		<div class="c-color-picker [&_label]:w-full">
-			<ColorPicker
-				label="色の選択"
-				bind:hex={color}
-				components={ChromeVariant}
-				sliderDirection="horizontal"
-				isDialog={true}
-			/>
-		</div>
-		<div class="grid grid-cols-3 gap-4 p-2">
-			{#each DRAW_MODE_TYPE as { type, name, icon }}
-				<label
-					class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md p-2 drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-150 {isDrawMode ===
-					type
-						? 'bg-base text-black'
-						: 'bg-main text-white'}"
-				>
-					<Icon {icon} class="h-6 w-6" />
-					<span class="text-sm">{name}</span>
-					<input
-						type="radio"
-						name="draw-mode"
-						bind:group={isDrawMode}
-						value={type}
-						class="hidden"
-					/>
-				</label>
-			{/each}
-		</div>
-
-		<div class="p-2">
-			{#if drawGeojsonData.features.length > 0}
-				<button
-					onclick={() => (drawGeojsonData ? downloadGeojson(drawGeojsonData) : null)}
-					class="c-btn-confirm max-w-[300px]"
-				>
-					<Icon icon="material-symbols:save-alt-rounded" class="h-8 w-8" />
-					<span class="text-sm">エクスポート</span>
-				</button>
-			{/if}
-		</div>
+<div
+	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
+	class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+>
+	<div class="c-color-picker [&_label]:w-full">
+		<ColorPicker
+			label="色の選択"
+			bind:hex={color}
+			components={ChromeVariant}
+			sliderDirection="horizontal"
+			isDialog={true}
+		/>
 	</div>
-{/if}
+	<div class="grid grid-cols-3 gap-4 p-2">
+		{#each DRAW_MODE_TYPE as { type, name, icon }}
+			<label
+				class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md p-2 drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-150 {isDrawMode ===
+				type
+					? 'bg-base text-black'
+					: 'bg-main text-white'}"
+			>
+				<Icon {icon} class="h-6 w-6" />
+				<span class="text-sm">{name}</span>
+				<input type="radio" name="draw-mode" bind:group={isDrawMode} value={type} class="hidden" />
+			</label>
+		{/each}
+	</div>
+
+	<div class="p-2">
+		{#if drawGeojsonData.features.length > 0}
+			<button
+				onclick={() => (drawGeojsonData ? downloadGeojson(drawGeojsonData) : null)}
+				class="c-btn-confirm max-w-[300px]"
+			>
+				<Icon icon="material-symbols:save-alt-rounded" class="h-8 w-8" />
+				<span class="text-sm">エクスポート</span>
+			</button>
+		{/if}
+	</div>
+</div>
 
 <style>
 	.c-color-picker {

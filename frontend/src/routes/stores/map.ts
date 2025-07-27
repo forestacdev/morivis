@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/map/protocol/terrain';
+import markerPngIcon from '$lib/icons/marker.png';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -151,6 +152,8 @@ const createMapStore = () => {
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
+			// maplibreLogo: true // MapLibreのロゴを表示
+			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
@@ -191,6 +194,15 @@ const createMapStore = () => {
 		const bytesPerPixel = 4;
 		const data = new Uint8Array(width * width * bytesPerPixel);
 		map.addImage('poi-icon', { width, height: width, data });
+
+		fetch(markerPngIcon, { mode: 'cors' }).then(async (response) => {
+			if (!response.ok) {
+				throw new Error(`Failed to fetch image: ${response.statusText}`);
+			}
+			const image = await createImageBitmap(await response.blob());
+			if (!map) return;
+			map.addImage('marker_png', image);
+		});
 
 		map.once('style.load', () => {
 			isStyleLoadEvent.set(map);
@@ -466,14 +478,11 @@ const createMapStore = () => {
 			  }
 	) => {
 		if (!map || !isMapValid(map)) return;
+
+		// TODO
+		//github.com/maplibre/maplibre-gl-js/issues/4891
 		map.panTo(lngLat, {
-			duration: 300,
-			padding: {
-				left: 400, // サイドバー分の余白を左に確保
-				top: 20,
-				right: 20,
-				bottom: 20
-			}
+			duration: 300
 		});
 	};
 
@@ -493,7 +502,7 @@ const createMapStore = () => {
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				padding: {
-					left: 400, // サイドバー分の余白を左に確保
+					left: 20,
 					top: 20,
 					right: 20,
 					bottom: 20
@@ -505,7 +514,7 @@ const createMapStore = () => {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
 				padding: {
-					left: 400, // サイドバー分の余白を左に確保
+					left: 20,
 					top: 20,
 					right: 20,
 					bottom: 20
@@ -522,12 +531,7 @@ const createMapStore = () => {
 
 		map.fitBounds(bbox, {
 			bearing: map.getBearing(),
-			padding: {
-				left: 400, // サイドバー分の余白を左に確保
-				top: 20,
-				right: 20,
-				bottom: 20
-			},
+			padding: 20,
 			duration: 500
 		});
 	};

@@ -6,10 +6,6 @@
 	import { isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { isPc } from '$routes/map/utils/ui';
-	interface Props {
-		isHover: boolean;
-	}
-	let { isHover = $bindable() }: Props = $props();
 
 	gsap.registerPlugin(Draggable);
 
@@ -47,7 +43,7 @@
 					element.style.transform = `rotate(0deg)`;
 				}
 				this.rotation = 0;
-				this.update(); // 内部状態を反映（これが重要！）
+				this.update();
 			},
 			onDragEnd: function () {
 				const bearing = mapStore.getBearing();
@@ -60,43 +56,25 @@
 </script>
 
 <!-- PC -->
-<div
-	bind:this={element}
-	class="grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-2"
->
-	<svg
-		class="h-full w-full scale-50"
-		xmlns="http://www.w3.org/2000/svg"
-		width="132"
-		height="132"
-		viewBox="0 0 132 132"
+<div class="absolute bottom-8 right-8">
+	<div
+		bind:this={element}
+		class="border-3 grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
 	>
-		<g transform="translate(47,0)">
-			<path fill="#00e040" d="m19 0 16.455 66H2.545L19 0Z" />
-			<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
-		</g>
-	</svg>
+		<svg
+			class="scale-60 h-full w-full"
+			xmlns="http://www.w3.org/2000/svg"
+			width="132"
+			height="132"
+			viewBox="0 0 132 132"
+		>
+			<g transform="translate(47,0)">
+				<path fill="#77D4AC" d="m19 0 16.455 66H2.545L19 0Z" />
+				<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
+			</g>
+		</svg>
+	</div>
 </div>
 
-<!-- Mobile -->
-<!-- <div class="pointer-events-none absolute bottom-0 flex w-full items-center justify-center">
-		<div
-			bind:this={element}
-			class="bg-main pointer-events-auto grid h-[100px] w-[100px] place-items-center overflow-hidden rounded-full"
-		>
-			<svg
-				class="h-full w-full scale-50"
-				xmlns="http://www.w3.org/2000/svg"
-				width="132"
-				height="132"
-				viewBox="0 0 132 132"
-			>
-				<g transform="translate(47,0)">
-					<path fill="#000" d="m19 0 16.455 66H2.545L19 0Z" />
-					<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
-				</g>
-			</svg>
-		</div>
-	</div> -->
 <style>
 </style>

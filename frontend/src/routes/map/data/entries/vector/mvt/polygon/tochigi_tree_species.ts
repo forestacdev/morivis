@@ -10,7 +10,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '樹種ポリゴン',
+		name: '栃木県 樹種ポリゴン',
 		description: ``,
 		attribution: '栃木県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
@@ -102,7 +102,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'#6a3d9a',
 							'#ff7f00',
 							'#b15928',
-
 							'#33a02c', // 針広混交林
 							'#b2df8a', // 新植地
 							'#a6cee3', // 伐採跡地
@@ -133,7 +132,6 @@ const entry: VectorEntry<TileMetaData> = {
 						pattern: null
 					}
 				},
-
 				{
 					type: 'step',
 					key: '面積_ha',

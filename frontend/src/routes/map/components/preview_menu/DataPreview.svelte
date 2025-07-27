@@ -52,16 +52,21 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="pointer-events-none absolute bottom-8 z-20 flex w-full items-center justify-center gap-4 p-4"
+	class="pointer-events-none absolute bottom-8 z-20 flex w-full items-center justify-center"
 >
-	<button class="c-btn-cancel pointer-events-auto px-4 text-lg" onclick={deleteData}
-		>キャンセル
-	</button>
-	{#if showDataEntry}
-		<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
-			>地図に追加
-		</button>
-	{/if}
+	<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
+		<span class="w-full text-center text-base">このデータを追加しますか？</span>
+		<div class="flex gap-4">
+			<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}
+				>キャンセル
+			</button>
+			{#if showDataEntry}
+				<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
+					>地図に追加
+				</button>
+			{/if}
+		</div>
+	</div>
 </div>
 
 <style>

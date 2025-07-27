@@ -15,7 +15,7 @@
 		clickableRasterIds,
 		isStyleEdit
 	} from '$routes/stores';
-	import { isSideMenuType } from '$routes/stores/ui';
+
 	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
@@ -182,7 +182,6 @@
 			}
 		}
 		if (showDataEntry) return;
-		if ($isSideMenuType === 'draw') return;
 
 		const clickLayerIds = [...$clickableVectorIds];
 		const features = map.queryRenderedFeatures(e.point, {
@@ -217,7 +216,6 @@
 		if ($isStyleEdit) {
 			// 編集モードの時は、クリックしたレイヤーを編集対象にする
 			const clickedLayer = features[0].layer.id;
-			console.log('Clicked layer:', clickedLayer);
 			const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
 			if (clickedLayerEntry) {
 				selectedLayerId.set(clickedLayerEntry.id);
@@ -250,6 +248,7 @@
 				const point = streetViewPointData.features.find(
 					(f) => f.properties.id === feature.properties.id
 				);
+
 				if (point) {
 					setPoint(point as StreetViewPoint);
 					isStreetView.set(true);

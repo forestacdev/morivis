@@ -7,10 +7,14 @@ export const isProcessing = writable<boolean>(false);
 /** スクリーンガードの状態 */
 export const isBlocked = writable<boolean>(false);
 
-export type SideMenuType = 'search' | 'layer' | 'data' | 'info' | 'settings' | 'draw' | null;
+/** レイヤーメニューの表示 */
+export const showLayerMenu = writable<boolean>(true);
 
-/** 表示中のサイドメニューの種類 */
-export const isSideMenuType = writable<SideMenuType>(null);
+/** 検索ーメニューの表示 */
+export const showSearchMenu = writable<boolean>(false);
+
+/** 検索メニューのサジェスト */
+export const showSearchSuggest = writable<boolean>(false);
 
 /** 外部コンポーネントからイベントを発火させるストア */
 const eventStore = () => {

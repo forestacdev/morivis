@@ -158,18 +158,25 @@
 		<div
 			class="c-scroll flex h-full w-full grow flex-col items-center overflow-y-auto overflow-x-hidden"
 		>
-			{#each getEpsgInfoArray({ exclude4326: true }) as info}
+			{#each poiData as info}
 				<label
-					class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info.code ===
-					selectedEpsgCode
+					class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info
+						.properties.code === selectedEpsgCode
 						? 'bg-accent '
 						: 'text-white'}"
 				>
-					<input type="radio" bind:group={selectedEpsgCode} value={info.code} class="hidden" />
+					<input
+						type="radio"
+						bind:group={selectedEpsgCode}
+						value={info.properties.code}
+						class="hidden"
+					/>
 					<div class="flex flex-col">
-						<span class="select-none transition-colors duration-200">{info.name_ja} </span>
+						<span class="select-none transition-colors duration-200"
+							>{info.properties.name_ja}
+						</span>
 						<span class="text select-none text-xs text-gray-300 transition-colors duration-200"
-							>{info.prefecture}
+							>{info.properties.prefecture ?? ''}
 						</span>
 					</div>
 				</label>

@@ -9,9 +9,8 @@
 
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
-	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
+	// import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
-	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
@@ -20,6 +19,7 @@
 	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
+	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import SideMenu from '$routes/map/components/SideMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
@@ -32,7 +32,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, isSideMenuType } from '$routes/stores/ui';
+	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -43,6 +43,8 @@
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import Processing from './Processing.svelte';
+	import { slide } from 'svelte/transition';
+	import type { ResultData } from './utils/feature';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -107,9 +109,9 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
-
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
+	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
 		const params = getParams(location.search);
@@ -341,67 +343,81 @@
 </script>
 
 {#if isInitialized}
-	<div class="relative flex h-full w-full grow">
-		<!-- マップのオフセット調整用 -->
-		<!-- {#if $isSideMenuType}
-		<div
-			in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-			class="bg-main w-side-menu flex h-full shrink-0 flex-col"
-		></div>
-	{/if} -->
+	<div class="flex h-dvh w-full flex-col">
+		<HeaderMenu
+			{resetlayerEntries}
+			bind:featureMenuData
+			bind:inputSearchWord
+			bind:results
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/>
+		<div class="flex w-full flex-1">
+			<!-- マップのオフセット調整用 -->
+			{#if $showLayerMenu}
+				<div
+					in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+					class="bg-main w-side-menu flex h-full shrink-0 flex-col"
+				></div>
+			{/if}
 
-		<!-- メニューの背景 -->
-		{#if $isSideMenuType}
-			<!-- <div
-			transition:fade={{ duration: 300 }}
-			class="bg-side-menu pointer-events-none absolute z-10 flex h-full w-[400px] flex-col gap-2"
-		></div> -->
-		{/if}
-		<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+
+			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
+
+			<MapLibreMap
+				bind:maplibreMap={map}
+				bind:layerEntries
+				bind:tempLayerEntries
+				bind:showDataEntry
+				bind:featureMenuData
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+				bind:showAngleMarker
+				bind:angleMarkerLngLat
+				bind:cameraBearing
+				bind:dropFile
+				bind:showDialogType
+				bind:drawGeojsonData
+				bind:showZoneForm
+				bind:focusBbox
+				{selectedEpsgCode}
+				{demEntries}
+				{streetViewLineData}
+				{streetViewPointData}
+				{streetViewPoint}
+				{showMapCanvas}
+				{setPoint}
+			/>
+		</div>
+
+		<!-- <HeaderMenu
+			bind:featureMenuData
+			bind:inputSearchWord
+			{layerEntries}
+			bind:showSelectionMarker
+			bind:selectionMarkerLngLat
+		/> -->
 		<SearchMenu
 			bind:featureMenuData
 			bind:inputSearchWord
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-		/>
-		<DrawMenu bind:layerEntries bind:drawGeojsonData />
-
-		<MapLibreMap
-			bind:maplibreMap={map}
-			bind:layerEntries
-			bind:tempLayerEntries
-			bind:showDataEntry
-			bind:featureMenuData
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-			bind:showAngleMarker
-			bind:angleMarkerLngLat
-			bind:cameraBearing
-			bind:dropFile
-			bind:showDialogType
-			bind:drawGeojsonData
-			bind:showZoneForm
-			bind:focusBbox
-			{selectedEpsgCode}
-			{demEntries}
-			{streetViewLineData}
-			{streetViewPointData}
-			{streetViewPoint}
-			{showMapCanvas}
-			{setPoint}
+			bind:results
 		/>
 
-		<HeaderMenu
+		<SearchSuggest
 			bind:featureMenuData
 			bind:inputSearchWord
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 		/>
-		<FooterMenu {layerEntries} />
+
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-		<FeatureMenu bind:featureMenuData {layerEntries} />
+		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 		<PreviewMenu bind:showDataEntry />
 
 		{#if !showDataEntry && !showZoneForm}
@@ -411,14 +427,16 @@
 			<DataPreview bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			bind:showAngleMarker
-			{setPoint}
-		/>
+		{#if $isStreetView}
+			<StreetViewCanvas
+				{streetViewPoint}
+				{nextPointData}
+				{showThreeCanvas}
+				bind:cameraBearing
+				bind:showAngleMarker
+				{setPoint}
+			/>
+		{/if}
 	</div>
 {/if}
 <UploadDialog

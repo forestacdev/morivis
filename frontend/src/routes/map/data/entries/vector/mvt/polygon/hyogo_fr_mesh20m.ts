@@ -9,7 +9,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://rinya-hyogo.geospatial.jp/2023/rinya/tile/fr_mesh20m/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '森林資源量集計メッシュ',
+		name: '兵庫県 森林資源量集計メッシュ',
 		description: `兵庫県（令和２～３年度）及び国土交通省近畿地方整備局六甲砂防事務所（平成24～25年度）が実施した航空レーザ測量データを使用して作成した「森林資源量集計メッシュ」です。
 「森林資源量集計メッシュ」は、森林GISフォーラムが運用する”森林資源データ解析・管理標準仕様書ver.2.0”に則し作成したデータで、20mメッシュ単位で次に記載する森林資源量を集計しています。（G空間情報センター引用）`,
 		attribution: '兵庫県森林資源データ',
@@ -85,7 +85,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'match',
 					key: '解析樹種',
-					name: '樹種による色分け',
+					name: '樹種ごとの色分け',
 					mapping: {
 						categories: [
 							'スギ',
@@ -94,35 +94,59 @@ const entry: VectorEntry<TileMetaData> = {
 							'カラマツ',
 							'トドマツ',
 							'エゾマツ',
-							'その他Ｎ',
+							'その他Ｎ', // 針葉樹
 							'クヌギ',
 							'ナラ類',
 							'ブナ',
-							'その他L',
+							'その他L', // 広葉樹
 							'タケ',
+
 							'針広混交林',
 							'新植地',
 							'伐採跡地',
 							'その他'
 						],
 						values: [
-							'#00cc66',
-							'#99ff66',
-							'#cc0000',
-							'#ff9966',
-							'#ffcc99',
-							'#cc6600',
-							'#cc00cc',
+							'#33a02c',
+							'#b2df8a',
+							'#a6cee3',
+							'#1f78b4',
+							'#fb9a99',
+							'#e31a1c',
+							'#fdbf6f',
 							'#ffff99',
-							'#ff9933',
-							'#cc9900',
-							'#ffff00',
-							'#8000ff',
-							'#8db3e2',
-							'#ccff99',
-							'#ff80ff',
-							'#bfbfbf'
+							'#cab2d6',
+							'#6a3d9a',
+							'#ff7f00',
+							'#b15928',
+							'#33a02c', // 針広混交林
+							'#b2df8a', // 新植地
+							'#a6cee3', // 伐採跡地
+							'#1f78b4' // その他（グレー）
+						],
+						// パターン情報（新規追加）
+						patterns: [
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							null,
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black',
+							'tmpoly-grid-light-200-black'
 						]
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				},
 				{

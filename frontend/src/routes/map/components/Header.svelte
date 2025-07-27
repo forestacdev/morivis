@@ -15,7 +15,7 @@
 		showDataMenu,
 		isStreetView
 	} from '$routes/stores';
-	import { isSideMenuType } from '$routes/stores/ui';
+	import { isProcessing, showLayerMenu, showSearchMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';
@@ -24,13 +24,49 @@
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import Fuse from 'fuse.js';
+	import { DATA_PATH } from '$routes/constants';
+	import { onMount } from 'svelte';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showNotification } from '$routes/stores/notification';
 
-	let searchData: any = null; // 検索データ
+	interface SearchData {
+		layer_id: string;
+		name: string;
+		search_values: string[];
+		feature_id: number;
+		point: [number, number];
+		prop_id?: string | null;
+		path: string;
+	}
+
+	let searchData: SearchData[]; // 検索データ
 
 	const LIMIT = 100; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
-	let results = $state<ResultData[] | null>([]);
 	let isLoading = $state<boolean>(false);
+
+	onMount(async () => {
+		// 検索データの初期化
+		searchData = await fetch(`${DATA_PATH}/search_data.json`)
+			.then((res) => res.json())
+			.then((data) => {
+				return data;
+			})
+			.catch((error) => {
+				console.error('Error fetching search data:', error);
+			});
+
+		searchData.forEach((data) => {
+			const layerId = data.layer_id;
+
+			// TODO: location
+			const location = '森林文化アカデミー';
+			if (location) {
+				// レイヤー名が存在する場合のみ辞書に追加
+				dict[layerId] = location;
+			}
+		});
+	});
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -38,6 +74,8 @@
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		results: ResultData[] | null;
+		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
 	let {
@@ -45,11 +83,14 @@
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		results = $bindable(),
+		resetlayerEntries
 	}: Props = $props();
 
 	const searchFeature = async (searchWord: string) => {
 		isLoading = true;
+		isProcessing.set(true);
 		try {
 			if (!searchData) {
 				console.error('Search data is not loaded yet.');
@@ -108,240 +149,89 @@
 			console.error('Error searching features:', error);
 		} finally {
 			isLoading = false;
+			isProcessing.set(false);
+			if (results && results.length > 0) {
+				showSearchMenu.set(true);
+			} else {
+				showSearchMenu.set(false);
+				showNotification('該当するデータが見つかりませんでした。', 'info');
+			}
 		}
-	};
-
-	const toggleDataMenu = () => {
-		if (!$showDataMenu) {
-			showDataMenu.set(true);
-			isSideMenuType.set('layer');
-		} else {
-			showDataMenu.set(false);
-			isSideMenuType.set(null);
-		}
-	};
-
-	const toggleInfoDialog = () => {
-		showSideMenu.set(false);
-		showInfoDialog.set(!$showInfoDialog);
-	};
-
-	const toggleTermsDialog = () => {
-		showSideMenu.set(false);
-		showTermsDialog.set(!$showTermsDialog);
 	};
 
 	mapMode.subscribe((mode) => {
 		showSideMenu.set(false);
 	});
 
-	const toggleSearchMenu = () => {
-		if ($isSideMenuType === 'search') {
-			// isSideMenuType.set(null);
-		} else {
-			isSideMenuType.set('search');
-		}
-	};
+	// レイヤーのリセット処理
+	const resetLayers = async () => {
+		const result = await resetLayersConfirm();
 
-	const toggleLayerMenu = () => {
-		if ($isSideMenuType === 'layer') {
-			// isSideMenuType.set(null);
-		} else {
-			isSideMenuType.set('layer');
+		if (result) {
+			resetlayerEntries();
 		}
 	};
-
-	const toggleDrawMenu = () => {
-		if ($isSideMenuType === 'draw') {
-			isSideMenuType.set(null);
-		} else {
-			isSideMenuType.set('draw');
-		}
-	};
-	let isEditLayerName = $derived.by(() => {
-		if ($isStyleEdit && $selectedLayerId) {
-			const layerEntry = layerEntries.find((layer) => layer.id === $selectedLayerId);
-			return layerEntry ? layerEntry.metaData.name : '';
-		}
-	});
 </script>
 
-{#if !$isStreetView}
-	<div
-		class="absolute left-2 top-2 z-20 flex justify-between rounded-full p-1 transition-all duration-150 {$isSideMenuType
-			? 'bg-base text-main pr-1'
-			: 'bg-main  pr-2 text-white'}"
-	>
-		{#if $isStyleEdit}
-			<div
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="text-accent pointer-events-auto flex w-[80px] cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
+<div class="bg-main flex items-center justify-between p-2 pb-6 text-base">
+	<!-- 左側 -->
+	<div class="flex items-center gap-4 pl-2">
+		<!-- <button
+			class="hover:text-accent bg-base text-main cursor-pointer rounded-full p-1 text-left duration-150"
+		>
+			<Icon icon="ic:round-layers" class="h-8 w-8" />
+		</button> -->
+		<div class="flex select-none items-center justify-center">
+			<span class="-translate-y-1 text-4xl">morivis</span>
+		</div>
+		<div class="flex gap-2">
+			<button
+				onclick={() => showDataMenu.set(true)}
+				class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
 			>
-				<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-			</div>
-		{/if}
-		{#if !$isStyleEdit}
-			<div transition:slide={{ duration: 300, axis: 'x' }} class="relative">
-				{#if $isSideMenuType}
-					<!-- バックボタン -->
-					<button
-						class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-						onclick={() => {
-							isSideMenuType.set(null);
-							showDataMenu.set(false);
-							isStyleEdit.set(false);
-						}}
-					>
-						<Icon icon="ep:back" class="h-7 w-7" />
-					</button>
-				{:else}
-					<button
-						class="hover:text-accent pointer-events-auto cursor-pointer p-2 text-left duration-150"
-						onclick={() => showSideMenu.set(true)}
-					>
-						<Icon icon="ic:round-menu" class="h-7 w-7" />
-					</button>
-				{/if}
-			</div>
-			<div
-				transition:slide={{ duration: 300, axis: 'x' }}
-				class="h-hull w-[1px] rounded-full bg-gray-400"
-			></div>
-		{/if}
-		<div class="flex w-full items-center justify-between">
-			{#if $isSideMenuType === 'search'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar text-main pointer-events-auto relative shrink-0"
+				<Icon icon="material-symbols:add" class="h-7 w-7 text-black" /><span class="text-black"
+					>データ追加</span
 				>
-					<Geocoder
-						{layerEntries}
-						bind:results
-						bind:inputSearchWord
-						searchFeature={(v) => searchFeature(v)}
-					/>
-				</div>
-			{/if}
-			{#if $isSideMenuType === 'search' || !$isSideMenuType}
-				<!-- 検索メニューボタン -->
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					onclick={toggleSearchMenu}
-					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'search'
-						? 'text-accent scale-120'
-						: 'cursor-pointer'}"
-				>
-					<Icon icon="stash:search-solid" class="h-7 w-7" />
-				</button>
-			{/if}
-
-			{#if ($isSideMenuType === 'layer' && !$isStyleEdit && !$showDataMenu) || !$isSideMenuType}
-				<!-- レイヤーメニューボタン -->
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'layer'
-						? 'text-accent scale-120'
-						: 'cursor-pointer'}"
-					onclick={toggleLayerMenu}
-				>
-					<Icon icon="ic:round-layers" class="h-7 w-7" />
-				</button>
-			{/if}
-			{#if !$isSideMenuType || ($isSideMenuType === 'layer' && $showDataMenu)}
-				<!-- データメニューボタン -->
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent transition-text pointer-events-auto flex items-center justify-start gap-2 p-2 duration-150 {$isSideMenuType ===
-					'layer'
-						? 'text-accent scale-120'
-						: 'cursor-pointer'}"
-					onclick={toggleDataMenu}
-				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-7 w-7" />
-				</button>
-			{/if}
-			{#if $isSideMenuType === 'layer'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar flex shrink-0 items-center justify-center text-nowrap text-center text-lg"
-				>
-					{#if !$isStyleEdit && !$showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">地図上の</div>
-					{/if}
-
-					<div class="select-none">データ</div>
-
-					{#if !$isStyleEdit && !$showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">項目</div>
-					{/if}
-					{#if $isStyleEdit}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">
-							のカスタマイズ
-						</div>
-					{/if}
-					{#if $showDataMenu}
-						<div transition:slide={{ duration: 300, axis: 'x' }} class="select-none">カタログ</div>
-					{/if}
-					{#if $isStyleEdit || $showDataMenu}
-						<button
-							transition:slide={{ duration: 300, axis: 'x' }}
-							class="hover:text-accent pointer-events-auto absolute right-2 flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150"
-							onclick={() => {
-								isStyleEdit.set(false);
-								showDataMenu.set(false);
-							}}
-						>
-							<Icon icon="material-symbols:close-rounded" class="h-7 w-7" />
-						</button>
-					{/if}
-				</div>
-			{/if}
-			<!-- {#if $isSideMenuType === 'draw' || !$isSideMenuType}
-				<button
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="hover:text-accent pointer-events-auto flex cursor-pointer items-center justify-start gap-2 p-2 transition-all duration-150 {$isSideMenuType ===
-					'draw'
-						? 'text-accent scale-120'
-						: ''}"
-					onclick={toggleDrawMenu}
-				>
-					<Icon icon="fa6-solid:pen" class="h-5 w-5" />
-				</button>
-			{/if} -->
-			<!-- {#if $isSideMenuType === 'draw'}
-				<div
-					transition:slide={{ duration: 300, axis: 'x' }}
-					class="w-title-bar shrink-0 text-nowrap text-center text-lg"
-				>
-					描画ツール
-				</div>
-			{/if} -->
+			</button>
+			<button
+				onclick={resetLayers}
+				class="bg-sub pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-1 px-4"
+			>
+				<span>リセット</span>
+			</button>
 		</div>
 	</div>
-{/if}
+	<!-- 中央 -->
+	<div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
+		<Geocoder
+			{layerEntries}
+			bind:results
+			bind:inputSearchWord
+			searchFeature={(v) => searchFeature(v)}
+		/>
+		<button
+			transition:slide={{ duration: 300, axis: 'x' }}
+			onclick={() => searchFeature(inputSearchWord)}
+			disabled={$isProcessing || !inputSearchWord}
+			class="flex items-center justify-start gap-2 rounded-r-full p-2 px-4 text-white {inputSearchWord
+				? 'bg-accent cursor-pointer'
+				: 'bg-sub cursor-not-allowed'}"
+		>
+			<Icon icon="stash:search-solid" class="h-6 w-6" />
+		</button>
+	</div>
 
-<!-- <li class="absolute right-0 top-0 flex">
-	<button
-		class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg {$showDataMenu
-			? 'text-accent'
-			: ''}"
-		onclick={toggleDataMenu}
-	>
-		<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-	</button>
-	<StreetViewControl />
-	<TerrainControl />
-	<GeolocateControl />
-</li> -->
-
-<style>
-	.c-bg-blur {
-		backdrop-filter: blur(10px);
-	}
-
-	.w-title-bar {
-		@apply w-[290px];
-	}
-</style>
+	<!-- 右側 -->
+	<div class="flex items-center pr-2">
+		<StreetViewControl />
+		<!-- <TerrainControl /> -->
+		<GeolocateControl />
+		<!-- ハンバーガーメニュー -->
+		<button
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-150"
+			onclick={() => showSideMenu.set(true)}
+		>
+			<Icon icon="ic:round-menu" class="h-8 w-8" />
+		</button>
+	</div>
+</div>

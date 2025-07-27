@@ -17,6 +17,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -33,6 +34,7 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
+	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
@@ -48,7 +50,6 @@
 	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isSideMenuType } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import {
 		type FeatureMenuData,
@@ -268,6 +269,10 @@
 				zone_bbox: {
 					type: 'geojson',
 					data: { type: 'FeatureCollection', features: [] }
+				},
+				search_result: {
+					type: 'geojson',
+					data: { type: 'FeatureCollection', features: [] }
 				}
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -307,7 +312,22 @@
 						'line-color': 'white',
 						'line-width': 1
 					}
+				},
+				{
+					id: '@search_result',
+					type: 'symbol',
+					source: 'search_result',
+
+					layout: {
+						'text-allow-overlap': true, // テキストの重複を許可
+						'text-ignore-placement': true, // 他の要素への配置影響を無視
+						'icon-allow-overlap': true, // アイコンの重複を許可
+						'icon-ignore-placement': true,
+						'icon-image': 'marker_png',
+						'icon-anchor': 'bottom'
+					}
 				}
+
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {
@@ -490,36 +510,40 @@
 	ondrop={drop}
 	ondragover={dragover}
 	ondragleave={dragleave}
-	class="bg-main relative flex h-full w-full grow items-center justify-center {$isSideMenuType
-		? 'overflow-hidden'
-		: ''}"
+	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
+	$mapMode === 'small'
+		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white hover:h-[400px] hover:w-[600px] hover:transition-all hover:duration-300'
+		: 'relative h-full w-full grow pb-4 pr-4'}"
 >
 	<div
 		bind:this={mapContainer}
-		class="absolute grow bg-black transition-opacity duration-500 {!showMapCanvas &&
+		class="h-full w-full overflow-hidden rounded-lg bg-black transition-opacity {!showMapCanvas &&
 		$mapMode === 'view'
-			? 'pointer-events-none bottom-0 left-0 h-full w-full opacity-0'
+			? 'opacity-0'
 			: $isStreetView && $mapMode === 'small'
-				? 'bottom-2 left-2 z-20 h-[200px] w-[300px] overflow-hidden rounded-md border-4 border-white bg-white'
-				: 'bottom-0 left-0 h-full w-full opacity-100'}"
-	></div>
+				? ''
+				: 'opacity-100'}"
+	>
+		{#if maplibreMap}
+			<PoiManager
+				map={maplibreMap}
+				bind:featureMenuData
+				{showDataEntry}
+				{showZoneForm}
+				bind:showSelectionMarker
+			/>
+		{/if}
+	</div>
+	<!-- <FooterMenu {layerEntries} /> -->
 
-	<!-- <div
-		bind:this={mapContainer}
-		class="absolute h-full w-full bg-black transition-all duration-200"
-	></div> -->
-
-	<!-- <div
-		bind:this={mapContainer}
-		class="absolute bg-black transition-all duration-200 {$isSideMenuType
-			? 'h-[calc(100%-100px)] w-[calc(100%-100px)] overflow-hidden rounded-lg'
-			: 'h-full w-full'}"
-	></div> -->
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 
 	<MapControl />
-	<MapStatePane />
+	{#if !$isStreetView}
+		<Compass />
+	{/if}
+	<!-- <MapStatePane /> -->
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:featureMenuData
@@ -543,13 +567,7 @@
 	/>
 
 	<StreetViewLayer map={maplibreMap} />
-	<PoiManager
-		map={maplibreMap}
-		bind:featureMenuData
-		{showDataEntry}
-		{showZoneForm}
-		bind:showSelectionMarker
-	/>
+
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
 		{showDataEntry}
@@ -593,5 +611,10 @@
 	/* maplibreのデフォルトの出典表記を非表示 */
 	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
 		display: none !important;
+	}
+
+	:global(.maplibregl-canvas) {
+		border-radius: 0.5rem !important;
+		overflow: hidden !important;
 	}
 </style>

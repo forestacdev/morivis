@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Compass from './Compass.svelte';
-
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
 	import { mapStore, displayingArea } from '$routes/stores/map';
@@ -25,23 +23,17 @@
 	<GeolocateControl />
 </div> -->
 
-<div
-	class="bg-main absolute bottom-8 right-0 flex h-auto w-[200px] gap-2 rounded-l-full p-2 text-sm text-white transition-opacity duration-200 {isHover
+<!-- <div
+	class="bg-main absolute bottom-0 right-0 flex h-auto w-full gap-2 p-2 text-sm text-white transition-opacity duration-200 {isHover
 		? 'opacity-100'
-		: 'opacity-80'}"
+		: 'opacity-70'}"
 	onmouseenter={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
 	role="button"
 	tabindex="0"
 >
 	<Compass bind:isHover />
-	<div class="flex gap-2">
-		<!-- <div class="text-base font-bold">{$displayingArea}</div> -->
-		<StreetViewControl />
-		<!-- <TerrainControl /> -->
-		<GeolocateControl />
-	</div>
-</div>
+</div> -->
 
 <style>
 </style>

@@ -104,6 +104,14 @@ const attributionData = {
 	森林総合研究所: {
 		name: '森林総合研究所',
 		url: 'https://www.ffpri.go.jp/ffpri.html'
+	},
+	防災科学技術研究所: {
+		name: '防災科学技術研究所',
+		url: 'https://www.bosai.go.jp/'
+	},
+	長野県林業総合センター: {
+		name: '長野県林業総合センター',
+		url: 'https://www.pref.nagano.lg.jp/ringyosogo/'
 	}
 } as const;
 
