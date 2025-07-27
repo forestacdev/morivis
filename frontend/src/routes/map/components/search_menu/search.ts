@@ -18,44 +18,6 @@ const detectAmbiguousOrder = (
 } => {
 	let confidence = 0.5; // デフォルト信頼度
 
-	// // 日本周辺の座標かどうかで判定
-	// const isJapanLat = (val: number) => val >= 20 && val <= 50;
-	// const isJapanLng = (val: number) => val >= 120 && val <= 150;
-
-	// // ヨーロッパ周辺の座標かどうかで判定
-	// const isEuropeLat = (val: number) => val >= 35 && val <= 75;
-	// const isEuropeLng = (val: number) => val >= -15 && val <= 50;
-
-	// // アメリカ周辺の座標かどうかで判定
-	// const isAmericaLat = (val: number) => val >= 25 && val <= 50;
-	// const isAmericaLng = (val: number) => val >= -130 && val <= -65;
-
-	// // 日本の場合の判定
-	// if (isJapanLat(first) && isJapanLng(second)) {
-	// 	return { lat: first, lng: second, order: 'lat_lng', confidence: 0.8 };
-	// }
-	// if (isJapanLng(first) && isJapanLat(second)) {
-	// 	return { lat: second, lng: first, order: 'lng_lat', confidence: 0.8 };
-	// }
-
-	// // ヨーロッパの場合の判定
-	// if (isEuropeLat(first) && isEuropeLng(second)) {
-	// 	return { lat: first, lng: second, order: 'lat_lng', confidence: 0.7 };
-	// }
-	// if (isEuropeLng(first) && isEuropeLat(second)) {
-	// 	return { lat: second, lng: first, order: 'lng_lat', confidence: 0.7 };
-	// }
-
-	// // 数値の大きさによる判定（経度の方が一般的に大きい）
-	// if (Math.abs(first) > Math.abs(second) && Math.abs(first) > 90) {
-	// 	// 最初の値の方が大きく、90を超えている場合は経度の可能性
-	// 	return { lat: second, lng: first, order: 'lng_lat', confidence: 0.6 };
-	// }
-	// if (Math.abs(second) > Math.abs(first) && Math.abs(second) > 90) {
-	// 	// 2番目の値の方が大きく、90を超えている場合
-	// 	return { lat: first, lng: second, order: 'lat_lng', confidence: 0.6 };
-	// }
-
 	// デフォルト: 緯度, 経度の順序として扱う
 	return { lat: first, lng: second, order: 'lat_lng', confidence: 0.5 };
 };
