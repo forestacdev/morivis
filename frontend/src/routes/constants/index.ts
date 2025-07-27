@@ -3,6 +3,7 @@ import type { TileXYZ } from '$routes/map/data/types/raster';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';
+export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
 export const ENTRY_DATA_PATH = DATA_PATH + '/entries';

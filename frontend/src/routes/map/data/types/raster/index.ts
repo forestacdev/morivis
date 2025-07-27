@@ -9,6 +9,16 @@ export const DEM_DATA_TYPE = {
 
 export type DemDataType = typeof DEM_DATA_TYPE;
 export type DemDataTypeKey = keyof DemDataType;
+
+interface ImageLegendCategory {
+	name: string;
+	urls: string[];
+	labels: string[];
+}
+export interface ImageLegend {
+	type: 'image';
+	categories: ImageLegendCategory[];
+}
 export interface CategoryLegend {
 	type: 'category';
 	name: string;
@@ -96,7 +106,7 @@ export interface RasterCategoricalStyle {
 	type: 'categorical';
 	opacity: Opacity;
 	visible?: boolean;
-	legend: CategoryLegend | GradientLegend;
+	legend: CategoryLegend | GradientLegend | ImageLegend;
 }
 
 export const COLOR_MAP_TYPE = [

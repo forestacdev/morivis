@@ -531,12 +531,7 @@ const createMapStore = () => {
 
 		map.fitBounds(bbox, {
 			bearing: map.getBearing(),
-			padding: {
-				left: 20, // サイドバー分の余白を左に確保
-				top: 20,
-				right: 20,
-				bottom: 20
-			},
+			padding: 20,
 			duration: 500
 		});
 	};

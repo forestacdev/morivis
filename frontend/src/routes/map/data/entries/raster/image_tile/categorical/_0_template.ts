@@ -25,7 +25,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	style: {
 		type: 'categorical',
-		opacity: 0.8,
+		opacity: 0.7,
 		legend: {
 			type: 'category',
 			name: '傾斜',

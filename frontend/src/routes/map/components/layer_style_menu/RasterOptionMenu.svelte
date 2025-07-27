@@ -110,7 +110,7 @@
 			</div>
 		</Accordion> -->
 	{:else if style.type === 'categorical'}
-		<h1 class="text-base">凡例</h1>
+		<h1 class="mt-4 text-base text-lg">凡例</h1>
 		{#if style.legend.type === 'category'}
 			<h2 class="text-base">{style.legend.name}</h2>
 			<ul class="text-base">
@@ -141,7 +141,22 @@
 					{/each}
 				</div>
 			</div>
-		{/if}
+		{:else if style.legend.type === 'image'}
+			<ul class="flex flex-col gap-2 text-base">
+				{#each style.legend.categories as category, i}
+					<h2 class="mt-4 text-base">{category.name}</h2>
+					<div class="flex flex-col gap-2">
+						{#each category.urls as url, j}
+							<li class="flex items-center gap-2">
+								<div class="w-20 shrink-0 rounded-lg bg-white p-2">
+									<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
+								</div>
+								<span class="text-sm">{category.labels[j]} </span>
+							</li>
+						{/each}
+					</div>
+				{/each}
+			</ul>{/if}
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}

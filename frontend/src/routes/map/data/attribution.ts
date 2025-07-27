@@ -104,6 +104,10 @@ const attributionData = {
 	森林総合研究所: {
 		name: '森林総合研究所',
 		url: 'https://www.ffpri.go.jp/ffpri.html'
+	},
+	防災科学技術研究所: {
+		name: '防災科学技術研究所',
+		url: 'https://www.bosai.go.jp/'
 	}
 } as const;
 

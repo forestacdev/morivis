@@ -124,7 +124,10 @@
 							duration: 0
 						});
 
-						mapStore.focusLayer(showDataEntry);
+						const mapBbox = mapStore.getMapBounds();
+						if (!isBBoxInside(mapBbox, data.bbox)) {
+							mapStore.focusLayer(showDataEntry);
+						}
 					} else {
 						hasBbox = false;
 					}
