@@ -10,7 +10,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
 	},
 	metaData: {
-		name: '演習林 歩道',
+		name: '演習林の道',
 		description: '演習林',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
@@ -23,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
-		keys: [],
+		keys: ['種類'],
 		titles: []
 	},
 	interaction: {
