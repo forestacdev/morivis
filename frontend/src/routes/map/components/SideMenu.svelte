@@ -128,7 +128,7 @@
 				<span class="select-none">地図をエクスポート</span>
 			</button>
 		</ui>
-		<div class="w-hull bg-base h-[1px] rounded-full"></div>
+		<div class="w-hull bg-base h-[1px] rounded-full opacity-60"></div>
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
@@ -176,7 +176,7 @@
 				<span>トップページへ</span></button
 			>
 		</ui>
-		<ui class="mt-auto"> Ver. 0.1.0 beta </ui>
+		<ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui>
 	</div>
 {/if}
 
