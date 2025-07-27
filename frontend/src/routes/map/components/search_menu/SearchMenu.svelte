@@ -125,7 +125,6 @@
 
 	$effect(() => {
 		if (results) {
-			console.log('Search results updated:', results);
 			const geojson = {
 				type: 'FeatureCollection',
 				features: results.map((result) => ({
@@ -152,6 +151,12 @@
 			});
 		} else {
 			closeSearchMenu();
+		}
+	});
+
+	showSearchMenu.subscribe((show) => {
+		if (!show) {
+			showSelectionMarker = false;
 		}
 	});
 </script>

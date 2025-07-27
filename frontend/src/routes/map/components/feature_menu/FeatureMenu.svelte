@@ -11,10 +11,17 @@
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 
+	interface Props {
+		featureMenuData: FeatureMenuData | null;
+		layerEntries: GeoDataEntry[];
+		showSelectionMarker: boolean;
+	}
+
 	let {
 		featureMenuData = $bindable(),
-		layerEntries
-	}: { featureMenuData: FeatureMenuData | null; layerEntries: GeoDataEntry[] } = $props();
+		layerEntries,
+		showSelectionMarker = $bindable()
+	}: Props = $props();
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -109,6 +116,12 @@
 		if (url.length <= maxLength) return url;
 		return url.substring(0, maxLength) + '...';
 	};
+
+	$effect(() => {
+		if (!featureMenuData) {
+			showSelectionMarker = false;
+		}
+	});
 </script>
 
 {#if featureMenuData}

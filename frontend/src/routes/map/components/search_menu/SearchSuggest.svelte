@@ -14,7 +14,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
+	import { isProcessing, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
@@ -122,6 +122,7 @@
 			return;
 		}
 		isLoading = true;
+
 		isClickedSearch = true;
 		try {
 			if (!searchData) {
@@ -178,85 +179,7 @@
 		}
 	};
 
-	const searchFeature = async (searchWord: string, isAddressSearch: boolean = true) => {
-		if (!searchWord) {
-			results = null;
-			return;
-		}
-		isLoading = true;
-		isClickedSearch = true;
-		try {
-			if (!searchData) {
-				console.error('Search data is not loaded yet.');
-				return;
-			}
-
-			const fuse = new Fuse(searchData, {
-				keys: ['search_values'],
-				threshold: 0.1
-			});
-			// 検索実行
-			const result = fuse.search(searchWord, {
-				limit: LIMIT
-			});
-
-			const resultsData = result.map((item) => {
-				const data = item.item;
-
-				return {
-					name: data.name,
-					location: dict[data.layer_id] || null,
-					point: data.point,
-					layerId: data.layer_id,
-					featureId: data.feature_id,
-					propId: data.prop_id
-				};
-			});
-
-			let addressSearchData = [];
-
-			// 2文字以上の検索ワードの場合、住所検索を実行
-			if (searchWord.length > 1 && isAddressSearch) {
-				// 住所検索
-
-				const addressSearchResponse = await addressSearch(searchWord);
-
-				addressSearchData = addressSearchResponse
-					.slice(0, LIMIT - result.length)
-					.map(({ geometry: { coordinates: center }, properties }) => {
-						const address = properties.addressCode
-							? addressCodeToAddress(properties.addressCode)
-							: null;
-
-						return {
-							point: center,
-							name: properties.title,
-							location: address
-						};
-					});
-			}
-
-			results = [...resultsData, ...addressSearchData];
-		} catch (error) {
-			console.error('Error searching features:', error);
-		} finally {
-			isLoading = false;
-		}
-	};
-
 	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
-
-	const debounceSearch = debounce((searchWord: string) => {
-		if (isClickedSearch) {
-			isClickedSearch = false;
-			return;
-		}
-		if (!searchWord) {
-			results = null;
-			return;
-		}
-		searchFeature(searchWord);
-	}, 500);
 
 	$effect(() => {
 		if (inputSearchWord) {
@@ -266,13 +189,13 @@
 		}
 	});
 
-	$effect(() => {
-		if (inputSearchWord) {
-			debounceSearch(inputSearchWord);
-		} else {
-			results = null;
-		}
-	});
+	// $effect(() => {
+	// 	if (inputSearchWord) {
+	// 		debounceSearch(inputSearchWord);
+	// 	} else {
+	// 		results = null;
+	// 	}
+	// });
 
 	// let containerRef = $state<HTMLElement>();
 
@@ -308,7 +231,7 @@
 				</div>
 			{:else if results}
 				<div
-					class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
+					class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
 				>
 					{#each results as result (result)}
 						<button
@@ -336,9 +259,6 @@
 					{/each}
 				</div>
 			{/if}
-			<!-- <div
-			class="c-fog pointer-events-none absolute bottom-0 z-10 flex h-[100px] w-full items-end justify-center pb-4"
-		></div> -->
 		</div>
 	</div>
 {/if}

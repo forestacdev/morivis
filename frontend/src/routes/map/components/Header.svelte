@@ -15,7 +15,7 @@
 		showDataMenu,
 		isStreetView
 	} from '$routes/stores';
-	import { showLayerMenu, showSearchMenu } from '$routes/stores/ui';
+	import { isProcessing, showLayerMenu, showSearchMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { LngLat } from 'maplibre-gl';
@@ -89,6 +89,7 @@
 
 	const searchFeature = async (searchWord: string) => {
 		isLoading = true;
+		isProcessing.set(true);
 		try {
 			if (!searchData) {
 				console.error('Search data is not loaded yet.');
@@ -147,6 +148,7 @@
 			console.error('Error searching features:', error);
 		} finally {
 			isLoading = false;
+			isProcessing.set(false);
 			if (results && results.length > 0) {
 				showSearchMenu.set(true);
 			}

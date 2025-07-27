@@ -517,7 +517,7 @@
 >
 	<div
 		bind:this={mapContainer}
-		class="h-full w-full overflow-hidden bg-black transition-opacity {!showMapCanvas &&
+		class="h-full w-full overflow-hidden rounded-lg bg-black transition-opacity {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'opacity-0'
 			: $isStreetView && $mapMode === 'small'

@@ -417,7 +417,7 @@
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-		<FeatureMenu bind:featureMenuData {layerEntries} />
+		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 		<PreviewMenu bind:showDataEntry />
 
 		{#if !showDataEntry && !showZoneForm}
@@ -427,14 +427,16 @@
 			<DataPreview bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			bind:showAngleMarker
-			{setPoint}
-		/>
+		{#if $isStreetView}
+			<StreetViewCanvas
+				{streetViewPoint}
+				{nextPointData}
+				{showThreeCanvas}
+				bind:cameraBearing
+				bind:showAngleMarker
+				{setPoint}
+			/>
+		{/if}
 	</div>
 {/if}
 <UploadDialog
