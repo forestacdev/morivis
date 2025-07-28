@@ -33,10 +33,6 @@
 	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
-		if (!checkToTermsAccepted()) {
-			showTermsDialog.set(true);
-			return;
-		}
 		showButton = false;
 		if (import.meta.env.MODE === 'production') {
 			goto('/morivis/map');
@@ -206,6 +202,10 @@
 		// 画面リサイズ時にキャンバスもリサイズ
 		window.addEventListener('resize', onResize);
 		onResize();
+
+		if (!checkToTermsAccepted()) {
+			showTermsDialog.set(true);
+		}
 	});
 
 	onDestroy(() => {

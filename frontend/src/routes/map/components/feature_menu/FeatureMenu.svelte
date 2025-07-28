@@ -238,7 +238,9 @@
 									target="_blank"
 									rel="noopener noreferrer"
 									><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
-									<span class="text-accent text-ellipsis">{truncateUrl(data.url)}</span></a
+									<span class="text-accent text-ellipsis hover:underline"
+										>{truncateUrl(data.url)}</span
+									></a
 								>
 							{/if}
 						{/if}
