@@ -184,16 +184,16 @@
 		<div class="flex select-none items-center justify-center text-base">
 			<span class="-translate-y-1 text-5xl">morivis</span>
 		</div>
-		<div class="flex gap-2">
+		<div class="flex items-end gap-2">
 			<button
 				onclick={() => showDataMenu.set(true)}
-				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
+				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
 				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="">データ追加</span>
 			</button>
 			<button
 				onclick={resetLayers}
-				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-1 px-2"
+				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"
 			>
 				<span class="text-sm">リセット</span>
 			</button>
