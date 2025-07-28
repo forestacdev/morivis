@@ -30,7 +30,7 @@
 						morivis（モリビス）は、岐阜県立森林文化アカデミー演習林の森林地理情報をWebGIS上で表示するシステムです。演習林の地形、植生、林道などの基本情報を地図上で確認できるほか、全国の森林オープンデータも閲覧可能です。
 						森林情報の可視化と共有を目的とした研究開発の一環として作成しており、現在も機能の追加や改善を継続しています。バグなどを見つけた場合は、お手数ですが<a
 							class="text-accent"
-							href="https://github.com/forestacdev/enshurin-viewer/issues"
+							href="https://github.com/forestacdev/morivis/issues"
 							target="_blank"
 							rel="noopener noreferrer">GitHubのイシュー</a
 						>にてご報告ください。

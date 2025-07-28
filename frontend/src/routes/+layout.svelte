@@ -10,6 +10,8 @@
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
 	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
+	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
+
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/stores';
@@ -121,5 +123,6 @@
 </div>
 
 <TermsOfServiceDialog />
+<InfoDialog />
 <WebGLScreen {initialized} />
 <ScreenGuard />

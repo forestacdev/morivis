@@ -8,7 +8,6 @@
 	import { onMount, onDestroy } from 'svelte';
 
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
-	import InfoDialog from '$routes/map/components/dialog/InfoDialog.svelte';
 	// import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
@@ -433,7 +432,7 @@
 <Tooltip />
 <SideMenu />
 <NotificationMessage />
-<InfoDialog />
+
 <Processing />
 <ConfirmationDialog />
 
