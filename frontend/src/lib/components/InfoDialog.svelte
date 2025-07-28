@@ -42,7 +42,7 @@
 
 					<div class="flex max-w-[300px] flex-col gap-2">
 						<a
-							class="lg:hover:bg-accent flex cursor-pointer items-center justify-start gap-2 rounded-full border-2 border-gray-300 p-2 transition-colors lg:hover:text-white"
+							class="lg:hover:bg-accent border-1 flex cursor-pointer items-center justify-start gap-2 rounded-full border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
 							href="https://github.com/satoshi7190"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -61,7 +61,7 @@
 							</div>
 						</a>
 						<a
-							class="lg:hover:bg-accent flex cursor-pointer items-center justify-start gap-2 rounded-full border-2 border-gray-300 p-2 transition-colors lg:hover:text-white"
+							class="lg:hover:bg-accent border-1 flex cursor-pointer items-center justify-start gap-2 rounded-full border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
 							href="https://www.forest.ac.jp/"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -71,7 +71,7 @@
 							>
 								<img
 									class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
-									src="https://pbs.twimg.com/profile_images/1349232244909510656/US-2oTws_400x400.jpg"
+									src="./mapicon.png"
 									alt="岐阜県立森林文化アカデミー"
 								/>
 							</div>
