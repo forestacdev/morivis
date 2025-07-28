@@ -97,13 +97,13 @@ export const INT_ADD_LAYER_IDS = [
 	// 'fac_poi',
 	'ensyurin_road',
 	// 'gsi_road',
-	'ensyurin_rinhan',
+	'ensyurin_rinhan'
 	// 'ensyurin_photo'
 	// 'tochigi_tree_species'
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
-	'gsi_rinya_m'
+	// 'gsi_rinya_m'
 
 	// 'gsi_seamlessphoto'
 	// 'gsi_std'
