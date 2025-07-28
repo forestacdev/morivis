@@ -182,7 +182,7 @@
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
 		<div class="flex select-none items-center justify-center text-base">
-			<span class="-translate-y-1 text-4xl">morivis</span>
+			<span class="-translate-y-1 text-5xl">morivis</span>
 		</div>
 		<div class="flex gap-2">
 			<button
@@ -193,9 +193,9 @@
 			</button>
 			<button
 				onclick={resetLayers}
-				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-1 px-4"
+				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-1 px-2"
 			>
-				<span>リセット</span>
+				<span class="text-sm">リセット</span>
 			</button>
 		</div>
 	</div>
