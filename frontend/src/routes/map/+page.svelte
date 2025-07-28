@@ -179,9 +179,6 @@
 				featureData: nextPoint,
 				bearing: turfBearing(point, nextPoint)
 			}));
-		const map = mapStore.getMap();
-
-		if (!map) return;
 
 		const pointLngLat = new maplibregl.LngLat(
 			point.geometry.coordinates[0],
@@ -189,8 +186,8 @@
 		);
 
 		if ($isStreetView) {
-			setCamera(map, pointLngLat);
-			map.panTo(point.geometry.coordinates, {
+			mapStore.setCamera(pointLngLat);
+			mapStore.panTo(point.geometry.coordinates, {
 				duration: 1000,
 				animate: true
 			});
@@ -223,27 +220,9 @@
 	// 	}
 	// });
 
-	const setCamera = (map: maplibregl.Map, lngLat: maplibregl.LngLat) => {
-		// https://github.com/maplibre/maplibre-gl-js/issues/4688
-
-		const elevation = map.queryTerrainElevation(lngLat);
-
-		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0);
-
-		map._elevationStart = map._elevationTarget;
-	};
-
-	const resetCamera = (map: maplibregl.Map) => {
-		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
-		map.setCenterElevation(0);
-		map._elevationStart = map._elevationTarget;
-	};
-
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
-		const map = mapStore.getMap();
-		if (!map || !map.loaded() || !streetViewPoint) return;
+		if (!streetViewPoint) return;
 		isBlocked.set(true);
 
 		showAngleMarker = value;
@@ -254,8 +233,8 @@
 		);
 
 		if (value) {
-			setCamera(map, pointLngLat);
-			map.easeTo({
+			mapStore.setCamera(pointLngLat);
+			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: 750,
@@ -269,14 +248,13 @@
 
 			await delay(500);
 
-			map.setBearing(0);
-			map.setPitch(0);
-			map.setZoom(18);
+			mapStore.setBearing(0);
+			mapStore.setPitch(0);
+			mapStore.setZoom(18);
 			$mapMode = 'small';
-			map.resize();
 			isBlocked.set(false);
 		} else {
-			map.easeTo({
+			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: 0,
@@ -287,18 +265,17 @@
 			$mapMode = 'view';
 			showMapCanvas = true;
 			showThreeCanvas = false;
-			resetCamera(map);
+			mapStore.resetCamera();
 
 			await delay(300);
 
 			// マップを移動
-			map.easeTo({
+			mapStore.easeTo({
 				zoom: 17,
 				bearing: 0,
 				pitch: 0,
 				duration: 750
 			});
-			map.resize();
 			await delay(750);
 			isBlocked.set(false);
 		}
