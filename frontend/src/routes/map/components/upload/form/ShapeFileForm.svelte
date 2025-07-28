@@ -403,7 +403,7 @@
 		</div>
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-			<button onclick={cancel} class="c-btn-cancel cursor-pointer p-4 text-lg"> キャンセル </button>
+			<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 			<button
 				onclick={registration}
 				disabled={isDisabled}

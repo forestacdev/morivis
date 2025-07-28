@@ -18,7 +18,7 @@
 			value?.type === 'error'
 				? 'bg-red-500 text-base'
 				: value?.type === 'success'
-					? 'bg-accent text-base'
+					? 'bg-[#348163] text-base'
 					: value?.type === 'info'
 						? 'bg-main text-base'
 						: value?.type === 'warning'

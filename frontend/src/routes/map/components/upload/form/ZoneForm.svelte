@@ -187,10 +187,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button
-					onclick={() => (showZoneForm = false)}
-					class="c-btn-cancel cursor-pointer p-4 text-lg"
-				>
+				<button onclick={() => (showZoneForm = false)} class="c-btn-sub cursor-pointer p-4 text-lg">
 					キャンセル
 				</button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
