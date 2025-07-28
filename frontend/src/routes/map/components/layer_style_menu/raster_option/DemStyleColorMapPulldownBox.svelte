@@ -41,7 +41,7 @@
 		class="c-select flex w-full justify-between"
 	>
 		<div class="flex w-full items-center justify-center gap-2">
-			<span class="w-[200px] select-none">{isColorMap}</span>
+			<span class="w-[180px] select-none text-start">{isColorMap}</span>
 			<ColorScale {isColorMap} />
 		</div>
 		<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
