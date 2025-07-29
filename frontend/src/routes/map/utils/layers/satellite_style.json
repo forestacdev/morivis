@@ -73,7 +73,7 @@
 			"filter": ["==", "$type", "Point"],
 			"layout": {
 				"text-field": "{housenumber}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-size": 10,
 				"visibility": "visible"
 			},
@@ -2814,7 +2814,7 @@
 					0
 				],
 				"text-allow-overlap": false,
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-justify": "auto",
 				"text-size": [
 					"let",
@@ -2845,7 +2845,7 @@
 				"icon-size": 1,
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 8,
 				"text-offset": [0, 0.5],
 				"text-size": 11,
@@ -2869,7 +2869,7 @@
 				"icon-size": 1,
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 8,
 				"text-offset": [0, 0.5],
 				"text-size": 11,
@@ -2896,7 +2896,7 @@
 			"layout": {
 				"symbol-placement": "line",
 				"text-field": "{name}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-letter-spacing": 0.1,
 				"text-rotation-alignment": "map",
 				"text-size": {
@@ -2929,7 +2929,7 @@
 			"layout": {
 				"text-anchor": "center",
 				"text-field": "{name}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 6,
 				"text-size": {
 					"stops": [
@@ -2955,7 +2955,7 @@
 			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "city"]],
 			"layout": {
 				"text-field": "{name:ja}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 10,
 				"text-size": {
 					"stops": [
@@ -2980,7 +2980,7 @@
 			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "country"], ["!has", "iso_a2"]],
 			"layout": {
 				"text-field": "{name}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 10,
 				"text-size": {
 					"stops": [
@@ -3006,7 +3006,7 @@
 			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "country"], ["has", "iso_a2"]],
 			"layout": {
 				"text-field": "{name:ja}",
-				"text-font": ["migu1c-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-width": 10,
 				"text-size": {
 					"stops": [
@@ -3070,7 +3070,7 @@
 			"source-layer": "island_poi",
 			"layout": {
 				"text-field": "{name}",
-				"text-font": ["migu2m-regular"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-size": {
 					"stops": [
 						[10, 14],

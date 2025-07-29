@@ -61,7 +61,7 @@
 				"text-pitch-alignment": "viewport",
 				"text-rotation-alignment": "map",
 				"text-size": 13,
-				"text-font": ["Noto Sans JP Light"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-angle": 360,
 				"text-field": ["get", "vt_alti"]
 			},
@@ -94,7 +94,7 @@
 				"text-pitch-alignment": "viewport",
 				"text-rotation-alignment": "map",
 				"text-size": 13,
-				"text-font": ["Noto Sans JP Light"],
+				"text-font": ["Noto Sans JP Regular"],
 				"text-max-angle": 360,
 				"text-field": ["get", "vt_depth"]
 			},
