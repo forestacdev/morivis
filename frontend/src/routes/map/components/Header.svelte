@@ -182,14 +182,14 @@
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
 		<div class="flex select-none items-center justify-center text-base">
-			<span class="-translate-y-1 text-5xl">morivis</span>
+			<span class="text-4xl">morivis</span>
 		</div>
 		<div class="flex items-end gap-2">
 			<button
 				onclick={() => showDataMenu.set(true)}
 				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
-				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="">データ追加</span>
+				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="text-sm">データ追加</span>
 			</button>
 			<button
 				onclick={resetLayers}
