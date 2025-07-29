@@ -12,9 +12,9 @@ export const getBaseMapSources = (): Record<string, RasterSourceSpecification> =
 		// オブジェクトのプロパティを展開（スプレッド演算子を外側で使用）
 		base_seamlessphoto: satelliteStyleJson.sources.base_seamlessphoto,
 		base_usgs_imagery_only: satelliteStyleJson.sources.base_usgs_imagery_only,
-		rinya_m: {
+		base_gsi_rinya_m: {
 			type: 'raster',
-			url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/rinya_m.pmtiles`,
+			url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/gsi_rinya_m.pmtiles`,
 			tileSize: 256,
 			maxzoom: 18,
 			minzoom: 14,
@@ -29,8 +29,8 @@ export const getBaseMapLayers = (): RasterLayerSpecification[] => {
 			(layer) => layer.type === 'raster'
 		) as RasterLayerSpecification[]),
 		{
-			id: 'base_rinya_m',
-			source: 'rinya_m',
+			id: 'base_gsi_rinya_m',
+			source: 'base_gsi_rinya_m',
 			type: 'raster',
 			maxzoom: 24,
 			minzoom: 12
