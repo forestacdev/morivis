@@ -13,8 +13,7 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 
 	import { page } from '$app/state';
-	import { MOBILE_WIDTH } from '$routes/constants';
-	import { showTermsDialog } from '$routes/stores';
+
 	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';

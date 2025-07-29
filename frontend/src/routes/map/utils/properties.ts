@@ -1,5 +1,4 @@
-import type { MapGeoJSONFeature } from 'maplibre-gl';
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, GeoJSON } from 'geojson';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 
 import type { Title } from '$routes/map/data/types/vector';
 

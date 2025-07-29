@@ -1,21 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { hex } from 'chroma-js';
 	import { fly } from 'svelte/transition';
 	import ColorPicker, { ChromeVariant } from 'svelte-awesome-color-picker';
 	import {
 		TerraDraw,
-		TerraDrawAngledRectangleMode,
 		TerraDrawCircleMode,
 		TerraDrawFreehandMode,
 		TerraDrawLineStringMode,
 		TerraDrawPointMode,
 		TerraDrawPolygonMode,
 		TerraDrawRectangleMode,
-		TerraDrawRenderMode,
 		TerraDrawSectorMode,
-		TerraDrawSelectMode,
-		TerraDrawSensorMode
+		TerraDrawSelectMode
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 

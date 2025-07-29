@@ -35,7 +35,7 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { getStreetViewParams, get3dParams, getParams } from '$routes/map/utils/params';
+	import { get3dParams, getParams } from '$routes/map/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
