@@ -146,7 +146,7 @@
 			</button>
 			<a
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				href="https://github.com/forestacdev/enshurin-viewer"
+				href="https://github.com/forestacdev/morivis"
 				target="_blank"
 				rel="noopener noreferrer"
 				><Icon icon="mdi:github" class="h-8 w-8" />

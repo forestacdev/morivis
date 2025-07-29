@@ -10,6 +10,8 @@
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
 	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
+
 	import { page } from '$app/state';
 	import { MOBILE_WIDTH } from '$routes/constants';
 	import { showTermsDialog } from '$routes/stores';
@@ -102,13 +104,6 @@
 	const initialized = () => {
 		isInitialized = true;
 	};
-
-	showTermsDialog.subscribe(async (value) => {
-		if (!isInitialized) return;
-		if (!value && page.route.id === '/') {
-			await goto('/map');
-		}
-	});
 </script>
 
 <!-- Googleアナリティクスの設定 -->
@@ -128,5 +123,6 @@
 </div>
 
 <TermsOfServiceDialog />
+<InfoDialog />
 <WebGLScreen {initialized} />
 <ScreenGuard />

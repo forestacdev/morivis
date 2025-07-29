@@ -775,6 +775,26 @@ const createMapStore = () => {
 		return map.getLayer(layerId);
 	};
 
+	const setCamera = (lngLat: maplibregl.LngLat) => {
+		if (!map) return;
+
+		// https://github.com/maplibre/maplibre-gl-js/issues/4688
+		const elevation = map.queryTerrainElevation(lngLat);
+
+		map.setCenterClampedToGround(false);
+		map.setCenterElevation(elevation ?? 0);
+
+		map._elevationStart = map._elevationTarget;
+	};
+
+	const resetCamera = () => {
+		if (!map) return;
+
+		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
+		map.setCenterElevation(0);
+		map._elevationStart = map._elevationTarget;
+	};
+
 	return {
 		subscribe,
 		// 処理
@@ -790,6 +810,10 @@ const createMapStore = () => {
 		setFilter,
 		setLayoutProperty,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
+		setPitch: (pitch: number) => map?.setPitch(pitch),
+		setZoom: (zoom: number) => map?.setZoom(zoom),
+		setCamera,
+		resetCamera,
 		fitBounds,
 		panTo,
 		panToPoi,

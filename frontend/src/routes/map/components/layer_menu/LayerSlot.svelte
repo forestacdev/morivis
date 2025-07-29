@@ -244,7 +244,7 @@
 				<div class="bg-base absolute aspect-square rounded-full p-1"></div>
 			{/if}
 			<div class="bg-base/60 h-full w-[2px]"></div>
-			<div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div>
+			<!-- <div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div> -->
 		</div>
 	{/if}
 	<div

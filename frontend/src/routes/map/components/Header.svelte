@@ -173,7 +173,7 @@
 	};
 </script>
 
-<div class="bg-main flex items-center justify-between p-2 pb-6 text-base">
+<div class="bg-main flex items-center justify-between p-2 pb-6">
 	<!-- 左側 -->
 	<div class="flex items-center gap-4 pl-2">
 		<!-- <button
@@ -181,23 +181,21 @@
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
-		<div class="flex select-none items-center justify-center">
-			<span class="-translate-y-1 text-4xl">morivis</span>
+		<div class="flex select-none items-center justify-center text-base">
+			<span class="text-4xl">morivis</span>
 		</div>
-		<div class="flex gap-2">
+		<div class="flex items-end gap-2">
 			<button
 				onclick={() => showDataMenu.set(true)}
-				class="bg-accent pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-1 rounded-full p-1 pl-2 pr-4"
+				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
-				<Icon icon="material-symbols:add" class="h-7 w-7 text-black" /><span class="text-black"
-					>データ追加</span
-				>
+				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="text-sm">データ追加</span>
 			</button>
 			<button
 				onclick={resetLayers}
-				class="bg-sub pointer-events-auto flex shrink cursor-pointer items-center justify-center gap-2 rounded-full p-1 px-4"
+				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"
 			>
-				<span>リセット</span>
+				<span class="text-sm">リセット</span>
 			</button>
 		</div>
 	</div>

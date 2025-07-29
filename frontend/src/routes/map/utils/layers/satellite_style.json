@@ -1,3310 +1,3089 @@
 {
-  "version": 8,
-  "metadata": {
-    "mapbox:autocomposite": false,
-    "mapbox:type": "template",
-    "maputnik:renderer": "mbgljs",
-    "openmaptiles:version": "3.x",
-    "openmaptiles:mapbox:owner": "openmaptiles",
-    "openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t"
-  },
-  "projection": {"type": "globe"},
-  "sources": {
-    "openmaptiles": {
-      "type": "vector",
-      "url": "https://tile.openstreetmap.jp/data/planet.json"
-    },
-    "takeshima": {
-      "type": "vector",
-      "url": "https://tile.openstreetmap.jp/data/takeshima.json"
-    },
-    "hoppo": {
-      "type": "vector",
-      "url": "https://tile.openstreetmap.jp/data/hoppo.json"
-    },
-    "v": {
-      "type": "vector",
-      "minzoom": 4,
-      "maxzoom": 16,
-      "tiles": [
-        "https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf"
-      ],
-      "attribution": "国土地理院最適化ベクトルタイル"
-    },
-    "base_usgs_imagery_only": {
-      "type": "raster",
-      "tiles": [
-        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-      ],
-      "tileSize": 256,
-      "maxzoom": 9,
-      "attribution": "USGS"
-    },
-    "base_seamlessphoto": {
-      "type": "raster",
-      "tiles": [
-        "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg"
-      ],
-      "tileSize": 256,
-      "minzoom": 1,
-      "maxzoom": 18,
-      "bounds": [122.933755, 24.045713, 153.986895, 45.556277],
-      "attribution": "国土地理院"
-    }
-  },
-  "sprite": "https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
-  "glyphs": "https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf",
-  "layers": [
-    {
-      "id": "base-map-layer",
-      "type": "raster",
-      "source": "base_usgs_imagery_only",
-      "maxzoom": 22,
-      "paint": {
-        "raster-saturation": -0.2,
-        "raster-brightness-min": 0,
-        "raster-hue-rotate": 10
-      }
-    },
-    {
-      "id": "base_seamlessphoto_layer",
-      "type": "raster",
-      "source": "base_seamlessphoto",
-      "minzoom": 8,
-      "maxzoom": 24
-    },
-    {
-      "id": "housenumber",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "housenumber",
-      "minzoom": 17,
-      "filter": ["==", "$type", "Point"],
-      "layout": {
-        "text-field": "{housenumber}",
-        "text-font": ["migu1c-regular"],
-        "text-size": 10,
-        "visibility": "visible"
-      },
-      "paint": {"text-color": "rgba(212, 177, 146, 1)"}
-    },
-    {
-      "id": "道路中心線ククリ統合",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 24,
-      "filter": [
-        "step",
-        ["zoom"],
-        [
-          "all",
-          ["<=", ["get", "vt_lvorder"], 4],
-          [
-            "!",
-            [
-              "in",
-              ["get", "vt_code"],
-              [
-                "literal",
-                [
-                  2703,
-                  2704,
-                  2713,
-                  2714,
-                  2721,
-                  2722,
-                  2723,
-                  2724,
-                  2731,
-                  2732,
-                  2733,
-                  2734
-                ]
-              ]
-            ]
-          ],
-          [
-            "!",
-            [
-              "all",
-              ["in", ["get", "vt_rdctg"], ["literal", ["市区町村道等", "その他", "不明"]]],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ]
-          ]
-        ],
-        14,
-        [
-          "all",
-          ["<=", ["get", "vt_lvorder"], 4],
-          [
-            "!",
-            [
-              "in",
-              ["get", "vt_code"],
-              [
-                "literal",
-                [
-                  2703,
-                  2704,
-                  2713,
-                  2714,
-                  2721,
-                  2722,
-                  2723,
-                  2724,
-                  2731,
-                  2732,
-                  2733,
-                  2734
-                ]
-              ]
-            ]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"],
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": [
-          "match",
-          ["get", "vt_motorway"],
-          1,
-          "rgba(0,0,0,1)",
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2711, 2712, 2713]]],
-            "rgba(173,173,173,1)",
-            "rgba(100,100,100,1)"
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          11,
-          0,
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "+",
-            [
-              "case",
-              [
-                "all",
-                [
-                  "in",
-                  ["get", "vt_code"],
-                  ["literal", [2703, 2713, 2723, 2733]]
-                ],
-                ["!=", ["get", "vt_motorway"], 1]
-              ],
-              500,
-              300
-            ],
-            [
-              "case",
-              ["has", "vt_width"],
-              ["get", "vt_width"],
-              [
-                "case",
-                ["has", "vt_rnkwidth"],
-                [
-                  "match",
-                  ["get", "vt_rnkwidth"],
-                  "3m未満",
-                  300,
-                  "3m-5.5m未満",
-                  450,
-                  "5.5m-13m未満",
-                  900,
-                  "13m-19.5m未満",
-                  1800,
-                  "19.5m以上",
-                  2700,
-                  0
-                ],
-                3000
-              ]
-            ]
-          ],
-          "width2",
-          [
-            "+",
-            [
-              "case",
-              [
-                "all",
-                [
-                  "in",
-                  ["get", "vt_code"],
-                  ["literal", [2703, 2713, 2723, 2733]]
-                ],
-                ["!=", ["get", "vt_motorway"], 1]
-              ],
-              500,
-              300
-            ],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                700,
-                "3m-5.5m未満",
-                1200,
-                "5.5m-13m未満",
-                1700,
-                "13m-19.5m未満",
-                2200,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            2,
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線ZL4-10国道",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "maxzoom": 11,
-      "filter": [
-        "in",
-        ["get", "vt_rdctg"],
-        ["literal", ["主要道路", "国道", "都道府県道", "市区町村道等"]]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "case",
-          ["in", ["get", "vt_code"], ["literal", [2704, 2714, 2724, 2734]]],
-          [
-            "case",
-            ["==", ["get", "vt_motorway"], 1],
-            "rgba(210,190,139,0.5)",
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              ["国道", "主要道路"],
-              "rgba(210,190,139,0.5)",
-              "都道府県道",
-              "rgba(100,100,100,0.5)",
-              "市区町村道等",
-              "rgba(100,100,100,0.5)",
-              "高速自動車国道等",
-              "rgba(210,190,139,0.5)",
-              "その他",
-              "rgba(100,100,100,0.5)",
-              "不明",
-              "rgba(100,100,100,0.5)",
-              "rgba(100,100,100,0.5)"
-            ]
-          ],
-          [
-            "match",
-            ["get", "vt_code"],
-            [2721, 2722, 2723],
-            "rgba(173,173,173,1)",
-            [2731, 2732, 2733],
-            "rgba(255,255,255,1)",
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                ["国道", "主要道路"],
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                "rgba(255,255,255,1)"
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          [
-            "case",
-            [
-              "all",
-              ["!", ["==", ["get", "vt_motorway"], 1]],
-              ["==", ["get", "vt_rdctg"], "都道府県道"]
-            ],
-            0,
-            1
-          ],
-          11,
-          1
-        ],
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          8,
-          1,
-          9,
-          [
-            "case",
-            [
-              "all",
-              ["!", ["==", ["get", "vt_motorway"], 1]],
-              ["==", ["get", "vt_rdctg"], "都道府県道"]
-            ],
-            1.5,
-            2
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線ZL4-10高速",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "maxzoom": 11,
-      "filter": ["==", ["get", "vt_rdctg"], "高速自動車国道等"],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "line-sort-key": ["get", "vt_drworder"],
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": [
-          "case",
-          ["in", ["get", "vt_code"], ["literal", [2704, 2714, 2724, 2734]]],
-          [
-            "match",
-            ["get", "vt_rdctg"],
-            "国道",
-            "rgba(210,190,139,0.5)",
-            "都道府県道",
-            "rgba(210,190,139,0.5)",
-            "市区町村道等",
-            "rgba(100,100,100,0.5)",
-            "高速自動車国道等",
-            "rgba(210,190,139,0.5)",
-            "その他",
-            "rgba(100,100,100,0.5)",
-            "不明",
-            "rgba(100,100,100,0.5)",
-            "rgba(100,100,100,0.5)"
-          ],
-          [
-            "match",
-            ["get", "vt_code"],
-            [2721, 2722, 2723],
-            "rgba(173,173,173,1)",
-            [2731, 2732, 2733],
-            "rgba(255,255,255,1)",
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              "rgba(210,190,139,1)",
-              "都道府県道",
-              "rgba(210,190,139,1)",
-              "市区町村道等",
-              "rgba(255,255,255,1)",
-              "高速自動車国道等",
-              "rgba(210,190,139,1)",
-              "その他",
-              "rgba(255,255,255,1)",
-              "不明",
-              "rgba(255,255,255,1)",
-              "rgba(255,255,255,1)"
-            ]
-          ]
-        ],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 2, 9, 4]
-      }
-    },
-    {
-      "id": "道路中心線色0",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "filter": [
-        "step",
-        ["zoom"],
-        [
-          "all",
-          ["==", ["get", "vt_lvorder"], 0],
-          [
-            "!",
-            [
-              "in",
-              ["get", "vt_code"],
-              ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]
-            ]
-          ]
-        ],
-        22,
-        [
-          "all",
-          ["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
-          ["!", ["in", ["get", "vt_code"], ["literal", [2724, 2734]]]]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色橋0",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 0],
-        ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色1",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 1],
-        [
-          "!",
-          [
-            "in",
-            ["get", "vt_code"],
-            ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色橋1",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 1],
-        ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色2",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 2],
-        [
-          "!",
-          [
-            "in",
-            ["get", "vt_code"],
-            ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          14,
-          1
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色橋2",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 2],
-        ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色3",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 3],
-        [
-          "!",
-          [
-            "in",
-            ["get", "vt_code"],
-            ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          14,
-          1
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色橋3",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        ["==", ["get", "vt_lvorder"], 3],
-        ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          13,
-          1,
-          18,
-          0
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色4",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        [">=", ["get", "vt_lvorder"], 4],
-        [
-          "!",
-          [
-            "in",
-            ["get", "vt_code"],
-            ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          14,
-          1
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線色橋4",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "all",
-        [">=", ["get", "vt_lvorder"], 4],
-        ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": [
-          "step",
-          ["zoom"],
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "case",
-                  ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
-                  "rgba(173,173,173,1)",
-                  [
-                    "match",
-                    ["get", "vt_code"],
-                    [2721, 2722, 2723],
-                    "rgba(173,173,173,1)",
-                    [2731, 2732, 2733],
-                    "rgba(200,200,200,1)",
-                    "rgba(255,255,255,1)"
-                  ]
-                ]
-              ]
-            ]
-          ],
-          14,
-          [
-            "case",
-            ["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,0.5)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,0.5)",
-                "都道府県道",
-                "rgba(210,190,139,0.5)",
-                "市区町村道等",
-                "rgba(100,100,100,0.5)",
-                "高速自動車国道等",
-                "rgba(210,190,139,0.5)",
-                "その他",
-                "rgba(100,100,100,0.5)",
-                "不明",
-                "rgba(100,100,100,0.5)",
-                "rgba(100,100,100,0.5)"
-              ]
-            ],
-            [
-              "case",
-              ["==", ["get", "vt_motorway"], 1],
-              "rgba(210,190,139,1)",
-              [
-                "match",
-                ["get", "vt_rdctg"],
-                "国道",
-                "rgba(210,190,139,1)",
-                "都道府県道",
-                "rgba(210,190,139,1)",
-                "高速自動車国道等",
-                "rgba(210,190,139,1)",
-                [
-                  "match",
-                  ["get", "vt_code"],
-                  [2721, 2722, 2723],
-                  "rgba(173,173,173,1)",
-                  [2731, 2732, 2733],
-                  "rgba(200,200,200,1)",
-                  "rgba(255,255,255,1)"
-                ]
-              ]
-            ]
-          ]
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          [
-            "case",
-            [
-              "all",
-              [
-                "!",
-                [
-                  "in",
-                  ["get", "vt_rdctg"],
-                  ["literal", ["国道", "都道府県道", "高速自動車国道等"]]
-                ]
-              ],
-              ["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
-            ],
-            0,
-            1
-          ],
-          14,
-          1
-        ],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          "width2",
-          [
-            "case",
-            ["has", "vt_rnkwidth"],
-            [
-              "match",
-              ["get", "vt_rnkwidth"],
-              "3m未満",
-              700,
-              "3m-5.5m未満",
-              1200,
-              "5.5m-13m未満",
-              1700,
-              "13m-19.5m未満",
-              2200,
-              "19.5m以上",
-              2700,
-              0
-            ],
-            3000
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            [
-              "match",
-              ["get", "vt_rdctg"],
-              "国道",
-              2,
-              "都道府県道",
-              1.5,
-              "高速自動車国道等",
-              4,
-              1
-            ],
-            12,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width2"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "道路中心線破線",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "filter": [
-        "step",
-        ["zoom"],
-        ["in", ["get", "vt_code"], ["literal", [2724, 2734]]],
-        17,
-        [
-          "all",
-          ["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
-          ["in", ["get", "vt_code"], ["literal", [2724, 2734]]]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-round-limit": 1.57,
-        "line-sort-key": ["get", "vt_drworder"]
-      },
-      "paint": {
-        "line-color": "rgba(100,100,100,1)",
-        "line-dasharray": [5, 5],
-        "line-gap-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                150,
-                "3m-5.5m未満",
-                225,
-                "5.5m-13m未満",
-                450,
-                "13m-19.5m未満",
-                900,
-                "19.5m以上",
-                1350,
-                0
-              ],
-              1500
-            ]
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            2,
-            12,
-            ["*", ["^", 2, -9], ["var", "width"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width"]],
-            23,
-            ["var", "width"]
-          ]
-        ],
-        "line-width": 1
-      }
-    },
-    {
-      "id": "道路中心線階段",
-      "type": "line",
-      "source": "v",
-      "source-layer": "RdCL",
-      "minzoom": 11,
-      "maxzoom": 22,
-      "filter": [
-        "in",
-        ["get", "vt_code"],
-        ["literal", [2731, 2732, 2733, 2734]]
-      ],
-      "paint": {
-        "line-color": "rgba(100,100,100,1)",
-        "line-dasharray": [0.1, 1],
-        "line-width": [
-          "let",
-          "width",
-          [
-            "case",
-            ["has", "vt_width"],
-            ["get", "vt_width"],
-            [
-              "case",
-              ["has", "vt_rnkwidth"],
-              [
-                "match",
-                ["get", "vt_rnkwidth"],
-                "3m未満",
-                300,
-                "3m-5.5m未満",
-                450,
-                "5.5m-13m未満",
-                900,
-                "13m-19.5m未満",
-                1800,
-                "19.5m以上",
-                2700,
-                0
-              ],
-              3000
-            ]
-          ],
-          [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            11,
-            2,
-            12,
-            ["*", ["^", 2, -9], ["var", "width"]],
-            14,
-            ["*", ["^", 2, -9], ["var", "width"]],
-            23,
-            ["var", "width"]
-          ]
-        ]
-      }
-    },
-    {
-      "id": "admin_sub",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "filter": ["in", "admin_level", 4, 6, 8],
-      "layout": {"visibility": "visible"},
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.5)",
-        "line-dasharray": [2, 1]
-      }
-    },
-    {
-      "id": "admin_country_z0-4",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "minzoom": 0,
-      "maxzoom": 5,
-      "filter": [
-        "all",
-        ["<=", "admin_level", 2],
-        ["==", "$type", "LineString"],
-        ["!has", "claimed_by"]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "hsl(0, 0%, 60%)",
-        "line-width": {"base": 1.3, "stops": [[3, 0.5], [22, 15]]}
-      }
-    },
-    {
-      "id": "admin_country_z5-",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "minzoom": 5,
-      "filter": [
-        "all",
-        ["<=", "admin_level", 2],
-        ["==", "$type", "LineString"]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "hsl(0, 0%, 60%)",
-        "line-width": {"base": 1.3, "stops": [[3, 0.5], [22, 15]]}
-      }
-    },
-    {
-      "id": "注記道路番号",
-      "type": "symbol",
-      "source": "v",
-      "source-layer": "Anno",
-      "filter": [
-        "step",
-        ["zoom"],
-        [
-          "all",
-          ["==", ["geometry-type"], "Point"],
-          ["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
-        ],
-        16,
-        [
-          "all",
-          ["==", ["geometry-type"], "Point"],
-          ["in", ["get", "vt_flag17"], ["literal", [0, 1]]],
-          ["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
-        ],
-        17,
-        [
-          "all",
-          ["==", ["geometry-type"], "Point"],
-          ["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
-          ["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
-        ]
-      ],
-      "layout": {
-        "icon-allow-overlap": true,
-        "icon-image": [
-          "match",
-          ["get", "vt_code"],
-          2901,
-          "国道番号-20",
-          2903,
-          "都市高速道路番号-20",
-          2904,
-          "高速道路番号-20",
-          ""
-        ],
-        "icon-size": [
-          "let",
-          "size",
-          ["match", ["get", "vt_code"], 7701, 0.7, 0.5],
-          [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            15,
-            ["var", "size"],
-            17,
-            ["*", 2, ["var", "size"]]
-          ]
-        ],
-        "symbol-sort-key": [
-          "match",
-          ["get", "vt_code"],
-          2901,
-          88,
-          2903,
-          50,
-          2904,
-          49,
-          7701,
-          111,
-          0
-        ],
-        "text-allow-overlap": false,
-        "text-font": ["migu1c-regular"],
-        "text-justify": "auto",
-        "text-size": [
-          "let",
-          "size",
-          ["match", ["get", "vt_code"], 2901, 10, 7701, 12, 8],
-          [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            15,
-            ["var", "size"],
-            17,
-            ["*", 2, ["var", "size"]]
-          ]
-        ],
-        "text-field": ["get", "vt_text"],
-        "text-max-width": 100
-      },
-      "paint": {
-        "text-color": [
-          "match",
-          ["get", "vt_code"],
-          7701,
-          "rgba(0,0,0,1)",
-          "rgba(255,255,255,1)"
-        ]
-      }
-    },
-    {
-      "id": "poi_label",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "poi",
-      "minzoom": 14,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["==", "rank", 1],
-        ["!=", "name", "岐阜県立森林文化アカデミー"]
-      ],
-      "layout": {
-        "icon-size": 1,
-        "text-anchor": "top",
-        "text-field": "{name}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 8,
-        "text-offset": [0, 0.5],
-        "text-size": 11,
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-blur": 1,
-        "text-halo-color": "rgba(0, 0, 0, 0.75)",
-        "text-halo-width": 1
-      }
-    },
-    {
-      "id": "airport-label",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "aerodrome_label",
-      "minzoom": 10,
-      "filter": ["all", ["has", "iata"]],
-      "layout": {
-        "icon-size": 1,
-        "text-anchor": "top",
-        "text-field": "{name}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 8,
-        "text-offset": [0, 0.5],
-        "text-size": 11,
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-blur": 1,
-        "text-halo-color": "rgba(0, 0, 0, 0.75)",
-        "text-halo-width": 1
-      }
-    },
-    {
-      "id": "road_major_label",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "transportation_name",
-      "minzoom": 13,
-      "filter": [
-        "all",
-        ["!=", "name", "森林文化アカデミー演習林歩道"],
-        ["==", "$type", "LineString"]
-      ],
-      "layout": {
-        "symbol-placement": "line",
-        "text-field": "{name}",
-        "text-font": ["migu1c-regular"],
-        "text-letter-spacing": 0.1,
-        "text-rotation-alignment": "map",
-        "text-size": {"base": 1.4, "stops": [[10, 8], [20, 14]]},
-        "text-transform": "uppercase",
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-color": "rgba(73, 73, 73, 1)",
-        "text-halo-width": 2
-      }
-    },
-    {
-      "id": "place_label_other",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "minzoom": 8,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["!in", "class", "city", "state", "country", "continent"]
-      ],
-      "layout": {
-        "text-anchor": "center",
-        "text-field": "{name}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 6,
-        "text-size": {"stops": [[6, 10], [12, 14]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-blur": 0,
-        "text-halo-color": "rgba(32, 32, 32, 1)",
-        "text-halo-width": 2
-      }
-    },
-    {
-      "id": "place_label_city",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 16,
-      "filter": ["all", ["==", "$type", "Point"], ["==", "class", "city"]],
-      "layout": {
-        "text-field": "{name:ja}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 10,
-        "text-size": {"stops": [[3, 12], [8, 16]]}
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-blur": 0,
-        "text-halo-color": "rgba(0, 0, 0, 0.75)",
-        "text-halo-width": 2
-      }
-    },
-    {
-      "id": "country_label-other",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 12,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["==", "class", "country"],
-        ["!has", "iso_a2"]
-      ],
-      "layout": {
-        "text-field": "{name}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 10,
-        "text-size": {"stops": [[3, 12], [8, 22]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "hsl(0, 0%, 13%)",
-        "text-halo-blur": 0,
-        "text-halo-color": "rgba(255,255,255,0.75)",
-        "text-halo-width": 2
-      }
-    },
-    {
-      "id": "country_label",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 12,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["==", "class", "country"],
-        ["has", "iso_a2"]
-      ],
-      "layout": {
-        "text-field": "{name:ja}",
-        "text-font": ["migu1c-regular"],
-        "text-max-width": 10,
-        "text-size": {"stops": [[3, 12], [8, 22]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-blur": 0,
-        "text-halo-color": "rgba(0, 0, 0, 0.75)",
-        "text-halo-width": 2
-      }
-    },
-    {
-      "id": "island-hoppo-name",
-      "type": "symbol",
-      "source": "hoppo",
-      "source-layer": "island",
-      "layout": {
-        "text-field": "{name}",
-        "text-size": {"stops": [[10, 14], [15, 24]]}
-      },
-      "paint": {
-        "text-color": "#333",
-        "text-halo-color": "rgba(255, 255, 255, 0.8)",
-        "text-halo-width": 1.2
-      }
-    },
-    {
-      "id": "island-takeshima-name",
-      "type": "symbol",
-      "source": "takeshima",
-      "source-layer": "island",
-      "layout": {
-        "text-field": "{name}",
-        "text-size": {"stops": [[10, 14], [15, 24]]}
-      },
-      "paint": {
-        "text-color": "#333",
-        "text-halo-color": "rgba(255, 255, 255, 0.8)",
-        "text-halo-width": 1.2
-      }
-    },
-    {
-      "id": "island-takeshima-poi",
-      "type": "symbol",
-      "source": "takeshima",
-      "source-layer": "island_poi",
-      "layout": {
-        "text-field": "{name}",
-        "text-font": ["migu2m-regular"],
-        "text-size": {"stops": [[10, 14], [15, 24]]}
-      },
-      "paint": {
-        "text-color": "#333",
-        "text-halo-color": "rgba(255, 255, 255, 0.8)",
-        "text-halo-width": 1.2
-      }
-    }
-  ],
-  "id": "1kknbdc"
+	"version": 8,
+	"metadata": {
+		"mapbox:autocomposite": false,
+		"mapbox:type": "template",
+		"maputnik:renderer": "mbgljs",
+		"openmaptiles:version": "3.x",
+		"openmaptiles:mapbox:owner": "openmaptiles",
+		"openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t"
+	},
+	"projection": { "type": "globe" },
+	"sources": {
+		"openmaptiles": {
+			"type": "vector",
+			"url": "https://tile.openstreetmap.jp/data/planet.json"
+		},
+		"takeshima": {
+			"type": "vector",
+			"url": "https://tile.openstreetmap.jp/data/takeshima.json"
+		},
+		"hoppo": {
+			"type": "vector",
+			"url": "https://tile.openstreetmap.jp/data/hoppo.json"
+		},
+		"v": {
+			"type": "vector",
+			"minzoom": 4,
+			"maxzoom": 16,
+			"tiles": ["https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf"],
+			"attribution": "国土地理院最適化ベクトルタイル"
+		},
+		"base_usgs_imagery_only": {
+			"type": "raster",
+			"tiles": [
+				"https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+			],
+			"tileSize": 256,
+			"maxzoom": 9,
+			"attribution": "USGS"
+		},
+		"base_seamlessphoto": {
+			"type": "raster",
+			"tiles": ["https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg"],
+			"tileSize": 256,
+			"minzoom": 1,
+			"maxzoom": 18,
+			"bounds": [122.933755, 24.045713, 153.986895, 45.556277],
+			"attribution": "国土地理院"
+		}
+	},
+	"sprite": "https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
+	"glyphs": "https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf",
+	"layers": [
+		{
+			"id": "base-map-layer",
+			"type": "raster",
+			"source": "base_usgs_imagery_only",
+			"maxzoom": 22
+		},
+		{
+			"id": "base_seamlessphoto_layer",
+			"type": "raster",
+			"source": "base_seamlessphoto",
+			"minzoom": 8,
+			"maxzoom": 24
+		},
+		{
+			"id": "housenumber",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "housenumber",
+			"minzoom": 17,
+			"filter": ["==", "$type", "Point"],
+			"layout": {
+				"text-field": "{housenumber}",
+				"text-font": ["migu1c-regular"],
+				"text-size": 10,
+				"visibility": "visible"
+			},
+			"paint": { "text-color": "rgba(212, 177, 146, 1)" }
+		},
+		{
+			"id": "道路中心線ククリ統合",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 24,
+			"filter": [
+				"step",
+				["zoom"],
+				[
+					"all",
+					["<=", ["get", "vt_lvorder"], 4],
+					[
+						"!",
+						[
+							"in",
+							["get", "vt_code"],
+							["literal", [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
+						]
+					],
+					[
+						"!",
+						[
+							"all",
+							["in", ["get", "vt_rdctg"], ["literal", ["市区町村道等", "その他", "不明"]]],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						]
+					]
+				],
+				14,
+				[
+					"all",
+					["<=", ["get", "vt_lvorder"], 4],
+					[
+						"!",
+						[
+							"in",
+							["get", "vt_code"],
+							["literal", [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
+						]
+					]
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"],
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": [
+					"match",
+					["get", "vt_motorway"],
+					1,
+					"rgba(0,0,0,1)",
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2711, 2712, 2713]]],
+						"rgba(173,173,173,1)",
+						"rgba(100,100,100,1)"
+					]
+				],
+				"line-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 13, 1, 18, 0],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"+",
+						[
+							"case",
+							[
+								"all",
+								["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]],
+								["!=", ["get", "vt_motorway"], 1]
+							],
+							500,
+							300
+						],
+						[
+							"case",
+							["has", "vt_width"],
+							["get", "vt_width"],
+							[
+								"case",
+								["has", "vt_rnkwidth"],
+								[
+									"match",
+									["get", "vt_rnkwidth"],
+									"3m未満",
+									300,
+									"3m-5.5m未満",
+									450,
+									"5.5m-13m未満",
+									900,
+									"13m-19.5m未満",
+									1800,
+									"19.5m以上",
+									2700,
+									0
+								],
+								3000
+							]
+						]
+					],
+					"width2",
+					[
+						"+",
+						[
+							"case",
+							[
+								"all",
+								["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]],
+								["!=", ["get", "vt_motorway"], 1]
+							],
+							500,
+							300
+						],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								700,
+								"3m-5.5m未満",
+								1200,
+								"5.5m-13m未満",
+								1700,
+								"13m-19.5m未満",
+								2200,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						2,
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線ZL4-10国道",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"maxzoom": 11,
+			"filter": [
+				"in",
+				["get", "vt_rdctg"],
+				["literal", ["主要道路", "国道", "都道府県道", "市区町村道等"]]
+			],
+			"layout": {
+				"line-cap": "round",
+				"line-join": "round",
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"case",
+					["in", ["get", "vt_code"], ["literal", [2704, 2714, 2724, 2734]]],
+					[
+						"case",
+						["==", ["get", "vt_motorway"], 1],
+						"rgba(210,190,139,0.5)",
+						[
+							"match",
+							["get", "vt_rdctg"],
+							["国道", "主要道路"],
+							"rgba(210,190,139,0.5)",
+							"都道府県道",
+							"rgba(100,100,100,0.5)",
+							"市区町村道等",
+							"rgba(100,100,100,0.5)",
+							"高速自動車国道等",
+							"rgba(210,190,139,0.5)",
+							"その他",
+							"rgba(100,100,100,0.5)",
+							"不明",
+							"rgba(100,100,100,0.5)",
+							"rgba(100,100,100,0.5)"
+						]
+					],
+					[
+						"match",
+						["get", "vt_code"],
+						[2721, 2722, 2723],
+						"rgba(173,173,173,1)",
+						[2731, 2732, 2733],
+						"rgba(255,255,255,1)",
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								["国道", "主要道路"],
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								"rgba(255,255,255,1)"
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					10,
+					[
+						"case",
+						[
+							"all",
+							["!", ["==", ["get", "vt_motorway"], 1]],
+							["==", ["get", "vt_rdctg"], "都道府県道"]
+						],
+						0,
+						1
+					],
+					11,
+					1
+				],
+				"line-width": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					8,
+					1,
+					9,
+					[
+						"case",
+						[
+							"all",
+							["!", ["==", ["get", "vt_motorway"], 1]],
+							["==", ["get", "vt_rdctg"], "都道府県道"]
+						],
+						1.5,
+						2
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線ZL4-10高速",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"maxzoom": 11,
+			"filter": ["==", ["get", "vt_rdctg"], "高速自動車国道等"],
+			"layout": {
+				"line-cap": "round",
+				"line-join": "round",
+				"line-sort-key": ["get", "vt_drworder"],
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": [
+					"case",
+					["in", ["get", "vt_code"], ["literal", [2704, 2714, 2724, 2734]]],
+					[
+						"match",
+						["get", "vt_rdctg"],
+						"国道",
+						"rgba(210,190,139,0.5)",
+						"都道府県道",
+						"rgba(210,190,139,0.5)",
+						"市区町村道等",
+						"rgba(100,100,100,0.5)",
+						"高速自動車国道等",
+						"rgba(210,190,139,0.5)",
+						"その他",
+						"rgba(100,100,100,0.5)",
+						"不明",
+						"rgba(100,100,100,0.5)",
+						"rgba(100,100,100,0.5)"
+					],
+					[
+						"match",
+						["get", "vt_code"],
+						[2721, 2722, 2723],
+						"rgba(173,173,173,1)",
+						[2731, 2732, 2733],
+						"rgba(255,255,255,1)",
+						[
+							"match",
+							["get", "vt_rdctg"],
+							"国道",
+							"rgba(210,190,139,1)",
+							"都道府県道",
+							"rgba(210,190,139,1)",
+							"市区町村道等",
+							"rgba(255,255,255,1)",
+							"高速自動車国道等",
+							"rgba(210,190,139,1)",
+							"その他",
+							"rgba(255,255,255,1)",
+							"不明",
+							"rgba(255,255,255,1)",
+							"rgba(255,255,255,1)"
+						]
+					]
+				],
+				"line-width": ["interpolate", ["linear"], ["zoom"], 8, 2, 9, 4]
+			}
+		},
+		{
+			"id": "道路中心線色0",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"filter": [
+				"step",
+				["zoom"],
+				[
+					"all",
+					["==", ["get", "vt_lvorder"], 0],
+					["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
+				],
+				22,
+				[
+					"all",
+					["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
+					["!", ["in", ["get", "vt_code"], ["literal", [2724, 2734]]]]
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色橋0",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 0],
+				["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色1",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 1],
+				["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色橋1",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 1],
+				["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色2",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 2],
+				["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					13,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					14,
+					1
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色橋2",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 2],
+				["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色3",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 3],
+				["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					13,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					14,
+					1
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色橋3",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				["==", ["get", "vt_lvorder"], 3],
+				["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					12,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					13,
+					1,
+					18,
+					0
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色4",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				[">=", ["get", "vt_lvorder"], 4],
+				["!", ["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733, 2724, 2734]]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					13,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					14,
+					1
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線色橋4",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": [
+				"all",
+				[">=", ["get", "vt_lvorder"], 4],
+				["in", ["get", "vt_code"], ["literal", [2703, 2713, 2723, 2733]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": [
+					"step",
+					["zoom"],
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"case",
+									["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"],
+									"rgba(173,173,173,1)",
+									[
+										"match",
+										["get", "vt_code"],
+										[2721, 2722, 2723],
+										"rgba(173,173,173,1)",
+										[2731, 2732, 2733],
+										"rgba(200,200,200,1)",
+										"rgba(255,255,255,1)"
+									]
+								]
+							]
+						]
+					],
+					14,
+					[
+						"case",
+						["in", ["get", "vt_code"], ["literal", [2704, 2714]]],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,0.5)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,0.5)",
+								"都道府県道",
+								"rgba(210,190,139,0.5)",
+								"市区町村道等",
+								"rgba(100,100,100,0.5)",
+								"高速自動車国道等",
+								"rgba(210,190,139,0.5)",
+								"その他",
+								"rgba(100,100,100,0.5)",
+								"不明",
+								"rgba(100,100,100,0.5)",
+								"rgba(100,100,100,0.5)"
+							]
+						],
+						[
+							"case",
+							["==", ["get", "vt_motorway"], 1],
+							"rgba(210,190,139,1)",
+							[
+								"match",
+								["get", "vt_rdctg"],
+								"国道",
+								"rgba(210,190,139,1)",
+								"都道府県道",
+								"rgba(210,190,139,1)",
+								"高速自動車国道等",
+								"rgba(210,190,139,1)",
+								[
+									"match",
+									["get", "vt_code"],
+									[2721, 2722, 2723],
+									"rgba(173,173,173,1)",
+									[2731, 2732, 2733],
+									"rgba(200,200,200,1)",
+									"rgba(255,255,255,1)"
+								]
+							]
+						]
+					]
+				],
+				"line-opacity": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					13,
+					[
+						"case",
+						[
+							"all",
+							[
+								"!",
+								["in", ["get", "vt_rdctg"], ["literal", ["国道", "都道府県道", "高速自動車国道等"]]]
+							],
+							["==", ["get", "vt_rnkwidth"], "3m-5.5m未満"]
+						],
+						0,
+						1
+					],
+					14,
+					1
+				],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					"width2",
+					[
+						"case",
+						["has", "vt_rnkwidth"],
+						[
+							"match",
+							["get", "vt_rnkwidth"],
+							"3m未満",
+							700,
+							"3m-5.5m未満",
+							1200,
+							"5.5m-13m未満",
+							1700,
+							"13m-19.5m未満",
+							2200,
+							"19.5m以上",
+							2700,
+							0
+						],
+						3000
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						["match", ["get", "vt_rdctg"], "国道", 2, "都道府県道", 1.5, "高速自動車国道等", 4, 1],
+						12,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width2"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "道路中心線破線",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"filter": [
+				"step",
+				["zoom"],
+				["in", ["get", "vt_code"], ["literal", [2724, 2734]]],
+				17,
+				[
+					"all",
+					["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
+					["in", ["get", "vt_code"], ["literal", [2724, 2734]]]
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-round-limit": 1.57,
+				"line-sort-key": ["get", "vt_drworder"]
+			},
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [5, 5],
+				"line-gap-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								150,
+								"3m-5.5m未満",
+								225,
+								"5.5m-13m未満",
+								450,
+								"13m-19.5m未満",
+								900,
+								"19.5m以上",
+								1350,
+								0
+							],
+							1500
+						]
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						2,
+						12,
+						["*", ["^", 2, -9], ["var", "width"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width"]],
+						23,
+						["var", "width"]
+					]
+				],
+				"line-width": 1
+			}
+		},
+		{
+			"id": "道路中心線階段",
+			"type": "line",
+			"source": "v",
+			"source-layer": "RdCL",
+			"minzoom": 11,
+			"maxzoom": 22,
+			"filter": ["in", ["get", "vt_code"], ["literal", [2731, 2732, 2733, 2734]]],
+			"paint": {
+				"line-color": "rgba(100,100,100,1)",
+				"line-dasharray": [0.1, 1],
+				"line-width": [
+					"let",
+					"width",
+					[
+						"case",
+						["has", "vt_width"],
+						["get", "vt_width"],
+						[
+							"case",
+							["has", "vt_rnkwidth"],
+							[
+								"match",
+								["get", "vt_rnkwidth"],
+								"3m未満",
+								300,
+								"3m-5.5m未満",
+								450,
+								"5.5m-13m未満",
+								900,
+								"13m-19.5m未満",
+								1800,
+								"19.5m以上",
+								2700,
+								0
+							],
+							3000
+						]
+					],
+					[
+						"interpolate",
+						["exponential", 2],
+						["zoom"],
+						11,
+						2,
+						12,
+						["*", ["^", 2, -9], ["var", "width"]],
+						14,
+						["*", ["^", 2, -9], ["var", "width"]],
+						23,
+						["var", "width"]
+					]
+				]
+			}
+		},
+		{
+			"id": "admin_sub",
+			"type": "line",
+			"source": "openmaptiles",
+			"source-layer": "boundary",
+			"filter": ["in", "admin_level", 4, 6, 8],
+			"layout": { "visibility": "visible" },
+			"paint": {
+				"line-color": "rgba(255, 255, 255, 0.5)",
+				"line-dasharray": [2, 1]
+			}
+		},
+		{
+			"id": "admin_country_z0-4",
+			"type": "line",
+			"source": "openmaptiles",
+			"source-layer": "boundary",
+			"minzoom": 0,
+			"maxzoom": 5,
+			"filter": [
+				"all",
+				["<=", "admin_level", 2],
+				["==", "$type", "LineString"],
+				["!has", "claimed_by"]
+			],
+			"layout": {
+				"line-cap": "round",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "hsl(0, 0%, 60%)",
+				"line-width": {
+					"base": 1.3,
+					"stops": [
+						[3, 0.5],
+						[22, 15]
+					]
+				}
+			}
+		},
+		{
+			"id": "admin_country_z5-",
+			"type": "line",
+			"source": "openmaptiles",
+			"source-layer": "boundary",
+			"minzoom": 5,
+			"filter": ["all", ["<=", "admin_level", 2], ["==", "$type", "LineString"]],
+			"layout": {
+				"line-cap": "round",
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "hsl(0, 0%, 60%)",
+				"line-width": {
+					"base": 1.3,
+					"stops": [
+						[3, 0.5],
+						[22, 15]
+					]
+				}
+			}
+		},
+		{
+			"id": "注記道路番号",
+			"type": "symbol",
+			"source": "v",
+			"source-layer": "Anno",
+			"filter": [
+				"step",
+				["zoom"],
+				[
+					"all",
+					["==", ["geometry-type"], "Point"],
+					["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
+				],
+				16,
+				[
+					"all",
+					["==", ["geometry-type"], "Point"],
+					["in", ["get", "vt_flag17"], ["literal", [0, 1]]],
+					["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
+				],
+				17,
+				[
+					"all",
+					["==", ["geometry-type"], "Point"],
+					["in", ["get", "vt_flag17"], ["literal", [1, 2]]],
+					["in", ["get", "vt_code"], ["literal", [2901, 2903, 2904, 7701]]]
+				]
+			],
+			"layout": {
+				"icon-allow-overlap": true,
+				"icon-image": [
+					"match",
+					["get", "vt_code"],
+					2901,
+					"国道番号-20",
+					2903,
+					"都市高速道路番号-20",
+					2904,
+					"高速道路番号-20",
+					""
+				],
+				"icon-size": [
+					"let",
+					"size",
+					["match", ["get", "vt_code"], 7701, 0.7, 0.5],
+					["interpolate", ["linear"], ["zoom"], 15, ["var", "size"], 17, ["*", 2, ["var", "size"]]]
+				],
+				"symbol-sort-key": [
+					"match",
+					["get", "vt_code"],
+					2901,
+					88,
+					2903,
+					50,
+					2904,
+					49,
+					7701,
+					111,
+					0
+				],
+				"text-allow-overlap": false,
+				"text-font": ["migu1c-regular"],
+				"text-justify": "auto",
+				"text-size": [
+					"let",
+					"size",
+					["match", ["get", "vt_code"], 2901, 10, 7701, 12, 8],
+					["interpolate", ["linear"], ["zoom"], 15, ["var", "size"], 17, ["*", 2, ["var", "size"]]]
+				],
+				"text-field": ["get", "vt_text"],
+				"text-max-width": 100
+			},
+			"paint": {
+				"text-color": ["match", ["get", "vt_code"], 7701, "rgba(0,0,0,1)", "rgba(255,255,255,1)"]
+			}
+		},
+		{
+			"id": "poi_label",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "poi",
+			"minzoom": 14,
+			"filter": [
+				"all",
+				["==", "$type", "Point"],
+				["==", "rank", 1],
+				["!=", "name", "岐阜県立森林文化アカデミー"]
+			],
+			"layout": {
+				"icon-size": 1,
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 8,
+				"text-offset": [0, 0.5],
+				"text-size": 11,
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-blur": 1,
+				"text-halo-color": "rgba(0, 0, 0, 0.75)",
+				"text-halo-width": 1
+			}
+		},
+		{
+			"id": "airport-label",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "aerodrome_label",
+			"minzoom": 10,
+			"filter": ["all", ["has", "iata"]],
+			"layout": {
+				"icon-size": 1,
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 8,
+				"text-offset": [0, 0.5],
+				"text-size": 11,
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-blur": 1,
+				"text-halo-color": "rgba(0, 0, 0, 0.75)",
+				"text-halo-width": 1
+			}
+		},
+		{
+			"id": "road_major_label",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "transportation_name",
+			"minzoom": 13,
+			"filter": [
+				"all",
+				["!=", "name", "森林文化アカデミー演習林歩道"],
+				["==", "$type", "LineString"]
+			],
+			"layout": {
+				"symbol-placement": "line",
+				"text-field": "{name}",
+				"text-font": ["migu1c-regular"],
+				"text-letter-spacing": 0.1,
+				"text-rotation-alignment": "map",
+				"text-size": {
+					"base": 1.4,
+					"stops": [
+						[10, 8],
+						[20, 14]
+					]
+				},
+				"text-transform": "uppercase",
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-color": "rgba(73, 73, 73, 1)",
+				"text-halo-width": 2
+			}
+		},
+		{
+			"id": "place_label_other",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "place",
+			"minzoom": 8,
+			"filter": [
+				"all",
+				["==", "$type", "Point"],
+				["!in", "class", "city", "state", "country", "continent"]
+			],
+			"layout": {
+				"text-anchor": "center",
+				"text-field": "{name}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 6,
+				"text-size": {
+					"stops": [
+						[6, 10],
+						[12, 14]
+					]
+				},
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-blur": 0,
+				"text-halo-color": "rgba(32, 32, 32, 1)",
+				"text-halo-width": 2
+			}
+		},
+		{
+			"id": "place_label_city",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "place",
+			"maxzoom": 16,
+			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "city"]],
+			"layout": {
+				"text-field": "{name:ja}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 10,
+				"text-size": {
+					"stops": [
+						[3, 12],
+						[8, 16]
+					]
+				}
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-blur": 0,
+				"text-halo-color": "rgba(0, 0, 0, 0.75)",
+				"text-halo-width": 2
+			}
+		},
+		{
+			"id": "country_label-other",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "place",
+			"maxzoom": 12,
+			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "country"], ["!has", "iso_a2"]],
+			"layout": {
+				"text-field": "{name}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 10,
+				"text-size": {
+					"stops": [
+						[3, 12],
+						[8, 22]
+					]
+				},
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "hsl(0, 0%, 13%)",
+				"text-halo-blur": 0,
+				"text-halo-color": "rgba(255,255,255,0.75)",
+				"text-halo-width": 2
+			}
+		},
+		{
+			"id": "country_label",
+			"type": "symbol",
+			"source": "openmaptiles",
+			"source-layer": "place",
+			"maxzoom": 12,
+			"filter": ["all", ["==", "$type", "Point"], ["==", "class", "country"], ["has", "iso_a2"]],
+			"layout": {
+				"text-field": "{name:ja}",
+				"text-font": ["migu1c-regular"],
+				"text-max-width": 10,
+				"text-size": {
+					"stops": [
+						[3, 12],
+						[8, 22]
+					]
+				},
+				"visibility": "visible"
+			},
+			"paint": {
+				"text-color": "rgba(255, 255, 255, 1)",
+				"text-halo-blur": 0,
+				"text-halo-color": "rgba(0, 0, 0, 0.75)",
+				"text-halo-width": 2
+			}
+		},
+		{
+			"id": "island-hoppo-name",
+			"type": "symbol",
+			"source": "hoppo",
+			"source-layer": "island",
+			"layout": {
+				"text-field": "{name}",
+				"text-size": {
+					"stops": [
+						[10, 14],
+						[15, 24]
+					]
+				}
+			},
+			"paint": {
+				"text-color": "#333",
+				"text-halo-color": "rgba(255, 255, 255, 0.8)",
+				"text-halo-width": 1.2
+			}
+		},
+		{
+			"id": "island-takeshima-name",
+			"type": "symbol",
+			"source": "takeshima",
+			"source-layer": "island",
+			"layout": {
+				"text-field": "{name}",
+				"text-size": {
+					"stops": [
+						[10, 14],
+						[15, 24]
+					]
+				}
+			},
+			"paint": {
+				"text-color": "#333",
+				"text-halo-color": "rgba(255, 255, 255, 0.8)",
+				"text-halo-width": 1.2
+			}
+		},
+		{
+			"id": "island-takeshima-poi",
+			"type": "symbol",
+			"source": "takeshima",
+			"source-layer": "island_poi",
+			"layout": {
+				"text-field": "{name}",
+				"text-font": ["migu2m-regular"],
+				"text-size": {
+					"stops": [
+						[10, 14],
+						[15, 24]
+					]
+				}
+			},
+			"paint": {
+				"text-color": "#333",
+				"text-halo-color": "rgba(255, 255, 255, 0.8)",
+				"text-halo-width": 1.2
+			}
+		}
+	],
+	"id": "1kknbdc"
 }

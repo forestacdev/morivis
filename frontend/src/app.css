@@ -30,10 +30,9 @@
 		border-color: var(--color-gray-200, currentcolor);
 	}
 }
-
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
-	@apply border-accent bg-accent hover:text-accent hover:border-base hover:bg-base cursor-pointer rounded-full border-2 p-2 text-black transition-colors duration-150;
+	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-[#348163] bg-[#348163] p-2 text-base transition-colors duration-150 hover:text-black;
 }
 
 @utility c-btn-sub {
@@ -43,7 +42,7 @@
 
 @utility c-btn-cancel {
 	/* キャンセルボタンスタイル */
-	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 font-bold text-gray-500 transition-colors duration-150 lg:hover:bg-gray-200;
+	@apply cursor-pointer rounded-full border-2 border-[#F5F5F5] bg-[#F5F5F5] p-2 text-gray-500 transition-colors duration-150 lg:hover:bg-gray-200;
 }
 
 @utility c-form-field {

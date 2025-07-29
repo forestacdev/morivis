@@ -109,7 +109,7 @@
 						e.stopPropagation();
 						deleteData(dataEntry.id);
 					}}
-					class="c-btn-cancel grid place-items-center p-1"
+					class="c-btn-sub grid place-items-center p-1"
 				>
 					<Icon icon="ic:round-minus" class=" h-6 w-6" />
 				</button>

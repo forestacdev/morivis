@@ -16,7 +16,8 @@
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
-	import { showTermsDialog } from './stores';
+	import { showTermsDialog, showInfoDialog } from './stores';
+	import Icon from '@iconify/svelte';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -33,10 +34,6 @@
 	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
-		if (!checkToTermsAccepted()) {
-			showTermsDialog.set(true);
-			return;
-		}
 		showButton = false;
 		if (import.meta.env.MODE === 'production') {
 			goto('/morivis/map');
@@ -206,6 +203,10 @@
 		// 画面リサイズ時にキャンバスもリサイズ
 		window.addEventListener('resize', onResize);
 		onResize();
+
+		if (!checkToTermsAccepted()) {
+			showTermsDialog.set(true);
+		}
 	});
 
 	onDestroy(() => {
@@ -220,6 +221,13 @@
 
 		window.removeEventListener('resize', onResize);
 	});
+	const toggleInfoDialog = () => {
+		showInfoDialog.set(!$showInfoDialog);
+	};
+
+	const toggleTermsDialog = () => {
+		showTermsDialog.set(!$showTermsDialog);
+	};
 </script>
 
 <div class="app relative flex h-dvh w-dvw">
@@ -239,11 +247,38 @@
 					>マップを見る
 				</button>
 			{/if}
-
-			<div class="absolute bottom-8 [&_path]:fill-white">
-				<FacLogo width={'230'} />
-			</div>
 		</div>
+	</div>
+	<div class="absolute bottom-8 flex w-full items-center justify-between px-8 opacity-90">
+		<div class="flex gap-3">
+			<a
+				class="pointer-events-auto flex cursor-pointer items-center text-white"
+				href="https://github.com/forestacdev/morivis"
+				target="_blank"
+				rel="noopener noreferrer"
+				><Icon icon="mdi:github" class="h-8 w-8" />
+			</a>
+			<button
+				class="pointer-events-auto flex cursor-pointer items-center text-white"
+				onclick={toggleInfoDialog}
+			>
+				<Icon icon="akar-icons:info-fill" class="h-7 w-7" />
+			</button>
+		</div>
+		<a
+			class="pointer-events-auto shrink-0 cursor-pointer [&_path]:fill-white"
+			href="https://www.forest.ac.jp/"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			<FacLogo width={'230'} />
+		</a>
+		<button
+			class="pointer-events-auto flex shrink-0 cursor-pointer items-center p-2 text-white"
+			onclick={toggleTermsDialog}
+		>
+			<span class="select-none underline">利用規約</span>
+		</button>
 	</div>
 </div>
 
