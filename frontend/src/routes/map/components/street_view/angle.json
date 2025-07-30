@@ -1,9 +1,9 @@
 [
 	{
 		"id": "2d095ab2-c2c6-477e-ba12-daed8b8585be",
-		"angleX": 345.6,
-		"angleY": 33.12,
-		"angleZ": 0.0
+		"angleX": 186.12,
+		"angleY": 222.48,
+		"angleZ": 167.76
 	},
 	{
 		"id": "806d8a3d-5293-453e-9582-80004d2d06c6",
@@ -517,9 +517,9 @@
 	},
 	{
 		"id": "f692e86a-2276-4ea7-bc91-87cd6ef3f93a",
-		"angleX": 357.84,
-		"angleY": 60.12,
-		"angleZ": 0.0
+		"angleX": 194.04,
+		"angleY": 246.6,
+		"angleZ": 172.08
 	},
 	{
 		"id": "e27f0531-fb28-4e32-b389-bf9beda7b936",
@@ -547,9 +547,9 @@
 	},
 	{
 		"id": "b8ad9125-4f3b-47cf-91d1-018dda7e3345",
-		"angleX": 351.72,
-		"angleY": 85.32,
-		"angleZ": 0.0
+		"angleX": 187.92,
+		"angleY": 238.68,
+		"angleZ": 165.96
 	},
 	{
 		"id": "9facc575-a168-4054-8259-14c7b17eb50e",
@@ -1063,9 +1063,9 @@
 	},
 	{
 		"id": "7bb2a421-711c-47a1-b7e8-5c8c1c6b4bfe",
-		"angleX": 339.12,
-		"angleY": 97.56,
-		"angleZ": 0.0
+		"angleX": 16.2,
+		"angleY": 88.92,
+		"angleZ": 3.96
 	},
 	{
 		"id": "135c0d0c-c1bd-4cfa-8d2d-1d616bfed880",
@@ -1123,9 +1123,9 @@
 	},
 	{
 		"id": "496180f0-b156-4aa9-ad0c-d27bbe140d43",
-		"angleX": 0.0,
+		"angleX": 2.16,
 		"angleY": 72.72,
-		"angleZ": 360.0
+		"angleZ": 6.12
 	},
 	{
 		"id": "b69e4150-06e5-4d1e-a7e2-254f33f957bb",
@@ -1867,9 +1867,9 @@
 	},
 	{
 		"id": "0d74dc48-0d79-4ed3-886e-4fbcc110069a",
-		"angleX": 349.56,
-		"angleY": 62.28,
-		"angleZ": 0.0
+		"angleX": 194.04,
+		"angleY": 242.64,
+		"angleZ": 176.04
 	},
 	{
 		"id": "cfa203fb-30d0-403e-8c15-5193730b497b",
@@ -1879,9 +1879,9 @@
 	},
 	{
 		"id": "b72fe2a1-f7f1-43da-9ed4-757410bdb6c2",
-		"angleX": 349.56,
-		"angleY": 81.0,
-		"angleZ": 0.0
+		"angleX": 180,
+		"angleY": 258.84,
+		"angleZ": 167.76
 	},
 	{
 		"id": "917fb0bf-bc0f-4f3d-b1ca-198ee49d9b5b",
@@ -6506,7 +6506,7 @@
 	},
 	{
 		"id": "f7405dac-3ae2-4753-b24b-04847f9916c6",
-		"angleX": 0.0,
+		"angleX": 10.08,
 		"angleY": 20.16,
 		"angleZ": 7.92
 	},
@@ -7028,9 +7028,9 @@
 	},
 	{
 		"id": "97b2c2ac-4cfc-493a-ac00-e44243de3f3a",
-		"angleX": 353.88,
-		"angleY": 35.28,
-		"angleZ": 0.0
+		"angleX": 14.04,
+		"angleY": 60.48,
+		"angleZ": 0
 	},
 	{
 		"id": "70c0df91-6e6b-4560-98e9-7da0293a679e",
@@ -7064,9 +7064,9 @@
 	},
 	{
 		"id": "8f62b936-b075-49fe-af9f-79b828c6bee1",
-		"angleX": 0.0,
+		"angleX": 10.08,
 		"angleY": 30.24,
-		"angleZ": 0.0
+		"angleZ": 0
 	},
 	{
 		"id": "90705712-862e-4dc7-92c8-61a5ddf73cd8",
