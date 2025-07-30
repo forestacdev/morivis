@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce, delay } from 'es-toolkit';
+	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -8,23 +8,17 @@
 		type LayerSpecification,
 		type MapGeoJSONFeature,
 		type CanvasSourceSpecification,
-		type CanvasSource,
-		type GeoJSONSourceSpecification,
 		type MapMouseEvent,
-		type Marker,
-		type LngLat,
-		type AddLayerObject
+		type LngLat
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
 
 	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
-	import MapStatePane from '$routes/map/components/map_control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
@@ -61,7 +55,6 @@
 
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
-	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/session_storage';
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 

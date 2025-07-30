@@ -24,7 +24,6 @@
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
-	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
