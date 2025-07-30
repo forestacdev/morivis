@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { style } from '$routes/_development/maptreestyle/style';
+
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import DemStyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleColorMapPulldownBox.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
-	import type { RasterDemStyle, RasterDemEntry } from '$routes/map/data/types/raster';
+	import type { RasterDemEntry } from '$routes/map/data/types/raster';
 	import Accordion from '../../atoms/Accordion.svelte';
 
 	interface Props {

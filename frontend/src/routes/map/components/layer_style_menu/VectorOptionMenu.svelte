@@ -11,8 +11,6 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
-	import { style } from '$routes/_development/maptreestyle/style';
-	import RangeSlider from '../atoms/RangeSlider.svelte';
 
 	interface Props {
 		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;

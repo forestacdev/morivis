@@ -278,9 +278,9 @@
 		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
 		scene.add(sphere);
 
-		// const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
-		// const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
-		// scene.add(wireframeCube);
+		const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
+		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
+		scene.add(wireframeCube);
 
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -542,7 +542,7 @@
 <style>
 	/* NOTE: debug */
 	:global(.lil-gui) {
-		display: none !important;
+		display: block !important;
 	}
 	canvas {
 		background-image: radial-gradient(#000000, #000000);

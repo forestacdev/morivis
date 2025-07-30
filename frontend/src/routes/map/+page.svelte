@@ -35,7 +35,7 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { get3dParams, getParams } from '$routes/map/utils/params';
+	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
@@ -134,21 +134,21 @@
 
 		// TODO ストリートビューのパラメータを取得
 
-		// const imageId = getStreetViewParams();
+		const imageId = getStreetViewParams();
 
-		// if (imageId) {
-		// 	const point = streetViewPointData.features.find(
-		// 		(point) => point.properties.id === Number(imageId)
-		// 	);
-		// 	if (point) {
-		// 		showStreetViewLayer.set(true);
-		// 		setPoint(point as StreetViewPoint);
+		if (imageId) {
+			const point = streetViewPointData.features.find(
+				(point) => point.properties.id === Number(imageId)
+			);
+			if (point) {
+				showStreetViewLayer.set(true);
+				setPoint(point as StreetViewPoint);
 
-		// 		isStreetView.set(true);
-		// 	} else {
-		// 		console.warn(`Street view point with ID ${imageId} not found.`);
-		// 	}
-		// }
+				isStreetView.set(true);
+			} else {
+				console.warn(`Street view point with ID ${imageId} not found.`);
+			}
+		}
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
