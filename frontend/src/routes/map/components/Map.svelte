@@ -33,15 +33,9 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { DEBUG_MODE, isStreetView } from '$routes/stores';
+	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
-	import {
-		activeLayerIdsStore,
-		getEntryIds,
-		showLabelLayer,
-		showStreetViewLayer,
-		showXYZTileLayer
-	} from '$routes/stores/layers';
+	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -368,7 +362,7 @@
 		if (!layerEntries) return;
 
 		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
-		// if (!$DEBUG_MODE) {
+		// if (!$isDebugMode) {
 		// 	const localEntries = loadLayerEntries();
 
 		// 	// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用

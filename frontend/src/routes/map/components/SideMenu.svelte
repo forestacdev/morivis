@@ -8,13 +8,15 @@
 		showDataMenu,
 		mapMode,
 		showInfoDialog,
-		showTermsDialog
+		showTermsDialog,
+		isDebugMode
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
 
@@ -175,6 +177,11 @@
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
+			{#if import.meta.env.MODE === 'development'}
+				{#if import.meta.env.MODE === 'development'}
+					<Switch label="デバックモード" bind:value={$isDebugMode} />
+				{/if}
+			{/if}
 		</ui>
 		<ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui>
 	</div>

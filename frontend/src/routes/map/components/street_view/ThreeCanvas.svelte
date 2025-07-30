@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { GUI } from 'lil-gui';
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -10,19 +9,19 @@
 	import fs from './shaders/fragment.glsl?raw';
 	// import fs from './shaders/fragment_debug.glsl?raw';
 	import vs from './shaders/vertex.glsl?raw';
+	import DebugControl from './DebugControl.svelte';
 
-	import { getCameraYRotation, updateAngle, degreesToRadians, TextureCache } from './utils';
+	import { degreesToRadians, TextureCache } from './utils';
 	import type { CurrentPointData } from './utils';
 
-	import { isStreetView, DEBUG_MODE } from '$routes/stores';
+	import { isStreetView, isDebugMode } from '$routes/stores';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
 
-	const IMAGE_URL = 'https://raw.githubusercontent.com/forestacdev/fac-cubemap-image/main/images/';
-	const IMAGE_URL_SHINGLE =
+	const PANORAMA_IMAGE_URL =
 		'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 
 	const IN_CAMERA_FOV = 75;
@@ -115,48 +114,21 @@
 		wireframe: true,
 		side: THREE.DoubleSide,
 		opacity: 1.0,
-		visible: true
+		visible: false
 	});
 
-	let geometryBearing = { x: 0, y: 0, z: 0 };
-	let controllerX;
-	let controllerY;
-	let controllerZ;
+	let angleX = $state<number>(0);
+	let angleY = $state<number>(0);
+	let angleZ = $state<number>(0);
+	let showWireframe = $state<boolean>(false); // デバッグ用ワイヤーフレーム表示
 
-	const gui = new GUI();
-
-	controllerX = gui.add(geometryBearing, 'x', 0, 360).listen();
-	controllerY = gui.add(geometryBearing, 'y', 0, 360).listen();
-	controllerZ = gui.add(geometryBearing, 'z', 0, 360).listen();
-
-	const copy = {
-		copyAngle: () => {
-			if (!streetViewPoint) return;
-			// クリップボードに角度をjson textでコピー
-			const angleX = geometryBearing.x;
-			const angleY = geometryBearing.y;
-			const angleZ = geometryBearing.z;
-			const angleData = {
-				id: streetViewPoint.properties['ID'],
-				angleX: angleX,
-				angleY: angleY,
-				angleZ: angleZ
-			};
-
-			const angleJson = JSON.stringify(angleData, null, 2);
-			navigator.clipboard
-				.writeText(angleJson)
-				.then(() => {
-					console.log('角度データをクリップボードにコピーしました:', angleJson);
-				})
-				.catch((err) => {
-					console.error('クリップボードへのコピーに失敗しました:', err);
-				});
+	$effect(() => {
+		if (showWireframe) {
+			debugBoxMaterial.visible = true;
+		} else {
+			debugBoxMaterial.visible = false;
 		}
-	};
-
-	// 角度を更新するボタンを追加
-	gui.add(copy, 'copyAngle').name('copy Angle');
+	});
 
 	// 球体を削除する関数
 	const removeSpheres = () => {
@@ -183,7 +155,7 @@
 			const angleData = angleDataJson.find((angle) => angle.id === id);
 
 			const webp =
-				IMAGE_URL_SHINGLE + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
+				PANORAMA_IMAGE_URL + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
 
 			return {
 				id: id,
@@ -327,9 +299,9 @@
 
 			// // 度をラジアンに変換してシェーダーに渡す
 			let rotationAngles = new THREE.Vector3(
-				degreesToRadians(geometryBearing.x),
-				degreesToRadians(geometryBearing.y),
-				degreesToRadians(geometryBearing.z)
+				degreesToRadians(angleX),
+				degreesToRadians(angleY),
+				degreesToRadians(angleZ)
 			);
 
 			if (currentTextureIndex === 0) {
@@ -387,9 +359,9 @@
 				);
 			}
 
-			geometryBearing.x = angle.angleX;
-			geometryBearing.y = angle.angleY;
-			geometryBearing.z = angle.angleZ;
+			angleX = angle.angleX;
+			angleY = angle.angleY;
+			angleZ = angle.angleZ;
 
 			// フェード開始時刻を設定
 			uniforms.fadeStartTime.value = performance.now() * 0.001;
@@ -425,63 +397,17 @@
 			setStreetViewParams(currentSceneId);
 		}
 	});
-
-	gui.add(debugBoxMaterial, 'visible').name('Wireframe');
-
-	// デバッグ用
-	// デバッグ用GUI設定
-	// const advancedLighting = {
-	// 	inputGamma: 2.2, // 入力画像のガンマ値
-	// 	outputGamma: 2.2, // 出力のガンマ値
-	// 	exposure: 0.6,
-	// 	brightness: 1.5, // 追加の明度調整
-	// 	contrast: 1.5 // コントラスト調整
-	// };
-
-	// // ガンマ調整（1.8-2.6程度が一般的）
-	// gui
-	// 	.add(advancedLighting, 'inputGamma', 1.5, 3.0, 0.1)
-	// 	.onChange((value) => {
-	// 		uniforms.gamma.value = value;
-	// 	})
-	// 	.name('inputGamma');
-	// gui
-	// 	.add(advancedLighting, 'outputGamma', 1.5, 3.0, 0.1)
-	// 	.onChange((value) => {
-	// 		uniforms.outputGamma.value = value;
-	// 	})
-	// 	.name('outputGamma');
-
-	// // 明るさ調整
-	// gui
-	// 	.add(advancedLighting, 'brightness', 0.0, 2.0, 0.1)
-	// 	.onChange((value) => {
-	// 		uniforms.brightness.value = value;
-	// 	})
-	// 	.name('Brightness');
-	// // コントラスト調整
-	// gui
-	// 	.add(advancedLighting, 'contrast', 0.0, 2.0, 0.1)
-	// 	.onChange((value) => {
-	// 		uniforms.contrast.value = value;
-	// 	})
-	// 	.name('Contrast');
-
-	// // 露出調整
-	// gui
-	// 	.add(advancedLighting, 'exposure', -1.0, 2.0, 0.1)
-	// 	.onChange((value) => {
-	// 		uniforms.exposure.value = value;
-	// 	})
-	// 	.name('Exposure');
 </script>
 
-<!-- <div class="css-canvas-back"></div> -->
 <div
 	class="absolute z-10 flex overflow-hidden duration-500 {showThreeCanvas
 		? 'bottom-0 right-0 h-full w-full opacity-100'
 		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
 >
+	<!-- 角度調整コントロール -->
+	{#if $isDebugMode}
+		<DebugControl bind:angleX bind:angleY bind:angleZ bind:showWireframe {streetViewPoint} />
+	{/if}
 	<canvas class="h-full w-full" bind:this={canvas}></canvas>
 	{#if isLoading}
 		<div class="css-loading">
@@ -540,10 +466,6 @@
 </div>
 
 <style>
-	/* NOTE: debug */
-	:global(.lil-gui) {
-		display: block !important;
-	}
 	canvas {
 		background-image: radial-gradient(#000000, #000000);
 		padding: 0;

@@ -21,7 +21,7 @@ import type { CSSCursor } from '$routes/map/types';
 
 import turfBbox, { bbox } from '@turf/bbox';
 import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
-import { DEBUG_MODE } from '$routes/stores';
+import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';
@@ -173,7 +173,7 @@ const createMapStore = () => {
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
 		});
 
-		if (get(DEBUG_MODE)) {
+		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
 			// データ読み込みイベントを監視
 			map.on('data', (e) => {

@@ -16,7 +16,7 @@
 		isStyleEdit
 	} from '$routes/stores';
 
-	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
+	import { selectedLayerId } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';

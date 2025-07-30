@@ -28,7 +28,7 @@
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
+	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
@@ -117,7 +117,7 @@
 
 		if (params) {
 			if (params.debug && params.debug === '1') {
-				DEBUG_MODE.set(true);
+				isDebugMode.set(true);
 			}
 		}
 
@@ -440,7 +440,7 @@
 <!-- <svelte:window
 	onkeydown={(e) => {
 		if (e.key === 'F3') {
-			DEBUG_MODE.set(!$DEBUG_MODE);
+			isDebugMode.set(!$isDebugMode);
 		}
 	}}
 /> -->
