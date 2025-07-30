@@ -179,7 +179,7 @@
 			>
 			{#if import.meta.env.MODE === 'development'}
 				{#if import.meta.env.MODE === 'development'}
-					<Switch label="デバックモード" bind:value={$isDebugMode} />
+					<Switch label="デバッグモード" bind:value={$isDebugMode} />
 				{/if}
 			{/if}
 		</ui>
