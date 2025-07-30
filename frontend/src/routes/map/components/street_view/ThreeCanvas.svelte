@@ -285,7 +285,7 @@
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-		canvas.addEventListener('resize', onResize);
+		window.addEventListener('resize', onResize);
 
 		$effect(() => {
 			if (fov) {
