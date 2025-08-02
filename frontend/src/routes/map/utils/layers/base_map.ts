@@ -27,6 +27,13 @@ export const getBaseMapSources = (): Record<string, RasterSourceSpecification> =
 
 export const getBaseMapLayers = (): RasterLayerSpecification[] => {
 	return [
+		{
+			id: 'background',
+			type: 'background',
+			paint: {
+				'background-color': '#000000'
+			}
+		},
 		...(satelliteStyleJson.layers.filter(
 			(layer) => layer.type === 'raster'
 		) as RasterLayerSpecification[]),

@@ -14,7 +14,6 @@
 
 	import { page } from '$app/state';
 
-	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import { isBlocked, isMobile } from '$routes/stores/ui';
@@ -47,15 +46,6 @@
 		});
 	});
 
-	let deviceWidth = $state<number>(window.innerWidth);
-
-	$effect(() => {
-		if (deviceWidth <= MOBILE_WIDTH) {
-			isMobile.set(true);
-		} else {
-			isMobile.set(false);
-		}
-	});
 	let isInitialized = $state<boolean>(false);
 
 	// // 環境ごとのファビコンの設定
@@ -105,7 +95,15 @@
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
 
-<svelte:window onresize={() => (deviceWidth = window.innerWidth)} />
+<svelte:window
+	onresize={() => {
+		if (window.innerWidth <= MOBILE_WIDTH) {
+			isMobile.set(true);
+		} else {
+			isMobile.set(false);
+		}
+	}}
+/>
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->

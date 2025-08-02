@@ -127,7 +127,28 @@
 						const mapBbox = mapStore.getMapBounds();
 						if (!isBBoxInside(mapBbox, data.bbox)) {
 							mapStore.focusLayer(showDataEntry);
+							// return;
 						}
+
+						//TODO: 自動ズーム
+						// let z = mapStore.getZoom();
+						// let isZoomOffset = false;
+
+						// if (!z) return;
+
+						// if ('tileSize' in showDataEntry.metaData && showDataEntry.metaData.tileSize === 256) {
+						// 	isZoomOffset = true;
+						// 	z = z + 1.5; // タイルサイズが256の場合、ズームレベルを調整
+						// }
+
+						// console.log(showDataEntry.metaData.minZoom);
+						// console.log(z);
+
+						// // ズームレベル範囲内かのチェック
+						// if (showDataEntry.metaData.minZoom && z > showDataEntry.metaData.minZoom) {
+						// 	mapStore.setZoom(showDataEntry.metaData.minZoom - (isZoomOffset ? 1.5 : 0));
+						// 	return;
+						// }
 					} else {
 						hasBbox = false;
 					}
