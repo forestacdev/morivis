@@ -500,7 +500,7 @@
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
 		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white hover:h-[400px] hover:w-[600px] hover:transition-all hover:duration-300'
-		: 'relative h-full w-full grow pb-4 pr-4'}"
+		: 'relative h-full w-full grow '}"
 >
 	<div
 		bind:this={mapContainer}
@@ -540,6 +540,8 @@
 	/>
 	<LockOnScreen />
 </div>
+<!-- 右側余白 -->
+<div class="bg-main p-2"></div>
 
 {#if maplibreMap}
 	<FileManager

@@ -277,6 +277,12 @@
 			});
 			await delay(750);
 			isBlocked.set(false);
+
+			// const map = mapStore.getMap();
+			// if (!map) return;
+			// map.resize();
+			// await delay(100); // 短いdelayを追加
+			// map.triggerRepaint();
 		}
 	});
 
@@ -367,6 +373,9 @@
 				{setPoint}
 			/>
 		</div>
+
+		<!-- フッター余白 -->
+		<div class="bg-main p-2"></div>
 
 		<!-- <HeaderMenu
 			bind:featureMenuData
