@@ -81,7 +81,7 @@
 
 <div
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
+	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 max-lg:hidden {$showLayerMenu
 		? 'translate-x-0'
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'
@@ -190,24 +190,26 @@
 		<!-- 余白 -->
 		<div class="h-[150px] w-full shrink-0"></div>
 	</div>
-	<div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
-		<ContourSvg width={'1000'} strokeWidth={'0.5'} />
-	</div>
-	<div
-		class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
-	>
-		<Switch label="地名・道路など" bind:value={$showLabelLayer} />
-		<!-- <Switch label="3D地形" bind:value={is3d} /> -->
-		{#if $isDebugMode}
-			<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
-		{/if}
-		<button
-			onclick={resetLayers}
-			class="c-btn-sub pointer-events-auto flex items-center justify-center gap-2 p-1"
+	{#if !$isStyleEdit && !$showDataMenu}
+		<div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
+			<ContourSvg width={'1000'} strokeWidth={'0.5'} />
+		</div>
+		<div
+			class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
 		>
-			<Icon icon="carbon:reset" class="h-6 w-6" />
-		</button>
-	</div>
+			<Switch label="地名・道路など" bind:value={$showLabelLayer} />
+			<!-- <Switch label="3D地形" bind:value={is3d} /> -->
+			{#if $isDebugMode}
+				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+			{/if}
+			<button
+				onclick={resetLayers}
+				class="c-btn-sub pointer-events-auto flex items-center justify-center gap-2 p-1"
+			>
+				<Icon icon="carbon:reset" class="h-6 w-6" />
+			</button>
+		</div>
+	{/if}
 	<!-- {#if !$isStyleEdit && !$showDataMenu}
 		<div transition:fade={{ duration: 150 }} class="">
 			<Switch label="地名・道路など" bind:value={$showLabelLayer} />

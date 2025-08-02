@@ -27,7 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 		titles: []
 	},
 	interaction: {
-		clickable: false
+		clickable: true
 	},
 	style: {
 		type: 'line',

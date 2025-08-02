@@ -504,7 +504,7 @@
 >
 	<div
 		bind:this={mapContainer}
-		class="h-full w-full overflow-hidden rounded-lg bg-black transition-opacity {!showMapCanvas &&
+		class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'opacity-0'
 			: $isStreetView && $mapMode === 'small'
@@ -602,8 +602,10 @@
 		display: none !important;
 	}
 
-	:global(.maplibregl-canvas) {
-		border-radius: 0.5rem !important;
-		overflow: hidden !important;
+	@media (width >= 64rem /* 1024px */) {
+		:global(.maplibregl-canvas) {
+			border-radius: 0.5rem !important;
+			overflow: hidden !important;
+		}
 	}
 </style>
