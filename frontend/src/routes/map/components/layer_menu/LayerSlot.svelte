@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
+	import { showLayerMenu } from '$routes/stores/ui';
 
 	interface Props {
 		index: number;
@@ -48,14 +49,16 @@
 	});
 
 	const selectedLayer = () => {
-		// if ($selectedLayerId === layerEntry.id) {
-		// 	$isStyleEdit = !$isStyleEdit;
-		// 	return;
-		// }
 		selectedLayerId.set(layerEntry.id);
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
 	};
+
+	isStyleEdit.subscribe((value) => {
+		if (value && $selectedLayerId === layerEntry.id && !isLayerInRange) {
+			mapStore.focusLayer(layerEntry);
+		}
+	});
 
 	const toggleChecked = (id: string) => {
 		showLegend = !showLegend;
