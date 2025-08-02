@@ -4,6 +4,7 @@
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import {
 		showSideMenu,
 		mapMode,
@@ -18,7 +19,7 @@
 	import { isProcessing, showLayerMenu, showSearchMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import type { LngLat } from 'maplibre-gl';
+	import { type LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { ResultData } from '$routes/map/utils/feature';
@@ -199,28 +200,28 @@
 
 <div class="bg-main flex items-center justify-between p-2 pb-6">
 	<!-- 左側 -->
-	<div class="flex items-center gap-4 pl-2">
+	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button
 			class="hover:text-accent bg-base text-main cursor-pointer rounded-full p-1 text-left duration-150"
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
 		<div class="flex select-none items-center justify-center text-base">
-			<span class="text-4xl">morivis</span>
+			<span class="text-5xl">morivis</span>
 		</div>
-		<div class="flex items-end gap-2">
+		<div class="flex h-full items-end justify-center gap-2">
 			<button
 				onclick={() => showDataMenu.set(true)}
-				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-0.5 pl-2 pr-4"
+				class="c-btn-confirm flex items-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
-				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="text-sm">データ追加</span>
+				<Icon icon="material-symbols:add" class="h-7 w-7" /><span class="text-sm">データ追加</span>
 			</button>
-			<button
+			<!-- <button
 				onclick={resetLayers}
 				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"
 			>
 				<span class="text-sm">リセット</span>
-			</button>
+			</button> -->
 		</div>
 	</div>
 	<!-- 中央 -->
@@ -275,7 +276,7 @@
 			</button>
 		</div>
 		<StreetViewControl />
-		<!-- <TerrainControl /> -->
+		<TerrainControl />
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button
