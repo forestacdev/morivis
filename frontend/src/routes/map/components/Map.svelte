@@ -541,7 +541,7 @@
 	<LockOnScreen />
 </div>
 <!-- 右側余白 -->
-<div class="bg-main p-2"></div>
+<div class="bg-main p-2 max-lg:hidden"></div>
 
 {#if maplibreMap}
 	<FileManager
