@@ -158,7 +158,7 @@
 	};
 
 	// レイヤー表示範囲をチェック
-	// TODO: bboxがないデータの場合
+
 	const checkRange = (_state: MapState) => {
 		if (!layerEntry) return;
 		let z = _state.zoom;
@@ -169,10 +169,9 @@
 				layerEntry.format.type !== 'geojson' &&
 				layerEntry.format.type !== 'fgb')
 		) {
-			if (layerEntry.metaData.tileSize && layerEntry.metaData.tileSize === 256) {
-				z = z + 1.5; // タイルサイズが256の場合はズームレベルを1.5加算
+			if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
+				z = z + 1.5;
 			}
-			isLayerInRange = z >= layerEntry.metaData.minZoom;
 		}
 
 		if (!LayerBbox) {
