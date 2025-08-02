@@ -14,7 +14,9 @@ export const getBaseMapSources = (): Record<string, RasterSourceSpecification> =
 		base_usgs_imagery_only: satelliteStyleJson.sources.base_usgs_imagery_only,
 		base_gsi_rinya_m: {
 			type: 'raster',
-			url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/gsi_rinya_m.pmtiles`,
+			tiles: [
+				'https://raw.githubusercontent.com/forestacdev/tiles-ensyurin-photo/main/tiles/{z}/{x}/{y}.webp'
+			],
 			tileSize: 256,
 			maxzoom: 18,
 			minzoom: 14,

@@ -256,7 +256,6 @@
 				/>
 			{/if}
 			<button
-				transition:slide={{ duration: 300, axis: 'x' }}
 				onclick={() => {
 					if (showSearchForm && inputSearchWord) {
 						searchFeature(inputSearchWord);
@@ -265,11 +264,14 @@
 					}
 				}}
 				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 {showSearchForm
-					? 'bg-white text-gray-700'
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
+					? 'bg-white text-gray-700 delay-100'
 					: 'text-white'}"
 			>
-				<Icon icon="stash:search-solid" class={showSearchForm ? 'h-6 w-6' : 'h-8 w-8'} />
+				<Icon
+					icon="stash:search-solid"
+					class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
+				/>
 			</button>
 		</div>
 		<StreetViewControl />
@@ -277,7 +279,7 @@
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-150"
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-100"
 			onclick={() => showSideMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
