@@ -247,7 +247,7 @@ export const propData: PropData = {
 		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_19.webp`,
 		description:
 			'森と人がつながる場所 テクニカルグラウンドは山と街との中間地点にあり、Cobikiはそこに建つ。 簡易製材機ホリゾンが設置され、丸太からの製材が容易にできる。 丸太の搬入がしやすいように広い開口になっており、複数人での作業も安全に行える。壁面には桟積みに使用する桟木や、帯鋸等が収納できる。ホリゾンのレールを跨ぐことを防止し、また仮の乾燥場としても使えるよう、レールカバーを製作した。 材料にはスギとヒノキを使用し、また仕上げを一部帯鋸仕上げとしたことで、樹種による経年変化の違い、仕上げによる経年変化の違いを見ることができる。',
-		url: 'https://www.forest.ac.jp/facilities/self/midori-archi/'
+		url: 'https://www.forest.ac.jp/facilities/self/'
 	},
 	ziriki_20: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_20.webp`,

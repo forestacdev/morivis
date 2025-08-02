@@ -96,99 +96,103 @@
 	>
 		<!-- ポイント -->
 		{#if pointEntries.length > 0}
-			{#each pointEntries as layerEntry, i (layerEntry.id)}
-				<div
-					animate:flip={{ duration: enableFlip ? 200 : 0 }}
-					class="transition-colors duration-150 {isDraggingLayerType === 'point'
-						? 'bg-accent/70'
-						: ''}"
-				>
-					<LayerSlot
-						index={i}
-						length={pointEntries.length}
-						layerType={'point'}
-						bind:layerEntry={pointEntries[i]}
-						bind:showDataEntry
-						bind:tempLayerEntries
-						bind:enableFlip
-						bind:isDraggingLayerType
-					/>
-				</div>
-			{/each}
+			<div
+				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
+					? 'bg-accent/70'
+					: ''}"
+			>
+				{#each pointEntries as layerEntry, i (layerEntry.id)}
+					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+						<LayerSlot
+							index={i}
+							length={pointEntries.length}
+							layerType={'point'}
+							bind:layerEntry={pointEntries[i]}
+							bind:showDataEntry
+							bind:tempLayerEntries
+							bind:enableFlip
+							bind:isDraggingLayerType
+						/>
+					</div>
+				{/each}
+			</div>
 		{/if}
 		<!-- ライン -->
 		{#if lineEntries.length > 0}
-			{#each lineEntries as layerEntry, i (layerEntry.id)}
-				<div
-					animate:flip={{ duration: enableFlip ? 200 : 0 }}
-					class="transition-colors duration-150 {isDraggingLayerType === 'line'
-						? 'bg-accent/70'
-						: ''}"
-				>
-					<LayerSlot
-						index={i}
-						length={lineEntries.length}
-						layerType={'line'}
-						bind:layerEntry={lineEntries[i]}
-						bind:showDataEntry
-						bind:tempLayerEntries
-						bind:enableFlip
-						bind:isDraggingLayerType
-					/>
-				</div>
-			{/each}
+			<div
+				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
+					? 'bg-accent/70'
+					: ''}"
+			>
+				{#each lineEntries as layerEntry, i (layerEntry.id)}
+					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+						<LayerSlot
+							index={i}
+							length={lineEntries.length}
+							layerType={'line'}
+							bind:layerEntry={lineEntries[i]}
+							bind:showDataEntry
+							bind:tempLayerEntries
+							bind:enableFlip
+							bind:isDraggingLayerType
+						/>
+					</div>
+				{/each}
+			</div>
 		{/if}
 		<!-- ポリゴン -->
 		{#if polygonEntries.length > 0}
-			{#each polygonEntries as layerEntry, i (layerEntry.id)}
-				<div
-					animate:flip={{ duration: enableFlip ? 200 : 0 }}
-					class="transition-colors duration-150 {isDraggingLayerType === 'polygon'
-						? 'bg-accent/70'
-						: ''}"
-				>
-					<LayerSlot
-						index={i}
-						length={polygonEntries.length}
-						layerType={'polygon'}
-						bind:layerEntry={polygonEntries[i]}
-						bind:showDataEntry
-						bind:tempLayerEntries
-						bind:enableFlip
-						bind:isDraggingLayerType
-					/>
-				</div>
-			{/each}
+			<div
+				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
+					? 'bg-accent/70'
+					: ''}"
+			>
+				{#each polygonEntries as layerEntry, i (layerEntry.id)}
+					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+						<LayerSlot
+							index={i}
+							length={polygonEntries.length}
+							layerType={'polygon'}
+							bind:layerEntry={polygonEntries[i]}
+							bind:showDataEntry
+							bind:tempLayerEntries
+							bind:enableFlip
+							bind:isDraggingLayerType
+						/>
+					</div>
+				{/each}
+			</div>
 		{/if}
 		<!-- ラスター -->
 		{#if rasterEntries.length > 0}
-			{#each rasterEntries as layerEntry, i (layerEntry.id)}
-				<div
-					animate:flip={{ duration: enableFlip ? 200 : 0 }}
-					class="transition-colors duration-150 {isDraggingLayerType === 'raster'
-						? 'bg-accent/70'
-						: ''}"
-				>
-					<LayerSlot
-						index={i}
-						length={rasterEntries.length}
-						layerType={'raster'}
-						bind:layerEntry={rasterEntries[i]}
-						bind:showDataEntry
-						bind:tempLayerEntries
-						bind:enableFlip
-						bind:isDraggingLayerType
-					/>
-				</div>
-			{/each}
+			<div
+				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
+					? 'bg-accent/70'
+					: ''}"
+			>
+				{#each rasterEntries as layerEntry, i (layerEntry.id)}
+					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+						<LayerSlot
+							index={i}
+							length={rasterEntries.length}
+							layerType={'raster'}
+							bind:layerEntry={rasterEntries[i]}
+							bind:showDataEntry
+							bind:tempLayerEntries
+							bind:enableFlip
+							bind:isDraggingLayerType
+						/>
+					</div>
+				{/each}
+			</div>
 		{/if}
 
 		<!-- 余白 -->
 		<div class="h-[150px] w-full shrink-0"></div>
 	</div>
-	<!-- <div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
+	<div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
 		<ContourSvg width={'1000'} strokeWidth={'0.5'} />
-	</div> -->
+	</div>
 	<div
 		class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
 	>

@@ -266,7 +266,7 @@
 				}}
 				disabled={$isProcessing}
 				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
-					? 'bg-white text-gray-700 delay-100'
+					? 'bg-base text-gray-700 delay-100'
 					: 'text-white'}"
 			>
 				<Icon
