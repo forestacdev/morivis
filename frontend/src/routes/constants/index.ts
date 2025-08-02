@@ -34,7 +34,9 @@ export interface MapPosition {
 }
 
 /* スマホ判定の幅 */
-export const MOBILE_WIDTH = 1024;
+export const MOBILE_WIDTH = Number(
+	getComputedStyle(document.documentElement).getPropertyValue('--breakpoint-lg').replace('px', '')
+);
 
 /** マップの初期位置 */
 export const MAP_POSITION: MapPosition = {

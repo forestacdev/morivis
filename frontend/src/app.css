@@ -11,7 +11,7 @@
 	--color-main-accent: #166345;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
-	--breakpoint-lg: 64rem; /* 1024px */
+	--breakpoint-lg: 1024px; /* 64rem */
 }
 
 /*

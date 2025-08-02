@@ -44,7 +44,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.5, // 透過率
+		opacity: 0.7,
 		colors: {
 			key: '単色',
 			show: true,
