@@ -247,7 +247,7 @@
 	</div> -->
 
 	<!-- 右側 -->
-	<div class="flex items-center pr-2">
+	<div class="flex items-center pr-2 max-lg:hidden">
 		<div bind:this={searchContainerRef} class="flex items-center">
 			{#if showSearchForm}
 				<Geocoder

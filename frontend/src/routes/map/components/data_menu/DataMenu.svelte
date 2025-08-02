@@ -105,7 +105,7 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button>
 	<div class="flex grow items-center justify-between gap-4 p-2">
-		<div class="flex items-center gap-2 text-base">
+		<div class="flex items-center gap-2 text-base max-lg:hidden">
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
 			<span class="select-none text-lg">データカタログ</span>
 		</div>
@@ -130,12 +130,12 @@
 			</div>
 		{/if}
 
-		<div class="w-[300px] shrink-0">
+		<div class="w-[300px] shrink-0 max-lg:hidden">
 			<HorizontalSelectBox bind:group={selected} bind:options />
 		</div>
 	</div>
 	{#if selected === 'system'}
-		<div class="flex w-full grow items-center justify-between gap-4 p-2">
+		<div class="flex w-full grow items-center justify-between gap-4 p-2 max-lg:hidden">
 			<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
 			{#each TAG_LIST as tag}
 				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>

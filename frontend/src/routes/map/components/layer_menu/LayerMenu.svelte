@@ -79,138 +79,139 @@
 
 <!-- レイヤーメニュー -->
 
-<div
-	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 max-lg:hidden {$showLayerMenu
-		? 'translate-x-0'
-		: '-translate-x-[400px]'} {$isStyleEdit
-		? 'translate-x-[75px] bg-transparent delay-150'
-		: 'bg-main'}"
-	style={`width: ${$showDataMenu ? '80px' : '400px'};transition-property: width, transform, translate, scale, rotate; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
->
+{#if $showLayerMenu}
 	<div
-		class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
-		$isStyleEdit
-			? 'c-scroll-hidden '
-			: 'c-scroll'}"
+		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
+		class="transition-[width, transform, translate, scale, rotate] absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 duration-200 {$showLayerMenu
+			? 'translate-x-0'
+			: '-translate-x-[400px]'} {$isStyleEdit
+			? 'translate-x-[75px] bg-transparent delay-150'
+			: 'bg-main'}
+             {$showDataMenu ? 'w-[80px]' : 'w-side-menu'}"
 	>
-		<!-- ポイント -->
-		{#if pointEntries.length > 0}
-			<div
-				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
-					? 'bg-accent/70'
-					: ''}"
-			>
-				{#each pointEntries as layerEntry, i (layerEntry.id)}
-					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-						<LayerSlot
-							index={i}
-							length={pointEntries.length}
-							layerType={'point'}
-							bind:layerEntry={pointEntries[i]}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-						/>
-					</div>
-				{/each}
-			</div>
-		{/if}
-		<!-- ライン -->
-		{#if lineEntries.length > 0}
-			<div
-				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
-					? 'bg-accent/70'
-					: ''}"
-			>
-				{#each lineEntries as layerEntry, i (layerEntry.id)}
-					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-						<LayerSlot
-							index={i}
-							length={lineEntries.length}
-							layerType={'line'}
-							bind:layerEntry={lineEntries[i]}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-						/>
-					</div>
-				{/each}
-			</div>
-		{/if}
-		<!-- ポリゴン -->
-		{#if polygonEntries.length > 0}
-			<div
-				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
-					? 'bg-accent/70'
-					: ''}"
-			>
-				{#each polygonEntries as layerEntry, i (layerEntry.id)}
-					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-						<LayerSlot
-							index={i}
-							length={polygonEntries.length}
-							layerType={'polygon'}
-							bind:layerEntry={polygonEntries[i]}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-						/>
-					</div>
-				{/each}
-			</div>
-		{/if}
-		<!-- ラスター -->
-		{#if rasterEntries.length > 0}
-			<div
-				class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
-					? 'bg-accent/70'
-					: ''}"
-			>
-				{#each rasterEntries as layerEntry, i (layerEntry.id)}
-					<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-						<LayerSlot
-							index={i}
-							length={rasterEntries.length}
-							layerType={'raster'}
-							bind:layerEntry={rasterEntries[i]}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-						/>
-					</div>
-				{/each}
-			</div>
-		{/if}
-
-		<!-- 余白 -->
-		<div class="h-[150px] w-full shrink-0"></div>
-	</div>
-	{#if !$isStyleEdit && !$showDataMenu}
-		<div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
-			<ContourSvg width={'1000'} strokeWidth={'0.5'} />
-		</div>
 		<div
-			class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
+			class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
+			$isStyleEdit
+				? 'c-scroll-hidden '
+				: 'c-scroll'}"
 		>
-			<Switch label="地名・道路など" bind:value={$showLabelLayer} />
-			<!-- <Switch label="3D地形" bind:value={is3d} /> -->
-			{#if $isDebugMode}
-				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+			<!-- ポイント -->
+			{#if pointEntries.length > 0}
+				<div
+					class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
+						? 'bg-accent/70'
+						: ''}"
+				>
+					{#each pointEntries as layerEntry, i (layerEntry.id)}
+						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+							<LayerSlot
+								index={i}
+								length={pointEntries.length}
+								layerType={'point'}
+								bind:layerEntry={pointEntries[i]}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+							/>
+						</div>
+					{/each}
+				</div>
 			{/if}
-			<button
-				onclick={resetLayers}
-				class="c-btn-sub pointer-events-auto flex items-center justify-center gap-2 p-1"
-			>
-				<Icon icon="carbon:reset" class="h-6 w-6" />
-			</button>
+			<!-- ライン -->
+			{#if lineEntries.length > 0}
+				<div
+					class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
+						? 'bg-accent/70'
+						: ''}"
+				>
+					{#each lineEntries as layerEntry, i (layerEntry.id)}
+						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+							<LayerSlot
+								index={i}
+								length={lineEntries.length}
+								layerType={'line'}
+								bind:layerEntry={lineEntries[i]}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			<!-- ポリゴン -->
+			{#if polygonEntries.length > 0}
+				<div
+					class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
+						? 'bg-accent/70'
+						: ''}"
+				>
+					{#each polygonEntries as layerEntry, i (layerEntry.id)}
+						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+							<LayerSlot
+								index={i}
+								length={polygonEntries.length}
+								layerType={'polygon'}
+								bind:layerEntry={polygonEntries[i]}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			<!-- ラスター -->
+			{#if rasterEntries.length > 0}
+				<div
+					class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
+						? 'bg-accent/70'
+						: ''}"
+				>
+					{#each rasterEntries as layerEntry, i (layerEntry.id)}
+						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+							<LayerSlot
+								index={i}
+								length={rasterEntries.length}
+								layerType={'raster'}
+								bind:layerEntry={rasterEntries[i]}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			<!-- 余白 -->
+			<div class="h-[150px] w-full shrink-0"></div>
 		</div>
-	{/if}
-	<!-- {#if !$isStyleEdit && !$showDataMenu}
+		{#if !$isStyleEdit && !$showDataMenu}
+			<div class="absolute -bottom-[100px] -left-[100px] -z-10 opacity-90 [&_path]:stroke-gray-700">
+				<ContourSvg width={'1000'} strokeWidth={'0.5'} />
+			</div>
+			<div
+				class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
+			>
+				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
+				<!-- <Switch label="3D地形" bind:value={is3d} /> -->
+				{#if $isDebugMode}
+					<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+				{/if}
+				<button
+					onclick={resetLayers}
+					class="c-btn-sub pointer-events-auto flex items-center justify-center gap-2 p-1"
+				>
+					<Icon icon="carbon:reset" class="h-6 w-6" />
+				</button>
+			</div>
+		{/if}
+		<!-- {#if !$isStyleEdit && !$showDataMenu}
 		<div transition:fade={{ duration: 150 }} class="">
 			<Switch label="地名・道路など" bind:value={$showLabelLayer} />
 			{#if $isDebugMode}
@@ -224,5 +225,6 @@
 			</button>
 		</div>
 	{/if} -->
-	<div class="h-[98px] w-full shrink-0"></div>
-</div>
+		<div class="h-[98px] w-full shrink-0"></div>
+	</div>
+{/if}

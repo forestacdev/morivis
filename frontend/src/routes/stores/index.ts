@@ -23,6 +23,9 @@ export const showSideMenu = writable<boolean>(false);
 /** スタイル編集モード */
 export const isStyleEdit = writable<boolean>(false);
 
+/** レイヤーメニューの表示 */
+export const showLayerMenu = writable<boolean>(true);
+
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
 

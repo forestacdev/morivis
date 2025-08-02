@@ -1,24 +1,66 @@
 <script lang="ts">
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu } from '$routes/stores';
-	import { isPc } from '$routes/map/utils/ui';
+	import { showDataMenu, showLayerMenu, showSideMenu } from '$routes/stores';
 	import Icon from '@iconify/svelte';
+
+	type Active = 'map' | 'layer' | 'data' | 'menu';
+
+	let active = $state<Active>('map');
+
+	$effect(() => {
+		if (active) {
+			switch (active) {
+				case 'map':
+					showDataMenu.set(false);
+					showLayerMenu.set(false);
+					showSideMenu.set(false);
+					break;
+				case 'layer':
+					showDataMenu.set(false);
+					showLayerMenu.set(true);
+					showSideMenu.set(false);
+					break;
+				case 'data':
+					showDataMenu.set(true);
+					showLayerMenu.set(false);
+					showSideMenu.set(false);
+					break;
+				case 'menu':
+					showDataMenu.set(false);
+					showLayerMenu.set(false);
+					showSideMenu.set(true);
+					break;
+			}
+		}
+	});
 </script>
 
 <div
 	class="bg-main bottom-0 left-0 flex h-[60px] w-full items-center justify-between text-base lg:hidden"
 >
-	<button class="flex h-full w-full cursor-pointer items-center justify-center">
-		<Icon icon="ph:map-pin-area-fill" class="h-10 w-10" />
-	</button>
-	<button class="flex h-full w-full cursor-pointer items-center justify-center">
-		<Icon icon="jam:layers-f" class="h-10 w-10" />
+	<button
+		class="flex h-full w-full cursor-pointer items-center justify-center"
+		onclick={() => (active = 'map')}
+	>
+		<Icon icon="ph:map-pin-area-fill" class="h-9 w-9" />
 	</button>
 	<button
 		class="flex h-full w-full cursor-pointer items-center justify-center"
-		onclick={() => showDataMenu.set(true)}
+		onclick={() => (active = 'layer')}
 	>
-		<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
+		<Icon icon="jam:layers-f" class="h-9 w-9" />
+	</button>
+	<button
+		class="flex h-full w-full cursor-pointer items-center justify-center"
+		onclick={() => (active = 'data')}
+	>
+		<Icon icon="material-symbols:data-saver-on-rounded" class="h-9 w-9" />
+	</button>
+	<button
+		class="flex h-full w-full cursor-pointer items-center justify-center"
+		onclick={() => (active = 'menu')}
+	>
+		<Icon icon="ic:round-menu" class="h-9 w-9" />
 	</button>
 </div>
 

@@ -127,7 +127,7 @@
 {#if featureMenuData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2"
+		class="bg-main lg:w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 max-lg:w-full"
 	>
 		<div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
 			<button
@@ -144,7 +144,7 @@
 				{#if srcData && data && !data.medias}
 					<img
 						in:fade
-						class="block aspect-square h-full w-full object-cover"
+						class="block h-full w-full object-cover max-lg:aspect-video lg:aspect-square"
 						alt="画像"
 						src={srcData}
 					/>
