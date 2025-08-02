@@ -171,6 +171,30 @@
 			resetlayerEntries();
 		}
 	};
+
+	let searchContainerRef = $state<HTMLDivElement | null>(null);
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				showSearchForm &&
+				searchContainerRef &&
+				!searchContainerRef.contains(event.target as Node)
+			) {
+				showSearchForm = false;
+			}
+		};
+
+		if (showSearchForm) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
+
+	let showSearchForm = $state<boolean>(false);
 </script>
 
 <div class="bg-main flex items-center justify-between p-2 pb-6">
@@ -200,7 +224,7 @@
 		</div>
 	</div>
 	<!-- 中央 -->
-	<div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
+	<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
 		<Geocoder
 			{layerEntries}
 			bind:results
@@ -217,10 +241,37 @@
 		>
 			<Icon icon="stash:search-solid" class="h-6 w-6" />
 		</button>
-	</div>
+	</div> -->
 
 	<!-- 右側 -->
 	<div class="flex items-center pr-2">
+		<div bind:this={searchContainerRef} class="flex items-center">
+			{#if showSearchForm}
+				<Geocoder
+					{layerEntries}
+					bind:results
+					bind:inputSearchWord
+					bind:showSearchForm
+					searchFeature={(v) => searchFeature(v)}
+				/>
+			{/if}
+			<button
+				transition:slide={{ duration: 300, axis: 'x' }}
+				onclick={() => {
+					if (showSearchForm && inputSearchWord) {
+						searchFeature(inputSearchWord);
+					} else {
+						showSearchForm = true;
+					}
+				}}
+				disabled={$isProcessing}
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 {showSearchForm
+					? 'bg-white text-gray-700'
+					: 'text-white'}"
+			>
+				<Icon icon="stash:search-solid" class={showSearchForm ? 'h-6 w-6' : 'h-8 w-8'} />
+			</button>
+		</div>
 		<StreetViewControl />
 		<!-- <TerrainControl /> -->
 		<GeolocateControl />
