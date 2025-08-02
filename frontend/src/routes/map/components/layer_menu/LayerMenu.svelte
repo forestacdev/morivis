@@ -79,7 +79,7 @@
 
 <div
 	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
+	class="absolute flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
 		? 'translate-x-0'
 		: '-translate-x-[400px]'} {$isStyleEdit
 		? 'translate-x-[75px] bg-transparent delay-150'

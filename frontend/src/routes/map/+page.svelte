@@ -374,16 +374,11 @@
 			/>
 		</div>
 
-		<!-- フッター余白 -->
-		<div class="bg-main p-2"></div>
+		<!-- フッター余白 出典表示 -->
+		<div class="bg-main z-10 w-full shrink-0 p-1 pr-4 text-end text-base text-xs font-light">
+			国土地理院, © OpenMapTiles, © OpenStreetMap contributors © U.S. Geological Survey
+		</div>
 
-		<!-- <HeaderMenu
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/> -->
 		<SearchMenu
 			bind:featureMenuData
 			bind:inputSearchWord
