@@ -27,7 +27,12 @@ No warranties are given. The license may not give you all of the permissions nec
 
 ## Data Attribution
 
-While this software is licensed under CC BY-NC-SA 4.0, please note that forest data used in this project has been provided by the Gifu Academy of Forest Science and Culture (https://www.forest.ac.jp/) and may be subject to separate terms and conditions.
+While this software is licensed under CC BY-NC-SA 4.0, please note that various data sources are used in this project, which may be subject to separate terms and conditions:
+
+- **Gifu Academy of Forest Science and Culture data**: Some forest and geographic data kindly provided by the academy (https://www.forest.ac.jp/)
+- **Other open data sources**: Various public datasets including government open data, geospatial information, and other publicly available datasets that may have their own licensing terms
+
+Please refer to the individual data sources for their specific licensing requirements. Users of this software are responsible for ensuring compliance with all applicable data licenses.
 
 ---
 
