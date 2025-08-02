@@ -32,4 +32,6 @@ Note: This repository (morivis) focuses only on the application (frontend logic)
 
 ## License
 
-<a href="https://forestacdev.github.io/morivis/">morivis</a> © 2025 by <a href="https://github.com/satoshi7190">Satoshi Komatsu</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC" style="max-width: 0.5em;max-height:0.5em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY" style="max-width: 0.5em;max-height:0.5em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC" style="max-width: 0.5em;max-height:0.5em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="SA" style="max-width: 0.5em;max-height:0.5em;margin-left: .2em;">
+<a href="https://forestacdev.github.io/morivis/">morivis</a> © 2025 by <a href="https://github.com/satoshi7190">Satoshi Komatsu</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+
+<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC" width="25"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY" width="25"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC" width="25"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="SA" width="25">
