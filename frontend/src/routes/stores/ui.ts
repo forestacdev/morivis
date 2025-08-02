@@ -16,6 +16,8 @@ export const showSearchMenu = writable<boolean>(false);
 /** 検索メニューのサジェスト */
 export const showSearchSuggest = writable<boolean>(false);
 
+export const isMobile = writable<boolean>(false);
+
 /** 外部コンポーネントからイベントを発火させるストア */
 const eventStore = () => {
 	const { subscribe, set } = writable<UseEventTriggerType>('');

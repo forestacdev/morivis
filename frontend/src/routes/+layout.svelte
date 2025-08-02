@@ -17,7 +17,8 @@
 	import { isPc } from '$routes/map/utils/ui';
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked } from '$routes/stores/ui';
+	import { isBlocked, isMobile } from '$routes/stores/ui';
+	import { MOBILE_WIDTH } from './constants';
 
 	let { children } = $props();
 
@@ -46,10 +47,15 @@
 		});
 	});
 
-	type Device = 'mobile' | 'pc' | '';
-
-	let isDevice = $state<Device>('');
 	let deviceWidth = $state<number>(window.innerWidth);
+
+	$effect(() => {
+		if (deviceWidth <= MOBILE_WIDTH) {
+			isMobile.set(true);
+		} else {
+			isMobile.set(false);
+		}
+	});
 	let isInitialized = $state<boolean>(false);
 
 	// // 環境ごとのファビコンの設定
@@ -89,15 +95,6 @@
 
 	onMount(async () => {
 		await onNextPage(page.route.id);
-	});
-
-	onMount(() => {
-		// スマホかPCかの判定
-		if (isPc()) {
-			isDevice = 'pc';
-		} else {
-			isDevice = 'mobile';
-		}
 	});
 
 	const initialized = () => {

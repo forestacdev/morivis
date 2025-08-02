@@ -92,7 +92,7 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 pl-[100px] transition-all duration-300 {$showDataMenu
+	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 transition-all duration-300 lg:pl-[100px] {$showDataMenu
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
@@ -116,7 +116,6 @@
 					class="c-search-form tex grid w-full text-left text-gray-500"
 					type="text"
 					placeholder="検索"
-					disabled={selected === 'user'}
 					bind:value={searchWord}
 				/>
 				{#if searchWord}

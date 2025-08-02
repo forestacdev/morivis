@@ -58,7 +58,6 @@
 	let camera: THREE.PerspectiveCamera;
 	let orbitControls: OrbitControls;
 	let renderer: THREE.WebGLRenderer;
-	let renderTarget: THREE.WebGLRenderTarget;
 	let bufferScene: THREE.Scene;
 	const fov = new Tween(IN_CAMERA_FOV, { duration: 300, easing: cubicOut });
 

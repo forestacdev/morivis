@@ -198,7 +198,9 @@
 	let showSearchForm = $state<boolean>(false);
 </script>
 
-<div class="bg-main flex items-center justify-between p-2 pb-6">
+<div
+	class="lg:bg-main left-0 flex w-full items-center justify-between p-2 pb-6 max-lg:absolute max-lg:top-0 max-lg:z-10"
+>
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button
@@ -206,10 +208,10 @@
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
-		<div class="flex select-none items-center justify-center text-base">
-			<span class="text-5xl">morivis</span>
+		<div class="flex select-none items-center justify-center text-base max-lg:hidden">
+			<span class="max-lg:text-3xl lg:text-5xl">morivis</span>
 		</div>
-		<div class="flex h-full items-end justify-center gap-2">
+		<div class="flex h-full items-end justify-center gap-2 max-lg:hidden">
 			<button
 				onclick={() => showDataMenu.set(true)}
 				class="c-btn-confirm flex items-center gap-1 rounded-full p-0.5 pl-2 pr-4"

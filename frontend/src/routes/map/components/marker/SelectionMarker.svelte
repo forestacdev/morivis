@@ -54,7 +54,7 @@
 {#if show}
 	<div
 		bind:this={container}
-		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
+		class="pointer-events-none relative grid h-[100px] w-[100px] place-items-center"
 	>
 		<div class="c-ripple-effect"></div>
 		<div class="border-main absolute h-[12px] w-[12px] rounded-full border-[2px] bg-white"></div>

@@ -44,6 +44,7 @@
 	import Processing from './Processing.svelte';
 	import { slide } from 'svelte/transition';
 	import type { ResultData } from './utils/feature';
+	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -325,7 +326,7 @@
 </script>
 
 {#if isInitialized}
-	<div class="flex h-dvh w-full flex-col">
+	<div class="relative flex h-dvh w-full flex-col">
 		<HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData
@@ -419,6 +420,8 @@
 				{setPoint}
 			/>
 		{/if}
+
+		<MobileFooter />
 	</div>
 {/if}
 <UploadDialog
