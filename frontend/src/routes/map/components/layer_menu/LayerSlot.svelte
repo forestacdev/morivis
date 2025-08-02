@@ -25,6 +25,7 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
+		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 	}
 
 	let {
@@ -34,7 +35,8 @@
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
-		enableFlip = $bindable()
+		enableFlip = $bindable(),
+		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
@@ -142,6 +144,7 @@
 		enableFlip = false;
 		showLegend = false;
 
+		isDraggingLayerType = layerType; // ドラッグ中のレイヤータイプを設定
 		selectedLayerId.set(layerId);
 	};
 
@@ -156,7 +159,7 @@
 	const dragEnd = () => {
 		isDragging = false;
 		enableFlip = true;
-
+		isDraggingLayerType = null; // ドラッグ中のレイヤータイプをリセット
 		reorderStatus.set('idle');
 	};
 

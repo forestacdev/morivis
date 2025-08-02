@@ -14,7 +14,7 @@
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 
 	import { gsap } from 'gsap';
-	import { getLayerType } from '$routes/map/utils/entries';
+	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import ContourSvg from '$lib/components/svgs/contour.svelte';
 
 	interface Props {
@@ -73,6 +73,8 @@
 	let rasterEntries = $derived.by(() => {
 		return layerEntries.filter((layer) => getLayerType(layer) === 'raster');
 	});
+
+	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 </script>
 
 <!-- レイヤーメニュー -->
@@ -92,9 +94,15 @@
 			? 'c-scroll-hidden '
 			: 'c-scroll'}"
 	>
+		<!-- ポイント -->
 		{#if pointEntries.length > 0}
 			{#each pointEntries as layerEntry, i (layerEntry.id)}
-				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+				<div
+					animate:flip={{ duration: enableFlip ? 200 : 0 }}
+					class="transition-colors duration-150 {isDraggingLayerType === 'point'
+						? 'bg-accent/70'
+						: ''}"
+				>
 					<LayerSlot
 						index={i}
 						length={pointEntries.length}
@@ -103,13 +111,20 @@
 						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
+						bind:isDraggingLayerType
 					/>
 				</div>
 			{/each}
 		{/if}
+		<!-- ライン -->
 		{#if lineEntries.length > 0}
 			{#each lineEntries as layerEntry, i (layerEntry.id)}
-				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+				<div
+					animate:flip={{ duration: enableFlip ? 200 : 0 }}
+					class="transition-colors duration-150 {isDraggingLayerType === 'line'
+						? 'bg-accent/70'
+						: ''}"
+				>
 					<LayerSlot
 						index={i}
 						length={lineEntries.length}
@@ -118,13 +133,20 @@
 						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
+						bind:isDraggingLayerType
 					/>
 				</div>
 			{/each}
 		{/if}
+		<!-- ポリゴン -->
 		{#if polygonEntries.length > 0}
 			{#each polygonEntries as layerEntry, i (layerEntry.id)}
-				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+				<div
+					animate:flip={{ duration: enableFlip ? 200 : 0 }}
+					class="transition-colors duration-150 {isDraggingLayerType === 'polygon'
+						? 'bg-accent/70'
+						: ''}"
+				>
 					<LayerSlot
 						index={i}
 						length={polygonEntries.length}
@@ -133,13 +155,20 @@
 						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
+						bind:isDraggingLayerType
 					/>
 				</div>
 			{/each}
 		{/if}
+		<!-- ラスター -->
 		{#if rasterEntries.length > 0}
 			{#each rasterEntries as layerEntry, i (layerEntry.id)}
-				<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
+				<div
+					animate:flip={{ duration: enableFlip ? 200 : 0 }}
+					class="transition-colors duration-150 {isDraggingLayerType === 'raster'
+						? 'bg-accent/70'
+						: ''}"
+				>
 					<LayerSlot
 						index={i}
 						length={rasterEntries.length}
@@ -148,6 +177,7 @@
 						bind:showDataEntry
 						bind:tempLayerEntries
 						bind:enableFlip
+						bind:isDraggingLayerType
 					/>
 				</div>
 			{/each}
