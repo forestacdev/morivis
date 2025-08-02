@@ -33,7 +33,12 @@ export const getBaseMapLayers = (): RasterLayerSpecification[] => {
 			source: 'base_gsi_rinya_m',
 			type: 'raster',
 			maxzoom: 24,
-			minzoom: 12
+			minzoom: 12,
+			paint: {
+				'raster-opacity': 0.9,
+				'raster-brightness-min': 0,
+				'raster-brightness-max': 0.8
+			}
 		} as RasterLayerSpecification
 	];
 };

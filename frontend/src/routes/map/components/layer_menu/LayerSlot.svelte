@@ -163,15 +163,14 @@
 		if (!layerEntry) return;
 		let z = _state.zoom;
 
-		if (
-			layerEntry.type === 'raster' ||
-			(layerEntry.type === 'vector' &&
-				layerEntry.format.type !== 'geojson' &&
-				layerEntry.format.type !== 'fgb')
-		) {
-			if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
-				z = z + 1.5;
-			}
+		if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
+			z = z + 1.5;
+		}
+
+		// ズームレベル範囲内かのチェック
+		if (layerEntry.metaData.minZoom && z < layerEntry.metaData.minZoom) {
+			isLayerInRange = false;
+			return;
 		}
 
 		if (!LayerBbox) {
