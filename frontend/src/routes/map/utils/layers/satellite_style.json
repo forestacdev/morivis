@@ -55,7 +55,7 @@
 			"id": "base-map-layer",
 			"type": "raster",
 			"source": "base_usgs_imagery_only",
-			"maxzoom": 22,
+			"maxzoom": 9,
 			"paint": {
 				"raster-opacity": 0.9,
 				"raster-brightness-min": 0,
