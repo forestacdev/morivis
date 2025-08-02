@@ -19,13 +19,13 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['林班図', '森林'],
 		maxZoom: 17,
 		minZoom: 8,
-		sourceLayer: 'ensyurin_rinhan',
+		sourceLayer: 'ensyurin_rinhanfgb',
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`,
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
-		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
+		keys: ['小林班ID', '樹種', '林齢', 'area', '林班'],
 
 		titles: [
 			{
@@ -89,7 +89,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '林班',
 					name: '林班ごとの色分け',
 					mapping: {
-						categories: [1, 2, 3],
+						categories: ['1', '2', '3'],
 						values: ['#7fc97f', '#beaed4', '#fdc086'],
 						patterns: [null, null, null]
 					},
@@ -110,7 +110,7 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					type: 'step',
-					key: '面積',
+					key: 'area',
 					name: '面積の範囲による色分け',
 					mapping: {
 						range: [0, 1],
@@ -131,6 +131,29 @@ const entry: VectorEntry<TileMetaData> = {
 			show: true, // ラベル表示状態の色
 			expressions: [
 				{
+					key: '樹種',
+					name: '樹種',
+					value: [
+						'case',
+						['!', ['has', '樹種']],
+						'', // プロパティが存在しない場合
+						['==', ['get', '樹種'], ''],
+						'', // 空文字の場合
+						[
+							'match',
+							['get', '樹種'],
+							['草地', 'その他', '岩石'],
+							['get', '樹種'],
+							['concat', ['get', '樹種'], '林']
+						]
+					]
+				},
+				{
+					key: 'area',
+					name: '面積',
+					value: '{area} ha'
+				},
+				{
 					key: '小林班ID',
 					name: '小林班ID',
 					value: '{小林班ID}'
@@ -148,24 +171,6 @@ const entry: VectorEntry<TileMetaData> = {
 						['all', ['has', '林齢'], ['!=', ['get', '林齢'], '']],
 						['concat', ['get', '林齢'], '年生'],
 						''
-					]
-				},
-				{
-					key: '樹種',
-					name: '樹種',
-					value: [
-						'case',
-						['!', ['has', '樹種']],
-						'', // プロパティが存在しない場合
-						['==', ['get', '樹種'], ''],
-						'', // 空文字の場合
-						[
-							'match',
-							['get', '樹種'],
-							['草地', 'その他', '岩石'],
-							['get', '樹種'],
-							['concat', ['get', '樹種'], '林']
-						]
 					]
 				}
 			]
