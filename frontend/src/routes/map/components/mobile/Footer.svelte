@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showLayerMenu, showSideMenu } from '$routes/stores';
+
+	import { showLayerMenu, showDataMenu, showSideMenu } from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 
 	type Active = 'map' | 'layer' | 'data' | 'menu';
@@ -37,9 +38,15 @@
 
 <div
 	class="bg-main bottom-0 left-0 flex h-[60px] w-full items-center justify-between text-base lg:hidden"
+></div>
+
+<div
+	class="bg-main absolute bottom-0 left-0 z-10 flex h-[60px] w-full items-center justify-between text-base lg:hidden"
 >
 	<button
-		class="flex h-full w-full cursor-pointer items-center justify-center"
+		class="flex h-full w-full cursor-pointer items-center justify-center {active === 'map'
+			? 'bg-accent'
+			: ''}"
 		onclick={() => (active = 'map')}
 	>
 		<Icon icon="ph:map-pin-area-fill" class="h-9 w-9" />

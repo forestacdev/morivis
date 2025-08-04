@@ -8,7 +8,8 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStyleEdit, showDataMenu } from '$routes/stores';
+	import { isStyleEdit } from '$routes/stores';
+	import { showDataMenu } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST } from '$routes/map/data/types/tags';

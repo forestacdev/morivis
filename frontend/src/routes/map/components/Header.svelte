@@ -1,22 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { slide } from 'svelte/transition';
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
-	import {
-		showSideMenu,
-		mapMode,
-		showInfoDialog,
-		showTermsDialog,
-		showTerrainMenu,
-		selectedLayerId,
-		isStyleEdit,
-		showDataMenu,
-		isStreetView
-	} from '$routes/stores';
-	import { isProcessing, showLayerMenu, showSearchMenu } from '$routes/stores/ui';
+	import { mapMode } from '$routes/stores';
+	import { isProcessing, showSearchMenu, showSideMenu, showDataMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { type LngLat } from 'maplibre-gl';

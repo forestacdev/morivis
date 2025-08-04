@@ -17,17 +17,8 @@ export const clickableRasterIds = writable<string[]>([]);
 /**  地図のモード */
 export const mapMode = writable<'view' | 'small'>('view');
 
-/** サイドメニューの表示状態 */
-export const showSideMenu = writable<boolean>(false);
-
 /** スタイル編集モード */
 export const isStyleEdit = writable<boolean>(false);
-
-/** レイヤーメニューの表示 */
-export const showLayerMenu = writable<boolean>(true);
-
-/** データメニューの表示 */
-export const showDataMenu = writable<boolean>(false);
 
 /** 地形メニュー */
 export const showTerrainMenu = writable<boolean>(false);

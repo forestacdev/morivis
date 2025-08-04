@@ -3,7 +3,8 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/stores';
+	import { showDataMenu } from '$routes/stores/ui';
+
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
 	import { get } from 'svelte/store';

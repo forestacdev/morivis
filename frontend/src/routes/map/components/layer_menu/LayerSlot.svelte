@@ -2,20 +2,16 @@
 	import Icon from '@iconify/svelte';
 	import { fly, slide } from 'svelte/transition';
 
-	import Legend from './Legend.svelte';
-	import turfBbox, { bbox } from '@turf/bbox';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import OpacityRangeSlider from '$routes/map/components/layer_menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
-	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
-	import { showLayerMenu } from '$routes/stores/ui';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		index: number;

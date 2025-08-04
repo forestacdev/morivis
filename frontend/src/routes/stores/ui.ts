@@ -7,8 +7,14 @@ export const isProcessing = writable<boolean>(false);
 /** スクリーンガードの状態 */
 export const isBlocked = writable<boolean>(false);
 
+/** サイドメニューの表示状態 */
+export const showSideMenu = writable<boolean>(false);
+
 /** レイヤーメニューの表示 */
 export const showLayerMenu = writable<boolean>(true);
+
+/** データメニューの表示 */
+export const showDataMenu = writable<boolean>(false);
 
 /** 検索ーメニューの表示 */
 export const showSearchMenu = writable<boolean>(false);

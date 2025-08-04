@@ -6,8 +6,8 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit, showDataMenu, isDebugMode } from '$routes/stores';
-	import { showLayerMenu } from '$routes/stores/ui';
+	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
+	import { showLayerMenu, showDataMenu } from '$routes/stores/ui';
 
 	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
 	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
@@ -82,12 +82,12 @@
 {#if $showLayerMenu}
 	<div
 		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="transition-[width, transform, translate, scale, rotate] absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 duration-200 {$showLayerMenu
+		class="transition-[width, transform, translate, scale, rotate] absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
 			? 'translate-x-[75px] bg-transparent delay-150'
 			: 'bg-main'}
-             {$showDataMenu ? 'w-[80px]' : 'w-side-menu'}"
+             {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 	>
 		<div
 			class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
