@@ -235,11 +235,13 @@
 
 	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
 		<div class="flex h-full w-full flex-col items-center justify-center">
-			<span class="c-text-shadow text-[100px] font-bold text-white">morivis</span>
+			<span class="c-text-shadow font-bold text-white max-lg:text-[75px] lg:text-[100px]"
+				>morivis</span
+			>
 			{#if !$isBlocked}
 				<button
 					transition:slide={{ duration: 300, axis: 'y' }}
-					class="bg-base hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 text-2xl transition-all duration-200 hover:text-white {$isBlocked
+					class="bg-base hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 hover:text-white lg:text-2xl {$isBlocked
 						? 'pointer-events-none'
 						: 'pointer-events-auto'}"
 					onclick={goMap}
@@ -249,8 +251,10 @@
 			{/if}
 		</div>
 	</div>
-	<div class="absolute bottom-8 flex w-full items-center justify-between px-8 opacity-90">
-		<div class="flex gap-3">
+	<div
+		class="absolute bottom-8 flex w-full items-center px-8 opacity-90 max-lg:justify-center lg:justify-between"
+	>
+		<div class="flex gap-3 max-lg:hidden">
 			<a
 				class="pointer-events-auto flex cursor-pointer items-center text-white"
 				href="https://github.com/forestacdev/morivis"
@@ -274,7 +278,7 @@
 			<FacLogo width={'230'} />
 		</a>
 		<button
-			class="pointer-events-auto flex shrink-0 cursor-pointer items-center p-2 text-white"
+			class="pointer-events-auto flex shrink-0 cursor-pointer items-center p-2 text-white max-lg:hidden"
 			onclick={toggleTermsDialog}
 		>
 			<span class="select-none underline">利用規約</span>
