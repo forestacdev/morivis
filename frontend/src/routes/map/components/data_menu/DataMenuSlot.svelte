@@ -91,7 +91,7 @@
 </script>
 
 <div
-	class="relative m-2 flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 hover:z-10 hover:scale-105 hover:shadow-lg"
+	class="relative m-2 flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
 	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}

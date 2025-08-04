@@ -421,7 +421,7 @@
 			/>
 		{/if}
 
-		<MobileFooter />
+		<MobileFooter {showDataEntry} />
 	</div>
 {/if}
 <UploadDialog

@@ -98,7 +98,7 @@
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
 	<button
-		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150"
+		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"
 		onclick={() => {
 			showDataMenu.set(false);
 		}}
@@ -112,7 +112,7 @@
 		</div>
 
 		{#if selected === 'system'}
-			<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
+			<div class="bg-base relative flex w-full rounded-full border-[1px] px-4 lg:max-w-[400px]">
 				<input
 					class="c-search-form tex grid w-full text-left text-gray-500"
 					type="text"
@@ -216,7 +216,7 @@
 	.row {
 		display: grid;
 		gap: 10px;
-		grid-template-columns: repeat(var(--grid-columns), minmax(300px, 1fr));
+		grid-template-columns: repeat(var(--grid-columns), minmax(200px, 1fr));
 	}
 
 	/* 検索ボックスのスタイル */
