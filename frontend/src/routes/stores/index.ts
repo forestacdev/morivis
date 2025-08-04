@@ -20,9 +20,6 @@ export const mapMode = writable<'view' | 'small'>('view');
 /** スタイル編集モード */
 export const isStyleEdit = writable<boolean>(false);
 
-/** 地形メニュー */
-export const showTerrainMenu = writable<boolean>(false);
-
 /** ストリートビュー */
 export const isStreetView = writable<boolean>(false);
 
