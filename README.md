@@ -5,7 +5,7 @@
 
 **🌲 [Live Site →](https://forestacdev.github.io/morivis/)**
 
-morivis is an open-source web platform for exploring and visualizing forest data, specifically focusing on the training forest at the [Gifu Academy of Forest Science and Culture](https://www.forest.ac.jp/).
+morivis is an open development web platform for exploring and visualizing forest data, specifically focusing on the training forest at the [Gifu Academy of Forest Science and Culture](https://www.forest.ac.jp/).
 
 ## Disclaimer
 
