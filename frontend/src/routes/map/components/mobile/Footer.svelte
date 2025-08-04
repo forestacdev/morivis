@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MobileActiveMenu } from '$routes/map/utils/ui';
+	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
 	import { showLayerMenu, showDataMenu, showSideMenu } from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -13,7 +13,7 @@
 	let active = $state<MobileActiveMenu>('map');
 
 	$effect(() => {
-		if (active) {
+		if (active && checkMobile()) {
 			switch (active) {
 				case 'map':
 					showDataMenu.set(false);
@@ -31,9 +31,6 @@
 					showSideMenu.set(false);
 					break;
 				default:
-					showDataMenu.set(false);
-					showLayerMenu.set(false);
-					showSideMenu.set(false);
 			}
 		}
 	});

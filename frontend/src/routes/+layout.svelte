@@ -18,7 +18,6 @@
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import { isBlocked, isMobile } from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
-	import { isPc } from './map/utils/ui';
 
 	let { children } = $props();
 
