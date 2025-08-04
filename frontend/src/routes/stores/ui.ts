@@ -16,6 +16,12 @@ export const showLayerMenu = writable<boolean>(true);
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);
 
+/** インフォメーションの表示 */
+export const showInfoDialog = writable<boolean>(false);
+
+/** 利用規約ダイアログの表示 */
+export const showTermsDialog = writable<boolean>(false);
+
 /** 検索ーメニューの表示 */
 export const showSearchMenu = writable<boolean>(false);
 

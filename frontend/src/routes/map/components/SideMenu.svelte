@@ -3,8 +3,8 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-	import { mapMode, showInfoDialog, showTermsDialog, isDebugMode } from '$routes/stores';
-	import { showSideMenu, showDataMenu } from '$routes/stores/ui';
+	import { mapMode, isDebugMode } from '$routes/stores';
+	import { showSideMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';

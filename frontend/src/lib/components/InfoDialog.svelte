@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import { showInfoDialog } from '$routes/stores';
+	import { showInfoDialog } from '$routes/stores/ui';
 </script>
 
 {#if $showInfoDialog}

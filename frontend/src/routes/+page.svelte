@@ -16,7 +16,7 @@
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
-	import { showTermsDialog, showInfoDialog } from './stores';
+	import { showTermsDialog, showInfoDialog } from './stores/ui';
 	import Icon from '@iconify/svelte';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);

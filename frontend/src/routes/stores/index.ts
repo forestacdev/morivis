@@ -23,12 +23,6 @@ export const isStyleEdit = writable<boolean>(false);
 /** 地形メニュー */
 export const showTerrainMenu = writable<boolean>(false);
 
-/** インフォメーションの表示 */
-export const showInfoDialog = writable<boolean>(false);
-
-/** 利用規約ダイアログの表示 */
-export const showTermsDialog = writable<boolean>(false);
-
 /** ストリートビュー */
 export const isStreetView = writable<boolean>(false);
 
