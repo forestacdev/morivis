@@ -16,7 +16,7 @@
 		isStyleEdit
 	} from '$routes/stores';
 
-	import { mapMode, DEBUG_MODE, selectedLayerId } from '$routes/stores';
+	import { selectedLayerId } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
@@ -24,7 +24,6 @@
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
 	import type { FeatureCollection } from 'geojson';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
-	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {

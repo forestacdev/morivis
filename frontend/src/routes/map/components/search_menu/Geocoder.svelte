@@ -5,23 +5,26 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { showSearchSuggest } from '$routes/stores/ui';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		results: ResultData[] | null;
 		inputSearchWord: string;
+		showSearchForm: boolean;
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
 	let {
 		layerEntries,
-
+		showSearchForm = $bindable(),
 		results = $bindable(),
 		inputSearchWord = $bindable(),
 		searchFeature
 	}: Props = $props();
-	let marker: Marker;
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
+	let inputElement = $state<HTMLInputElement | null>(null); // 入力要素
 
 	// 検索処理
 	const search = async (_searchWord: string) => {
@@ -47,9 +50,16 @@
 
 	// 検索結果のリセット
 	const resetSearchResult = () => {};
+
+	onMount(() => {
+		inputElement?.focus();
+	});
 </script>
 
 <input
+	bind:this={inputElement}
+	in:fade={{ duration: 100, delay: 100 }}
+	out:fade={{ duration: 100 }}
 	type="text"
 	class="bg-base focus:outline-hidden placeholder:gray-400 text-main w-full rounded-l-full px-4 py-2 outline-0"
 	bind:value={inputSearchWord}

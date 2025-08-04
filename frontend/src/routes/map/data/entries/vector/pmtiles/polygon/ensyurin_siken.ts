@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 17,
 		minZoom: 8,
 		tags: ['森林'],
-		sourceLayer: 'ensyurin_siken',
+		sourceLayer: 'ensyurin_sikenfgb',
 		bounds: [136.920084, 35.549852, 136.925498, 35.554401],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`
 	},
@@ -44,7 +44,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.5, // 透過率
+		opacity: 0.7,
 		colors: {
 			key: '単色',
 			show: true,
@@ -54,15 +54,15 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#001aff'
+						value: '#377eb8'
 					}
 				}
 			]
 		},
 		outline: {
-			show: false,
+			show: true,
 			color: '#000000',
-			width: 2,
+			width: 1,
 			lineStyle: 'solid'
 		},
 		labels: {

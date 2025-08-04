@@ -1,20 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-
-	import { mapStore } from '$routes/stores/map';
-	import { style } from '$routes/_development/maptreestyle/style';
-	import { showLabelLayer } from '$routes/stores/layers';
-	import Switch from '../atoms/Switch.svelte';
-	import Accordion from '../atoms/Accordion.svelte';
 
 	import { getLayerImage } from '$routes/map/utils/image';
 
@@ -101,7 +92,7 @@
 			>
 				<div class="flex h-[80px] items-center gap-2 text-base">
 					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-					<span class="select-none text-lg">データのカスタマイズ</span>
+					<span class="select-none text-lg max-lg:hidden">データのカスタマイズ</span>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);

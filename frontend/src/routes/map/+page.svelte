@@ -28,14 +28,14 @@
 	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, DEBUG_MODE } from '$routes/stores';
+	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { getStreetViewParams, get3dParams, getParams } from '$routes/map/utils/params';
+	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
@@ -44,6 +44,7 @@
 	import Processing from './Processing.svelte';
 	import { slide } from 'svelte/transition';
 	import type { ResultData } from './utils/feature';
+	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -117,7 +118,7 @@
 
 		if (params) {
 			if (params.debug && params.debug === '1') {
-				DEBUG_MODE.set(true);
+				isDebugMode.set(true);
 			}
 		}
 
@@ -134,21 +135,21 @@
 
 		// TODO ストリートビューのパラメータを取得
 
-		// const imageId = getStreetViewParams();
+		const imageId = getStreetViewParams();
 
-		// if (imageId) {
-		// 	const point = streetViewPointData.features.find(
-		// 		(point) => point.properties.id === Number(imageId)
-		// 	);
-		// 	if (point) {
-		// 		showStreetViewLayer.set(true);
-		// 		setPoint(point as StreetViewPoint);
+		if (imageId) {
+			const point = streetViewPointData.features.find(
+				(point) => point.properties.id === Number(imageId)
+			);
+			if (point) {
+				showStreetViewLayer.set(true);
+				setPoint(point as StreetViewPoint);
 
-		// 		isStreetView.set(true);
-		// 	} else {
-		// 		console.warn(`Street view point with ID ${imageId} not found.`);
-		// 	}
-		// }
+				isStreetView.set(true);
+			} else {
+				console.warn(`Street view point with ID ${imageId} not found.`);
+			}
+		}
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
@@ -277,6 +278,12 @@
 			});
 			await delay(750);
 			isBlocked.set(false);
+
+			// const map = mapStore.getMap();
+			// if (!map) return;
+			// map.resize();
+			// await delay(100); // 短いdelayを追加
+			// map.triggerRepaint();
 		}
 	});
 
@@ -319,7 +326,7 @@
 </script>
 
 {#if isInitialized}
-	<div class="flex h-dvh w-full flex-col">
+	<div class="relative flex h-dvh w-full flex-col">
 		<HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData
@@ -334,7 +341,7 @@
 			{#if $showLayerMenu}
 				<div
 					in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-					class="bg-main w-side-menu flex h-full shrink-0 flex-col"
+					class="bg-main w-side-menu flex h-full shrink-0 flex-col max-lg:hidden"
 				></div>
 			{/if}
 
@@ -368,13 +375,13 @@
 			/>
 		</div>
 
-		<!-- <HeaderMenu
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/> -->
+		<!-- フッター余白 出典表示 -->
+		<div
+			class="bg-main w-full shrink-0 p-1 pr-4 text-end text-xs font-light text-white/80 max-lg:hidden"
+		>
+			国土地理院, © OpenMapTiles, © OpenStreetMap contributors © U.S. Geological Survey
+		</div>
+
 		<SearchMenu
 			bind:featureMenuData
 			bind:inputSearchWord
@@ -413,6 +420,8 @@
 				{setPoint}
 			/>
 		{/if}
+
+		<MobileFooter {showDataEntry} />
 	</div>
 {/if}
 <UploadDialog
@@ -440,7 +449,7 @@
 <!-- <svelte:window
 	onkeydown={(e) => {
 		if (e.key === 'F3') {
-			DEBUG_MODE.set(!$DEBUG_MODE);
+			isDebugMode.set(!$isDebugMode);
 		}
 	}}
 /> -->

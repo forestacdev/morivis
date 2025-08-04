@@ -1,24 +1,14 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { slide } from 'svelte/transition';
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
-	import {
-		showSideMenu,
-		mapMode,
-		showInfoDialog,
-		showTermsDialog,
-		showTerrainMenu,
-		selectedLayerId,
-		isStyleEdit,
-		showDataMenu,
-		isStreetView
-	} from '$routes/stores';
-	import { isProcessing, showLayerMenu, showSearchMenu } from '$routes/stores/ui';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import { mapMode } from '$routes/stores';
+	import { isProcessing, showSearchMenu, showSideMenu, showDataMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import type { LngLat } from 'maplibre-gl';
+	import { type LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { ResultData } from '$routes/map/utils/feature';
@@ -171,36 +161,62 @@
 			resetlayerEntries();
 		}
 	};
+
+	let searchContainerRef = $state<HTMLDivElement | null>(null);
+
+	$effect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				showSearchForm &&
+				searchContainerRef &&
+				!searchContainerRef.contains(event.target as Node)
+			) {
+				showSearchForm = false;
+			}
+		};
+
+		if (showSearchForm) {
+			document.addEventListener('click', handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
+
+	let showSearchForm = $state<boolean>(false);
 </script>
 
-<div class="bg-main flex items-center justify-between p-2 pb-6">
+<div
+	class="lg:bg-main left-0 flex w-full items-center justify-between p-2 pb-6 max-lg:absolute max-lg:top-0 max-lg:z-10"
+>
 	<!-- 左側 -->
-	<div class="flex items-center gap-4 pl-2">
+	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button
 			class="hover:text-accent bg-base text-main cursor-pointer rounded-full p-1 text-left duration-150"
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
-		<div class="flex select-none items-center justify-center text-base">
-			<span class="text-4xl">morivis</span>
+		<div class="flex select-none items-center justify-center text-base max-lg:hidden">
+			<span class="max-lg:text-3xl lg:text-5xl">morivis</span>
 		</div>
-		<div class="flex items-end gap-2">
+		<div class="flex h-full items-end justify-center gap-2 max-lg:hidden">
 			<button
 				onclick={() => showDataMenu.set(true)}
-				class="c-btn-confirm flex shrink items-center justify-center gap-1 rounded-full p-0.5 pl-2 pr-4"
+				class="c-btn-confirm flex items-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
-				<Icon icon="material-symbols:add" class="h-7 w-7 " /><span class="text-sm">データ追加</span>
+				<Icon icon="material-symbols:add" class="h-7 w-7" /><span class="text-sm">データ追加</span>
 			</button>
-			<button
+			<!-- <button
 				onclick={resetLayers}
 				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"
 			>
 				<span class="text-sm">リセット</span>
-			</button>
+			</button> -->
 		</div>
 	</div>
 	<!-- 中央 -->
-	<div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
+	<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
 		<Geocoder
 			{layerEntries}
 			bind:results
@@ -217,16 +233,45 @@
 		>
 			<Icon icon="stash:search-solid" class="h-6 w-6" />
 		</button>
-	</div>
+	</div> -->
 
 	<!-- 右側 -->
-	<div class="flex items-center pr-2">
+	<div class="flex items-center pr-2 max-lg:hidden">
+		<div bind:this={searchContainerRef} class="flex items-center">
+			{#if showSearchForm}
+				<Geocoder
+					{layerEntries}
+					bind:results
+					bind:inputSearchWord
+					bind:showSearchForm
+					searchFeature={(v) => searchFeature(v)}
+				/>
+			{/if}
+			<button
+				onclick={() => {
+					if (showSearchForm && inputSearchWord) {
+						searchFeature(inputSearchWord);
+					} else {
+						showSearchForm = true;
+					}
+				}}
+				disabled={$isProcessing}
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
+					? 'bg-base text-gray-700 delay-100'
+					: 'text-white'}"
+			>
+				<Icon
+					icon="stash:search-solid"
+					class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
+				/>
+			</button>
+		</div>
 		<StreetViewControl />
-		<!-- <TerrainControl /> -->
+		<TerrainControl />
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-150"
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-100"
 			onclick={() => showSideMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />

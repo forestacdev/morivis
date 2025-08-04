@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scale } from 'svelte/transition';
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
@@ -35,7 +36,7 @@
 				marker.setLngLat(lngLat);
 			} else {
 				marker = new maplibregl.Marker({
-					element: container,
+					element: container as HTMLElement,
 					anchor: 'center',
 					offset: [0, 0]
 				})
@@ -53,19 +54,20 @@
 {#if show}
 	<div
 		bind:this={container}
-		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
+		class="pointer-events-none relative grid h-[100px] w-[100px] place-items-center"
 	>
-		<div class="css-ripple-effect"></div>
+		<div class="c-ripple-effect"></div>
 		<div class="border-main absolute h-[12px] w-[12px] rounded-full border-[2px] bg-white"></div>
 
-		<div class="border-main absolute h-[24px] w-[24px] rounded-full border-2"></div>
-		<div class="border-base absolute h-[20px] w-[20px] rounded-full border-2"></div>
+		<div class="border-main c-scale-effect absolute h-[24px] w-[24px] rounded-full border-2"></div>
+
+		<div class="border-base c-scale-effect absolute h-[20px] w-[20px] rounded-full border-2"></div>
 	</div>
 {/if}
 
 <style>
 	/* エフェクト要素 */
-	.css-ripple-effect {
+	.c-ripple-effect {
 		width: 70px;
 		height: 70px;
 		position: absolute;
@@ -74,6 +76,22 @@
 		opacity: 0;
 		animation: ripple 1.5s ease-out infinite;
 		background-color: var(--color-base);
+	}
+
+	.c-scale-effect {
+		animation: scale 0.15s ease-out;
+	}
+
+	@keyframes scale {
+		0% {
+			scale: 6;
+			opacity: 0;
+		}
+
+		100% {
+			scale: 1;
+			opacity: 1;
+		}
 	}
 
 	/* アニメーションの定義 */

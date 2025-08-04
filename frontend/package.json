@@ -102,7 +102,6 @@
 		"html2canvas": "^1.4.1",
 		"jspdf": "^3.0.1",
 		"jszip": "^3.10.1",
-		"lil-gui": "^0.20.0",
 		"maplibre-gl": "^5.4.0",
 		"ol": "^10.5.0",
 		"papaparse": "^5.5.2",

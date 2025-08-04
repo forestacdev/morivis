@@ -55,7 +55,6 @@ import { poiStyleJson } from '$routes/map/utils/layers/poi';
 import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 import { get } from 'svelte/store';
 
-import { getContourLabelLayers, getContourLineLayers } from './contour';
 import { cloudStyleJson } from './cloud';
 import { getBaseMapLayers } from './base_map';
 

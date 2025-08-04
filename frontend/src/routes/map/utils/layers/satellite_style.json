@@ -55,14 +55,24 @@
 			"id": "base-map-layer",
 			"type": "raster",
 			"source": "base_usgs_imagery_only",
-			"maxzoom": 22
+			"maxzoom": 9,
+			"paint": {
+				"raster-opacity": 0.9,
+				"raster-brightness-min": 0,
+				"raster-brightness-max": 0.8
+			}
 		},
 		{
 			"id": "base_seamlessphoto_layer",
 			"type": "raster",
 			"source": "base_seamlessphoto",
 			"minzoom": 8,
-			"maxzoom": 24
+			"maxzoom": 24,
+			"paint": {
+				"raster-opacity": 0.9,
+				"raster-brightness-min": 0,
+				"raster-brightness-max": 0.8
+			}
 		},
 		{
 			"id": "housenumber",

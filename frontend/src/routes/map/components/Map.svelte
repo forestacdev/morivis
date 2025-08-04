@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce, delay } from 'es-toolkit';
+	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -8,23 +8,17 @@
 		type LayerSpecification,
 		type MapGeoJSONFeature,
 		type CanvasSourceSpecification,
-		type CanvasSource,
-		type GeoJSONSourceSpecification,
 		type MapMouseEvent,
-		type Marker,
-		type LngLat,
-		type AddLayerObject
+		type LngLat
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import FooterMenu from '$routes/map/components/footer/Footer.svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
 
 	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
-	import MapStatePane from '$routes/map/components/map_control/MapStatePane.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
@@ -39,15 +33,9 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { DEBUG_MODE, isStreetView } from '$routes/stores';
+	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
-	import {
-		activeLayerIdsStore,
-		getEntryIds,
-		showLabelLayer,
-		showStreetViewLayer,
-		showXYZTileLayer
-	} from '$routes/stores/layers';
+	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -61,7 +49,6 @@
 
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
-	import { loadLayerEntries, saveToLayerEntries } from '$routes/map/utils/session_storage';
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
@@ -375,7 +362,7 @@
 		if (!layerEntries) return;
 
 		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
-		// if (!$DEBUG_MODE) {
+		// if (!$isDebugMode) {
 		// 	const localEntries = loadLayerEntries();
 
 		// 	// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
@@ -512,12 +499,12 @@
 	ondragleave={dragleave}
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
-		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white hover:h-[400px] hover:w-[600px] hover:transition-all hover:duration-300'
-		: 'relative h-full w-full grow pb-4 pr-4'}"
+		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white'
+		: 'relative h-full w-full grow '}"
 >
 	<div
 		bind:this={mapContainer}
-		class="h-full w-full overflow-hidden rounded-lg bg-black transition-opacity {!showMapCanvas &&
+		class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
 		$mapMode === 'view'
 			? 'opacity-0'
 			: $isStreetView && $mapMode === 'small'
@@ -553,6 +540,8 @@
 	/>
 	<LockOnScreen />
 </div>
+<!-- 右側余白 -->
+<div class="bg-main p-2 max-lg:hidden"></div>
 
 {#if maplibreMap}
 	<FileManager
@@ -613,8 +602,10 @@
 		display: none !important;
 	}
 
-	:global(.maplibregl-canvas) {
-		border-radius: 0.5rem !important;
-		overflow: hidden !important;
+	@media (width >= 64rem /* 1024px */) {
+		:global(.maplibregl-canvas) {
+			border-radius: 0.5rem !important;
+			overflow: hidden !important;
+		}
 	}
 </style>

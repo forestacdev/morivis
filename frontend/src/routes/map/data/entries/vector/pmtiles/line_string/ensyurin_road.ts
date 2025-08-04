@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['森林歩道'],
 		maxZoom: 17,
 		minZoom: 8,
-		sourceLayer: 'ensyurin_road',
+		sourceLayer: 'ensyurin_roadfgb',
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
@@ -27,7 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 		titles: []
 	},
 	interaction: {
-		clickable: false
+		clickable: true
 	},
 	style: {
 		type: 'line',

@@ -14,7 +14,9 @@ export const getBaseMapSources = (): Record<string, RasterSourceSpecification> =
 		base_usgs_imagery_only: satelliteStyleJson.sources.base_usgs_imagery_only,
 		base_gsi_rinya_m: {
 			type: 'raster',
-			url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/gsi_rinya_m.pmtiles`,
+			tiles: [
+				'https://raw.githubusercontent.com/forestacdev/tiles-ensyurin-photo/main/tiles/{z}/{x}/{y}.webp'
+			],
 			tileSize: 256,
 			maxzoom: 18,
 			minzoom: 14,
@@ -25,6 +27,13 @@ export const getBaseMapSources = (): Record<string, RasterSourceSpecification> =
 
 export const getBaseMapLayers = (): RasterLayerSpecification[] => {
 	return [
+		{
+			id: 'background',
+			type: 'background',
+			paint: {
+				'background-color': '#000000'
+			}
+		},
 		...(satelliteStyleJson.layers.filter(
 			(layer) => layer.type === 'raster'
 		) as RasterLayerSpecification[]),
@@ -33,7 +42,12 @@ export const getBaseMapLayers = (): RasterLayerSpecification[] => {
 			source: 'base_gsi_rinya_m',
 			type: 'raster',
 			maxzoom: 24,
-			minzoom: 12
+			minzoom: 12,
+			paint: {
+				'raster-opacity': 0.9,
+				'raster-brightness-min': 0,
+				'raster-brightness-max': 0.8
+			}
 		} as RasterLayerSpecification
 	];
 };

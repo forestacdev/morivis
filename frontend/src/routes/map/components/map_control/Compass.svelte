@@ -5,7 +5,6 @@
 
 	import { isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
-	import { isPc } from '$routes/map/utils/ui';
 
 	gsap.registerPlugin(Draggable);
 

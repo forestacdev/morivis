@@ -8,7 +8,8 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStyleEdit, showDataMenu } from '$routes/stores';
+	import { isStyleEdit } from '$routes/stores';
+	import { showDataMenu } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST } from '$routes/map/data/types/tags';
@@ -92,12 +93,12 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 pl-[100px] transition-all duration-300 {$showDataMenu
+	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 transition-all duration-300 lg:pl-[100px] {$showDataMenu
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
 	<button
-		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150"
+		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"
 		onclick={() => {
 			showDataMenu.set(false);
 		}}
@@ -105,18 +106,17 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button>
 	<div class="flex grow items-center justify-between gap-4 p-2">
-		<div class="flex items-center gap-2 text-base">
+		<div class="flex items-center gap-2 text-base max-lg:hidden">
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
 			<span class="select-none text-lg">データカタログ</span>
 		</div>
 
 		{#if selected === 'system'}
-			<div class="bg-base relative flex w-full max-w-[400px] rounded-full border-[1px] px-4">
+			<div class="bg-base relative flex w-full rounded-full border-[1px] px-4 lg:max-w-[400px]">
 				<input
 					class="c-search-form tex grid w-full text-left text-gray-500"
 					type="text"
 					placeholder="検索"
-					disabled={selected === 'user'}
 					bind:value={searchWord}
 				/>
 				{#if searchWord}
@@ -131,12 +131,12 @@
 			</div>
 		{/if}
 
-		<div class="w-[300px] shrink-0">
+		<div class="w-[300px] shrink-0 max-lg:hidden">
 			<HorizontalSelectBox bind:group={selected} bind:options />
 		</div>
 	</div>
 	{#if selected === 'system'}
-		<div class="flex w-full grow items-center justify-between gap-4 p-2">
+		<div class="flex w-full grow items-center justify-between gap-4 p-2 max-lg:hidden">
 			<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
 			{#each TAG_LIST as tag}
 				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
@@ -216,7 +216,7 @@
 	.row {
 		display: grid;
 		gap: 10px;
-		grid-template-columns: repeat(var(--grid-columns), minmax(300px, 1fr));
+		grid-template-columns: repeat(var(--grid-columns), minmax(200px, 1fr));
 	}
 
 	/* 検索ボックスのスタイル */

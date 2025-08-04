@@ -13,12 +13,11 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 
 	import { page } from '$app/state';
-	import { MOBILE_WIDTH } from '$routes/constants';
-	import { showTermsDialog } from '$routes/stores';
-	import { isPc } from '$routes/map/utils/ui';
+
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked } from '$routes/stores/ui';
+	import { isBlocked, isMobile } from '$routes/stores/ui';
+	import { MOBILE_WIDTH } from './constants';
 
 	let { children } = $props();
 
@@ -47,10 +46,6 @@
 		});
 	});
 
-	type Device = 'mobile' | 'pc' | '';
-
-	let isDevice = $state<Device>('');
-	let deviceWidth = $state<number>(window.innerWidth);
 	let isInitialized = $state<boolean>(false);
 
 	// // 環境ごとのファビコンの設定
@@ -92,15 +87,6 @@
 		await onNextPage(page.route.id);
 	});
 
-	onMount(() => {
-		// スマホかPCかの判定
-		if (isPc()) {
-			isDevice = 'pc';
-		} else {
-			isDevice = 'mobile';
-		}
-	});
-
 	const initialized = () => {
 		isInitialized = true;
 	};
@@ -109,7 +95,15 @@
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
 
-<svelte:window onresize={() => (deviceWidth = window.innerWidth)} />
+<svelte:window
+	onresize={() => {
+		if (window.innerWidth <= MOBILE_WIDTH) {
+			isMobile.set(true);
+		} else {
+			isMobile.set(false);
+		}
+	}}
+/>
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->

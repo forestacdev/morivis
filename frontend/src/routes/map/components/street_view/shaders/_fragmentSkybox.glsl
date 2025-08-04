@@ -91,7 +91,7 @@ void main() {
 // 			geometryBearing.y = angleData.angleY;
 // 			geometryBearing.z = angleData.angleZ;
 // 			// GUI側のコントロールの値を更新
-// 			if ($DEBUG_MODE) {
+// 			if ($isDebugMode) {
 // 				controllerX.setValue(geometryBearing.x);
 // 				controllerY.setValue(geometryBearing.y);
 // 				controllerZ.setValue(geometryBearing.z);

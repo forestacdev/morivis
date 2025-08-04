@@ -37,7 +37,7 @@
 {#if showDataEntry}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4"
+		class="bg-main lg:w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 pt-4 max-lg:hidden"
 	>
 		<!-- <div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
 			<button

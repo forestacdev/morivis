@@ -17,6 +17,7 @@
 			if (!isBBoxInside(bounds, defaultBounds)) {
 				mapStore.fitBounds(defaultBounds, {
 					padding: 20,
+					duration: 1000,
 					animate: true
 				});
 			}

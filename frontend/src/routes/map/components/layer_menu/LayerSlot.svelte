@@ -2,19 +2,16 @@
 	import Icon from '@iconify/svelte';
 	import { fly, slide } from 'svelte/transition';
 
-	import Legend from './Legend.svelte';
-	import turfBbox, { bbox } from '@turf/bbox';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import OpacityRangeSlider from '$routes/map/components/layer_menu/OpacityRangeSlider.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
-	import { selectedLayerId, isStyleEdit, showDataMenu } from '$routes/stores';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		index: number;
@@ -24,6 +21,7 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
+		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 	}
 
 	let {
@@ -33,7 +31,8 @@
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
-		enableFlip = $bindable()
+		enableFlip = $bindable(),
+		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
 	}: Props = $props();
 	let showLegend = $state(false);
 	let isDragging = $state(false);
@@ -48,14 +47,16 @@
 	});
 
 	const selectedLayer = () => {
-		// if ($selectedLayerId === layerEntry.id) {
-		// 	$isStyleEdit = !$isStyleEdit;
-		// 	return;
-		// }
 		selectedLayerId.set(layerEntry.id);
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
 	};
+
+	isStyleEdit.subscribe((value) => {
+		if (value && $selectedLayerId === layerEntry.id && !isLayerInRange) {
+			mapStore.focusLayer(layerEntry);
+		}
+	});
 
 	const toggleChecked = (id: string) => {
 		showLegend = !showLegend;
@@ -139,6 +140,7 @@
 		enableFlip = false;
 		showLegend = false;
 
+		isDraggingLayerType = layerType; // ドラッグ中のレイヤータイプを設定
 		selectedLayerId.set(layerId);
 	};
 
@@ -153,26 +155,24 @@
 	const dragEnd = () => {
 		isDragging = false;
 		enableFlip = true;
-
+		isDraggingLayerType = null; // ドラッグ中のレイヤータイプをリセット
 		reorderStatus.set('idle');
 	};
 
 	// レイヤー表示範囲をチェック
-	// TODO: bboxがないデータの場合
+
 	const checkRange = (_state: MapState) => {
 		if (!layerEntry) return;
 		let z = _state.zoom;
 
-		if (
-			layerEntry.type === 'raster' ||
-			(layerEntry.type === 'vector' &&
-				layerEntry.format.type !== 'geojson' &&
-				layerEntry.format.type !== 'fgb')
-		) {
-			if (layerEntry.metaData.tileSize && layerEntry.metaData.tileSize === 256) {
-				z = z + 1.5; // タイルサイズが256の場合はズームレベルを1.5加算
-			}
-			isLayerInRange = z >= layerEntry.metaData.minZoom;
+		if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
+			z = z + 1.5;
+		}
+
+		// ズームレベル範囲内かのチェック
+		if (layerEntry.metaData.minZoom && z < layerEntry.metaData.minZoom) {
+			isLayerInRange = false;
+			return;
 		}
 
 		if (!LayerBbox) {
@@ -249,17 +249,20 @@
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-100
+		class="c-dragging-style translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-200
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit
 			? 'rounded-lg bg-black/50'
 			: $isStyleEdit
 				? 'bg-main rounded-lg'
-				: 'rounded-full bg-black'}"
+				: 'rounded-full bg-black'} {$showDataMenu
+			? 'w-[66px]'
+			: $isStyleEdit
+				? 'w-[400px]'
+				: 'w-[330px]'}"
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
 		tabindex="0"
-		style={`width: ${$showDataMenu ? '66px' : $isStyleEdit ? '400px' : '330px'};transition-property: width, transform, translate, scale, rotate, height; transition-duration: 0.2s; transition-timing-function: ease-in-out;`}
 	>
 		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 			<!-- アイコン -->

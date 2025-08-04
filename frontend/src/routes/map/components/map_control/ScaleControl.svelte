@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu } from '$routes/stores';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	let scaleControl: ScaleControl | null = null;
 
