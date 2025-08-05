@@ -201,12 +201,12 @@
 			<span class="max-lg:text-3xl lg:text-5xl">morivis</span>
 		</div>
 		<div class="flex h-full items-end justify-center gap-2 max-lg:hidden">
-			<button
+			<!-- <button
 				onclick={() => showDataMenu.set(true)}
 				class="c-btn-confirm flex items-center gap-1 rounded-full p-0.5 pl-2 pr-4"
 			>
 				<Icon icon="material-symbols:add" class="h-7 w-7" /><span class="text-sm">データ追加</span>
-			</button>
+			</button> -->
 			<!-- <button
 				onclick={resetLayers}
 				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"

@@ -5,7 +5,7 @@
 
 	import MapPane from '$routes/map/components/preview_menu/Map.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { attributionMap } from '$routes/map/data/attribution';
+	import { getAttributionName } from '$routes/map/data/attribution';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -72,7 +72,7 @@
 						<span class="font-bold">データ出典元</span>
 					</div>
 					<div class="mb-2 rounded-lg bg-black p-2">
-						<span>{attributionMap.get(showDataEntry?.metaData.attribution)?.name}</span>
+						<span>{getAttributionName(showDataEntry?.metaData.attribution)}</span>
 						{#if showDataEntry?.metaData.downloadUrl}
 							<a
 								class="text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150 hover:underline"

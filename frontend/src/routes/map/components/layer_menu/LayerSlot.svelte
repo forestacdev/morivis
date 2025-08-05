@@ -12,6 +12,7 @@
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 	import { showDataMenu } from '$routes/stores/ui';
+	import { getAttributionName } from '$routes/map/data/attribution';
 
 	interface Props {
 		index: number;
@@ -264,7 +265,7 @@
 		role="button"
 		tabindex="0"
 	>
-		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
+		<div class="flex w-full items-center justify-start gap-1 bg-transparent">
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
@@ -275,17 +276,15 @@
 				<LayerIcon {layerEntry} />
 			</button>
 
-			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
+			<div class="relative flex w-full grow flex-col items-start overflow-hidden">
 				{#if !$isStyleEdit}
 					<!-- レイヤー名 -->
-					<div class="flex flex-col">
-						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
-							>{layerEntry.metaData.name}</span
-						>
+					<div class="flex flex-col gap-[2px]">
+						<span class="truncate pl-1 text-base">{layerEntry.metaData.name}</span>
 						<div class="flex items-center">
-							<Icon icon="lets-icons:info-alt-fill" class="h-5 w-5 text-gray-500" />
+							<Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" />
 							<span class="truncate text-xs text-gray-400"
-								>{layerEntry.metaData.attribution ?? '---'}</span
+								>{getAttributionName(layerEntry.metaData.attribution) ?? '---'}</span
 							>
 						</div>
 					</div>
@@ -295,7 +294,7 @@
 					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
+						class="absolute flex h-full w-full gap-4 bg-black pl-1 text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}

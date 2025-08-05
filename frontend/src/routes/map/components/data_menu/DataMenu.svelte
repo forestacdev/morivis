@@ -97,14 +97,14 @@
 		? 'pointer-events-auto translate-y-0 opacity-100'
 		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
 >
-	<button
+	<!-- <button
 		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"
 		onclick={() => {
 			showDataMenu.set(false);
 		}}
 	>
 		<Icon icon="ep:back" class="h-7 w-7" />
-	</button>
+	</button> -->
 	<div class="flex grow items-center justify-between gap-4 p-2">
 		<div class="flex items-center gap-2 text-base max-lg:hidden">
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
