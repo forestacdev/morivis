@@ -255,7 +255,7 @@
 					}
 				}}
 				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 p-2 px-4 drop-shadow-lg transition-colors duration-100 {showSearchForm
 					? 'bg-base text-gray-700 delay-100'
 					: 'text-white'}"
 			>
@@ -271,7 +271,7 @@
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base duration-100"
+			class="hover:text-accent cursor-pointer rounded-full p-2 p-2 text-left text-base drop-shadow-lg duration-100"
 			onclick={() => showSideMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
