@@ -327,7 +327,7 @@
 
 {#if isInitialized}
 	<div class="relative flex h-dvh w-full flex-col">
-		<HeaderMenu
+		<!-- <HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData
 			bind:inputSearchWord
@@ -335,7 +335,7 @@
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-		/>
+		/> -->
 		<div class="flex w-full flex-1">
 			<!-- マップのオフセット調整用 -->
 			{#if $showLayerMenu}
@@ -348,31 +348,46 @@
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
+			<div class="flex w-full flex-1 flex-col overflow-hidden">
+				<div class="bg-main w-full p-2"></div>
 
-			<MapLibreMap
-				bind:maplibreMap={map}
-				bind:layerEntries
-				bind:tempLayerEntries
-				bind:showDataEntry
-				bind:featureMenuData
-				bind:showSelectionMarker
-				bind:selectionMarkerLngLat
-				bind:showAngleMarker
-				bind:angleMarkerLngLat
-				bind:cameraBearing
-				bind:dropFile
-				bind:showDialogType
-				bind:drawGeojsonData
-				bind:showZoneForm
-				bind:focusBbox
-				{selectedEpsgCode}
-				{demEntries}
-				{streetViewLineData}
-				{streetViewPointData}
-				{streetViewPoint}
-				{showMapCanvas}
-				{setPoint}
-			/>
+				<MapLibreMap
+					bind:maplibreMap={map}
+					bind:layerEntries
+					bind:tempLayerEntries
+					bind:showDataEntry
+					bind:featureMenuData
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+					bind:showAngleMarker
+					bind:angleMarkerLngLat
+					bind:cameraBearing
+					bind:dropFile
+					bind:showDialogType
+					bind:drawGeojsonData
+					bind:showZoneForm
+					bind:focusBbox
+					{selectedEpsgCode}
+					{demEntries}
+					{streetViewLineData}
+					{streetViewPointData}
+					{streetViewPoint}
+					{showMapCanvas}
+					{setPoint}
+				/>
+
+				<HeaderMenu
+					{resetlayerEntries}
+					bind:featureMenuData
+					bind:inputSearchWord
+					bind:results
+					{layerEntries}
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+				/>
+			</div>
+			<!-- 右側余白 -->
+			<div class="bg-main p-2"></div>
 		</div>
 
 		<!-- フッター余白 出典表示 -->

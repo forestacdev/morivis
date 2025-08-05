@@ -3,6 +3,7 @@
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
+	import LabelControl from '$routes/map/components/map_control/LabelControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import { mapMode } from '$routes/stores';
 	import { isProcessing, showSearchMenu, showSideMenu, showDataMenu } from '$routes/stores/ui';
@@ -187,9 +188,7 @@
 	let showSearchForm = $state<boolean>(false);
 </script>
 
-<div
-	class="lg:bg-main left-0 flex w-full items-center justify-between p-2 pb-6 max-lg:absolute max-lg:top-0 max-lg:z-10"
->
+<div class="absolute right-2 top-2 flex w-full items-center justify-between p-2 max-lg:z-10">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button
@@ -197,9 +196,9 @@
 		>
 			<Icon icon="ic:round-layers" class="h-8 w-8" />
 		</button> -->
-		<div class="flex select-none items-center justify-center text-base max-lg:hidden">
+		<!-- <div class="flex select-none items-center justify-center text-base max-lg:hidden">
 			<span class="max-lg:text-3xl lg:text-5xl">morivis</span>
-		</div>
+		</div> -->
 		<div class="flex h-full items-end justify-center gap-2 max-lg:hidden">
 			<!-- <button
 				onclick={() => showDataMenu.set(true)}
@@ -236,7 +235,7 @@
 	</div> -->
 
 	<!-- 右側 -->
-	<div class="flex items-center pr-2 max-lg:hidden">
+	<div class="k flex items-center rounded-lg pr-2 max-lg:hidden">
 		<div bind:this={searchContainerRef} class="flex items-center">
 			{#if showSearchForm}
 				<Geocoder
@@ -266,8 +265,9 @@
 				/>
 			</button>
 		</div>
-		<StreetViewControl />
+		<LabelControl />
 		<TerrainControl />
+		<StreetViewControl />
 		<GeolocateControl />
 		<!-- ハンバーガーメニュー -->
 		<button

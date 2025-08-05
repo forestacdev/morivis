@@ -96,7 +96,7 @@
 	>
 		<div class="pl-2">
 			<!-- データ追加スロット -->
-			<div class="relative flex h-[75px] w-full items-center">
+			<div class="relative flex h-[90px] w-full items-center">
 				<!-- アイコン -->
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
@@ -262,15 +262,15 @@
 				icon="proicons:layers"
 				class="absolute bottom-[200px] left-2 -z-10 h-60 w-60 text-gray-700 opacity-50"
 			/> -->
-			<div
+			<!-- <div
 				class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
 			>
 				<Switch label="地名・道路など" bind:value={$showLabelLayer} />
-				<!-- <Switch label="3D地形" bind:value={is3d} /> -->
+				<Switch label="3D地形" bind:value={is3d} />
 				{#if $isDebugMode}
 					<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 				{/if}
-			</div>
+			</div> -->
 		{/if}
 		<!-- {#if !$isStyleEdit && !$showDataMenu}
 		<div transition:fade={{ duration: 150 }} class="">
@@ -286,6 +286,6 @@
 			</button>
 		</div>
 	{/if} -->
-		<div class="h-[98px] w-full shrink-0"></div>
+		<!-- <div class="h-[98px] w-full shrink-0"></div> -->
 	</div>
 {/if}

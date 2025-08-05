@@ -214,7 +214,7 @@
 </script>
 
 <div
-	class="relative flex h-[75px] w-full items-center
+	class="relative flex h-[80px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
