@@ -87,19 +87,14 @@
 {#if $showLayerMenu}
 	<div
 		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col gap-2 overflow-hidden duration-200 {$showLayerMenu
+		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
 			? 'translate-x-[75px] bg-transparent delay-150'
 			: 'bg-main'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 	>
-		<div
-			class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
-			$isStyleEdit
-				? 'c-scroll-hidden '
-				: 'c-scroll'}"
-		>
+		<div class="pl-2">
 			<!-- データ追加スロット -->
 			<div class="relative flex h-[75px] w-full items-center">
 				<!-- アイコン -->
@@ -156,6 +151,13 @@
 					</div>
 				</button>
 			</div>
+		</div>
+		<div
+			class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
+			$isStyleEdit
+				? 'c-scroll-hidden '
+				: 'c-scroll'}"
+		>
 			<!-- ポイント -->
 			{#if pointEntries.length > 0}
 				<div
