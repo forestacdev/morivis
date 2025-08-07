@@ -9,6 +9,8 @@
 		min?: number;
 		max?: number;
 		primaryColor?: string;
+		minRangeColor?: string;
+		maxRangeColor?: string;
 		step?: number;
 		disabled?: boolean;
 		onChange?: (lower: number, upper: number) => void;
@@ -23,6 +25,8 @@
 		max = 100,
 		step = 1,
 		primaryColor = 'var(--color-accent)',
+		minRangeColor = '#ef4444', // 赤色（最小範囲）
+		maxRangeColor = '#10b981', // 緑色（最大範囲）
 		disabled = false,
 		onChange
 	}: Props = $props();
