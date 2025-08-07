@@ -25,8 +25,8 @@
 		max = 100,
 		step = 1,
 		primaryColor = 'var(--color-accent)',
-		minRangeColor = '#ef4444', // 赤色（最小範囲）
-		maxRangeColor = '#10b981', // 緑色（最大範囲）
+		minRangeColor = 'black', // 赤色（最小範囲）
+		maxRangeColor = 'black', // 緑色（最大範囲）
 		disabled = false,
 		onChange
 	}: Props = $props();
@@ -122,16 +122,24 @@
 	<!-- スライダー背景 -->
 
 	<!-- スライダーコンテナ -->
+	<!-- スライダーコンテナ -->
 	<div class="pointer-events-none absolute grid w-[90%] place-items-center">
+		<!-- 最小範囲の色付きバー（左側） -->
 		<div
 			class="pointer-events-none absolute -z-10 h-2 rounded-full"
-			style="background: {secondaryColor}; width: 100%;"
+			style="background: {minRangeColor}; left: 0; width: calc({rangeBarStyle.left});"
 		></div>
 
-		<!-- 選択範囲の色付きバー -->
+		<!-- 選択範囲の色付きバー（中間） -->
 		<div
 			class="pointer-events-none absolute -z-10 h-2 rounded-full"
 			style="background: {primaryColor}; left: calc({rangeBarStyle.left}); width: calc({rangeBarStyle.width});"
+		></div>
+
+		<!-- 最大範囲の色付きバー（右側） -->
+		<div
+			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			style="background: {maxRangeColor}; left: calc({rangeBarStyle.left} + {rangeBarStyle.width}); width: calc(100% - {rangeBarStyle.left} - {rangeBarStyle.width});"
 		></div>
 	</div>
 

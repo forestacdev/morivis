@@ -247,6 +247,42 @@ export class ColorMapManager {
 		return gradient;
 	}
 
+	/**
+	 * カラーマップの最小値の色を取得
+	 * @param colorMapName カラーマップ名
+	 * @param format 出力フォーマット ('hex' | 'rgb' | 'rgba')
+	 * @returns 最小値の色
+	 */
+	public getMinColor(colorMapName: string, format: 'hex' | 'rgb' | 'rgba' = 'hex'): string {
+		const options = {
+			colormap: colorMapName,
+			nshades: 16,
+			format: format,
+			alpha: 1
+		};
+
+		const colors = colormap(options as any);
+		return colors[0] as string; // 最初の色（最小値）
+	}
+
+	/**
+	 * カラーマップの最大値の色を取得
+	 * @param colorMapName カラーマップ名
+	 * @param format 出力フォーマット ('hex' | 'rgb' | 'rgba')
+	 * @returns 最大値の色
+	 */
+	public getMaxColor(colorMapName: string, format: 'hex' | 'rgb' | 'rgba' = 'hex'): string {
+		const options = {
+			colormap: colorMapName,
+			nshades: 16,
+			format: format,
+			alpha: 1
+		};
+
+		const colors = colormap(options as any);
+		return colors[colors.length - 1] as string; // 最後の色（最大値）
+	}
+
 	add(cacheKey: string, pixels: Uint8Array): void {
 		this.cache.set(cacheKey, pixels);
 	}

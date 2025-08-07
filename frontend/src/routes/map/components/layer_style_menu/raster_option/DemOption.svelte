@@ -36,6 +36,12 @@
 			primaryColor={colorMapManager.createSimpleCSSGradient(
 				layerEntry.style.visualization.uniformsData['relief'].colorMap
 			)}
+			minRangeColor={colorMapManager.getMinColor(
+				layerEntry.style.visualization.uniformsData['relief'].colorMap
+			)}
+			maxRangeColor={colorMapManager.getMaxColor(
+				layerEntry.style.visualization.uniformsData['relief'].colorMap
+			)}
 		/>
 	{/if}
 
