@@ -51,6 +51,9 @@
 			max={90}
 			min={0}
 			step={0.01}
+			primaryColor={colorMapManager.createSimpleCSSGradient(
+				layerEntry.style.visualization.uniformsData['slope'].colorMap
+			)}
 		/>
 	{/if}
 
