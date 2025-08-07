@@ -5,6 +5,9 @@
 	import type { RasterDemEntry } from '$routes/map/data/types/raster';
 	import Accordion from '../../atoms/Accordion.svelte';
 	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
+	import { ColorMapManager } from '$routes/map/utils/color_mapping';
+
+	const colorMapManager = new ColorMapManager();
 
 	interface Props {
 		layerEntry: RasterDemEntry;
@@ -24,12 +27,15 @@
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['relief'].colorMap}
 		/>
 		<RangeSliderDouble
-			label="数値範囲"
+			label="標高数値範囲"
 			bind:lowerValue={layerEntry.style.visualization.uniformsData['relief'].min}
 			bind:upperValue={layerEntry.style.visualization.uniformsData['relief'].max}
 			max={rangeMax}
 			min={rangeMin}
 			step={0.01}
+			primaryColor={colorMapManager.createSimpleCSSGradient(
+				layerEntry.style.visualization.uniformsData['relief'].colorMap
+			)}
 		/>
 	{/if}
 
@@ -37,17 +43,11 @@
 		<DemStyleColorMapPulldownBox
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['slope'].colorMap}
 		/>
-		<RangeSlider
-			label="最大傾斜量"
-			bind:value={layerEntry.style.visualization.uniformsData['slope'].max}
-			max={90}
-			min={0}
-			step={0.01}
-		/>
 
-		<RangeSlider
-			label="最小傾斜量"
-			bind:value={layerEntry.style.visualization.uniformsData['slope'].min}
+		<RangeSliderDouble
+			label="傾斜数値範囲"
+			bind:lowerValue={layerEntry.style.visualization.uniformsData['slope'].min}
+			bind:upperValue={layerEntry.style.visualization.uniformsData['slope'].max}
 			max={90}
 			min={0}
 			step={0.01}

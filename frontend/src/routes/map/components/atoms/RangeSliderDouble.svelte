@@ -27,26 +27,25 @@
 		onChange
 	}: Props = $props();
 
-	const secondaryColor = '#fff';
+	const secondaryColor = 'black';
 
 	// 内部状態管理用
 	let lowerSliderElement: HTMLInputElement;
 	let upperSliderElement: HTMLInputElement;
-	let sliderBackground = $state<string>('');
 	let isInitialized = false;
 
-	// スライダーの背景を更新する関数
-	const updateSliderBackground = (value: number): void => {
-		const ratio = ((value - min) / (max - min)) * 100;
+	// 可変要素のスタイルを計算
+	let rangeBarStyle = $derived.by(() => {
+		const totalRange = max - min;
+		const leftPosition = ((lowerValue - min) / totalRange) * 100;
+		const rightPosition = ((upperValue - min) / totalRange) * 100;
+		const width = rightPosition - leftPosition;
 
-		const minRatio = ((lowerValue - min) / (max - min)) * 100;
-		const maxRatio = ((upperValue - min) / (max - min)) * 100;
-		const leftColor = secondaryColor;
-		const rightColor = secondaryColor;
-
-		const gradient = `linear-gradient(90deg, ${leftColor} ${minRatio}%, ${primaryColor} ${minRatio}%, ${primaryColor} ${ratio}%, ${secondaryColor} ${ratio}%, ${secondaryColor} ${maxRatio}%, ${rightColor} ${maxRatio}%)`;
-		sliderBackground = gradient;
-	};
+		return {
+			left: `${leftPosition}%`,
+			width: `${width}%`
+		};
+	});
 
 	// 下限スライダーの値変更処理
 	const handleLowerChange = (event: Event): void => {
@@ -60,8 +59,6 @@
 		} else {
 			lowerValue = newValue;
 		}
-
-		updateSliderBackground(lowerValue);
 
 		// コールバック関数があれば呼び出し
 		onChange?.(lowerValue, upperValue);
@@ -80,8 +77,6 @@
 			upperValue = newValue;
 		}
 
-		updateSliderBackground(upperValue);
-
 		// コールバック関数があれば呼び出し
 		onChange?.(lowerValue, upperValue);
 	};
@@ -94,10 +89,6 @@
 				lowerValue = Math.max(min, upperValue - step);
 			}
 
-			// 初期背景設定
-			updateSliderBackground(lowerValue);
-			updateSliderBackground(upperValue);
-
 			isInitialized = true;
 		}
 	});
@@ -108,16 +99,13 @@
 			// 外部からの値変更に対応
 			lowerSliderElement.value = String(lowerValue);
 			upperSliderElement.value = String(upperValue);
-
-			updateSliderBackground(lowerValue);
-			updateSliderBackground(upperValue);
 		}
 	});
 </script>
 
 <!-- ラベル表示 -->
 {#if label}
-	<div class="mb-2 text-base">
+	<div class="mb-4 text-base">
 		{label}
 		<span class="">
 			{lowerValue} - {upperValue}
@@ -126,41 +114,52 @@
 {/if}
 
 <!-- デュアルスライダー本体 -->
+<div class="relative grid w-full place-items-center">
+	<!-- スライダー背景 -->
 
-<div class="pointer-events-none grid w-full place-items-center px-2">
-	<!-- 下限スライダー -->
-	<input
-		bind:this={lowerSliderElement}
-		type="range"
-		class="slider w-full"
-		value={lowerValue}
-		{min}
-		{max}
-		{step}
-		{disabled}
-		oninput={handleLowerChange}
-		aria-label="下限値"
-		style="--primary-color: {primaryColor}; --secondary-color: {secondaryColor};"
-	/>
+	<!-- スライダーコンテナ -->
+	<div class="pointer-events-none absolute grid w-[90%] place-items-center">
+		<div
+			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			style="background: {secondaryColor}; width: 100%;"
+		></div>
 
-	<!-- 上限スライダー -->
-	<input
-		bind:this={upperSliderElement}
-		type="range"
-		class="slider w-full"
-		value={upperValue}
-		{min}
-		{max}
-		{step}
-		{disabled}
-		oninput={handleUpperChange}
-		aria-label="上限値"
-		style="--primary-color: {primaryColor}; --secondary-color: {secondaryColor};"
-	/>
-	<div
-		class="absolute -z-10 w-[90%] rounded-full py-1"
-		style="background: {sliderBackground}"
-	></div>
+		<!-- 選択範囲の色付きバー -->
+		<div
+			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			style="background: {primaryColor}; left: calc({rangeBarStyle.left}); width: calc({rangeBarStyle.width});"
+		></div>
+	</div>
+
+	<div class="pointer-events-none relative grid w-[95%] place-items-center">
+		<!-- 下限スライダー -->
+		<input
+			bind:this={lowerSliderElement}
+			type="range"
+			class="slider w-full"
+			value={lowerValue}
+			{min}
+			{max}
+			{step}
+			{disabled}
+			oninput={handleLowerChange}
+			aria-label="下限値"
+		/>
+
+		<!-- 上限スライダー -->
+		<input
+			bind:this={upperSliderElement}
+			type="range"
+			class="slider w-full"
+			value={upperValue}
+			{min}
+			{max}
+			{step}
+			{disabled}
+			oninput={handleUpperChange}
+			aria-label="上限値"
+		/>
+	</div>
 </div>
 
 <!-- 値表示（詳細版） -->
@@ -183,12 +182,9 @@
 		outline: none;
 		height: 8px;
 		border-radius: 8px;
-
+		background: transparent;
 		pointer-events: none;
 		transition: all 0.2s ease;
-	}
-
-	.slider::-webkit-slider-runnable-track {
 	}
 
 	/* つまみ部分：クリック有効 */
@@ -204,18 +200,19 @@
 
 	.slider::-webkit-slider-runnable-track {
 		background: transparent; /* スライダーバーの背景を透明に */
+		border: none;
 	}
 
 	/* Webkit（Chrome, Safari）のスタイル */
 	.slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
-		width: 20px;
-		height: 20px;
-		background-color: var(--primary-color, #007bff);
+		width: 25px;
+		height: 25px;
+		background-color: var(--color-base);
 		border-radius: 50%;
 		cursor: pointer;
-		border: 2px solid white;
+		border: 2px solid black;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 		transition: all 0.2s ease;
 		pointer-events: auto;
@@ -224,17 +221,5 @@
 	.slider::-webkit-slider-thumb:hover {
 		transform: scale(1.1);
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-	}
-
-	/* Firefox用のスタイル */
-	.slider::-moz-range-thumb {
-		width: 20px;
-		height: 20px;
-		background-color: var(--primary-color, #007bff);
-		border-radius: 50%;
-		cursor: pointer;
-		border: 2px solid white;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-		pointer-events: auto;
 	}
 </style>
