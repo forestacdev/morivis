@@ -33,7 +33,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { isStreetView } from '$routes/stores';
+	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
 
@@ -51,6 +51,7 @@
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -511,6 +512,14 @@
 				? ''
 				: 'opacity-100'}"
 	>
+		<!--スタイル編集時のメニュー -->
+		<!-- {#if $isStyleEdit}
+			<div
+				transition:fade={{ duration: 200, delay: 200 }}
+				class="z-5 absolute left-0 h-full w-[75px] bg-black/50"
+			></div>
+		{/if} -->
+
 		{#if maplibreMap}
 			<PoiManager
 				map={maplibreMap}

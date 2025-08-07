@@ -80,6 +80,16 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
+
+	// <button
+	// 				onclick={() => {
+	// 					isStyleEdit.set(false);
+	// 					selectedLayerId.set('');
+	// 				}}
+	// 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
+	// 			>
+	// 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+	// 			</button>
 </script>
 
 <!-- レイヤーメニュー -->
@@ -96,7 +106,7 @@
 	>
 		<div class="pl-2">
 			<!-- データ追加スロット -->
-			<div class="relative flex h-[90px] w-full items-center">
+			<div class="relative flex h-[100px] w-full items-center">
 				<!-- アイコン -->
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
@@ -105,7 +115,7 @@
 					>
 						<button
 							onclick={resetLayers}
-							class="c-btn-sub bg-sub peer peer pointer-events-auto absolute aspect-square rounded-full p-1.5"
+							class="c-btn-sub bg-sub peer peer pointer-events-auto absolute aspect-square translate-y-[10px] rounded-full p-1.5"
 						>
 							<Icon icon="carbon:reset" class="h-6 w-6" />
 						</button>
@@ -120,21 +130,31 @@
 				{/if}
 				<!-- 追加ボタン -->
 				<button
-					onclick={() => showDataMenu.set(!$showDataMenu)}
-					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] bg-main not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] relative flex cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
+					onclick={() => {
+						if ($isStyleEdit) {
+							isStyleEdit.set(false);
+							selectedLayerId.set('');
+						} else {
+							showDataMenu.set(!$showDataMenu);
+						}
+					}}
+					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
 						? 'w-[66px]'
 						: $isStyleEdit
-							? 'w-[100px]'
-							: 'hover:bg-accent w-[330px]'}"
+							? 'w-[400px]'
+							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
+						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
+						: ''}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 						<!-- アイコン -->
 						<div
-							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu
+							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
+							!$isStyleEdit
 								? 'bg-accent text-base'
-								: 'bg-base text-main'}"
+								: 'bg-base text-main'} {$isStyleEdit ? 'translate-x-[320px]' : ''}"
 						>
-							{#if !$showDataMenu}
+							{#if !$showDataMenu && !$isStyleEdit}
 								<Icon icon="material-symbols:add" width={30} />
 							{:else}
 								<Icon icon="ep:back" class="h-7 w-7" />
@@ -252,8 +272,9 @@
 			{/if}
 
 			<!-- 余白 -->
-			<div class="h-[150px] w-full shrink-0"></div>
+			<!-- <div class="h-[150px] w-full shrink-0"></div> -->
 		</div>
+
 		{#if !$isStyleEdit && !$showDataMenu}
 			<!-- <div class="absolute bottom-[0px] left-[-450px] -z-10 opacity-90 [&_path]:stroke-gray-700">
 				<FacCottageSvg width={'1500'} strokeWidth={'0.5'} />

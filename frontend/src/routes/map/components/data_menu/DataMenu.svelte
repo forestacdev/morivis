@@ -54,7 +54,7 @@
 
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
-	let rowColumns = $state<number>(2); // グリッドの列数
+	let rowColumns = $state<number>(1); // グリッドの列数
 	let itemHeight = $state<number>(300 + 70); // item Height + grid margin & padding
 	let itemWidth = $state<number>(300 + 10); // item Height + grid margin & padding
 
@@ -63,10 +63,10 @@
 			// 2列分の幅がある場合のみ再計算
 			rowColumns = Math.floor(gridWidth / itemWidth);
 			if (rowColumns < 2) {
-				rowColumns = 2; // 計算結果が2未満になった場合も2を維持
+				rowColumns = 1; // 計算結果が2未満になった場合も2を維持
 			}
 		} else {
-			rowColumns = 2; // 幅が足りない場合は最低2列を維持
+			rowColumns = 1; // 幅が足りない場合は最低2列を維持
 		}
 	});
 

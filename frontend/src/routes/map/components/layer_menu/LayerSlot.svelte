@@ -248,18 +248,16 @@
 			<!-- <div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div> -->
 		</div>
 	{/if}
+
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-200
-			{$selectedLayerId !== layerEntry.id && $isStyleEdit
-			? 'rounded-lg bg-black/50'
-			: $isStyleEdit
-				? 'bg-main rounded-lg'
-				: 'rounded-full bg-black'} {$showDataMenu
+		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200
+			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black opacity-70' : ''} {$showDataMenu ||
+		$isStyleEdit
 			? 'w-[66px]'
-			: $isStyleEdit
-				? 'w-[400px]'
-				: 'w-[330px]'}"
+			: 'w-[330px]'} {$isStyleEdit
+			? 'translate-x-[320px]'
+			: 'bg-black drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
 		onmouseenter={() => (isHovered = true)}
 		onmouseleave={() => (isHovered = false)}
 		role="button"
@@ -270,8 +268,8 @@
 			<button
 				onclick={selectedLayer}
 				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
-					? 'translate-x-[320px]'
-					: ''} {$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'opacity-50' : 'opacity-100'}"
+					? ''
+					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'scale-110 ' : ''}"
 			>
 				<LayerIcon {layerEntry} />
 			</button>
@@ -330,7 +328,7 @@
 			</div>
 		</div>
 		<!-- ステータス -->
-		{#if !$showDataMenu}
+		{#if !$showDataMenu && !$isStyleEdit}
 			<div
 				class="pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
 					.style.visible
@@ -340,7 +338,8 @@
 						: 'bg-red-500'}"
 			></div>
 		{/if}
-		<!-- ステータス -->
+
+		<!-- タイプ -->
 		{#if $showDataMenu}
 			<div
 				class="bg-base pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
@@ -348,12 +347,36 @@
 				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
 			</div>
 		{/if}
+
+		<!-- 選択中 -->
+		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+			<div
+				class="c-ripple-anime absolute top-0 -z-10 aspect-square shrink-0 -translate-y-[3px] rounded-r-full p-9 shadow-md"
+			></div>
+		{/if}
 	</div>
 </div>
 
 <style>
+	.c-ripple-anime {
+		/* animation: ripple 0.7s linear infinite;
+		transform-origin: center; */
+		background: rgb(233, 233, 233);
+		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	}
+
 	.c-fog {
 		background: rgb(233, 233, 233);
 		background: linear-gradient(90deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
+	}
+
+	@keyframes ripple {
+		0% {
+			scale: 0.8;
+		}
+		100% {
+			scale: 1.5;
+			opacity: 0;
+		}
 	}
 </style>

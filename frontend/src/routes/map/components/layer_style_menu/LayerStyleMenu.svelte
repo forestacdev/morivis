@@ -93,18 +93,9 @@
 				<div class="flex h-[80px] items-center gap-2 text-base">
 					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
 					<span class="select-none text-lg max-lg:hidden">データのカスタマイズ</span>
-					<button
-						onclick={() => {
-							isStyleEdit.set(false);
-							selectedLayerId.set('');
-						}}
-						class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
-					>
-						<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
-					</button>
 				</div>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-				<div class="flex items-center gap-2 border-t text-base"></div>
+
 				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
 					<div class="flex w-full justify-center gap-2">
 						<!-- 表示 -->
@@ -117,12 +108,12 @@
 							}}
 						>
 							<div
-								class="hover:bg-accent border-base grid aspect-square w-full cursor-pointer place-items-center rounded-full border-2 object-cover text-left {!layerEntry
+								class="hover:bg-accent border-base/80 grid aspect-square w-full cursor-pointer place-items-center rounded-full border-2 object-cover text-left {!layerEntry
 									.style.visible
 									? 'bg-accent'
 									: ''}"
 							>
-								<Icon icon={'akar-icons:eye-slashed'} class="h-8 w-8 text-base" />
+								<Icon icon={'akar-icons:eye-slashed'} class="text-base/90 h-8 w-8" />
 							</div>
 
 							<span
@@ -148,7 +139,7 @@
 										class="rounded-full border-2 {layerEntry.style.opacity === item.value &&
 										layerEntry.style.visible
 											? 'border-accent'
-											: 'border-base'}"
+											: 'border-base/80'}"
 									>
 										<img
 											{src}
