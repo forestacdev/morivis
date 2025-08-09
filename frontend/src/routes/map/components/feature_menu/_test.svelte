@@ -12,19 +12,33 @@
 	const SWIPE_THRESHOLD = 100;
 	const VELOCITY_THRESHOLD = 0.5;
 
+	// タップ判定の閾値
+	const TAP_THRESHOLD_TIME = 300; // 300ms以内
+	const TAP_THRESHOLD_DISTANCE = 10; // 10px以内の移動
+
 	let lastTouchTime = 0;
 	let lastTouchY = 0;
 
+	// タッチ判定用
+	let tapStartTime = 0;
+	let tapStartPosition = { x: 0, y: 0 };
+	let touchHandled = $state(false); // 重複防止フラグ
+
 	// タッチ開始
 	const handleTouchStart = (event: TouchEvent) => {
+		touchHandled = false; // フラグをリセット
 		isDragging = true;
 		startY = event.touches[0].clientY;
 		currentY = startY;
 		lastTouchTime = Date.now();
 		lastTouchY = startY;
 
-		// iOS Safariでのスクロール防止
-		event.preventDefault();
+		// タップ判定用の記録
+		tapStartTime = Date.now();
+		tapStartPosition = {
+			x: event.touches[0].clientX,
+			y: event.touches[0].clientY
+		};
 	};
 
 	// タッチ移動
@@ -51,40 +65,61 @@
 
 		// ピクセル値をカード高さに対するパーセンテージに変換
 		translateY = (newOffsetPx / cardHeight) * 100;
-
-		event.preventDefault();
 	};
 
 	// タッチ終了
-	const handleTouchEnd = (_event: TouchEvent) => {
-		if (!isDragging) return;
+	const handleTouchEnd = (event: TouchEvent) => {
+		if (!isDragging || touchHandled) return;
 
 		isDragging = false;
+		touchHandled = true; // 処理済みフラグを設定
+
 		const deltaY = currentY - startY;
 		const now = Date.now();
 		const timeDelta = now - lastTouchTime;
 		const velocity = Math.abs(deltaY) / timeDelta;
 
-		// 現在の位置を基準に判定
-		if (isExpanded) {
-			// 展開状態の場合
-			if (translateY > 25 || (deltaY > SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
-				// 下にスワイプまたは25%より下 → 折りたたみ
-				collapseCard();
-			} else {
-				// そのまま展開状態を維持
-				expandCard();
-			}
+		// タップ判定
+		const tapDuration = now - tapStartTime;
+		const tapDistance = Math.sqrt(
+			Math.pow(event.changedTouches[0].clientX - tapStartPosition.x, 2) +
+				Math.pow(event.changedTouches[0].clientY - tapStartPosition.y, 2)
+		);
+
+		const isTap = tapDuration < TAP_THRESHOLD_TIME && tapDistance < TAP_THRESHOLD_DISTANCE;
+
+		console.log('touchEnd - isTap:', isTap, 'duration:', tapDuration, 'distance:', tapDistance);
+
+		if (isTap) {
+			// タップの場合：状態を切り替え
+			toggleCard();
 		} else {
-			// 折りたたみ状態の場合
-			if (translateY < 25 || (deltaY < -SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
-				// 上にスワイプまたは25%より上 → 展開
-				expandCard();
+			// スワイプの場合：従来のロジック
+			if (isExpanded) {
+				// 展開状態の場合
+				if (translateY > 25 || (deltaY > SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
+					// 下にスワイプまたは25%より下 → 折りたたみ
+					collapseCard();
+				} else {
+					// そのまま展開状態を維持
+					expandCard();
+				}
 			} else {
-				// そのまま折りたたみ状態を維持
-				collapseCard();
+				// 折りたたみ状態の場合
+				if (translateY < 25 || (deltaY < -SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
+					// 上にスワイプまたは25%より上 → 展開
+					expandCard();
+				} else {
+					// そのまま折りたたみ状態を維持
+					collapseCard();
+				}
 			}
 		}
+
+		// 少し遅らせてフラグをリセット
+		setTimeout(() => {
+			touchHandled = false;
+		}, 100);
 	};
 
 	// カード展開
@@ -102,14 +137,35 @@
 		translateY = 50;
 	};
 
+	// 展開・折りたたみの切り替え
+	const toggleCard = () => {
+		if (isExpanded) {
+			collapseCard();
+		} else {
+			expandCard();
+		}
+	};
+
 	// マウスイベント（デスクトップ用）
 	let isMouseDown = $state(false);
+	let mouseStartTime = 0;
+	let mouseStartPosition = { x: 0, y: 0 };
 
 	const handleMouseDown = (event: MouseEvent) => {
+		// タッチイベントが既に処理済みの場合はスキップ
+		if (touchHandled) return;
+
 		isMouseDown = true;
 		startY = event.clientY;
 		currentY = startY;
 		isDragging = true;
+
+		// マウスクリック判定用
+		mouseStartTime = Date.now();
+		mouseStartPosition = {
+			x: event.clientX,
+			y: event.clientY
+		};
 	};
 
 	const handleMouseMove = (event: MouseEvent) => {
@@ -124,33 +180,52 @@
 		const baseOffsetPx = cardHeight * (basePosition / 100);
 		const newOffsetPx = baseOffsetPx + deltaY;
 
-		if (deltaY < 0) {
-			translateY = (newOffsetPx / cardHeight) * 100;
-		} else {
-			const resistedOffsetPx = baseOffsetPx + deltaY * 0.3;
-			translateY = (resistedOffsetPx / cardHeight) * 100;
-		}
+		translateY = (newOffsetPx / cardHeight) * 100;
 	};
 
-	const handleMouseUp = () => {
-		if (!isMouseDown) return;
+	const handleMouseUp = (event: MouseEvent) => {
+		if (!isMouseDown || touchHandled) return;
 
 		isMouseDown = false;
 		isDragging = false;
 		const deltaY = currentY - startY;
+		const now = Date.now();
 
-		// マウスでも同じ判定ロジック
-		if (isExpanded) {
-			if (translateY > 25 || deltaY > SWIPE_THRESHOLD) {
-				collapseCard();
-			} else {
-				expandCard();
-			}
+		// クリック判定
+		const clickDuration = now - mouseStartTime;
+		const clickDistance = Math.sqrt(
+			Math.pow(event.clientX - mouseStartPosition.x, 2) +
+				Math.pow(event.clientY - mouseStartPosition.y, 2)
+		);
+
+		const isClick = clickDuration < TAP_THRESHOLD_TIME && clickDistance < TAP_THRESHOLD_DISTANCE;
+
+		console.log(
+			'mouseUp - isClick:',
+			isClick,
+			'duration:',
+			clickDuration,
+			'distance:',
+			clickDistance
+		);
+
+		if (isClick) {
+			// クリックの場合：状態を切り替え
+			toggleCard();
 		} else {
-			if (translateY < 25 || deltaY < -SWIPE_THRESHOLD) {
-				expandCard();
+			// ドラッグの場合：従来のロジック
+			if (isExpanded) {
+				if (translateY > 25 || deltaY > SWIPE_THRESHOLD) {
+					collapseCard();
+				} else {
+					expandCard();
+				}
 			} else {
-				collapseCard();
+				if (translateY < 25 || deltaY < -SWIPE_THRESHOLD) {
+					expandCard();
+				} else {
+					collapseCard();
+				}
 			}
 		}
 	};
