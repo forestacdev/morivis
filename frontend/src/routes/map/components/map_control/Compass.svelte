@@ -55,24 +55,23 @@
 </script>
 
 <!-- PC -->
-<div class="absolute bottom-8 right-8">
-	<div
-		bind:this={element}
-		class="border-3 grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
+
+<div
+	bind:this={element}
+	class="border-3 grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
+>
+	<svg
+		class="scale-60 h-full w-full"
+		xmlns="http://www.w3.org/2000/svg"
+		width="132"
+		height="132"
+		viewBox="0 0 132 132"
 	>
-		<svg
-			class="scale-60 h-full w-full"
-			xmlns="http://www.w3.org/2000/svg"
-			width="132"
-			height="132"
-			viewBox="0 0 132 132"
-		>
-			<g transform="translate(47,0)">
-				<path fill="#77D4AC" d="m19 0 16.455 66H2.545L19 0Z" />
-				<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
-			</g>
-		</svg>
-	</div>
+		<g transform="translate(47,0)">
+			<path fill="#77D4AC" d="m19 0 16.455 66H2.545L19 0Z" />
+			<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
+		</g>
+	</svg>
 </div>
 
 <style>

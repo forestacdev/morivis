@@ -51,7 +51,7 @@
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
-	import { fade } from 'svelte/transition';
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -536,8 +536,17 @@
 	<!-- <ThreeScreen /> -->
 
 	<MapControl />
+
 	{#if !$isStreetView}
-		<Compass />
+		<!-- PC用地図コントロール -->
+		<div class="absolute bottom-6 right-6 max-lg:hidden">
+			<Compass />
+		</div>
+
+		<!-- スマホ用地図コントロール -->
+		<div class="absolute bottom-[90px] right-5 lg:hidden">
+			<MobileMapControl />
+		</div>
 	{/if}
 	<!-- <MapStatePane /> -->
 	<SelectionPopup

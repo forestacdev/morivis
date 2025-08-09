@@ -137,7 +137,7 @@ const createMapStore = () => {
 
 		map = new maplibregl.Map({
 			...mapPosition,
-			minZoom: 2, // 最小ズームレベル
+			minZoom: checkPc() ? 2 : 1, // 最小ズームレベル
 			container: mapContainer,
 			// canvasContextAttributes: {
 			// 	// WebGLのコンテキスト属性を設定

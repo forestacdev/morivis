@@ -77,7 +77,7 @@
 
 	const updateThrottle = throttle(() => {
 		updateMarkers();
-	}, 100);
+	}, 500);
 
 	const onClick = (featureId: number) => {
 		const poiData = poiDatas.find((data) => data.featureId === featureId);
@@ -124,8 +124,9 @@
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
-			updateThrottle();
+			updateMarkers();
 			map.on('move', updateThrottle);
+			map.on('moveend', updateMarkers);
 		});
 	});
 
