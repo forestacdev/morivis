@@ -45,16 +45,18 @@
 	import { slide } from 'svelte/transition';
 	import type { ResultData } from './utils/feature';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
-	import { PCFShadowMap } from 'three';
 
-	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
+	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
-	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 
-	let layerEntriesData = $derived.by(() => {
+	const getLayerEntriesData = (): GeoDataEntry[] => {
+		// tempが空の場合は定数のみ返す
+		if (tempLayerEntries.length === 0) {
+			return geoDataEntries;
+		}
 		return [...geoDataEntries, ...tempLayerEntries];
-	});
+	};
 
 	let demEntries = $derived.by(() => {
 		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
@@ -72,23 +74,27 @@
 			return null;
 		}
 	});
-	let inputSearchWord = $state<string>(''); // 検索ワード
 
-	let drawGeojsonData = $state<DrawGeojsonData>({
+	// 検索ワード
+	let inputSearchWord = $state<string>('');
+
+	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
 		features: []
 	}); // 描画データ
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
+
+	type NodeConnections = Record<string, string[]>;
 	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
 
 	let streetViewPoint = $state<StreetViewPoint | null>(null);
-	let streetViewPointData = $state<StreetViewPointGeoJson>({
+	let streetViewPointData = $state.raw<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []
 	});
-	let streetViewLineData = $state<FeatureCollection>({
+	let streetViewLineData = $state.raw<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
@@ -110,6 +116,7 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
+
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
 	let results = $state<ResultData[] | null>([]);
@@ -306,7 +313,7 @@
 				newLayerEntries.push(layer);
 			} else {
 				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
-				layer = layerEntriesData.find((entry) => entry.id === id);
+				layer = getLayerEntriesData().find((entry) => entry.id === id);
 
 				if (layer) {
 					// layerEntriesData から取得したオブジェクトを、初期状態として追加
