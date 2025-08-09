@@ -35,6 +35,12 @@
 	body {
 		overscroll-behavior-y: none;
 	}
+
+	/* タップハイライトの色を透明にする */
+	* {
+		-webkit-tap-highlight-color: transparent;
+		user-select: none;
+	}
 }
 
 @utility c-btn-confirm {
