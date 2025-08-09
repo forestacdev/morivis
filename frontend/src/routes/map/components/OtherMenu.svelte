@@ -13,7 +13,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
-	import { checkPc } from '../utils/ui';
+	import { checkMobile, checkPc } from '../utils/ui';
 
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
@@ -21,12 +21,12 @@
 	};
 
 	const toggleInfoDialog = () => {
-		showOtherMenu.set(false);
+		if (checkPc()) showOtherMenu.set(false);
 		showInfoDialog.set(!$showInfoDialog);
 	};
 
 	const toggleTermsDialog = () => {
-		showOtherMenu.set(false);
+		if (checkPc()) showOtherMenu.set(false);
 		showTermsDialog.set(!$showTermsDialog);
 	};
 
@@ -108,7 +108,7 @@
 				<span class="select-none">地図の解析</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 				onclick={toggleDataMenu}
 			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
@@ -121,7 +121,7 @@
 				<span class="select-none">設定</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 				onclick={mapExport}
 			>
 				<Icon icon="bx:export" class="h-8 w-8" />
