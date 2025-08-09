@@ -50,14 +50,7 @@
 		const newOffsetPx = baseOffsetPx + deltaY;
 
 		// ピクセル値をカード高さに対するパーセンテージに変換
-		if (deltaY < 0) {
-			// 上方向：完全に1:1
-			translateY = (newOffsetPx / cardHeight) * 100;
-		} else {
-			// 下方向：抵抗感を追加
-
-			translateY = (newOffsetPx / cardHeight) * 100;
-		}
+		translateY = (newOffsetPx / cardHeight) * 100;
 
 		event.preventDefault();
 	};
