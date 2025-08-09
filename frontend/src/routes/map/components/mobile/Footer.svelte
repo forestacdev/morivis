@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
-	import { showLayerMenu, showDataMenu, showSideMenu } from '$routes/stores/ui';
+	import { showLayerMenu, showDataMenu, showOtherMenu } from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
@@ -18,22 +18,22 @@
 				case 'map':
 					showDataMenu.set(false);
 					showLayerMenu.set(false);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
 					break;
 				case 'layer':
 					showDataMenu.set(false);
 					showLayerMenu.set(true);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
 					break;
 				case 'data':
 					showDataMenu.set(true);
 					showLayerMenu.set(false);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
 					break;
 				case 'other':
 					showDataMenu.set(false);
 					showLayerMenu.set(false);
-					showSideMenu.set(true);
+					showOtherMenu.set(true);
 					break;
 				default:
 			}

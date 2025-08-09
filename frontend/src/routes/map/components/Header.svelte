@@ -6,7 +6,7 @@
 	import LabelControl from '$routes/map/components/map_control/LabelControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import { mapMode } from '$routes/stores';
-	import { isProcessing, showSearchMenu, showSideMenu, showDataMenu } from '$routes/stores/ui';
+	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { type LngLat } from 'maplibre-gl';
@@ -151,7 +151,7 @@
 	};
 
 	mapMode.subscribe((mode) => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 	});
 
 	// レイヤーのリセット処理
@@ -272,7 +272,7 @@
 		<!-- ハンバーガーメニュー -->
 		<button
 			class="hover:text-accent cursor-pointer rounded-full p-2 p-2 text-left text-base drop-shadow-lg duration-100"
-			onclick={() => showSideMenu.set(true)}
+			onclick={() => showOtherMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
 		</button>

@@ -8,7 +8,7 @@ export const isProcessing = writable<boolean>(false);
 export const isBlocked = writable<boolean>(false);
 
 /** サイドメニューの表示状態 */
-export const showSideMenu = writable<boolean>(false);
+export const showOtherMenu = writable<boolean>(false);
 
 /** レイヤーメニューの表示 */
 export const showLayerMenu = writable<boolean>(true);

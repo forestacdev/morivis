@@ -4,7 +4,7 @@
 
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { mapMode, isDebugMode } from '$routes/stores';
-	import { showSideMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
+	import { showOtherMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -16,22 +16,22 @@
 	import { checkPc } from '../utils/ui';
 
 	const toggleDataMenu = () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		showDataMenu.set(!$showDataMenu);
 	};
 
 	const toggleInfoDialog = () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		showInfoDialog.set(!$showInfoDialog);
 	};
 
 	const toggleTermsDialog = () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		showTermsDialog.set(!$showTermsDialog);
 	};
 
 	const mapExport = async () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		isProcessing.set(true);
 		const map = mapStore.getMap();
 		if (!map) return;
@@ -41,7 +41,7 @@
 	};
 
 	const goHome = async () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		if (import.meta.env.MODE === 'production') {
 			goto('/morivis');
 		} else {
@@ -49,20 +49,20 @@
 		}
 	};
 	mapMode.subscribe((mode) => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 	});
 </script>
 
-{#if $showSideMenu}
+{#if $showOtherMenu}
 	<div
 		transition:fade={{ duration: 300 }}
 		class="absolute left-0 top-0 h-full w-full bg-black/50 lg:z-30"
 		role="button"
 		tabindex="0"
-		onclick={() => showSideMenu.set(false)}
+		onclick={() => showOtherMenu.set(false)}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
-				showSideMenu.set(false);
+				showOtherMenu.set(false);
 			}
 		}}
 	></div>
@@ -75,7 +75,7 @@
 				<FacLogo width={'250px'} />
 			</div>
 			<button
-				onclick={() => showSideMenu.set(false)}
+				onclick={() => showOtherMenu.set(false)}
 				class="bg-base cursor-pointer rounded-full p-2 max-lg:hidden"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />

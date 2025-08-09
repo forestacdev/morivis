@@ -19,7 +19,7 @@
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
-	import SideMenu from '$routes/map/components/SideMenu.svelte';
+	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 
@@ -31,7 +31,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, showLayerMenu, showSideMenu } from '$routes/stores/ui';
+	import { isBlocked, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -349,8 +349,8 @@
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
 			<!-- スマホ用その他メニュー -->
-			<div class="relative h-full w-full lg:hidden {$showSideMenu ? 'block' : 'hidden'}">
-				<SideMenu />
+			<div class="relative h-full w-full lg:hidden {$showOtherMenu ? 'block' : 'hidden'}">
+				<OtherMenu />
 			</div>
 
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
@@ -464,7 +464,7 @@
 
 <!-- PC用その他メニュー -->
 <div class="max-lg:hidden">
-	<SideMenu />
+	<OtherMenu />
 </div>
 <NotificationMessage />
 
