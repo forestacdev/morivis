@@ -10,6 +10,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	// import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
+	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
@@ -331,8 +332,6 @@
 		// コンポーネントが破棄されるときに、スト
 		isInitialized = false;
 	});
-
-	import Test from '$routes/map/components/feature_menu/_test.svelte';
 </script>
 
 {#if isInitialized}
@@ -432,7 +431,7 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-		<Test />
+		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 		<PreviewMenu bind:showDataEntry />
 
 		{#if !showDataEntry && !showZoneForm}
@@ -453,7 +452,7 @@
 			/>
 		{/if}
 
-		<MobileFooter {showDataEntry} />
+		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
 {/if}
 <UploadDialog

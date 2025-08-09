@@ -499,8 +499,6 @@ const createMapStore = () => {
 				offset: [0, -offsetY],
 				duration: 300
 			});
-
-			console.log(offsetY);
 		}
 	};
 
