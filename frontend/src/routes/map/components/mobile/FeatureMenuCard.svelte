@@ -6,6 +6,7 @@
 	import { checkMobile } from '$routes/map/utils/ui';
 	import { fly } from 'svelte/transition';
 	import Icon from '@iconify/svelte';
+	import { generatePopupTitle } from '$routes/map/utils/properties';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -457,6 +458,24 @@
 			collapseCard();
 		}
 	});
+
+	let propId = $derived.by(() => {
+		if (featureMenuData && featureMenuData.properties) {
+			return featureMenuData.properties._prop_id;
+		} else {
+			return null;
+		}
+	});
+
+	let targetLayer = $derived.by(() => {
+		if (featureMenuData) {
+			const layer = layerEntries.find(
+				(entry) => featureMenuData && entry.id === featureMenuData.layerId
+			);
+			return layer;
+		}
+		return null;
+	});
 </script>
 
 {#if featureMenuData && checkMobile()}
@@ -482,7 +501,24 @@
 			<div class="handle-bar h-1 w-10 rounded bg-gray-400"></div>
 		</div>
 
-		<div class=" flex w-full justify-between p-4 px-6">
+		<div class="flex w-full items-center justify-between p-4 px-4">
+			<!-- タイトル -->
+			<div>
+				{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
+					<!-- poiタイトル -->
+					<span class="text-[22px] text-base font-bold">{featureMenuData.properties.name}</span>
+				{:else}
+					<!-- その他 -->
+					<span class="text-[22px] text-base font-bold"
+						>{targetLayer &&
+						targetLayer.type === 'vector' &&
+						targetLayer.properties.titles.length &&
+						featureMenuData.properties
+							? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+							: targetLayer?.metaData.name}</span
+					>
+				{/if}
+			</div>
 			<button
 				onclick={() => (featureMenuData = null)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"

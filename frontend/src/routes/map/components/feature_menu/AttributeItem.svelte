@@ -19,7 +19,7 @@
 		<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" />
 		<span class="text-base font-semibold">{key}</span>
 	</div>
-	<div class="w-full p-2 pl-6">
+	<div class="w-full pl-6 pt-2 lg:pr-2">
 		<button
 			onclick={() => copyToClipboard(value)}
 			onmouseover={() => (isHover = true)}

@@ -123,8 +123,6 @@
 			showSelectionMarker = false;
 		}
 	});
-
-	let isMaximization = $state<boolean>(false);
 </script>
 
 <!-- PC -->
