@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import gsap from 'gsap';
 
 	let cardElement = $state<HTMLElement | null>(null);
 	let contentElement = $state<HTMLElement | null>(null);
@@ -31,18 +32,7 @@
 	let tapStartPosition = { x: 0, y: 0 };
 	let touchHandled = $state(false);
 
-	// anime.jsをCDNから読み込み
-	let anime: any = null;
-
-	onMount(async () => {
-		// anime.jsをCDNから動的読み込み
-		const script = document.createElement('script');
-		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js';
-		script.onload = () => {
-			anime = (window as any).anime;
-		};
-		document.head.appendChild(script);
-
+	onMount(() => {
 		// グローバルマウスイベント
 		document.addEventListener('mousemove', handleMouseMove);
 		document.addEventListener('mouseup', handleMouseUp);
@@ -54,18 +44,20 @@
 	});
 
 	// アニメーション関数
-	const animateCard = (targetY: number, duration: number = 300) => {
-		if (!anime || !cardElement) return;
+	const animateCard = (targetY: number, duration: number = 0.3) => {
+		if (!cardElement) return;
 
 		isAnimating = true;
 		isFullyAnimated = false;
 
-		anime({
-			targets: cardElement,
-			translateY: `${targetY}%`,
+		// 現在位置を正確に設定してからアニメーション開始
+		gsap.set(cardElement, { y: `${translateY}%` });
+
+		gsap.to(cardElement, {
+			y: `${targetY}%`,
 			duration: duration,
-			easing: 'easeOutCubic',
-			complete: () => {
+			ease: 'power2.out',
+			onComplete: () => {
 				isAnimating = false;
 				isFullyAnimated = true;
 				translateY = targetY;
@@ -100,8 +92,8 @@
 		lastTouchY = startY;
 
 		// アニメーション中の場合は停止
-		if (isAnimating && anime && cardElement) {
-			anime.remove(cardElement);
+		if (isAnimating && cardElement) {
+			gsap.killTweensOf(cardElement);
 			isAnimating = false;
 		}
 
@@ -266,8 +258,8 @@
 		isDragging = true;
 
 		// アニメーション中の場合は停止
-		if (isAnimating && anime && cardElement) {
-			anime.remove(cardElement);
+		if (isAnimating && cardElement) {
+			gsap.killTweensOf(cardElement);
 			isAnimating = false;
 		}
 
