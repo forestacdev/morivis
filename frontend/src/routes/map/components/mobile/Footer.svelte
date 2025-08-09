@@ -47,12 +47,10 @@
 </script>
 
 <!-- フッターのメニュー -->
-{#if !featureMenuData}
+{#if !featureMenuData && !showDataEntry}
 	<div
 		transition:fly={{ y: 100, duration: 300 }}
-		class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
-			? 'hidden'
-			: ''}"
+		class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry}"
 		style="height: {footerHeight}px;"
 	>
 		<button

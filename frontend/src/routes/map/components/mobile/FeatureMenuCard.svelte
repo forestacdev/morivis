@@ -5,6 +5,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { checkMobile } from '$routes/map/utils/ui';
 	import { fly } from 'svelte/transition';
+	import Icon from '@iconify/svelte';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -419,6 +420,12 @@
 			}
 		}
 	};
+
+	$effect(() => {
+		if (!featureMenuData) {
+			collapseCard();
+		}
+	});
 </script>
 
 {#if featureMenuData && checkMobile()}
@@ -430,7 +437,7 @@
 			opacity: 0
 		}}
 		bind:this={cardElement}
-		class="absolute bottom-0 z-20 h-[calc(100%_-_20px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] bg-white shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)]"
+		class="bg-main absolute bottom-0 z-20 h-[calc(100%_-_20px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)]"
 		style="transform: translateY({translateY}%)"
 		ontouchstart={handleTouchStart}
 		ontouchmove={handleTouchMove}
@@ -441,15 +448,16 @@
 	>
 		<!-- ハンドルバー -->
 		<div class="flex cursor-grab justify-center p-[12px_0_8px]">
-			<div class="handle-bar h-1 w-10 rounded bg-gray-300"></div>
+			<div class="handle-bar h-1 w-10 rounded bg-gray-400"></div>
 		</div>
 
-		<!-- 状態表示 -->
-		<div class="px-4 pb-2 text-xs text-gray-500">
-			{isExpanded ? '展開' : '折りたたみ'} |
-			{isAnimating ? 'アニメーション中' : isFullyAnimated ? '完了' : '待機'} | Y: {Math.round(
-				translateY
-			)}% | 速度: {velocityTracker.length > 1 ? Math.round(calculateVelocity() * 1000) : 0}px/s
+		<div class=" flex w-full justify-between p-4 px-6">
+			<button
+				onclick={() => (featureMenuData = null)}
+				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
+			>
+				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+			</button>
 		</div>
 
 		<!-- スクロール可能なコンテンツ -->
