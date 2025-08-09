@@ -47,8 +47,6 @@
 		if (!map || !mapStore.isInitialized()) return;
 		if (!$showLabelLayer || !mapStore.getLayer(poiLayersIds[0])) return;
 
-		console.log('Updating POI markers...');
-
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
 		const featureDataArray: PoiData[] = [];

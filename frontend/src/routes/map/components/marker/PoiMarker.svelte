@@ -132,36 +132,38 @@
 </script>
 
 {#if properties._prop_id === 'fac_top'}
-	{#if isReady}
-		<button
-			bind:this={markerContainer}
-			class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
-			onclick={jumpToFac}
-			onfocus={() => onHover(true)}
-			onblur={() => onHover(false)}
-			onmouseover={() => onHover(true)}
-			onmouseleave={() => onHover(false)}
-		>
-			{#if showImage}
-				<img
-					transition:scale={{ duration: 300, start: 0.5 }}
-					class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
-					src={imageUrl}
-					alt={properties.name}
-				/>
-			{:else if showPlaceholder}
-				<div class="absolute h-[50px] w-[50px] animate-pulse rounded-full bg-gray-300"></div>
-			{:else if imageError}
-				<!-- エラー時のフォールバック -->
-				<div
-					transition:scale={{ duration: 300, start: 0.5 }}
-					class="absolute flex h-[50px] w-[50px] items-center justify-center rounded-full bg-gray-400"
-				>
-					<span class="text-xs text-white">?</span>
-				</div>
-			{/if}
-		</button>
-	{/if}
+	<div
+		bind:this={markerContainer}
+		class="pointer-events-none relative grid w-[150px] place-items-center"
+	>
+		{#if isReady}
+			<button
+				class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
+				onclick={jumpToFac}
+				onfocus={() => onHover(true)}
+				onblur={() => onHover(false)}
+				onmouseover={() => onHover(true)}
+				onmouseleave={() => onHover(false)}
+			>
+				{#if showImage}
+					<img
+						transition:fade={{ duration: 100 }}
+						class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
+						src={imageUrl}
+						alt={properties.name}
+					/>
+				{:else if imageError}
+					<!-- エラー時のフォールバック -->
+					<div
+						transition:fade={{ duration: 100 }}
+						class="absolute flex h-[50px] w-[50px] items-center justify-center rounded-full bg-gray-400"
+					>
+						<span class="text-xs text-white">?</span>
+					</div>
+				{/if}
+			</button>
+		{/if}
+	</div>
 {:else}
 	<div
 		bind:this={markerContainer}
