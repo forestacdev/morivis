@@ -178,7 +178,7 @@
 			>
 				{#if showImage}
 					<img
-						transition:scale={{ duration: 200, start: 0.3 }}
+						transition:fade={{ duration: 100 }}
 						class="border-base bg-main border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-110'
@@ -189,7 +189,7 @@
 				{:else if imageError}
 					<!-- エラー時のフォールバック -->
 					<div
-						transition:scale={{ duration: 200, start: 0.3 }}
+						transition:fade={{ duration: 100 }}
 						class="border-base border-3 absolute flex h-full w-full items-center justify-center rounded-full bg-gray-400 transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-110'
