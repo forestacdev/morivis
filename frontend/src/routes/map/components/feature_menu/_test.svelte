@@ -2,11 +2,13 @@
 	import { onMount } from 'svelte';
 
 	let cardElement = $state<HTMLElement | null>(null);
+	let contentElement = $state<HTMLElement | null>(null);
 	let isDragging = $state(false);
 	let startY = $state(0);
 	let currentY = $state(0);
 	let translateY = $state(50); // 初期位置：50%下に配置
 	let isExpanded = $state(false);
+	let isFullyExpanded = $state(false); // 完全展開状態
 
 	// スワイプ検知の閾値
 	const SWIPE_THRESHOLD = 100;
@@ -24,9 +26,32 @@
 	let tapStartPosition = { x: 0, y: 0 };
 	let touchHandled = $state(false); // 重複防止フラグ
 
+	// 内部スクロール判定用（削除）
+	// let isScrolling = $state(false);
+
 	// タッチ開始
 	const handleTouchStart = (event: TouchEvent) => {
-		touchHandled = false; // フラグをリセット
+		touchHandled = false;
+
+		// 完全展開時の特別処理
+		if (isFullyExpanded && contentElement) {
+			const touch = event.touches[0];
+			const rect = contentElement.getBoundingClientRect();
+			const isInsideContent = touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+
+			// コンテンツエリア内でタッチが開始された場合
+			if (isInsideContent) {
+				// スクロール位置をチェック
+				const isAtTop = contentElement.scrollTop === 0;
+
+				// スクロールが途中の場合は、まずスクロール操作を優先
+				if (!isAtTop) {
+					// この時点ではカードのドラッグを開始しない
+					return;
+				}
+			}
+		}
+
 		isDragging = true;
 		startY = event.touches[0].clientY;
 		currentY = startY;
@@ -43,18 +68,51 @@
 
 	// タッチ移動
 	const handleTouchMove = (event: TouchEvent) => {
-		if (!isDragging || !cardElement) return;
+		if (!cardElement) return;
 
-		currentY = event.touches[0].clientY;
+		const touch = event.touches[0];
+		currentY = touch.clientY;
 		const deltaY = currentY - startY;
+
+		// 完全展開時の特別処理
+		if (isFullyExpanded && contentElement) {
+			const rect = contentElement.getBoundingClientRect();
+			const isInsideContent = touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+
+			if (isInsideContent) {
+				const isAtTop = contentElement.scrollTop === 0;
+
+				// 下向きスワイプの場合
+				if (deltaY > 0) {
+					// スクロールが先頭でない場合は、スクロールを優先
+					if (!isAtTop) {
+						// カードは動かさず、通常のスクロール動作に任せる
+						return;
+					}
+					// スクロールが先頭の場合のみ、カードのドラッグを開始
+					if (!isDragging) {
+						isDragging = true;
+						startY = touch.clientY;
+						currentY = startY;
+					}
+				}
+				// 上向きスワイプの場合は常にスクロールを優先
+				else if (deltaY < 0) {
+					return;
+				}
+			}
+		}
+
+		// カードドラッグが有効でない場合は処理しない
+		if (!isDragging) return;
 
 		// カードの高さを取得
 		const cardHeight = cardElement.offsetHeight;
 
 		// 現在の状態に応じてベース位置を決定
 		let basePosition: number;
-		if (isExpanded) {
-			basePosition = 0; // 展開時は0%がベース
+		if (isFullyExpanded || isExpanded) {
+			basePosition = 0; // 展開時・完全展開時は0%がベース
 		} else {
 			basePosition = 50; // 通常時は50%がベース
 		}
@@ -64,7 +122,27 @@
 		const newOffsetPx = baseOffsetPx + deltaY;
 
 		// ピクセル値をカード高さに対するパーセンテージに変換
-		translateY = (newOffsetPx / cardHeight) * 100;
+		let newTranslateY = (newOffsetPx / cardHeight) * 100;
+
+		// Yが0以下にならないように制限
+		if (newTranslateY <= 0) {
+			newTranslateY = 0;
+			// 0に到達したら完全展開状態にして、スクロールを開始
+			if (!isFullyExpanded) {
+				isFullyExpanded = true;
+				isExpanded = true;
+			}
+
+			// 0に到達後の上スワイプをスクロールに変換
+			if (deltaY < 0 && contentElement) {
+				const scrollDelta = Math.abs(deltaY - (startY - cardHeight * 0));
+				contentElement.scrollTop += scrollDelta * 0.5;
+			}
+		} else {
+			translateY = newTranslateY;
+			// 完全展開状態の更新
+			isFullyExpanded = translateY <= 0 && isExpanded;
+		}
 	};
 
 	// タッチ終了
@@ -72,7 +150,7 @@
 		if (!isDragging || touchHandled) return;
 
 		isDragging = false;
-		touchHandled = true; // 処理済みフラグを設定
+		touchHandled = true;
 
 		const deltaY = currentY - startY;
 		const now = Date.now();
@@ -88,31 +166,20 @@
 
 		const isTap = tapDuration < TAP_THRESHOLD_TIME && tapDistance < TAP_THRESHOLD_DISTANCE;
 
-		console.log('touchEnd - isTap:', isTap, 'duration:', tapDuration, 'distance:', tapDistance);
-
 		if (isTap) {
 			// タップの場合：状態を切り替え
 			toggleCard();
 		} else {
-			// スワイプの場合：従来のロジック
-			if (isExpanded) {
-				// 展開状態の場合
-				if (translateY > 25 || (deltaY > SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
-					// 下にスワイプまたは25%より下 → 折りたたみ
-					collapseCard();
-				} else {
-					// そのまま展開状態を維持
-					expandCard();
-				}
+			// スワイプの場合：判定ロジックを調整
+			if (translateY <= 0) {
+				// 0%位置にいる場合は完全展開
+				fullyExpandCard();
+			} else if (translateY <= 25) {
+				// 25%より上の場合は展開
+				expandCard();
 			} else {
-				// 折りたたみ状態の場合
-				if (translateY < 25 || (deltaY < -SWIPE_THRESHOLD && velocity > VELOCITY_THRESHOLD)) {
-					// 上にスワイプまたは25%より上 → 展開
-					expandCard();
-				} else {
-					// そのまま折りたたみ状態を維持
-					collapseCard();
-				}
+				// それ以外は折りたたみ
+				collapseCard();
 			}
 		}
 
@@ -122,25 +189,33 @@
 		}, 100);
 	};
 
+	// カード完全展開
+	const fullyExpandCard = () => {
+		isExpanded = true;
+		isFullyExpanded = true;
+		translateY = 0; // 展開時と同じ位置
+	};
+
 	// カード展開
 	const expandCard = () => {
 		isExpanded = true;
-		// 現在位置から展開位置へ滑らかに移動
-		if (translateY > 0) {
-			translateY = 0;
-		}
+		isFullyExpanded = false;
+		translateY = 0;
 	};
 
 	// カード折りたたみ
 	const collapseCard = () => {
 		isExpanded = false;
+		isFullyExpanded = false;
 		translateY = 50;
 	};
 
 	// 展開・折りたたみの切り替え
 	const toggleCard = () => {
-		if (isExpanded) {
+		if (isFullyExpanded) {
 			collapseCard();
+		} else if (isExpanded) {
+			fullyExpandCard();
 		} else {
 			expandCard();
 		}
@@ -152,7 +227,6 @@
 	let mouseStartPosition = { x: 0, y: 0 };
 
 	const handleMouseDown = (event: MouseEvent) => {
-		// タッチイベントが既に処理済みの場合はスキップ
 		if (touchHandled) return;
 
 		isMouseDown = true;
@@ -160,7 +234,6 @@
 		currentY = startY;
 		isDragging = true;
 
-		// マウスクリック判定用
 		mouseStartTime = Date.now();
 		mouseStartPosition = {
 			x: event.clientX,
@@ -175,12 +248,23 @@
 		const deltaY = currentY - startY;
 		const cardHeight = cardElement.offsetHeight;
 
-		// マウスでも同じロジックを適用
-		let basePosition = isExpanded ? 0 : 50;
+		let basePosition = isFullyExpanded || isExpanded ? 0 : 50;
 		const baseOffsetPx = cardHeight * (basePosition / 100);
 		const newOffsetPx = baseOffsetPx + deltaY;
 
-		translateY = (newOffsetPx / cardHeight) * 100;
+		let newTranslateY = (newOffsetPx / cardHeight) * 100;
+
+		// Yが0以下にならないように制限
+		if (newTranslateY <= 0) {
+			newTranslateY = 0;
+			if (!isFullyExpanded) {
+				isFullyExpanded = true;
+				isExpanded = true;
+			}
+		} else {
+			translateY = newTranslateY;
+			isFullyExpanded = translateY <= 0 && (isExpanded || isFullyExpanded);
+		}
 	};
 
 	const handleMouseUp = (event: MouseEvent) => {
@@ -191,7 +275,6 @@
 		const deltaY = currentY - startY;
 		const now = Date.now();
 
-		// クリック判定
 		const clickDuration = now - mouseStartTime;
 		const clickDistance = Math.sqrt(
 			Math.pow(event.clientX - mouseStartPosition.x, 2) +
@@ -200,38 +283,21 @@
 
 		const isClick = clickDuration < TAP_THRESHOLD_TIME && clickDistance < TAP_THRESHOLD_DISTANCE;
 
-		console.log(
-			'mouseUp - isClick:',
-			isClick,
-			'duration:',
-			clickDuration,
-			'distance:',
-			clickDistance
-		);
-
 		if (isClick) {
-			// クリックの場合：状態を切り替え
 			toggleCard();
 		} else {
-			// ドラッグの場合：従来のロジック
-			if (isExpanded) {
-				if (translateY > 25 || deltaY > SWIPE_THRESHOLD) {
-					collapseCard();
-				} else {
-					expandCard();
-				}
+			// ドラッグの場合：シンプルな判定
+			if (translateY <= 0) {
+				fullyExpandCard();
+			} else if (translateY <= 25) {
+				expandCard();
 			} else {
-				if (translateY < 25 || deltaY < -SWIPE_THRESHOLD) {
-					expandCard();
-				} else {
-					collapseCard();
-				}
+				collapseCard();
 			}
 		}
 	};
 
 	onMount(() => {
-		// グローバルマウスイベント
 		document.addEventListener('mousemove', handleMouseMove);
 		document.addEventListener('mouseup', handleMouseUp);
 
@@ -245,7 +311,7 @@
 <!-- スワイプ可能なカード -->
 <div
 	bind:this={cardElement}
-	class="absolute bottom-0 h-[calc(100%_-_50px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] bg-white shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)] {!isDragging
+	class="absolute bottom-0 h-[calc(100%_-_20px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] bg-white shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)] {!isDragging
 		? 'transition-transform duration-300 ease-out'
 		: ''}"
 	style="transform: translateY({translateY}%)"
@@ -258,10 +324,109 @@
 >
 	<!-- ハンドルバー -->
 	<div class="flex cursor-grab justify-center p-[12px_0_8px]">
-		<div class="handle-bar h-1 w-10 rounded bg-gray-500"></div>
+		<div class="handle-bar h-1 w-10 rounded bg-gray-300"></div>
 	</div>
-	{translateY}
 
-	<!-- カードコンテンツ -->
-	<div class="p-2"></div>
+	<!-- 状態表示 -->
+	<div class="px-4 pb-2 text-xs text-gray-500">
+		{isFullyExpanded ? '完全展開' : isExpanded ? '展開' : '折りたたみ'} | Y: {Math.round(
+			translateY
+		)}%
+	</div>
+
+	<!-- スクロール可能なコンテンツ -->
+	<div
+		bind:this={contentElement}
+		class="h-[calc(100%_-_60px)] overflow-y-auto px-4 pb-4"
+		class:touch-auto={isFullyExpanded}
+		class:touch-none={!isFullyExpanded}
+		onscroll={(e) => {
+			// スクロール位置をログ出力（デバッグ用）
+			// console.log('Scroll position:', e.target.scrollTop);
+		}}
+	>
+		<!-- ダミーコンテンツ -->
+		<div class="space-y-4">
+			<div class="rounded-lg bg-blue-50 p-4">
+				<h3 class="text-lg font-semibold text-blue-900">セクション 1</h3>
+				<p class="mt-2 text-blue-800">
+					これはスクロール可能なコンテンツのサンプルです。カードを最大まで展開すると、このエリアが通常のスクロール動作をします。
+				</p>
+			</div>
+
+			<div class="rounded-lg bg-green-50 p-4">
+				<h3 class="text-lg font-semibold text-green-900">セクション 2</h3>
+				<p class="mt-2 text-green-800">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+					ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+				</p>
+				<ul class="mt-3 list-inside list-disc text-green-800">
+					<li>リストアイテム 1</li>
+					<li>リストアイテム 2</li>
+					<li>リストアイテム 3</li>
+				</ul>
+			</div>
+
+			<div class="rounded-lg bg-purple-50 p-4">
+				<h3 class="text-lg font-semibold text-purple-900">セクション 3</h3>
+				<p class="mt-2 text-purple-800">
+					長いコンテンツをスクロールして確認できます。カードが完全展開状態の時のみ、内部スクロールが有効になります。
+				</p>
+			</div>
+
+			<div class="rounded-lg bg-orange-50 p-4">
+				<h3 class="text-lg font-semibold text-orange-900">セクション 4</h3>
+				<p class="mt-2 text-orange-800">
+					Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+					nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+				</p>
+			</div>
+
+			<div class="rounded-lg bg-pink-50 p-4">
+				<h3 class="text-lg font-semibold text-pink-900">セクション 5</h3>
+				<p class="mt-2 text-pink-800">
+					Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
+					laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore.
+				</p>
+				<div class="mt-3 grid grid-cols-2 gap-2">
+					<div class="rounded bg-pink-100 p-2 text-sm">カード 1</div>
+					<div class="rounded bg-pink-100 p-2 text-sm">カード 2</div>
+					<div class="rounded bg-pink-100 p-2 text-sm">カード 3</div>
+					<div class="rounded bg-pink-100 p-2 text-sm">カード 4</div>
+				</div>
+			</div>
+
+			<div class="rounded-lg bg-indigo-50 p-4">
+				<h3 class="text-lg font-semibold text-indigo-900">セクション 6</h3>
+				<p class="mt-2 text-indigo-800">
+					At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium
+					voluptatum deleniti atque corrupti.
+				</p>
+			</div>
+
+			<div class="rounded-lg bg-teal-50 p-4">
+				<h3 class="text-lg font-semibold text-teal-900">セクション 7</h3>
+				<p class="mt-2 text-teal-800">
+					Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta
+					nobis est eligendi optio cumque.
+				</p>
+			</div>
+
+			<div class="rounded-lg bg-red-50 p-4">
+				<h3 class="text-lg font-semibold text-red-900">最終セクション</h3>
+				<p class="mt-2 text-red-800">
+					これが最後のセクションです。ここまでスクロールできれば、内部スクロール機能が正常に動作しています。
+				</p>
+				<div class="mt-4 rounded-lg bg-red-100 p-3">
+					<p class="text-sm text-red-700">
+						💡 ヒント:
+						カードを完全展開状態（完全展開表示）にしてから、このエリア内でスクロールしてみてください。
+					</p>
+				</div>
+			</div>
+
+			<!-- スクロール確認用の余白 -->
+			<div class="h-20"></div>
+		</div>
+	</div>
 </div>
