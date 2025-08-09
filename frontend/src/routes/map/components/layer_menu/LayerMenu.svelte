@@ -21,6 +21,7 @@
 	} from '$routes/map/utils/entries';
 	import FacCottageSvg from '$lib/components/svgs/fac/cottage.svelte';
 	import LayerIcon from '../atoms/LayerIcon.svelte';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -96,7 +97,12 @@
 
 {#if $showLayerMenu}
 	<div
-		transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
+		transition:fly={{
+			duration: checkPc() ? 300 : 0,
+			y: checkPc() ? 100 : 0,
+			opacity: 0,
+			delay: checkPc() ? 100 : 0
+		}}
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
@@ -106,7 +112,7 @@
 	>
 		<div class="pl-2">
 			<!-- データ追加スロット -->
-			<div class="relative flex h-[100px] w-full items-center">
+			<div class="relative flex h-[100px] w-full items-center max-lg:hidden">
 				<!-- アイコン -->
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div

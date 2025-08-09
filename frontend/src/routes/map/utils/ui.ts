@@ -25,7 +25,7 @@ export const checkMobile = () => {
 	return false;
 };
 
-export type MobileActiveMenu = 'map' | 'layer' | 'data';
+export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';
 
 type MappingType = 'single' | 'match' | 'linear' | 'step';
 

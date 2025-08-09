@@ -30,6 +30,11 @@
 					showLayerMenu.set(false);
 					showSideMenu.set(false);
 					break;
+				case 'other':
+					showDataMenu.set(false);
+					showLayerMenu.set(false);
+					showSideMenu.set(true);
+					break;
 				default:
 			}
 		}
@@ -73,6 +78,15 @@
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
 		</div>
 		<span class="text-xs">データ</span>
+	</button>
+	<button
+		class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+		onclick={() => (active = 'other')}
+	>
+		<div class="rounded-full px-4 py-1 {active === 'other' ? 'bg-accent' : ''}">
+			<Icon icon="basil:other-1-outline" class="h-9 w-9" />
+		</div>
+		<span class="text-xs">その他</span>
 	</button>
 </div>
 

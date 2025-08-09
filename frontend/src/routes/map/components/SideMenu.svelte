@@ -13,6 +13,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
+	import { checkPc } from '../utils/ui';
 
 	const toggleDataMenu = () => {
 		showSideMenu.set(false);
@@ -55,7 +56,7 @@
 {#if $showSideMenu}
 	<div
 		transition:fade={{ duration: 300 }}
-		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50"
+		class="absolute left-0 top-0 h-full w-full bg-black/50 lg:z-30"
 		role="button"
 		tabindex="0"
 		onclick={() => showSideMenu.set(false)}
@@ -66,8 +67,8 @@
 		}}
 	></div>
 	<div
-		transition:fly={{ duration: 300, x: 100, opacity: 0 }}
-		class="bg-main absolute right-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
+		transition:fly={{ duration: checkPc() ? 300 : 0, x: checkPc() ? 100 : 0, opacity: 0 }}
+		class="bg-main absolute right-0 top-0 z-30 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:w-[400px]"
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">
@@ -75,7 +76,7 @@
 			</div>
 			<button
 				onclick={() => showSideMenu.set(false)}
-				class="bg-base cursor-pointer rounded-full p-2"
+				class="bg-base cursor-pointer rounded-full p-2 max-lg:hidden"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
@@ -157,13 +158,7 @@
 				><Icon icon="mdi:web" class="h-8 w-8" />
 				<span>森林文化アカデミーHP</span></a
 			>
-			<!-- <button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				onclick={goHome}
-			>
-				<Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
-				<span class="select-none">トップページへ</span>
-			</button> -->
+
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={goHome}

@@ -31,7 +31,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
+	import { isBlocked, showLayerMenu, showSideMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -45,6 +45,7 @@
 	import { slide } from 'svelte/transition';
 	import type { ResultData } from './utils/feature';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
+	import { PCFShadowMap } from 'three';
 
 	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
 
@@ -347,6 +348,11 @@
 
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
+			<!-- スマホ用その他メニュー -->
+			<div class="relative h-full w-full lg:hidden {$showSideMenu ? 'block' : 'hidden'}">
+				<SideMenu />
+			</div>
+
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
 			<div class="flex w-full flex-1 flex-col overflow-hidden">
 				<!-- 上部余白 -->
@@ -455,7 +461,11 @@
 {/if}
 
 <Tooltip />
-<SideMenu />
+
+<!-- PC用その他メニュー -->
+<div class="max-lg:hidden">
+	<SideMenu />
+</div>
 <NotificationMessage />
 
 <Processing />

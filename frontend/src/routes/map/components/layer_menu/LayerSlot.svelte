@@ -13,6 +13,7 @@
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 	import { showDataMenu } from '$routes/stores/ui';
 	import { getAttributionName } from '$routes/map/data/attribution';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		index: number;
@@ -255,11 +256,11 @@
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black opacity-70' : ''} {$showDataMenu ||
 		$isStyleEdit
 			? 'w-[66px]'
-			: 'w-[330px]'} {$isStyleEdit
+			: 'max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[320px]'
 			: 'bg-black drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
-		onmouseenter={() => (isHovered = true)}
-		onmouseleave={() => (isHovered = false)}
+		onmouseenter={() => (checkPc() ? (isHovered = true) : null)}
+		onmouseleave={() => (checkPc() ? (isHovered = false) : null)}
 		role="button"
 		tabindex="0"
 	>
