@@ -10,6 +10,10 @@
 	let isExpanded = $state(false);
 	let isFullyExpanded = $state(false); // 完全展開状態
 
+	// スクロール連携用の変数
+	let scrollTransitionStartY = $state(0); // スクロールに移行した時のY座標
+	let initialScrollTop = $state(0); // スクロール移行時の初期スクロール位置
+
 	// スワイプ検知の閾値
 	const SWIPE_THRESHOLD = 100;
 	const VELOCITY_THRESHOLD = 0.5;
@@ -126,17 +130,22 @@
 
 		// Yが0以下にならないように制限
 		if (newTranslateY <= 0) {
-			newTranslateY = 0;
-			// 0に到達したら完全展開状態にして、スクロールを開始
+			translateY = 0;
+			// 0に到達したら完全展開状態にする
 			if (!isFullyExpanded) {
 				isFullyExpanded = true;
 				isExpanded = true;
+				// スクロール移行時の基準点を設定
+				scrollTransitionStartY = currentY;
+				initialScrollTop = contentElement ? contentElement.scrollTop : 0;
 			}
 
 			// 0に到達後の上スワイプをスクロールに変換
 			if (deltaY < 0 && contentElement) {
-				const scrollDelta = Math.abs(deltaY - (startY - cardHeight * 0));
-				contentElement.scrollTop += scrollDelta * 0.5;
+				// 移行後の指の移動量のみをスクロールに適用
+				const scrollDelta = scrollTransitionStartY - currentY;
+				const newScrollTop = initialScrollTop + scrollDelta;
+				contentElement.scrollTop = Math.max(0, newScrollTop);
 			}
 		} else {
 			translateY = newTranslateY;
