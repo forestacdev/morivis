@@ -8,19 +8,20 @@
 	let currentY = $state(0);
 	let translateY = $state(50); // 初期位置：50%下に配置
 	let isExpanded = $state(false);
-	let isFullyExpanded = $state(false); // 完全展開状態
+	let isAnimating = $state(false); // アニメーション中フラグ
+	let isFullyAnimated = $state(false); // アニメーション完了フラグ
 
 	// スクロール連携用の変数
-	let scrollTransitionStartY = $state(0); // スクロールに移行した時のY座標
-	let initialScrollTop = $state(0); // スクロール移行時の初期スクロール位置
+	let scrollTransitionStartY = $state(0);
+	let initialScrollTop = $state(0);
 
 	// スワイプ検知の閾値
 	const SWIPE_THRESHOLD = 100;
 	const VELOCITY_THRESHOLD = 0.5;
 
 	// タップ判定の閾値
-	const TAP_THRESHOLD_TIME = 300; // 300ms以内
-	const TAP_THRESHOLD_DISTANCE = 10; // 10px以内の移動
+	const TAP_THRESHOLD_TIME = 300;
+	const TAP_THRESHOLD_DISTANCE = 10;
 
 	let lastTouchTime = 0;
 	let lastTouchY = 0;
@@ -28,29 +29,65 @@
 	// タッチ判定用
 	let tapStartTime = 0;
 	let tapStartPosition = { x: 0, y: 0 };
-	let touchHandled = $state(false); // 重複防止フラグ
+	let touchHandled = $state(false);
 
-	// 内部スクロール判定用（削除）
-	// let isScrolling = $state(false);
+	// anime.jsをCDNから読み込み
+	let anime: any = null;
+
+	onMount(async () => {
+		// anime.jsをCDNから動的読み込み
+		const script = document.createElement('script');
+		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js';
+		script.onload = () => {
+			anime = (window as any).anime;
+		};
+		document.head.appendChild(script);
+
+		// グローバルマウスイベント
+		document.addEventListener('mousemove', handleMouseMove);
+		document.addEventListener('mouseup', handleMouseUp);
+
+		return () => {
+			document.removeEventListener('mousemove', handleMouseMove);
+			document.removeEventListener('mouseup', handleMouseUp);
+		};
+	});
+
+	// アニメーション関数
+	const animateCard = (targetY: number, duration: number = 300) => {
+		if (!anime || !cardElement) return;
+
+		isAnimating = true;
+		isFullyAnimated = false;
+
+		anime({
+			targets: cardElement,
+			translateY: `${targetY}%`,
+			duration: duration,
+			easing: 'easeOutCubic',
+			complete: () => {
+				isAnimating = false;
+				isFullyAnimated = true;
+				translateY = targetY;
+			}
+		});
+	};
 
 	// タッチ開始
 	const handleTouchStart = (event: TouchEvent) => {
 		touchHandled = false;
 
-		// 完全展開時の特別処理
-		if (isFullyExpanded && contentElement) {
+		// 展開時の特別処理
+		if (isExpanded && isFullyAnimated && contentElement) {
 			const touch = event.touches[0];
 			const rect = contentElement.getBoundingClientRect();
 			const isInsideContent = touch.clientY >= rect.top && touch.clientY <= rect.bottom;
 
-			// コンテンツエリア内でタッチが開始された場合
 			if (isInsideContent) {
-				// スクロール位置をチェック
 				const isAtTop = contentElement.scrollTop === 0;
 
 				// スクロールが途中の場合は、まずスクロール操作を優先
 				if (!isAtTop) {
-					// この時点ではカードのドラッグを開始しない
 					return;
 				}
 			}
@@ -61,6 +98,12 @@
 		currentY = startY;
 		lastTouchTime = Date.now();
 		lastTouchY = startY;
+
+		// アニメーション中の場合は停止
+		if (isAnimating && anime && cardElement) {
+			anime.remove(cardElement);
+			isAnimating = false;
+		}
 
 		// タップ判定用の記録
 		tapStartTime = Date.now();
@@ -78,8 +121,8 @@
 		currentY = touch.clientY;
 		const deltaY = currentY - startY;
 
-		// 完全展開時の特別処理
-		if (isFullyExpanded && contentElement) {
+		// 展開時の特別処理
+		if (isExpanded && isFullyAnimated && contentElement) {
 			const rect = contentElement.getBoundingClientRect();
 			const isInsideContent = touch.clientY >= rect.top && touch.clientY <= rect.bottom;
 
@@ -88,69 +131,62 @@
 
 				// 下向きスワイプの場合
 				if (deltaY > 0) {
-					// スクロールが先頭でない場合は、スクロールを優先
 					if (!isAtTop) {
-						// カードは動かさず、通常のスクロール動作に任せる
-						return;
+						return; // スクロールを優先
 					}
-					// スクロールが先頭の場合のみ、カードのドラッグを開始
 					if (!isDragging) {
 						isDragging = true;
 						startY = touch.clientY;
 						currentY = startY;
 					}
 				}
-				// 上向きスワイプの場合は常にスクロールを優先
+				// 上向きスワイプの場合はスクロールを優先
 				else if (deltaY < 0) {
 					return;
 				}
 			}
 		}
 
-		// カードドラッグが有効でない場合は処理しない
 		if (!isDragging) return;
 
-		// カードの高さを取得
 		const cardHeight = cardElement.offsetHeight;
-
-		// 現在の状態に応じてベース位置を決定
-		let basePosition: number;
-		if (isFullyExpanded || isExpanded) {
-			basePosition = 0; // 展開時・完全展開時は0%がベース
-		} else {
-			basePosition = 50; // 通常時は50%がベース
-		}
-
-		// 指の移動量を直接ピクセル値で適用
+		let basePosition = isExpanded ? 0 : 50;
 		const baseOffsetPx = cardHeight * (basePosition / 100);
 		const newOffsetPx = baseOffsetPx + deltaY;
-
-		// ピクセル値をカード高さに対するパーセンテージに変換
 		let newTranslateY = (newOffsetPx / cardHeight) * 100;
 
 		// Yが0以下にならないように制限
 		if (newTranslateY <= 0) {
 			translateY = 0;
-			// 0に到達したら完全展開状態にする
-			if (!isFullyExpanded) {
-				isFullyExpanded = true;
+
+			// スクロール移行の処理
+			if (!isExpanded) {
 				isExpanded = true;
-				// スクロール移行時の基準点を設定
-				scrollTransitionStartY = currentY;
-				initialScrollTop = contentElement ? contentElement.scrollTop : 0;
+				isFullyAnimated = true; // ドラッグ時は即座に完了状態に
 			}
 
-			// 0に到達後の上スワイプをスクロールに変換
+			// スクロール移行時の基準点設定
 			if (deltaY < 0 && contentElement) {
+				if (scrollTransitionStartY === 0) {
+					scrollTransitionStartY = currentY;
+					initialScrollTop = contentElement.scrollTop;
+				}
+
 				// 移行後の指の移動量のみをスクロールに適用
 				const scrollDelta = scrollTransitionStartY - currentY;
 				const newScrollTop = initialScrollTop + scrollDelta;
 				contentElement.scrollTop = Math.max(0, newScrollTop);
 			}
+
+			// スタイルを直接更新
+			cardElement.style.transform = `translateY(0%)`;
 		} else {
 			translateY = newTranslateY;
-			// 完全展開状態の更新
-			isFullyExpanded = translateY <= 0 && isExpanded;
+			// スタイルを直接更新
+			cardElement.style.transform = `translateY(${translateY}%)`;
+
+			// スクロール移行の基準点をリセット
+			scrollTransitionStartY = 0;
 		}
 	};
 
@@ -160,6 +196,9 @@
 
 		isDragging = false;
 		touchHandled = true;
+
+		// スクロール移行の基準点をリセット
+		scrollTransitionStartY = 0;
 
 		const deltaY = currentY - startY;
 		const now = Date.now();
@@ -176,55 +215,38 @@
 		const isTap = tapDuration < TAP_THRESHOLD_TIME && tapDistance < TAP_THRESHOLD_DISTANCE;
 
 		if (isTap) {
-			// タップの場合：状態を切り替え
 			toggleCard();
 		} else {
-			// スワイプの場合：判定ロジックを調整
-			if (translateY <= 0) {
-				// 0%位置にいる場合は完全展開
-				fullyExpandCard();
-			} else if (translateY <= 25) {
-				// 25%より上の場合は展開
+			// スワイプの場合：シンプルな判定
+			if (translateY <= 25) {
 				expandCard();
 			} else {
-				// それ以外は折りたたみ
 				collapseCard();
 			}
 		}
 
-		// 少し遅らせてフラグをリセット
 		setTimeout(() => {
 			touchHandled = false;
 		}, 100);
 	};
 
-	// カード完全展開
-	const fullyExpandCard = () => {
-		isExpanded = true;
-		isFullyExpanded = true;
-		translateY = 0; // 展開時と同じ位置
-	};
-
 	// カード展開
 	const expandCard = () => {
 		isExpanded = true;
-		isFullyExpanded = false;
-		translateY = 0;
+		animateCard(0);
 	};
 
 	// カード折りたたみ
 	const collapseCard = () => {
 		isExpanded = false;
-		isFullyExpanded = false;
-		translateY = 50;
+		isFullyAnimated = false;
+		animateCard(50);
 	};
 
 	// 展開・折りたたみの切り替え
 	const toggleCard = () => {
-		if (isFullyExpanded) {
+		if (isExpanded) {
 			collapseCard();
-		} else if (isExpanded) {
-			fullyExpandCard();
 		} else {
 			expandCard();
 		}
@@ -243,6 +265,12 @@
 		currentY = startY;
 		isDragging = true;
 
+		// アニメーション中の場合は停止
+		if (isAnimating && anime && cardElement) {
+			anime.remove(cardElement);
+			isAnimating = false;
+		}
+
 		mouseStartTime = Date.now();
 		mouseStartPosition = {
 			x: event.clientX,
@@ -257,22 +285,21 @@
 		const deltaY = currentY - startY;
 		const cardHeight = cardElement.offsetHeight;
 
-		let basePosition = isFullyExpanded || isExpanded ? 0 : 50;
+		let basePosition = isExpanded ? 0 : 50;
 		const baseOffsetPx = cardHeight * (basePosition / 100);
 		const newOffsetPx = baseOffsetPx + deltaY;
-
 		let newTranslateY = (newOffsetPx / cardHeight) * 100;
 
-		// Yが0以下にならないように制限
 		if (newTranslateY <= 0) {
-			newTranslateY = 0;
-			if (!isFullyExpanded) {
-				isFullyExpanded = true;
+			translateY = 0;
+			if (!isExpanded) {
 				isExpanded = true;
+				isFullyAnimated = true;
 			}
+			cardElement.style.transform = `translateY(0%)`;
 		} else {
 			translateY = newTranslateY;
-			isFullyExpanded = translateY <= 0 && (isExpanded || isFullyExpanded);
+			cardElement.style.transform = `translateY(${translateY}%)`;
 		}
 	};
 
@@ -295,34 +322,19 @@
 		if (isClick) {
 			toggleCard();
 		} else {
-			// ドラッグの場合：シンプルな判定
-			if (translateY <= 0) {
-				fullyExpandCard();
-			} else if (translateY <= 25) {
+			if (translateY <= 25) {
 				expandCard();
 			} else {
 				collapseCard();
 			}
 		}
 	};
-
-	onMount(() => {
-		document.addEventListener('mousemove', handleMouseMove);
-		document.addEventListener('mouseup', handleMouseUp);
-
-		return () => {
-			document.removeEventListener('mousemove', handleMouseMove);
-			document.removeEventListener('mouseup', handleMouseUp);
-		};
-	});
 </script>
 
 <!-- スワイプ可能なカード -->
 <div
 	bind:this={cardElement}
-	class="absolute bottom-0 h-[calc(100%_-_20px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] bg-white shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)] {!isDragging
-		? 'transition-transform duration-300 ease-out'
-		: ''}"
+	class="absolute bottom-0 h-[calc(100%_-_20px)] w-full touch-none overflow-hidden rounded-[20px_20px_0_0] bg-white shadow-[0_-4px_20px_rgba(0,_0,_0,_0.15)]"
 	style="transform: translateY({translateY}%)"
 	ontouchstart={handleTouchStart}
 	ontouchmove={handleTouchMove}
@@ -338,7 +350,8 @@
 
 	<!-- 状態表示 -->
 	<div class="px-4 pb-2 text-xs text-gray-500">
-		{isFullyExpanded ? '完全展開' : isExpanded ? '展開' : '折りたたみ'} | Y: {Math.round(
+		{isExpanded ? '展開' : '折りたたみ'} |
+		{isAnimating ? 'アニメーション中' : isFullyAnimated ? '完了' : '待機'} | Y: {Math.round(
 			translateY
 		)}%
 	</div>
@@ -347,19 +360,15 @@
 	<div
 		bind:this={contentElement}
 		class="h-[calc(100%_-_60px)] overflow-y-auto px-4 pb-4"
-		class:touch-auto={isFullyExpanded}
-		class:touch-none={!isFullyExpanded}
-		onscroll={(e) => {
-			// スクロール位置をログ出力（デバッグ用）
-			// console.log('Scroll position:', e.target.scrollTop);
-		}}
+		class:touch-auto={isExpanded && isFullyAnimated}
+		class:touch-none={!isExpanded || !isFullyAnimated}
 	>
 		<!-- ダミーコンテンツ -->
 		<div class="space-y-4">
 			<div class="rounded-lg bg-blue-50 p-4">
 				<h3 class="text-lg font-semibold text-blue-900">セクション 1</h3>
 				<p class="mt-2 text-blue-800">
-					これはスクロール可能なコンテンツのサンプルです。カードを最大まで展開すると、このエリアが通常のスクロール動作をします。
+					これはスクロール可能なコンテンツのサンプルです。カードを展開してアニメーションが完了すると、このエリアが通常のスクロール動作をします。
 				</p>
 			</div>
 
@@ -379,7 +388,7 @@
 			<div class="rounded-lg bg-purple-50 p-4">
 				<h3 class="text-lg font-semibold text-purple-900">セクション 3</h3>
 				<p class="mt-2 text-purple-800">
-					長いコンテンツをスクロールして確認できます。カードが完全展開状態の時のみ、内部スクロールが有効になります。
+					長いコンテンツをスクロールして確認できます。カードが展開完了状態の時のみ、内部スクロールが有効になります。
 				</p>
 			</div>
 
@@ -429,7 +438,7 @@
 				<div class="mt-4 rounded-lg bg-red-100 p-3">
 					<p class="text-sm text-red-700">
 						💡 ヒント:
-						カードを完全展開状態（完全展開表示）にしてから、このエリア内でスクロールしてみてください。
+						カードを展開してアニメーション完了後に、このエリア内でスクロールしてみてください。
 					</p>
 				</div>
 			</div>
