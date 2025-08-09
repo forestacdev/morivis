@@ -34,13 +34,16 @@
 			}
 		}
 	});
+
+	const footerHeight = 70; // フッターの高さを設定
 </script>
 
 <!-- フッターのメニュー -->
 <div
-	class="bg-main absolute bottom-0 left-0 z-20 flex h-[60px] w-full items-center justify-between text-base lg:hidden {showDataEntry
+	class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
 		? 'hidden'
 		: ''}"
+	style="height: {footerHeight}px;"
 >
 	<button
 		class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
@@ -75,9 +78,10 @@
 
 <!-- フッターの余白分 -->
 <div
-	class="bg-main bottom-0 left-0 flex h-[60px] w-full items-center justify-between text-base lg:hidden {showDataEntry
+	class="bg-main bottom-0 left-0 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
 		? 'hidden'
 		: ''}"
+	style="height: {footerHeight}px;"
 ></div>
 
 <style>

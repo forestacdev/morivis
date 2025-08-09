@@ -230,8 +230,11 @@
 	};
 </script>
 
-<div class="app relative flex h-dvh w-dvw">
-	<canvas class="h-full w-full bg-gray-900" bind:this={canvas}></canvas>
+<div class="relative h-dvh w-full bg-gray-900">
+	<canvas
+		class="absolute m-0 block h-full w-full overflow-hidden bg-gray-900 p-0"
+		bind:this={canvas}
+	></canvas>
 
 	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
 		<div class="flex h-full w-full flex-col items-center justify-center">

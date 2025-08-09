@@ -279,11 +279,14 @@
 					<!-- レイヤー名 -->
 					<div class="flex flex-col gap-[2px]">
 						<span class="truncate pl-1 text-base">{layerEntry.metaData.name}</span>
-						<div class="flex items-center">
-							<Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" />
+						<div class="flex items-center pl-4">
+							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" />
 							<span class="truncate text-xs text-gray-400"
 								>{getAttributionName(layerEntry.metaData.attribution) ?? '---'}</span
-							>
+							> -->
+							<!-- <span class="truncate text-xs text-gray-400"
+								>{layerEntry.metaData.location ?? '---'}</span
+							> -->
 						</div>
 					</div>
 				{/if}
@@ -330,13 +333,20 @@
 		<!-- ステータス -->
 		{#if !$showDataMenu && !$isStyleEdit}
 			<div
-				class="pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
+				class="pointer-events-none absolute bottom-[2px] left-[40px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
 						? 'bg-green-500'
 						: 'bg-red-500'}"
 			></div>
+			<div class="absolute bottom-[6px] left-[66px] truncate text-xs text-gray-400">
+				<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" />
+							<span class="truncate text-xs text-gray-400"
+								>{getAttributionName(layerEntry.metaData.attribution) ?? '---'}</span
+							> -->
+				{layerEntry.metaData.location ?? '---'}
+			</div>
 		{/if}
 
 		<!-- タイプ -->

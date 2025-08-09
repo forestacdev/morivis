@@ -31,7 +31,12 @@
 	::file-selector-button {
 		border-color: var(--color-gray-200, currentcolor);
 	}
+
+	body {
+		overscroll-behavior-y: none;
+	}
 }
+
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
 	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-[#348163] bg-[#348163] p-2 text-base transition-colors duration-150 hover:text-black;

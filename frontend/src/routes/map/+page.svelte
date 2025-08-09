@@ -349,7 +349,8 @@
 
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
 			<div class="flex w-full flex-1 flex-col overflow-hidden">
-				<div class="bg-main w-full p-2"></div>
+				<!-- 上部余白 -->
+				<div class="bg-main w-full p-2 max-lg:hidden"></div>
 
 				<MapLibreMap
 					bind:maplibreMap={map}
@@ -387,7 +388,7 @@
 				/>
 			</div>
 			<!-- 右側余白 -->
-			<div class="bg-main p-2"></div>
+			<div class="bg-main p-2 max-lg:hidden"></div>
 		</div>
 
 		<!-- フッター余白 出典表示 -->
