@@ -338,8 +338,8 @@
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
-						? 'bg-green-500'
-						: 'bg-red-500'}"
+						? 'bg-accent'
+						: 'bg-red-400'}"
 			></div>
 		{/if}
 

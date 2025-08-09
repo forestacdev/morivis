@@ -272,7 +272,7 @@
 			{/if}
 
 			<!-- 余白 -->
-			<!-- <div class="h-[150px] w-full shrink-0"></div> -->
+			<div class="h-[150px] w-full shrink-0"></div>
 		</div>
 
 		{#if !$isStyleEdit && !$showDataMenu}
