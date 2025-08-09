@@ -91,12 +91,12 @@
 </div>
 
 <!-- フッターの余白分 -->
-<div
+<!-- <div
 	class="bg-main bottom-0 left-0 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
 		? 'hidden'
 		: ''}"
 	style="height: {footerHeight}px;"
-></div>
+></div> -->
 
 <style>
 </style>
