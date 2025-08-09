@@ -331,6 +331,8 @@
 		// コンポーネントが破棄されるときに、スト
 		isInitialized = false;
 	});
+
+	import Test from '$routes/map/components/feature_menu/_test.svelte';
 </script>
 
 {#if isInitialized}
@@ -430,6 +432,7 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		<Test />
 		<PreviewMenu bind:showDataEntry />
 
 		{#if !showDataEntry && !showZoneForm}

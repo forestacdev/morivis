@@ -38,6 +38,7 @@ import {
 	WEB_MERCATOR_MAX_LNG
 } from '$routes/map/data/location_bbox';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
+import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -479,11 +480,28 @@ const createMapStore = () => {
 	) => {
 		if (!map || !isMapValid(map)) return;
 
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		map.panTo(lngLat, {
-			duration: 300
-		});
+		if (checkPc()) {
+			// TODO
+			//github.com/maplibre/maplibre-gl-js/issues/4891
+			map.panTo(lngLat, {
+				duration: 300
+			});
+		}
+
+		if (checkMobile()) {
+			const container = map.getContainer();
+			const containerHeight = container.clientHeight;
+
+			// シンプルに固定オフセットを使用
+			const offsetY = containerHeight / 4;
+
+			map.panTo(lngLat, {
+				offset: [0, -offsetY],
+				duration: 300
+			});
+
+			console.log(offsetY);
+		}
 	};
 
 	const easeTo = (options: EaseToOptions) => {
