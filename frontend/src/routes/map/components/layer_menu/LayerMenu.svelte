@@ -81,16 +81,6 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
-
-	// <button
-	// 				onclick={() => {
-	// 					isStyleEdit.set(false);
-	// 					selectedLayerId.set('');
-	// 				}}
-	// 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
-	// 			>
-	// 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
-	// 			</button>
 </script>
 
 <!-- レイヤーメニュー -->
@@ -111,7 +101,7 @@
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 	>
 		<div class="pl-2">
-			<div class="relative flex h-[60px] w-full items-center max-lg:hidden">
+			<div class="relative flex h-[64px] w-full items-center max-lg:hidden">
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
@@ -322,8 +312,8 @@
 						: $isStyleEdit
 							? 'w-[400px]'
 							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
-						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
-						: ''}"
+						? ' not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
+						: 'opacity-0'}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
 						<!-- アイコン -->

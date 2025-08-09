@@ -253,7 +253,9 @@
 	<div
 		id={layerEntry.id}
 		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200
-			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black opacity-70' : ''} {$showDataMenu ||
+			{$selectedLayerId !== layerEntry.id && $isStyleEdit
+			? 'bg-black opacity-70'
+			: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'c-fog' : ''} {$showDataMenu ||
 		$isStyleEdit
 			? 'w-[66px]'
 			: 'max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
@@ -270,7 +272,7 @@
 				onclick={selectedLayer}
 				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
 					? ''
-					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'scale-110 ' : ''}"
+					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? '' : ''}"
 			>
 				<LayerIcon {layerEntry} />
 			</button>
@@ -297,7 +299,7 @@
 					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="absolute flex h-full w-full gap-4 bg-black pl-1 text-gray-100"
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
@@ -354,11 +356,11 @@
 		{/if}
 
 		<!-- 選択中 -->
-		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
 			<div
 				class="c-ripple-anime absolute top-0 -z-10 aspect-square shrink-0 -translate-y-[3px] rounded-r-full p-9 shadow-md"
 			></div>
-		{/if}
+		{/if} -->
 	</div>
 </div>
 
@@ -371,8 +373,7 @@
 	}
 
 	.c-fog {
-		background: rgb(233, 233, 233);
-		background: linear-gradient(90deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
+		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
 	}
 
 	@keyframes ripple {

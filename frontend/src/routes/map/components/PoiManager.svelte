@@ -12,6 +12,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStyleEdit } from '$routes/stores';
 	import { showSearchMenu } from '$routes/stores/ui';
+	import { fade } from 'svelte/transition';
+	import { debounce } from 'es-toolkit';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -44,6 +46,8 @@
 	const updateMarkers = () => {
 		if (!map || !mapStore.isInitialized()) return;
 		if (!$showLabelLayer || !mapStore.getLayer(poiLayersIds[0])) return;
+
+		console.log('Updating POI markers...');
 
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
@@ -133,10 +137,21 @@
 	onDestroy(() => {
 		if (!map) return;
 	});
+
+	let stablePOIData = $state<PoiData[]>([]);
+
+	const updatePOIData = debounce((newData: PoiData[]) => {
+		stablePOIData = [...newData];
+	}, 50);
+
+	// poiDatasの変更を監視してdebounced更新
+	$effect(() => {
+		updatePOIData(poiDatas);
+	});
 </script>
 
-{#if $showLabelLayer && !showDataEntry && !showZoneForm && !$isStyleEdit && !$showSearchMenu}
-	{#each poiDatas as poiData (poiData.propId)}
+<div class="poi-container">
+	{#each stablePOIData as poiData (poiData.propId)}
 		<PoiMarker
 			{map}
 			lngLat={new maplibregl.LngLat(poiData.coordinates[0], poiData.coordinates[1])}
@@ -146,7 +161,7 @@
 			{clickId}
 		/>
 	{/each}
-{/if}
+</div>
 
 <style>
 </style>
