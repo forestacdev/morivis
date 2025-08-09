@@ -357,7 +357,11 @@
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
 			<!-- スマホ用その他メニュー -->
-			<div class="relative h-full w-full lg:hidden {$showOtherMenu ? 'block' : 'hidden'}">
+			<div
+				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
+					? 'opacity-500 pointer-events-auto'
+					: 'pointer-events-none opacity-0'}"
+			>
 				<OtherMenu />
 			</div>
 

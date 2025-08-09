@@ -57,7 +57,11 @@
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 			onclick={() => (active = 'map')}
 		>
-			<div class="rounded-full px-4 py-1 {active === 'map' ? 'bg-accent' : ''}">
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'map'
+					? 'bg-accent'
+					: ''}"
+			>
 				<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
 			</div>
 
@@ -67,7 +71,11 @@
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 			onclick={() => (active = 'layer')}
 		>
-			<div class="rounded-full px-4 py-1 {active === 'layer' ? 'bg-accent' : ''}">
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'layer'
+					? 'bg-accent'
+					: ''}"
+			>
 				<Icon icon="jam:layers-f" class="h-8 w-8" />
 			</div>
 
@@ -77,7 +85,11 @@
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 			onclick={() => (active = 'data')}
 		>
-			<div class="rounded-full px-4 py-1 {active === 'data' ? 'bg-accent' : ''}">
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'data'
+					? 'bg-accent'
+					: ''}"
+			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
 			</div>
 			<span class="text-xs">データ</span>
@@ -86,7 +98,11 @@
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 			onclick={() => (active = 'other')}
 		>
-			<div class="rounded-full px-4 py-1 {active === 'other' ? 'bg-accent' : ''}">
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'other'
+					? 'bg-accent'
+					: ''}"
+			>
 				<Icon icon="basil:other-1-outline" class="h-9 w-9" />
 			</div>
 			<span class="text-xs">その他</span>

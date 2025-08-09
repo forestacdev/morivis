@@ -24,6 +24,7 @@
 	let isReady = $state(false); // マーカーの準備完了フラグ
 
 	let isHover = $state(false);
+	let onLoaded = $state(false);
 
 	onMount(() => {
 		if (markerContainer && lngLat) {
@@ -117,7 +118,9 @@
 	>
 		{#if isReady}
 			<button
-				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md"
+				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md {onLoaded
+					? 'opacity-100'
+					: 'opacity-0'}"
 				onclick={click}
 				onfocus={() => onHover(true)}
 				onblur={() => onHover(false)}
@@ -126,12 +129,13 @@
 			>
 				{#if imageUrl}
 					<img
-						class="border-base border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
+						class="border-base bg-base border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-110'
 							: ''}"
 						src={imageUrl}
 						alt={properties.name || 'Marker Image'}
+						onload={() => (onLoaded = true)}
 					/>
 				{/if}
 			</button>
