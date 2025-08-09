@@ -17,8 +17,10 @@
 	let initialScrollTop = $state(0);
 
 	// スワイプ検知の閾値
-	const SWIPE_THRESHOLD = 100;
-	const VELOCITY_THRESHOLD = 0.5;
+	const SWIPE_THRESHOLD = 100; // 位置による判定の閾値
+	const VELOCITY_THRESHOLD = 0.8; // 速度による判定の閾値 (px/ms)
+	const MIN_SWIPE_DISTANCE = 30; // 最小スワイプ距離
+	const VELOCITY_MULTIPLIER = 200; // 速度を距離に変換する係数
 
 	// タップ判定の閾値
 	const TAP_THRESHOLD_TIME = 300;
@@ -32,6 +34,49 @@
 	let tapStartPosition = { x: 0, y: 0 };
 	let touchHandled = $state(false);
 
+	// 速度計算用
+	let velocityTracker: { time: number; y: number }[] = [];
+
+	// 速度を計算する関数
+	const calculateVelocity = () => {
+		if (velocityTracker.length < 2) return 0;
+
+		const latest = velocityTracker[velocityTracker.length - 1];
+		const earliest = velocityTracker[0];
+
+		const timeDiff = latest.time - earliest.time;
+		const positionDiff = latest.y - earliest.y;
+
+		return timeDiff > 0 ? positionDiff / timeDiff : 0; // px/ms
+	};
+
+	// 慣性を考慮した判定関数
+	const shouldExpandWithInertia = (deltaY: number, velocity: number) => {
+		// 上向きスワイプ（マイナス値）
+		if (deltaY < 0) {
+			// 速度による判定
+			if (Math.abs(velocity) > VELOCITY_THRESHOLD && Math.abs(deltaY) > MIN_SWIPE_DISTANCE) {
+				return true;
+			}
+			// 位置による判定
+			return translateY < 25;
+		}
+		return false;
+	};
+
+	const shouldCollapseWithInertia = (deltaY: number, velocity: number) => {
+		// 下向きスワイプ（プラス値）
+		if (deltaY > 0) {
+			// 速度による判定
+			if (velocity > VELOCITY_THRESHOLD && deltaY > MIN_SWIPE_DISTANCE) {
+				return true;
+			}
+			// 位置による判定
+			return translateY > 25;
+		}
+		return false;
+	};
+
 	onMount(() => {
 		// グローバルマウスイベント
 		document.addEventListener('mousemove', handleMouseMove);
@@ -44,7 +89,7 @@
 	});
 
 	// アニメーション関数
-	const animateCard = (targetY: number, duration: number = 0.3) => {
+	const animateCard = (targetY: number, duration: number = 0.2) => {
 		if (!cardElement) return;
 
 		isAnimating = true;
@@ -91,6 +136,9 @@
 		lastTouchTime = Date.now();
 		lastTouchY = startY;
 
+		// 速度トラッキングを初期化
+		velocityTracker = [{ time: lastTouchTime, y: startY }];
+
 		// アニメーション中の場合は停止
 		if (isAnimating && cardElement) {
 			gsap.killTweensOf(cardElement);
@@ -112,6 +160,13 @@
 		const touch = event.touches[0];
 		currentY = touch.clientY;
 		const deltaY = currentY - startY;
+		const now = Date.now();
+
+		// 速度トラッキング用のデータポイントを追加
+		velocityTracker.push({ time: now, y: currentY });
+
+		// 過去100ms以内のデータのみ保持
+		velocityTracker = velocityTracker.filter((point) => now - point.time <= 100);
 
 		// 展開時の特別処理
 		if (isExpanded && isFullyAnimated && contentElement) {
@@ -194,8 +249,7 @@
 
 		const deltaY = currentY - startY;
 		const now = Date.now();
-		const timeDelta = now - lastTouchTime;
-		const velocity = Math.abs(deltaY) / timeDelta;
+		const velocity = calculateVelocity();
 
 		// タップ判定
 		const tapDuration = now - tapStartTime;
@@ -209,11 +263,19 @@
 		if (isTap) {
 			toggleCard();
 		} else {
-			// スワイプの場合：シンプルな判定
-			if (translateY <= 25) {
-				expandCard();
+			// 慣性を考慮した判定
+			if (isExpanded) {
+				if (shouldCollapseWithInertia(deltaY, velocity)) {
+					collapseCard();
+				} else {
+					expandCard();
+				}
 			} else {
-				collapseCard();
+				if (shouldExpandWithInertia(deltaY, velocity)) {
+					expandCard();
+				} else {
+					collapseCard();
+				}
 			}
 		}
 
@@ -257,6 +319,10 @@
 		currentY = startY;
 		isDragging = true;
 
+		// 速度トラッキングを初期化
+		const now = Date.now();
+		velocityTracker = [{ time: now, y: startY }];
+
 		// アニメーション中の場合は停止
 		if (isAnimating && cardElement) {
 			gsap.killTweensOf(cardElement);
@@ -274,6 +340,12 @@
 		if (!isMouseDown || !isDragging || !cardElement) return;
 
 		currentY = event.clientY;
+		const now = Date.now();
+
+		// 速度トラッキング
+		velocityTracker.push({ time: now, y: currentY });
+		velocityTracker = velocityTracker.filter((point) => now - point.time <= 100);
+
 		const deltaY = currentY - startY;
 		const cardHeight = cardElement.offsetHeight;
 
@@ -302,6 +374,7 @@
 		isDragging = false;
 		const deltaY = currentY - startY;
 		const now = Date.now();
+		const velocity = calculateVelocity();
 
 		const clickDuration = now - mouseStartTime;
 		const clickDistance = Math.sqrt(
@@ -314,10 +387,19 @@
 		if (isClick) {
 			toggleCard();
 		} else {
-			if (translateY <= 25) {
-				expandCard();
+			// 慣性を考慮した判定（マウス版）
+			if (isExpanded) {
+				if (shouldCollapseWithInertia(deltaY, velocity)) {
+					collapseCard();
+				} else {
+					expandCard();
+				}
 			} else {
-				collapseCard();
+				if (shouldExpandWithInertia(deltaY, velocity)) {
+					expandCard();
+				} else {
+					collapseCard();
+				}
 			}
 		}
 	};
@@ -345,7 +427,7 @@
 		{isExpanded ? '展開' : '折りたたみ'} |
 		{isAnimating ? 'アニメーション中' : isFullyAnimated ? '完了' : '待機'} | Y: {Math.round(
 			translateY
-		)}%
+		)}% | 速度: {velocityTracker.length > 1 ? Math.round(calculateVelocity() * 1000) : 0}px/s
 	</div>
 
 	<!-- スクロール可能なコンテンツ -->
