@@ -188,7 +188,7 @@
 	let showSearchForm = $state<boolean>(false);
 </script>
 
-<div class="absolute right-2 top-2 flex w-full items-center justify-between p-2 max-lg:z-10">
+<div class=" bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:z-10">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button

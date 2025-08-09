@@ -133,9 +133,9 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col gap-2"
+		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col"
 	>
-		<div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
+		<div class="flex w-full justify-between p-3 px-4">
 			<button
 				onclick={() => (featureMenuData = null)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
@@ -146,11 +146,11 @@
 
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
 			<!-- 画像 -->
-			<div class="relative w-full">
+			<div class="relative w-full p-2 pl-4">
 				{#if srcData && data && !data.medias}
 					<img
 						in:fade
-						class="block h-full w-full object-cover max-lg:aspect-video lg:aspect-square"
+						class="block aspect-video h-full w-full rounded-lg object-cover"
 						alt="画像"
 						src={srcData}
 					/>
@@ -203,7 +203,7 @@
 				{/if}
 
 				<div
-					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
+					class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
 				>
 					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 						<!-- poiタイトル -->

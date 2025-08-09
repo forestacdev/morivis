@@ -90,9 +90,18 @@
 				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
-				<div class="flex h-[80px] items-center gap-2 text-base">
-					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-					<span class="select-none text-lg max-lg:hidden">データのカスタマイズ</span>
+				<div class="flex h-[80px] items-center gap-2 pr-2">
+					<Icon icon="streamline:paint-palette-solid text-base" class="h-7 w-7" />
+					<span class="select-none text-base text-lg max-lg:hidden">データのカスタマイズ</span>
+					<button
+						onclick={() => {
+							isStyleEdit.set(false);
+							selectedLayerId.set('');
+						}}
+						class="bg-base ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+					>
+						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
+					</button>
 				</div>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
 

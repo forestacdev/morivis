@@ -111,31 +111,40 @@
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 	>
 		<div class="pl-2">
-			<!-- データ追加スロット -->
-			<div class="relative flex h-[100px] w-full items-center max-lg:hidden">
-				<!-- アイコン -->
+			<div class="relative flex h-[60px] w-full items-center max-lg:hidden">
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
 						class="relative grid h-full w-[50px] shrink-0 place-items-center"
 					>
-						<button
-							onclick={resetLayers}
-							class="c-btn-sub bg-sub peer peer pointer-events-auto absolute aspect-square translate-y-[10px] rounded-full p-1.5"
-						>
-							<Icon icon="carbon:reset" class="h-6 w-6" />
-						</button>
-
-						<div
-							class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
-						>
-							リセット
-						</div>
 						<div class="bg-base/60 h-full w-[2px]"></div>
 					</div>
 				{/if}
-				<!-- 追加ボタン -->
-				<button
+
+				{#if !$isStyleEdit && !$showDataMenu}
+					<div
+						transition:slide={{ duration: 200, axis: 'x' }}
+						class="flex shrink-0 select-none items-center justify-center text-base max-lg:hidden"
+					>
+						<span class="text-[2.7rem]">morivis</span>
+					</div>
+				{/if}
+
+				{#if $showDataMenu}
+					<div class="grid w-full shrink-0 place-items-center">
+						<button
+							transition:slide={{ duration: 200, axis: 'x' }}
+							onclick={() => {
+								$showDataMenu = false;
+							}}
+							class="bg-base grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						>
+							<Icon icon="ep:back" class="h-6 w-6" />
+						</button>
+					</div>
+				{/if}
+
+				<!-- <button
 					onclick={() => {
 						if ($isStyleEdit) {
 							isStyleEdit.set(false);
@@ -153,7 +162,6 @@
 						: ''}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
-						<!-- アイコン -->
 						<div
 							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
 							!$isStyleEdit
@@ -166,7 +174,7 @@
 								<Icon icon="ep:back" class="h-7 w-7" />
 							{/if}
 						</div>
-						<!-- ボタン -->
+
 						<div
 							class="relative flex w-full grow flex-col items-center justify-center gap-[2px] overflow-hidden pr-6 text-white"
 						>
@@ -175,7 +183,7 @@
 							{/if}
 						</div>
 					</div>
-				</button>
+				</button> -->
 			</div>
 		</div>
 		<div
@@ -276,6 +284,72 @@
 					{/each}
 				</div>
 			{/if}
+
+			<div class="relative flex h-[60px] w-full items-center max-lg:hidden">
+				<!-- アイコン -->
+				{#if !$isStyleEdit && !$showDataMenu}
+					<div
+						transition:slide={{ duration: 200, axis: 'x' }}
+						class="relative grid h-full w-[50px] shrink-0 place-items-center"
+					>
+						<button
+							onclick={resetLayers}
+							class="c-btn-sub bg-sub peer peer pointer-events-auto absolute aspect-square translate-y-[10px] rounded-full p-1.5"
+						>
+							<Icon icon="carbon:reset" class="h-6 w-6" />
+						</button>
+
+						<div
+							class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
+						>
+							リセット
+						</div>
+						<div class="bg-base/60 h-full w-[2px]"></div>
+					</div>
+				{/if}
+				<!-- 追加ボタン -->
+				<button
+					onclick={() => {
+						if ($isStyleEdit) {
+							isStyleEdit.set(false);
+							selectedLayerId.set('');
+						} else {
+							showDataMenu.set(!$showDataMenu);
+						}
+					}}
+					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
+						? 'w-[66px]'
+						: $isStyleEdit
+							? 'w-[400px]'
+							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
+						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
+						: ''}"
+				>
+					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
+						<!-- アイコン -->
+						<div
+							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
+							!$isStyleEdit
+								? 'bg-accent text-base'
+								: 'bg-base text-main'} {$isStyleEdit ? 'translate-x-[320px]' : ''}"
+						>
+							{#if !$showDataMenu && !$isStyleEdit}
+								<Icon icon="material-symbols:add" width={30} />
+							{:else}
+								<Icon icon="ep:back" class="h-7 w-7" />
+							{/if}
+						</div>
+						<!-- ボタン -->
+						<div
+							class="relative flex w-full grow flex-col items-center justify-center gap-[2px] overflow-hidden pr-6 text-white"
+						>
+							{#if !$showDataMenu}
+								<span class="text-lg">データの追加</span>
+							{/if}
+						</div>
+					</div>
+				</button>
+			</div>
 
 			<!-- 余白 -->
 			<div class="h-[150px] w-full shrink-0"></div>

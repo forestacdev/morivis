@@ -368,7 +368,16 @@
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
 			<div class="flex w-full flex-1 flex-col overflow-hidden">
 				<!-- 上部余白 -->
-				<div class="bg-main w-full p-2 max-lg:hidden"></div>
+				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
+				<HeaderMenu
+					{resetlayerEntries}
+					bind:featureMenuData
+					bind:inputSearchWord
+					bind:results
+					{layerEntries}
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+				/>
 
 				<MapLibreMap
 					bind:maplibreMap={map}
@@ -393,16 +402,6 @@
 					{streetViewPoint}
 					{showMapCanvas}
 					{setPoint}
-				/>
-
-				<HeaderMenu
-					{resetlayerEntries}
-					bind:featureMenuData
-					bind:inputSearchWord
-					bind:results
-					{layerEntries}
-					bind:showSelectionMarker
-					bind:selectionMarkerLngLat
 				/>
 			</div>
 			<!-- 右側余白 -->
