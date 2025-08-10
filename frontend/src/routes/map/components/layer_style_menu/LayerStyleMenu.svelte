@@ -92,7 +92,7 @@
 			>
 				<div class="flex h-[80px] items-center gap-2 pr-2">
 					<Icon icon="streamline:paint-palette-solid text-base" class="h-7 w-7" />
-					<span class="select-none text-base text-lg max-lg:hidden">データのカスタマイズ</span>
+					<span class="select-none text-base text-lg max-lg:hidden">カスタマイズ</span>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);

@@ -254,7 +254,7 @@
 					</div>
 					{#if data}
 						{#if data.description}
-							<span class="my-2 text-base">{data.description}</span>
+							<span class="my-2 text-justify text-base">{data.description}</span>
 						{/if}
 					{/if}
 				</div>

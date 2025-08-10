@@ -20,8 +20,11 @@
 	};
 
 	const formatDescription = (text: string): string => {
+		// 先頭の改行を除去
+		const trimmedText = text.replace(/^\n+/, '');
+
 		const urlRegex = /(https?:\/\/[^\s））\]」」＞>、。,]+)/g;
-		const linked = text.replace(urlRegex, (url) => {
+		const linked = trimmedText.replace(urlRegex, (url) => {
 			return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
 		});
 		const withBreaks = linked.replace(/\n/g, '<br>');
@@ -93,7 +96,7 @@
 					</div>
 					{#if showDataEntry}
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="rounded-lg bg-black p-2 text-sm">
+						<div class="rounded-lg bg-black p-2 text-justify text-sm">
 							{@html formatDescription(showDataEntry?.metaData.description)}
 						</div>
 					{/if}
