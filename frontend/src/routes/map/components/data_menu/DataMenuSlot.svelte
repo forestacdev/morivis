@@ -14,6 +14,7 @@
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { getAttributionName } from '$routes/map/data/attribution';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -96,6 +97,15 @@
 
 	let prefCode = $derived.by(() => {
 		return getPrefectureCode(dataEntry.metaData.location);
+	});
+
+	showDataMenu.subscribe((value) => {
+		if (value) {
+			if (container) {
+				const h = container.clientHeight;
+				updateItemHeight(h);
+			}
+		}
 	});
 </script>
 
