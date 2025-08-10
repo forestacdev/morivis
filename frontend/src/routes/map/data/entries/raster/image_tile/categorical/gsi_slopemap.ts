@@ -11,7 +11,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: '全国傾斜量図',
-		description: '',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#slopemap',
 		location: '全国',

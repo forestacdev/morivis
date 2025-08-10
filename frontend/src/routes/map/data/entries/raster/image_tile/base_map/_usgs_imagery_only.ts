@@ -14,7 +14,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: 'USGS Imagery Only',
-		description: '',
+
 		attribution: 'USGS',
 		tags: ['写真'],
 		downloadUrl: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer',

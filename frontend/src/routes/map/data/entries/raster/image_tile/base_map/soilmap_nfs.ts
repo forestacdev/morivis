@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '国有林 林野土壌図',
-		description: '国有林林野土壌図',
 		attribution: '森林総合研究所',
 		tags: ['土壌図', '国有林'],
 		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src2.html',

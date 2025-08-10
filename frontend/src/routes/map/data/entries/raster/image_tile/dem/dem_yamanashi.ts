@@ -12,7 +12,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 	metaData: {
 		name: '山梨県 数値標高データ',
 		sourceDataName: '山梨県数値標高モデル',
-		description: '',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-yamanashi-maptiles',
 		attribution: '林野庁',
 		location: '山梨県',

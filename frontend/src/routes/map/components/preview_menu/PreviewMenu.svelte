@@ -74,6 +74,24 @@
 					<span class="text-sm opacity-90"
 						>{getAttributionName(showDataEntry?.metaData.attribution)}</span
 					>
+					<div class="flex flex-col gap-2 py-2">
+						<div class="flex items-center gap-1 text-gray-300">
+							{#each showDataEntry?.metaData.tags as tag}
+								<span class="rounded-full bg-black p-1 px-2 text-sm">{tag}</span>
+							{/each}
+						</div>
+					</div>
+
+					{#if showDataEntry?.metaData.downloadUrl}
+						<a
+							class="c-btn-confirm flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+							href={showDataEntry?.metaData.downloadUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							><Icon icon="majesticons:open" class="h-6 w-6" />
+							<span>データ提供元サイト</span></a
+						>
+					{/if}
 				</div>
 				<div class="absolute -z-10 grid aspect-video h-full place-items-center opacity-15">
 					{#if showDataEntry.metaData.location === '森林文化アカデミー'}
@@ -114,36 +132,6 @@
 							{@html formatDescription(showDataEntry?.metaData.description)}
 						</div>
 					{/if}
-				{/if}
-
-				<div class="flex flex-col gap-2 py-2 pb-4">
-					<div class="flex items-center gap-1 text-gray-300">
-						{#each showDataEntry?.metaData.tags as tag}
-							<span class="rounded-full bg-black p-1 px-2 text-xs">{tag}</span>
-						{/each}
-					</div>
-				</div>
-
-				{#if showDataEntry?.metaData.attribution !== 'カスタムデータ'}
-					<div class="flex flex-col gap-2 py-2 pb-4">
-						<div class="flex gap-1">
-							<Icon icon="lets-icons:info-alt-fill" class="h-6 w-6" />
-							<span class="font-bold">データ出典元</span>
-						</div>
-						<div class="mb-2 rounded-lg bg-black p-2">
-							<span>{getAttributionName(showDataEntry?.metaData.attribution)}</span>
-							{#if showDataEntry?.metaData.downloadUrl}
-								<a
-									class="text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150 hover:underline"
-									href={showDataEntry?.metaData.downloadUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									><Icon icon="el:download" class="h-6 w-6" />
-									<span>データ提供元サイトを開く</span></a
-								>
-							{/if}
-						</div>
-					</div>
 				{/if}
 
 				<div class="flex flex-col gap-2 py-2 pb-4">

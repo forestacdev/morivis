@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '地理院標準地図',
-		description: '国土地理院の電子国土基本図',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#std',
 		location: '全国',

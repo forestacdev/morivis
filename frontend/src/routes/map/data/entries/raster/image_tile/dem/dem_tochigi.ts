@@ -11,8 +11,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 	},
 	metaData: {
 		name: '栃木県 数値標高データ',
-		description: `
-栃木県のGeoTiff標高データを投影法変換してズームレベル18のタイルを作成し、順次低ズームレベルのタイルセットを生成。低解像度化の際は4ピクセル中の北西（左上）ピクセル値を採用。全国Q地図タイルを加工したもの。`,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
 		attribution: '栃木県森林資源データ',
 		location: '栃木県',

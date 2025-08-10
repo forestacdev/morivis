@@ -10,7 +10,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 	},
 	metaData: {
 		name: '東京都 数値標高データ',
-		description: '',
 		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#h_tokyo',
 		attribution: '産総研シームレス標高タイル',
 		tags: ['DEM', '地形', '0.25m解像度'],

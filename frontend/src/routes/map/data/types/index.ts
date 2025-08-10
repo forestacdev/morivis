@@ -18,7 +18,7 @@ export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 export interface BaseMetaData {
 	name: string;
 	sourceDataName?: string;
-	description: string;
+	description?: string;
 	downloadUrl?: string;
 	attribution: AttributionKey;
 	tags: Tag[];

@@ -10,7 +10,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: '岐阜県 傾斜区分図',
-		description: '岐阜県の傾斜区分図',
 		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/sinrinwebmap.html',
 		attribution: '岐阜県森林研究所',
 		location: '岐阜県',

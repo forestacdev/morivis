@@ -11,8 +11,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: '栃木県 傾斜区分図',
-		description:
-			'令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「傾斜区分図」です。（引用:G空間情報センター）',
 		attribution: '栃木県森林資源データ',
 		location: '栃木県',
 		tags: ['傾斜区分図'],

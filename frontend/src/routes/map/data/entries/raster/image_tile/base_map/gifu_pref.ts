@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	metaData: {
 		name: '岐阜県 基本図',
 		sourceDataName: '岐阜県共有空間データ',
-		description: '',
 		attribution: 'Q地図タイル',
 		downloadUrl:
 			'https://maps.qchizu.xyz/#9/35.814472/137.059937/&base=std&ls=std%7Cgifu_pref_00&blend=0&disp=11&lcd=gifu_pref_00&vs=c1j0h0k0l0u0t0z0r0s0m0f1&d=m',

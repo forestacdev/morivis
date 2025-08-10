@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '全国地質図',
-		description: '',
 		sourceDataName: '20万分の1日本シームレス地質図V2',
 		downloadUrl: 'https://gbank.gsj.jp/seamless/v2/api/1.3.1/#tiles',
 		attribution: '産総研地質調査総合センター',

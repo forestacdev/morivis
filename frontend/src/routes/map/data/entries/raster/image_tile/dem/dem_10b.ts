@@ -11,7 +11,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 	},
 	metaData: {
 		name: '全国数値標高データ',
-		description: '基盤地図情報数値標高モデル DEM10B',
+		sourceDataName: '基盤地図情報数値標高モデル DEM10B',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
 		attribution: '国土地理院',
 		tags: ['DEM', '地形', '10m解像度'],

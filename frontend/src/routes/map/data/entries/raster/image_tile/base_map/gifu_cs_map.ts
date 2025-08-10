@@ -13,8 +13,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '岐阜県 CS立体図',
-		description:
-			'岐阜県森林研究所が整備し、公開した微地形表現図（CS立体図）をマップタイル化したものです。（引用:G空間情報センター）',
 		attribution: '岐阜県森林研究所',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-gifu-maptiles',
 		location: '岐阜県',

@@ -11,7 +11,6 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 	},
 	metaData: {
 		name: '長岡市 数値樹冠高データ',
-		description: '',
 		sourceDataName: '林野庁・数値樹冠高モデルDCHM0.5m（長岡地域2024）',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-dchm-nagaoka2024',
 		attribution: '林野庁',

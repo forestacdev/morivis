@@ -15,8 +15,6 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	metaData: {
 		name: '全国植生図',
 		sourceDataName: '第6～7回 自然環境保全基礎調査 植生調査結果GISデータ',
-		description:
-			'第6～7回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)を使用し、株式会社エコリスが着色し加工したものです。',
 		attribution: 'エコリス地図タイル',
 		downloadUrl: 'https://map.ecoris.info/#contents',
 		location: '全国',
