@@ -175,6 +175,15 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			]
 		}
+		// default: {
+		// 	symbol: {
+		// 		paint: {},
+		// 		layout: {
+		// 			'text-padding': 4,
+		// 			'symbol-spacing': 400 // デフォルト: 400px
+		// 		}
+		// 	}
+		// }
 	}
 };
 

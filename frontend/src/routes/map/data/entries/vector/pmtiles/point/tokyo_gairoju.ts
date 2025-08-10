@@ -484,6 +484,10 @@ const entry: VectorEntry<TileMetaData> = {
 							'マグワ'
 						],
 						values: generateHueBasedHexColors(405)
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				}
 			]

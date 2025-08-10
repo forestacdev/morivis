@@ -136,8 +136,8 @@
 		if (!map) return;
 	});
 
+	// ちらつき防止
 	let stablePOIData = $state<PoiData[]>([]);
-
 	const updatePOIData = debounce((newData: PoiData[]) => {
 		stablePOIData = [...newData];
 	}, 50);
@@ -146,9 +146,20 @@
 	$effect(() => {
 		updatePOIData(poiDatas);
 	});
+
+	let shouldShowPoi = $derived.by(() => {
+		return (
+			$showLabelLayer &&
+			!showDataEntry &&
+			!showZoneForm &&
+			!$isStyleEdit &&
+			!$showSearchMenu &&
+			poiDatas.length > 0
+		);
+	});
 </script>
 
-<div class="poi-container">
+{#if shouldShowPoi}
 	{#each stablePOIData as poiData (poiData.propId)}
 		<PoiMarker
 			{map}
@@ -159,7 +170,7 @@
 			{clickId}
 		/>
 	{/each}
-</div>
+{/if}
 
 <style>
 </style>

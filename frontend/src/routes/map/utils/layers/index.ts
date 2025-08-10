@@ -696,11 +696,12 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Regular'],
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
 
-			// "text-variable-anchor": ["top", "bottom", "left", "right"],
-			// "text-radial-offset": 0.5,
-			// "text-justify": "auto",
+			// 自動オフセット
+			'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+			'text-radial-offset': 0.5,
+			'text-justify': 'auto'
 		}
 	};
 

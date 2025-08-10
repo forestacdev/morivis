@@ -149,7 +149,7 @@ const createMapStore = () => {
 			// },
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
 			style: mapStyle,
-			fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
