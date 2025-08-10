@@ -44,14 +44,21 @@
 			version: 8,
 			glyphs: MAP_FONT_DATA_PATH, // TODO; フォントの検討
 			sources: {
-				mierune_mono: {
+				earthhillshade: {
 					type: 'raster',
-					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/earthhillshade/{z}/{x}/{y}.png'],
 					tileSize: 256,
 					minzoom: 0,
 					maxzoom: 18,
-					attribution:
-						'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+					attribution: '地理院タイル'
+				},
+				hillshademap: {
+					type: 'raster',
+					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
+					tileSize: 256,
+					minzoom: 2,
+					maxzoom: 16,
+					attribution: '地理院タイル'
 				},
 				bbox: {
 					type: 'geojson',
@@ -61,13 +68,29 @@
 
 			layers: [
 				{
-					id: 'mierune_mono_layer',
-					source: 'mierune_mono',
-					type: 'raster',
+					id: 'background_layer',
+					type: 'background',
 					paint: {
-						'raster-opacity': 0.5,
-						'raster-brightness-min': 1,
-						'raster-brightness-max': 0
+						'background-color': '#FFFFEE'
+					}
+				},
+				{
+					id: 'earthhillshade_layer',
+					source: 'earthhillshade',
+					type: 'raster',
+					maxzoom: 8,
+					paint: {
+						'raster-opacity': 1.0
+					}
+				},
+				{
+					id: 'hillshademap_layer',
+					source: 'hillshademap',
+					type: 'raster',
+					minzoom: 2,
+					maxzoom: 24,
+					paint: {
+						'raster-opacity': 1.0
 					}
 				},
 				{
@@ -75,7 +98,7 @@
 					source: 'bbox',
 					type: 'fill',
 					paint: {
-						'fill-color': '#007508',
+						'fill-color': '#529F81',
 						'fill-opacity': 0.5
 					}
 				},
@@ -85,7 +108,7 @@
 					type: 'line',
 					paint: {
 						'line-color': '#FFFFFF',
-						'line-width': 2
+						'line-width': 1
 					}
 				}
 				// {
@@ -118,7 +141,7 @@
 							style: data.style, // スタイル設定
 							pitch: 0,
 							bearing: 0,
-							interactive: false,
+							// interactive: false,
 							attributionControl: false,
 							renderWorldCopies: false
 						});
@@ -171,12 +194,9 @@
 </script>
 
 {#if hasBbox}
-	<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}>
-		<div class="absolute left-2 top-2 z-10 rounded-lg bg-black/70 p-2">
-			{showDataEntry?.metaData.location}
-		</div>
+	<div class="aspect-video w-full rounded-lg bg-black" bind:this={mapContainer}>
 		{#if import.meta.env.DEV}
-			<div class="absolute bottom-0 right-0 z-10 bg-black/70 p-1">
+			<div class="absolute bottom-0 right-0 z-10 p-1">
 				{showDataEntry?.metaData.bounds}
 			</div>
 		{/if}

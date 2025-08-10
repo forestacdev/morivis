@@ -77,7 +77,7 @@
 
 					{#if showDataEntry?.metaData.downloadUrl}
 						<a
-							class="c-btn-confirm flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+							class="c-btn-confirm mt-4 flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
 							href={showDataEntry?.metaData.downloadUrl}
 							target="_blank"
 							rel="noopener noreferrer"
@@ -129,23 +129,28 @@
 					{/if}
 				{/if}
 
-				<div class="flex flex-col gap-2 py-2">
-					<div class="flex items-center gap-1 text-gray-300">
-						{#each showDataEntry?.metaData.tags as tag}
-							<span class="rounded-full bg-black p-1 px-2 text-sm">{tag}</span>
-						{/each}
-					</div>
-				</div>
-
 				<div class="flex flex-col gap-2 py-2 pb-4">
 					<div class="flex gap-1">
 						<Icon icon="tabler:map-pin" class="h-6 w-6" />
-						<span class="font-bold">データ範囲</span>
+						<span class="">{showDataEntry?.metaData.location}</span>
 					</div>
 
 					{#if showDataEntry}
 						<MapPane bind:showDataEntry />
 					{/if}
+				</div>
+
+				<!-- タグ -->
+				<div class="flex flex-col gap-2 py-2">
+					<div class="flex gap-1">
+						<Icon icon="tabler:tag-filled" class="h-6 w-6" />
+						<span class="">タグ</span>
+					</div>
+					<div class="flex items-center gap-1 text-gray-300">
+						{#each showDataEntry?.metaData.tags as tag}
+							<span class="rounded-lg bg-black p-1 px-2 text-sm">{tag}</span>
+						{/each}
+					</div>
 				</div>
 			</div>
 		</div>
