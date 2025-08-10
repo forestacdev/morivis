@@ -91,7 +91,7 @@
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
 				<div class="flex h-[80px] items-center gap-2 pr-2">
-					<Icon icon="streamline:paint-palette-solid text-base" class="h-7 w-7" />
+					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
 					<span class="select-none text-base text-lg max-lg:hidden">カスタマイズ</span>
 					<button
 						onclick={() => {

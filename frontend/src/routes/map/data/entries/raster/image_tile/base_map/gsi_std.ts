@@ -1,3 +1,4 @@
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
@@ -21,7 +22,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: WEB_MERCATOR_JAPAN_BOUNDS
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

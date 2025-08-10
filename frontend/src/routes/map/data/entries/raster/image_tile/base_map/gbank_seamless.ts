@@ -23,11 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 13,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: {
-			x: 1827,
-			y: 777,
-			z: 11
-		}
+		xyzImageTile: { x: 225, y: 100, z: 8 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

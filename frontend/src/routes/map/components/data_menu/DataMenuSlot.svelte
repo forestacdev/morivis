@@ -231,19 +231,6 @@
 				</div>
 			{/if}
 
-			<!-- <div
-				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
-				isHover
-					? 'opacity-100'
-					: 'opacity-0'}"
-			>
-				{#if isAdded}
-					<span class="z-10 text-lg text-white">地図に追加済み</span>
-				{:else if isHover}
-					<span class="z-10 text-lg text-white">プレビュー</span>
-				{/if}
-			</div> -->
-
 			{#if layertype}
 				<div
 					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:left-1 max-lg:top-1 lg:left-2 lg:top-2"

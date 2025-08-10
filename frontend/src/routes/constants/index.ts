@@ -77,7 +77,7 @@ export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
 	}
 };
 
-export const IMAGE_TILE_XYZ: TileXYZ = IMAGE_TILE_XYZ_SETS['zoom_14'];
+export const IMAGE_TILE_XYZ: TileXYZ = IMAGE_TILE_XYZ_SETS['zoom_15'];
 
 /** maplibreのデフォルトのpopupオプション */
 export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {

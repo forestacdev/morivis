@@ -154,7 +154,7 @@
 
 						const mapBbox = mapStore.getMapBounds();
 						if (!isBBoxInside(mapBbox, data.bbox)) {
-							mapStore.focusLayer(showDataEntry);
+							// mapStore.focusLayer(showDataEntry);
 							// return;
 						}
 
