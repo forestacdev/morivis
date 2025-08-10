@@ -11,7 +11,8 @@ const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: 'スギ人工林冠雪害危険度',
-		description: '岐阜県森林研究所が提供する「岐阜県スギ人工林冠雪害危険度マップ」を加工',
+		sourceDataName: '岐阜県スギ人工林冠雪害危険度マップ',
+		description: '',
 		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/kansetsugaimap.html',
 		attribution: '岐阜県森林研究所',
 		tags: ['森林'],

@@ -32,14 +32,17 @@
 		border-color: var(--color-gray-200, currentcolor);
 	}
 
-	body {
-		overscroll-behavior-y: none;
-	}
+	@media (width < 768px) {
+		/* スワイプリロード無効 */
+		body {
+			overscroll-behavior-y: none;
+		}
 
-	/* タップハイライトの色を透明にする */
-	* {
-		-webkit-tap-highlight-color: transparent;
-		user-select: none;
+		/* タップハイライトの色を透明にする */
+		* {
+			-webkit-tap-highlight-color: transparent;
+			user-select: none;
+		}
 	}
 }
 

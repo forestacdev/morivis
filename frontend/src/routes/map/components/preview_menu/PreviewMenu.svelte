@@ -58,50 +58,51 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div> -->
-		<div class="c-scroll flex h-full flex-col gap-2 overflow-y-auto overflow-x-hidden">
-			<div class="flex shrink-0 grow flex-col gap-1 text-base">
-				<!-- ヘッダー -->
-				<div class="relative flex flex-col items-center gap-2 pb-4">
-					<div
-						class="relative isolate grid h-[100px] w-[100px] shrink-0 place-items-center rounded-full bg-black"
-					>
-						<LayerIcon layerEntry={showDataEntry} />
-					</div>
-
-					<!-- タイトル -->
-					<div class="flex flex-col items-center gap-2">
-						<div class="text-2xl">{showDataEntry?.metaData.name}</div>
-						<span class="text-sm opacity-90"
-							>{getAttributionName(showDataEntry?.metaData.attribution)}</span
-						>
-					</div>
-					<div class="absolute -z-10 grid aspect-video h-full place-items-center opacity-15">
-						{#if showDataEntry.metaData.location === '森林文化アカデミー'}
-							<div class="grid place-items-center [&_path]:fill-white">
-								<FacIcon width={'100%'} />
-							</div>
-						{/if}
-						{#if prefCode}
-							<div class="[&_path]:fill-base grid place-items-center">
-								<PrefectureIcon width={'100%'} code={prefCode} />
-							</div>
-							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-						{/if}
-						{#if showDataEntry.metaData.location === '全国'}
-							<div class="grid h-full w-full place-items-center">
-								<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
-								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-							</div>
-						{/if}
-						{#if showDataEntry.metaData.location === '世界'}
-							<div class="grid h-full w-full place-items-center">
-								<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
-								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-							</div>
-						{/if}
-					</div>
+		<div class="flex h-full flex-col text-base">
+			<!-- ヘッダー -->
+			<div class="relative flex flex-col items-center gap-2 pb-4">
+				<!-- アイコン -->
+				<div
+					class="relative isolate grid h-[120px] w-[120px] shrink-0 place-items-center rounded-full bg-black drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]"
+				>
+					<LayerIcon layerEntry={showDataEntry} />
 				</div>
 
+				<!-- タイトル -->
+				<div class="flex flex-col items-center gap-2">
+					<div class="text-2xl">{showDataEntry?.metaData.name}</div>
+					<span class="text-sm opacity-90"
+						>{getAttributionName(showDataEntry?.metaData.attribution)}</span
+					>
+				</div>
+				<div class="absolute -z-10 grid aspect-video h-full place-items-center opacity-15">
+					{#if showDataEntry.metaData.location === '森林文化アカデミー'}
+						<div class="grid place-items-center [&_path]:fill-white">
+							<FacIcon width={'95%'} />
+						</div>
+					{/if}
+					{#if prefCode}
+						<div class="[&_path]:fill-base grid place-items-center">
+							<PrefectureIcon width={'100%'} code={prefCode} />
+						</div>
+						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+					{/if}
+					{#if showDataEntry.metaData.location === '全国'}
+						<div class="grid h-full w-full place-items-center">
+							<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+					{#if showDataEntry.metaData.location === '世界'}
+						<div class="grid h-full w-full place-items-center">
+							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<div class="c-scroll gap-2 overflow-y-auto overflow-x-hidden">
 				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
 					{#if showDataEntry}
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -116,26 +117,11 @@
 				{/if}
 
 				<div class="flex flex-col gap-2 py-2 pb-4">
-					<div class="flex gap-1">
-						<Icon icon="mynaui:tag-solid" class="h-6 w-6" />
-						<span class="font-bold">タグ</span>
-					</div>
 					<div class="flex items-center gap-1 text-gray-300">
 						{#each showDataEntry?.metaData.tags as tag}
 							<span class="rounded-full bg-black p-1 px-2 text-xs">{tag}</span>
 						{/each}
 					</div>
-				</div>
-
-				<div class="flex flex-col gap-2 py-2 pb-4">
-					<div class="flex gap-1">
-						<Icon icon="tabler:map-pin" class="h-6 w-6" />
-						<span class="font-bold">データ範囲</span>
-					</div>
-
-					{#if showDataEntry}
-						<MapPane bind:showDataEntry />
-					{/if}
 				</div>
 
 				{#if showDataEntry?.metaData.attribution !== 'カスタムデータ'}
@@ -159,12 +145,17 @@
 						</div>
 					</div>
 				{/if}
-			</div>
-			<!-- 切り替えタブ -->
 
-			<!-- 詳細情報 -->
-			<div class="c-scroll flex h-full w-full grow flex-col overflow-y-auto">
-				<!-- 属性情報 -->
+				<div class="flex flex-col gap-2 py-2 pb-4">
+					<div class="flex gap-1">
+						<Icon icon="tabler:map-pin" class="h-6 w-6" />
+						<span class="font-bold">データ範囲</span>
+					</div>
+
+					{#if showDataEntry}
+						<MapPane bind:showDataEntry />
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>

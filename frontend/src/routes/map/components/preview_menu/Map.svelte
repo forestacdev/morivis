@@ -63,7 +63,12 @@
 				{
 					id: 'mierune_mono_layer',
 					source: 'mierune_mono',
-					type: 'raster'
+					type: 'raster',
+					paint: {
+						'raster-opacity': 0.5,
+						'raster-brightness-min': 1,
+						'raster-brightness-max': 0
+					}
 				},
 				{
 					id: 'bbox_layer',

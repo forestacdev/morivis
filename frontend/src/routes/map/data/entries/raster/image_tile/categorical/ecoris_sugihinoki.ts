@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: 'スギ・ヒノキ・サワラ植林分布図',
-		sourceDataName: '自然環境保全基礎調査 植生調査結果GISデータ',
+		sourceDataName: 'スギ・ヒノキ・サワラ植林（自然環境保全基礎調査 植生調査結果GISデータ）',
 		description: `
             第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したものです。`,
 		attribution: 'エコリス地図タイル',
