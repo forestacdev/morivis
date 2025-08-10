@@ -20,9 +20,18 @@
 		showDataEntry: GeoDataEntry | null;
 		itemHeight: number;
 		index: number;
+		isLeftEdge: boolean;
+		isRightEdge: boolean;
 	}
 
-	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
+	let {
+		dataEntry,
+		showDataEntry = $bindable(),
+		itemHeight = $bindable(),
+		index,
+		isLeftEdge,
+		isRightEdge
+	}: Props = $props();
 
 	let isHover = $state(false);
 	// Blob URLとクリーンアップ関数を管理するための状態
@@ -91,7 +100,11 @@
 </script>
 
 <div
-	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:shadow-lg"
+	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg {isLeftEdge
+		? 'origin-left'
+		: isRightEdge
+			? 'origin-right'
+			: 'origin-center'}"
 	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}

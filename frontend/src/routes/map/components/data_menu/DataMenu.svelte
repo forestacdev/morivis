@@ -65,7 +65,7 @@
 	let gridWidth = $state<number>(0);
 	let rowColumns = $state<number>(2); // グリッドの列数
 	let itemHeight = $state<number>(500); // item Height + grid margin & padding
-	let itemWidth = $state<number>(256); // item Height + grid margin & padding
+	let itemWidth = $state<number>(300); // item Height + grid margin & padding
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -168,18 +168,23 @@
 				>
 					<div slot="item" let:index let:style {style}>
 						<div
-							class="grid gap-[5px]"
+							class="grid max-lg:gap-[5px] lg:gap-3"
 							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({checkPc()
 								? 256
 								: 100}px, 1fr));"
 						>
 							{#each Array(rowColumns) as _, i}
 								{#if filterDataEntries[index * rowColumns + i]}
+									{@const itemIndex = index * rowColumns + i}
+									{@const isLeftEdge = itemIndex % rowColumns === 0}
+									{@const isRightEdge = itemIndex % rowColumns === rowColumns - 1}
 									<DataSlot
-										dataEntry={filterDataEntries[index * rowColumns + i]}
+										dataEntry={filterDataEntries[itemIndex]}
 										bind:showDataEntry
 										bind:itemHeight
-										index={index * rowColumns + i}
+										index={itemIndex}
+										{isLeftEdge}
+										{isRightEdge}
 									/>
 								{/if}
 							{/each}
