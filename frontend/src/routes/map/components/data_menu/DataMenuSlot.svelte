@@ -172,12 +172,12 @@
 				</div>
 			{/if}
 
-			<div class="absolute bottom-0 right-0 grid place-items-center opacity-70">
+			<div class="absolute bottom-0 right-0 grid place-items-center pr-2 opacity-30">
 				{#if dataEntry.metaData.location === '森林文化アカデミー'}
 					<!-- <div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
 				<FacLogo width={'150px'} />
 			</div> -->
-					<div class="grid place-items-center p-4">
+					<div class="grid place-items-center">
 						<img
 							class="h-[50px] w-[50px] rounded-full object-cover"
 							src="./mapicon.png"
@@ -186,13 +186,13 @@
 					</div>
 				{/if}
 				{#if prefCode}
-					<div class="[&_path]:fill-base grid aspect-square place-items-center p-2">
+					<div class="[&_path]:fill-base grid aspect-square place-items-center">
 						<PrefectureIcon width={'60px'} code={prefCode} />
 					</div>
 					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 				{/if}
 				{#if dataEntry.metaData.location === '全国'}
-					<div class=" grid place-items-center">
+					<div class="grid place-items-center">
 						<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
 						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 					</div>
@@ -207,7 +207,7 @@
 		</div>
 
 		<!-- 詳細情報 -->
-		<div class="flex w-full flex-col gap-2 p-2 {isHover ? '' : 'c-gradient'}">
+		<div class="flex h-full w-full flex-col items-end justify-end gap-1 p-2 pb-4">
 			<!-- タグ -->
 			<!-- <div class="flex items-center gap-1 text-gray-300">
 				{#each dataEntry.metaData.tags as tag}
@@ -215,13 +215,13 @@
 				{/each}
 			</div> -->
 			<!-- タイトル -->
-			<div class="w-full p-2 text-left text-white">
-				<span class="text-lg">{dataEntry.metaData.name}</span>
+			<div class="flex w-full flex-col justify-end gap-1 text-left text-white">
+				<span class="text-lg leading-6">{dataEntry.metaData.name}</span>
+				<!-- 出典 -->
+				<span class="text-left text-xs text-gray-400">
+					{getAttributionName(dataEntry.metaData.attribution)}</span
+				>
 			</div>
-			<!-- 出典 -->
-			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white">
-				{getAttributionName(dataEntry.metaData.attribution)}</span
-			>
 		</div>
 	</button>
 </div>
