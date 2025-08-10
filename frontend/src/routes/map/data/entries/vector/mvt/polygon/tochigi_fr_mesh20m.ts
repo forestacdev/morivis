@@ -1,6 +1,7 @@
 import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { expressions } from 'maplibre-gl';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'tochigi_fr_mesh20m',
@@ -12,9 +13,6 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '栃木県 森林資源量集計メッシュ',
-		description: `令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「森林資源量集計メッシュ」です。
-            「森林資源量集計メッシュ」は、森林GISフォーラムが運用する”森林資源データ解析・管理標準仕様書ver.2.0”に則し作成したデータで、20mメッシュ単位で次に記載する森林資源量を集計しています。
-             （G空間情報センター引用）`,
 		attribution: '栃木県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_tochigi',
 		location: '栃木県',

@@ -12,7 +12,6 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '兵庫県 樹種ポリゴン',
-		description: `兵庫県（令和２～３年度）及び国土交通省近畿地方整備局六甲砂防事務所（平成24～25年度）が実施した航空レーザ測量データを使用して作成した「樹種ポリゴン」です。（引用:G空間情報センター）`,
 		attribution: '兵庫県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_hyogo',
 		location: '兵庫県',

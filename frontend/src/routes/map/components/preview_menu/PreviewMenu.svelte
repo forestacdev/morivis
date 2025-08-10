@@ -74,13 +74,6 @@
 					<span class="text-sm opacity-90"
 						>{getAttributionName(showDataEntry?.metaData.attribution)}</span
 					>
-					<div class="flex flex-col gap-2 py-2">
-						<div class="flex items-center gap-1 text-gray-300">
-							{#each showDataEntry?.metaData.tags as tag}
-								<span class="rounded-full bg-black p-1 px-2 text-sm">{tag}</span>
-							{/each}
-						</div>
-					</div>
 
 					{#if showDataEntry?.metaData.downloadUrl}
 						<a
@@ -129,10 +122,20 @@
 								元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
 							{/if}
 
-							{@html formatDescription(showDataEntry?.metaData.description)}
+							{#if showDataEntry?.metaData.description}
+								{@html formatDescription(showDataEntry?.metaData.description)}
+							{/if}
 						</div>
 					{/if}
 				{/if}
+
+				<div class="flex flex-col gap-2 py-2">
+					<div class="flex items-center gap-1 text-gray-300">
+						{#each showDataEntry?.metaData.tags as tag}
+							<span class="rounded-full bg-black p-1 px-2 text-sm">{tag}</span>
+						{/each}
+					</div>
+				</div>
 
 				<div class="flex flex-col gap-2 py-2 pb-4">
 					<div class="flex gap-1">
