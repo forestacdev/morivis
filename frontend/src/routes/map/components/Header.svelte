@@ -104,7 +104,6 @@
 					name: data.name,
 					location: dict[data.layer_id] || null,
 
-					tile: data.tile_coords,
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,

@@ -14,6 +14,8 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST } from '$routes/map/data/types/tags';
 
+	import Fuse from 'fuse.js';
+
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
@@ -32,18 +34,24 @@
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(true); // データ追加の状態
 
+	const fuse = new Fuse(geoDataEntries, {
+		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
+		threshold: 0.3
+	});
+
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
 		if (searchWord) {
-			filterDataEntries = dataEntries.filter((data) =>
-				data.metaData.name.toLowerCase().includes(searchWord.toLowerCase())
-			);
+			const result = fuse.search(searchWord);
+			filterDataEntries = result.map((item) => item.item);
 		} else {
 			// 検索ワードが空の場合、全てのデータを表示
 			if (!showAddedData) {
-				filterDataEntries = dataEntries.filter((data) => !$activeLayerIdsStore.includes(data.id));
+				filterDataEntries = geoDataEntries.filter(
+					(data) => !$activeLayerIdsStore.includes(data.id)
+				);
 			} else {
-				filterDataEntries = dataEntries;
+				filterDataEntries = geoDataEntries;
 			}
 		}
 	});
