@@ -10,22 +10,28 @@ export const WEB_MERCATOR_JAPAN_BOUNDS: [number, number, number, number] = [
 ];
 
 // 都道府県のBBOX定数 [west, south, east, north]
+
+/* 北海道 */
 export const HOKKAIDO_BBOX: [number, number, number, number] = [
 	139.334302, 41.35211, 148.894833, 45.556277
 ];
 
+/* 青森県 */
 export const AOMORI_BBOX: [number, number, number, number] = [
 	139.860725, 40.218604, 141.68324, 41.555998
 ];
 
+/* 岩手県 */
 export const IWATE_BBOX: [number, number, number, number] = [
 	140.653166, 38.747651, 142.072461, 40.449927
 ];
 
+/* 宮城県 */
 export const MIYAGI_BBOX: [number, number, number, number] = [
 	140.274764, 37.773252, 141.675431, 39.002776
 ];
 
+/* 秋田県 */
 export const AKITA_BBOX: [number, number, number, number] = [
 	139.694597, 38.874522, 140.995425, 40.511122
 ];
@@ -197,6 +203,12 @@ export const KAGOSHIMA_BBOX: [number, number, number, number] = [
 export const OKINAWA_BBOX: [number, number, number, number] = [
 	122.933755, 24.045713, 131.332068, 27.885401
 ];
+
+/* 新潟県長岡市 */
+export const NIIGATA_NAGAOKA_BBOX: [number, number, number, number] = [
+	138.55255031479942, 37.10031545326591, 139.24508261732308, 37.76892107563275
+];
+
 type LocationBbox = {
 	name: string;
 	bbox: [number, number, number, number];

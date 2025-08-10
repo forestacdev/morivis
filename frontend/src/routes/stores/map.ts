@@ -303,6 +303,10 @@ const createMapStore = () => {
 				bearing: map.getBearing()
 			});
 			mooveEndEvent.set(e);
+
+			if (import.meta.env.DEV) {
+				console.log(getMapBounds());
+			}
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
