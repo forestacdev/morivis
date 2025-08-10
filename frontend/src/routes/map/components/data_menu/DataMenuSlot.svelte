@@ -11,7 +11,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { fade, fly } from 'svelte/transition';
-	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { getAttributionName } from '$routes/map/data/attribution';
 
@@ -150,15 +150,44 @@
 			{:catch}
 				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
+			<div class="pointer-events-none absolute h-full w-full">
+				<div class="c-bg absolute h-full w-full"></div>
+			</div>
 			<!-- オーバーレイ -->
-			<div
-				class="c-gradient pointer-events-none absolute grid h-full w-full place-items-center"
-			></div>
-			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
-			<div
+			{#if !isHover}
+				<div transition:fade={{ duration: 150 }} class="pointer-events-none absolute h-full w-full">
+					<div class="c-gradient absolute h-full w-full"></div>
+				</div>
+			{/if}
+			{#if isHover && !isAdded}
+				<div
+					transition:fade={{ duration: 150 }}
+					class="pointer-events-none absolute grid h-full w-full place-items-center"
+				>
+					<div
+						class="z-10 flex items-center justify-center gap-1 rounded-full bg-black/60 p-2 px-4 text-lg text-white"
+					>
+						<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
+					</div>
+				</div>
+			{/if}
+			{#if isAdded}
+				<div
+					transition:fade={{ duration: 150 }}
+					class="pointer-events-none absolute grid h-full w-full place-items-center"
+				>
+					<div
+						class="z-10 flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
+					>
+						<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
+					</div>
+				</div>
+			{/if}
+
+			<!-- <div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
 				isHover
-					? 'opacity-0'
+					? 'opacity-100'
 					: 'opacity-0'}"
 			>
 				{#if isAdded}
@@ -166,7 +195,7 @@
 				{:else if isHover}
 					<span class="z-10 text-lg text-white">プレビュー</span>
 				{/if}
-			</div>
+			</div> -->
 
 			{#if layertype}
 				<div
@@ -178,7 +207,9 @@
 		</div>
 
 		<!-- 詳細情報 -->
-		<div class="flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2">
+		<div
+			class="relative flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2"
+		>
 			<!-- タグ -->
 			<!-- <div class="flex items-center gap-1 text-gray-300">
 				{#each dataEntry.metaData.tags as tag}
@@ -194,40 +225,33 @@
 				<span class="text-left text-xs text-gray-400">
 					{getAttributionName(dataEntry.metaData.attribution)}</span
 				>
-			</div>
-			<div
-				class="absolute bottom-0 right-0 grid place-items-center pb-2 opacity-20 max-lg:pr-1 lg:pr-2"
-			>
-				{#if dataEntry.metaData.location === '森林文化アカデミー'}
-					<!-- <div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
-                        <FacLogo width={'150px'} />
-                    </div> -->
-					<div class="grid place-items-center">
-						<img
-							class="h-[50px] w-[50px] rounded-full object-cover"
-							src="./mapicon.png"
-							alt={'森林文化アカデミー'}
-						/>
-					</div>
-				{/if}
-				{#if prefCode}
-					<div class="[&_path]:fill-base grid aspect-square place-items-center">
-						<PrefectureIcon width={'90px'} code={prefCode} />
-					</div>
-					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-				{/if}
-				{#if dataEntry.metaData.location === '全国'}
-					<div class="grid place-items-center">
-						<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+				<div
+					class="absolute bottom-0 right-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
+				>
+					{#if dataEntry.metaData.location === '森林文化アカデミー'}
+						<div class="grid place-items-center [&_path]:fill-white">
+							<FacIcon width={'60px'} />
+						</div>
+					{/if}
+					{#if prefCode}
+						<div class="[&_path]:fill-base grid aspect-square place-items-center">
+							<PrefectureIcon width={'80px'} code={prefCode} />
+						</div>
 						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-					</div>
-				{/if}
-				{#if dataEntry.metaData.location === '世界'}
-					<div class="grid place-items-center">
-						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
-						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-					</div>
-				{/if}
+					{/if}
+					{#if dataEntry.metaData.location === '全国'}
+						<div class="grid place-items-center">
+							<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+					{#if dataEntry.metaData.location === '世界'}
+						<div class="grid place-items-center">
+							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</button>
