@@ -176,6 +176,7 @@
 							{#each Array(rowColumns) as _, i}
 								{#if filterDataEntries[index * rowColumns + i]}
 									{@const itemIndex = index * rowColumns + i}
+									{@const isTopEdge = itemIndex < rowColumns}
 									{@const isLeftEdge = itemIndex % rowColumns === 0}
 									{@const isRightEdge = itemIndex % rowColumns === rowColumns - 1}
 									<DataSlot
@@ -185,6 +186,7 @@
 										index={itemIndex}
 										{isLeftEdge}
 										{isRightEdge}
+										{isTopEdge}
 									/>
 								{/if}
 							{/each}

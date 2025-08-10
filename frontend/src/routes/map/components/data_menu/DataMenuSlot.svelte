@@ -23,6 +23,7 @@
 		index: number;
 		isLeftEdge: boolean;
 		isRightEdge: boolean;
+		isTopEdge: boolean;
 	}
 
 	let {
@@ -31,7 +32,8 @@
 		itemHeight = $bindable(),
 		index,
 		isLeftEdge,
-		isRightEdge
+		isRightEdge,
+		isTopEdge
 	}: Props = $props();
 
 	let isHover = $state(false);
@@ -107,14 +109,25 @@
 			}
 		}
 	});
+
+	function getTransformOrigin() {
+		// 角の場合
+		if (isTopEdge && isLeftEdge) return 'top left';
+		if (isTopEdge && isRightEdge) return 'top right';
+
+		// 辺の場合
+		if (isTopEdge) return 'top';
+		if (isLeftEdge) return 'left';
+		if (isRightEdge) return 'right';
+
+		// 中央の場合
+		return 'center';
+	}
 </script>
 
 <div
-	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg {isLeftEdge
-		? 'origin-left'
-		: isRightEdge
-			? 'origin-right'
-			: 'origin-center'}"
+	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	style="transform-origin: {getTransformOrigin()}"
 	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
