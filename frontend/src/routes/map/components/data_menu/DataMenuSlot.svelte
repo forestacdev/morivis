@@ -192,7 +192,7 @@
 				<div class="[&_path]:fill-sub grid aspect-square h-[90px] place-items-center p-1">
 					<PrefectureIcon width={'60px'} code={prefCode} />
 				</div>
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 			</div>
 		{/if}
 		{#if dataEntry.metaData.location === '森林文化アカデミー'}
@@ -210,13 +210,13 @@
 		{#if dataEntry.metaData.location === '全国'}
 			<div class="absolute bottom-2 right-2 grid place-items-center">
 				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-18 w-18" />
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 			</div>
 		{/if}
 		{#if dataEntry.metaData.location === '世界'}
 			<div class="absolute bottom-0 right-2 grid place-items-center">
 				<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
+				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 			</div>
 		{/if}
 	</button>

@@ -285,13 +285,13 @@
 					<div class="flex h-full w-full flex-col gap-[2px]">
 						<span class="truncate pl-1 pt-2 text-base">{layerEntry.metaData.name}</span>
 						<div class="mt-auto flex pl-1">
-							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" />
+							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" /> -->
 							<span class="truncate text-xs text-gray-400"
 								>{getAttributionName(layerEntry.metaData.attribution) ?? '---'}</span
-							> -->
-							<span class="truncate text-xs text-gray-400"
-								>{layerEntry.metaData.location ?? '---'}</span
 							>
+							<!-- <span class="truncate text-xs text-gray-400"
+								>{layerEntry.metaData.location ?? '---'}</span
+							> -->
 						</div>
 					</div>
 				{/if}

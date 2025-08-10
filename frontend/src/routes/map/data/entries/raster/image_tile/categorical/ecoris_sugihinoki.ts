@@ -11,9 +11,10 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://map.ecoris.info/tiles/sugihinoki/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'スギ・ヒノキ・サワラ植林',
-		description:
-			'第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したものです。',
+		name: 'スギ・ヒノキ・サワラ植林分布図',
+		sourceDataName: 'スギ・ヒノキ・サワラ植林',
+		description: `
+            第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)からスギ・ヒノキ・サワラ植林を抽出し、株式会社エコリスが着色し加工したものです。`,
 		attribution: 'エコリス地図タイル',
 		tags: ['植生図'],
 		location: '全国',
@@ -35,9 +36,9 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
-			name: '植林',
-			colors: ['#FD4202'],
-			labels: ['スギ・ヒノキ・サワラ']
+			name: '',
+			colors: ['#FD4202', '#B7FFFF', '#FFFFFF'],
+			labels: ['スギ・ヒノキ・サワラ植林地', '水域', 'その他']
 		}
 	}
 };

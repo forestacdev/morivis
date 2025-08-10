@@ -10,10 +10,11 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://tiles.gsj.jp/tiles/elev/tochigi/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '栃木県 数値標高モデル',
-		description: '',
+		name: '栃木県 数値標高データ',
+		description: `
+栃木県のGeoTiff標高データを投影法変換してズームレベル18のタイルを作成し、順次低ズームレベルのタイルセットを生成。低解像度化の際は4ピクセル中の北西（左上）ピクセル値を採用。全国Q地図タイルを加工したもの。`,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
-		attribution: '産総研シームレス標高タイル',
+		attribution: '栃木県森林資源データ',
 		location: '栃木県',
 		tags: ['DEM', '地形', '0.5m解像度'],
 		minZoom: 2,

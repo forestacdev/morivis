@@ -17,9 +17,9 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://map.ecoris.info/tiles/tanbo/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '田んぼ',
-		description:
-			'第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)から水田雑草群落を抽出し、株式会社エコリスが着色し加工したものです。',
+		name: '田んぼ分布図',
+		sourceDataName: '田んぼ',
+		description: `第5回 自然環境保全基礎調査 植生調査結果GISデータ(環境省生物多様性センター)から水田雑草群落を抽出し、株式会社エコリスが着色し加工したものです。`,
 		attribution: 'エコリス地図タイル',
 		location: '全国',
 		minZoom: 5,

@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '傾斜量図',
+		name: '全国傾斜量図',
 		description: '',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#slopemap',

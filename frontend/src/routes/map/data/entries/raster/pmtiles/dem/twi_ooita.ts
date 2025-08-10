@@ -11,7 +11,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		url: `${ENTRY_PMTILES_RASTER_PATH}/twi_ooita.pmtiles`
 	},
 	metaData: {
-		name: '地形湿潤指標',
+		name: '福岡県 地形湿潤指標',
 		description:
 			'森林総合研究所が提供する福岡県の地形湿潤指標（TWI）の10mメッシュデータをPMTiles形式で加工したもの。',
 		attribution: '森林総合研究所',

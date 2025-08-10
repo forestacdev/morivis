@@ -97,6 +97,10 @@
 					{#if showDataEntry}
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<div class="rounded-lg bg-black p-2 text-justify text-sm">
+							{#if showDataEntry?.metaData.sourceDataName}
+								元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
+							{/if}
+
 							{@html formatDescription(showDataEntry?.metaData.description)}
 						</div>
 					{/if}

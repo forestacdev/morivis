@@ -10,7 +10,8 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://forestgeo.info/opendata/19_yamanashi/dem_terrainRGB_2024/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '山梨県 数値標高モデル',
+		name: '山梨県 数値標高データ',
+		sourceDataName: '山梨県数値標高モデル',
 		description: '',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-yamanashi-maptiles',
 		attribution: '林野庁',
