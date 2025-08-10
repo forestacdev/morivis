@@ -150,6 +150,10 @@
 			{:catch}
 				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
+			<!-- オーバーレイ -->
+			<div
+				class="c-gradient pointer-events-none absolute grid h-full w-full place-items-center"
+			></div>
 			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
 			<div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
@@ -166,17 +170,38 @@
 
 			{#if layertype}
 				<div
-					class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
+					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:left-1 max-lg:top-1 lg:left-2 lg:top-2"
 				>
-					<Icon icon={getLayerIcon(layertype)} class="h-6 w-6" />
+					<Icon icon={getLayerIcon(layertype)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</div>
 			{/if}
+		</div>
 
-			<div class="absolute bottom-0 right-0 grid place-items-center pr-2 opacity-30">
+		<!-- 詳細情報 -->
+		<div class="flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2">
+			<!-- タグ -->
+			<!-- <div class="flex items-center gap-1 text-gray-300">
+				{#each dataEntry.metaData.tags as tag}
+					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+				{/each}
+			</div> -->
+			<!-- タイトル -->
+			<div class="flex w-full flex-col justify-end text-left text-white lg:gap-1">
+				<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"
+					>{dataEntry.metaData.name}</span
+				>
+				<!-- 出典 -->
+				<span class="text-left text-xs text-gray-400">
+					{getAttributionName(dataEntry.metaData.attribution)}</span
+				>
+			</div>
+			<div
+				class="absolute bottom-0 right-0 grid place-items-center pb-2 opacity-20 max-lg:pr-1 lg:pr-2"
+			>
 				{#if dataEntry.metaData.location === '森林文化アカデミー'}
 					<!-- <div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
-				<FacLogo width={'150px'} />
-			</div> -->
+                        <FacLogo width={'150px'} />
+                    </div> -->
 					<div class="grid place-items-center">
 						<img
 							class="h-[50px] w-[50px] rounded-full object-cover"
@@ -187,7 +212,7 @@
 				{/if}
 				{#if prefCode}
 					<div class="[&_path]:fill-base grid aspect-square place-items-center">
-						<PrefectureIcon width={'60px'} code={prefCode} />
+						<PrefectureIcon width={'90px'} code={prefCode} />
 					</div>
 					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 				{/if}
@@ -205,24 +230,6 @@
 				{/if}
 			</div>
 		</div>
-
-		<!-- 詳細情報 -->
-		<div class="flex h-full w-full flex-col items-end justify-end gap-1 p-2 pb-4">
-			<!-- タグ -->
-			<!-- <div class="flex items-center gap-1 text-gray-300">
-				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-				{/each}
-			</div> -->
-			<!-- タイトル -->
-			<div class="flex w-full flex-col justify-end gap-1 text-left text-white">
-				<span class="text-lg leading-6">{dataEntry.metaData.name}</span>
-				<!-- 出典 -->
-				<span class="text-left text-xs text-gray-400">
-					{getAttributionName(dataEntry.metaData.attribution)}</span
-				>
-			</div>
-		</div>
 	</button>
 </div>
 
@@ -232,16 +239,15 @@
 			circle,
 			rgba(255, 255, 255, 0) 0%,
 			rgba(255, 255, 255, 0) 60%,
-			rgba(0, 0, 0, 0.7) 100%
+			rgba(0, 0, 0, 0.5) 100%
 		);
-		background: linear-gradient(0deg, rgb(0, 0, 0) 0%, rgba(233, 233, 233, 0) 100%);
 	}
 
 	.c-gradient {
 		background: linear-gradient(
 			0deg,
 			rgb(0, 0, 0) 0%,
-			rgb(0, 0, 0) 0%,
+
 			rgba(233, 233, 233, 0) 100%
 		);
 	}
