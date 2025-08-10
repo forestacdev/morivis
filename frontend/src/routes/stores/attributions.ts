@@ -7,6 +7,8 @@ interface AttributionItem {
 	id: string;
 	key: string;
 }
+
+// TODO: 使用してない
 const createAttributionStore = () => {
 	const store = writable<AttributionItem[]>([]);
 	const { subscribe, update, set } = store;

@@ -191,17 +191,18 @@
 		}
 	};
 
-	$effect(() => {
-		if (isLayerInRange) {
-			const attributionItem = {
-				id: layerEntry.id,
-				key: layerEntry.metaData.attribution
-			};
-			layerAttributions.add(attributionItem);
-		} else {
-			layerAttributions.remove(layerEntry.id);
-		}
-	});
+	// TODO: 使用してない
+	// $effect(() => {
+	// 	if (isLayerInRange) {
+	// 		const attributionItem = {
+	// 			id: layerEntry.id,
+	// 			key: layerEntry.metaData.attribution
+	// 		};
+	// 		layerAttributions.add(attributionItem);
+	// 	} else {
+	// 		layerAttributions.remove(layerEntry.id);
+	// 	}
+	// });
 
 	onMount(() => {
 		const state = mapStore.getState();
