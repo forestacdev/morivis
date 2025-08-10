@@ -110,7 +110,7 @@
 		}
 	});
 
-	function getTransformOrigin() {
+	const getTransformOrigin = () => {
 		// 角の場合
 		if (isTopEdge && isLeftEdge) return 'top left';
 		if (isTopEdge && isRightEdge) return 'top right';
@@ -122,7 +122,7 @@
 
 		// 中央の場合
 		return 'center';
-	}
+	};
 </script>
 
 <div
@@ -201,10 +201,21 @@
 					class="pointer-events-none absolute grid h-full w-full place-items-center"
 				>
 					<div
-						class="z-10 flex items-center justify-center gap-1 rounded-full bg-black/60 p-2 px-4 text-lg text-white"
+						class="flex items-center justify-center gap-1 rounded-full bg-black/80 p-2 px-4 text-lg text-white"
 					>
 						<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
 					</div>
+				</div>
+			{/if}
+			{#if isHover}
+				<!-- タグ -->
+				<div
+					transition:fade={{ duration: 150 }}
+					class="absolute bottom-2 flex items-center gap-1 pl-2 text-gray-300"
+				>
+					{#each dataEntry.metaData.tags as tag}
+						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+					{/each}
 				</div>
 			{/if}
 			{#if isAdded}
@@ -213,7 +224,7 @@
 					class="pointer-events-none absolute grid h-full w-full place-items-center"
 				>
 					<div
-						class="z-10 flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
+						class=" flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
 					>
 						<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
 					</div>
@@ -246,12 +257,6 @@
 		<div
 			class="relative flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2"
 		>
-			<!-- タグ -->
-			<!-- <div class="flex items-center gap-1 text-gray-300">
-				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-				{/each}
-			</div> -->
 			<!-- タイトル -->
 			<div class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2">
 				<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"

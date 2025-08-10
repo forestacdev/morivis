@@ -167,9 +167,14 @@
 
 {#if hasBbox}
 	<div class="aspect-video w-full rounded-lg" bind:this={mapContainer}>
-		<div class="absolute bottom-0 right-0 z-10 bg-black/70 p-1">
-			{showDataEntry?.metaData.bounds}
+		<div class="absolute left-2 top-2 z-10 rounded-lg bg-black/70 p-2">
+			{showDataEntry?.metaData.location}
 		</div>
+		{#if import.meta.env.DEV}
+			<div class="absolute bottom-0 right-0 z-10 bg-black/70 p-1">
+				{showDataEntry?.metaData.bounds}
+			</div>
+		{/if}
 	</div>
 {/if}
 
