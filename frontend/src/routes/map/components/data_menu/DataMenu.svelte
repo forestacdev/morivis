@@ -64,8 +64,8 @@
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
 	let rowColumns = $state<number>(2); // グリッドの列数
-	let itemHeight = $state<number>(300); // item Height + grid margin & padding
-	let itemWidth = $state<number>(300); // item Height + grid margin & padding
+	let itemHeight = $state<number>(500); // item Height + grid margin & padding
+	let itemWidth = $state<number>(256); // item Height + grid margin & padding
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -170,7 +170,7 @@
 						<div
 							class="grid gap-[5px]"
 							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({checkPc()
-								? 200
+								? 256
 								: 100}px, 1fr));"
 						>
 							{#each Array(rowColumns) as _, i}
