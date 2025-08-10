@@ -53,7 +53,7 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="pointer-events-none absolute bottom-8 z-20 flex w-full items-center justify-center"
+	class="pointer-events-none absolute bottom-12 z-20 flex w-full items-center justify-center"
 >
 	<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
 		<span class="w-full text-center text-base">このデータを追加しますか？</span>

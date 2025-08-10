@@ -89,7 +89,7 @@
 					</div>
 				{/if}
 
-				{#if showDataEntry.metaData.description}
+				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
 					<div class="flex gap-1">
 						<Icon icon="openmoji:overview" class="h-6 w-6" />
 						<span class="font-bold">概要</span>

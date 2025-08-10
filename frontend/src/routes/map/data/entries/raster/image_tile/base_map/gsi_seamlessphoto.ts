@@ -14,7 +14,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'
 	},
 	metaData: {
-		name: '全国最新写真',
+		name: '全国航空写真',
+		sourceDataName: '全国最新写真',
 		description: '',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#seamlessphoto',
 		attribution: '国土地理院',
