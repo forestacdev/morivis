@@ -15,6 +15,7 @@
 	import { TAG_LIST } from '$routes/map/data/types/tags';
 
 	import Fuse from 'fuse.js';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -62,19 +63,19 @@
 
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
-	let rowColumns = $state<number>(1); // グリッドの列数
-	let itemHeight = $state<number>(300 + 70); // item Height + grid margin & padding
-	let itemWidth = $state<number>(300 + 10); // item Height + grid margin & padding
+	let rowColumns = $state<number>(2); // グリッドの列数
+	let itemHeight = $state<number>(300); // item Height + grid margin & padding
+	let itemWidth = $state<number>(300); // item Height + grid margin & padding
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
 			// 2列分の幅がある場合のみ再計算
 			rowColumns = Math.floor(gridWidth / itemWidth);
 			if (rowColumns < 2) {
-				rowColumns = 1; // 計算結果が2未満になった場合も2を維持
+				rowColumns = 2; // 計算結果が2未満になった場合も2を維持
 			}
 		} else {
-			rowColumns = 1; // 幅が足りない場合は最低2列を維持
+			rowColumns = 2; // 幅が足りない場合は最低2列を維持
 		}
 	});
 
@@ -166,7 +167,12 @@
 					itemSize={itemHeight}
 				>
 					<div slot="item" let:index let:style {style}>
-						<div class="row" style="--grid-columns: {rowColumns};">
+						<div
+							class="grid gap-[5px]"
+							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({checkPc()
+								? 200
+								: 100}px, 1fr));"
+						>
 							{#each Array(rowColumns) as _, i}
 								{#if filterDataEntries[index * rowColumns + i]}
 									<DataSlot
@@ -212,6 +218,18 @@
 		height: 5px;
 	}
 
+	@media (width < 768px) {
+		:global(.virtual-list-wrapper) {
+			/* スクロールバー */
+			-ms-overflow-style: none;
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+	}
+
 	:global(.virtual-list-wrapper::-webkit-scrollbar-track) {
 		background: transparent;
 	}
@@ -219,12 +237,6 @@
 	:global(.virtual-list-wrapper::-webkit-scrollbar-thumb) {
 		background: var(--color-accent);
 		border-radius: 9999px;
-	}
-
-	.row {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(var(--grid-columns), minmax(200px, 1fr));
 	}
 
 	/* 検索ボックスのスタイル */

@@ -91,7 +91,7 @@
 </script>
 
 <div
-	class="relative m-2 flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	class="relative flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:shadow-lg"
 	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
@@ -132,7 +132,7 @@
 		}}
 		class="flex h-full w-full cursor-pointer flex-col"
 	>
-		<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
+		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden">
 			{#await promise then imageResult}
 				{#if imageResult}
 					<img
@@ -154,7 +154,7 @@
 			<div
 				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
 				isHover
-					? 'opacity-100'
+					? 'opacity-0'
 					: 'opacity-0'}"
 			>
 				{#if isAdded}
@@ -164,10 +164,6 @@
 				{/if}
 			</div>
 
-			<!-- 出典 -->
-			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white">
-				{getAttributionName(dataEntry.metaData.attribution)}</span
-			>
 			{#if layertype}
 				<div
 					class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
@@ -177,58 +173,72 @@
 			{/if}
 		</div>
 
-		<div class="flex w-full flex-col gap-2 p-2">
-			<!-- タイトル -->
-			<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
+		<!-- 詳細情報 -->
+		<div
+			class="absolute bottom-0 flex h-full w-full flex-col gap-2 p-2 {isHover ? '' : 'c-gradient'}"
+		>
 			<!-- タグ -->
-			<div class="flex items-center gap-1 text-gray-300">
+			<!-- <div class="flex items-center gap-1 text-gray-300">
 				{#each dataEntry.metaData.tags as tag}
 					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
 				{/each}
+			</div> -->
+			<!-- タイトル -->
+			<div class="absolute bottom-4 w-full p-2 text-left text-white">
+				<span class="text-lg">{dataEntry.metaData.name}</span>
 			</div>
 		</div>
-		{#if prefCode}
-			<div class="absolute bottom-0 right-0 grid place-items-center">
-				<div class="[&_path]:fill-sub grid aspect-square h-[90px] place-items-center p-1">
-					<PrefectureIcon width={'60px'} code={prefCode} />
+		<div class="absolute bottom-0 right-0 grid place-items-center opacity-25">
+			{#if dataEntry.metaData.location === '森林文化アカデミー'}
+				<!-- <div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
+				<FacLogo width={'150px'} />
+			</div> -->
+				<div class="grid place-items-center p-4">
+					<img
+						class="h-[50px] w-[50px] rounded-full object-cover"
+						src="./mapicon.png"
+						alt={'森林文化アカデミー'}
+					/>
+				</div>
+			{/if}
+			{#if prefCode}
+				<div class="[&_path]:fill-base grid aspect-square place-items-center p-2">
+					<PrefectureIcon width={'100px'} code={prefCode} />
 				</div>
 				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-			</div>
-		{/if}
-		{#if dataEntry.metaData.location === '森林文化アカデミー'}
-			<div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
-				<FacLogo width={'150px'} />
-			</div>
-			<!-- <div class="absolute bottom-0 right-0 grid place-items-center">
-			<img
-				class="h-[50px] w-[50px] rounded-full object-cover"
-				src="./mapicon.png"
-				alt={'森林文化アカデミー'}
-			/>
-		</div> -->
-		{/if}
-		{#if dataEntry.metaData.location === '全国'}
-			<div class="absolute bottom-2 right-2 grid place-items-center">
-				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-18 w-18" />
-				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-			</div>
-		{/if}
-		{#if dataEntry.metaData.location === '世界'}
-			<div class="absolute bottom-0 right-2 grid place-items-center">
-				<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
-				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-			</div>
-		{/if}
+			{/if}
+			{#if dataEntry.metaData.location === '全国'}
+				<div class="absolute bottom-2 right-2 grid place-items-center">
+					<Icon icon="emojione-monotone:map-of-japan" class="h-26 w-26 text-base" />
+					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+				</div>
+			{/if}
+			{#if dataEntry.metaData.location === '世界'}
+				<div class="absolute bottom-0 right-2 grid place-items-center">
+					<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-26 w-26" />
+					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+				</div>
+			{/if}
+		</div>
 	</button>
 </div>
 
 <style>
-	.c-bg {
+	/* .c-bg {
 		background: radial-gradient(
 			circle,
 			rgba(255, 255, 255, 0) 0%,
 			rgba(255, 255, 255, 0) 60%,
 			rgba(0, 0, 0, 0.5) 100%
+		);
+	} */
+
+	.c-gradient {
+		background: linear-gradient(
+			0deg,
+			rgb(0, 0, 0) 0%,
+			rgb(0, 0, 0) 0%,
+			rgba(233, 233, 233, 0) 100%
 		);
 	}
 </style>
