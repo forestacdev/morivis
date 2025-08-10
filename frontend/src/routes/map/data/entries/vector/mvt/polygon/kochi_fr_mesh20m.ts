@@ -1,3 +1,4 @@
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -67,7 +68,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.7,
 		colors: {
-			key: '単色',
+			key: '解析樹種',
 			show: true,
 			expressions: [
 				{
@@ -77,6 +78,9 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#349f1c'
 					}
+				},
+				{
+					...TREE_MATCH_COLOR_STYLE
 				},
 				{
 					type: 'step',
