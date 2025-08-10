@@ -210,11 +210,13 @@
 						paint: {
 							'text-color': '#000000',
 							'text-halo-color': '#FFFFFF',
+
 							'text-halo-width': 1,
 							'text-opacity': 1
 						},
 						layout: {
 							'text-field': ['to-string', ['get', 'index']],
+							'text-font': ['Noto Sans JP Regular'],
 							'text-max-width': 12,
 							'text-size': 24,
 							'text-justify': 'auto'

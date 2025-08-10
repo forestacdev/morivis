@@ -34,7 +34,15 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
-			demType: 'gsi'
+			demType: 'gsi',
+			uniformsData: {
+				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
+				relief: {
+					max: 2600,
+					min: 0,
+					colorMap: 'jet'
+				}
+			}
 		}
 	}
 };

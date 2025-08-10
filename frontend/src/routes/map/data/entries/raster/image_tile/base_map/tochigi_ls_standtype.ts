@@ -21,7 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		tags: ['林相図', '森林'],
+		tags: ['森林', '林相図', 'レーザ林相図'],
 		bounds: TOCHIGI_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_tochigi',
 		xyzImageTile: {
