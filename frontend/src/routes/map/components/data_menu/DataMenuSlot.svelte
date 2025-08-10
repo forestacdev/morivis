@@ -217,7 +217,7 @@
 				{/each}
 			</div> -->
 			<!-- タイトル -->
-			<div class="flex w-full flex-col justify-end text-left text-white lg:gap-1">
+			<div class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2">
 				<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"
 					>{dataEntry.metaData.name}</span
 				>
@@ -263,7 +263,7 @@
 			circle,
 			rgba(255, 255, 255, 0) 0%,
 			rgba(255, 255, 255, 0) 60%,
-			rgba(0, 0, 0, 0.5) 100%
+			rgba(0, 0, 0, 0.4) 100%
 		);
 	}
 
