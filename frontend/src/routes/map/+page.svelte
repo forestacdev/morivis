@@ -14,6 +14,7 @@
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import Footer from '$routes/map/components/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
@@ -408,12 +409,8 @@
 			<div class="bg-main p-2 max-lg:hidden"></div>
 		</div>
 
-		<!-- フッター余白 出典表示 -->
-		<div
-			class="bg-main w-full shrink-0 p-1 pr-4 text-end text-xs font-light text-white/80 max-lg:hidden"
-		>
-			国土地理院, © OpenMapTiles, © OpenStreetMap contributors © U.S. Geological Survey
-		</div>
+		<!-- フッター -->
+		<Footer />
 
 		<SearchMenu
 			bind:featureMenuData

@@ -57,6 +57,8 @@ import { get } from 'svelte/store';
 
 import { cloudStyleJson } from './cloud';
 import { getBaseMapLayers } from './base_map';
+import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
+import { mapAttributions } from '$routes/stores/attributions';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -762,6 +764,8 @@ export const createLayersItems = (
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
+	const attributionMap = new Map<string, AttributionKey>();
+
 	FeatureStateManager.clear();
 
 	_dataEntries
@@ -783,6 +787,12 @@ export const createLayersItems = (
 					titles: entry.type === 'vector' ? entry.properties.titles : null
 				}
 			};
+
+			const attributionItem = getAttribution(metaData.attribution);
+
+			if (attributionItem && metaData.attribution !== 'カスタムデータ') {
+				attributionMap.set(metaData.attribution, metaData.attribution);
+			}
 
 			switch (type) {
 				// ラスターレイヤー
@@ -897,6 +907,9 @@ export const createLayersItems = (
 					break;
 			}
 		});
+
+	const attributionArray = Array.from(attributionMap.values());
+	mapAttributions.set(attributionArray);
 
 	// ストリートビューレイヤー表示がオンの時
 	if (get(showStreetViewLayer)) {
