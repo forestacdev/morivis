@@ -19,11 +19,12 @@
 	}
 
 	let { showDataEntry, featureMenuData }: Props = $props();
+	let initialized = $state<boolean>(false);
 
 	const footerHeight = 70; // フッターの高さを設定
 
 	isActiveMobileMenu.subscribe((value) => {
-		if (value && checkMobile()) {
+		if (value && initialized) {
 			switch (value) {
 				case 'map':
 					showDataMenu.set(false);
@@ -48,6 +49,8 @@
 				default:
 			}
 		}
+
+		initialized = true;
 	});
 	onMount(() => {
 		if (checkMobile()) {

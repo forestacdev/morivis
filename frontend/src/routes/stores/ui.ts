@@ -12,7 +12,7 @@ export const isBlocked = writable<boolean>(false);
 export const showOtherMenu = writable<boolean>(false);
 
 /** レイヤーメニューの表示 */
-export const showLayerMenu = writable<boolean>(true);
+export const showLayerMenu = writable<boolean>(checkPc() ? true : false);
 
 /** データメニューの表示 */
 export const showDataMenu = writable<boolean>(false);

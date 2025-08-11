@@ -4,6 +4,7 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
+	import Icon from '@iconify/svelte';
 
 	import { onMount } from 'svelte';
 
@@ -18,6 +19,7 @@
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import { isBlocked } from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 
 	let { children } = $props();
 
@@ -90,6 +92,20 @@
 	const initialized = () => {
 		isInitialized = true;
 	};
+
+	const deviceType = checkMobile() ? 'mobile' : 'pc';
+
+	let isMobileWidth = $state<boolean>(checkMobile());
+
+	window.addEventListener('resize', () => {
+		isMobileWidth = checkMobileWidth();
+	});
+
+	$effect(() => {
+		if (isMobileWidth) {
+		} else {
+		}
+	});
 </script>
 
 <!-- Googleアナリティクスの設定 -->
@@ -101,7 +117,12 @@
 </svelte:head>
 
 <div class="absolute h-full w-full">
-	{#if isInitialized}
+	{#if deviceType === 'mobile' && !isMobileWidth}
+		<div class="bg-main flex h-full w-full items-center justify-center text-base">
+			<p class="text-2xl">端末を縦向きにしてください。</p>
+			<Icon icon="circum:mobile-3" class="h-16 w-16" />
+		</div>
+	{:else}
 		{@render children()}
 	{/if}
 </div>

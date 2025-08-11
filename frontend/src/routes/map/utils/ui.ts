@@ -26,6 +26,18 @@ export const checkMobile = () => {
 	}
 };
 
+/**
+ * pcブラウザでのスマホ画面サイズかどうかを判定する
+ * @returns boolean
+ * @description スマホ画面と判定する関数
+ */
+export const checkMobileWidth = () => {
+	if (window.innerWidth <= MOBILE_WIDTH) {
+		return true;
+	}
+	return false;
+};
+
 export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';
 
 type MappingType = 'single' | 'match' | 'linear' | 'step';
