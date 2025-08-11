@@ -1,1 +1,3 @@
 Disallow: /_*
+
+Sitemap: https://forestacdev.github.io/morivis/sitemap.xml
