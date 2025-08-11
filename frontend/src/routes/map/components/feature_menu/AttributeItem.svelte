@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	import { showNotification } from '$routes/stores/notification';
 	let { key, value } = $props();
@@ -21,11 +22,21 @@
 	</div>
 	<div class="w-full pl-6 pt-2 lg:pr-2">
 		<button
-			onclick={() => copyToClipboard(value)}
-			onmouseover={() => (isHover = true)}
-			onmouseleave={() => (isHover = false)}
-			onfocus={() => (isHover = true)}
-			onblur={() => (isHover = false)}
+			onclick={() => {
+				if (checkPc()) copyToClipboard(value);
+			}}
+			onmouseover={() => {
+				if (checkPc()) isHover = true;
+			}}
+			onmouseleave={() => {
+				if (checkPc()) isHover = false;
+			}}
+			onfocus={() => {
+				if (checkPc()) isHover = true;
+			}}
+			onblur={() => {
+				if (checkPc()) isHover = false;
+			}}
 			class="text-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-black p-2 pl-4 text-left transition-colors duration-150"
 			><span>{value}</span>
 			{#if isHover}
