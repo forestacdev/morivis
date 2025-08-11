@@ -23,7 +23,7 @@
 	onclick={toggleLayer}
 	class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 >
-	<Icon icon="mynaui:label-solid" class="h-7 w-7 {$showLabelLayer ? 'text-accent' : 'text-base'}" />
+	<Icon icon="hugeicons:layer" class="h-8 w-8 {$showLabelLayer ? 'text-accent' : 'text-base'}" />
 </button>
 
 <style>
