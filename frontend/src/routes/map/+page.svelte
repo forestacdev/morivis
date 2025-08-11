@@ -127,7 +127,6 @@
 	onMount(async () => {
 		/** レイヤーメニューの表示 */
 
-		showLayerMenu.set(checkPc());
 		const params = getParams(location.search);
 
 		if (params) {
@@ -167,7 +166,7 @@
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
-			if (terrain3d === '1') {
+			if (terrain3d === '1' && checkPc()) {
 				mapStore.toggleTerrain(true);
 				isTerrain3d.set(true);
 			}
@@ -360,6 +359,11 @@
 			{/if}
 
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+
+			<!-- 左側余白 -->
+			{#if !$showLayerMenu}
+				<div class="bg-main p-2 max-lg:hidden"></div>
+			{/if}
 
 			<!-- スマホ用その他メニュー -->
 			<div

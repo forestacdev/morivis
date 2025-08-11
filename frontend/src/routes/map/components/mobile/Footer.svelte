@@ -23,7 +23,7 @@
 	const footerHeight = 70; // フッターの高さを設定
 
 	isActiveMobileMenu.subscribe((value) => {
-		if (value) {
+		if (value && checkMobile()) {
 			switch (value) {
 				case 'map':
 					showDataMenu.set(false);
@@ -47,6 +47,13 @@
 					break;
 				default:
 			}
+		}
+	});
+	onMount(() => {
+		if (checkMobile()) {
+			showLayerMenu.set(false);
+			showDataMenu.set(false);
+			showOtherMenu.set(false);
 		}
 	});
 </script>

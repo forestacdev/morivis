@@ -4,6 +4,7 @@
 
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu, showLayerMenu } from '$routes/stores/ui';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);
@@ -101,7 +102,9 @@
 </script>
 
 <div
-	class="absolute bottom-1 left-[400px] z-10 {$showLayerMenu ? 'left-[400px]' : 'left-[10px]'}"
+	class="absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu && checkPc()
+		? 'left-[400px]'
+		: 'left-[15px]'}"
 	bind:this={controlContainer}
 >
 	<div class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm">

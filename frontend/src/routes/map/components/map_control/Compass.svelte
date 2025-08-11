@@ -58,7 +58,7 @@
 
 <div
 	bind:this={element}
-	class="border-3 grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
+	class="border-3 pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
 >
 	<svg
 		class="scale-60 h-full w-full"

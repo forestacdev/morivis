@@ -52,6 +52,7 @@
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
+	import { checkPc } from '../utils/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -237,7 +238,7 @@
 			glyphs: MAP_FONT_DATA_PATH,
 			// glyphs: MAP_FONT_DATA_PATH,
 			projection: {
-				type: 'globe'
+				type: checkPc() ? 'globe' : 'mercator'
 			},
 			sources: {
 				...terrainSources,
@@ -546,9 +547,8 @@
 		</div>
 
 		<!-- スマホ用地図コントロール -->
-		<div class="absolute bottom-[90px] right-5 lg:hidden">
-			<MobileMapControl />
-		</div>
+
+		<MobileMapControl />
 	{/if}
 	<!-- <MapStatePane /> -->
 	<SelectionPopup
