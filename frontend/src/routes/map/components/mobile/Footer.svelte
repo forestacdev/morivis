@@ -10,7 +10,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { fly } from 'svelte/transition';
-	import { isStyleEdit } from '$routes/stores';
+	import { isStreetView, isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -51,7 +51,7 @@
 </script>
 
 <!-- フッターのメニュー -->
-{#if !featureMenuData && !showDataEntry && !$isStyleEdit}
+{#if !featureMenuData && !showDataEntry && !$isStyleEdit && !$isStreetView}
 	<div
 		transition:fly={{ y: 100, duration: 300 }}
 		class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry}"
