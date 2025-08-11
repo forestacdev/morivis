@@ -18,7 +18,6 @@
 
 	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
 
-	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
@@ -538,8 +537,6 @@
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 
-	<MapControl />
-
 	{#if !$isStreetView}
 		<!-- PC用地図コントロール -->
 		<div class="absolute bottom-6 right-6 max-lg:hidden">
@@ -550,7 +547,6 @@
 
 		<MobileMapControl />
 	{/if}
-	<!-- <MapStatePane /> -->
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:featureMenuData

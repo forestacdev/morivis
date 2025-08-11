@@ -18,7 +18,6 @@
 	let currentIndex = $state<number>(0);
 	const INTERVAL = 5000; //
 
-	// setTimeout版（一般的に推奨）
 	let timeoutId: NodeJS.Timeout | null = null;
 	function scheduleNext() {
 		timeoutId = setTimeout(() => {
