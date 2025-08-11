@@ -1,5 +1,0 @@
--e plugins:
-  - jekyll-sitemap
-include:
-  - _next
-  - _app
