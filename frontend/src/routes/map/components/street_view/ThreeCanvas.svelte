@@ -67,6 +67,7 @@
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
+	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
 	// Uniforms の型定義を修正
 	interface Uniforms {
@@ -224,7 +225,7 @@
 		orbitControls.dampingFactor = 0.1;
 
 		// マウスドラッグの反転
-		orbitControls.rotateSpeed *= -0.3;
+		orbitControls.rotateSpeed *= checkPc() ? -0.3 : -0.6;
 		orbitControls.enableDamping = true;
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;
@@ -325,6 +326,7 @@
 		// タッチ終了時の処理
 		canvas.addEventListener('touchend', (event) => {
 			lastTouchDistance = 0;
+			orbitControls.enablePan = true;
 		});
 
 		// アニメーション
@@ -445,18 +447,51 @@
 			setStreetViewParams(currentSceneId);
 		}
 	});
+
+	// TODO: 画面リサイズ時にキャンバスもリサイズ
+	const onCanvasResize = (value: boolean) => {
+		if (!renderer || !canvas) return;
+
+		console.log('onCanvasResize called');
+
+		// キャンバスの実際のサイズを取得
+		const width = canvas.clientWidth;
+		const height = value
+			? window.innerHeight // モバイルフルスクリーン時はヘッダー分を引く
+			: window.innerHeight / 2;
+
+		// レンダラーのサイズを調整する
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.setSize(width, height);
+
+		// カメラのアスペクト比を正す
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+	};
+
+	$effect(() => {
+		if (mobileFullscreen !== undefined) {
+			// 少し遅延を入れてからリサイズを実行（CSSトランジションの完了を待つ）
+			setTimeout(() => {
+				onCanvasResize(mobileFullscreen);
+			}, 500);
+		}
+	});
 </script>
 
 <div
-	class="absolute z-10 flex overflow-hidden duration-500 {showThreeCanvas
+	class="absolute z-10 flex overflow-hidden bg-black duration-500 {showThreeCanvas
 		? 'right-0 top-0 w-full opacity-100 max-lg:h-1/2 lg:h-full'
-		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
+		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'} {showThreeCanvas &&
+	mobileFullscreen
+		? 'max-lg:h-full'
+		: ''}"
 >
 	<!-- 角度調整コントロール -->
 	{#if $isDebugMode}
 		<DebugControl bind:angleX bind:angleY bind:angleZ bind:showWireframe {streetViewPoint} />
 	{/if}
-	<canvas class="h-full w-full" bind:this={canvas}></canvas>
+	<canvas class="h-full w-full" bind:this={canvas}> </canvas>
 	{#if isLoading}
 		<div class="css-loading">
 			<div class="css-spinner"></div>
@@ -464,19 +499,33 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 px-4 text-white"
+				class="lg:bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
 			>
 				<button
-					class="bg-base cursor-pointer rounded-full p-2 text-black"
+					class="lg:bg-base cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
 					onclick={() => ($isStreetView = false)}
-					><Icon icon="ep:back" class="h-6 w-6" />
+					><Icon icon="ep:back" class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</button>
 				<div class="flex flex-col gap-2">
-					<span class="text-lg">{streetViewPoint ? streetViewPoint.properties['name'] : ''}</span>
+					<span class="text-lg max-lg:hidden"
+						>{streetViewPoint ? streetViewPoint.properties['name'] : ''}</span
+					>
 					<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
 				</div>
 			</div>
 		{/if}
+
+		<button
+			class="absolute bottom-3 right-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
+			onclick={() => {
+				mobileFullscreen = !mobileFullscreen;
+				onResize();
+			}}
+			><Icon
+				icon={mobileFullscreen ? 'mingcute:fullscreen-exit-2-line' : 'mingcute:fullscreen-2-line'}
+				class="h-7 w-7"
+			/>
+		</button>
 
 		<!-- コントロール -->
 		<div
@@ -496,7 +545,7 @@
 								>
 									<Icon
 										icon="ep:arrow-up-bold"
-										class="max-lg:h-[90px] max-lg:w-[90px] lg:h-[128px] lg:w-[128px]"
+										class="max-lg:h-[70px] max-lg:w-[70px] lg:h-[128px] lg:w-[128px]"
 										style="transform: rotate({point.bearing}deg);"
 									/>
 								</button>
