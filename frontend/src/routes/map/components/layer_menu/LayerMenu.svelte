@@ -1,26 +1,19 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
-	import { slide, fly, fade } from 'svelte/transition';
+	import { slide, fly } from 'svelte/transition';
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
-	import { showLayerMenu, showDataMenu } from '$routes/stores/ui';
+	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
-	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
-	import { resetLayersConfirm, showConfirmDialog } from '$routes/stores/confirmation';
-	import { isTerrain3d, mapStore } from '$routes/stores/map';
+	import { showXYZTileLayer } from '$routes/stores/layers';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
 
-	import {
-		getLayerIcon,
-		getLayerType,
-		TYPE_LABELS,
-		type LayerType
-	} from '$routes/map/utils/entries';
-	import FacCottageSvg from '$lib/components/svgs/fac/cottage.svelte';
-	import LayerIcon from '../atoms/LayerIcon.svelte';
+	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+
 	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
@@ -38,7 +31,6 @@
 	}: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
-	let container = $state<HTMLElement | null>(null); // コンテナ要素
 
 	// 編集中のレイヤーの取得
 	selectedLayerId.subscribe((id) => {
@@ -59,11 +51,6 @@
 		}
 	};
 
-	let is3d = $state<boolean>(false);
-	$effect(() => {
-		mapStore.toggleTerrain(is3d);
-	});
-
 	let pointEntries = $derived.by(() => {
 		return layerEntries.filter((layer) => getLayerType(layer) === 'point');
 	});
@@ -81,6 +68,17 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
+
+	// レイヤーメニューの調整
+	isMobile.subscribe((value) => {
+		if (!value && !$showLayerMenu) {
+			$showLayerMenu = true;
+		}
+
+		if (value && $showLayerMenu && $isActiveMobileMenu !== 'layer') {
+			$showLayerMenu = false;
+		}
+	});
 </script>
 
 <!-- レイヤーメニュー -->
@@ -88,10 +86,10 @@
 {#if $showLayerMenu}
 	<div
 		transition:fly={{
-			duration: checkPc() ? 300 : 0,
-			y: checkPc() ? 100 : 0,
+			duration: !$isMobile ? 300 : 0,
+			y: !$isMobile ? 100 : 0,
 			opacity: 0,
-			delay: checkPc() ? 100 : 0
+			delay: !$isMobile ? 100 : 0
 		}}
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
@@ -276,7 +274,7 @@
 			{/if}
 
 			<!-- TODO:調整 -->
-			<div class="relative flex h-[60px] w-full items-center max-lg:hidden">
+			<div class="relative flex h-[60px] w-full items-center">
 				<!-- アイコン -->
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
@@ -306,13 +304,18 @@
 							selectedLayerId.set('');
 						} else {
 							showDataMenu.set(!$showDataMenu);
+							if ($isMobile) {
+								// モバイルの場合の処理
+								isActiveMobileMenu.set('data');
+							}
 						}
 					}}
 					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
 						? 'w-[66px]'
 						: $isStyleEdit
 							? 'w-[400px]'
-							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
+							: 'hover:bg-accent bg-main max-lg:w-full lg:w-[330px]'} {!$isStyleEdit &&
+					!$showDataMenu
 						? ' not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
 						: 'opacity-0'}"
 				>
@@ -358,8 +361,6 @@
 				<div
 					class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
 				>
-					<!-- <Switch label="地名・道路など" bind:value={$showLabelLayer} />
-				<Switch label="3D地形" bind:value={is3d} /> -->
 					<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 				</div>
 			{/if}

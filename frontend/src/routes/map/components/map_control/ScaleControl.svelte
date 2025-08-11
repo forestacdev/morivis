@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
+	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 	import { checkMobileWidth } from '$routes/map/utils/ui';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
@@ -116,7 +116,7 @@
 {#if show}
 	<div
 		class="pointer-events-none absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu &&
-		!checkMobileWidth()
+		!$isMobile
 			? 'left-[400px]'
 			: 'left-[15px]'}"
 		bind:this={controlContainer}

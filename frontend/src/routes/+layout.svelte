@@ -17,7 +17,7 @@
 
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked } from '$routes/stores/ui';
+	import { isBlocked, isMobile } from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
@@ -102,18 +102,6 @@
 	};
 
 	const deviceType = checkMobile() ? 'mobile' : 'pc';
-
-	let isMobileWidth = $state<boolean>(checkMobile());
-
-	window.addEventListener('resize', () => {
-		isMobileWidth = checkMobileWidth();
-	});
-
-	$effect(() => {
-		if (isMobileWidth) {
-		} else {
-		}
-	});
 </script>
 
 <!-- Googleアナリティクスの設定 -->
@@ -125,7 +113,7 @@
 </svelte:head>
 
 <div class="absolute h-full w-full">
-	{#if deviceType === 'mobile' && !isMobileWidth}
+	{#if deviceType === 'mobile' && !$isMobile}
 		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
 			<p class="text-2xl">端末を縦向きにしてください。</p>
 			<Icon icon="circum:mobile-3" class="h-16 w-16" />

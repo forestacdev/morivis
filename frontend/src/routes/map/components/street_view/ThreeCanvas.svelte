@@ -21,6 +21,7 @@
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
 	import { checkPc } from '$routes/map/utils/ui';
+	import { isMobile } from '$routes/stores/ui';
 
 	const PANORAMA_IMAGE_URL =
 		'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
@@ -452,8 +453,6 @@
 	const onCanvasResize = (value: boolean) => {
 		if (!renderer || !canvas) return;
 
-		console.log('onCanvasResize called');
-
 		// キャンバスの実際のサイズを取得
 		const width = canvas.clientWidth;
 		const height = value
@@ -541,7 +540,7 @@
 										setPoint(point.featureData);
 									}}
 									class="css-arrow"
-									style="--angle: {point.bearing}deg; --distance: {checkPc() ? '175' : '120'}px;"
+									style="--angle: {point.bearing}deg; --distance: {!$isMobile ? '175' : '120'}px;"
 								>
 									<Icon
 										icon="ep:arrow-up-bold"

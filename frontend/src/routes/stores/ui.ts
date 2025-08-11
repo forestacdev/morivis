@@ -1,6 +1,8 @@
 import type { UseEventTriggerType } from '$routes/map/types/ui';
 import { writable } from 'svelte/store';
 import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
+import { browser } from '$app/environment';
+import { MOBILE_WIDTH } from '$routes/constants';
 
 /** 処理中の状態 */
 export const isProcessing = writable<boolean>(false);
@@ -31,6 +33,26 @@ export const showSearchSuggest = writable<boolean>(false);
 
 /** モバイルフッターの状態 */
 export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
+
+// ストアを先に定義
+export const isMobile = writable<boolean>(false);
+
+// メディアクエリをチェックして更新する関数
+const setupMediaQueries = (): void => {
+	if (!browser) return;
+
+	// 各メディアクエリのチェック関数
+	const checkMobile = (): void => {
+		const mql = window.matchMedia(`(max-width: ${MOBILE_WIDTH}px)`);
+		isMobile.set(mql.matches);
+		mql.addEventListener('change', (e) => isMobile.set(e.matches));
+	};
+
+	checkMobile();
+};
+setupMediaQueries();
+
+// 初期化
 
 /** 外部コンポーネントからイベントを発火させるストア */
 const eventStore = () => {

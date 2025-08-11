@@ -503,7 +503,7 @@
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
 		? 'absolute transform border-white max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg lg:border-4'
-		: 'relative h-full w-full grow '}"
+		: 'relative h-full w-full grow'}"
 >
 	<div
 		bind:this={mapContainer}
