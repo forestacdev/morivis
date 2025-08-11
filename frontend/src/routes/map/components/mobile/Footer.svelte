@@ -52,13 +52,6 @@
 
 		initialized = true;
 	});
-	onMount(() => {
-		if (checkMobileWidth()) {
-			showLayerMenu.set(false);
-			showDataMenu.set(false);
-			showOtherMenu.set(false);
-		}
-	});
 </script>
 
 <!-- フッターのメニュー -->

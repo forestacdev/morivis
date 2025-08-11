@@ -148,7 +148,7 @@
 				onclick={toggleInfoDialog}
 			>
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
-				<span class="select-none">このアプリについて</span>
+				<span class="select-none">{$isMobile ? 'このアプリについて' : 'このサイトについて'}</span>
 			</button>
 			<a
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"

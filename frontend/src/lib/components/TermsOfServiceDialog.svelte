@@ -8,21 +8,23 @@
 {#if $showTermsDialog}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
+		class="absolute bottom-0 z-30 flex h-full w-full bg-black/50 max-lg:p-4 max-lg:py-8 lg:items-center lg:justify-center"
 	>
 		<div
 			transition:scale={{ duration: 300 }}
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"
+			class="bg-opacity-8 bg-main flex max-w-[900px] grow flex-col rounded-lg text-base max-lg:p-3 lg:h-full lg:max-h-[600px] lg:p-6"
 		>
 			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 				<span class="text-2xl font-bold">利用規約</span>
 			</div>
-			<div class="c-scroll flex h-full grow flex-col overflow-y-auto overflow-x-hidden pb-4">
+			<div
+				class="c-scroll flex h-full grow flex-col overflow-y-auto overflow-x-hidden pb-4 text-justify"
+			>
 				<div class="pb-4">
 					本規約は、本アプリケーション（以下、「本アプリ」）の利用に関する条件を定めるものです。本アプリをご利用いただくことで、本規約に同意したものとみなします。
 				</div>
 				<div class="pb-4">
-					<div class="text-lg font-bold">🚧 開発中のアプリケーションについて 🚧</div>
+					<div class="text-lg font-bold">開発中のアプリケーションについて</div>
 
 					本アプリは現在開発中であり、動作の安定性や正確性は保証されません。不具合や予期しない挙動が発生する可能性があります。予告なく仕様変更・機能追加・サービス停止・データ削除が行われる場合もありますので、あらかじめご理解のうえご利用ください。
 				</div>

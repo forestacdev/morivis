@@ -17,7 +17,13 @@
 
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked, isMobile } from '$routes/stores/ui';
+	import {
+		isBlocked,
+		isMobile,
+		showDataMenu,
+		showLayerMenu,
+		showOtherMenu
+	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 

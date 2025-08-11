@@ -22,11 +22,9 @@
 					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 				</button>
 			</div>
-			<div class="flex-flex-col c-scroll overflow-y-auto overflow-x-hidden p-2">
+			<div class="flex-flex-col c-scroll overflow-y-auto overflow-x-hidden">
 				<div class="pb-4">
-					<div class="pb-2 text-lg font-bold">概要</div>
-
-					<div class="">
+					<div class="text-justify">
 						morivis（モリビス）は、岐阜県立森林文化アカデミー演習林の森林地理情報をWebGIS上で表示するシステムです。演習林の地形、植生、林道などの基本情報を地図上で確認できるほか、全国の森林オープンデータも閲覧可能です。
 						森林情報の可視化と共有を目的とした研究開発の一環として作成しており、現在も機能の追加や改善を継続しています。バグなどを見つけた場合は、お手数ですが<a
 							class="text-accent"

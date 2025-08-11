@@ -38,17 +38,17 @@ export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
 export const isMobile = writable<boolean>(false);
 
 // メディアクエリをチェックして更新する関数
-const setupMediaQueries = (): void => {
+export const setupMediaQueries = (): void => {
 	if (!browser) return;
 
 	// 各メディアクエリのチェック関数
-	const checkMobile = (): void => {
+	const setMobileState = (): void => {
 		const mql = window.matchMedia(`(max-width: ${MOBILE_WIDTH}px)`);
 		isMobile.set(mql.matches);
 		mql.addEventListener('change', (e) => isMobile.set(e.matches));
 	};
 
-	checkMobile();
+	setMobileState();
 };
 setupMediaQueries();
 
