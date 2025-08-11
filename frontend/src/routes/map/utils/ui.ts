@@ -44,9 +44,7 @@ export const checkMobileWidth = () => {
  * @description PWAかどうかを判定する関数
  */
 export const checkPWA = () => {
-	return (
-		window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-	); // iOS Safari用
+	return window.matchMedia('(display-mode: standalone)').matches;
 };
 
 export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';

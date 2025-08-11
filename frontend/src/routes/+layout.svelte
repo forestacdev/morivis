@@ -27,6 +27,14 @@
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
+	if (checkPWA()) {
+		// PWAモードなら、mapページに遷移
+		if (import.meta.env.MODE === 'production') {
+			window.location.href = '/morivis/map';
+		} else {
+			window.location.href = '/map';
+		}
+	}
 	let { children } = $props();
 
 	const webManifestLink = pwaInfo?.webManifest?.linkTag || '';
@@ -71,14 +79,6 @@
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
 
-		if (checkPWA()) {
-			// PWAモードなら、mapページに遷移
-			if (import.meta.env.MODE === 'production') {
-				window.location.href = '/morivis/map';
-			} else {
-				window.location.href = '/map';
-			}
-		}
 		if (import.meta.env.MODE === 'production' && toPage.startsWith('/_')) {
 			// 行き先の先頭時が_なら、ホームに遷移
 			window.location.href = '/morivis';
@@ -125,7 +125,11 @@
 			<Icon icon="circum:mobile-3" class="h-16 w-16" />
 		</div>
 	{/if}
-	{@render children()}
+	{#if isInitialized}
+		{@render children()}
+	{:else}
+		<div class="flex h-full w-full items-center justify-center"></div>
+	{/if}
 </div>
 
 <TermsOfServiceDialog />
