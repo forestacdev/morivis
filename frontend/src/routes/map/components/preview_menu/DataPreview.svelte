@@ -7,8 +7,10 @@
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
-	import { get } from 'svelte/store';
+
 	import { getLayerType } from '$routes/map/utils/entries';
+
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -32,7 +34,8 @@
 			activeLayerIdsStore.addType(copy.id, layerType);
 			activeLayerIdsStore.add(copy.id);
 			showNotification(`${copy.metaData.name}を追加しました`, 'success');
-			showDataMenu.set(false);
+
+			if (checkPc()) showDataMenu.set(false);
 		}
 	};
 	const deleteData = () => {

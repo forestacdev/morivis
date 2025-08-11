@@ -18,7 +18,7 @@ This project is currently in the alpha stage.
 
 APIs, data structures, and features are subject to change without notice.
 
-![alt text](image.png)
+![alt text](frontend/static/ogp.jpg)
 
 ## Related Repository
 
