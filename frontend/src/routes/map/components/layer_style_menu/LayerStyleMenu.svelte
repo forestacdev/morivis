@@ -82,7 +82,7 @@
 	<div
 		in:fly={{ duration: 300, opacity: 0, x: -100 }}
 		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
-		class="bg-main w-side-menu absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
+		class="bg-main lg:w-side-menu absolute z-10 flex flex-col gap-2 overflow-hidden pl-2 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full max-lg:pt-2 lg:top-0 lg:h-full"
 	>
 		{#key layerEntry.id}
 			<div
@@ -92,7 +92,7 @@
 			>
 				<div class="flex h-[80px] items-center gap-2 pr-2">
 					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
-					<span class="select-none text-base text-lg max-lg:hidden">カスタマイズ</span>
+					<span class="select-none text-base text-lg">カスタマイズ</span>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);

@@ -514,6 +514,8 @@ const createMapStore = () => {
 	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map || !isMapValid(map)) return;
 
+		const padding = checkPc() ? 20 : 0;
+
 		if (_entry.metaData.center) {
 			// 中心座標が指定されている場合は、中心にズーム
 			map.easeTo({
@@ -521,24 +523,14 @@ const createMapStore = () => {
 				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				padding: {
-					left: 20,
-					top: 20,
-					right: 20,
-					bottom: 20
-				},
+				padding: padding,
 				duration: 500
 			});
 			return;
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
-				padding: {
-					left: 20,
-					top: 20,
-					right: 20,
-					bottom: 20
-				},
+				padding: padding,
 				duration: 500
 			});
 		}

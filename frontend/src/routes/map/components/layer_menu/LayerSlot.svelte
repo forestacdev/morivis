@@ -11,9 +11,9 @@
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 	import { getAttributionName } from '$routes/map/data/attribution';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		index: number;
@@ -37,6 +37,7 @@
 		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
 	}: Props = $props();
 	let showLegend = $state(false);
+	let showMobileLegend = $state(false);
 	let isDragging = $state(false);
 	let draggingEnabled = $state(true);
 
@@ -100,6 +101,9 @@
 	const focusLayer = () => {
 		if (!layerEntry) return;
 		mapStore.focusLayer(layerEntry);
+		if (checkMobile()) {
+			isActiveMobileMenu.set('map');
+		}
 	};
 
 	const editLayer = () => {
@@ -333,7 +337,58 @@
 						</button> -->
 					</div>
 				{/if}
+
+				<!-- TODO:モバイル -->
+				{#if showMobileLegend && $selectedLayerId === layerEntry.id && checkMobile()}
+					<!-- 編集ボタン モバイル -->
+					<div
+						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
+					>
+						<button
+							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							class="cursor-pointer"
+						>
+							<Icon
+								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
+								class="h-8 w-8"
+							/>
+						</button>
+
+						<button onclick={removeLayer} class="cursor-pointer">
+							<Icon icon="bx:trash" class="h-8 w-8" />
+						</button>
+
+						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+							<button class="cursor-pointer" onclick={focusLayer}>
+								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+							</button>
+						{/if}
+
+						<!-- <button onclick={copyLayer}>
+							<Icon icon="lucide:copy" />
+						</button> -->
+						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
+						</button>
+						<!-- <button onclick={infoLayer} class="cursor-pointer">
+							<Icon icon="akar-icons:info" class="h-8 w-8" />
+						</button> -->
+					</div>
+				{/if}
 			</div>
+
+			{#if checkMobile()}
+				<button
+					onclick={() => {
+						$selectedLayerId = layerEntry.id;
+						showMobileLegend = !showMobileLegend;
+					}}
+					class=" grid place-items-center"
+				>
+					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
+				</button>
+			{/if}
 		</div>
 		<!-- ステータス -->
 		{#if !$showDataMenu && !$isStyleEdit}

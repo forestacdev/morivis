@@ -96,7 +96,7 @@
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
-			? 'translate-x-[75px] bg-transparent delay-150'
+			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[75px]'
 			: 'bg-main'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 	>
