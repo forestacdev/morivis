@@ -27,8 +27,8 @@
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
-	if (checkPWA()) {
-		// PWAモードなら、mapページに遷移
+	if (checkPWA() && !window.location.pathname.includes('/map')) {
+		// PWAモードかつ、mapページにいない場合のみ遷移
 		if (import.meta.env.MODE === 'production') {
 			window.location.href = '/morivis/map';
 		} else {
