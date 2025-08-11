@@ -118,13 +118,12 @@
 
 <div class="absolute h-full w-full">
 	{#if deviceType === 'mobile' && !isMobileWidth}
-		<div class="bg-main flex h-full w-full items-center justify-center text-base">
+		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
 			<p class="text-2xl">端末を縦向きにしてください。</p>
 			<Icon icon="circum:mobile-3" class="h-16 w-16" />
 		</div>
-	{:else}
-		{@render children()}
 	{/if}
+	{@render children()}
 </div>
 
 <TermsOfServiceDialog />
