@@ -1,6 +1,6 @@
 import type { UseEventTriggerType } from '$routes/map/types/ui';
 import { writable } from 'svelte/store';
-import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
+import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
 
 /** 処理中の状態 */
 export const isProcessing = writable<boolean>(false);
@@ -12,6 +12,7 @@ export const isBlocked = writable<boolean>(false);
 export const showOtherMenu = writable<boolean>(false);
 
 /** レイヤーメニューの表示 */
+
 export const showLayerMenu = writable<boolean>(true);
 
 /** データメニューの表示 */

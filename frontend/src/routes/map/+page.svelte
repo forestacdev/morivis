@@ -48,6 +48,7 @@
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
+	import { checkPc } from './utils/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -124,6 +125,9 @@
 	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
+		/** レイヤーメニューの表示 */
+
+		showLayerMenu.set(checkPc());
 		const params = getParams(location.search);
 
 		if (params) {

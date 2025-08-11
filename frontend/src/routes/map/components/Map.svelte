@@ -502,7 +502,7 @@
 	ondragleave={dragleave}
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
-		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white'
+		? 'absolute transform border-white max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg lg:border-4'
 		: 'relative h-full w-full grow '}"
 >
 	<div
