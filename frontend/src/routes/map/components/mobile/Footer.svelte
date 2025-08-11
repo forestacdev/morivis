@@ -11,6 +11,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { fly } from 'svelte/transition';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -22,7 +23,7 @@
 	const footerHeight = 70; // フッターの高さを設定
 
 	isActiveMobileMenu.subscribe((value) => {
-		if (value && checkMobile()) {
+		if (value) {
 			switch (value) {
 				case 'map':
 					showDataMenu.set(false);
