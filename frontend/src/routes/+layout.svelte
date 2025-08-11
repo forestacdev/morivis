@@ -19,7 +19,7 @@
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import { isBlocked } from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
 	let { children } = $props();
 
@@ -65,8 +65,16 @@
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
 
-		// 行き先の先頭時が_なら、ホームに遷移
+		if (checkPWA()) {
+			// PWAモードなら、mapページに遷移
+			if (import.meta.env.MODE === 'production') {
+				window.location.href = '/morivis/map';
+			} else {
+				window.location.href = '/map';
+			}
+		}
 		if (import.meta.env.MODE === 'production' && toPage.startsWith('/_')) {
+			// 行き先の先頭時が_なら、ホームに遷移
 			window.location.href = '/morivis';
 			return;
 		}
