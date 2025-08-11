@@ -339,7 +339,7 @@
 </script>
 
 {#if isInitialized}
-	<div class="relative flex h-dvh w-full flex-col">
+	<div class="relative flex h-full w-full flex-col">
 		<!-- <HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData

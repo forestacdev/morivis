@@ -231,7 +231,7 @@
 	};
 </script>
 
-<div class="relative h-dvh w-full bg-gray-900">
+<div class="relative h-full w-full bg-gray-900">
 	<canvas
 		class="absolute m-0 block h-full w-full overflow-hidden bg-gray-900 p-0"
 		bind:this={canvas}

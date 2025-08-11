@@ -118,7 +118,7 @@
 	{@html webManifestLink}
 </svelte:head>
 
-<div class="absolute h-full w-full">
+<div class="absolute h-dvh w-full">
 	{#if deviceType === 'mobile' && !$isMobile}
 		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
 			<p class="text-2xl">端末を縦向きにしてください。</p>
