@@ -27,14 +27,6 @@
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
-	if (checkPWA() && !window.location.pathname.includes('/map')) {
-		// PWAモードかつ、mapページにいない場合のみ遷移
-		if (import.meta.env.MODE === 'production') {
-			window.location.href = '/morivis/map';
-		} else {
-			window.location.href = '/map';
-		}
-	}
 	let { children } = $props();
 
 	const webManifestLink = pwaInfo?.webManifest?.linkTag || '';
