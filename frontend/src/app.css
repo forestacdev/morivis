@@ -36,6 +36,7 @@
 		/* スワイプリロード無効 */
 		body {
 			overscroll-behavior-y: none;
+			background-color: var(--color-main);
 		}
 
 		/* タップハイライトの色を透明にする */
