@@ -12,6 +12,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import { mapStore } from '$routes/stores/map';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -46,6 +47,12 @@
 		}
 	});
 
+	let layertype = $derived.by(() => {
+		if (showDataEntry) {
+			return getLayerType(showDataEntry);
+		}
+	});
+
 	$effect(() => {
 		if (showDataEntry) {
 			const mapBbox = mapStore.getMapBounds();
@@ -75,6 +82,14 @@
 					class="relative isolate grid h-[180px] w-[180px] shrink-0 place-items-center rounded-full bg-black drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]"
 				>
 					<LayerIcon layerEntry={showDataEntry} />
+					<!-- タイプアイコン -->
+					{#if layertype}
+						<div
+							class="bounded-full bg-base absolute bottom-1 right-1 aspect-square rounded-full border-2 border-gray-900 p-2 text-black"
+						>
+							<Icon icon={getLayerIcon(layertype)} class="h-7 w-7" />
+						</div>
+					{/if}
 				</div>
 
 				<!-- タイトル -->
@@ -95,6 +110,8 @@
 						>
 					{/if}
 				</div>
+
+				<!-- 背景 -->
 				<div class="absolute -z-10 grid w-full place-items-center opacity-15">
 					{#if showDataEntry.metaData.location === '森林文化アカデミー'}
 						<div class="grid aspect-square place-items-center [&_path]:fill-white">
@@ -139,7 +156,6 @@
 				{/if}
 
 				<!-- <div class="flex flex-col gap-2 py-2 pb-4">
-				
 
 					{#if showDataEntry}
 						<MapPane bind:showDataEntry />
