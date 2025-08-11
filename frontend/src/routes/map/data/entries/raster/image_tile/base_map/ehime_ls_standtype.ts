@@ -14,12 +14,9 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '愛媛県 レーザ林相図',
-		description: `
-			平成30年度に林野庁が実施した航空レーザ測量データを基に、愛媛県が作成した「レーザ林相図」です。「レーザ林相図」は、航空レーザ測量で取得した樹冠高や樹冠形状、レーザパルスの反射強度に基づき、樹種や樹冠形状の特徴を図示した画像です。
-             （G空間情報センター引用）`,
 		attribution: '愛媛県森林資源データ',
 		location: '愛媛県',
-		tags: ['林相図', '森林'],
+		tags: ['森林', '林相図', 'レーザ林相図'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,

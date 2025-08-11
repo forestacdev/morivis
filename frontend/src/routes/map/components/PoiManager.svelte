@@ -12,6 +12,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStyleEdit } from '$routes/stores';
 	import { showSearchMenu } from '$routes/stores/ui';
+	import { fade } from 'svelte/transition';
+	import { debounce } from 'es-toolkit';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -77,7 +79,7 @@
 
 	const updateThrottle = throttle(() => {
 		updateMarkers();
-	}, 100);
+	}, 500);
 
 	const onClick = (featureId: number) => {
 		const poiData = poiDatas.find((data) => data.featureId === featureId);
@@ -124,18 +126,41 @@
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
-			updateThrottle();
+			updateMarkers();
 			map.on('move', updateThrottle);
+			map.on('moveend', updateMarkers);
 		});
 	});
 
 	onDestroy(() => {
 		if (!map) return;
 	});
+
+	// ちらつき防止
+	let stablePOIData = $state<PoiData[]>([]);
+	const updatePOIData = debounce((newData: PoiData[]) => {
+		stablePOIData = [...newData];
+	}, 50);
+
+	// poiDatasの変更を監視してdebounced更新
+	$effect(() => {
+		updatePOIData(poiDatas);
+	});
+
+	let shouldShowPoi = $derived.by(() => {
+		return (
+			$showLabelLayer &&
+			!showDataEntry &&
+			!showZoneForm &&
+			!$isStyleEdit &&
+			!$showSearchMenu &&
+			poiDatas.length > 0
+		);
+	});
 </script>
 
-{#if $showLabelLayer && !showDataEntry && !showZoneForm && !$isStyleEdit && !$showSearchMenu}
-	{#each poiDatas as poiData (poiData.propId)}
+{#if shouldShowPoi}
+	{#each stablePOIData as poiData (poiData.propId)}
 		<PoiMarker
 			{map}
 			lngLat={new maplibregl.LngLat(poiData.coordinates[0], poiData.coordinates[1])}

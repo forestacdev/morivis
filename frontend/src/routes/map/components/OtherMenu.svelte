@@ -4,7 +4,7 @@
 
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { mapMode, isDebugMode } from '$routes/stores';
-	import { showSideMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
+	import { showOtherMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -13,24 +13,25 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
+	import { checkMobile, checkPc } from '../utils/ui';
 
 	const toggleDataMenu = () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		showDataMenu.set(!$showDataMenu);
 	};
 
 	const toggleInfoDialog = () => {
-		showSideMenu.set(false);
+		if (checkPc()) showOtherMenu.set(false);
 		showInfoDialog.set(!$showInfoDialog);
 	};
 
 	const toggleTermsDialog = () => {
-		showSideMenu.set(false);
+		if (checkPc()) showOtherMenu.set(false);
 		showTermsDialog.set(!$showTermsDialog);
 	};
 
 	const mapExport = async () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		isProcessing.set(true);
 		const map = mapStore.getMap();
 		if (!map) return;
@@ -40,7 +41,7 @@
 	};
 
 	const goHome = async () => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 		if (import.meta.env.MODE === 'production') {
 			goto('/morivis');
 		} else {
@@ -48,34 +49,37 @@
 		}
 	};
 	mapMode.subscribe((mode) => {
-		showSideMenu.set(false);
+		showOtherMenu.set(false);
 	});
 </script>
 
-{#if $showSideMenu}
+{#if $showOtherMenu}
+	<!-- 背景のオーバーレイ -->
 	<div
 		transition:fade={{ duration: 300 }}
-		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50"
+		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50 max-lg:hidden"
 		role="button"
 		tabindex="0"
-		onclick={() => showSideMenu.set(false)}
+		onclick={() => showOtherMenu.set(false)}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
-				showSideMenu.set(false);
+				showOtherMenu.set(false);
 			}
 		}}
 	></div>
+
+	<!-- メニュー本体 -->
 	<div
-		transition:fly={{ duration: 300, x: 100, opacity: 0 }}
-		class="bg-main absolute right-0 top-0 z-30 flex h-full w-[400px] flex-col gap-2 p-2 text-base"
+		transition:fly={{ duration: checkPc() ? 300 : 0, x: checkPc() ? 100 : 0, opacity: 0 }}
+		class="bg-main absolute right-0 top-0 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:z-30 lg:w-[400px]"
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">
 				<FacLogo width={'250px'} />
 			</div>
 			<button
-				onclick={() => showSideMenu.set(false)}
-				class="bg-base cursor-pointer rounded-full p-2"
+				onclick={() => showOtherMenu.set(false)}
+				class="bg-base cursor-pointer rounded-full p-2 max-lg:hidden"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
@@ -104,7 +108,7 @@
 				<span class="select-none">地図の解析</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 				onclick={toggleDataMenu}
 			>
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
@@ -117,7 +121,7 @@
 				<span class="select-none">設定</span>
 			</button> -->
 			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 				onclick={mapExport}
 			>
 				<Icon icon="bx:export" class="h-8 w-8" />
@@ -157,13 +161,7 @@
 				><Icon icon="mdi:web" class="h-8 w-8" />
 				<span>森林文化アカデミーHP</span></a
 			>
-			<!-- <button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				onclick={goHome}
-			>
-				<Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
-				<span class="select-none">トップページへ</span>
-			</button> -->
+
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={goHome}

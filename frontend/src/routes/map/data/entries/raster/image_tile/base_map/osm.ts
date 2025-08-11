@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: 'OpenStreetMap',
-		description: '',
 		attribution: 'OSM',
 		location: '世界',
 		minZoom: 0,

@@ -14,6 +14,9 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST } from '$routes/map/data/types/tags';
 
+	import Fuse from 'fuse.js';
+	import { checkPc } from '$routes/map/utils/ui';
+
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
@@ -30,20 +33,26 @@
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
-	let showAddedData = $state<boolean>(true); // データ追加の状態
+	let showAddedData = $state<boolean>(false); // データ追加の状態
+
+	const fuse = new Fuse(geoDataEntries, {
+		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
+		threshold: 0.3
+	});
 
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
 		if (searchWord) {
-			filterDataEntries = dataEntries.filter((data) =>
-				data.metaData.name.toLowerCase().includes(searchWord.toLowerCase())
-			);
+			const result = fuse.search(searchWord);
+			filterDataEntries = result.map((item) => item.item);
 		} else {
 			// 検索ワードが空の場合、全てのデータを表示
 			if (!showAddedData) {
-				filterDataEntries = dataEntries.filter((data) => !$activeLayerIdsStore.includes(data.id));
+				filterDataEntries = geoDataEntries.filter(
+					(data) => !$activeLayerIdsStore.includes(data.id)
+				);
 			} else {
-				filterDataEntries = dataEntries;
+				filterDataEntries = geoDataEntries;
 			}
 		}
 	});
@@ -55,8 +64,8 @@
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
 	let rowColumns = $state<number>(2); // グリッドの列数
-	let itemHeight = $state<number>(300 + 70); // item Height + grid margin & padding
-	let itemWidth = $state<number>(300 + 10); // item Height + grid margin & padding
+	let itemHeight = $state<number>(450); // item Height + grid margin & padding
+	let itemWidth = $state<number>(300); // item Height + grid margin & padding
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -93,18 +102,18 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 transition-all duration-300 lg:pl-[100px] {$showDataMenu
-		? 'pointer-events-auto translate-y-0 opacity-100'
-		: 'pointer-events-none -translate-x-[100px] opacity-0'}"
+	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300 {$showDataMenu
+		? 'pointer-events-auto opacity-100 lg:translate-x-0'
+		: 'pointer-events-none opacity-0 lg:-translate-x-[100px]'}"
 >
-	<button
+	<!-- <button
 		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"
 		onclick={() => {
 			showDataMenu.set(false);
 		}}
 	>
 		<Icon icon="ep:back" class="h-7 w-7" />
-	</button>
+	</button> -->
 	<div class="flex grow items-center justify-between gap-4 p-2">
 		<div class="flex items-center gap-2 text-base max-lg:hidden">
 			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
@@ -158,14 +167,26 @@
 					itemSize={itemHeight}
 				>
 					<div slot="item" let:index let:style {style}>
-						<div class="row" style="--grid-columns: {rowColumns};">
+						<div
+							class="grid max-lg:gap-[5px] lg:gap-3"
+							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({checkPc()
+								? 256
+								: 100}px, 1fr));"
+						>
 							{#each Array(rowColumns) as _, i}
 								{#if filterDataEntries[index * rowColumns + i]}
+									{@const itemIndex = index * rowColumns + i}
+									{@const isTopEdge = itemIndex < rowColumns}
+									{@const isLeftEdge = itemIndex % rowColumns === 0}
+									{@const isRightEdge = itemIndex % rowColumns === rowColumns - 1}
 									<DataSlot
-										dataEntry={filterDataEntries[index * rowColumns + i]}
+										dataEntry={filterDataEntries[itemIndex]}
 										bind:showDataEntry
 										bind:itemHeight
-										index={index * rowColumns + i}
+										index={itemIndex}
+										{isLeftEdge}
+										{isRightEdge}
+										{isTopEdge}
 									/>
 								{/if}
 							{/each}
@@ -175,7 +196,7 @@
 			</div>
 		{/if}
 		{#if filterDataEntries.length === 0}
-			<div class="flex h-full w-full items-center justify-center">
+			<div class="flex h-full w-full justify-center max-lg:items-start max-lg:pt-4 lg:items-center">
 				<div class="flex flex-col items-center gap-4">
 					<Icon icon="streamline:sad-face" class="h-16 w-16 text-gray-500 opacity-95" />
 					<span class="text-2xl text-gray-500">データが見つかりません</span>
@@ -204,6 +225,18 @@
 		height: 5px;
 	}
 
+	@media (width < 768px) {
+		:global(.virtual-list-wrapper) {
+			/* スクロールバー */
+			-ms-overflow-style: none;
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+	}
+
 	:global(.virtual-list-wrapper::-webkit-scrollbar-track) {
 		background: transparent;
 	}
@@ -211,12 +244,6 @@
 	:global(.virtual-list-wrapper::-webkit-scrollbar-thumb) {
 		background: var(--color-accent);
 		border-radius: 9999px;
-	}
-
-	.row {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(var(--grid-columns), minmax(200px, 1fr));
 	}
 
 	/* 検索ボックスのスタイル */

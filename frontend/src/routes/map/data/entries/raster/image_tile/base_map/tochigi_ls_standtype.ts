@@ -14,14 +14,12 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '栃木県 レーザ林相図',
-		description:
-			'令和３～４年度に栃木県が実施した航空レーザ測量データを使用して作成した「レーザ林相図」です。「レーザ林相図」は、航空レーザ測量で取得した樹冠高や樹冠形状、レーザパルスの反射強度に基づき、樹種や樹冠形状の特徴を図示した画像です。（引用:G空間情報センター）',
 		attribution: '栃木県森林資源データ',
 		location: '栃木県',
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		tags: ['林相図', '森林'],
+		tags: ['森林', '林相図', 'レーザ林相図'],
 		bounds: TOCHIGI_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_tochigi',
 		xyzImageTile: {

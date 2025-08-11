@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"mobile": "vite dev --host --mode mobile",
 		"build": "vite build",
 		"deploy": "pnpm run build && echo > build/.nojekyll && gh-pages -d build -m \"Updates --skip-ci\"",
 		"preview": "vite preview",

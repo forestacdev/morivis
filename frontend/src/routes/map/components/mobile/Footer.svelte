@@ -1,84 +1,139 @@
 <script lang="ts">
 	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
-	import { showLayerMenu, showDataMenu, showSideMenu } from '$routes/stores/ui';
+	import {
+		showLayerMenu,
+		showDataMenu,
+		showOtherMenu,
+		isActiveMobileMenu
+	} from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { fly } from 'svelte/transition';
+	import { isStreetView, isStyleEdit } from '$routes/stores';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+		featureMenuData: FeatureMenuData | null;
 	}
 
-	let { showDataEntry }: Props = $props();
+	let { showDataEntry, featureMenuData }: Props = $props();
+	let initialized = $state<boolean>(false);
 
-	let active = $state<MobileActiveMenu>('map');
+	const footerHeight = 70; // フッターの高さを設定
 
-	$effect(() => {
-		if (active && checkMobile()) {
-			switch (active) {
+	isActiveMobileMenu.subscribe((value) => {
+		if (value && initialized) {
+			switch (value) {
 				case 'map':
 					showDataMenu.set(false);
 					showLayerMenu.set(false);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
 					break;
 				case 'layer':
 					showDataMenu.set(false);
 					showLayerMenu.set(true);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
 					break;
 				case 'data':
 					showDataMenu.set(true);
 					showLayerMenu.set(false);
-					showSideMenu.set(false);
+					showOtherMenu.set(false);
+					break;
+				case 'other':
+					showDataMenu.set(false);
+					showLayerMenu.set(false);
+					showOtherMenu.set(true);
 					break;
 				default:
 			}
+		}
+
+		initialized = true;
+	});
+	onMount(() => {
+		if (checkMobile()) {
+			showLayerMenu.set(false);
+			showDataMenu.set(false);
+			showOtherMenu.set(false);
 		}
 	});
 </script>
 
 <!-- フッターのメニュー -->
-<div
-	class="bg-main absolute bottom-0 left-0 z-20 flex h-[60px] w-full items-center justify-between text-base lg:hidden {showDataEntry
-		? 'hidden'
-		: ''}"
->
-	<button
-		class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-		onclick={() => (active = 'map')}
+{#if !featureMenuData && !showDataEntry && !$isStyleEdit && !$isStreetView}
+	<div
+		transition:fly={{ y: 100, duration: 300 }}
+		class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry}"
+		style="height: {footerHeight}px;"
 	>
-		<div class="rounded-full px-4 py-1 {active === 'map' ? 'bg-accent' : ''}">
-			<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
-		</div>
+		<button
+			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+			onclick={() => ($isActiveMobileMenu = 'map')}
+		>
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'map'
+					? 'bg-accent'
+					: ''}"
+			>
+				<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
+			</div>
 
-		<span class="text-xs">地図</span>
-	</button>
-	<button
-		class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-		onclick={() => (active = 'layer')}
-	>
-		<div class="rounded-full px-4 py-1 {active === 'layer' ? 'bg-accent' : ''}">
-			<Icon icon="jam:layers-f" class="h-8 w-8" />
-		</div>
+			<span class="text-xs">地図</span>
+		</button>
+		<button
+			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+			onclick={() => ($isActiveMobileMenu = 'layer')}
+		>
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+				'layer'
+					? 'bg-accent'
+					: ''}"
+			>
+				<Icon icon="jam:layers-f" class="h-8 w-8" />
+			</div>
 
-		<span class="text-xs">レイヤー</span>
-	</button>
-	<button
-		class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-		onclick={() => (active = 'data')}
-	>
-		<div class="rounded-full px-4 py-1 {active === 'data' ? 'bg-accent' : ''}">
-			<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-		</div>
-		<span class="text-xs">データ</span>
-	</button>
-</div>
+			<span class="text-xs">レイヤー</span>
+		</button>
+		<button
+			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+			onclick={() => ($isActiveMobileMenu = 'data')}
+		>
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'data'
+					? 'bg-accent'
+					: ''}"
+			>
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+			</div>
+			<span class="text-xs">データ</span>
+		</button>
+		<button
+			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+			onclick={() => ($isActiveMobileMenu = 'other')}
+		>
+			<div
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+				'other'
+					? 'bg-accent'
+					: ''}"
+			>
+				<Icon icon="basil:other-1-outline" class="h-9 w-9" />
+			</div>
+			<span class="text-xs">その他</span>
+		</button>
+	</div>
+{/if}
 
 <!-- フッターの余白分 -->
-<div
-	class="bg-main bottom-0 left-0 flex h-[60px] w-full items-center justify-between text-base lg:hidden {showDataEntry
+<!-- <div
+	class="bg-main bottom-0 left-0 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
 		? 'hidden'
 		: ''}"
-></div>
+	style="height: {footerHeight}px;"
+></div> -->
 
 <style>
 </style>

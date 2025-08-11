@@ -11,12 +11,10 @@ const entry: VectorEntry<TileMetaData> = {
 		url: `${ENTRY_PMTILES_VECTOR_PATH}/tokyo_gairoju.pmtiles`
 	},
 	metaData: {
-		name: '街路樹 東京都23区',
+		name: '東京都23区 街路樹',
+		sourceDataName: '都道の街路樹',
 		description: `
-            本データは「東京都オープンデータカタログサイト」（https://catalog.data.metro.tokyo.lg.jp/）において公開されているデータをもとに作成しています。
-            データセット名：「都道の街路樹」
-            データ提供元：東京都
-            ライセンス：東京都オープンデータ利用規約（https://portal.data.metro.tokyo.lg.jp/terms/）`,
+            「東京都オープンデータカタログサイト」において公開されている「都道の街路樹」データをもとに加工`,
 		attribution: '東京都オープンデータカタログサイト',
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
@@ -484,6 +482,10 @@ const entry: VectorEntry<TileMetaData> = {
 							'マグワ'
 						],
 						values: generateHueBasedHexColors(405)
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				}
 			]

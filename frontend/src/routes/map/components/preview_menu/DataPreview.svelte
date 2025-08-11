@@ -3,12 +3,14 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
-	import { get } from 'svelte/store';
+
 	import { getLayerType } from '$routes/map/utils/entries';
+
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -33,6 +35,9 @@
 			activeLayerIdsStore.add(copy.id);
 			showNotification(`${copy.metaData.name}を追加しました`, 'success');
 			showDataMenu.set(false);
+			if (checkMobile()) {
+				$isActiveMobileMenu = 'map';
+			}
 		}
 	};
 	const deleteData = () => {
@@ -53,9 +58,9 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="pointer-events-none absolute bottom-8 z-20 flex w-full items-center justify-center"
+	class="pointer-events-none absolute bottom-12 z-20 flex w-full items-center justify-center"
 >
-	<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
+	<div class="flex flex-col gap-4 rounded-lg bg-black p-6">
 		<span class="w-full text-center text-base">このデータを追加しますか？</span>
 		<div class="flex gap-4">
 			<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}

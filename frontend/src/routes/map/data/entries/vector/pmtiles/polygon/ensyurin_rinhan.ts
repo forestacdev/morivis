@@ -172,9 +172,28 @@ const entry: VectorEntry<TileMetaData> = {
 						['concat', ['get', '林齢'], '年生'],
 						''
 					]
+				},
+				{
+					key: '植栽年',
+					name: '植栽年',
+					value: [
+						'case',
+						['all', ['has', '植栽年'], ['!=', ['get', '植栽年'], '']],
+						['concat', ['get', '植栽年'], '年'],
+						''
+					]
 				}
 			]
 		}
+		// default: {
+		// 	symbol: {
+		// 		paint: {},
+		// 		layout: {
+		// 			'text-padding': 4,
+		// 			'symbol-spacing': 400 // デフォルト: 400px
+		// 		}
+		// 	}
+		// }
 	}
 };
 

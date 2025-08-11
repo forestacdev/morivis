@@ -10,6 +10,7 @@
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -124,12 +125,17 @@
 	});
 </script>
 
-{#if featureMenuData}
+<!-- PC -->
+{#if featureMenuData && checkPc()}
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main lg:w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 max-lg:w-full"
+		transition:fly={{
+			duration: 300,
+			x: -100,
+			opacity: 0
+		}}
+		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col"
 	>
-		<div class="absolute top-0 z-10 flex w-full justify-between p-4 px-6">
+		<div class="flex w-full justify-between p-3 px-4">
 			<button
 				onclick={() => (featureMenuData = null)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
@@ -140,11 +146,11 @@
 
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
 			<!-- 画像 -->
-			<div class="relative w-full">
+			<div class="relative w-full p-2 pl-4">
 				{#if srcData && data && !data.medias}
 					<img
 						in:fade
-						class="block h-full w-full object-cover max-lg:aspect-video lg:aspect-square"
+						class="block aspect-video h-full w-full rounded-lg object-cover"
 						alt="画像"
 						src={srcData}
 					/>
@@ -171,6 +177,7 @@
 										src={media.url}
 										width={1920}
 										height={1080}
+										alt="画像"
 										class="ml-2 aspect-video min-w-0 flex-[0_0_100%] object-cover"
 									/>
 								{:else if media.type === 'youtube'}
@@ -189,14 +196,10 @@
 					</div>
 				{:else}
 					<!-- !タイトルが長い場合 -->
-					<div
-						in:fade
-						class="bg-sub aspect-2/1 grid h-full w-full shrink-0 grow place-items-center overflow-hidden"
-					></div>
 				{/if}
 
 				<div
-					class="c-gradient absolute bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
+					class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
 				>
 					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 						<!-- poiタイトル -->
@@ -247,7 +250,7 @@
 					</div>
 					{#if data}
 						{#if data.description}
-							<span class="my-2 text-base">{data.description}</span>
+							<span class="my-2 text-justify text-base">{data.description}</span>
 						{/if}
 					{/if}
 				</div>

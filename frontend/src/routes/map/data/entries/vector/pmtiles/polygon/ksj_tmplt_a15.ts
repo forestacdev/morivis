@@ -69,6 +69,10 @@ const entry: VectorEntry<TileMetaData> = {
 						categories: ['鳥獣保護区', '特別保護地区', '休猟区', '特例休猟区'],
 						values: ['#f55b23', '#f5d133', '#00b4fb', '#50e3c2'],
 						patterns: [null, null, null, null]
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
 					}
 				}
 			]

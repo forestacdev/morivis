@@ -4,7 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -24,8 +24,75 @@
 	let isReady = $state(false); // マーカーの準備完了フラグ
 
 	let isHover = $state(false);
+	let onLoaded = $state(false);
 
-	onMount(() => {
+	const jumpToFac = () => {
+		mapStore.jumpToFac();
+	};
+
+	const onHover = (val: boolean) => {
+		isHoverPoiMarker.set(val);
+		isHover = val;
+	};
+
+	const click = () => {
+		onClick(featureId);
+	};
+
+	// 画像キャッシュ（同じ画像の重複読み込みを防ぐ）
+	const imageCache = new Map<string, Promise<void>>();
+
+	let imageLoaded = $state(false);
+	let imageError = $state(false);
+
+	// 画像を事前読み込みする関数（キャッシュ付き）
+	const preloadImage = (url: string): Promise<void> => {
+		if (imageCache.has(url)) {
+			return imageCache.get(url)!;
+		}
+
+		const promise = new Promise<void>((resolve, reject) => {
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+			img.src = url;
+		});
+
+		imageCache.set(url, promise);
+		return promise;
+	};
+
+	// 画像URLを設定し、読み込み完了を待つ
+	const loadImage = async () => {
+		const id = properties._prop_id;
+
+		try {
+			// 画像URLを決定
+			if (id === 'fac_top') {
+				imageUrl = properties.image;
+			} else {
+				imageUrl = propData[id]?.image;
+			}
+
+			// 画像URLが存在しない場合
+			if (!imageUrl) {
+				imageError = true;
+				return;
+			}
+
+			// 画像の読み込み完了を待つ
+			await preloadImage(imageUrl);
+			imageLoaded = true;
+			imageError = false;
+		} catch (error) {
+			console.warn('Failed to load image:', error);
+			imageError = true;
+			imageLoaded = false;
+		}
+	};
+
+	onMount(async () => {
+		// マーカーの初期化を先に実行
 		if (markerContainer && lngLat) {
 			marker = new maplibregl.Marker({
 				element: markerContainer,
@@ -46,70 +113,57 @@
 				.addTo(map);
 		}
 
-		const id = properties._prop_id;
-
-		// TODO: 整理
-		if (id === 'fac_top') {
-			imageUrl = properties.image;
-		} else {
-			imageUrl = propData[id].image;
-		}
-
-		// 準備完了フラグを設定
+		// 基本的な準備完了
 		isReady = true;
+
+		// 画像読み込みは非同期で実行
+		await loadImage();
 	});
-
-	const jumpToFac = () => {
-		mapStore.jumpToFac();
-	};
-
-	const onHover = (val: boolean) => {
-		isHoverPoiMarker.set(val);
-		isHover = val;
-	};
-
-	const click = () => {
-		onClick(featureId);
-	};
-
-	// $effect(() => {
-	// 	if (marker && lngLat && container) {
-	// 		marker = new maplibregl.Marker({
-	// 			element: container,
-	// 			anchor: 'center',
-	// 			offset: [0, 0]
-	// 		})
-	// 			.setLngLat(lngLat)
-	// 			.addTo(map);
-	// 	}
-	// });
-
 	onDestroy(() => {
 		marker?.remove();
 		name?.remove();
 		marker = null;
 		name = null;
 	});
+
+	// フォールバック画像またはプレースホルダーを表示するかどうか
+	const showPlaceholder = $derived(!imageLoaded && !imageError);
+	const showImage = $derived(imageLoaded && !imageError);
 </script>
 
 {#if properties._prop_id === 'fac_top'}
-	<button
+	<div
 		bind:this={markerContainer}
-		class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
-		onclick={jumpToFac}
-		onfocus={() => onHover(true)}
-		onblur={() => onHover(false)}
-		onmouseover={() => onHover(true)}
-		onmouseleave={() => onHover(false)}
+		class="pointer-events-none relative grid w-[150px] place-items-center"
 	>
-		{#if imageUrl}
-			<img
-				class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
-				src={imageUrl}
-				alt={properties.name}
-			/>
+		{#if isReady}
+			<button
+				class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
+				onclick={jumpToFac}
+				onfocus={() => onHover(true)}
+				onblur={() => onHover(false)}
+				onmouseover={() => onHover(true)}
+				onmouseleave={() => onHover(false)}
+			>
+				{#if showImage}
+					<img
+						transition:fade={{ duration: 100 }}
+						class="hover:scale-120 absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150"
+						src={imageUrl}
+						alt={properties.name}
+					/>
+				{:else if imageError}
+					<!-- エラー時のフォールバック -->
+					<div
+						transition:fade={{ duration: 100 }}
+						class="absolute flex h-[50px] w-[50px] items-center justify-center rounded-full bg-gray-400"
+					>
+						<span class="text-xs text-white">?</span>
+					</div>
+				{/if}
+			</button>
 		{/if}
-	</button>
+	</div>
 {:else}
 	<div
 		bind:this={markerContainer}
@@ -117,22 +171,34 @@
 	>
 		{#if isReady}
 			<button
-				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md"
+				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md transition-opacity duration-200"
 				onclick={click}
 				onfocus={() => onHover(true)}
 				onblur={() => onHover(false)}
 				onmouseover={() => onHover(true)}
 				onmouseleave={() => onHover(false)}
 			>
-				{#if imageUrl}
+				{#if showImage}
 					<img
-						class="border-base border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
+						transition:fade={{ duration: 100 }}
+						class="border-base bg-main border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
-							? 'scale-110'
+							? 'scale-120'
 							: ''}"
 						src={imageUrl}
 						alt={properties.name || 'Marker Image'}
 					/>
+				{:else if imageError}
+					<!-- エラー時のフォールバック -->
+					<div
+						transition:fade={{ duration: 100 }}
+						class="border-base border-3 absolute flex h-full w-full items-center justify-center rounded-full bg-gray-400 transition-all duration-150 {isHover ||
+						clickId === featureId
+							? 'scale-120'
+							: ''}"
+					>
+						<span class="text-sm text-white">?</span>
+					</div>
 				{/if}
 			</button>
 		{/if}
@@ -142,7 +208,7 @@
 		bind:this={nameContainer}
 		class="items-top pointer-events-none relative z-10 flex w-[170px] justify-center"
 	>
-		{#if isHover || clickId === featureId}
+		{#if (isHover || clickId === featureId) && isReady}
 			<div
 				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
 				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
@@ -154,4 +220,17 @@
 {/if}
 
 <style>
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	.animate-pulse {
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
 </style>

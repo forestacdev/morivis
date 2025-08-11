@@ -1,9 +1,14 @@
+import type { AttributionKey } from '$routes/map/data/attribution';
 import { writable } from 'svelte/store';
+
+export const mapAttributions = writable<AttributionKey[]>([]);
 
 interface AttributionItem {
 	id: string;
 	key: string;
 }
+
+// TODO: 使用してない
 const createAttributionStore = () => {
 	const store = writable<AttributionItem[]>([]);
 	const { subscribe, update, set } = store;

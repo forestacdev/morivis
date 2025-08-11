@@ -14,12 +14,13 @@
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import Footer from '$routes/map/components/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
-	import SideMenu from '$routes/map/components/SideMenu.svelte';
+	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 
@@ -31,7 +32,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, showLayerMenu } from '$routes/stores/ui';
+	import { isBlocked, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -45,15 +46,20 @@
 	import { slide } from 'svelte/transition';
 	import type { ResultData } from './utils/feature';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
+	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
+	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
+	import { checkPc } from './utils/ui';
+	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
-	let map: maplibregl.Map | null = $state(null); // MapLibreのマップオブジェクト
-
-	type NodeConnections = Record<string, string[]>;
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 
-	let layerEntriesData = $derived.by(() => {
+	const getLayerEntriesData = (): GeoDataEntry[] => {
+		// tempが空の場合は定数のみ返す
+		if (tempLayerEntries.length === 0) {
+			return geoDataEntries;
+		}
 		return [...geoDataEntries, ...tempLayerEntries];
-	});
+	};
 
 	let demEntries = $derived.by(() => {
 		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
@@ -71,23 +77,27 @@
 			return null;
 		}
 	});
-	let inputSearchWord = $state<string>(''); // 検索ワード
 
-	let drawGeojsonData = $state<DrawGeojsonData>({
+	// 検索ワード
+	let inputSearchWord = $state<string>('');
+
+	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
 		features: []
 	}); // 描画データ
 
 	// ストリートビューのデータ
 	let nextPointData = $state<NextPointData[] | null>(null);
+
+	type NodeConnections = Record<string, string[]>;
 	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
 
 	let streetViewPoint = $state<StreetViewPoint | null>(null);
-	let streetViewPointData = $state<StreetViewPointGeoJson>({
+	let streetViewPointData = $state.raw<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []
 	});
-	let streetViewLineData = $state<FeatureCollection>({
+	let streetViewLineData = $state.raw<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
@@ -109,11 +119,14 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
+
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
 	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
+		/** レイヤーメニューの表示 */
+
 		const params = getParams(location.search);
 
 		if (params) {
@@ -153,7 +166,7 @@
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
-			if (terrain3d === '1') {
+			if (terrain3d === '1' && checkPc()) {
 				mapStore.toggleTerrain(true);
 				isTerrain3d.set(true);
 			}
@@ -305,7 +318,7 @@
 				newLayerEntries.push(layer);
 			} else {
 				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
-				layer = layerEntriesData.find((entry) => entry.id === id);
+				layer = getLayerEntriesData().find((entry) => entry.id === id);
 
 				if (layer) {
 					// layerEntriesData から取得したオブジェクトを、初期状態として追加
@@ -327,7 +340,7 @@
 
 {#if isInitialized}
 	<div class="relative flex h-dvh w-full flex-col">
-		<HeaderMenu
+		<!-- <HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData
 			bind:inputSearchWord
@@ -335,7 +348,7 @@
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-		/>
+		/> -->
 		<div class="flex w-full flex-1">
 			<!-- マップのオフセット調整用 -->
 			{#if $showLayerMenu}
@@ -347,40 +360,65 @@
 
 			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
 
+			<!-- 左側余白 -->
+			{#if !$showLayerMenu}
+				<div class="bg-main p-2 max-lg:hidden"></div>
+			{/if}
+
+			<!-- スマホ用その他メニュー -->
+			<div
+				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
+					? 'opacity-500 pointer-events-auto'
+					: 'pointer-events-none opacity-0'}"
+			>
+				<OtherMenu />
+			</div>
+
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
+			<div class="flex w-full flex-1 flex-col overflow-hidden">
+				<!-- 上部余白 -->
+				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
+				<HeaderMenu
+					{resetlayerEntries}
+					bind:featureMenuData
+					bind:inputSearchWord
+					bind:results
+					{layerEntries}
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+				/>
 
-			<MapLibreMap
-				bind:maplibreMap={map}
-				bind:layerEntries
-				bind:tempLayerEntries
-				bind:showDataEntry
-				bind:featureMenuData
-				bind:showSelectionMarker
-				bind:selectionMarkerLngLat
-				bind:showAngleMarker
-				bind:angleMarkerLngLat
-				bind:cameraBearing
-				bind:dropFile
-				bind:showDialogType
-				bind:drawGeojsonData
-				bind:showZoneForm
-				bind:focusBbox
-				{selectedEpsgCode}
-				{demEntries}
-				{streetViewLineData}
-				{streetViewPointData}
-				{streetViewPoint}
-				{showMapCanvas}
-				{setPoint}
-			/>
+				<MapLibreMap
+					bind:maplibreMap={map}
+					bind:layerEntries
+					bind:tempLayerEntries
+					bind:showDataEntry
+					bind:featureMenuData
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+					bind:showAngleMarker
+					bind:angleMarkerLngLat
+					bind:cameraBearing
+					bind:dropFile
+					bind:showDialogType
+					bind:drawGeojsonData
+					bind:showZoneForm
+					bind:focusBbox
+					{selectedEpsgCode}
+					{demEntries}
+					{streetViewLineData}
+					{streetViewPointData}
+					{streetViewPoint}
+					{showMapCanvas}
+					{setPoint}
+				/>
+			</div>
+			<!-- 右側余白 -->
+			<div class="bg-main p-2 max-lg:hidden"></div>
 		</div>
 
-		<!-- フッター余白 出典表示 -->
-		<div
-			class="bg-main w-full shrink-0 p-1 pr-4 text-end text-xs font-light text-white/80 max-lg:hidden"
-		>
-			国土地理院, © OpenMapTiles, © OpenStreetMap contributors © U.S. Geological Survey
-		</div>
+		<!-- フッター -->
+		<Footer />
 
 		<SearchMenu
 			bind:featureMenuData
@@ -401,6 +439,12 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+
+		<!-- スマホ用地物情報 -->
+		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
+			<MobileFeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		</MobileFeatureMenuCard>
+
 		<PreviewMenu bind:showDataEntry />
 
 		{#if !showDataEntry && !showZoneForm}
@@ -421,7 +465,7 @@
 			/>
 		{/if}
 
-		<MobileFooter {showDataEntry} />
+		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
 {/if}
 <UploadDialog
@@ -439,7 +483,11 @@
 {/if}
 
 <Tooltip />
-<SideMenu />
+
+<!-- PC用その他メニュー -->
+<div class="max-lg:hidden">
+	<OtherMenu />
+</div>
 <NotificationMessage />
 
 <Processing />

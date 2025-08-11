@@ -1,4 +1,5 @@
 import { HYOGO_BBOX } from '$routes/map/data/location_bbox';
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -11,11 +12,10 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '兵庫県 樹種ポリゴン',
-		description: `兵庫県（令和２～３年度）及び国土交通省近畿地方整備局六甲砂防事務所（平成24～25年度）が実施した航空レーザ測量データを使用して作成した「樹種ポリゴン」です。（引用:G空間情報センター）`,
 		attribution: '兵庫県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_hyogo',
 		location: '兵庫県',
-		tags: ['森林', '林班図'],
+		tags: ['森林', '林相図'],
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_hyogo',
@@ -72,71 +72,7 @@ const entry: VectorEntry<TileMetaData> = {
 					}
 				},
 				{
-					type: 'match',
-					key: '解析樹種',
-					name: '樹種ごとの色分け',
-					mapping: {
-						categories: [
-							'スギ',
-							'ヒノキ類',
-							'マツ類',
-							'カラマツ',
-							'トドマツ',
-							'エゾマツ',
-							'その他Ｎ', // 針葉樹
-							'クヌギ',
-							'ナラ類',
-							'ブナ',
-							'その他L', // 広葉樹
-							'タケ',
-
-							'針広混交林',
-							'新植地',
-							'伐採跡地',
-							'その他'
-						],
-						values: [
-							'#33a02c',
-							'#b2df8a',
-							'#a6cee3',
-							'#1f78b4',
-							'#fb9a99',
-							'#e31a1c',
-							'#fdbf6f',
-							'#ffff99',
-							'#cab2d6',
-							'#6a3d9a',
-							'#ff7f00',
-							'#b15928',
-							'#33a02c', // 針広混交林
-							'#b2df8a', // 新植地
-							'#a6cee3', // 伐採跡地
-							'#1f78b4' // その他（グレー）
-						],
-						// パターン情報（新規追加）
-						patterns: [
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							'tmpoly-grid-light-200-black',
-							'tmpoly-grid-light-200-black',
-							'tmpoly-grid-light-200-black',
-							'tmpoly-grid-light-200-black'
-						]
-					},
-					noData: {
-						values: 'transparent',
-						pattern: null
-					}
+					...TREE_MATCH_COLOR_STYLE
 				},
 				{
 					type: 'step',

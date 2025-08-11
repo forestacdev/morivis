@@ -1,3 +1,4 @@
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
@@ -14,7 +15,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '地理院標準地図',
-		description: '国土地理院の電子国土基本図',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#std',
 		location: '全国',
@@ -22,7 +22,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: WEB_MERCATOR_JAPAN_BOUNDS
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

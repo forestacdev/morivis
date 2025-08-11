@@ -11,18 +11,30 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { fade, fly } from 'svelte/transition';
-	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
-	import { attributionMap } from '$routes/map/data/attribution';
+	import { getAttributionName } from '$routes/map/data/attribution';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null;
 		itemHeight: number;
 		index: number;
+		isLeftEdge: boolean;
+		isRightEdge: boolean;
+		isTopEdge: boolean;
 	}
 
-	let { dataEntry, showDataEntry = $bindable(), itemHeight = $bindable(), index }: Props = $props();
+	let {
+		dataEntry,
+		showDataEntry = $bindable(),
+		itemHeight = $bindable(),
+		index,
+		isLeftEdge,
+		isRightEdge,
+		isTopEdge
+	}: Props = $props();
 
 	let isHover = $state(false);
 	// Blob URLとクリーンアップ関数を管理するための状態
@@ -88,10 +100,34 @@
 	let prefCode = $derived.by(() => {
 		return getPrefectureCode(dataEntry.metaData.location);
 	});
+
+	showDataMenu.subscribe((value) => {
+		if (value) {
+			if (container) {
+				const h = container.clientHeight;
+				updateItemHeight(h);
+			}
+		}
+	});
+
+	const getTransformOrigin = () => {
+		// 角の場合
+		if (isTopEdge && isLeftEdge) return 'top left';
+		if (isTopEdge && isRightEdge) return 'top right';
+
+		// 辺の場合
+		if (isTopEdge) return 'top';
+		if (isLeftEdge) return 'left';
+		if (isRightEdge) return 'right';
+
+		// 中央の場合
+		return 'center';
+	};
 </script>
 
 <div
-	class="relative m-2 flex aspect-square shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	style="transform-origin: {getTransformOrigin()}"
 	bind:this={container}
 	onmouseover={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
@@ -132,7 +168,7 @@
 		}}
 		class="flex h-full w-full cursor-pointer flex-col"
 	>
-		<div class="group relative flex aspect-video w-full shrink-0 overflow-hidden">
+		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden">
 			{#await promise then imageResult}
 				{#if imageResult}
 					<img
@@ -150,75 +186,102 @@
 			{:catch}
 				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
-			<div class="c-bg pointer-events-none absolute grid h-full w-full place-items-center"></div>
-			<div
-				class="pointer-events-none absolute grid h-full w-full place-items-center bg-black/50 transition-opacity duration-150 {isAdded ||
-				isHover
-					? 'opacity-100'
-					: 'opacity-0'}"
-			>
-				{#if isAdded}
-					<span class="z-10 text-lg text-white">地図に追加済み</span>
-				{:else if isHover}
-					<span class="z-10 text-lg text-white">プレビュー</span>
-				{/if}
+			<div class="pointer-events-none absolute h-full w-full">
+				<div class="c-bg absolute h-full w-full"></div>
 			</div>
+			<!-- オーバーレイ -->
+			{#if !isHover}
+				<div transition:fade={{ duration: 150 }} class="pointer-events-none absolute h-full w-full">
+					<div class="c-gradient absolute h-full w-full"></div>
+				</div>
+			{/if}
+			{#if isHover && !isAdded}
+				<div
+					transition:fade={{ duration: 150 }}
+					class="pointer-events-none absolute grid h-full w-full place-items-center"
+				>
+					<div
+						class="flex items-center justify-center gap-1 rounded-full bg-black/80 p-2 px-4 text-lg text-white"
+					>
+						<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
+					</div>
+				</div>
+			{/if}
+			{#if isHover}
+				<!-- タグ -->
+				<div
+					transition:fade={{ duration: 150 }}
+					class="absolute bottom-2 flex items-center gap-1 pl-2 text-gray-300"
+				>
+					{#each dataEntry.metaData.tags as tag}
+						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+					{/each}
+				</div>
+			{/if}
+			{#if isAdded}
+				<div
+					transition:fade={{ duration: 150 }}
+					class="pointer-events-none absolute grid h-full w-full place-items-center"
+				>
+					<div
+						class=" flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
+					>
+						<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
+					</div>
+				</div>
+			{/if}
 
-			<!-- 出典 -->
-			<span class="absolute bottom-1 right-1 rounded-lg bg-black/40 p-1 px-2 text-xs text-white">
-				{attributionMap.get(dataEntry.metaData.attribution)?.name}</span
-			>
 			{#if layertype}
 				<div
-					class="bounded-full absolute left-2 top-2 aspect-square rounded-full bg-black/50 p-2 text-base"
+					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:left-1 max-lg:top-1 lg:left-2 lg:top-2"
 				>
-					<Icon icon={getLayerIcon(layertype)} class="h-6 w-6" />
+					<Icon icon={getLayerIcon(layertype)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</div>
 			{/if}
 		</div>
 
-		<div class="flex w-full flex-col gap-2 p-2">
+		<!-- 詳細情報 -->
+		<div
+			class="relative flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2"
+		>
 			<!-- タイトル -->
-			<div class="text-left text-base text-lg">{dataEntry.metaData.name}</div>
-			<!-- タグ -->
-			<div class="flex items-center gap-1 text-gray-300">
-				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-				{/each}
+			<div class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2">
+				<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"
+					>{dataEntry.metaData.name}</span
+				>
+				<!-- 出典 -->
+				<span class="text-left text-xs text-gray-400">
+					{getAttributionName(dataEntry.metaData.attribution)}</span
+				>
+				<div
+					class="absolute bottom-0 right-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
+				>
+					{#if dataEntry.metaData.location === '森林文化アカデミー'}
+						<div class="grid place-items-center [&_path]:fill-white">
+							<FacIcon width={'60px'} />
+						</div>
+					{/if}
+					{#if prefCode}
+						<div class="[&_path]:fill-base grid aspect-square place-items-center">
+							<PrefectureIcon width={'80px'} code={prefCode} />
+						</div>
+						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+					{/if}
+					{#if dataEntry.metaData.location === '全国'}
+						<div class="grid place-items-center">
+							<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+					{#if dataEntry.metaData.location === '世界'}
+						<div class="grid place-items-center">
+							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
-		{#if prefCode}
-			<div class="absolute bottom-0 right-0 grid place-items-center">
-				<div class="[&_path]:fill-sub grid aspect-square h-[90px] place-items-center p-1">
-					<PrefectureIcon width={'60px'} code={prefCode} />
-				</div>
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
-			</div>
-		{/if}
-		{#if dataEntry.metaData.location === '森林文化アカデミー'}
-			<div class="absolute bottom-2 right-2 grid place-items-center [&_path]:fill-white">
-				<FacLogo width={'150px'} />
-			</div>
-			<!-- <div class="absolute bottom-0 right-0 grid place-items-center">
-			<img
-				class="h-[50px] w-[50px] rounded-full object-cover"
-				src="./mapicon.png"
-				alt={'森林文化アカデミー'}
-			/>
-		</div> -->
-		{/if}
-		{#if dataEntry.metaData.location === '全国'}
-			<div class="absolute bottom-2 right-2 grid place-items-center">
-				<Icon icon="emojione-monotone:map-of-japan" class="text-sub h-18 w-18" />
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
-			</div>
-		{/if}
-		{#if dataEntry.metaData.location === '世界'}
-			<div class="absolute bottom-0 right-2 grid place-items-center">
-				<Icon icon="fxemoji:worldmap" class="[&_path]:fill-sub h-20 w-20" />
-				<span class="absolute text-base text-xs">{dataEntry.metaData.location}</span>
-			</div>
-		{/if}
 	</button>
 </div>
 
@@ -228,7 +291,16 @@
 			circle,
 			rgba(255, 255, 255, 0) 0%,
 			rgba(255, 255, 255, 0) 60%,
-			rgba(0, 0, 0, 0.5) 100%
+			rgba(0, 0, 0, 0.4) 100%
+		);
+	}
+
+	.c-gradient {
+		background: linear-gradient(
+			0deg,
+			rgb(0, 0, 0) 0%,
+
+			rgba(233, 233, 233, 0) 100%
 		);
 	}
 </style>

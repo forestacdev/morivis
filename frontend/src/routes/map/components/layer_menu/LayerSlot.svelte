@@ -11,7 +11,9 @@
 	import { onMount } from 'svelte';
 	import { layerAttributions } from '$routes/stores/attributions';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
+	import { getAttributionName } from '$routes/map/data/attribution';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		index: number;
@@ -35,6 +37,7 @@
 		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
 	}: Props = $props();
 	let showLegend = $state(false);
+	let showMobileLegend = $state(false);
 	let isDragging = $state(false);
 	let draggingEnabled = $state(true);
 
@@ -98,6 +101,9 @@
 	const focusLayer = () => {
 		if (!layerEntry) return;
 		mapStore.focusLayer(layerEntry);
+		if (checkMobile()) {
+			isActiveMobileMenu.set('map');
+		}
 	};
 
 	const editLayer = () => {
@@ -189,17 +195,18 @@
 		}
 	};
 
-	$effect(() => {
-		if (isLayerInRange) {
-			const attributionItem = {
-				id: layerEntry.id,
-				key: layerEntry.metaData.attribution
-			};
-			layerAttributions.add(attributionItem);
-		} else {
-			layerAttributions.remove(layerEntry.id);
-		}
-	});
+	// TODO: 使用してない
+	// $effect(() => {
+	// 	if (isLayerInRange) {
+	// 		const attributionItem = {
+	// 			id: layerEntry.id,
+	// 			key: layerEntry.metaData.attribution
+	// 		};
+	// 		layerAttributions.add(attributionItem);
+	// 	} else {
+	// 		layerAttributions.remove(layerEntry.id);
+	// 	}
+	// });
 
 	onMount(() => {
 		const state = mapStore.getState();
@@ -213,7 +220,7 @@
 </script>
 
 <div
-	class="relative flex h-[75px] w-full items-center
+	class="relative flex h-[80px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
@@ -247,46 +254,48 @@
 			<!-- <div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div> -->
 		</div>
 	{/if}
+
 	<div
 		id={layerEntry.id}
-		class="c-dragging-style translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] duration-200
+		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit
-			? 'rounded-lg bg-black/50'
-			: $isStyleEdit
-				? 'bg-main rounded-lg'
-				: 'rounded-full bg-black'} {$showDataMenu
+			? 'bg-black opacity-70'
+			: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'c-fog' : ''} {$showDataMenu ||
+		$isStyleEdit
 			? 'w-[66px]'
-			: $isStyleEdit
-				? 'w-[400px]'
-				: 'w-[330px]'}"
-		onmouseenter={() => (isHovered = true)}
-		onmouseleave={() => (isHovered = false)}
+			: 'max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
+			? 'translate-x-[320px]'
+			: 'bg-black drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
+		onmouseenter={() => (checkPc() ? (isHovered = true) : null)}
+		onmouseleave={() => (checkPc() ? (isHovered = false) : null)}
 		role="button"
 		tabindex="0"
 	>
-		<div class="flex w-full items-center justify-start gap-2 bg-transparent">
+		<div class="flex w-full items-center justify-start gap-1 bg-transparent">
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
 				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
-					? 'translate-x-[320px]'
-					: ''} {$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'opacity-50' : 'opacity-100'}"
+					? ''
+					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? '' : ''}"
 			>
 				<LayerIcon {layerEntry} />
 			</button>
 
-			<div class="relative flex w-full grow flex-col items-start gap-[2px] overflow-hidden">
+			<!-- レイヤー名 -->
+			<div class="relative flex h-full w-full grow flex-col items-start overflow-hidden">
 				{#if !$isStyleEdit}
 					<!-- レイヤー名 -->
-					<div class="flex flex-col">
-						<span class="truncate text-base {showLegend ? 'text-main' : 'text-base'}"
-							>{layerEntry.metaData.name}</span
-						>
-						<div class="flex items-center">
-							<Icon icon="lets-icons:info-alt-fill" class="h-5 w-5 text-gray-500" />
+					<div class="flex h-full w-full flex-col gap-[2px]">
+						<span class="truncate pl-1 pt-2 text-base">{layerEntry.metaData.name}</span>
+						<div class="mt-auto flex pl-1">
+							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" /> -->
 							<span class="truncate text-xs text-gray-400"
-								>{layerEntry.metaData.attribution ?? '---'}</span
+								>{getAttributionName(layerEntry.metaData.attribution) ?? '---'}</span
 							>
+							<!-- <span class="truncate text-xs text-gray-400"
+								>{layerEntry.metaData.location ?? '---'}</span
+							> -->
 						</div>
 					</div>
 				{/if}
@@ -295,7 +304,46 @@
 					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="absolute flex h-full w-full gap-4 bg-black text-gray-100"
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
+					>
+						<button
+							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							class="cursor-pointer"
+						>
+							<Icon
+								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
+								class="h-8 w-8"
+							/>
+						</button>
+
+						<button onclick={removeLayer} class="cursor-pointer">
+							<Icon icon="bx:trash" class="h-8 w-8" />
+						</button>
+
+						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+							<button class="cursor-pointer" onclick={focusLayer}>
+								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+							</button>
+						{/if}
+
+						<!-- <button onclick={copyLayer}>
+							<Icon icon="lucide:copy" />
+						</button> -->
+						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
+						</button>
+						<!-- <button onclick={infoLayer} class="cursor-pointer">
+							<Icon icon="akar-icons:info" class="h-8 w-8" />
+						</button> -->
+					</div>
+				{/if}
+
+				<!-- TODO:モバイル -->
+				{#if showMobileLegend && $selectedLayerId === layerEntry.id && checkMobile()}
+					<!-- 編集ボタン モバイル -->
+					<div
+						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
@@ -329,19 +377,32 @@
 					</div>
 				{/if}
 			</div>
+
+			{#if checkMobile()}
+				<button
+					onclick={() => {
+						$selectedLayerId = layerEntry.id;
+						showMobileLegend = !showMobileLegend;
+					}}
+					class=" grid place-items-center"
+				>
+					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
+				</button>
+			{/if}
 		</div>
 		<!-- ステータス -->
-		{#if !$showDataMenu}
+		{#if !$showDataMenu && !$isStyleEdit}
 			<div
-				class="pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
+				class="pointer-events-none absolute bottom-[4px] left-[40px] z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-black text-sm transition-colors duration-300 {!layerEntry
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
-						? 'bg-green-500'
-						: 'bg-red-500'}"
+						? 'bg-accent'
+						: 'bg-red-400'}"
 			></div>
 		{/if}
-		<!-- ステータス -->
+
+		<!-- タイプ -->
 		{#if $showDataMenu}
 			<div
 				class="bg-base pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
@@ -349,12 +410,35 @@
 				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
 			</div>
 		{/if}
+
+		<!-- 選択中 -->
+		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+			<div
+				class="c-ripple-anime absolute top-0 -z-10 aspect-square shrink-0 -translate-y-[3px] rounded-r-full p-9 shadow-md"
+			></div>
+		{/if} -->
 	</div>
 </div>
 
 <style>
-	.c-fog {
+	.c-ripple-anime {
+		/* animation: ripple 0.7s linear infinite;
+		transform-origin: center; */
 		background: rgb(233, 233, 233);
-		background: linear-gradient(90deg, rgb(0, 93, 3) 10%, rgba(233, 233, 233, 0) 100%);
+		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	}
+
+	.c-fog {
+		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	}
+
+	@keyframes ripple {
+		0% {
+			scale: 0.8;
+		}
+		100% {
+			scale: 1.5;
+			opacity: 0;
+		}
 	}
 </style>

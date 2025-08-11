@@ -1,3 +1,4 @@
+import { get } from 'svelte/store';
 export type Attribution = {
 	name: string;
 	url: string;
@@ -123,3 +124,24 @@ export type AttributionKey = keyof typeof attributionData | 'カスタムデー�
 export const attributionMap: Map<string, Attribution> = new Map(
 	Object.entries(attributionData).map(([key, value]) => [key, value])
 );
+
+export const getAttribution = (key: AttributionKey): Attribution | undefined => {
+	if (key === 'カスタムデータ') {
+		return { name: 'カスタムデータ', url: '' };
+	}
+	return attributionMap.get(key);
+};
+
+export const getAttributionName = (key: AttributionKey): string | undefined => {
+	if (key === 'カスタムデータ') {
+		return 'カスタムデータ';
+	}
+	return attributionMap.get(key)?.name;
+};
+
+export const getAttributionUrl = (key: AttributionKey): string | undefined => {
+	if (key === 'カスタムデータ') {
+		return '';
+	}
+	return attributionMap.get(key)?.url;
+};

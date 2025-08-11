@@ -286,12 +286,12 @@ export const propData: PropData = {
 		url: 'https://www.forest.ac.jp/facilities/self/shiori-jiriki2024/'
 	},
 	// other_point
-	sinrinken: {
-		// 岐阜県森林研究所
-		image: `${FEATURE_IMAGE_BASE_PATH}/no_image.webp`,
-		description: '森林・林業に関する公設研究機関です。',
-		url: 'https://www.forest.rd.pref.gifu.lg.jp/'
-	},
+	// sinrinken: {
+	// 	// 岐阜県森林研究所
+	// 	image: `${FEATURE_IMAGE_BASE_PATH}/no_image.webp`,
+	// 	description: '森林・林業に関する公設研究機関です。',
+	// 	url: 'https://www.forest.rd.pref.gifu.lg.jp/'
+	// },
 	gate_ensyurin: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/gate_ensyurin.webp`,
 		description: '',
@@ -386,10 +386,10 @@ export const propData: PropData = {
 		description:
 			'演習林内には、「山の神」と呼ばれる神聖な場所が存在します。この「山の神」は、巨大な磐座（いわくら）の直下に祀られており、周囲には樹齢100年を超えるスギやヒノキの人工林が広がっています。毎年4月、アカデミーでは「入山式」と称する伝統行事が行われます。この式典では、学長をはじめ教職員や学生、隣接する森林研究所の職員が参加し、「山の神」に対して実習や研修の安全を祈願します。式典では、祝詞の奏上や御玉串の奉納が行われ、最後にはお供え物を参加者全員でいただく「直会（なおらい）」が執り行われます。',
 		url: 'https://www.forest.ac.jp/academy-archives/jimu0423/'
-	},
-	kozyo_kanritou: {
-		image: null,
-		description: '',
-		url: 'https://mori-gakko.net/gifu/'
 	}
+	// kozyo_kanritou: {
+	// 	image: null,
+	// 	description: '',
+	// 	url: 'https://mori-gakko.net/gifu/'
+	// }
 };

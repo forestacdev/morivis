@@ -4,6 +4,7 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
+	import Icon from '@iconify/svelte';
 
 	import { onMount } from 'svelte';
 
@@ -16,8 +17,9 @@
 
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked, isMobile } from '$routes/stores/ui';
+	import { isBlocked } from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 
 	let { children } = $props();
 
@@ -90,20 +92,24 @@
 	const initialized = () => {
 		isInitialized = true;
 	};
+
+	const deviceType = checkMobile() ? 'mobile' : 'pc';
+
+	let isMobileWidth = $state<boolean>(checkMobile());
+
+	window.addEventListener('resize', () => {
+		isMobileWidth = checkMobileWidth();
+	});
+
+	$effect(() => {
+		if (isMobileWidth) {
+		} else {
+		}
+	});
 </script>
 
 <!-- Googleアナリティクスの設定 -->
 <GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
-
-<svelte:window
-	onresize={() => {
-		if (window.innerWidth <= MOBILE_WIDTH) {
-			isMobile.set(true);
-		} else {
-			isMobile.set(false);
-		}
-	}}
-/>
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->
@@ -111,7 +117,12 @@
 </svelte:head>
 
 <div class="absolute h-full w-full">
-	{#if isInitialized}
+	{#if deviceType === 'mobile' && !isMobileWidth}
+		<div class="bg-main flex h-full w-full items-center justify-center text-base">
+			<p class="text-2xl">端末を縦向きにしてください。</p>
+			<Icon icon="circum:mobile-3" class="h-16 w-16" />
+		</div>
+	{:else}
 		{@render children()}
 	{/if}
 </div>

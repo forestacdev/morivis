@@ -13,8 +13,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://gbank.gsj.jp/seamless/v2/api/1.3.1/tiles/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '20万分の1日本シームレス地質図V2',
-		description: '',
+		name: '全国地質図',
+		sourceDataName: '20万分の1日本シームレス地質図V2',
 		downloadUrl: 'https://gbank.gsj.jp/seamless/v2/api/1.3.1/#tiles',
 		attribution: '産総研地質調査総合センター',
 		tags: ['地質図'],
@@ -23,11 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 13,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: {
-			x: 1827,
-			y: 777,
-			z: 11
-		}
+		xyzImageTile: { x: 225, y: 100, z: 8 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

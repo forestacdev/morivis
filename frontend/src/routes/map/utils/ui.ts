@@ -7,7 +7,7 @@ import type { ExpressionType } from '$routes/map/data/types/vector/style';
  * @description PC画面と判定する関数
  */
 export const checkPc = () => {
-	if (window.innerWidth > MOBILE_WIDTH) {
+	if (window.matchMedia && window.matchMedia(`(min-device-width: ${MOBILE_WIDTH + 1}px)`).matches) {
 		return true;
 	}
 	return false;
@@ -19,13 +19,26 @@ export const checkPc = () => {
  * @description スマホ画面と判定する関数
  */
 export const checkMobile = () => {
+	if (window.matchMedia && window.matchMedia(`(max-device-width: ${MOBILE_WIDTH}px)`).matches) {
+		return true;
+	} else {
+		return false;
+	}
+};
+
+/**
+ * pcブラウザでのスマホ画面サイズかどうかを判定する
+ * @returns boolean
+ * @description スマホ画面と判定する関数
+ */
+export const checkMobileWidth = () => {
 	if (window.innerWidth <= MOBILE_WIDTH) {
 		return true;
 	}
 	return false;
 };
 
-export type MobileActiveMenu = 'map' | 'layer' | 'data';
+export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';
 
 type MappingType = 'single' | 'match' | 'linear' | 'step';
 

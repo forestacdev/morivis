@@ -82,7 +82,7 @@
 	<div
 		in:fly={{ duration: 300, opacity: 0, x: -100 }}
 		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
-		class="bg-main w-side-menu absolute top-0 z-10 flex h-full flex-col gap-2 overflow-hidden pl-2"
+		class="bg-main lg:w-side-menu absolute z-10 flex flex-col gap-2 overflow-hidden pl-2 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full max-lg:pt-2 lg:top-0 lg:h-full"
 	>
 		{#key layerEntry.id}
 			<div
@@ -90,21 +90,21 @@
 				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
-				<div class="flex h-[80px] items-center gap-2 text-base">
-					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7" />
-					<span class="select-none text-lg max-lg:hidden">データのカスタマイズ</span>
+				<div class="flex h-[80px] items-center gap-2 pr-2">
+					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
+					<span class="select-none text-base text-lg">カスタマイズ</span>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);
 							selectedLayerId.set('');
 						}}
-						class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
+						class="bg-base ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
-						<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
 					</button>
 				</div>
 				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
-				<div class="flex items-center gap-2 border-t text-base"></div>
+
 				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
 					<div class="flex w-full justify-center gap-2">
 						<!-- 表示 -->
@@ -117,12 +117,12 @@
 							}}
 						>
 							<div
-								class="hover:bg-accent border-base grid aspect-square w-full cursor-pointer place-items-center rounded-full border-2 object-cover text-left {!layerEntry
+								class="hover:bg-accent border-base/80 grid aspect-square w-full cursor-pointer place-items-center rounded-full border-2 object-cover text-left {!layerEntry
 									.style.visible
 									? 'bg-accent'
 									: ''}"
 							>
-								<Icon icon={'akar-icons:eye-slashed'} class="h-8 w-8 text-base" />
+								<Icon icon={'akar-icons:eye-slashed'} class="text-base/90 h-8 w-8" />
 							</div>
 
 							<span
@@ -148,7 +148,7 @@
 										class="rounded-full border-2 {layerEntry.style.opacity === item.value &&
 										layerEntry.style.visible
 											? 'border-accent'
-											: 'border-base'}"
+											: 'border-base/80'}"
 									>
 										<img
 											{src}

@@ -14,7 +14,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '長野県 CS立体図',
-		description: `「CS立体図」は、長野県林業総合センターが考案した微地形表現図です。長野県林務部が平成25年～26年に実施した航空レーザ測量データによる0.5mメッシュDEMを使用して作成しました。（引用：G空間情報センター）`,
 		attribution: '長野県林業総合センター',
 		location: '長野県',
 		minZoom: 8,

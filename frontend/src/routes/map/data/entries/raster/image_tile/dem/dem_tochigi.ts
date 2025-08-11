@@ -10,10 +10,9 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://tiles.gsj.jp/tiles/elev/tochigi/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: '栃木県 数値標高モデル',
-		description: '',
+		name: '栃木県 数値標高データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/dem05_tochigi',
-		attribution: '産総研シームレス標高タイル',
+		attribution: '栃木県森林資源データ',
 		location: '栃木県',
 		tags: ['DEM', '地形', '0.5m解像度'],
 		minZoom: 2,
@@ -33,7 +32,15 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		...DEFAULT_RASTER_DEM_STYLE,
 		visualization: {
 			...DEFAULT_RASTER_DEM_STYLE.visualization,
-			demType: 'gsi'
+			demType: 'gsi',
+			uniformsData: {
+				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
+				relief: {
+					max: 2600,
+					min: 0,
+					colorMap: 'jet'
+				}
+			}
 		}
 	}
 };

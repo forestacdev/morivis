@@ -1,3 +1,4 @@
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -10,8 +11,6 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '高知県 森林資源量集計メッシュ',
-		description: `平成30年度に林野庁が実施した航空レーザ測量データを基に、高知県が作成した「森林資源量集計メッシュ」です。
-「森林資源量集計メッシュ」は、森林GISフォーラムが運用する”森林資源データ解析・管理標準仕様書ver.2.0”に則し作成したデータで、20mメッシュ単位で次に記載する森林資源量を集計しています。（G空間情報センター引用）`,
 		attribution: '高知県森林資源データ',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_kochi',
 		location: '高知県',
@@ -67,7 +66,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.7,
 		colors: {
-			key: '単色',
+			key: '解析樹種',
 			show: true,
 			expressions: [
 				{
@@ -77,6 +76,9 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#349f1c'
 					}
+				},
+				{
+					...TREE_MATCH_COLOR_STYLE
 				},
 				{
 					type: 'step',

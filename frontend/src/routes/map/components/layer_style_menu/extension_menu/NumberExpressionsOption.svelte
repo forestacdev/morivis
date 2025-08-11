@@ -30,7 +30,7 @@
 	{#if setExpression.type === 'match'}
 		{#each setExpression.mapping.categories as _, index}
 			<RangeSlider
-				label="大きさ"
+				label={setExpression.mapping.categories[index] as string}
 				bind:value={setExpression.mapping.values[index]}
 				min={2}
 				max={10}

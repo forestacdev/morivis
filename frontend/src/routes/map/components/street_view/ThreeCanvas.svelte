@@ -20,12 +20,15 @@
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	const PANORAMA_IMAGE_URL =
 		'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
 
-	const IN_CAMERA_FOV = 75;
+	const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 	const OUT_CAMERA_FOV = 150;
+	const MIN_CAMERA_FOV = 20; // 最小FOV
+	const MAX_CAMERA_FOV = 100; // 最大FOV
 	const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
 	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
@@ -64,6 +67,7 @@
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
 	let controlDiv = $state<HTMLDivElement | null>(null);
+	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
 	// Uniforms の型定義を修正
 	interface Uniforms {
@@ -221,7 +225,7 @@
 		orbitControls.dampingFactor = 0.1;
 
 		// マウスドラッグの反転
-		orbitControls.rotateSpeed *= -0.3;
+		orbitControls.rotateSpeed *= checkPc() ? -0.3 : -0.6;
 		orbitControls.enableDamping = true;
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;
@@ -267,15 +271,62 @@
 
 		// マウスホイールでFOVを変更するイベントリスナー
 		canvas.addEventListener('wheel', (event) => {
-			const minFov = 20; // 最小FOV
-			const maxFov = 100; // 最大FOV
 			const zoomSpeed = 0.51; // ズーム速度
 
 			const newFOV = camera.fov + event.deltaY * 0.05 * zoomSpeed;
 
 			// マウススクロールの方向に応じてFOVを増減
 
-			fov.set(Math.max(minFov, Math.min(maxFov, newFOV)));
+			fov.set(Math.max(MIN_CAMERA_FOV, Math.min(MAX_CAMERA_FOV, newFOV)));
+		});
+
+		// スマホのピンチ操作に対応するためのタッチイベント
+		let lastTouchDistance = 0;
+
+		canvas.addEventListener('touchstart', (event) => {
+			if (event.touches.length === 2) {
+				// 2本指の距離を計算
+				const touch1 = event.touches[0];
+				const touch2 = event.touches[1];
+				lastTouchDistance = Math.sqrt(
+					Math.pow(touch2.clientX - touch1.clientX, 2) +
+						Math.pow(touch2.clientY - touch1.clientY, 2)
+				);
+			}
+		});
+
+		canvas.addEventListener(
+			'touchmove',
+			(event) => {
+				if (event.touches.length === 2) {
+					event.preventDefault(); // デフォルトのピンチズームを無効化
+
+					const zoomSpeed = 15; // ズーム速度
+
+					// 現在の2本指の距離を計算
+					const touch1 = event.touches[0];
+					const touch2 = event.touches[1];
+					const currentDistance = Math.sqrt(
+						Math.pow(touch2.clientX - touch1.clientX, 2) +
+							Math.pow(touch2.clientY - touch1.clientY, 2)
+					);
+
+					// 距離の変化からズーム方向を決定
+					const deltaDistance = currentDistance - lastTouchDistance;
+					const newFOV = camera.fov - deltaDistance * 0.1 * zoomSpeed;
+
+					fov.set(Math.max(MIN_CAMERA_FOV, Math.min(MAX_CAMERA_FOV, newFOV)));
+
+					lastTouchDistance = currentDistance;
+				}
+			},
+			{ passive: false }
+		);
+
+		// タッチ終了時の処理
+		canvas.addEventListener('touchend', (event) => {
+			lastTouchDistance = 0;
+			orbitControls.enablePan = true;
 		});
 
 		// アニメーション
@@ -396,18 +447,51 @@
 			setStreetViewParams(currentSceneId);
 		}
 	});
+
+	// TODO: 画面リサイズ時にキャンバスもリサイズ
+	const onCanvasResize = (value: boolean) => {
+		if (!renderer || !canvas) return;
+
+		console.log('onCanvasResize called');
+
+		// キャンバスの実際のサイズを取得
+		const width = canvas.clientWidth;
+		const height = value
+			? window.innerHeight // モバイルフルスクリーン時はヘッダー分を引く
+			: window.innerHeight / 2;
+
+		// レンダラーのサイズを調整する
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.setSize(width, height);
+
+		// カメラのアスペクト比を正す
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+	};
+
+	$effect(() => {
+		if (mobileFullscreen !== undefined) {
+			// 少し遅延を入れてからリサイズを実行（CSSトランジションの完了を待つ）
+			setTimeout(() => {
+				onCanvasResize(mobileFullscreen);
+			}, 500);
+		}
+	});
 </script>
 
 <div
-	class="absolute z-10 flex overflow-hidden duration-500 {showThreeCanvas
-		? 'bottom-0 right-0 h-full w-full opacity-100'
-		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'}"
+	class="absolute z-10 flex overflow-hidden bg-black duration-500 {showThreeCanvas
+		? 'right-0 top-0 w-full opacity-100 max-lg:h-1/2 lg:h-full'
+		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'} {showThreeCanvas &&
+	mobileFullscreen
+		? 'max-lg:h-full'
+		: ''}"
 >
 	<!-- 角度調整コントロール -->
 	{#if $isDebugMode}
 		<DebugControl bind:angleX bind:angleY bind:angleZ bind:showWireframe {streetViewPoint} />
 	{/if}
-	<canvas class="h-full w-full" bind:this={canvas}></canvas>
+	<canvas class="h-full w-full" bind:this={canvas}> </canvas>
 	{#if isLoading}
 		<div class="css-loading">
 			<div class="css-spinner"></div>
@@ -415,26 +499,40 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 px-4 text-white"
+				class="lg:bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
 			>
-				<button class="cursor-pointer rounded-md" onclick={() => ($isStreetView = false)}
-					><Icon icon="ep:back" class="h-7 w-7" />
+				<button
+					class="lg:bg-base cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
+					onclick={() => ($isStreetView = false)}
+					><Icon icon="ep:back" class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</button>
 				<div class="flex flex-col gap-2">
-					<span class="text-lg">{streetViewPoint ? streetViewPoint.properties['name'] : ''}</span>
+					<span class="text-lg max-lg:hidden"
+						>{streetViewPoint ? streetViewPoint.properties['name'] : ''}</span
+					>
 					<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
 				</div>
 			</div>
 		{/if}
 
+		<button
+			class="absolute bottom-3 right-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
+			onclick={() => {
+				mobileFullscreen = !mobileFullscreen;
+				onResize();
+			}}
+			><Icon
+				icon={mobileFullscreen ? 'mingcute:fullscreen-exit-2-line' : 'mingcute:fullscreen-2-line'}
+				class="h-7 w-7"
+			/>
+		</button>
+
 		<!-- コントロール -->
 		<div
-			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 {showThreeCanvas
-				? ' h-[400px]'
-				: ' h-full'}"
+			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 max-lg:h-[200px] lg:h-[400px]"
 		>
-			<div class="css-control-warp">
-				<div bind:this={controlDiv} class="css-control">
+			<div class="rotate-x-[60deg]">
+				<div bind:this={controlDiv} class="pointer-events-none origin-center">
 					{#if nextPointData}
 						{#each nextPointData as point, index}
 							{#if point.featureData.properties.id !== currentSceneId}
@@ -443,15 +541,11 @@
 										setPoint(point.featureData);
 									}}
 									class="css-arrow"
-									style="--angle: {point.bearing}deg; --distance: {showThreeCanvas
-										? '175'
-										: '64'}px;"
+									style="--angle: {point.bearing}deg; --distance: {checkPc() ? '175' : '120'}px;"
 								>
 									<Icon
 										icon="ep:arrow-up-bold"
-										width={showThreeCanvas ? 128 : 64}
-										height={showThreeCanvas ? 128 : 64}
-										class=""
+										class="max-lg:h-[70px] max-lg:w-[70px] lg:h-[128px] lg:w-[128px]"
 										style="transform: rotate({point.bearing}deg);"
 									/>
 								</button>
@@ -475,17 +569,6 @@
 		transform-style: preserve-3d;
 		perspective: 1000px;
 		/* background-color: #000000; */
-	}
-
-	.css-control-warp {
-		transform: rotateX(60deg);
-	}
-
-	.css-control {
-		transform-origin: center;
-		height: 400px;
-		width: 400px;
-		pointer-events: none;
 	}
 
 	.css-arrow {

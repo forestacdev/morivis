@@ -11,7 +11,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		url: `${ENTRY_PMTILES_RASTER_PATH}/ensyurin_curvature.pmtiles`
 	},
 	metaData: {
-		name: '演習林 曲率図',
+		name: '演習林 数値曲率データ',
 		description: '森林文化アカデミー演習林の地形の曲率を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

@@ -11,7 +11,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		url: `${ENTRY_PMTILES_RASTER_PATH}/ensyurin_dem.pmtiles`
 	},
 	metaData: {
-		name: '演習林 標高図',
+		name: '演習林 数値標高データ',
 		description: '森林文化アカデミー演習林の地形の標高値を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

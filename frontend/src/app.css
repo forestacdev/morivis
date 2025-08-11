@@ -31,7 +31,22 @@
 	::file-selector-button {
 		border-color: var(--color-gray-200, currentcolor);
 	}
+
+	@media (width < 768px) {
+		/* スワイプリロード無効 */
+		body {
+			overscroll-behavior-y: none;
+			background-color: var(--color-main);
+		}
+
+		/* タップハイライトの色を透明にする */
+		* {
+			-webkit-tap-highlight-color: transparent;
+			user-select: none;
+		}
+	}
 }
+
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
 	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-[#348163] bg-[#348163] p-2 text-base transition-colors duration-150 hover:text-black;
@@ -158,12 +173,4 @@
 	img {
 		@apply inline-block;
 	}
-}
-
-.lil-gui {
-	--name-width: 10px;
-	--input-padding: 4px 8px;
-	--slider-input-width: 4%;
-	--color-input-width: 4%;
-	/* max-height: calc(100vh - 50px); */
 }

@@ -14,16 +14,17 @@
 	let rangeElement = $state<HTMLDivElement | null>(null);
 </script>
 
-<div class="flex flex-col gap-2 pb-4 text-base">
-	<div class="flex items-center gap-1">
+<div class="flex flex-col gap-4 pb-4 text-base">
+	<div class="flex w-full items-center gap-1">
 		{#if icon}
 			<Icon {icon} width={20} />
 		{/if}
-		<span class="select-none"> {label ? `${label}: ` : ''}{value.toFixed(2)}</span>
+		<div class="flex w-full select-none justify-between pr-2">
+			<span>{label ? `${label}: ` : ''}</span><span>{value.toFixed(2)}</span>
+		</div>
 	</div>
 
 	<input class="css-range" type="range" bind:value {min} {max} {step} />
-	<!-- <div bind:this={rangeElement}>{1900000}</div> -->
 </div>
 
 <style>
@@ -48,9 +49,9 @@
 	.css-range::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
-		height: 18px;
-		width: 18px;
-		margin-top: -5px; /* 位置の調整が必要 */
+		height: 25px;
+		width: 25px;
+		margin-top: -9px; /* 位置の調整が必要 */
 		background-color: #ffffff;
 		border-radius: 50%;
 		border: 3px solid rgb(0, 0, 0);
@@ -58,6 +59,6 @@
 	}
 	.css-range::-webkit-slider-thumb:hover {
 		background-color: #ffffff;
-		border: 3px solid #47d400;
+		border: 3px solid var(--color-accent);
 	}
 </style>

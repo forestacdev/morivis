@@ -9,7 +9,7 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 		url: `${ENTRY_TIFF_DATA_PATH}/ensyurin_dem.tif`
 	},
 	metaData: {
-		name: '演習林 標高図 TIFF',
+		name: '演習林標高TIFF',
 		description: '',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',

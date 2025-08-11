@@ -293,7 +293,6 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 				if (!response.ok) {
 					throw new Error(`Tile URL fetch failed: ${response.status} - ${checkUrl}`);
 				}
-				console.log('Tile URL check successful:', checkUrl);
 			} else {
 				throw new Error('Invalid tile URL');
 			}

@@ -33,7 +33,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { isStreetView } from '$routes/stores';
+	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
 
@@ -51,6 +51,8 @@
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
+	import { checkPc } from '../utils/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -209,11 +211,13 @@
 						paint: {
 							'text-color': '#000000',
 							'text-halo-color': '#FFFFFF',
+
 							'text-halo-width': 1,
 							'text-opacity': 1
 						},
 						layout: {
 							'text-field': ['to-string', ['get', 'index']],
+							'text-font': ['Noto Sans JP Regular'],
 							'text-max-width': 12,
 							'text-size': 24,
 							'text-justify': 'auto'
@@ -234,7 +238,7 @@
 			glyphs: MAP_FONT_DATA_PATH,
 			// glyphs: MAP_FONT_DATA_PATH,
 			projection: {
-				type: 'globe'
+				type: checkPc() ? 'globe' : 'mercator'
 			},
 			sources: {
 				...terrainSources,
@@ -499,7 +503,7 @@
 	ondragleave={dragleave}
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
-		? 'absolute bottom-2 left-2 z-20 h-[200px] w-[300px] transform rounded-lg border-4 border-white'
+		? 'absolute transform border-white max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg lg:border-4'
 		: 'relative h-full w-full grow '}"
 >
 	<div
@@ -511,6 +515,14 @@
 				? ''
 				: 'opacity-100'}"
 	>
+		<!--スタイル編集時のメニュー -->
+		<!-- {#if $isStyleEdit}
+			<div
+				transition:fade={{ duration: 200, delay: 200 }}
+				class="z-5 absolute left-0 h-full w-[75px] bg-black/50"
+			></div>
+		{/if} -->
+
 		{#if maplibreMap}
 			<PoiManager
 				map={maplibreMap}
@@ -527,8 +539,16 @@
 	<!-- <ThreeScreen /> -->
 
 	<MapControl />
+
 	{#if !$isStreetView}
-		<Compass />
+		<!-- PC用地図コントロール -->
+		<div class="absolute bottom-6 right-6 max-lg:hidden">
+			<Compass />
+		</div>
+
+		<!-- スマホ用地図コントロール -->
+
+		<MobileMapControl />
 	{/if}
 	<!-- <MapStatePane /> -->
 	<SelectionPopup
@@ -541,7 +561,7 @@
 	<LockOnScreen />
 </div>
 <!-- 右側余白 -->
-<div class="bg-main p-2 max-lg:hidden"></div>
+<!-- <div class="bg-main p-2 max-lg:hidden"></div> -->
 
 {#if maplibreMap}
 	<FileManager

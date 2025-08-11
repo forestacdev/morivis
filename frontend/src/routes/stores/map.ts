@@ -38,6 +38,7 @@ import {
 	WEB_MERCATOR_MAX_LNG
 } from '$routes/map/data/location_bbox';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
+import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -136,7 +137,7 @@ const createMapStore = () => {
 
 		map = new maplibregl.Map({
 			...mapPosition,
-			minZoom: 2, // 最小ズームレベル
+			minZoom: checkPc() ? 2 : 1, // 最小ズームレベル
 			container: mapContainer,
 			// canvasContextAttributes: {
 			// 	// WebGLのコンテキスト属性を設定
@@ -148,7 +149,7 @@ const createMapStore = () => {
 			// },
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
 			style: mapStyle,
-			fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85 // 最大ピッチ角度
@@ -302,6 +303,10 @@ const createMapStore = () => {
 				bearing: map.getBearing()
 			});
 			mooveEndEvent.set(e);
+
+			if (import.meta.env.DEV) {
+				console.log(getMapBounds());
+			}
 		});
 
 		map.on('zoom', (e: MouseEvent) => {
@@ -479,11 +484,26 @@ const createMapStore = () => {
 	) => {
 		if (!map || !isMapValid(map)) return;
 
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		map.panTo(lngLat, {
-			duration: 300
-		});
+		if (checkPc()) {
+			// TODO
+			//github.com/maplibre/maplibre-gl-js/issues/4891
+			map.panTo(lngLat, {
+				duration: 300
+			});
+		}
+
+		if (checkMobile()) {
+			const container = map.getContainer();
+			const containerHeight = container.clientHeight;
+
+			// シンプルに固定オフセットを使用
+			const offsetY = containerHeight / 4;
+
+			map.panTo(lngLat, {
+				offset: [0, -offsetY],
+				duration: 300
+			});
+		}
 	};
 
 	const easeTo = (options: EaseToOptions) => {
@@ -494,6 +514,8 @@ const createMapStore = () => {
 	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map || !isMapValid(map)) return;
 
+		const padding = checkPc() ? 20 : 0;
+
 		if (_entry.metaData.center) {
 			// 中心座標が指定されている場合は、中心にズーム
 			map.easeTo({
@@ -501,24 +523,14 @@ const createMapStore = () => {
 				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				padding: {
-					left: 20,
-					top: 20,
-					right: 20,
-					bottom: 20
-				},
+				padding: padding,
 				duration: 500
 			});
 			return;
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
-				padding: {
-					left: 20,
-					top: 20,
-					right: 20,
-					bottom: 20
-				},
+				padding: padding,
 				duration: 500
 			});
 		}

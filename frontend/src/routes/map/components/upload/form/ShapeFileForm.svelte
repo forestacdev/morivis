@@ -65,7 +65,6 @@
 				.mixed()
 				.optional()
 				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
-					console.log(value);
 					if (value instanceof File) {
 						return value.name.endsWith('.prj');
 					}

@@ -17,7 +17,7 @@ const entry: PointEntry<TileMetaData> = {
 		minZoom: 10,
 		maxZoom: 14,
 		tags: ['フェノロジー'],
-		bounds: [136.918075, 35.554408333333335, 136.9268, 35.55841111111111],
+		bounds: [136.918075, 35.554408, 136.9268, 35.558411],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/phenology_2020.webp`
 	},
 	properties: {
