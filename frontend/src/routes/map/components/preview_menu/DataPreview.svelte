@@ -3,14 +3,14 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
 
 	import { getLayerType } from '$routes/map/utils/entries';
 
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -34,8 +34,10 @@
 			activeLayerIdsStore.addType(copy.id, layerType);
 			activeLayerIdsStore.add(copy.id);
 			showNotification(`${copy.metaData.name}を追加しました`, 'success');
-
-			if (checkPc()) showDataMenu.set(false);
+			showDataMenu.set(false);
+			if (checkMobile()) {
+				$isActiveMobileMenu = 'map';
+			}
 		}
 	};
 	const deleteData = () => {

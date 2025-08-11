@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
-	import { showLayerMenu, showDataMenu, showOtherMenu } from '$routes/stores/ui';
+	import {
+		showLayerMenu,
+		showDataMenu,
+		showOtherMenu,
+		isActiveMobileMenu
+	} from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
@@ -13,11 +18,11 @@
 
 	let { showDataEntry, featureMenuData }: Props = $props();
 
-	let active = $state<MobileActiveMenu>('map');
+	const footerHeight = 70; // フッターの高さを設定
 
-	$effect(() => {
-		if (active && checkMobile()) {
-			switch (active) {
+	isActiveMobileMenu.subscribe((value) => {
+		if (value && checkMobile()) {
+			switch (value) {
 				case 'map':
 					showDataMenu.set(false);
 					showLayerMenu.set(false);
@@ -42,8 +47,6 @@
 			}
 		}
 	});
-
-	const footerHeight = 70; // フッターの高さを設定
 </script>
 
 <!-- フッターのメニュー -->
@@ -55,10 +58,10 @@
 	>
 		<button
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => (active = 'map')}
+			onclick={() => ($isActiveMobileMenu = 'map')}
 		>
 			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'map'
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'map'
 					? 'bg-accent'
 					: ''}"
 			>
@@ -69,10 +72,11 @@
 		</button>
 		<button
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => (active = 'layer')}
+			onclick={() => ($isActiveMobileMenu = 'layer')}
 		>
 			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'layer'
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+				'layer'
 					? 'bg-accent'
 					: ''}"
 			>
@@ -83,10 +87,10 @@
 		</button>
 		<button
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => (active = 'data')}
+			onclick={() => ($isActiveMobileMenu = 'data')}
 		>
 			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'data'
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'data'
 					? 'bg-accent'
 					: ''}"
 			>
@@ -96,10 +100,11 @@
 		</button>
 		<button
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => (active = 'other')}
+			onclick={() => ($isActiveMobileMenu = 'other')}
 		>
 			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {active === 'other'
+				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+				'other'
 					? 'bg-accent'
 					: ''}"
 			>

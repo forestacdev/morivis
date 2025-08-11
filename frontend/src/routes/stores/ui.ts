@@ -1,5 +1,6 @@
 import type { UseEventTriggerType } from '$routes/map/types/ui';
 import { writable } from 'svelte/store';
+import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
 
 /** 処理中の状態 */
 export const isProcessing = writable<boolean>(false);
@@ -28,7 +29,8 @@ export const showSearchMenu = writable<boolean>(false);
 /** 検索メニューのサジェスト */
 export const showSearchSuggest = writable<boolean>(false);
 
-export const isMobile = writable<boolean>(false);
+/** モバイルフッターの状態 */
+export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
 
 /** 外部コンポーネントからイベントを発火させるストア */
 const eventStore = () => {

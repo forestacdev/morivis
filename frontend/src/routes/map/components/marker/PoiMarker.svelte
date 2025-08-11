@@ -148,7 +148,7 @@
 				{#if showImage}
 					<img
 						transition:fade={{ duration: 100 }}
-						class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-110"
+						class="hover:scale-120 absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150"
 						src={imageUrl}
 						alt={properties.name}
 					/>
@@ -183,7 +183,7 @@
 						transition:fade={{ duration: 100 }}
 						class="border-base bg-main border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
-							? 'scale-110'
+							? 'scale-120'
 							: ''}"
 						src={imageUrl}
 						alt={properties.name || 'Marker Image'}
@@ -194,7 +194,7 @@
 						transition:fade={{ duration: 100 }}
 						class="border-base border-3 absolute flex h-full w-full items-center justify-center rounded-full bg-gray-400 transition-all duration-150 {isHover ||
 						clickId === featureId
-							? 'scale-110'
+							? 'scale-120'
 							: ''}"
 					>
 						<span class="text-sm text-white">?</span>
