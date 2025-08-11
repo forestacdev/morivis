@@ -275,6 +275,7 @@
 				</div>
 			{/if}
 
+			<!-- TODO:調整 -->
 			<div class="relative flex h-[60px] w-full items-center max-lg:hidden">
 				<!-- アイコン -->
 				{#if !$isStyleEdit && !$showDataMenu}
@@ -290,7 +291,7 @@
 						</button>
 
 						<div
-							class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
+							class="bg-base pointer-events-none absolute -bottom-5 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
 						>
 							リセット
 						</div>

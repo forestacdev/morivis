@@ -69,7 +69,7 @@
 		</div>
 		<div class="flex h-full flex-col text-base">
 			<!-- ヘッダー -->
-			<div class="relative flex flex-col items-center gap-2 py-4">
+			<div class="relative flex flex-col items-center gap-2 pb-8">
 				<!-- アイコン -->
 				<div
 					class="relative isolate grid h-[180px] w-[180px] shrink-0 place-items-center rounded-full bg-black drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]"
