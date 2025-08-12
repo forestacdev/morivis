@@ -62,6 +62,7 @@ self.onmessage = (e) => {
 			console.error('Failed to create shaders');
 			return;
 		}
+
 		program = createProgram(gl, vertexShader, fragmentShader);
 
 		if (!program) {
@@ -69,11 +70,15 @@ self.onmessage = (e) => {
 			return;
 		}
 
+		// まずプログラムを使用状態にする
+		gl.useProgram(program);
+
 		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 		time = gl.getUniformLocation(program, 'time');
 		resolution = gl.getUniformLocation(program, 'resolution');
 		animationFlagUniformLocation = gl.getUniformLocation(program, 'animationFlag');
 		gl.uniform1f(animationFlagUniformLocation, 0.0);
+		console.log('Init: animationFlag set to 0.0'); // ✅ 追加
 
 		const positionBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -81,7 +86,6 @@ self.onmessage = (e) => {
 		const positions = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-		gl.useProgram(program);
 		gl.enableVertexAttribArray(positionAttributeLocation);
 		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
@@ -110,6 +114,8 @@ self.onmessage = (e) => {
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
 		gl.uniform1f(animationFlagUniformLocation, 0);
+		gl.uniform1f(animationFlagUniformLocation, 0);
+		console.log('Resize: animationFlag set to 0'); // ✅ 追加
 	} else if (type === 'transition') {
 		const { animationFlag } = e.data;
 		if (!gl || !animationFlagUniformLocation) {
@@ -118,6 +124,8 @@ self.onmessage = (e) => {
 		}
 		gl.useProgram(program);
 		gl.uniform1f(animationFlagUniformLocation, animationFlag);
+		gl.uniform1f(animationFlagUniformLocation, animationFlag);
+		console.log('Transition: animationFlag set to', animationFlag); // ✅ 追加
 	}
 
 	const draw = () => {

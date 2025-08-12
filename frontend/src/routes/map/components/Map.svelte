@@ -16,8 +16,6 @@
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
-	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
-
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
@@ -554,7 +552,6 @@
 		{layerEntries}
 		{clickedLngLat}
 	/>
-	<LockOnScreen />
 </div>
 <!-- 右側余白 -->
 <!-- <div class="bg-main p-2 max-lg:hidden"></div> -->
