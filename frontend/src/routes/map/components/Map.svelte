@@ -535,7 +535,7 @@
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 
-	{#if !$isStreetView}
+	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
 		<div class="absolute bottom-6 right-6 max-lg:hidden">
 			<Compass />

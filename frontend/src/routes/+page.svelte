@@ -242,7 +242,7 @@
 			<span class="c-text-shadow font-bold text-white max-lg:text-[75px] lg:text-[100px]"
 				>morivis</span
 			>
-			{#if !$isBlocked}
+			{#if !$isBlocked && showButton}
 				<button
 					transition:slide={{ duration: 300, axis: 'y' }}
 					class="bg-base lg:hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 max-lg:text-lg lg:text-2xl lg:hover:text-white {$isBlocked
