@@ -3,6 +3,7 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	import { activeLayerIdsStore } from '$routes/stores/layers';

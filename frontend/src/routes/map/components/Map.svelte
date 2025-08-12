@@ -430,7 +430,7 @@
 
 	// データプレビュー
 	$effect(() => {
-		if (showDataEntry) {
+		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
