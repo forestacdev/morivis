@@ -15,6 +15,9 @@ let currentAnimationFlag = 0;
 let animationStartTime = 0;
 let currentTransitionStartTime = 0;
 
+// 遅延停止タイマー管理
+let delayedStopTimerId: number | null = null;
+
 const createShader = (gl: WebGLRenderingContext, type: GLenum, source: string) => {
 	const shader = gl.createShader(type);
 	if (!shader) {
@@ -57,6 +60,9 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const startAnimation = (startTime: number) => {
 	if (isAnimating) return;
 
+	// 既存の遅延停止タイマーがあればキャンセル
+	cancelDelayedStop();
+
 	isAnimating = true;
 	animationStartTime = startTime;
 	currentTransitionStartTime = startTime;
@@ -94,6 +100,9 @@ const startAnimation = (startTime: number) => {
 
 // アニメーションを停止する関数
 const stopAnimation = () => {
+	// 遅延停止タイマーもキャンセル
+	cancelDelayedStop();
+
 	if (animationId !== null) {
 		self.cancelAnimationFrame(animationId);
 		animationId = null;
@@ -105,17 +114,39 @@ const stopAnimation = () => {
 	}
 };
 
-// 遅延停止関数
-const stopAnimationDelay = async () => {
-	if (animationId !== null) {
-		await delay(1500);
-		self.cancelAnimationFrame(animationId);
-		animationId = null;
+// 遅延停止タイマーをキャンセルする関数
+const cancelDelayedStop = () => {
+	if (delayedStopTimerId !== null) {
+		clearTimeout(delayedStopTimerId);
+		delayedStopTimerId = null;
+		if (import.meta.env.DEV) {
+			console.log('Delayed stop timer cancelled');
+		}
 	}
-	isAnimating = false;
+};
+
+// 遅延停止関数（改良版）
+const stopAnimationDelay = async (delayMs: number = 1500) => {
+	// 既存の遅延停止タイマーをキャンセル
+	cancelDelayedStop();
+
 	if (import.meta.env.DEV) {
-		console.log('Animation stopped after delay');
+		console.log(`Starting delayed stop timer (${delayMs}ms)`);
 	}
+
+	// 新しいタイマーを設定
+	delayedStopTimerId = setTimeout(() => {
+		if (animationId !== null) {
+			self.cancelAnimationFrame(animationId);
+			animationId = null;
+		}
+		isAnimating = false;
+		delayedStopTimerId = null;
+
+		if (import.meta.env.DEV) {
+			console.log('Animation stopped after delay');
+		}
+	}, delayMs);
 };
 
 // 1回だけ描画する関数（静的状態用）
@@ -133,6 +164,16 @@ const drawOnce = () => {
 	gl.uniform2f(resolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
+};
+
+// アニメーション状態を取得する関数（デバッグ用）
+const getAnimationStatus = () => {
+	return {
+		isAnimating,
+		currentAnimationFlag,
+		hasDelayedStopTimer: delayedStopTimerId !== null,
+		animationId: animationId !== null
+	};
 };
 
 self.onmessage = (e) => {
@@ -205,6 +246,10 @@ self.onmessage = (e) => {
 			console.error('WebGL context not available');
 			return;
 		}
+
+		// アニメーションをクリーンに停止
+		stopAnimation();
+
 		gl.canvas.width = width;
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
@@ -221,11 +266,11 @@ self.onmessage = (e) => {
 			return;
 		}
 
-		gl.useProgram(program);
+		if (import.meta.env.DEV) {
+			console.log(`Transition request: ${animationFlag}, current status:`, getAnimationStatus());
+		}
 
-		// gl.disable(gl.DEPTH_TEST);
-		// gl.enable(gl.BLEND); // ブレンドを有効化
-		// gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // 通常のアルファブレンド
+		gl.useProgram(program);
 		gl.uniform1f(animationFlagUniformLocation, animationFlag);
 		currentAnimationFlag = animationFlag;
 
@@ -233,13 +278,17 @@ self.onmessage = (e) => {
 		currentTransitionStartTime = performance.now();
 
 		if (animationFlag === 1) {
-			// アニメーション開始
+			// 出現アニメーション開始
 			if (!isAnimating) {
 				startAnimation(currentTransitionStartTime);
 			}
 		} else if (animationFlag === -1) {
-			// アニメーション終了指示 - 5秒後に停止
-			stopAnimationDelay();
+			// 消失アニメーション開始
+			if (!isAnimating) {
+				startAnimation(currentTransitionStartTime);
+			}
+			// 遅延停止を設定（既存のタイマーは自動でキャンセルされる）
+			stopAnimationDelay(1500);
 		}
 	} else if (type === 'stop') {
 		// 強制停止用（必要に応じて）
@@ -250,5 +299,11 @@ self.onmessage = (e) => {
 			gl.uniform1f(animationFlagUniformLocation, 0);
 			drawOnce();
 		}
+	} else if (type === 'status') {
+		// デバッグ用: 現在のアニメーション状態を返す
+		self.postMessage({
+			type: 'status_response',
+			status: getAnimationStatus()
+		});
 	}
 };
