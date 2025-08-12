@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
 	import { transitionPageScreen } from '$routes/stores/effect';
@@ -11,6 +11,8 @@
 	let { initialized }: props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
+	let worker: Worker | null = null;
+	let resizeHandler: ((event: Event) => void) | null = null;
 
 	onMount(() => {
 		if (!canvas) {
@@ -18,7 +20,7 @@
 			return;
 		}
 		const offscreen = canvas.transferControlToOffscreen();
-		const worker = new Worker(new URL('./webgl.worker.ts', import.meta.url), {
+		worker = new Worker(new URL('./webgl.worker.ts', import.meta.url), {
 			type: 'module'
 		});
 
@@ -39,20 +41,47 @@
 			console.error('WebGL worker error:', error);
 		};
 
-		transitionPageScreen.subscribe((transition) => {
-			worker.postMessage({
-				type: 'transition',
-				animationFlag: transition
-			});
+		const unsubscribeTransition = transitionPageScreen.subscribe((transition) => {
+			if (worker) {
+				worker.postMessage({
+					type: 'transition',
+					animationFlag: transition
+				});
+			}
 		});
 
-		window.addEventListener('resize', (event) => {
-			worker.postMessage({
-				type: 'resize',
-				width: window.innerWidth,
-				height: window.innerHeight
-			});
-		});
+		resizeHandler = () => {
+			if (worker) {
+				worker.postMessage({
+					type: 'resize',
+					width: window.innerWidth,
+					height: window.innerHeight
+				});
+			}
+		};
+		window.addEventListener('resize', resizeHandler);
+
+		// クリーンアップ関数を返す
+		return () => {
+			unsubscribeTransition();
+			if (resizeHandler) {
+				window.removeEventListener('resize', resizeHandler);
+			}
+			if (worker) {
+				worker.terminate();
+				worker = null;
+			}
+		};
+	});
+
+	onDestroy(() => {
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
+		}
+		if (worker) {
+			worker.terminate();
+			worker = null;
+		}
 	});
 </script>
 

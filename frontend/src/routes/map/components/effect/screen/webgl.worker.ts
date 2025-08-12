@@ -7,6 +7,8 @@ let time: WebGLUniformLocation | null = null;
 let texture: WebGLTexture | null = null;
 let resolution: WebGLUniformLocation | null = null;
 let animationFlagUniformLocation: WebGLUniformLocation | null = null;
+let animationId: number | null = null;
+let isInitialized = false;
 
 const createShader = (gl: WebGLRenderingContext, type: GLenum, source: string) => {
 	const shader = gl.createShader(type);
@@ -48,6 +50,18 @@ self.onmessage = (e) => {
 	const { type, canvas, width, height } = e.data;
 
 	if (type === 'init') {
+		// 既存のアニメーションを停止
+		if (animationId !== null) {
+			self.cancelAnimationFrame(animationId);
+			animationId = null;
+		}
+
+		if (isInitialized) {
+			console.warn('WebGL worker already initialized, skipping initialization');
+			self.postMessage({ type: 'initialized' });
+			return;
+		}
+
 		gl = canvas.getContext('webgl');
 
 		if (!gl) {
@@ -99,7 +113,11 @@ self.onmessage = (e) => {
 		gl.canvas.height = height;
 		gl.viewport(0, 0, width, height);
 
+		isInitialized = true;
 		self.postMessage({ type: 'initialized' });
+
+		// アニメーションループを開始（一度だけ）
+		startAnimationLoop(startTime);
 	} else if (type === 'resize') {
 		const { width, height } = e.data;
 		if (!gl) {
@@ -119,7 +137,9 @@ self.onmessage = (e) => {
 		gl.useProgram(program);
 		gl.uniform1f(animationFlagUniformLocation, animationFlag);
 	}
+};
 
+const startAnimationLoop = (startTime: number) => {
 	const draw = () => {
 		const now = performance.now();
 		const elapsed = (now - startTime) / 1000;
@@ -133,9 +153,6 @@ self.onmessage = (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		gl.useProgram(program);
-		// gl.disable(gl.DEPTH_TEST);
-		// gl.enable(gl.BLEND); // ✅ ブレンドを有効化
-		// gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // ✅ 通常のアルファブレンド
 
 		gl.uniform1f(time, elapsed);
 		gl.uniform2f(resolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -143,9 +160,9 @@ self.onmessage = (e) => {
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 		// 次フレームを予約
-		self.requestAnimationFrame(draw);
+		animationId = self.requestAnimationFrame(draw);
 	};
 
 	// 初回呼び出し
-	self.requestAnimationFrame(draw);
+	animationId = self.requestAnimationFrame(draw);
 };

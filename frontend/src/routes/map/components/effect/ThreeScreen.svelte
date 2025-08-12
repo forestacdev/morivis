@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import * as THREE from 'three';
 
 	import { mapStore } from '$routes/stores/map';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let mapCanvas: HTMLCanvasElement | null = null;
+	let animationId: number | null = null;
+	let renderer: THREE.WebGLRenderer | null = null;
+	let resizeHandler: (() => void) | null = null;
+	let renderCallback: (() => void) | null = null;
 
 	onMount(() => {
 		if (!canvas) {
@@ -31,7 +35,7 @@
 
 		// シーンとレンダラー
 		const scene = new THREE.Scene();
-		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+		renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 		renderer.setSize(width, height);
 
 		// テクスチャ化
@@ -72,36 +76,63 @@
 		scene.add(sprite);
 
 		// 地図の更新イベントでテクスチャ更新を指示
-		mapStore.onRender(() => {
+		renderCallback = () => {
 			mapCanvas = mapStore.getCanvas(); // MapLibre の canvas
 			mapTexture.image = mapCanvas;
 			mapTexture.needsUpdate = true; // MapLibre の canvas が更新されたらテクスチャも更新
-		});
+		};
+		mapStore.onRender(renderCallback);
+
 		// アニメーションループ
 		function animate() {
-			renderer.render(scene, camera);
-			requestAnimationFrame(animate);
+			if (renderer) {
+				renderer.render(scene, camera);
+			}
+			animationId = requestAnimationFrame(animate);
 		}
-		animate();
+		animationId = requestAnimationFrame(animate);
 
 		// リサイズ対応（必要に応じて）
-		const onResize = () => {
-			const w = canvas.clientWidth;
-			const h = canvas.clientHeight;
+		resizeHandler = () => {
+			const w = canvas!.clientWidth;
+			const h = canvas!.clientHeight;
 			const aspect = w / h;
 			camera.left = -cameraSize * aspect;
 			camera.right = cameraSize * aspect;
 			camera.top = cameraSize;
 			camera.bottom = -cameraSize;
 			camera.updateProjectionMatrix();
-			renderer.setSize(w, h);
+			if (renderer) {
+				renderer.setSize(w, h);
+			}
 		};
-		window.addEventListener('resize', onResize);
+		window.addEventListener('resize', resizeHandler);
+	});
 
-		return () => {
-			window.removeEventListener('resize', onResize);
+	onDestroy(() => {
+		// アニメーションループを停止
+		if (animationId !== null) {
+			cancelAnimationFrame(animationId);
+			animationId = null;
+		}
+
+		// イベントリスナーを削除
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
+			resizeHandler = null;
+		}
+
+		// MapLibreのコールバックを削除
+		if (renderCallback) {
+			// MapStoreがoffRenderメソッドを持つ場合
+			// mapStore.offRender(renderCallback);
+		}
+
+		// Three.jsリソースを破棄
+		if (renderer) {
 			renderer.dispose();
-		};
+			renderer = null;
+		}
 	});
 </script>
 
