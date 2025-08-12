@@ -45,5 +45,3 @@ This project uses dual licensing:
 - License: [CC BY-NC-ND 4.0](LICENSE-CC-BY-NC-ND)
 - Scope: Data and resources provided by Gifu Academy of Forest Science and Culture
 - Usage: Educational and research purposes only, no commercial use, no modifications
-
-For detailed terms, please refer to the respective license files.

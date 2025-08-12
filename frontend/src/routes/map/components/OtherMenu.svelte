@@ -4,7 +4,13 @@
 
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import { mapMode, isDebugMode } from '$routes/stores';
-	import { showOtherMenu, showDataMenu, showInfoDialog, showTermsDialog } from '$routes/stores/ui';
+	import {
+		showOtherMenu,
+		showDataMenu,
+		showInfoDialog,
+		showTermsDialog,
+		isMobile
+	} from '$routes/stores/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -13,7 +19,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
-	import { checkMobile, checkPc } from '../utils/ui';
+	import { checkPc } from '../utils/ui';
 
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
@@ -70,7 +76,7 @@
 
 	<!-- メニュー本体 -->
 	<div
-		transition:fly={{ duration: checkPc() ? 300 : 0, x: checkPc() ? 100 : 0, opacity: 0 }}
+		transition:fly={{ duration: !$isMobile ? 300 : 0, x: !$isMobile ? 100 : 0, opacity: 0 }}
 		class="bg-main absolute right-0 top-0 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:z-30 lg:w-[400px]"
 	>
 		<div class="flex items-center justify-between">
@@ -142,7 +148,7 @@
 				onclick={toggleInfoDialog}
 			>
 				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
-				<span class="select-none">このアプリについて</span>
+				<span class="select-none">{$isMobile ? 'このアプリについて' : 'このサイトについて'}</span>
 			</button>
 			<a
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"

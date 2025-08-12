@@ -16,9 +16,6 @@
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
-	import LockOnScreen from '$routes/map/components/effect/LockOnScreen.svelte';
-
-	import MapControl from '$routes/map/components/map_control/MapControl.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
@@ -433,7 +430,7 @@
 
 	// データプレビュー
 	$effect(() => {
-		if (showDataEntry) {
+		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
@@ -504,7 +501,7 @@
 	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
 	$mapMode === 'small'
 		? 'absolute transform border-white max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg lg:border-4'
-		: 'relative h-full w-full grow '}"
+		: 'relative h-full w-full grow'}"
 >
 	<div
 		bind:this={mapContainer}
@@ -538,9 +535,7 @@
 	<!-- <WebGLScreen /> -->
 	<!-- <ThreeScreen /> -->
 
-	<MapControl />
-
-	{#if !$isStreetView}
+	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
 		<div class="absolute bottom-6 right-6 max-lg:hidden">
 			<Compass />
@@ -550,7 +545,6 @@
 
 		<MobileMapControl />
 	{/if}
-	<!-- <MapStatePane /> -->
 	<SelectionPopup
 		bind:clickedLayerIds
 		bind:featureMenuData
@@ -558,7 +552,6 @@
 		{layerEntries}
 		{clickedLngLat}
 	/>
-	<LockOnScreen />
 </div>
 <!-- 右側余白 -->
 <!-- <div class="bg-main p-2 max-lg:hidden"></div> -->

@@ -9,6 +9,7 @@
 	}
 
 	let { initialized }: props = $props();
+	let isWorkerInitialized = false;
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 
@@ -40,6 +41,11 @@
 		};
 
 		transitionPageScreen.subscribe((transition) => {
+			// 初回は発火させない
+			if (!isWorkerInitialized) {
+				isWorkerInitialized = true;
+				return;
+			}
 			worker.postMessage({
 				type: 'transition',
 				animationFlag: transition

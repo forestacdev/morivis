@@ -11,13 +11,14 @@
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 
-	import { isBlocked } from '$routes/stores/ui';
+	import { isBlocked, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
 
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
 	import { showTermsDialog, showInfoDialog } from './stores/ui';
 	import Icon from '@iconify/svelte';
+	import { checkMobile } from './map/utils/ui';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -230,7 +231,7 @@
 	};
 </script>
 
-<div class="relative h-dvh w-full bg-gray-900">
+<div class="relative h-full w-full bg-gray-900">
 	<canvas
 		class="absolute m-0 block h-full w-full overflow-hidden bg-gray-900 p-0"
 		bind:this={canvas}
@@ -241,10 +242,10 @@
 			<span class="c-text-shadow font-bold text-white max-lg:text-[75px] lg:text-[100px]"
 				>morivis</span
 			>
-			{#if !$isBlocked}
+			{#if !$isBlocked && showButton}
 				<button
 					transition:slide={{ duration: 300, axis: 'y' }}
-					class="bg-base hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 hover:text-white lg:text-2xl {$isBlocked
+					class="bg-base lg:hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 max-lg:text-lg lg:text-2xl lg:hover:text-white {$isBlocked
 						? 'pointer-events-none'
 						: 'pointer-events-auto'}"
 					onclick={goMap}

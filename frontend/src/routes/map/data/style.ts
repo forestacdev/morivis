@@ -267,7 +267,7 @@ export const TREE_MATCH_COLOR_STYLE: ColorMatchExpression = {
 			'#a6cee3', // 伐採跡地
 			'#1f78b4' // その他（グレー）
 		],
-		// パターン情報（新規追加）
+		// パターン情報
 		patterns: [
 			null,
 			null,

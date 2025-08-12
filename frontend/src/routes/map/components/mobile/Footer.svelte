@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, type MobileActiveMenu } from '$routes/map/utils/ui';
 	import {
 		showLayerMenu,
 		showDataMenu,
@@ -51,13 +51,6 @@
 		}
 
 		initialized = true;
-	});
-	onMount(() => {
-		if (checkMobile()) {
-			showLayerMenu.set(false);
-			showDataMenu.set(false);
-			showOtherMenu.set(false);
-		}
 	});
 </script>
 
@@ -120,20 +113,12 @@
 					? 'bg-accent'
 					: ''}"
 			>
-				<Icon icon="basil:other-1-outline" class="h-9 w-9" />
+				<Icon icon="basil:other-1-outline" class="h-8 w-8" />
 			</div>
 			<span class="text-xs">その他</span>
 		</button>
 	</div>
 {/if}
-
-<!-- フッターの余白分 -->
-<!-- <div
-	class="bg-main bottom-0 left-0 flex w-full items-center justify-between text-base lg:hidden {showDataEntry
-		? 'hidden'
-		: ''}"
-	style="height: {footerHeight}px;"
-></div> -->
 
 <style>
 </style>

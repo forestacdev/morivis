@@ -17,9 +17,15 @@
 
 	import { delay } from 'es-toolkit';
 	import { transitionPageScreen } from '$routes/stores/effect';
-	import { isBlocked } from '$routes/stores/ui';
+	import {
+		isBlocked,
+		isMobile,
+		showDataMenu,
+		showLayerMenu,
+		showOtherMenu
+	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
 
 	let { children } = $props();
 
@@ -27,9 +33,11 @@
 
 	onNavigate((navigation) => {
 		// NOTE: URLパラメータの変更のみ無効
+
 		if (navigation.from && navigation.to && navigation.from.route.id === navigation.to.route.id) {
 			return;
 		}
+
 		return new Promise((resolve) => {
 			isBlocked.set(true);
 			// ページ遷移のアニメーションを制御
@@ -65,8 +73,8 @@
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
 
-		// 行き先の先頭時が_なら、ホームに遷移
 		if (import.meta.env.MODE === 'production' && toPage.startsWith('/_')) {
+			// 行き先の先頭時が_なら、ホームに遷移
 			window.location.href = '/morivis';
 			return;
 		}
@@ -94,18 +102,6 @@
 	};
 
 	const deviceType = checkMobile() ? 'mobile' : 'pc';
-
-	let isMobileWidth = $state<boolean>(checkMobile());
-
-	window.addEventListener('resize', () => {
-		isMobileWidth = checkMobileWidth();
-	});
-
-	$effect(() => {
-		if (isMobileWidth) {
-		} else {
-		}
-	});
 </script>
 
 <!-- Googleアナリティクスの設定 -->
@@ -116,14 +112,17 @@
 	{@html webManifestLink}
 </svelte:head>
 
-<div class="absolute h-full w-full">
-	{#if deviceType === 'mobile' && !isMobileWidth}
-		<div class="bg-main flex h-full w-full items-center justify-center text-base">
+<div class="absolute h-dvh w-full">
+	{#if deviceType === 'mobile' && !$isMobile}
+		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
 			<p class="text-2xl">端末を縦向きにしてください。</p>
 			<Icon icon="circum:mobile-3" class="h-16 w-16" />
 		</div>
-	{:else}
+	{/if}
+	{#if isInitialized}
 		{@render children()}
+	{:else}
+		<div class="flex h-full w-full items-center justify-center"></div>
 	{/if}
 </div>
 

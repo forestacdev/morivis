@@ -32,11 +32,14 @@
 		border-color: var(--color-gray-200, currentcolor);
 	}
 
+	body {
+		background-color: var(--color-main);
+	}
+
 	@media (width < 768px) {
 		/* スワイプリロード無効 */
 		body {
 			overscroll-behavior-y: none;
-			background-color: var(--color-main);
 		}
 
 		/* タップハイライトの色を透明にする */

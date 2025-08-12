@@ -7,6 +7,7 @@
 	import { fly } from 'svelte/transition';
 	import Icon from '@iconify/svelte';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -478,7 +479,7 @@
 	});
 </script>
 
-{#if featureMenuData && checkMobile()}
+{#if featureMenuData && $isMobile}
 	<!-- スワイプ可能なカード -->
 	<div
 		transition:fly={{

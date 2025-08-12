@@ -248,6 +248,8 @@
 							{/if}
 						{/if}
 					</div>
+
+					<!-- 概要説明 -->
 					{#if data}
 						{#if data.description}
 							<span class="my-2 text-justify text-base">{data.description}</span>

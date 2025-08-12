@@ -9,13 +9,12 @@
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStyleEdit } from '$routes/stores';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isMobile, showDataMenu } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST } from '$routes/map/data/types/tags';
 
 	import Fuse from 'fuse.js';
-	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -169,7 +168,7 @@
 					<div slot="item" let:index let:style {style}>
 						<div
 							class="grid max-lg:gap-[5px] lg:gap-3"
-							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({checkPc()
+							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({!$isMobile
 								? 256
 								: 100}px, 1fr));"
 						>

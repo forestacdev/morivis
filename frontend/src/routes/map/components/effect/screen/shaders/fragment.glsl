@@ -79,5 +79,8 @@ void main(void) {
         alpha = hexagon * scale;
     }
 
+    // vec3 debugAnimeColor = vec3(sin(time) *2.0, cos(time) * 2.0, sin(time * 0.5) * 2.0);
     gl_FragColor = vec4(col, alpha);
+
+
 }

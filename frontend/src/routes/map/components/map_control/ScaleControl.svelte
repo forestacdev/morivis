@@ -1,14 +1,20 @@
 <script lang="ts">
-	import { ScaleControl, type Map as MapLibreMap } from 'maplibre-gl';
+	import { type Map as MapLibreMap } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showLayerMenu } from '$routes/stores/ui';
-	import { checkMobileWidth, checkPc } from '$routes/map/utils/ui';
+	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
+	import { checkMobileWidth } from '$routes/map/utils/ui';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);
 	let map: MapLibreMap | null = null;
+	let show = $derived.by(() => {
+		if ($showLayerMenu || $showDataMenu || $showOtherMenu) {
+			return !checkMobileWidth();
+		}
+		return true;
+	});
 
 	// スケール計算用の定数
 	const MAX_WIDTH = 100; // ピクセル
@@ -88,10 +94,16 @@
 		}
 	});
 
+	$effect(() => {
+		if (show) {
+			updateScale();
+		}
+	});
+
+	// 	NOTE:debug
 	// mapStore.onload(() => {
 	// 	const map = mapStore.getMap();
 
-	// 	// 比較よう
 	// 	map?.addControl(
 	// 		new ScaleControl({
 	// 			maxWidth: 100,
@@ -101,17 +113,20 @@
 	// });
 </script>
 
-<div
-	class="absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu && !checkMobileWidth()
-		? 'left-[400px]'
-		: 'left-[15px]'}"
-	bind:this={controlContainer}
->
-	<div class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm">
-		<div
-			bind:this={scaleElement}
-			class="border-base border-b-2 border-l-2 border-r-2 pl-2 text-left leading-none"
-			style="min-width: 30px;"
-		></div>
+{#if show}
+	<div
+		class="pointer-events-none absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu &&
+		!$isMobile
+			? 'left-[400px]'
+			: 'left-[15px]'}"
+		bind:this={controlContainer}
+	>
+		<div class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm">
+			<div
+				bind:this={scaleElement}
+				class="border-base border-b-2 border-l-2 border-r-2 pl-2 text-left leading-none"
+				style="min-width: 30px;"
+			></div>
+		</div>
 	</div>
-</div>
+{/if}
