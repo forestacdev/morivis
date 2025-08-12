@@ -49,8 +49,10 @@ maplibregl.addProtocol(webgl.protocolName, webgl.request);
 const terrain = terrainProtocol('terrain');
 maplibregl.addProtocol(terrain.protocolName, terrain.request);
 
-const tileIndex = tileIndexProtocol('tile_index');
-maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
+if (import.meta.env.DEV) {
+	const tileIndex = tileIndexProtocol('tile_index');
+	maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
+}
 
 export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
 
