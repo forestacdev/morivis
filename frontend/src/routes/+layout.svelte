@@ -33,9 +33,11 @@
 
 	onNavigate((navigation) => {
 		// NOTE: URLパラメータの変更のみ無効
+
 		if (navigation.from && navigation.to && navigation.from.route.id === navigation.to.route.id) {
 			return;
 		}
+
 		return new Promise((resolve) => {
 			isBlocked.set(true);
 			// ページ遷移のアニメーションを制御

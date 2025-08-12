@@ -82,22 +82,5 @@ void main(void) {
     // vec3 debugAnimeColor = vec3(sin(time) *2.0, cos(time) * 2.0, sin(time * 0.5) * 2.0);
     gl_FragColor = vec4(col, alpha);
 
-        // デバッグ用: animationFlagの値を色で確認
-    if (abs(animationFlag) < 0.1) {
-        // animationFlag が 0 に近い場合は赤
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 0.3);
-        return;
-    } else if (animationFlag > 0.9) {
-        // animationFlag が 1 に近い場合は緑
-        gl_FragColor = vec4(0.0, 1.0, 0.0, 0.3);
-        return;
-    } else if (animationFlag < -0.9) {
-        // animationFlag が -1 に近い場合は青
-        gl_FragColor = vec4(0.0, 0.0, 1.0, 0.3);
-        return;
-    } else {
-        // その他の値は黄色
-        gl_FragColor = vec4(1.0, 1.0, 0.0, 0.3);
-        return;
-    }
+
 }
