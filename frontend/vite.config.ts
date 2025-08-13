@@ -17,6 +17,23 @@ export default defineConfig({
 				categories: ['navigation'],
 				short_name: 'morivis',
 				description: '森林文化アカデミー演習林Webマップ',
+				screenshots: [
+					{
+						src: 'screen_1.webp',
+						sizes: '720x1478',
+						type: 'image/webp'
+					},
+					{
+						src: 'screen_2.webp',
+						sizes: '720x1478',
+						type: 'image/webp'
+					},
+					{
+						src: 'screen_3.webp',
+						sizes: '720x1478',
+						type: 'image/webp'
+					}
+				],
 				theme_color: '#0C221D',
 				orientation: 'natural',
 				start_url: '/morivis/map',
