@@ -17,6 +17,7 @@
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
 	import { checkPc } from '../utils/ui';
@@ -54,6 +55,27 @@
 			goto('/');
 		}
 	};
+
+	// TODO
+	// デフォのインストールメッセージとめる
+	// let defferedPrompt;
+	// window.addEventListener('beforeinstallprompt', function (event) {
+	// 	event.preventDefault();
+	// 	defferedPrompt = event;
+	// 	console.log(defferedPrompt);
+	// 	return false;
+	// });
+
+	// const pwaInstall = () => {
+	// 	if (defferedPrompt) {
+	// 		defferedPrompt.prompt();
+	// 		defferedPrompt = null;
+	// 	} else {
+	// 		window.alert(
+	// 			'既にインストールされているか、お使いのブラウザが対応していません。ブラウザが対応していない場合は「ホーム画面に追加」からインストールしてください。'
+	// 		);
+	// 	}
+	// }
 	mapMode.subscribe((mode) => {
 		showOtherMenu.set(false);
 	});
@@ -175,6 +197,14 @@
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
+
+			<!-- <button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={pwaInstall}
+				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
+				<span>アプリをインストール</span>
+			</button> -->
+
 			{#if import.meta.env.MODE === 'development'}
 				{#if import.meta.env.MODE === 'development'}
 					<Switch label="デバッグモード" bind:value={$isDebugMode} />
