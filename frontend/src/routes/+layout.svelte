@@ -26,6 +26,7 @@
 	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/pwa';
 
 	let { children } = $props();
 
@@ -95,6 +96,11 @@
 
 	onMount(async () => {
 		await onNextPage(page.route.id);
+		window.addEventListener('beforeinstallprompt', (event) => {
+			event.preventDefault();
+			setDeferredPrompt(event as BeforeInstallPromptEvent);
+			return false;
+		});
 	});
 
 	const initialized = () => {

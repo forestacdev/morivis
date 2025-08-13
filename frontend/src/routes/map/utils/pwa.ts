@@ -10,7 +10,7 @@ export const checkPWA = () => {
 };
 
 // PWAインストールを制御
-interface BeforeInstallPromptEvent extends Event {
+export interface BeforeInstallPromptEvent extends Event {
 	prompt(): Promise<void>;
 	userChoice: Promise<{
 		outcome: 'accepted' | 'dismissed';
@@ -20,11 +20,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 let defferedPrompt: BeforeInstallPromptEvent | null = null;
 
-window.addEventListener('beforeinstallprompt', function (event) {
-	event.preventDefault();
-	defferedPrompt = event as BeforeInstallPromptEvent;
-	return false;
-} as EventListener);
+export const setDeferredPrompt = (prompt: BeforeInstallPromptEvent | null) => {
+	defferedPrompt = prompt;
+};
 
 /**
  * PWAをインストールする関数
@@ -32,9 +30,6 @@ window.addEventListener('beforeinstallprompt', function (event) {
 export const pwaInstall = () => {
 	if (defferedPrompt) {
 		defferedPrompt.prompt();
-		defferedPrompt.userChoice.then((choiceResult) => {
-			showNotification(`アプリをインストールしました: ${choiceResult.outcome}`, 'info');
-		});
 		defferedPrompt = null;
 	} else {
 		showNotification(
