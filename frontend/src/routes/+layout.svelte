@@ -25,7 +25,7 @@
 		showOtherMenu
 	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
-	import { checkMobile, checkMobileWidth, checkPc, checkPWA } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 
 	let { children } = $props();
 

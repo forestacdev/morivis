@@ -1,4 +1,3 @@
-import { get } from 'svelte/store';
 export type Attribution = {
 	name: string;
 	url: string;
@@ -113,6 +112,10 @@ const attributionData = {
 	長野県林業総合センター: {
 		name: '長野県林業総合センター',
 		url: 'https://www.pref.nagano.lg.jp/ringyosogo/'
+	},
+	['広島県林業課（林野庁加工）']: {
+		name: '広島県林業課（林野庁加工）',
+		url: 'https://www.rinya.maff.go.jp/index.html'
 	}
 } as const;
 

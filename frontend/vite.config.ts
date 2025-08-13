@@ -37,6 +37,7 @@ export default defineConfig({
 				theme_color: '#0C221D',
 				orientation: 'natural',
 				start_url: '/morivis/map',
+				scope: '/morivis/map',
 				lang: 'ja',
 				icons: [
 					{
@@ -45,24 +46,24 @@ export default defineConfig({
 						type: 'image/png',
 						purpose: 'any'
 					},
-					{
-						src: 'pwa-192x192.png',
-						sizes: '192x192',
-						type: 'image/png',
-						purpose: 'maskable'
-					},
+					// {
+					// 	src: 'pwa-192x192.png',
+					// 	sizes: '192x192',
+					// 	type: 'image/png',
+					// 	purpose: 'maskable'
+					// },
 					{
 						src: 'pwa-512x512.png',
 						sizes: '512x512',
 						type: 'image/png',
 						purpose: 'any'
-					},
-					{
-						src: 'pwa-512x512.png',
-						sizes: '512x512',
-						type: 'image/png',
-						purpose: 'maskable'
 					}
+					// {
+					// 	src: 'pwa-512x512.png',
+					// 	sizes: '512x512',
+					// 	type: 'image/png',
+					// 	purpose: 'maskable'
+					// }
 				]
 			},
 			devOptions: {
