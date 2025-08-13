@@ -13,20 +13,38 @@ export default defineConfig({
 			includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
 			manifest: {
 				name: 'morivis',
+				background_color: '#0C221D',
+				categories: ['navigation'],
 				short_name: 'morivis',
-				description: '森林文化アカデミー演習林WebGIS',
+				description: '森林文化アカデミー演習林Webマップ',
 				theme_color: '#0C221D',
+				orientation: 'natural',
+				start_url: '/morivis/map',
 				lang: 'ja',
 				icons: [
 					{
 						src: 'pwa-192x192.png',
 						sizes: '192x192',
-						type: 'image/png'
+						type: 'image/png',
+						purpose: 'any'
+					},
+					{
+						src: 'pwa-192x192.png',
+						sizes: '192x192',
+						type: 'image/png',
+						purpose: 'maskable'
 					},
 					{
 						src: 'pwa-512x512.png',
 						sizes: '512x512',
-						type: 'image/png'
+						type: 'image/png',
+						purpose: 'any'
+					},
+					{
+						src: 'pwa-512x512.png',
+						sizes: '512x512',
+						type: 'image/png',
+						purpose: 'maskable'
 					}
 				]
 			},

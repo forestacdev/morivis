@@ -12,7 +12,9 @@ export const generateNumberToNumberMap = (
 } => {
 	const { range, divisions, values } = mapping;
 
-	console.log(range, divisions, values);
+	if (import.meta.env.DEV) {
+		console.log(range, divisions, values);
+	}
 
 	if (divisions <= 0) {
 		throw new Error('divisions must be greater than 0');
