@@ -32,7 +32,7 @@
 	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
-	let showAddedData = $state<boolean>(false); // データ追加の状態
+	let showAddedData = $state<boolean>(true); // データ追加の状態
 
 	const fuse = new Fuse(geoDataEntries, {
 		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
