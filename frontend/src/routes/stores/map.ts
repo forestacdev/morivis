@@ -227,6 +227,22 @@ const createMapStore = () => {
 			onLoadEvent.set(e);
 		});
 
+		// より詳細なエラー情報を取得
+		// map.on('error', (e) => {
+		// 	console.error('Map error details:', e);
+		// 	console.error('Error source:', e.error);
+		// 	console.error('Error stack:', e.error?.stack);
+		// });
+
+		// map.on('sourcedata', (e) => {
+		// 	if (e.sourceId === 'hiroshima-trees') {
+		// 		console.log('Source data event:', e);
+		// 		if (e.dataType === 'source' && e.isSourceLoaded) {
+		// 			console.log('Source loaded successfully');
+		// 		}
+		// 	}
+		// });
+
 		map.on('click', (e: MapMouseEvent) => {
 			if (get(isHoverPoiMarker)) {
 				// POIマーカーにホバーしている場合はクリックイベントを無視

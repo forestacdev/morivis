@@ -32,7 +32,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '兵庫県の樹種ポリゴン'
+				template: ''
 			}
 		]
 	},
