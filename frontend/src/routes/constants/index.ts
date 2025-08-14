@@ -95,20 +95,18 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
-	// 'cog_test',
 	// 'ensyurin_pole',
 	// 'fac_ziriki_point',
 	// 'fac_building_point',
 	// 'fac_poi',
 	'ensyurin_road',
 	// 'gsi_road',
-	'ensyurin_rinhan'
-	// 'ensyurin_photo'
+	'ensyurin_rinhan',
+	'national_forest_stand'
 	// 'tochigi_tree_species'
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
-	// 'gsi_rinya_m'
 
 	// 'gsi_seamlessphoto'
 	// 'gsi_std'
