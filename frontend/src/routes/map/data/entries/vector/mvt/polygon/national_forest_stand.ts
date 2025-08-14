@@ -75,7 +75,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.5,
 		colors: {
-			key: '解析樹種',
+			key: '単色',
 			show: true,
 			expressions: [
 				{
@@ -89,12 +89,52 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					type: 'step',
-					key: '面積_ha',
-					name: '面積ごとの色分け',
+					key: '材積',
+					name: '材積による色分け',
 					mapping: {
-						range: [0, 200],
-						divisions: 5,
-						values: ['#e0f7fa', '#ed006e']
+						range: [0, 81006.0],
+						divisions: 10,
+						values: ['#e6f2ff', '#ff00dd']
+					}
+				},
+				{
+					type: 'step',
+					key: '面積',
+					name: '面積による色分け',
+					mapping: {
+						range: [0, 5641.8],
+						divisions: 10,
+						values: ['#e6f2ff', '#ff00dd']
+					}
+				},
+				{
+					type: 'step',
+					key: '樹立林齢１',
+					name: '樹立林齢１による色分け',
+					mapping: {
+						range: [0, 606.0],
+						divisions: 10,
+						values: ['#e6f2ff', '#ff00dd']
+					}
+				},
+				{
+					type: 'step',
+					key: '樹立林齢２',
+					name: '樹立林齢２による色分け',
+					mapping: {
+						range: [0, 632.0],
+						divisions: 10,
+						values: ['#e6f2ff', '#ff00dd']
+					}
+				},
+				{
+					type: 'step',
+					key: '樹立林齢３',
+					name: '樹立林齢２による色分け',
+					mapping: {
+						range: [0, 415.0],
+						divisions: 10,
+						values: ['#e6f2ff', '#ff00dd']
 					}
 				}
 			]
@@ -106,7 +146,7 @@ const entry: VectorEntry<TileMetaData> = {
 			lineStyle: 'solid'
 		},
 		labels: {
-			key: '樹種',
+			key: '樹種１',
 			show: false,
 			expressions: [
 				{
