@@ -790,13 +790,13 @@ export const createLayersItems = (
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
-			const { format, style, metaData, interaction, type } = entry;
+			const { format, style, metaData, interaction, type, auxiliaryLayers } = entry;
 
 			const layer: LayerItem = {
 				id: layerId,
 				source: sourceId,
 				maxzoom: 24,
-				minzoom: 0,
+				minzoom: metaData.minZoom ?? 1,
 				metadata: {
 					name: metaData.name,
 					location: metaData.location,
@@ -914,6 +914,22 @@ export const createLayersItems = (
 						// ラベルを追加
 						const symbolLayer = createSymbolLayer(layer, style);
 						symbolLayerItems.push(symbolLayer);
+					}
+
+					// 補助レイヤーの追加
+					if (auxiliaryLayers) {
+						auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
+							const type = auxiliaryLayer.type;
+							if (type === 'fill') {
+								fillLayerItems.push(auxiliaryLayer);
+							} else if (type === 'line') {
+								lineLayerItems.push(auxiliaryLayer);
+							} else if (type === 'circle') {
+								circleLayerItems.push(auxiliaryLayer);
+							} else if (type === 'symbol') {
+								symbolLayerItems.push(auxiliaryLayer);
+							}
+						});
 					}
 					break;
 				}

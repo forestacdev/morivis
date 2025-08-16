@@ -10,6 +10,7 @@ export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
 export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
 export const ENTRY_FGB_PATH = ENTRY_DATA_PATH + '/fgb';
+export const ENTRY_GEOJSON_PATH = ENTRY_DATA_PATH + '/geojson';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
 export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
@@ -95,7 +96,7 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
-	// 'ensyurin_owl',
+	'ensyurin_owl',
 	// 'ensyurin_pole',
 	// 'fac_ziriki_point',
 	// 'fac_building_point',
@@ -103,7 +104,7 @@ export const INT_ADD_LAYER_IDS = [
 	// 'gsi_elevation_point',
 	'ensyurin_road',
 	// 'gsi_road',
-	'ensyurin_rinhan',
+	'ensyurin_syouhan',
 	'national_forest_stand'
 	// 'tochigi_tree_species'
 	// 'dem_5a'

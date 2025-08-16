@@ -6,7 +6,9 @@ import type {
 	HeatmapLayerSpecification,
 	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
-	FormattedSpecification
+	FormattedSpecification,
+	SourceSpecification,
+	LayerSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
 

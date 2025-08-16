@@ -10,9 +10,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_owl.fgb`
 	},
 	metaData: {
-		name: 'OWL利用研修立木計測データ',
-		description: '林業専攻-OWL利用研修立木計測データ',
-		attribution: '株式会社アドイン研究所',
+		name: '演習林 ヒノキ単木',
+		description: '2021年度に実施した林業専攻のOWL利用研修立木計測データ。',
+		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		minZoom: 10,
 		maxZoom: 22,

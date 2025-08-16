@@ -3,7 +3,6 @@
 
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
-	import LabelControl from '$routes/map/components/map_control/LabelControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import { mapMode } from '$routes/stores';
 	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
@@ -264,7 +263,7 @@
 				/>
 			</button>
 		</div>
-		<LabelControl />
+
 		<TerrainControl />
 		<StreetViewControl />
 		<GeolocateControl />

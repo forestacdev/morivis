@@ -7,6 +7,7 @@ import type {
 import type { FeatureCollection } from 'geojson';
 
 import type { BaseMetaData } from '$routes/map/data/types';
+import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
 
@@ -34,6 +35,15 @@ export interface TileMetaData extends BaseMetaData {
 
 export type GeoJsonMetaData = BaseMetaData;
 
+export interface AuxiliaryLayersData {
+	// MapLibreのソース定義をそのまま使用
+	source: {
+		[key: string]: SourceSpecification; // MapLibre SourceSpecification
+	};
+	// MapLibreのレイヤー定義をそのまま使用
+	layers: LayerSpecification[];
+}
+
 interface BaseVectorEntry {
 	id: string;
 	type: 'vector';
@@ -50,6 +60,7 @@ export interface PolygonEntry<T> extends BaseVectorEntry {
 		data?: FeatureCollection;
 	};
 	style: PolygonStyle;
+	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
 export interface LineStringEntry<T> extends BaseVectorEntry {
@@ -61,6 +72,7 @@ export interface LineStringEntry<T> extends BaseVectorEntry {
 		data?: FeatureCollection;
 	};
 	style: LineStringStyle;
+	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
 export interface PointEntry<T> extends BaseVectorEntry {
@@ -72,6 +84,7 @@ export interface PointEntry<T> extends BaseVectorEntry {
 		data?: FeatureCollection;
 	};
 	style: PointStyle;
+	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
 export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>;

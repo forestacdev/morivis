@@ -1,25 +1,23 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, ENTRY_GEOJSON_PATH } from '$routes/constants';
 
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import chroma from 'chroma-js';
+import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
-	id: 'ensyurin_rinhan',
+const entry: PolygonEntry<GeoJsonMetaData> = {
+	id: 'ensyurin_syouhan',
 	type: 'vector',
 	format: {
-		type: 'pmtiles',
+		type: 'fgb',
 		geometryType: 'Polygon',
-		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
+		url: `${ENTRY_FGB_PATH}/ensyurin_syouhan.fgb`
 	},
 	metaData: {
-		name: '演習林 林班',
-		description: '森林文化アカデミー演習林の林班。',
+		name: '演習林 小班区画',
+		description: '森林文化アカデミー演習林の小班区画。',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		tags: ['林班図', '森林'],
+		tags: ['小班', '森林'],
 		maxZoom: 17,
-		minZoom: 8,
-		sourceLayer: 'ensyurin_rinhanfgb',
+		minZoom: 10,
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`,
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
@@ -58,7 +56,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#00ff00',
+						value: '#33a02c',
 						pattern: null
 					}
 				},
@@ -195,6 +193,55 @@ const entry: VectorEntry<TileMetaData> = {
 		// 	}
 		// }
 	}
+	// auxiliaryLayers: {
+	// 	source: {
+	// 		ensyurin_syouhan_rinhan: {
+	// 			type: 'geojson',
+	// 			data: `${ENTRY_GEOJSON_PATH}/ensyurin_rinhan.geojson`,
+	// 			maxzoom: 14
+	// 		}
+	// 	},
+	// 	layers: [
+	// 		{
+	// 			id: 'ensyurin_rinhan_fill_layer',
+	// 			type: 'fill',
+	// 			maxzoom: 14,
+	// 			source: 'ensyurin_syouhan_rinhan',
+	// 			paint: {
+	// 				'fill-color': '#b2df8a',
+	// 				'fill-opacity': 0.5
+	// 			}
+	// 		},
+	// 		{
+	// 			id: 'ensyurin_rinhan_line_layer',
+	// 			type: 'line',
+	// 			maxzoom: 14,
+	// 			source: 'ensyurin_syouhan_rinhan',
+	// 			paint: {
+	// 				'line-color': '#ffffff',
+	// 				'line-width': 2
+	// 			}
+	// 		},
+	// 		{
+	// 			id: 'ensyurin_rinhan_label_layer',
+	// 			type: 'symbol',
+	// 			maxzoom: 14,
+	// 			source: 'ensyurin_syouhan_rinhan',
+	// 			layout: {
+	// 				'text-field': '{林班}林班',
+	// 				'text-font': ['Noto Sans JP Regular'],
+	// 				'text-size': 12,
+	// 				'text-anchor': 'center'
+	// 			},
+	// 			paint: {
+	// 				'text-color': '#000000',
+	// 				'text-halo-color': '#ffffff',
+	// 				'text-halo-width': 1
+	// 			}
+	// 		}
+	// 	]
+	// }
+	// default: {
 };
 
 export default entry;

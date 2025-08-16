@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
-	import { slide, fly } from 'svelte/transition';
+	import { slide, fly, fade } from 'svelte/transition';
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
@@ -9,8 +9,9 @@
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
-	import { showXYZTileLayer } from '$routes/stores/layers';
+	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import LayerControl from '$routes/map/components/layer_menu/LayerControl.svelte';
 
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 
@@ -365,20 +366,11 @@
 				</div>
 			{/if}
 		{/if}
-		<!-- {#if !$isStyleEdit && !$showDataMenu}
-		<div transition:fade={{ duration: 150 }} class="">
-			<Switch label="地名・道路など" bind:value={$showLabelLayer} />
-			{#if $isDebugMode}
-				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
-			{/if}
-			<button
-				onclick={resetLayers}
-				class="c-btn-sub pointer-events-auto flex shrink items-center justify-center gap-2"
-			>
-				<Icon icon="carbon:reset" class="h-6 w-6" />
-			</button>
-		</div>
-	{/if} -->
+		{#if !$isStyleEdit && !$showDataMenu}
+			<div transition:fade={{ duration: 150 }} class="p-3">
+				<LayerControl />
+			</div>
+		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->
 	</div>
 {/if}

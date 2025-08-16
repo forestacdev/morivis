@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '林野庁の「国有林GISデータ」の「小班区画」をベクトルタイルに加工したもの',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',
 		location: '全国',
-		tags: ['林班図', '国有林'],
+		tags: ['林班', '国有林'],
 		minZoom: 0,
 		maxZoom: 14,
 		sourceLayer: 'national_forest_stand',

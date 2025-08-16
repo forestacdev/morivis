@@ -1,14 +1,14 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
 
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { GeoJsonMetaData, PolygonEntry } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_siken',
 	type: 'vector',
 	format: {
-		type: 'pmtiles',
+		type: 'fgb',
 		geometryType: 'Polygon',
-		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
+		url: `${ENTRY_FGB_PATH}/ensyurin_siken.fgb`
 	},
 	metaData: {
 		name: '演習林 試験地',
@@ -18,7 +18,6 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 17,
 		minZoom: 8,
 		tags: ['森林'],
-		sourceLayer: 'ensyurin_sikenfgb',
 		bounds: [136.920084, 35.549852, 136.925498, 35.554401],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`
 	},

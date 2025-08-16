@@ -46,7 +46,7 @@ export const createSourcesItems = async (
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
-			const { metaData, format, type, style } = entry;
+			const { metaData, format, type, style, auxiliaryLayers } = entry;
 
 			switch (type) {
 				case 'raster': {
@@ -218,6 +218,14 @@ export const createSourcesItems = async (
 					break;
 			}
 
+			if (auxiliaryLayers) {
+				const { source } = auxiliaryLayers;
+
+				Object.entries(source).forEach(([auxiliarySourceId, auxiliarySource]) => {
+					const sourceKey = `${auxiliarySourceId}`;
+					items[sourceKey] = auxiliarySource as SourceSpecification;
+				});
+			}
 			return { index, items }; // インデックスを含めて返す
 		})
 	);

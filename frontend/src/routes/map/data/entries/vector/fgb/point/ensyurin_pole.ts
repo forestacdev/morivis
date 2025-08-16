@@ -10,8 +10,9 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_pole.fgb`
 	},
 	metaData: {
-		name: 'サインポール',
-		description: '演習林内のサインポール',
+		name: '林内サインポール',
+		description:
+			'演習林内とその周辺に設置されている赤いポール。緊急時の集合場所としての目印として使われる。',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['看板'],
