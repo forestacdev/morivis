@@ -106,6 +106,10 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 	return layerEntries.map((entry) => entry.id);
 };
 
+/** ベースマップ */
+export type BaseMapType = 'satellite' | 'hillshade';
+export const selectedBaseMap = writable<BaseMapType>('satellite');
+
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 

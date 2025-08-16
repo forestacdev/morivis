@@ -22,7 +22,7 @@ import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/la
 import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
-import { showStreetViewLayer } from '$routes/stores/layers';
+import { showStreetViewLayer, selectedBaseMap } from '$routes/stores/layers';
 
 import { geoDataEntries } from '$routes/map/data';
 import type { GeoDataEntry } from '$routes/map/data/types';

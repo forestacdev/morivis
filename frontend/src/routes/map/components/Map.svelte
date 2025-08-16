@@ -32,7 +32,13 @@
 
 	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
-	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
+	import {
+		selectedBaseMap,
+		showLabelLayer,
+		showStreetViewLayer,
+		showXYZTileLayer,
+		type BaseMapType
+	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -401,6 +407,10 @@
 	// レイヤーの更新を監視
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
