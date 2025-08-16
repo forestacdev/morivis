@@ -1,8 +1,7 @@
 import type {
 	PolygonStyle,
 	LineStringStyle,
-	PointStyle,
-	LabelStyle
+	PointStyle
 } from '$routes/map/data/types/vector/style';
 
 import type { FeatureCollection } from 'geojson';
@@ -73,18 +72,6 @@ export interface PointEntry<T> extends BaseVectorEntry {
 		data?: FeatureCollection;
 	};
 	style: PointStyle;
-}
-
-// TODO:使用していない
-export interface LabelEntry<T> extends BaseVectorEntry {
-	metaData: T;
-	format: {
-		type: VectorFormatType;
-		geometryType: 'Label';
-		url: string;
-		data?: FeatureCollection;
-	};
-	style: LabelStyle;
 }
 
 export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>;

@@ -13,33 +13,39 @@ import type { SpritePatternId } from './pattern';
 interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];
 	layout: FillLayerSpecification['layout'];
+	filter?: FillLayerSpecification['filter']; // Optional filter for fill layers
 }
 
 interface lineLayerStyle {
 	paint: LineLayerSpecification['paint'];
 	layout: LineLayerSpecification['layout'];
+	filter?: LineLayerSpecification['filter']; // Optional filter for line layers
 }
 
 interface circleLayerStyle {
 	paint: CircleLayerSpecification['paint'];
 	layout: CircleLayerSpecification['layout'];
+	filter?: CircleLayerSpecification['filter']; // Optional filter for circle layers
 }
 
 interface SymbolLayerStyle {
 	paint: SymbolLayerSpecification['paint'];
 	layout: SymbolLayerSpecification['layout'];
+	filter?: SymbolLayerSpecification['filter']; // Optional filter for symbol layers
 }
 
 // TODO: 押し出しポリゴンのスタイルを追加
 interface FillExtrusionLayerStyle {
 	paint: FillExtrusionLayerSpecification['paint'];
 	layout: FillExtrusionLayerSpecification['layout'];
+	filter?: FillExtrusionLayerSpecification['filter']; // Optional filter for fill-extrusion layers
 }
 
 // TODO: ヒートマップのスタイルを追加
 interface HeatmapLayerStyle {
 	paint: HeatmapLayerSpecification['paint'];
 	layout: HeatmapLayerSpecification['layout'];
+	filter?: HeatmapLayerSpecification['filter']; // Optional filter for heatmap layers
 }
 
 export interface PolygonDefaultStyle {
@@ -245,11 +251,4 @@ export interface PointStyle extends BaseVectorStyle {
 	default?: PointDefaultStyle;
 }
 
-export interface LabelStyle extends BaseVectorStyle {
-	type: 'symbol';
-	textSize: NumbersStyle;
-	outline: LabelOutLine;
-	default?: LabelDefaultStyle;
-}
-
-export type VectorStyle = PolygonStyle | LineStringStyle | PointStyle | LabelStyle;
+export type VectorStyle = PolygonStyle | LineStringStyle | PointStyle;

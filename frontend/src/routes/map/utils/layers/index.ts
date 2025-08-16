@@ -43,7 +43,6 @@ import type {
 	PointStyle,
 	PolygonStyle,
 	LineStringStyle,
-	LabelStyle,
 	PolygonOutLine
 } from '$routes/map/data/types/vector/style';
 
@@ -482,7 +481,14 @@ const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecif
 		},
 		layout: {
 			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
-		}
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.fill?.filter) {
+				return { filter: defaultStyle.fill.filter };
+			}
+			return {};
+		})()
 	};
 
 	return fillLayer;
@@ -498,6 +504,7 @@ const createFillPatternLayer = (
 		return undefined;
 	}
 	const opacity = getSelectedOpacityExpression(style.opacity);
+	const defaultStyle = style.default;
 
 	const fillPatternLayer: FillLayerSpecification = {
 		...layer,
@@ -507,14 +514,22 @@ const createFillPatternLayer = (
 			'fill-pattern': patternExpression,
 			'fill-opacity': opacity
 		},
-		layout: {}
+		layout: {},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.fill?.filter) {
+				return { filter: defaultStyle.fill.filter };
+			}
+			return {};
+		})()
 	};
 
 	return fillPatternLayer;
 };
 
 // ポリゴンのアウトラインレイヤーの作成
-const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: number) => {
+const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
+	const defaultStyle = style.default;
 	// TODO ライン幅固定関数
 	const _createExponentialLineWidth = (baseWidth: number, baseZoom: number) => {
 		return [
@@ -531,14 +546,21 @@ const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: 
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,
-		minzoom: outline.minZoom ? outline.minZoom : layer.minzoom,
+		minzoom: style.outline.minZoom ? style.outline.minZoom : layer.minzoom,
 		type: 'line',
 		paint: {
-			'line-color': outline.color,
-			'line-width': outline.width,
-			'line-opacity': opacity,
-			...(outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
-		}
+			'line-color': style.outline.color,
+			'line-width': style.outline.width,
+			'line-opacity': style.opacity,
+			...(style.outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.line?.filter) {
+				return { filter: defaultStyle.line.filter };
+			}
+			return {};
+		})()
 	};
 	return outlineLayer;
 };
@@ -561,7 +583,14 @@ const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpe
 		},
 		layout: {
 			...(defaultStyle && defaultStyle.line ? defaultStyle.line.layout : {})
-		}
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.line?.filter) {
+				return { filter: defaultStyle.line.filter };
+			}
+			return {};
+		})()
 	};
 
 	// TODO width line-gradient
@@ -589,43 +618,16 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 		},
 		layout: {
 			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.layout : {})
-		}
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.circle?.filter) {
+				return { filter: defaultStyle.circle.filter };
+			}
+			return {};
+		})()
 	};
 	return circleLayer;
-};
-
-// TODO: 破棄する
-// ラベルレイヤーの作成
-const createLabelLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const key = style.labels.key as keyof Labels;
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}`,
-		type: 'symbol',
-		paint: {
-			'text-opacity': style.opacity,
-			'icon-opacity': style.opacity,
-			'text-color': color,
-			'text-halo-color': '#FFFFFF',
-			'text-halo-width': 2,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
-		},
-		layout: {
-			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
-			'text-size': 12,
-			'text-max-width': 12,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
-
-			// "text-variable-anchor": ["top", "bottom", "left", "right"],
-			// "text-radial-offset": 0.5,
-			// "text-justify": "auto",
-		}
-	};
-
-	// TODO: text-halo-color text-halo-width text-size
-	return symbolLayer;
 };
 
 // ポイントのicon用レイヤーの作成
@@ -668,7 +670,14 @@ const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerS
 			// "text-variable-anchor": ["top", "bottom", "left", "right"],
 			// "text-radial-offset": 0.5,
 			// "text-justify": "auto",
-		}
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
 	};
 
 	// TODO: text-halo-color text-halo-width text-size
@@ -704,7 +713,14 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 			'text-radial-offset': 0.5,
 			'text-justify': 'auto'
-		}
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
 	};
 
 	// TODO: text-halo-color text-halo-width text-size
@@ -742,9 +758,6 @@ const createVectorLayer = (
 					console.warn(`未対応の style.markerType: ${style.markerType} （layer.id: ${layer.id}）`);
 					return undefined;
 			}
-		}
-		case 'symbol': {
-			return createLabelLayer(layer, style);
 		}
 		default:
 			console.warn(`対応してないstyle.typeのデータ: ${layer.id}`);
@@ -878,7 +891,7 @@ export const createLayersItems = (
 
 						// ポリゴンのアウトライン
 						if (style.outline.show) {
-							const lineLayer = createOutLineLayer(layer, style.outline, style.opacity);
+							const lineLayer = createOutLineLayer(layer, style);
 							fillLayerItems.push(lineLayer);
 						}
 					}

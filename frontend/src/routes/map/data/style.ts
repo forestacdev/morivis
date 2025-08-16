@@ -2,7 +2,6 @@ import type {
 	PolygonStyle,
 	LineStringStyle,
 	PointStyle,
-	LabelStyle,
 	Labels,
 	ColorMatchExpression
 } from '$routes/map/data/types/vector/style';
