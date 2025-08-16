@@ -22,7 +22,7 @@ import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/la
 import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
 
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
-import { showStreetViewLayer, selectedBaseMap } from '$routes/stores/layers';
+import { showStreetViewLayer, selectedBaseMap, showRoadLayer } from '$routes/stores/layers';
 
 import { geoDataEntries } from '$routes/map/data';
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -47,7 +47,7 @@ import type {
 } from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
-import { getLabelLayers, getLoadLayers } from '$routes/map/utils/layers/label';
+import { getLabelLayers, getRoadLayers } from '$routes/map/utils/layers/label';
 import { showLabelLayer } from '$routes/stores/layers';
 import { poiStyleJson } from '$routes/map/utils/layers/poi';
 
@@ -965,7 +965,7 @@ export const createLayersItems = (
 
 	// デフォルトラベルの表示
 	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
-	const mapLineItems = get(showLabelLayer) && _type === 'main' ? getLoadLayers() : [];
+	const mapLineItems = get(showRoadLayer) && _type === 'main' ? getRoadLayers() : [];
 
 	// POIレイヤーの表示
 	const poiLayers = get(showLabelLayer) && _type === 'main' ? poiStyleJson.layers : [];

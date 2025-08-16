@@ -113,6 +113,9 @@ export const selectedBaseMap = writable<BaseMapType>('satellite');
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 
+/** 道路レイヤー */
+export const showRoadLayer = writable<boolean>(true);
+
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);
 

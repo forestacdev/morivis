@@ -6,7 +6,12 @@
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 
-	import { selectedBaseMap, showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
+	import {
+		selectedBaseMap,
+		showLabelLayer,
+		showXYZTileLayer,
+		showRoadLayer
+	} from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 
 	import type { LngLatBoundsLike } from 'maplibre-gl';
@@ -84,14 +89,6 @@
 			/>
 		</button>
 		<div class="flex items-center">
-			<button
-				onclick={() => {
-					showMenuType = showMenuType === 'layer' ? null : 'layer';
-				}}
-				class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
-			>
-				<Icon icon="ci:layer" class="h-8 w-8 text-base" />
-			</button>
 			<TerrainControl />
 			<GeolocateControl />
 
@@ -105,6 +102,16 @@
 			class="bg-sub absolute bottom-[100px] z-10 flex w-full flex-col rounded-lg p-2 text-base shadow-lg"
 		>
 			{#if showMenuType === 'baseMap'}
+				<div>
+					<div>レイヤ</div>
+					<div class="flex w-full flex-col">
+						{#if import.meta.env.DEV}
+							<Switch label="地名等" bind:value={$showLabelLayer} />
+							<Switch label="道路" bind:value={$showRoadLayer} />
+							<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+						{/if}
+					</div>
+				</div>
 				<div class="">
 					<div>背景地図</div>
 					<div class="flex gap-4">
@@ -131,15 +138,6 @@
 							</button>
 						{/each}
 					</div>
-				</div>
-			{/if}
-
-			{#if showMenuType === 'layer'}
-				<div class="flex w-full flex-col gap-1">
-					{#if import.meta.env.DEV}
-						<Switch label="ラベル" bind:value={$showLabelLayer} />
-						<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
-					{/if}
 				</div>
 			{/if}
 		</div>

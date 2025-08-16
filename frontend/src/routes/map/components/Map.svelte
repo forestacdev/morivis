@@ -37,6 +37,7 @@
 		showLabelLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
+		showRoadLayer,
 		type BaseMapType
 	} from '$routes/stores/layers';
 
@@ -416,6 +417,10 @@
 
 	// ラベルの表示
 	showLabelLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
+	showRoadLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
