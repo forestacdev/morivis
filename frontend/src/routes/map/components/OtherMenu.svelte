@@ -181,7 +181,7 @@
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 					onclick={pwaInstall}
-					><Icon icon="grommet-icons:install-option" class="h-8 w-8" />
+					><Icon icon="grommet-icons:install-option" class="h-8 w-8 scale-95" />
 					<span>アプリをインストール</span>
 				</button>
 			{/if}

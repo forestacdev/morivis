@@ -320,6 +320,7 @@ const createMapStore = () => {
 				pitch: map.getPitch(),
 				bearing: map.getBearing()
 			});
+
 			mooveEndEvent.set(e);
 
 			if (import.meta.env.DEV) {

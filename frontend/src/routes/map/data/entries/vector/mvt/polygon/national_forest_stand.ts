@@ -600,7 +600,7 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: '樹種１',
 			show: true,
-			minZoom: 11,
+			minZoom: 12,
 			expressions: [
 				{
 					key: 'ID',
