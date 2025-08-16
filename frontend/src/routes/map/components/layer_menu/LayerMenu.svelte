@@ -3,7 +3,6 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
@@ -358,13 +357,6 @@
 				icon="proicons:layers"
 				class="absolute bottom-[200px] left-2 -z-10 h-60 w-60 text-gray-700 opacity-50"
 			/> -->
-			{#if $isDebugMode}
-				<div
-					class="border-1 mx-2 flex items-center justify-between gap-2 rounded-lg border-gray-500/50 bg-black p-2"
-				>
-					<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
-				</div>
-			{/if}
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
 			<div transition:fade={{ duration: 150 }} class="p-3">

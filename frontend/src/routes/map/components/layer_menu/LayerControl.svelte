@@ -1,29 +1,40 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 
-	import { selectedBaseMap, showLabelLayer } from '$routes/stores/layers';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
+
+	import { selectedBaseMap, showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
-	import { isBBoxInside } from '$routes/map/utils/map';
+
 	import type { LngLatBoundsLike } from 'maplibre-gl';
+	import StreetViewControl from '../map_control/StreetViewControl.svelte';
+	import { isDebugMode } from '$routes/stores';
+	import { fly } from 'svelte/transition';
+	import { isBBoxInside } from '$routes/map/utils/map';
+
 	import type { BaseMapType } from '$routes/stores/layers';
 
 	const toggleLayer = () => {
 		showLabelLayer.set(!$showLabelLayer);
 	};
 
-	let showMenu = $state<boolean>(false);
+	type MenuType = 'baseMap' | 'layer' | null;
+
+	let showMenuType = $state<MenuType>(null);
 
 	let containerRef = $state<HTMLElement>();
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (showMenu && containerRef && !containerRef.contains(event.target as Node)) {
-				showMenu = false;
+			if (showMenuType && containerRef && !containerRef.contains(event.target as Node)) {
+				showMenuType = null;
 			}
 		};
 
-		if (showMenu) {
+		if (showMenuType) {
 			document.addEventListener('click', handleClickOutside);
 		}
 
@@ -55,10 +66,10 @@
 </script>
 
 <div bind:this={containerRef} class="relative">
-	<div class="rounded-lg bg-black p-2">
+	<div class="flex items-center justify-between rounded-lg bg-black p-2">
 		<button
 			onclick={() => {
-				showMenu = !showMenu;
+				showMenuType = showMenuType === 'baseMap' ? null : 'baseMap';
 			}}
 			class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 		>
@@ -69,40 +80,68 @@
 					.replace('{y}', String(xyz.y))
 					.replace('{z}', String(xyz.z))}
 				alt="背景地図"
-				class="h-14 w-14 rounded-lg"
+				class="c-no-drag-icon h-14 w-14 rounded-lg"
 			/>
 		</button>
+		<div class="flex items-center">
+			<button
+				onclick={() => {
+					showMenuType = showMenuType === 'layer' ? null : 'layer';
+				}}
+				class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
+			>
+				<Icon icon="ci:layer" class="h-8 w-8 text-base" />
+			</button>
+			<TerrainControl />
+			<GeolocateControl />
+
+			<StreetViewControl />
+		</div>
 	</div>
 
-	{#if showMenu}
-		<div class="bg-base absolute bottom-[100px] z-10 flex flex-col rounded-lg p-2 shadow-lg">
-			<div class="">
-				<div>背景地図</div>
-				<div class="flex gap-4">
-					{#each baseMapList as baseMap}
-						<button
-							onclick={() => {
-								if ($selectedBaseMap === baseMap.type) return;
-								$selectedBaseMap = baseMap.type;
-							}}
-							class="flex cursor-pointer flex-col items-center justify-start gap-2 rounded-md border-2 p-2 transition-colors duration-150 hover:bg-gray-100 {$selectedBaseMap ===
-							baseMap.type
-								? 'border-accent'
-								: 'border-transparent'}"
-						>
-							<img
-								src={baseMap.src
-									.replace('{x}', String(xyz.x))
-									.replace('{y}', String(xyz.y))
-									.replace('{z}', String(xyz.z))}
-								alt={baseMap.label}
-								class="h-16 w-16 rounded-lg"
-							/>
-							<span class="text-xs"> {baseMap.label}</span>
-						</button>
-					{/each}
+	{#if showMenuType}
+		<div
+			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
+			class="bg-sub absolute bottom-[100px] z-10 flex w-full flex-col rounded-lg p-2 text-base shadow-lg"
+		>
+			{#if showMenuType === 'baseMap'}
+				<div class="">
+					<div>背景地図</div>
+					<div class="flex gap-4">
+						{#each baseMapList as baseMap}
+							<button
+								onclick={() => {
+									if ($selectedBaseMap === baseMap.type) return;
+									$selectedBaseMap = baseMap.type;
+								}}
+								class="flex cursor-pointer select-none flex-col items-center justify-start gap-2 rounded-md border-2 p-2 transition-colors duration-150 {$selectedBaseMap ===
+								baseMap.type
+									? 'border-accent'
+									: 'border-transparent'}"
+							>
+								<img
+									src={baseMap.src
+										.replace('{x}', String(xyz.x))
+										.replace('{y}', String(xyz.y))
+										.replace('{z}', String(xyz.z))}
+									alt={baseMap.label}
+									class="c-no-drag-icon h-16 w-16 rounded-lg"
+								/>
+								<span class="text-xs"> {baseMap.label}</span>
+							</button>
+						{/each}
+					</div>
 				</div>
-			</div>
+			{/if}
+
+			{#if showMenuType === 'layer'}
+				<div class="flex w-full flex-col gap-1">
+					{#if import.meta.env.DEV}
+						<Switch label="ラベル" bind:value={$showLabelLayer} />
+						<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+					{/if}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
