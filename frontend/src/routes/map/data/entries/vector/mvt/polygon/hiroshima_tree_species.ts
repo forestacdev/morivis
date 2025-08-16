@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://raw.githubusercontent.com/forestacdev/tiles-tree-species-hiroshima/main/tiles/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '広島県・樹種ポリゴン',
+		name: '広島県 樹種ポリゴン',
 		attribution: '広島県林業課（林野庁加工）',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-hiroshima-maptiles',
 		location: '広島県',
@@ -120,8 +120,8 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '面積_ha',
-					name: '面積_ha',
-					value: '{面積_ha}'
+					name: '面積',
+					value: '{面積_ha} ha'
 				},
 				{
 					key: '森林計測年',

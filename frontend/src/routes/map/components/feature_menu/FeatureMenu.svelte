@@ -144,9 +144,9 @@
 			</button>
 		</div>
 
-		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden">
+		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2">
 			<!-- 画像 -->
-			<div class="relative w-full p-2 pl-4">
+			<div class="b relative w-full p-2">
 				{#if srcData && data && !data.medias}
 					<img
 						in:fade
@@ -199,7 +199,7 @@
 				{/if}
 
 				<div
-					class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 p-4 text-base"
+					class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base"
 				>
 					{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 						<!-- poiタイトル -->
@@ -224,8 +224,9 @@
 
 			<div class="pl-2">
 				<!-- 詳細情報 -->
-				<div class="flex h-full w-full flex-col gap-2 p-2">
+				<div class="flex h-full w-full flex-col gap-2 pr-2">
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
+						<!-- 座標 -->
 						<div class="flex w-full justify-start gap-2">
 							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
 							<span class="text-accent"
@@ -233,6 +234,7 @@
 							>
 						</div>
 
+						<!-- url -->
 						{#if data}
 							{#if data.url}
 								<a
@@ -259,8 +261,12 @@
 
 				<!-- 通常の地物の属性情報 -->
 				{#if !propId}
-					<div class="mb-56 flex h-full w-full flex-col gap-2">
-						<div class="my-4 text-base text-lg">属性情報</div>
+					<div class="my-4 flex items-center gap-1 text-base text-lg">
+						<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" /><span
+							>データ内容</span
+						>
+					</div>
+					<div class="mb-56 flex h-full w-full flex-col gap-3">
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
 								{#if key !== '_prop_id' && value}
@@ -274,7 +280,7 @@
 				{#if featureMenuData.layerId !== 'fac_poi'}
 					<button
 						onclick={edit}
-						class="c-btn-confirm absolute left-3 top-3 z-10 flex items-center justify-center gap-2"
+						class="c-btn-confirm absolute left-3 top-3 z-10 flex items-center justify-center gap-2 px-3"
 					>
 						<Icon icon="mdi:mixer-settings" class="h-6 w-6" />
 						<span class="select-none">カスタマイズ</span>

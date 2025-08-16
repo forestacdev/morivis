@@ -243,7 +243,6 @@ export const TREE_MATCH_COLOR_STYLE: ColorMatchExpression = {
 			'ブナ',
 			'その他L', // 広葉樹
 			'タケ',
-
 			'針広混交林',
 			'新植地',
 			'伐採跡地',

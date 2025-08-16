@@ -531,6 +531,7 @@ const createOutLineLayer = (layer: LayerItem, outline: PolygonOutLine, opacity: 
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
 		id: `${layer.id}_outline`,
+		minzoom: outline.minZoom ? outline.minZoom : layer.minzoom,
 		type: 'line',
 		paint: {
 			'line-color': outline.color,
@@ -682,6 +683,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
 		id: `${layer.id}_label`,
+		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
 		type: 'symbol',
 		paint: {
 			'text-opacity': 1,

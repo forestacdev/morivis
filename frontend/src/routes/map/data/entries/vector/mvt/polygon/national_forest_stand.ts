@@ -9,7 +9,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'mvt',
 		geometryType: 'Polygon',
-		url: 'https://raw.githubusercontent.com/forestacdev/tiles-national-forest-stand/main/tiles/{z}/{x}/{y}.pbf'
+		url: 'https://forestacdev.github.io/tiles-national-forest-stand/tiles/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
 		name: '国有林 小班区画',
@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: { x: 7309, y: 3016, z: 13 }
+		xyzImageTile: { x: 3626, y: 1598, z: 12 }
 	},
 	properties: {
 		keys: [
@@ -95,9 +95,21 @@ const entry: VectorEntry<TileMetaData> = {
 						categories: [
 							'スギ',
 							'ヒノキ',
+							'カラマツ',
+							'トドマツ',
+							'エゾマツ',
+							'アカマツ',
+							'その他針葉樹',
+							'クヌギ',
+							'コナラ',
+							'ブナ',
+							'その他広葉樹',
+							'マダケ',
+
 							'リキダマツ',
-							'ウワミズサクラ',
+							'天然ヒノキ',
 							'天然スギ',
+							'ウワミズサクラ',
 							'ストローブマツ',
 							'ヤマサクラ',
 							'コウヨウザン',
@@ -105,7 +117,7 @@ const entry: VectorEntry<TileMetaData> = {
 							'エドヒガン',
 							'ダフリカカラマツ',
 							'キハダ',
-							'天然ヒノキ',
+
 							'シベリアカラマツ',
 							'イタヤカエデ',
 							'サワラ',
@@ -114,11 +126,8 @@ const entry: VectorEntry<TileMetaData> = {
 							'ヒバ',
 							'外国針葉樹',
 							'イロハモミジ',
-							'カラマツ',
-							'その他針葉樹',
 							'トチノキ',
 							'天然カラマツ',
-							'ブナ',
 							'シナノキ',
 							'グイマツ',
 							'イヌブナ',
@@ -126,7 +135,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'グイマツＦ１',
 							'クリ',
 							'センノキ',
-							'アカマツ',
 							'アカガシ',
 							'シオジ',
 							'天然アカマツ',
@@ -147,8 +155,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'チョウセンゴヨウ',
 							'ウバメガシ',
 							'ミズキ',
-							'トドマツ',
-							'クヌギ',
 							'リョウブ',
 							'天然トドマツ',
 							'アベマキ',
@@ -156,8 +162,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'アオモリトドマツ',
 							'ミズナラ',
 							'ツバキ',
-							'エゾマツ',
-							'コナラ',
 							'ヤブツバキ',
 							'天然エゾマツ',
 							'カシワ',
@@ -218,13 +222,11 @@ const entry: VectorEntry<TileMetaData> = {
 							'アキグミ',
 							'イチイ',
 							'カツラ',
-							'その他広葉樹',
 							'ドイツトウヒ',
 							'ホオノキ',
 							'その他外来広葉樹',
 							'フランスカイガンショウ',
 							'クス',
-							'マダケ',
 							'レジノーサマツ',
 							'タブ',
 							'ハチク',
@@ -579,7 +581,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'step',
 					key: '樹立林齢３',
-					name: '樹立林齢２による色分け',
+					name: '樹立林齢３による色分け',
 					mapping: {
 						range: [0, 415.0],
 						divisions: 10,
@@ -590,6 +592,7 @@ const entry: VectorEntry<TileMetaData> = {
 		},
 		outline: {
 			show: true,
+			minZoom: 11,
 			color: '#ffffff',
 			width: 0.5,
 			lineStyle: 'dashed'
@@ -597,6 +600,7 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: '樹種１',
 			show: true,
+			minZoom: 11,
 			expressions: [
 				{
 					key: 'ID',
@@ -656,7 +660,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '材積',
 					name: '材積',
-					value: '{材積}'
+					value: '{材積} m3'
 				},
 				{
 					key: '国有林名',
@@ -721,7 +725,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '面積',
 					name: '面積',
-					value: '{面積}'
+					value: '{面積} ha'
 				},
 				{
 					key: '保安林１',

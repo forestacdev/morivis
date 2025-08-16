@@ -185,6 +185,7 @@ export interface LabelsExpressions {
 export interface Labels {
 	key: string;
 	show: boolean;
+	minZoom?: number;
 	expressions: LabelsExpressions[];
 }
 
@@ -199,6 +200,7 @@ interface BaseVectorStyle {
 
 export interface PolygonOutLine {
 	show: boolean;
+	minZoom?: number;
 	color: string;
 	width: number;
 	lineStyle: 'solid' | 'dashed';

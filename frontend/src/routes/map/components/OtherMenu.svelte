@@ -192,7 +192,7 @@
 				{/if}
 			{/if}
 		</ui>
-		<ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui>
+		<!-- <ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui> -->
 	</div>
 {/if}
 

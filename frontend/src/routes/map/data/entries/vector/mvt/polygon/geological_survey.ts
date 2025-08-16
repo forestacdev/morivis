@@ -9,7 +9,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'mvt',
 		geometryType: 'Polygon',
-		url: 'https://raw.githubusercontent.com/forestacdev/tiles-geological-survey/main/tiles/{z}/{x}/{y}.pbf'
+		url: 'https://forestacdev.github.io/tiles-geological-survey/tiles/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
 		name: '全国地質図',

@@ -118,8 +118,8 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '面積_ha',
-					name: '面積_ha',
-					value: '{面積_ha}'
+					name: '面積',
+					value: '{面積_ha} ha'
 				},
 				{
 					key: '森林計測年',

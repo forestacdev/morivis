@@ -17,10 +17,9 @@
 
 <div class="flex flex-col items-start justify-center">
 	<div class="flex items-center justify-center gap-1">
-		<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" />
 		<span class="text-base font-semibold">{key}</span>
 	</div>
-	<div class="w-full pl-6 pt-2 lg:pr-2">
+	<div class="w-full pt-2 lg:pr-2">
 		<button
 			onclick={() => {
 				if (checkPc()) copyToClipboard(value);
