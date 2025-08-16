@@ -14,6 +14,7 @@
 	import { showSearchMenu } from '$routes/stores/ui';
 	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -54,6 +55,10 @@
 		for (let i = 0; i < features.length; i++) {
 			const feature = features[i];
 			const props = feature.properties;
+			const propId = props._prop_id;
+
+			// TODO: propを整理
+			props.iconImage = `${ICON_IMAGE_BASE_PATH}/${propId}.webp`;
 
 			// Point geometryかどうかをチェック
 			if (feature.geometry.type !== 'Point') {
@@ -61,7 +66,7 @@
 			}
 
 			const coords = feature.geometry.coordinates as [number, number];
-			const propId = props._prop_id;
+
 			const featureId = feature.id as string;
 
 			if (propId) {
