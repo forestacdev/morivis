@@ -180,7 +180,8 @@ async function _generateMapImageParallel(
 		map.setBearing(bearing);
 		map.setPitch(pitch);
 		map.fitBounds(mapBounds, {
-			duration: 0
+			duration: 0,
+			animate: false
 		});
 
 		// Mapの設定
@@ -248,7 +249,8 @@ async function _generateMapImageParallel(
 				map.setBearing(bearing);
 				map.setPitch(pitch);
 				map.fitBounds(mapBounds, {
-					duration: 0
+					duration: 0,
+					animate: false
 				});
 
 				// idle イベントで画像生成

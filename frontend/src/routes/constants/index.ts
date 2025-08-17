@@ -48,9 +48,8 @@ export const MAP_POSITION: MapPosition = {
 	center: [136.921382, 35.55356],
 	zoom: 16,
 	pitch: 0,
-	bearing: 0
-
-	// bounds: [136.91278, 35.543576, 136.92986, 35.556704]
+	bearing: 0,
+	bounds: [136.91917, 35.54692, 136.926817, 35.555122]
 };
 
 /** アイコン用画像タイルのXYZ */

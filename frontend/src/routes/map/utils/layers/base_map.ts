@@ -1,8 +1,42 @@
+import type { BaseMapType } from '$routes/stores/layers';
+
 import type {
 	RasterLayerSpecification,
 	BackgroundLayerSpecification,
 	RasterSourceSpecification
 } from 'maplibre-gl';
+
+const basemapXYZ = { x: 28846, y: 12917, z: 15 };
+export const baseMapList: {
+	type: BaseMapType;
+	label: string;
+	src: string;
+}[] = [
+	{
+		type: 'satellite',
+		label: '航空写真',
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto2018/{z}/{x}/{y}.png'
+			.replace('{x}', String(basemapXYZ.x))
+			.replace('{y}', String(basemapXYZ.y))
+			.replace('{z}', String(basemapXYZ.z))
+	},
+	{
+		type: 'hillshade',
+		label: '地形図',
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'
+			.replace('{x}', String(basemapXYZ.x))
+			.replace('{y}', String(basemapXYZ.y))
+			.replace('{z}', String(basemapXYZ.z))
+	},
+	{
+		type: 'osm',
+		label: 'OpenStreetMap',
+		src: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+			.replace('{x}', String(basemapXYZ.x))
+			.replace('{y}', String(basemapXYZ.y))
+			.replace('{z}', String(basemapXYZ.z))
+	}
+];
 
 /** 航空写真 */
 export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> = {

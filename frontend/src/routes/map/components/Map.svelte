@@ -149,8 +149,6 @@
 		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
 
-		console.log('layers', layers);
-
 		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};

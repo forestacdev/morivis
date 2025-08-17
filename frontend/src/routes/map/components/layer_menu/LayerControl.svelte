@@ -16,8 +16,9 @@
 	import { fly } from 'svelte/transition';
 
 	import type { BaseMapType } from '$routes/stores/layers';
+	import { baseMapList } from '$routes/map/utils/layers/base_map';
 
-	let showMenu = $state<boolean>(true);
+	let showMenu = $state<boolean>(false);
 
 	let containerRef = $state<HTMLElement>();
 
@@ -37,32 +38,6 @@
 		};
 	});
 
-	const baseMapList = $state.raw<
-		{
-			type: BaseMapType;
-			label: string;
-			src: string;
-		}[]
-	>([
-		{
-			type: 'satellite',
-			label: '航空写真',
-			src: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto2018/{z}/{x}/{y}.png'
-		},
-		{
-			type: 'hillshade',
-			label: '地形図',
-			src: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'
-		},
-		{
-			type: 'osm',
-			label: 'OpenStreetMap',
-			src: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-		}
-	]);
-
-	const xyz = { x: 28846, y: 12917, z: 15 };
-
 	let isOsm = $derived.by(() => {
 		return $selectedBaseMap === 'osm';
 	});
@@ -77,11 +52,7 @@
 			class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 		>
 			<img
-				src={baseMapList
-					.find((map) => map.type === $selectedBaseMap)
-					?.src.replace('{x}', String(xyz.x))
-					.replace('{y}', String(xyz.y))
-					.replace('{z}', String(xyz.z))}
+				src={baseMapList.find((map) => map.type === $selectedBaseMap)?.src}
 				alt="ベースマップ"
 				class="c-no-drag-icon h-14 w-14 rounded-lg"
 			/>
@@ -101,7 +72,7 @@
 			<div class="flex flex-col gap-2">
 				<div>レイヤ</div>
 
-				<div class="ml-6 grid w-full grid-cols-2 items-center justify-center gap-y-2">
+				<div class="ml-6 grid w-full grid-cols-2 items-center justify-center gap-y-4">
 					<Checkbox label="アカデミー施設等" bind:value={$showPoiLayer} />
 					<Checkbox label="境界線" bind:value={$showBoundaryLayer} disabled={isOsm} />
 					<Checkbox label="地名等" bind:value={$showLabelLayer} disabled={isOsm} />
@@ -126,10 +97,7 @@
 								: 'border-transparent'}"
 						>
 							<img
-								src={baseMap.src
-									.replace('{x}', String(xyz.x))
-									.replace('{y}', String(xyz.y))
-									.replace('{z}', String(xyz.z))}
+								src={baseMap.src}
 								alt={baseMap.label}
 								class="c-no-drag-icon h-16 w-16 rounded-lg"
 							/>

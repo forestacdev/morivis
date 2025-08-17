@@ -356,7 +356,7 @@
 			/> -->
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
-			<div transition:fade={{ duration: 150 }} class="p-3">
+			<div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
 			</div>
 		{/if}

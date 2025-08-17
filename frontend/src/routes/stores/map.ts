@@ -409,7 +409,8 @@ const createMapStore = () => {
 	// 森林文化アカデミーへジャンプするメソッド
 	const jumpToFac = () => {
 		if (!map || !isMapValid(map)) return;
-		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		// const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		const bounds = [136.91917, 35.54692, 136.926817, 35.555122] as LngLatBoundsLike;
 		map.fitBounds(bounds, {
 			padding: 20,
 			bearing: map.getBearing(),
