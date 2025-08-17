@@ -64,6 +64,11 @@
 			type: 'hillshade',
 			label: '地形図',
 			src: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'
+		},
+		{
+			type: 'osm',
+			label: 'OpenStreetMap',
+			src: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 		}
 	]);
 

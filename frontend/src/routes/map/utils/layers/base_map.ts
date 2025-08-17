@@ -8,11 +8,13 @@ import type {
 export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> = {
 	base_usgs_imagery_only: {
 		type: 'raster',
-		tiles: [
-			'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
-		],
+		// tiles: [
+		// 	'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
+		// ],
+		tiles: ['https://forestacdev.github.io/tiles-usgs-imagery-only/tiles/{z}/{x}/{y}.webp'],
+
 		tileSize: 256,
-		maxzoom: 9,
+		maxzoom: 8,
 		attribution: 'USGS'
 	},
 	base_seamlessphoto: {
@@ -117,6 +119,33 @@ export const baseMaphillshadeLayers: (RasterLayerSpecification | BackgroundLayer
 		maxzoom: 24,
 		paint: {
 			'raster-opacity': 0.7
+		}
+	}
+];
+
+/** osm */
+export const baseMapOsmSources: Record<string, RasterSourceSpecification> = {
+	osm: {
+		type: 'raster',
+		tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+		tileSize: 256,
+		minzoom: 0,
+		maxzoom: 24,
+		attribution: '© OpenStreetMap contributors'
+	}
+};
+
+export const baseMapOsmLayers: (RasterLayerSpecification | BackgroundLayerSpecification)[] = [
+	{
+		id: 'osm_layer',
+		source: 'osm',
+		type: 'raster',
+		minzoom: 0,
+		maxzoom: 24,
+		paint: {
+			'raster-opacity': 0.9,
+			'raster-brightness-min': 0,
+			'raster-brightness-max': 0.9
 		}
 	}
 ];

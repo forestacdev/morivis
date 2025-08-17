@@ -9,7 +9,8 @@ export const roadSources: Record<string, VectorSourceSpecification> = {
 		type: 'vector',
 		minzoom: 4,
 		maxzoom: 16,
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+		url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
+		// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
 		attribution: '国土地理院最適化ベクトルタイル'
 	}
 };

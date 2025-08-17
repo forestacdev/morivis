@@ -49,7 +49,11 @@ import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { poiLayers } from '$routes/map/utils/layers/poi';
-import { baseMapSatelliteLayers, baseMaphillshadeLayers } from '$routes/map/utils/layers/base_map';
+import {
+	baseMapSatelliteLayers,
+	baseMaphillshadeLayers,
+	baseMapOsmLayers
+} from '$routes/map/utils/layers/base_map';
 import {
 	showPoiLayer,
 	showLabelLayer,
@@ -973,6 +977,8 @@ export const createLayersItems = (
 			baseMapLayerItems = baseMapSatelliteLayers;
 		} else if (get(selectedBaseMap) === 'hillshade') {
 			baseMapLayerItems = baseMaphillshadeLayers;
+		} else if (get(selectedBaseMap) === 'osm') {
+			baseMapLayerItems = baseMapOsmLayers;
 		} else {
 			baseMapLayerItems = [];
 		}
@@ -980,30 +986,19 @@ export const createLayersItems = (
 		baseMapLayerItems = [];
 	}
 
-	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
-	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
-	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
-	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
-	const boundaryLayerItems = get(showBoundaryLayer) && _type === 'main' ? boundaryLayers : [];
+	const isNotOsm = get(selectedBaseMap) !== 'osm';
+
+	const poiLayerItems = get(showPoiLayer) && _type === 'main' && isNotOsm ? poiLayers : [];
+	const labelLayerItems = get(showLabelLayer) && _type === 'main' && isNotOsm ? labelLayers : [];
+	const roadLabelLayerItems =
+		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLabelLayers : [];
+	const roadLineLayerItems =
+		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLineLayers : [];
+	const boundaryLayerItems =
+		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
 
 	const cloudLayerItems =
 		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
-
-	console.log([
-		...baseMapLayerItems,
-		...rasterLayerItems,
-		...boundaryLayerItems,
-		...roadLineLayerItems,
-		...fillLayerItems,
-		...lineLayerItems,
-		...circleLayerItems,
-		...streetViewLayers,
-		...cloudLayerItems,
-		...labelLayerItems,
-		...roadLabelLayerItems,
-		...symbolLayerItems,
-		...poiLayerItems
-	]);
 
 	return [
 		...baseMapLayerItems,

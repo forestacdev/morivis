@@ -17,7 +17,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		attribution: 'OSM',
 		location: '世界',
 		minZoom: 0,
-		maxZoom: 22,
+		maxZoom: 24,
 		tileSize: 256,
 		tags: ['背景地図'],
 		bounds: WEB_MERCATOR_WORLD_BBOX

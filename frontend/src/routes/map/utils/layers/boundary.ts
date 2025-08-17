@@ -16,7 +16,7 @@ export const boundaryLayers: LineLayerSpecification[] = [
 		filter: ['in', 'admin_level', 4, 6, 8],
 		layout: { visibility: 'visible' },
 		paint: {
-			'line-color': 'rgba(255, 255, 255, 0.5)',
+			'line-color': 'rgba(255, 255, 255, 1)',
 			'line-dasharray': [2, 1]
 		}
 	},

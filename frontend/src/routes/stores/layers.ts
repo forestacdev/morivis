@@ -107,7 +107,7 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 };
 
 /** ベースマップ */
-export type BaseMapType = 'satellite' | 'hillshade';
+export type BaseMapType = 'satellite' | 'hillshade' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
 /** アカデミーPOI */

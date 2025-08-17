@@ -165,6 +165,14 @@
 					maxzoom: 18,
 					attribution: '地理院タイル'
 				},
+				preview_base_2: {
+					type: 'vector',
+					minzoom: 4,
+					maxzoom: 16,
+					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
+					// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+					attribution: '国土地理院最適化ベクトルタイル'
+				},
 				tile_grid: {
 					type: 'raster',
 					tiles: ['./tile_grid.png'],
@@ -183,7 +191,7 @@
 				// 	}
 				// },
 				{
-					id: 'preview_base_layer',
+					id: 'preview_base_layer_1',
 					source: 'preview_base_1',
 					type: 'raster',
 					maxzoom: 24,
@@ -191,6 +199,23 @@
 						'raster-opacity': 1.0,
 						'raster-brightness-max': 0,
 						'raster-brightness-min': 1.0
+					}
+				},
+				{
+					id: 'preview_base_layer_2',
+					type: 'line',
+					source: 'preview_base_2',
+					'source-layer': 'Cntr',
+					minzoom: 7,
+					maxzoom: 24,
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round'
+					},
+					paint: {
+						'line-color': '#FFFFFF',
+						'line-width': 1,
+						'line-opacity': 0.6
 					}
 				},
 
@@ -202,14 +227,14 @@
 						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
 					}
 				} as BackgroundLayerSpecification,
-				{
-					id: 'tile_grid',
-					type: 'raster',
-					source: 'tile_grid',
-					paint: {
-						'raster-opacity': 0.3
-					}
-				},
+				// {
+				// 	id: 'tile_grid',
+				// 	type: 'raster',
+				// 	source: 'tile_grid',
+				// 	paint: {
+				// 		'raster-opacity': 0.3
+				// 	}
+				// },
 				...previewLayers
 			];
 		}
