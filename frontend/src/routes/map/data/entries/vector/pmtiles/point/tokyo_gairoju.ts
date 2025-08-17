@@ -524,18 +524,18 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '樹高(m)',
-					name: '樹高(m)',
-					value: '{樹高(m)}'
+					name: '樹高',
+					value: '{樹高(m)} m'
 				},
 				{
 					key: '枝張(m)',
-					name: '枝張(m)',
-					value: '{枝張(m)}'
+					name: '枝張',
+					value: '{枝張(m)} m'
 				},
 				{
 					key: '幹周(cm）',
-					name: '幹周(cm）',
-					value: '{幹周(cm）}'
+					name: '幹周',
+					value: '{幹周(cm）} cm'
 				},
 				{
 					key: '行政区',
