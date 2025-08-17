@@ -133,7 +133,7 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col"
+		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
@@ -166,7 +166,7 @@
 						<div class="flex">
 							<img
 								in:fade
-								class="block aspect-video h-full w-full object-cover"
+								class="c-no-drag-icon block aspect-video h-full w-full object-cover"
 								alt="画像"
 								src={srcData}
 							/>
