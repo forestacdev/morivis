@@ -19,7 +19,7 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',
-		minZoom: 10,
+		minZoom: 7,
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
 		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
