@@ -59,17 +59,6 @@
 
 	let isInitialized = $state<boolean>(false);
 
-	// // 環境ごとのファビコンの設定
-	// type EnvMode = 'development';
-
-	// const faviconDict: Record<EnvMode, string> = {
-	// 	development: '🚧' // develop環境
-	// };
-
-	// const faviconChar = faviconDict[import.meta.env.MODE as EnvMode];
-	// const faviconHref = faviconChar
-	// 	? `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${faviconChar}</text></svg>`
-	// 	: './favicon.svg';
 
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;

@@ -36,6 +36,7 @@
 				if (map.getTerrain()) {
 					map.setTerrain(null);
 				}
+                set3dParams('0');
 				// map.easeTo({ pitch: 0 });
 			}
 		} catch (error) {
