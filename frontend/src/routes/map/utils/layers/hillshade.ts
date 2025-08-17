@@ -1,9 +1,19 @@
 import type { HillshadeLayerSpecification } from 'maplibre-gl';
 
+export const terrainSource = {
+	id: 'basemap-terrain',
+	type: 'raster-dem',
+	url: 'https://tiles.gsj.jp/tiles/elev/land/{z}/{y}/{x}.png',
+	tileSize: 256,
+	attribution: '産総研シームレス標高タイル',
+	maxzoom: 17,
+	minzoom: 0
+};
+
 export const hillshadeLayer: HillshadeLayerSpecification = {
 	id: 'hillshade',
 	type: 'hillshade',
-	source: 'terrain',
+	source: 'basemap-terrain',
 	paint: {
 		'hillshade-method': 'igor',
 		'hillshade-illumination-altitude': 45,
