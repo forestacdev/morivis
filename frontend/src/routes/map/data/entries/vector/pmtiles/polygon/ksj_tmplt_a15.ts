@@ -1,8 +1,8 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'ksj_tmplt_a15',
 	type: 'vector',
 	format: {
