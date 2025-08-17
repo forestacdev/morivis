@@ -36,7 +36,7 @@ export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> 
 
 export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 	{
-		id: 'base-map-layer',
+		id: 'base_map_usgs_layer',
 		type: 'raster',
 		source: 'base_usgs_imagery_only',
 		maxzoom: 9,

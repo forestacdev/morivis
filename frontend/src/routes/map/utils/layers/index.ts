@@ -968,10 +968,14 @@ export const createLayersItems = (
 
 	// ベースマップ
 	let baseMapLayerItems: LayerSpecification[] = [];
-	if (get(selectedBaseMap) === 'satellite') {
-		baseMapLayerItems = baseMapSatelliteLayers;
-	} else if (get(selectedBaseMap) === 'hillshade') {
-		baseMapLayerItems = baseMaphillshadeLayers;
+	if (_type === 'main') {
+		if (get(selectedBaseMap) === 'satellite') {
+			baseMapLayerItems = baseMapSatelliteLayers;
+		} else if (get(selectedBaseMap) === 'hillshade') {
+			baseMapLayerItems = baseMaphillshadeLayers;
+		} else {
+			baseMapLayerItems = [];
+		}
 	} else {
 		baseMapLayerItems = [];
 	}
@@ -984,6 +988,22 @@ export const createLayersItems = (
 
 	const cloudLayerItems =
 		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
+
+	console.log([
+		...baseMapLayerItems,
+		...rasterLayerItems,
+		...boundaryLayerItems,
+		...roadLineLayerItems,
+		...fillLayerItems,
+		...lineLayerItems,
+		...circleLayerItems,
+		...streetViewLayers,
+		...cloudLayerItems,
+		...labelLayerItems,
+		...roadLabelLayerItems,
+		...symbolLayerItems,
+		...poiLayerItems
+	]);
 
 	return [
 		...baseMapLayerItems,

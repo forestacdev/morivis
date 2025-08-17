@@ -542,14 +542,14 @@ const createMapStore = () => {
 				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				padding: padding,
+				// padding: padding,
 				duration: 500
 			});
 			return;
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
-				padding: padding,
+				// padding: padding,
 				duration: 500
 			});
 		}

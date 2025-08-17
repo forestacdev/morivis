@@ -146,8 +146,10 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = await createSourcesItems(_dataEntries);
-		const layers = await createLayersItems(_dataEntries);
+		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
+		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
+
+		console.log('layers', layers);
 
 		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
@@ -155,6 +157,14 @@
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
 				...previewSources,
+				preview_base_1: {
+					type: 'raster',
+					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+					tileSize: 256,
+					minzoom: 0,
+					maxzoom: 18,
+					attribution: '地理院タイル'
+				},
 				tile_grid: {
 					type: 'raster',
 					tiles: ['./tile_grid.png'],
@@ -165,6 +175,33 @@
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry || showZoneForm) {
 			previewLayers = [
+				// {
+				// 	id: 'background_layer',
+				// 	type: 'background',
+				// 	paint: {
+				// 		'background-color': '#FFFFEE'
+				// 	}
+				// },
+				{
+					id: 'preview_base_layer',
+					source: 'preview_base_1',
+					type: 'raster',
+					maxzoom: 24,
+					paint: {
+						'raster-opacity': 1.0,
+						'raster-brightness-max': 0,
+						'raster-brightness-min': 1.0
+					}
+				},
+
+				{
+					id: '@overlay_layer',
+					type: 'background',
+					paint: {
+						'background-color': '#000000',
+						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
+					}
+				} as BackgroundLayerSpecification,
 				{
 					id: 'tile_grid',
 					type: 'raster',
@@ -276,14 +313,6 @@
 			layers: [
 				...layers,
 				...xyzTileLayer,
-				{
-					id: '@overlay_layer',
-					type: 'background',
-					paint: {
-						'background-color': '#000000',
-						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
-					}
-				} as BackgroundLayerSpecification,
 				...previewLayers,
 
 				{
