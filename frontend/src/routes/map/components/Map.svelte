@@ -38,7 +38,9 @@
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRoadLayer,
-		type BaseMapType
+		type BaseMapType,
+		showBoundaryLayer,
+		showPoiLayer
 	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
@@ -414,20 +416,21 @@
 	selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
-	// ラベルの表示
+	showPoiLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+	showBoundaryLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 	showLabelLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
 	showRoadLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
 	showXYZTileLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
 	// ストリートビューの表示
 	showStreetViewLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);

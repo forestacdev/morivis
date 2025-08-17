@@ -19,10 +19,7 @@ import type {
 } from 'maplibre-gl';
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
-import { hillshadeLayer } from '$routes/map/utils/layers/hillshade';
-
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
-import { showStreetViewLayer, selectedBaseMap, showRoadLayer } from '$routes/stores/layers';
 
 import { geoDataEntries } from '$routes/map/data';
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -47,15 +44,24 @@ import type {
 } from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
-import { getLabelLayers, getRoadLayers } from '$routes/map/utils/layers/label';
-import { showLabelLayer } from '$routes/stores/layers';
-import { poiStyleJson } from '$routes/map/utils/layers/poi';
+import { labelLayers } from '$routes/map/utils/layers/label';
+import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
+import { boundaryLayers } from '$routes/map/utils/layers/boundary';
+import { cloudLayers } from '$routes/map/utils/layers/cloud';
+import { poiLayers } from '$routes/map/utils/layers/poi';
+import { baseMapSatelliteLayers, baseMaphillshadeLayers } from '$routes/map/utils/layers/base_map';
+import {
+	showPoiLayer,
+	showLabelLayer,
+	showBoundaryLayer,
+	showRoadLayer,
+	showStreetViewLayer,
+	selectedBaseMap
+} from '$routes/stores/layers';
 
 import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 import { get } from 'svelte/store';
 
-import { cloudStyleJson } from './cloud';
-import { getBaseMapLayers } from './base_map';
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 
@@ -961,28 +967,37 @@ export const createLayersItems = (
 			: [];
 
 	// ベースマップ
-	const baseMap = _type === 'main' ? getBaseMapLayers() : [];
+	let baseMapLayerItems: LayerSpecification[] = [];
+	if (get(selectedBaseMap) === 'satellite') {
+		baseMapLayerItems = baseMapSatelliteLayers;
+	} else if (get(selectedBaseMap) === 'hillshade') {
+		baseMapLayerItems = baseMaphillshadeLayers;
+	} else {
+		baseMapLayerItems = [];
+	}
 
-	// デフォルトラベルの表示
-	const mapLabelItems = get(showLabelLayer) && _type === 'main' ? getLabelLayers() : [];
-	const mapLineItems = get(showRoadLayer) && _type === 'main' ? getRoadLayers() : [];
+	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
+	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
+	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
+	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
+	const boundaryLayerItems = get(showBoundaryLayer) && _type === 'main' ? boundaryLayers : [];
 
-	// POIレイヤーの表示
-	const poiLayers = get(showLabelLayer) && _type === 'main' ? poiStyleJson.layers : [];
-
-	const cloudLayer = _type === 'main' ? cloudStyleJson.layers : [];
+	const cloudLayerItems =
+		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
 
 	return [
-		...baseMap,
+		...baseMapLayerItems,
 		...rasterLayerItems,
-		...mapLineItems,
+		...boundaryLayerItems,
+		...roadLineLayerItems,
 		...fillLayerItems,
 		...lineLayerItems,
 		...circleLayerItems,
 		...streetViewLayers,
-		...cloudLayer,
-		...mapLabelItems,
+		...cloudLayerItems,
+		...labelLayerItems,
+		...roadLabelLayerItems,
 		...symbolLayerItems,
-		...poiLayers
+		...poiLayerItems
 	];
 };

@@ -110,8 +110,14 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 export type BaseMapType = 'satellite' | 'hillshade';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
+/** アカデミーPOI */
+export const showPoiLayer = writable<boolean>(true);
+
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
+
+/** 境界 */
+export const showBoundaryLayer = writable<boolean>(true);
 
 /** 道路レイヤー */
 export const showRoadLayer = writable<boolean>(true);
