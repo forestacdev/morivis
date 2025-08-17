@@ -8,13 +8,10 @@
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
-	import { showLabelLayer, showXYZTileLayer } from '$routes/stores/layers';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import LayerControl from '$routes/map/components/layer_menu/LayerControl.svelte';
 
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
-
-	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

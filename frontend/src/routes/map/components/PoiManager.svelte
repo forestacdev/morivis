@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showLabelLayer } from '$routes/stores/layers';
+	import { showPoiLayer } from '$routes/stores/layers';
 
 	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
@@ -46,7 +46,7 @@
 
 	const updateMarkers = () => {
 		if (!map || !mapStore.isInitialized()) return;
-		if (!$showLabelLayer || !mapStore.getLayer(poiLayersIds[0])) return;
+		if (!$showPoiLayer || !mapStore.getLayer(poiLayersIds[0])) return;
 
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
@@ -154,7 +154,7 @@
 
 	let shouldShowPoi = $derived.by(() => {
 		return (
-			$showLabelLayer &&
+			$showPoiLayer &&
 			!showDataEntry &&
 			!showZoneForm &&
 			!$isStyleEdit &&

@@ -56,7 +56,7 @@
 	onclick={toggle3d}
 	class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 >
-	<Icon icon={$isTerrain3d ? 'mdi:video-3d' : 'mdi:video-2d'} class="h-10 w-10 text-white " />
+	<Icon icon={'ic:round-terrain'} class="h-10 w-10 {$isTerrain3d ? 'text-accent' : 'text-base'}" />
 </button>
 
 <style>
