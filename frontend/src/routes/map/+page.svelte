@@ -167,8 +167,8 @@
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
 			if (terrain3d === '1' && checkPc()) {
-				mapStore.toggleTerrain(true);
-				isTerrain3d.set(true);
+				// mapStore.toggleTerrain(true);
+				// isTerrain3d.set(true);
 			}
 		});
 	});
