@@ -106,8 +106,21 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 	return layerEntries.map((entry) => entry.id);
 };
 
+/** ベースマップ */
+export type BaseMapType = 'satellite' | 'hillshade' | 'osm';
+export const selectedBaseMap = writable<BaseMapType>('satellite');
+
+/** アカデミーPOI */
+export const showPoiLayer = writable<boolean>(true);
+
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
+
+/** 境界 */
+export const showBoundaryLayer = writable<boolean>(true);
+
+/** 道路レイヤー */
+export const showRoadLayer = writable<boolean>(true);
 
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);

@@ -12,7 +12,24 @@ import { TileImageManager } from '$routes/map/protocol/image';
 import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { showLabelLayer } from '$routes/stores/layers';
+import {
+	showLabelLayer,
+	showPoiLayer,
+	showBoundaryLayer,
+	showRoadLayer,
+	selectedBaseMap
+} from '$routes/stores/layers';
+
+import { poiSources } from '$routes/map/utils/layers/poi';
+import { labelSources } from '$routes/map/utils/layers/label';
+import { roadSources } from '$routes/map/utils/layers/road';
+import { boundarySources } from '$routes/map/utils/layers/boundary';
+import { cloudSources } from '$routes/map/utils/layers/cloud';
+import {
+	baseMapSatelliteSources,
+	baseMaphillshadeSources,
+	baseMapOsmSources
+} from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
@@ -23,9 +40,6 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
 import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
-import { poiStyleJson } from '$routes/map/utils/layers/poi';
-import { cloudStyleJson } from '$routes/map/utils/layers/cloud';
-import { getBaseMapSources } from './layers/base_map';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -46,7 +60,7 @@ export const createSourcesItems = async (
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
-			const { metaData, format, type, style } = entry;
+			const { metaData, format, type, style, auxiliaryLayers } = entry;
 
 			switch (type) {
 				case 'raster': {
@@ -218,6 +232,14 @@ export const createSourcesItems = async (
 					break;
 			}
 
+			if (auxiliaryLayers) {
+				const { source } = auxiliaryLayers;
+
+				Object.entries(source).forEach(([auxiliarySourceId, auxiliarySource]) => {
+					const sourceKey = `${auxiliarySourceId}`;
+					items[sourceKey] = auxiliarySource as SourceSpecification;
+				});
+			}
 			return { index, items }; // インデックスを含めて返す
 		})
 	);
@@ -232,40 +254,34 @@ export const createSourcesItems = async (
 	// 配列をオブジェクトに統合
 	const sourceItems = Object.assign({}, ...sortedItems);
 
-	// ラベルのソースを追加
-	const isGsiSource = get(showLabelLayer);
+	// ベースマップ
+	let baseSourcesItem;
+	if (get(selectedBaseMap) === 'satellite') {
+		baseSourcesItem = baseMapSatelliteSources;
+	} else if (get(selectedBaseMap) === 'hillshade') {
+		baseSourcesItem = baseMaphillshadeSources;
+	} else if (get(selectedBaseMap) === 'hillshade') {
+		baseSourcesItem = baseMaphillshadeSources;
+	} else if (get(selectedBaseMap) === 'osm') {
+		baseSourcesItem = baseMapOsmSources;
+	} else {
+		baseSourcesItem = {};
+	}
 
-	// POIのソースを追加
-	const poiSources = get(showLabelLayer) ? poiStyleJson.sources : {};
+	const poiSourcesItem = get(showPoiLayer) ? poiSources : {};
+	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
+	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
+	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
 
-	const gsiSources = isGsiSource
-		? {
-				openmaptiles: {
-					type: 'vector',
-					url: 'https://tile.openstreetmap.jp/data/planet.json'
-				},
-				takeshima: {
-					type: 'vector',
-					url: 'https://tile.openstreetmap.jp/data/takeshima.json'
-				},
-				hoppo: {
-					type: 'vector',
-					url: 'https://tile.openstreetmap.jp/data/hoppo.json'
-				},
-				v: {
-					type: 'vector',
-					minzoom: 4,
-					maxzoom: 16,
-					tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
-					attribution: '国土地理院最適化ベクトルタイル'
-				}
-			}
-		: {};
-
-	const cloudSources = cloudStyleJson.sources;
-	const baseSources = getBaseMapSources();
-
-	return { ...sourceItems, ...gsiSources, ...poiSources, ...cloudSources, ...baseSources } as {
+	return {
+		...sourceItems,
+		...baseSourcesItem,
+		...poiSourcesItem,
+		...labelSourcesItem,
+		...roadSourcesItem,
+		...boundarySourcesItem,
+		...cloudSources
+	} as {
 		[_: string]: SourceSpecification;
 	};
 };

@@ -1,23 +1,26 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_FGB_PATH,
+	ENTRY_PMTILES_VECTOR_PATH
+} from '$routes/constants';
+import type { GeoJsonMetaData, LineStringEntry } from '$routes/map/data/types/vector';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: LineStringEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_road',
 	type: 'vector',
 	format: {
-		type: 'pmtiles',
+		type: 'fgb',
 		geometryType: 'LineString',
-		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin.pmtiles`
+		url: `${ENTRY_FGB_PATH}/ensyurin_road.fgb`
 	},
 	metaData: {
-		name: '演習林の道',
-		description: '演習林',
+		name: '演習林 道',
+		description: '演習林内の歩道と林道のデータ',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		tags: ['森林歩道'],
+		tags: ['森林歩道', '林道'],
 		maxZoom: 17,
 		minZoom: 8,
-		sourceLayer: 'ensyurin_roadfgb',
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }

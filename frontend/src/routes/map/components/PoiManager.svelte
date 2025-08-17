@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showLabelLayer } from '$routes/stores/layers';
+	import { showPoiLayer } from '$routes/stores/layers';
 
 	import { poiLayersIds } from '$routes/map/utils/layers/poi';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
@@ -14,6 +14,7 @@
 	import { showSearchMenu } from '$routes/stores/ui';
 	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -45,7 +46,7 @@
 
 	const updateMarkers = () => {
 		if (!map || !mapStore.isInitialized()) return;
-		if (!$showLabelLayer || !mapStore.getLayer(poiLayersIds[0])) return;
+		if (!$showPoiLayer || !mapStore.getLayer(poiLayersIds[0])) return;
 
 		const features = map.queryRenderedFeatures({ layers: poiLayersIds });
 
@@ -54,6 +55,10 @@
 		for (let i = 0; i < features.length; i++) {
 			const feature = features[i];
 			const props = feature.properties;
+			const propId = props._prop_id;
+
+			// TODO: propを整理
+			props.iconImage = `${ICON_IMAGE_BASE_PATH}/${propId}.webp`;
 
 			// Point geometryかどうかをチェック
 			if (feature.geometry.type !== 'Point') {
@@ -61,7 +66,7 @@
 			}
 
 			const coords = feature.geometry.coordinates as [number, number];
-			const propId = props._prop_id;
+
 			const featureId = feature.id as string;
 
 			if (propId) {
@@ -149,7 +154,7 @@
 
 	let shouldShowPoi = $derived.by(() => {
 		return (
-			$showLabelLayer &&
+			$showPoiLayer &&
 			!showDataEntry &&
 			!showZoneForm &&
 			!$isStyleEdit &&

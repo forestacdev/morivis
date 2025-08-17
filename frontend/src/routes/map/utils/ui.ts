@@ -38,15 +38,6 @@ export const checkMobileWidth = () => {
 	return false;
 };
 
-/**
- * PWAかどうかを判定する
- * @returns boolean
- * @description PWAかどうかを判定する関数
- */
-export const checkPWA = () => {
-	return window.matchMedia('(display-mode: standalone)').matches;
-};
-
 export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';
 
 type MappingType = 'single' | 'match' | 'linear' | 'step';

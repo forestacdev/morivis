@@ -8,7 +8,7 @@ import {
 } from '$routes/map/utils/ui';
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
-import { isStreetView } from '$routes/stores';
+import { isStreetView, isStyleEdit } from '$routes/stores';
 
 /** 処理中の状態 */
 export const isProcessing = writable<boolean>(false);
@@ -278,15 +278,6 @@ class MenuHistoryPcManager {
 	}
 
 	/**
-	 * 現在の状態をログ出力（デバッグ用）
-	 */
-	public logCurrentState(): void {
-		if (import.meta.env.DEV) {
-			console.log('Current menu state:', this.getCurrentState());
-		}
-	}
-
-	/**
 	 * 初期化状態を確認
 	 */
 	public getIsInitialized(): boolean {
@@ -324,6 +315,7 @@ class MenuHistoryPcManager {
 interface MobileMenuState {
 	activeMenu: MobileActiveMenu;
 	isStreetView: boolean;
+	isStyleEdit: boolean;
 	timestamp: number;
 }
 
@@ -350,6 +342,7 @@ class MenuHistoryMobileManager {
 		return {
 			activeMenu: 'map',
 			isStreetView: false,
+			isStyleEdit: false,
 			timestamp: Date.now()
 		};
 	}
@@ -384,6 +377,7 @@ class MenuHistoryMobileManager {
 		return {
 			activeMenu: get(isActiveMobileMenu),
 			isStreetView: get(isStreetView),
+			isStyleEdit: get(isStyleEdit),
 			timestamp: Date.now()
 		};
 	}
@@ -402,7 +396,11 @@ class MenuHistoryMobileManager {
 			this.handleStreetViewChange(value);
 		});
 
-		this.unsubscribers = [unsubActiveMobileMenu, unsubStreetView];
+		const unsubStyleEdit: UnsubscribeFunction = isStyleEdit.subscribe((value: boolean) => {
+			this.handleStyleEditChange(value);
+		});
+
+		this.unsubscribers = [unsubActiveMobileMenu, unsubStreetView, unsubStyleEdit];
 	}
 
 	/**
@@ -467,6 +465,33 @@ class MenuHistoryMobileManager {
 		}
 	}
 
+	private handleStyleEditChange(newValue: boolean): void {
+		if (this.isHandlingPopstate) return;
+
+		const oldValue = this.previousState.isStyleEdit;
+
+		// 値が実際に変更された場合のみ処理
+		if (oldValue !== newValue) {
+			if (import.meta.env.DEV) {
+				console.log(`StyleEdit changed: ${oldValue} → ${newValue}`);
+			}
+
+			// 現在の状態を更新
+			this.previousState.isStyleEdit = newValue;
+			this.previousState.timestamp = Date.now();
+
+			// スタイル編集がtrueになった場合のみ履歴に追加
+			if (this.shouldAddToHistoryForStyleEdit(oldValue, newValue)) {
+				const stateToSave: MobileHistoryState = { ...this.previousState };
+				history.pushState(stateToSave, '', null);
+
+				if (import.meta.env.DEV) {
+					console.log(`履歴に追加 (styleEdit): ${newValue} (from ${oldValue})`);
+				}
+			}
+		}
+	}
+
 	/**
 	 * メニュー変更で履歴に追加すべきかどうかを判断
 	 */
@@ -487,6 +512,14 @@ class MenuHistoryMobileManager {
 	}
 
 	/**
+	 * スタイル編集で履歴に追加すべきかどうかを判断
+	 */
+	private shouldAddToHistoryForStyleEdit(oldValue: boolean, newValue: boolean): boolean {
+		// スタイル編集がtrueになった場合のみ履歴に追加
+		return oldValue === false && newValue === true;
+	}
+
+	/**
 	 * popstateイベントハンドラー
 	 */
 	private handlePopState(event: PopStateEvent): void {
@@ -496,6 +529,7 @@ class MenuHistoryMobileManager {
 
 		const currentMenu = get(isActiveMobileMenu);
 		const currentStreetView = get(isStreetView);
+		const currentStyleEdit = get(isStyleEdit);
 
 		// 1. ストリートビューがtrueの場合は、ストリートビューを終了してmapに戻る
 		if (currentStreetView) {
@@ -507,6 +541,7 @@ class MenuHistoryMobileManager {
 			this.previousState = {
 				activeMenu: 'map',
 				isStreetView: false,
+				isStyleEdit: false,
 				timestamp: Date.now()
 			};
 
@@ -520,7 +555,31 @@ class MenuHistoryMobileManager {
 			return;
 		}
 
-		// 2. 現在mapの場合は通常のブラウザバック処理を継続
+		// 2. スタイル編集がtrueの場合は、スタイル編集を終了してmapに戻る
+		if (currentStyleEdit) {
+			this.isHandlingPopstate = true;
+
+			isStyleEdit.set(false);
+			isActiveMobileMenu.set('map');
+
+			this.previousState = {
+				activeMenu: 'map',
+				isStreetView: false,
+				isStyleEdit: false,
+				timestamp: Date.now()
+			};
+
+			if (import.meta.env.DEV) {
+				console.log('StyleEdit ended, returned to map');
+			}
+
+			setTimeout(() => {
+				this.isHandlingPopstate = false;
+			}, 10);
+			return;
+		}
+
+		// 3. 現在mapの場合は通常のブラウザバック処理を継続
 		if (currentMenu === 'map') {
 			if (import.meta.env.DEV) {
 				console.log('Current menu is map, allowing normal browser back');
@@ -538,6 +597,7 @@ class MenuHistoryMobileManager {
 			const mapState: MobileMenuState = {
 				activeMenu: 'map',
 				isStreetView: false,
+				isStyleEdit: false,
 				timestamp: Date.now()
 			};
 			this.applyStateToStore(mapState);
@@ -559,7 +619,8 @@ class MenuHistoryMobileManager {
 			typeof state === 'object' &&
 			typeof state.activeMenu === 'string' &&
 			validMenus.includes(state.activeMenu as MobileActiveMenu) &&
-			typeof state.isStreetView === 'boolean'
+			typeof state.isStreetView === 'boolean' &&
+			typeof state.isStyleEdit === 'boolean'
 		);
 	}
 
@@ -574,6 +635,7 @@ class MenuHistoryMobileManager {
 		this.previousState = {
 			activeMenu: state.activeMenu ?? 'map',
 			isStreetView: state.isStreetView ?? false,
+			isStyleEdit: state.isStyleEdit ?? false,
 			timestamp: state.timestamp ?? Date.now()
 		};
 
@@ -610,17 +672,8 @@ class MenuHistoryMobileManager {
 		return get(isStreetView);
 	}
 
-	/**
-	 * 現在の状態をログ出力（デバッグ用）
-	 */
-	public logCurrentState(): void {
-		if (import.meta.env.DEV) {
-			console.log('Current mobile menu state:', {
-				current: this.getCurrentMenu(),
-				streetView: this.isStreetViewActive(),
-				state: this.getCurrentState()
-			});
-		}
+	public isStyleEditActive(): boolean {
+		return get(isStyleEdit);
 	}
 
 	/**

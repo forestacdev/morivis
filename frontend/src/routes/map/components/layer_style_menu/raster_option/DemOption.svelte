@@ -51,13 +51,19 @@
 		/>
 
 		<RangeSliderDouble
-			label="傾斜数値範囲"
+			label="傾斜量数値範囲"
 			bind:lowerValue={layerEntry.style.visualization.uniformsData['slope'].min}
 			bind:upperValue={layerEntry.style.visualization.uniformsData['slope'].max}
 			max={90}
 			min={0}
 			step={0.01}
 			primaryColor={colorMapManager.createSimpleCSSGradient(
+				layerEntry.style.visualization.uniformsData['slope'].colorMap
+			)}
+			minRangeColor={colorMapManager.getMinColor(
+				layerEntry.style.visualization.uniformsData['slope'].colorMap
+			)}
+			maxRangeColor={colorMapManager.getMaxColor(
 				layerEntry.style.visualization.uniformsData['slope'].colorMap
 			)}
 		/>

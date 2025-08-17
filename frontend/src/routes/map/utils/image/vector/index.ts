@@ -44,8 +44,11 @@ class MapInstancePool {
 			container.style.width = '512px';
 			container.style.height = '512px';
 			container.style.position = 'absolute';
+
 			container.style.top = '-9999px';
 			container.style.left = '-9999px';
+			container.style.visibility = 'hidden';
+
 			container.id = `map-instance-${i}`;
 			document.body.appendChild(container);
 
@@ -150,6 +153,10 @@ async function _generateMapImageParallel(
 	style: maplibregl.StyleSpecification | string,
 	options = {} as MapImageOptions
 ): Promise<MapImageResult> {
+	if (import.meta.env.DEV) {
+		console.log('Generating map image with options:', options);
+	}
+
 	const {
 		name,
 		width = 512,
@@ -173,7 +180,8 @@ async function _generateMapImageParallel(
 		map.setBearing(bearing);
 		map.setPitch(pitch);
 		map.fitBounds(mapBounds, {
-			duration: 0
+			duration: 0,
+			animate: false
 		});
 
 		// Mapの設定
@@ -241,7 +249,8 @@ async function _generateMapImageParallel(
 				map.setBearing(bearing);
 				map.setPitch(pitch);
 				map.fitBounds(mapBounds, {
-					duration: 0
+					duration: 0,
+					animate: false
 				});
 
 				// idle イベントで画像生成

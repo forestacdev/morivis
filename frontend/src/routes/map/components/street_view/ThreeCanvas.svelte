@@ -23,8 +23,7 @@
 	import { checkPc } from '$routes/map/utils/ui';
 	import { isMobile } from '$routes/stores/ui';
 
-	const PANORAMA_IMAGE_URL =
-		'https://raw.githubusercontent.com/forestacdev/360photo-data-webp/main/webp/';
+	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
 
 	const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 	const OUT_CAMERA_FOV = 150;

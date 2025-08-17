@@ -71,7 +71,7 @@
 			if (id === 'fac_top') {
 				imageUrl = properties.image;
 			} else {
-				imageUrl = propData[id]?.image;
+				imageUrl = properties.iconImage;
 			}
 
 			// 画像URLが存在しない場合

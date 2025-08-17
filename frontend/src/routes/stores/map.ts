@@ -227,6 +227,22 @@ const createMapStore = () => {
 			onLoadEvent.set(e);
 		});
 
+		// より詳細なエラー情報を取得
+		// map.on('error', (e) => {
+		// 	console.error('Map error details:', e);
+		// 	console.error('Error source:', e.error);
+		// 	console.error('Error stack:', e.error?.stack);
+		// });
+
+		// map.on('sourcedata', (e) => {
+		// 	if (e.sourceId === 'hiroshima-trees') {
+		// 		console.log('Source data event:', e);
+		// 		if (e.dataType === 'source' && e.isSourceLoaded) {
+		// 			console.log('Source loaded successfully');
+		// 		}
+		// 	}
+		// });
+
 		map.on('click', (e: MapMouseEvent) => {
 			if (get(isHoverPoiMarker)) {
 				// POIマーカーにホバーしている場合はクリックイベントを無視
@@ -304,6 +320,7 @@ const createMapStore = () => {
 				pitch: map.getPitch(),
 				bearing: map.getBearing()
 			});
+
 			mooveEndEvent.set(e);
 
 			if (import.meta.env.DEV) {
@@ -392,7 +409,8 @@ const createMapStore = () => {
 	// 森林文化アカデミーへジャンプするメソッド
 	const jumpToFac = () => {
 		if (!map || !isMapValid(map)) return;
-		const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		// const bounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+		const bounds = [136.91917, 35.54692, 136.926817, 35.555122] as LngLatBoundsLike;
 		map.fitBounds(bounds, {
 			padding: 20,
 			bearing: map.getBearing(),
@@ -525,14 +543,14 @@ const createMapStore = () => {
 				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				padding: padding,
+				// padding: padding,
 				duration: 500
 			});
 			return;
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
-				padding: padding,
+				// padding: padding,
 				duration: 500
 			});
 		}

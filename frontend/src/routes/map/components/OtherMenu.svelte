@@ -17,10 +17,11 @@
 	import { imageExport, exportPDF } from '$routes/map/utils/map';
 	import { goto } from '$app/navigation';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	import { isBlocked } from '$routes/stores/ui';
-	import { checkPc } from '../utils/ui';
-
+	import { checkPc } from '$routes/map/utils/ui';
+	import { checkPWA, pwaInstall } from '$routes/map/utils/pwa';
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
 		showDataMenu.set(!$showDataMenu);
@@ -54,6 +55,7 @@
 			goto('/');
 		}
 	};
+
 	mapMode.subscribe((mode) => {
 		showOtherMenu.set(false);
 	});
@@ -175,13 +177,22 @@
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
+			{#if !checkPWA()}
+				<button
+					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+					onclick={pwaInstall}
+					><Icon icon="grommet-icons:install-option" class="h-8 w-8 scale-95" />
+					<span>アプリをインストール</span>
+				</button>
+			{/if}
+
 			{#if import.meta.env.MODE === 'development'}
 				{#if import.meta.env.MODE === 'development'}
 					<Switch label="デバッグモード" bind:value={$isDebugMode} />
 				{/if}
 			{/if}
 		</ui>
-		<ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui>
+		<!-- <ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui> -->
 	</div>
 {/if}
 

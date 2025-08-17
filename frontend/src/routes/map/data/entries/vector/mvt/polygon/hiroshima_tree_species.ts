@@ -1,31 +1,30 @@
-import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import { HIROSHIMA_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'tochigi_tree_species',
+	id: 'hiroshima_tree_species',
 	type: 'vector',
 	format: {
 		type: 'mvt',
 		geometryType: 'Polygon',
-		url: 'https://rinya-tochigi.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf'
+		url: 'https://raw.githubusercontent.com/forestacdev/tiles-tree-species-hiroshima/main/tiles/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '栃木県 樹種ポリゴン',
-		attribution: '栃木県森林資源データ',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_tochigi',
-		location: '栃木県',
-		tags: ['森林', '林相図'],
+		name: '広島県 樹種ポリゴン',
+		attribution: '広島県林業課（林野庁加工）',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-hiroshima-maptiles',
+		location: '広島県',
+		tags: [],
 		minZoom: 8,
-		maxZoom: 18,
-		sourceLayer: 'tree_species_tochigi',
-		bounds: TOCHIGI_BBOX,
-		xyzImageTile: { x: 29096, y: 12791, z: 15 }
+		maxZoom: 16,
+		sourceLayer: 'tree_species_hiroshima',
+		bounds: HIROSHIMA_BBOX,
+		xyzImageTile: { x: 28450, y: 13023, z: 15 }
 	},
 	properties: {
 		keys: [
-			'解析樹種ID',
-			'解析樹種',
 			'樹種ID',
 			'樹種',
 			'面積_ha',
@@ -33,7 +32,8 @@ const entry: VectorEntry<TileMetaData> = {
 			'森林計測法',
 			'県code',
 			'市町村code',
-			'年度'
+			'解析樹種ID',
+			'解析樹種'
 		],
 		titles: [
 			{
@@ -42,7 +42,7 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '栃木県の樹種ポリゴン'
+				template: '広島県の樹種ポリゴン'
 			}
 		]
 	},
@@ -66,14 +66,32 @@ const entry: VectorEntry<TileMetaData> = {
 					}
 				},
 				{
-					...TREE_MATCH_COLOR_STYLE
+					type: 'match',
+					key: '解析樹種',
+					name: '樹種ごとの色分け',
+					mapping: {
+						categories: ['スギ', 'ヒノキ類', 'マツ類', 'タケ', 'その他'],
+						values: [
+							'#33a02c',
+							'#b2df8a',
+							'#a6cee3',
+							'#b15928',
+							'#1f78b4' // その他（グレー）
+						],
+						// パターン情報
+						patterns: [null, null, null, null, 'tmpoly-line-vertical-down-light-200-black']
+					},
+					noData: {
+						values: 'transparent',
+						pattern: null
+					}
 				},
 				{
 					type: 'step',
 					key: '面積_ha',
 					name: '面積ごとの色分け',
 					mapping: {
-						range: [0, 200],
+						range: [0, 9380],
 						divisions: 5,
 						values: ['#e0f7fa', '#ed006e']
 					}
@@ -91,24 +109,14 @@ const entry: VectorEntry<TileMetaData> = {
 			show: false,
 			expressions: [
 				{
-					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
-				},
-				{
-					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
-				},
-				{
-					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
-				},
-				{
 					key: '樹種ID',
 					name: '樹種ID',
 					value: '{樹種ID}'
+				},
+				{
+					key: '樹種',
+					name: '樹種',
+					value: '{樹種}'
 				},
 				{
 					key: '面積_ha',
@@ -136,9 +144,14 @@ const entry: VectorEntry<TileMetaData> = {
 					value: '{市町村code}'
 				},
 				{
-					key: '年度',
-					name: '年度',
-					value: '{年度}'
+					key: '解析樹種ID',
+					name: '解析樹種ID',
+					value: '{解析樹種ID}'
+				},
+				{
+					key: '解析樹種',
+					name: '解析樹種',
+					value: '{解析樹種}'
 				}
 			]
 		},

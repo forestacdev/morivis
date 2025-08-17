@@ -32,7 +32,16 @@
 
 	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
-	import { showLabelLayer, showStreetViewLayer, showXYZTileLayer } from '$routes/stores/layers';
+	import {
+		selectedBaseMap,
+		showLabelLayer,
+		showStreetViewLayer,
+		showXYZTileLayer,
+		showRoadLayer,
+		type BaseMapType,
+		showBoundaryLayer,
+		showPoiLayer
+	} from '$routes/stores/layers';
 
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
@@ -137,8 +146,8 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = await createSourcesItems(_dataEntries);
-		const layers = await createLayersItems(_dataEntries);
+		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
+		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
 
 		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
 
@@ -146,6 +155,22 @@
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
 				...previewSources,
+				preview_base_1: {
+					type: 'raster',
+					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+					tileSize: 256,
+					minzoom: 0,
+					maxzoom: 18,
+					attribution: '地理院タイル'
+				},
+				preview_base_2: {
+					type: 'vector',
+					minzoom: 4,
+					maxzoom: 16,
+					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
+					// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
+					attribution: '国土地理院最適化ベクトルタイル'
+				},
 				tile_grid: {
 					type: 'raster',
 					tiles: ['./tile_grid.png'],
@@ -156,14 +181,58 @@
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry || showZoneForm) {
 			previewLayers = [
+				// {
+				// 	id: 'background_layer',
+				// 	type: 'background',
+				// 	paint: {
+				// 		'background-color': '#FFFFEE'
+				// 	}
+				// },
 				{
-					id: 'tile_grid',
+					id: 'preview_base_layer_1',
+					source: 'preview_base_1',
 					type: 'raster',
-					source: 'tile_grid',
+					maxzoom: 24,
 					paint: {
-						'raster-opacity': 0.3
+						'raster-opacity': 1.0,
+						'raster-brightness-max': 0,
+						'raster-brightness-min': 1.0
 					}
 				},
+				{
+					id: 'preview_base_layer_2',
+					type: 'line',
+					source: 'preview_base_2',
+					'source-layer': 'Cntr',
+					minzoom: 7,
+					maxzoom: 24,
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round'
+					},
+					paint: {
+						'line-color': '#FFFFFF',
+						'line-width': 1,
+						'line-opacity': 0.6
+					}
+				},
+
+				{
+					id: '@overlay_layer',
+					type: 'background',
+					paint: {
+						'background-color': '#000000',
+						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
+					}
+				} as BackgroundLayerSpecification,
+				// {
+				// 	id: 'tile_grid',
+				// 	type: 'raster',
+				// 	source: 'tile_grid',
+				// 	paint: {
+				// 		'raster-opacity': 0.3
+				// 	}
+				// },
 				...previewLayers
 			];
 		}
@@ -267,14 +336,6 @@
 			layers: [
 				...layers,
 				...xyzTileLayer,
-				{
-					id: '@overlay_layer',
-					type: 'background',
-					paint: {
-						'background-color': '#000000',
-						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
-					}
-				} as BackgroundLayerSpecification,
 				...previewLayers,
 
 				{
@@ -404,15 +465,24 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-	// ラベルの表示
+	selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+	showPoiLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+	showBoundaryLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 	showLabelLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
+	showRoadLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 	showXYZTileLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
-
 	// ストリートビューの表示
 	showStreetViewLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);

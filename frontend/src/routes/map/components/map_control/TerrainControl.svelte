@@ -30,13 +30,13 @@
 						exaggeration: 1.0
 					});
 					set3dParams('1');
-					map.easeTo({ pitch: 60 });
+					// map.easeTo({ pitch: 60 });
 				}
 			} else {
 				if (map.getTerrain()) {
 					map.setTerrain(null);
 				}
-				map.easeTo({ pitch: 0 });
+				// map.easeTo({ pitch: 0 });
 			}
 		} catch (error) {
 			console.error('Terrain control error:', error);
@@ -56,7 +56,7 @@
 	onclick={toggle3d}
 	class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 >
-	<Icon icon={$isTerrain3d ? 'mdi:video-3d' : 'mdi:video-2d'} class="h-10 w-10 text-white " />
+	<Icon icon={'ic:round-terrain'} class="h-10 w-10 {$isTerrain3d ? 'text-accent' : 'text-base'}" />
 </button>
 
 <style>

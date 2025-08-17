@@ -10,9 +10,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_owl.fgb`
 	},
 	metaData: {
-		name: 'OWL利用研修立木計測データ',
-		description: '林業専攻-OWL利用研修立木計測データ',
-		attribution: '株式会社アドイン研究所',
+		name: '演習林 単木',
+		description: '2021年度に実施した林業専攻のOWL利用研修立木計測データ。',
+		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		minZoom: 10,
 		maxZoom: 22,
@@ -21,7 +21,24 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		coverImage: `${COVER_IMAGE_BASE_PATH}/owl.webp`
 	},
 	properties: {
-		keys: ['樹種'],
+		keys: [
+			'id',
+			'矢高cm',
+			'材積m3',
+			'樹冠半径m',
+			'バイオマスkg',
+			'樹高m',
+			'2cm括約胸高直径cm',
+			'バイオマス（2cm括約）[kg]',
+			'樹種',
+			'2cm括約材積m3',
+			'X',
+			'Y',
+			'幹周cm',
+			'Z',
+			'胸高直径cm',
+			'ID2'
+		],
 		titles: [
 			{
 				conditions: ['樹種'],
@@ -96,9 +113,65 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			show: false,
 			expressions: [
 				{
+					key: 'id',
+					name: 'id',
+					value: '{id}'
+				},
+				{
+					key: '矢高cm',
+					name: '矢高',
+					value: '{矢高cm} cm'
+				},
+				{
+					key: '材積m3',
+					name: '材積',
+					value: '{材積m3} m3'
+				},
+				{
+					key: '樹冠半径m',
+					name: '樹冠半径',
+					value: '{樹冠半径m} m'
+				},
+				{
+					key: 'バイオマスkg',
+					name: 'バイオマス',
+					value: '{バイオマスkg}'
+				},
+				{
+					key: '樹高m',
+					name: '樹高',
+					value: '{樹高m}m'
+				},
+				{
+					key: '2cm括約胸高直径cm',
+					name: '2cm括約胸高直径cm',
+					value: '{2cm括約胸高直径cm}'
+				},
+				{
+					key: 'バイオマス（2cm括約）[kg]',
+					name: 'バイオマス',
+					value: '{バイオマス（2cm括約）[kg]} kg'
+				},
+				{
+					key: '樹種',
+					name: '樹種',
+					value: '{樹種}'
+				},
+				{
+					key: '2cm括約材積m3',
+					name: '2cm括約材積',
+					value: '{2cm括約材積m3} m3'
+				},
+
+				{
+					key: '幹周cm',
+					name: '幹周',
+					value: '{幹周cm} cm'
+				},
+				{
 					key: '胸高直径cm',
-					name: '胸高直径cm',
-					value: '{胸高直径cm}'
+					name: '胸高直径',
+					value: '{胸高直径cm} cm'
 				}
 			]
 		},
