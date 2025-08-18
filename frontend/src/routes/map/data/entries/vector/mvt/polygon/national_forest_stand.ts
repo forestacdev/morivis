@@ -1,4 +1,4 @@
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import { ENTRY_GEOJSON_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',
 		location: '全国',
 		tags: ['林班', '国有林'],
-		minZoom: 0,
+		minZoom: 12,
 		maxZoom: 14,
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
@@ -83,7 +83,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#349f1c',
+						value: '#b2df8a',
 						pattern: null
 					}
 				},
@@ -593,7 +593,7 @@ const entry: VectorEntry<TileMetaData> = {
 		outline: {
 			show: true,
 			minZoom: 11,
-			color: '#ffffff',
+			color: '#ebebeb',
 			width: 0.5,
 			lineStyle: 'dashed'
 		},
@@ -739,6 +739,7 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			]
 		}
+
 		// default: {
 		// 	symbol: {
 		// 		paint: {
@@ -754,6 +755,72 @@ const entry: VectorEntry<TileMetaData> = {
 		// 		}
 		// 	}
 		// }
+	},
+	auxiliaryLayers: {
+		source: {
+			national_forest_compartment: {
+				type: 'vector',
+				tiles: [
+					'https://forestacdev.github.io/tiles-national-forest-compartment/tiles/{z}/{x}/{y}.pbf'
+				],
+				maxzoom: 12
+			}
+		},
+		layers: [
+			{
+				id: 'national_forest_compartment_fill_layer',
+				type: 'fill',
+				maxzoom: 12.1,
+				source: 'national_forest_compartment',
+				'source-layer': 'national_forest_compartment',
+				paint: {
+					'fill-color': '#b2df8a',
+					'fill-opacity': 0.5,
+					'fill-outline-color': [
+						'interpolate',
+						['linear'],
+						['zoom'],
+						8,
+						'transparent', // ズーム8以下：透明
+						10,
+						'#dcdcdc', // ズーム8以下：透明
+						12,
+						'#dcdcdc' // ズーム12：中程度のグレー
+					]
+				}
+			},
+			// {
+			// 	id: 'national_forest_compartment_line_layer',
+			// 	type: 'line',
+			// 	maxzoom: 12.1,
+			// 	minzoom: 10,
+			// 	source: 'national_forest_compartment',
+			// 	'source-layer': 'national_forest_compartment',
+			// 	paint: {
+			// 		'line-color': '#dcdcdc',
+			// 		'line-width': 0.5
+			// 	}
+			// },
+			{
+				id: 'national_forest_compartment_label_layer',
+				type: 'symbol',
+				maxzoom: 12.1,
+				minzoom: 10,
+				source: 'national_forest_compartment',
+				'source-layer': 'national_forest_compartment',
+				layout: {
+					'text-field': '{林班主番}-{林班枝番}',
+					'text-font': ['Noto Sans JP Regular'],
+					'text-size': 10,
+					'text-anchor': 'center'
+				},
+				paint: {
+					'text-color': '#000000',
+					'text-halo-color': '#ffffff',
+					'text-halo-width': 1
+				}
+			}
+		]
 	}
 };
 

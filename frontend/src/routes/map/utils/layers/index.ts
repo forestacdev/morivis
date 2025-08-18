@@ -708,7 +708,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-opacity': 1,
 			'icon-opacity': 1,
 			'text-color': '#000000',
-			'text-halo-color': '#FFFFFF',
+			'text-halo-color': '#e8e8e8',
 			'text-halo-width': 2,
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
 		},
@@ -717,12 +717,12 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-size': 12,
 			'text-max-width': 12,
 			'text-font': ['Noto Sans JP Regular'],
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// 自動オフセット
-			'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-			'text-radial-offset': 0.5,
-			'text-justify': 'auto'
+			// 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+			// 'text-radial-offset': 0.5,
+			// 'text-justify': 'auto'
 		},
 		// フィルター設定
 		...(() => {

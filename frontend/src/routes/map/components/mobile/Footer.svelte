@@ -88,7 +88,7 @@
 				<Icon icon="jam:layers-f" class="h-8 w-8" />
 			</div>
 
-			<span class="text-xs">レイヤー</span>
+			<span class="text-xs">レイヤ</span>
 		</button>
 		<button
 			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
