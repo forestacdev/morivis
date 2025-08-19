@@ -192,19 +192,27 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-		// poi用の透明アイコンを追加
-		const width = 16;
-		const bytesPerPixel = 4;
-		const data = new Uint8Array(width * width * bytesPerPixel);
-		map.addImage('poi-icon', { width, height: width, data });
-
-		fetch(markerPngIcon, { mode: 'cors' }).then(async (response) => {
-			if (!response.ok) {
-				throw new Error(`Failed to fetch image: ${response.statusText}`);
-			}
-			const image = await createImageBitmap(await response.blob());
+		map.on('styleimagemissing', (e) => {
 			if (!map) return;
-			map.addImage('marker_png', image);
+
+			const id = e.id;
+			if (id === 'marker_png') {
+				// 検索用のマーカーアイコンを追加
+				fetch(markerPngIcon).then(async (response) => {
+					if (!response.ok) {
+						throw new Error(`Failed to fetch image: ${response.statusText}`);
+					}
+					const image = await createImageBitmap(await response.blob());
+					if (!map) return;
+					map.addImage('marker_png', image);
+				});
+			} else if (id === 'poi-icon') {
+				// poi用の透明アイコンを追加
+				const width = 16;
+				const bytesPerPixel = 4;
+				const data = new Uint8Array(width * width * bytesPerPixel);
+				map.addImage('poi-icon', { width, height: width, data });
+			}
 		});
 
 		map.once('style.load', () => {
