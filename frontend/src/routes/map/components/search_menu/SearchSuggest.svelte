@@ -189,6 +189,12 @@
 		}
 	});
 
+	showSearchMenu.subscribe((show) => {
+		if (!show) {
+			results = null;
+		}
+	});
+
 	// $effect(() => {
 	// 	if (inputSearchWord) {
 	// 		debounceSearch(inputSearchWord);
@@ -218,7 +224,7 @@
 
 <!-- レイヤーメニュー -->
 {#if $showSearchSuggest && !$showSearchMenu && results && results.length > 0}
-	<div class="pointer-events-none absolute z-10 flex w-full justify-end pr-[150px] pt-[80px]">
+	<div class="pointer-events-none absolute z-10 flex w-full justify-end pr-[20px] pt-[80px]">
 		<div
 			transition:fly={{ duration: 200, y: 10, opacity: 0, delay: 100 }}
 			class="w-side-menu pointer-events-auto flex max-h-[calc(100dvh-300px)] flex-col gap-2 rounded-lg bg-black/80"
