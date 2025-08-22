@@ -21,7 +21,7 @@
 
 	import { isBlocked } from '$routes/stores/ui';
 	import { checkPc } from '$routes/map/utils/ui';
-	import { checkPWA, pwaInstall } from '$routes/map/utils/pwa';
+	import { checkPWA, pwaInstall } from '$routes/map/utils/device';
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
 		showDataMenu.set(!$showDataMenu);

@@ -26,7 +26,7 @@
 	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/pwa';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
 
 	let { children } = $props();
 
