@@ -534,10 +534,11 @@ const entry: VectorEntry<TileMetaData> = {
 						]
 					},
 					noData: {
-						values: 'transparent'
+						category: '未分類',
+						value: '#F7F7F7',
+						pattern: null
 					}
 				},
-
 				{
 					type: 'step',
 					key: '材積',

@@ -6,7 +6,7 @@ import type {
 	VectorEntryGeometryType,
 	TileMetaData
 } from '$routes/map/data/types/vector';
-import turfBbox, { bbox } from '@turf/bbox';
+
 import { getUniquePropertyKeys } from '$routes/map/utils/properties';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import {
@@ -25,8 +25,7 @@ import { createLabelsExpressions } from '$routes/map/data/style';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 import { WEB_MERCATOR_WORLD_BBOX } from './location_bbox';
-import { isBboxValid } from '$routes/map/utils/map';
-import { showNotification } from '$routes/stores/notification';
+
 import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
 

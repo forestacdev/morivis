@@ -2161,7 +2161,7 @@ const entry: VectorEntry<TileMetaData> = {
 						]
 					},
 					noData: {
-						values: 'transparent',
+						value: 'transparent',
 						pattern: null
 					}
 				}

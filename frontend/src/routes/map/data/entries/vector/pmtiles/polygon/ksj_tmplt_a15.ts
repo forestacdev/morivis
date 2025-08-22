@@ -71,7 +71,7 @@ const entry: PolygonEntry<TileMetaData> = {
 						patterns: [null, null, null, null]
 					},
 					noData: {
-						values: 'transparent',
+						value: 'transparent',
 						pattern: null
 					}
 				}

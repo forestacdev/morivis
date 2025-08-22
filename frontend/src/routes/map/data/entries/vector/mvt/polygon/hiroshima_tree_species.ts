@@ -82,7 +82,7 @@ const entry: VectorEntry<TileMetaData> = {
 						patterns: [null, null, null, null, 'tmpoly-line-vertical-down-light-200-black']
 					},
 					noData: {
-						values: 'transparent',
+						value: 'transparent',
 						pattern: null
 					}
 				},

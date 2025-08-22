@@ -56,7 +56,8 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 						values: ['#ffec42', '#e0e0e0']
 					},
 					noData: {
-						values: 'transparent'
+						value: 'transparent',
+						pattern: null
 					}
 				}
 			]

@@ -229,7 +229,11 @@ const generateMatchExpression = (
 	}
 
 	// デフォルト値を最後に追加
-	expression.push('#00000000');
+	if (expressionData.noData) {
+		expression.push(expressionData.noData.value);
+	} else {
+		expression.push('transparent');
+	}
 
 	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };

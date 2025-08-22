@@ -93,9 +93,10 @@ export interface ColorMatchExpression {
 		values: string[];
 		patterns?: (SpritePatternId | null)[];
 	};
-	noData: {
-		values: string;
-		pattern?: SpritePatternId | null;
+	noData?: {
+		category?: string;
+		value: string;
+		pattern: SpritePatternId | null;
 	};
 }
 

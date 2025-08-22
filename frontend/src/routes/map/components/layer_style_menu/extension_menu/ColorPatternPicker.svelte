@@ -4,6 +4,7 @@
 	import chroma from 'chroma-js';
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
 	import { fly } from 'svelte/transition';
+	import Icon from '@iconify/svelte';
 
 	interface Props {
 		label?: string | null;
@@ -51,10 +52,10 @@
 	/**
 	 * MapLibreのImageDataから4つ並べたパターン画像を生成 TODO: 最適化
 	 */
-	function createTiledPatternImage(
+	const createTiledPatternImage = (
 		imageData: StyleImage,
 		options: TileOptions = {}
-	): string | null {
+	): string | null => {
 		try {
 			const { tileCount = 25, spacing = 0, backgroundColor = 'transparent' } = options;
 
@@ -125,7 +126,7 @@
 			console.error('Error creating tiled pattern image:', error);
 			return null;
 		}
-	}
+	};
 
 	let imageSrc = $derived.by(() => {
 		if (!pattern) return null;
@@ -169,7 +170,10 @@
 			<span class="group-hover:text-accent select-none text-base">{label}</span>
 		{/if}
 		<div
-			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full"
+			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full {value ===
+			'transparent'
+				? 'border-1 border-white'
+				: ''}"
 			style="background-color: {value}"
 		>
 			{#if imageSrc}
@@ -180,6 +184,7 @@
 		</div>
 	</label>
 	{#if showColorPallet}
+		<!-- カラー選択UI -->
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
 			class="bg-sub absolute z-10 mt-2 grid w-full rounded-lg shadow-lg"
@@ -196,28 +201,24 @@
 						aria-label="Select color {color}"
 					></button>
 				{/each}
+			</div>
+			<div class="flex w-full items-center justify-center pb-2">
 				<button
-					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-amber-100"
+					class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-2 py-1"
 					onclick={() => {
 						value = 'transparent';
 						showColorPallet = false;
 					}}
-					aria-label="Select color "
-				></button>
+					aria-label="透明"
+					><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm">透明</span
+					></button
+				>
 			</div>
+			<!-- TODO:ラインやポイントのパターン選択UIを追加 -- >
 			<!-- NOTE:patternが存在するかどうか -->
 			{#if pattern || pattern === null}
 				<div class="bg-base h-[1px] w-full"></div>
 				<div class="grid grid-cols-8 gap-2 p-2">
-					<button
-						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
-						onclick={() => {
-							pattern = null;
-							showColorPallet = false;
-						}}
-						aria-label="Remove pattern"
-					>
-					</button>
 					{#each patternList as _pattern}
 						<button
 							class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
@@ -235,6 +236,16 @@
 							{/if}</button
 						>
 					{/each}
+				</div>
+				<div class="flex w-full items-center justify-center pb-2">
+					<button
+						class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
+						onclick={() => {
+							pattern = null;
+							showColorPallet = false;
+						}}
+						aria-label="Remove pattern"><span class="text-sm">パターンなし</span></button
+					>
 				</div>
 			{/if}
 		</div>
