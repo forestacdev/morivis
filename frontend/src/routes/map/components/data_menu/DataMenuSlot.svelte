@@ -15,6 +15,7 @@
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import { showDataMenu } from '$routes/stores/ui';
+	import { CoverImageManager } from '$routes/map/utils/image';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -161,6 +162,20 @@
 				</button>
 			{/if}
 		</div>
+		{#if import.meta.env.DEV && !dataEntry.metaData.coverImage && dataEntry.type === 'vector'}
+			<!-- タグ -->
+			<button
+				transition:fade={{ duration: 150 }}
+				onclick={() => {
+					// エクスポート処理を実装
+					console.log('Export button clicked');
+					CoverImageManager.export(dataEntry.id);
+				}}
+				class="absolute top-8 z-10 flex cursor-pointer items-center rounded-full bg-white/50 p-2"
+			>
+				エクスポート
+			</button>
+		{/if}
 	{/if}
 	<button
 		onclick={() => {

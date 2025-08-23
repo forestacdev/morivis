@@ -21,7 +21,8 @@ const entry: PolygonEntry<TileMetaData> = {
 		tags: ['鳥獣保護区'],
 		sourceLayer: 'ksj_tmplt_a15',
 		bounds: [123.00744367, 24.19197, 153.99083742, 45.45090445],
-		xyzImageTile: { x: 903, y: 400, z: 10 }
+		xyzImageTile: { x: 903, y: 400, z: 10 },
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ksj_tmplt_a15.webp`
 	},
 	properties: {
 		keys: [

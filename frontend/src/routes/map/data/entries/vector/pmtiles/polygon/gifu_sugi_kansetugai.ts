@@ -22,7 +22,8 @@ const entry: PolygonEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'gifu_sugi_kansetugai',
-		bounds: [136.2750000000000057, 35.1333333333333329, 137.6624999999999943, 36.4666666666666686]
+		bounds: [136.2750000000000057, 35.1333333333333329, 137.6624999999999943, 36.4666666666666686],
+		coverImage: `${COVER_IMAGE_BASE_PATH}/gifu_sugi_kansetugai.webp`
 	},
 	properties: {
 		keys: ['code', '20冬期中の危険日判定', '冠雪害危険日の頻度の目安'],

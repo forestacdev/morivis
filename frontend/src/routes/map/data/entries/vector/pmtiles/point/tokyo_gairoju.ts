@@ -1,4 +1,4 @@
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 
@@ -23,7 +23,8 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
 		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
-		xyzImageTile: { x: 14552, y: 6452, z: 14 }
+		xyzImageTile: { x: 14552, y: 6452, z: 14 },
+		coverImage: `${COVER_IMAGE_BASE_PATH}/tokyo_gairoju.webp`
 	},
 	properties: {
 		keys: [
