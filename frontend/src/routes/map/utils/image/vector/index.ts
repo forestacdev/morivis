@@ -364,7 +364,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 				type: 'raster',
 				source: 'mierune_mono'
 			},
-			...layers
+			...layers.filter((layer) => layer.type !== 'symbol')
 		]
 	};
 
