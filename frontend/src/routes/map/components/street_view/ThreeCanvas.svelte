@@ -20,7 +20,7 @@
 	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { isMobile } from '$routes/stores/ui';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
@@ -513,17 +513,19 @@
 			</div>
 		{/if}
 
-		<button
-			class="absolute bottom-3 right-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
-			onclick={() => {
-				mobileFullscreen = !mobileFullscreen;
-				onResize();
-			}}
-			><Icon
-				icon={mobileFullscreen ? 'mingcute:fullscreen-exit-2-line' : 'mingcute:fullscreen-2-line'}
-				class="h-7 w-7"
-			/>
-		</button>
+		{#if $isMobile}
+			<button
+				class="absolute bottom-3 right-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
+				onclick={() => {
+					mobileFullscreen = !mobileFullscreen;
+					onResize();
+				}}
+				><Icon
+					icon={mobileFullscreen ? 'mingcute:fullscreen-exit-2-line' : 'mingcute:fullscreen-2-line'}
+					class="h-7 w-7"
+				/>
+			</button>
+		{/if}
 
 		<!-- コントロール -->
 		<div
