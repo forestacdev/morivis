@@ -190,7 +190,8 @@
 								index={i}
 								length={pointEntries.length}
 								layerType={'point'}
-								bind:layerEntry={pointEntries[i]}
+								{layerEntry}
+								bind:layerEntries
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -213,7 +214,8 @@
 								index={i}
 								length={lineEntries.length}
 								layerType={'line'}
-								bind:layerEntry={lineEntries[i]}
+								{layerEntry}
+								bind:layerEntries
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -236,7 +238,8 @@
 								index={i}
 								length={polygonEntries.length}
 								layerType={'polygon'}
-								bind:layerEntry={polygonEntries[i]}
+								{layerEntry}
+								bind:layerEntries
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -259,7 +262,8 @@
 								index={i}
 								length={rasterEntries.length}
 								layerType={'raster'}
-								bind:layerEntry={rasterEntries[i]}
+								{layerEntry}
+								bind:layerEntries
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
