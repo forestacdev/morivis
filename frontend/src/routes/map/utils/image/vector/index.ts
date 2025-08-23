@@ -320,6 +320,10 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 	const minimumEntry = {
 		..._layerEntry,
+		style: {
+			..._layerEntry.style,
+			opacity: 1.0
+		},
 		metaData: {
 			..._layerEntry.metaData,
 			bounds: _layerEntry.metaData.xyzImageTile

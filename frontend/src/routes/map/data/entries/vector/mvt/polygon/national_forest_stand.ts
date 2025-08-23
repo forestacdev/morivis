@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',
 		location: '全国',
 		tags: ['林班', '国有林'],
-		minZoom: 12,
+		minZoom: 8,
 		maxZoom: 14,
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
@@ -90,7 +90,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'match',
 					key: '樹種１',
-					name: '樹種',
+					name: '第一樹種ごとの色分け',
 					mapping: {
 						categories: [
 							'スギ',
@@ -562,7 +562,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'step',
 					key: '樹立林齢１',
-					name: '樹立林齢１による色分け',
+					name: '第一樹種樹立林齢による色分け',
 					mapping: {
 						range: [0, 606.0],
 						divisions: 10,
@@ -572,7 +572,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'step',
 					key: '樹立林齢２',
-					name: '樹立林齢２による色分け',
+					name: '第二樹種樹立林齢による色分け',
 					mapping: {
 						range: [0, 632.0],
 						divisions: 10,
@@ -582,7 +582,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					type: 'step',
 					key: '樹立林齢３',
-					name: '樹立林齢３による色分け',
+					name: '第三樹種樹立林齢による色分け',
 					mapping: {
 						range: [0, 415.0],
 						divisions: 10,
@@ -680,32 +680,53 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '樹種１',
-					name: '樹種１',
-					value: '{樹種１}'
+					name: '第一樹種',
+					value: [
+						'case',
+						['!', ['has', '樹種１']],
+						'', // プロパティが存在しない場合
+						['==', ['get', '樹種１'], ''],
+						'', // 空文字の場合
+						['concat', ['get', '樹種１'], '林']
+					]
 				},
 				{
 					key: '樹立林齢１',
-					name: '樹立林齢１',
+					name: '第一樹種樹立林齢',
 					value: '{樹立林齢１}'
 				},
 				{
 					key: '樹種２',
-					name: '樹種２',
-					value: '{樹種２}'
+					name: '第二樹種',
+					value: [
+						'case',
+						['!', ['has', '樹種２']],
+						'', // プロパティが存在しない場合
+						['==', ['get', '樹種２'], ''],
+						'', // 空文字の場合
+						['concat', ['get', '樹種２'], '林']
+					]
 				},
 				{
 					key: '樹立林齢２',
-					name: '樹立林齢２',
+					name: '第二樹種樹立林齢',
 					value: '{樹立林齢２}'
 				},
 				{
 					key: '樹種３',
-					name: '樹種３',
-					value: '{樹種３}'
+					name: '第三樹種',
+					value: [
+						'case',
+						['!', ['has', '樹種３']],
+						'', // プロパティが存在しない場合
+						['==', ['get', '樹種３'], ''],
+						'', // 空文字の場合
+						['concat', ['get', '樹種３'], '林']
+					]
 				},
 				{
 					key: '樹立林齢３',
-					name: '樹立林齢３',
+					name: '第三樹種樹立林齢',
 					value: '{樹立林齢３}'
 				},
 				{
@@ -730,7 +751,7 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '保安林１',
-					name: '保安林１',
+					name: '保安林種別１',
 					value: '{保安林１}'
 				},
 				{
@@ -756,73 +777,62 @@ const entry: VectorEntry<TileMetaData> = {
 		// 		}
 		// 	}
 		// }
-	},
-	auxiliaryLayers: {
-		source: {
-			national_forest_compartment: {
-				type: 'vector',
-				tiles: [
-					'https://forestacdev.github.io/tiles-national-forest-compartment/tiles/{z}/{x}/{y}.pbf'
-				],
-				maxzoom: 12
-			}
-		},
-		layers: [
-			{
-				id: 'national_forest_compartment_fill_layer',
-				type: 'fill',
-				maxzoom: 12.1,
-				source: 'national_forest_compartment',
-				'source-layer': 'national_forest_compartment',
-				paint: {
-					'fill-color': '#b2df8a',
-					'fill-opacity': 0.5,
-					'fill-outline-color': [
-						'interpolate',
-						['linear'],
-						['zoom'],
-						8,
-						'transparent', // ズーム8以下：透明
-						10,
-						'#dcdcdc', // ズーム8以下：透明
-						12,
-						'#dcdcdc' // ズーム12：中程度のグレー
-					]
-				}
-			},
-			// {
-			// 	id: 'national_forest_compartment_line_layer',
-			// 	type: 'line',
-			// 	maxzoom: 12.1,
-			// 	minzoom: 10,
-			// 	source: 'national_forest_compartment',
-			// 	'source-layer': 'national_forest_compartment',
-			// 	paint: {
-			// 		'line-color': '#dcdcdc',
-			// 		'line-width': 0.5
-			// 	}
-			// },
-			{
-				id: 'national_forest_compartment_label_layer',
-				type: 'symbol',
-				maxzoom: 12.1,
-				minzoom: 10,
-				source: 'national_forest_compartment',
-				'source-layer': 'national_forest_compartment',
-				layout: {
-					'text-field': '{林班主番}-{林班枝番}',
-					'text-font': ['Noto Sans JP Regular'],
-					'text-size': 10,
-					'text-anchor': 'center'
-				},
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#ffffff',
-					'text-halo-width': 1
-				}
-			}
-		]
 	}
+	// auxiliaryLayers: {
+	// 	source: {
+	// 		national_forest_compartment: {
+	// 			type: 'vector',
+	// 			tiles: [
+	// 				'https://forestacdev.github.io/tiles-national-forest-compartment/tiles/{z}/{x}/{y}.pbf'
+	// 			],
+	// 			maxzoom: 12
+	// 		}
+	// 	},
+	// 	layers: [
+	// 		{
+	// 			id: 'national_forest_compartment_fill_layer',
+	// 			type: 'fill',
+	// 			maxzoom: 12.1,
+	// 			source: 'national_forest_compartment',
+	// 			'source-layer': 'national_forest_compartment',
+	// 			paint: {
+	// 				'fill-color': '#b2df8a',
+	// 				'fill-opacity': 0.5,
+	// 				'fill-outline-color': [
+	// 					'interpolate',
+	// 					['linear'],
+	// 					['zoom'],
+	// 					8,
+	// 					'transparent', // ズーム8以下：透明
+	// 					10,
+	// 					'#dcdcdc', // ズーム8以下：透明
+	// 					12,
+	// 					'#dcdcdc' // ズーム12：中程度のグレー
+	// 				]
+	// 			}
+	// 		},
+
+	// 		{
+	// 			id: 'national_forest_compartment_label_layer',
+	// 			type: 'symbol',
+	// 			maxzoom: 12.1,
+	// 			minzoom: 10,
+	// 			source: 'national_forest_compartment',
+	// 			'source-layer': 'national_forest_compartment',
+	// 			layout: {
+	// 				'text-field': '{林班主番}-{林班枝番}',
+	// 				'text-font': ['Noto Sans JP Regular'],
+	// 				'text-size': 10,
+	// 				'text-anchor': 'center'
+	// 			},
+	// 			paint: {
+	// 				'text-color': '#000000',
+	// 				'text-halo-color': '#ffffff',
+	// 				'text-halo-width': 1
+	// 			}
+	// 		}
+	// 	]
+	// }
 };
 
 export default entry;

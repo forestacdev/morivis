@@ -21,11 +21,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_tochigi',
 		bounds: TOCHIGI_BBOX,
-		xyzImageTile: {
-			x: 58222,
-			y: 25571,
-			z: 16
-		},
+		xyzImageTile: { x: 58224, y: 25564, z: 16 },
 		center: [139.833104, 36.723743]
 	},
 	properties: {
