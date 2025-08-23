@@ -11,6 +11,7 @@ html,
 body {
 	overscroll-behavior-y: contain;
 	background-color: var(--color-main);
+	overflow: hidden;
 }
 
 @theme {
