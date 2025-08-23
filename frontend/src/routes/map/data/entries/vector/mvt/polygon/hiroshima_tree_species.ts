@@ -81,10 +81,6 @@ const entry: VectorEntry<TileMetaData> = {
 						],
 						// パターン情報
 						patterns: [null, null, null, null, 'tmpoly-line-vertical-down-light-200-black']
-					},
-					noData: {
-						value: 'transparent',
-						pattern: null
 					}
 				},
 				{

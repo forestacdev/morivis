@@ -2160,10 +2160,6 @@ const entry: VectorEntry<TileMetaData> = {
 							null, // Tr_pan_a
 							null // Tr_pim_a
 						]
-					},
-					noData: {
-						value: 'transparent',
-						pattern: null
 					}
 				}
 			]
