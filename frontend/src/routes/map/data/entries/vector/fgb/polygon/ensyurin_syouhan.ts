@@ -23,12 +23,11 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
-		keys: ['小林班ID', '樹種', '林齢', 'area', '林班'],
-
+		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
 		titles: [
 			{
-				conditions: ['樹種', '林齢'],
-				template: '{樹種}林 {林齢}年生'
+				template: '{樹種}林 {林齢}年生',
+				conditions: ['樹種', '林齢']
 			},
 			{
 				conditions: ['樹種'],
@@ -100,7 +99,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 				},
 				{
 					type: 'step',
-					key: 'area',
+					key: '面積',
 					name: '面積の範囲による色分け',
 					mapping: {
 						range: [0, 1],
@@ -139,9 +138,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					]
 				},
 				{
-					key: 'area',
+					key: '面積',
 					name: '面積',
-					value: '{area} ha'
+					value: '{面積} ha'
 				},
 				{
 					key: '小林班ID',
