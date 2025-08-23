@@ -38,7 +38,6 @@ export default defineConfig({
 				theme_color: '#0C221D',
 				orientation: 'natural',
 				start_url: '/morivis/map',
-				scope: '/morivis/map',
 				lang: 'ja',
 				icons: [
 					{
