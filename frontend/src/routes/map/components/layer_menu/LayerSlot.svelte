@@ -20,6 +20,7 @@
 		length: number;
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
+		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -30,7 +31,8 @@
 		index,
 		length,
 		layerType,
-		layerEntry = $bindable(),
+		layerEntry,
+		layerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
@@ -46,16 +48,18 @@
 	let isLayerInRange = $state(false);
 
 	let LayerBbox = $derived.by(() => {
-		return layerEntry.metaData.bounds;
+		return layerEntry?.metaData.bounds;
 	});
 
 	const selectedLayer = () => {
+		if (!layerEntry) return;
 		selectedLayerId.set(layerEntry.id);
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
 	};
 
 	isStyleEdit.subscribe((value) => {
+		if (!layerEntry) return;
 		if (value && $selectedLayerId === layerEntry.id && !isLayerInRange) {
 			mapStore.focusLayer(layerEntry);
 		}
