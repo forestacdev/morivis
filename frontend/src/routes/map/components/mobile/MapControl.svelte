@@ -8,11 +8,14 @@
 </script>
 
 <div class="pointer-events-none absolute h-full w-full lg:hidden">
-	<div class="absolute right-4 top-4">
+	<div class="absolute right-4" style="top: calc(16px + env(safe-area-inset-top));">
 		<Compass />
 	</div>
 
-	<div class="absolute bottom-24 right-4 rounded-lg bg-black/50 p-1">
+	<div
+		class="absolute right-4 rounded-lg bg-black/50 p-1"
+		style="bottom: calc(96px + env(safe-area-inset-bottom));"
+	>
 		<StreetViewControl />
 		<GeolocateControl />
 	</div>

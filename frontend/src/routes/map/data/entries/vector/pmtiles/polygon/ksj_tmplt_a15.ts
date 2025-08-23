@@ -1,8 +1,8 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'ksj_tmplt_a15',
 	type: 'vector',
 	format: {
@@ -21,7 +21,8 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['鳥獣保護区'],
 		sourceLayer: 'ksj_tmplt_a15',
 		bounds: [123.00744367, 24.19197, 153.99083742, 45.45090445],
-		xyzImageTile: { x: 903, y: 400, z: 10 }
+		xyzImageTile: { x: 903, y: 400, z: 10 },
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ksj_tmplt_a15.webp`
 	},
 	properties: {
 		keys: [
@@ -69,10 +70,6 @@ const entry: VectorEntry<TileMetaData> = {
 						categories: ['鳥獣保護区', '特別保護地区', '休猟区', '特例休猟区'],
 						values: ['#f55b23', '#f5d133', '#00b4fb', '#50e3c2'],
 						patterns: [null, null, null, null]
-					},
-					noData: {
-						values: 'transparent',
-						pattern: null
 					}
 				}
 			]

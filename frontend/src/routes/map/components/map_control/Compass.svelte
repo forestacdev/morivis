@@ -3,7 +3,6 @@
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
-	import { isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
 	gsap.registerPlugin(Draggable);

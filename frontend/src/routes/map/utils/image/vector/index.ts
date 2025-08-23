@@ -320,6 +320,10 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 	const minimumEntry = {
 		..._layerEntry,
+		style: {
+			..._layerEntry.style,
+			opacity: 1.0
+		},
 		metaData: {
 			..._layerEntry.metaData,
 			bounds: _layerEntry.metaData.xyzImageTile
@@ -360,7 +364,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 				type: 'raster',
 				source: 'mierune_mono'
 			},
-			...layers
+			...layers.filter((layer) => layer.type !== 'symbol')
 		]
 	};
 

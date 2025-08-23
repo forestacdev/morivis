@@ -183,8 +183,15 @@
 		if (showDataEntry) return;
 
 		const clickLayerIds = [...$clickableVectorIds];
+		// 存在するレイヤーIDのみをフィルタリング
+		const existingLayerIds = clickLayerIds.filter((layerId) => {
+			return map.getLayer(layerId) !== undefined;
+		});
+
+		if (!existingLayerIds.length) return;
+
 		const features = map.queryRenderedFeatures(e.point, {
-			layers: clickLayerIds
+			layers: existingLayerIds
 		});
 
 		if (!features.length) {
@@ -324,8 +331,12 @@
 		if (!map) return;
 		map.on('mousemove', (e) => {
 			const clickLayerIds = [...$clickableVectorIds];
+
+			const existingLayerIds = clickLayerIds.filter((layerId) => {
+				return map.getLayer(layerId) !== undefined;
+			});
 			const features = map.queryRenderedFeatures(e.point, {
-				layers: clickLayerIds
+				layers: existingLayerIds
 			});
 
 			if (features.length > 0) {

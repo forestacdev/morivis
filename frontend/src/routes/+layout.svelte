@@ -3,6 +3,7 @@
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import Icon from '@iconify/svelte';
 
@@ -26,7 +27,7 @@
 	} from '$routes/stores/ui';
 	import { MOBILE_WIDTH } from './constants';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/pwa';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
 
 	let { children } = $props();
 
@@ -58,18 +59,6 @@
 	});
 
 	let isInitialized = $state<boolean>(false);
-
-	// // 環境ごとのファビコンの設定
-	// type EnvMode = 'development';
-
-	// const faviconDict: Record<EnvMode, string> = {
-	// 	development: '🚧' // develop環境
-	// };
-
-	// const faviconChar = faviconDict[import.meta.env.MODE as EnvMode];
-	// const faviconHref = faviconChar
-	// 	? `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${faviconChar}</text></svg>`
-	// 	: './favicon.svg';
 
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
@@ -118,21 +107,18 @@
 	{@html webManifestLink}
 </svelte:head>
 
-<div class="absolute h-dvh w-full">
-	{#if deviceType === 'mobile' && !$isMobile}
-		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
-			<p class="text-2xl">端末を縦向きにしてください。</p>
-			<Icon icon="circum:mobile-3" class="h-16 w-16" />
-		</div>
-	{/if}
-	{#if isInitialized}
-		{@render children()}
-	{:else}
-		<div class="flex h-full w-full items-center justify-center"></div>
-	{/if}
-</div>
+{#if deviceType === 'mobile' && !$isMobile}
+	<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
+		<p class="text-2xl">端末を縦向きにしてください。</p>
+		<Icon icon="circum:mobile-3" class="h-16 w-16" />
+	</div>
+{/if}
+{#if isInitialized}
+	{@render children()}
+{/if}
 
 <TermsOfServiceDialog />
 <InfoDialog />
 <WebGLScreen {initialized} />
 <ScreenGuard />
+<PwaManualDialog />

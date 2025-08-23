@@ -13,6 +13,7 @@ export default defineConfig({
 			includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
 			manifest: {
 				name: 'morivis',
+				display: 'fullscreen',
 				background_color: '#0C221D',
 				categories: ['navigation'],
 				short_name: 'morivis',

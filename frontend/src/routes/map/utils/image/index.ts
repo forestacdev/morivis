@@ -65,6 +65,16 @@ export class CoverImageManager {
 		this.images.clear();
 	}
 
+	static export(id: string): void {
+		const url = this.get(id);
+		if (url) {
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${id}.jpg`;
+			a.click();
+		}
+	}
+
 	// 追加のユーティリティメソッド
 	static size(): number {
 		return this.images.size;

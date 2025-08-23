@@ -17,10 +17,21 @@
 		/>
 		<meta
 			name="viewport"
-			content="initial-scale=1,maximum-scale=1,user-scalable=no"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
 		/>
+
+		<!-- <meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, viewport-fit=cover"
+			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
+		/> -->
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
 		<meta name="theme-color" content="#0c221d" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon-180x180.png" />
 		<meta
 			property="og:description"
 			content="岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。"
@@ -38,7 +49,7 @@
 		<meta name="twitter:card" content="summary_large_image" />
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover" class="font-noto h-dvh w-screen overflow-hidden">
+	<body data-sveltekit-preload-data="hover" class="font-noto">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

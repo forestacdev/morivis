@@ -76,10 +76,6 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 						],
 						values: ['#33a02c', '#b2df8a', '#e31a1c', '#1f78b4', '#fdbf6f', '#a6cee3', '#fb9a99'],
 						patterns: [null, null, null, null, null, null, null]
-					},
-					noData: {
-						values: 'transparent',
-						pattern: null
 					}
 				},
 				{
@@ -90,10 +86,6 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 						categories: ['1', '2', '3'],
 						values: ['#7fc97f', '#beaed4', '#fdc086'],
 						patterns: [null, null, null]
-					},
-					noData: {
-						values: 'transparent',
-						pattern: null
 					}
 				},
 				{

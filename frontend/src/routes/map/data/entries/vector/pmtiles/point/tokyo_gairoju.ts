@@ -1,4 +1,4 @@
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 
@@ -19,11 +19,12 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',
-		minZoom: 10,
+		minZoom: 7,
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
 		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
-		xyzImageTile: { x: 14552, y: 6452, z: 14 }
+		xyzImageTile: { x: 14552, y: 6452, z: 14 },
+		coverImage: `${COVER_IMAGE_BASE_PATH}/tokyo_gairoju.webp`
 	},
 	properties: {
 		keys: [
@@ -484,7 +485,8 @@ const entry: VectorEntry<TileMetaData> = {
 						values: generateHueBasedHexColors(405)
 					},
 					noData: {
-						values: 'transparent',
+						category: '未分類',
+						value: '#F7F7F7',
 						pattern: null
 					}
 				}
@@ -524,18 +526,18 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '樹高(m)',
-					name: '樹高(m)',
-					value: '{樹高(m)}'
+					name: '樹高',
+					value: '{樹高(m)} m'
 				},
 				{
 					key: '枝張(m)',
-					name: '枝張(m)',
-					value: '{枝張(m)}'
+					name: '枝張',
+					value: '{枝張(m)} m'
 				},
 				{
 					key: '幹周(cm）',
-					name: '幹周(cm）',
-					value: '{幹周(cm）}'
+					name: '幹周',
+					value: '{幹周(cm）} cm'
 				},
 				{
 					key: '行政区',

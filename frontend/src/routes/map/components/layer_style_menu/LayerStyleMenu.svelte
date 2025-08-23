@@ -91,8 +91,14 @@
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
 				<div class="flex h-[80px] items-center gap-2 pr-2">
-					<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
-					<span class="select-none text-base text-lg">カスタマイズ</span>
+					<div class="flex items-center gap-2 max-lg:hidden">
+						<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
+						<span class="select-none text-base text-lg">カスタマイズ</span>
+					</div>
+					<!-- モバイル用タイトル -->
+					<div class="truncate text-2xl text-base lg:hidden">
+						<span class="select-none">{layerEntry.metaData.name}</span>
+					</div>
 					<button
 						onclick={() => {
 							isStyleEdit.set(false);
@@ -103,7 +109,9 @@
 						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
 					</button>
 				</div>
-				<div class="text-2xl text-base">{layerEntry.metaData.name}</div>
+
+				<!-- PC用タイトル -->
+				<div class="text-2xl text-base max-lg:hidden">{layerEntry.metaData.name}</div>
 
 				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
 					<div class="flex w-full justify-center gap-2">

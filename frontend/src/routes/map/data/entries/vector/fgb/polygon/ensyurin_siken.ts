@@ -53,7 +53,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#377eb8'
+						value: '#cab2d6'
 					}
 				}
 			]

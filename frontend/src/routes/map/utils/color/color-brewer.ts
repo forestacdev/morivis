@@ -927,7 +927,7 @@ const COLOR_BREWER = {
 	}
 } as const;
 
-type ColorBrewer = typeof COLOR_BREWER;
+export type ColorBrewer = typeof COLOR_BREWER;
 type ColorBrewerScheme = keyof ColorBrewer;
 
 const SEQUENTIAL_SINGLE_HUE = ['Blues', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
@@ -958,6 +958,47 @@ const COLOR_BREWER_SCHEME_COUNT = {
 } as const;
 
 type ColorSchemeCategory = keyof typeof COLOR_BREWER_SCHEME_COUNT;
+
+// 単色の基準にする色
+export type BaseSingleColor = ColorBrewer['Paired'][12][number];
+
+// マッチングに使用する色
+export type BaseMatchColor =
+	| ColorBrewer['YlGn'][9][number]
+	| ColorBrewer['YlGnBu'][9][number]
+	| ColorBrewer['GnBu'][9][number]
+	| ColorBrewer['BuGn'][9][number]
+	| ColorBrewer['PuBuGn'][9][number]
+	| ColorBrewer['PuBu'][9][number]
+	| ColorBrewer['BuPu'][9][number]
+	| ColorBrewer['RdPu'][9][number]
+	| ColorBrewer['PuRd'][9][number]
+	| ColorBrewer['OrRd'][9][number]
+	| ColorBrewer['YlOrRd'][9][number]
+	| ColorBrewer['YlOrBr'][9][number]
+	| ColorBrewer['Purples'][9][number]
+	| ColorBrewer['Blues'][9][number]
+	| ColorBrewer['Greens'][9][number]
+	| ColorBrewer['Oranges'][9][number]
+	| ColorBrewer['Reds'][9][number]
+	| ColorBrewer['Greys'][9][number]
+	| ColorBrewer['PuOr'][11][number]
+	| ColorBrewer['BrBG'][11][number]
+	| ColorBrewer['PRGn'][11][number]
+	| ColorBrewer['PiYG'][11][number]
+	| ColorBrewer['RdBu'][11][number]
+	| ColorBrewer['RdGy'][11][number]
+	| ColorBrewer['RdYlBu'][11][number]
+	| ColorBrewer['Spectral'][11][number]
+	| ColorBrewer['RdYlGn'][11][number]
+	| ColorBrewer['Accent'][8][number]
+	| ColorBrewer['Dark2'][8][number]
+	| ColorBrewer['Paired'][12][number]
+	| ColorBrewer['Pastel1'][9][number]
+	| ColorBrewer['Pastel2'][8][number]
+	| ColorBrewer['Set1'][9][number]
+	| ColorBrewer['Set2'][8][number]
+	| ColorBrewer['Set3'][12][number];
 
 /** 指定されたカウント数の有効なカラースキームを取得する関数 */
 const getAvailableColorSchemeByCategory = (

@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let observer;
@@ -17,6 +18,7 @@
 			if (target.classList.contains('maplibregl-ctrl-geolocate-waiting')) {
 				// 処理中
 				controlState = 'waiting';
+				showNotification('現在位置を取得中...', 'info');
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-active') ||
@@ -24,12 +26,14 @@
 			) {
 				// 現在位置表示中
 				controlState = 'active';
+
 				return;
 			} else if (
 				target.classList.contains('maplibregl-ctrl-geolocate-error') ||
 				target.classList.contains('maplibregl-ctrl-geolocate-background-error')
 			) {
 				controlState = 'error';
+				showNotification('現在位置を取得できませんでした。', 'error');
 				return;
 			} else {
 				// 現在位置表示していない
@@ -88,14 +92,17 @@
 
 <style>
 	:global(.css-rotate) {
-		animation: scale 2s linear infinite;
+		animation: scale 1s ease infinite;
 	}
 	@keyframes scale {
-		from {
+		0% {
 			transform: scale(1);
 		}
-		to {
+		50% {
 			transform: scale(1.5);
+		}
+		100% {
+			transform: scale(1);
 		}
 	}
 	:global(.maplibregl-ctrl-group) {

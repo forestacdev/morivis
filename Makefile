@@ -2,6 +2,10 @@ dev:
 	cd frontend && \
 	pnpm run dev
 
+mobile:
+	cd frontend && \
+	pnpm run mobile
+
 build:
 	cd frontend && \
 	pnpm run build

@@ -1,14 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade } from 'svelte/transition';
+	import { scale } from 'svelte/transition';
 
 	import { showInfoDialog } from '$routes/stores/ui';
 </script>
 
 {#if $showInfoDialog}
 	<div
-		transition:fade={{ duration: 100 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50"
+		transition:scale={{ duration: 300, start: 0.9 }}
+		class="fixed bottom-0 z-30 flex h-dvh w-full items-center justify-center bg-black/50"
+		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[900px] grow flex-col rounded-md p-4 text-base"

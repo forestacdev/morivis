@@ -41,7 +41,7 @@
 			: ''}"
 	>
 		<div
-			transition:scale={{ duration: 300 }}
+			transition:scale={{ duration: 300, start: 0.9 }}
 			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
 		>
 			<!-- {#if showDialogType === 'wmts'}

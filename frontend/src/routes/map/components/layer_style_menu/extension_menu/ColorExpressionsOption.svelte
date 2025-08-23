@@ -26,7 +26,7 @@
 
 {#if setExpression.type === 'single'}
 	<!-- NOTE: プロパティが存在するかどうか -->
-	<!-- TODO: ポイント、ラインの対応 -->
+	<!-- TODO: patternのポイント、ラインの対応 -->
 	{#if 'pattern' in setExpression.mapping}
 		<ColorPatternPicker
 			label="全体の色"
@@ -51,6 +51,14 @@
 			/>
 		{/if}
 	{/each}
+
+	<!-- No Data -->
+	{#if setExpression.noData}
+		<ColorPatternPicker
+			label={setExpression.noData.category ?? ('データなし' as string)}
+			bind:value={setExpression.noData.value as string}
+		/>
+	{/if}
 {:else if setExpression.type === 'step'}
 	<div class="flex-between flex w-full items-center gap-2 text-base">
 		{#each setExpression.mapping.values as _, index}

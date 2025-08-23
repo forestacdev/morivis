@@ -8,10 +8,11 @@
 {#if $showTermsDialog}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full bg-black/50 max-lg:p-4 max-lg:py-8 lg:items-center lg:justify-center"
+		class="fixed bottom-0 z-30 flex h-dvh w-full bg-black/50 max-lg:p-4 max-lg:py-8 lg:items-center lg:justify-center"
+		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div
-			transition:scale={{ duration: 300 }}
+			transition:scale={{ duration: 300, start: 0.9 }}
 			class="bg-opacity-8 bg-main flex max-w-[900px] grow flex-col rounded-lg text-base max-lg:p-3 lg:h-full lg:max-h-[600px] lg:p-6"
 		>
 			<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">

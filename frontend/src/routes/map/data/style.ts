@@ -286,7 +286,7 @@ export const TREE_MATCH_COLOR_STYLE: ColorMatchExpression = {
 		]
 	},
 	noData: {
-		values: 'transparent',
+		value: 'transparent',
 		pattern: null
 	}
 };
