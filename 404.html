@@ -17,10 +17,21 @@
 		/>
 		<meta
 			name="viewport"
-			content="initial-scale=1,maximum-scale=1,user-scalable=no"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
 		/>
+
+		<!-- <meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, viewport-fit=cover"
+			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
+		/> -->
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
 		<meta name="theme-color" content="#0c221d" />
+		<link rel="apple-touch-icon" href="/morivis/apple-touch-icon-180x180.png" />
 		<meta
 			property="og:description"
 			content="岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。"
@@ -37,20 +48,19 @@
 
 		<meta name="twitter:card" content="summary_large_image" />
 		
-		<link rel="modulepreload" href="/morivis/_app/immutable/entry/start.BBXvHL6u.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/BjsDUncv.js">
+		<link rel="modulepreload" href="/morivis/_app/immutable/entry/start.BPmWjupH.js">
+		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/BAFu2cmu.js">
 		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/BSdiOwP2.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/entry/app.CSVWfUUe.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/C1FmrZbK.js">
+		<link rel="modulepreload" href="/morivis/_app/immutable/entry/app.CqBq5ZGk.js">
+		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/Q6hpPFTD.js">
 		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/D0t-KpC4.js">
 		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/BLZvhTbo.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/DWi-B36l.js">
 	</head>
-	<body data-sveltekit-preload-data="hover" class="font-noto h-dvh w-screen overflow-hidden">
+	<body data-sveltekit-preload-data="hover" class="font-noto">
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_1butqs4 = {
+					__sveltekit_1gyllyo = {
 						base: "/morivis",
 						assets: "/morivis"
 					};
@@ -58,8 +68,8 @@
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("/morivis/_app/immutable/entry/start.BBXvHL6u.js"),
-						import("/morivis/_app/immutable/entry/app.CSVWfUUe.js")
+						import("/morivis/_app/immutable/entry/start.BPmWjupH.js"),
+						import("/morivis/_app/immutable/entry/app.CqBq5ZGk.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
