@@ -38,7 +38,7 @@
 		}}
 	>
 		<div
-			transition:scale={{ duration: 300 }}
+			transition:scale={{ duration: 300, start: 0.9 }}
 			class="bg-opacity-8 flex max-h-[600px] max-w-[600px] grow flex-col rounded-md bg-black p-4 text-base"
 		>
 			<div class="p-2">

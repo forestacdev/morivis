@@ -15,6 +15,7 @@
 	import { TAG_LIST } from '$routes/map/data/types/tags';
 
 	import Fuse from 'fuse.js';
+	import { fly, slide, scale } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -100,13 +101,13 @@
 	});
 </script>
 
-<div
-	class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300 {$showDataMenu
-		? 'pointer-events-auto opacity-100 lg:translate-x-0'
-		: 'pointer-events-none opacity-0 lg:-translate-x-[100px]'}"
-	style="padding-top: env(safe-area-inset-top);"
->
-	<!-- <button
+{#if $showDataMenu}
+	<div
+		transition:scale={{ duration: 300, start: 0.9 }}
+		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300"
+		style="padding-top: env(safe-area-inset-top);"
+	>
+		<!-- <button
 		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"
 		onclick={() => {
 			showDataMenu.set(false);
@@ -114,100 +115,103 @@
 	>
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
-	<div class="flex grow items-center justify-between gap-4 p-2">
-		<div class="flex items-center gap-2 text-base max-lg:hidden">
-			<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
-			<span class="select-none text-lg">データカタログ</span>
-		</div>
-
-		{#if selected === 'system'}
-			<div class="bg-base relative flex w-full rounded-full border-[1px] px-4 lg:max-w-[400px]">
-				<input
-					class="c-search-form tex grid w-full text-left text-gray-500"
-					type="text"
-					placeholder="検索"
-					bind:value={searchWord}
-				/>
-				{#if searchWord}
-					<button
-						onclick={() => (searchWord = '')}
-						disabled={!searchWord}
-						class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
-					>
-						<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
-					</button>
-				{/if}
+		<div class="flex grow items-center justify-between gap-4 p-2">
+			<div class="flex items-center gap-2 text-base max-lg:hidden">
+				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
+				<span class="select-none text-lg">データカタログ</span>
 			</div>
-		{/if}
 
-		<div class="w-[300px] shrink-0 max-lg:hidden">
-			<HorizontalSelectBox bind:group={selected} bind:options />
+			{#if selected === 'system'}
+				<div class="bg-base relative flex w-full rounded-full border-[1px] px-4 lg:max-w-[400px]">
+					<input
+						class="c-search-form tex grid w-full text-left text-gray-500"
+						type="text"
+						placeholder="検索"
+						bind:value={searchWord}
+					/>
+					{#if searchWord}
+						<button
+							onclick={() => (searchWord = '')}
+							disabled={!searchWord}
+							class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
+						>
+							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
+						</button>
+					{/if}
+				</div>
+			{/if}
+
+			<div class="w-[300px] shrink-0 max-lg:hidden">
+				<HorizontalSelectBox bind:group={selected} bind:options />
+			</div>
 		</div>
-	</div>
-	{#if selected === 'system'}
-		<div class="flex w-full grow items-center justify-between gap-4 p-2 max-lg:hidden">
-			<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
+		{#if selected === 'system'}
+			<div class="flex w-full grow items-center justify-between gap-4 p-2 max-lg:hidden">
+				<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
 			{#each TAG_LIST as tag}
 				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
 			{/each}
 		</div> -->
-			<div>
-				<Switch label="追加済みデータの表示" bind:value={showAddedData} />
-			</div>
-		</div>
-	{/if}
-
-	{#if selected === 'system'}
-		{#if filterDataEntries.length}
-			<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
-				<VirtualList
-					width="100%"
-					height="100%"
-					itemCount={filterDataEntries.length / rowColumns + 1}
-					itemSize={itemHeight}
-				>
-					<div slot="item" let:index let:style {style}>
-						<div
-							class="grid max-lg:gap-[5px] lg:gap-3"
-							style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({!$isMobile
-								? 256
-								: 100}px, 1fr));"
-						>
-							{#each Array(rowColumns) as _, i}
-								{#if filterDataEntries[index * rowColumns + i]}
-									{@const itemIndex = index * rowColumns + i}
-									{@const isTopEdge = itemIndex < rowColumns}
-									{@const isLeftEdge = itemIndex % rowColumns === 0}
-									{@const isRightEdge = itemIndex % rowColumns === rowColumns - 1}
-									<DataSlot
-										dataEntry={filterDataEntries[itemIndex]}
-										bind:showDataEntry
-										bind:itemHeight
-										index={itemIndex}
-										{isLeftEdge}
-										{isRightEdge}
-										{isTopEdge}
-									/>
-								{/if}
-							{/each}
-						</div>
-					</div>
-				</VirtualList>
-			</div>
-		{/if}
-		{#if filterDataEntries.length === 0}
-			<div class="flex h-full w-full justify-center max-lg:items-start max-lg:pt-4 lg:items-center">
-				<div class="flex flex-col items-center gap-4">
-					<Icon icon="streamline:sad-face" class="h-16 w-16 text-gray-500 opacity-95" />
-					<span class="text-2xl text-gray-500">データが見つかりません</span>
+				<div>
+					<Switch label="追加済みデータの表示" bind:value={showAddedData} />
 				</div>
 			</div>
 		{/if}
-	{/if}
-	{#if selected === 'user'}
-		<UploadPane bind:showDataEntry bind:dropFile bind:showDialogType />
-	{/if}
-</div>
+
+		{#if selected === 'system'}
+			{#if filterDataEntries.length}
+				<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
+					<VirtualList
+						width="100%"
+						height="100%"
+						itemCount={filterDataEntries.length / rowColumns + 1}
+						itemSize={itemHeight}
+					>
+						<div slot="item" let:index let:style {style}>
+							<div
+								class="grid max-lg:gap-[5px] lg:gap-3"
+								style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({!$isMobile
+									? 256
+									: 100}px, 1fr));"
+							>
+								{#each Array(rowColumns) as _, i}
+									{#if filterDataEntries[index * rowColumns + i]}
+										{@const itemIndex = index * rowColumns + i}
+										{@const isTopEdge = itemIndex < rowColumns}
+										{@const isLeftEdge = itemIndex % rowColumns === 0}
+										{@const isRightEdge = itemIndex % rowColumns === rowColumns - 1}
+										<DataSlot
+											dataEntry={filterDataEntries[itemIndex]}
+											bind:showDataEntry
+											bind:itemHeight
+											index={itemIndex}
+											{isLeftEdge}
+											{isRightEdge}
+											{isTopEdge}
+										/>
+									{/if}
+								{/each}
+							</div>
+						</div>
+					</VirtualList>
+				</div>
+			{/if}
+			{#if filterDataEntries.length === 0}
+				<div
+					class="flex h-full w-full justify-center max-lg:items-start max-lg:pt-4 lg:items-center"
+				>
+					<div class="flex flex-col items-center gap-4">
+						<Icon icon="streamline:sad-face" class="h-16 w-16 text-gray-500 opacity-95" />
+						<span class="text-2xl text-gray-500">データが見つかりません</span>
+					</div>
+				</div>
+			{/if}
+		{/if}
+		{#if selected === 'user'}
+			<UploadPane bind:showDataEntry bind:dropFile bind:showDialogType />
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.c-list:global(.virtual-list-wrapper) {
