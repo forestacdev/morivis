@@ -80,7 +80,7 @@ export interface ColorSingleExpression {
 	key: string;
 	name: string;
 	mapping: {
-		value: BaseSingleColor;
+		value: string;
 		pattern?: SpritePatternId | null;
 	};
 }
