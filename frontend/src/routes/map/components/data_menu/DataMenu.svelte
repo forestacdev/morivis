@@ -16,6 +16,8 @@
 
 	import Fuse from 'fuse.js';
 	import { fly, slide, scale } from 'svelte/transition';
+	import { cubicIn } from 'svelte/easing';
+	import { checkMobile } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -103,7 +105,7 @@
 
 {#if $showDataMenu}
 	<div
-		transition:scale={{ duration: 300, start: 0.9 }}
+		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
 		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300"
 		style="padding-top: env(safe-area-inset-top);"
 	>
