@@ -11,6 +11,7 @@ import type {
 	LayerSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
+import type { BaseSingleColor, BaseMatchColor } from '$routes/map/utils/color/color-brewer';
 
 interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];
@@ -79,7 +80,7 @@ export interface ColorSingleExpression {
 	key: string;
 	name: string;
 	mapping: {
-		value: string;
+		value: BaseSingleColor;
 		pattern?: SpritePatternId | null;
 	};
 }
