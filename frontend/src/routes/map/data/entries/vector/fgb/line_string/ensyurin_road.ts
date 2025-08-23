@@ -54,10 +54,6 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 					mapping: {
 						categories: ['林道', '歩道'],
 						values: ['#ffec42', '#e0e0e0']
-					},
-					noData: {
-						value: 'transparent',
-						pattern: null
 					}
 				}
 			]

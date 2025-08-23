@@ -59,10 +59,6 @@ const entry: PolygonEntry<TileMetaData> = {
 						categories: ['0日', '1~2日', '3~5日', '6~10日', '11〜15日', '16~20日', '21日以上'],
 						values: ['#ffffb2', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026'],
 						patterns: [null, null, null, null, null, null, null]
-					},
-					noData: {
-						value: 'transparent',
-						pattern: null
 					}
 				}
 			]
