@@ -1,4 +1,5 @@
 import { showNotification } from '$routes/stores/notification';
+import { showPwaManuelDialog } from '$routes/stores/ui';
 
 /**
  * PWAかどうかを判定する
@@ -53,17 +54,8 @@ export const setDeferredPrompt = (prompt: BeforeInstallPromptEvent | null) => {
  * iOSでのPWAインストール手順を表示する
  */
 export const showIOSInstallInstructions = () => {
-	const instructions = `
-		PWAをインストールするには：
-		1. 画面下部の共有ボタン（□↑）をタップ
-		2. 「ホーム画面に追加」を選択
-		3. 「追加」をタップしてインストール完了
-	`;
-
-	showNotification(instructions, 'info');
-
-	// より詳細な手順をモーダルで表示する場合
-	// showIOSInstallModal();
+	// マニュアルを表示する
+	showPwaManuelDialog.set(true);
 };
 
 /**

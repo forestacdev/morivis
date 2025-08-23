@@ -40,8 +40,11 @@ export const showSearchSuggest = writable<boolean>(false);
 /** モバイルフッターの状態 */
 export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
 
-// ストアを先に定義
+/** モバイルデバイスかどうか */
 export const isMobile = writable<boolean>(false);
+
+/** PWAのインストール手順 */
+export const showPwaManuelDialog = writable<boolean>(false);
 
 // メディアクエリをチェックして更新する関数
 export const setupMediaQueries = (): void => {

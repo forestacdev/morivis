@@ -3,6 +3,7 @@
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import Icon from '@iconify/svelte';
 
@@ -58,7 +59,6 @@
 	});
 
 	let isInitialized = $state<boolean>(false);
-
 
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
@@ -125,3 +125,4 @@
 <InfoDialog />
 <WebGLScreen {initialized} />
 <ScreenGuard />
+<PwaManualDialog />
