@@ -44,7 +44,7 @@
 </script>
 
 <div bind:this={containerRef} class="relative">
-	<div class="flex items-center justify-between rounded-lg bg-black p-2">
+	<div class="flex items-center justify-between rounded-lg bg-black p-1">
 		<button
 			onclick={() => {
 				showMenu = !showMenu;
