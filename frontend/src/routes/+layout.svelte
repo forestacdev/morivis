@@ -107,19 +107,15 @@
 	{@html webManifestLink}
 </svelte:head>
 
-<div class="absolute h-dvh w-full">
-	{#if deviceType === 'mobile' && !$isMobile}
-		<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
-			<p class="text-2xl">端末を縦向きにしてください。</p>
-			<Icon icon="circum:mobile-3" class="h-16 w-16" />
-		</div>
-	{/if}
-	{#if isInitialized}
-		{@render children()}
-	{:else}
-		<div class="flex h-full w-full items-center justify-center"></div>
-	{/if}
-</div>
+{#if deviceType === 'mobile' && !$isMobile}
+	<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
+		<p class="text-2xl">端末を縦向きにしてください。</p>
+		<Icon icon="circum:mobile-3" class="h-16 w-16" />
+	</div>
+{/if}
+{#if isInitialized}
+	{@render children()}
+{/if}
 
 <TermsOfServiceDialog />
 <InfoDialog />

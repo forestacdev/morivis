@@ -8,7 +8,8 @@
 {#if $showPwaManuelDialog}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full bg-black/50 max-lg:p-4 max-lg:py-8 lg:items-center lg:justify-center"
+		class="fixed bottom-0 z-30 flex h-dvh w-full bg-black/50 max-lg:p-4 max-lg:py-8 lg:items-center lg:justify-center"
+		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div
 			transition:scale={{ duration: 300 }}

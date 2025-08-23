@@ -5,7 +5,7 @@
 </script>
 
 {#if $isProcessing}
-	<div bind:this={container} class="absolute left-0 top-0 z-[9999] h-dvh w-full bg-black/50">
+	<div bind:this={container} class="fixed left-0 top-0 z-[9999] h-dvh w-full bg-black/50">
 		<div class="flex h-full w-full items-center justify-center">
 			<div class="loader"></div>
 		</div>

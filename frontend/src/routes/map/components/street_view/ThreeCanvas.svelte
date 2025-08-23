@@ -497,7 +497,8 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="lg:bg-main absolute left-4 top-[10px] z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
+				class="lg:bg-main absolute left-4 z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
+				style="top: calc(10px + env(safe-area-inset-top));"
 			>
 				<button
 					class="lg:bg-base cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"

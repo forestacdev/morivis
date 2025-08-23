@@ -339,7 +339,7 @@
 </script>
 
 {#if isInitialized}
-	<div class="relative flex h-full w-full flex-col">
+	<div class="fixed flex h-dvh w-full flex-col">
 		<!-- <HeaderMenu
 			{resetlayerEntries}
 			bind:featureMenuData
@@ -349,7 +349,7 @@
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 		/> -->
-		<div class="flex w-full flex-1">
+		<div class="flex h-full w-full flex-1">
 			<!-- マップのオフセット調整用 -->
 			{#if $showLayerMenu}
 				<div

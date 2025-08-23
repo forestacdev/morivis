@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { checkMobile, checkMobileWidth, type MobileActiveMenu } from '$routes/map/utils/ui';
 	import {
 		showLayerMenu,
 		showDataMenu,
@@ -58,65 +57,69 @@
 {#if !featureMenuData && !showDataEntry && !$isStyleEdit && !$isStreetView}
 	<div
 		transition:fly={{ y: 100, duration: 300 }}
-		class="bg-main absolute bottom-0 left-0 z-20 flex w-full items-center justify-between text-base lg:hidden {showDataEntry}"
-		style="height: {footerHeight}px;"
+		class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-col text-base lg:hidden {showDataEntry}"
 	>
-		<button
-			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => ($isActiveMobileMenu = 'map')}
-		>
-			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'map'
-					? 'bg-accent'
-					: ''}"
+		<div class="flex w-full items-center justify-between" style="height: {footerHeight}px;">
+			<button
+				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+				onclick={() => ($isActiveMobileMenu = 'map')}
 			>
-				<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
-			</div>
+				<div
+					class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+					'map'
+						? 'bg-accent'
+						: ''}"
+				>
+					<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
+				</div>
 
-			<span class="text-xs">地図</span>
-		</button>
-		<button
-			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => ($isActiveMobileMenu = 'layer')}
-		>
-			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
-				'layer'
-					? 'bg-accent'
-					: ''}"
+				<span class="text-xs">地図</span>
+			</button>
+			<button
+				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+				onclick={() => ($isActiveMobileMenu = 'layer')}
 			>
-				<Icon icon="jam:layers-f" class="h-8 w-8" />
-			</div>
+				<div
+					class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+					'layer'
+						? 'bg-accent'
+						: ''}"
+				>
+					<Icon icon="jam:layers-f" class="h-8 w-8" />
+				</div>
 
-			<span class="text-xs">レイヤ</span>
-		</button>
-		<button
-			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => ($isActiveMobileMenu = 'data')}
-		>
-			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu === 'data'
-					? 'bg-accent'
-					: ''}"
+				<span class="text-xs">レイヤ</span>
+			</button>
+			<button
+				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+				onclick={() => ($isActiveMobileMenu = 'data')}
 			>
-				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-			</div>
-			<span class="text-xs">データ</span>
-		</button>
-		<button
-			class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
-			onclick={() => ($isActiveMobileMenu = 'other')}
-		>
-			<div
-				class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
-				'other'
-					? 'bg-accent'
-					: ''}"
+				<div
+					class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+					'data'
+						? 'bg-accent'
+						: ''}"
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+				</div>
+				<span class="text-xs">データ</span>
+			</button>
+			<button
+				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
+				onclick={() => ($isActiveMobileMenu = 'other')}
 			>
-				<Icon icon="basil:other-1-outline" class="h-8 w-8" />
-			</div>
-			<span class="text-xs">その他</span>
-		</button>
+				<div
+					class="rounded-full px-4 py-1 transition-colors duration-150 {$isActiveMobileMenu ===
+					'other'
+						? 'bg-accent'
+						: ''}"
+				>
+					<Icon icon="basil:other-1-outline" class="h-8 w-8" />
+				</div>
+				<span class="text-xs">その他</span>
+			</button>
+		</div>
+		<div style="height: env(safe-area-inset-bottom);" class="w-full"></div>
 	</div>
 {/if}
 

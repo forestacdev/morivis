@@ -101,9 +101,10 @@
 </script>
 
 <div
-	class="bg-main absolute bottom-0 flex h-dvh w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300 {$showDataMenu
+	class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300 {$showDataMenu
 		? 'pointer-events-auto opacity-100 lg:translate-x-0'
 		: 'pointer-events-none opacity-0 lg:-translate-x-[100px]'}"
+	style="padding-top: env(safe-area-inset-top);"
 >
 	<!-- <button
 		class="hover:text-accent bg-base pointer-events-auto absolute left-4 top-4 grid cursor-pointer place-items-center rounded-full p-2 transition-all duration-150 max-lg:hidden"

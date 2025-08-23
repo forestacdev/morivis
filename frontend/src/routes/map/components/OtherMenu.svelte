@@ -80,6 +80,7 @@
 	<div
 		transition:fly={{ duration: !$isMobile ? 300 : 0, x: !$isMobile ? 100 : 0, opacity: 0 }}
 		class="bg-main absolute right-0 top-0 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:z-30 lg:w-[400px]"
+		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="flex items-center justify-between">
 			<div class="w-full p-4 [&_path]:fill-white">

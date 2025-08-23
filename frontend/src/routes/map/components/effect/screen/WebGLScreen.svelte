@@ -62,7 +62,7 @@
 	});
 </script>
 
-<canvas bind:this={canvas} class="pointer-events-none absolute z-50 h-full w-full"></canvas>
+<canvas bind:this={canvas} class="pointer-events-none fixed z-50 h-dvh w-full"></canvas>
 
 <style>
 </style>

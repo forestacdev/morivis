@@ -2,6 +2,17 @@
 
 @plugin '@tailwindcss/typography';
 
+html {
+	min-height: calc(100svh + env(safe-area-inset-top));
+}
+
+/* スワイプリロード無効 */
+html,
+body {
+	overscroll-behavior-y: contain;
+	background-color: var(--color-main);
+}
+
 @theme {
 	--color-base: #f1f1f1;
 	--color-main: #0c221d;
@@ -32,16 +43,7 @@
 		border-color: var(--color-gray-200, currentcolor);
 	}
 
-	body {
-		background-color: var(--color-main);
-	}
-
 	@media (width < 768px) {
-		/* スワイプリロード無効 */
-		body {
-			overscroll-behavior-y: none;
-		}
-
 		/* タップハイライトの色を透明にする */
 		* {
 			-webkit-tap-highlight-color: transparent;

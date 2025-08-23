@@ -94,6 +94,7 @@
 			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[75px]'
 			: 'bg-main'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
+		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="pl-2">
 			<div class="relative flex h-[64px] w-full items-center max-lg:hidden">
