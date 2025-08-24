@@ -28,7 +28,7 @@
 
 	let searchData: SearchData[]; // 検索データ
 
-	const LIMIT = 100; // 検索結果の表示上限
+	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 	let isLoading = $state<boolean>(false);
 
@@ -231,34 +231,36 @@
 
 	<!-- 右側 -->
 	<div class="flex items-center gap-2 rounded-lg pr-1 max-lg:hidden">
-		<div bind:this={searchContainerRef} class="flex items-center">
-			{#if showSearchForm}
-				<Geocoder
-					{layerEntries}
-					bind:results
-					bind:inputSearchWord
-					searchFeature={(v) => searchFeature(v)}
-				/>
-			{/if}
-			<button
-				onclick={() => {
-					if (showSearchForm && inputSearchWord) {
-						searchFeature(inputSearchWord);
-					} else {
-						showSearchForm = true;
-					}
-				}}
-				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
-					? 'bg-base text-gray-700 delay-100'
-					: 'text-white'}"
-			>
-				<Icon
-					icon="stash:search-solid"
-					class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
-				/>
-			</button>
-		</div>
+		{#if !$showDataMenu}
+			<div bind:this={searchContainerRef} class="flex items-center">
+				{#if showSearchForm}
+					<Geocoder
+						{layerEntries}
+						bind:results
+						bind:inputSearchWord
+						searchFeature={(v) => searchFeature(v)}
+					/>
+				{/if}
+				<button
+					onclick={() => {
+						if (showSearchForm && inputSearchWord) {
+							searchFeature(inputSearchWord);
+						} else {
+							showSearchForm = true;
+						}
+					}}
+					disabled={$isProcessing}
+					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
+						? 'bg-base text-gray-700 delay-100'
+						: 'text-white'}"
+				>
+					<Icon
+						icon="stash:search-solid"
+						class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
+					/>
+				</button>
+			</div>
+		{/if}
 
 		<!-- ハンバーガーメニュー -->
 		<button
