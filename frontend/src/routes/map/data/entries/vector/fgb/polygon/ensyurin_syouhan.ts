@@ -1,6 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, ENTRY_GEOJSON_PATH } from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
+import type { values } from 'es-toolkit/compat';
 
 const entry: PolygonEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_syouhan',
@@ -82,8 +83,8 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '林班',
 					name: '林班ごとの色分け',
 					mapping: {
-						categories: ['1', '2', '3'],
-						values: ['#7fc97f', '#beaed4', '#fdc086'],
+						categories: [1, 2, 3],
+						values: ['#a6cee3', '#1f78b4', '#b2df8a'],
 						patterns: [null, null, null]
 					}
 				},
