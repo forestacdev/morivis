@@ -160,26 +160,6 @@
 
 	let searchContainerRef = $state<HTMLDivElement | null>(null);
 
-	$effect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				showSearchForm &&
-				searchContainerRef &&
-				!searchContainerRef.contains(event.target as Node)
-			) {
-				showSearchForm = true;
-			}
-		};
-
-		if (showSearchForm) {
-			document.addEventListener('click', handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
-
 	let showSearchForm = $state<boolean>(true);
 </script>
 
@@ -233,31 +213,23 @@
 	<div class="flex items-center gap-2 rounded-lg pr-1 max-lg:hidden">
 		{#if !$showDataMenu}
 			<div bind:this={searchContainerRef} class="flex items-center">
-				{#if showSearchForm}
-					<Geocoder
-						{layerEntries}
-						bind:results
-						bind:inputSearchWord
-						searchFeature={(v) => searchFeature(v)}
-					/>
-				{/if}
+				<Geocoder
+					{layerEntries}
+					bind:results
+					bind:inputSearchWord
+					searchFeature={(v) => searchFeature(v)}
+				/>
+
 				<button
 					onclick={() => {
-						if (showSearchForm && inputSearchWord) {
+						if (inputSearchWord) {
 							searchFeature(inputSearchWord);
-						} else {
-							showSearchForm = true;
 						}
 					}}
 					disabled={$isProcessing}
-					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
-						? 'bg-base text-gray-700 delay-100'
-						: 'text-white'}"
+					class="bg-base flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 text-gray-700 transition-colors delay-100 duration-100"
 				>
-					<Icon
-						icon="stash:search-solid"
-						class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
-					/>
+					<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
 				</button>
 			</div>
 		{/if}
