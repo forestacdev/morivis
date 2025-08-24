@@ -227,7 +227,7 @@
 						}
 					}}
 					disabled={$isProcessing}
-					class="bg-base flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 text-gray-700 transition-colors delay-100 duration-100"
+					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
 				>
 					<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
 				</button>
