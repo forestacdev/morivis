@@ -12,7 +12,6 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStyleEdit } from '$routes/stores';
 	import { showSearchMenu } from '$routes/stores/ui';
-	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 
@@ -131,9 +130,8 @@
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
-          
 			updateMarkers();
-            if (!map) return;
+			if (!map) return;
 			map.on('move', updateThrottle);
 			map.on('moveend', updateMarkers);
 		});
