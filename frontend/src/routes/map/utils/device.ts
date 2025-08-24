@@ -96,7 +96,6 @@ export const pwaInstall = () => {
 		deferredPrompt.prompt();
 		deferredPrompt.userChoice.then((choiceResult) => {
 			if (choiceResult.outcome === 'accepted') {
-				showNotification('PWAのインストールが開始されました。', 'success');
 			}
 			deferredPrompt = null;
 		});
@@ -112,7 +111,7 @@ export const pwaInstall = () => {
 	// その他のブラウザ
 	showNotification(
 		'このブラウザではPWAの自動インストールに対応していません。ブラウザの設定から「ホーム画面に追加」を選択してください。',
-		'warning'
+		'info'
 	);
 };
 

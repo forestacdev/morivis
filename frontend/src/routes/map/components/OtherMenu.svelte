@@ -178,7 +178,7 @@
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
-			{#if !checkPWA()}
+			{#if !checkPWA() && $isMobile}
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 					onclick={pwaInstall}
