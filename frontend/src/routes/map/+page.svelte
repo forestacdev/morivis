@@ -32,7 +32,15 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import { isBlocked, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
+	import {
+		isBlocked,
+		showDataMenu,
+		showLayerMenu,
+		showOtherMenu,
+		showInfoDialog,
+		showSearchMenu,
+		showTermsDialog
+	} from '$routes/stores/ui';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
@@ -494,13 +502,66 @@
 <ConfirmationDialog />
 
 <!-- TODO -->
-<!-- <svelte:window
+<svelte:window
 	onkeydown={(e) => {
 		if (e.key === 'F3') {
 			isDebugMode.set(!$isDebugMode);
 		}
+
+		if (e.key === 'Escape') {
+			// フォーカスを外す処理を追加
+			if (document.activeElement && document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+			}
+
+			if (featureMenuData) {
+				featureMenuData = null;
+				return;
+			}
+
+			if (showDataEntry) {
+				showDataEntry = null;
+				return;
+			}
+			if (isStyleEditEntry) {
+				isStyleEditEntry = null;
+				selectedLayerId.set('');
+				isStyleEdit.set(false);
+				return;
+			}
+
+			if ($showDataMenu) {
+				showDataMenu.set(false);
+				return;
+			}
+
+			if ($isStreetView) {
+				isStreetView.set(false);
+				return;
+			}
+
+			if ($showOtherMenu) {
+				showOtherMenu.set(false);
+				return;
+			}
+
+			if ($showInfoDialog) {
+				showInfoDialog.set(false);
+				return;
+			}
+
+			if ($showTermsDialog) {
+				showTermsDialog.set(false);
+				return;
+			}
+
+			if ($showSearchMenu) {
+				showSearchMenu.set(false);
+				return;
+			}
+		}
 	}}
-/> -->
+/>
 
 <style>
 </style>

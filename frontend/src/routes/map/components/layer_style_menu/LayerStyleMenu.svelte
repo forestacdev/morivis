@@ -18,11 +18,6 @@
 	let showVisibleOption = $state<boolean>(false);
 	let showColorOption = $state<boolean>(false);
 
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			layerEntry = null;
-		}
-	};
 	interface OpacityButton {
 		label: string;
 		value: number;
@@ -75,8 +70,6 @@
 		}
 	});
 </script>
-
-<svelte:window on:keydown={handleKeydown} />
 
 {#if layerEntry}
 	<div

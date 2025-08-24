@@ -153,7 +153,7 @@
 
 	showSearchMenu.subscribe((show) => {
 		if (!show) {
-			showSelectionMarker = false;
+			closeSearchMenu();
 		}
 	});
 	showDataMenu.subscribe((show) => {
