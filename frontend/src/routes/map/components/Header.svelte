@@ -167,7 +167,7 @@
 				searchContainerRef &&
 				!searchContainerRef.contains(event.target as Node)
 			) {
-				showSearchForm = false;
+				showSearchForm = true;
 			}
 		};
 
@@ -180,7 +180,7 @@
 		};
 	});
 
-	let showSearchForm = $state<boolean>(false);
+	let showSearchForm = $state<boolean>(true);
 </script>
 
 <div class=" bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
@@ -230,14 +230,13 @@
 	</div> -->
 
 	<!-- 右側 -->
-	<div class="k flex items-center rounded-lg pr-2 max-lg:hidden">
+	<div class="flex items-center gap-2 rounded-lg pr-1 max-lg:hidden">
 		<div bind:this={searchContainerRef} class="flex items-center">
 			{#if showSearchForm}
 				<Geocoder
 					{layerEntries}
 					bind:results
 					bind:inputSearchWord
-					bind:showSearchForm
 					searchFeature={(v) => searchFeature(v)}
 				/>
 			{/if}
@@ -250,7 +249,7 @@
 					}
 				}}
 				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 p-2 px-4 drop-shadow-lg transition-colors duration-100 {showSearchForm
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 px-4 transition-colors duration-100 {showSearchForm
 					? 'bg-base text-gray-700 delay-100'
 					: 'text-white'}"
 			>
@@ -263,7 +262,7 @@
 
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 p-2 text-left text-base drop-shadow-lg duration-100"
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
 			onclick={() => showOtherMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />

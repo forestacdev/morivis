@@ -11,13 +11,13 @@
 		layerEntries: GeoDataEntry[];
 		results: ResultData[] | null;
 		inputSearchWord: string;
-		showSearchForm: boolean;
+
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
 	let {
 		layerEntries,
-		showSearchForm = $bindable(),
+
 		results = $bindable(),
 		inputSearchWord = $bindable(),
 		searchFeature
