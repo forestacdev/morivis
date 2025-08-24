@@ -131,7 +131,9 @@
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 		mapStore.onload((e) => {
+          
 			updateMarkers();
+            if (!map) return;
 			map.on('move', updateThrottle);
 			map.on('moveend', updateMarkers);
 		});
@@ -139,6 +141,9 @@
 
 	onDestroy(() => {
 		if (!map) return;
+
+		map.off('move', updateThrottle);
+		map.off('moveend', updateMarkers);
 	});
 
 	// ちらつき防止
