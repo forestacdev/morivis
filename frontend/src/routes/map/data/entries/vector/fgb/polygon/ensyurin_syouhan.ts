@@ -1,7 +1,6 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, ENTRY_GEOJSON_PATH } from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
-import type { values } from 'es-toolkit/compat';
 
 const entry: PolygonEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_syouhan',
@@ -36,7 +35,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 			},
 			{
 				conditions: [],
-				template: '演習林林班'
+				template: '演習林小班'
 			}
 		]
 	},
