@@ -218,16 +218,16 @@
 				return;
 			}
 
-			if ($isStyleEdit) {
-				// 編集モードの時は、クリックしたレイヤーを編集対象にする
-				const clickedLayer = features[0].layer.id;
-				const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
-				if (clickedLayerEntry) {
-					selectedLayerId.set(clickedLayerEntry.id);
-				}
+			// if ($isStyleEdit) {
+			// 	// 編集モードの時は、クリックしたレイヤーを編集対象にする
+			// 	const clickedLayer = features[0].layer.id;
+			// 	const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
+			// 	if (clickedLayerEntry) {
+			// 		selectedLayerId.set(clickedLayerEntry.id);
+			// 	}
 
-				return;
-			}
+			// 	return;
+			// }
 
 			const selectedVecterLayersId = features.map((feature) => feature.layer.id);
 			const selectedRasterLayersId = layerEntries
