@@ -310,7 +310,11 @@ const createMapStore = () => {
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
 			const url = window.location.href;
-			const origin = window.location.origin;
+			let origin = window.location.origin;
+
+			if (import.meta.env.PROD) {
+				origin += '/morivis';
+			}
 
 			const zoom = map.getZoom();
 			// 地図の中心座標を取得
