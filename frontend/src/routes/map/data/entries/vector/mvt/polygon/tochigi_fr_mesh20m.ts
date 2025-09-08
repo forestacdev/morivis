@@ -194,7 +194,6 @@ const entry: VectorEntry<TileMetaData> = {
 					'text-opacity': 1
 				},
 				layout: {
-					'text-field': ['to-string', ['get', '樹種']],
 					'text-max-width': 12,
 					'text-size': 12,
 					'text-anchor': 'center',

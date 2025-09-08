@@ -11,13 +11,13 @@
 		layerEntries: GeoDataEntry[];
 		results: ResultData[] | null;
 		inputSearchWord: string;
-		showSearchForm: boolean;
+
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
 	let {
 		layerEntries,
-		showSearchForm = $bindable(),
+
 		results = $bindable(),
 		inputSearchWord = $bindable(),
 		searchFeature
@@ -51,9 +51,9 @@
 	// 検索結果のリセット
 	const resetSearchResult = () => {};
 
-	onMount(() => {
-		inputElement?.focus();
-	});
+	// onMount(() => {
+	// 	inputElement?.focus();
+	// });
 </script>
 
 <input
@@ -61,7 +61,7 @@
 	in:fade={{ duration: 100, delay: 100 }}
 	out:fade={{ duration: 100 }}
 	type="text"
-	class="bg-base focus:outline-hidden placeholder:gray-400 text-main w-full rounded-l-full px-4 py-2 outline-0"
+	class="focus:outline-hidden placeholder:gray-400 w-full rounded-l-full bg-black px-4 py-2 text-base outline-0"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}

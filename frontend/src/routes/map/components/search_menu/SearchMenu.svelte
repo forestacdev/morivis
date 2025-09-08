@@ -1,26 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import Fuse from 'fuse.js';
-	import type { Map as MapLibreMap } from 'maplibre-gl';
-	import type { Marker, LngLat } from 'maplibre-gl';
+
+	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { slide, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
 	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { geoDataEntries } from '$routes/map/data';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
+
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showSearchMenu } from '$routes/stores/ui';
+	import { showDataMenu, showSearchMenu } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData } from '$routes/map/utils/feature';
-	import { debounce } from 'es-toolkit';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import turfBbox from '@turf/bbox';
+	import { isStyleEdit } from '$routes/stores';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
@@ -52,7 +50,6 @@
 	let searchData: SearchData[]; // 検索データ
 	let isClickedSearch = $state<boolean>(false);
 
-	const LIMIT = 100; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
 	onMount(async () => {
@@ -156,7 +153,17 @@
 
 	showSearchMenu.subscribe((show) => {
 		if (!show) {
-			showSelectionMarker = false;
+			closeSearchMenu();
+		}
+	});
+	showDataMenu.subscribe((show) => {
+		if (show) {
+			closeSearchMenu();
+		}
+	});
+	isStyleEdit.subscribe((show) => {
+		if (show) {
+			closeSearchMenu();
 		}
 	});
 </script>

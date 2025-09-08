@@ -47,15 +47,7 @@
 			showDataEntry = null;
 		}
 	};
-
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			showDataEntry = null;
-		}
-	};
 </script>
-
-<svelte:window on:keydown={handleKeydown} />
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}

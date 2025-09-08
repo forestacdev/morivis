@@ -139,224 +139,222 @@
 	};
 
 	mapStore.onClick((e: MapMouseEvent) => {
-		const map = mapStore.getMap();
-		if (!map) return;
+		try {
+			if (import.meta.env.MODE === 'development') {
+				const features = mapStore.queryRenderedFeatures(e.point);
 
-		if (import.meta.env.MODE === 'development') {
-			const features = map.queryRenderedFeatures(e.point);
+				if (features.length === 0) {
+					console.warn('No features found at clicked point.');
+					return;
+				}
+				console.log('Clicked features:', features);
 
-			if (features.length === 0) {
-				console.warn('No features found at clicked point.');
+				const prop = features[0].properties;
+
+				// keyを配列で取得
+				const keys = Object.keys(prop);
+				console.log(keys);
+
+				// expressions配列を作成
+				const expressions = keys.map((key) => {
+					return {
+						key: key,
+						name: key,
+						value: `{${key}}`
+					};
+				});
+
+				console.log(expressions);
+
+				if (features[0].layer.id === '@tile_index_layer') {
+					const xyz = {
+						x: prop.x,
+						y: prop.y,
+						z: prop.z
+					};
+
+					console.log(xyz);
+
+					//クリップボードにコピー
+				}
+			}
+			if (showDataEntry) return;
+
+			const clickLayerIds = [...$clickableVectorIds];
+			// 存在するレイヤーIDのみをフィルタリング
+
+			const existingLayerIds = clickLayerIds.filter((layerId) => {
+				return mapStore.getLayer(layerId) !== undefined;
+			});
+
+			if (!existingLayerIds.length) return;
+
+			const features = mapStore.queryRenderedFeatures(e.point, {
+				layers: existingLayerIds
+			});
+
+			if (!features.length) {
+				if (hoveredId !== null && hoveredFeatureState !== null) {
+					mapStore.setFeatureState(
+						{
+							...hoveredFeatureState,
+							id: hoveredId
+						},
+						{ selected: false }
+					);
+					hoveredId = null;
+				}
+
+				featureMenuData = null;
+				clickedLayerIds = [];
+
+				if (markerLngLat) {
+					markerLngLat = null;
+					showMarker = false;
+				} else {
+					showMarker = true;
+					markerLngLat = e.lngLat;
+				}
 				return;
 			}
-			console.log('Clicked features:', features);
 
-			const prop = features[0].properties;
+			// if ($isStyleEdit) {
+			// 	// 編集モードの時は、クリックしたレイヤーを編集対象にする
+			// 	const clickedLayer = features[0].layer.id;
+			// 	const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
+			// 	if (clickedLayerEntry) {
+			// 		selectedLayerId.set(clickedLayerEntry.id);
+			// 	}
 
-			// keyを配列で取得
-			const keys = Object.keys(prop);
-			console.log(keys);
+			// 	return;
+			// }
 
-			// expressions配列を作成
-			const expressions = keys.map((key) => {
-				return {
-					key: key,
-					name: key,
-					value: `{${key}}`
-				};
-			});
+			const selectedVecterLayersId = features.map((feature) => feature.layer.id);
+			const selectedRasterLayersId = layerEntries
+				.filter((entry) => {
+					if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
+						if (entry.metaData.location === '全国') {
+							return true;
+						} else if (isPointInBbox(e.lngLat, entry.metaData.bounds)) {
+							return true;
+						}
+					}
+				})
+				.map((entry) => entry.id);
 
-			console.log(expressions);
+			// ストリートビューに切り返る
+			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+				const features = mapStore.queryRenderedFeatures(e.point, {
+					layers: ['@street_view_circle_layer']
+				});
 
-			if (features[0].layer.id === '@tile_index_layer') {
-				const xyz = {
-					x: prop.x,
-					y: prop.y,
-					z: prop.z
-				};
+				if (features.length > 0 && streetViewPointData.features.length > 0) {
+					const feature = features[0];
+					const point = streetViewPointData.features.find(
+						(f) => f.properties.id === feature.properties.id
+					);
 
-				console.log(xyz);
-
-				//クリップボードにコピー
-			}
-		}
-		if (showDataEntry) return;
-
-		const clickLayerIds = [...$clickableVectorIds];
-		// 存在するレイヤーIDのみをフィルタリング
-		const existingLayerIds = clickLayerIds.filter((layerId) => {
-			return map.getLayer(layerId) !== undefined;
-		});
-
-		if (!existingLayerIds.length) return;
-
-		const features = map.queryRenderedFeatures(e.point, {
-			layers: existingLayerIds
-		});
-
-		if (!features.length) {
-			if (hoveredId !== null && hoveredFeatureState !== null) {
-				map.setFeatureState(
-					{
-						...hoveredFeatureState,
-						id: hoveredId
-					},
-					{ selected: false }
-				);
-				hoveredId = null;
-			}
-
-			featureMenuData = null;
-			clickedLayerIds = [];
-
-			if (markerLngLat) {
-				markerLngLat = null;
-				showMarker = false;
-			} else {
-				showMarker = true;
-				markerLngLat = e.lngLat;
-			}
-			return;
-		}
-
-		if ($isStyleEdit) {
-			// 編集モードの時は、クリックしたレイヤーを編集対象にする
-			const clickedLayer = features[0].layer.id;
-			const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
-			if (clickedLayerEntry) {
-				selectedLayerId.set(clickedLayerEntry.id);
-			}
-
-			return;
-		}
-
-		const selectedVecterLayersId = features.map((feature) => feature.layer.id);
-		const selectedRasterLayersId = layerEntries
-			.filter((entry) => {
-				if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
-					if (entry.metaData.location === '全国') {
-						return true;
-					} else if (isPointInBbox(e.lngLat, entry.metaData.bounds)) {
-						return true;
+					if (point) {
+						setPoint(point as StreetViewPoint);
+						isStreetView.set(true);
 					}
 				}
-			})
-			.map((entry) => entry.id);
+				// TODO: ストリートビュー用のクリックイベントを実装する
+				// mapStore.onClick((e) => {
+				// 	if (!e || $mapMode === 'edit') return;
+				// 	if (streetViewPointData.features.length > 0) {
+				// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
+				// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
+				// 		if (distance < 100) {
+				// 			// streetViewPoint = point;
+				// 			setPoint(point as StreetViewPoint);
+				// 		}
+				// 	}
+				// });
+				return;
+			}
 
-		// ストリートビューに切り返る
-		if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-			const features = map.queryRenderedFeatures(e.point, {
-				layers: ['@street_view_circle_layer']
-			});
+			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
+			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
-			if (features.length > 0 && streetViewPointData.features.length > 0) {
+			if (features.length > 0) {
 				const feature = features[0];
-				const point = streetViewPointData.features.find(
-					(f) => f.properties.id === feature.properties.id
-				);
+				const point =
+					feature.geometry.type === 'Point'
+						? feature.geometry.coordinates
+						: ([e.lngLat.lng, e.lngLat.lat] as [number, number]);
 
-				if (point) {
-					setPoint(point as StreetViewPoint);
-					isStreetView.set(true);
+				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
+
+				featureMenuData = geojsonFeature;
+				// mapStore.panTo(e.lngLat, {
+				// 	duration: 1000
+				// });
+			}
+
+			const feature = features[0]; // 一番上のfeature
+			const id = feature.id;
+			const featureStateData = FeatureStateManager.get(feature.layer.id);
+
+			markerLngLat = e.lngLat;
+			showMarker = true;
+
+			if (hoveredFeatureState) {
+				if (hoveredId !== null) {
+					mapStore.setFeatureState(
+						{
+							...hoveredFeatureState,
+							id: hoveredId
+						},
+						{ selected: false }
+					);
 				}
 			}
-			// TODO: ストリートビュー用のクリックイベントを実装する
-			// mapStore.onClick((e) => {
-			// 	if (!e || $mapMode === 'edit') return;
-			// 	if (streetViewPointData.features.length > 0) {
-			// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-			// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-			// 		if (distance < 100) {
-			// 			// streetViewPoint = point;
-			// 			setPoint(point as StreetViewPoint);
-			// 		}
-			// 	}
-			// });
-			return;
-		}
 
-		const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
-		clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
-
-		if (features.length > 0) {
-			const feature = features[0];
-			const point =
-				feature.geometry.type === 'Point'
-					? feature.geometry.coordinates
-					: ([e.lngLat.lng, e.lngLat.lat] as [number, number]);
-
-			const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
-
-			featureMenuData = geojsonFeature;
-			// mapStore.panTo(e.lngLat, {
-			// 	duration: 1000
-			// });
-		}
-
-		const feature = features[0]; // 一番上のfeature
-		const id = feature.id;
-		const featureStateData = FeatureStateManager.get(feature.layer.id);
-
-		markerLngLat = e.lngLat;
-		showMarker = true;
-
-		if (hoveredFeatureState) {
-			if (hoveredId !== null) {
-				map.setFeatureState(
+			if (featureStateData) {
+				hoveredId = id as number;
+				hoveredFeatureState = featureStateData;
+				mapStore.setFeatureState(
 					{
 						...hoveredFeatureState,
-						id: hoveredId
+						id: id as number
 					},
-					{ selected: false }
+					{ selected: true }
 				);
 			}
-		}
-
-		if (featureStateData) {
-			hoveredId = id as number;
-			hoveredFeatureState = featureStateData;
-			map.setFeatureState(
-				{
-					...hoveredFeatureState,
-					id: id as number
-				},
-				{ selected: true }
-			);
+		} catch (error) {
+			console.error('Error occurred while processing mouse events:', error);
 		}
 	});
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
-	mapStore.onload((e) => {
-		const map = mapStore.getMap();
-		if (!map) return;
-		map.on('mousemove', (e) => {
-			const clickLayerIds = [...$clickableVectorIds];
+	mapStore.onMousemove((e) => {
+		const clickLayerIds = [...$clickableVectorIds];
 
-			const existingLayerIds = clickLayerIds.filter((layerId) => {
-				return map.getLayer(layerId) !== undefined;
-			});
-			const features = map.queryRenderedFeatures(e.point, {
-				layers: existingLayerIds
-			});
-
-			if (features.length > 0) {
-				mapStore.setCursor('pointer');
-
-				// TODO: ツールチップの表示
-				// toggleTooltip(e, features[0]);
-			} else {
-				mapStore.setCursor('default');
-				// toggleTooltip();
-			}
+		const existingLayerIds = clickLayerIds.filter((layerId) => {
+			return mapStore.getLayer(layerId) !== undefined;
+		});
+		const features = mapStore.queryRenderedFeatures(e.point, {
+			layers: existingLayerIds
 		});
 
-		map.on('mousedown', (e) => {
-			mapStore.setCursor('move');
-		});
+		if (features.length > 0) {
+			mapStore.setCursor('pointer');
 
-		map.on('mouseup', (e) => {
+			// TODO: ツールチップの表示
+			// toggleTooltip(e, features[0]);
+		} else {
 			mapStore.setCursor('default');
-		});
+			// toggleTooltip();
+		}
+	});
+
+	mapStore.onMouseDown((e) => {
+		mapStore.setCursor('move');
+	});
+
+	mapStore.onMouseUp((e) => {
+		mapStore.setCursor('default');
 	});
 
 	// // マウスカーソルの変更
@@ -390,9 +388,7 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			if (hoveredId !== null && hoveredFeatureState !== null) {
-				const map = mapStore.getMap();
-				if (!map) return;
-				map.setFeatureState(
+				mapStore.setFeatureState(
 					{
 						...hoveredFeatureState,
 						id: hoveredId
@@ -402,11 +398,6 @@
 				hoveredId = null;
 			}
 		}
-	});
-
-	onDestroy(() => {
-		const map = mapStore.getMap();
-		if (!map) return;
 	});
 </script>
 

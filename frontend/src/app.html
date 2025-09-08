@@ -2,36 +2,33 @@
 <html lang="ja">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-
-		<title>morivis - 森林文化アカデミー演習林WebGIS</title>
-
-		<link rel="icon" type="image/x-icon" href="%sveltekit.assets%/favicon.ico" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" />
-
-		<link
-			href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap"
-			rel="stylesheet"
-		/>
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
 		/>
 
-		<!-- <meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, viewport-fit=cover"
-			prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"
-		/> -->
+		<title>morivis - 森林文化アカデミー演習林Webマップ</title>
+
+		<link rel="icon" type="image/x-icon" href="%sveltekit.assets%/favicon.ico" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap"
+			rel="stylesheet"
+		/>
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 		<meta name="theme-color" content="#0c221d" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon-180x180.png" />
+		<meta name="google-site-verification" content="googlea03946f4418c44fc" />
+		<meta
+			name="description"
+			content="岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。"
+		/>
 		<meta
 			property="og:description"
 			content="岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。"
@@ -45,8 +42,130 @@
 			property="og:image"
 			content="https://raw.githubusercontent.com/forestacdev/morivis/refs/heads/main/frontend/static/ogp.jpg"
 		/>
-
 		<meta name="twitter:card" content="summary_large_image" />
+
+		<!-- 構造化データ (JSON-LD) -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": ["WebApplication", "SoftwareApplication"],
+				"name": "morivis - 森林文化アカデミー演習林Webマップ",
+				"alternateName": "morivis",
+				"description": "岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。",
+				"url": "https://forestacdev.github.io/morivis/",
+				"image": "https://raw.githubusercontent.com/forestacdev/morivis/refs/heads/main/frontend/static/ogp.jpg",
+				"applicationCategory": "EducationalApplication",
+				"operatingSystem": "Web Browser",
+				"browserRequirements": "HTML5, JavaScript, WebGL",
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "JPY"
+				},
+				"creator": {
+					"@type": "Person",
+					"name": "Satoshi Komatsu",
+					"jobTitle": "開発者",
+					"affiliation": {
+						"@type": "EducationalOrganization",
+						"name": "岐阜県立森林文化アカデミー",
+						"url": "https://www.forest.ac.jp/",
+						"address": {
+							"@type": "PostalAddress",
+							"addressCountry": "JP",
+							"addressRegion": "岐阜県",
+							"addressLocality": "美濃市",
+							"streetAddress": "曽代88番地",
+							"postalCode": "501-3714"
+						}
+					},
+					"sameAs": ["https://github.com/forestacdev", "https://github.com/satoshi7190"]
+				},
+				"publisher": {
+					"@type": "EducationalOrganization",
+					"name": "岐阜県立森林文化アカデミー",
+					"url": "https://www.forest.ac.jp/"
+				},
+				"about": [
+					{
+						"@type": "Place",
+						"name": "森林文化アカデミー演習林",
+						"description": "森林文化アカデミーの背後に広がる約33haの演習林",
+						"geo": {
+							"@type": "GeoShape",
+							"box": "35.54692 136.91917 35.555122 136.926817"
+						}
+					},
+					{
+						"@type": "DefinedTerm",
+						"name": "WebGIS",
+						"description": "Web上で動作する地理情報システム"
+					},
+					{
+						"@type": "DefinedTerm",
+						"name": "森林データ可視化",
+						"description": "森林に関するデータの視覚的表現"
+					}
+				],
+				"keywords": [
+					"WebGIS",
+					"森林GIS",
+					"森林データ可視化",
+					"演習林",
+					"森林文化アカデミー",
+					"森林教育",
+					"地理情報システム",
+					"オープンデータ",
+					"森林管理",
+					"デジタルコンテンツ"
+				],
+				"educationalUse": "森林文化を身につけFbSを実践する教育、社会課題解決のための森林活用",
+				"educationalLevel": ["専門教育", "生涯教育", "継続教育"],
+				"audience": {
+					"@type": "EducationalAudience",
+					"educationalRole": ["student", "teacher", "researcher", "professional"]
+				},
+				"learningResourceType": "Interactive Resource",
+				"interactivityType": "active",
+				"isAccessibleForFree": true,
+				"license": [
+					{
+						"@type": "CreativeWork",
+						"name": "MIT License",
+						"url": "https://github.com/forestacdev/morivis/blob/main/LICENSE-MIT",
+						"description": "Application code, frontend logic"
+					},
+					{
+						"@type": "CreativeWork",
+						"name": "CC BY-NC-ND 4.0",
+						"url": "https://github.com/forestacdev/morivis/blob/main/LICENSE-CC-BY-NC-ND",
+						"description": "Data and resources provided by Gifu Academy of Forest Science and Culture"
+					}
+				],
+				"inLanguage": "ja",
+				"dateCreated": "2024-01-01",
+				"dateModified": "2025-08-24",
+				"version": "1.0",
+				"featureList": [
+					"森林データの可視化",
+					"インタラクティブマップ",
+					"レイヤー切り替え機能",
+					"外部データの追加・重ね合わせ",
+					"位置情報検索",
+					"ストリートビュー"
+				],
+				"screenshot": "https://raw.githubusercontent.com/forestacdev/morivis/refs/heads/main/frontend/static/ogp.jpg",
+				"applicationSubCategory": "GIS Application",
+				"spatialCoverage": {
+					"@type": "Place",
+					"name": "岐阜県立森林文化アカデミー演習林",
+					"geo": {
+						"@type": "GeoShape",
+						"box": "35.54692 136.91917 35.555122 136.926817"
+					}
+				}
+			}
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="font-noto">

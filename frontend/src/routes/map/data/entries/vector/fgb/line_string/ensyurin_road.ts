@@ -99,7 +99,25 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 		},
 		default: {
 			line: {
-				paint: {},
+				paint: {
+					// 'line-gradient': [
+					// 	'interpolate',
+					// 	['linear'],
+					// 	['line-progress'],
+					// 	0,
+					// 	'blue',
+					// 	0.1,
+					// 	'royalblue',
+					// 	0.3,
+					// 	'cyan',
+					// 	0.5,
+					// 	'lime',
+					// 	0.7,
+					// 	'yellow',
+					// 	1,
+					// 	'red'
+					// ]
+				},
 				layout: {
 					'line-cap': 'round',
 					'line-join': 'round'

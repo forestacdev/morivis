@@ -26,7 +26,20 @@ const entry: VectorEntry<TileMetaData> = {
 		coverImage: `${COVER_IMAGE_BASE_PATH}/geological_survey.webp`
 	},
 	properties: {
-		keys: [],
+		keys: [
+			'ser',
+			'symbol',
+			'凡例記号',
+			'r',
+			'g',
+			'b',
+			'形成時代',
+			'formationAge',
+			'大区分',
+			'group',
+			'岩相',
+			'lithology'
+		],
 		titles: [
 			{
 				conditions: ['symbol'],
@@ -2173,7 +2186,68 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: 'symbol',
 			show: false,
-			expressions: []
+			expressions: [
+				{
+					key: 'ser',
+					name: 'ser',
+					value: '{ser}'
+				},
+				{
+					key: 'symbol',
+					name: 'symbol',
+					value: '{symbol}'
+				},
+				{
+					key: '凡例記号',
+					name: '凡例記号',
+					value: '{凡例記号}'
+				},
+				{
+					key: 'r',
+					name: 'r',
+					value: '{r}'
+				},
+				{
+					key: 'g',
+					name: 'g',
+					value: '{g}'
+				},
+				{
+					key: 'b',
+					name: 'b',
+					value: '{b}'
+				},
+				{
+					key: '形成時代',
+					name: '形成時代',
+					value: '{形成時代}'
+				},
+				{
+					key: 'formationAge',
+					name: 'formationAge',
+					value: '{formationAge}'
+				},
+				{
+					key: '大区分',
+					name: '大区分',
+					value: '{大区分}'
+				},
+				{
+					key: 'group',
+					name: 'group',
+					value: '{group}'
+				},
+				{
+					key: '岩相',
+					name: '岩相',
+					value: '{岩相}'
+				},
+				{
+					key: 'lithology',
+					name: 'lithology',
+					value: '{lithology}'
+				}
+			]
 		}
 	}
 };

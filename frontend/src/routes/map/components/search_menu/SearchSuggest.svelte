@@ -51,7 +51,7 @@
 	let searchData: SearchData[]; // 検索データ
 	let isClickedSearch = $state<boolean>(false);
 
-	const LIMIT = 100; // 検索結果の表示上限
+	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
 	onMount(async () => {

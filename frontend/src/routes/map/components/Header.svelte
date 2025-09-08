@@ -28,7 +28,7 @@
 
 	let searchData: SearchData[]; // 検索データ
 
-	const LIMIT = 100; // 検索結果の表示上限
+	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 	let isLoading = $state<boolean>(false);
 
@@ -160,27 +160,7 @@
 
 	let searchContainerRef = $state<HTMLDivElement | null>(null);
 
-	$effect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				showSearchForm &&
-				searchContainerRef &&
-				!searchContainerRef.contains(event.target as Node)
-			) {
-				showSearchForm = false;
-			}
-		};
-
-		if (showSearchForm) {
-			document.addEventListener('click', handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
-
-	let showSearchForm = $state<boolean>(false);
+	let showSearchForm = $state<boolean>(true);
 </script>
 
 <div class=" bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
@@ -230,40 +210,33 @@
 	</div> -->
 
 	<!-- 右側 -->
-	<div class="k flex items-center rounded-lg pr-2 max-lg:hidden">
-		<div bind:this={searchContainerRef} class="flex items-center">
-			{#if showSearchForm}
+	<div class="flex items-center gap-2 rounded-lg pr-1 max-lg:hidden">
+		{#if !$showDataMenu}
+			<div bind:this={searchContainerRef} class="flex items-center">
 				<Geocoder
 					{layerEntries}
 					bind:results
 					bind:inputSearchWord
-					bind:showSearchForm
 					searchFeature={(v) => searchFeature(v)}
 				/>
-			{/if}
-			<button
-				onclick={() => {
-					if (showSearchForm && inputSearchWord) {
-						searchFeature(inputSearchWord);
-					} else {
-						showSearchForm = true;
-					}
-				}}
-				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full p-2 p-2 px-4 drop-shadow-lg transition-colors duration-100 {showSearchForm
-					? 'bg-base text-gray-700 delay-100'
-					: 'text-white'}"
-			>
-				<Icon
-					icon="stash:search-solid"
-					class="transition-[width, height] duration-100 {showSearchForm ? 'h-6 w-6' : 'h-8 w-8'}"
-				/>
-			</button>
-		</div>
+
+				<button
+					onclick={() => {
+						if (inputSearchWord) {
+							searchFeature(inputSearchWord);
+						}
+					}}
+					disabled={$isProcessing}
+					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
+				>
+					<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
+				</button>
+			</div>
+		{/if}
 
 		<!-- ハンバーガーメニュー -->
 		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 p-2 text-left text-base drop-shadow-lg duration-100"
+			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
 			onclick={() => showOtherMenu.set(true)}
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />

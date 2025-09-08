@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce } from 'es-toolkit';
+	import { debounce, delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -374,6 +374,26 @@
 						'icon-ignore-placement': true,
 						'icon-image': 'marker_png',
 						'icon-anchor': 'bottom'
+					}
+				},
+				{
+					id: '@search_result_label',
+					type: 'symbol',
+					source: 'search_result',
+					paint: {
+						'text-color': '#000000',
+						'text-halo-color': '#e8e8e8',
+						'text-halo-width': 2
+					},
+
+					layout: {
+						'text-field': '{name}',
+						'text-size': 11,
+						'text-max-width': 12,
+						'text-font': ['Noto Sans JP Regular'],
+						'text-variable-anchor': ['bottom-left', 'bottom-right'],
+						'text-radial-offset': 1.5,
+						'text-justify': 'auto'
 					}
 				}
 

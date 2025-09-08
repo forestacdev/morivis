@@ -14,7 +14,8 @@ import type {
 	LngLatBoundsLike,
 	GeoJSONSource,
 	FilterSpecification,
-	StyleSetterOptions
+	StyleSetterOptions,
+	FeatureIdentifier
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -124,6 +125,9 @@ const createMapStore = () => {
 	const clickEvent = writable<MapMouseEvent | null>(null);
 	const mouseoverEvent = writable<MapMouseEvent | null>(null);
 	const mouseoutEvent = writable<MapMouseEvent | null>(null);
+	const mousemoveEvent = writable<MapMouseEvent | null>(null);
+	const mousedownEvent = writable<MapMouseEvent | null>(null);
+	const mouseupEvent = writable<MapMouseEvent | null>(null);
 	const rotateEvent = writable<number | null>(null);
 	const zoomEvent = writable<number | null>(null);
 	const setStyleEvent = writable<StyleSpecification | null>(null);
@@ -279,29 +283,38 @@ const createMapStore = () => {
 		});
 
 		// 地図上でマウスクリックを押した時のイベント
-		map.on('mousedown', (e: MouseEvent) => {
-			// console.log('mousedown');
+		map.on('mousemove', (e: MapMouseEvent) => {
+			mousemoveEvent.set(e);
+		});
+
+		// 地図上でマウスクリックを押した時のイベント
+		map.on('mousedown', (e: MapMouseEvent) => {
+			mousedownEvent.set(e);
 		});
 
 		// 地図上でマウスクリックを離した時のイベント
-		map.on('mouseup', (e: MouseEvent) => {
-			// console.log('mouseup');
+		map.on('mouseup', (e: MapMouseEvent) => {
+			mouseupEvent.set(e);
 		});
 
 		// 地図にマウスが乗った時のイベント
-		map.on('mouseover', (e) => {
+		map.on('mouseover', (e: MapMouseEvent) => {
 			mouseoverEvent.set(e);
 		});
 
 		// 地図からマウスが離れた時のイベント
-		map.on('mouseout', (e) => {
+		map.on('mouseout', (e: MapMouseEvent) => {
 			mouseoutEvent.set(e);
 		});
 
 		map.on('moveend', (e: MapLibreEvent) => {
 			if (!map) return;
 			const url = window.location.href;
-			const origin = window.location.origin;
+			let origin = window.location.origin;
+
+			if (import.meta.env.PROD) {
+				origin += '/morivis';
+			}
 
 			const zoom = map.getZoom();
 			// 地図の中心座標を取得
@@ -485,8 +498,12 @@ const createMapStore = () => {
 	const queryRenderedFeatures = (
 		geometryOrOptions?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesOptions,
 		options?: QueryRenderedFeaturesOptions
-	): MapGeoJSONFeature[] | undefined => {
-		return map?.queryRenderedFeatures(geometryOrOptions, options);
+	): MapGeoJSONFeature[] => {
+		if (!map) {
+			return [];
+		}
+
+		return map.queryRenderedFeatures(geometryOrOptions, options);
 	};
 
 	const panTo = (
@@ -835,6 +852,11 @@ const createMapStore = () => {
 		map._elevationStart = map._elevationTarget;
 	};
 
+	const setFeatureState = (feature: FeatureIdentifier, state: any) => {
+		if (!map) return;
+		map.setFeatureState(feature, state);
+	};
+
 	return {
 		subscribe,
 		// 処理
@@ -848,6 +870,7 @@ const createMapStore = () => {
 		setData,
 		setStyle,
 		setFilter,
+		setFeatureState,
 		setLayoutProperty,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		setPitch: (pitch: number) => map?.setPitch(pitch),
@@ -890,6 +913,9 @@ const createMapStore = () => {
 		onClick: createEventSubscriber(clickEvent), // クリックイベント
 		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド
 		onMouseout: createEventSubscriber(mouseoutEvent), // マウスアウトイベントの購読用メソッド
+		onMousemove: createEventSubscriber(mousemoveEvent), // マウスムーブイベントの購読用メソッド
+		onMouseDown: createEventSubscriber(mousedownEvent), // マウスダウンイベントの購読用メソッド
+		onMouseUp: createEventSubscriber(mouseupEvent), // マウスアップイベントの購読用メソッド
 		onRotate: createEventSubscriber(rotateEvent), // 回転イベントの購読用メソッド
 		onZoom: createEventSubscriber(zoomEvent), // ズームイベントの購読用メソッド
 		onMooveEnd: createEventSubscriber(mooveEndEvent), // マップ移動イベントの購読用メソッド

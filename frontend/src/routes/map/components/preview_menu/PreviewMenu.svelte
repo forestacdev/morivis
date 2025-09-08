@@ -20,12 +20,6 @@
 
 	let { showDataEntry = $bindable() }: Props = $props();
 
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			showDataEntry = null;
-		}
-	};
-
 	const formatDescription = (text: string): string => {
 		// 先頭の改行を除去
 		const trimmedText = text.replace(/^\n+/, '');
@@ -62,8 +56,6 @@
 		}
 	});
 </script>
-
-<svelte:window on:keydown={handleKeydown} />
 
 {#if showDataEntry}
 	<div
