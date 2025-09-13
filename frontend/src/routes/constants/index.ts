@@ -14,6 +14,7 @@ export const ENTRY_GEOJSON_PATH = ENTRY_DATA_PATH + '/geojson';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
 export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
+export const MAP_IMAGE_BASE_PATH = DATA_PATH + '/images/map';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';

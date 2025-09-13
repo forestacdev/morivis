@@ -27,6 +27,7 @@ export interface BaseMetaData {
 	minZoom: number;
 	bounds: [number, number, number, number];
 	coverImage?: string;
+	mapImage?: string;
 	xyzImageTile?: TileXYZ;
 	center?: [number, number];
 }
