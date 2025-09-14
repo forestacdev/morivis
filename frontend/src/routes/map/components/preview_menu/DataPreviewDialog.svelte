@@ -54,6 +54,14 @@
 	class="items-cente pointer-events-none absolute bottom-12 z-20 flex w-full justify-center"
 >
 	<div class="relative">
+		<div
+			class="c-ripple-effect absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg border-2"
+		></div>
+		<div
+			class="c-ripple-effect2 absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg border-2"
+		></div>
+		<div class="border-1 absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg"></div>
+
 		<div class="border-sub border-1 flex flex-col gap-4 rounded-lg bg-black p-6">
 			<span class="w-full text-center text-base">このデータを追加しますか？</span>
 			<div class="flex gap-4">
@@ -67,12 +75,6 @@
 				{/if}
 			</div>
 		</div>
-		<div
-			class="c-ripple-effect absolute top-0 z-10 flex h-full w-full flex-col gap-4 rounded-lg border-2"
-		></div>
-		<div
-			class="c-ripple-effect2 absolute top-0 z-10 flex h-full w-full flex-col gap-4 rounded-lg border-2"
-		></div>
 	</div>
 </div>
 
@@ -96,7 +98,7 @@
 		}
 
 		100% {
-			scale: 1.2;
+			scale: 1.3;
 			opacity: 0;
 		}
 	}
