@@ -240,28 +240,36 @@
 		<!-- レイヤーの種類 -->
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
-			class="relative grid h-full w-[50px] shrink-0 place-items-center"
+			class="relative flex h-full w-[50px] shrink-0 items-center justify-center"
 		>
 			{#if index === 0}
-				<div class="bg-base peer absolute aspect-square rounded-full p-2">
-					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
+				<div class="bg-base peer absolute z-10 aspect-square rounded-full p-1.5">
+					<Icon icon={getLayerIcon(layerType)} class="h-5 w-5" />
 				</div>
 				<div
 					class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
 				>
 					{TYPE_LABELS[layerType]}
 				</div>
+
+				<div
+					class="bg-sub z-0 w-[40px] {length > 1
+						? 'h-full translate-y-[25%] rounded-t-full'
+						: 'h-1/2 rounded-full'}"
+				></div>
+			{:else if index === length - 1}
+				<div class="bg-sub z-0 h-full w-[40px] -translate-y-[25%] rounded-b-full"></div>
 			{:else}
-				<div class="bg-base absolute aspect-square rounded-full p-1"></div>
+				<div class="bg-sub z-0 h-full w-[40px]"></div>
 			{/if}
-			<div class="bg-base/60 h-full w-[2px]"></div>
+			<div class="bg-base/60 absolute -z-10 h-full w-[2px]"></div>
 			<!-- <div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div> -->
 		</div>
 	{/if}
 
 	<div
 		id={layerEntry.id}
-		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200
+		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left duration-200
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -437,15 +445,9 @@
 </div>
 
 <style>
-	.c-ripple-anime {
-		background: rgb(233, 233, 233);
-		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	.c-rounded {
+		border-radius: 9999px 9999px 9999px 9999px;
 	}
-
-	.c-fog {
-		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
-	}
-
 	/* エフェクト要素 */
 	.c-ripple-effect {
 		opacity: 0;
