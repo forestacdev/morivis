@@ -51,22 +51,53 @@
 
 <div
 	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="pointer-events-none absolute bottom-12 z-20 flex w-full items-center justify-center"
+	class="items-cente pointer-events-none absolute bottom-12 z-20 flex w-full justify-center"
 >
-	<div class="flex flex-col gap-4 rounded-lg bg-black p-6">
-		<span class="w-full text-center text-base">このデータを追加しますか？</span>
-		<div class="flex gap-4">
-			<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}
-				>キャンセル
-			</button>
-			{#if showDataEntry}
-				<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
-					>地図に追加
+	<div class="relative">
+		<div class="border-sub border-1 flex flex-col gap-4 rounded-lg bg-black p-6">
+			<span class="w-full text-center text-base">このデータを追加しますか？</span>
+			<div class="flex gap-4">
+				<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}
+					>キャンセル
 				</button>
-			{/if}
+				{#if showDataEntry}
+					<button class="c-btn-confirm pointer-events-auto px-6 text-lg" onclick={addData}
+						>地図に追加
+					</button>
+				{/if}
+			</div>
 		</div>
+		<div
+			class="c-ripple-effect absolute top-0 z-10 flex h-full w-full flex-col gap-4 rounded-lg border-2"
+		></div>
+		<div
+			class="c-ripple-effect2 absolute top-0 z-10 flex h-full w-full flex-col gap-4 rounded-lg border-2"
+		></div>
 	</div>
 </div>
 
 <style>
+	/* エフェクト要素 */
+	.c-ripple-effect {
+		opacity: 0;
+		animation: ripple 1s linear infinite;
+	}
+
+	.c-ripple-effect2 {
+		opacity: 0;
+		animation: ripple 1s 0.5s linear infinite;
+	}
+
+	/* アニメーションの定義 */
+	@keyframes ripple {
+		0% {
+			scale: 1;
+			opacity: 0.8;
+		}
+
+		100% {
+			scale: 1.2;
+			opacity: 0;
+		}
+	}
 </style>
