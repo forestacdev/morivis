@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'national_forest_road',
 		xyzImageTile: { x: 3613, y: 1612, z: 12 },
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',
-		coverImage: `${COVER_IMAGE_BASE_PATH}/national_forest_road.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_road.webp`
 	},
 	properties: {
 		keys: ['種類'],

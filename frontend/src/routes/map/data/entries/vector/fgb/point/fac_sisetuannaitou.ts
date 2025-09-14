@@ -1,5 +1,5 @@
 import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const entry: PointEntry<GeoJsonMetaData> = {
 	id: 'fac_sisetuannaitou',
@@ -18,7 +18,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		maxZoom: 22,
 		tags: ['看板'],
 		bounds: [136.917205, 35.553612, 136.919391, 35.556191],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_sisetuannaitou.webp`
+		xyzImageTile: { x: 115386, y: 51669, z: 17 },
+		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_sisetuannaitou.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/fac_sisetuannaitou.webp`
 	},
 	properties: {
 		keys: [],

@@ -8,6 +8,7 @@
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	import { getLayerImage } from '$routes/map/utils/image';
+	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -118,7 +119,7 @@
 							}}
 						>
 							<div
-								class="hover:bg-accent border-base/80 grid aspect-square w-full cursor-pointer place-items-center rounded-full border-2 object-cover text-left {!layerEntry
+								class="hover:bg-accent border-base/80 grid aspect-square w-full cursor-pointer place-items-center rounded-lg border-2 object-cover text-left {!layerEntry
 									.style.visible
 									? 'bg-accent'
 									: ''}"
@@ -146,15 +147,23 @@
 							>
 								{#if src}
 									<div
-										class="rounded-full border-2 {layerEntry.style.opacity === item.value &&
-										layerEntry.style.visible
+										class="relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
+											.style.opacity === item.value && layerEntry.style.visible
 											? 'border-accent'
 											: 'border-base/80'}"
 									>
+										<!-- 背景地図画像 -->
+										{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
+											<img
+												src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
+												class="c-basemap-img scale-200 absolute left-0 top-0 h-full w-full cursor-pointer object-cover text-left text-sm"
+												alt="背景地図画像"
+											/>
+										{/if}
 										<img
 											{src}
 											alt={layerEntry.metaData.name}
-											class="hover:bg-accent c-no-drag-icon aspect-square cursor-pointer rounded-full object-cover text-left text-sm"
+											class="c-no-drag-icon scale-200 absolute left-0 top-0 h-full w-full cursor-pointer text-left text-sm"
 											style="opacity: {item.value};"
 										/>
 									</div>

@@ -3,6 +3,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
+import { IMAGE_TILE_XYZ } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gifu_pref',
@@ -22,6 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 5,
 		maxZoom: 18,
 		tileSize: 256,
+		xyzImageTile: IMAGE_TILE_XYZ,
 		bounds: [136.276225, 35.133729, 137.651936, 36.465031]
 	},
 	interaction: {

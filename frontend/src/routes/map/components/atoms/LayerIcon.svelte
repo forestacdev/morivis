@@ -6,6 +6,7 @@
 	import type { GeoDataEntry, AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 
 	import { getLayerImage } from '$routes/map/utils/image';
+	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 
 	interface Props {
 		layerEntry: GeoDataEntry;
@@ -34,6 +35,14 @@
 
 {#if !isImageError}
 	{#await promise then imageResult}
+		{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
+			<img
+				transition:fade
+				class="c-basemap-img pointer-events-none absolute block h-full w-full rounded-full object-cover"
+				alt="背景地図画像"
+				src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
+			/>
+		{/if}
 		{#if imageResult}
 			<img
 				transition:fade

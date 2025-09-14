@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 		bounds: [134.252809, 34.156129, 135.468591, 35.674667],
 		xyzImageTile: { x: 57274, y: 25978, z: 16 },
 		center: [134.651168, 34.897842],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/hyogo_fr_mesh20m.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/hyogo_fr_mesh20m.webp`
 	},
 	properties: {
 		keys: [

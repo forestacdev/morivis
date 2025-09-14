@@ -1,5 +1,5 @@
 import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const entry: PointEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_kikenboku_h25',
@@ -18,7 +18,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		maxZoom: 22,
 		tags: ['森林', '単木'],
 		bounds: [136.919727, 35.547376, 136.92669, 35.554887],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_kikenboku_h25.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_kikenboku_h25.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_kikenboku_h25.webp`,
+		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
 		keys: ['樹種', '状態'],

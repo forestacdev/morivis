@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { HYOGO_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -23,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		bounds: HYOGO_BBOX,
 		xyzImageTile: { x: 14326, y: 6487, z: 14 },
 		center: [134.848807, 35.043807],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/hyogo_tree_species.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/hyogo_tree_species.webp`
 	},
 	properties: {
 		keys: [

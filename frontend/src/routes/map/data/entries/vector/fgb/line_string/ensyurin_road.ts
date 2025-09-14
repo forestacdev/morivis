@@ -1,7 +1,8 @@
 import {
 	COVER_IMAGE_BASE_PATH,
 	ENTRY_FGB_PATH,
-	ENTRY_PMTILES_VECTOR_PATH
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
 } from '$routes/constants';
 import type { GeoJsonMetaData, LineStringEntry } from '$routes/map/data/types/vector';
 
@@ -23,7 +24,8 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 		minZoom: 8,
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
-		xyzImageTile: { x: 115387, y: 51670, z: 17 }
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_road.webp`,
+		xyzImageTile: { x: 115387, y: 51671, z: 17 }
 	},
 	properties: {
 		keys: ['種類', '道の長さ_m'],

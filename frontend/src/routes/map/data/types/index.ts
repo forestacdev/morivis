@@ -28,7 +28,7 @@ export interface BaseMetaData {
 	bounds: [number, number, number, number];
 	coverImage?: string;
 	mapImage?: string;
-	xyzImageTile?: TileXYZ;
+	xyzImageTile: TileXYZ;
 	center?: [number, number];
 }
 

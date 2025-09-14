@@ -1,4 +1,8 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -23,7 +27,7 @@ const entry: PolygonEntry<TileMetaData> = {
 		minZoom: 1,
 		sourceLayer: 'gifu_sugi_kansetugai',
 		bounds: [136.2750000000000057, 35.1333333333333329, 137.6624999999999943, 36.4666666666666686],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/gifu_sugi_kansetugai.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/gifu_sugi_kansetugai.webp`
 	},
 	properties: {
 		keys: ['code', '20冬期中の危険日判定', '冠雪害危険日の頻度の目安'],

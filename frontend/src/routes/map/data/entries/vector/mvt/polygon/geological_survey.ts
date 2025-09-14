@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -23,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'geological_survey',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: { x: 225, y: 100, z: 8 },
-		coverImage: `${COVER_IMAGE_BASE_PATH}/geological_survey.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/geological_survey.webp`
 	},
 	properties: {
 		keys: [

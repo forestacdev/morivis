@@ -279,11 +279,13 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
+				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
 					? ''
 					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? '' : ''}"
 			>
-				<LayerIcon {layerEntry} />
+				<div class="scale-200 h-full w-full">
+					<LayerIcon {layerEntry} />
+				</div>
 			</button>
 
 			<!-- レイヤー名 -->
