@@ -329,12 +329,9 @@
 
 <style>
 	.c-bg {
-		background: radial-gradient(
-			circle,
-			rgba(255, 255, 255, 0) 0%,
-			rgba(255, 255, 255, 0) 60%,
-			rgba(0, 0, 0, 0.4) 100%
-		);
+		box-shadow:
+			inset 0 0 100px rgba(0, 0, 0, 0.4),
+			inset 0 0 200px rgba(0, 0, 0, 0.2);
 	}
 
 	.c-gradient {
