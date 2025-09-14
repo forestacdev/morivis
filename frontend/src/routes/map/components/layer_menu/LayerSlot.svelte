@@ -293,7 +293,7 @@
 					? ''
 					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'scale-115' : ''}"
 			>
-				<div class="scale-200 h-full w-full">
+				<div class="scale-200 h-full w-full {layerEntry.style.visible ? '' : 'grayscale'}">
 					<LayerIcon {layerEntry} />
 				</div>
 			</button>
