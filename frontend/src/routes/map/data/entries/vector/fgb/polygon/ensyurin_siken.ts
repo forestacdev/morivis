@@ -21,7 +21,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		bounds: [136.920084, 35.549852, 136.925498, 35.554401],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`,
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_siken.webp`,
-		xyzImageTile: { x: 115387, y: 51670, z: 17 }
+		xyzImageTile: { x: 230774, y: 103341, z: 18 }
 	},
 	properties: {
 		keys: ['活用内容', '活用期間', '番号'],
