@@ -91,7 +91,7 @@
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
-			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[75px]'
+			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[90px]'
 			: 'bg-main'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 		style="padding-top: env(safe-area-inset-top);"
@@ -318,7 +318,7 @@
 							? 'w-[400px]'
 							: 'hover:bg-accent bg-main max-lg:w-full lg:w-[330px]'} {!$isStyleEdit &&
 					!$showDataMenu
-						? ' not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
+						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
 						: 'opacity-0'}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
