@@ -290,14 +290,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.c-gradient {
-		background: linear-gradient(
-			0deg,
-			var(--color-main) 0%,
-			rgba(233, 233, 233, 0) 60%,
-			rgba(233, 233, 233, 0) 100%
-		);
-	}
-</style>
