@@ -575,7 +575,7 @@ const createMapStore = () => {
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
-				// padding: padding,
+				padding: -100,
 				duration: 500
 			});
 		}
