@@ -12,6 +12,7 @@
 	import LayerControl from '$routes/map/components/layer_menu/LayerControl.svelte';
 
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+	import RecommendedData from './RecommendedData.svelte';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -361,8 +362,11 @@
 			/> -->
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
-			<div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
+			<!-- <div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
+			</div> -->
+			<div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
+				<RecommendedData bind:showDataEntry />
 			</div>
 		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->
