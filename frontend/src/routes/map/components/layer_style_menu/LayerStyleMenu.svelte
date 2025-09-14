@@ -107,11 +107,11 @@
 				<!-- PC用タイトル -->
 				<div class="text-2xl text-base max-lg:hidden">{layerEntry.metaData.name}</div>
 
-				<div class="c-scroll h-full grow overflow-x-hidden pb-[300px]">
-					<div class="flex w-full justify-center gap-2">
+				<div class="c-scroll h-full grow overflow-x-hidden rounded-lg pb-[300px] pr-2">
+					<div class="flex w-full justify-between rounded-lg bg-black p-2">
 						<!-- 表示 -->
 						<button
-							class="flex aspect-square w-1/6 flex-col items-center gap-1"
+							class="flex aspect-square w-[19%] flex-col items-center gap-1"
 							onclick={() => {
 								if (layerEntry) {
 									layerEntry.style.visible = false;
@@ -119,7 +119,7 @@
 							}}
 						>
 							<div
-								class="hover:bg-accent border-base/80 grid aspect-square w-full cursor-pointer place-items-center rounded-lg border-2 object-cover text-left {!layerEntry
+								class="hover:bg-accent grid aspect-square w-full cursor-pointer place-items-center rounded-lg object-cover text-left {!layerEntry
 									.style.visible
 									? 'bg-accent'
 									: ''}"
@@ -137,7 +137,7 @@
 						<!-- 不透明度 -->
 						{#each opacityButtons as item (item.label)}
 							<button
-								class="flex aspect-square w-1/6 flex-col items-center gap-1"
+								class="flex aspect-square w-[19%] flex-col items-center gap-1"
 								onclick={() => {
 									if (layerEntry) {
 										layerEntry.style.visible = true;
@@ -147,10 +147,10 @@
 							>
 								{#if src}
 									<div
-										class="relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
+										class=" relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
 											.style.opacity === item.value && layerEntry.style.visible
 											? 'border-accent'
-											: 'border-base/80'}"
+											: 'border-transparent'}"
 									>
 										<!-- 背景地図画像 -->
 										{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}

@@ -1,4 +1,9 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_GEOJSON_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_GEOJSON_PATH,
+	IMAGE_TILE_XYZ_SETS,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -23,7 +28,8 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: { x: 3626, y: 1598, z: 12 },
-		coverImage: `${COVER_IMAGE_BASE_PATH}/national_forest_stand.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/national_forest_stand.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_stand.webp`
 	},
 	properties: {
 		keys: [
