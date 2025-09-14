@@ -42,7 +42,7 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.8, // 透過率
+		opacity: 0.7, // 透過率
 		markerType: 'circle',
 		colors: {
 			show: true,

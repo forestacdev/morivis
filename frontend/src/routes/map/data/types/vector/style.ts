@@ -202,7 +202,7 @@ export interface Labels {
 export type VectorLayerType = 'circle' | 'line' | 'fill' | 'symbol' | 'heatmap' | 'fill-extrusion';
 
 interface BaseVectorStyle {
-	opacity: number;
+	opacity: number | 1 | 0.7 | 0.5 | 0.3;
 	visible?: boolean; // NOTE: 動的追加
 	labels: Labels;
 	colors: ColorsStyle;

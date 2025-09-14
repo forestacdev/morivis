@@ -36,7 +36,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.8,
+		opacity: 0.7,
 		markerType: 'circle',
 		colors: {
 			show: true,
