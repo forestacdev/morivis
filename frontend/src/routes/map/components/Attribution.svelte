@@ -16,7 +16,7 @@
 	});
 
 	let currentIndex = $state<number>(0);
-	const INTERVAL = 5000; //
+	const INTERVAL = 10000; //
 
 	let timeoutId: NodeJS.Timeout | null = null;
 	function scheduleNext() {
