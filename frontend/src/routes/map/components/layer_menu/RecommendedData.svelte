@@ -9,6 +9,10 @@
 	import { showNotification } from '$routes/stores/notification';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { mapStore } from '$routes/stores/map';
+	import { isBBoxOverlapping } from '$routes/map/utils/map';
+	import type { Region } from '$routes/map/data/types/location';
+	import { flip } from 'svelte/animate';
+	import { checkMobileWidth } from '$routes/map/utils/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -19,7 +23,11 @@
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
-		dragFree: false
+		dragFree: false,
+		align: 'start',
+		containScroll: 'trimSnaps', // スナップを調整
+		slidesToScroll: 1, // 1つずつスクロール
+		startIndex: 0
 	};
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [
 		Autoplay({
@@ -67,19 +75,77 @@
 		emblaMainCarousel.scrollPrev();
 	};
 
+	// 優先度を決める関数
+	const getLocationPriority = (location: Region): number => {
+		// より具体的な地名ほど高い優先度（小さい数値）
+		if (location === '全国') return 100; // 最低優先度
+		if (location === '森林文化アカデミー') return 1; // 最低優先度
+		if (
+			location.includes('県') ||
+			location.includes('府') ||
+			location.includes('都') ||
+			location.includes('道')
+		) {
+			return 10; // 都道府県レベル：高優先度
+		}
+		if (
+			location.includes('市') ||
+			location.includes('区') ||
+			location.includes('町') ||
+			location.includes('村')
+		) {
+			return 5; // 市区町村レベル：最高優先度
+		}
+		if (location.includes('地方') || location.includes('地区') || location.includes('エリア')) {
+			return 50; // 地方レベル：中優先度
+		}
+		return 30; // その他：中程度の優先度
+	};
+
+	let mapBounds = $state<[number, number, number, number] | null>(null);
+
+	mapStore.onStateChange((state) => {
+		mapBounds = state.bbox;
+	});
+
+	const LIMIT = 15;
+
 	let dataEntries = $derived.by(() => {
-		return geoDataEntries.filter((data) => !$activeLayerIdsStore.includes(data.id));
+		if (!mapBounds) return [];
+		return geoDataEntries
+			.filter((data) => !$activeLayerIdsStore.includes(data.id))
+			.filter((data) =>
+				isBBoxOverlapping(mapBounds as [number, number, number, number], data.metaData.bounds)
+			)
+
+			.sort((a, b) => {
+				const priorityA = getLocationPriority(a.metaData.location);
+				const priorityB = getLocationPriority(b.metaData.location);
+
+				// 優先度が同じ場合は、名前でソート
+				if (priorityA === priorityB) {
+					return a.metaData.name.localeCompare(b.metaData.name, 'ja');
+				}
+
+				return priorityA - priorityB; // 小さい数値（高優先度）が先に来る
+			})
+			.slice(0, LIMIT);
 	});
 
 	let isHover = $state(false);
 
-	const addData = (id: string) => {
-		activeLayerIdsStore.add(id);
+	const addData = (dataEntry: GeoDataEntry) => {
+		if (checkMobileWidth()) {
+			activeLayerIdsStore.add(dataEntry.id);
+			return;
+		} else {
+			showDataEntry = dataEntry;
+		}
 	};
 </script>
 
-<div class="relative flex w-full flex-col gap-2 rounded-lg bg-black p-4">
-	<div class="text-base">関連データ</div>
+<div class="relative flex w-full flex-col gap-2 rounded-lg">
+	<div class="text-base">おすすめデータ</div>
 	<div
 		use:emblaCarouselSvelte={{
 			plugins: emblaMainCarouselPlugins,
@@ -88,17 +154,17 @@
 		class="overflow-hidden"
 		onemblaInit={onInitEmblaMainCarousel}
 	>
-		<div class="flex">
+		<div class="flex p-2">
 			{#each dataEntries as dataEntry (dataEntry.id)}
 				<button
-					onclick={() => (showDataEntry = dataEntry)}
-					class="flex min-w-0 flex-[0_0_100%] text-white"
+					animate:flip={{ duration: 200 }}
+					onclick={() => addData(dataEntry)}
+					class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
 				>
-					<div class="group relative flex aspect-square w-1/2 shrink-0 overflow-hidden rounded-lg">
+					<div
+						class="group relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
+					>
 						<RecommendedDataImage {dataEntry} />
-					</div>
-					<div class="mt-4 text-center text-lg">
-						{dataEntry.metaData.name}
 					</div>
 				</button>
 			{/each}

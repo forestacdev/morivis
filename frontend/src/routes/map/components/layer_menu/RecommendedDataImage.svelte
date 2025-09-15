@@ -50,7 +50,10 @@
 			<!-- 背景地図画像 -->
 			<img
 				src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
-				class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
+				class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150 {dataEntry
+					.format.geometryType === 'Point'
+					? 'scale-200'
+					: ''}"
 				alt="背景地図画像"
 				loading="lazy"
 				onerror={() => {
@@ -61,7 +64,10 @@
 		{/if}
 		<img
 			src={imageResult.url}
-			class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+			class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150 {dataEntry.type ===
+				'vector' && dataEntry.format.geometryType === 'Point'
+				? 'scale-200'
+				: ''}"
 			alt={dataEntry.metaData.name}
 			onload={() => handleImageLoad(imageResult)}
 			loading="lazy"
