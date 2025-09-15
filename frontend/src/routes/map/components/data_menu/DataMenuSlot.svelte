@@ -229,7 +229,7 @@
 				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
 			<div class="pointer-events-none absolute h-full w-full">
-				<div class="c-bg absolute h-full w-full"></div>
+				<div class="c-vignette absolute h-full w-full"></div>
 			</div>
 			<!-- オーバーレイ -->
 			{#if !isHover}
@@ -328,7 +328,7 @@
 </div>
 
 <style>
-	.c-bg {
+	.c-vignette {
 		box-shadow:
 			inset 0 0 100px rgba(0, 0, 0, 0.4),
 			inset 0 0 200px rgba(0, 0, 0, 0.2);

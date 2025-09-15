@@ -216,11 +216,12 @@
 						class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
 					>
 						<div
-							class="group relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
+							class="border-1 border-sub relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
 						>
 							<RecommendedDataImage {dataEntry} />
-						</div>
-					</button>
+							<div class="hover:border-accent z-10 h-full w-full border-2 border-transparent"></div>
+						</div></button
+					>
 				{/each}
 			</div>
 		</div>
