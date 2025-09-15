@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 
 	import { mapMode } from '$routes/stores';
 	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
@@ -15,6 +17,7 @@
 	import { onMount } from 'svelte';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
+	import StreetViewControl from './map_control/StreetViewControl.svelte';
 
 	interface SearchData {
 		layer_id: string;
@@ -210,7 +213,7 @@
 	</div> -->
 
 	<!-- 右側 -->
-	<div class="flex items-center gap-2 rounded-lg pr-1 max-lg:hidden">
+	<div class="flex items-center rounded-lg pr-1 max-lg:hidden">
 		{#if !$showDataMenu}
 			<div bind:this={searchContainerRef} class="flex items-center">
 				<Geocoder
@@ -233,6 +236,8 @@
 				</button>
 			</div>
 		{/if}
+		<GeolocateControl />
+		<StreetViewControl />
 
 		<!-- ハンバーガーメニュー -->
 		<button

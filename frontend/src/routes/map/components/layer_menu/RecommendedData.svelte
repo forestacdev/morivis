@@ -2,7 +2,6 @@
 	import { geoDataEntries } from '$routes/map/data';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
-	import { fade } from 'svelte/transition';
 	import Autoplay from 'embla-carousel-autoplay';
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
@@ -14,6 +13,7 @@
 	import { flip } from 'svelte/animate';
 	import { checkMobileWidth } from '$routes/map/utils/ui';
 	import { onDestroy } from 'svelte';
+	import { slide, fly, fade } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -197,34 +197,36 @@
 	};
 </script>
 
-<div class="relative flex w-full flex-col gap-2 rounded-lg">
-	<div class="text-base">おすすめデータ</div>
-	<div
-		use:emblaCarouselSvelte={{
-			plugins: emblaMainCarouselPlugins,
-			options: emblaMainCarouselOptions
-		}}
-		bind:this={carouselElement}
-		class="overflow-hidden"
-		onemblaInit={onInitEmblaMainCarousel}
-	>
-		<div class="flex p-2">
-			{#each dataEntries as dataEntry (dataEntry.id)}
-				<button
-					animate:flip={{ duration: 200 }}
-					onclick={() => addData(dataEntry)}
-					class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
-				>
-					<div
-						class="group relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
+{#if dataEntries.length > 0}
+	<div transition:fade={{ duration: 200 }} class="relative flex w-full flex-col gap-2 rounded-lg">
+		<div class="text-base">おすすめデータ</div>
+		<div
+			use:emblaCarouselSvelte={{
+				plugins: emblaMainCarouselPlugins,
+				options: emblaMainCarouselOptions
+			}}
+			bind:this={carouselElement}
+			class="overflow-hidden"
+			onemblaInit={onInitEmblaMainCarousel}
+		>
+			<div class="flex p-2">
+				{#each dataEntries as dataEntry (dataEntry.id)}
+					<button
+						animate:flip={{ duration: 200 }}
+						onclick={() => addData(dataEntry)}
+						class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
 					>
-						<RecommendedDataImage {dataEntry} />
-					</div>
-				</button>
-			{/each}
+						<div
+							class="group relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
+						>
+							<RecommendedDataImage {dataEntry} />
+						</div>
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 </style>
