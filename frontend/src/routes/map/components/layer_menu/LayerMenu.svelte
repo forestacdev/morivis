@@ -68,13 +68,6 @@
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 
-	// 可視状態の更新を一元管理
-	const setLayerVisible = (id: string, next: boolean) => {
-		layerEntries = layerEntries.map((e) =>
-			e.id === id ? { ...e, style: { ...e.style, visible: next } } : e
-		);
-	};
-
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
 		if (!value && !$showLayerMenu) {

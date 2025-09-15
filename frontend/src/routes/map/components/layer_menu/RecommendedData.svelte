@@ -13,6 +13,7 @@
 	import type { Region } from '$routes/map/data/types/location';
 	import { flip } from 'svelte/animate';
 	import { checkMobileWidth } from '$routes/map/utils/ui';
+	import { onDestroy } from 'svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -26,6 +27,7 @@
 		dragFree: false,
 		align: 'start',
 		containScroll: 'trimSnaps', // スナップを調整
+		duration: 25,
 		slidesToScroll: 1, // 1つずつスクロール
 		startIndex: 0
 	};
@@ -60,6 +62,13 @@
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
 		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
+
+		emblaMainCarousel = event.detail;
+
+		// ホイールイベントリスナーを追加
+		if (carouselElement) {
+			carouselElement.addEventListener('wheel', handleWheel, { passive: false });
+		}
 	};
 
 	const onInitEmblaThumbnailCarousel = (event: CustomEvent<EmblaCarouselType>) => {
@@ -74,6 +83,50 @@
 		if (!emblaMainCarousel) return;
 		emblaMainCarousel.scrollPrev();
 	};
+
+	// ホイールイベント用の変数
+	let carouselElement: HTMLElement | undefined = $state();
+	let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
+	let isWheelScrolling = $state(false);
+
+	// マウスホイールイベントハンドラー
+	function handleWheel(event: WheelEvent) {
+		if (!emblaMainCarousel) return;
+
+		// 縦スクロールのみ対応（横スクロールも対応したい場合は deltaX も使用）
+		const { deltaY } = event;
+
+		// スクロール感度の調整（数値を大きくすると敏感になる）
+		const threshold = 10;
+
+		if (Math.abs(deltaY) > threshold) {
+			event.preventDefault(); // ページのスクロールを防ぐ
+
+			if (deltaY > 0) {
+				// 下方向スクロール = 次へ
+				emblaMainCarousel.scrollNext();
+			} else {
+				// 上方向スクロール = 前へ
+				emblaMainCarousel.scrollPrev();
+			}
+
+			// スクロール状態の管理
+			isWheelScrolling = true;
+			if (wheelTimeout) clearTimeout(wheelTimeout);
+			wheelTimeout = setTimeout(() => {
+				isWheelScrolling = false;
+			}, 150);
+		}
+	}
+
+	onDestroy(() => {
+		if (carouselElement) {
+			carouselElement.removeEventListener('wheel', handleWheel);
+		}
+		if (wheelTimeout) {
+			clearTimeout(wheelTimeout);
+		}
+	});
 
 	// 優先度を決める関数
 	const getLocationPriority = (location: Region): number => {
@@ -151,6 +204,7 @@
 			plugins: emblaMainCarouselPlugins,
 			options: emblaMainCarouselOptions
 		}}
+		bind:this={carouselElement}
 		class="overflow-hidden"
 		onemblaInit={onInitEmblaMainCarousel}
 	>
