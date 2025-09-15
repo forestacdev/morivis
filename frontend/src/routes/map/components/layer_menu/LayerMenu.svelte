@@ -4,6 +4,7 @@
 	import { slide, fly, fade } from 'svelte/transition';
 
 	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import LayerSlot2 from '$routes/map/components/layer_menu/LayerSlot2.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
@@ -185,21 +186,16 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each pointEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={pointEntries.length}
-								layerType={'point'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerSlot2
+						length={pointEntries.length}
+						layerType={'point'}
+						bind:layerEntries
+						typeEntries={pointEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ライン -->
@@ -209,21 +205,16 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each lineEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={lineEntries.length}
-								layerType={'line'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerSlot2
+						length={lineEntries.length}
+						layerType={'line'}
+						bind:layerEntries
+						typeEntries={lineEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ポリゴン -->
@@ -233,21 +224,16 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each polygonEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={polygonEntries.length}
-								layerType={'polygon'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerSlot2
+						length={polygonEntries.length}
+						layerType={'polygon'}
+						bind:layerEntries
+						typeEntries={polygonEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ラスター -->
@@ -257,21 +243,16 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each rasterEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={rasterEntries.length}
-								layerType={'raster'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerSlot2
+						length={rasterEntries.length}
+						layerType={'raster'}
+						bind:layerEntries
+						typeEntries={rasterEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 
