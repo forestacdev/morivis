@@ -10,9 +10,9 @@
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
-	import LayerControl from '$routes/map/components/layer_menu/LayerControl.svelte';
 
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+	import RecommendedData from './RecommendedData.svelte';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -66,13 +66,6 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
-
-	// 可視状態の更新を一元管理
-	const setLayerVisible = (id: string, next: boolean) => {
-		layerEntries = layerEntries.map((e) =>
-			e.id === id ? { ...e, style: { ...e.style, visible: next } } : e
-		);
-	};
 
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
@@ -300,8 +293,11 @@
 			/> -->
 		{/if}
 		{#if !$isStyleEdit && !$showDataMenu}
-			<div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
+			<!-- <div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
+			</div> -->
+			<div transition:fade={{ duration: 150 }} class="max-lg:pb-18 p-3">
+				<RecommendedData bind:showDataEntry />
 			</div>
 		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->

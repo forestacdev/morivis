@@ -13,6 +13,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import LayerControl from '$routes/map/components/LayerControl.svelte';
 
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -628,12 +629,14 @@
 
 	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
-		<div class="absolute bottom-6 right-6 max-lg:hidden">
+		<div class="absolute bottom-[100px] right-5 max-lg:hidden">
 			<Compass />
 		</div>
 
-		<!-- スマホ用地図コントロール -->
+		<!-- PC用ベースマップコントロール -->
+		<LayerControl />
 
+		<!-- スマホ用地図コントロール -->
 		<MobileMapControl />
 	{/if}
 	<SelectionPopup
