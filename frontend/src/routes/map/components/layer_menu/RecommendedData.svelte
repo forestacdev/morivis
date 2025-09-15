@@ -90,7 +90,7 @@
 	let isWheelScrolling = $state(false);
 
 	// マウスホイールイベントハンドラー
-	function handleWheel(event: WheelEvent) {
+	const handleWheel = (event: WheelEvent) => {
 		if (!emblaMainCarousel) return;
 
 		// 縦スクロールのみ対応（横スクロールも対応したい場合は deltaX も使用）
@@ -117,7 +117,7 @@
 				isWheelScrolling = false;
 			}, 150);
 		}
-	}
+	};
 
 	onDestroy(() => {
 		if (carouselElement) {
