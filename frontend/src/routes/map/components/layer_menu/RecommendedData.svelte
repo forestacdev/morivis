@@ -212,7 +212,6 @@
 			<div class="flex p-2">
 				{#each dataEntries as dataEntry (dataEntry.id)}
 					<button
-						animate:flip={{ duration: 200 }}
 						onclick={() => addData(dataEntry)}
 						class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
 					>
