@@ -247,7 +247,7 @@
 				index={i}
 				length={typeEntries.length}
 				{layerType}
-				{layerEntry}
+				bind:layerEntry={typeEntries[i]}
 				bind:showDataEntry
 				bind:tempLayerEntries
 				bind:enableFlip

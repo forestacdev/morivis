@@ -30,7 +30,7 @@
 		index,
 		length,
 		layerType,
-		layerEntry,
+		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
