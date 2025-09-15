@@ -67,6 +67,13 @@
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 
+	// 可視状態の更新を一元管理
+	const setLayerVisible = (id: string, next: boolean) => {
+		layerEntries = layerEntries.map((e) =>
+			e.id === id ? { ...e, style: { ...e.style, visible: next } } : e
+		);
+	};
+
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
 		if (!value && !$showLayerMenu) {
@@ -130,47 +137,6 @@
 						</button>
 					</div>
 				{/if}
-
-				<!-- <button
-					onclick={() => {
-						if ($isStyleEdit) {
-							isStyleEdit.set(false);
-							selectedLayerId.set('');
-						} else {
-							showDataMenu.set(!$showDataMenu);
-						}
-					}}
-					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
-						? 'w-[66px]'
-						: $isStyleEdit
-							? 'w-[400px]'
-							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
-						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
-						: ''}"
-				>
-					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
-						<div
-							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
-							!$isStyleEdit
-								? 'bg-accent text-base'
-								: 'bg-base text-main'} {$isStyleEdit ? 'translate-x-[320px]' : ''}"
-						>
-							{#if !$showDataMenu && !$isStyleEdit}
-								<Icon icon="material-symbols:add" width={30} />
-							{:else}
-								<Icon icon="ep:back" class="h-7 w-7" />
-							{/if}
-						</div>
-
-						<div
-							class="relative flex w-full grow flex-col items-center justify-center gap-[2px] overflow-hidden pr-6 text-white"
-						>
-							{#if !$showDataMenu}
-								<span class="text-lg">データの追加</span>
-							{/if}
-						</div>
-					</div>
-				</button> -->
 			</div>
 		</div>
 		<div
