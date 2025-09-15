@@ -70,7 +70,7 @@ export class CoverImageManager {
 		if (url) {
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `${id}.jpg`;
+			a.download = `${id}.webp`;
 			a.click();
 		}
 	}
@@ -101,8 +101,14 @@ export class TileProxy {
 	}
 }
 
-const getCoverImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
+/** カバー画像のURLを取得する関数 */
+export const getCoverImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
 	return _layerEntry.metaData.coverImage ?? undefined;
+};
+
+/** 地図画像のURLを取得する関数 */
+export const getMapImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
+	return _layerEntry.metaData.mapImage ?? undefined;
 };
 
 // getLayerImage関数
@@ -118,13 +124,12 @@ export interface ImageResult {
  * @returns 画像URLまたはundefined
  */
 export const getLayerImage = async (
-	_layerEntry: GeoDataEntry,
-	option?: 'layer'
+	_layerEntry: GeoDataEntry
 ): Promise<ImageResult | undefined> => {
 	try {
-		if (_layerEntry.metaData.coverImage && option !== 'layer') {
-			// カバー画像が指定されている場合はそれを使用
-			const url = getCoverImageUrl(_layerEntry);
+		if (_layerEntry.metaData.mapImage) {
+			// 地図画像が指定されている場合はそれを使用
+			const url = getMapImageUrl(_layerEntry);
 			return url ? { url } : undefined;
 		} else if (_layerEntry.type === 'raster') {
 			// タイプとフォーマットによる分岐

@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { GeoJsonMetaData, PolygonEntry } from '$routes/map/data/types/vector/index';
 
@@ -19,7 +19,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		minZoom: 8,
 		tags: ['森林'],
 		bounds: [136.920084, 35.549852, 136.925498, 35.554401],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_siken.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_siken.webp`,
+		xyzImageTile: { x: 230774, y: 103341, z: 18 }
 	},
 	properties: {
 		keys: ['活用内容', '活用期間', '番号'],

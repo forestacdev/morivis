@@ -1,5 +1,5 @@
 import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/types/vector';
-import { FEATURE_IMAGE_BASE_PATH, ENTRY_FGB_PATH } from '$routes/constants';
+import { FEATURE_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const entry: VectorEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_pole',
@@ -19,7 +19,9 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 		maxZoom: 17,
 		minZoom: 1,
 		bounds: [136.919359, 35.549761, 136.926759, 35.557836],
-		coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`
+		xyzImageTile: { x: 57693, y: 25835, z: 16 },
+		coverImage: `${FEATURE_IMAGE_BASE_PATH}/pole_3.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_pole.webp`
 	},
 	properties: {
 		keys: ['name'],
@@ -40,7 +42,7 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.8, // 透過率
+		opacity: 0.7, // 透過率
 		markerType: 'circle',
 		colors: {
 			show: true,

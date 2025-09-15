@@ -17,7 +17,8 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		minZoom: 1,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
+		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122],
+		xyzImageTile: { x: 14424, y: 6458, z: 14 }
 	},
 	interaction: {
 		clickable: true

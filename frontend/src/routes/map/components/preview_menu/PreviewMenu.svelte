@@ -4,7 +4,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 
-	import MapPane from '$routes/map/components/preview_menu/Map.svelte';
+	import MapPane from '$routes/map/components/preview_menu/MapPane.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';

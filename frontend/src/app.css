@@ -44,6 +44,11 @@ body {
 		border-color: var(--color-gray-200, currentcolor);
 	}
 
+	/* html2canvasでテキストがずれるバグの対処 https://github.com/niklasvh/html2canvas/issues/2775 */
+	img {
+		@apply inline-block;
+	}
+
 	@media (width < 768px) {
 		/* タップハイライトの色を透明にする */
 		* {
@@ -174,9 +179,7 @@ body {
 	-moz-user-select: none;
 }
 
-@layer base {
-	/* html2canvasでテキストがずれるバグの対処 https://github.com/niklasvh/html2canvas/issues/2775 */
-	img {
-		@apply inline-block;
-	}
+/* 背景地図画像用のスタイル */
+@utility c-basemap-img {
+	@apply c-no-drag-icon brightness-80 invert-100;
 }

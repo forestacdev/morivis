@@ -16,6 +16,7 @@
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import { showDataMenu } from '$routes/stores/ui';
 	import { CoverImageManager } from '$routes/map/utils/image';
+	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -162,7 +163,7 @@
 				</button>
 			{/if}
 		</div>
-		{#if import.meta.env.DEV && !dataEntry.metaData.coverImage && dataEntry.type === 'vector'}
+		{#if import.meta.env.DEV && !dataEntry.metaData.mapImage && dataEntry.type === 'vector'}
 			<!-- タグ -->
 			<button
 				transition:fade={{ duration: 150 }}
@@ -186,23 +187,49 @@
 		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden">
 			{#await promise then imageResult}
 				{#if imageResult}
-					<img
-						src={imageResult.url}
-						class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
-						alt={dataEntry.metaData.name}
-						onload={() => handleImageLoad(imageResult)}
-						loading="lazy"
-						onerror={() => {
-							console.error('Image loading failed:', dataEntry.metaData.name);
-							isImageError = true;
-						}}
-					/>
+					{#if dataEntry.metaData.coverImage && !isImageError}
+						<img
+							src={dataEntry.metaData.coverImage}
+							class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+							alt={dataEntry.metaData.name}
+							loading="lazy"
+							onerror={() => {
+								console.error('Image loading failed:', dataEntry.metaData.name);
+								isImageError = true;
+							}}
+						/>
+					{:else}
+						{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
+							<!-- 背景地図画像 -->
+							<img
+								src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
+								class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
+								alt="背景地図画像"
+								loading="lazy"
+								onerror={() => {
+									console.error('Image loading failed: BaseMap Image');
+									isImageError = true;
+								}}
+							/>
+						{/if}
+						<img
+							src={imageResult.url}
+							class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+							alt={dataEntry.metaData.name}
+							onload={() => handleImageLoad(imageResult)}
+							loading="lazy"
+							onerror={() => {
+								console.error('Image loading failed:', dataEntry.metaData.name);
+								isImageError = true;
+							}}
+						/>
+					{/if}
 				{/if}
 			{:catch}
 				<div class="text-accent">データが取得できませんでした</div>
 			{/await}
 			<div class="pointer-events-none absolute h-full w-full">
-				<div class="c-bg absolute h-full w-full"></div>
+				<div class="c-vignette absolute h-full w-full"></div>
 			</div>
 			<!-- オーバーレイ -->
 			{#if !isHover}
@@ -301,13 +328,10 @@
 </div>
 
 <style>
-	.c-bg {
-		background: radial-gradient(
-			circle,
-			rgba(255, 255, 255, 0) 0%,
-			rgba(255, 255, 255, 0) 60%,
-			rgba(0, 0, 0, 0.4) 100%
-		);
+	.c-vignette {
+		box-shadow:
+			inset 0 0 100px rgba(0, 0, 0, 0.4),
+			inset 0 0 200px rgba(0, 0, 0, 0.2);
 	}
 
 	.c-gradient {

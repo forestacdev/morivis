@@ -90,6 +90,7 @@
 		"dompurify": "^3.2.5",
 		"earcut": "^3.0.1",
 		"embla-carousel": "^8.6.0",
+		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-svelte": "^8.6.0",
 		"es-toolkit": "^1.31.0",
 		"fast-xml-parser": "^5.2.3",

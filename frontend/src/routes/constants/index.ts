@@ -14,6 +14,7 @@ export const ENTRY_GEOJSON_PATH = ENTRY_DATA_PATH + '/geojson';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
 export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
+export const MAP_IMAGE_BASE_PATH = DATA_PATH + '/images/map';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
@@ -97,19 +98,20 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 export const INT_ADD_LAYER_IDS = [
 	'ensyurin_owl',
 	// 'ensyurin_pole',
-	// 'fac_ziriki_point',
-	// 'fac_building_point',
-	// 'fac_poi',
+	// 'ensyurin_kikenboku_h25',
+	// 'fac_sisetuannaitou',
+
 	// 'gsi_elevation_point',
 	'ensyurin_road',
-	// 'gsi_road',
+	// 'national_forest_road',
+
 	'ensyurin_syouhan',
 	'national_forest_stand'
-	// 'tochigi_tree_species'
+	// 'tochigi_tree_species',
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',
 	// 'gifu_slope_map',
 
-	// 'gsi_seamlessphoto'
+	// 'gsi_seamlessphoto',
 	// 'gsi_std'
 ];

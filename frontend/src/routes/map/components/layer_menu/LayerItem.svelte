@@ -20,7 +20,6 @@
 		length: number;
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
-		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -31,8 +30,7 @@
 		index,
 		length,
 		layerType,
-		layerEntry,
-		layerEntries = $bindable(),
+		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
@@ -237,53 +235,52 @@
 	aria-label="レイヤー"
 >
 	{#if !$isStyleEdit && !$showDataMenu}
-		<!-- レイヤーの種類 -->
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
-			class="relative grid h-full w-[50px] shrink-0 place-items-center"
+			class="relative flex h-full w-[50px] shrink-0 items-center justify-center"
 		>
-			{#if index === 0}
-				<div class="bg-base peer absolute aspect-square rounded-full p-2">
-					<Icon icon={getLayerIcon(layerType)} class="h-6 w-6" />
-				</div>
-				<div
-					class="bg-base pointer-events-none absolute bottom-0 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
-				>
-					{TYPE_LABELS[layerType]}
-				</div>
-			{:else}
-				<div class="bg-base absolute aspect-square rounded-full p-1"></div>
-			{/if}
-			<div class="bg-base/60 h-full w-[2px]"></div>
-			<!-- <div class="bg-base/60 absolute right-0 -z-10 h-[2px] w-1/2"></div> -->
+			<div class="bg-base/60 absolute h-full w-[2px]"></div>
 		</div>
 	{/if}
-
 	<div
 		id={layerEntry.id}
-		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] relative flex cursor-move select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200
-			{$selectedLayerId !== layerEntry.id && $isStyleEdit
-			? 'bg-black opacity-70'
-			: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'c-fog' : ''} {$showDataMenu ||
-		$isStyleEdit
+		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left duration-200
+			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
+			layerEntry.id && $isStyleEdit
+			? 'bg-base'
+			: ''} {$showDataMenu || $isStyleEdit
 			? 'w-[66px]'
 			: 'max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
-			? 'translate-x-[320px]'
-			: 'bg-black drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'} "
+			? 'translate-x-[310px]'
+			: 'border-1 border-sub bg-black'} "
 		onmouseenter={() => (checkPc() ? (isHovered = true) : null)}
 		onmouseleave={() => (checkPc() ? (isHovered = false) : null)}
 		role="button"
 		tabindex="0"
 	>
+		<!-- エフェクト -->
+		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+			<div
+				class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
+			></div>
+			<div
+				class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
+			></div>
+		{/if}
+
 		<div class="flex w-full items-center justify-start gap-1 bg-transparent">
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="bg-base relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full text-base transition-transform duration-150 {$isStyleEdit
+				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
 					? ''
-					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? '' : ''}"
+					: ''} {($selectedLayerId === layerEntry.id && $isStyleEdit) || isHovered
+					? 'scale-115'
+					: ''}"
 			>
-				<LayerIcon {layerEntry} />
+				<div class="scale-200 h-full w-full {layerEntry.style.visible ? '' : 'grayscale'}">
+					<LayerIcon {layerEntry} />
+				</div>
 			</button>
 
 			<!-- レイヤー名 -->
@@ -308,7 +305,7 @@
 					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
@@ -425,23 +422,29 @@
 </div>
 
 <style>
-	.c-ripple-anime {
-		/* animation: ripple 0.7s linear infinite;
-		transform-origin: center; */
-		background: rgb(233, 233, 233);
-		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	.c-rounded {
+		border-radius: 9999px 9999px 9999px 9999px;
+	}
+	/* エフェクト要素 */
+	.c-ripple-effect {
+		opacity: 0;
+		animation: ripple 1.5s linear infinite;
 	}
 
-	.c-fog {
-		background: linear-gradient(90deg, var(--color-main) 10%, var(--color-accent) 100%);
+	.c-ripple-effect2 {
+		opacity: 0;
+		animation: ripple 1.5s 0.75s linear infinite;
 	}
 
+	/* アニメーションの定義 */
 	@keyframes ripple {
 		0% {
-			scale: 0.8;
+			scale: 1;
+			opacity: 0.8;
 		}
+
 		100% {
-			scale: 1.5;
+			scale: 1.3;
 			opacity: 0;
 		}
 	}

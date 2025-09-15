@@ -1,4 +1,8 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -22,7 +26,7 @@ const entry: PolygonEntry<TileMetaData> = {
 		sourceLayer: 'ksj_tmplt_a15',
 		bounds: [123.00744367, 24.19197, 153.99083742, 45.45090445],
 		xyzImageTile: { x: 903, y: 400, z: 10 },
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ksj_tmplt_a15.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ksj_tmplt_a15.webp`
 	},
 	properties: {
 		keys: [

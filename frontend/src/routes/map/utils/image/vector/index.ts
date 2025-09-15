@@ -219,7 +219,7 @@ async function _generateMapImageParallel(
 							return;
 						}
 
-						const fileName = `${name}.jpg`;
+						const fileName = `${name}.webp`;
 						const blobUrl = URL.createObjectURL(blob);
 
 						const revokeBlobUrl = () => {
@@ -234,7 +234,7 @@ async function _generateMapImageParallel(
 
 						resolve(result);
 					},
-					'image/jpeg',
+					'image/webp',
 					1.0
 				);
 			} catch (error) {
@@ -344,26 +344,26 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		glyphs: MAP_FONT_DATA_PATH,
 		sources: {
 			// TODO 背景地図のみ処理を分離
-			mierune_mono: {
-				type: 'raster',
-				tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-				tileSize: 256,
-				minzoom: 0,
-				maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-				bounds: _layerEntry.metaData.xyzImageTile
-					? minimumEntry.metaData.bounds
-					: WEB_MERCATOR_WORLD_BBOX,
-				attribution:
-					'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenStreetMap contributors</a>'
-			},
+			// mierune_mono: {
+			// 	type: 'raster',
+			// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+			// 	tileSize: 256,
+			// 	minzoom: 0,
+			// 	maxzoom: minimumEntry.metaData.maxZoom ?? 18,
+			// 	bounds: _layerEntry.metaData.xyzImageTile
+			// 		? minimumEntry.metaData.bounds
+			// 		: WEB_MERCATOR_WORLD_BBOX,
+			// 	attribution:
+			// 		'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenStreetMap contributors</a>'
+			// },
 			...sources
 		},
 		layers: [
-			{
-				id: 'mierune_mono',
-				type: 'raster',
-				source: 'mierune_mono'
-			},
+			// {
+			// 	id: 'mierune_mono',
+			// 	type: 'raster',
+			// 	source: 'mierune_mono'
+			// },
 			...layers.filter((layer) => layer.type !== 'symbol')
 		]
 	};
@@ -389,7 +389,15 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 	return result.blobUrl;
 };
 
-// クリーンアップ関数（必要に応じて呼び出す）
-export function destroyMapPool() {
+/** クリーンアップ関数（必要に応じて呼び出す） */
+export const destroyMapPool = () => {
 	mapPool.destroy();
-}
+};
+
+/** 背景用画像のURLを取得 */
+export const getBaseMapImageUrl = (_xyzImageTile: { x: number; y: number; z: number }) => {
+	return 'https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'
+		.replace('{z}', _xyzImageTile.z.toString())
+		.replace('{x}', _xyzImageTile.x.toString())
+		.replace('{y}', _xyzImageTile.y.toString());
+};

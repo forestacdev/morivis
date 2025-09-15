@@ -1,4 +1,9 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, ENTRY_GEOJSON_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_FGB_PATH,
+	ENTRY_GEOJSON_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 
@@ -19,8 +24,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		maxZoom: 17,
 		minZoom: 10,
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin.webp`,
-		xyzImageTile: { x: 115387, y: 51670, z: 17 }
+		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_syouhan.webp`,
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_syouhan.webp`,
+		xyzImageTile: { x: 115387, y: 51671, z: 17 }
 	},
 	properties: {
 		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],

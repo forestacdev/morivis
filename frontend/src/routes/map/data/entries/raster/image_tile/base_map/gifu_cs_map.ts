@@ -20,6 +20,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
+		xyzImageTile: { x: 14424, y: 6458, z: 14 },
 		bounds: [136.1828594, 34.9090933, 137.8301219, 36.7868122]
 	},
 	interaction: {

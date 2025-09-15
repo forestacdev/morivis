@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -24,7 +24,7 @@ const entry: VectorEntry<TileMetaData> = {
 		bounds: TOCHIGI_BBOX,
 		xyzImageTile: { x: 58224, y: 25564, z: 16 },
 		center: [139.833104, 36.723743],
-		coverImage: `${COVER_IMAGE_BASE_PATH}/tochigi_fr_mesh20m.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/tochigi_fr_mesh20m.webp`
 	},
 	properties: {
 		keys: [

@@ -16,7 +16,7 @@
 	import MapLibreMap from '$routes/map/components/Map.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
-	import DataPreview from '$routes/map/components/preview_menu/DataPreview.svelte';
+	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
@@ -459,7 +459,7 @@
 			<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
 		{/if}
 		{#if showDataEntry}
-			<DataPreview bind:showDataEntry bind:tempLayerEntries />
+			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
 		{#if $isStreetView}
