@@ -274,7 +274,9 @@
 				onclick={selectedLayer}
 				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
 					? ''
-					: ''} {$selectedLayerId === layerEntry.id && $isStyleEdit ? 'scale-115' : ''}"
+					: ''} {($selectedLayerId === layerEntry.id && $isStyleEdit) || isHovered
+					? 'scale-115'
+					: ''}"
 			>
 				<div class="scale-200 h-full w-full {layerEntry.style.visible ? '' : 'grayscale'}">
 					<LayerIcon {layerEntry} />
@@ -303,7 +305,7 @@
 					<!-- 編集ボタン -->
 					<div
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
-						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
+						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
 						<button
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
