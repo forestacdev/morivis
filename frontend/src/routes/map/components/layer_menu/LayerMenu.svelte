@@ -3,8 +3,8 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
-	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
-	import LayerSlot2 from '$routes/map/components/layer_menu/LayerSlot2.svelte';
+	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
@@ -186,10 +186,9 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					<LayerSlot2
+					<LayerTypeItem
 						length={pointEntries.length}
 						layerType={'point'}
-						bind:layerEntries
 						typeEntries={pointEntries}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -205,10 +204,9 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					<LayerSlot2
+					<LayerTypeItem
 						length={lineEntries.length}
 						layerType={'line'}
-						bind:layerEntries
 						typeEntries={lineEntries}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -224,10 +222,9 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					<LayerSlot2
+					<LayerTypeItem
 						length={polygonEntries.length}
 						layerType={'polygon'}
-						bind:layerEntries
 						typeEntries={polygonEntries}
 						bind:showDataEntry
 						bind:tempLayerEntries
@@ -243,10 +240,9 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					<LayerSlot2
+					<LayerTypeItem
 						length={rasterEntries.length}
 						layerType={'raster'}
-						bind:layerEntries
 						typeEntries={rasterEntries}
 						bind:showDataEntry
 						bind:tempLayerEntries

@@ -20,7 +20,6 @@
 		length: number;
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
-		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -32,7 +31,6 @@
 		length,
 		layerType,
 		layerEntry,
-		layerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),

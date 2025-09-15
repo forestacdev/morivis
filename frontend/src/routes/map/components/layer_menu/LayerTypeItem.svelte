@@ -14,8 +14,8 @@
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import LayerSlot3 from '$routes/map/components/layer_menu/LayerSlot3.svelte';
-	import LayerSlot from './LayerSlot.svelte';
+	import LayerItem from '$routes/map/components/layer_menu/LayerItem.svelte';
+	import LayerSlot from './_LayerSlot.svelte';
 
 	import { flip } from 'svelte/animate';
 
@@ -24,7 +24,6 @@
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
 		typeEntries: GeoDataEntry[];
-		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -37,7 +36,6 @@
 		layerType,
 		layerEntry,
 		typeEntries,
-		layerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
@@ -245,12 +243,11 @@
 <div class="flex-1">
 	{#each typeEntries as layerEntry, i (layerEntry.id)}
 		<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-			<LayerSlot3
+			<LayerItem
 				index={i}
 				length={typeEntries.length}
 				{layerType}
 				{layerEntry}
-				bind:layerEntries
 				bind:showDataEntry
 				bind:tempLayerEntries
 				bind:enableFlip
