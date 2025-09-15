@@ -187,7 +187,6 @@
 						: ''}"
 				>
 					<LayerTypeItem
-						length={pointEntries.length}
 						layerType={'point'}
 						typeEntries={pointEntries}
 						bind:showDataEntry
@@ -205,7 +204,6 @@
 						: ''}"
 				>
 					<LayerTypeItem
-						length={lineEntries.length}
 						layerType={'line'}
 						typeEntries={lineEntries}
 						bind:showDataEntry
@@ -223,7 +221,6 @@
 						: ''}"
 				>
 					<LayerTypeItem
-						length={polygonEntries.length}
 						layerType={'polygon'}
 						typeEntries={polygonEntries}
 						bind:showDataEntry
@@ -241,7 +238,6 @@
 						: ''}"
 				>
 					<LayerTypeItem
-						length={rasterEntries.length}
 						layerType={'raster'}
 						typeEntries={rasterEntries}
 						bind:showDataEntry
