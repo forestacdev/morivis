@@ -3,7 +3,8 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
-	import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
@@ -65,6 +66,13 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
+
+	// 可視状態の更新を一元管理
+	const setLayerVisible = (id: string, next: boolean) => {
+		layerEntries = layerEntries.map((e) =>
+			e.id === id ? { ...e, style: { ...e.style, visible: next } } : e
+		);
+	};
 
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
@@ -129,47 +137,6 @@
 						</button>
 					</div>
 				{/if}
-
-				<!-- <button
-					onclick={() => {
-						if ($isStyleEdit) {
-							isStyleEdit.set(false);
-							selectedLayerId.set('');
-						} else {
-							showDataMenu.set(!$showDataMenu);
-						}
-					}}
-					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
-						? 'w-[66px]'
-						: $isStyleEdit
-							? 'w-[400px]'
-							: 'hover:bg-accent bg-main w-[330px]'} {!$isStyleEdit && !$showDataMenu
-						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
-						: ''}"
-				>
-					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
-						<div
-							class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
-							!$isStyleEdit
-								? 'bg-accent text-base'
-								: 'bg-base text-main'} {$isStyleEdit ? 'translate-x-[320px]' : ''}"
-						>
-							{#if !$showDataMenu && !$isStyleEdit}
-								<Icon icon="material-symbols:add" width={30} />
-							{:else}
-								<Icon icon="ep:back" class="h-7 w-7" />
-							{/if}
-						</div>
-
-						<div
-							class="relative flex w-full grow flex-col items-center justify-center gap-[2px] overflow-hidden pr-6 text-white"
-						>
-							{#if !$showDataMenu}
-								<span class="text-lg">データの追加</span>
-							{/if}
-						</div>
-					</div>
-				</button> -->
 			</div>
 		</div>
 		<div
@@ -185,21 +152,14 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each pointEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={pointEntries.length}
-								layerType={'point'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerTypeItem
+						layerType={'point'}
+						typeEntries={pointEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ライン -->
@@ -209,21 +169,14 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each lineEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={lineEntries.length}
-								layerType={'line'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerTypeItem
+						layerType={'line'}
+						typeEntries={lineEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ポリゴン -->
@@ -233,21 +186,14 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each polygonEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={polygonEntries.length}
-								layerType={'polygon'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerTypeItem
+						layerType={'polygon'}
+						typeEntries={polygonEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 			<!-- ラスター -->
@@ -257,21 +203,14 @@
 						? 'bg-accent/70'
 						: ''}"
 				>
-					{#each rasterEntries as layerEntry, i (layerEntry.id)}
-						<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
-							<LayerSlot
-								index={i}
-								length={rasterEntries.length}
-								layerType={'raster'}
-								{layerEntry}
-								bind:layerEntries
-								bind:showDataEntry
-								bind:tempLayerEntries
-								bind:enableFlip
-								bind:isDraggingLayerType
-							/>
-						</div>
-					{/each}
+					<LayerTypeItem
+						layerType={'raster'}
+						typeEntries={rasterEntries}
+						bind:showDataEntry
+						bind:tempLayerEntries
+						bind:enableFlip
+						bind:isDraggingLayerType
+					/>
 				</div>
 			{/if}
 

@@ -2,7 +2,6 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { propData } from '$routes/map/data/prop_data';
 	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
 	import { fade, fly, scale } from 'svelte/transition';
 
@@ -200,6 +199,15 @@
 						<span class="text-sm text-white">?</span>
 					</div>
 				{/if}
+				<!-- エフェクト -->
+				{#if clickId === featureId}
+					<div
+						class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
+					></div>
+					<div
+						class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
+					></div>
+				{/if}
 			</button>
 		{/if}
 	</div>
@@ -220,17 +228,26 @@
 {/if}
 
 <style>
-	@keyframes pulse {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.5;
-		}
+	.c-ripple-effect {
+		opacity: 0;
+		animation: ripple 1.5s linear infinite;
 	}
 
-	.animate-pulse {
-		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	.c-ripple-effect2 {
+		opacity: 0;
+		animation: ripple 1.5s 0.75s linear infinite;
+	}
+
+	/* アニメーションの定義 */
+	@keyframes ripple {
+		0% {
+			scale: 1.2;
+			opacity: 0.8;
+		}
+
+		100% {
+			scale: 1.8;
+			opacity: 0;
+		}
 	}
 </style>
