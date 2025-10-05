@@ -116,6 +116,10 @@ const attributionData = {
 	['広島県林業課（林野庁加工）']: {
 		name: '広島県林業課（林野庁加工）',
 		url: 'https://www.rinya.maff.go.jp/index.html'
+	},
+	['神奈川県森林再生課（林野庁加工）']: {
+		name: '神奈川県森林再生課（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya'
 	}
 } as const;
 
