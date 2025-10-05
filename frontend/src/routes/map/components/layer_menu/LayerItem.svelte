@@ -278,7 +278,11 @@
 					? 'scale-115'
 					: ''}"
 			>
-				<div class="scale-200 h-full w-full {layerEntry.style.visible ? '' : 'grayscale'}">
+				<div
+					class="scale-200 h-full w-full {layerEntry.style.visible
+						? ''
+						: 'brightness-75 grayscale'}"
+				>
 					<LayerIcon {layerEntry} />
 				</div>
 			</button>
