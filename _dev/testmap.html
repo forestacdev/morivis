@@ -10,8 +10,8 @@
 
 		<title>morivis - 森林文化アカデミー演習林Webマップ</title>
 
-		<link rel="icon" type="image/x-icon" href="/morivis/favicon.ico" />
-		<link rel="icon" href="/morivis/favicon.ico" />
+		<link rel="icon" type="image/x-icon" href="../favicon.ico" />
+		<link rel="icon" href="../favicon.ico" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" />
 		<link
@@ -23,7 +23,7 @@
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 		<meta name="theme-color" content="#0c221d" />
-		<link rel="apple-touch-icon" href="/morivis/apple-touch-icon-180x180.png" />
+		<link rel="apple-touch-icon" href="../apple-touch-icon-180x180.png" />
 		<meta name="google-site-verification" content="googlea03946f4418c44fc" />
 		<meta
 			name="description"
@@ -167,30 +167,30 @@
 			}
 		</script>
 		
-		<link rel="modulepreload" href="/morivis/_app/immutable/entry/start.Aho2YPGF.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/svQaLcub.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/D-DEec_z.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/vPfvdkF7.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/entry/app.BGl0nuKR.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/Bqx-0j2z.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/otnuiJXn.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/DchfDYiZ.js">
-		<link rel="modulepreload" href="/morivis/_app/immutable/chunks/cLiHfjO0.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.Aho2YPGF.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/svQaLcub.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/D-DEec_z.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/vPfvdkF7.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.BGl0nuKR.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/Bqx-0j2z.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/otnuiJXn.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DchfDYiZ.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/cLiHfjO0.js">
 	</head>
 	<body data-sveltekit-preload-data="hover" class="font-noto">
 		<div style="display: contents">
 			<script>
 				{
 					__sveltekit_1vvjsl1 = {
-						base: "/morivis",
+						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/morivis"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("/morivis/_app/immutable/entry/start.Aho2YPGF.js"),
-						import("/morivis/_app/immutable/entry/app.BGl0nuKR.js")
+						import("../_app/immutable/entry/start.Aho2YPGF.js"),
+						import("../_app/immutable/entry/app.BGl0nuKR.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
