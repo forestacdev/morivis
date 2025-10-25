@@ -443,8 +443,6 @@
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
-		console.log(layerEntries);
-
 		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
 		// if (!$isDebugMode) {
 		// 	const localEntries = loadLayerEntries();

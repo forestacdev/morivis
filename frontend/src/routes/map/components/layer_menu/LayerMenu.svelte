@@ -296,10 +296,18 @@
 			<!-- <div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
 			</div> -->
-			<div transition:fade={{ duration: 150 }} class="max-lg:pb-18 p-3">
+			<div transition:fade={{ duration: 150 }} class="mobile-bottom p-3">
 				<RecommendedData bind:showDataEntry />
 			</div>
 		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->
 	</div>
 {/if}
+
+<style>
+	@media (width < 768px) {
+		.mobile-bottom {
+			padding-bottom: calc(72px + env(safe-area-inset-bottom));
+		}
+	}
+</style>

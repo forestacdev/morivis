@@ -59,15 +59,15 @@ export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> 
 		maxzoom: 18,
 		bounds: [122.933755, 24.045713, 153.986895, 45.556277],
 		attribution: '国土地理院'
-	},
-	base_gsi_rinya_m: {
-		type: 'raster',
-		tiles: ['https://forestacdev.github.io/tiles-ensyurin-photo/tiles/{z}/{x}/{y}.webp'],
-		tileSize: 256,
-		maxzoom: 18,
-		minzoom: 14,
-		attribution: ''
 	}
+	// base_gsi_rinya_m: {
+	// 	type: 'raster',
+	// 	tiles: ['https://forestacdev.github.io/tiles-ensyurin-photo/tiles/{z}/{x}/{y}.webp'],
+	// 	tileSize: 256,
+	// 	maxzoom: 18,
+	// 	minzoom: 14,
+	// 	attribution: ''
+	// }
 };
 
 export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
@@ -93,19 +93,19 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 			'raster-brightness-min': 0,
 			'raster-brightness-max': 0.8
 		}
-	},
-	{
-		id: 'base_gsi_rinya_m',
-		source: 'base_gsi_rinya_m',
-		type: 'raster',
-		maxzoom: 24,
-		minzoom: 12,
-		paint: {
-			'raster-opacity': 0.9,
-			'raster-brightness-min': 0,
-			'raster-brightness-max': 0.8
-		}
 	}
+	// {
+	// 	id: 'base_gsi_rinya_m',
+	// 	source: 'base_gsi_rinya_m',
+	// 	type: 'raster',
+	// 	maxzoom: 24,
+	// 	minzoom: 12,
+	// 	paint: {
+	// 		'raster-opacity': 0.9,
+	// 		'raster-brightness-min': 0,
+	// 		'raster-brightness-max': 0.8
+	// 	}
+	// }
 ];
 
 /** 地形図 */

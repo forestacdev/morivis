@@ -1007,9 +1007,9 @@ export const createLayersItems = (
 	return [
 		...baseMapLayerItems,
 		...rasterLayerItems,
+		...fillLayerItems,
 		...boundaryLayerItems,
 		...roadLineLayerItems,
-		...fillLayerItems,
 		...lineLayerItems,
 		...circleLayerItems,
 		...streetViewLayers,
