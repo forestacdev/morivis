@@ -4,6 +4,6 @@ import type { SourceSpecification } from 'maplibre-gl';
 export const streetViewSources = {
 	street_view_sources: {
 		type: 'vector',
-		url: `pmtiles://${STREET_VIEW_DATA_PATH}/THETA360.pmtiles`
+		url: `pmtiles://${STREET_VIEW_DATA_PATH}/panorama.pmtiles`
 	} as SourceSpecification
 };

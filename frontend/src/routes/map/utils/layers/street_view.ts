@@ -5,7 +5,7 @@ export const streetViewLineLayer: LineLayerSpecification = {
 	id: '@street_view_line_layer',
 	type: 'line',
 	source: 'street_view_sources',
-	'source-layer': 'THETA360_line',
+	'source-layer': 'panorama_links',
 	paint: {
 		'line-color': [
 			'case',
@@ -28,7 +28,7 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 	id: '@street_view_circle_layer',
 	type: 'circle',
 	source: 'street_view_sources',
-	'source-layer': 'THETA360',
+	'source-layer': 'panorama_nodes',
 	minzoom: 10,
 	paint: {
 		'circle-color': [
