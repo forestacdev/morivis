@@ -29,6 +29,7 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 	type: 'circle',
 	source: 'street_view_sources',
 	'source-layer': 'panorama_nodes',
+	filter: ['==', ['get', 'has_link'], false],
 	minzoom: 10,
 	paint: {
 		'circle-color': [

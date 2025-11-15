@@ -254,10 +254,9 @@
 
 				if (features.length > 0 && streetViewPointData.features.length > 0) {
 					const feature = features[0];
+					const nodeId = Number(feature.properties.node_id);
 
-					const point = streetViewPointData.features.find(
-						(f) => f.properties.node_id === feature.properties.node_id
-					);
+					const point = streetViewPointData.features.find((f) => f.properties.node_id === nodeId);
 
 					if (point) {
 						setPoint(point as StreetViewPoint);
@@ -316,17 +315,12 @@
 						}
 
 						const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
-						console.log('bearing:', bearing);
 
 						cameraBearing = bearing;
-
-						console.log('cameraBearing:', cameraBearing);
 
 						const point = streetViewPointData.features.find(
 							(f) => f.properties.node_id === Number(id) // 文字列→数値
 						);
-
-						console.log(cameraBearing);
 
 						if (point) {
 							setPoint(point as StreetViewPoint);

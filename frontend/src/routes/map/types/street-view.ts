@@ -21,3 +21,17 @@ export interface StreetViewPointGeoJson {
 	type: 'FeatureCollection';
 	features: StreetViewPoint[];
 }
+
+// TODO: indexDataの型定義を追加
+export interface StreetViewNodeData {
+	lng: number;
+	lat: number;
+	photo_id: string;
+	has_link: boolean;
+	connection_count: number;
+	date: string;
+	time: string;
+	name: string;
+	node_id: number;
+}
+export type NodeIndex = Record<string, StreetViewNodeData>;
