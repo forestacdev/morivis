@@ -38,6 +38,7 @@
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
+		cameraBearing: number;
 	}
 
 	let {
@@ -49,7 +50,8 @@
 		setPoint,
 		layerEntries,
 		showDataEntry,
-		toggleTooltip
+		toggleTooltip,
+		cameraBearing = $bindable()
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -245,26 +247,26 @@
 				.map((entry) => entry.id);
 
 			// ストリートビューに切り返る
-			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-				const features = mapStore.queryRenderedFeatures(e.point, {
-					layers: ['@street_view_circle_layer']
-				});
+			// if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+			// 	const features = mapStore.queryRenderedFeatures(e.point, {
+			// 		layers: ['@street_view_circle_layer']
+			// 	});
 
-				if (features.length > 0 && streetViewPointData.features.length > 0) {
-					const feature = features[0];
+			// 	if (features.length > 0 && streetViewPointData.features.length > 0) {
+			// 		const feature = features[0];
 
-					const point = streetViewPointData.features.find(
-						(f) => f.properties.node_id === feature.properties.node_id
-					);
+			// 		const point = streetViewPointData.features.find(
+			// 			(f) => f.properties.node_id === feature.properties.node_id
+			// 		);
 
-					if (point) {
-						setPoint(point as StreetViewPoint);
-						isStreetView.set(true);
-					}
-				}
+			// 		if (point) {
+			// 			setPoint(point as StreetViewPoint);
+			// 			isStreetView.set(true);
+			// 		}
+			// 	}
 
-				return;
-			}
+			// 	return;
+			// }
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_line_layer')) {
@@ -313,11 +315,18 @@
 							id = feature.properties.source;
 						}
 
-						const bearing = turfBearing(turfPoint(first), turfPoint(last)); // -180〜180
+						const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
+						console.log('bearing:', bearing);
+
+						cameraBearing = bearing;
+
+						console.log('cameraBearing:', cameraBearing);
 
 						const point = streetViewPointData.features.find(
 							(f) => f.properties.node_id === Number(id) // 文字列→数値
 						);
+
+						console.log(cameraBearing);
 
 						if (point) {
 							setPoint(point as StreetViewPoint);

@@ -21,14 +21,14 @@
 		// 前のhoverをリセット
 		if (hoveredId !== null) {
 			map.setFeatureState(
-				{ source: 'street_view_sources', sourceLayer: 'THETA360', id: hoveredId },
+				{ source: 'street_view_sources', sourceLayer: 'THETA360_line', id: hoveredId },
 				{ hover: false }
 			);
 		}
 
 		hoveredId = e.features[0].id as number;
 		map.setFeatureState(
-			{ source: 'street_view_sources', sourceLayer: 'THETA360', id: hoveredId },
+			{ source: 'street_view_sources', sourceLayer: 'THETA360_line', id: hoveredId },
 			{ hover: true }
 		);
 		map.getCanvas().style.cursor = 'pointer';
@@ -37,7 +37,7 @@
 	const onMouseLeave = () => {
 		if (hoveredId !== null) {
 			map.setFeatureState(
-				{ source: 'street_view_sources', sourceLayer: 'THETA360', id: hoveredId },
+				{ source: 'street_view_sources', sourceLayer: 'THETA360_line', id: hoveredId },
 				{ hover: false }
 			);
 			hoveredId = null;
@@ -48,12 +48,12 @@
 	showStreetViewLayer.subscribe((value) => {
 		if (value) {
 			// 登録
-			map.on('mousemove', '@street_view_circle_layer', onMouseMove);
-			map.on('mouseleave', '@street_view_circle_layer', onMouseLeave);
+			map.on('mousemove', '@street_view_line_layer', onMouseMove);
+			map.on('mouseleave', '@street_view_line_layer', onMouseLeave);
 		} else {
 			// 解除
-			map.off('mousemove', '@street_view_circle_layer', onMouseMove);
-			map.off('mouseleave', '@street_view_circle_layer', onMouseLeave);
+			map.off('mousemove', '@street_view_line_layer', onMouseMove);
+			map.off('mouseleave', '@street_view_line_layer', onMouseLeave);
 		}
 	});
 

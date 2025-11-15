@@ -331,6 +331,7 @@
 		// アニメーション
 
 		const animate = () => {
+			if (!isStreetView) return;
 			requestAnimationFrame(animate);
 			// if (!isRendering) return;
 

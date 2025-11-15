@@ -120,7 +120,7 @@
 
 	// ストリートビューのマーカー
 	let showAngleMarker = $state<boolean>(false); // マーカーの表示
-	let angleMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
+	let angleMarkerLngLat = $state<LngLat>(new maplibregl.LngLat(0, 0)); // マーカーの位置
 
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
@@ -259,7 +259,7 @@
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: 750,
-				bearing: -cameraBearing + 180,
+				bearing: cameraBearing,
 				pitch: 65
 			});
 
@@ -279,7 +279,7 @@
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: 0,
-				bearing: -cameraBearing + 180,
+				bearing: cameraBearing,
 				pitch: 65
 			});
 
@@ -462,16 +462,14 @@
 			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		{#if $isStreetView}
-			<StreetViewCanvas
-				{streetViewPoint}
-				{nextPointData}
-				{showThreeCanvas}
-				bind:cameraBearing
-				bind:showAngleMarker
-				{setPoint}
-			/>
-		{/if}
+		<StreetViewCanvas
+			{streetViewPoint}
+			{nextPointData}
+			{showThreeCanvas}
+			bind:cameraBearing
+			bind:showAngleMarker
+			{setPoint}
+		/>
 
 		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
