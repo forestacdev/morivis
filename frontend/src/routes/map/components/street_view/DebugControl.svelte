@@ -71,18 +71,16 @@
 		if (!streetViewPoint) return;
 		// クリップボードに角度をjson textでコピー
 
-		const angleData = {
-			id: streetViewPoint.properties['ID'],
-			angleX: angleX,
-			angleY: angleY,
-			angleZ: angleZ
-		};
+		const angleDataContent = `"${streetViewPoint.properties.photo_id}": {
+            "angle_x": ${angleX},
+            "angle_y": ${angleY},
+            "angle_z": ${angleZ}
+        }`;
 
-		const angleJson = JSON.stringify(angleData, null, 2);
 		navigator.clipboard
-			.writeText(angleJson)
+			.writeText(angleDataContent)
 			.then(() => {
-				console.log('角度データをクリップボードにコピーしました:', angleJson);
+				console.log('角度データをクリップボードにコピーしました:', angleDataContent);
 			})
 			.catch((err) => {
 				console.error('クリップボードへのコピーに失敗しました:', err);
