@@ -69,8 +69,8 @@
 
 	const copyAngle = () => {
 		if (!streetViewPoint) return;
-		// クリップボードに角度をjson textでコピー
 
+		// クリップボードに角度をjson textでコピー
 		const angleDataContent = `"${streetViewPoint.properties.photo_id}": {
             "angle_x": ${angleX},
             "angle_y": ${angleY},

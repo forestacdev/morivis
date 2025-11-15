@@ -247,26 +247,26 @@
 				.map((entry) => entry.id);
 
 			// ストリートビューに切り返る
-			// if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-			// 	const features = mapStore.queryRenderedFeatures(e.point, {
-			// 		layers: ['@street_view_circle_layer']
-			// 	});
+			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+				const features = mapStore.queryRenderedFeatures(e.point, {
+					layers: ['@street_view_circle_layer']
+				});
 
-			// 	if (features.length > 0 && streetViewPointData.features.length > 0) {
-			// 		const feature = features[0];
+				if (features.length > 0 && streetViewPointData.features.length > 0) {
+					const feature = features[0];
 
-			// 		const point = streetViewPointData.features.find(
-			// 			(f) => f.properties.node_id === feature.properties.node_id
-			// 		);
+					const point = streetViewPointData.features.find(
+						(f) => f.properties.node_id === feature.properties.node_id
+					);
 
-			// 		if (point) {
-			// 			setPoint(point as StreetViewPoint);
-			// 			isStreetView.set(true);
-			// 		}
-			// 	}
+					if (point) {
+						setPoint(point as StreetViewPoint);
+						isStreetView.set(true);
+					}
+				}
 
-			// 	return;
-			// }
+				return;
+			}
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_line_layer')) {

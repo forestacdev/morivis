@@ -18,7 +18,7 @@ import type {
 	ResolvedImageSpecification
 } from 'maplibre-gl';
 
-import { streetViewLineLayer } from '$routes/map/utils/layers/street_view';
+import { streetViewLineLayer, streetViewCircleLayer } from '$routes/map/utils/layers/street_view';
 import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
 
 import { geoDataEntries } from '$routes/map/data';
@@ -960,6 +960,7 @@ export const createLayersItems = (
 	// ストリートビューレイヤー表示がオンの時
 	if (get(showStreetViewLayer)) {
 		clickableVecter.push('@street_view_line_layer');
+		clickableVecter.push('@street_view_circle_layer');
 	}
 
 	if (_type === 'main') {
@@ -970,7 +971,9 @@ export const createLayersItems = (
 
 	// ストリートビューのレイヤーを追加
 	const streetViewLayers =
-		get(showStreetViewLayer) && _type === 'main' ? [streetViewLineLayer] : [];
+		get(showStreetViewLayer) && _type === 'main'
+			? [streetViewLineLayer, streetViewCircleLayer]
+			: [];
 
 	// ベースマップ
 	let baseMapLayerItems: LayerSpecification[] = [];
