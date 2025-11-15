@@ -160,7 +160,7 @@
 
 		if (imageId) {
 			const point = streetViewPointData.features.find(
-				(point) => point.properties.id === Number(imageId)
+				(point) => point.properties.node_id === Number(imageId)
 			);
 			if (point) {
 				showStreetViewLayer.set(true);

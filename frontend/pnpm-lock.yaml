@@ -56,6 +56,9 @@ importers:
       '@turf/distance':
         specifier: ^7.2.0
         version: 7.2.0
+      '@turf/helpers':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@turf/hex-grid':
         specifier: ^7.2.0
         version: 7.2.0

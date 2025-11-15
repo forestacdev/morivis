@@ -959,6 +959,7 @@ export const createLayersItems = (
 
 	// ストリートビューレイヤー表示がオンの時
 	if (get(showStreetViewLayer)) {
+		clickableVecter.push('@street_view_line_layer');
 		clickableVecter.push('@street_view_circle_layer');
 	}
 
