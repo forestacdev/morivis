@@ -184,7 +184,7 @@
 	// ストリートビューのデータの取得
 	const setPoint = async (point: StreetViewPoint) => {
 		if (!point) return;
-		const pointId = point.properties.id;
+		const pointId = point.properties.node_id;
 
 		if (!pointId) {
 			console.warn('Point ID is not defined');
@@ -194,7 +194,7 @@
 		const linkPoints = nodeConnectionsJson[pointId] || [];
 
 		const nextPoints = [pointId, ...linkPoints]
-			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
+			.map((id) => streetViewPointData.features.find((point) => point.properties.node_id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
 				featureData: nextPoint,

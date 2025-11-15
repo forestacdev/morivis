@@ -4,7 +4,8 @@
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-	import angleDataJson from './angle.json';
+	import photoAngleDataDictRaw from './photo_angles.json';
+	import type { PhotoAngleDict } from './utils';
 
 	import fs from './shaders/fragment.glsl?raw';
 	// import fs from './shaders/fragment_debug.glsl?raw';
@@ -24,6 +25,7 @@
 	import { isMobile } from '$routes/stores/ui';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
+	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
 
 	const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 	const OUT_CAMERA_FOV = 150;
@@ -153,16 +155,13 @@
 
 		// テクスチャ読み込みのPromiseを格納する配列
 		const texturePromises = nextPointData.map((pointData) => {
-			// TODO: IDの修正
-			const id = pointData.featureData.properties['ID'];
-			const angleData = angleDataJson.find((angle) => angle.id === id);
-
-			const webp =
-				PANORAMA_IMAGE_URL + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
+			const id = pointData.featureData.properties.photo_id;
+			const angleData = photoAngleDataDict[id];
+			const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
 
 			return {
 				id: id,
-				angle: angleData as { angleX: number; angleY: number; angleZ: number },
+				angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
 				featureData: pointData.featureData,
 				texture: webp
 			};
@@ -389,29 +388,29 @@
 			if (nextIndex === 0) {
 				uniforms.textureA.value = newTexture;
 				uniforms.rotationAnglesA.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			} else if (nextIndex === 1) {
 				uniforms.textureB.value = newTexture;
 				uniforms.rotationAnglesB.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			} else {
 				uniforms.textureC.value = newTexture;
 				uniforms.rotationAnglesC.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			}
 
-			angleX = angle.angleX;
-			angleY = angle.angleY;
-			angleZ = angle.angleZ;
+			angleX = angle.angle_x;
+			angleY = angle.angle_y;
+			angleZ = angle.angle_z;
 
 			// フェード開始時刻を設定
 			uniforms.fadeStartTime.value = performance.now() * 0.001;
@@ -434,7 +433,7 @@
 			// loadTextureWithFade
 			const pointsData = placePointData(nextPointData || []);
 			const { id, angle, featureData, texture } = pointsData[0];
-			currentSceneId = featureData.properties.id;
+			currentSceneId = featureData.properties.node_id;
 
 			// 初期角度を設定
 			loadTextureWithFade(pointsData[0]);
@@ -535,8 +534,9 @@
 			<div class="rotate-x-[60deg]">
 				<div bind:this={controlDiv} class="pointer-events-none origin-center">
 					{#if nextPointData}
-						{#each nextPointData as point, index}
-							{#if point.featureData.properties.id !== currentSceneId}
+						{#each nextPointData as point}
+							<!-- 自身のnode_idを除外 -->
+							{#if point.featureData.properties.node_id !== currentSceneId}
 								<button
 									onclick={() => {
 										setPoint(point.featureData);

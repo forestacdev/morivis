@@ -5,10 +5,10 @@ export interface StreetViewPoint {
 		coordinates: [number, number];
 	};
 	properties: {
-		id: number;
+		node_id: number;
+		photo_id: string;
 		ID: string;
 		name: string;
-		Name: string;
 		Date: string;
 	};
 }

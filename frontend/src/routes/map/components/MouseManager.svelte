@@ -22,13 +22,12 @@
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
-	import type { FeatureCollection } from 'geojson';
-	import type { StreetViewPoint } from '$routes/map/types/street-view';
+	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
-		streetViewPointData: FeatureCollection;
+		streetViewPointData: StreetViewPointGeoJson;
 		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showMarker: boolean;
 		clickedLayerIds: string[];
@@ -250,8 +249,9 @@
 
 				if (features.length > 0 && streetViewPointData.features.length > 0) {
 					const feature = features[0];
+
 					const point = streetViewPointData.features.find(
-						(f) => f.properties.id === feature.properties.id
+						(f) => f.properties.node_id === feature.properties.node_id
 					);
 
 					if (point) {

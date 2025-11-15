@@ -183,13 +183,19 @@ export class TextureCache {
 	}
 }
 
+interface AngleData {
+	angle_x: number;
+	angle_y: number;
+	angle_z: number;
+}
+
+export interface PhotoAngleDict {
+	[photo_id: string]: AngleData; // photo_id をキーにする
+}
+
 export interface CurrentPointData {
 	id: string;
-	angle: {
-		angleX: number;
-		angleY: number;
-		angleZ: number;
-	};
+	angle: AngleData;
 	featureData: NextPointData['featureData'];
 	texture: string;
 }
