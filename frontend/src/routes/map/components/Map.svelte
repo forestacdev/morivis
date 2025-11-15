@@ -56,7 +56,6 @@
 
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
-	import { streetViewSources } from '$routes/map/components/map_layer';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
@@ -307,7 +306,14 @@
 			},
 			sources: {
 				...terrainSources,
-				...streetViewSources,
+				street_view_node_sources: {
+					type: 'geojson',
+					data: streetViewPointData
+				},
+				street_view_link_sources: {
+					type: 'geojson',
+					data: streetViewLineData
+				},
 				...xyzTileSources,
 				...sources,
 				draw_source: {
