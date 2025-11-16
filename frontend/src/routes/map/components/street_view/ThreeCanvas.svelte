@@ -23,6 +23,7 @@
 	import type { buffarUniforms } from '$routes/utils';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
+	import { fade } from 'svelte/transition';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
 	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
@@ -428,14 +429,16 @@
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
-			// loadTextureWithFade
+			isLoading = true;
 			const pointsData = placePointData(nextPointData || []);
 			const { id, angle, featureData, texture } = pointsData[0];
 			currentSceneId = featureData.properties.node_id;
 
-			// 初期角度を設定
-			loadTextureWithFade(pointsData[0]);
-			loadTextures(pointsData.slice(1));
+			// 1番目の読み込み完了を待ってから2番目以降を読み込む
+			loadTextureWithFade(pointsData[0]).then(() => {
+				isLoading = false;
+				loadTextures(pointsData.slice(1));
+			});
 		}
 	});
 
@@ -488,7 +491,7 @@
 	{/if}
 	<canvas class="h-full w-full" bind:this={canvas}> </canvas>
 	{#if isLoading}
-		<div class="css-loading">
+		<div class="css-loading" transition:fade={{ duration: 150 }}>
 			<div class="css-spinner"></div>
 		</div>
 	{:else}
@@ -607,6 +610,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background-color: rgba(0, 0, 0, 0.5);
 	}
 
 	.css-spinner {
