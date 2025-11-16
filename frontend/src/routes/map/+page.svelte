@@ -57,6 +57,7 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import { checkPc } from './utils/ui';
+	import { page } from '$app/state';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -177,11 +178,7 @@
 			);
 			if (point) {
 				showStreetViewLayer.set(true);
-				setPoint(point as StreetViewPoint);
-
-				isStreetView.set(true);
-			} else {
-				console.warn(`Street view point with ID ${imageId} not found.`);
+				setPoint(Number(imageId));
 			}
 		}
 
@@ -197,9 +194,8 @@
 	});
 
 	// ストリートビューのデータの取得
-	const setPoint = async (point: StreetViewPoint) => {
-		if (!point) return;
-		const pointId = point.properties.node_id;
+	const setPoint = (nodeId: number) => {
+		const pointId = nodeId;
 
 		if (!pointId) {
 			console.warn('Point ID is not defined');
@@ -207,6 +203,18 @@
 		}
 
 		const linkPoints = nodeConnectionsJson[pointId] || [];
+
+		const point = streetViewPointData.features.find(
+			(point) => point.properties.node_id === pointId
+		);
+
+		if (!point) {
+			console.warn(`Street view point with ID ${pointId} not found.`);
+			return;
+		}
+
+		streetViewPoint = point as StreetViewPoint;
+		isStreetView.set(true);
 
 		const nextPoints = [pointId, ...linkPoints]
 			.map((id) => streetViewPointData.features.find((point) => point.properties.node_id === id))
@@ -233,6 +241,8 @@
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
+
+		isInitialStreetViewEntry = true;
 	};
 
 	// レイヤーエントリーをリセット
@@ -358,6 +368,17 @@
 		layerEntries = newLayerEntries;
 	});
 
+	const streetViewNodeId = $derived(page.url.searchParams.get('imageId'));
+
+	let currentStreetViewNodeId: string | null = null;
+	// URLパラメータの変更を監視
+	$effect(() => {
+		if (streetViewNodeId === currentStreetViewNodeId) return;
+		currentStreetViewNodeId = streetViewNodeId;
+		if (!isInitialStreetViewEntry) return;
+		setPoint(Number(streetViewNodeId));
+	});
+
 	onDestroy(() => {
 		// コンポーネントが破棄されるときに、スト
 		isInitialized = false;
@@ -436,7 +457,6 @@
 					{streetViewPointData}
 					{streetViewPoint}
 					{showMapCanvas}
-					{setPoint}
 				/>
 			</div>
 			<!-- 右側余白 -->
@@ -486,7 +506,6 @@
 			{showThreeCanvas}
 			bind:cameraBearing
 			bind:showAngleMarker
-			{setPoint}
 		/>
 
 		<MobileFooter {showDataEntry} {featureMenuData} />

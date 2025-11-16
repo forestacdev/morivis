@@ -82,7 +82,6 @@
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
-		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
 	}
 
 	let {
@@ -106,8 +105,7 @@
 		demEntries,
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
-		selectedEpsgCode,
-		setPoint
+		selectedEpsgCode
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -673,7 +671,6 @@
 		bind:clickedLayerIds
 		bind:cameraBearing
 		{streetViewPointData}
-		{setPoint}
 		{layerEntries}
 		{toggleTooltip}
 	/>

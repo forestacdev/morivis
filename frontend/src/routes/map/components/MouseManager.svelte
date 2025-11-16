@@ -27,11 +27,11 @@
 	import turfBearing from '@turf/bearing';
 	import turfNearestPoint from '@turf/nearest-point';
 	import { point as turfPoint } from '@turf/helpers';
+	import { setStreetViewParams } from '../utils/params';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
 		streetViewPointData: StreetViewPointGeoJson;
-		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showMarker: boolean;
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
@@ -47,7 +47,7 @@
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		streetViewPointData,
-		setPoint,
+
 		layerEntries,
 		showDataEntry,
 		toggleTooltip,
@@ -142,7 +142,7 @@
 		}
 	};
 
-	mapStore.onClick((e: MapMouseEvent) => {
+	mapStore.onClick(async (e: MapMouseEvent) => {
 		try {
 			if (import.meta.env.MODE === 'development') {
 				const features = mapStore.queryRenderedFeatures(e.point);
@@ -254,14 +254,9 @@
 
 				if (features.length > 0 && streetViewPointData.features.length > 0) {
 					const feature = features[0];
-					const nodeId = Number(feature.properties.node_id);
+					const nodeId = feature.properties.node_id;
 
-					const point = streetViewPointData.features.find((f) => f.properties.node_id === nodeId);
-
-					if (point) {
-						setPoint(point as StreetViewPoint);
-						isStreetView.set(true);
-					}
+					setStreetViewParams(nodeId);
 				}
 
 				return;
@@ -301,31 +296,24 @@
 						const isFirst = closestPoint[0] === first[0] && closestPoint[1] === first[1];
 						const isLast = closestPoint[0] === last[0] && closestPoint[1] === last[1];
 
-						let id;
+						let nodeId;
 
 						if (isFirst) {
 							// 始点
-							id = feature.properties.source;
+							nodeId = feature.properties.source;
 						} else if (isLast) {
 							// 終点
-							id = feature.properties.target;
+							nodeId = feature.properties.target;
 						} else {
 							// 中間点の場合は始点
-							id = feature.properties.source;
+							nodeId = feature.properties.source;
 						}
 
 						const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
 
 						cameraBearing = bearing;
 
-						const point = streetViewPointData.features.find(
-							(f) => f.properties.node_id === Number(id) // 文字列→数値
-						);
-
-						if (point) {
-							setPoint(point as StreetViewPoint);
-							isStreetView.set(true);
-						}
+						setStreetViewParams(nodeId);
 					}
 
 					return;

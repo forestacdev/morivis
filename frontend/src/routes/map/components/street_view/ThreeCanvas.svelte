@@ -41,7 +41,6 @@
 		streetViewPoint: StreetViewPoint | null;
 		nextPointData: NextPointData[] | null;
 		cameraBearing: number;
-		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showThreeCanvas: boolean;
 		showAngleMarker: boolean; // 角度マーカーを表示するかどうか
 	}
@@ -50,8 +49,6 @@
 		streetViewPoint,
 		nextPointData,
 		cameraBearing = $bindable(),
-
-		setPoint,
 		showThreeCanvas,
 		showAngleMarker = $bindable()
 	}: Props = $props();
@@ -540,7 +537,7 @@
 							{#if point.featureData.properties.node_id !== currentSceneId}
 								<button
 									onclick={() => {
-										setPoint(point.featureData);
+										setStreetViewParams(point.featureData.properties.node_id);
 									}}
 									class="css-arrow"
 									style="--angle: {point.bearing}deg; --distance: {!$isMobile ? '175' : '120'}px;"
