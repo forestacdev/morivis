@@ -89,29 +89,42 @@
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
 
+	// 描画データ
 	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
 		features: []
-	}); // 描画データ
+	});
 
 	// ストリートビューのデータ
+	let streetViewPoint = $state<StreetViewPoint | null>(null);
 	let nextPointData = $state<NextPointData[] | null>(null);
 
-	type NodeConnections = Record<string, string[]>;
-	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
-
-	let streetViewPoint = $state<StreetViewPoint | null>(null);
+	// ストリートビューのpointデータ
 	let streetViewPointData = $state.raw<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []
 	});
+	// ストリートビューのlineデータ
 	let streetViewLineData = $state.raw<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
+
+	// ノード接続データ
+	type NodeConnections = Record<string, string[]>;
+	let nodeConnectionsJson = $state<NodeConnections>({});
+
+	// ストリートビューのカメラの向き
 	let cameraBearing = $state<number>(0);
+
+	// 起動時のストリートビュー判定
+	let isInitialStreetViewEntry = $state<boolean>(false);
+
+	// canvasの表示制御
 	let showMapCanvas = $state<boolean>(true);
 	let showThreeCanvas = $state<boolean>(false);
+
+	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 
 	// 選択マーカー
@@ -171,6 +184,8 @@
 				console.warn(`Street view point with ID ${imageId} not found.`);
 			}
 		}
+
+		isInitialStreetViewEntry = true;
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
@@ -254,20 +269,23 @@
 		);
 
 		if (value) {
-			mapStore.setCamera(pointLngLat);
-			mapStore.easeTo({
-				center: streetViewPoint.geometry.coordinates,
-				zoom: 20,
-				duration: 750,
-				bearing: cameraBearing,
-				pitch: 65
-			});
+			// 初回起動時はアニメーションをスキップ
+			if (isInitialStreetViewEntry) {
+				mapStore.setCamera(pointLngLat);
+				mapStore.easeTo({
+					center: streetViewPoint.geometry.coordinates,
+					zoom: 20,
+					duration: 750,
+					bearing: cameraBearing,
+					pitch: 65
+				});
 
-			await delay(750);
+				await delay(750);
+			}
+
 			showMapCanvas = false;
 			showThreeCanvas = true;
-
-			await delay(500);
+			if (isInitialStreetViewEntry) await delay(500);
 
 			mapStore.setBearing(0);
 			mapStore.setPitch(0);
