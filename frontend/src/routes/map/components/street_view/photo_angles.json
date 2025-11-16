@@ -135,9 +135,9 @@
 		"angle_z": 0.0
 	},
 	"R0011195": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 60.12,
-		"angle_z": 0.0
+		"angle_z": 6.52
 	},
 	"R0011181": {
 		"angle_x": 0.0,
@@ -300,9 +300,9 @@
 		"angle_z": 0.0
 	},
 	"R0011194": {
-		"angle_x": 0.0,
+		"angle_x": 2.38,
 		"angle_y": 62.28,
-		"angle_z": 0.0
+		"angle_z": 9.25
 	},
 	"R0010249": {
 		"angle_x": 7.92,
@@ -1040,9 +1040,9 @@
 		"angle_z": 0.0
 	},
 	"R0011193": {
-		"angle_x": 0.0,
-		"angle_y": 70.56,
-		"angle_z": 0.0
+		"angle_x": 0,
+		"angle_y": 63.7,
+		"angle_z": 8.86
 	},
 	"R0011420": {
 		"angle_x": 0,
@@ -3685,9 +3685,9 @@
 		"angle_z": 0
 	},
 	"R0010960": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 70.2,
-		"angle_z": 0.0
+		"angle_z": 6.64
 	},
 	"R0010784": {
 		"angle_x": 0,
@@ -4930,14 +4930,14 @@
 		"angle_z": 0
 	},
 	"R0010958": {
-		"angle_x": 3.96,
-		"angle_y": 42.48,
-		"angle_z": 0
+		"angle_x": 359.59,
+		"angle_y": 43.02,
+		"angle_z": 6.47
 	},
 	"R0010959": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 68.76,
-		"angle_z": 0.0
+		"angle_z": 9.35
 	},
 	"R0010781": {
 		"angle_x": 0,
