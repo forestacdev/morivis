@@ -88,7 +88,7 @@
 	};
 </script>
 
-<div class="absolute right-2 top-2 w-[400px] bg-black/50 p-2">
+<div class="top-18 absolute right-2 w-[400px] bg-black/50 p-2">
 	<div class="flex flex-col gap-2">
 		<RangeSlider label="Angle X" bind:value={angleX} min={0} max={360} step={0.01} />
 		<RangeSlider label="Angle Y" bind:value={angleY} min={0} max={360} step={0.01} />
