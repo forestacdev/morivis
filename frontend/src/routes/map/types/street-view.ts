@@ -22,6 +22,25 @@ export interface StreetViewPointGeoJson {
 	features: StreetViewPoint[];
 }
 
+interface AngleData {
+	angle_x: number;
+	angle_y: number;
+	angle_z: number;
+}
+
+export interface PhotoAngleDict {
+	[photo_id: string]: AngleData; // photo_id をキーにする
+}
+
+// 現在のポイントデータの型定義
+export interface CurrentPointData {
+	node_id: number;
+	photo_id: string;
+	angle: AngleData;
+	featureData: NextPointData['featureData'];
+	texture: string;
+}
+
 // TODO: indexDataの型定義を追加
 export interface StreetViewNodeData {
 	lng: number;

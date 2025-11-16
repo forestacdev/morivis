@@ -5,7 +5,6 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 	import photoAngleDataDictRaw from './photo_angles.json';
-	import type { PhotoAngleDict } from './utils';
 
 	import fs from './shaders/fragment.glsl?raw';
 	// import fs from './shaders/fragment_debug.glsl?raw';
@@ -13,7 +12,7 @@
 	import DebugControl from './DebugControl.svelte';
 
 	import { degreesToRadians, TextureCache } from './utils';
-	import type { CurrentPointData } from './utils';
+	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
 	import { Tween } from 'svelte/motion';
@@ -66,6 +65,7 @@
 
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
+	let isLoadedNodeIdList = [] as number[]; // 読み込み完了したノードIDのリスト
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
@@ -153,12 +153,13 @@
 
 		// テクスチャ読み込みのPromiseを格納する配列
 		const texturePromises = nextPointData.map((pointData) => {
-			const id = pointData.featureData.properties.photo_id;
-			const angleData = photoAngleDataDict[id];
+			const photo_id = pointData.featureData.properties.photo_id;
+			const angleData = photoAngleDataDict[photo_id];
 			const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
 
 			return {
-				id: id,
+				node_id: pointData.featureData.properties.node_id,
+				photo_id: photo_id,
 				angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
 				featureData: pointData.featureData,
 				texture: webp
@@ -373,7 +374,7 @@
 
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
-			const { id, angle, featureData, texture } = pointsData;
+			const { angle, featureData, texture, photo_id, node_id } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
 
 			// 次のテクスチャスロットを決定
@@ -424,18 +425,26 @@
 	const loadTextures = async (pointsData: CurrentPointData[]) => {
 		if (!pointsData || pointsData.length === 0) return;
 
-		textureCache.preloadTextures(pointsData.map((point) => point.texture));
+		textureCache.preloadTextures(pointsData.map((point) => point.texture)).then(() => {
+			pointsData.forEach(async (pointData, index) => {
+				// 読み込み完了リストに追加
+				isLoadedNodeIdList = [...isLoadedNodeIdList, pointData.node_id];
+			});
+		});
 	};
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
-			isLoading = true;
+			if (!isLoadedNodeIdList.includes(nextPointData[0].featureData.properties.node_id)) {
+				isLoading = true;
+			}
 			const pointsData = placePointData(nextPointData || []);
-			const { id, angle, featureData, texture } = pointsData[0];
+			const { node_id, angle, featureData, texture } = pointsData[0];
 			currentSceneId = featureData.properties.node_id;
 
 			// 1番目の読み込み完了を待ってから2番目以降を読み込む
 			loadTextureWithFade(pointsData[0]).then(() => {
+				isLoadedNodeIdList = [...isLoadedNodeIdList, node_id];
 				isLoading = false;
 				loadTextures(pointsData.slice(1));
 			});
