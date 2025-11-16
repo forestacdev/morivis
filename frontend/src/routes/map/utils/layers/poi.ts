@@ -39,7 +39,7 @@ export const poiLayers = [
 		minzoom: 11,
 		layout: {
 			'icon-image': 'poi-icon', // アイコンの画像名
-			'icon-size': 4, // アイコンのサイズ
+			'icon-size': 3, // アイコンのサイズ
 			// 'symbol-sort-key': [
 			// 	'case',
 			// 	// 特定の1つのfeature_idを最優先
