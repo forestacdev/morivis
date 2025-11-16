@@ -22,7 +22,7 @@
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { isMobile } from '$routes/stores/ui';
+	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
 	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
@@ -509,6 +509,12 @@
 					<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
 				</div>
 			</div>
+
+			<button
+				class="bg-main hover:text-accent absolute right-4 top-3 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg p-2 text-white duration-100 max-lg:hidden"
+				onclick={() => showOtherMenu.set(true)}
+				><Icon icon="ic:round-menu" class="h-8 w-8" />
+			</button>
 		{/if}
 
 		{#if $isMobile}
