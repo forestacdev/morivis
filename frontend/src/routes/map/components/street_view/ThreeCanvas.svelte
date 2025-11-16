@@ -65,7 +65,7 @@
 
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
-	let isLoadedNodeIdList = [] as number[]; // 読み込み完了したノードIDのリスト
+	let isLoadedNodeIdList = [] as number[]; // パノラマが画像の読み込みが完了したノードIDのリスト
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
