@@ -168,17 +168,16 @@
 			(res) => res.json()
 		);
 
-		// TODO ストリートビューのパラメータを取得
+		// ストリートビューのパラメータを取得
+		const nodeId = getStreetViewParams();
 
-		const imageId = getStreetViewParams();
-
-		if (imageId) {
+		if (nodeId) {
 			const point = streetViewPointData.features.find(
-				(point) => point.properties.node_id === Number(imageId)
+				(point) => point.properties.node_id === Number(nodeId)
 			);
 			if (point) {
 				showStreetViewLayer.set(true);
-				setPoint(Number(imageId));
+				setPoint(Number(nodeId));
 			}
 		}
 
@@ -280,18 +279,17 @@
 
 		if (value) {
 			// 初回起動時はアニメーションをスキップ
-			if (isInitialStreetViewEntry) {
-				mapStore.setCamera(pointLngLat);
-				mapStore.easeTo({
-					center: streetViewPoint.geometry.coordinates,
-					zoom: 20,
-					duration: 750,
-					bearing: cameraBearing,
-					pitch: 65
-				});
 
-				await delay(750);
-			}
+			mapStore.setCamera(pointLngLat);
+			mapStore.easeTo({
+				center: streetViewPoint.geometry.coordinates,
+				zoom: 20,
+				duration: isInitialStreetViewEntry ? 750 : 0,
+				bearing: cameraBearing,
+				pitch: isInitialStreetViewEntry ? 65 : 0
+			});
+
+			await delay(isInitialStreetViewEntry ? 750 : 0);
 
 			showMapCanvas = false;
 			showThreeCanvas = true;
@@ -368,7 +366,7 @@
 		layerEntries = newLayerEntries;
 	});
 
-	const streetViewNodeId = $derived(page.url.searchParams.get('imageId'));
+	const streetViewNodeId = $derived(page.url.searchParams.get('sv'));
 
 	let currentStreetViewNodeId: string | null = null;
 	// URLパラメータの変更を監視
