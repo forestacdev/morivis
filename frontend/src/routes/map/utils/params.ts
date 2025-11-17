@@ -133,7 +133,7 @@ export const setMapParams = (option: MapPosition) => {
 export const setStreetViewParams = (nodeId: number) => {
 	const params = get(queryParameters({}));
 	params.sv = nodeId.toString();
-	queryParameters({}, { pushHistory: true }).set(params);
+	queryParameters({}, { pushHistory: false }).set(params);
 };
 
 /** streetview用のURLパラメータの取得 */

@@ -301,6 +301,7 @@
 			$mapMode = 'small';
 			isBlocked.set(false);
 		} else {
+			// ストリートビュー終了時
 			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
@@ -378,12 +379,12 @@
 	});
 
 	onDestroy(() => {
-		// コンポーネントが破棄されるときに、スト
+		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
 	});
 </script>
 
-{#if isInitialized}
+{#if isInitialized && isInitialStreetViewEntry}
 	<div class="fixed flex h-dvh w-full flex-col">
 		<!-- <HeaderMenu
 			{resetlayerEntries}
