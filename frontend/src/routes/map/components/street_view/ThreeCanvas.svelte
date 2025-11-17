@@ -66,6 +66,7 @@
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
 	let isLoadedNodeIdList = [] as number[]; // パノラマが画像の読み込みが完了したノードIDのリスト
+	let isExternalUpdate = false; // 外部からの更新フラグ
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
@@ -364,6 +365,25 @@
 			renderer.render(scene, camera);
 		};
 		animate();
+	});
+
+	// 外部からのcameraBearing変更を監視してカメラに反映
+	$effect(() => {
+		if (cameraBearing !== undefined && camera && !isExternalUpdate) {
+			isExternalUpdate = true;
+
+			// cameraBearingからカメラの角度を計算
+			const targetDegrees = (cameraBearing - 180 + 360) % 360;
+			const targetRadians = THREE.MathUtils.degToRad(targetDegrees);
+
+			camera.rotation.y = targetRadians;
+			orbitControls.update();
+
+			// 次のフレームでフラグをリセット
+			requestAnimationFrame(() => {
+				isExternalUpdate = false;
+			});
+		}
 	});
 
 	isStreetView.subscribe(async (value) => {

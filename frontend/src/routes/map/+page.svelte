@@ -228,20 +228,20 @@
 			point.geometry.coordinates[1]
 		);
 
-		if ($isStreetView) {
-			mapStore.setCamera(pointLngLat);
-			mapStore.panTo(point.geometry.coordinates, {
-				duration: 1000,
-				animate: true
-			});
-		}
-
 		angleMarkerLngLat = pointLngLat;
 
 		nextPointData = nextPoints;
 		streetViewPoint = nextPoints[0]?.featureData || point;
 
 		isInitialStreetViewEntry = true;
+
+		if ($mapMode === 'small') {
+			mapStore.setCamera(pointLngLat);
+			mapStore.panTo(point.geometry.coordinates, {
+				duration: 1000,
+				animate: true
+			});
+		}
 	};
 
 	// レイヤーエントリーをリセット

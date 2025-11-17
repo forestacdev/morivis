@@ -144,7 +144,7 @@
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
 		try {
-			if (import.meta.env.MODE === 'development') {
+			if (import.meta.env.DEV) {
 				const features = mapStore.queryRenderedFeatures(e.point);
 
 				if (features.length === 0) {
