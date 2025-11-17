@@ -117,6 +117,7 @@
 
 	// ストリートビューのカメラの向き
 	let cameraBearing = $state<number>(0);
+	let isExternalCameraUpdate = $state<boolean>(false); // 外部からのカメラ更新かどうか
 
 	// 起動時のストリートビュー判定
 	let isInitialStreetViewEntry = $state<boolean>(false);
@@ -285,7 +286,7 @@
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: isInitialStreetViewEntry ? 750 : 0,
-				bearing: cameraBearing,
+				bearing: -cameraBearing + 180,
 				pitch: isInitialStreetViewEntry ? 65 : 0
 			});
 
@@ -306,7 +307,7 @@
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
 				duration: 0,
-				bearing: cameraBearing,
+				bearing: -cameraBearing + 180,
 				pitch: 65
 			});
 
@@ -450,6 +451,7 @@
 					bind:drawGeojsonData
 					bind:showZoneForm
 					bind:focusBbox
+					bind:isExternalCameraUpdate
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}
@@ -505,6 +507,7 @@
 			{showThreeCanvas}
 			bind:cameraBearing
 			bind:showAngleMarker
+			bind:isExternalCameraUpdate
 		/>
 
 		<MobileFooter {showDataEntry} {featureMenuData} />

@@ -39,6 +39,7 @@
 		showDataEntry: GeoDataEntry | null;
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
+		isExternalCameraUpdate: boolean;
 	}
 
 	let {
@@ -47,11 +48,11 @@
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		streetViewPointData,
-
 		layerEntries,
 		showDataEntry,
 		toggleTooltip,
-		cameraBearing = $bindable()
+		cameraBearing = $bindable(),
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -309,9 +310,11 @@
 							nodeId = feature.properties.source;
 						}
 
-						const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
+						// const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
 
-						cameraBearing = bearing;
+						// isExternalCameraUpdate = true;
+
+						// cameraBearing = bearing;
 
 						setStreetViewParams(nodeId);
 					}

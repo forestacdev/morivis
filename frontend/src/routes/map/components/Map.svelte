@@ -82,6 +82,7 @@
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
+		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 	}
 
 	let {
@@ -105,7 +106,8 @@
 		demEntries,
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
-		selectedEpsgCode
+		selectedEpsgCode,
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -670,6 +672,7 @@
 		bind:showMarker={showSelectionMarker}
 		bind:clickedLayerIds
 		bind:cameraBearing
+		bind:isExternalCameraUpdate
 		{streetViewPointData}
 		{layerEntries}
 		{toggleTooltip}

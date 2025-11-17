@@ -43,6 +43,7 @@
 		cameraBearing: number;
 		showThreeCanvas: boolean;
 		showAngleMarker: boolean; // 角度マーカーを表示するかどうか
+		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 	}
 
 	let {
@@ -50,7 +51,8 @@
 		nextPointData,
 		cameraBearing = $bindable(),
 		showThreeCanvas,
-		showAngleMarker = $bindable()
+		showAngleMarker = $bindable(),
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
@@ -66,7 +68,7 @@
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
 	let isLoadedNodeIdList = [] as number[]; // パノラマが画像の読み込みが完了したノードIDのリスト
-	let isExternalUpdate = false; // 外部からの更新フラグ
+
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
@@ -210,6 +212,7 @@
 		bufferScene = new THREE.Scene();
 
 		// camera.position.set(0, 0, 0);
+
 		camera.rotation.order = 'YXZ';
 
 		// カメラの設定
@@ -219,6 +222,13 @@
 		// パソコン閲覧時マウスドラッグで視点操作する
 		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
+
+		// -Z方向を向くようにターゲットを設定
+		orbitControls.target.set(
+			camera.position.x,
+			camera.position.y,
+			camera.position.z - 0.01 // ← +0.01 から -0.01 に変更
+		);
 
 		// 視点操作のイージングの値
 		orbitControls.dampingFactor = 0.1;
@@ -345,7 +355,10 @@
 			if (!controlDiv) return;
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 
-			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
+			// 外部更新中でない場合のみcameraBearingを更新;
+			if (!isExternalCameraUpdate) {
+				cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
+			}
 
 			// // 度をラジアンに変換してシェーダーに渡す
 			let rotationAngles = new THREE.Vector3(
@@ -369,23 +382,26 @@
 
 	// 外部からのcameraBearing変更を監視してカメラに反映
 	$effect(() => {
-		if (cameraBearing !== undefined && camera && !isExternalUpdate) {
-			isExternalUpdate = true;
-
-			// cameraBearingからカメラの角度を計算
+		if (cameraBearing !== undefined && camera && isExternalCameraUpdate) {
 			const targetDegrees = (cameraBearing - 180 + 360) % 360;
 			const targetRadians = THREE.MathUtils.degToRad(targetDegrees);
 
 			camera.rotation.y = targetRadians;
+
+			// ターゲット位置も更新
+			const distance = 0.01;
+			orbitControls.target.set(
+				camera.position.x + Math.sin(targetRadians) * distance,
+				camera.position.y,
+				camera.position.z + Math.cos(targetRadians) * distance
+			);
+
+			// orbitControls.enabled = wasEnabled;
 			orbitControls.update();
 
-			// 次のフレームでフラグをリセット
-			requestAnimationFrame(() => {
-				isExternalUpdate = false;
-			});
+			isExternalCameraUpdate = false;
 		}
 	});
-
 	isStreetView.subscribe(async (value) => {
 		onResize();
 	});
@@ -404,7 +420,7 @@
 			uniforms.fromTarget.value = currentTextureIndex;
 			uniforms.toTarget.value = nextIndex;
 
-			// 新しいテクスチャと角度を次のスロットに設定
+			// テクスチャの回転角度を設定（カメラの向きには影響させない）
 			if (nextIndex === 0) {
 				uniforms.textureA.value = newTexture;
 				uniforms.rotationAnglesA.value = new THREE.Vector3(
