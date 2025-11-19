@@ -22,20 +22,24 @@
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
-	import type { FeatureCollection } from 'geojson';
-	import type { StreetViewPoint } from '$routes/map/types/street-view';
+	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import turfBearing from '@turf/bearing';
+	import turfNearestPoint from '@turf/nearest-point';
+	import { point as turfPoint } from '@turf/helpers';
+	import { setStreetViewParams } from '../utils/params';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
-		streetViewPointData: FeatureCollection;
-		setPoint: (streetViewPoint: StreetViewPoint) => void;
+		streetViewPointData: StreetViewPointGeoJson;
 		showMarker: boolean;
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
+		cameraBearing: number;
+		isExternalCameraUpdate: boolean;
 	}
 
 	let {
@@ -44,10 +48,11 @@
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		streetViewPointData,
-		setPoint,
 		layerEntries,
 		showDataEntry,
-		toggleTooltip
+		toggleTooltip,
+		cameraBearing = $bindable(),
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -138,9 +143,9 @@
 		}
 	};
 
-	mapStore.onClick((e: MapMouseEvent) => {
+	mapStore.onClick(async (e: MapMouseEvent) => {
 		try {
-			if (import.meta.env.MODE === 'development') {
+			if (import.meta.env.DEV) {
 				const features = mapStore.queryRenderedFeatures(e.point);
 
 				if (features.length === 0) {
@@ -250,30 +255,73 @@
 
 				if (features.length > 0 && streetViewPointData.features.length > 0) {
 					const feature = features[0];
-					const point = streetViewPointData.features.find(
-						(f) => f.properties.id === feature.properties.id
-					);
+					const nodeId = feature.properties.node_id;
 
-					if (point) {
-						setPoint(point as StreetViewPoint);
-						isStreetView.set(true);
-					}
+					setStreetViewParams(nodeId);
 				}
-				// TODO: ストリートビュー用のクリックイベントを実装する
-				// mapStore.onClick((e) => {
-				// 	if (!e || $mapMode === 'edit') return;
-				// 	if (streetViewPointData.features.length > 0) {
-				// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-				// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-				// 		if (distance < 100) {
-				// 			// streetViewPoint = point;
-				// 			setPoint(point as StreetViewPoint);
-				// 		}
-				// 	}
-				// });
+
 				return;
 			}
 
+			// ストリートビューに切り返る
+			if (selectedVecterLayersId.includes('@street_view_line_layer')) {
+				const features = mapStore.queryRenderedFeatures(e.point, {
+					layers: ['@street_view_line_layer']
+				});
+
+				if (features.length) {
+					const feature = features[0];
+
+					// LineString の座標一覧
+					const lineCoordinates =
+						feature.geometry.type === 'LineString' ? feature.geometry.coordinates : [];
+
+					let closestPoint: [number, number] | null = null;
+					let minDistance = Infinity;
+
+					for (const coord of lineCoordinates) {
+						const distance = Math.sqrt(
+							Math.pow(coord[0] - e.lngLat.lng, 2) + Math.pow(coord[1] - e.lngLat.lat, 2)
+						);
+						if (distance < minDistance) {
+							minDistance = distance;
+							closestPoint = coord as [number, number];
+						}
+					}
+
+					// 始点/終点の判定
+					if (closestPoint) {
+						const first = lineCoordinates[0];
+						const last = lineCoordinates[lineCoordinates.length - 1];
+
+						const isFirst = closestPoint[0] === first[0] && closestPoint[1] === first[1];
+						const isLast = closestPoint[0] === last[0] && closestPoint[1] === last[1];
+
+						let nodeId;
+
+						if (isFirst) {
+							// 始点
+							nodeId = feature.properties.source;
+						} else if (isLast) {
+							// 終点
+							nodeId = feature.properties.target;
+						} else {
+							// 中間点の場合は始点
+							nodeId = feature.properties.source;
+						}
+
+						// const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
+
+						// isExternalCameraUpdate = true;
+
+						// cameraBearing = bearing;
+
+						setStreetViewParams(nodeId);
+					}
+
+					return;
+				}
+			}
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 

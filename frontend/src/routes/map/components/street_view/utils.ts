@@ -182,14 +182,3 @@ export class TextureCache {
 		this.loadingPromises.clear();
 	}
 }
-
-export interface CurrentPointData {
-	id: string;
-	angle: {
-		angleX: number;
-		angleY: number;
-		angleZ: number;
-	};
-	featureData: NextPointData['featureData'];
-	texture: string;
-}

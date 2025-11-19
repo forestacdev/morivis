@@ -4,12 +4,12 @@ export const streetViewLineLayer: LineLayerSpecification = {
 	// ストリートビューのライン
 	id: '@street_view_line_layer',
 	type: 'line',
-	source: 'street_view_sources',
-	'source-layer': 'THETA360_line',
+	source: 'street_view_link_sources',
 	paint: {
 		'line-color': '#08fa00',
-		'line-width': 10,
-		'line-opacity': 0.5,
+		'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 15, 12, 18, 20, 22, 40],
+
+		'line-opacity': 0.6,
 		'line-blur': 0.5
 	},
 	layout: {
@@ -22,16 +22,11 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 	// ストリートビューのポイント
 	id: '@street_view_circle_layer',
 	type: 'circle',
-	source: 'street_view_sources',
-	'source-layer': 'THETA360',
+	source: 'street_view_node_sources',
+	filter: ['==', ['get', 'has_link'], false],
 	minzoom: 10,
 	paint: {
-		'circle-color': [
-			'case',
-			['boolean', ['feature-state', 'hover'], false],
-			'#00fad0', // ホバー中
-			'#08fa00' // 通常時
-		],
+		'circle-color': '#08fa00',
 		'circle-radius': [
 			'interpolate',
 			['linear'],
@@ -41,10 +36,10 @@ export const streetViewCircleLayer: CircleLayerSpecification = {
 			15,
 			12 // At zoom level 15, radius is 12
 		],
-		'circle-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.8, 0.6],
+		'circle-opacity': 0.6,
 		'circle-stroke-width': 2,
 		'circle-stroke-color': '#ffffff',
-		'circle-stroke-opacity': 0.5,
+		'circle-stroke-opacity': 0.6,
 		'circle-blur': 0.3
 	}
 };

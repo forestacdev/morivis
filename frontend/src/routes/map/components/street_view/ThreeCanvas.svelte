@@ -4,7 +4,7 @@
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-	import angleDataJson from './angle.json';
+	import photoAngleDataDictRaw from './photo_angles.json';
 
 	import fs from './shaders/fragment.glsl?raw';
 	// import fs from './shaders/fragment_debug.glsl?raw';
@@ -12,7 +12,7 @@
 	import DebugControl from './DebugControl.svelte';
 
 	import { degreesToRadians, TextureCache } from './utils';
-	import type { CurrentPointData } from './utils';
+	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
 	import { Tween } from 'svelte/motion';
@@ -21,9 +21,11 @@
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import type { buffarUniforms } from '$routes/utils';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { isMobile } from '$routes/stores/ui';
+	import { isMobile, showOtherMenu } from '$routes/stores/ui';
+	import { fade } from 'svelte/transition';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
+	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
 
 	const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 	const OUT_CAMERA_FOV = 150;
@@ -39,19 +41,18 @@
 		streetViewPoint: StreetViewPoint | null;
 		nextPointData: NextPointData[] | null;
 		cameraBearing: number;
-		setPoint: (streetViewPoint: StreetViewPoint) => void;
 		showThreeCanvas: boolean;
 		showAngleMarker: boolean; // 角度マーカーを表示するかどうか
+		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 	}
 
 	let {
 		streetViewPoint,
 		nextPointData,
 		cameraBearing = $bindable(),
-
-		setPoint,
 		showThreeCanvas,
-		showAngleMarker = $bindable()
+		showAngleMarker = $bindable(),
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
@@ -66,6 +67,8 @@
 
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
+	let isLoadedNodeIdList = [] as number[]; // パノラマが画像の読み込みが完了したノードIDのリスト
+
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
 
@@ -153,16 +156,14 @@
 
 		// テクスチャ読み込みのPromiseを格納する配列
 		const texturePromises = nextPointData.map((pointData) => {
-			// TODO: IDの修正
-			const id = pointData.featureData.properties['ID'];
-			const angleData = angleDataJson.find((angle) => angle.id === id);
-
-			const webp =
-				PANORAMA_IMAGE_URL + pointData.featureData.properties['Name'].replace('.JPG', '.webp');
+			const photo_id = pointData.featureData.properties.photo_id;
+			const angleData = photoAngleDataDict[photo_id];
+			const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
 
 			return {
-				id: id,
-				angle: angleData as { angleX: number; angleY: number; angleZ: number },
+				node_id: pointData.featureData.properties.node_id,
+				photo_id: photo_id,
+				angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
 				featureData: pointData.featureData,
 				texture: webp
 			};
@@ -211,6 +212,7 @@
 		bufferScene = new THREE.Scene();
 
 		// camera.position.set(0, 0, 0);
+
 		camera.rotation.order = 'YXZ';
 
 		// カメラの設定
@@ -220,6 +222,13 @@
 		// パソコン閲覧時マウスドラッグで視点操作する
 		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
+
+		// -Z方向を向くようにターゲットを設定
+		orbitControls.target.set(
+			camera.position.x,
+			camera.position.y,
+			camera.position.z - 0.01 // ← +0.01 から -0.01 に変更
+		);
 
 		// 視点操作のイージングの値
 		orbitControls.dampingFactor = 0.1;
@@ -332,6 +341,7 @@
 		// アニメーション
 
 		const animate = () => {
+			if (!isStreetView) return;
 			requestAnimationFrame(animate);
 			// if (!isRendering) return;
 
@@ -345,7 +355,10 @@
 			if (!controlDiv) return;
 			controlDiv.style.transform = `rotateZ(${degrees}deg)`;
 
-			cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
+			// 外部更新中でない場合のみcameraBearingを更新;
+			if (!isExternalCameraUpdate) {
+				cameraBearing = (degrees + 180) % 360; // 0〜360度の範囲に調整
+			}
 
 			// // 度をラジアンに変換してシェーダーに渡す
 			let rotationAngles = new THREE.Vector3(
@@ -367,6 +380,28 @@
 		animate();
 	});
 
+	// 外部からのcameraBearing変更を監視してカメラに反映
+	$effect(() => {
+		if (cameraBearing !== undefined && camera && isExternalCameraUpdate) {
+			const targetDegrees = (cameraBearing - 180 + 360) % 360;
+			const targetRadians = THREE.MathUtils.degToRad(targetDegrees);
+
+			camera.rotation.y = targetRadians;
+
+			// ターゲット位置も更新
+			const distance = 0.01;
+			orbitControls.target.set(
+				camera.position.x + Math.sin(targetRadians) * distance,
+				camera.position.y,
+				camera.position.z + Math.cos(targetRadians) * distance
+			);
+
+			// orbitControls.enabled = wasEnabled;
+			orbitControls.update();
+
+			isExternalCameraUpdate = false;
+		}
+	});
 	isStreetView.subscribe(async (value) => {
 		onResize();
 	});
@@ -375,7 +410,7 @@
 
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
-			const { id, angle, featureData, texture } = pointsData;
+			const { angle, featureData, texture, photo_id, node_id } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
 
 			// 次のテクスチャスロットを決定
@@ -385,33 +420,33 @@
 			uniforms.fromTarget.value = currentTextureIndex;
 			uniforms.toTarget.value = nextIndex;
 
-			// 新しいテクスチャと角度を次のスロットに設定
+			// テクスチャの回転角度を設定（カメラの向きには影響させない）
 			if (nextIndex === 0) {
 				uniforms.textureA.value = newTexture;
 				uniforms.rotationAnglesA.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			} else if (nextIndex === 1) {
 				uniforms.textureB.value = newTexture;
 				uniforms.rotationAnglesB.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			} else {
 				uniforms.textureC.value = newTexture;
 				uniforms.rotationAnglesC.value = new THREE.Vector3(
-					degreesToRadians(angle.angleX),
-					degreesToRadians(angle.angleY),
-					degreesToRadians(angle.angleZ)
+					degreesToRadians(angle.angle_x),
+					degreesToRadians(angle.angle_y),
+					degreesToRadians(angle.angle_z)
 				);
 			}
 
-			angleX = angle.angleX;
-			angleY = angle.angleY;
-			angleZ = angle.angleZ;
+			angleX = angle.angle_x;
+			angleY = angle.angle_y;
+			angleZ = angle.angle_z;
 
 			// フェード開始時刻を設定
 			uniforms.fadeStartTime.value = performance.now() * 0.001;
@@ -426,19 +461,29 @@
 	const loadTextures = async (pointsData: CurrentPointData[]) => {
 		if (!pointsData || pointsData.length === 0) return;
 
-		textureCache.preloadTextures(pointsData.map((point) => point.texture));
+		textureCache.preloadTextures(pointsData.map((point) => point.texture)).then(() => {
+			pointsData.forEach(async (pointData, index) => {
+				// 読み込み完了リストに追加
+				isLoadedNodeIdList = [...isLoadedNodeIdList, pointData.node_id];
+			});
+		});
 	};
 	// $effect(() => created360Mesh(streetViewPoint));
 	$effect(() => {
 		if (nextPointData) {
-			// loadTextureWithFade
+			if (!isLoadedNodeIdList.includes(nextPointData[0].featureData.properties.node_id)) {
+				isLoading = true;
+			}
 			const pointsData = placePointData(nextPointData || []);
-			const { id, angle, featureData, texture } = pointsData[0];
-			currentSceneId = featureData.properties.id;
+			const { node_id, angle, featureData, texture } = pointsData[0];
+			currentSceneId = featureData.properties.node_id;
 
-			// 初期角度を設定
-			loadTextureWithFade(pointsData[0]);
-			loadTextures(pointsData.slice(1));
+			// 1番目の読み込み完了を待ってから2番目以降を読み込む
+			loadTextureWithFade(pointsData[0]).then(() => {
+				isLoadedNodeIdList = [...isLoadedNodeIdList, node_id];
+				isLoading = false;
+				loadTextures(pointsData.slice(1));
+			});
 		}
 	});
 
@@ -491,7 +536,7 @@
 	{/if}
 	<canvas class="h-full w-full" bind:this={canvas}> </canvas>
 	{#if isLoading}
-		<div class="css-loading">
+		<div class="css-loading" transition:fade={{ duration: 150 }}>
 			<div class="css-spinner"></div>
 		</div>
 	{:else}
@@ -512,6 +557,12 @@
 					<span>撮影日:{streetViewPoint ? streetViewPoint.properties['Date'] : ''}</span>
 				</div>
 			</div>
+
+			<button
+				class="bg-main hover:text-accent absolute right-4 top-3 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg p-2 text-white duration-100 max-lg:hidden"
+				onclick={() => showOtherMenu.set(true)}
+				><Icon icon="ic:round-menu" class="h-8 w-8" />
+			</button>
 		{/if}
 
 		{#if $isMobile}
@@ -535,11 +586,12 @@
 			<div class="rotate-x-[60deg]">
 				<div bind:this={controlDiv} class="pointer-events-none origin-center">
 					{#if nextPointData}
-						{#each nextPointData as point, index}
-							{#if point.featureData.properties.id !== currentSceneId}
+						{#each nextPointData as point}
+							<!-- 自身のnode_idを除外 -->
+							{#if point.featureData.properties.node_id !== currentSceneId}
 								<button
 									onclick={() => {
-										setPoint(point.featureData);
+										setStreetViewParams(point.featureData.properties.node_id);
 									}}
 									class="css-arrow"
 									style="--angle: {point.bearing}deg; --distance: {!$isMobile ? '175' : '120'}px;"
@@ -603,6 +655,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background-color: rgba(0, 0, 0, 0.5);
 	}
 
 	.css-spinner {

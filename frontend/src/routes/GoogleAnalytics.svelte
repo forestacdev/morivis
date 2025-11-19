@@ -1,5 +1,4 @@
 <script lang="ts">
-	// TODO: 利用明記をどこかに追加する
 	import { browser } from '$app/environment';
 	export let id: string;
 

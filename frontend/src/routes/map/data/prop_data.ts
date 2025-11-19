@@ -285,6 +285,11 @@ export const propData: PropData = {
 		description: `小規模木材乾燥庫の計画`,
 		url: 'https://www.forest.ac.jp/facilities/self/shiori-jiriki2024/'
 	},
+	ziriki_25: {
+		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_25.webp`,
+		description: `チェーンソーの実習場の計画`,
+		url: 'https://www.forest.ac.jp/facilities/self/'
+	},
 	// other_point
 	// sinrinken: {
 	// 	// 岐阜県森林研究所

@@ -55,8 +55,7 @@
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
 
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
-	import type { StreetViewPoint } from '$routes/map/types/street-view';
-	import { streetViewSources } from '$routes/map/components/map_layer';
+	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
@@ -66,7 +65,7 @@
 		layerEntries: GeoDataEntry[];
 		tempLayerEntries: GeoDataEntry[];
 		streetViewLineData: FeatureCollection;
-		streetViewPointData: FeatureCollection;
+		streetViewPointData: StreetViewPointGeoJson;
 		drawGeojsonData: DrawGeojsonData;
 		demEntries: RasterEntry<RasterDemStyle>[]; // DEMデータのエントリー
 		streetViewPoint: any;
@@ -75,7 +74,7 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		showAngleMarker: boolean;
-		angleMarkerLngLat: LngLat | null;
+		angleMarkerLngLat: LngLat;
 		cameraBearing: number; // カメラの向き
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
@@ -83,7 +82,7 @@
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
-		setPoint: (point: StreetViewPoint) => void; // ストリートビューのポイントを設定する関数
+		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 	}
 
 	let {
@@ -108,7 +107,7 @@
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
-		setPoint
+		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -300,16 +299,21 @@
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
-			// sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
 			sprite: MAP_SPRITE_DATA_PATH,
 			glyphs: MAP_FONT_DATA_PATH,
-			// glyphs: MAP_FONT_DATA_PATH,
 			projection: {
 				type: checkPc() ? 'globe' : 'mercator'
 			},
 			sources: {
 				...terrainSources,
-				...streetViewSources,
+				street_view_node_sources: {
+					type: 'geojson',
+					data: streetViewPointData
+				},
+				street_view_link_sources: {
+					type: 'geojson',
+					data: streetViewLineData
+				},
 				...xyzTileSources,
 				...sources,
 				draw_source: {
@@ -645,8 +649,6 @@
 		{clickedLngLat}
 	/>
 </div>
-<!-- 右側余白 -->
-<!-- <div class="bg-main p-2 max-lg:hidden"></div> -->
 
 {#if maplibreMap}
 	<FileManager
@@ -669,8 +671,9 @@
 		bind:featureMenuData
 		bind:showMarker={showSelectionMarker}
 		bind:clickedLayerIds
+		bind:cameraBearing
+		bind:isExternalCameraUpdate
 		{streetViewPointData}
-		{setPoint}
 		{layerEntries}
 		{toggleTooltip}
 	/>
@@ -682,14 +685,12 @@
 		/>
 	{/key}
 
-	{#key angleMarkerLngLat}
-		<AngleMarker
-			map={maplibreMap}
-			bind:show={showAngleMarker}
-			bind:lngLat={angleMarkerLngLat}
-			bind:rotation={cameraBearing}
-		/>
-	{/key}
+	<AngleMarker
+		map={maplibreMap}
+		bind:show={showAngleMarker}
+		bind:lngLat={angleMarkerLngLat}
+		bind:rotation={cameraBearing}
+	/>
 
 	{#key showTooltip}
 		<Tooltip

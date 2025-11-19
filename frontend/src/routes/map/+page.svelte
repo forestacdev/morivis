@@ -57,6 +57,7 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import { checkPc } from './utils/ui';
+	import { page } from '$app/state';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -89,29 +90,43 @@
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
 
+	// 描画データ
 	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
 		features: []
-	}); // 描画データ
+	});
 
 	// ストリートビューのデータ
+	let streetViewPoint = $state<StreetViewPoint | null>(null);
 	let nextPointData = $state<NextPointData[] | null>(null);
 
-	type NodeConnections = Record<string, string[]>;
-	let nodeConnectionsJson = $state<NodeConnections>({}); // ノード接続データ
-
-	let streetViewPoint = $state<StreetViewPoint | null>(null);
+	// ストリートビューのpointデータ
 	let streetViewPointData = $state.raw<StreetViewPointGeoJson>({
 		type: 'FeatureCollection',
 		features: []
 	});
+	// ストリートビューのlineデータ
 	let streetViewLineData = $state.raw<FeatureCollection>({
 		type: 'FeatureCollection',
 		features: []
 	});
+
+	// ノード接続データ
+	type NodeConnections = Record<string, string[]>;
+	let nodeConnectionsJson = $state<NodeConnections>({});
+
+	// ストリートビューのカメラの向き
 	let cameraBearing = $state<number>(0);
+	let isExternalCameraUpdate = $state<boolean>(false); // 外部からのカメラ更新かどうか
+
+	// 起動時のストリートビュー判定
+	let isInitialStreetViewEntry = $state<boolean>(false);
+
+	// canvasの表示制御
 	let showMapCanvas = $state<boolean>(true);
 	let showThreeCanvas = $state<boolean>(false);
+
+	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 
 	// 選択マーカー
@@ -120,7 +135,7 @@
 
 	// ストリートビューのマーカー
 	let showAngleMarker = $state<boolean>(false); // マーカーの表示
-	let angleMarkerLngLat = $state<LngLat | null>(null); // マーカーの位置
+	let angleMarkerLngLat = $state<LngLat>(new maplibregl.LngLat(0, 0)); // マーカーの位置
 
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
@@ -154,23 +169,20 @@
 			(res) => res.json()
 		);
 
-		// TODO ストリートビューのパラメータを取得
+		// ストリートビューのパラメータを取得
+		const nodeId = getStreetViewParams();
 
-		const imageId = getStreetViewParams();
-
-		if (imageId) {
+		if (nodeId) {
 			const point = streetViewPointData.features.find(
-				(point) => point.properties.id === Number(imageId)
+				(point) => point.properties.node_id === Number(nodeId)
 			);
 			if (point) {
 				showStreetViewLayer.set(true);
-				setPoint(point as StreetViewPoint);
-
-				isStreetView.set(true);
-			} else {
-				console.warn(`Street view point with ID ${imageId} not found.`);
+				setPoint(Number(nodeId));
 			}
 		}
+
+		isInitialStreetViewEntry = true;
 
 		mapStore.onload(() => {
 			const terrain3d = get3dParams();
@@ -182,9 +194,8 @@
 	});
 
 	// ストリートビューのデータの取得
-	const setPoint = async (point: StreetViewPoint) => {
-		if (!point) return;
-		const pointId = point.properties.id;
+	const setPoint = (nodeId: number) => {
+		const pointId = nodeId;
 
 		if (!pointId) {
 			console.warn('Point ID is not defined');
@@ -193,8 +204,20 @@
 
 		const linkPoints = nodeConnectionsJson[pointId] || [];
 
+		const point = streetViewPointData.features.find(
+			(point) => point.properties.node_id === pointId
+		);
+
+		if (!point) {
+			console.warn(`Street view point with ID ${pointId} not found.`);
+			return;
+		}
+
+		streetViewPoint = point as StreetViewPoint;
+		isStreetView.set(true);
+
 		const nextPoints = [pointId, ...linkPoints]
-			.map((id) => streetViewPointData.features.find((point) => point.properties.id === id))
+			.map((id) => streetViewPointData.features.find((point) => point.properties.node_id === id))
 			.filter((nextPoint): nextPoint is StreetViewPoint => nextPoint !== undefined)
 			.map((nextPoint) => ({
 				featureData: nextPoint,
@@ -206,18 +229,20 @@
 			point.geometry.coordinates[1]
 		);
 
-		if ($isStreetView) {
+		angleMarkerLngLat = pointLngLat;
+
+		nextPointData = nextPoints;
+		streetViewPoint = nextPoints[0]?.featureData || point;
+
+		isInitialStreetViewEntry = true;
+
+		if ($mapMode === 'small') {
 			mapStore.setCamera(pointLngLat);
 			mapStore.panTo(point.geometry.coordinates, {
 				duration: 1000,
 				animate: true
 			});
 		}
-
-		angleMarkerLngLat = pointLngLat;
-
-		nextPointData = nextPoints;
-		streetViewPoint = nextPoints[0]?.featureData || point;
 	};
 
 	// レイヤーエントリーをリセット
@@ -254,20 +279,22 @@
 		);
 
 		if (value) {
+			// 初回起動時はアニメーションをスキップ
+
 			mapStore.setCamera(pointLngLat);
 			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
-				duration: 750,
+				duration: isInitialStreetViewEntry ? 750 : 0,
 				bearing: -cameraBearing + 180,
-				pitch: 65
+				pitch: isInitialStreetViewEntry ? 65 : 0
 			});
 
-			await delay(750);
+			await delay(isInitialStreetViewEntry ? 750 : 0);
+
 			showMapCanvas = false;
 			showThreeCanvas = true;
-
-			await delay(500);
+			if (isInitialStreetViewEntry) await delay(500);
 
 			mapStore.setBearing(0);
 			mapStore.setPitch(0);
@@ -275,6 +302,7 @@
 			$mapMode = 'small';
 			isBlocked.set(false);
 		} else {
+			// ストリートビュー終了時
 			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
@@ -340,13 +368,24 @@
 		layerEntries = newLayerEntries;
 	});
 
+	const streetViewNodeId = $derived(page.url.searchParams.get('sv'));
+
+	let currentStreetViewNodeId: string | null = null;
+	// URLパラメータの変更を監視
+	$effect(() => {
+		if (streetViewNodeId === currentStreetViewNodeId) return;
+		currentStreetViewNodeId = streetViewNodeId;
+		if (!isInitialStreetViewEntry) return;
+		setPoint(Number(streetViewNodeId));
+	});
+
 	onDestroy(() => {
-		// コンポーネントが破棄されるときに、スト
+		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
 	});
 </script>
 
-{#if isInitialized}
+{#if isInitialized && isInitialStreetViewEntry}
 	<div class="fixed flex h-dvh w-full flex-col">
 		<!-- <HeaderMenu
 			{resetlayerEntries}
@@ -412,13 +451,13 @@
 					bind:drawGeojsonData
 					bind:showZoneForm
 					bind:focusBbox
+					bind:isExternalCameraUpdate
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}
 					{streetViewPointData}
 					{streetViewPoint}
 					{showMapCanvas}
-					{setPoint}
 				/>
 			</div>
 			<!-- 右側余白 -->
@@ -462,16 +501,14 @@
 			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		{#if $isStreetView}
-			<StreetViewCanvas
-				{streetViewPoint}
-				{nextPointData}
-				{showThreeCanvas}
-				bind:cameraBearing
-				bind:showAngleMarker
-				{setPoint}
-			/>
-		{/if}
+		<StreetViewCanvas
+			{streetViewPoint}
+			{nextPointData}
+			{showThreeCanvas}
+			bind:cameraBearing
+			bind:showAngleMarker
+			bind:isExternalCameraUpdate
+		/>
 
 		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
