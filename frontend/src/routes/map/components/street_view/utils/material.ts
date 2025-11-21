@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import fs from './shaders/fragment.glsl?raw';
-// import fs from './shaders/fragment_debug.glsl?raw';
+// import fs from '../shaders/fragment_debug.glsl?raw';
 import vs from './shaders/vertex.glsl?raw';
 
 export interface Uniforms {

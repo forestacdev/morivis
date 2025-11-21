@@ -10,15 +10,14 @@
 		MIN_CAMERA_FOV,
 		MAX_CAMERA_FOV,
 		IN_CAMERA_POSITION,
-		OUT_CAMERA_POSITION,
-		fov
+		OUT_CAMERA_POSITION
 	} from './constants';
 
 	import DebugControl from './DebugControl.svelte';
 	import InteractionManager from './InteractionManager.svelte';
 
 	import { degreesToRadians, TextureCache, getCameraXYRotation, placePointData } from './utils';
-	import { uniforms } from './material';
+	import { uniforms } from './utils/material';
 	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
@@ -28,7 +27,7 @@
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 	import { fade } from 'svelte/transition';
 	import { getStreetViewCameraParams } from '$routes/map/utils/params';
-	import { fadeShaderMaterial, debugBoxMaterial } from './material';
+	import { fadeShaderMaterial, debugBoxMaterial } from './utils/material';
 
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
