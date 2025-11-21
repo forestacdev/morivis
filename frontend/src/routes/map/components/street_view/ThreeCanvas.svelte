@@ -10,7 +10,8 @@
 		MIN_CAMERA_FOV,
 		MAX_CAMERA_FOV,
 		IN_CAMERA_POSITION,
-		OUT_CAMERA_POSITION
+		OUT_CAMERA_POSITION,
+		SCENE_CENTER_COORDS
 	} from './constants';
 
 	import DebugControl from './DebugControl.svelte';
@@ -28,6 +29,9 @@
 	import { fade } from 'svelte/transition';
 	import { getStreetViewCameraParams } from '$routes/map/utils/params';
 	import { fadeShaderMaterial, debugBoxMaterial } from './utils/material';
+	import { FGB2DLineLoader } from './utils/lineGeometryLoader';
+	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import { mapPotisonToWorldPotison } from './utils/proj';
 
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
@@ -51,7 +55,7 @@
 	let camera = $state<THREE.PerspectiveCamera>();
 	let renderer = $state<THREE.WebGLRenderer>();
 	let currentSceneId = $state<number>();
-	let scene: THREE.Scene;
+	let scene = $state<THREE.Scene>();
 
 	let orbitControls = $state<OrbitControls>();
 
@@ -84,6 +88,7 @@
 	const removeSpheres = () => {
 		if (spheres.length > 0) {
 			spheres.forEach((sphere) => {
+				if (!scene) return;
 				scene.remove(sphere);
 				sphere.geometry.dispose(); // メモリ解放
 			});
@@ -107,7 +112,7 @@
 		scene = new THREE.Scene();
 
 		// カメラ
-		camera = new THREE.PerspectiveCamera(IN_CAMERA_FOV, sizes.width / sizes.height, 0.1, 1000);
+		camera = new THREE.PerspectiveCamera(IN_CAMERA_FOV, sizes.width / sizes.height, 0.1, 10000);
 
 		scene.add(camera);
 
@@ -160,18 +165,35 @@
 		const skyBoxGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
 
 		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
+		sphere.name = 'panoramaSphere';
 		scene.add(sphere);
 
 		const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
 		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
 		scene.add(wireframeCube);
 
+		const lineLoader = new FGB2DLineLoader(SCENE_CENTER_COORDS);
+		const lineGeometry = await lineLoader.load(`${STREET_VIEW_DATA_PATH}/links.fgb`, {
+			color: new THREE.Color(0x00ff00),
+			speed: 1.0,
+			height: -10.1,
+			proj: 'EPSG:6675'
+		});
+
+		const lineMaterial = new THREE.LineBasicMaterial({
+			color: 0x00ff00
+		});
+		const lineMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
+		lineMesh.material.depthWrite = false; // 深度バッファに書き込まない
+		lineMesh.renderOrder = 1;
+		lineMesh.name = 'lineMesh';
+
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 		// アニメーション
 		const animate = () => {
-			if (!isStreetView || !orbitControls || !camera || !renderer) return;
+			if (!isStreetView || !orbitControls || !camera || !renderer || !scene) return;
 			requestAnimationFrame(animate);
 			// if (!isRendering) return;
 
@@ -238,6 +260,20 @@
 		try {
 			const { angle, featureData, texture, photo_id, node_id } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
+
+			const { x, z } = mapPotisonToWorldPotison(
+				featureData.geometry.coordinates[0],
+				featureData.geometry.coordinates[1]
+			);
+
+			console.log(`ワールド座標: x=${x}, z=${z}`); // ログ追加
+
+			// lineMeshの位置を更新
+			if (!scene) return;
+			const lineMesh = scene.getObjectByName('lineMesh');
+			if (lineMesh) {
+				lineMesh.position.set(-x * 30, 0 * 30, -z * 30);
+			}
 
 			// 次のテクスチャスロットを決定
 			const nextIndex = (currentTextureIndex + 1) % 3;
@@ -425,8 +461,16 @@
 	{/if}
 </div>
 
-{#if canvas && camera && orbitControls && renderer}
-	<InteractionManager {canvas} {camera} {orbitControls} {renderer} {mobileFullscreen} {onResize} />
+{#if canvas && camera && orbitControls && renderer && scene}
+	<InteractionManager
+		{scene}
+		{canvas}
+		{camera}
+		{orbitControls}
+		{renderer}
+		{mobileFullscreen}
+		{onResize}
+	/>
 {/if}
 
 <style>

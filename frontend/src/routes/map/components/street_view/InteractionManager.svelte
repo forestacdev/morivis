@@ -19,6 +19,7 @@
 	import { Tween } from 'svelte/motion';
 
 	interface Props {
+		scene: THREE.Scene;
 		canvas: HTMLCanvasElement;
 		camera: THREE.PerspectiveCamera;
 		orbitControls: OrbitControls;
@@ -27,7 +28,8 @@
 		onResize: () => void;
 	}
 
-	let { canvas, camera, orbitControls, renderer, mobileFullscreen, onResize }: Props = $props();
+	let { scene, canvas, camera, orbitControls, renderer, mobileFullscreen, onResize }: Props =
+		$props();
 
 	// 視点操作のイージングの値
 	orbitControls.dampingFactor = 0.1;

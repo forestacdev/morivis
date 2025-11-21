@@ -11,4 +11,4 @@ export const MAX_CAMERA_FOV = 100; // 最大FOV
 export const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
 export const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
 
-export const SCENE_CENTER_COORDS: [number, number] = [-12043, -34145]; // シーンの中心にする地理座標[x, y] (EPSG:6677)
+export const SCENE_CENTER_COORDS: [number, number] = [-22135.73, -49828.66]; // シーンの中心にする地理座標[x（N）, y（E）] (EPSG:6675)
