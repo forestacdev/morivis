@@ -1,7 +1,40 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import { SCENE_CENTER_COORDS } from './constants';
-import type { NextPointData } from '$routes/map/types/street-view';
+import { PANORAMA_IMAGE_URL, SCENE_CENTER_COORDS } from './constants';
+import type {
+	NextPointData,
+	CurrentPointData,
+	PhotoAngleDict
+} from '$routes/map/types/street-view';
+import photoAngleDataDictRaw from './photo_angles.json';
+
+const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
+
+// 次のポイントを読み込む
+export const placePointData = (nextPointData: NextPointData[]): CurrentPointData[] => {
+	// 次のポイントデータが存在しない場合は何もしない
+	if (!nextPointData || nextPointData.length === 0) {
+		console.warn('次のポイントデータが存在しません。');
+		return [];
+	}
+
+	// テクスチャ読み込みのPromiseを格納する配列
+	const texturePromises = nextPointData.map((pointData) => {
+		const photo_id = pointData.featureData.properties.photo_id;
+		const angleData = photoAngleDataDict[photo_id];
+		const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
+
+		return {
+			node_id: pointData.featureData.properties.node_id,
+			photo_id: photo_id,
+			angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
+			featureData: pointData.featureData,
+			texture: webp
+		};
+	});
+
+	return texturePromises;
+};
 
 /**
  * カメラの 軸回転角度を取得し、0〜360度の範囲に正規化する
@@ -42,45 +75,6 @@ export const setCameraXYRotation = (
 export const getCameraYRotation = (camera: THREE.Camera): number => {
 	let degrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
 	return (degrees + 360) % 360; // 0〜360度の範囲に調整
-};
-
-/**
- * パノラマ写真の回転角度を設定する
- * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
- * @param degrees 0〜360度の Y 軸回転角度
- */
-export const updateAngle = async (
-	id: string,
-	{
-		x,
-		y,
-		z
-	}: {
-		x: number;
-		y: number;
-		z: number;
-	}
-) => {
-	const response = await fetch('http://127.0.0.1:8000/update_angle', {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			id,
-			angleX: x,
-			angleY: y,
-			angleZ: z
-		})
-	});
-
-	if (!response.ok) {
-		console.error('Failed to update angles:', response.status);
-		return;
-	}
-
-	const data = await response.json();
-	console.log('Updated data:', data);
 };
 
 /** 度（°）をラジアン（rad）に変換する関数 */

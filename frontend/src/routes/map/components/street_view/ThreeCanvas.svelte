@@ -3,40 +3,32 @@
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+	import {
+		PANORAMA_IMAGE_URL,
+		IN_CAMERA_FOV,
+		OUT_CAMERA_FOV,
+		MIN_CAMERA_FOV,
+		MAX_CAMERA_FOV,
+		IN_CAMERA_POSITION,
+		OUT_CAMERA_POSITION,
+		fov
+	} from './constants';
 
-	import photoAngleDataDictRaw from './photo_angles.json';
-
-	import fs from './shaders/fragment.glsl?raw';
-	// import fs from './shaders/fragment_debug.glsl?raw';
-	import vs from './shaders/vertex.glsl?raw';
 	import DebugControl from './DebugControl.svelte';
+	import InteractionManager from './InteractionManager.svelte';
 
-	import { degreesToRadians, TextureCache, getCameraXYRotation } from './utils';
+	import { degreesToRadians, TextureCache, getCameraXYRotation, placePointData } from './utils';
+	import { uniforms } from './material';
 	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
-	import { Tween } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
-	import { removeUrlParams, setStreetViewParams } from '$routes/map/utils/params';
+
+	import { setStreetViewParams } from '$routes/map/utils/params';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
-	import type { buffarUniforms } from '$routes/utils';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 	import { fade } from 'svelte/transition';
-	import { setStreetViewCameraParams, getStreetViewCameraParams } from '$routes/map/utils/params';
-
-	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
-	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
-
-	const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
-	const OUT_CAMERA_FOV = 150;
-	const MIN_CAMERA_FOV = 20; // 最小FOV
-	const MAX_CAMERA_FOV = 100; // 最大FOV
-	const IN_CAMERA_POSITION = new THREE.Vector3(0, 0, 0);
-	const OUT_CAMERA_POSITION = new THREE.Vector3(0, 10, 0);
-
-	// テクスチャローダーを保持
-	let textureLoader: THREE.TextureLoader;
+	import { getStreetViewCameraParams } from '$routes/map/utils/params';
+	import { fadeShaderMaterial, debugBoxMaterial } from './material';
 
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
@@ -56,15 +48,16 @@
 		isExternalCameraUpdate = $bindable()
 	}: Props = $props();
 
-	let canvas = $state<HTMLCanvasElement | null>(null);
+	let canvas = $state<HTMLCanvasElement>();
+	let camera = $state<THREE.PerspectiveCamera>();
+	let renderer = $state<THREE.WebGLRenderer>();
 	let currentSceneId = $state<number>();
 	let scene: THREE.Scene;
-	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
-	let camera: THREE.PerspectiveCamera;
-	let orbitControls: OrbitControls;
-	let renderer: THREE.WebGLRenderer;
-	let bufferScene: THREE.Scene;
-	const fov = new Tween(IN_CAMERA_FOV, { duration: 300, easing: cubicOut });
+
+	let orbitControls = $state<OrbitControls>();
+
+	// テクスチャローダーを保持
+	let textureLoader: THREE.TextureLoader;
 
 	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
@@ -72,57 +65,6 @@
 
 	let controlDiv = $state<HTMLDivElement | null>(null);
 	let mobileFullscreen = $state<boolean>(true); // モバイルフルスクリーン用
-
-	// Uniforms の型定義を修正
-	interface Uniforms {
-		skybox: { value: THREE.CubeTexture | null };
-		gamma: { value: number }; // ガンマ補正用
-		exposure: { value: number }; // 明度調整用
-		inputGamma: { value: number }; // 入力ガンマ補正
-		outputGamma: { value: number }; // 出力ガンマ補正
-		brightness: { value: number }; // 明るさ調整用
-		contrast: { value: number }; // コントラスト調整用
-		rotationAnglesA: { value: THREE.Vector3 };
-		rotationAnglesB: { value: THREE.Vector3 };
-		rotationAnglesC: { value: THREE.Vector3 };
-		textureA: { value: THREE.Texture | null };
-		textureB: { value: THREE.Texture | null };
-		textureC: { value: THREE.Texture | null };
-		fadeStartTime: { value: number };
-		fadeSpeed: { value: number };
-		time: { value: number };
-		fromTarget: { value: number }; // フェード元 0=A, 1=B, 2=C
-		toTarget: { value: number }; // フェード先 0=A, 1=B, 2=C
-	}
-
-	const uniforms: Uniforms = {
-		skybox: { value: null },
-		exposure: { value: 0.6 }, // 明度調整用
-		gamma: { value: 2.2 }, // ガンマ補正用
-		inputGamma: { value: 2.2 },
-		outputGamma: { value: 2.2 },
-		brightness: { value: 1.5 },
-		contrast: { value: 0.5 },
-		rotationAnglesA: { value: new THREE.Vector3() },
-		rotationAnglesB: { value: new THREE.Vector3() },
-		rotationAnglesC: { value: new THREE.Vector3() },
-		textureA: { value: null },
-		textureB: { value: null },
-		textureC: { value: null },
-		fadeStartTime: { value: 0.0 },
-		fadeSpeed: { value: 3.0 },
-		time: { value: 0.0 },
-		fromTarget: { value: 0 }, // フェード元
-		toTarget: { value: 0 } // フェード先
-	};
-
-	const debugBoxMaterial = new THREE.MeshBasicMaterial({
-		color: 0xffffff,
-		wireframe: true,
-		side: THREE.DoubleSide,
-		opacity: 1.0,
-		visible: false
-	});
 
 	let angleX = $state<number>(0);
 	let angleY = $state<number>(0);
@@ -137,6 +79,8 @@
 		}
 	});
 
+	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
+
 	// 球体を削除する関数
 	const removeSpheres = () => {
 		if (spheres.length > 0) {
@@ -146,47 +90,6 @@
 			});
 			spheres = []; // 配列を空にする
 		}
-	};
-	// 次のポイントを読み込む
-	const placePointData = (nextPointData: NextPointData[]): CurrentPointData[] => {
-		// 次のポイントデータが存在しない場合は何もしない
-		if (!nextPointData || nextPointData.length === 0) {
-			console.warn('次のポイントデータが存在しません。');
-			return [];
-		}
-
-		// テクスチャ読み込みのPromiseを格納する配列
-		const texturePromises = nextPointData.map((pointData) => {
-			const photo_id = pointData.featureData.properties.photo_id;
-			const angleData = photoAngleDataDict[photo_id];
-			const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
-
-			return {
-				node_id: pointData.featureData.properties.node_id,
-				photo_id: photo_id,
-				angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
-				featureData: pointData.featureData,
-				texture: webp
-			};
-		});
-
-		return texturePromises;
-	};
-
-	// 画面リサイズ時にキャンバスもリサイズ
-	const onResize = () => {
-		// サイズを取得
-		if (!renderer) return;
-		const width = window.innerWidth;
-		const height = window.innerHeight;
-
-		// レンダラーのサイズを調整する
-		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-		renderer.setSize(width, height);
-
-		// カメラのアスペクト比を正す
-		camera.aspect = width / height;
-		camera.updateProjectionMatrix();
 	};
 
 	// テクスチャローダーを初期化
@@ -208,9 +111,6 @@
 		camera = new THREE.PerspectiveCamera(IN_CAMERA_FOV, sizes.width / sizes.height, 0.1, 1000);
 
 		scene.add(camera);
-
-		// フレームバッファ用のシーンとカメラを作成
-		bufferScene = new THREE.Scene();
 
 		camera.rotation.order = 'YXZ';
 
@@ -251,20 +151,6 @@
 			);
 		}
 
-		// 視点操作のイージングの値
-		orbitControls.dampingFactor = 0.1;
-
-		// マウスドラッグの反転
-		orbitControls.rotateSpeed *= checkPc() ? -0.3 : -0.6;
-		orbitControls.enableDamping = true;
-		orbitControls.enablePan = false;
-		orbitControls.enableZoom = false;
-		orbitControls.maxZoom = 1;
-		orbitControls.addEventListener('end', () => {
-			// ズーム終了時の処理
-			setStreetViewCameraParams(getCameraXYRotation(camera));
-		});
-
 		// レンダラー
 		renderer = new THREE.WebGLRenderer({
 			canvas: canvas,
@@ -273,16 +159,7 @@
 
 		// 球体
 		const skyBoxGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
-		// 自動フェード用シェーダー
-		const fadeShaderMaterial = new THREE.ShaderMaterial({
-			side: THREE.BackSide,
-			uniforms: uniforms as any, // 型の互換性のためにanyを使用
-			fragmentShader: fs,
-			vertexShader: vs,
-			transparent: false, // 必要に応じてtrueに
-			alphaTest: 0,
-			premultipliedAlpha: false // これも重要
-		});
+
 		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
 		scene.add(sphere);
 
@@ -293,79 +170,9 @@
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-		window.addEventListener('resize', onResize);
-
-		$effect(() => {
-			if (fov) {
-				camera.fov = fov.current; // tweened ストアの現在の値をカメラのFOVに設定
-				camera.updateProjectionMatrix();
-			}
-		});
-
-		// マウスホイールでFOVを変更するイベントリスナー
-		canvas.addEventListener('wheel', (event) => {
-			const zoomSpeed = 0.51; // ズーム速度
-
-			const newFOV = camera.fov + event.deltaY * 0.05 * zoomSpeed;
-
-			// マウススクロールの方向に応じてFOVを増減
-
-			fov.set(Math.max(MIN_CAMERA_FOV, Math.min(MAX_CAMERA_FOV, newFOV)));
-		});
-
-		// スマホのピンチ操作に対応するためのタッチイベント
-		let lastTouchDistance = 0;
-
-		canvas.addEventListener('touchstart', (event) => {
-			if (event.touches.length === 2) {
-				// 2本指の距離を計算
-				const touch1 = event.touches[0];
-				const touch2 = event.touches[1];
-				lastTouchDistance = Math.sqrt(
-					Math.pow(touch2.clientX - touch1.clientX, 2) +
-						Math.pow(touch2.clientY - touch1.clientY, 2)
-				);
-			}
-		});
-
-		canvas.addEventListener(
-			'touchmove',
-			(event) => {
-				if (event.touches.length === 2) {
-					event.preventDefault(); // デフォルトのピンチズームを無効化
-
-					const zoomSpeed = 15; // ズーム速度
-
-					// 現在の2本指の距離を計算
-					const touch1 = event.touches[0];
-					const touch2 = event.touches[1];
-					const currentDistance = Math.sqrt(
-						Math.pow(touch2.clientX - touch1.clientX, 2) +
-							Math.pow(touch2.clientY - touch1.clientY, 2)
-					);
-
-					// 距離の変化からズーム方向を決定
-					const deltaDistance = currentDistance - lastTouchDistance;
-					const newFOV = camera.fov - deltaDistance * 0.1 * zoomSpeed;
-
-					fov.set(Math.max(MIN_CAMERA_FOV, Math.min(MAX_CAMERA_FOV, newFOV)));
-
-					lastTouchDistance = currentDistance;
-				}
-			},
-			{ passive: false }
-		);
-
-		// タッチ終了時の処理
-		canvas.addEventListener('touchend', (event) => {
-			lastTouchDistance = 0;
-			orbitControls.enablePan = true;
-		});
-
 		// アニメーション
-
 		const animate = () => {
-			if (!isStreetView) return;
+			if (!isStreetView || !orbitControls || !camera || !renderer) return;
 			requestAnimationFrame(animate);
 			// if (!isRendering) return;
 
@@ -406,7 +213,7 @@
 
 	// 外部からのcameraBearing変更を監視してカメラに反映
 	$effect(() => {
-		if (cameraBearing !== undefined && camera && isExternalCameraUpdate) {
+		if (cameraBearing !== undefined && camera && isExternalCameraUpdate && orbitControls) {
 			const targetDegrees = (cameraBearing - 180 + 360) % 360;
 			const targetRadians = THREE.MathUtils.degToRad(targetDegrees);
 
@@ -424,9 +231,6 @@
 
 			isExternalCameraUpdate = false;
 		}
-	});
-	isStreetView.subscribe(async (value) => {
-		onResize();
 	});
 
 	let currentTextureIndex = $state<number>(0); // 0=A, 1=B, 2=C
@@ -516,15 +320,12 @@
 		}
 	});
 
-	// TODO: 画面リサイズ時にキャンバスもリサイズ
-	const onCanvasResize = (value: boolean) => {
-		if (!renderer || !canvas) return;
-
-		// キャンバスの実際のサイズを取得
-		const width = canvas.clientWidth;
-		const height = value
-			? window.innerHeight // モバイルフルスクリーン時はヘッダー分を引く
-			: window.innerHeight / 2;
+	// 画面リサイズ時の処理
+	const onResize = () => {
+		// サイズを取得
+		if (!renderer || !camera) return;
+		const width = window.innerWidth;
+		const height = window.innerHeight;
 
 		// レンダラーのサイズを調整する
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -534,15 +335,6 @@
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
 	};
-
-	$effect(() => {
-		if (mobileFullscreen !== undefined) {
-			// 少し遅延を入れてからリサイズを実行（CSSトランジションの完了を待つ）
-			setTimeout(() => {
-				onCanvasResize(mobileFullscreen);
-			}, 500);
-		}
-	});
 </script>
 
 <div
@@ -633,6 +425,10 @@
 		</div>
 	{/if}
 </div>
+
+{#if canvas && camera && orbitControls && renderer}
+	<InteractionManager {canvas} {camera} {orbitControls} {renderer} {mobileFullscreen} {onResize} />
+{/if}
 
 <style>
 	canvas {
