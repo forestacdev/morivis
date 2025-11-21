@@ -4,6 +4,37 @@ import { SCENE_CENTER_COORDS } from './constants';
 import type { NextPointData } from '$routes/map/types/street-view';
 
 /**
+ * カメラの 軸回転角度を取得し、0〜360度の範囲に正規化する
+ * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
+ * @returns 0〜360度の X Y Z 軸回転角度
+ */
+export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: number } => {
+	let xDegrees = -THREE.MathUtils.radToDeg(camera.rotation.x); // ラジアン→度に変換
+	let yDegrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
+	return {
+		x: (xDegrees + 360) % 360, // 0〜360度の範囲に調整
+		y: (yDegrees + 360) % 360 // 0〜360度の範囲に調整
+	};
+};
+
+/**
+ * カメラをX Y Z軸の回転角度(0〜360度)に設定する
+ * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
+ * @param rotation 0〜360度の X Y 軸回転角度
+ */
+export const setCameraXYRotation = (
+	camera: THREE.Camera,
+	rotation: { x: number; y: number }
+): void => {
+	// 0〜360度の値を -180〜180度に正規化してからラジアンに変換
+	const xRadians = -THREE.MathUtils.degToRad(rotation.x);
+	const yRadians = -THREE.MathUtils.degToRad(rotation.y);
+
+	camera.rotation.set(xRadians, yRadians, 0);
+	camera.updateMatrixWorld();
+};
+
+/**
  * カメラの Y 軸回転角度を取得し、0〜360度の範囲に正規化する
  * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
  * @returns 0〜360度の Y 軸回転角度

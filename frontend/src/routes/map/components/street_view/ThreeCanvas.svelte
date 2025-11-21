@@ -11,7 +11,7 @@
 	import vs from './shaders/vertex.glsl?raw';
 	import DebugControl from './DebugControl.svelte';
 
-	import { degreesToRadians, TextureCache } from './utils';
+	import { degreesToRadians, TextureCache, getCameraXYRotation } from './utils';
 	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
@@ -23,6 +23,7 @@
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 	import { fade } from 'svelte/transition';
+	import { setStreetViewCameraParams, getStreetViewCameraParams } from '$routes/map/utils/params';
 
 	const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
 	const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
@@ -211,8 +212,6 @@
 		// フレームバッファ用のシーンとカメラを作成
 		bufferScene = new THREE.Scene();
 
-		// camera.position.set(0, 0, 0);
-
 		camera.rotation.order = 'YXZ';
 
 		// カメラの設定
@@ -223,12 +222,34 @@
 		orbitControls = new OrbitControls(camera, canvas);
 		orbitControls.target.set(camera.position.x, camera.position.y, camera.position.z + 0.01);
 
-		// -Z方向を向くようにターゲットを設定
-		orbitControls.target.set(
-			camera.position.x,
-			camera.position.y,
-			camera.position.z - 0.01 // ← +0.01 から -0.01 に変更
-		);
+		const cameraParams = getStreetViewCameraParams();
+
+		if (cameraParams && cameraParams.x !== undefined && cameraParams.y !== undefined) {
+			const targetDegreesY = (-cameraParams.y - 180 + 360) % 360;
+			const targetRadiansY = THREE.MathUtils.degToRad(targetDegreesY);
+
+			// X軸回転（垂直）
+			const targetDegreesX = (-cameraParams.x + 360) % 360;
+			const targetRadiansX = THREE.MathUtils.degToRad(targetDegreesX);
+
+			// ターゲット位置も更新
+			const distance = 0.01;
+			orbitControls.target.set(
+				camera.position.x + Math.sin(targetRadiansY) * distance,
+				camera.position.y + Math.tan(targetRadiansX) * distance,
+				camera.position.z + Math.cos(targetRadiansY) * distance
+			);
+
+			orbitControls.update();
+			isExternalCameraUpdate = false;
+		} else {
+			// デフォルトの向き
+			orbitControls.target.set(
+				camera.position.x,
+				camera.position.y,
+				camera.position.z - 0.01 // ← +0.01 から -0.01 に変更
+			);
+		}
 
 		// 視点操作のイージングの値
 		orbitControls.dampingFactor = 0.1;
@@ -239,9 +260,12 @@
 		orbitControls.enablePan = false;
 		orbitControls.enableZoom = false;
 		orbitControls.maxZoom = 1;
+		orbitControls.addEventListener('end', () => {
+			// ズーム終了時の処理
+			setStreetViewCameraParams(getCameraXYRotation(camera));
+		});
 
 		// レンダラー
-
 		renderer = new THREE.WebGLRenderer({
 			canvas: canvas,
 			alpha: true
@@ -396,7 +420,6 @@
 				camera.position.z + Math.cos(targetRadians) * distance
 			);
 
-			// orbitControls.enabled = wasEnabled;
 			orbitControls.update();
 
 			isExternalCameraUpdate = false;
