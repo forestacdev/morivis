@@ -11,6 +11,7 @@
 	import { flip } from 'svelte/animate';
 	import { isStyleEdit } from '$routes/stores';
 	import { showDataMenu } from '$routes/stores/ui';
+	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		layerType: LayerType;
@@ -19,6 +20,7 @@
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
+		featureMenuData: FeatureMenuData | null;
 	}
 
 	let {
@@ -27,7 +29,8 @@
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
-		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
+		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
+		featureMenuData = $bindable()
 	}: Props = $props();
 </script>
 
@@ -61,6 +64,7 @@
 			bind:tempLayerEntries
 			bind:enableFlip
 			bind:isDraggingLayerType
+			bind:featureMenuData
 		/>
 	</div>
 {/each}

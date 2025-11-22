@@ -3,6 +3,7 @@
 	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type { ColorsStyle } from '$routes/map/data/types/vector/style';
+	import { slide } from 'svelte/transition';
 	interface Props {
 		colorStyle: ColorsStyle;
 		showColorOption: boolean;
@@ -13,5 +14,9 @@
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
 	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
-	<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} />
+	{#if colorStyle.show}
+		<div transition:slide={{ duration: 300 }}>
+			<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} />
+		</div>
+	{/if}
 </Accordion>

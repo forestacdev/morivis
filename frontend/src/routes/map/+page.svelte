@@ -405,7 +405,13 @@
 				></div>
 			{/if}
 
-			<LayerMenu bind:layerEntries bind:tempLayerEntries bind:showDataEntry {resetlayerEntries} />
+			<LayerMenu
+				bind:layerEntries
+				bind:tempLayerEntries
+				bind:showDataEntry
+				bind:featureMenuData
+				{resetlayerEntries}
+			/>
 
 			<!-- 左側余白 -->
 			{#if !$showLayerMenu}

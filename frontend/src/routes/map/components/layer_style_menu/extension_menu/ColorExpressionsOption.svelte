@@ -11,7 +11,16 @@
 	} from '$routes/map/data/types/vector/style';
 	import { generateNumberAndColorMap, generateColorPalette } from '$routes/map/utils/color_mapping';
 	import ColorPatternPicker from './ColorPatternPicker.svelte';
-
+	import ColorScaleStep from './ColorScaleStep.svelte';
+	import {
+		COLOR_BREWER_SCHEME_COUNT,
+		getSequentSchemeColors,
+		type SequentialScheme
+	} from '$routes/map/utils/color/color-brewer';
+	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
+	import { generateStepGradient } from '$routes/map/utils/color_mapping';
+	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
 	interface Props {
 		setExpression: ColorsExpression;
 	}
@@ -60,21 +69,25 @@
 		/>
 	{/if}
 {:else if setExpression.type === 'step'}
-	<div class="flex-between flex w-full items-center gap-2 text-base">
-		{#each setExpression.mapping.values as _, index}
-			<div class="flex items-center">
-				<span>{index === 0 ? '最小' : '最大'}</span>
-				<ColorPicker bind:value={setExpression.mapping.values[index]} />
-			</div>
-		{/each}
-	</div>
+	<StyleColorMapPulldownBox
+		bind:isColorMap={setExpression.mapping.scheme}
+		mutableColorMapType={[...COLOR_BREWER_SCHEME_COUNT.sequential['9']]}
+	>
+		{#snippet children(_isColorMap)}
+			<ColorScaleStep isColorMap={_isColorMap as SequentialScheme} />
+		{/snippet}
+	</StyleColorMapPulldownBox>
+	{#key setExpression}
+		<RangeSliderDoubleWrapper bind:setStepExpression={setExpression} />
+	{/key}
 
 	<RangeSlider
 		label="分類数"
 		bind:value={setExpression.mapping.divisions}
-		min={2}
-		max={10}
+		min={3}
+		max={9}
 		step={1}
+		isInt={true}
 	/>
 	{#if stepPallet}
 		{#each stepPallet.categories as _, index}

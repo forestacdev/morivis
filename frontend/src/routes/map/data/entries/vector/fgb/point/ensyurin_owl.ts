@@ -76,9 +76,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '樹高m',
 					name: '樹高の範囲による色分け',
 					mapping: {
+						scheme: 'YlOrRd',
 						range: [4.0, 20],
-						divisions: 6,
-						values: ['#dcd69c', '#e20000']
+						divisions: 6
 					}
 				}
 			]

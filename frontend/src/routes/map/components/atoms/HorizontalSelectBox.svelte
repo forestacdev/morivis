@@ -17,7 +17,7 @@
 		</div>
 	{/if}
 	{#if options.length === 2}
-		<div class="bg-sub relative flex w-full overflow-hidden rounded-full">
+		<div class="border-1 border-sub relative flex w-full overflow-hidden rounded-full bg-black">
 			<div
 				class="bg-base absolute h-full w-1/2 rounded-full transition-transform duration-200 {options[0]
 					.key === group
@@ -38,7 +38,7 @@
 		</div>
 	{/if}
 	{#if options.length === 3}
-		<div class="bg-sub relative flex w-full overflow-hidden rounded-full">
+		<div class="relative flex w-full overflow-hidden rounded-full bg-black">
 			<div
 				class="bg-base absolute h-full w-1/3 rounded-full transition-transform duration-200 {options[0]
 					.key === group

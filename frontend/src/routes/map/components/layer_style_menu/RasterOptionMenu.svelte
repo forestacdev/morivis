@@ -2,10 +2,7 @@
 	import DemOption from './raster_option/DemOption.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
 
-	import CheckBox from '$routes/map/components/atoms/CheckBox.svelte';
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPullDownBox.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,
@@ -14,7 +11,6 @@
 		RasterDemEntry,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 	import Accordion from '../atoms/Accordion.svelte';
 	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 	import { getLayerImage } from '$routes/map/utils/image';

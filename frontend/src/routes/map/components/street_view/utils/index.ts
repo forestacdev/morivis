@@ -1,7 +1,71 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import { SCENE_CENTER_COORDS } from './constants';
-import type { NextPointData } from '$routes/map/types/street-view';
+import { PANORAMA_IMAGE_URL, SCENE_CENTER_COORDS } from '../constants';
+import type {
+	NextPointData,
+	CurrentPointData,
+	PhotoAngleDict
+} from '$routes/map/types/street-view';
+import photoAngleDataDictRaw from './photo_angles.json';
+
+const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
+
+// 次のポイントを読み込む
+export const placePointData = (nextPointData: NextPointData[]): CurrentPointData[] => {
+	// 次のポイントデータが存在しない場合は何もしない
+	if (!nextPointData || nextPointData.length === 0) {
+		console.warn('次のポイントデータが存在しません。');
+		return [];
+	}
+
+	// テクスチャ読み込みのPromiseを格納する配列
+	const texturePromises = nextPointData.map((pointData) => {
+		const photo_id = pointData.featureData.properties.photo_id;
+		const angleData = photoAngleDataDict[photo_id];
+		const webp = PANORAMA_IMAGE_URL + pointData.featureData.properties.photo_id + '.webp';
+
+		return {
+			node_id: pointData.featureData.properties.node_id,
+			photo_id: photo_id,
+			angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
+			featureData: pointData.featureData,
+			texture: webp
+		};
+	});
+
+	return texturePromises;
+};
+
+/**
+ * カメラの 軸回転角度を取得し、0〜360度の範囲に正規化する
+ * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
+ * @returns 0〜360度の X Y Z 軸回転角度
+ */
+export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: number } => {
+	let xDegrees = -THREE.MathUtils.radToDeg(camera.rotation.x); // ラジアン→度に変換
+	let yDegrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
+	return {
+		x: (xDegrees + 360) % 360, // 0〜360度の範囲に調整
+		y: (yDegrees + 360) % 360 // 0〜360度の範囲に調整
+	};
+};
+
+/**
+ * カメラをX Y Z軸の回転角度(0〜360度)に設定する
+ * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
+ * @param rotation 0〜360度の X Y 軸回転角度
+ */
+export const setCameraXYRotation = (
+	camera: THREE.Camera,
+	rotation: { x: number; y: number }
+): void => {
+	// 0〜360度の値を -180〜180度に正規化してからラジアンに変換
+	const xRadians = -THREE.MathUtils.degToRad(rotation.x);
+	const yRadians = -THREE.MathUtils.degToRad(rotation.y);
+
+	camera.rotation.set(xRadians, yRadians, 0);
+	camera.updateMatrixWorld();
+};
 
 /**
  * カメラの Y 軸回転角度を取得し、0〜360度の範囲に正規化する
@@ -13,75 +77,9 @@ export const getCameraYRotation = (camera: THREE.Camera): number => {
 	return (degrees + 360) % 360; // 0〜360度の範囲に調整
 };
 
-/**
- * パノラマ写真の回転角度を設定する
- * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
- * @param degrees 0〜360度の Y 軸回転角度
- */
-export const updateAngle = async (
-	id: string,
-	{
-		x,
-		y,
-		z
-	}: {
-		x: number;
-		y: number;
-		z: number;
-	}
-) => {
-	const response = await fetch('http://127.0.0.1:8000/update_angle', {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			id,
-			angleX: x,
-			angleY: y,
-			angleZ: z
-		})
-	});
-
-	if (!response.ok) {
-		console.error('Failed to update angles:', response.status);
-		return;
-	}
-
-	const data = await response.json();
-	console.log('Updated data:', data);
-};
-
 /** 度（°）をラジアン（rad）に変換する関数 */
 export const degreesToRadians = (degrees: number) => {
 	return degrees * (Math.PI / 180);
-};
-
-proj4.defs(
-	'EPSG:6677',
-	'+proj=tmerc +lat_0=36 +lon_0=139.833333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs'
-);
-
-/* ワールド座標を経緯度に変える **/
-export const worldPotisonToMapPotison = (x: number, z: number): [number, number] => {
-	const lon = SCENE_CENTER_COORDS[0] + x;
-	const lat = SCENE_CENTER_COORDS[1] + z * -1;
-	const lnglat = proj4('EPSG:6677', 'WGS84', [lon, lat]) as [number, number];
-	return lnglat;
-};
-
-/* 経緯度をワールド座標に変える **/
-export const mapPotisonToWorldPotison = (
-	lng: number,
-	lat: number
-): {
-	x: number;
-	z: number;
-} => {
-	const vec2 = proj4('WGS84', 'EPSG:6677', [lng, lat]) as [number, number];
-	const x = vec2[0] - SCENE_CENTER_COORDS[0];
-	const z = (vec2[1] - SCENE_CENTER_COORDS[1]) * -1;
-	return { x, z };
 };
 
 // テクスチャキャッシュクラス（軽量版）

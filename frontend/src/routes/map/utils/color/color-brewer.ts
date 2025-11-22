@@ -1,4 +1,5 @@
 // https://gist.github.com/frankrowe/9007567
+
 // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
 const COLOR_BREWER = {
 	YlGn: {
@@ -930,7 +931,7 @@ const COLOR_BREWER = {
 export type ColorBrewer = typeof COLOR_BREWER;
 type ColorBrewerScheme = keyof ColorBrewer;
 
-const SEQUENTIAL_SINGLE_HUE = ['Blues', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
+const SEQUENTIAL_SINGLE_HUE = ['Blues', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'] as const;
 const SEQUENTIAL_MULTI_HUE = [
 	'BuGn',
 	'BuPu',
@@ -944,8 +945,9 @@ const SEQUENTIAL_MULTI_HUE = [
 	'YlGnBu',
 	'YlOrBr',
 	'YlOrRd'
-];
-const COLOR_BREWER_SCHEME_COUNT = {
+] as const;
+
+export const COLOR_BREWER_SCHEME_COUNT = {
 	sequential: { '9': [...SEQUENTIAL_SINGLE_HUE, ...SEQUENTIAL_MULTI_HUE] },
 	diverging: {
 		'11': ['BrBG', 'PiYG', 'PRGn', 'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral']
@@ -959,8 +961,22 @@ const COLOR_BREWER_SCHEME_COUNT = {
 
 type ColorSchemeCategory = keyof typeof COLOR_BREWER_SCHEME_COUNT;
 
+export const getSequentialcolorScheme = () => getAvailableColorSchemeByCategory(9, 'sequential');
+
+export type SequentialCount = 3 | 4 | 5 | 6 | 7 | 8 | 9;
+
+export type SequentialScheme =
+	| (typeof SEQUENTIAL_SINGLE_HUE)[number]
+	| (typeof SEQUENTIAL_MULTI_HUE)[number];
+
+export const getSequentSchemeColors = (
+	scheme: SequentialScheme,
+	count: SequentialCount
+): readonly string[] => {
+	return COLOR_BREWER[scheme][count];
+};
 // 単色の基準にする色
-export type BaseSingleColor = ColorBrewer['Paired'][12][number];
+export type BaseSingleColor = ColorBrewer['Paired'][12][number] | ColorBrewer['Set3'][12][number];
 
 // マッチングに使用する色
 export type BaseMatchColor =

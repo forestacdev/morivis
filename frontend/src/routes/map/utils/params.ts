@@ -142,6 +142,33 @@ export const getStreetViewParams = (): string | null => {
 	return params.sv as string;
 };
 
+/** streetviewカメラパラメータのセット */
+export const setStreetViewCameraParams = ({ x, y }: { x: number; y: number }) => {
+	const params = get(queryParameters({}));
+	params.cr = `${x.toFixed(2)}_${y.toFixed(2)}`;
+	queryParameters({}, { pushHistory: false }).set(params);
+};
+
+/** streetviewカメラパラメータの取得 */
+export const getStreetViewCameraParams = (): { x: number; y: number } | null => {
+	const params = get(queryParameters({}, { pushHistory: false }));
+	const cr = params.cr as string;
+
+	if (!cr) {
+		return null;
+	}
+
+	const [xStr, yStr] = cr.split('_');
+	const x = parseFloat(xStr);
+	const y = parseFloat(yStr);
+
+	if (isNaN(x) || isNaN(y)) {
+		return null;
+	}
+
+	return { x, y };
+};
+
 /** 3d用のURLパラメータのセット */
 export const set3dParams = (numString: '0' | '1') => {
 	const params = get(queryParameters({}));

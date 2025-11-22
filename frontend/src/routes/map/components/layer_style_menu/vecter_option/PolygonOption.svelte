@@ -12,6 +12,7 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		layerEntry: PolygonEntry<GeoJsonMetaData | TileMetaData>;
@@ -33,24 +34,28 @@
 >
 	<Switch label={'表示'} bind:value={layerEntry.style.outline.show} />
 
-	<RangeSlider
-		label="ライン幅"
-		bind:value={layerEntry.style.outline.width}
-		min={0}
-		max={10}
-		step={0.01}
-	/>
+	{#if layerEntry.style.outline.show}
+		<div transition:slide={{ duration: 300 }}>
+			<RangeSlider
+				label="ライン幅"
+				bind:value={layerEntry.style.outline.width}
+				min={0}
+				max={10}
+				step={0.01}
+			/>
 
-	<ColorPicker label="ラインの色" bind:value={layerEntry.style.outline.color} />
+			<ColorPicker label="ラインの色" bind:value={layerEntry.style.outline.color} />
 
-	<HorizontalSelectBox
-		label={'ラインのスタイル'}
-		bind:group={layerEntry.style.outline.lineStyle}
-		options={[
-			{ name: '実線', key: 'solid' },
-			{ name: '破線', key: 'dashed' }
-		]}
-	/>
+			<HorizontalSelectBox
+				label={'ラインのスタイル'}
+				bind:group={layerEntry.style.outline.lineStyle}
+				options={[
+					{ name: '実線', key: 'solid' },
+					{ name: '破線', key: 'dashed' }
+				]}
+			/>
+		</div>
+	{/if}
 </Accordion>
 
 <LabelOption bind:labels={layerEntry.style.labels} />

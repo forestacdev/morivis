@@ -551,9 +551,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '材積',
 					name: '材積による色分け',
 					mapping: {
-						range: [0, 81006.0],
-						divisions: 10,
-						values: ['#e6f2ff', '#ff00dd']
+						scheme: 'RdPu',
+						range: [0, 5000],
+						divisions: 9
 					}
 				},
 				{
@@ -561,9 +561,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '面積',
 					name: '面積による色分け',
 					mapping: {
-						range: [0, 5641.8],
-						divisions: 10,
-						values: ['#e6f2ff', '#ff00dd']
+						scheme: 'RdPu',
+						range: [0, 100],
+						divisions: 9
 					}
 				},
 				{
@@ -571,9 +571,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹立林齢１',
 					name: '第一樹種樹立林齢による色分け',
 					mapping: {
-						range: [0, 606.0],
-						divisions: 10,
-						values: ['#e6f2ff', '#ff00dd']
+						scheme: 'RdPu',
+						range: [0, 200.0],
+						divisions: 9
 					}
 				},
 				{
@@ -581,9 +581,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹立林齢２',
 					name: '第二樹種樹立林齢による色分け',
 					mapping: {
-						range: [0, 632.0],
-						divisions: 10,
-						values: ['#e6f2ff', '#ff00dd']
+						scheme: 'BuGn',
+						range: [0, 200.0],
+						divisions: 9
 					}
 				},
 				{
@@ -591,9 +591,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹立林齢３',
 					name: '第三樹種樹立林齢による色分け',
 					mapping: {
+						scheme: 'BuGn',
 						range: [0, 415.0],
-						divisions: 10,
-						values: ['#e6f2ff', '#ff00dd']
+						divisions: 9
 					}
 				}
 			]

@@ -7,9 +7,54 @@ import type {
 } from '$routes/map/data/types/vector/style';
 import colormap from 'colormap';
 
-import { scaleLinear } from 'd3-scale';
+import { scaleLinear, scaleQuantize } from 'd3-scale';
+import { range as d3Range, ticks } from 'd3-array';
 import { interpolateRgb } from 'd3-interpolate';
-import { color } from 'd3-color';
+import { color, color as d3Color } from 'd3-color';
+import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
+
+// export const generateNumberAndColorMap = (
+// 	mapping: ColorStepExpression['mapping']
+// ): {
+// 	categories: number[];
+// 	values: string[];
+// } => {
+// 	const { range, divisions } = mapping;
+
+// 	if (divisions <= 0) {
+// 		console.warn('divisions は 0 より大きくなければなりません。');
+// 		throw new Error('divisions must be greater than 0');
+// 	}
+
+// 	// 数値スケールの生成
+// 	const scale = scaleLinear<string>()
+// 		.domain(range) // データの範囲
+// 		.nice() // きれいな値に調整
+// 		.ticks(divisions);
+
+// 	const minColor = mapping.values[0];
+// 	const maxColor = mapping.values[1];
+
+// 	// 色スケールの生成
+// 	// const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
+// 	const colorScale = scaleLinear<string>()
+// 		.domain([range[0], range[1]]) // データ範囲
+// 		.interpolate(interpolateRgb) // 色の補間方法
+// 		.range([minColor, maxColor]); // 最小色と最大色
+
+// 	// 各値に対応する色を生成
+// 	const colors = scale.map((value: number) => {
+// 		const rgbColor = colorScale(value);
+
+// 		const hexColor = d3Color(rgbColor).formatHex();
+// 		return hexColor;
+// 	});
+
+// 	return {
+// 		categories: scale,
+// 		values: colors
+// 	};
+// };
 
 export const generateNumberAndColorMap = (
 	mapping: ColorStepExpression['mapping']
@@ -17,40 +62,56 @@ export const generateNumberAndColorMap = (
 	categories: number[];
 	values: string[];
 } => {
-	const { range, divisions } = mapping;
+	const { range, divisions, scheme } = mapping;
+	const [min, max] = range;
 
-	if (divisions <= 0) {
-		console.warn('divisions は 0 より大きくなければなりません。');
-		throw new Error('divisions must be greater than 0');
+	// 小数点以下の桁数を決定（データの範囲から判断）
+	const dataRange = max - min;
+	let decimalPlaces: number;
+
+	if (dataRange >= 100) {
+		decimalPlaces = 0; // 100以上なら整数
+	} else if (dataRange >= 10) {
+		decimalPlaces = 1; // 10-100なら小数第1位
+	} else if (dataRange >= 1) {
+		decimalPlaces = 2; // 1-10なら小数第2位
+	} else {
+		decimalPlaces = 3; // 1未満なら小数第3位
 	}
 
-	// 数値スケールの生成
-	const scale = scaleLinear<string>()
-		.domain(range) // データの範囲
-		.nice() // きれいな値に調整
-		.ticks(divisions);
+	// 優先順位: 1.正確にdivisions個 2.最小・最大を含む 3.できればきりの良い数字
+	const scale = Array.from({ length: divisions }, (_, i) => {
+		const ratio = i / (divisions - 1);
+		const value = min + (max - min) * ratio;
 
-	const minColor = mapping.values[0];
-	const maxColor = mapping.values[1];
+		// 小数点以下を適度に丸める
+		const magnitude = Math.pow(10, Math.floor(Math.log10(max - min)) - 1);
+		const rounded = Math.round(value / magnitude) * magnitude;
 
-	// 色スケールの生成
-	// const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
-	const colorScale = scaleLinear<string>()
-		.domain([range[0], range[1]]) // データ範囲
-		.interpolate(interpolateRgb) // 色の補間方法
-		.range([minColor, maxColor]); // 最小色と最大色
-
-	// 各値に対応する色を生成
-	const colors = scale.map((value: number) => {
-		const rgbColor = colorScale(value);
-		const hexColor = color(rgbColor).formatHex();
-		return hexColor;
+		// 指定した桁数に丸める
+		return Number(rounded.toFixed(decimalPlaces));
 	});
+
+	// 端は必ず元の値に（同じく桁数調整）
+	scale[0] = Number(min.toFixed(decimalPlaces));
+	scale[divisions - 1] = Number(max.toFixed(decimalPlaces));
+
+	const colors = getSequentSchemeColors(scheme, divisions);
 
 	return {
 		categories: scale,
 		values: colors
 	};
+};
+/** step用のCSSカラースケール作成 */
+export const generateStepGradient = (colors: string[]): string => {
+	const step = 100 / colors.length;
+	const stops = colors.flatMap((color, i) => {
+		const start = step * i;
+		const end = step * (i + 1);
+		return `${color} ${start}%, ${color} ${end}%`;
+	});
+	return `linear-gradient(to right, ${stops.join(', ')})`;
 };
 
 /**

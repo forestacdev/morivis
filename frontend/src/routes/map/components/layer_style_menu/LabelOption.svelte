@@ -20,6 +20,7 @@
 		LabelsExpressions,
 		Labels
 	} from '$routes/map/data/types/vector/style';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		labels: Labels;
@@ -36,8 +37,11 @@
 
 <Accordion label={'ラベル'} icon={'ci:font'} bind:value={showLabelOption}>
 	<Switch label={'表示'} bind:value={labels.show} />
-	<LabelPulldownBox bind:labels icon={'ci:font'} />
-
+	{#if labels.show}
+		<div transition:slide={{ duration: 300 }}>
+			<LabelPulldownBox bind:labels icon={'ci:font'} />
+		</div>
+	{/if}
 	<!-- <div class="flex grow flex-col gap-2">
 		{#each getlabelKeys(layerEntry.style.labels.expressions) as labelType (labelType.key)}
 			<label

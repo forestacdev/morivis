@@ -14,6 +14,7 @@
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
+	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		index: number;
@@ -24,6 +25,7 @@
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
+		featureMenuData: FeatureMenuData | null;
 	}
 
 	let {
@@ -34,7 +36,8 @@
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
-		isDraggingLayerType = $bindable() // ドラッグ中のレイヤータイプ
+		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
+		featureMenuData = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
@@ -52,6 +55,9 @@
 	const selectedLayer = () => {
 		if (!layerEntry) return;
 		selectedLayerId.set(layerEntry.id);
+
+		// 属性メニューが開いている場合は閉じる
+		featureMenuData = null;
 
 		if (!isLayerInRange && $isStyleEdit) mapStore.focusLayer(layerEntry);
 	};
