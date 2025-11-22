@@ -7,7 +7,7 @@
 </script>
 
 <label
-	class="hover:text-accent flex cursor-pointer items-center justify-between p-2 transition-colors duration-100"
+	class="hover:text-accent flex cursor-pointer items-center justify-between py-2 pr-2 transition-colors duration-100"
 >
 	{#if label}
 		<span class="select-none text-base">{label}</span>

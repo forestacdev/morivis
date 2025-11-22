@@ -5,6 +5,7 @@
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
 	import { fly } from 'svelte/transition';
 	import Icon from '@iconify/svelte';
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 
 	interface Props {
 		label?: string | null;
@@ -13,7 +14,7 @@
 	}
 	let { label, value = $bindable(), pattern = $bindable() }: Props = $props();
 
-	const patternList: SpritePatternId[] = [
+	const patternBlackList: SpritePatternId[] = [
 		'tmpoly-caret-200-black',
 		'tmpoly-circle-alt-light-200-black',
 		'tmpoly-circle-alt-medium-200-black',
@@ -38,6 +39,33 @@
 		'tmpoly-slash-back-200-black',
 		'tmpoly-slash-forward-200-black',
 		'tmpoly-square-200-black'
+	];
+
+	const patternWhiteList: SpritePatternId[] = [
+		'tmpoly-caret-200-white',
+		'tmpoly-circle-alt-light-200-white',
+		'tmpoly-circle-alt-medium-200-white',
+		'tmpoly-circle-bold-200-white',
+		'tmpoly-circle-heavy-200-white',
+		'tmpoly-circle-light-200-white',
+		'tmpoly-circle-medium-200-white',
+		'tmpoly-crosshatch-light-200-white',
+		'tmpoly-crosshatch-medium-200-white',
+		'tmpoly-grid-light-200-white',
+		'tmpoly-grid-medium-200-white',
+		'tmpoly-line-horizontal-light-200-white',
+		'tmpoly-line-horizontal-medium-200-white',
+		'tmpoly-line-vertical-down-light-200-white',
+		'tmpoly-line-vertical-down-medium-200-white',
+		'tmpoly-line-vertical-light-200-white',
+		'tmpoly-line-vertical-medium-200-white',
+		'tmpoly-line-vertical-up-light-200-white',
+		'tmpoly-line-vertical-up-medium-200-white',
+		'tmpoly-minus-200-white',
+		'tmpoly-plus-200-white',
+		'tmpoly-slash-back-200-white',
+		'tmpoly-slash-forward-200-white',
+		'tmpoly-square-200-white'
 	];
 
 	interface TileOptions {
@@ -143,7 +171,10 @@
 
 	let showColorPallet = $state<boolean>(false);
 	let containerRef = $state<HTMLElement>();
-	// if (label === 'スギ') showColorPallet = true; // デバッグ用
+	if (label === 'スギ') showColorPallet = true; // デバッグ用
+
+	let selectedColorBrewerScheme = $state<'Paired' | 'Set3'>('Paired');
+	let selectedPpattern = $state<'black' | 'white'>('black');
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -183,61 +214,99 @@
 			<input type="checkbox" class="invisible" bind:checked={showColorPallet} />
 		</div>
 	</label>
+	{#snippet colorButton(color: string)}
+		<button
+			class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
+			style="background-color: {color}"
+			onclick={() => {
+				value = color;
+				showColorPallet = false;
+			}}
+			aria-label="Select color {color}"
+		></button>
+	{/snippet}
+
 	{#if showColorPallet}
 		<!-- カラー選択UI -->
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute z-10 mt-2 grid w-full rounded-lg shadow-lg"
+			class="bg-sub absolute z-20 mt-2 w-full rounded-lg p-3 shadow-lg"
 		>
-			<div class="grid grid-cols-8 gap-2 p-2">
-				{#each [...chroma.brewer.Paired, ...chroma.brewer.Set3] as color}
-					<button
-						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
-						style="background-color: {color}"
-						onclick={() => {
-							value = color;
-							showColorPallet = false;
-						}}
-						aria-label="Select color {color}"
-					></button>
-				{/each}
-			</div>
-			<div class="flex w-full items-center justify-center pb-2">
+			<HorizontalSelectBox
+				bind:group={selectedColorBrewerScheme}
+				options={[
+					{ key: 'Paired', name: '色:Paired' },
+					{ key: 'Set3', name: '色:Set3' }
+				]}
+			/>
+			<div class="flex w-full items-center pb-2 text-base"></div>
+			<div class="relative">
+				<div class="grid grid-cols-8 gap-2">
+					{#if selectedColorBrewerScheme === 'Paired'}
+						{#each [...chroma.brewer.Paired] as color}
+							{@render colorButton(color)}
+						{/each}
+					{:else if selectedColorBrewerScheme === 'Set3'}
+						{#each [...chroma.brewer.Set3] as color}
+							{@render colorButton(color)}
+						{/each}
+					{/if}
+				</div>
 				<button
-					class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-2 py-1"
+					class="absolute bottom-0 right-[5px] flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pl-2 pr-3"
 					onclick={() => {
 						value = 'transparent';
 						showColorPallet = false;
 					}}
 					aria-label="透明"
-					><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm">透明</span
+					><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm">透明色</span
 					></button
 				>
 			</div>
+
+			<div class="flex w-full items-center justify-center pb-2"></div>
 			<!-- TODO:ラインやポイントのパターン選択UIを追加 -- >
 			<!-- NOTE:patternが存在するかどうか -->
 			{#if pattern || pattern === null}
-				<div class="bg-base h-[1px] w-full"></div>
-				<div class="grid grid-cols-8 gap-2 p-2">
-					{#each patternList as _pattern}
-						<button
-							class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full bg-white"
-							onclick={() => {
-								pattern = _pattern;
-								showColorPallet = false;
-							}}
-						>
-							{#if _pattern}
-								<img
-									src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
-									alt="pattern"
-									class="absolute h-full"
-								/>
-							{/if}</button
-						>
-					{/each}
+				{#snippet patternButton(_pattern: SpritePatternId)}
+					<button
+						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
+						style="background-color: {value};"
+						onclick={() => {
+							pattern = _pattern;
+							showColorPallet = false;
+						}}
+					>
+						{#if _pattern}
+							<img
+								src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
+								alt="pattern"
+								class="absolute h-full"
+							/>
+						{/if}
+					</button>
+				{/snippet}
+				<div class="bg-base mb-4 h-[1px] w-full"></div>
+				<HorizontalSelectBox
+					bind:group={selectedPpattern}
+					options={[
+						{ key: 'black', name: 'パターン:黒' },
+						{ key: 'white', name: 'パターン:白' }
+					]}
+				/>
+				<div class="flex w-full items-center pb-2 text-base"></div>
+				<div class="grid grid-cols-8 gap-2 pb-2">
+					{#if selectedPpattern === 'black'}
+						{#each patternBlackList as _pattern}
+							{@render patternButton(_pattern)}
+						{/each}
+					{:else if selectedPpattern === 'white'}
+						{#each patternWhiteList as _pattern}
+							{@render patternButton(_pattern)}
+						{/each}
+					{/if}
 				</div>
-				<div class="flex w-full items-center justify-center pb-2">
+				<div class="flex w-full items-center justify-end pb-2">
 					<button
 						class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
 						onclick={() => {

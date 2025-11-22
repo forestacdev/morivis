@@ -976,7 +976,7 @@ export const getSequentSchemeColors = (
 	return COLOR_BREWER[scheme][count];
 };
 // 単色の基準にする色
-export type BaseSingleColor = ColorBrewer['Paired'][12][number];
+export type BaseSingleColor = ColorBrewer['Paired'][12][number] | ColorBrewer['Set3'][12][number];
 
 // マッチングに使用する色
 export type BaseMatchColor =
