@@ -562,7 +562,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '面積による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 500],
+						range: [0, 100],
 						divisions: 9
 					}
 				},
@@ -572,7 +572,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '第一樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 606.0],
+						range: [0, 200.0],
 						divisions: 9
 					}
 				},
@@ -582,7 +582,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '第二樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'BuGn',
-						range: [0, 632.0],
+						range: [0, 200.0],
 						divisions: 9
 					}
 				},
