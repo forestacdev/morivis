@@ -74,12 +74,22 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#349f1c',
+						value: '#33a02c',
 						pattern: null
 					}
 				},
 				{
 					...TREE_MATCH_COLOR_STYLE
+				},
+				{
+					type: 'step',
+					key: '道から距離',
+					name: '道からの距離による色分け',
+					mapping: {
+						scheme: 'BuGn',
+						range: [0, 500],
+						divisions: 5
+					}
 				}
 			]
 		},

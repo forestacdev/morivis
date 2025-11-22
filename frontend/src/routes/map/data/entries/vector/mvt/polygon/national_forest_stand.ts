@@ -593,8 +593,7 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						scheme: 'BuGn',
 						range: [0, 415.0],
-						divisions: 9,
-						values: ['#e6f2ff', '#ff00dd']
+						divisions: 9
 					}
 				}
 			]
