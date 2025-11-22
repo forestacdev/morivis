@@ -13,11 +13,13 @@
 
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import RecommendedData from './RecommendedData.svelte';
+	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
+		featureMenuData: FeatureMenuData | null;
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
@@ -25,6 +27,7 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
+		featureMenuData = $bindable(),
 		resetlayerEntries
 	}: Props = $props();
 	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
@@ -152,6 +155,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:featureMenuData
 					/>
 				</div>
 			{/if}
@@ -169,6 +173,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:featureMenuData
 					/>
 				</div>
 			{/if}
@@ -186,6 +191,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:featureMenuData
 					/>
 				</div>
 			{/if}
@@ -203,6 +209,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:featureMenuData
 					/>
 				</div>
 			{/if}

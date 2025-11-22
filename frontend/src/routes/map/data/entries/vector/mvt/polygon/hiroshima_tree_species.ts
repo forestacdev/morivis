@@ -88,9 +88,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '面積_ha',
 					name: '面積ごとの色分け',
 					mapping: {
+						scheme: 'RdPu',
 						range: [0, 9380],
-						divisions: 5,
-						values: ['#e0f7fa', '#ed006e']
+						divisions: 5
 					}
 				}
 			]

@@ -11,6 +11,6 @@
 </script>
 
 <div
-	class="w-full rounded-full p-3"
+	class="border-1 w-full rounded-full border-black p-3"
 	style="background: {colorMapManager.createSimpleCSSGradient(isColorMap)}"
 ></div>

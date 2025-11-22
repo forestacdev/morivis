@@ -98,9 +98,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '林齢',
 					name: '林齢の範囲による色分け',
 					mapping: {
+						scheme: 'BuGn',
 						range: [0, 100],
-						divisions: 5,
-						values: ['#e5f5f9', '#2ca25f']
+						divisions: 5
 					}
 				},
 				{
@@ -108,9 +108,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '面積',
 					name: '面積の範囲による色分け',
 					mapping: {
+						scheme: 'Oranges',
 						range: [0, 1],
-						divisions: 5,
-						values: ['#fee8c8', '#e34a33']
+						divisions: 5
 					}
 				}
 			]

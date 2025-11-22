@@ -11,7 +11,7 @@ import type {
 	LayerSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
-import type { BaseSingleColor, BaseMatchColor } from '$routes/map/utils/color/color-brewer';
+import type { SequentialScheme, SequentialCount } from '$routes/map/utils/color/color-brewer';
 
 interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];
@@ -106,9 +106,9 @@ export interface ColorStepExpression {
 	key: string;
 	name: string;
 	mapping: {
+		scheme: SequentialScheme;
 		range: [number, number]; // min, max
-		divisions: number;
-		values: [string, string];
+		divisions: SequentialCount;
 	};
 }
 

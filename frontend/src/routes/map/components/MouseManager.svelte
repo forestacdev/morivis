@@ -148,39 +148,37 @@
 			if (import.meta.env.DEV) {
 				const features = mapStore.queryRenderedFeatures(e.point);
 
-				if (features.length === 0) {
-					console.warn('No features found at clicked point.');
-					return;
-				}
-				console.log('Clicked features:', features);
+				if (features.length) {
+					console.log('Clicked features:', features);
 
-				const prop = features[0].properties;
+					const prop = features[0].properties;
 
-				// keyを配列で取得
-				const keys = Object.keys(prop);
-				console.log(keys);
+					// keyを配列で取得
+					const keys = Object.keys(prop);
+					console.log(keys);
 
-				// expressions配列を作成
-				const expressions = keys.map((key) => {
-					return {
-						key: key,
-						name: key,
-						value: `{${key}}`
-					};
-				});
+					// expressions配列を作成
+					const expressions = keys.map((key) => {
+						return {
+							key: key,
+							name: key,
+							value: `{${key}}`
+						};
+					});
 
-				console.log(expressions);
+					console.log(expressions);
 
-				if (features[0].layer.id === '@tile_index_layer') {
-					const xyz = {
-						x: prop.x,
-						y: prop.y,
-						z: prop.z
-					};
+					if (features[0].layer.id === '@tile_index_layer') {
+						const xyz = {
+							x: prop.x,
+							y: prop.y,
+							z: prop.z
+						};
 
-					console.log(xyz);
+						console.log(xyz);
 
-					//クリップボードにコピー
+						//クリップボードにコピー
+					}
 				}
 			}
 			if (showDataEntry) return;

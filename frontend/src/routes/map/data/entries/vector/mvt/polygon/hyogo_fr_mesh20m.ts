@@ -91,9 +91,9 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '最大樹冠高',
 					name: '最大樹冠高による色分け',
 					mapping: {
+						scheme: 'RdPu',
 						range: [1.0, 50],
-						divisions: 5,
-						values: ['#e6f2ff', '#ff00dd']
+						divisions: 5
 					}
 				}
 			]
