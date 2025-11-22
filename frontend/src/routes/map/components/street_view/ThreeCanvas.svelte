@@ -82,19 +82,7 @@
 		}
 	});
 
-	let spheres: THREE.Mesh[] = []; // 球体を管理する配列
 
-	// 球体を削除する関数
-	const removeSpheres = () => {
-		if (spheres.length > 0) {
-			spheres.forEach((sphere) => {
-				if (!scene) return;
-				scene.remove(sphere);
-				sphere.geometry.dispose(); // メモリ解放
-			});
-			spheres = []; // 配列を空にする
-		}
-	};
 
 	// テクスチャローダーを初期化
 	textureLoader = new THREE.TextureLoader();
@@ -172,21 +160,21 @@
 		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
 		scene.add(wireframeCube);
 
-		const lineLoader = new FGB2DLineLoader(SCENE_CENTER_COORDS);
-		const lineGeometry = await lineLoader.load(`${STREET_VIEW_DATA_PATH}/links.fgb`, {
-			color: new THREE.Color(0x00ff00),
-			speed: 1.0,
-			height: -10.1,
-			proj: 'EPSG:6675'
-		});
+		// const lineLoader = new FGB2DLineLoader(SCENE_CENTER_COORDS);
+		// const lineGeometry = await lineLoader.load(`${STREET_VIEW_DATA_PATH}/links.fgb`, {
+		// 	color: new THREE.Color(0x00ff00),
+		// 	speed: 1.0,
+		// 	height: -10.1,
+		// 	proj: 'EPSG:6675'
+		// });
 
-		const lineMaterial = new THREE.LineBasicMaterial({
-			color: 0x00ff00
-		});
-		const lineMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
-		lineMesh.material.depthWrite = false; // 深度バッファに書き込まない
-		lineMesh.renderOrder = 1;
-		lineMesh.name = 'lineMesh';
+		// const lineMaterial = new THREE.LineBasicMaterial({
+		// 	color: 0x00ff00
+		// });
+		// const lineMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
+		// lineMesh.material.depthWrite = false; // 深度バッファに書き込まない
+		// lineMesh.renderOrder = 1;
+		// lineMesh.name = 'lineMesh';
 
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -261,19 +249,19 @@
 			const { angle, featureData, texture, photo_id, node_id } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
 
-			const { x, z } = mapPotisonToWorldPotison(
-				featureData.geometry.coordinates[0],
-				featureData.geometry.coordinates[1]
-			);
+			// const { x, z } = mapPotisonToWorldPotison(
+			// 	featureData.geometry.coordinates[0],
+			// 	featureData.geometry.coordinates[1]
+			// );
 
-			console.log(`ワールド座標: x=${x}, z=${z}`); // ログ追加
+			// console.log(`ワールド座標: x=${x}, z=${z}`); // ログ追加
 
-			// lineMeshの位置を更新
-			if (!scene) return;
-			const lineMesh = scene.getObjectByName('lineMesh');
-			if (lineMesh) {
-				lineMesh.position.set(-x * 30, 0 * 30, -z * 30);
-			}
+			// // lineMeshの位置を更新
+			// if (!scene) return;
+			// const lineMesh = scene.getObjectByName('lineMesh');
+			// if (lineMesh) {
+			// 	lineMesh.position.set(-x * 30, 0 * 30, -z * 30);
+			// }
 
 			// 次のテクスチャスロットを決定
 			const nextIndex = (currentTextureIndex + 1) % 3;
