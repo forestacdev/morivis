@@ -171,7 +171,7 @@
 
 	let showColorPallet = $state<boolean>(false);
 	let containerRef = $state<HTMLElement>();
-	if (label === 'スギ') showColorPallet = true; // デバッグ用
+	// if (label === 'スギ') showColorPallet = true; // デバッグ用
 
 	let selectedColorBrewerScheme = $state<'Paired' | 'Set3'>('Paired');
 	let selectedPpattern = $state<'black' | 'white'>('black');

@@ -14,10 +14,12 @@
 	import ColorScaleStep from './ColorScaleStep.svelte';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
+		getSequentSchemeColors,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
-
+	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
+	import { generateStepGradient } from '$routes/map/utils/color_mapping';
 	interface Props {
 		setExpression: ColorsExpression;
 	}
@@ -28,6 +30,13 @@
 			return generateNumberAndColorMap(setExpression.mapping);
 		}
 	});
+
+	const rangeMax = $state.raw(
+		setExpression && 'range' in setExpression.mapping ? setExpression.mapping.range[1] : 1000
+	);
+	const rangeMin = $state.raw(
+		setExpression && 'range' in setExpression.mapping ? setExpression.mapping.range[0] : 0
+	);
 </script>
 
 {#if setExpression.type === 'single'}
@@ -74,6 +83,23 @@
 			<ColorScaleStep isColorMap={_isColorMap as SequentialScheme} />
 		{/snippet}
 	</StyleColorMapPulldownBox>
+
+	<RangeSliderDouble
+		label="範囲"
+		bind:lowerValue={setExpression.mapping.range[0]}
+		bind:upperValue={setExpression.mapping.range[1]}
+		max={rangeMax}
+		min={rangeMin}
+		step={0.01}
+		primaryColor={generateStepGradient(
+			getSequentSchemeColors(setExpression.mapping.scheme, setExpression.mapping.divisions)
+		)}
+		minRangeColor={'#000000'}
+		maxRangeColor={getSequentSchemeColors(
+			setExpression.mapping.scheme,
+			setExpression.mapping.divisions
+		).at(-1)}
+	/>
 
 	<RangeSlider
 		label="分類数"

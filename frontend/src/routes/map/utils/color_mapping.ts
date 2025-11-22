@@ -65,6 +65,20 @@ export const generateNumberAndColorMap = (
 	const { range, divisions, scheme } = mapping;
 	const [min, max] = range;
 
+	// 小数点以下の桁数を決定（データの範囲から判断）
+	const dataRange = max - min;
+	let decimalPlaces: number;
+
+	if (dataRange >= 100) {
+		decimalPlaces = 0; // 100以上なら整数
+	} else if (dataRange >= 10) {
+		decimalPlaces = 1; // 10-100なら小数第1位
+	} else if (dataRange >= 1) {
+		decimalPlaces = 2; // 1-10なら小数第2位
+	} else {
+		decimalPlaces = 3; // 1未満なら小数第3位
+	}
+
 	// 優先順位: 1.正確にdivisions個 2.最小・最大を含む 3.できればきりの良い数字
 	const scale = Array.from({ length: divisions }, (_, i) => {
 		const ratio = i / (divisions - 1);
@@ -72,12 +86,15 @@ export const generateNumberAndColorMap = (
 
 		// 小数点以下を適度に丸める
 		const magnitude = Math.pow(10, Math.floor(Math.log10(max - min)) - 1);
-		return Math.round(value / magnitude) * magnitude;
+		const rounded = Math.round(value / magnitude) * magnitude;
+
+		// 指定した桁数に丸める
+		return Number(rounded.toFixed(decimalPlaces));
 	});
 
-	// 端は必ず元の値に
-	scale[0] = min;
-	scale[divisions - 1] = max;
+	// 端は必ず元の値に（同じく桁数調整）
+	scale[0] = Number(min.toFixed(decimalPlaces));
+	scale[divisions - 1] = Number(max.toFixed(decimalPlaces));
 
 	const colors = getSequentSchemeColors(scheme, divisions);
 
@@ -86,7 +103,6 @@ export const generateNumberAndColorMap = (
 		values: colors
 	};
 };
-
 /** step用のCSSカラースケール作成 */
 export const generateStepGradient = (colors: string[]): string => {
 	const step = 100 / colors.length;

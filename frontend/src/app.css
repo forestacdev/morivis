@@ -162,6 +162,23 @@ body {
 	}
 }
 
+@utility c-scroll-sub {
+	/* スクロールバー */
+	-webkit-overflow-scrolling: touch;
+
+	&::-webkit-scrollbar {
+		width: 5px;
+		height: 5px;
+	}
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	&::-webkit-scrollbar-thumb {
+		@apply bg-accent;
+		border-radius: 9999px;
+	}
+}
+
 @utility c-scroll-hidden {
 	/* スクロールバー非表示 */
 	-ms-overflow-style: none;

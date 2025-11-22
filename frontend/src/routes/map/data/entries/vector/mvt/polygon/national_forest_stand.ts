@@ -552,7 +552,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '材積による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 81006.0],
+						range: [0, 5000],
 						divisions: 9
 					}
 				},

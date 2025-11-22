@@ -14,6 +14,7 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;
@@ -47,16 +48,20 @@
 
 	<Accordion label={'縁'} icon={'material-symbols:line-curve'} bind:value={showOutlineOption}>
 		<Switch label={'表示'} bind:value={layerEntry.style.outline.show} />
-		<RangeSlider
-			label="縁の幅"
-			bind:value={layerEntry.style.outline.width}
-			min={0}
-			max={10}
-			step={0.01}
-		/>
-		<div class="flex flex-col gap-2 pb-2">
-			<ColorPicker label="縁の色" bind:value={layerEntry.style.outline.color} />
-		</div>
+		{#if layerEntry.style.outline.show}
+			<div transition:slide={{ duration: 300 }}>
+				<RangeSlider
+					label="縁の幅"
+					bind:value={layerEntry.style.outline.width}
+					min={0}
+					max={10}
+					step={0.01}
+				/>
+				<div class="flex flex-col gap-2 pb-2">
+					<ColorPicker label="縁の色" bind:value={layerEntry.style.outline.color} />
+				</div>
+			</div>
+		{/if}
 	</Accordion>
 {/if}
 
