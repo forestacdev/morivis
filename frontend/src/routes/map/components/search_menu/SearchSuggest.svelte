@@ -25,6 +25,7 @@
 	import maplibregl from 'maplibre-gl';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -274,6 +275,7 @@
 							<button
 								onclick={() => {
 									searchSuggests = null;
+
 									focusFeature(result);
 								}}
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
@@ -296,7 +298,12 @@
 							<button
 								onclick={() => {
 									searchSuggests = null;
-									showDataEntry = result.data;
+									if ($activeLayerIdsStore.includes(result.layerId)) {
+										selectedLayerId.set(result.layerId);
+										isStyleEdit.set(true);
+									} else {
+										showDataEntry = result.data;
+									}
 								}}
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
 							>
