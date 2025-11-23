@@ -149,6 +149,9 @@ importers:
       maplibre-gl:
         specifier: ^5.4.0
         version: 5.5.0
+      moji:
+        specifier: ^0.5.1
+        version: 0.5.1
       ol:
         specifier: ^10.5.0
         version: 10.5.0
@@ -3779,6 +3782,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  moji@0.5.1:
+    resolution: {integrity: sha512-xYylXOjBS9mE/d690InK3Y74NpE0El0TmAKDmKJveWk9jds/0Tl7MQP4yhavS0U64diEq+5ey2905nhCpIHE+Q==}
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -3826,6 +3832,10 @@ packages:
 
   oauth-sign@0.9.0:
     resolution: {integrity: sha512-fexhUFFPTGV8ybAtSIGbV6gOkSv8UtRbDBnAyLQw4QPKkgNlsH2ByPGtMUqdWkos6YCRmAqViwgZrJc/mRDzZQ==}
+
+  object-assign@3.0.0:
+    resolution: {integrity: sha512-jHP15vXVGeVh1HuaA2wY6lxk+whK/x4KBG88VXeRma7CCun7iGD5qPc4eYykQ9sdQvg8jkwFKsSxHln2ybW3xQ==}
+    engines: {node: '>=0.10.0'}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -9137,6 +9147,10 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
+  moji@0.5.1:
+    dependencies:
+      object-assign: 3.0.0
+
   mri@1.2.0: {}
 
   mrmime@2.0.1: {}
@@ -9167,6 +9181,8 @@ snapshots:
   nwsapi@2.2.20: {}
 
   oauth-sign@0.9.0: {}
+
+  object-assign@3.0.0: {}
 
   object-assign@4.1.1: {}
 

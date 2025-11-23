@@ -65,6 +65,7 @@
 	import { page } from '$app/state';
 	import { getPropertiesFromPMTiles } from './utils/pmtiles';
 	import { lonLatToTileCoords } from './utils/tile';
+	import { getWikipediaArticle } from './api/wikipedia';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -423,6 +424,16 @@
 			featureMenuData = data;
 		}
 
+		if (result.type === 'address') {
+			const article = await getWikipediaArticle(result.name);
+			if (article) {
+				console.log('Wikipedia article:', article);
+				return;
+			} else {
+				console.log('No Wikipedia article found for:', result.name);
+			}
+		}
+
 		// TODO
 
 		selectedSearchId = result.id as number;
@@ -533,7 +544,7 @@
 			bind:selectionMarkerLngLat
 			bind:searchResults
 			bind:searchGeojsonData
-            {selectedSearchId}
+			{selectedSearchId}
 			{focusFeature}
 		/>
 
