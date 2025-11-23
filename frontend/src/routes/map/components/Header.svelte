@@ -18,6 +18,7 @@
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
+	import SearchSuggest from './search_menu/SearchSuggest.svelte';
 
 	interface SearchData {
 		layer_id: string;
@@ -166,7 +167,25 @@
 	let showSearchForm = $state<boolean>(true);
 </script>
 
-<div class=" bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
+<!-- サジェスト -->
+<div class="pointer-events-none relative w-full">
+	<div class="absolute top-16 z-10 flex w-full items-center justify-between p-2 max-lg:hidden">
+		<!-- 左側 -->
+		<div class="flex h-full items-center gap-4 pl-2"></div>
+		<div class="flex max-w-[600px] flex-1 items-center">
+			<SearchSuggest
+				bind:featureMenuData
+				bind:inputSearchWord
+				{layerEntries}
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+			/>
+		</div>
+		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>
+	</div>
+</div>
+
+<div class="bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<!-- <button
@@ -193,6 +212,32 @@
 		</div>
 	</div>
 	<!-- 中央 -->
+	{#if !$showDataMenu}
+		<div
+			bind:this={searchContainerRef}
+			class="border-sub border-1 relative flex max-w-[600px] flex-1 items-center rounded-full"
+		>
+			<Geocoder
+				{layerEntries}
+				bind:results
+				bind:inputSearchWord
+				searchFeature={(v) => searchFeature(v)}
+			/>
+
+			<button
+				onclick={() => {
+					if (inputSearchWord) {
+						searchFeature(inputSearchWord);
+					}
+				}}
+				disabled={$isProcessing}
+				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
+			>
+				<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
+			</button>
+		</div>
+	{/if}
+
 	<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
 		<Geocoder
 			{layerEntries}
@@ -214,28 +259,6 @@
 
 	<!-- 右側 -->
 	<div class="flex items-center rounded-lg pr-1 max-lg:hidden">
-		{#if !$showDataMenu}
-			<div bind:this={searchContainerRef} class="flex items-center">
-				<Geocoder
-					{layerEntries}
-					bind:results
-					bind:inputSearchWord
-					searchFeature={(v) => searchFeature(v)}
-				/>
-
-				<button
-					onclick={() => {
-						if (inputSearchWord) {
-							searchFeature(inputSearchWord);
-						}
-					}}
-					disabled={$isProcessing}
-					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
-				>
-					<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
-				</button>
-			</div>
-		{/if}
 		<GeolocateControl />
 		<StreetViewControl />
 

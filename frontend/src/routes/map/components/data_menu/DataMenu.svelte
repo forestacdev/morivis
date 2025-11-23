@@ -124,9 +124,11 @@
 			</div>
 
 			{#if selected === 'system'}
-				<div class="bg-base relative flex w-full rounded-full border-[1px] px-4 lg:max-w-[400px]">
+				<div
+					class="border-sub border-1 relative flex w-full rounded-full bg-black px-4 lg:max-w-[400px]"
+				>
 					<input
-						class="c-search-form tex grid w-full text-left text-gray-500"
+						class="c-search-form tex grid w-full text-left text-base"
 						type="text"
 						placeholder="検索"
 						bind:value={searchWord}

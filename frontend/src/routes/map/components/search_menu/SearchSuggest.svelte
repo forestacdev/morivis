@@ -222,49 +222,46 @@
 	// });
 </script>
 
-<!-- レイヤーメニュー -->
 {#if $showSearchSuggest && !$showSearchMenu && results && results.length > 0}
-	<div class="pointer-events-none absolute z-10 flex w-full justify-end pr-[20px] pt-[80px]">
-		<div
-			transition:fly={{ duration: 200, y: 10, opacity: 0, delay: 100 }}
-			class="w-side-menu pointer-events-auto flex max-h-[calc(100dvh-300px)] flex-col gap-2 rounded-lg bg-black/80"
-		>
-			{#if isLoading}
-				<div class="flex w-full items-center justify-center">
-					<div
-						class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
-					></div>
-				</div>
-			{:else if results}
+	<div
+		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
+		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
+	>
+		{#if isLoading}
+			<div class="flex w-full items-center justify-center">
 				<div
-					class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
-				>
-					{#each results as result (result)}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
-							<div class="grid shrink-0 place-items-center">
-								{#if result.propId && propData[result.propId] && propData[result.propId].image}
-									<img
-										src={propData[result.propId].image}
-										alt="Icon"
-										class="h-12 w-12 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="grid h-12 w-12 place-items-center">
-										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
-									</div>
-								{/if}
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
-								<span class="text-xs">{result.location ?? '---'}</span>
-							</div>
-						</button>
-					{/each}
-				</div>
-			{/if}
-		</div>
+					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
+				></div>
+			</div>
+		{:else if results}
+			<div
+				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
+			>
+				{#each results as result (result)}
+					<button
+						onclick={() => focusFeature(result)}
+						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+					>
+						<div class="grid shrink-0 place-items-center">
+							{#if result.propId && propData[result.propId] && propData[result.propId].image}
+								<img
+									src={propData[result.propId].image}
+									alt="Icon"
+									class="h-12 w-12 rounded-full object-cover"
+								/>
+							{:else}
+								<div class="grid h-12 w-12 place-items-center">
+									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+								</div>
+							{/if}
+						</div>
+						<div class="flex w-full flex-col justify-center gap-[1px]">
+							<span class="">{result.name}</span>
+							<span class="text-xs">{result.location ?? '---'}</span>
+						</div>
+					</button>
+				{/each}
+			</div>
+		{/if}
 	</div>
 {/if}

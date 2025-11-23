@@ -19,7 +19,6 @@
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
@@ -480,14 +479,6 @@
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 			bind:results
-		/>
-
-		<SearchSuggest
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
