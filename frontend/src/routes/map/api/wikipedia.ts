@@ -2,6 +2,10 @@
 interface WikipediaResponse {
 	batchcomplete: string;
 	query: {
+		redirects?: Array<{
+			from: string;
+			to: string;
+		}>;
 		pages: {
 			[pageId: string]: WikipediaPage;
 		};
@@ -30,6 +34,7 @@ interface WikipediaPage {
 	};
 	pageimage?: string;
 	missing?: boolean; // ページが存在しない場合
+	redirect?: string; // リダイレクトページの場合
 }
 
 // 簡略化された型（実際に使う部分のみ）
@@ -43,6 +48,8 @@ export interface WikiArticle {
 		height: number;
 	};
 	url: string;
+	wasRedirected?: boolean; // リダイレクトされたかどうか
+	originalTitle?: string; // 元のタイトル
 }
 
 // Wikipedia APIで記事情報を取得
@@ -52,11 +59,15 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		action: 'query',
 		format: 'json',
 		titles: title,
-		prop: 'extracts|info|pageimages',
+		prop: 'extracts|info|pageimages|coordinates|categories|revisions',
 		exintro: 'true',
 		explaintext: 'true',
 		inprop: 'url',
 		pithumbsize: '500',
+		redirects: '1',
+		clshow: '!hidden', // 隠しカテゴリを除外
+		rvprop: 'timestamp', // 最終更新日時
+		rvlimit: '1',
 		origin: '*'
 	});
 
@@ -64,12 +75,22 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		const response = await fetch(`${endpoint}?${params}`);
 		const data: WikipediaResponse = await response.json();
 
+		// リダイレクト情報を取得
+		const redirectInfo = data.query.redirects?.[0];
+
 		const pages = data.query.pages;
 		const pageId = Object.keys(pages)[0];
 		const page = pages[pageId];
 
 		// ページが存在しない場合
 		if (page.missing || pageId === '-1') {
+			console.warn('ページが見つかりません:', title);
+			return null;
+		}
+
+		// extractが空の場合（リダイレクトのみで実体がない）
+		if (!page.extract) {
+			console.warn('記事の内容が空です:', title);
 			return null;
 		}
 
@@ -78,7 +99,9 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 			title: page.title,
 			extract: page.extract,
 			thumbnail: page.thumbnail,
-			url: page.fullurl
+			url: page.fullurl,
+			wasRedirected: !!redirectInfo,
+			originalTitle: redirectInfo ? redirectInfo.from : title
 		};
 	} catch (error) {
 		console.error('Wikipedia API Error:', error);
