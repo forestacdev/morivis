@@ -21,8 +21,11 @@ export const normalizeSchoolName = (name: string): string => {
 		return String.fromCharCode(s.charCodeAt(0) - 0xfee0);
 	});
 
-	// 2. 先頭の「私立」を削除
+	// 2. 先頭の私立、県立、道立、都立を削除
 	normalized = normalized.replace(/^私立/, '');
+	normalized = normalized.replace(/^県立/, '');
+	normalized = normalized.replace(/^道立/, '');
+	normalized = normalized.replace(/^都立/, '');
 
 	// 2. 「県立」の補完
 	const prefectures = [

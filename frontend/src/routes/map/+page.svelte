@@ -10,6 +10,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
+	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
@@ -65,7 +66,8 @@
 	import { page } from '$app/state';
 	import { getPropertiesFromPMTiles } from './utils/pmtiles';
 	import { lonLatToTileCoords } from './utils/tile';
-	import { getWikipediaArticle } from './api/wikipedia';
+	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
+	import { normalizeSchoolName } from './utils/normalized';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -136,6 +138,7 @@
 
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
+	let wikiMenuData = $state<WikiArticle | null>(null);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -425,10 +428,10 @@
 		}
 
 		if (result.type === 'address') {
-			const article = await getWikipediaArticle(result.name);
+			const name = normalizeSchoolName(result.name);
+			const article = await getWikipediaArticle(name);
 			if (article) {
-				console.log('Wikipedia article:', article);
-				return;
+				wikiMenuData = article;
 			} else {
 				console.log('No Wikipedia article found for:', result.name);
 			}
@@ -550,6 +553,7 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		<SearchFeatureMenu bind:wikiMenuData />
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>

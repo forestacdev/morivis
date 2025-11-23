@@ -33,7 +33,7 @@ interface WikipediaPage {
 }
 
 // 簡略化された型（実際に使う部分のみ）
-interface WikiArticle {
+export interface WikiArticle {
 	pageId: number;
 	title: string;
 	extract: string;
