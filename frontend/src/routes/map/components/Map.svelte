@@ -22,6 +22,7 @@
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
+	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
@@ -703,6 +704,16 @@
 			bind:lngLat={selectionMarkerLngLat}
 		/>
 	{/key}
+
+	{#if selectedSearchId && searchGeojsonData}
+		{@const feature = searchGeojsonData?.features.find((f) => f.id === selectedSearchId)}
+		{@const prop = {
+			id: feature?.id,
+			point: (feature?.geometry.type === 'Point' && feature.geometry.coordinates) || [0, 0],
+			...feature?.properties
+		}}
+		<SearchMarker map={maplibreMap} bind:selectedSearchId {prop} />
+	{/if}
 
 	<AngleMarker
 		map={maplibreMap}

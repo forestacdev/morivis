@@ -198,7 +198,7 @@
 	{#if !$showDataMenu}
 		<div
 			bind:this={searchContainerRef}
-			class="border-sub border-1 relative flex max-w-[600px] flex-1 items-center rounded-full {showDataEntry
+			class="border-sub border-1 relative flex max-w-[400px] flex-1 items-center rounded-full {showDataEntry
 				? 'pointer-events-none opacity-0'
 				: ''}"
 		>
@@ -246,7 +246,7 @@
 <div class="pointer-events-none relative w-full">
 	<div class="absolute top-0 z-10 flex w-full items-center justify-between p-2 max-lg:hidden">
 		<div class="flex h-full items-center gap-4 pl-2"></div>
-		<div class="flex max-w-[600px] flex-1 items-center">
+		<div class="flex max-w-[400px] flex-1 items-center">
 			<SearchSuggest
 				{focusFeature}
 				bind:featureMenuData

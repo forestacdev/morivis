@@ -158,8 +158,10 @@
 	$effect(() => {
 		if (selectedSearchId) {
 			mapStore.setFilter('@search_result', ['!=', ['id'], selectedSearchId]);
+			mapStore.setFilter('@search_result_label', ['!=', ['id'], selectedSearchId]);
 		} else {
 			mapStore.setFilter('@search_result', null);
+			mapStore.setFilter('@search_result_label', null);
 		}
 	});
 
@@ -398,7 +400,7 @@
 		setPoint(Number(streetViewNodeId));
 	});
 
-	const focusFeature = async (result: ResultData) => {
+	const focusFeature = async (result: ResultPoiData | ResultAddressData) => {
 		if (result.type === 'poi' && result.propId) {
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
@@ -423,15 +425,15 @@
 
 		// TODO
 
-		selectedSearchId = result.id;
+		selectedSearchId = result.id as number;
 		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.flyTo(result.point, {
+		mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
 			zoom: 17,
 			duration: 800
 		});
 
-		selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-		showSelectionMarker = true;
+		// selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
+		// showSelectionMarker = true;
 	};
 
 	onDestroy(() => {
@@ -531,6 +533,7 @@
 			bind:selectionMarkerLngLat
 			bind:searchResults
 			bind:searchGeojsonData
+            {selectedSearchId}
 			{focusFeature}
 		/>
 

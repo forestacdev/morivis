@@ -33,6 +33,7 @@
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
 		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchId: number | null;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -44,6 +45,7 @@
 		selectionMarkerLngLat = $bindable(),
 		searchResults = $bindable(),
 		searchGeojsonData = $bindable(),
+		selectedSearchId = $bindable(),
 		focusFeature
 	}: Props = $props();
 
@@ -184,11 +186,14 @@
 				class="c-scroll flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
 				{#each searchResults as result (result)}
-					{#if result.type === 'poi'}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
+					<button
+						onclick={() => focusFeature(result)}
+						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base {result.id &&
+						selectedSearchId === result.id
+							? 'bg-accent'
+							: ''}"
+					>
+						{#if result.type === 'poi'}
 							<div class="grid shrink-0 place-items-center">
 								{#if result.propId && propData[result.propId] && propData[result.propId].image}
 									<img
@@ -206,12 +211,7 @@
 								<span class="">{result.name}</span>
 								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
 							</div>
-						</button>
-					{:else if result.type === 'address'}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
+						{:else if result.type === 'address'}
 							<div class="grid shrink-0 place-items-center">
 								<div class="grid h-12 w-12 place-items-center">
 									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
@@ -221,23 +221,8 @@
 								<span class="">{result.name}</span>
 								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
 							</div>
-						</button>
-					{:else if result.type === 'coordinate'}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
-							<div class="grid shrink-0 place-items-center">
-								<div class="grid h-12 w-12 place-items-center">
-									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
-								</div>
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
-								<span class="text-xs text-gray-500">{'座標検索'}</span>
-							</div>
-						</button>
-					{/if}
+						{/if}
+					</button>
 				{/each}
 				<div class="h-[200px] w-full shrink-0"></div>
 			</div>
