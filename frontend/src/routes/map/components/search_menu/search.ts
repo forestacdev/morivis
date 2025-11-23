@@ -17,9 +17,49 @@ const detectAmbiguousOrder = (
 	confidence: number;
 } => {
 	let confidence = 0.5; // デフォルト信頼度
+	let lat = first;
+	let lng = second;
+	let order: 'lat_lng' | 'lng_lat' = 'lat_lng';
 
-	// デフォルト: 緯度, 経度の順序として扱う
-	return { lat: first, lng: second, order: 'lat_lng', confidence: 0.5 };
+	// ヒューリスティック判定
+
+	// 1. 絶対値が大きい方が経度の可能性が高い
+	if (Math.abs(first) > Math.abs(second) + 10) {
+		// firstの方が明らかに大きい → firstが経度の可能性
+		lat = second;
+		lng = first;
+		order = 'lng_lat';
+		confidence = 0.7;
+	} else if (Math.abs(second) > Math.abs(first) + 10) {
+		// secondの方が明らかに大きい → secondが経度の可能性
+		lat = first;
+		lng = second;
+		order = 'lat_lng';
+		confidence = 0.7;
+	}
+	// 2. 日本付近の座標パターン（北緯30-45度、東経130-145度）
+	else if (first >= 30 && first <= 45 && second >= 130 && second <= 145) {
+		// 日本の典型的な緯度,経度パターン
+		lat = first;
+		lng = second;
+		order = 'lat_lng';
+		confidence = 0.8;
+	} else if (second >= 30 && second <= 45 && first >= 130 && first <= 145) {
+		// 経度,緯度パターン
+		lat = second;
+		lng = first;
+		order = 'lng_lat';
+		confidence = 0.8;
+	}
+	// 3. 一般的な慣習: 緯度が先（Google Maps等）
+	else {
+		lat = first;
+		lng = second;
+		order = 'lat_lng';
+		confidence = 0.55; // わずかに高めの信頼度
+	}
+
+	return { lat, lng, order, confidence };
 };
 
 export const detectCoordinateOrder = (input: string): CoordinateResult => {

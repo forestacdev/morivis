@@ -19,13 +19,15 @@
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import turfBbox from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
+	import maplibregl from 'maplibre-gl';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
-		results: ResultData[] | null;
+		searchResults: ResultData[] | null;
+		focusFeature: (result: ResultData) => void;
 	}
 
 	let {
@@ -34,7 +36,8 @@
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
-		results = $bindable()
+		searchResults = $bindable(),
+		focusFeature
 	}: Props = $props();
 
 	interface SearchData {
@@ -77,43 +80,9 @@
 
 	let isLoading = $state<boolean>(false);
 
-	const focusFeature = async (result: ResultData) => {
-		if (result.propId) {
-			const tileCoords = lonLatToTileCoords(
-				result.point[0],
-				result.point[1],
-				14 // ズームレベル
-			);
-			const prop = await getPropertiesFromPMTiles(
-				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-				tileCoords,
-				result.layerId,
-				result.featureId
-			);
-
-			const data: FeatureMenuData = {
-				layerId: result.layerId,
-				properties: prop,
-				point: result.point,
-				featureId: result.featureId
-			};
-			featureMenuData = data;
-		}
-
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 17
-		});
-
-		selectionMarkerLngLat = result.point;
-		showSelectionMarker = true;
-	};
-
 	const closeSearchMenu = () => {
 		$showSearchMenu = false;
-		results = null;
+		searchResults = null;
 		mapStore.setData('search_result', {
 			type: 'FeatureCollection',
 			features: []
@@ -121,10 +90,10 @@
 	};
 
 	$effect(() => {
-		if (results && results.length > 0) {
+		if (searchResults && searchResults.length > 0) {
 			const geojson = {
 				type: 'FeatureCollection',
-				features: results.map((result) => ({
+				features: searchResults.map((result) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'Point',
@@ -183,33 +152,65 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
-		{#if results}
+		{#if searchResults}
 			<div
 				class="c-scroll flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
 			>
-				{#each results as result (result)}
-					<button
-						onclick={() => focusFeature(result)}
-						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-					>
-						<div class="grid shrink-0 place-items-center">
-							{#if result.propId && propData[result.propId] && propData[result.propId].image}
-								<img
-									src={propData[result.propId].image}
-									alt="Icon"
-									class="h-12 w-12 rounded-full object-cover"
-								/>
-							{:else}
+				{#each searchResults as result (result)}
+					{#if result.type === 'poi'}
+						<button
+							onclick={() => focusFeature(result)}
+							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						>
+							<div class="grid shrink-0 place-items-center">
+								{#if result.propId && propData[result.propId] && propData[result.propId].image}
+									<img
+										src={propData[result.propId].image}
+										alt="Icon"
+										class="h-12 w-12 rounded-full object-cover"
+									/>
+								{:else}
+									<div class="grid h-12 w-12 place-items-center">
+										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+									</div>
+								{/if}
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px]">
+								<span class="">{result.name}</span>
+								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+							</div>
+						</button>
+					{:else if result.type === 'address'}
+						<button
+							onclick={() => focusFeature(result)}
+							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						>
+							<div class="grid shrink-0 place-items-center">
 								<div class="grid h-12 w-12 place-items-center">
 									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
 								</div>
-							{/if}
-						</div>
-						<div class="flex w-full flex-col justify-center gap-[1px]">
-							<span class="">{result.name}</span>
-							<span class="text-xs">{result.location ?? '---'}</span>
-						</div>
-					</button>
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px]">
+								<span class="">{result.name}</span>
+								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+							</div>
+						</button>
+					{:else if result.type === 'coordinate'}
+						<button
+							onclick={() => focusFeature(result)}
+							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						>
+							<div class="grid shrink-0 place-items-center">
+								<div class="grid h-12 w-12 place-items-center">
+									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+								</div>
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px]">
+								<span class="">{result.name}</span>
+								<span class="text-xs text-gray-500">{'座標検索'}</span>
+							</div>
+						</button>
+					{/if}
 				{/each}
 				<div class="h-[200px] w-full shrink-0"></div>
 			</div>

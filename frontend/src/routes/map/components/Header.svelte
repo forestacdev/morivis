@@ -19,6 +19,29 @@
 	import { showNotification } from '$routes/stores/notification';
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
+	import { detectCoordinateOrder } from './search_menu/search';
+
+	interface Props {
+		layerEntries: GeoDataEntry[];
+		inputSearchWord: string;
+		featureMenuData: FeatureMenuData | null;
+		showSelectionMarker: boolean;
+		selectionMarkerLngLat: LngLat | null;
+		searchResults: ResultData[] | null;
+		resetlayerEntries: () => void; // レイヤーのリセット関数
+		focusFeature: (result: ResultData) => void;
+	}
+
+	let {
+		layerEntries,
+		featureMenuData = $bindable(),
+		inputSearchWord = $bindable(),
+		showSelectionMarker = $bindable(),
+		selectionMarkerLngLat = $bindable(),
+		searchResults = $bindable(),
+		resetlayerEntries,
+		focusFeature
+	}: Props = $props();
 
 	interface SearchData {
 		layer_id: string;
@@ -59,27 +82,15 @@
 		});
 	});
 
-	interface Props {
-		layerEntries: GeoDataEntry[];
-		inputSearchWord: string;
-		featureMenuData: FeatureMenuData | null;
-		showSelectionMarker: boolean;
-		selectionMarkerLngLat: LngLat | null;
-		results: ResultData[] | null;
-		resetlayerEntries: () => void; // レイヤーのリセット関数
-	}
-
-	let {
-		layerEntries,
-		featureMenuData = $bindable(),
-		inputSearchWord = $bindable(),
-		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable(),
-		results = $bindable(),
-		resetlayerEntries
-	}: Props = $props();
+	let searchSuggests = $state<ResultData[] | null>(null);
 
 	const searchFeature = async (searchWord: string) => {
+		if (searchSuggests && searchSuggests.length > 0 && searchSuggests[0].type === 'coordinate') {
+			const data = searchSuggests[0];
+			focusFeature(data);
+			searchSuggests = null;
+			return;
+		}
 		isLoading = true;
 		isProcessing.set(true);
 		try {
@@ -103,7 +114,6 @@
 				return {
 					name: data.name,
 					location: dict[data.layer_id] || null,
-
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,
@@ -127,6 +137,7 @@
 							: null;
 
 						return {
+							type: 'address',
 							point: center,
 							name: properties.title,
 							location: address
@@ -134,13 +145,13 @@
 					});
 			}
 
-			results = [...resultsData, ...addressSearchData];
+			searchResults = [...resultsData, ...addressSearchData];
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {
 			isLoading = false;
 			isProcessing.set(false);
-			if (results && results.length > 0) {
+			if (searchResults && searchResults.length > 0) {
 				showSearchMenu.set(true);
 			} else {
 				showSearchMenu.set(false);
@@ -166,24 +177,6 @@
 
 	let showSearchForm = $state<boolean>(true);
 </script>
-
-<!-- サジェスト -->
-<div class="pointer-events-none relative w-full">
-	<div class="absolute top-16 z-10 flex w-full items-center justify-between p-2 max-lg:hidden">
-		<!-- 左側 -->
-		<div class="flex h-full items-center gap-4 pl-2"></div>
-		<div class="flex max-w-[600px] flex-1 items-center">
-			<SearchSuggest
-				bind:featureMenuData
-				bind:inputSearchWord
-				{layerEntries}
-				bind:showSelectionMarker
-				bind:selectionMarkerLngLat
-			/>
-		</div>
-		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>
-	</div>
-</div>
 
 <div class="bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
@@ -219,7 +212,8 @@
 		>
 			<Geocoder
 				{layerEntries}
-				bind:results
+				bind:searchResults
+				{searchSuggests}
 				bind:inputSearchWord
 				searchFeature={(v) => searchFeature(v)}
 			/>
@@ -269,5 +263,23 @@
 		>
 			<Icon icon="ic:round-menu" class="h-8 w-8" />
 		</button>
+	</div>
+</div>
+
+<!-- サジェスト -->
+<div class="pointer-events-none relative w-full">
+	<div class="absolute top-0 z-10 flex w-full items-center justify-between p-2 max-lg:hidden">
+		<div class="flex h-full items-center gap-4 pl-2"></div>
+		<div class="flex max-w-[600px] flex-1 items-center">
+			<SearchSuggest
+				bind:featureMenuData
+				bind:inputSearchWord
+				{layerEntries}
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+				bind:searchSuggests
+			/>
+		</div>
+		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>
 	</div>
 </div>

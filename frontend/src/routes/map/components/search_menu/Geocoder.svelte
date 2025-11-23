@@ -9,16 +9,16 @@
 	import { fade } from 'svelte/transition';
 	interface Props {
 		layerEntries: GeoDataEntry[];
-		results: ResultData[] | null;
+		searchResults: ResultData[] | null;
+		searchSuggests: ResultData[] | null;
 		inputSearchWord: string;
-
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
 	let {
 		layerEntries,
-
-		results = $bindable(),
+		searchResults = $bindable(),
+		searchSuggests,
 		inputSearchWord = $bindable(),
 		searchFeature
 	}: Props = $props();
@@ -45,7 +45,7 @@
 	};
 
 	$effect(() => {
-		if (!inputSearchWord) results = null;
+		if (!inputSearchWord) searchResults = null;
 	});
 
 	// 検索結果のリセット
@@ -70,7 +70,7 @@
 			search(inputSearchWord);
 		}
 	}}
-	placeholder="施設名/住所"
+	placeholder="施設名/住所/座標"
 	onfocus={() => showSearchSuggest.set(true)}
 />
 

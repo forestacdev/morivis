@@ -9,7 +9,6 @@
 	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
@@ -17,10 +16,11 @@
 	import { isProcessing, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData } from '$routes/map/utils/feature';
+	import type { ResultData, ResultPoiData } from '$routes/map/utils/feature';
 	import { debounce } from 'es-toolkit';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import { detectCoordinateOrder } from './search';
+	import maplibregl from 'maplibre-gl';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -28,6 +28,7 @@
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		searchSuggests: ResultData[] | null;
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		searchSuggests = $bindable()
 	}: Props = $props();
 
 	interface SearchData {
@@ -68,7 +70,7 @@
 		searchData.forEach((data) => {
 			const layerId = data.layer_id;
 
-			// TODO: location
+			// TODO: location名
 			const location = '森林文化アカデミー';
 			if (location) {
 				// レイヤー名が存在する場合のみ辞書に追加
@@ -77,10 +79,9 @@
 		});
 	});
 
-	let results = $state<ResultData[] | null>([]);
 	let isLoading = $state<boolean>(false);
 
-	const focusFeature = async (result: ResultData) => {
+	const focusFeature = async (result: ResultPoiData) => {
 		inputSearchWord = result.name;
 		if (result.propId) {
 			const tileCoords = lonLatToTileCoords(
@@ -97,7 +98,7 @@
 
 			const data: FeatureMenuData = {
 				layerId: result.layerId,
-				properties: prop,
+				properties: prop as Record<string, any>,
 				point: result.point,
 				featureId: result.featureId
 			};
@@ -111,14 +112,14 @@
 			zoom: 17
 		});
 
-		selectionMarkerLngLat = result.point;
+		selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
 		showSelectionMarker = true;
 		showSearchSuggest.set(false);
 	};
 
 	const suggestWord = (searchWord: string) => {
 		if (!searchWord) {
-			results = null;
+			searchSuggests = null;
 			return;
 		}
 		isLoading = true;
@@ -131,23 +132,26 @@
 			}
 
 			// TODO:座標検索
-			// const hoge = detectCoordinateOrder(searchWord);
-			// console.log('hoge', hoge);
-			// if (hoge.isCoordinate) {
-			// 	const point = [hoge.lat, hoge.lng];
-			// 	const map = mapStore.getMap();
-			// 	map?.panTo([point[1], point[0]]);
-			// 	results = [
-			// 		{
-			// 			name: searchWord,
-			// 			location: null,
-			// 			point: point,
-			// 			layerId: null,
-			// 			featureId: null
-			// 		}
-			// 	];
-			// 	return;
-			// }
+			const coordinateInfo = detectCoordinateOrder(searchWord);
+
+			if (coordinateInfo.isCoordinate) {
+				let point: [number, number];
+
+				if (coordinateInfo.order === 'lng_lat') {
+					point = [coordinateInfo.lng, coordinateInfo.lat] as [number, number];
+				} else if (coordinateInfo.order === 'lat_lng') {
+					point = [coordinateInfo.lat, coordinateInfo.lng] as [number, number];
+				}
+
+				searchSuggests = [
+					{
+						type: 'coordinate',
+						name: searchWord,
+						point: point
+					}
+				];
+				return;
+			}
 
 			const fuse = new Fuse(searchData, {
 				keys: ['search_values'],
@@ -162,6 +166,7 @@
 				const data = item.item;
 
 				return {
+					type: 'poi',
 					name: data.name,
 					location: dict[data.layer_id] || null,
 					point: data.point,
@@ -171,7 +176,7 @@
 				};
 			});
 
-			results = [...resultsData];
+			searchSuggests = [...resultsData];
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {
@@ -185,13 +190,13 @@
 		if (inputSearchWord) {
 			suggestWord(inputSearchWord);
 		} else {
-			results = null;
+			searchSuggests = null;
 		}
 	});
 
 	showSearchMenu.subscribe((show) => {
 		if (!show) {
-			results = null;
+			searchSuggests = null;
 		}
 	});
 
@@ -222,7 +227,7 @@
 	// });
 </script>
 
-{#if $showSearchSuggest && !$showSearchMenu && results && results.length > 0}
+{#if $showSearchSuggest && !$showSearchMenu && searchSuggests && searchSuggests.length > 0}
 	<div
 		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
 		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
@@ -233,33 +238,52 @@
 					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
 				></div>
 			</div>
-		{:else if results}
+		{:else if searchSuggests}
 			<div
 				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
 			>
-				{#each results as result (result)}
-					<button
-						onclick={() => focusFeature(result)}
-						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-					>
-						<div class="grid shrink-0 place-items-center">
-							{#if result.propId && propData[result.propId] && propData[result.propId].image}
-								<img
-									src={propData[result.propId].image}
-									alt="Icon"
-									class="h-12 w-12 rounded-full object-cover"
-								/>
-							{:else}
-								<div class="grid h-12 w-12 place-items-center">
-									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
-								</div>
-							{/if}
-						</div>
-						<div class="flex w-full flex-col justify-center gap-[1px]">
-							<span class="">{result.name}</span>
-							<span class="text-xs">{result.location ?? '---'}</span>
-						</div>
-					</button>
+				{#each searchSuggests as result (result)}
+					{#if result.type === 'poi'}
+						<button
+							onclick={() => focusFeature(result)}
+							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						>
+							<div class="grid shrink-0 place-items-center">
+								{#if result.propId && propData[result.propId] && propData[result.propId].image}
+									<img
+										src={propData[result.propId].image}
+										alt="Icon"
+										class="h-12 w-12 rounded-full object-cover"
+									/>
+								{:else}
+									<div class="grid h-12 w-12 place-items-center">
+										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+									</div>
+								{/if}
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px]">
+								<span class="">{result.name}</span>
+								<span class="text-xs">{result.location ?? '---'}</span>
+							</div>
+						</button>
+					{:else if result.type === 'coordinate'}
+						<button
+							onclick={() => {
+								selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
+								showSelectionMarker = true;
+								showSearchSuggest.set(false);
+							}}
+							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						>
+							<div class="grid shrink-0 place-items-center">
+								<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px]">
+								<span class="">{result.name}</span>
+								<span class="text-xs">座標検索</span>
+							</div>
+						</button>
+					{/if}
 				{/each}
 			</div>
 		{/if}

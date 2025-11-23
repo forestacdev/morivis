@@ -25,7 +25,7 @@
 
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
-	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
@@ -57,6 +57,9 @@
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import { checkPc } from './utils/ui';
 	import { page } from '$app/state';
+	import { getPropertiesFromPMTiles } from './utils/pmtiles';
+	import { lonLatToTileCoords } from './utils/tile';
+
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -85,9 +88,6 @@
 			return null;
 		}
 	});
-
-	// 検索ワード
-	let inputSearchWord = $state<string>('');
 
 	// 描画データ
 	let drawGeojsonData = $state.raw<DrawGeojsonData>({
@@ -142,9 +142,12 @@
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 
+	// 検索ワード
+	let inputSearchWord = $state<string>('');
+	let searchResults = $state<ResultData[] | null>([]);
+
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
-	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
 		/** レイヤーメニューの表示 */
@@ -378,6 +381,40 @@
 		setPoint(Number(streetViewNodeId));
 	});
 
+	const focusFeature = async (result: ResultData) => {
+		if (result.type === 'poi' && result.propId) {
+			const tileCoords = lonLatToTileCoords(
+				result.point[0],
+				result.point[1],
+				14 // ズームレベル
+			);
+			const prop = await getPropertiesFromPMTiles(
+				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
+				tileCoords,
+				result.layerId,
+				result.featureId
+			);
+
+			const data: FeatureMenuData = {
+				layerId: result.layerId,
+				properties: prop,
+				point: result.point,
+				featureId: result.featureId
+			};
+			featureMenuData = data;
+		}
+
+		// TODO
+		//github.com/maplibre/maplibre-gl-js/issues/4891
+		mapStore.easeTo({
+			center: result.point,
+			zoom: 17
+		});
+
+		selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
+		showSelectionMarker = true;
+	};
+
 	onDestroy(() => {
 		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
@@ -432,9 +469,10 @@
 				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
 				<HeaderMenu
 					{resetlayerEntries}
+					{focusFeature}
 					bind:featureMenuData
 					bind:inputSearchWord
-					bind:results
+					bind:searchResults
 					{layerEntries}
 					bind:showSelectionMarker
 					bind:selectionMarkerLngLat
@@ -478,7 +516,8 @@
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-			bind:results
+			bind:searchResults
+			{focusFeature}
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
