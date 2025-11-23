@@ -56,6 +56,7 @@
 		ResultAddressData,
 		ResultCoordinateData,
 		ResultData,
+		ResultLayerData,
 		ResultPoiData,
 		SearchGeojsonData
 	} from './utils/feature';
@@ -68,6 +69,7 @@
 	import { lonLatToTileCoords } from './utils/tile';
 	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
 	import { normalizeSchoolName } from './utils/normalized';
+	import { result } from 'es-toolkit/compat';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -158,6 +160,7 @@
 	let inputSearchWord = $state<string>('');
 	let searchResults = $state<ResultData[] | null>([]);
 	let selectedSearchId = $state<number | null>(null);
+	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | null>(null);
 
 	$effect(() => {
 		if (selectedSearchId) {
@@ -405,7 +408,7 @@
 	});
 
 	const focusFeature = async (result: ResultPoiData | ResultAddressData) => {
-		if (result.type === 'poi' && result.propId) {
+		if (result.type === 'poi') {
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
 				result.point[1],
@@ -427,19 +430,11 @@
 			featureMenuData = data;
 		}
 
+		// TODO
 		if (result.type === 'address') {
-			const name = normalizeSchoolName(result.name);
-			const article = await getWikipediaArticle(name);
-			if (article) {
-				wikiMenuData = article;
-			} else {
-				console.log('No Wikipedia article found for:', result.name);
-			}
+			selectedSearchResultData = result;
 		}
 
-		// TODO
-
-		selectedSearchId = result.id as number;
 		//github.com/maplibre/maplibre-gl-js/issues/4891
 		mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
 			zoom: 17,
@@ -453,6 +448,17 @@
 	onDestroy(() => {
 		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
+	});
+
+	$effect(() => {
+		if (!selectedSearchId) {
+			selectedSearchResultData = null;
+		} else if (searchResults && selectedSearchId) {
+			const result = searchResults.find((res) => res.id === selectedSearchId);
+			if (result && (result.type === 'poi' || result.type === 'address')) {
+				selectedSearchResultData = result as ResultPoiData | ResultAddressData;
+			}
+		}
 	});
 </script>
 
@@ -523,6 +529,7 @@
 					bind:focusBbox
 					bind:isExternalCameraUpdate
 					bind:selectedSearchId
+					bind:selectedSearchResultData
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}
@@ -530,6 +537,7 @@
 					{streetViewPoint}
 					{showMapCanvas}
 					{searchGeojsonData}
+					{focusFeature}
 				/>
 			</div>
 			<!-- 右側余白 -->
@@ -553,7 +561,7 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-		<SearchFeatureMenu bind:wikiMenuData />
+		<SearchFeatureMenu bind:selectedSearchResultData />
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>

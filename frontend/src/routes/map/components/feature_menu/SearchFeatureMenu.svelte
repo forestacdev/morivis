@@ -1,29 +1,56 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import type { WikiArticle } from '$routes/map/api/wikipedia';
+	import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
+	import { normalizeSchoolName } from '$routes/map/utils/normalized';
+	import type { result } from 'es-toolkit/compat';
+	import type { ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
 
 	interface Props {
-		wikiMenuData: WikiArticle | null;
+		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
 	}
+	let { selectedSearchResultData = $bindable() }: Props = $props();
 
-	let { wikiMenuData = $bindable() }: Props = $props();
+	let isLoading = $state(true);
 
 	// URLを省略する関数
 	const truncateUrl = (url: string, maxLength = 50) => {
 		if (url.length <= maxLength) return url;
 		return url.substring(0, maxLength) + '...';
 	};
+
+	const promise = async () => {
+		if (selectedSearchResultData) {
+			if (selectedSearchResultData.type === 'address') {
+				const name = normalizeSchoolName(selectedSearchResultData.name);
+				const res = await getWikipediaArticle(name);
+				isLoading = false;
+				return Promise.resolve(res);
+			}
+		}
+		isLoading = false;
+		return Promise.resolve(null);
+	};
+
+	// if (result.type === 'address') {
+	// 		const name = normalizeSchoolName(result.name);
+	// 		const article = await getWikipediaArticle(name);
+	// 		if (article) {
+	// 			wikiMenuData = article;
+	// 		} else {
+	// 			console.log('No Wikipedia article found for:', result.name);
+	// 		}
+	// 	}
 </script>
 
 <!-- PC -->
-{#if wikiMenuData && checkPc()}
+{#if selectedSearchResultData && checkPc()}
 	<div
 		transition:fly={{
 			duration: 300,
@@ -34,71 +61,92 @@
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
-				onclick={() => (wikiMenuData = null)}
+				onclick={() => (selectedSearchResultData = null)}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
-
-		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2">
-			<!-- 画像 -->
-			<div class="b relative w-full p-2">
-				{#if wikiMenuData.thumbnail && wikiMenuData.thumbnail.source}
-					<img
-						in:fade
-						class="block aspect-video h-full w-full rounded-lg object-cover"
-						alt="画像"
-						src={wikiMenuData.thumbnail.source}
-					/>
-				{/if}
-
+		{#await promise()}
+			<!-- ローディング中 -->
+			<div class="flex h-full w-full flex-col items-center justify-center gap-4">
 				<div
-					class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base"
-				>
-					<!-- poiタイトル -->
-					<span class="text-[22px] font-bold">{wikiMenuData.title}</span>
-					<span class="text-[14px] text-gray-300">{wikiMenuData.prefecture}</span>
-				</div>
+					class="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500"
+				></div>
+				<p class="text-gray-400">読み込み中...</p>
 			</div>
+		{:then wikiMenuData}
+			<div
+				in:fade={{ duration: 100 }}
+				class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2"
+			>
+				<!-- 画像 -->
+				<div class="b relative w-full p-2">
+					{#if wikiMenuData}
+						{#if wikiMenuData.thumbnail && wikiMenuData.thumbnail.source}
+							<img
+								in:fade={{ duration: 300 }}
+								class="block aspect-video h-full w-full rounded-lg object-cover"
+								alt="画像"
+								src={wikiMenuData.thumbnail.source}
+							/>
+						{/if}
+					{/if}
 
-			<div class="pl-2">
-				<!-- 詳細情報 -->
-				<div class="flex h-full w-full flex-col gap-2 pr-2">
-					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
-						<!-- 座標 -->
-						{#if wikiMenuData.coordinates}
+					<div
+						class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base"
+					>
+						<!-- poiタイトル -->
+						<span class="text-[22px] font-bold"
+							>{wikiMenuData ? wikiMenuData.title : selectedSearchResultData.name}</span
+						>
+						<span class="text-[14px] text-gray-300"
+							>{wikiMenuData ? wikiMenuData.prefecture : selectedSearchResultData.location}</span
+						>
+					</div>
+				</div>
+
+				<div class="pl-2">
+					<!-- 詳細情報 -->
+					<div class="flex h-full w-full flex-col gap-2 pr-2">
+						<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
+							<!-- 座標 -->
+
 							<div class="flex w-full justify-start gap-2">
 								<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
-								<span class="text-accent"
-									>{wikiMenuData.coordinates?.lat.toFixed(6)}, {wikiMenuData.coordinates?.lon.toFixed(
-										6
-									)}</span
+								<span class="text-accent">
+									{#if wikiMenuData && wikiMenuData.coordinates}
+										{wikiMenuData.coordinates?.lat.toFixed(6)}, {wikiMenuData.coordinates?.lon.toFixed(
+											6
+										)}
+									{:else}
+										{selectedSearchResultData.point[1].toFixed(6)}, {selectedSearchResultData.point[0].toFixed(
+											6
+										)}
+									{/if}
+								</span>
+							</div>
+						</div>
+
+						<!-- 概要説明 -->
+						{#if wikiMenuData}
+							<span class="my-2 text-justify text-base">{wikiMenuData.extract}</span>
+							<div class="flex w-full items-center justify-center">
+								<a
+									class="c-btn-confirm mt-4 flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+									href={wikiMenuData.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									><Icon icon="majesticons:open" class="h-6 w-6" />
+									<span>Wikipediaを見る</span></a
 								>
 							</div>
 						{/if}
-
-						<!-- url -->
-
-						<a
-							class="flex w-full items-start justify-start gap-2 break-all"
-							href={wikiMenuData.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
-							<span class="text-accent text-ellipsis hover:underline"
-								>{truncateUrl(wikiMenuData.url)}</span
-							></a
-						>
 					</div>
 
-					<!-- 概要説明 -->
-
-					<span class="my-2 text-justify text-base">{wikiMenuData.extract}</span>
+					<!-- 通常の地物の属性情報 -->
 				</div>
-
-				<!-- 通常の地物の属性情報 -->
 			</div>
-		</div>
+		{/await}
 	</div>
 {/if}

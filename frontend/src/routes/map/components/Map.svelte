@@ -60,7 +60,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
-	import type { SearchGeojsonData } from '../utils/feature';
+	import type { ResultAddressData, ResultPoiData, SearchGeojsonData } from '../utils/feature';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -86,7 +86,9 @@
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
 		selectedSearchId: number | null;
+		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
 	let {
@@ -112,8 +114,10 @@
 		focusBbox = $bindable(),
 		selectedEpsgCode,
 		isExternalCameraUpdate = $bindable(),
+		selectedSearchResultData = $bindable(),
 		searchGeojsonData,
-		selectedSearchId = $bindable()
+		selectedSearchId = $bindable(),
+		focusFeature
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -694,8 +698,8 @@
 		bind:selectedSearchId
 		{streetViewPointData}
 		{layerEntries}
-		{searchGeojsonData}
 		{toggleTooltip}
+		{focusFeature}
 	/>
 	{#key selectionMarkerLngLat}
 		<SelectionMarker
@@ -705,14 +709,8 @@
 		/>
 	{/key}
 
-	{#if selectedSearchId && searchGeojsonData}
-		{@const feature = searchGeojsonData?.features.find((f) => f.id === selectedSearchId)}
-		{@const prop = {
-			id: feature?.id,
-			point: (feature?.geometry.type === 'Point' && feature.geometry.coordinates) || [0, 0],
-			...feature?.properties
-		}}
-		<SearchMarker map={maplibreMap} bind:selectedSearchId {prop} />
+	{#if selectedSearchResultData}
+		<SearchMarker map={maplibreMap} bind:selectedSearchId prop={selectedSearchResultData} />
 	{/if}
 
 	<AngleMarker

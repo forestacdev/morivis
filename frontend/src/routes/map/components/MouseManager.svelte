@@ -26,7 +26,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	import { setStreetViewParams } from '../utils/params';
-	import type { SearchGeojsonData } from '../utils/feature';
+	import type { ResultAddressData, ResultPoiData } from '../utils/feature';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -39,8 +39,9 @@
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
-		searchGeojsonData: SearchGeojsonData | null;
+
 		selectedSearchId: number | null;
+		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
 	let {
@@ -54,8 +55,9 @@
 		toggleTooltip,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
-		searchGeojsonData,
-		selectedSearchId = $bindable()
+
+		selectedSearchId = $bindable(),
+		focusFeature
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -328,19 +330,22 @@
 				layers: ['@search_result']
 			});
 
-			if (searchFeatures.length > 0 && searchGeojsonData) {
-				const { id } = searchFeatures[0];
-				const feature = searchGeojsonData.features.find((f) => f.id === id);
-				if (feature) {
-					selectedSearchId = id as number;
+			if (searchFeatures.length > 0) {
+				const { id, properties, geometry } = searchFeatures[0];
 
-					mapStore.panTo(feature.geometry.coordinates as [number, number], {
-						duration: 500
-					});
-					// markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
-					// showMarker = true;
-					return;
-				}
+				console.log('Clicked search feature ID:', id);
+
+				selectedSearchId = id as number;
+				mapStore.panTo(geometry.coordinates as [number, number], {
+					duration: 500
+				});
+
+				// mapStore.panTo(feature.geometry.coordinates as [number, number], {
+				// 	duration: 500
+				// });
+				// markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
+				// showMarker = true;
+				return;
 			}
 
 			// 通常の地物クリック処理
