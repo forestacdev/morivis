@@ -60,7 +60,6 @@
 	}
 
 	let searchData: SearchData[]; // 検索データ
-	let isClickedSearch = $state<boolean>(false);
 
 	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
@@ -106,9 +105,7 @@
 		if (!searchWord) {
 			return;
 		}
-		isLoading = true;
 
-		isClickedSearch = true;
 		try {
 			if (!searchData) {
 				console.error('Search data is not loaded yet.');
@@ -136,6 +133,8 @@
 				];
 				return;
 			}
+
+			isLoading = true;
 
 			// 検索実行
 			const featureDataResult = featureDataFuse.search(searchWord, {

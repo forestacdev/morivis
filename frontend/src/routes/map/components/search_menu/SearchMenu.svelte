@@ -51,7 +51,6 @@
 	}
 
 	let searchData: SearchData[]; // 検索データ
-	let isClickedSearch = $state<boolean>(false);
 
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
@@ -135,6 +134,8 @@
 			closeSearchMenu();
 		}
 	});
+
+	$inspect(searchResults);
 </script>
 
 <!-- レイヤーメニュー -->

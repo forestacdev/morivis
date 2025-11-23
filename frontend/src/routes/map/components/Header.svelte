@@ -10,7 +10,7 @@
 	import { type LngLat } from 'maplibre-gl';
 
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
-	import type { ResultData } from '$routes/map/utils/feature';
+	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import Fuse from 'fuse.js';
 	import { DATA_PATH } from '$routes/constants';
@@ -86,6 +86,7 @@
 
 	let searchSuggests = $state<ResultData[] | null>(null);
 
+	// 検索処理の実行
 	const searchFeature = async (searchWord: string) => {
 		// 座標検索の優先処理
 		if (searchSuggests && searchSuggests.length > 0 && searchSuggests[0].type === 'coordinate') {
@@ -116,6 +117,7 @@
 				const data = item.item;
 
 				return {
+					type: 'poi',
 					name: data.name,
 					location: dict[data.layer_id] || null,
 					point: data.point,
@@ -125,7 +127,7 @@
 				};
 			});
 
-			let addressSearchData = [];
+			let addressSearchData: ResultAddressData[] = [];
 
 			// 2文字以上の検索ワードの場合、住所検索を実行
 			if (searchWord.length > 1) {
