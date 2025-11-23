@@ -72,7 +72,6 @@
 	}}
 	placeholder="施設名 / 住所 / 座標 / データ名"
 	onfocus={() => showSearchSuggest.set(true)}
-	onblur={() => setTimeout(() => showSearchSuggest.set(false), 100)}
 />
 
 {#if inputSearchWord}
