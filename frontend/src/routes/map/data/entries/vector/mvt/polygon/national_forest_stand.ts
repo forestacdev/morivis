@@ -572,7 +572,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '第一樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 200.0],
+						range: [0, 200],
 						divisions: 9
 					}
 				},
