@@ -26,6 +26,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	import { setStreetViewParams } from '../utils/params';
+	import type { SearchGeojsonData } from '../utils/feature';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -38,6 +39,7 @@
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
+		searchGeojsonData: SearchGeojsonData | null;
 	}
 
 	let {
@@ -50,7 +52,8 @@
 		showDataEntry,
 		toggleTooltip,
 		cameraBearing = $bindable(),
-		isExternalCameraUpdate = $bindable()
+		isExternalCameraUpdate = $bindable(),
+		searchGeojsonData
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -323,13 +326,15 @@
 				layers: ['@search_result']
 			});
 
-			if (searchFeatures.length > 0) {
-				const { geometry } = searchFeatures[0];
-				if (geometry.type === 'Point') {
-					mapStore.panTo(geometry.coordinates as [number, number], {
-						duration: 1000
+			if (searchFeatures.length > 0 && searchGeojsonData) {
+				const { id } = searchFeatures[0];
+				const feature = searchGeojsonData.features.find((f) => f.id === id);
+				if (feature) {
+					mapStore.setFilter('@search_result', ['!=', ['id'], id]);
+					mapStore.panTo(feature.geometry.coordinates as [number, number], {
+						duration: 500
 					});
-					markerLngLat = e.lngLat;
+					markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
 					showMarker = true;
 					return;
 				}

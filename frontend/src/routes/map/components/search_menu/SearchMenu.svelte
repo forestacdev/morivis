@@ -15,7 +15,12 @@
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData, ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
+	import type {
+		ResultData,
+		ResultPoiData,
+		ResultAddressData,
+		SearchGeojsonData
+	} from '$routes/map/utils/feature';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import turfBbox, { bbox } from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
@@ -27,6 +32,7 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
+		searchGeojsonData: SearchGeojsonData | null;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -37,6 +43,7 @@
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
 		searchResults = $bindable(),
+		searchGeojsonData = $bindable(),
 		focusFeature
 	}: Props = $props();
 
@@ -82,15 +89,12 @@
 	const closeSearchMenu = () => {
 		$showSearchMenu = false;
 		searchResults = null;
-		mapStore.setData('search_result', {
-			type: 'FeatureCollection',
-			features: []
-		});
+		searchGeojsonData = null;
 	};
 
 	$effect(() => {
 		if (searchResults && searchResults.length > 0) {
-			const geojson = {
+			const geojson: SearchGeojsonData = {
 				type: 'FeatureCollection',
 				features: searchResults.map((result: ResultData) => {
 					let prop;
@@ -123,7 +127,8 @@
 					}
 				})
 			};
-			mapStore.setData('search_result', geojson);
+			searchGeojsonData = geojson;
+			// mapStore.setData('search_result', geojson);
 
 			const bbox = turfBbox(geojson);
 			mapStore.fitBounds(bbox, {

@@ -2,7 +2,7 @@
 	import turfBearing from '@turf/bearing';
 
 	import { delay } from 'es-toolkit';
-	import type { FeatureCollection } from 'geojson';
+	import type { FeatureCollection, Point } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
@@ -51,7 +51,13 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import Processing from './Processing.svelte';
 	import { slide } from 'svelte/transition';
-	import type { ResultData } from './utils/feature';
+	import type {
+		ResultAddressData,
+		ResultCoordinateData,
+		ResultData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from './utils/feature';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
@@ -109,6 +115,8 @@
 		type: 'FeatureCollection',
 		features: []
 	});
+
+	let searchGeojsonData = $state.raw<SearchGeojsonData | null>(null);
 
 	// ノード接続データ
 	type NodeConnections = Record<string, string[]>;
@@ -406,9 +414,9 @@
 
 		// TODO
 		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 17
+		mapStore.flyTo(result.point, {
+			zoom: 17,
+			duration: 800
 		});
 
 		selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
@@ -502,6 +510,7 @@
 					{streetViewPointData}
 					{streetViewPoint}
 					{showMapCanvas}
+					{searchGeojsonData}
 				/>
 			</div>
 			<!-- 右側余白 -->
@@ -518,6 +527,7 @@
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 			bind:searchResults
+			bind:searchGeojsonData
 			{focusFeature}
 		/>
 

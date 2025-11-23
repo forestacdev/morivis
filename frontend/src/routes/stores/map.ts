@@ -15,7 +15,8 @@ import type {
 	GeoJSONSource,
 	FilterSpecification,
 	StyleSetterOptions,
-	FeatureIdentifier
+	FeatureIdentifier,
+	FlyToOptions
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -781,7 +782,7 @@ const createMapStore = () => {
 		map.fitBounds(bounds, options);
 	};
 
-	const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
+	const flyTo = (lngLat: LngLat, options?: FlyToOptions) => {
 		if (!map || !isMapValid(map)) return;
 		map.flyTo({ center: lngLat, ...options });
 	};

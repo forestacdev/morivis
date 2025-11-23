@@ -151,7 +151,12 @@
 					});
 			}
 
-			searchResults = [...resultsData, ...addressSearchData];
+			searchResults = [...resultsData, ...addressSearchData].map((data, i) => {
+				return {
+					id: i,
+					...data
+				};
+			});
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {

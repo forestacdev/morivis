@@ -59,6 +59,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
+	import type { SearchGeojsonData } from '../utils/feature';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -83,6 +84,7 @@
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
+		searchGeojsonData: SearchGeojsonData | null;
 	}
 
 	let {
@@ -107,7 +109,8 @@
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
-		isExternalCameraUpdate = $bindable()
+		isExternalCameraUpdate = $bindable(),
+		searchGeojsonData
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -334,7 +337,10 @@
 				},
 				search_result: {
 					type: 'geojson',
-					data: { type: 'FeatureCollection', features: [] }
+					data: searchGeojsonData || {
+						type: 'FeatureCollection',
+						features: []
+					}
 				}
 				// webgl_canvas: webGLCanvasSource
 			},
@@ -514,6 +520,13 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	// 検索結果の更新
+	$effect(() => {
+		if (searchGeojsonData) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
+	});
+
 	// TODO:書き込みデータの更新を監視
 	// $effect(() => {
 	// 	if (!maplibreMap || !maplibreMap.loaded()) return;
@@ -677,6 +690,7 @@
 		bind:isExternalCameraUpdate
 		{streetViewPointData}
 		{layerEntries}
+		{searchGeojsonData}
 		{toggleTooltip}
 	/>
 	{#key selectionMarkerLngLat}
