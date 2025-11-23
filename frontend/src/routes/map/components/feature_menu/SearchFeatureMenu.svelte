@@ -58,7 +58,7 @@
 				>
 					<!-- poiタイトル -->
 					<span class="text-[22px] font-bold">{wikiMenuData.title}</span>
-					<span class="text-[14px] text-gray-300">{''}</span>
+					<span class="text-[14px] text-gray-300">{wikiMenuData.prefecture}</span>
 				</div>
 			</div>
 
@@ -67,12 +67,14 @@
 				<div class="flex h-full w-full flex-col gap-2 pr-2">
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 						<!-- 座標 -->
-						<!-- <div class="flex w-full justify-start gap-2">
+						<div class="flex w-full justify-start gap-2">
 							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
 							<span class="text-accent"
-								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
+								>{wikiMenuData.coordinates?.lat.toFixed(6)}, {wikiMenuData.coordinates?.lon.toFixed(
+									6
+								)}</span
 							>
-						</div> -->
+						</div>
 
 						<!-- url -->
 
@@ -94,21 +96,6 @@
 				</div>
 
 				<!-- 通常の地物の属性情報 -->
-
-				<div class="my-4 flex items-center gap-1 text-base text-lg">
-					<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" /><span
-						>データ内容</span
-					>
-				</div>
-				<!-- <div class="mb-56 flex h-full w-full flex-col gap-3">
-					{#if featureMenuData.properties}
-						{#each Object.entries(featureMenuData.properties) as [key, value]}
-							{#if key !== '_prop_id' && value}
-								<AttributeItem {key} {value} />
-							{/if}
-						{/each}
-					{/if}
-				</div> -->
 			</div>
 		</div>
 	</div>
