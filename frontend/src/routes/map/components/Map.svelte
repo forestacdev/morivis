@@ -367,11 +367,12 @@
 						'line-width': 1
 					}
 				},
+
+				// 検索マーカー
 				{
 					id: '@search_result',
 					type: 'symbol',
 					source: 'search_result',
-
 					layout: {
 						'text-allow-overlap': true, // テキストの重複を許可
 						'text-ignore-placement': true, // 他の要素への配置影響を無視
@@ -381,6 +382,7 @@
 						'icon-anchor': 'bottom'
 					}
 				},
+				// 検索ラベル
 				{
 					id: '@search_result_label',
 					type: 'symbol',
@@ -394,10 +396,10 @@
 					layout: {
 						'text-field': '{name}',
 						'text-size': 11,
-						'text-max-width': 12,
+						'text-max-width': 10,
 						'text-font': ['Noto Sans JP Regular'],
 						'text-variable-anchor': ['bottom-left', 'bottom-right'],
-						'text-radial-offset': 1.5,
+						'text-radial-offset': 2,
 						'text-justify': 'auto'
 					}
 				}

@@ -189,6 +189,7 @@
 			$showSearchSuggest = true;
 		} else {
 			$showSearchSuggest = false;
+			searchSuggests = null;
 		}
 	});
 

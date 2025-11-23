@@ -12,12 +12,12 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showSearchMenu } from '$routes/stores/ui';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData } from '$routes/map/utils/feature';
+	import type { ResultData, ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
-	import turfBbox from '@turf/bbox';
+	import turfBbox, { bbox } from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
 	import maplibregl from 'maplibre-gl';
 	interface Props {
@@ -92,28 +92,45 @@
 		if (searchResults && searchResults.length > 0) {
 			const geojson = {
 				type: 'FeatureCollection',
-				features: searchResults.map((result) => ({
-					type: 'Feature',
-					geometry: {
-						type: 'Point',
-						coordinates: result.point
-					},
-					properties: {
-						name: result.name,
-						location: result.location,
-						layerId: result.layerId,
-						featureId: result.featureId,
-						propId: result.propId
+				features: searchResults.map((result: ResultData) => {
+					let prop;
+					if (result.type === 'poi' || result.type === 'address') {
+						if (result.type === 'poi') {
+							prop = {
+								name: result.name,
+								location: result.location,
+								layerId: result.layerId,
+								featureId: result.featureId,
+								propId: result.propId
+							};
+						} else if (result.type === 'address') {
+							prop = {
+								name: result.name,
+								location: result.location,
+
+								propId: null
+							};
+						}
+						return {
+							id: result.id,
+							type: 'Feature',
+							geometry: {
+								type: 'Point',
+								coordinates: result.point as [number, number]
+							},
+							properties: prop
+						};
 					}
-				}))
+				})
 			};
 			mapStore.setData('search_result', geojson);
 
 			const bbox = turfBbox(geojson);
 			mapStore.fitBounds(bbox, {
 				duration: 500,
-				padding: 20
+				padding: 100
 			});
+			showSearchSuggest.set(false);
 		} else {
 			closeSearchMenu();
 		}
@@ -135,7 +152,11 @@
 		}
 	});
 
-	$inspect(searchResults);
+	$effect(() => {
+		if (showSelectionMarker) {
+			showSearchSuggest.set(false);
+		}
+	});
 </script>
 
 <!-- レイヤーメニュー -->

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
-	import { onDestroy } from 'svelte';
+
 	import { mount } from 'svelte';
 
 	import LegendPopup from '$routes/map/components/popup/LegendPopup.svelte';
@@ -22,11 +22,9 @@
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
-	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
+	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import turfBearing from '@turf/bearing';
-	import turfNearestPoint from '@turf/nearest-point';
-	import { point as turfPoint } from '@turf/helpers';
+
 	import { setStreetViewParams } from '../utils/params';
 
 	interface Props {
@@ -183,7 +181,7 @@
 			}
 			if (showDataEntry) return;
 
-			const clickLayerIds = [...$clickableVectorIds];
+			const clickLayerIds = [...$clickableVectorIds, '@search_result'];
 			// 存在するレイヤーIDのみをフィルタリング
 
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
@@ -320,6 +318,25 @@
 					return;
 				}
 			}
+
+			const searchFeatures = mapStore.queryRenderedFeatures(e.point, {
+				layers: ['@search_result']
+			});
+
+			if (searchFeatures.length > 0) {
+				const { geometry } = searchFeatures[0];
+				if (geometry.type === 'Point') {
+					mapStore.panTo(geometry.coordinates as [number, number], {
+						duration: 1000
+					});
+					markerLngLat = e.lngLat;
+					showMarker = true;
+					return;
+				}
+			}
+
+			// 通常の地物クリック処理
+
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
