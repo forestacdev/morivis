@@ -91,7 +91,7 @@
 		if (searchSuggests && searchSuggests.length > 0 && searchSuggests[0].type === 'coordinate') {
 			const data = searchSuggests[0];
 			focusFeature(data);
-			searchSuggests = null;
+
 			return;
 		}
 
@@ -212,7 +212,9 @@
 	{#if !$showDataMenu}
 		<div
 			bind:this={searchContainerRef}
-			class="border-sub border-1 relative flex max-w-[600px] flex-1 items-center rounded-full"
+			class="border-sub border-1 relative flex max-w-[600px] flex-1 items-center rounded-full {showDataEntry
+				? 'pointer-events-none opacity-0'
+				: ''}"
 		>
 			<Geocoder
 				{layerEntries}
@@ -234,9 +236,8 @@
 				<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
 			</button>
 		</div>
-	{/if}
 
-	<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
+		<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
 		<Geocoder
 			{layerEntries}
 			bind:results
@@ -254,9 +255,13 @@
 			<Icon icon="stash:search-solid" class="h-6 w-6" />
 		</button>
 	</div> -->
-
+	{/if}
 	<!-- 右側 -->
-	<div class="flex items-center rounded-lg pr-1 max-lg:hidden">
+	<div
+		class="flex items-center rounded-lg pr-1 max-lg:hidden {showDataEntry
+			? 'pointer-events-none opacity-0'
+			: ''}"
+	>
 		<GeolocateControl />
 		<StreetViewControl />
 

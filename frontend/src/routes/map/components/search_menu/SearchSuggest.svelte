@@ -104,7 +104,6 @@
 
 	const suggestWord = (searchWord: string) => {
 		if (!searchWord) {
-			searchSuggests = null;
 			return;
 		}
 		isLoading = true;
@@ -188,14 +187,15 @@
 	$effect(() => {
 		if (inputSearchWord) {
 			suggestWord(inputSearchWord);
+			$showSearchSuggest = true;
 		} else {
-			searchSuggests = null;
+			$showSearchSuggest = false;
 		}
 	});
 
 	showSearchMenu.subscribe((show) => {
 		if (!show) {
-			searchSuggests = null;
+			$showSearchSuggest = false;
 		}
 	});
 
@@ -226,7 +226,7 @@
 	// });
 </script>
 
-{#if $showSearchSuggest && !$showSearchMenu && searchSuggests && searchSuggests.length > 0}
+{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0}
 	<div
 		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
 		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
@@ -247,7 +247,7 @@
 						{#if result.type === 'poi'}
 							<button
 								onclick={() => {
-									searchSuggests = null;
+									$showSearchSuggest = false;
 									focusFeature(result);
 								}}
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
@@ -274,8 +274,7 @@
 						{#if result.type === 'coordinate'}
 							<button
 								onclick={() => {
-									searchSuggests = null;
-
+									$showSearchSuggest = false;
 									focusFeature(result);
 								}}
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
@@ -297,7 +296,7 @@
 						{#if result.type === 'layer'}
 							<button
 								onclick={() => {
-									searchSuggests = null;
+									$showSearchSuggest = false;
 									if ($activeLayerIdsStore.includes(result.layerId)) {
 										selectedLayerId.set(result.layerId);
 										isStyleEdit.set(true);
