@@ -67,14 +67,16 @@
 				<div class="flex h-full w-full flex-col gap-2 pr-2">
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 						<!-- 座標 -->
-						<div class="flex w-full justify-start gap-2">
-							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
-							<span class="text-accent"
-								>{wikiMenuData.coordinates?.lat.toFixed(6)}, {wikiMenuData.coordinates?.lon.toFixed(
-									6
-								)}</span
-							>
-						</div>
+						{#if wikiMenuData.coordinates}
+							<div class="flex w-full justify-start gap-2">
+								<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+								<span class="text-accent"
+									>{wikiMenuData.coordinates?.lat.toFixed(6)}, {wikiMenuData.coordinates?.lon.toFixed(
+										6
+									)}</span
+								>
+							</div>
+						{/if}
 
 						<!-- url -->
 

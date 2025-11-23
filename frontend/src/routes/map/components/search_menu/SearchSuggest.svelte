@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	import { slide, fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
@@ -229,7 +229,7 @@
 								<div class="grid shrink-0 place-items-center">
 									{#if result.propId && propData[result.propId] && propData[result.propId].image}
 										<img
-											src={propData[result.propId].image}
+											src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
 											alt="Icon"
 											class="h-12 w-12 rounded-full object-cover"
 										/>

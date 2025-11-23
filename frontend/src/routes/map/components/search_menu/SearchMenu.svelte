@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 
 	import { propData } from '$routes/map/data/prop_data';
@@ -182,22 +182,20 @@
 			</button>
 		</div>
 		{#if searchResults}
-			<div
-				class="c-scroll flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
-			>
+			<div class="c-scroll flex grow flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 pb-4">
 				{#each searchResults as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
-						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base {result.id &&
+						class="border-1 border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-black p-2 text-left text-base {result.id &&
 						selectedSearchId === result.id
 							? 'bg-accent'
 							: ''}"
 					>
 						{#if result.type === 'poi'}
-							<div class="grid shrink-0 place-items-center">
+							<div class="grid shrink-0 place-items-center overflow-hidden">
 								{#if result.propId && propData[result.propId] && propData[result.propId].image}
 									<img
-										src={propData[result.propId].image}
+										src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
 										alt="Icon"
 										class="h-12 w-12 rounded-full object-cover"
 									/>
@@ -207,18 +205,18 @@
 									</div>
 								{/if}
 							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
+							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+								<span class="truncate">{result.name}</span>
 								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
 							</div>
 						{:else if result.type === 'address'}
-							<div class="grid shrink-0 place-items-center">
+							<div class="grid shrink-0 place-items-center overflow-hidden">
 								<div class="grid h-12 w-12 place-items-center">
 									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
 								</div>
 							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
+							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+								<span class="truncate">{result.name}</span>
 								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
 							</div>
 						{/if}

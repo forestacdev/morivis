@@ -1,0 +1,881 @@
+{
+  "key": 273311114,
+  "datasetKey": "e007cc4a-8704-449d-8829-bb209d26d6c8",
+  "nubKey": 5211137,
+  "parentKey": 273310954,
+  "parent": "Chlorurus",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 270195436,
+  "phylumKey": 273083630,
+  "classKey": 273215330,
+  "familyKey": 273310342,
+  "genusKey": 273310954,
+  "speciesKey": 273311114,
+  "scientificName": "Chlorurus japanensis (Bloch, 1789)",
+  "canonicalName": "Chlorurus japanensis",
+  "authorship": "(Bloch, 1789)",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "5XYWD",
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "270195436": "Animalia",
+    "273083630": "Chordata",
+    "273215330": "Teleostei",
+    "273310342": "Scaridae",
+    "273310954": "Chlorurus"
+  },
+  "class": "Teleostei"
+}, {
+  "key": 155365402,
+  "datasetKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+  "nubKey": 5211137,
+  "parentKey": 155365244,
+  "parent": "Chlorurus",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Eupercaria incertae sedis",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 154946057,
+  "phylumKey": 155295572,
+  "classKey": 155303230,
+  "orderKey": 183508554,
+  "familyKey": 155364897,
+  "genusKey": 155365244,
+  "speciesKey": 155365402,
+  "scientificName": "Chlorurus japanensis (Bloch, 1789)",
+  "canonicalName": "Chlorurus japanensis",
+  "authorship": "(Bloch, 1789)",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "urn:lsid:marinespecies.org:taxname:219081",
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "154946057": "Animalia",
+    "155295572": "Chordata",
+    "155303230": "Teleostei",
+    "155364897": "Scaridae",
+    "155365244": "Chlorurus",
+    "183508554": "Eupercaria incertae sedis"
+  },
+  "class": "Teleostei"
+}, {
+  "key": 2393535,
+  "nameKey": 10121831,
+  "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
+  "constituentKey": "7ddf754f-d193-4cc9-b351-99906754a03b",
+  "nubKey": 2393535,
+  "parentKey": 2393457,
+  "parent": "Chlorurus",
+  "acceptedKey": 5211137,
+  "accepted": "Chlorurus japanensis (Bloch, 1789)",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Perciformes",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 1,
+  "phylumKey": 44,
+  "orderKey": 587,
+  "familyKey": 4504,
+  "genusKey": 2393457,
+  "speciesKey": 5211137,
+  "scientificName": "Scarus japanensis Bloch, 1789",
+  "canonicalName": "Scarus japanensis",
+  "authorship": "Bloch, 1789",
+  "publishedIn": "Bloch, M. E. (1789). Charactere und Beschreibung des Geschlechts der Papageyfische, Callyodon. <em>Abhandlungen der Böhmischen Gesellschaft der Wissenschaften.</em> v. 4 (for 1788): 242-248, Pls. 1-3.",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "SYNONYM",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "gbif:2393535",
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "palecheek parrotfish",
+      "language": "eng"
+    }
+  ],
+  "synonym": true,
+  "higherClassificationMap": {
+    "1": "Animalia",
+    "44": "Chordata",
+    "587": "Perciformes",
+    "4504": "Scaridae",
+    "2393457": "Chlorurus",
+    "5211137": "Chlorurus japanensis"
+  }
+}, {
+  "key": 155365422,
+  "datasetKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+  "nubKey": 2393535,
+  "parentKey": 860328,
+  "parent": "Chlorurus",
+  "acceptedKey": 155365402,
+  "accepted": "Chlorurus japanensis (Bloch, 1789)",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Eupercaria incertae sedis",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 154946057,
+  "phylumKey": 155295572,
+  "classKey": 155303230,
+  "orderKey": 183508554,
+  "familyKey": 155364897,
+  "genusKey": 155365244,
+  "speciesKey": 155365402,
+  "scientificName": "Scarus japanensis Bloch, 1789",
+  "canonicalName": "Scarus japanensis",
+  "authorship": "Bloch, 1789",
+  "publishedIn": "Bloch, M. E. (1789). Charactere und Beschreibung des Geschlechts der Papageyfische, Callyodon. <em>Abhandlungen der Böhmischen Gesellschaft der Wissenschaften.</em> v. 4 (for 1788): 242-248, Pls. 1-3.",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "SYNONYM",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "urn:lsid:marinespecies.org:taxname:219108",
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    }
+  ],
+  "synonym": true,
+  "higherClassificationMap": {
+    "860328": "Chlorurus",
+    "154946057": "Animalia",
+    "155295572": "Chordata",
+    "155303230": "Teleostei",
+    "155364897": "Scaridae",
+    "155365244": "Chlorurus",
+    "155365402": "Chlorurus japanensis",
+    "183508554": "Eupercaria incertae sedis"
+  },
+  "class": "Teleostei"
+}, {
+  "key": 299548459,
+  "datasetKey": "7ddf754f-d193-4cc9-b351-99906754a03b",
+  "nubKey": 5211137,
+  "parentKey": 299548265,
+  "parent": "Chlorurus",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Perciformes",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 296374190,
+  "phylumKey": 299312263,
+  "classKey": 299480021,
+  "orderKey": 299490573,
+  "familyKey": 299547501,
+  "genusKey": 299548265,
+  "speciesKey": 299548459,
+  "scientificName": "Chlorurus japanensis (Bloch, 1789)",
+  "canonicalName": "Chlorurus japanensis",
+  "authorship": "(Bloch, 1789)",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "5XYWD",
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "Japanese Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Pale Bullethead Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Red-tailed Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Yellow-blotched Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Perroquet de Bloch",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Perroquet à joue pâle",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Shijûkara",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "Papagaio Rosto Pálido",
+      "language": "por"
+    },
+    {
+      "vernacularName": "Loro rostro Pálido",
+      "language": "spa"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "296374190": "Animalia",
+    "299312263": "Chordata",
+    "299480021": "Teleostei",
+    "299490573": "Perciformes",
+    "299547501": "Scaridae",
+    "299548265": "Chlorurus"
+  },
+  "class": "Teleostei"
+}, {
+  "key": 123218611,
+  "nameKey": 8279667,
+  "datasetKey": "a5dd063e-f45b-4a54-8b94-8fa3adf7f1e1",
+  "nubKey": 5844847,
+  "parentKey": 167183957,
+  "parent": "Paridae",
+  "kingdom": "Animalia",
+  "order": "Passeriformes",
+  "family": "Paridae",
+  "species": "Parus minor",
+  "kingdomKey": 167183684,
+  "orderKey": 167183828,
+  "familyKey": 167183957,
+  "speciesKey": 123218611,
+  "scientificName": "Parus minor",
+  "canonicalName": "Parus minor",
+  "authorship": "",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "Parus minor",
+  "habitats": [],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [],
+  "vernacularNames": [
+    {
+      "vernacularName": "Japanese Tit",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanse Koolmees",
+      "language": "nld"
+    },
+    {
+      "vernacularName": "Lille Musvit",
+      "language": "dan"
+    },
+    {
+      "vernacularName": "Mésange de Chine",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Orientkjøttmeis",
+      "language": "nor"
+    },
+    {
+      "vernacularName": "bogatka wschodnia",
+      "language": "pol"
+    },
+    {
+      "vernacularName": "ida-rasvatihane",
+      "language": "est"
+    },
+    {
+      "vernacularName": "sýkorka japonská",
+      "language": "slk"
+    },
+    {
+      "vernacularName": "östlig talgoxe",
+      "language": "swe"
+    },
+    {
+      "vernacularName": "Восточная синица",
+      "language": "rus"
+    },
+    {
+      "vernacularName": "นกติ๊ดหลังสีไพล",
+      "language": "tha"
+    },
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "日本山雀〔東方大山雀〕",
+      "language": "zho"
+    },
+    {
+      "vernacularName": "远东山雀",
+      "language": "zho"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "167183684": "Animalia",
+    "167183828": "Passeriformes",
+    "167183957": "Paridae"
+  }
+}, {
+  "key": 5844847,
+  "nameKey": 8279669,
+  "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
+  "constituentKey": "7ddf754f-d193-4cc9-b351-99906754a03b",
+  "nubKey": 5844847,
+  "parentKey": 2487923,
+  "parent": "Parus",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Passeriformes",
+  "family": "Paridae",
+  "genus": "Parus",
+  "species": "Parus minor",
+  "kingdomKey": 1,
+  "phylumKey": 44,
+  "classKey": 212,
+  "orderKey": 729,
+  "familyKey": 9327,
+  "genusKey": 2487923,
+  "speciesKey": 5844847,
+  "scientificName": "Parus minor Temminck & Schlegel, 1848",
+  "canonicalName": "Parus minor",
+  "authorship": "Temminck & Schlegel, 1848",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 11,
+  "numOccurrences": 0,
+  "taxonID": "gbif:5844847",
+  "extinct": false,
+  "habitats": [],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [],
+  "descriptions": [
+    {
+      "description": "Breeding regions are PAL. Breeding subregions are ec, e Asia."
+    }
+  ],
+  "vernacularNames": [
+    {
+      "vernacularName": "Japanese Tit",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanese Tit",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanse Koolmees",
+      "language": "nld"
+    },
+    {
+      "vernacularName": "Lille Musvit",
+      "language": "dan"
+    },
+    {
+      "vernacularName": "Mésange de Chine",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Orientkjøttmeis",
+      "language": "nor"
+    },
+    {
+      "vernacularName": "bogatka wschodnia",
+      "language": "pol"
+    },
+    {
+      "vernacularName": "ida-rasvatihane",
+      "language": "est"
+    },
+    {
+      "vernacularName": "sýkorka japonská",
+      "language": "slk"
+    },
+    {
+      "vernacularName": "östlig talgoxe",
+      "language": "swe"
+    },
+    {
+      "vernacularName": "Восточная синица",
+      "language": "rus"
+    },
+    {
+      "vernacularName": "นกติ๊ดหลังสีไพล",
+      "language": "tha"
+    },
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "日本山雀〔東方大山雀〕",
+      "language": "zho"
+    },
+    {
+      "vernacularName": "远东山雀",
+      "language": "zho"
+    },
+    {
+      "vernacularName": "orientkjøttmeis",
+      "language": "nob"
+    },
+    {
+      "vernacularName": "Japanese Tit",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanese Tit",
+      "language": "eng"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "1": "Animalia",
+    "44": "Chordata",
+    "212": "Aves",
+    "729": "Passeriformes",
+    "9327": "Paridae",
+    "2487923": "Parus"
+  },
+  "class": "Aves"
+}, {
+  "key": 5211137,
+  "nameKey": 2417381,
+  "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
+  "constituentKey": "7ddf754f-d193-4cc9-b351-99906754a03b",
+  "nubKey": 5211137,
+  "parentKey": 2393457,
+  "parent": "Chlorurus",
+  "basionymKey": 2393535,
+  "basionym": "Scarus japanensis Bloch, 1789",
+  "kingdom": "Animalia",
+  "phylum": "Chordata",
+  "order": "Perciformes",
+  "family": "Scaridae",
+  "genus": "Chlorurus",
+  "species": "Chlorurus japanensis",
+  "kingdomKey": 1,
+  "phylumKey": 44,
+  "orderKey": 587,
+  "familyKey": 4504,
+  "genusKey": 2393457,
+  "speciesKey": 5211137,
+  "scientificName": "Chlorurus japanensis (Bloch, 1789)",
+  "canonicalName": "Chlorurus japanensis",
+  "authorship": "(Bloch, 1789) ",
+  "nameType": "SCIENTIFIC",
+  "taxonomicStatus": "ACCEPTED",
+  "rank": "SPECIES",
+  "origin": "SOURCE",
+  "numDescendants": 0,
+  "numOccurrences": 0,
+  "taxonID": "gbif:5211137",
+  "extinct": false,
+  "habitats": [
+    "MARINE"
+  ],
+  "nomenclaturalStatus": [],
+  "threatStatuses": [
+    "LEAST_CONCERN"
+  ],
+  "descriptions": [
+    {
+      "description": "Status at New Ireland. New record, based on a specimen photographed at Lissenung Island, Kavieng District at 7 m depth by Dean Tully on 24 Sept. 2015; a video of a specimen taken off southern New Hanover, at 4 – 51 m depth, St. KR 110, in 2014 (identified by Barry C. Russell)."
+    },
+    {
+      "description": "Distribution and habitat. New Ireland: 1, 2. — General distribution: East Africa and western Mascarenes east to Tonga, north to Ryukyu Islands, south to Queensland (Australia) and New Caledonia. Found on seaward coral and rocky reefs, usually on inner reefs with rich coral habitat, 1 – 20 m depth. Marine."
+    }
+  ],
+  "vernacularNames": [
+    {
+      "vernacularName": "Perroquet à joue pâle",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Perroquet de Bloch",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Loro rostro Pálido",
+      "language": "spa"
+    },
+    {
+      "vernacularName": "Papagaio Rosto Pálido",
+      "language": "por"
+    },
+    {
+      "vernacularName": "Shijûkara",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "Perroquet à Joue Pâle",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Perroquet de Bloch",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Yellow-blotched Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Red-tailed Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Palecheek Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Pale Bullethead Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanese Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "シジュウカラ",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "Mulmul",
+      "language": "tgl"
+    },
+    {
+      "vernacularName": "Mulmol",
+      "language": "tgl"
+    },
+    {
+      "vernacularName": "Lutiin",
+      "language": "tgl"
+    },
+    {
+      "vernacularName": "Luro",
+      "language": "tgl"
+    },
+    {
+      "vernacularName": "Loro",
+      "language": "tgl"
+    },
+    {
+      "vernacularName": "Loro rostro pálido",
+      "language": "spa"
+    },
+    {
+      "vernacularName": "Laea-ulusama",
+      "language": "smo"
+    },
+    {
+      "vernacularName": "Fuga-si'umu",
+      "language": "smo"
+    },
+    {
+      "vernacularName": "Moymoy"
+    },
+    {
+      "vernacularName": "Molmol"
+    },
+    {
+      "vernacularName": "Buyos"
+    },
+    {
+      "vernacularName": "Papagaio rosto pálido",
+      "language": "por"
+    },
+    {
+      "vernacularName": "Uvu raungali"
+    },
+    {
+      "vernacularName": "Perencong",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Ketarap",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Kalat",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Kakatua kembang",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Bayan Jepun",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Bayan",
+      "language": "msa"
+    },
+    {
+      "vernacularName": "Shijûkara",
+      "language": "jpn"
+    },
+    {
+      "vernacularName": "Perroquet à joue pâle",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "Perroquet de Bloch",
+      "language": "fra"
+    },
+    {
+      "vernacularName": "soqo",
+      "language": "fij"
+    },
+    {
+      "vernacularName": "kakarawa",
+      "language": "fij"
+    },
+    {
+      "vernacularName": "bubute damu",
+      "language": "fij"
+    },
+    {
+      "vernacularName": "bubute",
+      "language": "fij"
+    },
+    {
+      "vernacularName": "Yellow-blotched parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Yellow-blotched parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Redtail parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Redtail parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Redtail parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Redtail parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Redtail parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Red-tailed parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Palecheek parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Pale bullethead parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "Japanese parrotfish",
+      "language": "eng"
+    },
+    {
+      "vernacularName": "鹦哥"
+    },
+    {
+      "vernacularName": "鸚哥"
+    },
+    {
+      "vernacularName": "红尾鹦嘴鱼"
+    },
+    {
+      "vernacularName": "红尾鹦哥鱼"
+    },
+    {
+      "vernacularName": "紅尾鸚嘴魚"
+    },
+    {
+      "vernacularName": "紅尾鸚哥魚"
+    },
+    {
+      "vernacularName": "火红绿鹦嘴鱼"
+    },
+    {
+      "vernacularName": "火紅綠鸚嘴魚"
+    },
+    {
+      "vernacularName": "日本鹦嘴鱼"
+    },
+    {
+      "vernacularName": "日本鸚嘴魚"
+    },
+    {
+      "vernacularName": "日本绿鹦嘴鱼"
+    },
+    {
+      "vernacularName": "日本綠鸚嘴魚"
+    },
+    {
+      "vernacularName": "布氏鹦嘴鱼"
+    },
+    {
+      "vernacularName": "布氏鸚嘴魚"
+    },
+    {
+      "vernacularName": "Bungalog"
+    },
+    {
+      "vernacularName": "Aliyakyak"
+    },
+    {
+      "vernacularName": "Faaragingiicha"
+    },
+    {
+      "vernacularName": "Faaragimogoweim"
+    },
+    {
+      "vernacularName": "Maming"
+    },
+    {
+      "vernacularName": "Bunog na angol"
+    },
+    {
+      "vernacularName": "Bon-ak"
+    },
+    {
+      "vernacularName": "Asul"
+    },
+    {
+      "vernacularName": "Angol"
+    },
+    {
+      "vernacularName": "Debubuk"
+    },
+    {
+      "vernacularName": "palecheek parrotfish"
+    },
+    {
+      "vernacularName": "pale bullethead parrotfish"
+    },
+    {
+      "vernacularName": "Japanese parrotfish"
+    }
+  ],
+  "synonym": false,
+  "higherClassificationMap": {
+    "1": "Animalia",
+    "44": "Chordata",
+    "587": "Perciformes",
+    "4504": "Scaridae",
+    "2393457": "Chlorurus"
+  }
+}] 
