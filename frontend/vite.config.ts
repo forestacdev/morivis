@@ -85,10 +85,10 @@ export default defineConfig({
 	},
 	server: {
 		proxy: {
-			'/api/gsj': {
-				target: 'https://tiles.gsj.jp',
+			'/api/qchizu': {
+				target: 'https://mapdata.qchizu.xyz',
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/gsj/, '')
+				rewrite: (path) => path.replace(/^\/api\/qchizu/, '')
 			}
 		}
 	},

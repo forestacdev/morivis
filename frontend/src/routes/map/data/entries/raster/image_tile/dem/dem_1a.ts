@@ -3,21 +3,21 @@ import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'dem_5a',
+	id: 'dem_1a',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
+		url: 'https://mapdata.qchizu.xyz/03_dem/52_gsi/all_2025/1_02/{z}/{x}/{y}.webp'
 	},
 	metaData: {
-		name: '全国数値標高データ 5mメッシュ',
-		sourceDataName: '基盤地図情報数値標高モデル DEM5A',
-		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
-		attribution: '国土地理院',
-		tags: ['DEM', '地形', '5m解像度'],
+		name: '全国数値標高データ 1mメッシュ',
+		sourceDataName: '基盤地図情報1mメッシュDEM',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/qchizu_94dem_99gsi',
+		attribution: 'Q地図タイル',
+		tags: ['DEM', '地形', '1m解像度'],
 		location: '全国',
 		minZoom: 1,
-		maxZoom: 15,
+		maxZoom: 17,
 		tileSize: 256,
 		bounds: [122.935, 20.425, 153.986, 45.551],
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7 // 画像タイルのXYZ座標

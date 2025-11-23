@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { map } from 'es-toolkit/compat';
+
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import type { Map as MapLibreMap } from 'maplibre-gl';
@@ -21,6 +23,8 @@
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import { detectCoordinateOrder } from './search';
 	import maplibregl from 'maplibre-gl';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -29,6 +33,8 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchSuggests: ResultData[] | null;
+		focusFeature: (result: ResultData) => void;
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
@@ -37,7 +43,9 @@
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
-		searchSuggests = $bindable()
+		searchSuggests = $bindable(),
+		focusFeature,
+		showDataEntry = $bindable()
 	}: Props = $props();
 
 	interface SearchData {
@@ -56,6 +64,8 @@
 	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
+	let featureDataFuse: Fuse<SearchData>;
+
 	onMount(async () => {
 		// 検索データの初期化
 		searchData = await fetch(`${DATA_PATH}/search_data.json`)
@@ -66,6 +76,11 @@
 			.catch((error) => {
 				console.error('Error fetching search data:', error);
 			});
+
+		featureDataFuse = new Fuse(searchData, {
+			keys: ['search_values'],
+			threshold: 0.1
+		});
 
 		searchData.forEach((data) => {
 			const layerId = data.layer_id;
@@ -81,41 +96,10 @@
 
 	let isLoading = $state<boolean>(false);
 
-	const focusFeature = async (result: ResultPoiData) => {
-		inputSearchWord = result.name;
-		if (result.propId) {
-			const tileCoords = lonLatToTileCoords(
-				result.point[0],
-				result.point[1],
-				14 // ズームレベル
-			);
-			const prop = await getPropertiesFromPMTiles(
-				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-				tileCoords,
-				result.layerId,
-				result.featureId
-			);
-
-			const data: FeatureMenuData = {
-				layerId: result.layerId,
-				properties: prop as Record<string, any>,
-				point: result.point,
-				featureId: result.featureId
-			};
-			featureMenuData = data;
-		}
-
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 17
-		});
-
-		selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-		showSelectionMarker = true;
-		showSearchSuggest.set(false);
-	};
+	const layerDataFuse = new Fuse(geoDataEntries, {
+		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
+		threshold: 0.3
+	});
 
 	const suggestWord = (searchWord: string) => {
 		if (!searchWord) {
@@ -153,16 +137,12 @@
 				return;
 			}
 
-			const fuse = new Fuse(searchData, {
-				keys: ['search_values'],
-				threshold: 0.1
-			});
 			// 検索実行
-			const result = fuse.search(searchWord, {
-				limit: LIMIT
+			const featureDataResult = featureDataFuse.search(searchWord, {
+				limit: 10
 			});
 
-			const resultsData = result.map((item) => {
+			const resultsData = featureDataResult.map((item) => {
 				const data = item.item;
 
 				return {
@@ -176,7 +156,25 @@
 				};
 			});
 
-			searchSuggests = [...resultsData];
+			const layerDataResult = layerDataFuse.search(searchWord, {
+				limit: 10
+			});
+
+			const layerResultsData = layerDataResult.map((item) => {
+				const data = item.item;
+
+				console.log('layer search data:', data);
+
+				return {
+					type: 'layer' as const,
+					name: data.metaData.name,
+					layerId: data.id,
+					location: data.metaData.location || '---',
+					data: data
+				};
+			});
+
+			searchSuggests = [...resultsData, ...layerResultsData];
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {
@@ -242,49 +240,81 @@
 			<div
 				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
 			>
-				{#each searchSuggests as result (result)}
-					{#if result.type === 'poi'}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
-							<div class="grid shrink-0 place-items-center">
-								{#if result.propId && propData[result.propId] && propData[result.propId].image}
-									<img
-										src={propData[result.propId].image}
-										alt="Icon"
-										class="h-12 w-12 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="grid h-12 w-12 place-items-center">
-										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+				{#if searchSuggests.some((result) => result.type === 'poi' || result.type === 'coordinate')}
+					<div class="p-2 pt-3 text-white">場所検索</div>
+					{#each searchSuggests as result (result)}
+						{#if result.type === 'poi'}
+							<button
+								onclick={() => {
+									searchSuggests = null;
+									focusFeature(result);
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+							>
+								<div class="grid shrink-0 place-items-center">
+									{#if result.propId && propData[result.propId] && propData[result.propId].image}
+										<img
+											src={propData[result.propId].image}
+											alt="Icon"
+											class="h-12 w-12 rounded-full object-cover"
+										/>
+									{:else}
+										<div class="grid h-12 w-12 place-items-center">
+											<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+										</div>
+									{/if}
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">{result.location ?? '---'}</span>
+								</div>
+							</button>
+						{/if}
+						{#if result.type === 'coordinate'}
+							<button
+								onclick={() => {
+									searchSuggests = null;
+									focusFeature(result);
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+							>
+								<div class="grid shrink-0 place-items-center">
+									<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">座標</span>
+								</div>
+							</button>
+						{/if}
+					{/each}
+				{/if}
+				{#if searchSuggests.some((result) => result.type === 'layer')}
+					<div class="p-2 pt-3 text-white">データ検索</div>
+					{#each searchSuggests as result (result)}
+						{#if result.type === 'layer'}
+							<button
+								onclick={() => {
+									searchSuggests = null;
+									showDataEntry = result.data;
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+							>
+								<div
+									class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150"
+								>
+									<div class="scale-200 h-full w-full">
+										<LayerIcon layerEntry={result.data} />
 									</div>
-								{/if}
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
-								<span class="text-xs">{result.location ?? '---'}</span>
-							</div>
-						</button>
-					{:else if result.type === 'coordinate'}
-						<button
-							onclick={() => {
-								selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-								showSelectionMarker = true;
-								showSearchSuggest.set(false);
-							}}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
-							<div class="grid shrink-0 place-items-center">
-								<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
-								<span class="text-xs">座標検索</span>
-							</div>
-						</button>
-					{/if}
-				{/each}
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">{result.location ?? '---'}</span>
+								</div>
+							</button>
+						{/if}
+					{/each}
+				{/if}
 			</div>
 		{/if}
 	</div>

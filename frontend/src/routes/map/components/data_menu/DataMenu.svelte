@@ -32,7 +32,6 @@
 	}: Props = $props();
 
 	// export let mapBearing: number;
-	let dataEntries = $state<GeoDataEntry[]>([...geoDataEntries]);
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(true); // データ追加の状態

@@ -476,6 +476,7 @@
 					{layerEntries}
 					bind:showSelectionMarker
 					bind:selectionMarkerLngLat
+					bind:showDataEntry
 				/>
 
 				<MapLibreMap

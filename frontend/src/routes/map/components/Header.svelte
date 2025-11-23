@@ -30,6 +30,7 @@
 		searchResults: ResultData[] | null;
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 		focusFeature: (result: ResultData) => void;
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
@@ -40,7 +41,8 @@
 		selectionMarkerLngLat = $bindable(),
 		searchResults = $bindable(),
 		resetlayerEntries,
-		focusFeature
+		focusFeature,
+		showDataEntry = $bindable()
 	}: Props = $props();
 
 	interface SearchData {
@@ -85,12 +87,14 @@
 	let searchSuggests = $state<ResultData[] | null>(null);
 
 	const searchFeature = async (searchWord: string) => {
+		// 座標検索の優先処理
 		if (searchSuggests && searchSuggests.length > 0 && searchSuggests[0].type === 'coordinate') {
 			const data = searchSuggests[0];
 			focusFeature(data);
 			searchSuggests = null;
 			return;
 		}
+
 		isLoading = true;
 		isProcessing.set(true);
 		try {
@@ -272,12 +276,14 @@
 		<div class="flex h-full items-center gap-4 pl-2"></div>
 		<div class="flex max-w-[600px] flex-1 items-center">
 			<SearchSuggest
+				{focusFeature}
 				bind:featureMenuData
 				bind:inputSearchWord
 				{layerEntries}
 				bind:showSelectionMarker
 				bind:selectionMarkerLngLat
 				bind:searchSuggests
+				bind:showDataEntry
 			/>
 		</div>
 		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>

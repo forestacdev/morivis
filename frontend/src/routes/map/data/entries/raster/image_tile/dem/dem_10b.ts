@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '全国数値標高データ',
+		name: '全国数値標高データ 10mメッシュ',
 		sourceDataName: '基盤地図情報数値標高モデル DEM10B',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#dem',
 		attribution: '国土地理院',
