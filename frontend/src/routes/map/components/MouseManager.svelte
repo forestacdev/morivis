@@ -40,6 +40,7 @@
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
 		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchId: number | null;
 	}
 
 	let {
@@ -53,7 +54,8 @@
 		toggleTooltip,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
-		searchGeojsonData
+		searchGeojsonData,
+		selectedSearchId = $bindable()
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -330,12 +332,13 @@
 				const { id } = searchFeatures[0];
 				const feature = searchGeojsonData.features.find((f) => f.id === id);
 				if (feature) {
-					mapStore.setFilter('@search_result', ['!=', ['id'], id]);
+					selectedSearchId = id as number;
+
 					mapStore.panTo(feature.geometry.coordinates as [number, number], {
 						duration: 500
 					});
-					markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
-					showMarker = true;
+					// markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
+					// showMarker = true;
 					return;
 				}
 			}

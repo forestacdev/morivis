@@ -410,7 +410,7 @@ const createMapStore = () => {
 		map.setStyle(style);
 	};
 
-	const setFilter = (layerId: string, filter: FilterSpecification) => {
+	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
 		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
 		if (layer) {

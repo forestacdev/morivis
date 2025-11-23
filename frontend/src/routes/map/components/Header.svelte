@@ -165,7 +165,7 @@
 			if (searchResults && searchResults.length > 0) {
 				showSearchMenu.set(true);
 			} else {
-				showSearchMenu.set(false);
+				// showSearchMenu.set(false);
 				showNotification('該当するデータが見つかりませんでした。', 'info');
 			}
 		}
@@ -192,28 +192,7 @@
 <div class="bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
-		<!-- <button
-			class="hover:text-accent bg-base text-main cursor-pointer rounded-full p-1 text-left duration-150"
-		>
-			<Icon icon="ic:round-layers" class="h-8 w-8" />
-		</button> -->
-		<!-- <div class="flex select-none items-center justify-center text-base max-lg:hidden">
-			<span class="max-lg:text-3xl lg:text-5xl">morivis</span>
-		</div> -->
-		<div class="flex h-full items-end justify-center gap-2">
-			<!-- <button
-				onclick={() => showDataMenu.set(true)}
-				class="c-btn-confirm flex items-center gap-1 rounded-full p-0.5 pl-2 pr-4"
-			>
-				<Icon icon="material-symbols:add" class="h-7 w-7" /><span class="text-sm">データ追加</span>
-			</button> -->
-			<!-- <button
-				onclick={resetLayers}
-				class="c-btn-sub flex shrink items-center justify-center gap-2 rounded-full p-0.5 px-2"
-			>
-				<span class="text-sm">リセット</span>
-			</button> -->
-		</div>
+		<div class="flex h-full items-end justify-center gap-2"></div>
 	</div>
 	<!-- 中央 -->
 	{#if !$showDataMenu}
@@ -243,25 +222,6 @@
 				<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
 			</button>
 		</div>
-
-		<!-- <div class="relative flex max-w-[400px] flex-1 items-center justify-between overflow-hidden">
-		<Geocoder
-			{layerEntries}
-			bind:results
-			bind:inputSearchWord
-			searchFeature={(v) => searchFeature(v)}
-		/>
-		<button
-			transition:slide={{ duration: 300, axis: 'x' }}
-			onclick={() => searchFeature(inputSearchWord)}
-			disabled={$isProcessing || !inputSearchWord}
-			class="flex items-center justify-start gap-2 rounded-r-full p-2 px-4 text-white {inputSearchWord
-				? 'bg-accent cursor-pointer'
-				: 'bg-sub cursor-not-allowed'}"
-		>
-			<Icon icon="stash:search-solid" class="h-6 w-6" />
-		</button>
-	</div> -->
 	{/if}
 	<!-- 右側 -->
 	<div

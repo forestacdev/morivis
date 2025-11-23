@@ -85,6 +85,7 @@
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchId: number | null;
 	}
 
 	let {
@@ -110,7 +111,8 @@
 		focusBbox = $bindable(),
 		selectedEpsgCode,
 		isExternalCameraUpdate = $bindable(),
-		searchGeojsonData
+		searchGeojsonData,
+		selectedSearchId = $bindable()
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -522,7 +524,7 @@
 
 	// 検索結果の更新
 	$effect(() => {
-		if (searchGeojsonData) {
+		if (searchGeojsonData || !searchGeojsonData) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
@@ -688,6 +690,7 @@
 		bind:clickedLayerIds
 		bind:cameraBearing
 		bind:isExternalCameraUpdate
+		bind:selectedSearchId
 		{streetViewPointData}
 		{layerEntries}
 		{searchGeojsonData}

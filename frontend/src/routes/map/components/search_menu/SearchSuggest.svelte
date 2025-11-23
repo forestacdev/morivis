@@ -189,7 +189,7 @@
 			$showSearchSuggest = true;
 		} else {
 			$showSearchSuggest = false;
-			searchSuggests = null;
+			// searchSuggests = null;
 		}
 	});
 
@@ -198,32 +198,6 @@
 			$showSearchSuggest = false;
 		}
 	});
-
-	// $effect(() => {
-	// 	if (inputSearchWord) {
-	// 		debounceSearch(inputSearchWord);
-	// 	} else {
-	// 		results = null;
-	// 	}
-	// });
-
-	// let containerRef = $state<HTMLElement>();
-
-	// $effect(() => {
-	// 	const handleClickOutside = (event: MouseEvent) => {
-	// 		if ($showSearchMenu && containerRef && !containerRef.contains(event.target as Node)) {
-	// 			$showSearchMenu = false;
-	// 		}
-	// 	};
-
-	// 	if ($showSearchMenu) {
-	// 		document.addEventListener('click', handleClickOutside);
-	// 	}
-
-	// 	return () => {
-	// 		document.removeEventListener('click', handleClickOutside);
-	// 	};
-	// });
 </script>
 
 {#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0}

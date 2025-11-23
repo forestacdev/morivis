@@ -153,6 +153,15 @@
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
 	let searchResults = $state<ResultData[] | null>([]);
+	let selectedSearchId = $state<number | null>(null);
+
+	$effect(() => {
+		if (selectedSearchId) {
+			mapStore.setFilter('@search_result', ['!=', ['id'], selectedSearchId]);
+		} else {
+			mapStore.setFilter('@search_result', null);
+		}
+	});
 
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
@@ -413,6 +422,8 @@
 		}
 
 		// TODO
+
+		selectedSearchId = result.id;
 		//github.com/maplibre/maplibre-gl-js/issues/4891
 		mapStore.flyTo(result.point, {
 			zoom: 17,
@@ -431,15 +442,6 @@
 
 {#if isInitialized && isInitialStreetViewEntry}
 	<div class="fixed flex h-dvh w-full flex-col">
-		<!-- <HeaderMenu
-			{resetlayerEntries}
-			bind:featureMenuData
-			bind:inputSearchWord
-			bind:results
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/> -->
 		<div class="flex h-full w-full flex-1">
 			<!-- マップのオフセット調整用 -->
 			{#if $showLayerMenu}
@@ -504,6 +506,7 @@
 					bind:showZoneForm
 					bind:focusBbox
 					bind:isExternalCameraUpdate
+					bind:selectedSearchId
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}

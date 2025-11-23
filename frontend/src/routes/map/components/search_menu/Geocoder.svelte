@@ -43,17 +43,6 @@
 			isLoading = false;
 		}
 	};
-
-	$effect(() => {
-		if (!inputSearchWord) searchResults = null;
-	});
-
-	// 検索結果のリセット
-	const resetSearchResult = () => {};
-
-	// onMount(() => {
-	// 	inputElement?.focus();
-	// });
 </script>
 
 <input
