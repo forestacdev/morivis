@@ -29,7 +29,9 @@ export class WorkerProtocol {
 
 			const baseUrl = url.origin + url.pathname;
 
-			const geojson = await fetch(baseUrl, { signal: abortController.signal }).then((res) => {
+			const { signal } = abortController;
+
+			const geojson = await fetch(baseUrl, { signal }).then((res) => {
 				if (!res.ok) {
 					throw new Error(`Failed to fetch GeoJSON data: ${res.status} ${res.statusText}`);
 				}
@@ -55,8 +57,6 @@ export class WorkerProtocol {
 					});
 				}
 			}
-
-			const { signal } = abortController;
 
 			const id = `${z}/${x}/${y}_tile_index`;
 

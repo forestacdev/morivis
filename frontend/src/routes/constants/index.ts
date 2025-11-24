@@ -107,8 +107,8 @@ export const INT_ADD_LAYER_IDS = [
 	// 'national_forest_road',
 
 	'ensyurin_syouhan',
-	'national_forest_stand',
-	'experimental_landformclassification1'
+	'national_forest_stand'
+	// 'experimental_landformclassification1'
 	// 'tochigi_tree_species',
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',

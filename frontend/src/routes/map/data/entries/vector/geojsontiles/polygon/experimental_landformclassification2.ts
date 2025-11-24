@@ -5,15 +5,15 @@ import { TABLE_JOIN_DATA_PATH } from '$routes/constants/index';
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: PolygonEntry<TileMetaData> = {
-	id: 'experimental_landformclassification1',
+	id: 'experimental_landformclassification2',
 	type: 'vector',
 	format: {
 		type: 'geojsontile',
 		geometryType: 'Polygon',
-		url: `https://cyberjapandata.gsi.go.jp/xyz/experimental_landformclassification1/{z}/{x}/{y}.geojson`
+		url: `https://cyberjapandata.gsi.go.jp/xyz/experimental_landformclassification2/{z}/{x}/{y}.geojson`
 	},
 	metaData: {
-		name: '地形分類（自然地形）',
+		name: '地形分類（人工地形）',
 		description: '',
 		attribution: '国土地理院',
 		location: '全国',
@@ -23,17 +23,21 @@ const entry: PolygonEntry<TileMetaData> = {
 		promoteId: 'code',
 		tags: ['地形分類'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: { x: 225, y: 100, z: 8 },
+		xyzImageTile: {
+			x: 14561,
+			y: 6451,
+			z: 14
+		},
 		sourceDataName: '国土地理院ベクトルタイル提供実験（地形分類）',
 		downloadUrl: 'https://github.com/gsi-cyberjapan/experimental_landformclassification',
-		mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification1.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification2.webp`
 	},
 	properties: {
 		keys: [],
 		titles: [
 			{
 				conditions: [],
-				template: '地形分類（自然地形）'
+				template: '地形分類（人工地形）'
 			}
 		],
 		dict: {
