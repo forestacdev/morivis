@@ -6,7 +6,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
-	import { geoDataEntries } from '$routes/map/data';
+	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStyleEdit } from '$routes/stores';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
@@ -18,6 +18,7 @@
 	import { fly, slide, scale } from 'svelte/transition';
 	import { cubicIn } from 'svelte/easing';
 	import { checkMobile } from '$routes/map/utils/ui';
+	import { encode } from '$routes/map/utils/normalized';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -36,15 +37,10 @@
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(true); // データ追加の状態
 
-	const fuse = new Fuse(geoDataEntries, {
-		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
-		threshold: 0.3
-	});
-
 	$effect(() => {
 		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
 		if (searchWord) {
-			const result = fuse.search(searchWord);
+			const result = layerDataFuse.search(encode(searchWord));
 			filterDataEntries = result.map((item) => item.item);
 		} else {
 			// 検索ワードが空の場合、全てのデータを表示

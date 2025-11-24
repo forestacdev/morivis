@@ -3,6 +3,7 @@
 
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
+
 	import type { Map as MapLibreMap } from 'maplibre-gl';
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
@@ -10,7 +11,7 @@
 
 	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { geoDataEntries } from '$routes/map/data';
+	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
@@ -26,6 +27,7 @@
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { encode } from '$routes/map/utils/normalized';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -79,7 +81,16 @@
 
 		featureDataFuse = new Fuse(searchData, {
 			keys: ['search_values'],
-			threshold: 0.1
+			threshold: 0.3,
+			getFn: (obj: SearchData, path: string | string[]) => {
+				// pathが文字列の場合、配列に変換
+
+				const values = obj.search_values.map((v) => encode(v));
+
+				// 配列の各要素をエンコードして、配列として返す
+				return values;
+				// 返り値の例: ['ﾄｳｷｮｳ', 'ﾄｳｷｮｳ', 'Tokyo']
+			}
 		});
 
 		searchData.forEach((data) => {
@@ -96,15 +107,12 @@
 
 	let isLoading = $state<boolean>(false);
 
-	const layerDataFuse = new Fuse(geoDataEntries, {
-		keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
-		threshold: 0.3
-	});
-
 	const suggestWord = (searchWord: string) => {
 		if (!searchWord) {
 			return;
 		}
+
+		const encodedSearchWord = encode(searchWord);
 
 		try {
 			if (!searchData) {
@@ -113,7 +121,7 @@
 			}
 
 			// TODO:座標検索
-			const coordinateInfo = detectCoordinateOrder(searchWord);
+			const coordinateInfo = detectCoordinateOrder(encodedSearchWord);
 
 			if (coordinateInfo.isCoordinate) {
 				let point: [number, number];
@@ -137,7 +145,7 @@
 			isLoading = true;
 
 			// 検索実行
-			const featureDataResult = featureDataFuse.search(searchWord, {
+			const featureDataResult = featureDataFuse.search(encodedSearchWord, {
 				limit: 10
 			});
 
@@ -155,14 +163,12 @@
 				};
 			});
 
-			const layerDataResult = layerDataFuse.search(searchWord, {
+			const layerDataResult = layerDataFuse.search(encodedSearchWord, {
 				limit: 10
 			});
 
 			const layerResultsData = layerDataResult.map((item) => {
 				const data = item.item;
-
-				console.log('layer search data:', data);
 
 				return {
 					type: 'layer' as const,
