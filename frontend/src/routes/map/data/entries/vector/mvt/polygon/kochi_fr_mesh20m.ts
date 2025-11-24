@@ -79,8 +79,21 @@ const entry: VectorEntry<TileMetaData> = {
 						value: '#349f1c'
 					}
 				},
+				// NOTE:スギ、ヒノキしかない
 				{
-					...TREE_MATCH_COLOR_STYLE
+					type: 'match',
+					key: '解析樹種',
+					name: '樹種ごとの色分け',
+					mapping: {
+						categories: ['スギ', 'ヒノキ類'],
+						values: ['#33a02c', '#b2df8a'],
+						// パターン情報
+						patterns: [null, null]
+					},
+					noData: {
+						value: 'transparent',
+						pattern: null
+					}
 				},
 				{
 					type: 'step',
