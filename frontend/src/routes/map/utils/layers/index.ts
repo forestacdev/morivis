@@ -885,7 +885,7 @@ export const createLayersItems = (
 							});
 						}
 					}
-					if (format.type === 'mvt' || format.type === 'pmtiles') {
+					if (format.type === 'mvt' || format.type === 'pmtiles' || format.type === 'geojsontile') {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
 						}

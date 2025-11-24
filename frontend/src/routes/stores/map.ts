@@ -41,15 +41,19 @@ import {
 } from '$routes/map/data/location_bbox';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
+import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
-const webgl = demProtocol('webgl');
-maplibregl.addProtocol(webgl.protocolName, webgl.request);
+const webglProt = demProtocol('webgl');
+maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
-const terrain = terrainProtocol('terrain');
-maplibregl.addProtocol(terrain.protocolName, terrain.request);
+const terrainProt = terrainProtocol('terrain');
+maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
+
+const geojsonProt = geojsonProtocol('geojson');
+maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
 
 if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');

@@ -5,6 +5,7 @@ import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { layerAttributions } from './attributions';
 import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+import { JoinDataCache } from '$routes/map/utils/join_data';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -64,6 +65,9 @@ const createLayerStore = () => {
 				const newLayers = layers.filter((layerId) => layerId !== id);
 				// GeojsonCacheからも削除
 				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
+
+				// JoinDataCacheからも削除
+				if (JoinDataCache.has(id)) JoinDataCache.remove(id);
 				layerAttributions.remove(id);
 				return newLayers;
 			}),

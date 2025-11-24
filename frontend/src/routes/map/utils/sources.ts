@@ -33,6 +33,7 @@ import {
 import { get } from 'svelte/store';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
+import { JoinDataCache } from '$routes/map/utils/join_data';
 import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
 import { objectToUrlParams } from '$routes/map/utils/params';
@@ -60,7 +61,7 @@ export const createSourcesItems = async (
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
-			const { metaData, format, type, style, auxiliaryLayers } = entry;
+			const { metaData, format, type, style, auxiliaryLayers, properties } = entry;
 
 			switch (type) {
 				case 'raster': {
@@ -224,6 +225,21 @@ export const createSourcesItems = async (
 							attribution: metaData.attribution,
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
+					} else if (format.type === 'geojsontile') {
+						items[sourceId] = {
+							type: 'vector',
+							tiles: [`geojson://${format.url}?x={x}&y={y}&z={z}&entryId=${entry.id}`],
+							maxzoom: metaData.maxZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as VectorSourceSpecification;
+
+						if ('joinDataUrl' in properties && properties.joinDataUrl) {
+							const joinData = await fetch(properties.joinDataUrl).then((res) => res.json());
+							JoinDataCache.set(entry.id, joinData);
+						}
 					}
 					break;
 				}

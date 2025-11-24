@@ -65,24 +65,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 						pattern: null
 					}
 				},
-				{
-					type: 'match',
-					key: '樹種',
-					name: '樹種ごとの色分け',
-					mapping: {
-						categories: [
-							'スギ',
-							'ヒノキ',
-							'アカマツ',
-							'スラッシュマツ',
-							'広葉樹',
-							'草地',
-							'その他岩石'
-						],
-						values: ['#33a02c', '#b2df8a', '#e31a1c', '#1f78b4', '#fdbf6f', '#a6cee3', '#fb9a99'],
-						patterns: [null, null, null, null, null, null, null]
-					}
-				},
+
 				{
 					type: 'match',
 					key: '林班',
