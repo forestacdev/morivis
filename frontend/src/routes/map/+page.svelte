@@ -429,9 +429,11 @@
 			};
 			featureMenuData = data;
 			selectedSearchResultData = result;
+			selectedSearchId = result.id;
 		} else if (result.type === 'address') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
+			selectedSearchId = result.id;
 		}
 
 		//github.com/maplibre/maplibre-gl-js/issues/4891
@@ -449,16 +451,16 @@
 		isInitialized = false;
 	});
 
-	$effect(() => {
-		if (!selectedSearchId) {
-			selectedSearchResultData = null;
-		} else if (searchResults && selectedSearchId) {
-			const result = searchResults.find((res) => res.id === selectedSearchId);
-			if ((result && result.type === 'address') || (result && result.type === 'poi')) {
-				focusFeature(result as ResultPoiData | ResultAddressData);
-			}
-		}
-	});
+	// $effect(() => {
+	// 	if (!selectedSearchId) {
+	// 		selectedSearchResultData = null;
+	// 	} else if (searchResults && selectedSearchId) {
+	// 		const result = searchResults.find((res) => res.id === selectedSearchId);
+	// 		if ((result && result.type === 'address') || (result && result.type === 'poi')) {
+	// 			focusFeature(result as ResultPoiData | ResultAddressData);
+	// 		}
+	// 	}
+	// });
 </script>
 
 {#if isInitialized && isInitialStreetViewEntry}
@@ -530,6 +532,7 @@
 					bind:isExternalCameraUpdate
 					bind:selectedSearchId
 					bind:selectedSearchResultData
+					{searchResults}
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}

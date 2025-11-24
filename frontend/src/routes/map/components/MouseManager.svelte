@@ -26,7 +26,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	import { setStreetViewParams } from '../utils/params';
-	import type { ResultAddressData, ResultPoiData } from '../utils/feature';
+	import type { ResultAddressData, ResultData, ResultPoiData } from '../utils/feature';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -39,8 +39,7 @@
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
-
-		selectedSearchId: number | null;
+		searchResults: ResultData[] | null;
 		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
@@ -55,8 +54,7 @@
 		toggleTooltip,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
-
-		selectedSearchId = $bindable(),
+		searchResults,
 		focusFeature
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
@@ -332,12 +330,10 @@
 			});
 
 			if (searchFeatures.length > 0) {
-				const { id, properties, geometry } = searchFeatures[0];
+				const { properties } = searchFeatures[0];
 
-				selectedSearchId = id as number;
-				mapStore.panTo(geometry.coordinates as [number, number], {
-					duration: 500
-				});
+				const result = searchResults?.find((result) => result.id === properties.id);
+				focusFeature(result);
 
 				// mapStore.panTo(feature.geometry.coordinates as [number, number], {
 				// 	duration: 500
@@ -348,7 +344,6 @@
 			}
 
 			// 通常の地物クリック処理
-
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
@@ -363,14 +358,11 @@
 
 				featureMenuData = geojsonFeature;
 
-				// 検索マーカー
-				if (selectedSearchId) {
-					selectedSearchId = null;
-				}
 				// mapStore.panTo(e.lngLat, {
 				// 	duration: 1000
 				// });
 			}
+			// 検索マーカー
 
 			const feature = features[0]; // 一番上のfeature
 			const id = feature.id;

@@ -103,6 +103,7 @@
 					if (result.type === 'poi' || result.type === 'address') {
 						if (result.type === 'poi') {
 							prop = {
+								id: result.id,
 								name: result.name,
 								location: result.location,
 								layerId: result.layerId,
@@ -111,9 +112,9 @@
 							};
 						} else if (result.type === 'address') {
 							prop = {
+								id: result.id,
 								name: result.name,
 								location: result.location,
-
 								propId: null
 							};
 						}

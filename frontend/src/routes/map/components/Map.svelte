@@ -60,7 +60,12 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
-	import type { ResultAddressData, ResultPoiData, SearchGeojsonData } from '../utils/feature';
+	import type {
+		ResultAddressData,
+		ResultData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from '../utils/feature';
 	import type { TileInfo } from '../api/whether';
 
 	interface Props {
@@ -89,6 +94,7 @@
 		searchGeojsonData: SearchGeojsonData | null;
 		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
 		selectedSearchId: number | null;
+		searchResults: ResultData[] | null;
 		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
@@ -118,6 +124,7 @@
 		selectedSearchResultData = $bindable(),
 		searchGeojsonData,
 		selectedSearchId = $bindable(),
+		searchResults,
 		focusFeature
 	}: Props = $props();
 
@@ -608,8 +615,8 @@
 
 	$effect(() => {
 		if (!featureMenuData) {
-			// maplibreMarker?.remove();
 			showSelectionMarker = false;
+			selectedSearchId = null;
 		}
 	});
 
@@ -727,7 +734,7 @@
 		bind:clickedLayerIds
 		bind:cameraBearing
 		bind:isExternalCameraUpdate
-		bind:selectedSearchId
+		{searchResults}
 		{streetViewPointData}
 		{layerEntries}
 		{toggleTooltip}
@@ -741,7 +748,7 @@
 		/>
 	{/key}
 
-	{#if selectedSearchResultData}
+	{#if selectedSearchResultData && selectedSearchId}
 		<SearchMarker map={maplibreMap} bind:selectedSearchId prop={selectedSearchResultData} />
 	{/if}
 
