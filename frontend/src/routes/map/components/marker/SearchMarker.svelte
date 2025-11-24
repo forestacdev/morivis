@@ -20,7 +20,6 @@
 	let marker: maplibregl.Marker | null = $state.raw(null);
 
 	onMount(() => {
-		console.log('SearchMarker mounted with selectedSearchId:', selectedSearchId, 'and prop:', prop);
 		if (selectedSearchId && prop) {
 			marker = new maplibregl.Marker({
 				scale: 1.2,

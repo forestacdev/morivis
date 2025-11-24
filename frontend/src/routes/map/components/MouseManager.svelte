@@ -326,14 +326,13 @@
 				}
 			}
 
+			// 検索結果の地物クリック処理
 			const searchFeatures = mapStore.queryRenderedFeatures(e.point, {
 				layers: ['@search_result']
 			});
 
 			if (searchFeatures.length > 0) {
 				const { id, properties, geometry } = searchFeatures[0];
-
-				console.log('Clicked search feature ID:', id);
 
 				selectedSearchId = id as number;
 				mapStore.panTo(geometry.coordinates as [number, number], {
@@ -363,6 +362,11 @@
 				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
 
 				featureMenuData = geojsonFeature;
+
+				// 検索マーカー
+				if (selectedSearchId) {
+					selectedSearchId = null;
+				}
 				// mapStore.panTo(e.lngLat, {
 				// 	duration: 1000
 				// });

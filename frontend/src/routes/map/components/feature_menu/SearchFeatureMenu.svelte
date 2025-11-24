@@ -14,10 +14,13 @@
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
+		selectedSearchId: number | null;
 	}
-	let { selectedSearchResultData = $bindable() }: Props = $props();
+	let { selectedSearchResultData = $bindable(), selectedSearchId = $bindable() }: Props = $props();
 
 	let isLoading = $state(true);
+
+	// TODO: POIデータとの一貫性を持たせる
 
 	// URLを省略する関数
 	const truncateUrl = (url: string, maxLength = 50) => {
@@ -50,7 +53,7 @@
 </script>
 
 <!-- PC -->
-{#if selectedSearchResultData && checkPc()}
+{#if selectedSearchResultData && selectedSearchResultData.type === 'address' && checkPc()}
 	<div
 		transition:fly={{
 			duration: 300,
@@ -61,7 +64,10 @@
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
-				onclick={() => (selectedSearchResultData = null)}
+				onclick={() => {
+					selectedSearchResultData = null;
+					selectedSearchId = null;
+				}}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />

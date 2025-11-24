@@ -428,10 +428,9 @@
 				featureId: result.featureId
 			};
 			featureMenuData = data;
-		}
-
-		// TODO
-		if (result.type === 'address') {
+			selectedSearchResultData = result;
+		} else if (result.type === 'address') {
+			featureMenuData = null;
 			selectedSearchResultData = result;
 		}
 
@@ -455,8 +454,8 @@
 			selectedSearchResultData = null;
 		} else if (searchResults && selectedSearchId) {
 			const result = searchResults.find((res) => res.id === selectedSearchId);
-			if (result && (result.type === 'poi' || result.type === 'address')) {
-				selectedSearchResultData = result as ResultPoiData | ResultAddressData;
+			if ((result && result.type === 'address') || (result && result.type === 'poi')) {
+				focusFeature(result as ResultPoiData | ResultAddressData);
 			}
 		}
 	});
@@ -562,7 +561,7 @@
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-		<SearchFeatureMenu bind:selectedSearchResultData />
+		<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
