@@ -25,6 +25,7 @@
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
+		selectedSearchResultData: ResultData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
@@ -40,6 +41,7 @@
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
 		searchResults = $bindable(),
+		selectedSearchResultData = $bindable(),
 		resetlayerEntries,
 		focusFeature,
 		showDataEntry = $bindable()
@@ -164,6 +166,8 @@
 			isProcessing.set(false);
 			if (searchResults && searchResults.length > 0) {
 				showSearchMenu.set(true);
+				featureMenuData = null;
+				selectedSearchResultData = null;
 			} else {
 				// showSearchMenu.set(false);
 				showNotification('該当するデータが見つかりませんでした。', 'info');

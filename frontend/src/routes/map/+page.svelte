@@ -503,6 +503,7 @@
 					{resetlayerEntries}
 					{focusFeature}
 					bind:featureMenuData
+					bind:selectedSearchResultData
 					bind:inputSearchWord
 					bind:searchResults
 					{layerEntries}

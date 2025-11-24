@@ -42,18 +42,50 @@ const getObservations = async (taxonId: number, place?: string) => {
 	return data.results || [];
 };
 
-const get = async () => {
-	// 使用例
-	const taxa = await searchiNaturalist('メジロ');
-	if (taxa.length > 0) {
-		console.log('名前:', taxa[0].preferred_common_name);
-		console.log('学名:', taxa[0].name);
-		console.log('画像:', taxa[0].default_photo?.medium_url);
+// const get = async () => {
+// 	// 使用例
+// 	const taxa = await searchiNaturalist('メジロ');
+// 	if (taxa.length > 0) {
+// 		console.log('名前:', taxa[0].preferred_common_name);
+// 		console.log('学名:', taxa[0].name);
+// 		console.log('画像:', taxa[0].default_photo?.medium_url);
 
-		// 日本での観察記録を取得
-		const observations = await getObservations(taxa[0].id, '6737');
-		console.log('日本での観察記録:', observations.length);
-	}
-};
+// 		// 日本での観察記録を取得
+// 		const observations = await getObservations(taxa[0].id, '6737');
+// 		console.log('日本での観察記録:', observations.length);
+// 	}
+// };
 
-get();
+// get();
+
+// iNaturalist APIから観察データを取得
+interface Observation {
+	id: number;
+	geojson: {
+		type: 'Point';
+		coordinates: [number, number]; // [lng, lat]
+	};
+	species_guess: string;
+	observed_on: string;
+}
+
+async function fetchObservations(options?: {
+	taxonId?: number;
+	bounds?: [number, number, number, number];
+	limit?: number; // 取得件数（最大200）
+}): Promise<Observation[]> {
+	const params = new URLSearchParams({
+		per_page: (options?.limit || 1).toString(),
+		...(options?.taxonId && { taxon_id: options.taxonId.toString() }),
+		...(options?.bounds && {
+			nelat: options.bounds[3].toString(),
+			nelng: options.bounds[2].toString(),
+			swlat: options.bounds[1].toString(),
+			swlng: options.bounds[0].toString()
+		})
+	});
+
+	const response = await fetch(`https://api.inaturalist.org/v1/observations?${params}`);
+	const data = await response.json();
+	return data.results;
+}
