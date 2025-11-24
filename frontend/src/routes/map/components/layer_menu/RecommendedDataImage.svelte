@@ -4,6 +4,7 @@
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -50,6 +51,7 @@
 			{#if dataEntry.metaData.xyzImageTile && !isImageError && dataEntry.type === 'vector'}
 				<!-- 背景地図画像 -->
 				<img
+					transition:fade={{ duration: 200 }}
 					src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
 					class="c-basemap-img absolute h-full w-full object-cover opacity-50 transition-transform duration-150 {dataEntry
 						.format.geometryType === 'Point'
@@ -64,6 +66,7 @@
 				/>
 			{/if}
 			<img
+				transition:fade={{ duration: 200 }}
 				src={imageResult.url}
 				class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150 {dataEntry.type ===
 					'vector' && dataEntry.format.geometryType === 'Point'

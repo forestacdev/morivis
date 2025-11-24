@@ -211,7 +211,7 @@
 					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
 				></div>
 			</div>
-		{:else if searchSuggests}
+		{:else if searchSuggests && inputSearchWord.trim() !== ''}
 			<div
 				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
 			>
@@ -224,7 +224,7 @@
 									$showSearchSuggest = false;
 									focusFeature(result);
 								}}
-								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
 							>
 								<div class="grid shrink-0 place-items-center">
 									{#if result.propId && propData[result.propId] && propData[result.propId].image}
@@ -251,7 +251,7 @@
 									$showSearchSuggest = false;
 									focusFeature(result);
 								}}
-								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
 							>
 								<div class="grid shrink-0 place-items-center">
 									<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
@@ -278,7 +278,7 @@
 										showDataEntry = result.data;
 									}
 								}}
-								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
 							>
 								<div
 									class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150"

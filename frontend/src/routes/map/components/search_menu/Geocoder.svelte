@@ -25,6 +25,7 @@
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
 	let inputElement = $state<HTMLInputElement | null>(null); // 入力要素
+	let isFocus = $state<boolean>(false);
 
 	// 検索処理
 	const search = async (_searchWord: string) => {
@@ -59,8 +60,14 @@
 			search(inputSearchWord);
 		}
 	}}
-	placeholder="施設名 / 住所 / 座標 / データ名"
-	onfocus={() => showSearchSuggest.set(true)}
+	placeholder={isFocus ? '施設名 / 住所 / 座標 / データ名' : '検索'}
+	onfocus={() => {
+		isFocus = true;
+		showSearchSuggest.set(true);
+	}}
+	onblur={() => {
+		isFocus = false;
+	}}
 />
 
 {#if inputSearchWord}
