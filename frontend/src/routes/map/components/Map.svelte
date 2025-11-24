@@ -61,6 +61,7 @@
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
 	import type { ResultAddressData, ResultPoiData, SearchGeojsonData } from '../utils/feature';
+	import type { TileInfo } from '../api/whether';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -141,6 +142,8 @@
 	let isDragover = $state(false);
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+
+	let allTiles = $state<TileInfo[]>([]); // 全てのタイルURL
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	let webGLCanvasSource = $state<CanvasSourceSpecification>({
@@ -349,6 +352,14 @@
 						features: []
 					}
 				}
+				// nowcast_data: {
+				// 	type: 'raster',
+				// 	tiles: allTiles.length ? [allTiles.map((tile) => tile.url).at(0)] : [],
+				// 	tileSize: 256,
+				// 	maxzoom: 10,
+				// 	minzoom: 4,
+				// 	attribution: '高解像度降水ナウキャスト'
+				// }
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
@@ -416,6 +427,18 @@
 						'text-justify': 'auto'
 					}
 				}
+				// {
+				// 	id: '@nowcast_data_layer',
+				// 	type: 'raster',
+				// 	source: 'nowcast_data',
+				// 	maxzoom: 22,
+				// 	minzoom: 4,
+				// 	paint: {
+				// 		'raster-opacity': 0.7,
+				// 		'raster-resampling': 'nearest',
+				// 		'raster-fade-duration': 0
+				// 	}
+				// }
 
 				// TODO: 描画レイヤー
 				// ...drawLayers
@@ -462,6 +485,9 @@
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
+
+		// allTiles = await getJmaTileUrls();
+		// console.log('allTiles', allTiles);
 		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
 		// if (!$isDebugMode) {
 		// 	const localEntries = loadLayerEntries();
@@ -530,6 +556,12 @@
 	// 検索結果の更新
 	$effect(() => {
 		if (searchGeojsonData || !searchGeojsonData) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
+	});
+
+	$effect(() => {
+		if (allTiles.length) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
