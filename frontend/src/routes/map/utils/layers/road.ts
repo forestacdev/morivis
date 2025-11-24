@@ -565,7 +565,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
@@ -781,7 +781,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
@@ -997,7 +997,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
@@ -1213,7 +1213,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
@@ -1643,7 +1643,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
@@ -2073,7 +2073,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 				13,
 				1,
 				18,
-				0
+				0.1
 			],
 			'line-width': [
 				'let',
