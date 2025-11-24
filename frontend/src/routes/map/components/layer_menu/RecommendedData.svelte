@@ -25,7 +25,7 @@
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
 		dragFree: false,
-		align: 'start',
+		align: 'center',
 		containScroll: 'trimSnaps', // スナップを調整
 		duration: 25,
 		slidesToScroll: 1, // 1つずつスクロール
@@ -209,19 +209,16 @@
 			class="overflow-hidden"
 			onemblaInit={onInitEmblaMainCarousel}
 		>
-			<div class="flex p-2">
+			<div class="flex">
 				{#each dataEntries as dataEntry (dataEntry.id)}
 					<button
 						onclick={() => addData(dataEntry)}
-						class="flex flex-[0_0_30%] cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white"
+						class="transition-scale duration-150　origin-center group flex flex-[0_0_70%] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-2 text-white"
 					>
 						<div
-							class="border-1 border-sub relative flex aspect-square w-[90%] shrink-0 overflow-hidden rounded-lg bg-black"
+							class="border-1 border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg bg-black duration-150"
 						>
 							<RecommendedDataImage {dataEntry} />
-							<div
-								class="lg:hover:border-accent z-10 h-full w-full border-2 border-transparent"
-							></div>
 						</div></button
 					>
 				{/each}
