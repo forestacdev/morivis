@@ -89,6 +89,11 @@ export default defineConfig({
 				target: 'https://mapdata.qchizu.xyz',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/qchizu/, '')
+			},
+			'/api/google-suggest': {
+				target: 'https://suggestqueries.google.com',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/google-suggest/, '/complete/search')
 			}
 		}
 	},
