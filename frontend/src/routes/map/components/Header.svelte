@@ -248,7 +248,7 @@
 
 <!-- サジェスト -->
 <div class="pointer-events-none relative w-full">
-	<div class="absolute top-0 z-10 flex w-full items-center justify-between p-2 max-lg:hidden">
+	<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
 		<div class="flex h-full items-center gap-4 pl-2"></div>
 		<div class="flex max-w-[400px] flex-1 items-center">
 			<SearchSuggest
