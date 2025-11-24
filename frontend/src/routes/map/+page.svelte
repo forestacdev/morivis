@@ -2,7 +2,7 @@
 	import turfBearing from '@turf/bearing';
 
 	import { delay } from 'es-toolkit';
-	import type { FeatureCollection } from 'geojson';
+	import type { FeatureCollection, Point } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
@@ -10,6 +10,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
+	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
@@ -19,14 +20,13 @@
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
-	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
@@ -52,12 +52,25 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import Processing from './Processing.svelte';
 	import { slide } from 'svelte/transition';
-	import type { ResultData } from './utils/feature';
+	import type {
+		ResultAddressData,
+		ResultCoordinateData,
+		ResultData,
+		ResultLayerData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from './utils/feature';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import { checkPc } from './utils/ui';
 	import { page } from '$app/state';
+	import { getPropertiesFromPMTiles } from './utils/pmtiles';
+	import { lonLatToTileCoords } from './utils/tile';
+	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
+	import { normalizeSchoolName } from './utils/normalized';
+	import { result } from 'es-toolkit/compat';
+
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
@@ -87,9 +100,6 @@
 		}
 	});
 
-	// 検索ワード
-	let inputSearchWord = $state<string>('');
-
 	// 描画データ
 	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
@@ -111,6 +121,8 @@
 		features: []
 	});
 
+	let searchGeojsonData = $state.raw<SearchGeojsonData | null>(null);
+
 	// ノード接続データ
 	type NodeConnections = Record<string, string[]>;
 	let nodeConnectionsJson = $state<NodeConnections>({});
@@ -128,6 +140,7 @@
 
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
+	let wikiMenuData = $state<WikiArticle | null>(null);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -143,9 +156,24 @@
 	let selectedEpsgCode = $state<EpsgCode>('6675'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 
+	// 検索ワード
+	let inputSearchWord = $state<string>('');
+	let searchResults = $state<ResultData[] | null>([]);
+	let selectedSearchId = $state<number | null>(null);
+	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | null>(null);
+
+	$effect(() => {
+		if (selectedSearchId) {
+			mapStore.setFilter('@search_result', ['!=', ['id'], selectedSearchId]);
+			mapStore.setFilter('@search_result_label', ['!=', ['id'], selectedSearchId]);
+		} else {
+			mapStore.setFilter('@search_result', null);
+			mapStore.setFilter('@search_result_label', null);
+		}
+	});
+
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
-	let results = $state<ResultData[] | null>([]);
 
 	onMount(async () => {
 		/** レイヤーメニューの表示 */
@@ -379,23 +407,64 @@
 		setPoint(Number(streetViewNodeId));
 	});
 
+	const focusFeature = async (result: ResultPoiData | ResultAddressData) => {
+		if (result.type === 'poi') {
+			const tileCoords = lonLatToTileCoords(
+				result.point[0],
+				result.point[1],
+				14 // ズームレベル
+			);
+			const prop = await getPropertiesFromPMTiles(
+				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
+				tileCoords,
+				result.layerId,
+				result.featureId
+			);
+
+			const data: FeatureMenuData = {
+				layerId: result.layerId,
+				properties: prop,
+				point: result.point,
+				featureId: result.featureId
+			};
+			featureMenuData = data;
+			selectedSearchResultData = result;
+			selectedSearchId = result.id;
+		} else if (result.type === 'address') {
+			featureMenuData = null;
+			selectedSearchResultData = result;
+			selectedSearchId = result.id;
+		}
+
+		//github.com/maplibre/maplibre-gl-js/issues/4891
+		mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
+			zoom: 17,
+			duration: 800
+		});
+
+		// selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
+		// showSelectionMarker = true;
+	};
+
 	onDestroy(() => {
 		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
 	});
+
+	// $effect(() => {
+	// 	if (!selectedSearchId) {
+	// 		selectedSearchResultData = null;
+	// 	} else if (searchResults && selectedSearchId) {
+	// 		const result = searchResults.find((res) => res.id === selectedSearchId);
+	// 		if ((result && result.type === 'address') || (result && result.type === 'poi')) {
+	// 			focusFeature(result as ResultPoiData | ResultAddressData);
+	// 		}
+	// 	}
+	// });
 </script>
 
 {#if isInitialized && isInitialStreetViewEntry}
 	<div class="fixed flex h-dvh w-full flex-col">
-		<!-- <HeaderMenu
-			{resetlayerEntries}
-			bind:featureMenuData
-			bind:inputSearchWord
-			bind:results
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-		/> -->
 		<div class="flex h-full w-full flex-1">
 			<!-- マップのオフセット調整用 -->
 			{#if $showLayerMenu}
@@ -433,12 +502,15 @@
 				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
 				<HeaderMenu
 					{resetlayerEntries}
+					{focusFeature}
 					bind:featureMenuData
+					bind:selectedSearchResultData
 					bind:inputSearchWord
-					bind:results
+					bind:searchResults
 					{layerEntries}
 					bind:showSelectionMarker
 					bind:selectionMarkerLngLat
+					bind:showDataEntry
 				/>
 
 				<MapLibreMap
@@ -458,12 +530,17 @@
 					bind:showZoneForm
 					bind:focusBbox
 					bind:isExternalCameraUpdate
+					bind:selectedSearchId
+					bind:selectedSearchResultData
+					{searchResults}
 					{selectedEpsgCode}
 					{demEntries}
 					{streetViewLineData}
 					{streetViewPointData}
 					{streetViewPoint}
 					{showMapCanvas}
+					{searchGeojsonData}
+					{focusFeature}
 				/>
 			</div>
 			<!-- 右側余白 -->
@@ -479,19 +556,15 @@
 			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
-			bind:results
-		/>
-
-		<SearchSuggest
-			bind:featureMenuData
-			bind:inputSearchWord
-			{layerEntries}
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
+			bind:searchResults
+			bind:searchGeojsonData
+			{selectedSearchId}
+			{focusFeature}
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>

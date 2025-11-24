@@ -68,7 +68,7 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'fill',
 		opacity: 0.7,
 		colors: {
-			key: '解析樹種',
+			key: '立木本数',
 			show: true,
 			expressions: [
 				{

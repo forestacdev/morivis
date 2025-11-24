@@ -9,22 +9,23 @@
 	import { fade } from 'svelte/transition';
 	interface Props {
 		layerEntries: GeoDataEntry[];
-		results: ResultData[] | null;
+		searchResults: ResultData[] | null;
+		searchSuggests: ResultData[] | null;
 		inputSearchWord: string;
-
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
 	let {
 		layerEntries,
-
-		results = $bindable(),
+		searchResults = $bindable(),
+		searchSuggests,
 		inputSearchWord = $bindable(),
 		searchFeature
 	}: Props = $props();
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
 	let inputElement = $state<HTMLInputElement | null>(null); // 入力要素
+	let isFocus = $state<boolean>(false);
 
 	// 検索処理
 	const search = async (_searchWord: string) => {
@@ -43,17 +44,6 @@
 			isLoading = false;
 		}
 	};
-
-	$effect(() => {
-		if (!inputSearchWord) results = null;
-	});
-
-	// 検索結果のリセット
-	const resetSearchResult = () => {};
-
-	// onMount(() => {
-	// 	inputElement?.focus();
-	// });
 </script>
 
 <input
@@ -61,7 +51,7 @@
 	in:fade={{ duration: 100, delay: 100 }}
 	out:fade={{ duration: 100 }}
 	type="text"
-	class="focus:outline-hidden placeholder:gray-400 w-full rounded-l-full bg-black px-4 py-2 text-base outline-0"
+	class="focus:outline-hidden placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}
@@ -70,8 +60,14 @@
 			search(inputSearchWord);
 		}
 	}}
-	placeholder="施設名/住所"
-	onfocus={() => showSearchSuggest.set(true)}
+	placeholder={isFocus ? '施設名 / 住所 / 座標 / データ名' : '検索'}
+	onfocus={() => {
+		isFocus = true;
+		showSearchSuggest.set(true);
+	}}
+	onblur={() => {
+		isFocus = false;
+	}}
 />
 
 {#if inputSearchWord}

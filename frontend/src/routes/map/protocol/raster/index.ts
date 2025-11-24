@@ -225,8 +225,10 @@ export const demProtocol = (protocolName: string) => {
 	return {
 		protocolName,
 		request: (params: { url: string }, abortController: AbortController) => {
+			// プロトコル部分を削除（/// も // も対応）
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
-			const url = new URL(urlWithoutProtocol);
+
+			const url = new URL(urlWithoutProtocol, window.location.origin);
 			return workerProtocolPool.request(url, abortController);
 		},
 		cancelAllRequests: () => workerProtocolPool.cancelAllRequests(),

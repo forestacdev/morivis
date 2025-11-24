@@ -4,6 +4,7 @@
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -44,42 +45,51 @@
 	});
 </script>
 
-{#await promise then imageResult}
-	{#if imageResult}
-		{#if dataEntry.metaData.xyzImageTile && !isImageError && dataEntry.type === 'vector'}
-			<!-- 背景地図画像 -->
+<div class="flex w-full">
+	{#await promise then imageResult}
+		{#if imageResult}
+			{#if dataEntry.metaData.xyzImageTile && !isImageError && dataEntry.type === 'vector'}
+				<!-- 背景地図画像 -->
+				<img
+					transition:fade={{ duration: 200 }}
+					src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
+					class="c-basemap-img absolute h-full w-full object-cover opacity-50 transition-transform duration-150 {dataEntry
+						.format.geometryType === 'Point'
+						? 'scale-200'
+						: ''}"
+					alt="背景地図画像"
+					loading="lazy"
+					onerror={() => {
+						console.error('Image loading failed: BaseMap Image');
+						isImageError = true;
+					}}
+				/>
+			{/if}
 			<img
-				src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
-				class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150 {dataEntry
-					.format.geometryType === 'Point'
+				transition:fade={{ duration: 200 }}
+				src={imageResult.url}
+				class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150 {dataEntry.type ===
+					'vector' && dataEntry.format.geometryType === 'Point'
 					? 'scale-200'
 					: ''}"
-				alt="背景地図画像"
+				alt={dataEntry.metaData.name}
+				onload={() => handleImageLoad(imageResult)}
 				loading="lazy"
 				onerror={() => {
-					console.error('Image loading failed: BaseMap Image');
+					console.error('Image loading failed:', dataEntry.metaData.name);
 					isImageError = true;
 				}}
 			/>
 		{/if}
-		<img
-			src={imageResult.url}
-			class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150 {dataEntry.type ===
-				'vector' && dataEntry.format.geometryType === 'Point'
-				? 'scale-200'
-				: ''}"
-			alt={dataEntry.metaData.name}
-			onload={() => handleImageLoad(imageResult)}
-			loading="lazy"
-			onerror={() => {
-				console.error('Image loading failed:', dataEntry.metaData.name);
-				isImageError = true;
-			}}
-		/>
-	{/if}
-{:catch}
-	<div class="text-accent">データが取得できませんでした</div>
-{/await}
+	{:catch}
+		<div class="text-accent">データが取得できませんでした</div>
+	{/await}
+	<div
+		class="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 p-1 text-center text-xs text-white"
+	>
+		{dataEntry.metaData.name}
+	</div>
+</div>
 
 <style>
 </style>

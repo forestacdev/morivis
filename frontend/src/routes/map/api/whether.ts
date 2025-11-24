@@ -3,7 +3,7 @@
 /**
  * 気象庁高解像度降水ナウキャストのタイルURL情報
  */
-interface TileInfo {
+export interface TileInfo {
 	/** タイルURL（{z}/{x}/{y}の形式） */
 	url: string;
 	/** 観測・予測時刻のタイムスタンプ */
@@ -21,16 +21,17 @@ interface TileInfo {
  */
 function parseBasetime(basetime: string): Date | null {
 	try {
-		// basetimeの形式: YYYYMMDDHHMM
-		if (basetime.length !== 12) return null;
+		// basetimeの形式: YYYYMMDDHHMMSS (14桁)
+		if (basetime.length !== 14) return null;
 
 		const year = parseInt(basetime.substring(0, 4));
 		const month = parseInt(basetime.substring(4, 6)) - 1; // Monthは0ベース
 		const day = parseInt(basetime.substring(6, 8));
 		const hour = parseInt(basetime.substring(8, 10));
 		const minute = parseInt(basetime.substring(10, 12));
+		const second = parseInt(basetime.substring(12, 14));
 
-		return new Date(year, month, day, hour, minute);
+		return new Date(year, month, day, hour, minute, second);
 	} catch (error) {
 		console.error('Failed to parse basetime:', basetime, error);
 		return null;

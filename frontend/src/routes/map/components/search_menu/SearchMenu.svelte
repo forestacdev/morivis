@@ -5,27 +5,36 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showSearchMenu } from '$routes/stores/ui';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData } from '$routes/map/utils/feature';
+	import type {
+		ResultData,
+		ResultPoiData,
+		ResultAddressData,
+		SearchGeojsonData
+	} from '$routes/map/utils/feature';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
-	import turfBbox from '@turf/bbox';
+	import turfBbox, { bbox } from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
+	import maplibregl from 'maplibre-gl';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
-		results: ResultData[] | null;
+		searchResults: ResultData[] | null;
+		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchId: number | null;
+		focusFeature: (result: ResultData) => void;
 	}
 
 	let {
@@ -34,7 +43,10 @@
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
 		selectionMarkerLngLat = $bindable(),
-		results = $bindable()
+		searchResults = $bindable(),
+		searchGeojsonData = $bindable(),
+		selectedSearchId = $bindable(),
+		focusFeature
 	}: Props = $props();
 
 	interface SearchData {
@@ -48,7 +60,6 @@
 	}
 
 	let searchData: SearchData[]; // 検索データ
-	let isClickedSearch = $state<boolean>(false);
 
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
 
@@ -77,75 +88,57 @@
 
 	let isLoading = $state<boolean>(false);
 
-	const focusFeature = async (result: ResultData) => {
-		if (result.propId) {
-			const tileCoords = lonLatToTileCoords(
-				result.point[0],
-				result.point[1],
-				14 // ズームレベル
-			);
-			const prop = await getPropertiesFromPMTiles(
-				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-				tileCoords,
-				result.layerId,
-				result.featureId
-			);
-
-			const data: FeatureMenuData = {
-				layerId: result.layerId,
-				properties: prop,
-				point: result.point,
-				featureId: result.featureId
-			};
-			featureMenuData = data;
-		}
-
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 17
-		});
-
-		selectionMarkerLngLat = result.point;
-		showSelectionMarker = true;
-	};
-
 	const closeSearchMenu = () => {
 		$showSearchMenu = false;
-		results = null;
-		mapStore.setData('search_result', {
-			type: 'FeatureCollection',
-			features: []
-		});
+		searchResults = null;
+		searchGeojsonData = null;
 	};
 
 	$effect(() => {
-		if (results && results.length > 0) {
-			const geojson = {
+		if (searchResults && searchResults.length > 0) {
+			const geojson: SearchGeojsonData = {
 				type: 'FeatureCollection',
-				features: results.map((result) => ({
-					type: 'Feature',
-					geometry: {
-						type: 'Point',
-						coordinates: result.point
-					},
-					properties: {
-						name: result.name,
-						location: result.location,
-						layerId: result.layerId,
-						featureId: result.featureId,
-						propId: result.propId
+				features: searchResults.map((result: ResultData) => {
+					let prop;
+					if (result.type === 'poi' || result.type === 'address') {
+						if (result.type === 'poi') {
+							prop = {
+								id: result.id,
+								name: result.name,
+								location: result.location,
+								layerId: result.layerId,
+								featureId: result.featureId,
+								propId: result.propId
+							};
+						} else if (result.type === 'address') {
+							prop = {
+								id: result.id,
+								name: result.name,
+								location: result.location,
+								propId: null
+							};
+						}
+						return {
+							id: result.id,
+							type: 'Feature',
+							geometry: {
+								type: 'Point',
+								coordinates: result.point as [number, number]
+							},
+							properties: prop
+						};
 					}
-				}))
+				})
 			};
-			mapStore.setData('search_result', geojson);
+			searchGeojsonData = geojson;
+			// mapStore.setData('search_result', geojson);
 
 			const bbox = turfBbox(geojson);
 			mapStore.fitBounds(bbox, {
 				duration: 500,
-				padding: 20
+				padding: 100
 			});
+			showSearchSuggest.set(false);
 		} else {
 			closeSearchMenu();
 		}
@@ -166,6 +159,12 @@
 			closeSearchMenu();
 		}
 	});
+
+	$effect(() => {
+		if (showSelectionMarker) {
+			showSearchSuggest.set(false);
+		}
+	});
 </script>
 
 <!-- レイヤーメニュー -->
@@ -183,32 +182,45 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
-		{#if results}
-			<div
-				class="c-scroll flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2 pb-4"
-			>
-				{#each results as result (result)}
+		{#if searchResults}
+			<div class="c-scroll flex grow flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 pb-4">
+				{#each searchResults as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
-						class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
+						class="border-1 border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-black p-2 text-left text-base {result.id &&
+						selectedSearchId === result.id
+							? 'bg-accent'
+							: ''}"
 					>
-						<div class="grid shrink-0 place-items-center">
-							{#if result.propId && propData[result.propId] && propData[result.propId].image}
-								<img
-									src={propData[result.propId].image}
-									alt="Icon"
-									class="h-12 w-12 rounded-full object-cover"
-								/>
-							{:else}
+						{#if result.type === 'poi'}
+							<div class="grid shrink-0 place-items-center overflow-hidden">
+								{#if result.propId && propData[result.propId] && propData[result.propId].image}
+									<img
+										src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
+										alt="Icon"
+										class="h-12 w-12 rounded-full object-cover"
+									/>
+								{:else}
+									<div class="grid h-12 w-12 place-items-center">
+										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+									</div>
+								{/if}
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+								<span class="truncate">{result.name}</span>
+								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+							</div>
+						{:else if result.type === 'address'}
+							<div class="grid shrink-0 place-items-center overflow-hidden">
 								<div class="grid h-12 w-12 place-items-center">
 									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
 								</div>
-							{/if}
-						</div>
-						<div class="flex w-full flex-col justify-center gap-[1px]">
-							<span class="">{result.name}</span>
-							<span class="text-xs">{result.location ?? '---'}</span>
-						</div>
+							</div>
+							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+								<span class="truncate">{result.name}</span>
+								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+							</div>
+						{/if}
 					</button>
 				{/each}
 				<div class="h-[200px] w-full shrink-0"></div>

@@ -15,7 +15,8 @@ import type {
 	GeoJSONSource,
 	FilterSpecification,
 	StyleSetterOptions,
-	FeatureIdentifier
+	FeatureIdentifier,
+	FlyToOptions
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -158,7 +159,7 @@ const createMapStore = () => {
 			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85 // 最大ピッチ角度
+			maxPitch: 85, // 最大ピッチ角度
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
@@ -166,16 +167,14 @@ const createMapStore = () => {
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			// transformRequest: (url, resourceType) => {
-			// 	if (import.meta.env.PROD) return { url };
+			transformRequest: (url, resourceType) => {
+				if (import.meta.env.PROD) return { url };
 
-			// 	// 兵庫県森林情報のURLを変換
-			// 	if (url.includes('rinya-hyogo.geospatial.jp')) {
-			// 		const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', '/api/rinya');
-			// 		console.log('Transformed URL:', newUrl);
-			// 		return { url: newUrl };
-			// 	}
-			// }
+				if (url.includes('mapdata.qchizu.xyz')) {
+					const newUrl = url.replace('https://mapdata.qchizu.xyz', 'api/qchizu');
+					return { url: newUrl };
+				}
+			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
 		});
@@ -411,7 +410,7 @@ const createMapStore = () => {
 		map.setStyle(style);
 	};
 
-	const setFilter = (layerId: string, filter: FilterSpecification) => {
+	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
 		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
 		if (layer) {
@@ -783,7 +782,7 @@ const createMapStore = () => {
 		map.fitBounds(bounds, options);
 	};
 
-	const flyTo = (lngLat: LngLat, options?: AnimationOptions) => {
+	const flyTo = (lngLat: LngLat, options?: FlyToOptions) => {
 		if (!map || !isMapValid(map)) return;
 		map.flyTo({ center: lngLat, ...options });
 	};

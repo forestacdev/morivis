@@ -28,6 +28,8 @@ import { WEB_MERCATOR_WORLD_BBOX } from './location_bbox';
 
 import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
+import Fuse from 'fuse.js';
+import { encode } from '$routes/map/utils/normalized';
 
 // 共通の初期化処理
 // visible を true にする
@@ -70,6 +72,23 @@ export const geoDataEntries = (() => {
 	// オブジェクトを結合
 	return initData(entries);
 })();
+
+export const layerDataFuse = new Fuse(geoDataEntries, {
+	keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
+	threshold: 0.3,
+	getFn: (obj: GeoDataEntry, path: string | string[]) => {
+		const values = [];
+		if (obj.metaData.name) values.push(encode(obj.metaData.name));
+		if (obj.metaData.location) values.push(encode(obj.metaData.location));
+		if (obj.metaData.attribution) values.push(encode(obj.metaData.attribution));
+		if (obj.metaData.tags && Array.isArray(obj.metaData.tags)) {
+			obj.metaData.tags.forEach((tag) => {
+				values.push(encode(tag));
+			});
+		}
+		return values;
+	}
+});
 
 // TODO カスタムデータの削除処理
 export class EntryIdToTypeMap {

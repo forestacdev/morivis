@@ -22,6 +22,7 @@
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
+	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
@@ -59,6 +60,13 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
+	import type {
+		ResultAddressData,
+		ResultData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from '../utils/feature';
+	import type { TileInfo } from '../api/whether';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -83,6 +91,11 @@
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
+		searchGeojsonData: SearchGeojsonData | null;
+		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
+		selectedSearchId: number | null;
+		searchResults: ResultData[] | null;
+		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
 	let {
@@ -107,7 +120,12 @@
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
-		isExternalCameraUpdate = $bindable()
+		isExternalCameraUpdate = $bindable(),
+		selectedSearchResultData = $bindable(),
+		searchGeojsonData,
+		selectedSearchId = $bindable(),
+		searchResults,
+		focusFeature
 	}: Props = $props();
 
 	// 監視用のデータを保持
@@ -131,6 +149,8 @@
 	let isDragover = $state(false);
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+
+	let allTiles = $state<TileInfo[]>([]); // 全てのタイルURL
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	let webGLCanvasSource = $state<CanvasSourceSpecification>({
@@ -334,8 +354,19 @@
 				},
 				search_result: {
 					type: 'geojson',
-					data: { type: 'FeatureCollection', features: [] }
+					data: searchGeojsonData || {
+						type: 'FeatureCollection',
+						features: []
+					}
 				}
+				// nowcast_data: {
+				// 	type: 'raster',
+				// 	tiles: allTiles.length ? [allTiles.map((tile) => tile.url).at(0)] : [],
+				// 	tileSize: 256,
+				// 	maxzoom: 10,
+				// 	minzoom: 4,
+				// 	attribution: '高解像度降水ナウキャスト'
+				// }
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
@@ -367,11 +398,12 @@
 						'line-width': 1
 					}
 				},
+
+				// 検索マーカー
 				{
 					id: '@search_result',
 					type: 'symbol',
 					source: 'search_result',
-
 					layout: {
 						'text-allow-overlap': true, // テキストの重複を許可
 						'text-ignore-placement': true, // 他の要素への配置影響を無視
@@ -381,6 +413,7 @@
 						'icon-anchor': 'bottom'
 					}
 				},
+				// 検索ラベル
 				{
 					id: '@search_result_label',
 					type: 'symbol',
@@ -394,13 +427,25 @@
 					layout: {
 						'text-field': '{name}',
 						'text-size': 11,
-						'text-max-width': 12,
+						'text-max-width': 10,
 						'text-font': ['Noto Sans JP Regular'],
 						'text-variable-anchor': ['bottom-left', 'bottom-right'],
-						'text-radial-offset': 1.5,
+						'text-radial-offset': 2,
 						'text-justify': 'auto'
 					}
 				}
+				// {
+				// 	id: '@nowcast_data_layer',
+				// 	type: 'raster',
+				// 	source: 'nowcast_data',
+				// 	maxzoom: 22,
+				// 	minzoom: 4,
+				// 	paint: {
+				// 		'raster-opacity': 0.7,
+				// 		'raster-resampling': 'nearest',
+				// 		'raster-fade-duration': 0
+				// 	}
+				// }
 
 				// TODO: 描画レイヤー
 				// ...drawLayers
@@ -447,6 +492,9 @@
 	// 初期描画時
 	onMount(async () => {
 		if (!layerEntries) return;
+
+		// allTiles = await getJmaTileUrls();
+		// console.log('allTiles', allTiles);
 		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
 		// if (!$isDebugMode) {
 		// 	const localEntries = loadLayerEntries();
@@ -512,6 +560,19 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	// 検索結果の更新
+	$effect(() => {
+		if (searchGeojsonData || !searchGeojsonData) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
+	});
+
+	$effect(() => {
+		if (allTiles.length) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
+	});
+
 	// TODO:書き込みデータの更新を監視
 	// $effect(() => {
 	// 	if (!maplibreMap || !maplibreMap.loaded()) return;
@@ -554,8 +615,8 @@
 
 	$effect(() => {
 		if (!featureMenuData) {
-			// maplibreMarker?.remove();
 			showSelectionMarker = false;
+			selectedSearchId = null;
 		}
 	});
 
@@ -673,9 +734,11 @@
 		bind:clickedLayerIds
 		bind:cameraBearing
 		bind:isExternalCameraUpdate
+		{searchResults}
 		{streetViewPointData}
 		{layerEntries}
 		{toggleTooltip}
+		{focusFeature}
 	/>
 	{#key selectionMarkerLngLat}
 		<SelectionMarker
@@ -684,6 +747,10 @@
 			bind:lngLat={selectionMarkerLngLat}
 		/>
 	{/key}
+
+	{#if selectedSearchResultData && selectedSearchId}
+		<SearchMarker map={maplibreMap} bind:selectedSearchId prop={selectedSearchResultData} />
+	{/if}
 
 	<AngleMarker
 		map={maplibreMap}

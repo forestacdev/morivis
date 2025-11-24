@@ -25,7 +25,10 @@
 	primaryColor={generateStepGradient(
 		getSequentSchemeColors(setStepExpression.mapping.scheme, setStepExpression.mapping.divisions)
 	)}
-	minRangeColor={'#000000'}
+	minRangeColor={getSequentSchemeColors(
+		setStepExpression.mapping.scheme,
+		setStepExpression.mapping.divisions
+	).at(0)}
 	maxRangeColor={getSequentSchemeColors(
 		setStepExpression.mapping.scheme,
 		setStepExpression.mapping.divisions

@@ -1,15 +1,17 @@
 <script lang="ts">
+	import type { map } from 'es-toolkit/compat';
+
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
+
 	import type { Map as MapLibreMap } from 'maplibre-gl';
 	import type { Marker, LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { slide, fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { geoDataEntries } from '$routes/map/data';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
+	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
@@ -17,10 +19,15 @@
 	import { isProcessing, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData } from '$routes/map/utils/feature';
+	import type { ResultData, ResultPoiData } from '$routes/map/utils/feature';
 	import { debounce } from 'es-toolkit';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import { detectCoordinateOrder } from './search';
+	import maplibregl from 'maplibre-gl';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { isStyleEdit, selectedLayerId } from '$routes/stores';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { encode } from '$routes/map/utils/normalized';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -28,6 +35,9 @@
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
+		searchSuggests: ResultData[] | null;
+		focusFeature: (result: ResultData) => void;
+		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
@@ -35,7 +45,10 @@
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
-		selectionMarkerLngLat = $bindable()
+		selectionMarkerLngLat = $bindable(),
+		searchSuggests = $bindable(),
+		focusFeature,
+		showDataEntry = $bindable()
 	}: Props = $props();
 
 	interface SearchData {
@@ -49,10 +62,11 @@
 	}
 
 	let searchData: SearchData[]; // 検索データ
-	let isClickedSearch = $state<boolean>(false);
 
 	const LIMIT = 50; // 検索結果の表示上限
 	const dict: Record<string, string> = {}; // レイヤーIDとレイヤー名の辞書
+
+	let featureDataFuse: Fuse<SearchData>;
 
 	onMount(async () => {
 		// 検索データの初期化
@@ -65,10 +79,24 @@
 				console.error('Error fetching search data:', error);
 			});
 
+		featureDataFuse = new Fuse(searchData, {
+			keys: ['search_values'],
+			threshold: 0.3,
+			getFn: (obj: SearchData, path: string | string[]) => {
+				// pathが文字列の場合、配列に変換
+
+				const values = obj.search_values.map((v) => encode(v));
+
+				// 配列の各要素をエンコードして、配列として返す
+				return values;
+				// 返り値の例: ['ﾄｳｷｮｳ', 'ﾄｳｷｮｳ', 'Tokyo']
+			}
+		});
+
 		searchData.forEach((data) => {
 			const layerId = data.layer_id;
 
-			// TODO: location
+			// TODO: location名
 			const location = '森林文化アカデミー';
 			if (location) {
 				// レイヤー名が存在する場合のみ辞書に追加
@@ -77,53 +105,15 @@
 		});
 	});
 
-	let results = $state<ResultData[] | null>([]);
 	let isLoading = $state<boolean>(false);
-
-	const focusFeature = async (result: ResultData) => {
-		inputSearchWord = result.name;
-		if (result.propId) {
-			const tileCoords = lonLatToTileCoords(
-				result.point[0],
-				result.point[1],
-				14 // ズームレベル
-			);
-			const prop = await getPropertiesFromPMTiles(
-				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
-				tileCoords,
-				result.layerId,
-				result.featureId
-			);
-
-			const data: FeatureMenuData = {
-				layerId: result.layerId,
-				properties: prop,
-				point: result.point,
-				featureId: result.featureId
-			};
-			featureMenuData = data;
-		}
-
-		// TODO
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.easeTo({
-			center: result.point,
-			zoom: 17
-		});
-
-		selectionMarkerLngLat = result.point;
-		showSelectionMarker = true;
-		showSearchSuggest.set(false);
-	};
 
 	const suggestWord = (searchWord: string) => {
 		if (!searchWord) {
-			results = null;
 			return;
 		}
-		isLoading = true;
 
-		isClickedSearch = true;
+		const encodedSearchWord = encode(searchWord);
+
 		try {
 			if (!searchData) {
 				console.error('Search data is not loaded yet.');
@@ -131,37 +121,39 @@
 			}
 
 			// TODO:座標検索
-			// const hoge = detectCoordinateOrder(searchWord);
-			// console.log('hoge', hoge);
-			// if (hoge.isCoordinate) {
-			// 	const point = [hoge.lat, hoge.lng];
-			// 	const map = mapStore.getMap();
-			// 	map?.panTo([point[1], point[0]]);
-			// 	results = [
-			// 		{
-			// 			name: searchWord,
-			// 			location: null,
-			// 			point: point,
-			// 			layerId: null,
-			// 			featureId: null
-			// 		}
-			// 	];
-			// 	return;
-			// }
+			const coordinateInfo = detectCoordinateOrder(encodedSearchWord);
 
-			const fuse = new Fuse(searchData, {
-				keys: ['search_values'],
-				threshold: 0.1
-			});
+			if (coordinateInfo.isCoordinate) {
+				let point: [number, number];
+
+				if (coordinateInfo.order === 'lng_lat') {
+					point = [coordinateInfo.lng, coordinateInfo.lat] as [number, number];
+				} else if (coordinateInfo.order === 'lat_lng') {
+					point = [coordinateInfo.lat, coordinateInfo.lng] as [number, number];
+				}
+
+				searchSuggests = [
+					{
+						type: 'coordinate',
+						name: searchWord,
+						point: point
+					}
+				];
+				return;
+			}
+
+			isLoading = true;
+
 			// 検索実行
-			const result = fuse.search(searchWord, {
-				limit: LIMIT
+			const featureDataResult = featureDataFuse.search(encodedSearchWord, {
+				limit: 10
 			});
 
-			const resultsData = result.map((item) => {
+			const resultsData = featureDataResult.map((item) => {
 				const data = item.item;
 
 				return {
+					type: 'poi',
 					name: data.name,
 					location: dict[data.layer_id] || null,
 					point: data.point,
@@ -171,7 +163,23 @@
 				};
 			});
 
-			results = [...resultsData];
+			const layerDataResult = layerDataFuse.search(encodedSearchWord, {
+				limit: 10
+			});
+
+			const layerResultsData = layerDataResult.map((item) => {
+				const data = item.item;
+
+				return {
+					type: 'layer' as const,
+					name: data.metaData.name,
+					layerId: data.id,
+					location: data.metaData.location || '---',
+					data: data
+				};
+			});
+
+			searchSuggests = [...resultsData, ...layerResultsData];
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {
@@ -184,87 +192,116 @@
 	$effect(() => {
 		if (inputSearchWord) {
 			suggestWord(inputSearchWord);
+			$showSearchSuggest = true;
 		} else {
-			results = null;
+			$showSearchSuggest = false;
+			// searchSuggests = null;
 		}
 	});
 
 	showSearchMenu.subscribe((show) => {
 		if (!show) {
-			results = null;
+			$showSearchSuggest = false;
 		}
 	});
-
-	// $effect(() => {
-	// 	if (inputSearchWord) {
-	// 		debounceSearch(inputSearchWord);
-	// 	} else {
-	// 		results = null;
-	// 	}
-	// });
-
-	// let containerRef = $state<HTMLElement>();
-
-	// $effect(() => {
-	// 	const handleClickOutside = (event: MouseEvent) => {
-	// 		if ($showSearchMenu && containerRef && !containerRef.contains(event.target as Node)) {
-	// 			$showSearchMenu = false;
-	// 		}
-	// 	};
-
-	// 	if ($showSearchMenu) {
-	// 		document.addEventListener('click', handleClickOutside);
-	// 	}
-
-	// 	return () => {
-	// 		document.removeEventListener('click', handleClickOutside);
-	// 	};
-	// });
 </script>
 
-<!-- レイヤーメニュー -->
-{#if $showSearchSuggest && !$showSearchMenu && results && results.length > 0}
-	<div class="pointer-events-none absolute z-10 flex w-full justify-end pr-[20px] pt-[80px]">
-		<div
-			transition:fly={{ duration: 200, y: 10, opacity: 0, delay: 100 }}
-			class="w-side-menu pointer-events-auto flex max-h-[calc(100dvh-300px)] flex-col gap-2 rounded-lg bg-black/80"
-		>
-			{#if isLoading}
-				<div class="flex w-full items-center justify-center">
-					<div
-						class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
-					></div>
-				</div>
-			{:else if results}
+{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0}
+	<div
+		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
+		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
+	>
+		{#if isLoading}
+			<div class="flex w-full items-center justify-center">
 				<div
-					class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
-				>
-					{#each results as result (result)}
-						<button
-							onclick={() => focusFeature(result)}
-							class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base"
-						>
-							<div class="grid shrink-0 place-items-center">
-								{#if result.propId && propData[result.propId] && propData[result.propId].image}
-									<img
-										src={propData[result.propId].image}
-										alt="Icon"
-										class="h-12 w-12 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="grid h-12 w-12 place-items-center">
-										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
-									</div>
-								{/if}
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px]">
-								<span class="">{result.name}</span>
-								<span class="text-xs">{result.location ?? '---'}</span>
-							</div>
-						</button>
+					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
+				></div>
+			</div>
+		{:else if searchSuggests && inputSearchWord.trim() !== ''}
+			<div
+				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
+			>
+				{#if searchSuggests.some((result) => result.type === 'poi' || result.type === 'coordinate')}
+					<div class="p-2 pt-3 text-white">場所検索</div>
+					{#each searchSuggests as result (result)}
+						{#if result.type === 'poi'}
+							<button
+								onclick={() => {
+									$showSearchSuggest = false;
+									focusFeature(result);
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
+							>
+								<div class="grid shrink-0 place-items-center">
+									{#if result.propId && propData[result.propId] && propData[result.propId].image}
+										<img
+											src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
+											alt="Icon"
+											class="h-12 w-12 rounded-full object-cover"
+										/>
+									{:else}
+										<div class="grid h-12 w-12 place-items-center">
+											<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+										</div>
+									{/if}
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">{result.location ?? '---'}</span>
+								</div>
+							</button>
+						{/if}
+						{#if result.type === 'coordinate'}
+							<button
+								onclick={() => {
+									$showSearchSuggest = false;
+									focusFeature(result);
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
+							>
+								<div class="grid shrink-0 place-items-center">
+									<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">座標</span>
+								</div>
+							</button>
+						{/if}
 					{/each}
-				</div>
-			{/if}
-		</div>
+				{/if}
+				{#if searchSuggests.some((result) => result.type === 'layer')}
+					<div class="p-2 pt-3 text-white">データ検索</div>
+					{#each searchSuggests as result (result)}
+						{#if result.type === 'layer'}
+							<button
+								onclick={() => {
+									$showSearchSuggest = false;
+									if ($activeLayerIdsStore.includes(result.layerId)) {
+										selectedLayerId.set(result.layerId);
+										isStyleEdit.set(true);
+									} else {
+										showDataEntry = result.data;
+									}
+								}}
+								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
+							>
+								<div
+									class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150"
+								>
+									<div class="scale-200 h-full w-full">
+										<LayerIcon layerEntry={result.data} />
+									</div>
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px]">
+									<span class="">{result.name}</span>
+									<span class="text-xs">{result.location ?? '---'}</span>
+								</div>
+							</button>
+						{/if}
+					{/each}
+				{/if}
+			</div>
+		{/if}
 	</div>
 {/if}

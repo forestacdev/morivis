@@ -3,7 +3,7 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-	import { mapMode, isDebugMode } from '$routes/stores';
+	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
 	import {
 		showOtherMenu,
 		showDataMenu,
@@ -93,8 +93,9 @@
 				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 			</button>
 		</div>
-		<ui>
-			<!-- <button
+		{#if !$isStreetView}
+			<ui>
+				<!-- <button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={togleSearchMenu}
 			>
@@ -109,35 +110,36 @@
 				<span class="select-none">レイヤー</span>
 			</button> -->
 
-			<!-- <button
+				<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 				onclick={() => mapMode.set('analysis')}
 			>
 				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
 				<span class="select-none">地図の解析</span>
 			</button> -->
-			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
-				onclick={toggleDataMenu}
-			>
-				<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
-				<span class="select-none">データカタログ</span>
-			</button>
-			<!-- <button
+				<button
+					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
+					onclick={toggleDataMenu}
+				>
+					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+					<span class="select-none">データカタログ</span>
+				</button>
+				<!-- <button
 				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
 			>
 				<Icon icon="weui:setting-filled" class="h-8 w-8" />
 				<span class="select-none">設定</span>
 			</button> -->
-			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
-				onclick={mapExport}
-			>
-				<Icon icon="bx:export" class="h-8 w-8" />
-				<span class="select-none">地図をエクスポート</span>
-			</button>
-		</ui>
-		<div class="w-hull bg-base h-[1px] rounded-full opacity-60"></div>
+				<button
+					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
+					onclick={mapExport}
+				>
+					<Icon icon="bx:export" class="h-8 w-8" />
+					<span class="select-none">地図をエクスポート</span>
+				</button>
+			</ui>
+			<div class="w-hull bg-base h-[1px] rounded-full opacity-60"></div>
+		{/if}
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"

@@ -1,13 +1,50 @@
-export interface ResultData {
+import type { GeoDataEntry } from '$routes/map/data/types';
+import type { FeatureCollection, Point, Feature } from 'geojson';
+export type ResultData = ResultPoiData | ResultCoordinateData | ResultAddressData | ResultLayerData;
+
+export type ResultDataType = 'poi' | 'coordinate' | 'address' | 'layer';
+export interface ResultPoiData {
+	id?: number;
+	type: 'poi';
 	name: string;
-	tile: {
-		x: number;
-		y: number;
-		z: number;
-	};
 	point: [number, number];
 	featureId: number;
 	propId: string;
 	layerId: string;
 	location: string;
 }
+
+export interface ResultAddressData {
+	id?: number;
+	type: 'address';
+	point: [number, number];
+	name: string;
+	location: string;
+}
+
+export interface ResultCoordinateData {
+	type: 'coordinate';
+	name: string;
+	point: [number, number];
+}
+
+export interface ResultLayerData {
+	type: 'layer';
+	name: string;
+	layerId: string;
+	location: string;
+	data: GeoDataEntry;
+}
+
+export type SearchGeojsonData = {
+	type: 'FeatureCollection';
+	features: {
+		id: number | undefined;
+		type: 'Feature';
+		geometry: {
+			type: 'Point';
+			coordinates: [number, number];
+		};
+		properties: ResultPoiData | ResultAddressData;
+	}[];
+};
