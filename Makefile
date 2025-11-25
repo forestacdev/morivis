@@ -1,5 +1,8 @@
 dev:
+	@echo "Checking if port 5173 is in use..."
+	@lsof -ti:5173 && echo "Port 5173 is in use, killing process..." && npx kill-port 5173 || echo "Port 5173 is free"
 	cd frontend && \
+	pnpm install && \
 	pnpm run dev
 
 mobile:

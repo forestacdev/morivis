@@ -28,7 +28,6 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: { x: 3626, y: 1598, z: 12 },
-		coverImage: `${COVER_IMAGE_BASE_PATH}/national_forest_stand.webp`,
 		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_stand.webp`
 	},
 	properties: {
