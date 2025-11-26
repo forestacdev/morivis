@@ -895,6 +895,7 @@ const createMapStore = () => {
 		panToPoi,
 		flyTo,
 		panToOrJumpTo,
+		focusLayer,
 		jumpToFac: jumpToFac,
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		toggleTerrain,
