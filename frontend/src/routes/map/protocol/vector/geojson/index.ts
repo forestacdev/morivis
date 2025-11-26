@@ -1,5 +1,25 @@
 import { JoinDataCache } from '$routes/map/utils/join_data';
-import { geojson } from 'flatgeobuf';
+
+const loadGeoJSON = async (src: string, signal: AbortSignal): Promise<any> => {
+	try {
+		const response = await fetch(src, { signal });
+		if (!response.ok) {
+			throw new Error('Failed to fetch GeoJSON data');
+		}
+		return await response.json();
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			// リクエストがキャンセルされた場合はエラーをスロー
+			throw new Error('Request aborted');
+		} else {
+			// 他のエラー時には空のGeoJSONを返す
+			return {
+				type: 'FeatureCollection',
+				features: []
+			};
+		}
+	}
+};
 
 export class WorkerProtocol {
 	private worker: Worker;
@@ -31,14 +51,9 @@ export class WorkerProtocol {
 
 			const { signal } = abortController;
 
-			const geojson = await fetch(baseUrl, { signal }).then((res) => {
-				if (!res.ok) {
-					throw new Error(`Failed to fetch GeoJSON data: ${res.status} ${res.statusText}`);
-				}
-				return res.json();
-			});
+			const geojson = await loadGeoJSON(baseUrl, signal);
 
-			if (JoinDataCache.has(entryId)) {
+			if (geojson.features.length && JoinDataCache.has(entryId)) {
 				const joinData = JoinDataCache.get(entryId);
 
 				if (joinData) {
