@@ -436,11 +436,13 @@
 			selectedSearchId = result.id;
 		}
 
+		mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));
+
 		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
-			zoom: 17,
-			duration: 800
-		});
+		// mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
+		// 	zoom: 17,
+		// 	duration: 800
+		// });
 
 		// selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
 		// showSelectionMarker = true;

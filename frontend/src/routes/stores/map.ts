@@ -42,6 +42,7 @@ import {
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import { isPointInBbox } from '$routes/map/utils/map';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -791,6 +792,15 @@ const createMapStore = () => {
 		map.flyTo({ center: lngLat, ...options });
 	};
 
+	const panToOrJumpTo = (lngLat: LngLat) => {
+		if (!map || !isMapValid(map)) return;
+		if (isPointInBbox(lngLat, getMapBounds())) {
+			map.panTo(lngLat, { duration: 500 });
+		} else {
+			map.jumpTo({ center: lngLat, zoom: 17 });
+		}
+	};
+
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
@@ -884,9 +894,7 @@ const createMapStore = () => {
 		panTo,
 		panToPoi,
 		flyTo,
-		easeTo: (options: EaseToOptions) => easeTo(options),
-		focusLayer,
-		focusFeature,
+		panToOrJumpTo,
 		jumpToFac: jumpToFac,
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		toggleTerrain,
