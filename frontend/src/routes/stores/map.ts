@@ -894,6 +894,7 @@ const createMapStore = () => {
 		panTo,
 		panToPoi,
 		flyTo,
+		easeTo,
 		panToOrJumpTo,
 		focusLayer,
 		jumpToFac: jumpToFac,
