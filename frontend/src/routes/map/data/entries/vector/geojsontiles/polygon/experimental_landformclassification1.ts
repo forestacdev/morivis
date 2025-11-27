@@ -41,7 +41,7 @@ const entry: PolygonEntry<TileMetaData> = {
 			}
 		],
 		dict: {
-			type: '図式コード',
+			code: '図式コード',
 			name: '地形分類名',
 			description: '成因など',
 			risk: 'リスク'

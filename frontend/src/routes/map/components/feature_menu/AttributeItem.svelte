@@ -4,6 +4,7 @@
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 
 	import { showNotification } from '$routes/stores/notification';
+
 	let { key, value } = $props();
 
 	let isHover = $state<boolean>(false);

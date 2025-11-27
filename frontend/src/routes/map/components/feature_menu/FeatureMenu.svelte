@@ -79,6 +79,16 @@
 		return null;
 	});
 
+	let propDict = $derived.by(() => {
+		const dict: Record<string, string | number | null> = {};
+		layerEntries.forEach((entry) => {
+			if (entry.type === 'vector' && entry.properties && entry.properties.dict) {
+				Object.assign(dict, entry.properties.dict);
+			}
+		});
+		return dict;
+	});
+
 	let propId = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
 			return featureMenuData.properties._prop_id;
@@ -270,7 +280,8 @@
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
 								{#if key !== '_prop_id' && value}
-									<AttributeItem {key} {value} />
+									{@const dictKey = propDict[key] ?? key}
+									<AttributeItem key={dictKey} {value} />
 								{/if}
 							{/each}
 						{/if}
