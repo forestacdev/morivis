@@ -11,6 +11,7 @@
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
+	import { isOnlySpaces } from '$routes/map/utils/sanitize';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -105,11 +106,20 @@
 		}
 	});
 
+	let imageKey = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.imageKey;
+		}
+		return null;
+	});
+
 	let srcData = $derived.by(() => {
 		if (data) {
 			if (data.image) {
 				return data.image;
 			}
+		} else if (featureMenuData && featureMenuData.properties && imageKey) {
+			return featureMenuData.properties[imageKey] as string;
 		}
 		return null;
 	});
@@ -157,7 +167,7 @@
 		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2">
 			<!-- 画像 -->
 			<div class="b relative w-full p-2">
-				{#if srcData && data && !data.medias}
+				{#if srcData}
 					<img
 						in:fade
 						class="block aspect-video h-full w-full rounded-lg object-cover"
@@ -279,7 +289,7 @@
 					<div class="mb-56 flex h-full w-full flex-col gap-3">
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
-								{#if key !== '_prop_id' && value}
+								{#if key !== '_prop_id' && value && !isOnlySpaces(value) && imageKey !== key}
 									{@const dictKey = propDict[key] ?? key}
 									<AttributeItem key={dictKey} {value} />
 								{/if}
