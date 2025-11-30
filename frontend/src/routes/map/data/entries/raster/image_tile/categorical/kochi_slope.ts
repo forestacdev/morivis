@@ -28,9 +28,15 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
 			type: 'category',
-			name: '傾斜',
+			name: '傾斜量',
 			colors: ['#0200FC', '#32C2FF', '#B7FE8E', '#FFC801', '#FE0000'],
-			labels: ['0 - 14.9度', '15 - 29.9度', '30 - 39.9度', '40 - 44.9度', '45度以上']
+			labels: [
+				'0度以上15度未満',
+				'15度以上30度未満',
+				'30度以上40度未満',
+				'40度以上45度未満',
+				'45度以上'
+			]
 		}
 	}
 };

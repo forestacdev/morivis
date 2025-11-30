@@ -30,7 +30,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			type: 'category',
 			name: '傾斜',
 			colors: ['#FFFFD5', '#FED98E', '#FE992A', '#D9600E', '#993405'],
-			labels: ['0 - 10度', '10.1 - 20度', '20.1 - 30度', '30.1 - 40度', '40.1度以上']
+			labels: ['0度 - 10度', '10 - 20度', '20度 - 30度', '30度 - 40度', '40度以上']
 		}
 	}
 };
