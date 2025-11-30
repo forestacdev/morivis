@@ -582,14 +582,16 @@
 			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			bind:showAngleMarker
-			bind:isExternalCameraUpdate
-		/>
+		{#if showStreetViewLayer}
+			<StreetViewCanvas
+				{streetViewPoint}
+				{nextPointData}
+				{showThreeCanvas}
+				bind:cameraBearing
+				bind:showAngleMarker
+				bind:isExternalCameraUpdate
+			/>
+		{/if}
 
 		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>

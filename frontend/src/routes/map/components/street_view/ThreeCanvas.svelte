@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import {
@@ -81,8 +81,6 @@
 			debugBoxMaterial.visible = false;
 		}
 	});
-
-
 
 	// テクスチャローダーを初期化
 	textureLoader = new THREE.TextureLoader();
@@ -358,6 +356,45 @@
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
 	};
+
+	onDestroy(() => {
+		// リサイズイベントのリスナーを削除
+		window.removeEventListener('resize', onResize);
+
+		// アニメーションループを停止
+		if (renderer) {
+			renderer.dispose();
+		}
+
+		// OrbitControlsの破棄
+		if (orbitControls) {
+			orbitControls.dispose();
+		}
+
+		// シーン内のオブジェクトを破棄
+		if (scene) {
+			scene.traverse((object) => {
+				if (object instanceof THREE.Mesh) {
+					object.geometry?.dispose();
+					if (Array.isArray(object.material)) {
+						object.material.forEach((material) => material.dispose());
+					} else {
+						object.material?.dispose();
+					}
+				}
+			});
+		}
+
+		// テクスチャキャッシュのクリア
+		if (textureCache) {
+			textureCache.clearCache(); // TextureCacheにclearメソッドがあれば
+		}
+
+		// uniforms内のテクスチャを破棄
+		uniforms.textureA.value?.dispose();
+		uniforms.textureB.value?.dispose();
+		uniforms.textureC.value?.dispose();
+	});
 </script>
 
 <div
