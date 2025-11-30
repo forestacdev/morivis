@@ -1,27 +1,26 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'dem_aster_gdem_v3',
+	id: 'dem_gsi_geoid',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://tiles.gsj.jp/tiles/elev/astergdemv3/{z}/{y}/{x}.png'
+		url: 'https://tiles.gsj.jp/tiles/elev/gsigeoid/{z}/{y}/{x}.png'
 	},
 	metaData: {
-		name: 'ASTER全球3次元地形データ',
-		sourceDataName: 'ASTER GDEM 003',
-		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#h_astergdemv3',
+		name: 'ジオイド高データ',
+		sourceDataName: 'ジオイド・モデル「日本のジオイド2011」',
+		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#gsigeoid',
 		attribution: '産総研シームレス標高タイル',
-		tags: ['DEM', '地形'],
-		location: '世界',
+		tags: ['DEM', '地形', 'ジオイド高'],
+		location: '全国',
 		minZoom: 0,
-		maxZoom: 12,
+		maxZoom: 8,
 		tileSize: 256,
-		bounds: WEB_MERCATOR_WORLD_BBOX,
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_0
+		bounds: [120, 20, 150, 50],
+		xyzImageTile: { x: 28, y: 12, z: 5 } // 画像タイルのXYZ座標
 	},
 	interaction: {
 		clickable: true

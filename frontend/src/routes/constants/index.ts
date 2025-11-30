@@ -56,6 +56,11 @@ export const MAP_POSITION: MapPosition = {
 
 /** アイコン用画像タイルのXYZ */
 export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
+	zoom_0: {
+		x: 0,
+		y: 0,
+		z: 0
+	},
 	zoom_7: {
 		x: 113,
 		y: 50,
