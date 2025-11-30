@@ -3,7 +3,7 @@ import { TOCHIGI_BBOX, WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/locati
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
-	id: '',
+	id: 'tochigi_slope',
 	type: 'raster',
 	format: {
 		type: 'image',
@@ -34,7 +34,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			type: 'category',
 			name: '傾斜',
 			colors: ['#0000FE', '#56FE01', '#FFFF00', '#FE0000'],
-			labels: ['0 - 15度', '15.1 - 30度', '30.1 - 35度', '35.1度以上']
+			labels: ['0度 - 15度', '15度 - 30度', '30度 - 35度', '35度以上']
 		}
 	}
 };

@@ -22,7 +22,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tags: ['森林', '林相図', 'レーザ林相図'],
 		bounds: KANAGAWA_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-kanagawa-maptiles2',
-		xyzImageTile: { x: 29045, y: 12933, z: 15 }
+		xyzImageTile: { x: 116176, y: 51749, z: 17 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

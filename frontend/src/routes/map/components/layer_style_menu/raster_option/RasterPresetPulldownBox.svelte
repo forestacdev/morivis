@@ -66,7 +66,7 @@
 		<img
 			{src}
 			alt={presetOptions.find((option) => option.key === preset)?.name}
-			class="aspect-square h-24 rounded bg-black object-cover"
+			class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
 			style="filter:{getPresetCSSStyle(preset).filter};"
 		/>
 	</button>
@@ -99,7 +99,7 @@
 						<img
 							{src}
 							alt={name}
-							class="aspect-square w-full bg-black object-cover"
+							class="c-no-drag-icon aspect-square w-full bg-black object-cover"
 							style="filter:{getPresetCSSStyle(key).filter};"
 						/>
 					</div>

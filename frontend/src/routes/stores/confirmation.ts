@@ -5,6 +5,7 @@ type ConfirmationDialog = {
 	message: string;
 	confirmText?: string;
 	cancelText?: string;
+	confirmOnly?: boolean;
 	resolve: (result: boolean) => void;
 };
 
@@ -20,12 +21,14 @@ export const showConfirmDialog = (options: {
 	message: string;
 	confirmText?: string;
 	cancelText?: string;
+	confirmOnly?: boolean;
 }): Promise<boolean> => {
 	return new Promise<boolean>((resolve) => {
 		confirmationDialog.set({
 			message: options.message,
 			confirmText: options.confirmText || 'OK',
 			cancelText: options.cancelText || 'キャンセル',
+			confirmOnly: options.confirmOnly || false,
 			resolve
 		});
 	});

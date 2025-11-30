@@ -70,6 +70,7 @@
 	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
 	import { normalizeSchoolName } from './utils/normalized';
 	import { result } from 'es-toolkit/compat';
+	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -161,6 +162,9 @@
 	let searchResults = $state<ResultData[] | null>([]);
 	let selectedSearchId = $state<number | null>(null);
 	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | null>(null);
+
+	// 画像プレビュー
+	let imagePreviewUrl = $state<string | null>(null);
 
 	$effect(() => {
 		if (selectedSearchId) {
@@ -436,11 +440,13 @@
 			selectedSearchId = result.id;
 		}
 
+		mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));
+
 		//github.com/maplibre/maplibre-gl-js/issues/4891
-		mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
-			zoom: 17,
-			duration: 800
-		});
+		// mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
+		// 	zoom: 17,
+		// 	duration: 800
+		// });
 
 		// selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
 		// showSelectionMarker = true;
@@ -493,7 +499,7 @@
 					? 'opacity-500 pointer-events-auto'
 					: 'pointer-events-none opacity-0'}"
 			>
-				<OtherMenu />
+				<OtherMenu bind:imagePreviewUrl />
 			</div>
 
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
@@ -580,14 +586,16 @@
 			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 		{/if}
 
-		<StreetViewCanvas
-			{streetViewPoint}
-			{nextPointData}
-			{showThreeCanvas}
-			bind:cameraBearing
-			bind:showAngleMarker
-			bind:isExternalCameraUpdate
-		/>
+		{#if showStreetViewLayer}
+			<StreetViewCanvas
+				{streetViewPoint}
+				{nextPointData}
+				{showThreeCanvas}
+				bind:cameraBearing
+				bind:showAngleMarker
+				bind:isExternalCameraUpdate
+			/>
+		{/if}
 
 		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
@@ -602,6 +610,8 @@
 	{selectedEpsgCode}
 />
 
+<ImagePreviewDialog bind:imagePreviewUrl />
+
 {#if map}
 	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
 {/if}
@@ -610,7 +620,7 @@
 
 <!-- PC用その他メニュー -->
 <div class="max-lg:hidden">
-	<OtherMenu />
+	<OtherMenu bind:imagePreviewUrl />
 </div>
 <NotificationMessage />
 

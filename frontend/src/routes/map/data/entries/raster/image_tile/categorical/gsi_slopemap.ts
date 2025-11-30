@@ -1,4 +1,4 @@
-import { IMAGE_TILE_XYZ } from '$routes/constants';
+import { IMAGE_TILE_XYZ, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
@@ -19,7 +19,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		minZoom: 3,
 		maxZoom: 15,
 		tileSize: 256,
-		xyzImageTile: IMAGE_TILE_XYZ,
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS
 	},
 	interaction: {

@@ -129,6 +129,7 @@ def epsg_list_to_detailed_dict(epsg_codes):
             info = {
                 "citation": crs.name,  # 正式名称
                 "proj_context": crs.to_proj4(),  # Proj4文字列
+                "wkt": crs.to_wkt(version="WKT1_GDAL"), # WKT定義を追加
                 "area_of_use": None,
                 "datum": None,
                 "ellipsoid": None,
@@ -136,9 +137,9 @@ def epsg_list_to_detailed_dict(epsg_codes):
             }
 
             custom_info = get_epsg_info(code)
-            
+
             info["name_ja"] = custom_info["name_ja"]
-            
+
             # prefecture と zone を追加（値が存在する場合のみ）
             if custom_info["prefecture"]:
                 info["prefecture"] = custom_info["prefecture"]
@@ -177,6 +178,7 @@ def epsg_list_to_detailed_dict(epsg_codes):
             detailed_dict[str(code)] = {
                 "citation": None,
                 "projContext": None,
+                "wkt": None,
                 "name": None,
                 "error": str(e),
             }
@@ -184,16 +186,20 @@ def epsg_list_to_detailed_dict(epsg_codes):
     return detailed_dict
 
 
-
-
 # 使用例
-epsg_codes = EPSG_INFO_MAP.keys()
+if __name__ == "__main__":
+    epsg_codes = EPSG_INFO_MAP.keys()
 
-detailed_dict = epsg_list_to_detailed_dict(epsg_codes)
+    detailed_dict = epsg_list_to_detailed_dict(epsg_codes)
 
-# 結果を確認
-print(json.dumps(detailed_dict, indent=2, ensure_ascii=False))
+    # 結果を確認
+    print(json.dumps(detailed_dict, indent=2, ensure_ascii=False))
 
-# JSONファイルに保存
-with open("epsg_definitions.json", "w", encoding="utf-8") as f:
-    json.dump(detailed_dict, f, indent=2, ensure_ascii=False)
+    # JSONファイルに保存
+    with open("epsg_definitions.json", "w", encoding="utf-8") as f:
+        json.dump(detailed_dict, f, indent=2, ensure_ascii=False)
+
+
+
+
+

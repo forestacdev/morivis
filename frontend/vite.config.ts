@@ -90,10 +90,25 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/qchizu/, '')
 			},
+			'/api/rinya-hyogo': {
+				target: 'https://rinya-hyogo.geospatial.jp',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/rinya-hyogo/, '')
+			},
+			'/api/rinya-kochi': {
+				target: 'https://rinya-kochi.geospatial.jp',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/rinya-kochi/, '')
+			},
 			'/api/google-suggest': {
 				target: 'https://suggestqueries.google.com',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/google-suggest/, '/complete/search')
+			},
+			'/api/font-server': {
+				target: 'http://localhost:9000',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/font-server/, '')
 			}
 		}
 	},

@@ -35,6 +35,7 @@ export interface GradientLegend {
 }
 
 export type ZoomLevel =
+	| 0
 	| 1
 	| 2
 	| 3
@@ -106,6 +107,7 @@ export interface RasterCategoricalStyle {
 	type: 'categorical';
 	opacity: Opacity;
 	visible?: boolean;
+	resampling?: 'nearest' | 'linear';
 	legend: CategoryLegend | GradientLegend | ImageLegend;
 }
 

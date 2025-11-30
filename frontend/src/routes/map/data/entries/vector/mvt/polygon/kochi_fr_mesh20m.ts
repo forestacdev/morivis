@@ -1,6 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { KOCHI_BBOX } from '$routes/map/data/location_bbox';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'kochi_fr_mesh20m',
@@ -19,7 +20,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'fr_mesh20m_kochi',
-		bounds: [132.479888, 32.702505, 134.31367, 33.882997],
+		bounds: KOCHI_BBOX,
 		xyzImageTile: { x: 57075, y: 26263, z: 16 },
 		center: [133.49424, 33.636878],
 		mapImage: `${MAP_IMAGE_BASE_PATH}/kochi_fr_mesh20m.webp`
@@ -79,8 +80,21 @@ const entry: VectorEntry<TileMetaData> = {
 						value: '#349f1c'
 					}
 				},
+				// NOTE:スギ、ヒノキしかない
 				{
-					...TREE_MATCH_COLOR_STYLE
+					type: 'match',
+					key: '解析樹種',
+					name: '樹種ごとの色分け',
+					mapping: {
+						categories: ['スギ', 'ヒノキ類'],
+						values: ['#33a02c', '#b2df8a'],
+						// パターン情報
+						patterns: [null, null]
+					},
+					noData: {
+						value: 'transparent',
+						pattern: null
+					}
 				},
 				{
 					type: 'step',
@@ -88,7 +102,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '立木本数による色分け',
 					mapping: {
 						scheme: 'OrRd',
-						range: [1, 100],
+						range: [0, 100],
 						divisions: 5
 					}
 				}

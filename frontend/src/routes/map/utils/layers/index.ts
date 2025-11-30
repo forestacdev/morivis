@@ -848,7 +848,8 @@ export const createLayersItems = (
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity
+								'raster-opacity': style.opacity,
+								'raster-resampling': style.resampling ? style.resampling : 'linear'
 							}
 						});
 					} else if (style.type === 'dem') {
@@ -885,7 +886,7 @@ export const createLayersItems = (
 							});
 						}
 					}
-					if (format.type === 'mvt' || format.type === 'pmtiles') {
+					if (format.type === 'mvt' || format.type === 'pmtiles' || format.type === 'geojsontile') {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
 						}

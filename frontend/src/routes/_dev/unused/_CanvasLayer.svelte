@@ -221,7 +221,7 @@
 		});
 
 		// Mapboxイベントに基づいて多角形を更新
-		mapStore.onMooveEnd((e) => {
+		mapStore.onMoveEnd((e) => {
 			if (!$selectedHighlightData) return;
 			setHighlightData($selectedHighlightData);
 		});

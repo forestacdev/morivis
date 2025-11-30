@@ -41,15 +41,20 @@ import {
 } from '$routes/map/data/location_bbox';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
+import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import { isPointInBbox } from '$routes/map/utils/map';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
-const webgl = demProtocol('webgl');
-maplibregl.addProtocol(webgl.protocolName, webgl.request);
+const webglProt = demProtocol('webgl');
+maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
-const terrain = terrainProtocol('terrain');
-maplibregl.addProtocol(terrain.protocolName, terrain.request);
+const terrainProt = terrainProtocol('terrain');
+maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
+
+const geojsonProt = geojsonProtocol('geojson');
+maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
 
 if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');
@@ -134,7 +139,7 @@ const createMapStore = () => {
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const onStyleDataEvent = writable<MapLibreEvent | null>(null);
-	const mooveEndEvent = writable<MapLibreEvent | null>(null);
+	const moveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
@@ -172,6 +177,30 @@ const createMapStore = () => {
 
 				if (url.includes('mapdata.qchizu.xyz')) {
 					const newUrl = url.replace('https://mapdata.qchizu.xyz', 'api/qchizu');
+					return { url: newUrl };
+				}
+
+				if (url.includes('rinya-hyogo.geospatial.jp')) {
+					// .pbfファイルは除外
+					if (url.endsWith('.pbf')) {
+						return { url }; // または null を返す
+					}
+					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
+					return { url: newUrl };
+				}
+
+				if (url.includes('rinya-kochi.geospatial.jp')) {
+					// .pbfファイルは除外
+					if (url.endsWith('.pbf')) {
+						return { url };
+					}
+					const newUrl = url.replace('https://rinya-kochi.geospatial.jp', 'api/rinya-kochi');
+					return { url: newUrl };
+				}
+
+				// フォントファイルのプロキシ処理を追加
+				if (url.includes('localhost:9000/data/font') || url.includes('/data/font')) {
+					const newUrl = url.replace('http://localhost:9000', '/api/font-server');
 					return { url: newUrl };
 				}
 			}
@@ -341,7 +370,7 @@ const createMapStore = () => {
 				bearing: map.getBearing()
 			});
 
-			mooveEndEvent.set(e);
+			moveEndEvent.set(e);
 
 			if (import.meta.env.DEV) {
 				console.log(getMapBounds());
@@ -787,6 +816,15 @@ const createMapStore = () => {
 		map.flyTo({ center: lngLat, ...options });
 	};
 
+	const panToOrJumpTo = (lngLat: LngLat) => {
+		if (!map || !isMapValid(map)) return;
+		if (isPointInBbox(lngLat, getMapBounds())) {
+			map.panTo(lngLat, { duration: 500 });
+		} else {
+			map.jumpTo({ center: lngLat, zoom: 17 });
+		}
+	};
+
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
@@ -801,7 +839,7 @@ const createMapStore = () => {
 		setStyleEvent.set(null);
 		isLoadingEvent.set(true);
 		isStyleLoadEvent.set(null);
-		mooveEndEvent.set(null);
+		moveEndEvent.set(null);
 		resizeEvent.set(null);
 		initEvent.set(null);
 		onLoadEvent.set(null);
@@ -880,9 +918,9 @@ const createMapStore = () => {
 		panTo,
 		panToPoi,
 		flyTo,
-		easeTo: (options: EaseToOptions) => easeTo(options),
+		easeTo,
+		panToOrJumpTo,
 		focusLayer,
-		focusFeature,
 		jumpToFac: jumpToFac,
 		terrainReload: terrainReload, // 地形をリロードするメソッド
 		toggleTerrain,
@@ -917,7 +955,7 @@ const createMapStore = () => {
 		onMouseUp: createEventSubscriber(mouseupEvent), // マウスアップイベントの購読用メソッド
 		onRotate: createEventSubscriber(rotateEvent), // 回転イベントの購読用メソッド
 		onZoom: createEventSubscriber(zoomEvent), // ズームイベントの購読用メソッド
-		onMooveEnd: createEventSubscriber(mooveEndEvent), // マップ移動イベントの購読用メソッド
+		onMoveEnd: createEventSubscriber(moveEndEvent), // マップ移動イベントの購読用メソッド
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド

@@ -120,6 +120,10 @@ const attributionData = {
 	['神奈川県森林再生課（林野庁加工）']: {
 		name: '神奈川県森林再生課（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya'
+	},
+	兵庫県: {
+		name: '兵庫県',
+		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
 	}
 } as const;
 

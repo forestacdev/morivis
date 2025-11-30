@@ -4,6 +4,7 @@ import type { TileXYZ } from '$routes/map/data/types/raster';
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/data';
 export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
+export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
 export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
@@ -55,11 +56,17 @@ export const MAP_POSITION: MapPosition = {
 
 /** アイコン用画像タイルのXYZ */
 export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
+	zoom_0: {
+		x: 0,
+		y: 0,
+		z: 0
+	},
 	zoom_7: {
 		x: 113,
 		y: 50,
 		z: 7
 	},
+	zoom_9: { x: 453, y: 202, z: 9 },
 	zoom_16: {
 		x: 57693,
 		y: 25835,
@@ -107,6 +114,7 @@ export const INT_ADD_LAYER_IDS = [
 
 	'ensyurin_syouhan',
 	'national_forest_stand'
+	// 'experimental_landformclassification1'
 	// 'tochigi_tree_species',
 	// 'dem_5a'
 	// 'gifu_sugi_kansetugai',

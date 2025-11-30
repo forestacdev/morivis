@@ -8,8 +8,9 @@ import type { FeatureCollection } from 'geojson';
 
 import type { BaseMetaData } from '$routes/map/data/types';
 import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
+import type { R } from 'vitest/dist/chunks/environment.LoooBwUu.js';
 
-export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb';
+export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb' | 'geojsontile';
 
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 
@@ -21,7 +22,9 @@ export interface Title {
 export interface VectorProperties {
 	keys: string[];
 	titles: Title[];
-	dict?: string;
+	dict?: Record<string, any>;
+	joinDataUrl?: string;
+	imageKey?: string;
 }
 
 export interface VectorInteraction {
