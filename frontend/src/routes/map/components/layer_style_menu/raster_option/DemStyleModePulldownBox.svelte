@@ -99,7 +99,7 @@
 				<img
 					src={imageResult.url}
 					alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
-					class="aspect-square h-24 rounded bg-black object-cover"
+					class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
 				/>
 			{/if}
 		{:catch}

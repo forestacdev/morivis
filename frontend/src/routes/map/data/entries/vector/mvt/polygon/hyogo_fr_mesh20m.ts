@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '兵庫県 森林資源量集計メッシュ',
-		attribution: '兵庫県森林資源データ',
+		attribution: '兵庫県',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/fr_mesh20m_hyogo',
 		location: '兵庫県',
 		tags: ['森林', 'メッシュ'],

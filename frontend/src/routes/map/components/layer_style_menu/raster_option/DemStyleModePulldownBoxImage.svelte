@@ -52,7 +52,6 @@
 		class="hidden"
 		onchange={() => (showPullDown = false)}
 	/>
-
 	<div
 		class="border-3 overflow-hidden rounded-md {isMode === mode
 			? 'border-accent'
@@ -60,7 +59,11 @@
 	>
 		{#await promise then imageResult}
 			{#if imageResult}
-				<img alt={name} src={imageResult.url} class="aspect-square w-full bg-black object-cover" />
+				<img
+					alt={name}
+					src={imageResult.url}
+					class="c-no-drag-icon aspect-square w-full bg-black object-cover"
+				/>
 			{/if}
 		{:catch}
 			<div>画像の取得に失敗</div>
