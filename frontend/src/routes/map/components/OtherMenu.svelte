@@ -14,7 +14,7 @@
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import { imageExport, exportPDF } from '$routes/map/utils/map';
+	import { imageExport } from '$routes/map/utils/file/image';
 	import { goto } from '$app/navigation';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { onMount, onDestroy } from 'svelte';
