@@ -102,8 +102,8 @@ const entry: VectorEntry<TileMetaData> = {
 			lineStyle: 'solid'
 		},
 		labels: {
-			key: 'ID',
-			show: true,
+			key: '樹種１',
+			show: false,
 			expressions: [
 				{
 					key: 'ID',
