@@ -70,6 +70,7 @@
 	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
 	import { normalizeSchoolName } from './utils/normalized';
 	import { result } from 'es-toolkit/compat';
+	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -161,6 +162,9 @@
 	let searchResults = $state<ResultData[] | null>([]);
 	let selectedSearchId = $state<number | null>(null);
 	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | null>(null);
+
+	// 画像プレビュー
+	let imagePreviewUrl = $state<string | null>(null);
 
 	$effect(() => {
 		if (selectedSearchId) {
@@ -495,7 +499,7 @@
 					? 'opacity-500 pointer-events-auto'
 					: 'pointer-events-none opacity-0'}"
 			>
-				<OtherMenu />
+				<OtherMenu bind:imagePreviewUrl />
 			</div>
 
 			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
@@ -606,6 +610,8 @@
 	{selectedEpsgCode}
 />
 
+<ImagePreviewDialog bind:imagePreviewUrl />
+
 {#if map}
 	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
 {/if}
@@ -614,7 +620,7 @@
 
 <!-- PC用その他メニュー -->
 <div class="max-lg:hidden">
-	<OtherMenu />
+	<OtherMenu bind:imagePreviewUrl />
 </div>
 <NotificationMessage />
 

@@ -1,23 +1,41 @@
-import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { downloadWorldFile, generateWorldFile } from './worldfile';
 
 import JSZip from 'jszip';
-import type { image } from 'html2canvas/dist/types/css/types/image';
 
 export const getMapCanvasImage = (map: MapLibreMap): Promise<string> => {
 	return new Promise((resolve, reject) => {
-		map.once('render', () => {
+		map.once('render', async () => {
 			try {
 				const mapCanvas = map.getCanvas();
 				const mapImage = mapCanvas.toDataURL('image/png');
 				resolve(mapImage);
+
+				await map.setProjection({
+					type: 'globe'
+				}); // EPSG:3857に設定
 			} catch (error) {
 				reject(error);
 			}
 		});
+
+		map.setProjection({
+			type: 'mercator'
+		}); // EPSG:3857に設定
 		// Maplibre GL JS のレンダリングをトリガー
 		map.triggerRepaint();
+	});
+};
+
+export const downloadImage = async (src: string, filename: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const link = document.createElement('a');
+		link.href = src;
+		link.download = filename;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		resolve();
 	});
 };
 

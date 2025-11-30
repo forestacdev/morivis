@@ -14,7 +14,7 @@
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import { imageExport } from '$routes/map/utils/file/image';
+	import { imageExport, getMapCanvasImage } from '$routes/map/utils/file/image';
 	import { goto } from '$app/navigation';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -22,6 +22,12 @@
 	import { isBlocked } from '$routes/stores/ui';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { checkPWA, pwaInstall } from '$routes/map/utils/device';
+	interface Props {
+		imagePreviewUrl: string | null;
+	}
+
+	let { imagePreviewUrl = $bindable() }: Props = $props();
+
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
 		showDataMenu.set(!$showDataMenu);
@@ -42,9 +48,10 @@
 		isProcessing.set(true);
 		const map = mapStore.getMap();
 		if (!map) return;
-		await imageExport(map);
+		const imageUrl = await getMapCanvasImage(map);
+		imagePreviewUrl = imageUrl;
 		isProcessing.set(false);
-		showNotification('地図をPNG画像でエクスポートしました', 'success');
+		// showNotification('地図をPNG画像でエクスポートしました', 'success');
 	};
 
 	const goHome = async () => {
