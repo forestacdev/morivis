@@ -184,6 +184,11 @@ const createMapStore = () => {
 					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
 					return { url: newUrl };
 				}
+
+				if (url.includes('rinya-kochi.geospatial.jp')) {
+					const newUrl = url.replace('https://rinya-kochi.geospatial.jp', 'api/rinya-kochi');
+					return { url: newUrl };
+				}
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
