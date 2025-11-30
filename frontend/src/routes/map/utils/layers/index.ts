@@ -848,7 +848,8 @@ export const createLayersItems = (
 							...layer,
 							type: 'raster',
 							paint: {
-								'raster-opacity': style.opacity
+								'raster-opacity': style.opacity,
+								'raster-resampling': style.resampling ? style.resampling : 'linear'
 							}
 						});
 					} else if (style.type === 'dem') {

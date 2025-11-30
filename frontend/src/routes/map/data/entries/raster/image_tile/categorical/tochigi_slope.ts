@@ -3,7 +3,7 @@ import { TOCHIGI_BBOX, WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/locati
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
-	id: '',
+	id: 'tochigi_slope',
 	type: 'raster',
 	format: {
 		type: 'image',

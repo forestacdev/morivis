@@ -107,6 +107,7 @@ export interface RasterCategoricalStyle {
 	type: 'categorical';
 	opacity: Opacity;
 	visible?: boolean;
+	resampling?: 'nearest' | 'linear';
 	legend: CategoryLegend | GradientLegend | ImageLegend;
 }
 
