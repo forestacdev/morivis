@@ -82,7 +82,7 @@
 			updateScale();
 		});
 
-		mapStore.onMooveEnd(() => {
+		mapStore.onMoveEnd(() => {
 			updateScale();
 		});
 

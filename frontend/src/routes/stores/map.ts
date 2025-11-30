@@ -139,7 +139,7 @@ const createMapStore = () => {
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const onStyleDataEvent = writable<MapLibreEvent | null>(null);
-	const mooveEndEvent = writable<MapLibreEvent | null>(null);
+	const moveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
@@ -346,7 +346,7 @@ const createMapStore = () => {
 				bearing: map.getBearing()
 			});
 
-			mooveEndEvent.set(e);
+			moveEndEvent.set(e);
 
 			if (import.meta.env.DEV) {
 				console.log(getMapBounds());
@@ -815,7 +815,7 @@ const createMapStore = () => {
 		setStyleEvent.set(null);
 		isLoadingEvent.set(true);
 		isStyleLoadEvent.set(null);
-		mooveEndEvent.set(null);
+		moveEndEvent.set(null);
 		resizeEvent.set(null);
 		initEvent.set(null);
 		onLoadEvent.set(null);
@@ -931,7 +931,7 @@ const createMapStore = () => {
 		onMouseUp: createEventSubscriber(mouseupEvent), // マウスアップイベントの購読用メソッド
 		onRotate: createEventSubscriber(rotateEvent), // 回転イベントの購読用メソッド
 		onZoom: createEventSubscriber(zoomEvent), // ズームイベントの購読用メソッド
-		onMooveEnd: createEventSubscriber(mooveEndEvent), // マップ移動イベントの購読用メソッド
+		onMoveEnd: createEventSubscriber(moveEndEvent), // マップ移動イベントの購読用メソッド
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
