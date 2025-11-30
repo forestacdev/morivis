@@ -100,6 +100,11 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/rinya-kochi/, '')
 			},
+			'/api/rinya-toyama': {
+				target: 'https://rinya-toyama.geospatial.jp',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/rinya-toyama/, '')
+			},
 			'/api/google-suggest': {
 				target: 'https://suggestqueries.google.com',
 				changeOrigin: true,

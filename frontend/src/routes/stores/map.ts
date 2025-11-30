@@ -198,6 +198,15 @@ const createMapStore = () => {
 					return { url: newUrl };
 				}
 
+				if (url.includes('https://rinya-toyama.geospatial.jp')) {
+					// .pbfファイルは除外
+					if (url.endsWith('.pbf')) {
+						return { url };
+					}
+					const newUrl = url.replace('https://rinya-toyama.geospatial.jp', 'api/rinya-toyama');
+					return { url: newUrl };
+				}
+
 				// フォントファイルのプロキシ処理を追加
 				if (url.includes('localhost:9000/data/font') || url.includes('/data/font')) {
 					const newUrl = url.replace('http://localhost:9000', '/api/font-server');
