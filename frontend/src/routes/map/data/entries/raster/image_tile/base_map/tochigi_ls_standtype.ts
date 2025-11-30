@@ -22,11 +22,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tags: ['森林', '林相図', 'レーザ林相図'],
 		bounds: TOCHIGI_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_tochigi',
-		xyzImageTile: {
-			x: 3635,
-			y: 1597,
-			z: 12
-		}
+		xyzImageTile: { x: 116389, y: 51191, z: 17 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

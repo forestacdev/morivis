@@ -85,15 +85,16 @@ export class CoverImageManager {
 	}
 }
 
+// TODO 不要になる可能性あり
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
 		if (import.meta.env.PROD) return originalUrl;
 
 		try {
-			const url = new URL(originalUrl);
-			if (url.hostname === 'tiles.gsj.jp') {
-				return `/api/gsj${url.pathname}`;
-			}
+			// const url = new URL(originalUrl);
+			// if (url.hostname === 'tiles.gsj.jp') {
+			// 	return `/api/gsj${url.pathname}`;
+			// }
 		} catch (error) {
 			console.warn('Invalid URL:', originalUrl);
 		}

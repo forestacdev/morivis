@@ -22,7 +22,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tags: ['森林', '林相図', 'レーザ林相図'],
 		bounds: HYOGO_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/ls_standtype_hyogo',
-		xyzImageTile: { x: 57325, y: 25961, z: 16 }
+		xyzImageTile: { x: 114602, y: 51912, z: 17 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		maxZoom: 15,
 		tileSize: 256,
 		bounds: [122.935, 20.425, 153.986, 45.551],
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7 // 画像タイルのXYZ座標
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9 // 画像タイルのXYZ座標
 	},
 	interaction: {
 		clickable: true

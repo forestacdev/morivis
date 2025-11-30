@@ -61,6 +61,7 @@ export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
 		y: 50,
 		z: 7
 	},
+	zoom_9: { x: 453, y: 202, z: 9 },
 	zoom_16: {
 		x: 57693,
 		y: 25835,
