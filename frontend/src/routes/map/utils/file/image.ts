@@ -1,5 +1,25 @@
 import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { downloadWorldFile, generateWorldFile } from './worldfile';
+
+import JSZip from 'jszip';
+import type { image } from 'html2canvas/dist/types/css/types/image';
+
+export const getMapCanvasImage = (map: MapLibreMap): Promise<string> => {
+	return new Promise((resolve, reject) => {
+		map.once('render', () => {
+			try {
+				const mapCanvas = map.getCanvas();
+				const mapImage = mapCanvas.toDataURL('image/png');
+				resolve(mapImage);
+			} catch (error) {
+				reject(error);
+			}
+		});
+		// Maplibre GL JS のレンダリングをトリガー
+		map.triggerRepaint();
+	});
+};
 
 /**
  * Export the map as an image with a scale bar and compass.
@@ -102,8 +122,8 @@ export const imageExport = (map: MapLibreMap): Promise<void> => {
 						ctx.globalAlpha = 1.0; // 透過度をリセット
 
 						// 地図画像をダウンロード
-						const link = document.createElement('a');
-						link.href = finalCanvas.toDataURL('image/png');
+						// const link = document.createElement('a');
+						// link.href = finalCanvas.toDataURL('image/png');
 
 						// 現在の日時を取得してフォーマット（YYYYMMDDhhmmss）
 						const now = new Date();
@@ -115,12 +135,44 @@ export const imageExport = (map: MapLibreMap): Promise<void> => {
 							String(now.getMinutes()).padStart(2, '0') +
 							String(now.getSeconds()).padStart(2, '0');
 
-						link.download = formattedDate + '.png';
-						link.click();
+						// link.download = formattedDate + '.png';
+						// link.click();
 
 						// 全ての処理が成功したらPromiseを解決
 						console.log('エクスポート完了');
 						resolve();
+
+						const epsg = 4326;
+						const baseName = formattedDate + '_epsg_' + epsg;
+
+						const zip = new JSZip();
+						zip.file(baseName + '.png', finalCanvas.toDataURL('image/png').split(',')[1], {
+							base64: true
+						});
+
+						const worldFileContent = await generateWorldFile(
+							map,
+							finalCanvas.width,
+							finalCanvas.height,
+							epsg
+						);
+
+						zip.file(baseName + '.pgw', worldFileContent);
+
+						// ZIPファイルを生成してダウンロード
+						const zipBlob = await zip.generateAsync({ type: 'blob' });
+						const url = URL.createObjectURL(zipBlob);
+						const a = document.createElement('a');
+						a.href = url;
+						a.download = `${formattedDate}.zip`;
+						a.click();
+						URL.revokeObjectURL(url);
+
+						await map.setProjection({
+							type: 'globe'
+						}); // EPSG:3857に設定
+
+						// await downloadAuxXml(finalCanvas, map, 4326, formattedDate + '.png.aux.xml');
 					} catch (innerError) {
 						// 内部のエラーが発生した場合
 						console.error('エクスポート処理中のエラー:', innerError);
@@ -140,6 +192,10 @@ export const imageExport = (map: MapLibreMap): Promise<void> => {
 				reject(outerError); // Promiseを拒否
 			}
 		});
+
+		map.setProjection({
+			type: 'mercator'
+		}); // EPSG:3857に設定
 
 		// Maplibre GL JS のレンダリングをトリガー
 		map.triggerRepaint();

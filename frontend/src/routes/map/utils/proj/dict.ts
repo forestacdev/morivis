@@ -7,6 +7,7 @@ export interface EpsgInfo {
 	zone?: string;
 	citation: string;
 	proj_context: string;
+	wkt: string;
 	name: string;
 	area_of_use: {
 		name: string;
@@ -77,4 +78,8 @@ export const getZone = (epsgCode: EpsgCode): string | undefined => {
 
 export const getBbox = (epsgCode: EpsgCode): [number, number, number, number] => {
 	return epsg_definitions[epsgCode].area_of_use.bounds || [0, 0, 0, 0];
+};
+
+export const getWkt = (epsgCode: EpsgCode): string => {
+	return epsg_definitions[epsgCode].wkt;
 };
