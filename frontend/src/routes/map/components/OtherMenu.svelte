@@ -45,12 +45,12 @@
 
 	const mapExport = async () => {
 		showOtherMenu.set(false);
-		isProcessing.set(true);
+
 		const map = mapStore.getMap();
 		if (!map) return;
 		const imageUrl = await getMapCanvasImage(map);
 		imagePreviewUrl = imageUrl;
-		isProcessing.set(false);
+
 		// showNotification('地図をPNG画像でエクスポートしました', 'success');
 	};
 

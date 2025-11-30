@@ -46,10 +46,12 @@
 			</div>
 
 			<div class="flex shrink-0 items-center justify-end gap-2 pt-4">
-				<button class="c-btn-sub" onclick={handleCancel}>
-					{$confirmationDialog.cancelText}
-				</button>
-				<button class="c-btn-confirm" onclick={handleConfirm}>
+				{#if !$confirmationDialog.confirmOnly}
+					<button class="c-btn-sub px-4" onclick={handleCancel}>
+						{$confirmationDialog.cancelText}
+					</button>
+				{/if}
+				<button class="c-btn-confirm px-8" onclick={handleConfirm}>
 					{$confirmationDialog.confirmText}
 				</button>
 			</div>

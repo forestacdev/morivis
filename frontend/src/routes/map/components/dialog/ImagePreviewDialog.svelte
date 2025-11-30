@@ -107,9 +107,9 @@
 				/>
 			</div>
 
-			<div class="flex shrink-0 items-center justify-center gap-2 pt-4">
-				<button class="c-btn-sub" onclick={handleCancel}> キャンセル </button>
-				<button class="c-btn-confirm" onclick={handleConfirm}> 保存する </button>
+			<div class="flex shrink-0 items-center justify-center gap-4 pt-4">
+				<button class="c-btn-sub px-4" onclick={handleCancel}> キャンセル </button>
+				<button class="c-btn-confirm px-8" onclick={handleConfirm}> 保存する </button>
 			</div>
 		</div>
 	</div>

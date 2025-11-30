@@ -1,11 +1,10 @@
 import type { Map } from 'maplibre-gl';
-import { LngLat } from 'maplibre-gl';
 
 /**
  * 経緯度をWeb メルカトル座標(メートル)に変換
  */
 const lngLatToWebMercator = (lng: number, lat: number): { x: number; y: number } => {
-	const EARTH_RADIUS = 6378137; // WGS84楕円体の赤道半径(メートル)
+	const EARTH_RADIUS = 6378137;
 
 	const x = ((lng * Math.PI) / 180) * EARTH_RADIUS;
 	const y = Math.log(Math.tan(((90 + lat) * Math.PI) / 360)) * EARTH_RADIUS;
@@ -14,12 +13,7 @@ const lngLatToWebMercator = (lng: number, lat: number): { x: number; y: number }
 };
 
 /**
- * MapLibreの現在のbboxからワールドファイルのパラメータを生成
- * @param map MapLibreのMapインスタンス
- * @param imageWidth 出力画像の幅(px)
- * @param imageHeight 出力画像の高さ(px)
- * @param epsg 座標系（4326 or 3857）
- * @returns ワールドファイルの6行のパラメータ
+ * MapLibreの現在のbboxからワールドファイルのパラメータを生成（回転考慮）
  */
 export const generateWorldFile = (
 	map: Map,
@@ -27,50 +21,58 @@ export const generateWorldFile = (
 	imageHeight: number,
 	epsg: number = 4326
 ): string => {
-	const bounds = map.getBounds();
+	const bearing = map.getBearing(); // 回転角度（度）
+	const bearingRad = (-bearing * Math.PI) / 180; // ラジアンに変換（MapLibreは時計回りなので負にする）
 
-	let west: number, south: number, east: number, north: number;
+	// 四隅の座標を取得
+	const canvas = map.getCanvas();
+	const topLeft = map.unproject([0, 0]);
+	const topRight = map.unproject([canvas.width, 0]);
+	const bottomLeft = map.unproject([0, canvas.height]);
+
+	let x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
 
 	if (epsg === 3857) {
-		// Web メルカトル座標系の場合
-		// 経緯度をメートル単位に変換
-		const sw = lngLatToWebMercator(bounds.getWest(), bounds.getSouth());
-		const ne = lngLatToWebMercator(bounds.getEast(), bounds.getNorth());
+		const tl = lngLatToWebMercator(topLeft.lng, topLeft.lat);
+		const tr = lngLatToWebMercator(topRight.lng, topRight.lat);
+		const bl = lngLatToWebMercator(bottomLeft.lng, bottomLeft.lat);
 
-		west = sw.x;
-		south = sw.y;
-		east = ne.x;
-		north = ne.y;
+		x1 = tl.x;
+		y1 = tl.y;
+		x2 = tr.x;
+		y2 = tr.y;
+		x3 = bl.x;
+		y3 = bl.y;
 	} else {
-		// WGS84 地理座標系の場合（デフォルト）
-		west = bounds.getWest();
-		south = bounds.getSouth();
-		east = bounds.getEast();
-		north = bounds.getNorth();
+		x1 = topLeft.lng;
+		y1 = topLeft.lat;
+		x2 = topRight.lng;
+		y2 = topRight.lat;
+		x3 = bottomLeft.lng;
+		y3 = bottomLeft.lat;
 	}
 
-	// X方向のピクセルサイズ
-	const pixelSizeX = (east - west) / imageWidth;
+	// ワールドファイルのパラメータを計算
+	// A, D: X方向の変換（1ピクセル右に移動したときの座標変化）
+	const A = (x2 - x1) / imageWidth;
+	const D = (y2 - y1) / imageWidth;
 
-	// Y方向のピクセルサイズ（負の値）
-	const pixelSizeY = -(north - south) / imageHeight;
+	// B, E: Y方向の変換（1ピクセル下に移動したときの座標変化）
+	const B = (x3 - x1) / imageHeight;
+	const E = (y3 - y1) / imageHeight;
 
-	// 回転パラメータ(通常は0)
-	const rotationX = 0;
-	const rotationY = 0;
-
-	// 左上ピクセルの中心座標
-	const upperLeftX = west + pixelSizeX / 2;
-	const upperLeftY = north + pixelSizeY / 2;
+	// C, F: 左上ピクセル中心の座標
+	const C = x1 + A * 0.5 + B * 0.5;
+	const F = y1 + D * 0.5 + E * 0.5;
 
 	// ワールドファイルの形式(6行)
 	return [
-		pixelSizeX.toFixed(10), // Line 1: X方向のピクセルサイズ
-		rotationX.toFixed(10), // Line 2: Y軸方向の回転
-		rotationY.toFixed(10), // Line 3: X軸方向の回転
-		pixelSizeY.toFixed(10), // Line 4: Y方向のピクセルサイズ(負)
-		upperLeftX.toFixed(10), // Line 5: 左上ピクセル中心のX座標
-		upperLeftY.toFixed(10) // Line 6: 左上ピクセル中心のY座標
+		A.toFixed(10), // Line 1: X方向のピクセルサイズ
+		D.toFixed(10), // Line 2: Y軸方向の回転
+		B.toFixed(10), // Line 3: X軸方向の回転
+		E.toFixed(10), // Line 4: Y方向のピクセルサイズ
+		C.toFixed(10), // Line 5: 左上ピクセル中心のX座標
+		F.toFixed(10) // Line 6: 左上ピクセル中心のY座標
 	].join('\n');
 };
 

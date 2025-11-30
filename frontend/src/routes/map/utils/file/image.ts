@@ -3,26 +3,46 @@ import { downloadWorldFile, generateWorldFile } from './worldfile';
 
 import JSZip from 'jszip';
 
+import { showConfirmDialog } from '$routes/stores/confirmation';
+
 export const getMapCanvasImage = (map: MapLibreMap): Promise<string> => {
 	return new Promise((resolve, reject) => {
+		// 傾きチェックを最初に行う
+		if (map.getPitch() > 0) {
+			const result = showConfirmDialog({
+				message: '地図が傾いているため、画像の地理的な正確性が損なわれます。',
+				confirmOnly: true
+			});
+
+			if (!result) {
+				// キャンセルされた場合はrejectで終了
+				reject(new Error('ユーザーによってキャンセルされました'));
+				return;
+			}
+		}
+
+		// 確認OKまたは傾きなしの場合のみ処理続行
 		map.once('render', async () => {
 			try {
 				const mapCanvas = map.getCanvas();
 				const mapImage = mapCanvas.toDataURL('image/png');
-				resolve(mapImage);
 
+				// 画像取得後にglobeに戻す
 				await map.setProjection({
 					type: 'globe'
-				}); // EPSG:3857に設定
+				});
+
+				resolve(mapImage);
 			} catch (error) {
 				reject(error);
 			}
 		});
 
+		// mercatorに変更してレンダリングをトリガー
 		map.setProjection({
 			type: 'mercator'
-		}); // EPSG:3857に設定
-		// Maplibre GL JS のレンダリングをトリガー
+		});
+
 		map.triggerRepaint();
 	});
 };
