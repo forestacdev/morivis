@@ -90,6 +90,11 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/qchizu/, '')
 			},
+			'/api/rinya-hyogo': {
+				target: 'https://rinya-hyogo.geospatial.jp',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/rinya-hyogo/, '')
+			},
 			'/api/google-suggest': {
 				target: 'https://suggestqueries.google.com',
 				changeOrigin: true,

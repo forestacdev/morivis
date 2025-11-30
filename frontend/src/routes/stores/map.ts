@@ -179,6 +179,11 @@ const createMapStore = () => {
 					const newUrl = url.replace('https://mapdata.qchizu.xyz', 'api/qchizu');
 					return { url: newUrl };
 				}
+
+				if (url.includes('rinya-hyogo.geospatial.jp')) {
+					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
+					return { url: newUrl };
+				}
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
