@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fly, slide } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -15,6 +15,9 @@
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { getPrefectureCode } from '$routes/map/data/pref';
 
 	interface Props {
 		index: number;
@@ -225,6 +228,10 @@
 	mapStore.onStateChange((state) => {
 		checkRange(state);
 	});
+
+	let prefCode = $derived.by(() => {
+		return getPrefectureCode(layerEntry.metaData.location);
+	});
 </script>
 
 <div
@@ -256,7 +263,7 @@
 			? 'bg-base'
 			: ''} {$showDataMenu || $isStyleEdit
 			? 'w-[66px]'
-			: 'max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
+			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
 			: 'border-1 border-sub bg-black'} "
 		onmouseenter={() => (checkPc() ? (isHovered = true) : null)}
@@ -272,6 +279,34 @@
 			<div
 				class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
 			></div>
+		{/if}
+
+		{#if !isHovered && !$isStyleEdit && !$showDataMenu}
+			<div
+				transition:fade={{ duration: 100 }}
+				class="absolute right-4 top-2 grid place-items-center opacity-10"
+			>
+				{#if layerEntry.metaData.location === '森林文化アカデミー'}
+					<div class="grid place-items-center [&_path]:fill-white">
+						<FacIcon width={'60px'} />
+					</div>
+				{/if}
+				{#if prefCode}
+					<div class="[&_path]:fill-base grid aspect-square place-items-center">
+						<PrefectureIcon width={'80px'} code={prefCode} />
+					</div>
+				{/if}
+				{#if layerEntry.metaData.location === '全国'}
+					<div class="grid place-items-center">
+						<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+					</div>
+				{/if}
+				{#if layerEntry.metaData.location === '世界'}
+					<div class="grid place-items-center">
+						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+					</div>
+				{/if}
+			</div>
 		{/if}
 
 		<div class="flex w-full items-center justify-start gap-1 bg-transparent">
