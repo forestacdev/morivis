@@ -5,9 +5,11 @@
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 	import { checkMobileWidth } from '$routes/map/utils/ui';
+	import { getMapScale } from '$routes/map/utils/map';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);
+	let scaleText = $state<string>('');
 	let map: MapLibreMap | null = null;
 	let show = $derived.by(() => {
 		if ($showLayerMenu || $showDataMenu || $showOtherMenu) {
@@ -67,6 +69,8 @@
 
 		scaleElement.style.width = `${actualMaxWidth * ratio}px`;
 		scaleElement.textContent = formatDistance(distance);
+
+		scaleText = getMapScale(map);
 	};
 
 	onMount(() => {
@@ -76,9 +80,10 @@
 
 			// 初期スケールを設定
 			updateScale();
+		});
 
-			// マップイベントリスナーを追加
-			map.on('moveend', updateScale);
+		mapStore.onMooveEnd(() => {
+			updateScale();
 		});
 
 		showDataMenu.subscribe((show) => {
@@ -86,12 +91,6 @@
 				controlContainer.style.display = show ? 'none' : 'block';
 			}
 		});
-	});
-
-	onDestroy(() => {
-		if (map) {
-			map.off('moveend', updateScale);
-		}
 	});
 
 	$effect(() => {
@@ -115,9 +114,17 @@
 
 {#if show}
 	<div
+		class="pointer-events-none absolute bottom-1 text-xs {$showLayerMenu && !$isMobile
+			? 'left-[400px]'
+			: 'left-[15px]'}"
+	>
+		<!-- スケールテキスト -->
+		1/{scaleText}
+	</div>
+	<div
 		class="pointer-events-none absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu &&
 		!$isMobile
-			? 'left-[400px]'
+			? 'left-[460px]'
 			: 'left-[15px]'}"
 		bind:this={controlContainer}
 	>
