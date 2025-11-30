@@ -20,6 +20,7 @@
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
+		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
 	}
 
@@ -30,18 +31,22 @@
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
+		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		featureMenuData = $bindable()
 	}: Props = $props();
 </script>
 
 <!-- 左側：レイヤータイプアイコン -->
-
 {#if !$isStyleEdit && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
 		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[8px] justify-center"
 	>
-		<div class="bg-base peer absolute z-10 aspect-square rounded-full p-1.5">
+		<div
+			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType === layerType
+				? 'bg-accent text-base'
+				: 'bg-base'} duration-200"
+		>
 			<Icon icon={getLayerIcon(layerType)} class="h-5 w-5" />
 		</div>
 		<div
@@ -64,6 +69,7 @@
 			bind:tempLayerEntries
 			bind:enableFlip
 			bind:isDraggingLayerType
+			bind:isHoveredLayerType
 			bind:featureMenuData
 		/>
 	</div>

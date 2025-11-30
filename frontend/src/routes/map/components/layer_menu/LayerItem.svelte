@@ -28,6 +28,7 @@
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
+		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
 	}
 
@@ -40,6 +41,7 @@
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
+		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		featureMenuData = $bindable()
 	}: Props = $props();
 	let showLegend = $state(false);
@@ -176,6 +178,11 @@
 		reorderStatus.set('idle');
 	};
 
+	const hoverLayerItem = (bool: boolean) => {
+		isHovered = bool;
+		isHoveredLayerType = bool ? layerType : null;
+	};
+
 	// レイヤー表示範囲をチェック
 
 	const checkRange = (_state: MapState) => {
@@ -252,7 +259,11 @@
 			transition:slide={{ duration: 200, axis: 'x' }}
 			class="relative flex h-full w-[50px] shrink-0 items-center justify-center"
 		>
-			<div class="bg-base/60 absolute h-full w-[2px]"></div>
+			<div
+				class="absolute h-full w-[2px] {isHoveredLayerType === layerType
+					? 'bg-accent '
+					: 'bg-base/60'}"
+			></div>
 		</div>
 	{/if}
 	<div
@@ -266,8 +277,8 @@
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
 			: 'border-1 border-sub bg-black'} "
-		onmouseenter={() => (checkPc() ? (isHovered = true) : null)}
-		onmouseleave={() => (checkPc() ? (isHovered = false) : null)}
+		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
+		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
 		tabindex="0"
 	>

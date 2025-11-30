@@ -69,6 +69,7 @@
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
+	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
 
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
@@ -155,6 +156,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:isHoveredLayerType
 						bind:featureMenuData
 					/>
 				</div>
@@ -173,6 +175,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:isHoveredLayerType
 						bind:featureMenuData
 					/>
 				</div>
@@ -191,6 +194,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:isHoveredLayerType
 						bind:featureMenuData
 					/>
 				</div>
@@ -209,6 +213,7 @@
 						bind:tempLayerEntries
 						bind:enableFlip
 						bind:isDraggingLayerType
+						bind:isHoveredLayerType
 						bind:featureMenuData
 					/>
 				</div>
