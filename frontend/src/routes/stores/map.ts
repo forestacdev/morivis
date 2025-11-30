@@ -181,12 +181,26 @@ const createMapStore = () => {
 				}
 
 				if (url.includes('rinya-hyogo.geospatial.jp')) {
+					// .pbfファイルは除外
+					if (url.endsWith('.pbf')) {
+						return { url }; // または null を返す
+					}
 					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
 					return { url: newUrl };
 				}
 
 				if (url.includes('rinya-kochi.geospatial.jp')) {
+					// .pbfファイルは除外
+					if (url.endsWith('.pbf')) {
+						return { url };
+					}
 					const newUrl = url.replace('https://rinya-kochi.geospatial.jp', 'api/rinya-kochi');
+					return { url: newUrl };
+				}
+
+				// フォントファイルのプロキシ処理を追加
+				if (url.includes('localhost:9000/data/font') || url.includes('/data/font')) {
+					const newUrl = url.replace('http://localhost:9000', '/api/font-server');
 					return { url: newUrl };
 				}
 			}

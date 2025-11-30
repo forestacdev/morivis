@@ -104,6 +104,11 @@ export default defineConfig({
 				target: 'https://suggestqueries.google.com',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/google-suggest/, '/complete/search')
+			},
+			'/api/font-server': {
+				target: 'http://localhost:9000',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/font-server/, '')
 			}
 		}
 	},
