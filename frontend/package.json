@@ -26,8 +26,8 @@
 		"@playwright/test": "^1.45.3",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/enhanced-img": "^0.4.4",
-		"@sveltejs/kit": "^2.0.0",
-		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"@sveltejs/kit": "^2.49.0",
+		"@sveltejs/vite-plugin-svelte": "^4.0.4",
 		"@tailwindcss/postcss": "^4.1.4",
 		"@types/chroma-js": "^2.4.5",
 		"@types/colormap": "^2.3.4",
@@ -48,7 +48,7 @@
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.11",
-		"svelte": "^5.16.0",
+		"svelte": "^5.45.2",
 		"svelte-awesome-color-picker": "^4.0.2",
 		"svelte-check": "^4.0.0",
 		"sveltekit-search-params": "^3.0.0",
@@ -56,7 +56,7 @@
 		"typedoc": "^0.28.7",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
-		"vite": "^5.4.11",
+		"vite": "^5.4.21",
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
