@@ -29,3 +29,17 @@ export const gsiGetElevation = async (lng: number, lat: number): Promise<number>
 		}
 	}
 };
+
+// ココタイル
+// https://github.com/gsi-cyberjapan/cocotile-spec
+// そのタイル位置に存在する（地理院）タイルの {t} がカンマ区切りで羅列されています。
+// http://cyberjapandata.gsi.go.jp/xyz/cocotile/{z}/{x}/{y}.csv
+export const getCocoTile = async (z: number, x: number, y: number): Promise<string[]> => {
+	const url = `https://cyberjapandata.gsi.go.jp/xyz/cocotile/${z}/${x}/${y}.csv`;
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch coco tile at z:${z}, x:${x}, y:${y}`);
+	}
+	const text = await response.text();
+	return text.split(',').map((t) => t.trim());
+};
