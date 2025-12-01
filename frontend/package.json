@@ -90,6 +90,7 @@
 		"d3-interpolate": "^3.0.1",
 		"d3-scale": "^4.0.2",
 		"dompurify": "^3.2.5",
+		"dxf-parser": "^1.1.2",
 		"earcut": "^3.0.1",
 		"embla-carousel": "^8.6.0",
 		"embla-carousel-autoplay": "^8.6.0",
