@@ -5,11 +5,16 @@ export const stripHTMLTags = (str: unknown): string => {
 		return '';
 	}
 
+	const stripText = str.replace(/<[^>]*>/g, '');
+
+	if (import.meta.env.DEV) {
+		console.warn(`HTMLを除去Original: ${str}, Stripped: ${stripText}`);
+	}
 	// HTMLタグを全て除去
-	return str.replace(/<[^>]*>/g, '');
+	return stripText;
 };
 
-/**　空白文字のみかどうかを判定する関数 */
+/** 空白文字のみかどうかを判定する関数 */
 export const isOnlySpaces = (str: unknown): boolean => {
 	if (typeof str !== 'string') {
 		return false;
