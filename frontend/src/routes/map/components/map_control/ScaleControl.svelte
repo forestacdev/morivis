@@ -114,7 +114,7 @@
 
 {#if show}
 	<div
-		class="pointer-events-none absolute bottom-1 text-xs {$showLayerMenu && !$isMobile
+		class="pointer-events-none absolute bottom-1 text-xs max-lg:hidden {$showLayerMenu && !$isMobile
 			? 'left-[400px]'
 			: 'left-[15px]'}"
 	>
