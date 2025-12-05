@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx sirv . --port 9000 --cors --single"
+    "dev": "npx sirv . --port 9000 --cors --single",
+    "deploy": "gh-pages -d assets -r https://github.com/forestacdev/morivis-data.git -m \"Updates --skip-ci\""
   },
   "keywords": [],
   "author": "",

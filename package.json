@@ -6,10 +6,17 @@
   "scripts": {
     "dev": "pnpm -F morivis-frontend dev & pnpm -F morivis-data dev",
     "mobile": "pnpm -F morivis-frontend mobile",
+    "build": "pnpm -F morivis-frontend build",
+    "deploy": "pnpm deploy:frontend && pnpm deploy:data",
+    "deploy:frontend": "pnpm -F morivis-frontend run deploy",
+    "deploy:data": "pnpm -F morivis-data run deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.17.1",
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
 }

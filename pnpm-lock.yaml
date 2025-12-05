@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      gh-pages:
+        specifier: ^6.3.0
+        version: 6.3.0
 
   data:
     devDependencies:
@@ -291,9 +295,6 @@ importers:
       eslint-plugin-svelte:
         specifier: ^2.36.0
         version: 2.46.1(eslint@9.39.1(jiti@2.6.1))(svelte@5.45.5)(ts-node@10.9.2(@types/node@24.10.1)(typescript@5.9.3))
-      gh-pages:
-        specifier: ^6.3.0
-        version: 6.3.0
       globals:
         specifier: ^15.0.0
         version: 15.15.0
