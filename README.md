@@ -22,13 +22,12 @@ APIs, data structures, and features are subject to change without notice.
 
 ## Related Repository
 
-The forest and geographic data used in this project are managed separately.
-Please refer to the following repository for data management:
+The forest and geographic data used in this project are hosted separately for efficient delivery. The data is managed within this monorepo but deployed to a dedicated GitHub Pages repository:
 
-- [morivis-data (Data Management Repository)](https://github.com/forestacdev/morivis-data)
-- [360photo-data-webp (Panorama Image Data)](https://github.com/forestacdev/360photo-data-webp)
+- [morivis-data](https://github.com/forestacdev/morivis-data) - Data Hosting Repository
+- [360photo-data-webp](https://github.com/forestacdev/360photo-data-webp) - Panorama Image Data
 
-Note: This repository (morivis) focuses only on the application (frontend logic).
+Note: Data processing scripts are located in the `data/` directory of this repository. Processed datasets from `data/assets/` are automatically deployed to the morivis-data repository for public access via GitHub Pages.
 
 ## License
 

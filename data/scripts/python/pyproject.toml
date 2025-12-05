@@ -1,0 +1,25 @@
+[project]
+name = "scripts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pyproj>=3.7.1",
+    "aiopmtiles",
+    "beautifulsoup4>=4.13.4",
+    "fastapi[standard]>=0.115.7",
+    "flatgeobuf>=0.3.1",
+    "geopandas>=1.0.1",
+    "numpy>=2.2.2",
+    "pandas>=2.2.3",
+    "path>=17.1.0",
+    "pathlib>=1.0.1",
+    "pillow>=11.1.0",
+    "requests>=2.32.4",
+    "rio-rgbify>=0.4.0",
+    "shapely>=2.0.7",
+]
+
+[tool.uv.sources]
+aiopmtiles = { git = "http://github.com/developmentseed/aiopmtiles" }

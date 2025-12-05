@@ -9,3 +9,7 @@ Thumbs.db
 !.env.example
 !.env.test
 
+.vscode
+node_modules/
+**/node_modules/
+
