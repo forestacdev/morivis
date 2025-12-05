@@ -830,7 +830,7 @@ const createMapStore = () => {
 		if (isPointInBbox(lngLat, getMapBounds())) {
 			map.panTo(lngLat, { duration: 500 });
 		} else {
-			map.jumpTo({ center: lngLat, zoom: 17 });
+			map.flyTo({ center: lngLat, zoom: 17, duration: 1000 });
 		}
 	};
 
