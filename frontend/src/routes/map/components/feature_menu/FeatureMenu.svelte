@@ -11,7 +11,7 @@
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import { isOnlySpaces } from '$routes/map/utils/sanitize';
+	import { isOnlySpaces, stripHTMLTags } from '$routes/map/utils/sanitize';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -289,9 +289,12 @@
 					<div class="mb-56 flex h-full w-full flex-col gap-3">
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
-								{#if key !== '_prop_id' && value && !isOnlySpaces(value) && imageKey !== key}
+								{#if key !== '_prop_id' && value && imageKey !== key}
 									{@const dictKey = propDict[key] ?? key}
-									<AttributeItem key={dictKey} {value} />
+									{@const sanitizedValue = stripHTMLTags(value)}
+									{#if !isOnlySpaces(sanitizedValue)}
+										<AttributeItem key={dictKey} value={sanitizedValue} />
+									{/if}
 								{/if}
 							{/each}
 						{/if}

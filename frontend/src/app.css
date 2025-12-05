@@ -55,6 +55,11 @@ body {
 			-webkit-tap-highlight-color: transparent;
 			user-select: none;
 		}
+
+		/* ダブルタップを無効にして拡大操作を防止 */
+		html {
+			touch-action: manipulation;
+		}
 	}
 }
 

@@ -131,8 +131,10 @@
 	// 優先度を決める関数
 	const getLocationPriority = (location: Region): number => {
 		// より具体的な地名ほど高い優先度（小さい数値）
+
+		if (location === '森林文化アカデミー') return 120; // 最低優先度
+		if (location === '世界') return 110; // 最低優先度
 		if (location === '全国') return 100; // 最低優先度
-		if (location === '森林文化アカデミー') return 110; // 最低優先度
 		if (
 			location.includes('県') ||
 			location.includes('府') ||

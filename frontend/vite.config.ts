@@ -3,10 +3,12 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import path from 'path';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { qrcode } from 'vite-plugin-qrcode';
 
 export default defineConfig({
 	plugins: [
 		sveltekit(),
+		qrcode(),
 		enhancedImages(),
 		SvelteKitPWA({
 			// PWA用の設定

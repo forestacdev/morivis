@@ -39,7 +39,7 @@
 				if (checkPc()) isHover = false;
 			}}
 			class="text-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-black p-2 pl-4 text-left transition-colors duration-150"
-			><span>{typeof value !== 'string' ? value : stripHTMLTags(value)}</span>
+			><span>{value}</span>
 			{#if isHover}
 				<div transition:fade={{ duration: 100 }} class="absolute right-0 grid place-items-center">
 					<Icon icon="majesticons:clipboard-line" class="mr-2 h-6 w-6 shrink-0 text-base" />
