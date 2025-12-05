@@ -2,7 +2,7 @@ import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
-export const DATA_PATH = BASE_PATH + '/data';
+export const DATA_PATH = BASE_PATH + '/assets';
 export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';

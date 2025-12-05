@@ -1,0 +1,15 @@
+{
+  "name": "morivis",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -F morivis-frontend dev & pnpm -F morivis-data dev",
+    "mobile": "pnpm -F morivis-frontend mobile",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.17.1"
+}

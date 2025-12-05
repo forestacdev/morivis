@@ -1,0 +1,10 @@
+packages:
+  - frontend
+  - data
+  - data/scripts/node
+
+ignoredBuiltDependencies:
+  - better-sqlite3
+  - core-js
+  - esbuild
+  - sharp
