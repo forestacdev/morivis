@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "pnpm -F morivis-frontend dev & pnpm -F morivis-data dev",
     "mobile": "pnpm -F morivis-frontend mobile",
+    "host": "pnpm -F morivis-data dev",
     "build": "pnpm -F morivis-frontend build",
+    "preview": "pnpm -F morivis-frontend build && pnpm -F morivis-frontend preview",
     "deploy": "pnpm deploy:frontend && pnpm deploy:data",
     "deploy:frontend": "pnpm -F morivis-frontend run deploy",
     "deploy:data": "pnpm -F morivis-data run deploy",

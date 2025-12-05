@@ -11,16 +11,21 @@ mobile:
 	pnpm install
 	pnpm mobile
 
+host: ## データのホスティング
+	@echo "Checking if port 9000 is in use..."
+	@lsof -ti:9000 && echo "Port 9000 is in use, killing process..." && npx kill-port 9000 || echo "Port 9000 is free"
+	pnpm install
+	pnpm host
+
 build:
-	cd frontend && \
 	pnpm run build
 
 deploy:
-	cd frontend && \
 	pnpm run deploy
 
 preview:
-	cd frontend && \
+		@echo "Checking if port 4173 is in use..."
+	@lsof -ti:4173 && echo "Port 4173 is in use, killing process..." && npx kill-port 4173 || echo "Port 4173 is free"
 	pnpm run preview
 
 lint:
@@ -32,22 +37,15 @@ check:
 	pnpm run check
 
 proj:
-	cd scripts && \
+	cd data/scripts/python && \
 	uv sync && \
 	source .venv/bin/activate && \
 	uv run proj.py && \
 	deactivate
 
-
-host: ## データのホスティング
-	@echo "Checking if port 9000 is in use..."
-	@lsof -ti:9000 && echo "Port 9000 is in use, killing process..." && npx kill-port 9000 || echo "Port 9000 is free"
-	pnpm install
-	pnpm run dev
-
-init:
-	cd batch && \
-	pnpm run init
+sprite_bundle:
+	cd data/scripts/node && \
+	pnpm run sprite:bundle
 
 uv_activate: ## uv環境を有効化
 	cd batch && \

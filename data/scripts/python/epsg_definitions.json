@@ -1,0 +1,550 @@
+{
+  "4326": {
+    "citation": "WGS 84",
+    "proj_context": "+proj=longlat +datum=WGS84 +no_defs +type=crs",
+    "wkt": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]",
+    "area_of_use": {
+      "name": "World.",
+      "bounds": [
+        -180.0,
+        -90.0,
+        180.0,
+        90.0
+      ]
+    },
+    "datum": "World Geodetic System 1984 ensemble",
+    "ellipsoid": {
+      "name": "WGS 84",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257223563
+    },
+    "projection_method": null,
+    "name_ja": "WGS84 / 地理座標系",
+    "prefecture": "世界"
+  },
+  "3857": {
+    "citation": "WGS 84 / Pseudo-Mercator",
+    "proj_context": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs",
+    "wkt": "PROJCS[\"WGS 84 / Pseudo-Mercator\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"],AUTHORITY[\"EPSG\",\"3857\"]]",
+    "area_of_use": {
+      "name": "World between 85.06°S and 85.06°N.",
+      "bounds": [
+        -180.0,
+        -85.06,
+        180.0,
+        85.06
+      ]
+    },
+    "datum": "World Geodetic System 1984 ensemble",
+    "ellipsoid": {
+      "name": "WGS 84",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257223563
+    },
+    "projection_method": "Popular Visualisation Pseudo Mercator",
+    "name_ja": "Web メルカトル座標系",
+    "prefecture": "世界"
+  },
+  "4612": {
+    "citation": "JGD2000",
+    "proj_context": "+proj=longlat +ellps=GRS80 +no_defs +type=crs",
+    "wkt": "GEOGCS[\"JGD2000\",DATUM[\"Japanese_Geodetic_Datum_2000\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"6612\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4612\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore and offshore.",
+      "bounds": [
+        122.38,
+        17.09,
+        157.65,
+        46.05
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2000",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": null,
+    "name_ja": "日本測地系2000 / 地理座標系",
+    "prefecture": "全国"
+  },
+  "6668": {
+    "citation": "JGD2011",
+    "proj_context": "+proj=longlat +ellps=GRS80 +no_defs +type=crs",
+    "wkt": "GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore and offshore.",
+      "bounds": [
+        122.38,
+        17.09,
+        157.65,
+        46.05
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": null,
+    "name_ja": "日本測地系2011 / 地理座標系",
+    "prefecture": "全国"
+  },
+  "6669": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS I",
+    "proj_context": "+proj=tmerc +lat_0=33 +lon_0=129.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS I\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",33],PARAMETER[\"central_meridian\",129.5],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6669\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Kyushu west of approximately 130°E - Nagasaki-ken; islands of Kagoshima-ken between 27°N and 32°N and between 128°18'E and 130°E (between 128°18'E and 30°13'E for Amami islands).",
+      "bounds": [
+        128.17,
+        26.96,
+        130.46,
+        34.74
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第1系",
+    "prefecture": "長崎県",
+    "zone": "1"
+  },
+  "6670": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS II",
+    "proj_context": "+proj=tmerc +lat_0=33 +lon_0=131 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS II\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",33],PARAMETER[\"central_meridian\",131],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6670\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Kyushu east of approximately 130°E - Fukuoka-ken; Saga-ken; Kumamoto-ken; Oita-ken; Miyazaki-ken; Kagoshima-ken (except for area within Japan Plane Rectangular Coordinate System zone I).",
+      "bounds": [
+        129.76,
+        30.18,
+        132.05,
+        33.99
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第2系",
+    "prefecture": "福岡県、佐賀県、熊本県、大分県、宮崎県、鹿児島県",
+    "zone": "2"
+  },
+  "6671": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS III",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=132.166666666667 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS III\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",132.166666666667],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6671\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu west of approximately 133°15'E - Yamaguchi-ken; Shimane-ken; Hiroshima-ken.",
+      "bounds": [
+        130.81,
+        33.72,
+        133.49,
+        36.38
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第3系",
+    "prefecture": "広島県、山口県、島根県",
+    "zone": "3"
+  },
+  "6672": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS IV",
+    "proj_context": "+proj=tmerc +lat_0=33 +lon_0=133.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS IV\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",33],PARAMETER[\"central_meridian\",133.5],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6672\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Shikoku - Kagawa-ken; Ehime-ken; Tokushima-ken; Kochi-ken.",
+      "bounds": [
+        131.95,
+        32.69,
+        134.81,
+        34.45
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第4系",
+    "prefecture": "徳島県、香川県、愛媛県、高知県",
+    "zone": "4"
+  },
+  "6673": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS V",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=134.333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS V\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",134.333333333333],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6673\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu between approximately 133°15'E and 135°10'E - Hyogo-ken; Tottori-ken; Okayama-ken.",
+      "bounds": [
+        133.13,
+        34.13,
+        135.47,
+        35.71
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第5系",
+    "prefecture": "兵庫県、鳥取県、岡山県",
+    "zone": "5"
+  },
+  "6674": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS VI",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=136 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS VI\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",136],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6674\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu between approximately 135°10'E and 136°45'E - Kyoto-fu; Osaka-fu; Fukui-ken; Shiga-ken; Mie-ken; Nara-ken; Wakayama-ken.",
+      "bounds": [
+        134.86,
+        33.4,
+        136.99,
+        36.33
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第6系",
+    "prefecture": "京都府、大阪府、福井県、滋賀県、三重県、奈良県、和歌山県",
+    "zone": "6"
+  },
+  "6675": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS VII",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=137.166666666667 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS VII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",137.166666666667],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6675\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu between approximately 136°15'E and 137°45'E - Ishikawa-ken; Toyama-ken; Gifu-ken; Aichi-ken.",
+      "bounds": [
+        136.22,
+        34.51,
+        137.84,
+        37.58
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第7系",
+    "prefecture": "石川県、富山県、岐阜県、愛知県",
+    "zone": "7"
+  },
+  "6676": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS VIII",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=138.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS VIII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",138.5],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6676\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu between approximately 137°45'E and 139°E - Niigata-ken; Nagano-ken; Yamanashi-ken; Shizuoka-ken.",
+      "bounds": [
+        137.32,
+        34.54,
+        139.91,
+        38.58
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第8系",
+    "prefecture": "新潟県、長野県、山梨県、静岡県",
+    "zone": "8"
+  },
+  "6677": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS IX",
+    "proj_context": "+proj=tmerc +lat_0=36 +lon_0=139.833333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS IX\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",139.833333333333],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6677\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu - Tokyo-to. (Excludes offshore island areas of Tokyo-to covered by Japan Plane Rectangular Coordinate System zones XIV, XVIII and XIX).",
+      "bounds": [
+        138.4,
+        29.31,
+        141.11,
+        37.98
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第9系",
+    "prefecture": "東京都、福島県、栃木県、茨城県、埼玉県、千葉県、群馬県、神奈川県",
+    "zone": "9"
+  },
+  "6678": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS X",
+    "proj_context": "+proj=tmerc +lat_0=40 +lon_0=140.833333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS X\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",40],PARAMETER[\"central_meridian\",140.833333333333],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6678\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Honshu north of 38°N approximately - Aomori-ken; Akita-ken; Yamagata-ken; Iwate-ken; Miyagi-ken.",
+      "bounds": [
+        139.49,
+        37.73,
+        142.14,
+        41.58
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第10系",
+    "prefecture": "青森県、秋田県、山形県、岩手県、宮城県",
+    "zone": "10"
+  },
+  "6679": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XI",
+    "proj_context": "+proj=tmerc +lat_0=44 +lon_0=140.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XI\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",44],PARAMETER[\"central_meridian\",140.25],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6679\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Hokkaido west of approximately 141°E - Otaru city; Hakodate city; Date city; Usu-gun and Abuta-gun of Iburi-shicho; Hiyama-shicho; Shiribeshi-shicho; Oshima-shicho.",
+      "bounds": [
+        139.34,
+        41.34,
+        141.46,
+        43.42
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第11系",
+    "prefecture": "北海道（11系地域）",
+    "zone": "11"
+  },
+  "6680": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XII",
+    "proj_context": "+proj=tmerc +lat_0=44 +lon_0=142.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",44],PARAMETER[\"central_meridian\",142.25],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6680\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Hokkaido between approximately 141°E and 143°E - Sapporo city; Asahikawa city; Wakkanai city; Rumoi city; Bibai city; Yubari city; Iwamizawa city; Tomakomai city; Muroran city; Shibetsu city; Nayoro city; Ashibetsu city; Akabira city; Mikasa city; Takikawa city; Sunagawa city; Ebetsu city; Chitose city; Utashinai city; Fukagawa city; Monbetsu city; Furano city; Noboribetsu city; Eniwa city; Ishikari-shicho; Monbetsu-gun of Abashiri-shicho; Kamikawa-shicho; Soya-shicho; Hidaka-shicho; Iburi-shicho (except Usu-gun and Abuta-gun); Sorachi-shicho; Rumoi-shicho.",
+      "bounds": [
+        140.89,
+        42.15,
+        143.61,
+        45.54
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第12系",
+    "prefecture": "北海道",
+    "zone": "12"
+  },
+  "6681": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XIII",
+    "proj_context": "+proj=tmerc +lat_0=44 +lon_0=144.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XIII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",44],PARAMETER[\"central_meridian\",144.25],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6681\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Hokkaido east of approximately 143°E - Kitami city; Obihiro city; Kushiro city; Abashiri city; Nemuro city; Nemuro-shicho; Kushiro-shicho; Abashiri-shicho (except Monbetsu-gun); Tokachi-shicho.",
+      "bounds": [
+        142.61,
+        41.87,
+        145.87,
+        44.4
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第13系",
+    "prefecture": "北海道（13系地域）",
+    "zone": "13"
+  },
+  "6682": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XIV",
+    "proj_context": "+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XIV\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",26],PARAMETER[\"central_meridian\",142],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6682\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Tokyo-to south of 28°N and between 140°30'E and 143°E.",
+      "bounds": [
+        141.2,
+        24.67,
+        142.33,
+        27.8
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第14系",
+    "prefecture": "東京都（小笠原）",
+    "zone": "14"
+  },
+  "6683": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XV",
+    "proj_context": "+proj=tmerc +lat_0=26 +lon_0=127.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XV\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",26],PARAMETER[\"central_meridian\",127.5],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6683\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Okinawa-ken between 126°E and 130°E.",
+      "bounds": [
+        126.63,
+        26.02,
+        128.4,
+        26.91
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第15系",
+    "prefecture": "沖縄県",
+    "zone": "15"
+  },
+  "6684": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XVI",
+    "proj_context": "+proj=tmerc +lat_0=26 +lon_0=124 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XVI\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",26],PARAMETER[\"central_meridian\",124],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6684\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Okinawa-ken west of 126°E.",
+      "bounds": [
+        122.83,
+        23.98,
+        125.51,
+        24.94
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第16系",
+    "prefecture": "沖縄県（16系地域）",
+    "zone": "16"
+  },
+  "6685": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XVII",
+    "proj_context": "+proj=tmerc +lat_0=26 +lon_0=131 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XVII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",26],PARAMETER[\"central_meridian\",131],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6685\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore Okinawa-ken east of 130°E.",
+      "bounds": [
+        131.12,
+        24.4,
+        131.38,
+        26.01
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第17系",
+    "prefecture": "沖縄県（17系地域）",
+    "zone": "17"
+  },
+  "6686": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XVIII",
+    "proj_context": "+proj=tmerc +lat_0=20 +lon_0=136 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XVIII\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",20],PARAMETER[\"central_meridian\",136],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6686\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Tokyo-to south of 28°N and west of 140°30'E.",
+      "bounds": [
+        136.02,
+        20.37,
+        136.16,
+        20.48
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第18系",
+    "prefecture": "東京都（沖ノ鳥島）",
+    "zone": "18"
+  },
+  "6687": {
+    "citation": "JGD2011 / Japan Plane Rectangular CS XIX",
+    "proj_context": "+proj=tmerc +lat_0=26 +lon_0=154 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs",
+    "wkt": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS XIX\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",26],PARAMETER[\"central_meridian\",154],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AUTHORITY[\"EPSG\",\"6687\"]]",
+    "area_of_use": {
+      "name": "Japan - onshore - Tokyo-to south of 28°N and east of 143°E - Minamitori-shima (Marcus Island).",
+      "bounds": [
+        153.91,
+        24.22,
+        154.05,
+        24.35
+      ]
+    },
+    "datum": "Japanese Geodetic Datum 2011",
+    "ellipsoid": {
+      "name": "GRS 1980",
+      "semi_major_axis": 6378137.0,
+      "inverse_flattening": 298.257222101
+    },
+    "projection_method": "Transverse Mercator",
+    "name_ja": "日本測地系2011 / 平面直角座標系第19系",
+    "prefecture": "東京都（南鳥島）",
+    "zone": "19"
+  }
+}
