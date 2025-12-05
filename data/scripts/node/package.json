@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sprite:bundle": "mbsprite bundle data/sprite icons icons@2x"
+    "sprite:bundle": "mbsprite bundle ../../assets/sprite data/icons data/icons@2x"
   },
   "keywords": [],
   "author": "",

@@ -93,15 +93,17 @@ def process_directory(input_dir, output_dir=None, target_size=60):
     print(f"\n処理完了: {success_count}/{len(webp_files)}個の画像を正常に処理しました")
     print(f"出力ディレクトリ: {output_dir}")
 
-
-OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = SCRIPT_DIR.parents[2] / "assets"
 # 使用例
 if __name__ == "__main__":
     # 設定
     INPUT_DIRECTORY = (
-        Path(__file__).resolve().parent.parent.parent / "data" / "images" / "feature"
+        SCRIPT_DIR.parents[1] / "assets" / "images" / "feature"
     )  # ここに実際のディレクトリパスを指定
-    OUTPUT_DIRECTORY = Path(__file__).resolve().parent.parent.parent / "data" / "images" / "icons"  # 出力先（オプション）
+    OUTPUT_DIRECTORY = (
+        SCRIPT_DIR.parents[1] / "assets" / "images" / "icons"
+    )  # 出力先（オプション）
     TARGET_SIZE = 60  # 最終的な画像サイズ
 
     # ディレクトリ内の全WebP画像を処理

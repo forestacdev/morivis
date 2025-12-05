@@ -10,9 +10,9 @@ def load_geojson(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
-INPUT_DIR = Path(__file__).resolve().parent.parent / "data"
-OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "street_view"
+SCRIPT_DIR = Path(__file__).resolve().parent
+INPUT_DIR = SCRIPT_DIR  / "data"
+OUTPUT_DIR = SCRIPT_DIR.parents[1] / "assets" / "street_view"
 
 
 # ノードデータとリンクデータのファイルパスを指定（適宜変更）

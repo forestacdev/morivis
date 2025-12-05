@@ -7,10 +7,12 @@ from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 
+OUTPUT_DIR = SCRIPT_DIR.parents[1] / "assets"
 
-OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+print(f"OUTPUT_DIR: {OUTPUT_DIR}")
 
 # TODO: 引数でファイルパスをわたすのがいいかも
 search_data_dict = {
@@ -117,12 +119,12 @@ def create_search_json(file_paths, output_json=OUTPUT_DIR / "search_data.json"):
     print(f"✅ 検索用 JSON を作成: {output_json}")
 
 
-# `.fgb` ファイルのディレクトリを指定
-INPUT_DIR = Path(__file__).resolve().parent.parent.parent / "batch" / "data" / "search"
+# `.geojson` ファイルのディレクトリを指定
+INPUT_DIR = SCRIPT_DIR / "data" / "search"
 
 if __name__ == "__main__":
-    # `.fgb` ファイルのリストを取得
-    # .fgbファイルのリストを取得
+    
+    # `.geojson` ファイルのリストを取得
     all_fgb_files = glob.glob(str(INPUT_DIR / "*.geojson"))
 
     # search_data_dict に定義されたファイル名のみを対象にフィルタリング
