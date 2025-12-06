@@ -26,10 +26,11 @@
 
 	onMount(() => {
 		if (!element) return;
-		Draggable.create(element, {
+		const draggable = Draggable.create(element, {
 			type: 'rotation', // 回転モード
 			inertia: true, // 慣性を有効化
 			dragResistance: 0.5, // ドラッグ抵抗
+			allowEventDefault: true, // デフォルトイベントを許可
 			onDrag: function () {
 				const rotation = normalizeAngle(this.rotation); // 回転値を正規化して保持
 				mapStore.setBearing(rotation * -1);
@@ -56,6 +57,11 @@
 		gsap.set(element, {
 			rotation: bearing ? bearing * -1 : 0
 		});
+
+		return () => {
+			// クリーンアップ時にDraggableを破棄
+			draggable[0]?.kill();
+		};
 	});
 </script>
 
