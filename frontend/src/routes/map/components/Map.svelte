@@ -60,6 +60,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import { checkPc } from '../utils/ui';
+	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type {
 		ResultAddressData,
 		ResultData,
@@ -95,6 +96,7 @@
 		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
 		selectedSearchId: number | null;
 		searchResults: ResultData[] | null;
+		contextMenuState: ContextMenuState | null;
 		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
@@ -125,6 +127,7 @@
 		searchGeojsonData,
 		selectedSearchId = $bindable(),
 		searchResults,
+		contextMenuState = $bindable(),
 		focusFeature
 	}: Props = $props();
 
@@ -692,7 +695,7 @@
 
 	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
-		<div class="absolute bottom-[100px] right-5 max-lg:hidden">
+		<div class="absolute right-5 bottom-[100px] max-lg:hidden">
 			<Compass />
 		</div>
 
@@ -734,6 +737,7 @@
 		bind:clickedLayerIds
 		bind:cameraBearing
 		bind:isExternalCameraUpdate
+		bind:contextMenuState
 		{searchResults}
 		{streetViewPointData}
 		{layerEntries}

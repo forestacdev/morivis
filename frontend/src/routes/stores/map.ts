@@ -129,6 +129,7 @@ const createMapStore = () => {
 
 	// maplibre-glのイベントを管理するストア
 	const clickEvent = writable<MapMouseEvent | null>(null);
+	const contextMenuEvent = writable<MapMouseEvent | null>(null);
 	const mouseoverEvent = writable<MapMouseEvent | null>(null);
 	const mouseoutEvent = writable<MapMouseEvent | null>(null);
 	const mousemoveEvent = writable<MapMouseEvent | null>(null);
@@ -348,6 +349,10 @@ const createMapStore = () => {
 				return;
 			}
 			clickEvent.set(e);
+		});
+
+		map.on('contextmenu', (e: MapMouseEvent) => {
+			contextMenuEvent.set(e);
 		});
 
 		map.on('resize', (e) => {
@@ -1007,6 +1012,7 @@ const createMapStore = () => {
 		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
 		onload: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
 		onClick: createEventSubscriber(clickEvent), // クリックイベント
+		onContextMenu: createEventSubscriber(contextMenuEvent), // コンテキストメニューイベント
 		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド
 		onMouseout: createEventSubscriber(mouseoutEvent), // マウスアウトイベントの購読用メソッド
 		onMousemove: createEventSubscriber(mousemoveEvent), // マウスムーブイベントの購読用メソッド

@@ -1,3 +1,7 @@
+export const getOsmLink = (lat: number, lon: number, zoom: number = 16): string => {
+	return `https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`;
+};
+
 /**
  * Overpass APIを利用して、指定したキーワードでPOIを検索する関数
  * @param keyword 検索キーワード
