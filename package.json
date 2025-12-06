@@ -19,6 +19,9 @@
   "license": "ISC",
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
-    "gh-pages": "^6.3.0"
+    "gh-pages": "^6.3.0",
+    "prettier": "3.4.2",
+    "prettier-plugin-svelte": "3.3.2",
+    "prettier-plugin-tailwindcss": "0.6.14"
   }
 }

@@ -22,6 +22,7 @@
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
+		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
 	}
 
 	let {
@@ -32,7 +33,8 @@
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
-		featureMenuData = $bindable()
+		featureMenuData = $bindable(),
+		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
 	}: Props = $props();
 </script>
 
@@ -71,6 +73,7 @@
 			bind:isDraggingLayerType
 			bind:isHoveredLayerType
 			bind:featureMenuData
+			bind:isTouchDragging
 		/>
 	</div>
 {/each}

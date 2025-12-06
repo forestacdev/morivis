@@ -31,7 +31,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
-	import { isTerrain3d, mapStore } from '$routes/stores/map';
+	import { mapStore } from '$routes/stores/map';
 	import {
 		isBlocked,
 		showDataMenu,
@@ -54,9 +54,7 @@
 	import { slide } from 'svelte/transition';
 	import type {
 		ResultAddressData,
-		ResultCoordinateData,
 		ResultData,
-		ResultLayerData,
 		ResultPoiData,
 		SearchGeojsonData
 	} from './utils/feature';
@@ -67,10 +65,10 @@
 	import { page } from '$app/state';
 	import { getPropertiesFromPMTiles } from './utils/pmtiles';
 	import { lonLatToTileCoords } from './utils/tile';
-	import { getWikipediaArticle, type WikiArticle } from './api/wikipedia';
-	import { normalizeSchoolName } from './utils/normalized';
-	import { result } from 'es-toolkit/compat';
+	import { type WikiArticle } from './api/wikipedia';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
+	import type { ContextMenuState } from './types/ui';
+	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -165,6 +163,9 @@
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
+
+	// 右クリックメニュー
+	let contextMenuState = $state<ContextMenuState | null>(null);
 
 	$effect(() => {
 		if (selectedSearchId) {
@@ -496,7 +497,7 @@
 			<!-- スマホ用その他メニュー -->
 			<div
 				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
-					? 'opacity-500 pointer-events-auto'
+					? 'pointer-events-auto opacity-500'
 					: 'pointer-events-none opacity-0'}"
 			>
 				<OtherMenu bind:imagePreviewUrl />
@@ -538,6 +539,7 @@
 					bind:isExternalCameraUpdate
 					bind:selectedSearchId
 					bind:selectedSearchResultData
+					bind:contextMenuState
 					{searchResults}
 					{selectedEpsgCode}
 					{demEntries}
@@ -616,6 +618,9 @@
 	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
 {/if}
 
+{#if contextMenuState}
+	<ContextMenu bind:contextMenuState />
+{/if}
 <Tooltip />
 
 <!-- PC用その他メニュー -->

@@ -27,6 +27,7 @@
 
 	import { setStreetViewParams } from '../utils/params';
 	import type { ResultAddressData, ResultData, ResultPoiData } from '../utils/feature';
+	import type { ContextMenuState } from '$routes/map/types/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -41,6 +42,7 @@
 		isExternalCameraUpdate: boolean;
 		searchResults: ResultData[] | null;
 		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
+		contextMenuState: ContextMenuState | null;
 	}
 
 	let {
@@ -55,7 +57,8 @@
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
 		searchResults,
-		focusFeature
+		focusFeature,
+		contextMenuState = $bindable()
 	}: Props = $props();
 	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
@@ -397,6 +400,19 @@
 		} catch (error) {
 			console.error('Error occurred while processing mouse events:', error);
 		}
+	});
+
+	mapStore.onContextMenu(async (e: MapMouseEvent) => {
+		// ウィンドウの座標を取得
+		const windowX = e.originalEvent.clientX;
+		const windowY = e.originalEvent.clientY;
+
+		contextMenuState = {
+			show: true,
+			x: windowX,
+			y: windowY,
+			lngLat: e.lngLat
+		};
 	});
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ

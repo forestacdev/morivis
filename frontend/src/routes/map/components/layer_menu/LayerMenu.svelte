@@ -71,6 +71,8 @@
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
 
+	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
+
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
 		if (!value && !$showLayerMenu) {
@@ -115,7 +117,7 @@
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
-						class="flex shrink-0 select-none items-center justify-center text-base max-lg:hidden"
+						class="flex shrink-0 items-center justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
 					</div>
@@ -137,10 +139,11 @@
 			</div>
 		</div>
 		<div
-			class="flex h-full flex-col overflow-y-auto overflow-x-hidden pl-2 {$showDataMenu ||
-			$isStyleEdit
-				? 'c-scroll-hidden '
-				: 'c-scroll'}"
+			class="flex h-full flex-col overflow-x-hidden pl-2 {$showDataMenu || $isStyleEdit
+				? 'c-scroll-hidden'
+				: 'c-scroll'} {isTouchDragging
+				? 'touch-none overflow-hidden'
+				: 'touch-auto overflow-y-auto'}"
 		>
 			<!-- ポイント -->
 			{#if pointEntries.length > 0}
@@ -158,6 +161,7 @@
 						bind:isDraggingLayerType
 						bind:isHoveredLayerType
 						bind:featureMenuData
+						bind:isTouchDragging
 					/>
 				</div>
 			{/if}
@@ -177,6 +181,7 @@
 						bind:isDraggingLayerType
 						bind:isHoveredLayerType
 						bind:featureMenuData
+						bind:isTouchDragging
 					/>
 				</div>
 			{/if}
@@ -196,6 +201,7 @@
 						bind:isDraggingLayerType
 						bind:isHoveredLayerType
 						bind:featureMenuData
+						bind:isTouchDragging
 					/>
 				</div>
 			{/if}
@@ -215,6 +221,7 @@
 						bind:isDraggingLayerType
 						bind:isHoveredLayerType
 						bind:featureMenuData
+						bind:isTouchDragging
 					/>
 				</div>
 			{/if}
@@ -256,13 +263,13 @@
 							}
 						}
 					}}
-					class="translate-z-0 transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 {$showDataMenu
+					class="transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] translate-z-0 cursor-pointer justify-center rounded-full p-2 text-left text-nowrap text-clip duration-200 select-none max-lg:hidden {$showDataMenu
 						? 'w-[66px]'
 						: $isStyleEdit
 							? 'w-[400px]'
 							: 'hover:bg-accent bg-main max-lg:w-full lg:w-[330px]'} {!$isStyleEdit &&
 					!$showDataMenu
-						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
+						? 'opacity-100 not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
 						: 'opacity-0'}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">
@@ -308,7 +315,7 @@
 			<!-- <div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
 			</div> -->
-			<div transition:fade={{ duration: 150 }} class="mobile-bottom p-3">
+			<div transition:fade={{ duration: 150 }} class="mobile-bottom p-3 max-lg:hidden">
 				<RecommendedData bind:showDataEntry />
 			</div>
 		{/if}

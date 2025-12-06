@@ -50,14 +50,19 @@
 				}
 			}
 		});
+
+		const bearing = mapStore.getBearing();
+
+		gsap.set(element, {
+			rotation: bearing ? bearing * -1 : 0
+		});
 	});
 </script>
 
-<!-- PC -->
-
+<!-- Mobile -->
 <div
 	bind:this={element}
-	class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black/50"
+	class="pointer-events-auto absolute grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black"
 >
 	<svg
 		class="h-full w-full scale-60"

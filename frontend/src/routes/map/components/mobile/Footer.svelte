@@ -10,8 +10,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { fly } from 'svelte/transition';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
-	import { onMount } from 'svelte';
-
+	import MobileCompass from './MobileCompass.svelte';
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		featureMenuData: FeatureMenuData | null;
@@ -51,13 +50,61 @@
 
 		initialized = true;
 	});
+
+	let isActiveCompass = $state(false);
+
+	// タッチ判定用の変数
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+	const LONG_PRESS_DURATION = 200; // 長押し判定時間（ミリ秒）
+	const SWIPE_THRESHOLD = 10; // スワイプ判定の移動距離（ピクセル）
+
+	const handleTouchStart = (e: TouchEvent) => {
+		const touch = e.touches[0];
+		touchStartX = touch.clientX;
+		touchStartY = touch.clientY;
+
+		// 長押しタイマーを設定
+		longPressTimer = setTimeout(() => {
+			isActiveCompass = true;
+		}, LONG_PRESS_DURATION);
+	};
+
+	const handleTouchMove = (e: TouchEvent) => {
+		const touch = e.touches[0];
+		const deltaX = Math.abs(touch.clientX - touchStartX);
+		const deltaY = Math.abs(touch.clientY - touchStartY);
+
+		// スワイプ検出：一定距離以上移動したら
+		if (deltaX > SWIPE_THRESHOLD || deltaY > SWIPE_THRESHOLD) {
+			// 長押しタイマーをキャンセル
+			if (longPressTimer) {
+				clearTimeout(longPressTimer);
+				longPressTimer = null;
+			}
+			// スワイプ中はコンパスを有効に
+			isActiveCompass = true;
+			$isActiveMobileMenu = 'map';
+		}
+	};
+
+	const handleTouchEnd = () => {
+		// 長押しタイマーをキャンセル
+		if (longPressTimer) {
+			clearTimeout(longPressTimer);
+			longPressTimer = null;
+		}
+
+		isActiveCompass = false;
+	};
 </script>
 
 <!-- フッターのメニュー -->
 {#if !featureMenuData && !showDataEntry && !$isStyleEdit && !$isStreetView}
 	<div
 		transition:fly={{ y: 100, duration: 300 }}
-		class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-col text-base lg:hidden {showDataEntry}"
+		class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-col text-base select-none lg:hidden {showDataEntry}"
 	>
 		<div class="flex w-full items-center justify-between" style="height: {footerHeight}px;">
 			<button
@@ -90,6 +137,26 @@
 
 				<span class="text-xs">レイヤ</span>
 			</button>
+
+			<div
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
+				ontouchend={handleTouchEnd}
+				class="transition-scale relative grid w-full place-items-center duration-200 {isActiveCompass
+					? '-translate-y-6 scale-200'
+					: ''} {$isActiveMobileMenu === 'map' ? 'pointer-events-auto' : 'pointer-events-none'}"
+			>
+				<MobileCompass />
+				{#if isActiveCompass}
+					<div
+						class="c-ripple-effect pointer-events-none absolute h-[50px] w-[50px] rounded-full border-2 border-amber-50"
+					></div>
+					<div
+						class="c-ripple-effect2 pointer-events-none absolute h-[50px] w-[50px] rounded-full border-2 border-amber-50"
+					></div>
+				{/if}
+			</div>
+
 			<button
 				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 				onclick={() => ($isActiveMobileMenu = 'data')}
@@ -124,4 +191,26 @@
 {/if}
 
 <style>
+	.c-ripple-effect {
+		opacity: 0;
+		animation: ripple 1.5s linear infinite;
+	}
+
+	.c-ripple-effect2 {
+		opacity: 0;
+		animation: ripple 1.5s 0.75s linear infinite;
+	}
+
+	/* アニメーションの定義 */
+	@keyframes ripple {
+		0% {
+			scale: 1;
+			opacity: 0.8;
+		}
+
+		100% {
+			scale: 1.3;
+			opacity: 0;
+		}
+	}
 </style>

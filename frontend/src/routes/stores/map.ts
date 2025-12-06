@@ -129,6 +129,7 @@ const createMapStore = () => {
 
 	// maplibre-glのイベントを管理するストア
 	const clickEvent = writable<MapMouseEvent | null>(null);
+	const contextMenuEvent = writable<MapMouseEvent | null>(null);
 	const mouseoverEvent = writable<MapMouseEvent | null>(null);
 	const mouseoutEvent = writable<MapMouseEvent | null>(null);
 	const mousemoveEvent = writable<MapMouseEvent | null>(null);
@@ -165,6 +166,10 @@ const createMapStore = () => {
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85, // 最大ピッチ角度
+			dragRotate: false, // デフォルトの右ドラッグ回転を無効化
+			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
+			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
+			keyboard: false, // キーボード操作を無効化
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
@@ -276,6 +281,48 @@ const createMapStore = () => {
 			onLoadEvent.set(e);
 		});
 
+		// Ctrl or Shift+左クリックドラッグで回転・ピッチを操作
+		let isCtrlDragging = false;
+		let lastMouseX = 0;
+		let lastMouseY = 0;
+
+		const handleMouseDown = (e: MouseEvent) => {
+			if ((e.ctrlKey || e.shiftKey) && e.button === 0) {
+				isCtrlDragging = true;
+				lastMouseX = e.clientX;
+				lastMouseY = e.clientY;
+				e.preventDefault();
+			}
+		};
+
+		const handleMouseMove = (e: MouseEvent) => {
+			if (!isCtrlDragging || !map) return;
+
+			const deltaX = e.clientX - lastMouseX;
+			const deltaY = e.clientY - lastMouseY;
+
+			// 水平方向の移動で回転（bearing）を変更
+			const currentBearing = map.getBearing();
+			map.setBearing(currentBearing + deltaX * 0.3);
+
+			// 垂直方向の移動でピッチを変更
+			const currentPitch = map.getPitch();
+			const newPitch = Math.max(0, Math.min(85, currentPitch - deltaY * 0.3));
+			map.setPitch(newPitch);
+
+			lastMouseX = e.clientX;
+			lastMouseY = e.clientY;
+		};
+
+		const handleMouseUp = () => {
+			isCtrlDragging = false;
+		};
+
+		const canvas = map.getCanvas();
+		canvas.addEventListener('mousedown', handleMouseDown);
+		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('mouseup', handleMouseUp);
+
 		// より詳細なエラー情報を取得
 		// map.on('error', (e) => {
 		// 	console.error('Map error details:', e);
@@ -297,7 +344,15 @@ const createMapStore = () => {
 				// POIマーカーにホバーしている場合はクリックイベントを無視
 				return;
 			}
+			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
+				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
+				return;
+			}
 			clickEvent.set(e);
+		});
+
+		map.on('contextmenu', (e: MapMouseEvent) => {
+			contextMenuEvent.set(e);
 		});
 
 		map.on('resize', (e) => {
@@ -957,6 +1012,7 @@ const createMapStore = () => {
 		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
 		onload: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
 		onClick: createEventSubscriber(clickEvent), // クリックイベント
+		onContextMenu: createEventSubscriber(contextMenuEvent), // コンテキストメニューイベント
 		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド
 		onMouseout: createEventSubscriber(mouseoutEvent), // マウスアウトイベントの購読用メソッド
 		onMousemove: createEventSubscriber(mousemoveEvent), // マウスムーブイベントの購読用メソッド

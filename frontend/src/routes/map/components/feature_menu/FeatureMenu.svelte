@@ -153,7 +153,7 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col max-lg:hidden"
+		class="bg-main w-side-menu max absolute top-0 left-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
@@ -164,7 +164,7 @@
 			</button>
 		</div>
 
-		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2">
+		<div class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2">
 			<!-- 画像 -->
 			<div class="b relative w-full p-2">
 				{#if srcData}
@@ -291,10 +291,7 @@
 							{#each Object.entries(featureMenuData.properties) as [key, value]}
 								{#if key !== '_prop_id' && value && imageKey !== key}
 									{@const dictKey = propDict[key] ?? key}
-									{@const sanitizedValue = stripHTMLTags(value)}
-									{#if !isOnlySpaces(sanitizedValue)}
-										<AttributeItem key={dictKey} value={sanitizedValue} />
-									{/if}
+									<AttributeItem key={dictKey} {value} />
 								{/if}
 							{/each}
 						{/if}
@@ -304,7 +301,7 @@
 				{#if featureMenuData.layerId !== 'fac_poi'}
 					<button
 						onclick={edit}
-						class="c-btn-confirm absolute left-3 top-3 z-10 flex items-center justify-center gap-2 px-3"
+						class="c-btn-confirm absolute top-3 left-3 z-10 flex items-center justify-center gap-2 px-3"
 					>
 						<Icon icon="mdi:mixer-settings" class="h-6 w-6" />
 						<span class="select-none">カスタマイズ</span>

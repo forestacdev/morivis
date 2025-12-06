@@ -112,15 +112,18 @@
 	>
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
-		<div class="flex grow items-center justify-between gap-4 p-2">
+		<div
+			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2"
+			style="padding-top: env(safe-area-inset-top);"
+		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
-				<span class="select-none text-lg">データカタログ</span>
+				<span class="text-lg select-none">データカタログ</span>
 			</div>
 
 			{#if selected === 'system'}
 				<div
-					class="border-sub border-1 relative flex w-full rounded-full bg-black px-4 lg:max-w-[400px]"
+					class="border-sub relative flex w-full rounded-full border bg-black px-4 lg:max-w-[400px]"
 				>
 					<input
 						class="c-search-form tex grid w-full text-left text-base"
@@ -132,7 +135,7 @@
 						<button
 							onclick={() => (searchWord = '')}
 							disabled={!searchWord}
-							class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
+							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
 						>
 							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 						</button>
@@ -167,6 +170,7 @@
 						itemSize={itemHeight}
 					>
 						<div slot="item" let:index let:style {style}>
+							<div class="h-16 w-full lg:hidden"><!-- スマホ表示スペース --></div>
 							<div
 								class="grid max-lg:gap-[5px] lg:gap-3"
 								style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({!$isMobile

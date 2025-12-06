@@ -30,6 +30,7 @@
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
+		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
 	}
 
 	let {
@@ -42,10 +43,12 @@
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
-		featureMenuData = $bindable()
+		featureMenuData = $bindable(),
+		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
+	let layerItemElement: HTMLDivElement;
 	let isDragging = $state(false);
 	let draggingEnabled = $state(true);
 
@@ -178,13 +181,118 @@
 		reorderStatus.set('idle');
 	};
 
+	// タッチイベント用の状態
+	let touchStartY = 0;
+	let touchCurrentY = 0;
+
+	let dragElement: HTMLElement | null = null;
+	let dragClone: HTMLElement | null = null;
+
+	// スマホ用のドラッグ処理
+	const handleTouchStart = (e: TouchEvent, layerId: string) => {
+		if (!draggingEnabled || !checkMobile()) return;
+
+		const touch = e.touches[0];
+		touchStartY = touch.clientY;
+		touchCurrentY = touch.clientY;
+
+		dragElement = document.getElementById(layerId);
+		if (!dragElement) return;
+
+		// 長押し判定用のタイマー
+		const longPressTimer = setTimeout(() => {
+			isTouchDragging = true;
+			isDragging = true;
+			enableFlip = false;
+			showLegend = false;
+			isDraggingLayerType = layerType;
+			selectedLayerId.set(layerId);
+
+			// ドラッグ用のクローン要素を作成
+			if (dragElement) {
+				dragClone = dragElement.cloneNode(true) as HTMLElement;
+				dragClone.style.position = 'fixed';
+				dragClone.style.left = `${dragElement.getBoundingClientRect().left}px`;
+				dragClone.style.top = `${touch.clientY - 40}px`;
+				dragClone.style.width = `${dragElement.offsetWidth}px`;
+				dragClone.style.zIndex = '9999';
+				dragClone.style.opacity = '0.8';
+				dragClone.style.pointerEvents = 'none';
+				dragClone.style.transition = 'none';
+				document.body.appendChild(dragClone);
+			}
+		}, 200);
+
+		// タッチ終了時にタイマーをクリア
+		const clearTimer = () => {
+			clearTimeout(longPressTimer);
+			document.removeEventListener('touchend', clearTimer);
+			document.removeEventListener('touchmove', handleEarlyMove);
+		};
+
+		// 早期の移動でタイマーをクリア（長押し前の移動）
+		const handleEarlyMove = (moveEvent: TouchEvent) => {
+			const moveTouch = moveEvent.touches[0];
+			if (Math.abs(moveTouch.clientY - touchStartY) > 10 && !isTouchDragging) {
+				clearTimer();
+			}
+		};
+
+		document.addEventListener('touchend', clearTimer, { once: true });
+		document.addEventListener('touchmove', handleEarlyMove);
+	};
+
+	// スマホ用のドラッグ処理
+	const handleTouchMove = (e: TouchEvent) => {
+		if (!isTouchDragging || !checkMobile()) return;
+
+		e.preventDefault();
+		const touch = e.touches[0];
+		touchCurrentY = touch.clientY;
+
+		// クローン要素を移動
+		if (dragClone) {
+			dragClone.style.top = `${touch.clientY - 40}px`;
+		}
+
+		// タッチ位置にある要素を検出してドラッグエンターを発火
+		const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+		for (const elem of elementsAtPoint) {
+			const layerItem = elem.closest('[data-layer-id]') as HTMLElement;
+			if (layerItem && layerItem.dataset.layerId !== layerEntry.id) {
+				const targetLayerId = layerItem.dataset.layerId;
+				if (targetLayerId && $selectedLayerId !== targetLayerId) {
+					activeLayerIdsStore.reorder($selectedLayerId, targetLayerId);
+				}
+				break;
+			}
+		}
+	};
+
+	// スマホ用のドラッグ処理
+	const handleTouchEnd = () => {
+		if (!isTouchDragging || !checkMobile()) return;
+
+		// クローン要素を削除
+		if (dragClone) {
+			dragClone.remove();
+			dragClone = null;
+		}
+
+		isTouchDragging = false;
+		isDragging = false;
+		enableFlip = true;
+		isDraggingLayerType = null;
+		reorderStatus.set('idle');
+		dragElement = null;
+	};
+
 	const hoverLayerItem = (bool: boolean) => {
 		isHovered = bool;
 		isHoveredLayerType = bool ? layerType : null;
 	};
 
 	// レイヤー表示範囲をチェック
-
 	const checkRange = (_state: MapState) => {
 		if (!layerEntry) return;
 		let z = _state.zoom;
@@ -230,6 +338,13 @@
 		const state = mapStore.getState();
 
 		checkRange(state);
+
+		// passive: false を指定してtouchmoveでpreventDefault()を使えるようにする
+		layerItemElement?.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+		return () => {
+			layerItemElement?.removeEventListener('touchmove', handleTouchMove);
+		};
 	});
 
 	mapStore.onStateChange((state) => {
@@ -242,14 +357,18 @@
 </script>
 
 <div
+	bind:this={layerItemElement}
 	class="relative flex h-[80px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
+	data-layer-id={layerEntry.id}
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
 	ondragover={(e) => e.preventDefault()}
 	onmousedown={(e) => handleMouseDown(e, layerEntry.id)}
 	ondragend={dragEnd}
+	ontouchstart={(e) => handleTouchStart(e, layerEntry.id)}
+	ontouchend={handleTouchEnd}
 	role="button"
 	tabindex="0"
 	aria-label="レイヤー"
@@ -268,7 +387,7 @@
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="translate-z-0 transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left duration-200
+		class="transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex translate-z-0 cursor-move justify-center p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -276,7 +395,7 @@
 			? 'w-[66px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
-			: 'border-1 border-sub bg-black'} "
+			: 'border-sub border-1 bg-black'} "
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
@@ -292,10 +411,10 @@
 			></div>
 		{/if}
 
-		{#if !isHovered && !$isStyleEdit && !$showDataMenu}
+		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
 			<div
 				transition:fade={{ duration: 100 }}
-				class="absolute right-4 top-2 grid place-items-center opacity-10"
+				class="absolute top-2 right-4 grid place-items-center opacity-10"
 			>
 				{#if layerEntry.metaData.location === '森林文化アカデミー'}
 					<div class="grid place-items-center [&_path]:fill-white">
@@ -331,7 +450,7 @@
 					: ''}"
 			>
 				<div
-					class="scale-200 h-full w-full {layerEntry.style.visible
+					class="h-full w-full scale-200 {layerEntry.style.visible
 						? ''
 						: 'brightness-75 grayscale'}"
 				>
@@ -344,7 +463,7 @@
 				{#if !$isStyleEdit}
 					<!-- レイヤー名 -->
 					<div class="flex h-full w-full flex-col gap-[2px]">
-						<span class="truncate pl-1 pt-2 text-base">{layerEntry.metaData.name}</span>
+						<span class="truncate pt-2 pl-1 text-base">{layerEntry.metaData.name}</span>
 						<div class="mt-auto flex pl-1">
 							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" /> -->
 							<span class="truncate text-xs text-gray-400"
@@ -386,7 +505,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
@@ -425,7 +544,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
@@ -441,7 +560,7 @@
 						$selectedLayerId = layerEntry.id;
 						showMobileLegend = !showMobileLegend;
 					}}
-					class=" grid place-items-center"
+					class="grid translate-x-3 place-items-center px-2 py-2"
 				>
 					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
 				</button>
