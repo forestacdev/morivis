@@ -35,7 +35,7 @@
 				mapStore.setBearing(rotation * -1);
 			},
 			onClick: function () {
-				mapStore.easeTo({ bearing: 0 });
+				mapStore.easeTo({ bearing: 0, pitch: 0 });
 				// rotation = 0;
 				if (element) {
 					element.style.transform = `rotate(0deg)`;
@@ -57,10 +57,10 @@
 
 <div
 	bind:this={element}
-	class="border-3 pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full bg-black/50"
+	class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black/50"
 >
 	<svg
-		class="scale-60 h-full w-full"
+		class="h-full w-full scale-60"
 		xmlns="http://www.w3.org/2000/svg"
 		width="132"
 		height="132"

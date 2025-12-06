@@ -11,6 +11,7 @@
 	import { fly } from 'svelte/transition';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import { onMount } from 'svelte';
+	import Compass from '$routes/map/components/map_control/Compass.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -51,6 +52,8 @@
 
 		initialized = true;
 	});
+
+	let isActiveCompass = $state(false);
 </script>
 
 <!-- フッターのメニュー -->
@@ -90,6 +93,13 @@
 
 				<span class="text-xs">レイヤ</span>
 			</button>
+			<div
+				ontouchstart={() => (isActiveCompass = true)}
+				ontouchend={() => (isActiveCompass = false)}
+				class="transition-scale duration-200 {isActiveCompass ? 'scale-200' : ''}"
+			>
+				<Compass />
+			</div>
 			<button
 				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 				onclick={() => ($isActiveMobileMenu = 'data')}

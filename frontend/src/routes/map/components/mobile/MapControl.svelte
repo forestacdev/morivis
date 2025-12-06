@@ -8,19 +8,23 @@
 </script>
 
 <div class="pointer-events-none absolute h-full w-full lg:hidden">
-	<div class="absolute right-4" style="top: calc(16px + env(safe-area-inset-top));">
-		<Compass />
-	</div>
-
 	<div
 		class="absolute right-4 rounded-lg bg-black/50 p-1"
-		style="bottom: calc(96px + env(safe-area-inset-bottom));"
+		style="top: calc(16px + env(safe-area-inset-top));"
 	>
 		<StreetViewControl />
 		<GeolocateControl />
 	</div>
 
-	<div class="bottom-18 absolute left-0 rounded-lg">
+	<!-- <div
+		class="absolute right-4 rounded-lg bg-black/50 p-1"
+		style="bottom: calc(96px + env(safe-area-inset-bottom));"
+	>
+		<StreetViewControl />
+		<GeolocateControl />
+	</div> -->
+
+	<div class="absolute bottom-18 left-0 rounded-lg">
 		<ScaleControl />
 	</div>
 </div>
