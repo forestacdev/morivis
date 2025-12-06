@@ -560,7 +560,7 @@
 						$selectedLayerId = layerEntry.id;
 						showMobileLegend = !showMobileLegend;
 					}}
-					class=" grid place-items-center"
+					class="grid translate-x-3 place-items-center px-2 py-2"
 				>
 					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
 				</button>
