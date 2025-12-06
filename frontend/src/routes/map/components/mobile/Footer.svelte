@@ -74,8 +74,6 @@
 	};
 
 	const handleTouchMove = (e: TouchEvent) => {
-		if ($isActiveMobileMenu !== 'map') return;
-
 		const touch = e.touches[0];
 		const deltaX = Math.abs(touch.clientX - touchStartX);
 		const deltaY = Math.abs(touch.clientY - touchStartY);
@@ -89,12 +87,11 @@
 			}
 			// スワイプ中はコンパスを有効に
 			isActiveCompass = true;
+			$isActiveMobileMenu = 'map';
 		}
 	};
 
 	const handleTouchEnd = () => {
-		if ($isActiveMobileMenu !== 'map') return;
-
 		// 長押しタイマーをキャンセル
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
