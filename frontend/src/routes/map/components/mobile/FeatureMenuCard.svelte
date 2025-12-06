@@ -507,10 +507,10 @@
 			<div>
 				{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 					<!-- poiタイトル -->
-					<span class="text-[22px] text-base font-bold">{featureMenuData.properties.name}</span>
+					<span class="text-base text-[22px] font-bold">{featureMenuData.properties.name}</span>
 				{:else}
 					<!-- その他 -->
-					<span class="text-[22px] text-base font-bold"
+					<span class="text-base text-[22px] font-bold"
 						>{targetLayer &&
 						targetLayer.type === 'vector' &&
 						targetLayer.properties.titles.length &&
@@ -521,7 +521,11 @@
 				{/if}
 			</div>
 			<button
-				onclick={() => (featureMenuData = null)}
+				onclick={(e) => {
+					e.stopPropagation();
+					featureMenuData = null;
+				}}
+				ontouchend={(e) => e.stopPropagation()}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
 				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
