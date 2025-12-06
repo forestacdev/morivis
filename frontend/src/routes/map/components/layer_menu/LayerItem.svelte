@@ -411,7 +411,7 @@
 			></div>
 		{/if}
 
-		{#if !isHovered && !$isStyleEdit && !$showDataMenu}
+		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
 			<div
 				transition:fade={{ duration: 100 }}
 				class="absolute top-2 right-4 grid place-items-center opacity-10"
