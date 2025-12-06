@@ -61,8 +61,6 @@
 	const SWIPE_THRESHOLD = 10; // スワイプ判定の移動距離（ピクセル）
 
 	const handleTouchStart = (e: TouchEvent) => {
-		if ($isActiveMobileMenu !== 'map') return;
-
 		const touch = e.touches[0];
 		touchStartX = touch.clientX;
 		touchStartY = touch.clientY;
@@ -106,7 +104,7 @@
 {#if !featureMenuData && !showDataEntry && !$isStyleEdit && !$isStreetView}
 	<div
 		transition:fly={{ y: 100, duration: 300 }}
-		class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-col text-base lg:hidden {showDataEntry}"
+		class="bg-main absolute bottom-0 left-0 z-20 flex w-full flex-col text-base select-none lg:hidden {showDataEntry}"
 	>
 		<div class="flex w-full items-center justify-between" style="height: {footerHeight}px;">
 			<button
@@ -144,11 +142,19 @@
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}
 				ontouchend={handleTouchEnd}
-				class="transition-scale duration-200 {isActiveCompass
+				class="transition-scale relative grid w-full place-items-center duration-200 {isActiveCompass
 					? '-translate-y-6 scale-200'
 					: ''} {$isActiveMobileMenu === 'map' ? 'pointer-events-auto' : 'pointer-events-none'}"
 			>
 				<MobileCompass />
+				{#if isActiveCompass}
+					<div
+						class="c-ripple-effect pointer-events-none absolute h-[50px] w-[50px] rounded-full border-2 border-amber-50"
+					></div>
+					<div
+						class="c-ripple-effect2 pointer-events-none absolute h-[50px] w-[50px] rounded-full border-2 border-amber-50"
+					></div>
+				{/if}
 			</div>
 
 			<button
@@ -185,4 +191,26 @@
 {/if}
 
 <style>
+	.c-ripple-effect {
+		opacity: 0;
+		animation: ripple 1.5s linear infinite;
+	}
+
+	.c-ripple-effect2 {
+		opacity: 0;
+		animation: ripple 1.5s 0.75s linear infinite;
+	}
+
+	/* アニメーションの定義 */
+	@keyframes ripple {
+		0% {
+			scale: 1;
+			opacity: 0.8;
+		}
+
+		100% {
+			scale: 1.3;
+			opacity: 0;
+		}
+	}
 </style>
