@@ -178,13 +178,117 @@
 		reorderStatus.set('idle');
 	};
 
+	// タッチイベント用の状態
+	let touchStartY = 0;
+	let touchCurrentY = 0;
+	let isTouchDragging = false;
+	let dragElement: HTMLElement | null = null;
+	let dragClone: HTMLElement | null = null;
+
+    // スマホ用のドラッグ処理
+	const handleTouchStart = (e: TouchEvent, layerId: string) => {
+		if (!draggingEnabled || !checkMobile()) return;
+
+		const touch = e.touches[0];
+		touchStartY = touch.clientY;
+		touchCurrentY = touch.clientY;
+
+		dragElement = document.getElementById(layerId);
+		if (!dragElement) return;
+
+		// 長押し判定用のタイマー
+		const longPressTimer = setTimeout(() => {
+			isTouchDragging = true;
+			isDragging = true;
+			enableFlip = false;
+			showLegend = false;
+			isDraggingLayerType = layerType;
+			selectedLayerId.set(layerId);
+
+			// ドラッグ用のクローン要素を作成
+			if (dragElement) {
+				dragClone = dragElement.cloneNode(true) as HTMLElement;
+				dragClone.style.position = 'fixed';
+				dragClone.style.left = `${dragElement.getBoundingClientRect().left}px`;
+				dragClone.style.top = `${touch.clientY - 40}px`;
+				dragClone.style.width = `${dragElement.offsetWidth}px`;
+				dragClone.style.zIndex = '9999';
+				dragClone.style.opacity = '0.8';
+				dragClone.style.pointerEvents = 'none';
+				document.body.appendChild(dragClone);
+			}
+		}, 200);
+
+		// タッチ終了時にタイマーをクリア
+		const clearTimer = () => {
+			clearTimeout(longPressTimer);
+			document.removeEventListener('touchend', clearTimer);
+			document.removeEventListener('touchmove', handleEarlyMove);
+		};
+
+		// 早期の移動でタイマーをクリア（長押し前の移動）
+		const handleEarlyMove = (moveEvent: TouchEvent) => {
+			const moveTouch = moveEvent.touches[0];
+			if (Math.abs(moveTouch.clientY - touchStartY) > 10 && !isTouchDragging) {
+				clearTimer();
+			}
+		};
+
+		document.addEventListener('touchend', clearTimer, { once: true });
+		document.addEventListener('touchmove', handleEarlyMove);
+	};
+
+    // スマホ用のドラッグ処理
+	const handleTouchMove = (e: TouchEvent) => {
+		if (!isTouchDragging || !checkMobile()) return;
+
+		e.preventDefault();
+		const touch = e.touches[0];
+		touchCurrentY = touch.clientY;
+
+		// クローン要素を移動
+		if (dragClone) {
+			dragClone.style.top = `${touch.clientY - 40}px`;
+		}
+
+		// タッチ位置にある要素を検出してドラッグエンターを発火
+		const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+		for (const elem of elementsAtPoint) {
+			const layerItem = elem.closest('[data-layer-id]') as HTMLElement;
+			if (layerItem && layerItem.dataset.layerId !== layerEntry.id) {
+				const targetLayerId = layerItem.dataset.layerId;
+				if (targetLayerId && $selectedLayerId !== targetLayerId) {
+					activeLayerIdsStore.reorder($selectedLayerId, targetLayerId);
+				}
+				break;
+			}
+		}
+	};
+
+    // スマホ用のドラッグ処理
+	const handleTouchEnd = () => {
+		if (!isTouchDragging || !checkMobile()) return;
+
+		// クローン要素を削除
+		if (dragClone) {
+			dragClone.remove();
+			dragClone = null;
+		}
+
+		isTouchDragging = false;
+		isDragging = false;
+		enableFlip = true;
+		isDraggingLayerType = null;
+		reorderStatus.set('idle');
+		dragElement = null;
+	};
+
 	const hoverLayerItem = (bool: boolean) => {
 		isHovered = bool;
 		isHoveredLayerType = bool ? layerType : null;
 	};
 
 	// レイヤー表示範囲をチェック
-
 	const checkRange = (_state: MapState) => {
 		if (!layerEntry) return;
 		let z = _state.zoom;
@@ -244,12 +348,16 @@
 <div
 	class="relative flex h-[80px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
+	data-layer-id={layerEntry.id}
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
 	ondragenter={() => dragEnter(layerEntry.id)}
 	ondragover={(e) => e.preventDefault()}
 	onmousedown={(e) => handleMouseDown(e, layerEntry.id)}
 	ondragend={dragEnd}
+	ontouchstart={(e) => handleTouchStart(e, layerEntry.id)}
+	ontouchmove={handleTouchMove}
+	ontouchend={handleTouchEnd}
 	role="button"
 	tabindex="0"
 	aria-label="レイヤー"
