@@ -263,7 +263,7 @@
 							}
 						}
 					}}
-					class="transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] translate-z-0 cursor-pointer justify-center rounded-full p-2 text-left text-nowrap text-clip duration-200 select-none {$showDataMenu
+					class="transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] translate-z-0 cursor-pointer justify-center rounded-full p-2 text-left text-nowrap text-clip duration-200 select-none max-lg:hidden {$showDataMenu
 						? 'w-[66px]'
 						: $isStyleEdit
 							? 'w-[400px]'
