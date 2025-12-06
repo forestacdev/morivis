@@ -10,9 +10,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { fly } from 'svelte/transition';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
-	import { onMount } from 'svelte';
-	import Compass from '$routes/map/components/map_control/Compass.svelte';
-
+	import MobileCompass from './MobileCompass.svelte';
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		featureMenuData: FeatureMenuData | null;
@@ -54,6 +52,57 @@
 	});
 
 	let isActiveCompass = $state(false);
+
+	// タッチ判定用の変数
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+	const LONG_PRESS_DURATION = 200; // 長押し判定時間（ミリ秒）
+	const SWIPE_THRESHOLD = 10; // スワイプ判定の移動距離（ピクセル）
+
+	const handleTouchStart = (e: TouchEvent) => {
+		if ($isActiveMobileMenu !== 'map') return;
+
+		const touch = e.touches[0];
+		touchStartX = touch.clientX;
+		touchStartY = touch.clientY;
+
+		// 長押しタイマーを設定
+		longPressTimer = setTimeout(() => {
+			isActiveCompass = true;
+		}, LONG_PRESS_DURATION);
+	};
+
+	const handleTouchMove = (e: TouchEvent) => {
+		if ($isActiveMobileMenu !== 'map') return;
+
+		const touch = e.touches[0];
+		const deltaX = Math.abs(touch.clientX - touchStartX);
+		const deltaY = Math.abs(touch.clientY - touchStartY);
+
+		// スワイプ検出：一定距離以上移動したら
+		if (deltaX > SWIPE_THRESHOLD || deltaY > SWIPE_THRESHOLD) {
+			// 長押しタイマーをキャンセル
+			if (longPressTimer) {
+				clearTimeout(longPressTimer);
+				longPressTimer = null;
+			}
+			// スワイプ中はコンパスを有効に
+			isActiveCompass = true;
+		}
+	};
+
+	const handleTouchEnd = () => {
+		if ($isActiveMobileMenu !== 'map') return;
+
+		// 長押しタイマーをキャンセル
+		if (longPressTimer) {
+			clearTimeout(longPressTimer);
+			longPressTimer = null;
+		}
+
+		isActiveCompass = false;
+	};
 </script>
 
 <!-- フッターのメニュー -->
@@ -93,13 +142,18 @@
 
 				<span class="text-xs">レイヤ</span>
 			</button>
+
 			<div
-				ontouchstart={() => (isActiveCompass = true)}
-				ontouchend={() => (isActiveCompass = false)}
-				class="transition-scale duration-200 {isActiveCompass ? 'scale-200' : ''}"
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
+				ontouchend={handleTouchEnd}
+				class="transition-scale duration-200 {isActiveCompass
+					? '-translate-y-6 scale-200'
+					: ''} {$isActiveMobileMenu === 'map' ? 'pointer-events-auto' : 'pointer-events-none'}"
 			>
-				<Compass />
+				<MobileCompass />
 			</div>
+
 			<button
 				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"
 				onclick={() => ($isActiveMobileMenu = 'data')}
