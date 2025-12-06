@@ -113,7 +113,8 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
 		<div
-			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-0 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2"
+			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2"
+			style="padding-top: env(safe-area-inset-top);"
 		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
