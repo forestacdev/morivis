@@ -48,6 +48,7 @@
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
+	let layerItemElement: HTMLDivElement;
 	let isDragging = $state(false);
 	let draggingEnabled = $state(true);
 
@@ -337,6 +338,13 @@
 		const state = mapStore.getState();
 
 		checkRange(state);
+
+		// passive: false を指定してtouchmoveでpreventDefault()を使えるようにする
+		layerItemElement?.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+		return () => {
+			layerItemElement?.removeEventListener('touchmove', handleTouchMove);
+		};
 	});
 
 	mapStore.onStateChange((state) => {
@@ -349,6 +357,7 @@
 </script>
 
 <div
+	bind:this={layerItemElement}
 	class="relative flex h-[80px] w-full items-center
 		transition-colors {isDragging ? 'c-dragging-style' : ''}"
 	data-layer-id={layerEntry.id}
@@ -359,7 +368,6 @@
 	onmousedown={(e) => handleMouseDown(e, layerEntry.id)}
 	ondragend={dragEnd}
 	ontouchstart={(e) => handleTouchStart(e, layerEntry.id)}
-	ontouchmove={handleTouchMove}
 	ontouchend={handleTouchEnd}
 	role="button"
 	tabindex="0"
