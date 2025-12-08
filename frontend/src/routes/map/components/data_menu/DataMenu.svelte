@@ -101,7 +101,7 @@
 {#if $showDataMenu}
 	<div
 		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
-		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-300"
+		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-30"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<!-- <button
@@ -113,7 +113,7 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
 		<div
-			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2"
+			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
 			style="padding-top: env(safe-area-inset-top);"
 		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
