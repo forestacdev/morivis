@@ -19,9 +19,6 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-		csrf: {
-			checkOrigin: false
-		},
 		paths: {
 			base: process.argv.includes('dev') ? '' : '/morivis'
 		}
