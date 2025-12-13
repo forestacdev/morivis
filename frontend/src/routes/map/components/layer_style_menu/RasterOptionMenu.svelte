@@ -58,6 +58,24 @@
 			previousPreset = preset;
 		}
 	});
+
+	// グラデーションの作成
+	const createGradientStops = (colors: string[], ranges: number[]): string => {
+		const max = Math.max(...ranges);
+		const min = Math.min(...ranges);
+
+		// rangesが降順の場合、colorsと対応させる
+		const sortedData = ranges
+			.map((range, i) => ({ range, color: colors[i] }))
+			.sort((a, b) => a.range - b.range);
+
+		return sortedData
+			.map(({ range, color }) => {
+				const position = ((range - min) / (max - min)) * 100;
+				return `${color} ${position.toFixed(1)}%`;
+			})
+			.join(', ');
+	};
 </script>
 
 {#if layerEntry && layerEntry.type === 'raster' && style}
@@ -129,15 +147,19 @@
 				<div class="flex flex-col text-base">
 					<div class="w-full py-[10px]">
 						<div
-							class="border-1 h-[30px] w-full rounded-lg border-black"
-							style="background: linear-gradient(90deg, {style.legend.colors[0]} 0%, {style.legend
-								.colors[1]} 100%);"
+							class="h-[30px] w-full rounded-lg border border-black"
+							style="background: linear-gradient(90deg, {createGradientStops(
+								style.legend.colors,
+								style.legend.ranges
+							)});"
 						></div>
 					</div>
 
 					<div class="flex justify-between text-base">
-						{#each style.legend.range.slice().reverse() as value}
-							<span>{value} {style.legend.unit}</span>
+						{#each style.legend.ranges.slice().reverse() as value, i}
+							{#if i === 0 || i === style.legend.ranges.length - 1}
+								<span>{value} {style.legend.unit}</span>
+							{/if}
 						{/each}
 					</div>
 				</div>

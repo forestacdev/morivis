@@ -30,7 +30,7 @@ export interface GradientLegend {
 	type: 'gradient';
 	name: string;
 	colors: string[];
-	range: number[];
+	ranges: number[];
 	unit: string;
 }
 

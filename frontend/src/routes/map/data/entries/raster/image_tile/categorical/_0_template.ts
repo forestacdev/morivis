@@ -1,5 +1,6 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: '',
@@ -18,7 +19,8 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		maxZoom: 24,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		downloadUrl: ''
+		downloadUrl: '',
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
 	},
 	interaction: {
 		clickable: true
