@@ -7,19 +7,20 @@ import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: '',
+	id: 'gsi_blank',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: ''
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'カスタムデータ',
+		name: '全国白地図',
 		description: '',
-		attribution: 'カスタムデータ',
-		location: '不明',
-		minZoom: 0,
-		maxZoom: 24,
+		attribution: '国土地理院',
+		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#blank',
+		location: '全国',
+		minZoom: 5,
+		maxZoom: 14,
 		tileSize: 256,
 		tags: [],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,

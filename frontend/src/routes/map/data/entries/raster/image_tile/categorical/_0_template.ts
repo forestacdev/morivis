@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		downloadUrl: '',
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9
 	},
 	interaction: {
 		clickable: true

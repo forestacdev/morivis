@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '色別標高図',
+		name: '全国色別標高図',
 		description: '色別標高図は、標高の変化を陰影と段彩の効果を用いて視覚的に表現したものです。',
 		attribution: '国土地理院',
 		location: '全国',
@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#relief',
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9
 	},
 	interaction: {
 		clickable: true
