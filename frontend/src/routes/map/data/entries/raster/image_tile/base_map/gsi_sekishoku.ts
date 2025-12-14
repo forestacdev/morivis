@@ -7,21 +7,22 @@ import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: '',
+	id: 'gsi_sekishoku',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: ''
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/sekishoku/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'カスタムデータ',
+		name: '全国赤色立体地図',
 		description: '',
-		attribution: 'カスタムデータ',
-		location: '不明',
-		minZoom: 0,
-		maxZoom: 24,
+		attribution: '国土地理院',
+		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#sekishoku',
+		location: '全国',
+		minZoom: 2,
+		maxZoom: 14,
 		tileSize: 256,
-		tags: [],
+		tags: ['赤色立体地図', '地形', '10m解像度'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9
 	},

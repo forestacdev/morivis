@@ -96,7 +96,10 @@
 			longPressTimer = null;
 		}
 
-		isActiveCompass = false;
+		// 少し遅延させてコンパスを非アクティブにする（Draggableのイベント処理が完了するのを待つ）
+		setTimeout(() => {
+			isActiveCompass = false;
+		}, 50);
 	};
 </script>
 
@@ -142,7 +145,8 @@
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}
 				ontouchend={handleTouchEnd}
-				class="transition-scale relative grid w-full place-items-center duration-200 {isActiveCompass
+				ontouchcancel={handleTouchEnd}
+				class="transition-scale relative grid w-full place-items-center duration-200 select-none {isActiveCompass
 					? '-translate-y-6 scale-200'
 					: ''} {$isActiveMobileMenu === 'map' ? 'pointer-events-auto' : 'pointer-events-none'}"
 			>
