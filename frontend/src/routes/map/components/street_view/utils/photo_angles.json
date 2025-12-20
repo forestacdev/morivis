@@ -40,9 +40,9 @@
 		"angle_z": 0.0
 	},
 	"R0010894": {
-		"angle_x": 0,
-		"angle_y": 0,
-		"angle_z": 0
+		"angle_x": 2.22,
+		"angle_y": 0.96,
+		"angle_z": 14.7
 	},
 	"R0011234": {
 		"angle_x": 0.0,
@@ -390,9 +390,9 @@
 		"angle_z": 0
 	},
 	"R0010895": {
-		"angle_x": 0.0,
-		"angle_y": 14.04,
-		"angle_z": 0.0
+		"angle_x": 2.04,
+		"angle_y": 22.88,
+		"angle_z": 11.31
 	},
 	"R0011235": {
 		"angle_x": 0.0,
@@ -470,9 +470,9 @@
 		"angle_z": 0
 	},
 	"R0010897": {
-		"angle_x": 0.0,
-		"angle_y": 7.92,
-		"angle_z": 0.0
+		"angle_x": 0,
+		"angle_y": 0,
+		"angle_z": 8.44
 	},
 	"R0010883": {
 		"angle_x": 0.0,
@@ -500,9 +500,9 @@
 		"angle_z": 0
 	},
 	"R0010698": {
-		"angle_x": 0.0,
-		"angle_y": 186.12,
-		"angle_z": 0.0
+		"angle_x": 180.5,
+		"angle_y": 360,
+		"angle_z": 178.04
 	},
 	"R0010471": {
 		"angle_x": 0.0,
@@ -835,9 +835,9 @@
 		"angle_z": 167.76
 	},
 	"R0010699": {
-		"angle_x": 0.0,
-		"angle_y": 186.12,
-		"angle_z": 0.0
+		"angle_x": 358.13,
+		"angle_y": 172.19,
+		"angle_z": 10.83
 	},
 	"R0010841": {
 		"angle_x": 0,
@@ -875,9 +875,9 @@
 		"angle_z": 0.0
 	},
 	"R0010896": {
-		"angle_x": 0.0,
-		"angle_y": 3.96,
-		"angle_z": 0.0
+		"angle_x": 5.28,
+		"angle_y": 15.4,
+		"angle_z": 9.25
 	},
 	"R0010666": {
 		"angle_x": 0.0,
@@ -900,9 +900,9 @@
 		"angle_z": 0.0
 	},
 	"R0010892": {
-		"angle_x": 0.0,
-		"angle_y": 351.72,
-		"angle_z": 0.0
+		"angle_x": 2.45,
+		"angle_y": 0,
+		"angle_z": 8.89
 	},
 	"R0011232": {
 		"angle_x": 0.0,
@@ -1070,9 +1070,9 @@
 		"angle_z": 0.0
 	},
 	"R0010702": {
-		"angle_x": 0.0,
+		"angle_x": 3.21,
 		"angle_y": 131.4,
-		"angle_z": 0.0
+		"angle_z": 9.02
 	},
 	"R0010064": {
 		"angle_x": 0.0,
@@ -1340,9 +1340,9 @@
 		"angle_z": 0
 	},
 	"R0010893": {
-		"angle_x": 0.0,
-		"angle_y": 347.76,
-		"angle_z": 0.0
+		"angle_x": 4.06,
+		"angle_y": 349.26,
+		"angle_z": 5.03
 	},
 	"R0011233": {
 		"angle_x": 0.0,
@@ -1535,9 +1535,9 @@
 		"angle_z": 0
 	},
 	"R0010701": {
-		"angle_x": 0.0,
+		"angle_x": 357.47,
 		"angle_y": 133.56,
-		"angle_z": 0.0
+		"angle_z": 6.41
 	},
 	"R0010932": {
 		"angle_x": 0.0,
@@ -1600,9 +1600,9 @@
 		"angle_z": 8.28
 	},
 	"R0010700": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 125.28,
-		"angle_z": 0.0
+		"angle_z": 7.85
 	},
 	"R0010714": {
 		"angle_x": 0.0,
@@ -4212,7 +4212,7 @@
 	"R0011089": {
 		"angle_x": 0,
 		"angle_y": 35.64,
-		"angle_z": 0
+		"angle_z": 7.09
 	},
 	"R0011062": {
 		"angle_x": 4.19,
@@ -6130,9 +6130,9 @@
 		"angle_z": 0.0
 	},
 	"R0010694": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 119.16,
-		"angle_z": 0.0
+		"angle_z": 5.21
 	},
 	"R0010858": {
 		"angle_x": 0.0,
@@ -6505,9 +6505,9 @@
 		"angle_z": 0.0
 	},
 	"R0010695": {
-		"angle_x": 0.0,
+		"angle_x": 3.23,
 		"angle_y": 137.52,
-		"angle_z": 0.0
+		"angle_z": 14.22
 	},
 	"R0010865": {
 		"angle_x": 0.0,
@@ -6575,9 +6575,9 @@
 		"angle_z": 0
 	},
 	"R0010898": {
-		"angle_x": 0.0,
-		"angle_y": 10.08,
-		"angle_z": 0.0
+		"angle_x": 0,
+		"angle_y": 11.31,
+		"angle_z": 6.65
 	},
 	"R0011238": {
 		"angle_x": 0.0,
@@ -6615,9 +6615,9 @@
 		"angle_z": 12.81
 	},
 	"R0010697": {
-		"angle_x": 0.0,
+		"angle_x": 354.74,
 		"angle_y": 202.32,
-		"angle_z": 0.0
+		"angle_z": 9.85
 	},
 	"R0010318": {
 		"angle_x": 9.07,
@@ -6940,9 +6940,9 @@
 		"angle_z": 5.88
 	},
 	"R0010696": {
-		"angle_x": 0.0,
+		"angle_x": 0,
 		"angle_y": 192.24,
-		"angle_z": 0.0
+		"angle_z": 8.99
 	},
 	"R0010682": {
 		"angle_x": 7.45,
@@ -6970,9 +6970,9 @@
 		"angle_z": 0.0
 	},
 	"R0010899": {
-		"angle_x": 0.0,
-		"angle_y": 10.08,
-		"angle_z": 0.0
+		"angle_x": 1.46,
+		"angle_y": 0,
+		"angle_z": 7.13
 	},
 	"R0010641": {
 		"angle_x": 0,
