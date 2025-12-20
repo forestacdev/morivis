@@ -2,15 +2,7 @@
 	import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import * as THREE from 'three';
 
-	import {
-		PANORAMA_IMAGE_URL,
-		IN_CAMERA_FOV,
-		OUT_CAMERA_FOV,
-		MIN_CAMERA_FOV,
-		MAX_CAMERA_FOV,
-		IN_CAMERA_POSITION,
-		OUT_CAMERA_POSITION
-	} from './constants';
+	import { IN_CAMERA_FOV, MIN_CAMERA_FOV, MAX_CAMERA_FOV } from './constants';
 	import { setStreetViewCameraParams } from '$routes/map/utils/params';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { getCameraXYRotation } from './utils';
@@ -19,7 +11,6 @@
 	import { Tween } from 'svelte/motion';
 
 	interface Props {
-		scene: THREE.Scene;
 		canvas: HTMLCanvasElement;
 		camera: THREE.PerspectiveCamera;
 		orbitControls: OrbitControls;
@@ -28,8 +19,14 @@
 		onResize: () => void;
 	}
 
-	let { scene, canvas, camera, orbitControls, renderer, mobileFullscreen, onResize }: Props =
-		$props();
+	let {
+		canvas = $bindable(),
+		camera,
+		orbitControls = $bindable(),
+		renderer,
+		mobileFullscreen,
+		onResize
+	}: Props = $props();
 
 	// 視点操作のイージングの値
 	orbitControls.dampingFactor = 0.1;

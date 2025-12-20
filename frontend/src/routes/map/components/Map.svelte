@@ -670,14 +670,6 @@
 				? ''
 				: 'opacity-100'}"
 	>
-		<!--スタイル編集時のメニュー -->
-		<!-- {#if $isStyleEdit}
-			<div
-				transition:fade={{ duration: 200, delay: 200 }}
-				class="z-5 absolute left-0 h-full w-[75px] bg-black/50"
-			></div>
-		{/if} -->
-
 		{#if maplibreMap}
 			<PoiManager
 				map={maplibreMap}
@@ -688,10 +680,6 @@
 			/>
 		{/if}
 	</div>
-	<!-- <FooterMenu {layerEntries} /> -->
-
-	<!-- <WebGLScreen /> -->
-	<!-- <ThreeScreen /> -->
 
 	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
