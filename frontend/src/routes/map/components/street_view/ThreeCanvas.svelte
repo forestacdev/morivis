@@ -374,13 +374,16 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="absolute left-4 z-10 flex items-center justify-center rounded-lg p-2 text-white max-lg:gap-2 max-lg:bg-black/70 lg:gap-3 lg:bg-black lg:px-4"
+				class="lg:border-sub absolute left-4 z-10 flex items-center justify-center rounded-lg p-2 text-white max-lg:gap-2 max-lg:bg-black/70 lg:gap-3 lg:border lg:bg-black lg:px-4"
 				style="top: calc(10px + env(safe-area-inset-top));"
 			>
 				<button
-					class="lg:bg-base cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
+					class="lg:bg-base group cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
 					onclick={() => ($isStreetView = false)}
-					><Icon icon="ep:back" class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
+					><Icon
+						icon="ep:back"
+						class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
+					/>
 				</button>
 				<div class="flex flex-col gap-2">
 					<span class="text-lg max-lg:hidden"
@@ -391,7 +394,7 @@
 			</div>
 
 			<button
-				class="hover:text-accent absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-black p-2 text-white duration-100 max-lg:hidden"
+				class="hover:text-accent lg:border-sub absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-black p-2 text-white duration-100 max-lg:hidden lg:border"
 				onclick={() => showOtherMenu.set(true)}
 				><Icon icon="ic:round-menu" class="h-8 w-8" />
 			</button>

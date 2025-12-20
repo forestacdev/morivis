@@ -130,9 +130,12 @@
 							onclick={() => {
 								$showDataMenu = false;
 							}}
-							class="bg-base grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+							class="bg-base group grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 						>
-							<Icon icon="ep:back" class="h-6 w-6" />
+							<Icon
+								icon="ep:back"
+								class="h-6 w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
+							/>
 						</button>
 					</div>
 				{/if}
