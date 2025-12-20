@@ -177,7 +177,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 				><Icon icon="mdi:web" class="h-8 w-8" />
-				<span>森林文化アカデミーHP</span></a
+				<span>森林文化アカデミーWebサイト</span></a
 			>
 
 			<button
