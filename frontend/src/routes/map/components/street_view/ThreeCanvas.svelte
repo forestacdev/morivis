@@ -3,23 +3,14 @@
 	import { onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import {
-		PANORAMA_IMAGE_URL,
-		IN_CAMERA_FOV,
-		OUT_CAMERA_FOV,
-		MIN_CAMERA_FOV,
-		MAX_CAMERA_FOV,
-		IN_CAMERA_POSITION,
-		OUT_CAMERA_POSITION,
-		SCENE_CENTER_COORDS
-	} from './constants';
+	import { IN_CAMERA_FOV } from './constants';
 
 	import DebugControl from './DebugControl.svelte';
 	import InteractionManager from './InteractionManager.svelte';
 
-	import { degreesToRadians, TextureCache, getCameraXYRotation, placePointData } from './utils';
+	import { degreesToRadians, TextureCache, placePointData } from './utils';
 	import { uniforms } from './utils/material';
-	import type { CurrentPointData, PhotoAngleDict } from '$routes/map/types/street-view';
+	import type { CurrentPointData } from '$routes/map/types/street-view';
 
 	import { isStreetView, isDebugMode } from '$routes/stores';
 
@@ -29,9 +20,6 @@
 	import { fade } from 'svelte/transition';
 	import { getStreetViewCameraParams } from '$routes/map/utils/params';
 	import { fadeShaderMaterial, debugBoxMaterial } from './utils/material';
-	import { FGB2DLineLoader } from './utils/lineGeometryLoader';
-	import { STREET_VIEW_DATA_PATH } from '$routes/constants';
-	import { mapPotisonToWorldPotison } from './utils/proj';
 
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
@@ -62,7 +50,6 @@
 	// テクスチャローダーを保持
 	let textureLoader: THREE.TextureLoader;
 
-	let postMesh: THREE.Mesh;
 	let isLoading = $state<boolean>(false);
 	let isLoadedNodeIdList = [] as number[]; // パノラマが画像の読み込みが完了したノードIDのリスト
 
@@ -158,22 +145,6 @@
 		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
 		scene.add(wireframeCube);
 
-		// const lineLoader = new FGB2DLineLoader(SCENE_CENTER_COORDS);
-		// const lineGeometry = await lineLoader.load(`${STREET_VIEW_DATA_PATH}/links.fgb`, {
-		// 	color: new THREE.Color(0x00ff00),
-		// 	speed: 1.0,
-		// 	height: -10.1,
-		// 	proj: 'EPSG:6675'
-		// });
-
-		// const lineMaterial = new THREE.LineBasicMaterial({
-		// 	color: 0x00ff00
-		// });
-		// const lineMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
-		// lineMesh.material.depthWrite = false; // 深度バッファに書き込まない
-		// lineMesh.renderOrder = 1;
-		// lineMesh.name = 'lineMesh';
-
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -246,20 +217,6 @@
 		try {
 			const { angle, featureData, texture, photo_id, node_id } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
-
-			// const { x, z } = mapPotisonToWorldPotison(
-			// 	featureData.geometry.coordinates[0],
-			// 	featureData.geometry.coordinates[1]
-			// );
-
-			// console.log(`ワールド座標: x=${x}, z=${z}`); // ログ追加
-
-			// // lineMeshの位置を更新
-			// if (!scene) return;
-			// const lineMesh = scene.getObjectByName('lineMesh');
-			// if (lineMesh) {
-			// 	lineMesh.position.set(-x * 30, 0 * 30, -z * 30);
-			// }
 
 			// 次のテクスチャスロットを決定
 			const nextIndex = (currentTextureIndex + 1) % 3;
@@ -399,8 +356,8 @@
 
 <div
 	class="absolute z-10 flex overflow-hidden bg-black duration-500 {showThreeCanvas
-		? 'right-0 top-0 w-full opacity-100 max-lg:h-1/2 lg:h-full'
-		: 'pointer-events-none bottom-0 right-0 h-full w-full opacity-0'} {showThreeCanvas &&
+		? 'top-0 right-0 w-full opacity-100 max-lg:h-1/2 lg:h-full'
+		: 'pointer-events-none right-0 bottom-0 h-full w-full opacity-0'} {showThreeCanvas &&
 	mobileFullscreen
 		? 'max-lg:h-full'
 		: ''}"
@@ -417,13 +374,16 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="lg:bg-main absolute left-4 z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
+				class="lg:border-sub absolute left-4 z-10 flex items-center justify-center rounded-lg p-2 text-white max-lg:gap-2 max-lg:bg-black/70 lg:gap-3 lg:border lg:bg-black lg:px-4"
 				style="top: calc(10px + env(safe-area-inset-top));"
 			>
 				<button
-					class="lg:bg-base cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
+					class="lg:bg-base group cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
 					onclick={() => ($isStreetView = false)}
-					><Icon icon="ep:back" class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
+					><Icon
+						icon="ep:back"
+						class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
+					/>
 				</button>
 				<div class="flex flex-col gap-2">
 					<span class="text-lg max-lg:hidden"
@@ -434,7 +394,7 @@
 			</div>
 
 			<button
-				class="bg-main hover:text-accent absolute right-4 top-3 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg p-2 text-white duration-100 max-lg:hidden"
+				class="hover:text-accent lg:border-sub absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-black p-2 text-white duration-100 max-lg:hidden lg:border"
 				onclick={() => showOtherMenu.set(true)}
 				><Icon icon="ic:round-menu" class="h-8 w-8" />
 			</button>
@@ -442,7 +402,7 @@
 
 		{#if $isMobile}
 			<button
-				class="absolute bottom-3 right-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
+				class="absolute right-3 bottom-3 z-10 cursor-pointer rounded-full bg-black/70 p-2 text-white"
 				onclick={() => {
 					mobileFullscreen = !mobileFullscreen;
 					onResize();
@@ -458,7 +418,7 @@
 		<div
 			class="css-3d pointer-events-none absolute bottom-0 grid w-full place-items-center p-0 max-lg:h-[200px] lg:h-[400px]"
 		>
-			<div class="rotate-x-[60deg]">
+			<div class="rotate-x-60">
 				<div bind:this={controlDiv} class="pointer-events-none origin-center">
 					{#if nextPointData}
 						{#each nextPointData as point}
@@ -486,12 +446,11 @@
 	{/if}
 </div>
 
-{#if canvas && camera && orbitControls && renderer && scene}
+{#if canvas && camera && orbitControls && renderer}
 	<InteractionManager
-		{scene}
-		{canvas}
+		bind:canvas
 		{camera}
-		{orbitControls}
+		bind:orbitControls
 		{renderer}
 		{mobileFullscreen}
 		{onResize}
