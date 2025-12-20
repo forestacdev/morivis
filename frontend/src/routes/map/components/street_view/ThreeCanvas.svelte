@@ -374,7 +374,7 @@
 	{:else}
 		{#if showThreeCanvas}
 			<div
-				class="lg:bg-main absolute left-4 z-10 flex items-center justify-center gap-2 rounded-lg p-2 text-white max-lg:bg-black/70 lg:px-4"
+				class="absolute left-4 z-10 flex items-center justify-center rounded-lg p-2 text-white max-lg:gap-2 max-lg:bg-black/70 lg:gap-3 lg:bg-black lg:px-4"
 				style="top: calc(10px + env(safe-area-inset-top));"
 			>
 				<button
@@ -391,7 +391,7 @@
 			</div>
 
 			<button
-				class="bg-main hover:text-accent absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg p-2 text-white duration-100 max-lg:hidden"
+				class="hover:text-accent absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-black p-2 text-white duration-100 max-lg:hidden"
 				onclick={() => showOtherMenu.set(true)}
 				><Icon icon="ic:round-menu" class="h-8 w-8" />
 			</button>
