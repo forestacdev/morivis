@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	interface Props {
 		map: maplibregl.Map;
