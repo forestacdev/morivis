@@ -52,7 +52,6 @@ uniform sampler2D textureC;
 uniform float fadeStartTime;
 uniform float fadeSpeed;
 uniform float time;
-varying vec2 vUv;
 varying vec3 v_modelPosition;
 uniform vec3 rotationAnglesA;
 uniform vec3 rotationAnglesB;
@@ -60,7 +59,6 @@ uniform vec3 rotationAnglesC;
 uniform float fromTarget; // フェード元 0=A, 1=B, 2=C
 uniform float toTarget;   // フェード先 0=A, 1=B, 2=C
 uniform float exposure; // JavaScript側で設定
-uniform float gamma;
 uniform float inputGamma;
 uniform float outputGamma;
 uniform float brightness;
@@ -83,12 +81,9 @@ vec4 sampleTexture(sampler2D tex, vec3 rotationAngles) {
 
 
 // ガンマ補正関数を修正
-
-
 vec3 sRGBToLinear(vec3 color) {
     return pow(max(color, vec3(0.0)), vec3(inputGamma));
 }
-
 
 
 vec3 applyBrightnessContrast(vec3 linearColor, float brightness, float contrast) {
@@ -137,11 +132,11 @@ void main() {
         toColor = sampleTexture(textureC, rotationAnglesC);
     }
     
-  // Step1: sRGBからリニア空間に変換
+    // sRGBからリニア空間に変換
     vec3 fromColorLinear = sRGBToLinear(fromColor.rgb);
     vec3 toColorLinear = sRGBToLinear(toColor.rgb);
     
-    // Step2: 露出調整（リニア空間で）
+    // 露出調整（リニア空間で）
     fromColorLinear = adjustExposure(fromColorLinear, exposure);
     toColorLinear = adjustExposure(toColorLinear, exposure);
     
