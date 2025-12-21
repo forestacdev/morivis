@@ -137,9 +137,9 @@
 		// 球体
 		const skyBoxGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
 
-		const sphere = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
-		sphere.name = 'panoramaSphere';
-		scene.add(sphere);
+		const skyBox = new THREE.Mesh(skyBoxGeometry, fadeShaderMaterial);
+		skyBox.name = 'panoramaBox';
+		scene.add(skyBox);
 
 		const debugGeometry: THREE.BoxGeometry = new THREE.BoxGeometry(900, 900, 900, 2, 2, 2);
 		const wireframeCube = new THREE.Mesh(debugGeometry, debugBoxMaterial);
