@@ -870,7 +870,8 @@ export const createLayersItems = (
 							}
 						});
 					} else if (style.type === 'cad') {
-						rasterLayerItems.push({
+						// lineとして扱う
+						lineLayerItems.push({
 							...layer,
 							type: 'raster',
 							paint: {

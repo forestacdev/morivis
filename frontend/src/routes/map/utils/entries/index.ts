@@ -5,7 +5,11 @@ export type LayerType = 'point' | 'line' | 'polygon' | 'raster';
 /** レイヤータイプの取得 */
 export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
 	if (_dataEntry.type === 'raster') {
-		return 'raster';
+		if (_dataEntry.style.type === 'cad') {
+			return 'line';
+		} else {
+			return 'raster';
+		}
 	} else if (_dataEntry.type === 'vector') {
 		if (_dataEntry.format.geometryType === 'Point') {
 			return 'point';

@@ -149,7 +149,8 @@ const defaultCustomMetaData: BaseMetaData = {
 	maxZoom: 24,
 	minZoom: 0,
 	tags: [],
-	bounds: WEB_MERCATOR_WORLD_BBOX
+	bounds: WEB_MERCATOR_WORLD_BBOX,
+	xyzImageTile: { x: 0, y: 0, z: 0 }
 };
 
 export const createGeoJsonEntry = (
