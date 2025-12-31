@@ -9,16 +9,22 @@
 		RasterBaseMapStyle,
 		RasterDemStyle,
 		RasterDemEntry,
-		RasterTiffStyle
+		RasterTiffStyle,
+		RasterCadStyle
 	} from '$routes/map/data/types/raster';
 	import Accordion from '../atoms/Accordion.svelte';
 	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import Icon from '@iconify/svelte';
+	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 
 	interface Props {
 		layerEntry: RasterEntry<
-			RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
+			| RasterCategoricalStyle
+			| RasterBaseMapStyle
+			| RasterDemStyle
+			| RasterTiffStyle
+			| RasterCadStyle
 		>;
 		showColorOption: boolean;
 	}
@@ -184,6 +190,10 @@
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
 		<TiffOption bind:style />
+	{:else if style.type === 'cad'}
+		<div class="mt-8">
+			<ColorPicker bind:value={style.color} label={'ラインの色'} />
+		</div>
 	{/if}
 {/if}
 

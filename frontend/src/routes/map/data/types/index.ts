@@ -6,6 +6,7 @@ import type {
 	RasterBaseMapStyle,
 	RasterDemStyle,
 	RasterTiffStyle,
+	RasterCadStyle,
 	TileXYZ
 } from '$routes/map/data/types/raster';
 import type { AttributionKey } from '../attribution';
@@ -33,7 +34,7 @@ export interface BaseMetaData {
 }
 
 export type AnyRasterEntry = RasterEntry<
-	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
+	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 >;
 
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;

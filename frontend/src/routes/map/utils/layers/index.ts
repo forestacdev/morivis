@@ -68,6 +68,7 @@ import { get } from 'svelte/store';
 
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
+import { createRasterPaint } from '$routes/map/utils/layers/raster';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -866,6 +867,15 @@ export const createLayersItems = (
 							type: 'raster',
 							paint: {
 								'raster-opacity': style.opacity
+							}
+						});
+					} else if (style.type === 'cad') {
+						rasterLayerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity,
+								...createRasterPaint(style.color)
 							}
 						});
 					}

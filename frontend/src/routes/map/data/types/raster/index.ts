@@ -71,6 +71,8 @@ export type RasterFormatType = 'image' | 'pmtiles' | 'cog' | 'tiff';
 
 export type TileSize = 512 | 256;
 
+export type RasterStyleType = 'basemap' | 'categorical' | 'dem' | 'tiff' | 'cad';
+
 export interface RasterBaseMapStyle {
 	type: 'basemap';
 	opacity: Opacity;
@@ -109,6 +111,13 @@ export interface RasterCategoricalStyle {
 	visible?: boolean;
 	resampling?: 'nearest' | 'linear';
 	legend: CategoryLegend | GradientLegend | ImageLegend;
+}
+
+export interface RasterCadStyle {
+	type: 'cad';
+	opacity: Opacity;
+	visible?: boolean;
+	color: string;
 }
 
 export const COLOR_MAP_TYPE = [

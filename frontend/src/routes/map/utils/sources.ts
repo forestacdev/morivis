@@ -167,6 +167,16 @@ export const createSourcesItems = async (
 									bounds: metaData.bounds
 								} as RasterSourceSpecification;
 							}
+						} else if (style.type === 'cad') {
+							items[sourceId] = {
+								type: 'raster',
+								url: `pmtiles://${format.url}`,
+								maxzoom: metaData.maxZoom,
+								minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds
+							} as RasterSourceSpecification;
 						} else {
 							items[sourceId] = {
 								type: 'raster',
