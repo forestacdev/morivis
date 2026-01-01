@@ -167,7 +167,7 @@ export const generateDemCoverImage = async (
 		}
 
 		const worker = new Worker(
-			new URL('../../../protocol/raster/protocol_dem.worker', import.meta.url),
+			new URL('../../../protocol/raster/protocol_dem.worker.ts', import.meta.url),
 			{
 				type: 'module'
 			}
@@ -304,7 +304,7 @@ export const generateDemCoverImage = async (
 // 色と画像urlを引数に画像の特定の色を変える関数
 const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Promise<string> => {
 	const tileId = crypto.randomUUID();
-	const worker = new Worker(new URL('./image_replacement_color.worker', import.meta.url), {
+	const worker = new Worker(new URL('./image_replacement_color.worker.ts', import.meta.url), {
 		type: 'module'
 	});
 	const { metaData } = _entry;
