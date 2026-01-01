@@ -4,11 +4,15 @@ import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
-import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
+import {
+	DEM_DATA_TYPE,
+	type DemDataTypeKey,
+	type RasterDemEntry
+} from '$routes/map/data/types/raster';
 import { TileProxy } from '$routes/map/utils/image';
 import {
 	type RasterDemStyle,
-	type RasterDemEntry,
+	type RasterCadEntry,
 	DEM_STYLE_TYPE,
 	type DemStyleMode
 } from '$routes/map/data/types/raster';
@@ -64,6 +68,12 @@ export const generatePmtilesImageUrl = async (
 
 			return convertUrl;
 		}
+	} else if (_layerEntry.style.type === 'cad') {
+		const convertUrl = await replaceColorInImage(
+			_layerEntry.format.url,
+			_layerEntry as RasterCadEntry
+		);
+		return convertUrl;
 	} else {
 		const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
 		return await getImagePmtiles(_layerEntry.format.url, tile);
@@ -151,9 +161,12 @@ export const generateDemCoverImage = async (
 			image = await createEmptyBitmap();
 		}
 
-		const worker = new Worker(new URL('../../../protocol/raster/worker', import.meta.url), {
-			type: 'module'
-		});
+		const worker = new Worker(
+			new URL('../../../protocol/raster/protocol_dem.worker', import.meta.url),
+			{
+				type: 'module'
+			}
+		);
 
 		if (mode === 'relief') {
 			const elevationColorArray = colorMapCache.createColorArray(
@@ -281,4 +294,52 @@ export const generateDemCoverImage = async (
 	} catch (error) {
 		throw new Error(`Failed to load image: ${error}`);
 	}
+};
+
+// 色と画像urlを引数に画像の特定の色を変える関数
+const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Promise<string> => {
+	const tileId = crypto.randomUUID();
+	const worker = new Worker(new URL('./image_replacement_color.worker', import.meta.url), {
+		type: 'module'
+	});
+	const { metaData } = _entry;
+	const { x, y, z } = metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
+	const baseUrl = _entry.format.url;
+	const encodeType: 'blob' | 'buffar' = 'blob';
+
+	let image;
+
+	if (_entry.format.type === 'image') {
+		image = await loadImageToBitmap(imageUrl);
+	} else if (_entry.format.type === 'pmtiles') {
+		image = await loadImagePmtiles(baseUrl, { x, y, z });
+	} else {
+		image = await createEmptyBitmap();
+	}
+
+	const targetColor = '#ff0000';
+	const replacementColor = _entry.style.color;
+
+	return new Promise((resolve, reject) => {
+		worker.postMessage({
+			tileId,
+			image,
+			targetColor,
+			replacementColor,
+			encodeType
+		});
+
+		worker.onmessage = (e) => {
+			const { id, blob, error } = e.data;
+			if (id === tileId) {
+				if (error) {
+					reject(new Error(error));
+				} else {
+					resolve(URL.createObjectURL(blob));
+				}
+			}
+
+			worker.terminate(); // Workerを終了
+		};
+	});
 };

@@ -105,8 +105,10 @@ export const createRasterPaint = (
 	let saturationAdjust = targetSat - baseSat + saturationBoost;
 
 	// 明度の調整
-	let brightnessMin = options.brightnessMin ?? 0;
-	let brightnessMax = options.brightnessMax ?? 1;
+	// targetLumとbaseLumの差に基づいて調整
+	// raster-brightness-min/maxは0〜1の範囲
+	let brightnessMin: number;
+	let brightnessMax: number;
 
 	// 無彩色（白・黒・グレー）への変換処理
 	if (isTargetAchromatic) {
@@ -118,6 +120,28 @@ export const createRasterPaint = (
 		// brightness-minとmaxを同じ値にすることで、その明度に固定
 		brightnessMin = targetLum;
 		brightnessMax = targetLum;
+	} else {
+		// 有彩色の場合、明度差を反映
+		// baseLum(赤) ≈ 0.5を基準に、targetLumとの差を調整
+		const lumDiff = targetLum - baseLum;
+
+		if (options.brightnessMin !== undefined || options.brightnessMax !== undefined) {
+			// オプションで明示的に指定された場合はそれを使用
+			brightnessMin = options.brightnessMin ?? 0;
+			brightnessMax = options.brightnessMax ?? 1;
+		} else {
+			// 自動調整: 明度差に応じてmin/maxを調整
+			// 明るくする場合: minを上げる、暗くする場合: maxを下げる
+			if (lumDiff >= 0) {
+				// 明るくする: minを上げて全体を底上げ
+				brightnessMin = Math.min(1, lumDiff * 2);
+				brightnessMax = 1;
+			} else {
+				// 暗くする: maxを下げて全体を暗く
+				brightnessMin = 0;
+				brightnessMax = Math.max(0, 1 + lumDiff * 2);
+			}
+		}
 	}
 
 	return {
@@ -210,3 +234,6 @@ export const createCssColorFilter = (
 
 	return filters.join(' ');
 };
+
+console.log(createRasterPaint('#ff0000'));
+console.log(createRasterPaint('#ff8282'));

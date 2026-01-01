@@ -3,7 +3,7 @@ import type { Map, MapStyleImageMissingEvent } from 'maplibre-gl';
 
 let mapLibreMap: Map | null = null;
 
-const iconWorker = new Worker(new URL('./worker.ts', import.meta.url), {
+const iconWorker = new Worker(new URL('./generation_icon.worker.ts', import.meta.url), {
 	type: 'module'
 });
 

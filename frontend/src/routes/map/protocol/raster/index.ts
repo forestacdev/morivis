@@ -190,7 +190,9 @@ class WorkerProtocolPool {
 
 		// 指定されたプールサイズのワーカープロトコルを作成
 		for (let i = 0; i < poolSize; i++) {
-			const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+			const worker = new Worker(new URL('./protocol_dem.worker.ts', import.meta.url), {
+				type: 'module'
+			});
 			this.workers.push(new WorkerProtocol(worker));
 		}
 	}

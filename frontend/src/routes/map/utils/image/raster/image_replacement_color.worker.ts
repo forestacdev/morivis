@@ -1,5 +1,6 @@
 import fsSource from './shaders/fragment.glsl?raw';
 import vsSource from './shaders/vertex.glsl?raw';
+import chroma from 'chroma-js';
 
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
@@ -62,66 +63,18 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 };
 
-const bindTextures = (
-	gl: WebGL2RenderingContext,
-	program: WebGLProgram,
-	textures: { [name: string]: { image: ImageBitmap; type: 'height' } }
-) => {
-	let textureUnit = gl.TEXTURE0;
-
-	Object.entries(textures).forEach(([uniformName, { image, type }]) => {
-		// テクスチャをバインド
-		const texture = gl.createTexture();
-		gl.activeTexture(textureUnit); // 現在のテクスチャユニットをアクティブ
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-
-		const location = gl.getUniformLocation(program, uniformName);
-		gl.uniform1i(location, textureUnit - gl.TEXTURE0);
-
-		if (type === 'height') {
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image as ImageBitmap);
-		}
-
-		// ラッピングとフィルタリングの設定
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-		textureUnit += 1; // 次のテクスチャユニットへ
-	});
-};
-
-type UniformValue = {
-	type: '1f' | '1i' | '4fv' | '3fv'; // 型指定
-	value: number | Float32Array | Int32Array | number[];
-};
-
-type Uniforms = {
-	[name: string]: UniformValue;
-};
-
-const setUniforms = (
-	gl: WebGL2RenderingContext,
-	program: WebGLProgram,
-	uniforms: Uniforms
-): void => {
-	for (const [name, { type, value }] of Object.entries(uniforms)) {
-		const location = gl.getUniformLocation(program, name);
-		if (location !== null) {
-			(gl as any)[`uniform${type}`](location, value);
-		}
-	}
-};
-
-const canvas = new OffscreenCanvas(256, 256);
+const canvas = new OffscreenCanvas(512, 512);
 
 self.onmessage = async (e) => {
-	const { id, image, demTypeNumber } = e.data;
-
+	const { tileId, image, targetColor, replacementColor, encodeType } = e.data;
 	try {
 		if (!gl) {
 			initWebGL(canvas);
+		}
+
+		if (canvas.width !== image.width || canvas.height !== image.height) {
+			canvas.width = image.width;
+			canvas.height = image.height;
 		}
 
 		if (!gl || !program || !positionBuffer) {
@@ -130,16 +83,28 @@ self.onmessage = async (e) => {
 
 		gl.useProgram(program);
 
-		const uniforms: Uniforms = {
-			u_dem_type: { type: '1f', value: demTypeNumber }
-		};
+		// テクスチャの作成と読み込み
+		const texture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, texture);
 
-		setUniforms(gl, program, uniforms);
+		// 色の置換用のユニフォーム設定
+		const targetColorLocation = gl.getUniformLocation(program, 'u_target_color');
+		const replacementColorLocation = gl.getUniformLocation(program, 'u_replacement_color');
+		const toleranceLocation = gl.getUniformLocation(program, 'u_tolerance');
 
-		// テクスチャ
-		bindTextures(gl, program, {
-			u_height_map: { image: image, type: 'height' }
-		});
+		gl.uniform3fv(targetColorLocation, chroma(targetColor).gl().slice(0, 3));
+		gl.uniform3fv(replacementColorLocation, chroma(replacementColor).gl().slice(0, 3));
+		gl.uniform1f(toleranceLocation, 1.0); // 許容範囲
+
+		// テクスチャのパラメータ設定
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		// gl.generateMipmap(gl.TEXTURE_2D);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -149,10 +114,13 @@ self.onmessage = async (e) => {
 			throw new Error('Failed to convert canvas to blob');
 		}
 
-		self.postMessage({ responseId: id, blob }); // Blobを転送
-	} catch (error) {
-		if (error instanceof Error) {
-			self.postMessage({ id, error: error.message });
+		if (encodeType === 'buffar') {
+			const buffer = await blob.arrayBuffer();
+			self.postMessage({ id: tileId, buffer });
+		} else if (encodeType === 'blob') {
+			self.postMessage({ id: tileId, blob });
 		}
+	} catch (e) {
+		console.error(e);
 	}
 };

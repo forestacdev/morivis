@@ -1,3 +1,4 @@
+import type { image } from 'html2canvas/dist/types/css/types/image';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 

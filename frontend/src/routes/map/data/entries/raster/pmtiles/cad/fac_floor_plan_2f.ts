@@ -35,7 +35,7 @@ const entry: RasterPMTilesEntry<RasterCadStyle> = {
 	style: {
 		type: 'cad',
 		opacity: 1.0,
-		color: '#ff0000'
+		color: '#aeff00'
 	}
 };
 
