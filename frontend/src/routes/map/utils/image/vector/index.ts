@@ -306,14 +306,16 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 				throw new Error('Invalid tile URL');
 			}
 		} catch (error) {
-			console.error('Tile URL fetch failed:', error);
-			// CORSエラーの場合は、タイルが存在すると仮定するか、
-			// 別の検証方法を使用することを検討
-			if (error.name === 'TypeError' && error.message.includes('CORS')) {
-				console.warn('CORS error detected, skipping tile validation');
-				// 必要に応じてここで代替処理
-			} else {
-				throw new Error(`Tile URL fetch failed: ${checkUrl} - ${error.message}`);
+			if (error instanceof Error) {
+				console.error('Tile URL fetch failed:', error);
+				// CORSエラーの場合は、タイルが存在すると仮定するか、
+				// 別の検証方法を使用することを検討
+				if (error.name === 'TypeError' && error.message.includes('CORS')) {
+					console.warn('CORS error detected, skipping tile validation');
+					// 必要に応じてここで代替処理
+				} else {
+					throw new Error(`Tile URL fetch failed: ${checkUrl} - ${error.message}`);
+				}
 			}
 		}
 	}

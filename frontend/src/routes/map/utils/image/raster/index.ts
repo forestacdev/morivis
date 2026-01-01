@@ -2,6 +2,7 @@ import { getImagePmtiles } from '$routes/map/utils/raster';
 import { convertTmsToXyz } from '$routes/map/utils/sources';
 import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
+import { CoverImageManager } from '../index';
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
 import {
@@ -298,6 +299,8 @@ export const generateDemCoverImage = async (
 
 // 色と画像urlを引数に画像の特定の色を変える関数
 const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Promise<string> => {
+	const url = CoverImageManager.get(_entry.id);
+	if (url) return url;
 	const tileId = crypto.randomUUID();
 	const worker = new Worker(new URL('./image_replacement_color.worker', import.meta.url), {
 		type: 'module'
@@ -335,7 +338,8 @@ const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Pr
 				if (error) {
 					reject(new Error(error));
 				} else {
-					resolve(URL.createObjectURL(blob));
+					CoverImageManager.add(_entry.id, URL.createObjectURL(blob));
+					resolve(CoverImageManager.get(_entry.id)!);
 				}
 			}
 

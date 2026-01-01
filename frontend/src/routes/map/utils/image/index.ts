@@ -7,10 +7,19 @@ import { generateMapImageDOM, generateVectorImageUrl, type MapImageOptions } fro
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
+/** BlobURLかどうかを判定 */
+const isBlobUrl = (url: string): boolean => url.startsWith('blob:');
+
 /**   画像の管理クラス */
 export class CoverImageManager {
 	private static readonly MAX_SIZE = 100;
 	private static images: Map<string, string> = new Map();
+
+	private static revokeIfBlob(url: string): void {
+		if (isBlobUrl(url)) {
+			URL.revokeObjectURL(url);
+		}
+	}
 
 	static add(id: string, url: string): void {
 		if (this.images.has(id)) {
@@ -24,10 +33,10 @@ export class CoverImageManager {
 			// 最も古いエントリ（最初のエントリ）を削除
 			const oldestKey = this.images.keys().next().value;
 			if (oldestKey) {
-				const oldestUrl = this.images.get(oldestKey); // 先に取得
-				this.images.delete(oldestKey); // 削除
+				const oldestUrl = this.images.get(oldestKey);
+				this.images.delete(oldestKey);
 				if (oldestUrl) {
-					URL.revokeObjectURL(oldestUrl); // クリーンアップ
+					this.revokeIfBlob(oldestUrl);
 				}
 			}
 		}
@@ -50,7 +59,9 @@ export class CoverImageManager {
 	}
 
 	static remove(id: string): void {
-		if (this.images.has(id)) {
+		const url = this.images.get(id);
+		if (url) {
+			this.revokeIfBlob(url);
 			this.images.delete(id);
 		} else {
 			console.warn(`Image with id ${id} does not exist.`);
@@ -58,9 +69,8 @@ export class CoverImageManager {
 	}
 
 	static clear(): void {
-		// 全てのBlobURLをクリーンアップ
 		this.images.forEach((url) => {
-			URL.revokeObjectURL(url);
+			this.revokeIfBlob(url);
 		});
 		this.images.clear();
 	}
