@@ -8,6 +8,7 @@ import type {
 	RasterCadStyle,
 	TileXYZ
 } from '$routes/map/data/types/raster';
+import type { AnyModelEntry } from '$routes/map/data/types/model';
 import type { AttributionKey } from '../attribution';
 import type { Region } from './location';
 import type { Tag } from './tags';
@@ -38,4 +39,4 @@ export type AnyRasterEntry = RasterEntry<
 
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
 
-export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry;
+export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry;
