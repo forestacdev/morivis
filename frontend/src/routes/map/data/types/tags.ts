@@ -51,7 +51,8 @@ export const TAG_LIST = [
 	'樹木被覆率',
 	'標高段彩図',
 	'施設平面図',
-	'CAD'
+	'CAD',
+	'点群'
 ] as const;
 
 // 配列から型を生成

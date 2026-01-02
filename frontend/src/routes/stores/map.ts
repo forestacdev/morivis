@@ -671,33 +671,21 @@ const createMapStore = () => {
 
 		const padding = checkPc() ? 20 : 0;
 
-		if (_entry.type === 'model') {
-			const { metaData } = _entry;
-
-			map.flyTo({
-				center: metaData.center, // 中心座標
-				zoom: 18, // ズームレベル
-				pitch: 60, // 傾き（0-85度）
+		if (_entry.metaData.center) {
+			// 中心座標が指定されている場合は、中心にズーム
+			map.easeTo({
+				center: _entry.metaData.center,
+				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
+				pitch: map.getPitch(),
 				duration: 500
 			});
 		} else {
-			if (_entry.metaData.center) {
-				// 中心座標が指定されている場合は、中心にズーム
-				map.easeTo({
-					center: _entry.metaData.center,
-					zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
-					bearing: map.getBearing(),
-					pitch: map.getPitch(),
-					duration: 500
-				});
-			} else {
-				map.fitBounds(_entry.metaData.bounds, {
-					bearing: map.getBearing(),
-					padding: -100,
-					duration: 500
-				});
-			}
+			map.fitBounds(_entry.metaData.bounds, {
+				bearing: map.getBearing(),
+				padding: -100,
+				duration: 500
+			});
 		}
 	};
 

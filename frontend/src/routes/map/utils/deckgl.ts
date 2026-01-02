@@ -2,7 +2,17 @@ import { Tile3DLayer } from '@deck.gl/geo-layers';
 
 import type { AnyModelTiles3DEntry } from '../data/types/model';
 
+interface TileContent {
+	cartographicOrigin?: number[];
+}
+
+interface Tile3D {
+	content?: TileContent;
+}
+
 const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
+	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
+
 	return new Tile3DLayer({
 		id: `3d-tiles-layer-${dataEntry.id}`,
 		data: dataEntry.format.url,
@@ -15,6 +25,13 @@ const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 		beforeId: 'deck-reference-layer', // これ以降に描画されるように
 		loadOptions: {
 			'3d-tiles': { decodeQuantizedPositions: true }
+		},
+		// 高さオフセットを適用
+		onTileLoad: (tile: Tile3D) => {
+			if (tile.content?.cartographicOrigin && altitudeOffset !== 0) {
+				// Z座標（高さ）にオフセットを加算
+				// tile.content.cartographicOrigin[2] -= altitudeOffset;
+			}
 		}
 	});
 };
