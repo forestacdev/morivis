@@ -14,11 +14,23 @@ interface BaseModelEntry {
 }
 
 export interface MeshStyle {
-	type: 'mash';
+	type: 'mesh';
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
 	color: string;
+	transform: {
+		lng: number;
+		lat: number;
+		altitude: number;
+		scale: number;
+		// rotationX: number;
+		rotationY: number;
+		// rotationZ: number;
+		// translateX: number;
+		// translateY: number;
+		// translateZ: number;
+	};
 }
 
 export interface PointCloudStyle {
