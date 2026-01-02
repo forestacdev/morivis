@@ -170,6 +170,7 @@ const createMapStore = () => {
 			// 	alpha: true, // アルファチャンネルを有効にする
 			// 	preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
 			// },
+			canvasContextAttributes: { antialias: true }, // アンチエイリアスを有効にする
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
 			style: {
 				version: 8,
@@ -514,7 +515,7 @@ const createMapStore = () => {
 	};
 
 	const setDeckOverlay = (layers: LayersList) => {
-		if (!map || !isMapValid(map)) return;
+		if (!map || !isMapValid(map) || !deckOverlay) return;
 		deckOverlay.setProps({
 			layers: layers
 		});
@@ -670,23 +671,33 @@ const createMapStore = () => {
 
 		const padding = checkPc() ? 20 : 0;
 
-		if (_entry.metaData.center) {
-			// 中心座標が指定されている場合は、中心にズーム
-			map.easeTo({
-				center: _entry.metaData.center,
-				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
+		if (_entry.type === 'model') {
+			const { metaData } = _entry;
+
+			map.flyTo({
+				center: metaData.center, // 中心座標
+				zoom: 18, // ズームレベル
+				pitch: 60, // 傾き（0-85度）
 				bearing: map.getBearing(),
-				pitch: map.getPitch(),
-				// padding: padding,
 				duration: 500
 			});
-			return;
 		} else {
-			map.fitBounds(_entry.metaData.bounds, {
-				bearing: map.getBearing(),
-				padding: -100,
-				duration: 500
-			});
+			if (_entry.metaData.center) {
+				// 中心座標が指定されている場合は、中心にズーム
+				map.easeTo({
+					center: _entry.metaData.center,
+					zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
+					bearing: map.getBearing(),
+					pitch: map.getPitch(),
+					duration: 500
+				});
+			} else {
+				map.fitBounds(_entry.metaData.bounds, {
+					bearing: map.getBearing(),
+					padding: -100,
+					duration: 500
+				});
+			}
 		}
 	};
 
@@ -955,14 +966,14 @@ const createMapStore = () => {
 		return map.getLayer(layerId);
 	};
 
-	const setCamera = (lngLat: maplibregl.LngLat) => {
+	const setCamera = (lngLat: maplibregl.LngLat, altitude?: number) => {
 		if (!map) return;
 
 		// https://github.com/maplibre/maplibre-gl-js/issues/4688
 		const elevation = map.queryTerrainElevation(lngLat);
 
 		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0);
+		map.setCenterElevation(elevation ? elevation : (altitude ?? 0));
 
 		map._elevationStart = map._elevationTarget;
 	};

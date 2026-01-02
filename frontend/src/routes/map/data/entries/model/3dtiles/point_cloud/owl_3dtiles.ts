@@ -16,7 +16,9 @@ const entry: ModelTiles3DEntry<PointCloudStyle> = {
 		minZoom: 10,
 		maxZoom: 22,
 		tags: ['森林', '単木'],
-		bounds: [136.920923, 35.548695, 136.921198, 35.548997],
+		bounds: [136.92055416544, 35.54856972088334, 136.9217569739988, 35.54913869414441],
+		center: [136.92102808, 35.54882817],
+		altitude: 201,
 		xyzImageTile: { x: 923099, y: 413380, z: 20 },
 		mapImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_owl_poc.webp`,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_owl_poc.webp`
@@ -27,7 +29,7 @@ const entry: ModelTiles3DEntry<PointCloudStyle> = {
 	style: {
 		type: 'point-cloud',
 		opacity: 0.7,
-		pointSize: 0.1
+		pointSize: 1
 	}
 };
 
