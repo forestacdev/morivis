@@ -903,6 +903,7 @@ const createMapStore = () => {
 		setStyleEvent.set(null);
 		isLoadingEvent.set(true);
 		isStyleLoadEvent.set(null);
+		onStyleDataEvent.set(null);
 		moveEndEvent.set(null);
 		resizeEvent.set(null);
 		initEvent.set(null);

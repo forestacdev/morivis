@@ -54,7 +54,7 @@
 	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
-
+	import ThreeLayer from '$routes/map/components/map_layer/ThreeLayer.svelte';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
@@ -529,8 +529,6 @@
 		mapStore.setStyle(mapStyle);
 		mapStore.terrainReload();
 
-		// saveToLayerEntries(entries as GeoDataEntry[]);
-
 		if (!maplibreMap) return;
 	}, 100);
 
@@ -575,16 +573,6 @@
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});
-
-	// TODO:書き込みデータの更新を監視
-	// $effect(() => {
-	// 	if (!maplibreMap || !maplibreMap.loaded()) return;
-
-	// 	const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
-	// 	if (source) {
-	// 		source.setData(drawGeojsonData as FeatureCollection);
-	// 	}
-	// });
 
 	// データプレビュー
 	$effect(() => {
@@ -683,7 +671,7 @@
 
 	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
-		<div class="absolute right-5 bottom-[100px] max-lg:hidden">
+		<div class="absolute bottom-[100px] right-5 max-lg:hidden">
 			<Compass />
 		</div>
 
@@ -701,7 +689,7 @@
 		{clickedLngLat}
 	/>
 </div>
-
+<!-- <ThreeLayer /> -->
 {#if maplibreMap}
 	<FileManager
 		map={maplibreMap}
