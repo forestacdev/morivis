@@ -62,7 +62,8 @@
 						paint: {
 							'raster-opacity': 0.5
 						}
-					}
+					},
+					...layers
 				]
 			},
 			center: [139.7454, 35.6586],

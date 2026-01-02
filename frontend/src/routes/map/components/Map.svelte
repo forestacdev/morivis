@@ -53,8 +53,6 @@
 	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
-	import ThreeLayer from '$routes/map/components/map_layer/ThreeLayer.svelte';
-	import DeckglLayer from '$routes/map/components/map_layer/DeckglLayer.svelte';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
@@ -692,7 +690,7 @@
 	/>
 </div>
 <!-- <ThreeLayer /> -->
-<DeckglLayer />
+
 {#if maplibreMap}
 	<FileManager
 		map={maplibreMap}
