@@ -118,6 +118,7 @@ export interface MapState {
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
+	let deckOverlay: MapboxOverlay | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -147,13 +148,13 @@ const createMapStore = () => {
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
 
-	const deckOverlay = new MapboxOverlay({
+	deckOverlay = new MapboxOverlay({
 		id: 'deckgl-overlay',
 		interleaved: true,
 		layers: []
 	});
 
-	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
+	const init = (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
 
 		map = new maplibregl.Map({
@@ -169,7 +170,11 @@ const createMapStore = () => {
 			// 	preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
 			// },
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
-			style: mapStyle,
+			style: {
+				version: 8,
+				sources: {},
+				layers: []
+			},
 			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
@@ -237,12 +242,6 @@ const createMapStore = () => {
 				// resourceTimingプロパティにタイミング情報が含まれる
 			});
 		}
-		// map.scrollZoom.setWheelZoomRate(1 / 800);
-
-		// map.setBearing(mapPosition.bearing);
-		// map.setZoom(mapPosition.zoom);
-
-		setStyleEvent.set(mapStyle);
 
 		if (!map) return;
 
@@ -515,7 +514,6 @@ const createMapStore = () => {
 
 	const setDeckOverlay = (layers: LayersList) => {
 		if (!map || !isMapValid(map)) return;
-
 		deckOverlay.setProps({
 			layers: layers
 		});
@@ -910,6 +908,7 @@ const createMapStore = () => {
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
+		deckOverlay.finalize();
 		map.remove();
 		map = null;
 		set(null);

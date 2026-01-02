@@ -502,26 +502,9 @@
 
 	// 初期描画時
 	onMount(async () => {
-		if (!layerEntries) return;
+		if (!mapContainer) return;
 
-		// allTiles = await getJmaTileUrls();
-		// console.log('allTiles', allTiles);
-		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
-		// if (!$isDebugMode) {
-		// 	const localEntries = loadLayerEntries();
-
-		// 	// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
-		// 	if (localEntries && localEntries.length > 0) {
-		// 		layerEntries = localEntries;
-		// 		const ids = getEntryIds(layerEntries);
-		// 		activeLayerIdsStore.setLayers(ids);
-		// 	}
-		// }
-
-		const mapStyle = await createMapStyle(layerEntries);
-		if (!mapStyle || !mapContainer) return;
-
-		mapStore.init(mapContainer, mapStyle as StyleSpecification);
+		mapStore.init(mapContainer);
 	});
 
 	onDestroy(() => {
@@ -533,7 +516,9 @@
 
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
-		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
+		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
+
+		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
 
 		mapStore.setStyle(mapStyle);
 
@@ -541,11 +526,8 @@
 			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
 		) as AnyModelTiles3DEntry[];
 
-		console.log('tiles3dEntry', tiles3dEntry);
-		if (tiles3dEntry.length) {
-			const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
-			mapStore.setDeckOverlay(deckOverlayLayers);
-		}
+		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
+		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		mapStore.terrainReload();
 
