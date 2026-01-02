@@ -217,7 +217,7 @@
 
 		isInitialStreetViewEntry = true;
 
-		mapStore.onload(() => {
+		mapStore.onLoad(() => {
 			const terrain3d = get3dParams();
 			if (terrain3d === '1' && checkPc()) {
 				// mapStore.toggleTerrain(true);
@@ -497,7 +497,7 @@
 			<!-- スマホ用その他メニュー -->
 			<div
 				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
-					? 'pointer-events-auto opacity-500'
+					? 'opacity-500 pointer-events-auto'
 					: 'pointer-events-none opacity-0'}"
 			>
 				<OtherMenu bind:imagePreviewUrl />

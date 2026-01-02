@@ -57,6 +57,9 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
+		"@deck.gl/core": "^9.2.5",
+		"@deck.gl/geo-layers": "^9.2.5",
+		"@deck.gl/mapbox": "^9.2.5",
 		"@mapbox/tilebelt": "^2.0.2",
 		"@mapbox/vector-tile": "^2.0.3",
 		"@ngageoint/geopackage": "^4.2.6",

@@ -14,7 +14,6 @@
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import LayerControl from '$routes/map/components/LayerControl.svelte';
-
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
@@ -55,11 +54,12 @@
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
 	import ThreeLayer from '$routes/map/components/map_layer/ThreeLayer.svelte';
+	import DeckglLayer from '$routes/map/components/map_layer/DeckglLayer.svelte';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import { checkPc } from '../utils/ui';
+	import { checkPc } from '$routes/map/utils/ui';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type {
 		ResultAddressData,
@@ -67,7 +67,9 @@
 		ResultPoiData,
 		SearchGeojsonData
 	} from '../utils/feature';
-	import type { TileInfo } from '../api/whether';
+	import type { TileInfo } from '$routes/map/api/whether';
+	import { createDeckOverlay } from '$routes/map/utils/deckgl';
+	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -376,7 +378,13 @@
 				...layers,
 				...xyzTileLayer,
 				...previewLayers,
-
+				{
+					id: 'deck-reference-layer',
+					type: 'background',
+					paint: {
+						'background-opacity': 0
+					}
+				},
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
@@ -526,7 +534,19 @@
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
+
 		mapStore.setStyle(mapStyle);
+
+		const tiles3dEntry = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+		) as AnyModelTiles3DEntry[];
+
+		console.log('tiles3dEntry', tiles3dEntry);
+		if (tiles3dEntry.length) {
+			const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
+			mapStore.setDeckOverlay(deckOverlayLayers);
+		}
+
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
@@ -690,6 +710,7 @@
 	/>
 </div>
 <!-- <ThreeLayer /> -->
+<DeckglLayer />
 {#if maplibreMap}
 	<FileManager
 		map={maplibreMap}

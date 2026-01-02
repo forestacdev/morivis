@@ -43,6 +43,8 @@ import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'ge
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { isPointInBbox } from '$routes/map/utils/map';
+import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
+import type { LayersList } from '@deck.gl/core';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -144,6 +146,12 @@ const createMapStore = () => {
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
+
+	const deckOverlay = new MapboxOverlay({
+		id: 'deckgl-overlay',
+		interleaved: true,
+		layers: []
+	});
 
 	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
 		const mapPosition = getMapParams();
@@ -262,6 +270,8 @@ const createMapStore = () => {
 		});
 
 		map.once('style.load', () => {
+			if (!map) return;
+			map.addControl(deckOverlay as maplibregl.IControl);
 			isStyleLoadEvent.set(map);
 		});
 
@@ -501,6 +511,14 @@ const createMapStore = () => {
 		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
 		map.setStyle(style);
+	};
+
+	const setDeckOverlay = (layers: LayersList) => {
+		if (!map || !isMapValid(map)) return;
+
+		deckOverlay.setProps({
+			layers: layers
+		});
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
@@ -971,6 +989,7 @@ const createMapStore = () => {
 		setCursor,
 		setData,
 		setStyle,
+		setDeckOverlay,
 		setFilter,
 		setFeatureState,
 		setLayoutProperty,
@@ -1011,7 +1030,7 @@ const createMapStore = () => {
 		// リスナー
 		onSetStyle: createEventSubscriber(setStyleEvent), // スタイル設定イベントの購読用メソッド
 		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
-		onload: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
+		onLoad: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
 		onClick: createEventSubscriber(clickEvent), // クリックイベント
 		onContextMenu: createEventSubscriber(contextMenuEvent), // コンテキストメニューイベント
 		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド

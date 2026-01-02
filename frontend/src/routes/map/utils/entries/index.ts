@@ -1,6 +1,6 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 // 配列を自動ソートする ラスターが下になるように
-export type LayerType = 'point' | 'line' | 'polygon' | 'raster';
+export type LayerType = 'model' | 'point' | 'line' | 'polygon' | 'raster';
 
 /** レイヤータイプの取得 */
 export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
@@ -18,7 +18,10 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 		} else if (_dataEntry.format.geometryType === 'Polygon') {
 			return 'polygon';
 		}
+	} else if (_dataEntry.type === 'model') {
+		return 'model';
 	} else {
+		console.error('不明なデータエントリタイプです。');
 		throw new Error(`Unknown layer type: ${_dataEntry}`);
 	}
 };
@@ -33,6 +36,8 @@ export const getLayerIcon = (layerType: LayerType): string => {
 			return 'ic:baseline-pentagon';
 		case 'raster':
 			return 'mdi:raster';
+		case 'model':
+			return 'iconoir:3d-select-solid';
 		default:
 			throw new Error(`Unknown layer type: ${layerType}`);
 	}

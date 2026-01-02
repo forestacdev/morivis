@@ -6,7 +6,7 @@ const entry: ModelTiles3DEntry<PointCloudStyle> = {
 	type: 'model',
 	format: {
 		type: '3d-tiles',
-		url: `${ENTRY_3DTILES_PATH}/ensyurin_owl`
+		url: `${ENTRY_3DTILES_PATH}/ensyurin_owl/tileset.json`
 	},
 	metaData: {
 		name: '演習林 単木 点群',
@@ -18,8 +18,8 @@ const entry: ModelTiles3DEntry<PointCloudStyle> = {
 		tags: ['森林', '単木'],
 		bounds: [136.920923, 35.548695, 136.921198, 35.548997],
 		xyzImageTile: { x: 923099, y: 413380, z: 20 },
-		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_owl.webp`,
-		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_owl.webp`
+		mapImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_owl_poc.webp`,
+		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_owl_poc.webp`
 	},
 	interaction: {
 		clickable: false

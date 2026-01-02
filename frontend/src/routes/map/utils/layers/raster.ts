@@ -234,6 +234,3 @@ export const createCssColorFilter = (
 
 	return filters.join(' ');
 };
-
-console.log(createRasterPaint('#ff0000'));
-console.log(createRasterPaint('#ff8282'));

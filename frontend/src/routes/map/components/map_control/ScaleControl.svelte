@@ -74,7 +74,7 @@
 	};
 
 	onMount(() => {
-		mapStore.onload(() => {
+		mapStore.onLoad(() => {
 			map = mapStore.getMap();
 			if (!map) return;
 
@@ -100,7 +100,7 @@
 	});
 
 	// 	NOTE:debug
-	// mapStore.onload(() => {
+	// mapStore.onLoad(() => {
 	// 	const map = mapStore.getMap();
 
 	// 	map?.addControl(
