@@ -148,14 +148,15 @@ const createMapStore = () => {
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
 
-	deckOverlay = new MapboxOverlay({
-		id: 'deckgl-overlay',
-		interleaved: true,
-		layers: []
-	});
-
 	const init = (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
+
+		// deckOverlay を再作成（ページ遷移後に再初期化するため）
+		deckOverlay = new MapboxOverlay({
+			id: 'deckgl-overlay',
+			interleaved: true,
+			layers: []
+		});
 
 		map = new maplibregl.Map({
 			...mapPosition,
@@ -908,7 +909,10 @@ const createMapStore = () => {
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
-		deckOverlay.finalize();
+		if (deckOverlay) {
+			deckOverlay.finalize();
+			deckOverlay = null;
+		}
 		map.remove();
 		map = null;
 		set(null);
