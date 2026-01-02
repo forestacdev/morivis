@@ -1,5 +1,4 @@
 import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
-
 import type {
 	RasterEntry,
 	RasterCategoricalStyle,
@@ -13,7 +12,7 @@ import type { AttributionKey } from '../attribution';
 import type { Region } from './location';
 import type { Tag } from './tags';
 
-export type GeoDataType = 'raster' | 'vector' | '3d';
+export type GeoDataType = 'raster' | 'vector' | 'model';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 
 export interface BaseMetaData {
