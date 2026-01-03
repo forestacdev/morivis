@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce, delay } from 'es-toolkit';
+	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -31,7 +31,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { isStreetView, isStyleEdit } from '$routes/stores';
+	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import {
 		selectedBaseMap,
@@ -483,7 +483,7 @@
 		};
 
 		if (!import.meta.env.PROD) {
-			console.log('mapStyle', mapStyle);
+			console.log('debug:mapStyle', mapStyle);
 		}
 
 		return mapStyle;

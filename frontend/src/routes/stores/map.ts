@@ -21,12 +21,12 @@ import type {
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
-import turfBbox, { bbox } from '@turf/bbox';
+import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';
+import { debounce } from 'es-toolkit';
 
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
@@ -64,8 +64,6 @@ if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');
 	maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 }
-
-export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
@@ -309,7 +307,7 @@ const createMapStore = () => {
 		let lastMouseY = 0;
 
 		const handleMouseDown = (e: MouseEvent) => {
-			if ((e.ctrlKey || e.shiftKey) && e.button === 0) {
+			if (((e.ctrlKey || e.shiftKey) && e.button === 0) || e.button === 1) {
 				isCtrlDragging = true;
 				lastMouseX = e.clientX;
 				lastMouseY = e.clientY;
@@ -340,11 +338,6 @@ const createMapStore = () => {
 			isCtrlDragging = false;
 		};
 
-		const canvas = map.getCanvas();
-		canvas.addEventListener('mousedown', handleMouseDown);
-		window.addEventListener('mousemove', handleMouseMove);
-		window.addEventListener('mouseup', handleMouseUp);
-
 		// より詳細なエラー情報を取得
 		map.on('error', (e) => {
 			if (import.meta.env.PROD) return;
@@ -354,15 +347,20 @@ const createMapStore = () => {
 		});
 
 		map.on('click', (e: MapMouseEvent) => {
-			if (get(isHoverPoiMarker) || checkMobile()) {
-				// POIマーカーにホバーしている場合はクリックイベントを無視
+			if (checkMobile()) {
 				return;
 			}
 			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
 				return;
 			}
-			clickEvent.set(e);
+
+			// DOM要素をチェック
+			const target = e.originalEvent.target as HTMLElement;
+			if (target.classList.contains('maplibregl-canvas')) {
+				// 地図本体がクリックされた時の処理
+				clickEvent.set(e);
+			}
 		});
 
 		map.on('touchend', (e: MapMouseEvent) => {
@@ -370,7 +368,11 @@ const createMapStore = () => {
 				return;
 			}
 
-			clickEvent.set(e);
+			const target = e.originalEvent.target as HTMLElement;
+			if (target.classList.contains('maplibregl-canvas')) {
+				// 地図本体がクリックされた時の処理
+				clickEvent.set(e);
+			}
 		});
 
 		map.on('contextmenu', (e: MapMouseEvent) => {
@@ -396,18 +398,21 @@ const createMapStore = () => {
 			rotateEvent.set(bearing);
 		});
 
-		// 地図上でマウスクリックを押した時のイベント
+		// 地図上でマウスが移動した時のイベント
 		map.on('mousemove', (e: MapMouseEvent) => {
+			handleMouseMove(e.originalEvent);
 			mousemoveEvent.set(e);
 		});
 
 		// 地図上でマウスクリックを押した時のイベント
 		map.on('mousedown', (e: MapMouseEvent) => {
+			handleMouseDown(e.originalEvent);
 			mousedownEvent.set(e);
 		});
 
 		// 地図上でマウスクリックを離した時のイベント
 		map.on('mouseup', (e: MapMouseEvent) => {
+			handleMouseUp();
 			mouseupEvent.set(e);
 		});
 
@@ -421,7 +426,7 @@ const createMapStore = () => {
 			mouseoutEvent.set(e);
 		});
 
-		map.on('moveend', (e: MapLibreEvent) => {
+		const debounceMapMoveEnd = debounce((e: MapLibreEvent) => {
 			if (!map) return;
 			const url = window.location.href;
 			let origin = window.location.origin;
@@ -459,9 +464,11 @@ const createMapStore = () => {
 			moveEndEvent.set(e);
 
 			if (!import.meta.env.PROD) {
-				console.log(getMapBounds());
+				console.log('debug:Map moved: ', getMapBounds());
 			}
-		});
+		}, 100);
+
+		map.on('moveend', debounceMapMoveEnd);
 
 		map.on('zoom', (e: MouseEvent) => {
 			if (!map) return;
@@ -487,7 +494,6 @@ const createMapStore = () => {
 	const setStyle = (style: StyleSpecification) => {
 		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
-		console.log('Setting style:', map.getLayer('3d-model'));
 		map.setStyle(style, {
 			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
 			transformStyle: (previous, next) => {
@@ -1006,6 +1012,7 @@ const createMapStore = () => {
 
 	const setFeatureState = (feature: FeatureIdentifier, state: any) => {
 		if (!map) return;
+		if (!import.meta.env.PROD) console.log('debug:setFeatureState', feature, state);
 		map.setFeatureState(feature, state);
 	};
 

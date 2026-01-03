@@ -155,7 +155,7 @@
 				const features = mapStore.queryRenderedFeatures(e.point);
 
 				if (features.length) {
-					console.log('Clicked features:', features);
+					console.log('debug:Clicked features:', features);
 
 					const prop = features[0].properties;
 
@@ -474,7 +474,7 @@
 	// });
 
 	$effect(() => {
-		if (!featureMenuData) {
+		if (!featureMenuData || featureMenuData.layerId === 'fac_poi') {
 			if (hoveredId !== null && hoveredFeatureState !== null) {
 				mapStore.setFeatureState(
 					{

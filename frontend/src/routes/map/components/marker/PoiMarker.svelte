@@ -2,7 +2,7 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
+	import { mapStore } from '$routes/stores/map';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { checkMobile } from '$routes/map/utils/ui';
 
@@ -31,7 +31,7 @@
 
 	const onHover = (val: boolean) => {
 		if (checkMobile()) return;
-		isHoverPoiMarker.set(val);
+
 		isHover = val;
 	};
 
