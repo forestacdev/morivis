@@ -32,7 +32,7 @@ const entry: ModelMeshEntry<MeshStyle> = {
 			scale: 600,
 			lng: 136.919315,
 			lat: 35.552991,
-			altitude: 0, // 121
+			altitude: 0,
 			rotationY: 0
 		}
 	}

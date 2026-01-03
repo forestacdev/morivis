@@ -69,7 +69,7 @@
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import { map } from 'es-toolkit/compat';
+	import { threeJsManager } from '../utils/threejs';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -568,6 +568,10 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	mapStore.onTerrain(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
 	// 検索結果の更新
 	$effect(() => {
 		if (searchGeojsonData || !searchGeojsonData) {
@@ -585,6 +589,7 @@
 	$effect(() => {
 		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			threeJsManager.setGroupVisibility(!showDataEntry);
 		}
 	});
 

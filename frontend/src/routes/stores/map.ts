@@ -149,6 +149,7 @@ const createMapStore = () => {
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
+	const onTerrainEvent = writable<MapLibreEvent | null>(null);
 
 	const init = (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
@@ -186,6 +187,7 @@ const createMapStore = () => {
 			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
 			keyboard: false, // キーボード操作を無効化
+
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
@@ -280,8 +282,13 @@ const createMapStore = () => {
 			isStyleLoadEvent.set(map);
 		});
 
+		map.on('terrain', (e: MapLibreEvent) => {
+			onTerrainEvent.set(e);
+		});
+
 		map.on('styledata', (e) => {
 			if (!map) return;
+
 			state.set({
 				bbox: getMapBounds(),
 				zoom: map.getZoom(),
@@ -482,19 +489,11 @@ const createMapStore = () => {
 				};
 			}
 		});
-
+		// スタイル変更後にカスタムレイヤーを追加
 		initThreeLayer();
-
-		// スタイル変更後にカスタムレイヤーを再追加
-		// map.once('style.load', () => {
-		// 	if (!map) return;
-		// 	// deck.gl overlay を再追加
-		// 	// three.js layer を再追加
-		// if (!map.getLayer('3d-model')) {
-		// 	map.addLayer(threeLayer as CustomLayerInterface);
-		// }
 	};
 
+	// deck.gl レイヤーを設定
 	const setDeckOverlay = (layers: LayersList) => {
 		if (!map || !isMapValid(map) || !deckOverlay) return;
 		deckOverlay.setProps({
@@ -506,7 +505,6 @@ const createMapStore = () => {
 	const initThreeLayer = () => {
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
-
 		if (map.getLayer(layerId)) {
 			return;
 		}
@@ -545,6 +543,7 @@ const createMapStore = () => {
 		}
 
 		// 現在のIDを更新
+		threeJsManager.updateTransform(newEntries);
 		currentThreeModelIds = newIds;
 	};
 
@@ -599,14 +598,28 @@ const createMapStore = () => {
 
 	// 地形をリロードするメソッド
 	// https://github.com/maplibre/maplibre-gl-js/issues/3001
+	let terrainReloadTimer: ReturnType<typeof setTimeout> | null = null;
+
 	const terrainReload = () => {
 		if (!map || !isMapValid(map)) return;
 		if (!map.getTerrain()) return;
-		setTimeout(() => {
-			if (map) map.terrain.sourceCache.sourceCache.reload();
+
+		// 既存のタイマーをクリア
+		if (terrainReloadTimer) {
+			clearTimeout(terrainReloadTimer);
+		}
+
+		terrainReloadTimer = setTimeout(() => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const terrain = map?.terrain as any;
+			if (terrain?.sourceCache?.sourceCache) {
+				terrain.sourceCache.sourceCache.reload();
+			}
+			terrainReloadTimer = null;
 		}, 200);
 	};
 
+	// 3D地形の表示・非表示を切り替えるメソッド
 	const toggleTerrain = (is3d: boolean) => {
 		if (!map || !isMapValid(map)) return;
 
@@ -618,14 +631,14 @@ const createMapStore = () => {
 						exaggeration: 1.0
 					});
 					set3dParams('1');
-					// map.easeTo({ pitch: 60 });
+					map.easeTo({ pitch: 60 });
 				}
 			} else {
 				if (map.getTerrain()) {
 					map.setTerrain(null);
 				}
 				set3dParams('0');
-				// map.easeTo({ pitch: 0 });
+				map.easeTo({ pitch: 0 });
 			}
 		} catch (error) {
 			console.error('Terrain control error:', error);
@@ -728,6 +741,12 @@ const createMapStore = () => {
 		});
 	};
 
+	const getElevation = (lngLat: LngLat): number | null => {
+		if (!map || !isMapValid(map)) return null;
+		map.queryTerrainElevation(lngLat);
+		return null;
+	};
+
 	const getSpriteUrl = (id: string): string | undefined => {
 		if (!map || !isMapValid(map)) return;
 		undefined;
@@ -749,7 +768,6 @@ const createMapStore = () => {
 		}
 	};
 
-	// TODO: サイドバーの分をオフセット
 	const getMapBounds = (): [number, number, number, number] => {
 		if (!map || !isMapValid(map)) {
 			console.warn('Map is not ready yet.');
@@ -847,37 +865,11 @@ const createMapStore = () => {
 		map.setTerrain(null);
 		map.removeSource('terrain');
 
-		// map.addSource('terrain', {
-		// 	type: 'raster-dem',
-		// 	tiles: [`${terrain.protocolName}://${demEntry.url}?demType=${demEntry.demType}`],
-		// 	tileSize: 256,
-		// 	minzoom: demEntry.sourceMinZoom,
-		// 	maxzoom: demEntry.sourceMaxZoom,
-		// 	attribution: demEntry.attribution,
-		// 	bounds: demEntry.bbox
-		// });
-
 		map.setTerrain({
 			source: 'terrain',
 			exaggeration: 1
 		});
 
-		// const bbox = demEntry.bbox;
-		// if (!bbox) return;
-
-		const bounds = map.getBounds().toArray();
-
-		const zoom = map.getZoom();
-
-		// map.fitBounds(bbox, {
-		// 	padding: 100,
-		// 	duration: 300,
-		// 	bearing: map.getBearing()
-		// });
-
-		// if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
-		// 	map.setZoom(demEntry.sourceMaxZoom - 1.5);
-		// }
 		resetAllSourcesAndLayers();
 		terrainReload();
 	};
@@ -1058,6 +1050,7 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		getTerrain: () => map?.getTerrain(),
+		getElevation: getElevation,
 		getLayer,
 		getState: () => get(state),
 		getImage: (id: string) => map?.getImage(id),
@@ -1083,7 +1076,8 @@ const createMapStore = () => {
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
-		onStateChange: state.subscribe // マップの状態を購読するメソッド
+		onStateChange: state.subscribe, // マップの状態を購読するメソッド
+		onTerrain: createEventSubscriber(onTerrainEvent) // 地形イベントの購読用メソッド
 	};
 };
 

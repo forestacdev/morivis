@@ -26,7 +26,10 @@ interface LoadedModel {
 const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 	const { lng, lat, altitude, scale, rotationY } = style.transform;
 
-	const mc = maplibregl.MercatorCoordinate.fromLngLat([lng, lat], altitude);
+	const mc = maplibregl.MercatorCoordinate.fromLngLat(
+		[lng, lat],
+		mapStore.getTerrain() ? altitude : 0
+	);
 	const baseScale = mc.meterInMercatorCoordinateUnits();
 
 	return {
@@ -47,6 +50,7 @@ const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 export class ThreeJsLayerManager {
 	private camera: THREE.Camera | null = null;
 	private scene: THREE.Scene | null = null;
+	private modelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
@@ -65,6 +69,8 @@ export class ThreeJsLayerManager {
 				if (!this.isInitialized) {
 					this.camera = new THREE.Camera();
 					this.scene = new THREE.Scene();
+					this.modelGroup = new THREE.Group();
+					this.scene.add(this.modelGroup);
 
 					this.renderer = new THREE.WebGLRenderer({
 						canvas: map.getCanvas(),
@@ -130,7 +136,7 @@ export class ThreeJsLayerManager {
 					this.camera.projectionMatrix = projectionMatrix.multiply(modelMatrix);
 
 					// このモデルだけ表示して描画
-					this.scene!.traverse((child) => {
+					this.modelGroup!.traverse((child) => {
 						if (child.userData.entryId) {
 							child.visible = child.userData.entryId === loaded.entry.id;
 						}
@@ -153,8 +159,8 @@ export class ThreeJsLayerManager {
 	 */
 	addModel(entry: ModelMeshEntry<MeshStyle>): Promise<void> {
 		return new Promise((resolve, reject) => {
-			if (!this.scene) {
-				reject(new Error('Scene not initialized'));
+			if (!this.modelGroup) {
+				reject(new Error('modelGroup not initialized'));
 				return;
 			}
 
@@ -198,7 +204,7 @@ export class ThreeJsLayerManager {
 					model.userData.entryId = entry.id;
 
 					this.loadedModels.set(entry.id, { entry, object: model, transform });
-					this.scene!.add(model);
+					this.modelGroup!.add(model);
 					resolve();
 				},
 				undefined,
@@ -216,14 +222,24 @@ export class ThreeJsLayerManager {
 		await Promise.all(entries.map((entry) => this.addModel(entry)));
 	}
 
+	updateTransform(entries: ModelMeshEntry<MeshStyle>[]): void {
+		entries.forEach((entry) => {
+			const loaded = this.loadedModels.get(entry.id);
+			if (!loaded) return;
+
+			const transform = calculateModelTransform(entry.style);
+			loaded.transform = transform;
+		});
+	}
+
 	/**
 	 * モデルを削除
 	 */
 	removeModel(entryId: string): void {
 		const loaded = this.loadedModels.get(entryId);
-		if (!loaded || !this.scene) return;
+		if (!loaded || !this.modelGroup) return;
 
-		this.scene.remove(loaded.object);
+		this.modelGroup.remove(loaded.object);
 		loaded.object.traverse((child) => {
 			if ((child as THREE.Mesh).isMesh) {
 				const mesh = child as THREE.Mesh;
@@ -303,6 +319,28 @@ export class ThreeJsLayerManager {
 				});
 			}
 		});
+	}
+
+	setModelColor(entryId: string, color: string): void {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return;
+		loaded.object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				const mesh = child as THREE.Mesh;
+				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				materials.forEach((material) => {
+					if (material instanceof THREE.MeshStandardMaterial) {
+						material.color = new THREE.Color(color);
+					}
+				});
+			}
+		});
+	}
+
+	setGroupVisibility(visible: boolean): void {
+		if (!this.modelGroup) return;
+		console.log('Setting model group visibility to', visible);
+		this.modelGroup.visible = visible;
 	}
 
 	/**
