@@ -110,7 +110,7 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 export const INT_ADD_LAYER_IDS = [
 	'morinos_3d',
 	// 'fac_floor_plan_1f',
-	'ensyurin_owl_3dtiles',
+	// 'ensyurin_owl_3dtiles',
 	'ensyurin_owl',
 	// 'ensyurin_pole',
 	// 'ensyurin_kikenboku_h25',

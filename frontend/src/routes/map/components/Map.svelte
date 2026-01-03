@@ -65,7 +65,6 @@
 		ResultPoiData,
 		SearchGeojsonData
 	} from '../utils/feature';
-	import type { TileInfo } from '$routes/map/api/whether';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -153,8 +152,6 @@
 	let isDragover = $state(false);
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
-
-	let allTiles = $state<TileInfo[]>([]); // 全てのタイルURL
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	let webGLCanvasSource = $state<CanvasSourceSpecification>({
@@ -363,14 +360,7 @@
 						features: []
 					}
 				}
-				// nowcast_data: {
-				// 	type: 'raster',
-				// 	tiles: allTiles.length ? [allTiles.map((tile) => tile.url).at(0)] : [],
-				// 	tileSize: 256,
-				// 	maxzoom: 10,
-				// 	minzoom: 4,
-				// 	attribution: '高解像度降水ナウキャスト'
-				// }
+
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
@@ -492,7 +482,7 @@
 			terrain: $isTerrain3d ? terrain : undefined
 		};
 
-		if (import.meta.env.MODE === 'development') {
+		if (!import.meta.env.PROD) {
 			console.log('mapStyle', mapStyle);
 		}
 
@@ -575,12 +565,6 @@
 	// 検索結果の更新
 	$effect(() => {
 		if (searchGeojsonData || !searchGeojsonData) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}
-	});
-
-	$effect(() => {
-		if (allTiles.length) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});

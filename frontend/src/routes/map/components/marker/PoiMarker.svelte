@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { mapStore, isHoverPoiMarker } from '$routes/stores/map';
 	import { fade, fly, scale } from 'svelte/transition';
+	import { checkMobile } from '$routes/map/utils/ui';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -23,13 +24,13 @@
 	let isReady = $state(false); // マーカーの準備完了フラグ
 
 	let isHover = $state(false);
-	let onLoaded = $state(false);
 
 	const jumpToFac = () => {
 		mapStore.jumpToFac();
 	};
 
 	const onHover = (val: boolean) => {
+		if (checkMobile()) return;
 		isHoverPoiMarker.set(val);
 		isHover = val;
 	};

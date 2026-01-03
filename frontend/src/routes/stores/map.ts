@@ -354,7 +354,7 @@ const createMapStore = () => {
 		});
 
 		map.on('click', (e: MapMouseEvent) => {
-			if (get(isHoverPoiMarker)) {
+			if (get(isHoverPoiMarker) || checkMobile()) {
 				// POIマーカーにホバーしている場合はクリックイベントを無視
 				return;
 			}
@@ -362,6 +362,14 @@ const createMapStore = () => {
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
 				return;
 			}
+			clickEvent.set(e);
+		});
+
+		map.on('touchend', (e: MapMouseEvent) => {
+			if (checkPc()) {
+				return;
+			}
+
 			clickEvent.set(e);
 		});
 

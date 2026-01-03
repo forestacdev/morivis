@@ -80,13 +80,6 @@ export class ThreeJsLayerManager {
 					this.renderer.autoClear = false;
 
 					// ライトを追加
-					const directionalLight = new THREE.DirectionalLight(0xffffff);
-					directionalLight.position.set(0, -70, 100).normalize();
-					this.scene.add(directionalLight);
-
-					const directionalLight2 = new THREE.DirectionalLight(0xffffff);
-					directionalLight2.position.set(0, 70, 100).normalize();
-					this.scene.add(directionalLight2);
 
 					// const debugSphere = new THREE.Mesh(
 					// 	new THREE.SphereGeometry(500, 32, 32),
@@ -94,6 +87,9 @@ export class ThreeJsLayerManager {
 					// );
 					// debugSphere.position.set(0, 0, 0);
 					// this.scene.add(debugSphere);
+
+					const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+					this.scene.add(hemiLight);
 
 					this.isInitialized = true;
 				}
