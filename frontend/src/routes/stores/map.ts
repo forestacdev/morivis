@@ -32,8 +32,6 @@ import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
-import type { CustomLayerInterface } from 'maplibre-gl';
-import * as THREE from 'three';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -47,7 +45,8 @@ import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { isPointInBbox } from '$routes/map/utils/map';
 import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { threeJsManager } from '$routes/map/utils/threejs';
+import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -165,15 +164,14 @@ const createMapStore = () => {
 			...mapPosition,
 			minZoom: checkPc() ? 2 : 1, // 最小ズームレベル
 			container: mapContainer,
-			// canvasContextAttributes: {
-			// 	// WebGLのコンテキスト属性を設定
-			// 	antialias: true, // アンチエイリアスを有効にする
-			// 	depth: true, // 深度バッファを有効にする
-			// 	stencil: true, // ステンシルバッファを有効にする
-			// 	alpha: true, // アルファチャンネルを有効にする
-			// 	preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
-			// },
-			canvasContextAttributes: { antialias: true }, // アンチエイリアスを有効にする
+			canvasContextAttributes: {
+				// WebGLのコンテキスト属性を設定
+				antialias: true, // アンチエイリアスを有効にする
+				depth: true // 深度バッファを有効にする
+				// stencil: true, // ステンシルバッファを有効にする
+				// alpha: true, // アルファチャンネルを有効にする
+				// preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
+			},
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
 			style: {
 				version: 8,
@@ -278,7 +276,14 @@ const createMapStore = () => {
 		map.once('style.load', () => {
 			if (!map) return;
 			map.addControl(deckOverlay as maplibregl.IControl);
-
+			// initThreeLayer();
+			const layerId = '3d-model-layer';
+			// 既存のレイヤーがあれば削除
+			if (map.getLayer(layerId)) {
+				map.removeLayer(layerId);
+			}
+			const layer = threeJsManager.createLayer();
+			map.addLayer(layer);
 			isStyleLoadEvent.set(map);
 		});
 
@@ -546,13 +551,49 @@ const createMapStore = () => {
 		});
 	};
 
-	const setThreeLayer = (layer: CustomLayerInterface) => {
+	// Three.js レイヤーを初期化（マップに追加）
+	const initThreeLayer = () => {
 		if (!map || !isMapValid(map)) return;
+		const layerId = '3d-model-layer';
 		// 既存のレイヤーがあれば削除
-		if (map.getLayer(layer.id)) {
-			map.removeLayer(layer.id);
+		if (map.getLayer(layerId)) {
+			map.removeLayer(layerId);
 		}
-		map.addLayer(layer);
+		const layer = threeJsManager.createLayer();
+		map.addLayer(layer, 'deck-reference-layer');
+	};
+
+	// 現在のエントリIDを追跡
+	let currentThreeModelIds: Set<string> = new Set();
+
+	// Three.js モデルを設定（差分更新）
+	const setThreeLayer = async (newEntries: ModelMeshEntry<MeshStyle>[]): Promise<void> => {
+		const newIds = new Set(newEntries.map((e) => e.id));
+		const currentIds = currentThreeModelIds;
+
+		// 削除: 現在あるが新しいリストにないもの
+		for (const id of currentIds) {
+			if (!newIds.has(id)) {
+				threeJsManager.removeModel(id);
+			}
+		}
+
+		// 追加: 新しいリストにあるが現在ないもの
+		const entriesToAdd = newEntries.filter((e) => !currentIds.has(e.id));
+		for (const entry of entriesToAdd) {
+			await threeJsManager.addModel(entry);
+		}
+
+		// 更新: 両方にあるもの（opacity, visible の変更）
+		for (const entry of newEntries) {
+			if (currentIds.has(entry.id)) {
+				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
+				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
+			}
+		}
+
+		// 現在のIDを更新
+		currentThreeModelIds = newIds;
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
@@ -946,6 +987,9 @@ const createMapStore = () => {
 			deckOverlay.finalize();
 			deckOverlay = null;
 		}
+		// Three.js マネージャーを破棄
+		threeJsManager.dispose();
+
 		map.remove();
 		map = null;
 		set(null);
@@ -1026,6 +1070,8 @@ const createMapStore = () => {
 		setData,
 		setStyle,
 		setDeckOverlay,
+		// Three.js 関連
+		initThreeLayer,
 		setThreeLayer,
 		setFilter,
 		setFeatureState,
@@ -1047,6 +1093,10 @@ const createMapStore = () => {
 		toggleTerrain,
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
+		triggerRepaint: () => {
+			if (!map) return;
+			map.triggerRepaint();
+		},
 
 		// 取得
 		getLockonMarker: () => lockOnMarker,
