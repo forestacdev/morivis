@@ -258,10 +258,17 @@ export class ThreeJsLayerManager {
 	 */
 	setModelVisibility(entryId: string, visible: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
-		if (loaded) {
-			console.log(`Setting visibility of model ${entryId} to ${visible}`);
-			loaded.object.visible = visible;
-		}
+		if (!loaded) return;
+
+		loaded.object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				const mesh = child as THREE.Mesh;
+				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				materials.forEach((material) => {
+					material.visible = visible;
+				});
+			}
+		});
 	}
 
 	/**
@@ -277,6 +284,22 @@ export class ThreeJsLayerManager {
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((material) => {
 					material.opacity = opacity;
+				});
+			}
+		});
+	}
+
+	setModelWireframe(entryId: string, wireframe: boolean): void {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return;
+		loaded.object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				const mesh = child as THREE.Mesh;
+				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				materials.forEach((material) => {
+					if (material instanceof THREE.MeshStandardMaterial) {
+						material.wireframe = wireframe;
+					}
 				});
 			}
 		});

@@ -9,6 +9,7 @@
 
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
+	import ModelOptionMenu from './ModelOptionMenu.svelte';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -197,6 +198,10 @@
 
 					{#if layerEntry.type === 'raster'}
 						<RasterOptionMenu bind:layerEntry bind:showColorOption />
+					{/if}
+
+					{#if layerEntry.type === 'model'}
+						<ModelOptionMenu bind:layerEntry bind:showColorOption />
 					{/if}
 				</div>
 			</div>

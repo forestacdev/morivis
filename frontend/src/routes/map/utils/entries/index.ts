@@ -44,6 +44,7 @@ export const getLayerIcon = (layerType: LayerType): string => {
 };
 
 export const TYPE_LABELS = {
+	model: '3Dモデル',
 	point: 'ポイント',
 	line: 'ライン',
 	polygon: 'ポリゴン',

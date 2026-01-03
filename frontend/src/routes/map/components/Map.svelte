@@ -69,6 +69,7 @@
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import { map } from 'es-toolkit/compat';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];

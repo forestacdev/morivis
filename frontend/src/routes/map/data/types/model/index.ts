@@ -33,7 +33,7 @@ export interface PointCloudStyle {
 	type: 'point-cloud';
 	opacity: Opacity;
 	visible?: boolean;
-	pointSize?: number;
+	pointSize: number;
 }
 
 export type MeshFormatType = 'gltf';
@@ -58,6 +58,11 @@ export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<Point
 
 export type AnyModelTiles3DEntry =
 	| ModelTiles3DEntry<MeshStyle>
+	| ModelTiles3DEntry<PointCloudStyle>;
+
+export type MeshStyleEntry = ModelMeshEntry<MeshStyle> | ModelTiles3DEntry<MeshStyle>;
+export type PointCloudStyleEntry =
+	| ModelMeshEntry<PointCloudStyle>
 	| ModelTiles3DEntry<PointCloudStyle>;
 
 export type AnyModelEntry = AnyModelMeshEntry | AnyModelTiles3DEntry;

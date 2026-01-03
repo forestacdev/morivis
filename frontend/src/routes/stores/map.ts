@@ -339,20 +339,12 @@ const createMapStore = () => {
 		window.addEventListener('mouseup', handleMouseUp);
 
 		// より詳細なエラー情報を取得
-		// map.on('error', (e) => {
-		// 	console.error('Map error details:', e);
-		// 	console.error('Error source:', e.error);
-		// 	console.error('Error stack:', e.error?.stack);
-		// });
-
-		// map.on('sourcedata', (e) => {
-		// 	if (e.sourceId === 'hiroshima-trees') {
-		// 		console.log('Source data event:', e);
-		// 		if (e.dataType === 'source' && e.isSourceLoaded) {
-		// 			console.log('Source loaded successfully');
-		// 		}
-		// 	}
-		// });
+		map.on('error', (e) => {
+			if (import.meta.env.PROD) return;
+			console.error('Map error details:', e);
+			console.error('Error source:', e.error);
+			console.error('Error stack:', e.error?.stack);
+		});
 
 		map.on('click', (e: MapMouseEvent) => {
 			if (get(isHoverPoiMarker)) {
@@ -451,7 +443,7 @@ const createMapStore = () => {
 
 			moveEndEvent.set(e);
 
-			if (import.meta.env.DEV) {
+			if (!import.meta.env.PROD) {
 				console.log(getMapBounds());
 			}
 		});
@@ -484,7 +476,6 @@ const createMapStore = () => {
 		map.setStyle(style, {
 			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
 			transformStyle: (previous, next) => {
-				console.log('Transforming style during setStyle:', previous, next);
 				return {
 					...next,
 					layers: [...next.layers]
@@ -515,12 +506,12 @@ const createMapStore = () => {
 	const initThreeLayer = () => {
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
-		// 既存のレイヤーがあれば削除
+
 		if (map.getLayer(layerId)) {
 			return;
 		}
 		const layer = threeJsManager.createLayer();
-		map.addLayer(layer, 'deck-reference-layer');
+		map.addLayer(layer);
 	};
 
 	// 現在のエントリIDを追跡
@@ -549,6 +540,7 @@ const createMapStore = () => {
 			if (currentIds.has(entry.id)) {
 				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
+				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
 			}
 		}
 
