@@ -50,7 +50,6 @@ export class ThreeJsLayerManager {
 	private renderer: THREE.WebGLRenderer | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
-
 	private isInitialized = false;
 
 	/**
@@ -83,14 +82,12 @@ export class ThreeJsLayerManager {
 					directionalLight2.position.set(0, 70, 100).normalize();
 					this.scene.add(directionalLight2);
 
-					// デバッグででっかい球体を追加
-
-					const debugSphere = new THREE.Mesh(
-						new THREE.SphereGeometry(500, 32, 32),
-						new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
-					);
-					debugSphere.position.set(0, 0, 0);
-					this.scene.add(debugSphere);
+					// const debugSphere = new THREE.Mesh(
+					// 	new THREE.SphereGeometry(500, 32, 32),
+					// 	new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+					// );
+					// debugSphere.position.set(0, 0, 0);
+					// this.scene.add(debugSphere);
 
 					this.isInitialized = true;
 				}
@@ -138,10 +135,10 @@ export class ThreeJsLayerManager {
 							child.visible = child.userData.entryId === loaded.entry.id;
 						}
 					});
+
+					this.renderer!.resetState();
+					this.renderer!.render(this.scene!, this.camera!);
 				});
-				this.renderer!.resetState();
-				this.renderer!.render(this.scene!, this.camera!);
-				mapStore.triggerRepaint();
 			},
 
 			onRemove: () => {
@@ -202,7 +199,6 @@ export class ThreeJsLayerManager {
 
 					this.loadedModels.set(entry.id, { entry, object: model, transform });
 					this.scene!.add(model);
-
 					resolve();
 				},
 				undefined,

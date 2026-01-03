@@ -167,9 +167,9 @@ const createMapStore = () => {
 			canvasContextAttributes: {
 				// WebGLのコンテキスト属性を設定
 				antialias: true, // アンチエイリアスを有効にする
-				depth: true // 深度バッファを有効にする
+				depth: true, // 深度バッファを有効にする
 				// stencil: true, // ステンシルバッファを有効にする
-				// alpha: true, // アルファチャンネルを有効にする
+				alpha: true // アルファチャンネルを有効にする
 				// preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
 			},
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
@@ -276,14 +276,7 @@ const createMapStore = () => {
 		map.once('style.load', () => {
 			if (!map) return;
 			map.addControl(deckOverlay as maplibregl.IControl);
-			// initThreeLayer();
-			const layerId = '3d-model-layer';
-			// 既存のレイヤーがあれば削除
-			if (map.getLayer(layerId)) {
-				map.removeLayer(layerId);
-			}
-			const layer = threeJsManager.createLayer();
-			map.addLayer(layer);
+
 			isStyleLoadEvent.set(map);
 		});
 
@@ -472,41 +465,6 @@ const createMapStore = () => {
 		initEvent.set(map);
 	};
 
-	// TODO
-	const setStylePreservation = (style: StyleSpecification) => {
-		if (!map) {
-			console.warn('Map is not initialized');
-			return;
-		}
-
-		if (!style) {
-			map.setStyle(null);
-			return;
-		}
-
-		// 即座にsetStyleを実行（MapLibre GLが前回の処理を自動キャンセル）
-		map.setStyle(style, {
-			transformStyle: (previous, next) => {
-				// ベーススタイルの情報を保存
-				const baseLight = next.light;
-				const baseProjection = next.projection;
-				const baseSky = next.sky;
-				const baseTerrain = next.terrain;
-
-				return {
-					...next,
-					light: baseLight,
-					projection: baseProjection,
-					sky: baseSky,
-					terrain: baseTerrain
-				};
-			}
-		});
-
-		// スタイル変更イベントを発火
-		setStyleEvent.set(style);
-	};
-
 	// マップの初期化判定
 	const isMapValid = (_map: any): boolean => {
 		return (
@@ -534,6 +492,8 @@ const createMapStore = () => {
 			}
 		});
 
+		initThreeLayer();
+
 		// スタイル変更後にカスタムレイヤーを再追加
 		// map.once('style.load', () => {
 		// 	if (!map) return;
@@ -557,7 +517,7 @@ const createMapStore = () => {
 		const layerId = '3d-model-layer';
 		// 既存のレイヤーがあれば削除
 		if (map.getLayer(layerId)) {
-			map.removeLayer(layerId);
+			return;
 		}
 		const layer = threeJsManager.createLayer();
 		map.addLayer(layer, 'deck-reference-layer');
