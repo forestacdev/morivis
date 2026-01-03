@@ -57,7 +57,6 @@
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import { checkPc } from '$routes/map/utils/ui';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type {
 		ResultAddressData,
@@ -322,8 +321,12 @@
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
 			glyphs: MAP_FONT_DATA_PATH,
+			//TODO: 投影法の切り替え対応
+			// projection: {
+			// 	type: checkPc() && zoom && zoom < 9 ? 'globe' : 'mercator'
+			// },
 			projection: {
-				type: checkPc() ? 'globe' : 'mercator'
+				type: 'mercator'
 			},
 			sources: {
 				...terrainSources,

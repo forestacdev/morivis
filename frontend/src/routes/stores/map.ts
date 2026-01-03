@@ -466,6 +466,16 @@ const createMapStore = () => {
 			if (!import.meta.env.PROD) {
 				console.log('debug:Map moved: ', getMapBounds());
 			}
+
+			const zoomLevel = map.getZoom();
+
+			//TODO: 投影法の切り替え対応
+			// map.once('idle', () => {
+			// 	if (!map || !isMapValid(map)) return;
+			// 	map.setProjection({
+			// 		type: checkPc() && zoomLevel && zoomLevel < 9 ? 'globe' : 'mercator'
+			// 	});
+			// });
 		}, 100);
 
 		map.on('moveend', debounceMapMoveEnd);
