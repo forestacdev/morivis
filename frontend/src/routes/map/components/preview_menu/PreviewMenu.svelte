@@ -4,7 +4,6 @@
 	import { fade, fly } from 'svelte/transition';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 
-	import MapPane from '$routes/map/components/preview_menu/MapPane.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getAttributionName } from '$routes/map/data/attribution';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
@@ -147,12 +146,6 @@
 					{/if}
 				{/if}
 
-				<!-- <div class="flex flex-col gap-2 py-2 pb-4">
-
-					{#if showDataEntry}
-						<MapPane bind:showDataEntry />
-					{/if}
-				</div> -->
 				<div class="mb-2 flex gap-2">
 					<Icon icon="tabler:map-pin" class="h-6 w-6" />
 					<span class="">{showDataEntry?.metaData.location}</span>
