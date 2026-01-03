@@ -655,14 +655,14 @@ const createMapStore = () => {
 						exaggeration: 1.0
 					});
 					set3dParams('1');
-					map.easeTo({ pitch: 60 });
+					// map.easeTo({ pitch: 60 });
 				}
 			} else {
 				if (map.getTerrain()) {
 					map.setTerrain(null);
 				}
 				set3dParams('0');
-				map.easeTo({ pitch: 0 });
+				// map.easeTo({ pitch: 0 });
 			}
 		} catch (error) {
 			console.error('Terrain control error:', error);
