@@ -17,7 +17,7 @@ const entry: ModelMeshEntry<MeshStyle> = {
 		maxZoom: 22,
 		tags: ['3Dモデル', '建物'],
 		bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
-		altitude: 116,
+
 		xyzImageTile: { x: 923099, y: 413380, z: 20 },
 		mapImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`
@@ -34,7 +34,7 @@ const entry: ModelMeshEntry<MeshStyle> = {
 			scale: 0.83,
 			lng: 136.919515,
 			lat: 35.553991,
-			altitude: 121, // 121
+			altitude: 116, // 121
 			rotationY: 2
 		}
 	}

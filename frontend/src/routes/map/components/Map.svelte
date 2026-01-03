@@ -169,7 +169,7 @@
 		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
 
-		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
+		const terrainSources = await createTerrainSources(demEntries, 'dem_5a');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
@@ -367,6 +367,14 @@
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
+				{
+					id: '@background_layer',
+					type: 'background',
+					paint: {
+						'background-opacity': 1,
+						'background-color': '#000'
+					}
+				},
 				...layers,
 				...xyzTileLayer,
 				...previewLayers,
