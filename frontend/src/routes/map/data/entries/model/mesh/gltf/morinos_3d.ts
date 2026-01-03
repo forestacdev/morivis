@@ -6,7 +6,7 @@ const entry: ModelMeshEntry<MeshStyle> = {
 	type: 'model',
 	format: {
 		type: 'gltf',
-		url: `${ENTRY_GLTF_PATH}/morinos.gltf`
+		url: `${ENTRY_GLTF_PATH}/morinos.glb`
 	},
 	metaData: {
 		name: 'morinos 3Dモデル',
@@ -31,10 +31,10 @@ const entry: ModelMeshEntry<MeshStyle> = {
 		wireframe: false,
 		color: '#ffffff',
 		transform: {
-			scale: 1,
+			scale: 0.83,
 			lng: 136.919515,
 			lat: 35.553991,
-			altitude: 116,
+			altitude: 0, // 121
 			rotationY: 0
 		}
 	}

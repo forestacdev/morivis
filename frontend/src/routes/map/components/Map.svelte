@@ -68,7 +68,8 @@
 	import type { TileInfo } from '$routes/map/api/whether';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
-
+	import { createThreeJsLayer } from '$routes/map/utils/threejs';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -526,6 +527,15 @@
 
 		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
 		mapStore.setDeckOverlay(deckOverlayLayers);
+
+		const meshEntries = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === 'gltf'
+		) as ModelMeshEntry<MeshStyle>[];
+
+		const threeLayer = createThreeJsLayer(meshEntries);
+
+		console.log('threeLayer', threeLayer);
+		mapStore.setThreeLayer(threeLayer);
 
 		mapStore.terrainReload();
 

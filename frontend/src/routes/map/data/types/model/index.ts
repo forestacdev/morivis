@@ -24,12 +24,8 @@ export interface MeshStyle {
 		lat: number;
 		altitude: number;
 		scale: number;
-		// rotationX: number;
+
 		rotationY: number;
-		// rotationZ: number;
-		// translateX: number;
-		// translateY: number;
-		// translateZ: number;
 	};
 }
 
