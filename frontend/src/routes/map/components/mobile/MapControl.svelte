@@ -12,6 +12,7 @@
 		class="absolute right-4 rounded-lg bg-black/50 p-1"
 		style="top: calc(16px + env(safe-area-inset-top));"
 	>
+		<TerrainControl />
 		<StreetViewControl />
 		<GeolocateControl />
 	</div>
@@ -24,7 +25,7 @@
 		<GeolocateControl />
 	</div> -->
 
-	<div class="absolute bottom-18 left-0 rounded-lg">
+	<div class="bottom-18 absolute left-0 rounded-lg">
 		<ScaleControl />
 	</div>
 </div>
