@@ -224,6 +224,16 @@
 				} else {
 					showMarker = true;
 					markerLngLat = e.lngLat;
+
+					const windowX = e.originalEvent.clientX;
+					const windowY = e.originalEvent.clientY;
+
+					contextMenuState = {
+						show: true,
+						x: windowX,
+						y: windowY,
+						lngLat: e.lngLat
+					};
 				}
 				return;
 			}

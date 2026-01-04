@@ -307,7 +307,7 @@ const createMapStore = () => {
 		let lastMouseY = 0;
 
 		const handleMouseDown = (e: MouseEvent) => {
-			if (((e.ctrlKey || e.shiftKey) && e.button === 0) || e.button === 1) {
+			if ((e.ctrlKey && e.button === 0) || (e.shiftKey && e.button === 0) || e.button === 1) {
 				isCtrlDragging = true;
 				lastMouseX = e.clientX;
 				lastMouseY = e.clientY;
@@ -338,6 +338,11 @@ const createMapStore = () => {
 			isCtrlDragging = false;
 		};
 
+		const canvas = map.getCanvas();
+		canvas.addEventListener('mousedown', handleMouseDown);
+		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('mouseup', handleMouseUp);
+
 		// より詳細なエラー情報を取得
 		map.on('error', (e) => {
 			if (import.meta.env.PROD) return;
@@ -351,6 +356,7 @@ const createMapStore = () => {
 				return;
 			}
 			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
+				console.log('クリックイベント無視: 回転・ピッチ操作中');
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
 				return;
 			}
@@ -376,6 +382,11 @@ const createMapStore = () => {
 		});
 
 		map.on('contextmenu', (e: MapMouseEvent) => {
+			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
+				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
+				return;
+			}
+
 			contextMenuEvent.set(e);
 		});
 
@@ -400,13 +411,11 @@ const createMapStore = () => {
 
 		// 地図上でマウスが移動した時のイベント
 		map.on('mousemove', (e: MapMouseEvent) => {
-			handleMouseMove(e.originalEvent);
 			mousemoveEvent.set(e);
 		});
 
 		// 地図上でマウスクリックを押した時のイベント
 		map.on('mousedown', (e: MapMouseEvent) => {
-			handleMouseDown(e.originalEvent);
 			mousedownEvent.set(e);
 		});
 
