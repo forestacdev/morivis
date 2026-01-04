@@ -124,6 +124,10 @@ const attributionData = {
 	兵庫県: {
 		name: '兵庫県',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
+	},
+	['PLATEAU']: {
+		name: '国土交通省 Project PLATEAU',
+		url: 'https://www.mlit.go.jp/plateau/'
 	}
 } as const;
 
