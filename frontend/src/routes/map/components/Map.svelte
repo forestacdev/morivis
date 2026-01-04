@@ -533,7 +533,9 @@
 			(entry) => entry.type === 'model' && entry.format.type === 'gltf'
 		) as ModelMeshEntry<MeshStyle>[];
 
-		mapStore.setThreeLayer(meshEntries);
+		showDataEntry ? meshEntries.push(showDataEntry as ModelMeshEntry<MeshStyle>) : null;
+
+		mapStore.setThreeLayer(meshEntries, showDataEntry ? 'preview' : 'main');
 
 		mapStore.terrainReload();
 
@@ -584,7 +586,6 @@
 	$effect(() => {
 		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
-			threeJsManager.setGroupVisibility(!showDataEntry);
 		}
 	});
 
@@ -758,11 +759,6 @@
 {/if}
 
 <style>
-	/* maplibreのデフォルトの出典表記を非表示 */
-	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
-		display: none !important;
-	}
-
 	@media (width >= 64rem /* 1024px */) {
 		:global(.maplibregl-canvas) {
 			border-radius: 0.5rem !important;

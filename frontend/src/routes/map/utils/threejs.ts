@@ -51,6 +51,7 @@ export class ThreeJsLayerManager {
 	private camera: THREE.Camera | null = null;
 	private scene: THREE.Scene | null = null;
 	private modelGroup: THREE.Group | null = null;
+	private previewModelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
@@ -70,7 +71,9 @@ export class ThreeJsLayerManager {
 					this.camera = new THREE.Camera();
 					this.scene = new THREE.Scene();
 					this.modelGroup = new THREE.Group();
+					this.previewModelGroup = new THREE.Group();
 					this.scene.add(this.modelGroup);
+					this.scene.add(this.previewModelGroup);
 
 					this.renderer = new THREE.WebGLRenderer({
 						canvas: map.getCanvas(),
@@ -152,10 +155,11 @@ export class ThreeJsLayerManager {
 
 	/**
 	 * モデルを追加
+	 * プレビューに同じIDのモデルがあれば再利用する
 	 */
-	addModel(entry: ModelMeshEntry<MeshStyle>): Promise<void> {
+	addModel(entry: ModelMeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
 		return new Promise((resolve, reject) => {
-			if (!this.modelGroup) {
+			if (!this.modelGroup || !this.previewModelGroup) {
 				reject(new Error('modelGroup not initialized'));
 				return;
 			}
@@ -165,12 +169,31 @@ export class ThreeJsLayerManager {
 				return;
 			}
 
-			// 既存のモデルがあれば削除
-			if (this.loadedModels.has(entry.id)) {
-				this.removeModel(entry.id);
+			const transform = calculateModelTransform(entry.style);
+
+			// mainとして追加する場合、プレビューに同じIDがあれば再利用
+			if (_type === 'main') {
+				const existing = this.loadedModels.get(entry.id);
+				if (existing && existing.object.parent === this.previewModelGroup) {
+					// プレビューからメインに移動（再読み込み不要）
+					this.previewModelGroup.remove(existing.object);
+					this.modelGroup.add(existing.object);
+					existing.transform = transform;
+					resolve();
+					return;
+				}
 			}
 
-			const transform = calculateModelTransform(entry.style);
+			// 既存のモデルがあれば削除（同じグループにある場合のみ）
+			const existing = this.loadedModels.get(entry.id);
+			if (existing) {
+				// previewとして追加時にpreviewにある、またはmainとして追加時にmainにある場合は削除
+				const isInPreview = existing.object.parent === this.previewModelGroup;
+				const isInMain = existing.object.parent === this.modelGroup;
+				if ((_type === 'preview' && isInPreview) || (_type === 'main' && isInMain)) {
+					this.removeModel(entry.id);
+				}
+			}
 
 			this.loader.load(
 				entry.format.url,
@@ -200,7 +223,11 @@ export class ThreeJsLayerManager {
 					model.userData.entryId = entry.id;
 
 					this.loadedModels.set(entry.id, { entry, object: model, transform });
-					this.modelGroup!.add(model);
+					if (_type === 'preview') {
+						this.previewModelGroup!.add(model);
+					} else {
+						this.modelGroup!.add(model);
+					}
 					resolve();
 				},
 				undefined,
@@ -335,8 +362,46 @@ export class ThreeJsLayerManager {
 
 	setGroupVisibility(visible: boolean): void {
 		if (!this.modelGroup) return;
-		console.log('Setting model group visibility to', visible);
 		this.modelGroup.visible = visible;
+	}
+
+	/**
+	 * プレビューモデルをメイングループに移動（再読み込み不要）
+	 */
+	promotePreviewToMain(entryId: string): boolean {
+		if (!this.modelGroup || !this.previewModelGroup) return false;
+
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return false;
+
+		// previewModelGroupから削除してmodelGroupに追加
+		this.previewModelGroup.remove(loaded.object);
+		this.modelGroup.add(loaded.object);
+		return true;
+	}
+
+	/**
+	 * プレビューモデルをクリア（確定しない場合）
+	 */
+	clearPreview(entryId?: string): void {
+		if (!this.previewModelGroup) return;
+
+		if (entryId) {
+			// 特定のプレビューモデルを削除
+			const loaded = this.loadedModels.get(entryId);
+			if (loaded && loaded.object.parent === this.previewModelGroup) {
+				this.removeModel(entryId);
+			}
+		} else {
+			// すべてのプレビューモデルを削除
+			const previewIds: string[] = [];
+			this.loadedModels.forEach((loaded, id) => {
+				if (loaded.object.parent === this.previewModelGroup) {
+					previewIds.push(id);
+				}
+			});
+			previewIds.forEach((id) => this.removeModel(id));
+		}
 	}
 
 	/**

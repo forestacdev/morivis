@@ -540,7 +540,15 @@ const createMapStore = () => {
 	let currentThreeModelIds: Set<string> = new Set();
 
 	// Three.js モデルを設定（差分更新）
-	const setThreeLayer = async (newEntries: ModelMeshEntry<MeshStyle>[]): Promise<void> => {
+	const setThreeLayer = async (
+		newEntries: ModelMeshEntry<MeshStyle>[],
+		_type: 'main' | 'preview' = 'main'
+	): Promise<void> => {
+		threeJsManager.setGroupVisibility(_type === 'main');
+		if (_type === 'preview') {
+			threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+			return;
+		}
 		const newIds = new Set(newEntries.map((e) => e.id));
 		const currentIds = currentThreeModelIds;
 
@@ -569,6 +577,10 @@ const createMapStore = () => {
 		// 現在のIDを更新
 		threeJsManager.updateTransform(newEntries);
 		currentThreeModelIds = newIds;
+
+		if (_type === 'main') {
+			threeJsManager.clearPreview();
+		}
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
