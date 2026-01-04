@@ -21,12 +21,12 @@ import type {
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
-import turfBbox, { bbox } from '@turf/bbox';
+import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { get } from 'svelte/store';
+import { debounce } from 'es-toolkit';
 
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
@@ -43,6 +43,10 @@ import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'ge
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { isPointInBbox } from '$routes/map/utils/map';
+import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
+import type { LayersList } from '@deck.gl/core';
+import { threeJsManager } from '$routes/map/utils/threejs';
+import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -60,8 +64,6 @@ if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');
 	maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
 }
-
-export const isHoverPoiMarker = writable<boolean>(false); // POIマーカーにホバーしているかどうか
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
@@ -116,6 +118,7 @@ export interface MapState {
 const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
+	let deckOverlay: MapboxOverlay | null = null;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -144,24 +147,36 @@ const createMapStore = () => {
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
+	const onTerrainEvent = writable<MapLibreEvent | null>(null);
 
-	const init = (mapContainer: HTMLElement, mapStyle: StyleSpecification) => {
+	const init = (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
+
+		// deckOverlay を再作成（ページ遷移後に再初期化するため）
+		deckOverlay = new MapboxOverlay({
+			id: 'deckgl-overlay',
+			interleaved: true,
+			layers: []
+		});
 
 		map = new maplibregl.Map({
 			...mapPosition,
 			minZoom: checkPc() ? 2 : 1, // 最小ズームレベル
 			container: mapContainer,
-			// canvasContextAttributes: {
-			// 	// WebGLのコンテキスト属性を設定
-			// 	antialias: true, // アンチエイリアスを有効にする
-			// 	depth: true, // 深度バッファを有効にする
-			// 	stencil: true, // ステンシルバッファを有効にする
-			// 	alpha: true, // アルファチャンネルを有効にする
-			// 	preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
-			// },
+			canvasContextAttributes: {
+				// WebGLのコンテキスト属性を設定
+				antialias: true, // アンチエイリアスを有効にする
+				depth: true, // 深度バッファを有効にする
+				// stencil: true, // ステンシルバッファを有効にする
+				alpha: true // アルファチャンネルを有効にする
+				// preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
+			},
 			centerClampedToGround: true, // 地図の中心を地面にクランプする
-			style: mapStyle,
+			style: {
+				version: 8,
+				sources: {},
+				layers: []
+			},
 			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
@@ -170,6 +185,7 @@ const createMapStore = () => {
 			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
 			keyboard: false, // キーボード操作を無効化
+
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// maxZoom: 20
@@ -229,12 +245,6 @@ const createMapStore = () => {
 				// resourceTimingプロパティにタイミング情報が含まれる
 			});
 		}
-		// map.scrollZoom.setWheelZoomRate(1 / 800);
-
-		// map.setBearing(mapPosition.bearing);
-		// map.setZoom(mapPosition.zoom);
-
-		setStyleEvent.set(mapStyle);
 
 		if (!map) return;
 
@@ -261,12 +271,22 @@ const createMapStore = () => {
 			}
 		});
 
+		// マップに追加
+
 		map.once('style.load', () => {
+			if (!map) return;
+			map.addControl(deckOverlay as maplibregl.IControl);
+
 			isStyleLoadEvent.set(map);
+		});
+
+		map.on('terrain', (e: MapLibreEvent) => {
+			onTerrainEvent.set(e);
 		});
 
 		map.on('styledata', (e) => {
 			if (!map) return;
+
 			state.set({
 				bbox: getMapBounds(),
 				zoom: map.getZoom(),
@@ -287,7 +307,7 @@ const createMapStore = () => {
 		let lastMouseY = 0;
 
 		const handleMouseDown = (e: MouseEvent) => {
-			if ((e.ctrlKey || e.shiftKey) && e.button === 0) {
+			if ((e.ctrlKey && e.button === 0) || (e.shiftKey && e.button === 0) || e.button === 1) {
 				isCtrlDragging = true;
 				lastMouseX = e.clientX;
 				lastMouseY = e.clientY;
@@ -324,34 +344,49 @@ const createMapStore = () => {
 		window.addEventListener('mouseup', handleMouseUp);
 
 		// より詳細なエラー情報を取得
-		// map.on('error', (e) => {
-		// 	console.error('Map error details:', e);
-		// 	console.error('Error source:', e.error);
-		// 	console.error('Error stack:', e.error?.stack);
-		// });
-
-		// map.on('sourcedata', (e) => {
-		// 	if (e.sourceId === 'hiroshima-trees') {
-		// 		console.log('Source data event:', e);
-		// 		if (e.dataType === 'source' && e.isSourceLoaded) {
-		// 			console.log('Source loaded successfully');
-		// 		}
-		// 	}
-		// });
+		map.on('error', (e) => {
+			if (import.meta.env.PROD) return;
+			console.error('Map error details:', e);
+			console.error('Error source:', e.error);
+			console.error('Error stack:', e.error?.stack);
+		});
 
 		map.on('click', (e: MapMouseEvent) => {
-			if (get(isHoverPoiMarker)) {
-				// POIマーカーにホバーしている場合はクリックイベントを無視
+			if (checkMobile()) {
 				return;
 			}
+			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
+				console.log('クリックイベント無視: 回転・ピッチ操作中');
+				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
+				return;
+			}
+
+			// DOM要素をチェック
+			const target = e.originalEvent.target as HTMLElement;
+			if (target.classList.contains('maplibregl-canvas')) {
+				// 地図本体がクリックされた時の処理
+				clickEvent.set(e);
+			}
+		});
+
+		map.on('touchend', (e: MapMouseEvent) => {
+			if (checkPc()) {
+				return;
+			}
+
+			const target = e.originalEvent.target as HTMLElement;
+			if (target.classList.contains('maplibregl-canvas')) {
+				// 地図本体がクリックされた時の処理
+				clickEvent.set(e);
+			}
+		});
+
+		map.on('contextmenu', (e: MapMouseEvent) => {
 			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
 				return;
 			}
-			clickEvent.set(e);
-		});
 
-		map.on('contextmenu', (e: MapMouseEvent) => {
 			contextMenuEvent.set(e);
 		});
 
@@ -374,7 +409,7 @@ const createMapStore = () => {
 			rotateEvent.set(bearing);
 		});
 
-		// 地図上でマウスクリックを押した時のイベント
+		// 地図上でマウスが移動した時のイベント
 		map.on('mousemove', (e: MapMouseEvent) => {
 			mousemoveEvent.set(e);
 		});
@@ -386,6 +421,7 @@ const createMapStore = () => {
 
 		// 地図上でマウスクリックを離した時のイベント
 		map.on('mouseup', (e: MapMouseEvent) => {
+			handleMouseUp();
 			mouseupEvent.set(e);
 		});
 
@@ -399,7 +435,7 @@ const createMapStore = () => {
 			mouseoutEvent.set(e);
 		});
 
-		map.on('moveend', (e: MapLibreEvent) => {
+		const debounceMapMoveEnd = debounce((e: MapLibreEvent) => {
 			if (!map) return;
 			const url = window.location.href;
 			let origin = window.location.origin;
@@ -436,10 +472,22 @@ const createMapStore = () => {
 
 			moveEndEvent.set(e);
 
-			if (import.meta.env.DEV) {
-				console.log(getMapBounds());
+			if (!import.meta.env.PROD) {
+				console.log('debug:Map moved: ', getMapBounds());
 			}
-		});
+
+			const zoomLevel = map.getZoom();
+
+			//TODO: 投影法の切り替え対応
+			// map.once('idle', () => {
+			// 	if (!map || !isMapValid(map)) return;
+			// 	map.setProjection({
+			// 		type: checkPc() && zoomLevel && zoomLevel < 9 ? 'globe' : 'mercator'
+			// 	});
+			// });
+		}, 100);
+
+		map.on('moveend', debounceMapMoveEnd);
 
 		map.on('zoom', (e: MouseEvent) => {
 			if (!map) return;
@@ -448,41 +496,6 @@ const createMapStore = () => {
 		});
 
 		initEvent.set(map);
-	};
-
-	// TODO
-	const setStylePreservation = (style: StyleSpecification) => {
-		if (!map) {
-			console.warn('Map is not initialized');
-			return;
-		}
-
-		if (!style) {
-			map.setStyle(null);
-			return;
-		}
-
-		// 即座にsetStyleを実行（MapLibre GLが前回の処理を自動キャンセル）
-		map.setStyle(style, {
-			transformStyle: (previous, next) => {
-				// ベーススタイルの情報を保存
-				const baseLight = next.light;
-				const baseProjection = next.projection;
-				const baseSky = next.sky;
-				const baseTerrain = next.terrain;
-
-				return {
-					...next,
-					light: baseLight,
-					projection: baseProjection,
-					sky: baseSky,
-					terrain: baseTerrain
-				};
-			}
-		});
-
-		// スタイル変更イベントを発火
-		setStyleEvent.set(style);
 	};
 
 	// マップの初期化判定
@@ -500,7 +513,84 @@ const createMapStore = () => {
 	const setStyle = (style: StyleSpecification) => {
 		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
-		map.setStyle(style);
+		map.setStyle(style, {
+			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
+			transformStyle: (previous, next) => {
+				return {
+					...next,
+					layers: [...next.layers]
+				};
+			}
+		});
+		// スタイル変更後にカスタムレイヤーを追加
+		initThreeLayer();
+	};
+
+	// deck.gl レイヤーを設定
+	const setDeckOverlay = (layers: LayersList) => {
+		if (!map || !isMapValid(map) || !deckOverlay) return;
+		deckOverlay.setProps({
+			layers: layers
+		});
+	};
+
+	// Three.js レイヤーを初期化（マップに追加）
+	const initThreeLayer = () => {
+		if (!map || !isMapValid(map)) return;
+		const layerId = '3d-model-layer';
+		if (map.getLayer(layerId)) {
+			return;
+		}
+		const layer = threeJsManager.createLayer();
+		// https://github.com/maplibre/maplibre-gl-js/issues/2587
+		// map.addLayer(layer, 'deck-reference-layer');
+		map.addLayer(layer);
+	};
+
+	// 現在のエントリIDを追跡
+	let currentThreeModelIds: Set<string> = new Set();
+
+	// Three.js モデルを設定（差分更新）
+	const setThreeLayer = async (
+		newEntries: ModelMeshEntry<MeshStyle>[],
+		_type: 'main' | 'preview' = 'main'
+	): Promise<void> => {
+		if (_type === 'preview' && newEntries.length > 0) {
+			threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+			return;
+		}
+		const newIds = new Set(newEntries.map((e) => e.id));
+		const currentIds = currentThreeModelIds;
+
+		// 削除: 現在あるが新しいリストにないもの
+		for (const id of currentIds) {
+			if (!newIds.has(id)) {
+				threeJsManager.removeModel(id);
+			}
+		}
+
+		// 追加: 新しいリストにあるが現在ないもの
+		const entriesToAdd = newEntries.filter((e) => !currentIds.has(e.id));
+		for (const entry of entriesToAdd) {
+			await threeJsManager.addModel(entry);
+		}
+
+		// 更新: 両方にあるもの（opacity, visible の変更）
+		for (const entry of newEntries) {
+			if (currentIds.has(entry.id)) {
+				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
+				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
+				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+			}
+		}
+
+		// 現在のIDを更新
+		threeJsManager.updateTransform(newEntries);
+		currentThreeModelIds = newIds;
+
+		if (_type === 'main') {
+			threeJsManager.clearPreview();
+		}
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
@@ -554,14 +644,28 @@ const createMapStore = () => {
 
 	// 地形をリロードするメソッド
 	// https://github.com/maplibre/maplibre-gl-js/issues/3001
+	let terrainReloadTimer: ReturnType<typeof setTimeout> | null = null;
+
 	const terrainReload = () => {
 		if (!map || !isMapValid(map)) return;
 		if (!map.getTerrain()) return;
-		setTimeout(() => {
-			if (map) map.terrain.sourceCache.sourceCache.reload();
+
+		// 既存のタイマーをクリア
+		if (terrainReloadTimer) {
+			clearTimeout(terrainReloadTimer);
+		}
+
+		terrainReloadTimer = setTimeout(() => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const terrain = map?.terrain as any;
+			if (terrain?.sourceCache?.sourceCache) {
+				terrain.sourceCache.sourceCache.reload();
+			}
+			terrainReloadTimer = null;
 		}, 200);
 	};
 
+	// 3D地形の表示・非表示を切り替えるメソッド
 	const toggleTerrain = (is3d: boolean) => {
 		if (!map || !isMapValid(map)) return;
 
@@ -660,10 +764,8 @@ const createMapStore = () => {
 				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				// padding: padding,
 				duration: 500
 			});
-			return;
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
@@ -683,6 +785,12 @@ const createMapStore = () => {
 			padding: 20,
 			duration: 500
 		});
+	};
+
+	const getElevation = (lngLat: LngLat): number | null => {
+		if (!map || !isMapValid(map)) return null;
+		map.queryTerrainElevation(lngLat);
+		return null;
 	};
 
 	const getSpriteUrl = (id: string): string | undefined => {
@@ -706,7 +814,6 @@ const createMapStore = () => {
 		}
 	};
 
-	// TODO: サイドバーの分をオフセット
 	const getMapBounds = (): [number, number, number, number] => {
 		if (!map || !isMapValid(map)) {
 			console.warn('Map is not ready yet.');
@@ -804,37 +911,11 @@ const createMapStore = () => {
 		map.setTerrain(null);
 		map.removeSource('terrain');
 
-		// map.addSource('terrain', {
-		// 	type: 'raster-dem',
-		// 	tiles: [`${terrain.protocolName}://${demEntry.url}?demType=${demEntry.demType}`],
-		// 	tileSize: 256,
-		// 	minzoom: demEntry.sourceMinZoom,
-		// 	maxzoom: demEntry.sourceMaxZoom,
-		// 	attribution: demEntry.attribution,
-		// 	bounds: demEntry.bbox
-		// });
-
 		map.setTerrain({
 			source: 'terrain',
 			exaggeration: 1
 		});
 
-		// const bbox = demEntry.bbox;
-		// if (!bbox) return;
-
-		const bounds = map.getBounds().toArray();
-
-		const zoom = map.getZoom();
-
-		// map.fitBounds(bbox, {
-		// 	padding: 100,
-		// 	duration: 300,
-		// 	bearing: map.getBearing()
-		// });
-
-		// if (zoom < demEntry.sourceMinZoom || zoom > demEntry.sourceMaxZoom) {
-		// 	map.setZoom(demEntry.sourceMaxZoom - 1.5);
-		// }
 		resetAllSourcesAndLayers();
 		terrainReload();
 	};
@@ -892,6 +973,13 @@ const createMapStore = () => {
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
+		if (deckOverlay) {
+			deckOverlay.finalize();
+			deckOverlay = null;
+		}
+		// Three.js マネージャーを破棄
+		threeJsManager.dispose();
+
 		map.remove();
 		map = null;
 		set(null);
@@ -903,6 +991,7 @@ const createMapStore = () => {
 		setStyleEvent.set(null);
 		isLoadingEvent.set(true);
 		isStyleLoadEvent.set(null);
+		onStyleDataEvent.set(null);
 		moveEndEvent.set(null);
 		resizeEvent.set(null);
 		initEvent.set(null);
@@ -933,14 +1022,14 @@ const createMapStore = () => {
 		return map.getLayer(layerId);
 	};
 
-	const setCamera = (lngLat: maplibregl.LngLat) => {
+	const setCamera = (lngLat: maplibregl.LngLat, altitude?: number) => {
 		if (!map) return;
 
 		// https://github.com/maplibre/maplibre-gl-js/issues/4688
 		const elevation = map.queryTerrainElevation(lngLat);
 
 		map.setCenterClampedToGround(false);
-		map.setCenterElevation(elevation ?? 0);
+		map.setCenterElevation(elevation ? elevation : (altitude ?? 0));
 
 		map._elevationStart = map._elevationTarget;
 	};
@@ -955,6 +1044,7 @@ const createMapStore = () => {
 
 	const setFeatureState = (feature: FeatureIdentifier, state: any) => {
 		if (!map) return;
+		if (!import.meta.env.PROD) console.log('debug:setFeatureState', feature, state);
 		map.setFeatureState(feature, state);
 	};
 
@@ -970,6 +1060,10 @@ const createMapStore = () => {
 		setCursor,
 		setData,
 		setStyle,
+		setDeckOverlay,
+		// Three.js 関連
+		initThreeLayer,
+		setThreeLayer,
 		setFilter,
 		setFeatureState,
 		setLayoutProperty,
@@ -990,6 +1084,10 @@ const createMapStore = () => {
 		toggleTerrain,
 		resetDem: resetDem, // 地形をリセットするメソッド
 		resetAllSourcesAndLayers: resetAllSourcesAndLayers, // ソースとレイヤーをリセットするメソッド
+		triggerRepaint: () => {
+			if (!map) return;
+			map.triggerRepaint();
+		},
 
 		// 取得
 		getLockonMarker: () => lockOnMarker,
@@ -999,6 +1097,7 @@ const createMapStore = () => {
 		getPitch: () => map?.getPitch(),
 		getBearing: () => map?.getBearing(),
 		getTerrain: () => map?.getTerrain(),
+		getElevation: getElevation,
 		getLayer,
 		getState: () => get(state),
 		getImage: (id: string) => map?.getImage(id),
@@ -1010,7 +1109,7 @@ const createMapStore = () => {
 		// リスナー
 		onSetStyle: createEventSubscriber(setStyleEvent), // スタイル設定イベントの購読用メソッド
 		onResize: createEventSubscriber(resizeEvent), // リサイズイベントの購読用メソッド
-		onload: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
+		onLoad: createEventSubscriber(onLoadEvent), // onloadイベントの購読用メソッド
 		onClick: createEventSubscriber(clickEvent), // クリックイベント
 		onContextMenu: createEventSubscriber(contextMenuEvent), // コンテキストメニューイベント
 		onMouseover: createEventSubscriber(mouseoverEvent), // マウスオーバーイベントの購読用メソッド
@@ -1024,7 +1123,8 @@ const createMapStore = () => {
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
-		onStateChange: state.subscribe // マップの状態を購読するメソッド
+		onStateChange: state.subscribe, // マップの状態を購読するメソッド
+		onTerrain: createEventSubscriber(onTerrainEvent) // 地形イベントの購読用メソッド
 	};
 };
 

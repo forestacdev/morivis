@@ -27,8 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		sourceLayer: 'tokyo_gairoju',
 		bounds: [139.5658198, 35.5473344, 139.9092201, 35.8170772],
-		xyzImageTile: { x: 14552, y: 6452, z: 14 },
-		mapImage: `${MAP_IMAGE_BASE_PATH}/tokyo_gairoju.webp`
+		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
 		keys: [
@@ -41,6 +40,7 @@ const entry: VectorEntry<TileMetaData> = {
 			'種別',
 			'整理番号',
 			'路線名',
+			'通称道路名',
 			'経度',
 			'緯度'
 		],
@@ -60,10 +60,10 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.5,
+		opacity: 0.7,
 		markerType: 'circle',
 		colors: {
-			key: '単色',
+			key: '樹高(m)',
 			show: true,
 			expressions: [
 				{
@@ -71,7 +71,17 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#009405'
+						value: '#33a02c'
+					}
+				},
+				{
+					type: 'step',
+					key: '樹高(m)',
+					name: '樹高ごとの色分け',
+					mapping: {
+						scheme: 'YlGn',
+						range: [0, 10],
+						divisions: 5
 					}
 				},
 				{

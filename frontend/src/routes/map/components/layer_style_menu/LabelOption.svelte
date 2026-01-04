@@ -1,25 +1,9 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-	import type { Vector2 } from 'three';
-
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
-	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import LabelPulldownBox from '$routes/map/components/atoms/LabelPulldownBox.svelte';
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
-	import type {
-		VectorEntryGeometryType,
-		GeoJsonMetaData,
-		TileMetaData,
-		VectorEntry
-	} from '$routes/map/data/types/vector';
-	import type {
-		VectorLayerType,
-		ColorsExpression,
-		LabelsExpressions,
-		Labels
-	} from '$routes/map/data/types/vector/style';
+
+	import type { LabelsExpressions, Labels } from '$routes/map/data/types/vector/style';
 	import { slide } from 'svelte/transition';
 
 	interface Props {

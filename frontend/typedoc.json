@@ -1,0 +1,8 @@
+{
+	"entryPoints": ["src/routes/map/data/types/*"],
+	"exclude": ["test/*", "**/node_modules/*", "**/dist/**", "src/*.d.ts"],
+	"out": "docs",
+	"name": "morivis TypeDoc",
+	"readme": "none",
+	"skipErrorChecking": true
+}

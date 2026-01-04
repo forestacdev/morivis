@@ -390,16 +390,3 @@ export function getPresetCSSStyle(preset: RasterStylePreset): {
 } {
 	return rasterToCSSStyle(getRasterStylePreset(preset));
 }
-
-// 使用例
-const exampleStyle: RasterBaseMapStyle = {
-	type: 'basemap',
-	visible: true,
-	preset: 'default',
-	opacity: 0.8,
-	hueRotate: 45,
-	brightnessMin: 0.2,
-	brightnessMax: 0.8,
-	saturation: 0.5,
-	contrast: 0.3
-};

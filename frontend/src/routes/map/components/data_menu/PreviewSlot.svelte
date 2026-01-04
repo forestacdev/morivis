@@ -47,13 +47,6 @@
 				glyphs: MAP_FONT_DATA_PATH,
 				sprite: 'https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std', // TODO: スプライトの保存
 				sources: {
-					// pales: {
-					// 	type: 'raster',
-					// 	tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
-					// 	tileSize: 256,
-					// 	maxzoom: 18,
-					// 	attribution: "<a href='https://www.gsi.go.jp/' target='_blank'>国土地理院</a>"
-					// },
 					tile_grid: {
 						type: 'raster',
 						tiles: ['./tile_grid.png'],
@@ -62,11 +55,6 @@
 					...sources
 				},
 				layers: [
-					// {
-					// 	id: 'pales_layer',
-					// 	source: 'pales',
-					// 	type: 'raster'
-					// },
 					{
 						id: 'tile_grid',
 						type: 'raster',

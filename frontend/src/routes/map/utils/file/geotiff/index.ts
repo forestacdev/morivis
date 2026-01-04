@@ -228,7 +228,7 @@ export const getRasters = async (
 	}
 };
 
-const rebderWorker = new Worker(new URL('./render.worker.ts', import.meta.url), {
+const rebderWorker = new Worker(new URL('./geotiff_render.worker.ts', import.meta.url), {
 	type: 'module'
 });
 

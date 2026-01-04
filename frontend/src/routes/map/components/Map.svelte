@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { debounce, delay } from 'es-toolkit';
+	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		type StyleSpecification,
@@ -14,7 +14,6 @@
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import LayerControl from '$routes/map/components/LayerControl.svelte';
-
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
@@ -32,7 +31,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
-	import { isStreetView, isStyleEdit } from '$routes/stores';
+	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import {
 		selectedBaseMap,
@@ -54,12 +53,10 @@
 	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
-
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import { checkPc } from '../utils/ui';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type {
 		ResultAddressData,
@@ -67,8 +64,14 @@
 		ResultPoiData,
 		SearchGeojsonData
 	} from '../utils/feature';
-	import type { TileInfo } from '../api/whether';
-
+	import { createDeckOverlay } from '$routes/map/utils/deckgl';
+	import type {
+		AnyModelMeshEntry,
+		AnyModelTiles3DEntry,
+		MeshStyleEntry
+	} from '$routes/map/data/types/model';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import { threeJsManager } from '../utils/threejs';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -153,8 +156,6 @@
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 
-	let allTiles = $state<TileInfo[]>([]); // 全てのタイルURL
-
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	let webGLCanvasSource = $state<CanvasSourceSpecification>({
 		type: 'canvas',
@@ -172,7 +173,7 @@
 		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
 
-		const terrainSources = await createTerrainSources(demEntries, 'dem_10b');
+		const terrainSources = await createTerrainSources(demEntries, 'dem_5a');
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
@@ -324,8 +325,12 @@
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
 			glyphs: MAP_FONT_DATA_PATH,
+			//TODO: 投影法の切り替え対応
+			// projection: {
+			// 	type: checkPc() && zoom && zoom < 9 ? 'globe' : 'mercator'
+			// },
 			projection: {
-				type: checkPc() ? 'globe' : 'mercator'
+				type: 'mercator'
 			},
 			sources: {
 				...terrainSources,
@@ -362,21 +367,28 @@
 						features: []
 					}
 				}
-				// nowcast_data: {
-				// 	type: 'raster',
-				// 	tiles: allTiles.length ? [allTiles.map((tile) => tile.url).at(0)] : [],
-				// 	tileSize: 256,
-				// 	maxzoom: 10,
-				// 	minzoom: 4,
-				// 	attribution: '高解像度降水ナウキャスト'
-				// }
+
 				// webgl_canvas: webGLCanvasSource
 			},
 			layers: [
+				{
+					id: '@background_layer',
+					type: 'background',
+					paint: {
+						'background-opacity': 1,
+						'background-color': '#000'
+					}
+				},
 				...layers,
 				...xyzTileLayer,
 				...previewLayers,
-
+				{
+					id: 'deck-reference-layer',
+					type: 'background',
+					paint: {
+						'background-opacity': 0
+					}
+				},
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
@@ -485,8 +497,8 @@
 			terrain: $isTerrain3d ? terrain : undefined
 		};
 
-		if (import.meta.env.MODE === 'development') {
-			console.log('mapStyle', mapStyle);
+		if (!import.meta.env.PROD) {
+			console.log('debug:mapStyle', mapStyle);
 		}
 
 		return mapStyle;
@@ -494,26 +506,9 @@
 
 	// 初期描画時
 	onMount(async () => {
-		if (!layerEntries) return;
+		if (!mapContainer) return;
 
-		// allTiles = await getJmaTileUrls();
-		// console.log('allTiles', allTiles);
-		// TODO: レイヤーエントリーをローカルストレージまたはセッションストレージから読み込む
-		// if (!$isDebugMode) {
-		// 	const localEntries = loadLayerEntries();
-
-		// 	// セッションストレージからのレイヤーエントリーが存在する場合はそれを使用
-		// 	if (localEntries && localEntries.length > 0) {
-		// 		layerEntries = localEntries;
-		// 		const ids = getEntryIds(layerEntries);
-		// 		activeLayerIdsStore.setLayers(ids);
-		// 	}
-		// }
-
-		const mapStyle = await createMapStyle(layerEntries);
-		if (!mapStyle || !mapContainer) return;
-
-		mapStore.init(mapContainer, mapStyle as StyleSpecification);
+		mapStore.init(mapContainer);
 	});
 
 	onDestroy(() => {
@@ -525,11 +520,33 @@
 
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
-		const mapStyle = await createMapStyle(entries as GeoDataEntry[]);
-		mapStore.setStyle(mapStyle);
-		mapStore.terrainReload();
+		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
 
-		// saveToLayerEntries(entries as GeoDataEntry[]);
+		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
+
+		mapStore.setStyle(mapStyle);
+
+		const tiles3dEntry = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+		) as AnyModelTiles3DEntry[];
+
+		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
+		mapStore.setDeckOverlay(deckOverlayLayers);
+
+		const meshEntries = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === 'gltf'
+		) as ModelMeshEntry<MeshStyle>[];
+
+		const previewMeshEntry =
+			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
+				? (showDataEntry as ModelMeshEntry<MeshStyle>)
+				: null;
+
+		previewMeshEntry
+			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
+			: mapStore.setThreeLayer(meshEntries, 'main');
+
+		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
 	}, 100);
@@ -563,6 +580,10 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
+	mapStore.onTerrain(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+
 	// 検索結果の更新
 	$effect(() => {
 		if (searchGeojsonData || !searchGeojsonData) {
@@ -570,26 +591,11 @@
 		}
 	});
 
-	$effect(() => {
-		if (allTiles.length) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}
-	});
-
-	// TODO:書き込みデータの更新を監視
-	// $effect(() => {
-	// 	if (!maplibreMap || !maplibreMap.loaded()) return;
-
-	// 	const source = maplibreMap.getSource('draw_source') as GeoJSONSourceSpecification;
-	// 	if (source) {
-	// 		source.setData(drawGeojsonData as FeatureCollection);
-	// 	}
-	// });
-
 	// データプレビュー
 	$effect(() => {
 		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			threeJsManager.setGroupVisibility(!showDataEntry);
 		}
 	});
 
@@ -683,7 +689,7 @@
 
 	{#if !$isStreetView && !showDataEntry}
 		<!-- PC用地図コントロール -->
-		<div class="absolute right-5 bottom-[100px] max-lg:hidden">
+		<div class="absolute bottom-[100px] right-5 max-lg:hidden">
 			<Compass />
 		</div>
 
@@ -701,6 +707,7 @@
 		{clickedLngLat}
 	/>
 </div>
+<!-- <ThreeLayer /> -->
 
 {#if maplibreMap}
 	<FileManager
@@ -762,11 +769,6 @@
 {/if}
 
 <style>
-	/* maplibreのデフォルトの出典表記を非表示 */
-	:global(.maplibregl-ctrl.maplibregl-ctrl-attrib) {
-		display: none !important;
-	}
-
 	@media (width >= 64rem /* 1024px */) {
 		:global(.maplibregl-canvas) {
 			border-radius: 0.5rem !important;

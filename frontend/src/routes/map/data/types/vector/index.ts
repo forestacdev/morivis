@@ -8,7 +8,6 @@ import type { FeatureCollection } from 'geojson';
 
 import type { BaseMetaData } from '$routes/map/data/types';
 import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
-import type { R } from 'vitest/dist/chunks/environment.LoooBwUu.js';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb' | 'geojsontile';
 

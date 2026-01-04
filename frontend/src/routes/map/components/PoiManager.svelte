@@ -129,7 +129,7 @@
 
 	onMount(() => {
 		// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
-		mapStore.onload((e) => {
+		mapStore.onLoad((e) => {
 			updateMarkers();
 			if (!map) return;
 			map.on('move', updateThrottle);

@@ -68,6 +68,7 @@ import { get } from 'svelte/store';
 
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
+import { createRasterPaint } from '$routes/map/utils/layers/raster';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -289,6 +290,8 @@ const getColorExpression = (colors: ColorsStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.value;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return generateMatchExpression(expressionData);
 		case 'step':
@@ -308,7 +311,7 @@ const getPatternSingleExpression = (
 		return undefined;
 	}
 
-	if (expressionData.type === 'single') {
+	if (expressionData.type === 'single' || expressionData.type === 'raw') {
 		console.warn(expressionData.mapping.pattern);
 		if (!expressionData.mapping.pattern) {
 			return undefined;
@@ -352,6 +355,8 @@ const getPatternExpression = (colors: ColorsStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.pattern;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return getPatternMatchExpression(expressionData);
 		default:
@@ -444,6 +449,8 @@ const getNumberExpression = (numbers: NumbersStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.value;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return generateNumberMatchExpression(expressionData);
 		case 'linear':
@@ -577,6 +584,75 @@ const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 		})()
 	};
 	return outlineLayer;
+};
+
+// fillExtrusionレイヤーの作成
+const createFillExtrusionLayer = (
+	layer: LayerItem,
+	style: PolygonStyle
+): FillExtrusionLayerSpecification => {
+	const defaultStyle = style.default;
+	const color = getColorExpression(style.colors);
+	const colorExpression = getSelectedColorExpression(color);
+	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
+		...layer,
+		type: 'fill-extrusion',
+		id: `${layer.id}_fill_extrusion`,
+		paint: {
+			'fill-extrusion-height': height,
+			'fill-extrusion-opacity': style.opacity,
+			'fill-extrusion-color': style.colors.show ? colorExpression : '#00000000',
+			'fill-extrusion-vertical-gradient': true,
+			// 'fill-extrusion-base': 10,
+
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
+		},
+		layout: {
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.fillExtrusion?.filter) {
+				return { filter: defaultStyle.fillExtrusion.filter };
+			}
+			return {};
+		})()
+	};
+
+	return fillExtrusionLayer;
+};
+
+const createFillExtrusionPatternLayer = (
+	layer: LayerItem,
+	style: PolygonStyle
+): FillExtrusionLayerSpecification => {
+	const defaultStyle = style.default;
+	const patternExpression = getPatternExpression(style.colors);
+	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
+		...layer,
+		id: `${layer.id}_fill_extrusion_pattern`,
+		type: 'fill-extrusion',
+		paint: {
+			'fill-extrusion-height': height,
+			'fill-extrusion-opacity': style.opacity,
+			'fill-extrusion-pattern': patternExpression ? patternExpression : '#00000000',
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
+		},
+		layout: {
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.fillExtrusion?.filter) {
+				return { filter: defaultStyle.fillExtrusion.filter };
+			}
+			return {};
+		})()
+	};
+
+	return fillExtrusionLayer;
 };
 
 // lineレイヤーの作成
@@ -750,10 +826,15 @@ const createVectorLayer = (
 	| LineLayerSpecification
 	| CircleLayerSpecification
 	| SymbolLayerSpecification
+	| FillExtrusionLayerSpecification
 	| undefined => {
 	switch (style.type) {
 		case 'fill': {
-			return createFillLayer(layer, style);
+			if (style.extrusion && style.extrusion.show) {
+				return createFillExtrusionLayer(layer, style);
+			} else {
+				return createFillLayer(layer, style);
+			}
 		}
 		case 'line': {
 			return createLineLayer(layer, style);
@@ -788,6 +869,7 @@ export const createLayersItems = (
 	const circleLayerItems: LayerSpecification[] = [];
 	const lineLayerItems: LayerSpecification[] = [];
 	const fillLayerItems: LayerSpecification[] = [];
+	const fillExtrusionLayerItems: LayerSpecification[] = [];
 	const rasterLayerItems: LayerSpecification[] = [];
 	// const vectorLayerItems: LayerSpecification[] = [];
 	const rasterAndVectorLayerItems: LayerSpecification[] = [];
@@ -868,6 +950,16 @@ export const createLayersItems = (
 								'raster-opacity': style.opacity
 							}
 						});
+					} else if (style.type === 'cad') {
+						// lineとして扱う
+						lineLayerItems.push({
+							...layer,
+							type: 'raster',
+							paint: {
+								'raster-opacity': style.opacity,
+								...createRasterPaint(style.color)
+							}
+						});
 					}
 					break;
 				}
@@ -897,11 +989,19 @@ export const createLayersItems = (
 
 					// ポリゴン
 					if (style.type === 'fill') {
-						fillLayerItems.push(vectorLayer);
-						// ポリゴンの塗りつぶしパターン
-						const fillPatternLayer = createFillPatternLayer(layer, style);
-						if (fillPatternLayer) {
-							fillLayerItems.push(fillPatternLayer);
+						if (!style.extrusion || (style.extrusion && !style.extrusion.show)) {
+							fillLayerItems.push(vectorLayer);
+							// ポリゴンの塗りつぶしパターン
+							const fillPatternLayer = createFillPatternLayer(layer, style);
+							if (fillPatternLayer) {
+								fillLayerItems.push(fillPatternLayer);
+							}
+						} else if (style.extrusion && style.extrusion.show) {
+							// 押し出し
+							fillExtrusionLayerItems.push(vectorLayer);
+							// ポリゴンの塗りつぶしパターン
+							const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
+							fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
 						}
 
 						// ポリゴンのアウトライン
@@ -1013,6 +1113,7 @@ export const createLayersItems = (
 		...boundaryLayerItems,
 		...roadLineLayerItems,
 		...lineLayerItems,
+		...fillExtrusionLayerItems,
 		...circleLayerItems,
 		...streetViewLayers,
 		...cloudLayerItems,

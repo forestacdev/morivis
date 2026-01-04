@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { checkMobile, type MobileActiveMenu } from '$routes/map/utils/ui';
-	import { showLayerMenu, showDataMenu, showOtherMenu } from '$routes/stores/ui';
 	import Icon from '@iconify/svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { propData } from '$routes/map/data/prop_data';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import AttributeItem from '../feature_menu/AttributeItem.svelte';
 

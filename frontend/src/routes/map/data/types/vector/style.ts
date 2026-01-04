@@ -8,7 +8,8 @@ import type {
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification,
 	SourceSpecification,
-	LayerSpecification
+	LayerSpecification,
+	ExpressionSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
 import type {
@@ -138,7 +139,7 @@ export type ColorsExpression =
 export interface ColorsStyle {
 	key: string;
 	show: boolean;
-	expressions: ColorsExpression[];
+	expressions: (ColorsExpression | RawExpression)[];
 }
 
 export interface NumberSingleExpression {
@@ -186,9 +187,18 @@ export type NumbersExpression =
 	| NumberMatchExpression
 	| NumberLinearExpression;
 
+export interface RawExpression {
+	type: 'raw';
+	key: string;
+	name: string;
+	mapping: {
+		expression: ExpressionSpecification;
+	};
+}
+
 export interface NumbersStyle {
 	key: string;
-	expressions: NumbersExpression[];
+	expressions: (NumbersExpression | RawExpression)[];
 }
 
 export type ExpressionType = 'color' | 'number';
@@ -223,6 +233,11 @@ export interface PolygonOutLine {
 	lineStyle: 'solid' | 'dashed';
 }
 
+export interface PolygonExtrusion {
+	show: boolean;
+	height: NumbersStyle;
+}
+
 export interface PointOutLine {
 	show: boolean;
 	color: string;
@@ -243,6 +258,7 @@ export interface LabelOutLine {
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill';
 	outline: PolygonOutLine;
+	extrusion?: PolygonExtrusion;
 	default?: PolygonDefaultStyle;
 }
 

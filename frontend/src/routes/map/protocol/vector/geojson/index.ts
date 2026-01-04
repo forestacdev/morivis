@@ -117,7 +117,9 @@ export class WorkerProtocol {
 	};
 }
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+const worker = new Worker(new URL('./protocol_geojson.worker.ts', import.meta.url), {
+	type: 'module'
+});
 const workerProtocol = new WorkerProtocol(worker);
 
 export const geojsonProtocol = (protocolName: 'geojson') => {

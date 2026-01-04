@@ -1,18 +1,19 @@
 import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
-
 import type {
 	RasterEntry,
 	RasterCategoricalStyle,
 	RasterBaseMapStyle,
 	RasterDemStyle,
 	RasterTiffStyle,
+	RasterCadStyle,
 	TileXYZ
 } from '$routes/map/data/types/raster';
+import type { AnyModelEntry } from '$routes/map/data/types/model';
 import type { AttributionKey } from '../attribution';
 import type { Region } from './location';
 import type { Tag } from './tags';
 
-export type GeoDataType = 'raster' | 'vector' | '3d';
+export type GeoDataType = 'raster' | 'vector' | 'model';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 
 export interface BaseMetaData {
@@ -33,9 +34,9 @@ export interface BaseMetaData {
 }
 
 export type AnyRasterEntry = RasterEntry<
-	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle
+	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 >;
 
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
 
-export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry;
+export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry;

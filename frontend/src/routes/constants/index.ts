@@ -15,6 +15,8 @@ export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
 export const ENTRY_FGB_PATH = ENTRY_DATA_PATH + '/fgb';
 export const ENTRY_GEOJSON_PATH = ENTRY_DATA_PATH + '/geojson';
+export const ENTRY_3DTILES_PATH = ENTRY_DATA_PATH + '/3dtiles';
+export const ENTRY_GLTF_PATH = ENTRY_DATA_PATH + '/gltf';
 export const ENTRY_PMTILES_RASTER_PATH = ENTRY_DATA_PATH + '/pmtiles/raster';
 export const ENTRY_PMTILES_VECTOR_PATH = ENTRY_DATA_PATH + '/pmtiles/vector';
 export const COVER_IMAGE_BASE_PATH = DATA_PATH + '/images/cover';
@@ -106,6 +108,9 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
+	'morinos_3d',
+	// 'fac_floor_plan_1f',
+	// 'ensyurin_owl_3dtiles',
 	'ensyurin_owl',
 	// 'ensyurin_pole',
 	// 'ensyurin_kikenboku_h25',

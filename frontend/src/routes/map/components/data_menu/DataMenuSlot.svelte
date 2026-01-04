@@ -44,7 +44,7 @@
 
 	let isImageError = $state<boolean>(false);
 
-	let layertype = $derived.by(() => {
+	let layerType = $derived.by(() => {
 		return getLayerType(dataEntry);
 	});
 
@@ -135,7 +135,7 @@
 </script>
 
 <div
-	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
 	style="transform-origin: {getTransformOrigin()}"
 	bind:this={container}
 	onmouseover={() => (checkPc() ? (isHover = true) : null)}
@@ -153,7 +153,7 @@
 >
 	<!-- 追加ボタン -->
 	{#if isHover}
-		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
+		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
 					onclick={(e) => {
@@ -286,11 +286,11 @@
 				</div>
 			{/if}
 
-			{#if layertype}
+			{#if layerType}
 				<div
-					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:left-1 max-lg:top-1 lg:left-2 lg:top-2"
 				>
-					<Icon icon={getLayerIcon(layertype)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
+					<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</div>
 			{/if}
 		</div>
@@ -309,7 +309,7 @@
 					{getAttributionName(dataEntry.metaData.attribution)}</span
 				>
 				<div
-					class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
+					class="absolute bottom-0 right-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
 				>
 					{#if dataEntry.metaData.location === '森林文化アカデミー'}
 						<div class="grid place-items-center [&_path]:fill-white">

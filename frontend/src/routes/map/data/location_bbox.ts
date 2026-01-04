@@ -79,6 +79,11 @@ export const TOKYO_BBOX: [number, number, number, number] = [
 	138.942865, 24.224731, 153.986895, 35.898404
 ];
 
+/* 東京都23区 */
+export const TOKYO_23KU_BBOX: [number, number, number, number] = [
+	139.5627858379999964, 35.5281980809999993, 139.9189083670000002, 35.8177059459999967
+];
+
 /* 神奈川県 */
 export const KANAGAWA_BBOX: [number, number, number, number] = [
 	138.915784, 35.128768, 139.798226, 35.675618

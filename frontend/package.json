@@ -57,6 +57,9 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
+		"@deck.gl/core": "^9.2.5",
+		"@deck.gl/geo-layers": "^9.2.5",
+		"@deck.gl/mapbox": "^9.2.5",
 		"@mapbox/tilebelt": "^2.0.2",
 		"@mapbox/vector-tile": "^2.0.3",
 		"@ngageoint/geopackage": "^4.2.6",
@@ -82,6 +85,7 @@
 		"@vite-pwa/assets-generator": "^0.2.6",
 		"chroma-js": "^3.1.2",
 		"colormap": "^2.3.2",
+		"copc": "^0.0.8",
 		"d3-array": "^3.2.4",
 		"d3-color": "^3.1.0",
 		"d3-interpolate": "^3.0.1",

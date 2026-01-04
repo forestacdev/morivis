@@ -17,28 +17,7 @@
 	import Icon from '@iconify/svelte';
 
 	isTerrain3d.subscribe((is3d) => {
-		const map = mapStore.getMap();
-		if (!map || !map.loaded()) return;
-		try {
-			if (is3d) {
-				if (map.getSource('terrain')) {
-					map.setTerrain({
-						source: 'terrain',
-						exaggeration: 1.0
-					});
-					set3dParams('1');
-					// map.easeTo({ pitch: 60 });
-				}
-			} else {
-				if (map.getTerrain()) {
-					map.setTerrain(null);
-				}
-				set3dParams('0');
-				// map.easeTo({ pitch: 0 });
-			}
-		} catch (error) {
-			console.error('Terrain control error:', error);
-		}
+		mapStore.toggleTerrain(is3d);
 	});
 
 	let showMenu = $state<boolean>(false);
