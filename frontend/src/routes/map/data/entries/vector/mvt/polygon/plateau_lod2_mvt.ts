@@ -54,7 +54,6 @@ const entry: VectorEntry<TileMetaData> = {
 						pattern: null
 					}
 				},
-
 				{
 					type: 'step',
 					key: 'z',

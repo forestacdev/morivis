@@ -150,7 +150,10 @@
 	};
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
+		// プレブュー中はクリック処理を行わない
+		if (showDataEntry) return;
 		try {
+			// デバッグ用コード
 			if (import.meta.env.DEV) {
 				const features = mapStore.queryRenderedFeatures(e.point);
 
@@ -187,11 +190,9 @@
 					}
 				}
 			}
-			if (showDataEntry) return;
 
 			const clickLayerIds = [...$clickableVectorIds, '@search_result'];
 			// 存在するレイヤーIDのみをフィルタリング
-
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
 				return mapStore.getLayer(layerId) !== undefined;
 			});
@@ -226,17 +227,6 @@
 				}
 				return;
 			}
-
-			// if ($isStyleEdit) {
-			// 	// 編集モードの時は、クリックしたレイヤーを編集対象にする
-			// 	const clickedLayer = features[0].layer.id;
-			// 	const clickedLayerEntry = layerEntries.find((layer) => layer.id === clickedLayer);
-			// 	if (clickedLayerEntry) {
-			// 		selectedLayerId.set(clickedLayerEntry.id);
-			// 	}
-
-			// 	return;
-			// }
 
 			const selectedVecterLayersId = features.map((feature) => feature.layer.id);
 			const selectedRasterLayersId = layerEntries
@@ -413,6 +403,9 @@
 			y: windowY,
 			lngLat: e.lngLat
 		};
+
+		markerLngLat = e.lngLat;
+		showMarker = true;
 	});
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
