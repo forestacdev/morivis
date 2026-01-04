@@ -28,6 +28,7 @@
 	import { setStreetViewParams } from '../utils/params';
 	import type { ResultAddressData, ResultData, ResultPoiData } from '../utils/feature';
 	import type { ContextMenuState } from '$routes/map/types/ui';
+	import { checkMobile } from '../utils/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -225,15 +226,17 @@
 					showMarker = true;
 					markerLngLat = e.lngLat;
 
-					const windowX = e.originalEvent.clientX;
-					const windowY = e.originalEvent.clientY;
+					if (!checkMobile()) {
+						const windowX = e.originalEvent.clientX;
+						const windowY = e.originalEvent.clientY;
 
-					contextMenuState = {
-						show: true,
-						x: windowX,
-						y: windowY,
-						lngLat: e.lngLat
-					};
+						contextMenuState = {
+							show: true,
+							x: windowX,
+							y: windowY,
+							lngLat: e.lngLat
+						};
+					}
 				}
 				return;
 			}

@@ -338,10 +338,12 @@ const createMapStore = () => {
 			isCtrlDragging = false;
 		};
 
-		const canvas = map.getCanvas();
-		canvas.addEventListener('mousedown', handleMouseDown);
-		window.addEventListener('mousemove', handleMouseMove);
-		window.addEventListener('mouseup', handleMouseUp);
+		if (!checkMobile()) {
+			const canvas = map.getCanvas();
+			canvas.addEventListener('mousedown', handleMouseDown);
+			window.addEventListener('mousemove', handleMouseMove);
+			window.addEventListener('mouseup', handleMouseUp);
+		}
 
 		// より詳細なエラー情報を取得
 		map.on('error', (e) => {
@@ -352,9 +354,6 @@ const createMapStore = () => {
 		});
 
 		map.on('click', (e: MapMouseEvent) => {
-			if (checkMobile()) {
-				return;
-			}
 			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
 				console.log('クリックイベント無視: 回転・ピッチ操作中');
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
@@ -369,20 +368,21 @@ const createMapStore = () => {
 			}
 		});
 
-		map.on('touchend', (e: MapMouseEvent) => {
-			if (checkPc()) {
-				return;
-			}
+		// TODO: スマホ対応　タップとタップムーブの判定
+		// map.on('touchend', (e: MapMouseEvent) => {
+		// 	if (checkPc()) {
+		// 		return;
+		// 	}
 
-			const target = e.originalEvent.target as HTMLElement;
-			if (target.classList.contains('maplibregl-canvas')) {
-				// 地図本体がクリックされた時の処理
-				clickEvent.set(e);
-			}
-		});
+		// 	const target = e.originalEvent.target as HTMLElement;
+		// 	if (target.classList.contains('maplibregl-canvas')) {
+		// 		// 地図本体がクリックされた時の処理
+		// 		clickEvent.set(e);
+		// 	}
+		// });
 
 		map.on('contextmenu', (e: MapMouseEvent) => {
-			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
+			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey || checkMobile()) {
 				// Shift/Ctrlキーが押されている場合は回転・ピッチ操作なのでクリックイベントを無視
 				return;
 			}
