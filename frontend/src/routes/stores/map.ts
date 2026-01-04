@@ -533,6 +533,8 @@ const createMapStore = () => {
 			return;
 		}
 		const layer = threeJsManager.createLayer();
+		// https://github.com/maplibre/maplibre-gl-js/issues/2587
+		// map.addLayer(layer, 'deck-reference-layer');
 		map.addLayer(layer);
 	};
 

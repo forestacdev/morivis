@@ -15,6 +15,8 @@
 			return generateNumberToNumberMap(setExpression.mapping);
 		}
 	});
+	const rangeMin = $state.raw(setExpression.type === 'linear' ? setExpression.mapping.range[0] : 0);
+	const rangeMax = $state.raw(setExpression.type === 'linear' ? setExpression.mapping.range[1] : 0);
 </script>
 
 {#if setExpression}
@@ -23,7 +25,7 @@
 			label="大きさ"
 			bind:value={setExpression.mapping.value}
 			min={1}
-			max={30}
+			max={50}
 			step={0.01}
 		/>
 	{/if}
@@ -48,8 +50,8 @@
 				<RangeSlider
 					label={index === 0 ? '最小値の大きさ' : '最大値の大きさ'}
 					bind:value={setExpression.mapping.values[index]}
-					min={0}
-					max={30}
+					min={rangeMin}
+					max={rangeMax}
 					step={0.01}
 				/>
 			</div>

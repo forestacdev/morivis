@@ -73,12 +73,19 @@ const entry: VectorEntry<TileMetaData> = {
 				key: 'z',
 				expressions: [
 					{
-						type: 'linear',
+						type: 'single',
+						key: 'single',
+						name: '固定値',
+						mapping: {
+							value: 30
+						}
+					},
+					{
+						type: 'raw',
 						key: 'z',
 						name: '建物の高さ',
 						mapping: {
-							range: [0, 1000],
-							values: [0, 1000]
+							expression: ['*', ['get', 'z'], 1]
 						}
 					}
 				]

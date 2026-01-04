@@ -13,7 +13,7 @@
 		TileMetaData
 	} from '$routes/map/data/types/vector';
 	import { slide } from 'svelte/transition';
-
+	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	interface Props {
 		layerEntry: PolygonEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;
@@ -22,10 +22,24 @@
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
 	let showOutlineOption = $state<boolean>(false);
+	let show3DOption = $state<boolean>(false);
 </script>
 
 <!-- 色 -->
 <ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
+
+{#if layerEntry.style.extrusion}
+	<Accordion label={'3D表現'} icon={'iconoir:3d-select-solid'} bind:value={show3DOption}>
+		<Switch label={'押し出し'} bind:value={layerEntry.style.extrusion.show} />
+
+		{#if layerEntry.style.extrusion.show}
+			<ExpressionsPulldownBox
+				bind:style={layerEntry.style.extrusion.height}
+				expressionType={'number'}
+			/>
+		{/if}
+	</Accordion>
+{/if}
 
 <Accordion
 	label={'アウトライン'}

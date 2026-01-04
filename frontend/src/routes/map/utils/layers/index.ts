@@ -290,6 +290,8 @@ const getColorExpression = (colors: ColorsStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.value;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return generateMatchExpression(expressionData);
 		case 'step':
@@ -353,6 +355,8 @@ const getPatternExpression = (colors: ColorsStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.pattern;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return getPatternMatchExpression(expressionData);
 		default:
@@ -445,6 +449,8 @@ const getNumberExpression = (numbers: NumbersStyle) => {
 	switch (expressionData.type) {
 		case 'single':
 			return expressionData.mapping.value;
+		case 'raw':
+			return expressionData.mapping.expression;
 		case 'match':
 			return generateNumberMatchExpression(expressionData);
 		case 'linear':
