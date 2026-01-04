@@ -65,7 +65,11 @@
 		SearchGeojsonData
 	} from '../utils/feature';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
-	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
+	import type {
+		AnyModelMeshEntry,
+		AnyModelTiles3DEntry,
+		MeshStyleEntry
+	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { threeJsManager } from '../utils/threejs';
 	interface Props {
@@ -533,9 +537,14 @@
 			(entry) => entry.type === 'model' && entry.format.type === 'gltf'
 		) as ModelMeshEntry<MeshStyle>[];
 
-		showDataEntry ? meshEntries.push(showDataEntry as ModelMeshEntry<MeshStyle>) : null;
+		const previewMeshEntry =
+			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
+				? (showDataEntry as ModelMeshEntry<MeshStyle>)
+				: null;
 
-		mapStore.setThreeLayer(meshEntries, showDataEntry ? 'preview' : 'main');
+		previewMeshEntry
+			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
+			: mapStore.setThreeLayer(meshEntries, 'main');
 
 		mapStore.terrainReload();
 
@@ -586,6 +595,7 @@
 	$effect(() => {
 		if (showDataEntry || !showDataEntry) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			threeJsManager.setGroupVisibility(!showDataEntry);
 		}
 	});
 

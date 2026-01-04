@@ -544,8 +544,7 @@ const createMapStore = () => {
 		newEntries: ModelMeshEntry<MeshStyle>[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
-		threeJsManager.setGroupVisibility(_type === 'main');
-		if (_type === 'preview') {
+		if (_type === 'preview' && newEntries.length > 0) {
 			threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
 			return;
 		}
