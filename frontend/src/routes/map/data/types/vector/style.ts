@@ -223,6 +223,11 @@ export interface PolygonOutLine {
 	lineStyle: 'solid' | 'dashed';
 }
 
+export interface PolygonExtrusion {
+	show: boolean;
+	height: NumbersStyle;
+}
+
 export interface PointOutLine {
 	show: boolean;
 	color: string;
@@ -243,6 +248,7 @@ export interface LabelOutLine {
 export interface PolygonStyle extends BaseVectorStyle {
 	type: 'fill';
 	outline: PolygonOutLine;
+	extrusion?: PolygonExtrusion;
 	default?: PolygonDefaultStyle;
 }
 

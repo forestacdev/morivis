@@ -1,5 +1,5 @@
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS, TOKYO_23KU_BBOX } from '$routes/map/data/location_bbox';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { TOKYO_23KU_BBOX } from '$routes/map/data/location_bbox';
 
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -12,34 +12,35 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://indigo-lab.github.io/plateau-lod2-mvt/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '3D都市モデル（Project PLATEAU）東京都23区 LOD2',
+		name: '3D都市モデル 東京都23区 LOD2',
 		attribution: 'PLATEAU',
 		downloadUrl: 'https://github.com/indigo-lab/plateau-lod2-mvt?tab=readme-ov-file',
 		description:
 			'plateau-lod2-mvt by indigo-lab (国土交通省 Project PLATEAU のデータを加工して作成)',
 		location: '東京都',
-		tags: [],
+		tags: ['建物'],
 		minZoom: 10,
 		maxZoom: 16,
 		sourceLayer: 'bldg',
 		bounds: TOKYO_23KU_BBOX,
-		xyzImageTile: { x: 29099, y: 12902, z: 15 }
+		xyzImageTile: { x: 29099, y: 12902, z: 15 },
+		mapImage: `${MAP_IMAGE_BASE_PATH}/plateau_lod2_mvt.webp`
 	},
 	properties: {
 		keys: [],
 		titles: [
 			{
 				conditions: [],
-				template: '3D都市モデル（Project PLATEAU）東京都23区 LOD2'
+				template: '3D都市モデル 東京都23区 LOD2'
 			}
 		]
 	},
 	interaction: {
-		clickable: true
+		clickable: false
 	},
 	style: {
 		type: 'fill',
-		opacity: 0.7,
+		opacity: 1,
 		colors: {
 			key: '単色',
 			show: true,
@@ -49,7 +50,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#ff7f00',
+						value: '#a6cee3',
 						pattern: null
 					}
 				},
@@ -65,6 +66,23 @@ const entry: VectorEntry<TileMetaData> = {
 					}
 				}
 			]
+		},
+		extrusion: {
+			show: true,
+			height: {
+				key: 'z',
+				expressions: [
+					{
+						type: 'linear',
+						key: 'z',
+						name: '建物の高さ',
+						mapping: {
+							range: [0, 1000],
+							values: [0, 1000]
+						}
+					}
+				]
+			}
 		},
 		outline: {
 			show: false,

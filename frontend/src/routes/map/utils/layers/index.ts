@@ -580,6 +580,39 @@ const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 	return outlineLayer;
 };
 
+// fillExtrusionレイヤーの作成
+const createFillExtrusionLayer = (
+	layer: LayerItem,
+	style: PolygonStyle
+): FillExtrusionLayerSpecification => {
+	const defaultStyle = style.default;
+	const color = getColorExpression(style.colors);
+	const colorExpression = getSelectedColorExpression(color);
+	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
+		...layer,
+		type: 'fill-extrusion',
+		paint: {
+			'fill-extrusion-height': height,
+			'fill-extrusion-opacity': style.opacity,
+			'fill-extrusion-color': style.colors.show ? colorExpression : '#00000000',
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
+		},
+		layout: {
+			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.fillExtrusion?.filter) {
+				return { filter: defaultStyle.fillExtrusion.filter };
+			}
+			return {};
+		})()
+	};
+
+	return fillExtrusionLayer;
+};
+
 // lineレイヤーの作成
 const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
 	const defaultStyle = style.default;
@@ -751,10 +784,15 @@ const createVectorLayer = (
 	| LineLayerSpecification
 	| CircleLayerSpecification
 	| SymbolLayerSpecification
+	| FillExtrusionLayerSpecification
 	| undefined => {
 	switch (style.type) {
 		case 'fill': {
-			return createFillLayer(layer, style);
+			if (style.extrusion && style.extrusion.show) {
+				return createFillExtrusionLayer(layer, style);
+			} else {
+				return createFillLayer(layer, style);
+			}
 		}
 		case 'line': {
 			return createLineLayer(layer, style);
