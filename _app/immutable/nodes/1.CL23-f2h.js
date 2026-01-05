@@ -1,0 +1,1 @@
+import"../chunks/CWj6FrbW.js";import{i as p}from"../chunks/CQnr0Roj.js";import{p as s,f as o,t as m,a as i,b as f,c as h,r as n,s as c}from"../chunks/Dd4CGWiK.js";import{p as l}from"../chunks/Dt6Quh35.js";var u=o("<h3> </h3>");function g(t,e){s(e,!1),p();var a=u(),r=h(a);n(a),m(()=>c(r,`Requested page path is ${l.url.pathname??""}`)),i(t,a),f()}export{g as component};
