@@ -18,7 +18,7 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['林道', '国有林'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		maxZoom: 14,
-		minZoom: 0,
+		minZoom: 8,
 		sourceLayer: 'national_forest_road',
 		xyzImageTile: { x: 3613, y: 1612, z: 12 },
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',

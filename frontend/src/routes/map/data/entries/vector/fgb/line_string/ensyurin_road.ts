@@ -21,7 +21,7 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 		location: '森林文化アカデミー',
 		tags: ['森林歩道', '林道'],
 		maxZoom: 17,
-		minZoom: 8,
+		minZoom: 12,
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_road.webp`,
