@@ -12,7 +12,7 @@
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import { TAG_LIST } from '$routes/map/data/types/tags';
+	import { TAG_LIST, type Tag } from '$routes/map/data/types/tags';
 
 	import Fuse from 'fuse.js';
 	import { fly, slide, scale } from 'svelte/transition';
@@ -34,24 +34,78 @@
 
 	// export let mapBearing: number;
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
+
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(true); // データ追加の状態
+	let tagList = $derived.by(() => {
+		const tags = new Set<string>();
+		geoDataEntries.forEach((entry) => {
+			entry.metaData.tags.forEach((tag) => tags.add(tag));
+		});
+		return Array.from(tags);
+	});
+
+	let selectedTag = $state<Tag | null>(null); // 選択されたタグ
+
+	// 文字種を判定して優先度を返す
+	const getCharPriority = (str: string): number => {
+		const firstChar = str.charAt(0);
+		if (/[\u4E00-\u9FFF]/.test(firstChar)) return 0; // 漢字
+		if (/[\u30A0-\u30FF]/.test(firstChar)) return 1; // カタカナ
+		if (/[\u3040-\u309F]/.test(firstChar)) return 2; // ひらがな
+		if (/[A-Za-z]/.test(firstChar)) return 3; // 英語
+		if (/[0-9]/.test(firstChar)) return 4; // 数字
+		return 5;
+	};
+
+	const collator = new Intl.Collator('ja', { sensitivity: 'base' });
 
 	$effect(() => {
-		// 検索ワードが空でない場合、filterDataEntriesにフィルタリングされたデータを格納
+		let results = geoDataEntries;
+
+		// タグでフィルタリング
+		if (selectedTag) {
+			results = results.filter((data) => data.metaData.tags.includes(selectedTag));
+		}
+
+		// 検索ワードでフィルタリング（Fuse.jsを使用）
 		if (searchWord) {
 			const result = layerDataFuse.search(encode(searchWord));
-			filterDataEntries = result.map((item) => item.item);
-		} else {
-			// 検索ワードが空の場合、全てのデータを表示
-			if (!showAddedData) {
-				filterDataEntries = geoDataEntries.filter(
-					(data) => !$activeLayerIdsStore.includes(data.id)
-				);
-			} else {
-				filterDataEntries = geoDataEntries;
-			}
+			results = result.map((item) => item.item);
 		}
+
+		// 追加済みデータの非表示
+		if (!showAddedData) {
+			results = results.filter((data) => !$activeLayerIdsStore.includes(data.id));
+		}
+
+		// 五十音順でソート（漢字 → カタカナ → 英語 → 数字）
+		// 五十音順でソート（森林文化アカデミー優先 → 岐阜県 → 漢字 → カタカナ → 英語 → 数字）
+		filterDataEntries = results.sort((a, b) => {
+			const locationA = a.metaData.location || '';
+			const locationB = b.metaData.location || '';
+
+			// locationの優先度を取得
+			const getLocationPriority = (location: string): number => {
+				if (location.includes('森林文化アカデミー')) return 0;
+				if (location.includes('岐阜県')) return 1;
+				return 2;
+			};
+
+			const locationPriorityA = getLocationPriority(locationA);
+			const locationPriorityB = getLocationPriority(locationB);
+
+			// locationの優先度でソート
+			if (locationPriorityA !== locationPriorityB) return locationPriorityA - locationPriorityB;
+
+			// 文字種の優先度でソート
+			const priorityA = getCharPriority(a.metaData.name);
+			const priorityB = getCharPriority(b.metaData.name);
+			if (priorityA !== priorityB) return priorityA - priorityB;
+
+			// 同じ文字種内では五十音順
+			return collator.compare(a.metaData.name, b.metaData.name);
+		});
 	});
 
 	const toggleDataMenu = () => {
@@ -76,7 +130,7 @@
 		}
 	});
 
-	let options = $state<
+	let options = $state.raw<
 		{
 			key: string;
 			name: string;
@@ -101,7 +155,7 @@
 {#if $showDataMenu}
 	<div
 		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
-		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-30"
+		class="bg-main lg:duration-30 absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<!-- <button
@@ -113,12 +167,12 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
 		<div
-			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
+			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:left-0 max-lg:top-2 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
 			style="padding-top: env(safe-area-inset-top);"
 		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
-				<span class="text-lg select-none">データカタログ</span>
+				<span class="select-none text-lg">データカタログ</span>
 			</div>
 
 			{#if selected === 'system'}
@@ -135,7 +189,7 @@
 						<button
 							onclick={() => (searchWord = '')}
 							disabled={!searchWord}
-							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
+							class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
 						>
 							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 						</button>
@@ -148,12 +202,25 @@
 			</div>
 		</div>
 		{#if selected === 'system'}
-			<div class="flex w-full grow items-center justify-between gap-4 p-2 max-lg:hidden">
-				<!-- <div class="flex items-center justify-center gap-1 overflow-x-auto text-base">
-			{#each TAG_LIST as tag}
-				<span class="shrink-0 rounded-lg bg-black p-1 px-2 text-xs">{tag}</span>
-			{/each}
-		</div> -->
+			<!-- <div class="flex w-full grow items-center justify-between gap-2 p-2 max-lg:hidden">
+				{#each tagList as tag}
+					<button
+						onclick={() => {
+							if (selectedTag === tag) {
+								selectedTag = null; // 同じタグが選択された場合は解除
+							} else {
+								selectedTag = tag;
+							}
+							// フィルタリング処理をここに追加
+						}}
+						class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {selectedTag ===
+						tag
+							? 'bg-base text-black'
+							: 'bg-black text-base'}">{tag}</button
+					>
+				{/each}
+			</div> -->
+			<div class="flex w-full grow items-start justify-between gap-4 p-2 max-lg:hidden">
 				<div>
 					<Switch label="追加済みデータの表示" bind:value={showAddedData} />
 				</div>
