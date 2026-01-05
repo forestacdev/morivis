@@ -605,10 +605,57 @@ const entry: VectorEntry<TileMetaData> = {
 			lineStyle: 'dashed'
 		},
 		labels: {
-			key: '樹種１',
+			key: 'auto',
 			show: true,
 			minZoom: 12,
 			expressions: [
+				{
+					key: 'auto',
+					name: '小班名・樹種・林齢',
+					value: [
+						'step',
+						['zoom'],
+						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
+						[
+							'case',
+							['all', ['has', '樹種１'], ['has', '樹立林齢１'], ['!=', ['get', '樹立林齢１'], '']],
+							['concat', ['get', '樹種１'], '林'],
+							['has', '樹種１'],
+							['get', '樹種１'],
+							''
+						],
+						15, // zoom >= 15 から以下を表示
+						// zoom >= 15: 小林班ID + 樹種・林齢
+						[
+							'case',
+							[
+								'all',
+								['has', '林班主番'],
+								['has', '小班主番'],
+								['has', '樹種１'],
+								['has', '樹立林齢１'],
+								['!=', ['get', '樹立林齢１'], '']
+							],
+							[
+								'concat',
+								['get', '林班主番'],
+								' ',
+								['get', '小班主番'],
+								'\n',
+								['get', '樹種１'],
+								'林',
+								'\n',
+								['get', '樹立林齢１'],
+								'年生'
+							],
+							['all', ['has', '林班主番'], ['has', '小班主番'], ['has', '樹種１']],
+							['concat', ['get', '林班主番'], ' ', ['get', '小班主番'], '\n', ['get', '樹種１']],
+							['all', ['has', '林班主番'], ['has', '小班主番']],
+							['concat', ['get', '林班主番'], ' ', ['get', '小班主番']],
+							''
+						]
+					]
+				},
 				{
 					key: 'ID',
 					name: 'ID',

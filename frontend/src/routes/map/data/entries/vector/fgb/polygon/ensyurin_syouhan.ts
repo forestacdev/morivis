@@ -140,7 +140,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 							['get', '樹種'],
 							''
 						],
-						16, // zoom >= 15 から以下を表示
+						15, // zoom >= 15 から以下を表示
 						// zoom >= 15: 小林班ID + 樹種・林齢
 						[
 							'case',
