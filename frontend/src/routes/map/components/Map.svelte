@@ -173,8 +173,6 @@
 		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
 
-		const terrainSources = await createTerrainSources(demEntries, 'dem_5a');
-
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
@@ -321,6 +319,8 @@
 			exaggeration: 1
 		};
 
+		// const terrainSources = await createTerrainSources(demEntries, 'dem_5a');
+
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -333,7 +333,16 @@
 				type: 'mercator'
 			},
 			sources: {
-				...terrainSources,
+				terrain: {
+					type: 'raster-dem',
+					tiles: [
+						'terrain://https://tiles.gsj.jp/tiles/elev/land/{z}/{y}/{x}.png?entryId=dem_land&formatType=image&demType=gsi&x={x}&y={y}&z={z}'
+					],
+					maxzoom: 15,
+					minzoom: 1,
+					tileSize: 256,
+					attribution: '国土地理院'
+				},
 				street_view_node_sources: {
 					type: 'geojson',
 					data: streetViewPointData
