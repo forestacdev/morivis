@@ -16,7 +16,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
 	import { mapStore } from '$routes/stores/map';
-	import { isProcessing, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
+	import { isProcessing, showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type { ResultData, ResultPoiData } from '$routes/map/utils/feature';
@@ -187,8 +187,6 @@
 		}
 	};
 
-	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
-
 	$effect(() => {
 		if (inputSearchWord) {
 			suggestWord(inputSearchWord);
@@ -206,7 +204,7 @@
 	});
 </script>
 
-{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0}
+{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0 && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
 		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
@@ -219,7 +217,7 @@
 			</div>
 		{:else if searchSuggests && inputSearchWord.trim() !== ''}
 			<div
-				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
+				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-x-hidden overflow-y-auto px-2"
 			>
 				{#if searchSuggests.some((result) => result.type === 'poi' || result.type === 'coordinate')}
 					<div class="p-2 pt-3 text-white">場所検索</div>
@@ -289,7 +287,7 @@
 								<div
 									class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150"
 								>
-									<div class="scale-200 h-full w-full">
+									<div class="h-full w-full scale-200">
 										<LayerIcon layerEntry={result.data} />
 									</div>
 								</div>

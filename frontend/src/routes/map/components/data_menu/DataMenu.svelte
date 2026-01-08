@@ -70,7 +70,7 @@
 
 		// 検索ワードでフィルタリング（Fuse.jsを使用）
 		if (searchWord) {
-			const result = layerDataFuse.search(searchWord);
+			const result = layerDataFuse.search(encode(searchWord));
 			results = result.map((item) => item.item);
 		}
 

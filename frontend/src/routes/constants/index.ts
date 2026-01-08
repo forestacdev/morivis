@@ -111,7 +111,7 @@ export const INT_ADD_LAYER_IDS = [
 	'ensyurin_owl',
 	'ensyurin_road',
 	'ensyurin_syouhan',
-	'national_forest_stand',
-	'kochi_tree_species',
-	'kanagawa_tree_species'
+	'national_forest_stand'
+	// 'kochi_tree_species',
+	// 'kanagawa_tree_species'
 ];
