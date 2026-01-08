@@ -12,6 +12,7 @@
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { isOnlySpaces, stripHTMLTags } from '$routes/map/utils/sanitize';
+	import { getFullName } from '$routes/map/utils/city_code';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -109,6 +110,13 @@
 	let imageKey = $derived.by(() => {
 		if (targetLayer && targetLayer.type === 'vector') {
 			return targetLayer.properties.imageKey;
+		}
+		return null;
+	});
+
+	let cityCodeKey = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.cityCodeKey;
 		}
 		return null;
 	});
@@ -248,11 +256,21 @@
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 						<!-- 座標 -->
 						<div class="flex w-full justify-start gap-2">
-							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+							<Icon icon="mdi:crosshairs-gps" class="h-6 w-6 shrink-0 text-base" />
 							<span class="text-accent"
 								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 							>
 						</div>
+
+						<!-- 市区町村情報 -->
+						{#if cityCodeKey && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
+							<div class="flex w-full justify-start gap-2">
+								<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+								<span class="text-accent"
+									>{getFullName(featureMenuData.properties[cityCodeKey])}</span
+								>
+							</div>
+						{/if}
 
 						<!-- url -->
 						{#if data}
@@ -281,11 +299,7 @@
 
 				<!-- 通常の地物の属性情報 -->
 				{#if !propId}
-					<div class="my-4 flex items-center gap-1 text-base text-lg">
-						<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" /><span
-							>データ内容</span
-						>
-					</div>
+					<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
 					<div class="mb-56 flex h-full w-full flex-col gap-3">
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}

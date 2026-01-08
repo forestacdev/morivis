@@ -18,8 +18,21 @@ export interface Title {
 	template: string;
 }
 
+export interface FieldDef {
+	key: string;
+	label?: string;
+	type?: 'string' | 'number' | 'integer';
+	unit?: string;
+	format?: {
+		digits?: number;
+		emptyText?: string;
+	};
+	dict?: Record<number | string, string>;
+}
+
 export interface VectorProperties {
 	keys: string[];
+	fields?: FieldDef[];
 	titles: Title[];
 	dict?: Record<string, any>;
 	joinDataUrl?: string;

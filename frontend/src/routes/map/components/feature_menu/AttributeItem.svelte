@@ -19,7 +19,7 @@
 
 <div class="flex flex-col items-start justify-center">
 	<div class="flex items-center justify-center gap-1">
-		<span class="text-base font-semibold">{key}</span>
+		<span class="text-base text-sm">{key}</span>
 	</div>
 	<div class="w-full pt-2 lg:pr-2">
 		<button
@@ -39,7 +39,7 @@
 				if (checkPc()) isHover = false;
 			}}
 			class="text-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-black p-2 pl-4 text-left transition-colors duration-150"
-			><span>{value}</span>
+			><span class="">{value}</span>
 			{#if isHover}
 				<div transition:fade={{ duration: 100 }} class="absolute right-0 grid place-items-center">
 					<Icon icon="majesticons:clipboard-line" class="mr-2 h-6 w-6 shrink-0 text-base" />

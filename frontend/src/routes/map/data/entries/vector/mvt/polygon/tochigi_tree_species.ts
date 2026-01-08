@@ -46,7 +46,8 @@ const entry: VectorEntry<TileMetaData> = {
 				conditions: [],
 				template: '栃木県の樹種ポリゴン'
 			}
-		]
+		],
+		cityCodeKey: '市町村code'
 	},
 	interaction: {
 		clickable: true
