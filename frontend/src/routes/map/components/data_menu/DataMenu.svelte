@@ -61,7 +61,7 @@
 	const collator = new Intl.Collator('ja', { sensitivity: 'base' });
 
 	$effect(() => {
-		let results = geoDataEntries;
+		let results = [...geoDataEntries];
 
 		// タグでフィルタリング
 		if (selectedTag) {
@@ -70,7 +70,7 @@
 
 		// 検索ワードでフィルタリング（Fuse.jsを使用）
 		if (searchWord) {
-			const result = layerDataFuse.search(encode(searchWord));
+			const result = layerDataFuse.search(searchWord);
 			results = result.map((item) => item.item);
 		}
 
@@ -79,9 +79,8 @@
 			results = results.filter((data) => !$activeLayerIdsStore.includes(data.id));
 		}
 
-		// 五十音順でソート（漢字 → カタカナ → 英語 → 数字）
 		// 五十音順でソート（森林文化アカデミー優先 → 岐阜県 → 漢字 → カタカナ → 英語 → 数字）
-		filterDataEntries = results.sort((a, b) => {
+		filterDataEntries = [...results].sort((a, b) => {
 			const locationA = a.metaData.location || '';
 			const locationB = b.metaData.location || '';
 
@@ -106,6 +105,10 @@
 			// 同じ文字種内では五十音順
 			return collator.compare(a.metaData.name, b.metaData.name);
 		});
+
+		if (!import.meta.env.PROD) {
+			console.log('Filtered Data Entries:', results);
+		}
 	});
 
 	const toggleDataMenu = () => {
@@ -155,7 +158,7 @@
 {#if $showDataMenu}
 	<div
 		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
-		class="bg-main lg:duration-30 absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all"
+		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-30"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<!-- <button
@@ -167,12 +170,12 @@
 		<Icon icon="ep:back" class="h-7 w-7" />
 	</button> -->
 		<div
-			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:left-0 max-lg:top-2 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
+			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
 			style="padding-top: env(safe-area-inset-top);"
 		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
 				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
-				<span class="select-none text-lg">データカタログ</span>
+				<span class="text-lg select-none">データカタログ</span>
 			</div>
 
 			{#if selected === 'system'}
@@ -189,7 +192,7 @@
 						<button
 							onclick={() => (searchWord = '')}
 							disabled={!searchWord}
-							class="absolute right-2 top-[5px] grid cursor-pointer place-items-center"
+							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
 						>
 							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
 						</button>
