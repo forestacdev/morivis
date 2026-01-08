@@ -108,26 +108,10 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
-	// 'morinos_3d',
-	// 'fac_floor_plan_1f',
-	// 'ensyurin_owl_3dtiles',
 	'ensyurin_owl',
-	// 'ensyurin_pole',
-	// 'ensyurin_kikenboku_h25',
-	// 'fac_sisetuannaitou',
-
-	// 'gsi_elevation_point',
 	'ensyurin_road',
-	// 'national_forest_road',
-
 	'ensyurin_syouhan',
-	'national_forest_stand'
-	// 'experimental_landformclassification1'
-	// 'tochigi_tree_species',
-	// 'dem_5a'
-	// 'gifu_sugi_kansetugai',
-	// 'gifu_slope_map',
-
-	// 'gsi_seamlessphoto',
-	// 'gsi_std'
+	'national_forest_stand',
+	'kochi_tree_species',
+	'kanagawa_tree_species'
 ];
