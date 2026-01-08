@@ -24,6 +24,7 @@ export interface VectorProperties {
 	dict?: Record<string, any>;
 	joinDataUrl?: string;
 	imageKey?: string;
+	cityCodeKey?: string;
 }
 
 export interface VectorInteraction {

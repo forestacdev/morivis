@@ -67,7 +67,8 @@ const entry: VectorEntry<TileMetaData> = {
 				conditions: [],
 				template: '栃木県の森林資源メッシュ'
 			}
-		]
+		],
+		cityCodeKey: '市町村code'
 	},
 	interaction: {
 		clickable: true

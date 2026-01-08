@@ -5,18 +5,20 @@
 https://www.soumu.go.jp/denshijiti/code.html
 """
 
+import argparse
 import csv
 import json
 from pathlib import Path
 
 
-def create_municipality_dict(csv_path: str, output_path: str):
+def create_municipality_dict(csv_path: str, output_path: str, code_length: int = 6):
     """
     CSVファイルから団体コードをキーにした辞書を作成してJSONファイルに保存
     
     Args:
         csv_path: 入力CSVファイルのパス
         output_path: 出力JSONファイルのパス
+        code_length: 団体コードの桁数（5 or 6）
     """
     municipality_dict = {}
     
@@ -30,6 +32,10 @@ def create_municipality_dict(csv_path: str, output_path: str):
             # 空のコードはスキップ
             if not code:
                 continue
+            
+            # 5桁にする場合は最後の1桁（チェックディジット）を削除
+            if code_length == 5:
+                code = code[:5]
             
             # カラム名から改行を削除して整形
             pref_kanji = row.get('都道府県名\n（漢字）', '').strip()
@@ -50,28 +56,52 @@ def create_municipality_dict(csv_path: str, output_path: str):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(municipality_dict, f, ensure_ascii=False, indent=2)
     
-    print(f"✓ {len(municipality_dict)} 件の団体コードを処理しました")
+    print(f"✓ {len(municipality_dict)} 件の団体コード（{code_length}桁）を処理しました")
     print(f"✓ 出力ファイル: {output_path}")
 
 
 def main():
+    parser = argparse.ArgumentParser(description='団体コードをキーにしたJSON辞書を作成')
+    parser.add_argument(
+        '--digits',
+        type=int,
+        choices=[5, 6],
+        default=6,
+        help='団体コードの桁数（5桁または6桁、デフォルト: 6）'
+    )
+    parser.add_argument(
+        '--output',
+        type=str,
+        help='出力ファイルパス（指定しない場合は桁数に応じて自動設定）'
+    )
+    
+    args = parser.parse_args()
+    
     # スクリプトのディレクトリを基準にパスを設定
     script_dir = Path(__file__).parent
     csv_path = script_dir / 'data' / 'code' / '000925835.csv'
-    output_path = script_dir / 'data' / 'code' / 'municipality_dict.json'
+    
+    # 出力ファイル名を桁数に応じて設定
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        if args.digits == 5:
+            output_path = script_dir / 'data' / 'code' / 'municipality_dict_5digit.json'
+        else:
+            output_path = script_dir / 'data' / 'code' / 'municipality_dict.json'
     
     # 出力ディレクトリが存在しない場合は作成
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
     # 辞書を作成
-    create_municipality_dict(str(csv_path), str(output_path))
+    create_municipality_dict(str(csv_path), str(output_path), args.digits)
     
     # サンプルデータを表示
     with open(output_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
         print("\n=== サンプルデータ ===")
         for i, (code, info) in enumerate(list(data.items())[:5]):
-            print(f"\n{code}:")
+            print(f"\n{code} ({len(code)}桁):")
             print(f"  {json.dumps(info, ensure_ascii=False, indent=2)}")
             if i >= 4:
                 break
