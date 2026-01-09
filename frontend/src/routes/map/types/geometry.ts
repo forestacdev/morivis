@@ -36,7 +36,7 @@ export type MultiPolygonGeometry = {
 	coordinates: [number, number][][][];
 };
 
-export type SingleGeometry = PointGeometry | LineStringGeometry;
+export type SingleGeometry = PointGeometry | LineStringGeometry | PolygonGeometry;
 
 export type MultiGeometry = MultiPointGeometry | MultiLineStringGeometry | MultiPolygonGeometry;
 
