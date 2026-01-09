@@ -40,7 +40,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
-import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -197,7 +197,7 @@ export const createSourcesItems = async (
 				}
 				case 'vector': {
 					if (format.type === 'geojson' || format.type === 'fgb') {
-						let geojson: GeoJSON.GeoJSON | undefined;
+						let geojson: FeatureCollection | undefined;
 						if (GeojsonCache.has(entry.id)) {
 							geojson = GeojsonCache.get(entry.id);
 						} else if (format.type === 'fgb') {

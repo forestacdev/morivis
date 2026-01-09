@@ -21,11 +21,11 @@
 	let promise = $state<Promise<ImageResult | undefined>>();
 	let isImageError = $state<boolean>(false);
 
-	let copyEntry = $derived.by(() => {
+	let copyEntry: RasterDemEntry = $derived.by(() => {
 		return {
 			...layerEntry,
 			style: { ...layerEntry.style, visualization: { ...layerEntry.style.visualization, mode } }
-		};
+		} as RasterDemEntry;
 	});
 
 	$effect(() => {
@@ -53,7 +53,7 @@
 		onchange={() => (showPullDown = false)}
 	/>
 	<div
-		class="border-3 overflow-hidden rounded-md {isMode === mode
+		class="overflow-hidden rounded-md border-3 {isMode === mode
 			? 'border-accent'
 			: 'border-transparent'}"
 	>
@@ -69,5 +69,5 @@
 			<div>画像の取得に失敗</div>
 		{/await}
 	</div>
-	<span class="select-none text-sm">{name}</span>
+	<span class="text-sm select-none">{name}</span>
 </label>
