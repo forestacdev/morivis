@@ -58,7 +58,12 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import type { ContextMenuState } from '$routes/map/types/ui';
-	import type { ResultData, SearchGeojsonData } from '../utils/feature';
+	import type {
+		ResultData,
+		SearchGeojsonData,
+		ResultPoiData,
+		ResultAddressData
+	} from '../utils/feature';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -253,13 +258,13 @@
 			];
 		}
 
-		let xyzTileSources = $showXYZTileLayer
+		const xyzTileSources: Record<string, SourceSpecification> = $showXYZTileLayer
 			? {
 					tile_index: {
 						type: 'vector',
 						maxzoom: 22,
 						tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
-					} as SourceSpecification
+					}
 				}
 			: {};
 		let xyzTileLayer: LayerSpecification[] = $showXYZTileLayer
@@ -747,7 +752,11 @@
 	{/key}
 
 	{#if selectedSearchResultData && selectedSearchId}
-		<SearchMarker map={maplibreMap} bind:selectedSearchId prop={selectedSearchResultData} />
+		<SearchMarker
+			map={maplibreMap}
+			bind:selectedSearchId
+			prop={selectedSearchResultData as ResultPoiData | ResultAddressData}
+		/>
 	{/if}
 
 	<AngleMarker

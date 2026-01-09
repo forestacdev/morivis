@@ -1,11 +1,8 @@
-import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import { geojson as fgb } from 'flatgeobuf';
 
 /** fgbファイルをGeoJSONで返す */
-export const fgbFileToGeojson = async (
-	file: File,
-	index?: number
-): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
+export const fgbFileToGeojson = async (file: File, index?: number): Promise<FeatureCollection> => {
 	try {
 		const arrayBuffer = await file.arrayBuffer();
 		const stream = new Response(arrayBuffer).body;

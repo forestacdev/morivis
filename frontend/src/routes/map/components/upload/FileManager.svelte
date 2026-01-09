@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import maplibregl from 'maplibre-gl';
 
 	import type { DialogType } from '$routes/map/types';
@@ -40,7 +40,7 @@
 	let fileName = $state<string>('');
 
 	const setFile = async (file: File | FileList) => {
-		let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
+		let geojsonData: FeatureCollection = { type: 'FeatureCollection', features: [] };
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
@@ -144,11 +144,6 @@
 
 		if (!entryGeometryType) {
 			showNotification('対応していないジオメトリタイプです', 'error');
-			return;
-		}
-
-		if (!geojsonData) {
-			showNotification('データが不正です', 'error');
 			return;
 		}
 

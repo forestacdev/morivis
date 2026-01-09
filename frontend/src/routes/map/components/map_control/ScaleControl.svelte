@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Map as MapLibreMap } from 'maplibre-gl';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
@@ -70,7 +70,7 @@
 		scaleElement.style.width = `${actualMaxWidth * ratio}px`;
 		scaleElement.textContent = formatDistance(distance);
 
-		scaleText = getMapScale(map);
+		scaleText = String(getMapScale(map));
 	};
 
 	onMount(() => {
@@ -131,7 +131,7 @@
 		<div class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm">
 			<div
 				bind:this={scaleElement}
-				class="border-base border-b-2 border-l-2 border-r-2 pl-2 text-left leading-none"
+				class="border-base border-r-2 border-b-2 border-l-2 pl-2 text-left leading-none"
 				style="min-width: 30px;"
 			></div>
 		</div>
