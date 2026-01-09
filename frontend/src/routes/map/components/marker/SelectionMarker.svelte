@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { scale } from 'svelte/transition';
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
@@ -34,7 +33,7 @@
 		} else {
 			if (marker && lngLat) {
 				marker.setLngLat(lngLat);
-			} else {
+			} else if (container && lngLat) {
 				marker = new maplibregl.Marker({
 					element: container as HTMLElement,
 					anchor: 'center',

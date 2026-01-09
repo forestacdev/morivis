@@ -1,12 +1,7 @@
 import { fromArrayBuffer } from 'geotiff';
 import type { ReadRasterResult } from 'geotiff';
 
-import type {
-	BandTypeKey,
-	ShingleBandData,
-	MultiBandData,
-	RasterTiffStyle
-} from '$routes/map/data/types/raster';
+import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
 
 export class GeoTiffCache {
@@ -192,7 +187,7 @@ export const getRasters = async (
 		return new Promise((resolve, reject) => {
 			if (rasters.length === 1) {
 				return resolve({
-					rastersData: rasters[0] as Float32Array[],
+					rastersData: rasters[0] as unknown as Float32Array[],
 					size: 1
 				});
 			}
@@ -243,9 +238,11 @@ export const loadToGeotiffFile = async (id: string, file: File): Promise<void> =
 	const height = image.getHeight();
 	const rasterData = await image.readRasters({ interleave: false });
 	// const rgb = await image.readRGB();
-	const { rastersData, size } = await getRasters(rasterData, width, height);
-	const rasters = rastersData as Float32Array[];
-	const bandCount = size;
+	const result = await getRasters(rasterData, width, height);
+	if (!result) {
+		throw new Error('Failed to process raster data');
+	}
+	const { rastersData, size } = result;
 
 	GeoTiffCache.setRasters(id, rastersData);
 	GeoTiffCache.setSize(id, width, height);
@@ -278,9 +275,12 @@ export const loadRasterData = async (
 			height = image.getHeight();
 			const rasterData = await image.readRasters({ interleave: false });
 			// const rgb = await image.readRGB();
-			const { rastersData, size } = await getRasters(rasterData, width, height);
-			rasters = rastersData as Float32Array[];
-			bandCount = size;
+			const result = await getRasters(rasterData, width, height);
+			if (!result) {
+				throw new Error('Failed to process raster data');
+			}
+			rasters = result.rastersData as Float32Array[];
+			bandCount = result.size;
 			GeoTiffCache.setRasters(id, rasters);
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, bandCount);

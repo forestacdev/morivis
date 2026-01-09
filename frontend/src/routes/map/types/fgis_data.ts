@@ -460,10 +460,3 @@ export function getTreeSpeciesName(id: AnalysisTreeSpeciesIdType): AnalysisTreeS
 export function getMeasurementMethodName(code: ForestMeasurementMethodType): string {
 	return ForestMeasurementMethodName[code];
 }
-
-/**
- * 樹種IDからカラーを取得
- */
-export function getTreeSpeciesColor(id: AnalysisTreeSpeciesIdType): string {
-	return AnalysisTreeSpeciesColors[id];
-}
