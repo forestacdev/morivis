@@ -35,7 +35,11 @@
 		renderer.setSize(width, height);
 
 		// テクスチャ化
-		mapCanvas = mapStore.getCanvas();
+		mapCanvas = mapStore.getCanvas() || null;
+		if (!mapCanvas) {
+			console.error('Map canvas is not available');
+			return;
+		}
 		const mapTexture = new THREE.Texture(mapCanvas);
 		mapTexture.needsUpdate = true;
 
@@ -71,21 +75,26 @@
 		sprite.scale.set(camWidth, camHeight, 1);
 		scene.add(sprite);
 
-		// 地図の更新イベントでテクスチャ更新を指示
-		mapStore.onRender(() => {
-			mapCanvas = mapStore.getCanvas(); // MapLibre の canvas
-			mapTexture.image = mapCanvas;
-			mapTexture.needsUpdate = true; // MapLibre の canvas が更新されたらテクスチャも更新
-		});
-		// アニメーションループ
-		function animate() {
-			renderer.render(scene, camera);
-			requestAnimationFrame(animate);
-		}
-		animate();
+		// TODO:地図の更新イベントでテクスチャ更新を指示
+		// mapStore.onRender(() => {
+		// 	mapCanvas = mapStore.getCanvas() || null; // MapLibre の canvas
+		// 	if (!mapCanvas) {
+		// 		console.error('Map canvas is not available');
+		// 		return;
+		// 	}
+		// 	mapTexture.image = mapCanvas;
+		// 	mapTexture.needsUpdate = true; // MapLibre の canvas が更新されたらテクスチャも更新
+		// });
+		// // アニメーションループ
+		// function animate() {
+		// 	renderer.render(scene, camera);
+		// 	requestAnimationFrame(animate);
+		// }
+		// animate();
 
 		// リサイズ対応（必要に応じて）
 		const onResize = () => {
+			if (!canvas) return;
 			const w = canvas.clientWidth;
 			const h = canvas.clientHeight;
 			const aspect = w / h;

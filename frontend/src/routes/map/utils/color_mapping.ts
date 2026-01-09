@@ -32,7 +32,7 @@ export const generateNumberAndColorMap = (
 };
 
 /** step用のCSSカラースケール作成 */
-export const generateStepGradient = (colors: string[]): string => {
+export const generateStepGradient = (colors: readonly string[]): string => {
 	const step = 100 / colors.length;
 	const stops = colors.flatMap((color, i) => {
 		const start = step * i;

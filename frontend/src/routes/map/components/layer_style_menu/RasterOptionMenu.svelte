@@ -2,7 +2,7 @@
 	import DemOption from './raster_option/DemOption.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
 
-	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPullDownBox.svelte';
+	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,

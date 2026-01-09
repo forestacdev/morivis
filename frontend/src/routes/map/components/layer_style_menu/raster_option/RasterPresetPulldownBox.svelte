@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { RasterStylePreset } from '$routes/map/utils/raster';
 	import { getPresetCSSStyle } from '$routes/map/utils/raster';
-	import Icon from '@iconify/svelte';
-	import { fade, fly, slide } from 'svelte/transition';
+
+	import { fly } from 'svelte/transition';
 
 	interface Props {
 		preset: RasterStylePreset;
@@ -74,7 +74,7 @@
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute left-0 top-[130px] z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+			class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
 		>
 			{#each presetOptions as { key, name } (key)}
 				<label
@@ -92,7 +92,7 @@
 					/>
 
 					<div
-						class="border-3 overflow-hidden rounded-md {preset === key
+						class="overflow-hidden rounded-md border-3 {preset === key
 							? 'border-accent'
 							: 'border-transparent'}"
 					>
@@ -103,7 +103,7 @@
 							style="filter:{getPresetCSSStyle(key).filter};"
 						/>
 					</div>
-					<span class="select-none text-sm">{name}</span>
+					<span class="text-sm select-none">{name}</span>
 				</label>
 			{/each}
 		</div>
