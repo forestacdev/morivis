@@ -143,7 +143,6 @@ interface AreaInformation extends BaseEvent {
 
 // 不明な情報形式
 interface UnknownInformation extends BaseEvent {
-	code?: number;
 	[key: string]: any;
 }
 

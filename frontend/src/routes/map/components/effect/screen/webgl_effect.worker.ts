@@ -135,7 +135,7 @@ const stopAnimationDelay = async (delayMs: number = 1500) => {
 	}
 
 	// 新しいタイマーを設定
-	delayedStopTimerId = setTimeout(() => {
+	delayedStopTimerId = self.setTimeout(() => {
 		if (animationId !== null) {
 			self.cancelAnimationFrame(animationId);
 			animationId = null;

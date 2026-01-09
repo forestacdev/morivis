@@ -62,7 +62,7 @@ export const gpxFileToGeojson = async (
 						distance_cumul: track.distance.cumul, // 累積距離
 						slopes: track.slopes // スロープ
 						// 必要に応じてトラックのプロパティを追加
-					} as unknown as FeatureProp;
+					} as unknown as FeatureProp
 				}))
 			};
 			geojson = trackGeojson;
@@ -86,7 +86,7 @@ export const gpxFileToGeojson = async (
 						lon: waypoint.lon,
 						ele: waypoint.ele,
 						time: waypoint.time
-					} as unknown as FeatureProp;
+					} as unknown as FeatureProp
 				}))
 			};
 
@@ -118,7 +118,7 @@ export const gpxFileToGeojson = async (
 						elevation_avg: route.elevation.avg,
 						distance_cumul: route.distance.cumul,
 						slopes: route.slopes
-					} as unknown as FeatureProp;
+					} as unknown as FeatureProp
 				}))
 			};
 			geojson = routeGeojson;
