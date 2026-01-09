@@ -423,11 +423,11 @@
 			};
 			featureMenuData = data;
 			selectedSearchResultData = result;
-			selectedSearchId = result.id;
+			if (result.id) selectedSearchId = result.id;
 		} else if (result.type === 'address') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
-			selectedSearchId = result.id;
+			if (result.id) selectedSearchId = result.id;
 		}
 
 		mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));

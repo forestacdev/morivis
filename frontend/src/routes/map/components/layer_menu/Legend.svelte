@@ -52,7 +52,7 @@
 			</div>
 
 			<div class="flex w-full justify-between">
-				{#each style.legend.range.slice() as value}
+				{#each style.legend.ranges.slice() as value}
 					<span>{value} {style.legend.unit}</span>
 				{/each}
 			</div>
@@ -63,7 +63,7 @@
 {#if setColorExpression}
 	{#if layerType === 'vector'}
 		{#if setColorExpression.type === 'single'}
-			<div class="flex-between flex w-full select-none items-center gap-2 text-gray-100">
+			<div class="flex-between flex w-full items-center gap-2 text-gray-100 select-none">
 				<div
 					class="h-[20px] w-[20px] flex-none rounded-full"
 					style="background-color: {setColorExpression.mapping.value};"
@@ -72,7 +72,7 @@
 			</div>
 		{:else if setColorExpression.type === 'match'}
 			{#each setColorExpression.mapping.categories as _, index}
-				<div class="flex-between flex w-full select-none items-center gap-2 text-gray-100">
+				<div class="flex-between flex w-full items-center gap-2 text-gray-100 select-none">
 					<div
 						class="h-[20px] w-[20px] flex-none rounded-full"
 						style="background-color: {setColorExpression.mapping.values[index]};"
@@ -83,7 +83,7 @@
 		{:else if setColorExpression.type === 'step'}
 			{#if stepPallet}
 				{#each stepPallet.categories as _, index}
-					<div class="flex w-full select-none items-center justify-center gap-2 text-gray-100">
+					<div class="flex w-full items-center justify-center gap-2 text-gray-100 select-none">
 						<div
 							class="h-[20px] w-[20px] flex-none rounded-full"
 							style="background-color: {stepPallet.values[index]};"
