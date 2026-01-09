@@ -1,5 +1,5 @@
 import type { BaseMetaData, GeoDataEntry } from '$routes/map/data/types';
-import type { SimpleFeatureCollection, FeatureCollection } from '$routes/map/types/geojson';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
@@ -155,7 +155,7 @@ const defaultCustomMetaData: BaseMetaData = {
 };
 
 export const createGeoJsonEntry = (
-	data: SimpleFeatureCollection,
+	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
 	bbox: [number, number, number, number],

@@ -1,6 +1,6 @@
 /*
-　https://geojson.io/
-　https://geojson.org/
+    https://geojson.io/
+    https://geojson.org/
 */
 
 import type { FeatureProp } from './properties';
@@ -17,7 +17,7 @@ import type {
 
 export interface Feature<_Geometry = AnyGeometry, _Properties = FeatureProp> {
 	type: 'Feature';
-	id?: number;
+	id?: number | string;
 	geometry: _Geometry;
 	properties: _Properties;
 }
@@ -41,11 +41,6 @@ export interface PolygonFeatureCollection<_Properties = FeatureProp> {
 	type: 'FeatureCollection';
 	features: Feature<PolygonGeometry | MultiPolygonGeometry, _Properties>[];
 }
-
-export type SimpleFeatureCollection =
-	| PointFeatureCollection
-	| LineStringFeatureCollection
-	| PolygonFeatureCollection;
 
 export interface GeometryCollectionFeatureCollection<_Properties = FeatureProp> {
 	type: 'FeatureCollection';

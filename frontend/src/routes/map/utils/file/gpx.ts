@@ -1,7 +1,7 @@
 import GPXParser from 'gpxparser';
 import type { Waypoint, Track, Route } from 'gpxparser';
 
-import type { FeatureCollection, SimpleFeatureCollection } from '$routes/map/types/geojson';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 export type DataType = 'tracks' | 'routes' | 'waypoints';
@@ -25,16 +25,13 @@ export const checkGpxFile = async (
 	}
 };
 
-export const gpxFileToGeojson = async (
-	file: File,
-	type: DataType
-): Promise<SimpleFeatureCollection> => {
+export const gpxFileToGeojson = async (file: File, type: DataType): Promise<FeatureCollection> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
-		let geojson: SimpleFeatureCollection;
+		let geojson: FeatureCollection;
 
 		if (type === 'tracks') {
 			const trackGeojson: FeatureCollection<LineStringGeometry> = {
