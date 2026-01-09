@@ -96,6 +96,27 @@
 								alt="画像"
 								src={wikiMenuData.thumbnail.source}
 							/>
+							<!-- ライセンス表示 -->
+							{#if wikiMenuData.imageLicense}
+								<div class="mt-1 text-xs text-gray-400">
+									{#if wikiMenuData.imageLicense.artist}
+										<span>{wikiMenuData.imageLicense.artist}</span>
+										<span class="mx-1">/</span>
+									{/if}
+									{#if wikiMenuData.imageLicense.licenseUrl}
+										<a
+											href={wikiMenuData.imageLicense.licenseUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="text-accent hover:underline"
+										>
+											{wikiMenuData.imageLicense.licenseShortName}
+										</a>
+									{:else}
+										<span>{wikiMenuData.imageLicense.licenseShortName}</span>
+									{/if}
+								</div>
+							{/if}
 						{/if}
 					{/if}
 
