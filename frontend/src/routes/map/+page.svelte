@@ -2,7 +2,7 @@
 	import turfBearing from '@turf/bearing';
 
 	import { delay } from 'es-toolkit';
-	import type { FeatureCollection, Point } from 'geojson';
+	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
@@ -497,7 +497,7 @@
 			<!-- スマホ用その他メニュー -->
 			<div
 				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
-					? 'opacity-500 pointer-events-auto'
+					? 'pointer-events-auto opacity-500'
 					: 'pointer-events-none opacity-0'}"
 			>
 				<OtherMenu bind:imagePreviewUrl />

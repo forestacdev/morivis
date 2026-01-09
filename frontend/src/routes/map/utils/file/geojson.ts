@@ -2,10 +2,8 @@ import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'ge
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { MapGeoJSONFeature } from 'maplibre-gl';
-import type { GeoDataEntry } from '$routes/map/data/types';
-import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureMenuData } from '$routes/map/types';
-import { activeLayerIdsStore } from '$routes/stores/layers';
+import type { DrawGeojsonData } from '$routes/map/types/draw';
 
 export type GeoJSONGeometryType =
 	| 'Point'
@@ -117,7 +115,7 @@ export const convertMapGeoJSONFeaturesToGeoJSON = (
  * @param filename ダウンロード時のファイル名 (デフォルト: 'data.geojson')
  */
 export const downloadGeojson = (
-	geojson: FeatureCollection,
+	geojson: FeatureCollection | DrawGeojsonData,
 	filename: string = 'data.geojson' // デフォルト値を設定
 ): void => {
 	const geojsonString = JSON.stringify(geojson);

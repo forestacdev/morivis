@@ -7,8 +7,6 @@ import type {
 	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification,
-	SourceSpecification,
-	LayerSpecification,
 	ExpressionSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
@@ -42,7 +40,6 @@ interface SymbolLayerStyle {
 	filter?: SymbolLayerSpecification['filter']; // Optional filter for symbol layers
 }
 
-// TODO: 押し出しポリゴンのスタイルを追加
 interface FillExtrusionLayerStyle {
 	paint: FillExtrusionLayerSpecification['paint'];
 	layout: FillExtrusionLayerSpecification['layout'];
@@ -185,6 +182,7 @@ export interface NumberLinearExpression {
 export type NumbersExpression =
 	| NumberSingleExpression
 	| NumberMatchExpression
+	| NumberStepExpression
 	| NumberLinearExpression;
 
 export interface RawExpression {

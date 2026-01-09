@@ -32,7 +32,7 @@ import type {
 	NumberSingleExpression,
 	NumberLinearExpression,
 	NumberMatchExpression,
-	NumberStepExpressions,
+	NumberStepExpression,
 	ColorsExpression,
 	ColorSingleExpression,
 	ColorMatchExpression,
@@ -89,36 +89,6 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 	}
 });
 
-const highlightFillPaint: FillLayerSpecification['paint'] = {
-	'fill-opacity': 0.4,
-	'fill-color': HIGHLIGHT_LAYER_COLOR,
-	'fill-outline-color': '#ffffff'
-};
-
-const highlightLinePaint: LineLayerSpecification['paint'] = {
-	'line-color': HIGHLIGHT_LAYER_COLOR,
-	'line-opacity': 1,
-	'line-width': 5
-};
-
-const highlightCirclePaint: CircleLayerSpecification['paint'] = {
-	'circle-color': HIGHLIGHT_LAYER_COLOR,
-	'circle-radius': 10,
-	'circle-stroke-width': 5,
-	'circle-stroke-color': '#ffffff'
-};
-
-const highlightSymbolPaint: SymbolLayerSpecification['paint'] = {
-	'text-color': HIGHLIGHT_LAYER_COLOR,
-	'text-halo-color': '#FFFFFF',
-	'text-halo-width': 10,
-	'text-opacity': 1
-};
-
-const highlightSymbolLayout: SymbolLayerSpecification['layout'] = {
-	'text-size': 20
-};
-
 interface LayerItem {
 	id: string;
 	source: string;
@@ -139,77 +109,6 @@ interface LayerItem {
 	'source-layer'?: string;
 	filter?: FilterSpecification;
 }
-
-// TODO: 使ってないので消す
-/* ハイライトレイヤー */
-export const createHighlightLayer = (
-	_selectedHighlightData: SelectedHighlightData | null
-):
-	| FillLayerSpecification
-	| LineLayerSpecification
-	| CircleLayerSpecification
-	| SymbolLayerSpecification
-	| undefined => {
-	if (!_selectedHighlightData) return undefined;
-	const entry = _selectedHighlightData.layerEntry;
-	const { format, style, metaData, type } = entry;
-
-	if (entry.type === 'raster') return undefined;
-	const layerId = `@highlight_${entry.id}`;
-
-	// TODO 元のデータが削除されたらハイライトを消す必要がある
-	const sourceId = `${entry.id}_source`;
-
-	const layer: LayerItem = {
-		id: layerId,
-		source: sourceId,
-		maxzoom: 24,
-		minzoom: metaData.minZoom ?? 1
-	};
-
-	// case 'vector': {
-
-	// TODO idとして決めるkey
-	// if (layerEntry.idField) {
-	// 	baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
-	// }
-	// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-
-	// }
-
-	let vectorLayer;
-
-	if (type === 'vector') {
-		if (format.type === 'mvt' || format.type === 'pmtiles') {
-			if ('sourceLayer' in metaData) {
-				layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
-			}
-		}
-
-		vectorLayer = createVectorLayer(layer, style);
-		if (!vectorLayer) return undefined;
-		switch (vectorLayer.type) {
-			case 'fill':
-				vectorLayer.paint = highlightFillPaint;
-				break;
-			case 'line':
-				vectorLayer.paint = highlightLinePaint;
-				break;
-			case 'circle':
-				vectorLayer.paint = highlightCirclePaint;
-				break;
-			case 'symbol':
-				vectorLayer.paint = highlightSymbolPaint;
-				// vectorLayer.layout = highlightSymbolLayout;
-				break;
-			default:
-				break;
-		}
-
-		vectorLayer.filter = ['==', ['id'], _selectedHighlightData.featureId];
-	}
-	return vectorLayer;
-};
 
 const generateMatchExpression = (
 	expressionData: ColorMatchExpression
@@ -302,24 +201,6 @@ const getColorExpression = (colors: ColorsStyle) => {
 	}
 };
 
-const getPatternSingleExpression = (
-	colors: ColorsStyle
-): DataDrivenPropertyValueSpecification<ColorSpecification> | undefined => {
-	const key = colors.key;
-	const expressionData = colors.expressions.find((expression) => expression.key === key);
-	if (!expressionData) {
-		return undefined;
-	}
-
-	if (expressionData.type === 'single' || expressionData.type === 'raw') {
-		console.warn(expressionData.mapping.pattern);
-		if (!expressionData.mapping.pattern) {
-			return undefined;
-		}
-		return ['get', expressionData.mapping.pattern];
-	}
-};
-
 const getPatternMatchExpression = (
 	expressionData: ColorMatchExpression
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
@@ -389,7 +270,7 @@ const generateNumberMatchExpression = (
 };
 
 const generateNumberStepExpression = (
-	expressionData: NumberStepExpressions
+	expressionData: NumberStepExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
 

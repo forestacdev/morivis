@@ -52,9 +52,10 @@ export const prefCodeDict = {
 
 const prefCodeReversedDict = Object.fromEntries(
 	Object.entries(prefCodeDict).map(([key, value]) => [value, key])
-) as Record<PrefectureCode, keyof typeof prefCodeDict>;
+) as Record<(typeof prefCodeDict)[PrefectureCode], PrefectureCode>;
 
 export type PrefectureCode = keyof typeof prefCodeDict;
+export type PrefectureName = (typeof prefCodeDict)[PrefectureCode];
 
 const prefCodes = Object.keys(prefCodeDict) as PrefectureCode[];
 
@@ -65,11 +66,10 @@ const prefCodes = Object.keys(prefCodeDict) as PrefectureCode[];
  * @throws Will throw an error if the prefecture name is not valid.
  */
 export const getPrefectureCode = (location: Region): PrefectureCode | undefined => {
-	if (location) {
-		return prefCodeReversedDict[location];
-	} else {
-		return undefined;
+	if (location && location in prefCodeReversedDict) {
+		return prefCodeReversedDict[location as PrefectureName];
 	}
+	return undefined;
 };
 
 export const name = {
