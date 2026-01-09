@@ -58,7 +58,7 @@
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="bg-sub c-scroll-sub absolute left-0 top-[60px] z-10 max-h-60 w-full divide-y divide-gray-400 overflow-hidden overflow-y-auto rounded-lg shadow-md"
+				class="bg-sub c-scroll-sub absolute top-[60px] left-0 z-10 max-h-60 w-full divide-y divide-gray-400 overflow-hidden overflow-y-auto rounded-lg shadow-md"
 			>
 				{#each labelsList as labelItem (labelItem.key)}
 					<label

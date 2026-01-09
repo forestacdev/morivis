@@ -60,7 +60,7 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col max-lg:hidden"
+		class="bg-main w-side-menu max absolute top-0 left-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
@@ -84,7 +84,7 @@
 		{:then wikiMenuData}
 			<div
 				in:fade={{ duration: 100 }}
-				class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2"
+				class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2"
 			>
 				<!-- 画像 -->
 				<div class="b relative w-full p-2">
@@ -160,7 +160,7 @@
 							<span class="my-2 text-justify text-base">{wikiMenuData.extract}</span>
 							<div class="flex w-full items-center justify-center">
 								<a
-									class="c-btn-confirm mt-4 flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+									class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
 									href={wikiMenuData.url}
 									target="_blank"
 									rel="noopener noreferrer"

@@ -218,7 +218,7 @@
 						class="transition-scale duration-150　origin-center group flex flex-[0_0_70%] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-2 text-white"
 					>
 						<div
-							class="border-1 border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg bg-black duration-150"
+							class="border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black duration-150"
 						>
 							<RecommendedDataImage {dataEntry} />
 						</div></button

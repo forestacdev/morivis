@@ -60,9 +60,9 @@
 		<div
 			class="c-ripple-effect2 absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg border-2"
 		></div>
-		<div class="border-1 absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg"></div>
+		<div class="absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg border-1"></div>
 
-		<div class="border-sub border-1 flex flex-col gap-4 rounded-lg bg-black p-6">
+		<div class="border-sub flex flex-col gap-4 rounded-lg border-1 bg-black p-6">
 			<span class="w-full text-center text-base">このデータを追加しますか？</span>
 			<div class="flex gap-4">
 				<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}

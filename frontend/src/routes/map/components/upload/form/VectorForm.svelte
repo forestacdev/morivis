@@ -96,7 +96,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
 	<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 	<TextForm bind:value={forms.tileUrl} label="タイルURL" error={errors.tileUrl} />

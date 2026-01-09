@@ -237,7 +237,7 @@
 		bind:this={canvas}
 	></canvas>
 
-	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
+	<div class="pointer-events-none absolute top-0 left-0 z-10 h-full w-full">
 		<div class="flex h-full w-full flex-col items-center justify-center">
 			<span class="c-text-shadow font-bold text-white max-lg:text-[75px] lg:text-[100px]"
 				>morivis</span
@@ -285,7 +285,7 @@
 			class="pointer-events-auto flex shrink-0 cursor-pointer items-center p-2 text-white max-lg:hidden"
 			onclick={toggleTermsDialog}
 		>
-			<span class="select-none underline">利用規約</span>
+			<span class="underline select-none">利用規約</span>
 		</button>
 	</div>
 </div>

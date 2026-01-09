@@ -99,8 +99,9 @@
 			const geojson: SearchGeojsonData = {
 				type: 'FeatureCollection',
 				features: searchResults
-					.filter((result): result is ResultPoiData | ResultAddressData =>
-						result.type === 'poi' || result.type === 'address'
+					.filter(
+						(result): result is ResultPoiData | ResultAddressData =>
+							result.type === 'poi' || result.type === 'address'
 					)
 					.map((result) => ({
 						id: result.id,

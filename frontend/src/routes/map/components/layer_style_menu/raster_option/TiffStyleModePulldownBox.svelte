@@ -41,7 +41,7 @@
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute left-0 top-[60px] z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
+			class="bg-sub absolute top-[60px] left-0 z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
 		>
 			{#each demStyleModes as { key, name } (key)}
 				<label

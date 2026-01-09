@@ -12,12 +12,12 @@
 
 <div class="flex flex-col gap-2">
 	{#if label}
-		<div class="flex select-none items-center gap-2 text-base">
+		<div class="flex items-center gap-2 text-base select-none">
 			<span>{label}</span>
 		</div>
 	{/if}
 	{#if options.length === 2}
-		<div class="border-1 border-sub relative flex w-full overflow-hidden rounded-full bg-black">
+		<div class="border-sub relative flex w-full overflow-hidden rounded-full border-1 bg-black">
 			<div
 				class="bg-base absolute h-full w-1/2 rounded-full transition-transform duration-200 {options[0]
 					.key === group
@@ -28,7 +28,7 @@
 				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
 					<input type="radio" bind:group value={line.key} class="hidden" />
 					<span
-						class="select-none transition-colors duration-200 {line.key === group
+						class="transition-colors duration-200 select-none {line.key === group
 							? 'text-black'
 							: ''}"
 						>{line.name}
@@ -51,7 +51,7 @@
 				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
 					<input type="radio" bind:group value={line.key} class="hidden" />
 					<span
-						class="select-none transition-colors duration-200 {line.key === group
+						class="transition-colors duration-200 select-none {line.key === group
 							? 'text-black'
 							: ''}"
 						>{line.name}

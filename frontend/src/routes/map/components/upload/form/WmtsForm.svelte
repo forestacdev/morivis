@@ -63,7 +63,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
 	<TextForm bind:value={forms.url} label="タイルURL" error={errors.url} />
 </div>

@@ -94,7 +94,7 @@
 					clickedLayerFeaturesData = null;
 					clickedLayerIds = [];
 				}}
-				class="absolute right-0 top-0 rounded-full p-2"
+				class="absolute top-0 right-0 rounded-full p-2"
 			>
 				<Icon icon="material-symbols:close-rounded" class="h-4 w-4 text-black" />
 			</button>

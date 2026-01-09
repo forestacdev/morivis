@@ -110,7 +110,7 @@
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute left-0 top-[130px] z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+			class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
 		>
 			{#each availableDemStyleModes as { key, name } (key)}
 				<DemStyleModePulldownBoxImage

@@ -19,7 +19,7 @@
 				<span class="text-2xl font-bold">利用規約</span>
 			</div>
 			<div
-				class="c-scroll flex h-full grow flex-col overflow-y-auto overflow-x-hidden pb-4 text-justify"
+				class="c-scroll flex h-full grow flex-col overflow-x-hidden overflow-y-auto pb-4 text-justify"
 			>
 				<div class="pb-4">
 					本規約は、本アプリケーション（以下、「本アプリ」）の利用に関する条件を定めるものです。本アプリをご利用いただくことで、本規約に同意したものとみなします。

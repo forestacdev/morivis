@@ -72,7 +72,7 @@
 	<!-- 背景のオーバーレイ -->
 	<div
 		transition:fade={{ duration: 300 }}
-		class="absolute left-0 top-0 z-30 h-full w-full bg-black/50 max-lg:hidden"
+		class="absolute top-0 left-0 z-30 h-full w-full bg-black/50 max-lg:hidden"
 		role="button"
 		tabindex="0"
 		onclick={() => showOtherMenu.set(false)}
@@ -86,7 +86,7 @@
 	<!-- メニュー本体 -->
 	<div
 		transition:fly={{ duration: 300, x: !$isMobile ? 100 : 0, opacity: 0 }}
-		class="bg-main absolute right-0 top-0 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:z-30 lg:w-[400px]"
+		class="bg-main absolute top-0 right-0 flex h-full flex-col gap-2 p-2 text-base max-lg:w-full lg:z-30 lg:w-[400px]"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="flex items-center justify-between">

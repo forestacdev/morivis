@@ -85,7 +85,7 @@
 		<div class="text-accent">データが取得できませんでした</div>
 	{/await}
 	<div
-		class="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 p-1 text-center text-xs text-white"
+		class="bg-opacity-50 absolute bottom-0 left-0 w-full bg-black p-1 text-center text-xs text-white"
 	>
 		{dataEntry.metaData.name}
 	</div>

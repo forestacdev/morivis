@@ -51,7 +51,7 @@
 	in:fade={{ duration: 100, delay: 100 }}
 	out:fade={{ duration: 100 }}
 	type="text"
-	class="focus:outline-hidden placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0"
+	class="placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0 focus:outline-hidden"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}
@@ -74,7 +74,7 @@
 	<button
 		onclick={() => (inputSearchWord = '')}
 		disabled={!inputSearchWord}
-		class="absolute right-14 top-0 grid h-full cursor-pointer place-items-center"
+		class="absolute top-0 right-14 grid h-full cursor-pointer place-items-center"
 	>
 		<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
 	</button>

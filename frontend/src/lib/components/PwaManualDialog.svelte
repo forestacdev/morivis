@@ -19,7 +19,7 @@
 				<span class="text-2xl font-bold">アプリのインストール手順</span>
 			</div>
 			<div
-				class="c-scroll flex h-full grow flex-col overflow-y-auto overflow-x-hidden pb-4 text-justify"
+				class="c-scroll flex h-full grow flex-col overflow-x-hidden overflow-y-auto pb-4 text-justify"
 			>
 				<div class="pb-4">画面下部のアドレスバーから共有アイコンをタップします。</div>
 				<img

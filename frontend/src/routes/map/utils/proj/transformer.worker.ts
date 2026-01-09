@@ -29,7 +29,10 @@ const flattenCoordinates = (coordinates: NestedCoordinates, flattened: number[] 
 	return flattened;
 };
 
-const unflattenCoordinates = (flattened: number[], originalStructure: NestedCoordinates): NestedCoordinates => {
+const unflattenCoordinates = (
+	flattened: number[],
+	originalStructure: NestedCoordinates
+): NestedCoordinates => {
 	let index = 0;
 	const unflattenRecursive = (structure: NestedCoordinates): NestedCoordinates => {
 		return (structure as NestedCoordinates[]).map((item) => {

@@ -7,9 +7,17 @@
 		max: number;
 		step: number;
 		icon?: string;
-        isInt?: boolean;
+		isInt?: boolean;
 	}
-	let { label, value = $bindable(), min = 0, max = 1, step = 0.01, icon, isInt = false }: Props = $props();
+	let {
+		label,
+		value = $bindable(),
+		min = 0,
+		max = 1,
+		step = 0.01,
+		icon,
+		isInt = false
+	}: Props = $props();
 
 	// TODO: animation
 	let rangeElement = $state<HTMLDivElement | null>(null);
@@ -20,8 +28,10 @@
 		{#if icon}
 			<Icon {icon} width={20} />
 		{/if}
-		<div class="flex w-full select-none justify-between pr-2">
-			<span>{label ? `${label}: ` : ''}</span><span class={isInt ? 'pr-2' : ''}>{isInt ? value.toFixed(0) : value.toFixed(2)}</span>
+		<div class="flex w-full justify-between pr-2 select-none">
+			<span>{label ? `${label}: ` : ''}</span><span class={isInt ? 'pr-2' : ''}
+				>{isInt ? value.toFixed(0) : value.toFixed(2)}</span
+			>
 		</div>
 	</div>
 

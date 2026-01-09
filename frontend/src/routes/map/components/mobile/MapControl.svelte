@@ -25,7 +25,7 @@
 		<GeolocateControl />
 	</div> -->
 
-	<div class="bottom-18 absolute left-0 rounded-lg">
+	<div class="absolute bottom-18 left-0 rounded-lg">
 		<ScaleControl />
 	</div>
 </div>
