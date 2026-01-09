@@ -98,43 +98,25 @@
 		if (searchResults && searchResults.length > 0) {
 			const geojson: SearchGeojsonData = {
 				type: 'FeatureCollection',
-				features: searchResults.map((result: ResultData) => {
-					let prop;
-					if (result.type === 'poi' || result.type === 'address') {
-						if (result.type === 'poi') {
-							prop = {
-								id: result.id,
-								name: result.name,
-								location: result.location,
-								layerId: result.layerId,
-								featureId: result.featureId,
-								propId: result.propId
-							};
-						} else if (result.type === 'address') {
-							prop = {
-								id: result.id,
-								name: result.name,
-								location: result.location,
-								propId: null
-							};
-						}
-						return {
-							id: result.id,
-							type: 'Feature',
-							geometry: {
-								type: 'Point',
-								coordinates: result.point as [number, number]
-							},
-							properties: prop
-						};
-					}
-				})
+				features: searchResults
+					.filter((result): result is ResultPoiData | ResultAddressData =>
+						result.type === 'poi' || result.type === 'address'
+					)
+					.map((result) => ({
+						id: result.id,
+						type: 'Feature' as const,
+						geometry: {
+							type: 'Point' as const,
+							coordinates: result.point as [number, number]
+						},
+						properties: result
+					}))
 			};
 			searchGeojsonData = geojson;
 			// mapStore.setData('search_result', geojson);
 
 			const bbox = turfBbox(geojson);
-			mapStore.fitBounds(bbox, {
+			mapStore.fitBounds(bbox as [number, number, number, number], {
 				duration: 500,
 				padding: 100
 			});
@@ -183,11 +165,11 @@
 			</button>
 		</div>
 		{#if searchResults}
-			<div class="c-scroll flex grow flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 pb-4">
+			<div class="c-scroll flex grow flex-col gap-3 overflow-x-hidden overflow-y-auto px-2 pb-4">
 				{#each searchResults as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
-						class="border-1 border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-black p-2 text-left text-base {result.id &&
+						class="border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base {result.id &&
 						selectedSearchId === result.id
 							? 'bg-accent'
 							: ''}"
