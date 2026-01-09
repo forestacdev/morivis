@@ -4,11 +4,13 @@
 	import { getEpsgInfoArray, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
-	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
 	import { fly } from 'svelte/transition';
 	import turfCenter from '@turf/center';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
 	import maplibregl from 'maplibre-gl';
+	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
+	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
+	import turfBbox from '@turf/bbox';
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
@@ -32,16 +34,10 @@
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
-			console.log('focusBbox:', focusBbox);
 			return focusBbox;
 		}
 		return null;
 	});
-
-	let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> = {
-		type: 'FeatureCollection',
-		features: []
-	};
 
 	interface PoiData {
 		coordinates: [number, number];
@@ -52,6 +48,11 @@
 			prefecture?: string;
 		};
 	}
+
+	let geojsonData: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
+		type: 'FeatureCollection',
+		features: []
+	};
 
 	let poiData = $state<PoiData[]>([]);
 
@@ -84,7 +85,6 @@
 										]
 									]
 								},
-								bbox: transformedBbox,
 								properties: {
 									...info
 								}
@@ -112,10 +112,7 @@
 
 			// TODO
 			setTimeout(() => {
-				mapStore.setData(
-					'zone_bbox',
-					geojsonData as FeatureCollection<Geometry, GeoJsonProperties>
-				);
+				mapStore.setData('zone_bbox', geojsonData);
 			}, 500); // 1秒後にデータを設定
 		}
 	});
@@ -127,8 +124,10 @@
 					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
 			);
 
+			const bbox = turfBbox(feature as Feature<PolygonGeometry>);
+
 			if (feature) {
-				mapStore.fitBounds(feature.bbox as [number, number, number, number], {
+				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
 					maxZoom: 10,
 					duration: 500
