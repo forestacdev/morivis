@@ -1,11 +1,7 @@
 <script lang="ts">
 	import type { DialogType } from '$routes/map/types';
-	import { createGeoJsonEntry } from '$routes/map/data';
-	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { notificationMessage, showNotification } from '$routes/stores/notification';
-	import { loadRasterData, loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
-	import { gpxFileToGeojson } from '$routes/map/utils/file/gpx';
+	import { loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -52,19 +48,8 @@
 		}
 
 		if (!file) return;
-		const geojsonData = await gpxFileToGeojson(file, dataType);
-		const entryGeometryType = geometryTypeToEntryType(geojsonData);
-		if (!entryGeometryType) {
-			showNotification('対応していないジオメトリタイプです', 'error');
-			return;
-		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
-		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
-		if (entry) {
-			showDataEntry = entry;
-			showDialogType = null;
-		}
+		// TODO
 	};
 
 	const cancel = () => {
@@ -77,7 +62,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 ></div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
