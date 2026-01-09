@@ -1,5 +1,6 @@
 import GPXParser from 'gpxparser';
-import type { FeatureCollection, GeoJsonProperties, Geometry, LineString, Point } from 'geojson';
+import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
 export type DataType = 'tracks' | 'routes' | 'waypoints';
 export const checkGpxFile = async (
 	file: File
@@ -21,25 +22,22 @@ export const checkGpxFile = async (
 	}
 };
 
-export const gpxFileToGeojson = async (
-	file: File,
-	type: DataType
-): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
+export const gpxFileToGeojson = async (file: File, type: DataType): Promise<FeatureCollection> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
-		let geojson: FeatureCollection<Geometry, GeoJsonProperties>;
+		let geojson: FeatureCollection;
 
 		if (type === 'tracks') {
-			const trackGeojson: FeatureCollection<LineString> = {
+			const trackGeojson: FeatureCollection<LineStringGeometry> = {
 				type: 'FeatureCollection',
 				features: parser.tracks.map((track) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'LineString',
-						coordinates: track.points.map((p) => [p.lon, p.lat])
+						coordinates: track.points.map((p) => [p.lon, p.lat] as [number, number])
 					},
 					properties: {
 						name: track.name,
@@ -66,13 +64,13 @@ export const gpxFileToGeojson = async (
 
 		if (type === 'waypoints') {
 			// ウェイポイント (地点) を GeoJSON の FeatureCollection として追加
-			const waypointsGeojson: FeatureCollection<Point> = {
+			const waypointsGeojson: FeatureCollection<PointGeometry> = {
 				type: 'FeatureCollection',
 				features: parser.waypoints.map((waypoint) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'Point',
-						coordinates: [waypoint.lon, waypoint.lat]
+						coordinates: [waypoint.lon, waypoint.lat] as [number, number]
 					},
 					properties: {
 						name: waypoint.name,
@@ -90,13 +88,13 @@ export const gpxFileToGeojson = async (
 		}
 
 		if (type === 'routes') {
-			const routeGeojson: FeatureCollection<LineString> = {
+			const routeGeojson: FeatureCollection<LineStringGeometry> = {
 				type: 'FeatureCollection',
 				features: parser.routes.map((route) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'LineString',
-						coordinates: route.points.map((p) => [p.lon, p.lat])
+						coordinates: route.points.map((p) => [p.lon, p.lat] as [number, number])
 					},
 					properties: {
 						name: route.name,
@@ -120,7 +118,7 @@ export const gpxFileToGeojson = async (
 			geojson = routeGeojson;
 		}
 
-		return geojson;
+		return geojson!;
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
 		throw new Error('Failed to parse GeoJSON file');
