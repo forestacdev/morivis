@@ -20,6 +20,7 @@
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		isDragover: boolean;
 	}
 
 	let {
@@ -29,7 +30,8 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode,
 		dropFile = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		isDragover = $bindable()
 	}: Props = $props();
 </script>
 
@@ -68,6 +70,7 @@
 		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile
+		bind:isDragover
 		bind:showZoneForm
 		bind:focusBbox
 		{selectedEpsgCode}

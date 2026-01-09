@@ -167,6 +167,8 @@
 	// 右クリックメニュー
 	let contextMenuState = $state<ContextMenuState | null>(null);
 
+	let isDragover = $state(false);
+
 	$effect(() => {
 		if (selectedSearchId) {
 			mapStore.setFilter('@search_result', ['!=', ['id'], selectedSearchId]);
@@ -609,6 +611,7 @@
 	bind:dropFile
 	bind:showZoneForm
 	bind:focusBbox
+	bind:isDragover
 	{selectedEpsgCode}
 />
 

@@ -65,13 +65,10 @@
 		SearchGeojsonData
 	} from '../utils/feature';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
-	import type {
-		AnyModelMeshEntry,
-		AnyModelTiles3DEntry,
-		MeshStyleEntry
-	} from '$routes/map/data/types/model';
+	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { threeJsManager } from '../utils/threejs';
+	import DropContainer from './DropContainer.svelte';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -100,6 +97,7 @@
 		selectedSearchId: number | null;
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
+		isDragover: boolean;
 		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
 	}
 
@@ -131,6 +129,7 @@
 		selectedSearchId = $bindable(),
 		searchResults,
 		contextMenuState = $bindable(),
+		isDragover = $bindable(),
 		focusFeature
 	}: Props = $props();
 
@@ -152,7 +151,6 @@
 	let showTooltip = $state<boolean>(false); // ツールチップの表示
 	let tooltipLngLat = $state<LngLat | null>(null); // ツールチップの位置
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
-	let isDragover = $state(false);
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 
@@ -652,70 +650,66 @@
 		isDragover = false;
 	};
 	// ドロップ完了時にファイルを取得
-	const drop: (e: DragEvent) => void = async (e) => {
-		e.preventDefault();
-		isDragover = false;
-
-		const dataTransfer = e.dataTransfer;
-		if (!dataTransfer) return;
-
-		const files = dataTransfer.files;
-		if (!files || files.length === 0) return;
-
+	const onDropFile: (files: FileList) => void = async (files) => {
 		dropFile = files;
 	};
 </script>
 
-<div
-	role="region"
-	ondrop={drop}
-	ondragover={dragover}
-	ondragleave={dragleave}
-	class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
-	$mapMode === 'small'
-		? 'absolute transform border border-gray-300 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg'
-		: 'relative h-full w-full grow'}"
+<DropContainer
+	bind:isDragover
+	onDragover={dragover}
+	onDragleave={dragleave}
+	{onDropFile}
+	class="h-full w-full"
 >
 	<div
-		bind:this={mapContainer}
-		class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
-		$mapMode === 'view'
-			? 'opacity-0'
-			: $isStreetView && $mapMode === 'small'
-				? ''
-				: 'opacity-100'}"
+		role="region"
+		class="bg-main flex items-center justify-center overflow-hidden {$isStreetView &&
+		$mapMode === 'small'
+			? 'absolute transform border border-gray-300 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg'
+			: 'relative h-full w-full grow'}"
 	>
-		{#if maplibreMap}
-			<PoiManager
-				map={maplibreMap}
-				bind:featureMenuData
-				{showDataEntry}
-				{showZoneForm}
-				bind:showSelectionMarker
-			/>
-		{/if}
-	</div>
-
-	{#if !$isStreetView && !showDataEntry}
-		<!-- PC用地図コントロール -->
-		<div class="absolute bottom-[100px] right-5 max-lg:hidden">
-			<Compass />
+		<div
+			bind:this={mapContainer}
+			class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
+			$mapMode === 'view'
+				? 'opacity-0'
+				: $isStreetView && $mapMode === 'small'
+					? ''
+					: 'opacity-100'}"
+		>
+			{#if maplibreMap}
+				<PoiManager
+					map={maplibreMap}
+					bind:featureMenuData
+					{showDataEntry}
+					{showZoneForm}
+					bind:showSelectionMarker
+				/>
+			{/if}
 		</div>
 
-		<!-- PC用ベースマップコントロール -->
-		<LayerControl />
+		{#if !$isStreetView && !showDataEntry}
+			<!-- PC用地図コントロール -->
+			<div class="absolute right-5 bottom-[100px] max-lg:hidden">
+				<Compass />
+			</div>
 
-		<!-- スマホ用地図コントロール -->
-		<MobileMapControl />
-	{/if}
-	<SelectionPopup
-		bind:clickedLayerIds
-		bind:featureMenuData
-		bind:clickedLayerFeaturesData
-		{layerEntries}
-		{clickedLngLat}
-	/>
-</div>
+			<!-- PC用ベースマップコントロール -->
+			<LayerControl />
+
+			<!-- スマホ用地図コントロール -->
+			<MobileMapControl />
+		{/if}
+		<SelectionPopup
+			bind:clickedLayerIds
+			bind:featureMenuData
+			bind:clickedLayerFeaturesData
+			{layerEntries}
+			{clickedLngLat}
+		/>
+	</div>
+</DropContainer>
 <!-- <ThreeLayer /> -->
 
 {#if maplibreMap}

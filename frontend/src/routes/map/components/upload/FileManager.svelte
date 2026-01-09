@@ -6,10 +6,7 @@
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
-	import { csvFileToGeojson } from '$routes/map/utils/file/csv';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';

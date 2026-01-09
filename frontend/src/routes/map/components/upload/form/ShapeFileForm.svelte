@@ -16,6 +16,7 @@
 	import type { UseEventTriggerType } from '$routes/map/types/ui';
 	import { fade } from 'svelte/transition';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
+	import DropContainer from '$routes/map/components/DropContainer.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -24,6 +25,7 @@
 		showZoneForm: boolean; // 座標系フォームの表示状態
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		isDragover: boolean;
 	}
 
 	let {
@@ -32,7 +34,8 @@
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		isDragover = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -316,63 +319,65 @@
 </script>
 
 {#if showDialogType && showDialogType === 'shp'}
-	<div
-		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/70
+	<DropContainer bind:isDragover onDropFile={(files) => (dropFile = files)}>
+		<div
+			transition:fade={{ duration: 200 }}
+			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/70
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
-	>
-		<div class="flex shrink-0 items-center justify-between overflow-auto pt-8 pb-4">
-			<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
+		>
+			<div class="flex shrink-0 items-center justify-between overflow-auto pt-8 pb-4">
+				<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
+			</div>
+
+			<div class="flex gap-2">
+				<ShapeFileFormInput
+					label=".shp"
+					bind:file={forms.shpFile}
+					accept=".shp"
+					error={errors.shpFile}
+					bind:name={forms.shpName}
+				/>
+
+				<ShapeFileFormInput
+					label=".dbf"
+					bind:file={forms.dbfFile}
+					accept=".dbf"
+					error={errors.dbfFile}
+					bind:name={forms.dbfName}
+				/>
+
+				<ShapeFileFormInput
+					label=".shx"
+					bind:file={forms.shxFile}
+					accept=".shx"
+					error={errors.shxFile}
+					bind:name={forms.shxName}
+				/>
+
+				<ShapeFileFormInput
+					label=".prj(任意)"
+					bind:file={forms.prjFile}
+					accept=".prj"
+					error={errors.prjFile}
+					bind:name={forms.prjName}
+				/>
+				{hasFilenameMatchError ? 'ファイル名が一致しません' : ''}
+			</div>
+
+			<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+				<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+				<button
+					onclick={registration}
+					disabled={isDisabled}
+					class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
+						? 'cursor-not-allowed opacity-50'
+						: 'cursor-pointer'}"
+				>
+					決定
+				</button>
+			</div>
 		</div>
-
-		<div class="flex gap-2">
-			<ShapeFileFormInput
-				label=".shp"
-				bind:file={forms.shpFile}
-				accept=".shp"
-				error={errors.shpFile}
-				bind:name={forms.shpName}
-			/>
-
-			<ShapeFileFormInput
-				label=".dbf"
-				bind:file={forms.dbfFile}
-				accept=".dbf"
-				error={errors.dbfFile}
-				bind:name={forms.dbfName}
-			/>
-
-			<ShapeFileFormInput
-				label=".shx"
-				bind:file={forms.shxFile}
-				accept=".shx"
-				error={errors.shxFile}
-				bind:name={forms.shxName}
-			/>
-
-			<ShapeFileFormInput
-				label=".prj(任意)"
-				bind:file={forms.prjFile}
-				accept=".prj"
-				error={errors.prjFile}
-				bind:name={forms.prjName}
-			/>
-			{hasFilenameMatchError ? 'ファイル名が一致しません' : ''}
-		</div>
-
-		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-			<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-			<button
-				onclick={registration}
-				disabled={isDisabled}
-				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
-					? 'cursor-not-allowed opacity-50'
-					: 'cursor-pointer'}"
-			>
-				決定
-			</button>
-		</div>
-	</div>
+	</DropContainer>
 {/if}
 
 <style>
