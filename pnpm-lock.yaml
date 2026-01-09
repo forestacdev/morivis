@@ -310,6 +310,9 @@ importers:
       '@types/papaparse':
         specifier: ^5.3.15
         version: 5.5.1
+      '@types/shapefile':
+        specifier: ^0.6.4
+        version: 0.6.4
       '@types/three':
         specifier: ^0.172.0
         version: 0.172.0
@@ -2581,6 +2584,9 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
+
+  '@types/shapefile@0.6.4':
+    resolution: {integrity: sha512-xZubzHAy4n/OQo32u4l8qx8OGVe9nG258otq4389npOKwXbTXoQSVfqUqKVVrgeR/+FfJt/YSweiVE4kqLqFTA==}
 
   '@types/stats.js@0.17.4':
     resolution: {integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==}
@@ -9355,6 +9361,11 @@ snapshots:
       csstype: 3.2.3
 
   '@types/resolve@1.20.2': {}
+
+  '@types/shapefile@0.6.4':
+    dependencies:
+      '@types/geojson': 7946.0.16
+      '@types/node': 24.10.1
 
   '@types/stats.js@0.17.4': {}
 

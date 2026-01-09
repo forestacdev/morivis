@@ -38,6 +38,7 @@
 		"@types/geojson-vt": "^3.2.5",
 		"@types/jsoneditor": "^9.9.5",
 		"@types/papaparse": "^5.3.15",
+		"@types/shapefile": "^0.6.4",
 		"@types/three": "^0.172.0",
 		"@types/vt-pbf": "^3.1.1",
 		"@vite-pwa/sveltekit": "^1.0.0",
