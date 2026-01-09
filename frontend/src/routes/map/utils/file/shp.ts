@@ -1,4 +1,4 @@
-import type { SimpleFeatureCollection } from '$routes/map/types/geojson';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import * as shapefile from 'shapefile';
 import { isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { showNotification } from '$routes/stores/notification';
@@ -21,7 +21,7 @@ export const shpFileToGeojson = async (
 	shp: File,
 	dbf?: File,
 	prjContent?: string
-): Promise<SimpleFeatureCollection> => {
+): Promise<FeatureCollection> => {
 	const [shpData, dbfData] =
 		shp && dbf
 			? await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)])
@@ -45,7 +45,7 @@ export const shpFileToGeojson = async (
 	}
 
 	if (!prjContent || !dbf || isWgs84Prj(prjContent)) {
-		return geojson as SimpleFeatureCollection;
+		return geojson as FeatureCollection;
 	}
 
 	const geojsonWGS84 = await transformGeoJSONParallel(geojson, prjContent);
@@ -56,8 +56,8 @@ export const shpFileToGeojson = async (
 
 	if (!geojsonWGS84) {
 		showNotification('座標系の変換に失敗しました。', 'error');
-		return geojson as SimpleFeatureCollection;
+		return geojson as FeatureCollection;
 	}
 
-	return geojsonWGS84 as SimpleFeatureCollection;
+	return geojsonWGS84 as FeatureCollection;
 };

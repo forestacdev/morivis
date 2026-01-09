@@ -1,5 +1,5 @@
 import type { BaseMetaData, GeoDataEntry } from '$routes/map/data/types';
-import type { SimpleFeatureCollection } from '$routes/map/types/geojson';
+import type { SimpleFeatureCollection, FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
@@ -30,6 +30,7 @@ import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
 import Fuse from 'fuse.js';
 import { encode } from '$routes/map/utils/normalized';
+import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
 // 共通の初期化処理
 // visible を true にする
@@ -117,7 +118,7 @@ export class EntryIdToTypeMap {
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (
-	geojson: SimpleFeatureCollection
+	geojson: FeatureCollection
 ): VectorEntryGeometryType | undefined => {
 	const geometryTypes = new Set<string>();
 	geojson.features.forEach((feature) => {
@@ -166,75 +167,83 @@ export const createGeoJsonEntry = (
 		bounds: bbox
 	};
 
-	let style;
-
-	if (entryGeometryType === 'Point') {
-		style = DEFAULT_VECTOR_POINT_STYLE;
-	} else if (entryGeometryType === 'LineString') {
-		style = DEFAULT_VECTOR_LINE_STYLE;
-	} else if (entryGeometryType === 'Polygon') {
-		style = DEFAULT_VECTOR_POLYGON_STYLE;
-	} else if (entryGeometryType === 'Label') {
-		// TODO : Labelのスタイルを作成する
-		style = DEFAULT_VECTOR_POINT_STYLE;
-
-		return undefined;
-	} else {
-		console.error('不明なジオメトリタイプです。');
-		return undefined;
-	}
-
-	if (!style) {
-		console.error('スタイルが見つかりませんでした。');
-		return undefined;
-	}
-
-	style.colors = {
+	const colorsConfig = {
 		key: '単色',
 		show: true,
 		expressions: [
 			{
-				type: 'single',
+				type: 'single' as const,
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: color
+					value: color as BaseSingleColor
 				}
 			}
 		]
 	};
 
-	const propKes = getUniquePropertyKeys(data);
-
-	style.labels = createLabelsExpressions(propKes);
+	const propKeys = getUniquePropertyKeys(data as any);
+	const labelsConfig = createLabelsExpressions(propKeys);
 
 	const id = 'geojson_' + crypto.randomUUID();
-	GeojsonCache.set(id, data);
+	GeojsonCache.set(id, data as any);
 
-	const entry: VectorEntry<GeoJsonMetaData> = {
+	const baseEntry = {
 		id,
-		type: 'vector',
-		format: {
-			type: 'geojson',
-			geometryType: entryGeometryType,
-			url: ''
-		},
+		type: 'vector' as const,
 		metaData,
 		interaction: {
-			clickable: true
+			clickable: true as const
 		},
 		properties: {
-			keys: propKes,
+			keys: propKeys,
 			titles: [
 				{
 					conditions: [],
 					template: name
 				}
 			]
-		},
-		style
+		}
 	};
-	return entry;
+
+	if (entryGeometryType === 'Point') {
+		const style = { ...DEFAULT_VECTOR_POINT_STYLE, colors: colorsConfig, labels: labelsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'Point' as const,
+				url: ''
+			},
+			style
+		};
+	} else if (entryGeometryType === 'LineString') {
+		const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'LineString' as const,
+				url: ''
+			},
+			style
+		};
+	} else if (entryGeometryType === 'Polygon') {
+		const style = { ...DEFAULT_VECTOR_POLYGON_STYLE, colors: colorsConfig, labels: labelsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'Polygon' as const,
+				url: ''
+			},
+			style
+		};
+	} else {
+		// Label またはその他の不明なタイプ
+		console.error('不明なジオメトリタイプです。');
+		return undefined;
+	}
 };
 
 export const createVectorTileEntry = (
@@ -250,39 +259,16 @@ export const createVectorTileEntry = (
 		sourceLayer
 	};
 
-	let style;
-
-	if (entryGeometryType === 'Point') {
-		style = DEFAULT_VECTOR_POINT_STYLE;
-	} else if (entryGeometryType === 'LineString') {
-		style = DEFAULT_VECTOR_LINE_STYLE;
-	} else if (entryGeometryType === 'Polygon') {
-		style = DEFAULT_VECTOR_POLYGON_STYLE;
-	} else if (entryGeometryType === 'Label') {
-		// TODO : Labelのスタイルを作成する
-		style = DEFAULT_VECTOR_POINT_STYLE;
-
-		return undefined;
-	} else {
-		console.error('不明なジオメトリタイプです。');
-		return undefined;
-	}
-
-	if (!style) {
-		console.error('スタイルが見つかりませんでした。');
-		return undefined;
-	}
-
-	style.colors = {
+	const colorsConfig = {
 		key: '単色',
 		show: true,
 		expressions: [
 			{
-				type: 'single',
+				type: 'single' as const,
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: color
+					value: color as BaseSingleColor
 				}
 			}
 		]
@@ -290,17 +276,12 @@ export const createVectorTileEntry = (
 
 	const id = 'vectorTile_' + crypto.randomUUID();
 
-	const entry: VectorEntry<TileMetaData> = {
+	const baseEntry = {
 		id,
-		type: 'vector',
-		format: {
-			type: 'mvt',
-			geometryType: entryGeometryType,
-			url
-		},
+		type: 'vector' as const,
 		metaData,
 		interaction: {
-			clickable: true
+			clickable: true as const
 		},
 		properties: {
 			keys: [],
@@ -310,11 +291,47 @@ export const createVectorTileEntry = (
 					template: name
 				}
 			]
-		},
-		style
+		}
 	};
 
-	return entry;
+	if (entryGeometryType === 'Point') {
+		const style = { ...DEFAULT_VECTOR_POINT_STYLE, colors: colorsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'mvt' as const,
+				geometryType: 'Point' as const,
+				url
+			},
+			style
+		};
+	} else if (entryGeometryType === 'LineString') {
+		const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'mvt' as const,
+				geometryType: 'LineString' as const,
+				url
+			},
+			style
+		};
+	} else if (entryGeometryType === 'Polygon') {
+		const style = { ...DEFAULT_VECTOR_POLYGON_STYLE, colors: colorsConfig };
+		return {
+			...baseEntry,
+			format: {
+				type: 'mvt' as const,
+				geometryType: 'Polygon' as const,
+				url
+			},
+			style
+		};
+	} else {
+		// Label またはその他の不明なタイプ
+		console.error('不明なジオメトリタイプです。');
+		return undefined;
+	}
 };
 
 // TODO: タイルサイズ指定
