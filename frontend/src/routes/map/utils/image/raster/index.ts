@@ -4,7 +4,7 @@ import { xyzToWMSXYZ } from '$routes/map/utils/tile';
 
 import { CoverImageManager } from '../index';
 import { IMAGE_TILE_XYZ } from '$routes/constants';
-import type { AnyRasterEntry, AnyVectorEntry } from '$routes/map/data/types';
+import type { AnyRasterEntry } from '$routes/map/data/types';
 import {
 	DEM_DATA_TYPE,
 	type DemDataTypeKey,
@@ -12,7 +12,6 @@ import {
 } from '$routes/map/data/types/raster';
 import { TileProxy } from '$routes/map/utils/image';
 import {
-	type RasterDemStyle,
 	type RasterCadEntry,
 	DEM_STYLE_TYPE,
 	type DemStyleMode
@@ -207,7 +206,7 @@ export const generateDemCoverImage = async (
 			});
 		} else if (mode === 'slope' || mode === 'aspect') {
 			const elevationColorArray = colorMapCache.createColorArray(
-				visualization.uniformsData[mode].colorMap || 'bone'
+				visualization.uniformsData[mode]?.colorMap || 'bone'
 			);
 
 			let min = 0;
@@ -215,7 +214,7 @@ export const generateDemCoverImage = async (
 
 			const emptyImage = await createImageBitmap(new ImageData(1, 1));
 
-			if (mode === 'slope') {
+			if (mode === 'slope' && visualization.uniformsData.slope) {
 				min = visualization.uniformsData.slope.min;
 				max = visualization.uniformsData.slope.max;
 			}

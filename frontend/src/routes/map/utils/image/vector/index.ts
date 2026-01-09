@@ -179,7 +179,7 @@ async function _generateMapImageParallel(
 
 		map.setBearing(bearing);
 		map.setPitch(pitch);
-		map.fitBounds(mapBounds, {
+		map.fitBounds(mapBounds as [number, number, number, number], {
 			duration: 0,
 			animate: false
 		});
