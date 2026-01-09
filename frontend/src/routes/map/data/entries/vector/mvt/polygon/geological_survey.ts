@@ -66,7 +66,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#8f37e7',
+						value: '#ff7f00',
 						pattern: null
 					}
 				},

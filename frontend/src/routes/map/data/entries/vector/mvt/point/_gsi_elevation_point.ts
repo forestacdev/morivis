@@ -20,7 +20,8 @@ const entry: PointEntry<TileMetaData> = {
 		minZoom: 4,
 		maxZoom: 16,
 		tags: [],
-		bounds: WEB_MERCATOR_JAPAN_BOUNDS
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		xyzImageTile: { x: 0, y: 0, z: 0 }
 	},
 	properties: {
 		keys: ['vt_code', 'vt_text'],
@@ -47,7 +48,7 @@ const entry: PointEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#ffffff'
+						value: '#ff7f00'
 					}
 				}
 			]

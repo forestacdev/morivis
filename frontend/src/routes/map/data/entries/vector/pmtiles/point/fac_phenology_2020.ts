@@ -56,7 +56,7 @@ const entry: PointEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#33ec00'
+						value: '#ff7f00'
 					}
 				}
 			]

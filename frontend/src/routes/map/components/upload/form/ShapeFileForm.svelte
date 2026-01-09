@@ -381,45 +381,4 @@
 {/if}
 
 <style>
-	.c-main {
-		animation: spin 0.3s;
-		transform-origin: center center;
-	}
-
-	@keyframes spin {
-		0% {
-			/* rotate: 0deg; */
-			scale: 0.5;
-			opacity: 0; /* アニメーションの開始時に透明にする */
-		}
-		100% {
-			/* rotate: 360deg; */
-			scale: 1; /* アニメーションの終わりで元のサイズに戻す */
-		}
-	}
-	.c-triangle {
-		--size: 320px;
-		background: var(--color-main);
-		border-radius: 9999px;
-		/* clip-path: polygon(50% 0, 100% 100%, 0 100%); */
-		width: var(--size);
-		aspect-ratio: 1 / 1;
-		/* translate: 0 -30px; */
-	}
-
-	.c-file-item {
-		padding: 0;
-		margin-top: 0;
-		position: absolute;
-		height: 200px;
-
-		width: 130px;
-		background: var(--color-main);
-		border-radius: 9999px;
-		--angle: calc(360deg / 3 * var(--index) - 90deg);
-		--x: calc(cos(var(--angle)) * 100px);
-		--y: calc(sin(var(--angle)) * 100px);
-		translate: calc(var(--x)) calc(var(--y));
-		rotate: calc(var(--angle) + 90deg);
-	}
 </style>
