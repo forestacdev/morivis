@@ -1,8 +1,4 @@
-import type {
-	DataDrivenPropertyValueSpecification,
-	FormattedSpecification,
-	ExpressionSpecification
-} from 'maplibre-gl';
+import type { DataDrivenPropertyValueSpecification, FormattedSpecification } from 'maplibre-gl';
 
 type FieldDef = {
 	key: string;
@@ -34,26 +30,47 @@ function numberExpr(
 }
 
 // unit を fields から付ける（' ha' みたいなスペースもここで統一）
-function withUnit(expr: MbExpr, unit?: string): MbExpr {
+const withUnit = (
+	expr: DataDrivenPropertyValueSpecification<FormattedSpecification>,
+	unit?: string
+): DataDrivenPropertyValueSpecification<FormattedSpecification> => {
 	if (!unit) return expr;
-	return ['concat', expr, ` ${unit}`];
-}
+	return [
+		'concat',
+		expr,
+		` ${unit}`
+	] as DataDrivenPropertyValueSpecification<FormattedSpecification>;
+};
 
 // null/empty を '-' にする（空値ポリシーを fields に寄せたい場合）
-function withEmptyFallback(expr: MbExpr, emptyText?: string): MbExpr {
+const withEmptyFallback = (
+	expr: DataDrivenPropertyValueSpecification<FormattedSpecification>,
+	emptyText?: string
+): DataDrivenPropertyValueSpecification<FormattedSpecification> => {
 	if (!emptyText) return expr;
 	// get が null だったら emptyText。空文字も扱いたいなら条件増やす
-	return ['case', ['==', expr, null], emptyText, expr];
-}
+	return [
+		'case',
+		['==', expr, null],
+		emptyText,
+		expr
+	] as DataDrivenPropertyValueSpecification<FormattedSpecification>;
+};
 
 /** LabelExpr を最終的な MapLibre text-field expression にコンパイル */
-function compileLabelExpr(le: LabelExpr, fields: FieldDef[]): MbExpr {
-	if (le.expr) return le.expr; // 明示exprが最優先
+// const compileLabelExpr = (
+// 	le: DataDrivenPropertyValueSpecification<FormattedSpecification>,
+// 	fields: FieldDef[]
+// ): DataDrivenPropertyValueSpecification<FormattedSpecification> => {
+// 	if (le.expr) return le.expr; // 明示exprが最優先
 
-	const f = getField(fields, le.key);
-	// 文字列はそのまま get、数値は丸めを適用（ここは type を持ってるならそれで分岐が理想）
-	const base = f?.format?.digits != null ? numberExpr(le.key, f.format.digits) : ['get', le.key];
+// 	const f = getField(fields, le.key);
+// 	// 文字列はそのまま get、数値は丸めを適用（ここは type を持ってるならそれで分岐が理想）
+// 	const base =
+// 		f?.format?.digits != null
+// 			? numberExpr(le.key, f.format.digits)
+// 			: (['get', le.key] as DataDrivenPropertyValueSpecification<FormattedSpecification>);
 
-	const withUnitExpr = withUnit(base, f?.unit);
-	return withEmptyFallback(withUnitExpr, f?.format?.emptyText);
-}
+// 	const withUnitExpr = withUnit(base, f?.unit);
+// 	return withEmptyFallback(withUnitExpr, f?.format?.emptyText);
+// };

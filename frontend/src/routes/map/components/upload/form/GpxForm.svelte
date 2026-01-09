@@ -4,8 +4,9 @@
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { notificationMessage, showNotification } from '$routes/stores/notification';
+	import { showNotification } from '$routes/stores/notification';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/file/gpx';
+	import turfBbox from '@turf/bbox';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -90,7 +91,14 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
+		const bbox = turfBbox(geojsonData);
+
+		const entry = createGeoJsonEntry(
+			geojsonData,
+			entryGeometryType,
+			setFileName,
+			bbox as [number, number, number, number]
+		);
 		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
 		if (entry) {
 			showDataEntry = entry;
@@ -108,7 +116,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
 	<div class="p-2">
 		<HorizontalSelectBox

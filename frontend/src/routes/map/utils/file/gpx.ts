@@ -1,6 +1,9 @@
 import GPXParser from 'gpxparser';
-import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { Waypoint, Track, Route } from 'gpxparser';
+
+import type { FeatureCollection, SimpleFeatureCollection } from '$routes/map/types/geojson';
 import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
+import type { FeatureProp } from '$routes/map/types/properties';
 export type DataType = 'tracks' | 'routes' | 'waypoints';
 export const checkGpxFile = async (
 	file: File
@@ -22,18 +25,21 @@ export const checkGpxFile = async (
 	}
 };
 
-export const gpxFileToGeojson = async (file: File, type: DataType): Promise<FeatureCollection> => {
+export const gpxFileToGeojson = async (
+	file: File,
+	type: DataType
+): Promise<SimpleFeatureCollection> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();
 		parser.parse(gpxData);
 
-		let geojson: FeatureCollection;
+		let geojson: SimpleFeatureCollection;
 
 		if (type === 'tracks') {
 			const trackGeojson: FeatureCollection<LineStringGeometry> = {
 				type: 'FeatureCollection',
-				features: parser.tracks.map((track) => ({
+				features: parser.tracks.map((track: Track) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'LineString',
@@ -56,7 +62,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						distance_cumul: track.distance.cumul, // 累積距離
 						slopes: track.slopes // スロープ
 						// 必要に応じてトラックのプロパティを追加
-					}
+					} as unknown as FeatureProp;
 				}))
 			};
 			geojson = trackGeojson;
@@ -66,7 +72,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 			// ウェイポイント (地点) を GeoJSON の FeatureCollection として追加
 			const waypointsGeojson: FeatureCollection<PointGeometry> = {
 				type: 'FeatureCollection',
-				features: parser.waypoints.map((waypoint) => ({
+				features: parser.waypoints.map((waypoint: Waypoint) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'Point',
@@ -80,7 +86,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						lon: waypoint.lon,
 						ele: waypoint.ele,
 						time: waypoint.time
-					}
+					} as unknown as FeatureProp;
 				}))
 			};
 
@@ -90,7 +96,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 		if (type === 'routes') {
 			const routeGeojson: FeatureCollection<LineStringGeometry> = {
 				type: 'FeatureCollection',
-				features: parser.routes.map((route) => ({
+				features: parser.routes.map((route: Route) => ({
 					type: 'Feature',
 					geometry: {
 						type: 'LineString',
@@ -112,7 +118,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						elevation_avg: route.elevation.avg,
 						distance_cumul: route.distance.cumul,
 						slopes: route.slopes
-					}
+					} as unknown as FeatureProp;
 				}))
 			};
 			geojson = routeGeojson;
