@@ -288,19 +288,6 @@
 		mapStore.jumpToFac();
 	};
 
-	// TODO: ストリートビュー用のクリックイベント
-	// mapStore.onClick((e) => {
-	// 	if (!e || $mapMode === 'edit') return;
-	// 	if (streetViewPointData.features.length > 0) {
-	// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-	// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-	// 		if (distance < 100) {
-	// 			// streetViewPoint = point;
-	// 			setPoint(point as StreetViewPoint);
-	// 		}
-	// 	}
-	// });
-
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		if (!streetViewPoint) return;

@@ -63,7 +63,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#33f543'
+						value: '#33a02c'
 					}
 				},
 				{
