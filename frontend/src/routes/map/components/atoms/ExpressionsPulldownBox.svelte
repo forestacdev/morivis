@@ -1,16 +1,16 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
 	import ColorExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/ColorExpressionsOption.svelte';
 	import NumberExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/NumberExpressionsOption.svelte';
 	import type {
 		ColorsExpression,
 		NumbersExpression,
-		LabelsExpressions,
 		ColorsStyle,
 		NumbersStyle,
-		ExpressionType
+		ExpressionType,
+		RawExpression
 	} from '$routes/map/data/types/vector/style';
 	import { getIconStyle } from '$routes/map/utils/ui';
 
@@ -22,11 +22,13 @@
 	let showPullDown = $state<boolean>(false);
 
 	// セットされた式の設定
-	let setExpression = $derived.by(() => {
-		const target = style.expressions.find((color) => color.key === style.key);
-		if (!target) return;
-		return target;
-	});
+	let setExpression: ColorsExpression | NumbersExpression | RawExpression | undefined = $derived.by(
+		() => {
+			const target = style.expressions.find((color) => color.key === style.key);
+			if (!target) return;
+			return target;
+		}
+	);
 
 	// 式のリスト
 	let expressionsList = $derived.by(() => {
@@ -68,7 +70,7 @@
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="bg-sub c-scroll-sub absolute left-0 top-[60px] z-10 max-h-60 w-full divide-y divide-gray-400 overflow-hidden overflow-y-auto rounded-lg shadow-md"
+				class="bg-sub c-scroll-sub absolute top-[60px] left-0 z-10 max-h-60 w-full divide-y divide-gray-400 overflow-hidden overflow-y-auto rounded-lg shadow-md"
 			>
 				{#each expressionsList as expressionItem (expressionItem.key)}
 					<label

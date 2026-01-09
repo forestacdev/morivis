@@ -139,9 +139,9 @@
 		}
 	});
 
-	isStreetView.subscribe(async (value) => {
-		onResize();
+	isStreetView.subscribe(async () => {
+		onResize?.();
 	});
 
-	window.addEventListener('resize', onResize);
+	window.addEventListener('resize', () => onResize?.());
 </script>

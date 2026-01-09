@@ -158,7 +158,12 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, fileName, bbox);
+		const entry = createGeoJsonEntry(
+			geojsonData,
+			entryGeometryType,
+			fileName,
+			bbox as [number, number, number, number]
+		);
 
 		if (!entry) {
 			showNotification('データが不正です', 'error');
