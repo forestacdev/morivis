@@ -22,8 +22,8 @@ self.onmessage = (e) => {
 		}
 
 		// 転送（copyではなくmoveする）
-		self.postMessage({ result: output }, [output.buffer]);
+		self.postMessage({ result: output }, { transfer: [output.buffer] });
 	} catch (err) {
-		self.postMessage({ error: err.message });
+		self.postMessage({ error: err instanceof Error ? err.message : 'Unknown error' });
 	}
 };
