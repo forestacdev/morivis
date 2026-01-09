@@ -47,7 +47,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#ff0000'
+						value: '#e31a1c'
 					}
 				}
 			]
