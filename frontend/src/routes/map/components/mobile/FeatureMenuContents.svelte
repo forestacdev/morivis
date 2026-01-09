@@ -11,8 +11,6 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
-
-
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
@@ -25,6 +23,8 @@
 		showSelectionMarker = $bindable()
 	}: Props = $props();
 
+	let selectedIndex = $state(0);
+
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
@@ -33,18 +33,17 @@
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
 
 	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-		loop: true,
-		containScroll: 'keepSnaps',
-		dragFree: true
-	};
-	let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
-	let selectedIndex = $state(0);
+	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
+	// 	loop: true,
+	// 	containScroll: 'keepSnaps',
+	// 	dragFree: true
+	// };
+	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 
-	function onThumbnailClick(index: number) {
-		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
-		emblaMainCarousel.scrollTo(index);
-	}
+	// function onThumbnailClick(index: number) {
+	// 	if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+	// 	emblaMainCarousel.scrollTo(index);
+	// }
 
 	function onSelect() {
 		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
@@ -57,18 +56,18 @@
 		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
 	}
 
-	function onInitEmblaThumbnailCarousel(event: CustomEvent<EmblaCarouselType>) {
-		emblaThumbnailCarousel = event.detail;
-	}
+	// function onInitEmblaThumbnailCarousel(event: CustomEvent<EmblaCarouselType>) {
+	// 	emblaThumbnailCarousel = event.detail;
+	// }
 
-	function onClickNext() {
-		if (!emblaMainCarousel) return;
-		emblaMainCarousel.scrollNext();
-	}
-	function onClickPrev() {
-		if (!emblaMainCarousel) return;
-		emblaMainCarousel.scrollPrev();
-	}
+	// function onClickNext() {
+	// 	if (!emblaMainCarousel) return;
+	// 	emblaMainCarousel.scrollNext();
+	// }
+	// function onClickPrev() {
+	// 	if (!emblaMainCarousel) return;
+	// 	emblaMainCarousel.scrollPrev();
+	// }
 
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {

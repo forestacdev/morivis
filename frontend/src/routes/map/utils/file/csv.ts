@@ -194,31 +194,35 @@ export const geojsonToCSV = (
 		// 座標の追加
 		if (feature.geometry) {
 			switch (feature.geometry.type) {
-				case 'Point':
+				case 'Point': {
 					const [lon, lat] = feature.geometry.coordinates as [number, number];
 					row[lonColumn] = lon;
 					row[latColumn] = lat;
 					break;
+				}
 				case 'LineString':
-				case 'MultiPoint':
+				case 'MultiPoint': {
 					// 最初の座標を使用
 					const [firstLon, firstLat] = feature.geometry.coordinates[0] as [number, number];
 					row[lonColumn] = firstLon;
 					row[latColumn] = firstLat;
 					break;
+				}
 				case 'Polygon':
-				case 'MultiLineString':
+				case 'MultiLineString': {
 					// 最初の座標を使用
 					const [polyLon, polyLat] = feature.geometry.coordinates[0][0] as [number, number];
 					row[lonColumn] = polyLon;
 					row[latColumn] = polyLat;
 					break;
-				case 'MultiPolygon':
+				}
+				case 'MultiPolygon': {
 					// 最初の座標を使用
 					const [multiLon, multiLat] = feature.geometry.coordinates[0][0][0] as [number, number];
 					row[lonColumn] = multiLon;
 					row[latColumn] = multiLat;
 					break;
+				}
 			}
 
 			// ジオメトリ情報を含める場合

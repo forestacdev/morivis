@@ -1,7 +1,5 @@
 import { checkPc } from '$routes/map/utils/ui';
 import * as THREE from 'three';
-import { Tween } from 'svelte/motion';
-import { cubicOut } from 'svelte/easing';
 
 export const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
 export const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV

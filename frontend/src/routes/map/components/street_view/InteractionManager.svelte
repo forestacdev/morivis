@@ -11,7 +11,6 @@
 	import { checkPc } from '$routes/map/utils/ui';
 	import { isStreetView } from '$routes/stores';
 
-
 	interface Props {
 		canvas: HTMLCanvasElement;
 		camera: THREE.PerspectiveCamera;

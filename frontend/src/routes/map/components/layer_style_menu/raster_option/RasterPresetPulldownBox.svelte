@@ -4,7 +4,6 @@
 	import type { RasterStylePreset } from '$routes/map/utils/raster';
 	import { getPresetCSSStyle } from '$routes/map/utils/raster';
 
-
 	interface Props {
 		preset: RasterStylePreset;
 		src: string;

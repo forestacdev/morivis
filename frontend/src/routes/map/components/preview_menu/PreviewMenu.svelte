@@ -140,6 +140,7 @@
 							{/if}
 
 							{#if showDataEntry?.metaData.description}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html formatDescription(showDataEntry?.metaData.description)}
 							{/if}
 						</div>

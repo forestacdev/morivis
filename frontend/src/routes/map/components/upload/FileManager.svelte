@@ -2,7 +2,6 @@
 	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';

@@ -51,6 +51,9 @@
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
+	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
+	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -63,9 +66,6 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
-	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 

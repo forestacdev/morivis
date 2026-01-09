@@ -4,7 +4,7 @@
 
 	import { isTerrain3d } from '$routes/stores/map';
 
-	const toggle3d = (e: any) => {
+	const toggle3d = () => {
 		isTerrain3d.set(!$isTerrain3d);
 	};
 

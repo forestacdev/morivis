@@ -57,7 +57,7 @@ const entityToFeature = (entity: any): Feature | null => {
 			break;
 
 		case 'LWPOLYLINE':
-		case 'POLYLINE':
+		case 'POLYLINE': {
 			const coordinates = entity.vertices.map((v: any) => [v.x, v.y]);
 
 			// 閉じたポリライン → Polygon
@@ -75,8 +75,8 @@ const entityToFeature = (entity: any): Feature | null => {
 				};
 			}
 			break;
-
-		case 'CIRCLE':
+		}
+		case 'CIRCLE': {
 			// 円を多角形として近似（36点）
 			const circleCoords = approximateCircle(entity.center.x, entity.center.y, entity.radius, 36);
 			geometry = {
@@ -85,8 +85,8 @@ const entityToFeature = (entity: any): Feature | null => {
 			};
 			properties.radius = entity.radius;
 			break;
-
-		case 'ARC':
+		}
+		case 'ARC': {
 			// 円弧をLineStringとして近似
 			const arcCoords = approximateArc(
 				entity.center.x,
@@ -104,8 +104,8 @@ const entityToFeature = (entity: any): Feature | null => {
 			properties.startAngle = entity.startAngle;
 			properties.endAngle = entity.endAngle;
 			break;
-
-		case 'ELLIPSE':
+		}
+		case 'ELLIPSE': {
 			// 楕円を多角形として近似
 			const ellipseCoords = approximateEllipse(
 				entity.center.x,
@@ -121,7 +121,7 @@ const entityToFeature = (entity: any): Feature | null => {
 				coordinates: [ellipseCoords]
 			};
 			break;
-
+		}
 		case 'SPLINE':
 			// スプライン曲線をLineStringとして近似
 			if (entity.controlPoints && entity.controlPoints.length > 0) {

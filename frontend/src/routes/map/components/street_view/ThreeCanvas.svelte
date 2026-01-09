@@ -19,7 +19,6 @@
 	import { isStreetView, isDebugMode } from '$routes/stores';
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 
-
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;
 		nextPointData: NextPointData[] | null;
@@ -214,7 +213,7 @@
 
 	const loadTextureWithFade = async (pointsData: CurrentPointData) => {
 		try {
-			const { angle, featureData, texture, photo_id, node_id } = pointsData;
+			const { angle, texture } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
 
 			// 次のテクスチャスロットを決定

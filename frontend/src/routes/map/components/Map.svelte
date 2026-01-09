@@ -7,7 +7,6 @@
 		type BackgroundLayerSpecification,
 		type LayerSpecification,
 		type MapGeoJSONFeature,
-		type CanvasSourceSpecification,
 		type MapMouseEvent,
 		type LngLat
 	} from 'maplibre-gl';
@@ -44,7 +43,6 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import {
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,

@@ -22,7 +22,7 @@ import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
 import turfBbox from '@turf/bbox';
-import { setMapParams, getMapParams, getParams, set3dParams } from '$routes/map/utils/params';
+import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
@@ -43,7 +43,7 @@ import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'ge
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { isPointInBbox } from '$routes/map/utils/map';
-import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
+import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/threejs';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -241,7 +241,7 @@ const createMapStore = () => {
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
 			// データ読み込みイベントを監視
-			map.on('data', (e) => {
+			map.on('data', () => {
 				// resourceTimingプロパティにタイミング情報が含まれる
 			});
 		}
@@ -368,7 +368,7 @@ const createMapStore = () => {
 			}
 		});
 
-		// TODO: スマホ対応　タップとタップムーブの判定
+		// TODO: スマホ対応 タップとタップムーブの判定
 		// map.on('touchend', (e: MapMouseEvent) => {
 		// 	if (checkPc()) {
 		// 		return;
@@ -393,17 +393,17 @@ const createMapStore = () => {
 		map.on('resize', (e) => {
 			resizeEvent.set(e);
 		});
-		map.on('data', (e) => {
+		map.on('data', () => {
 			//your code here
 			isLoadingEvent.set(true);
 			// console.log(e);
 		});
-		map.on('idle', (e) => {
+		map.on('idle', () => {
 			//your code here
 			isLoadingEvent.set(false);
 			// console.log(e);
 		});
-		map.on('rotate', (e: MouseEvent) => {
+		map.on('rotate', () => {
 			if (!map) return;
 			const bearing = map.getBearing();
 			rotateEvent.set(bearing);
@@ -795,12 +795,11 @@ const createMapStore = () => {
 
 	const getSpriteUrl = (id: string): string | undefined => {
 		if (!map || !isMapValid(map)) return;
-		undefined;
+
 		const sprite = map.getSprite();
 
 		if (!sprite) {
 			console.warn('Sprite is not available yet.');
-			undefined;
 		}
 
 		const target = sprite.find((s) => s.id === id);

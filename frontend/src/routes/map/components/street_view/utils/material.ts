@@ -48,7 +48,6 @@ export const uniforms: Uniforms = {
 // 自動フェード用シェーダー
 export const fadeShaderMaterial = new THREE.ShaderMaterial({
 	// visible: false,
-
 	side: THREE.BackSide,
 	uniforms: uniforms as any, // 型の互換性のためにanyを使用
 	fragmentShader: fs,

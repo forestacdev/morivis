@@ -290,8 +290,6 @@ export const createSourcesItems = async (
 		baseSourcesItem = baseMapSatelliteSources;
 	} else if (get(selectedBaseMap) === 'hillshade') {
 		baseSourcesItem = baseMaphillshadeSources;
-	} else if (get(selectedBaseMap) === 'hillshade') {
-		baseSourcesItem = baseMaphillshadeSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {

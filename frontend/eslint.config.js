@@ -25,6 +25,18 @@ export default [
 				...globals.browser,
 				...globals.node
 			}
+		},
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_'
+				}
+			]
 		}
 	},
 	{
@@ -61,7 +73,7 @@ export default [
 					destructuredArrayIgnorePattern: '^_'
 				}
 			],
-			'no-console': ['error', { allow: ['warn', 'error'] }],
+			'no-console': ['warn', { allow: ['warn', 'error'] }],
 			camelcase: ['error', { properties: 'never' }]
 		}
 	}

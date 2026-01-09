@@ -18,7 +18,6 @@
 	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
-
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
 		streetViewPointData: StreetViewPointGeoJson;
@@ -27,7 +26,6 @@
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
-		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
 		searchResults: ResultData[] | null;
@@ -43,7 +41,6 @@
 		streetViewPointData,
 		layerEntries,
 		showDataEntry,
-		toggleTooltip,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
 		searchResults,
@@ -375,12 +372,8 @@
 
 		if (features.length > 0) {
 			mapStore.setCursor('pointer');
-
-			// TODO: ツールチップの表示
-			// toggleTooltip(e, features[0]);
 		} else {
 			mapStore.setCursor('default');
-			// toggleTooltip();
 		}
 	});
 

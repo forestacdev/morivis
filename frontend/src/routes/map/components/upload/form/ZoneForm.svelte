@@ -17,10 +17,6 @@
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 
-
-
-
-
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
 		showZoneForm: boolean;
