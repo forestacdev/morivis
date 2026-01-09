@@ -58,12 +58,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import type { ContextMenuState } from '$routes/map/types/ui';
-	import type {
-		ResultAddressData,
-		ResultData,
-		ResultPoiData,
-		SearchGeojsonData
-	} from '../utils/feature';
+	import type { ResultData, SearchGeojsonData } from '../utils/feature';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
 	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -94,12 +89,12 @@
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 		searchGeojsonData: SearchGeojsonData | null;
-		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
+		selectedSearchResultData: ResultData | null;
 		selectedSearchId: number | null;
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
-		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
+		focusFeature: (result: ResultData) => void;
 	}
 
 	let {

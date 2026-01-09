@@ -3,7 +3,8 @@
 	import turfDissolve from '@turf/dissolve';
 
 	import earcut from 'earcut'; // earcutをインポート
-	import type { FeatureCollection, PolygonGeometry } from '$routes/map/types/geojson';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import type { PolygonGeometry } from '$routes/map/types/geometry';
 	import type { CanvasSourceSpecification, CanvasSource } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 

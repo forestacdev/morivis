@@ -26,7 +26,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	import { setStreetViewParams } from '../utils/params';
-	import type { ResultAddressData, ResultData, ResultPoiData } from '../utils/feature';
+	import type { ResultData } from '../utils/feature';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { checkMobile } from '../utils/ui';
 
@@ -42,7 +42,7 @@
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
 		searchResults: ResultData[] | null;
-		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
+		focusFeature: (result: ResultData) => void;
 		contextMenuState: ContextMenuState | null;
 	}
 
