@@ -768,7 +768,7 @@ export const createLayersItems = (
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
-			const { format, style, metaData, interaction, type, auxiliaryLayers } = entry;
+			const { format, style, metaData, interaction, type } = entry;
 
 			const layer: LayerItem = {
 				id: layerId,
@@ -914,8 +914,8 @@ export const createLayersItems = (
 					}
 
 					// 補助レイヤーの追加
-					if (auxiliaryLayers) {
-						auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
+					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
+						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
 							const type = auxiliaryLayer.type;
 							if (type === 'fill') {
 								fillLayerItems.push(auxiliaryLayer);

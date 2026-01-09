@@ -253,6 +253,7 @@ interface RasterMetaData extends BaseMetaData {
 
 export interface RasterInteraction {
 	clickable: boolean;
+	overlay?: boolean;
 }
 
 interface BaseRasterEntry {
