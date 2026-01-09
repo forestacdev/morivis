@@ -13,6 +13,7 @@
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { isOnlySpaces, stripHTMLTags } from '$routes/map/utils/sanitize';
 	import { getFullName } from '$routes/map/utils/city_code';
+	import { getImageByName } from '$routes/map/api/inaturalist';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -25,6 +26,8 @@
 		layerEntries,
 		showSelectionMarker = $bindable()
 	}: Props = $props();
+
+	let isLoading = $state(true);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -114,6 +117,13 @@
 		return null;
 	});
 
+	let iNaturalistNameKey = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.iNaturalistNameKey;
+		}
+		return null;
+	});
+
 	let cityCodeKey = $derived.by(() => {
 		if (targetLayer && targetLayer.type === 'vector') {
 			return targetLayer.properties.cityCodeKey;
@@ -131,6 +141,18 @@
 		}
 		return null;
 	});
+
+	const promise = async () => {
+		if (iNaturalistNameKey && featureMenuData && featureMenuData.properties) {
+			const name = featureMenuData.properties[iNaturalistNameKey] as string;
+			const res = await getImageByName(name);
+			console.log('iNaturalist image data:', res);
+			isLoading = false;
+			return Promise.resolve(res);
+		}
+		isLoading = false;
+		return Promise.resolve(null);
+	};
 
 	const edit = () => {
 		if (targetLayer && targetLayer.type === 'vector') {
@@ -222,8 +244,43 @@
 							{/each}
 						</div>
 					</div>
-				{:else}
-					<!-- !タイトルが長い場合 -->
+				{:else if iNaturalistNameKey}
+					{#await promise()}
+						<!-- ローディング中 -->
+						<div class="flex aspect-video h-full w-full flex-col items-center justify-center gap-4">
+							<div
+								class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
+							></div>
+							<p class="text-gray-400">読み込み中...</p>
+						</div>
+					{:then inatData}
+						{#if inatData && inatData.url}
+							<img
+								in:fade
+								class="block aspect-video h-full w-full rounded-lg object-cover"
+								alt="画像"
+								src={inatData.url}
+							/>
+							<!-- ライセンス表示 -->
+							<div class="mt-1 text-xs text-gray-400">
+								{#if inatData.attribution}
+									<span>{inatData.attribution}</span>
+								{/if}
+								{#if inatData.licenseCode}
+									<span class="ml-1">({inatData.licenseCode})</span>
+								{/if}
+								<span class="ml-1">via</span>
+								<a
+									href="https://www.inaturalist.org/taxa/{inatData.taxonId}"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-accent hover:underline"
+								>
+									iNaturalist
+								</a>
+							</div>
+						{/if}
+					{/await}
 				{/if}
 
 				<div

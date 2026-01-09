@@ -43,6 +43,7 @@ export interface VectorProperties {
 	joinDataUrl?: string;
 	imageKey?: string;
 	cityCodeKey?: string;
+	iNaturalistNameKey?: string;
 }
 
 export interface VectorInteraction {

@@ -447,17 +447,6 @@
 		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
 	});
-
-	// $effect(() => {
-	// 	if (!selectedSearchId) {
-	// 		selectedSearchResultData = null;
-	// 	} else if (searchResults && selectedSearchId) {
-	// 		const result = searchResults.find((res) => res.id === selectedSearchId);
-	// 		if ((result && result.type === 'address') || (result && result.type === 'poi')) {
-	// 			focusFeature(result as ResultPoiData | ResultAddressData);
-	// 		}
-	// 	}
-	// });
 </script>
 
 {#if isInitialized && isInitialStreetViewEntry}

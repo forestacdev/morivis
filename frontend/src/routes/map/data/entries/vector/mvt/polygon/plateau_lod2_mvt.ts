@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 		url: 'https://indigo-lab.github.io/plateau-lod2-mvt/{z}/{x}/{y}.pbf'
 	},
 	metaData: {
-		name: '3D都市モデル 東京都23区 LOD2',
+		name: '3D都市モデル 東京都23区',
 		attribution: 'PLATEAU',
 		downloadUrl: 'https://github.com/indigo-lab/plateau-lod2-mvt?tab=readme-ov-file',
 		description:

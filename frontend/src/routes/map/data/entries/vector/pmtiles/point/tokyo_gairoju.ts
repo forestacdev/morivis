@@ -53,7 +53,8 @@ const entry: VectorEntry<TileMetaData> = {
 				conditions: [],
 				template: '街路樹 東京都23区'
 			}
-		]
+		],
+		iNaturalistNameKey: '樹種'
 	},
 	interaction: {
 		clickable: true

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
-	import { getEpsgInfoArray, type EpsgCode, type EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
+	import {
+		getEpsgInfoArray,
+		type EpsgCode,
+		type EpsgInfoWithCode
+	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 	import { fly } from 'svelte/transition';
@@ -119,6 +123,10 @@
 				(feature) =>
 					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
 			);
+
+			if (!feature) {
+				return;
+			}
 
 			const bbox = turfBbox(feature as Feature<PolygonGeometry, PoiData['properties']>);
 
