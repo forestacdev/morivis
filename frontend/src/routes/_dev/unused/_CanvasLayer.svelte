@@ -201,9 +201,9 @@
 			if (data.features.length === 0) return;
 
 			if (data.features.length > 1) {
-				geojson = turfDissolve(data);
+				geojson = turfDissolve(data as any) as FeatureCollection<PolygonGeometry>;
 			} else {
-				geojson = data;
+				geojson = data as unknown as FeatureCollection<PolygonGeometry>;
 			}
 		};
 
