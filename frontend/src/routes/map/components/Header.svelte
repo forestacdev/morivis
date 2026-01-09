@@ -118,13 +118,13 @@
 				const data = item.item;
 
 				return {
-					type: 'poi',
+					type: 'poi' as const,
 					name: data.name,
-					location: dict[data.layer_id] || null,
+					location: dict[data.layer_id] || '---',
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,
-					propId: data.prop_id
+					propId: data.prop_id ?? ''
 				};
 			});
 
@@ -136,18 +136,22 @@
 
 				const addressSearchResponse = await addressSearch(searchWord);
 
+				if (!addressSearchResponse) {
+					throw new Error('住所検索に失敗しました');
+				}
+
 				addressSearchData = addressSearchResponse
 					.slice(0, LIMIT - result.length)
 					.map(({ geometry: { coordinates: center }, properties }) => {
 						const address = properties.addressCode
 							? addressCodeToAddress(properties.addressCode)
-							: null;
+							: '---';
 
 						return {
-							type: 'address',
+							type: 'address' as const,
 							point: center,
 							name: properties.title,
-							location: address
+							location: address ?? '---'
 						};
 					});
 			}
