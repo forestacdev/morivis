@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
-	import { getEpsgInfoArray, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getEpsgInfoArray, type EpsgCode, type EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 	import { fly } from 'svelte/transition';
@@ -41,12 +41,7 @@
 
 	interface PoiData {
 		coordinates: [number, number];
-		properties: {
-			name: string;
-			code: EpsgCode;
-			name_ja: string;
-			prefecture?: string;
-		};
+		properties: EpsgInfoWithCode;
 	}
 
 	let geojsonData: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
@@ -64,14 +59,12 @@
 					exclude4326: true
 				})
 					.flatMap((info) => {
-						const code = info.code;
-
 						const prj = info.proj_context;
 						const transformedBbox = transformBbox(originalBbox, prj);
 
 						if (isBboxValid(transformedBbox)) {
 							// ポリゴンフィーチャーを作成
-							const polygonFeature: Feature<Polygon, GeoJsonProperties> = {
+							const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
 								type: 'Feature',
 								geometry: {
 									type: 'Polygon',
@@ -91,9 +84,12 @@
 							};
 
 							// 中心ポイントを計算
-							const centerPoint = turfCenter(polygonFeature);
-							centerPoint.properties = {
-								...info
+							const centerPoint: Feature<PointGeometry, PoiData['properties']> = {
+								type: 'Feature',
+								geometry: turfCenter(polygonFeature).geometry as PointGeometry,
+								properties: {
+									...info
+								}
 							};
 
 							// ポリゴンと中心ポイントの両方を返す
@@ -124,7 +120,7 @@
 					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
 			);
 
-			const bbox = turfBbox(feature as Feature<PolygonGeometry>);
+			const bbox = turfBbox(feature as Feature<PolygonGeometry, PoiData['properties']>);
 
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
