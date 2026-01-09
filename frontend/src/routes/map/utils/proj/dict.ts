@@ -8,7 +8,6 @@ export interface EpsgInfo {
 	citation: string;
 	proj_context: string;
 	wkt: string;
-	name: string;
 	area_of_use: {
 		name: string;
 		bounds: [number, number, number, number];

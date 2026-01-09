@@ -1,17 +1,10 @@
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
+import type { AnyGeometry, GeometryType } from '$routes/map/types/geometry';
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
-
-export type GeoJSONGeometryType =
-	| 'Point'
-	| 'LineString'
-	| 'Polygon'
-	| 'MultiPoint'
-	| 'MultiPolygon'
-	| 'MultiLineString';
 
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
@@ -41,7 +34,7 @@ export const getFgbToGeojson = async (url: string, index?: number): Promise<Feat
 			let featureIndex = 0;
 			for await (const feature of featureIterator) {
 				if (featureIndex === index) {
-					geojson.features.push(feature);
+					geojson.features.push(feature as Feature);
 					break;
 				}
 				featureIndex++;
@@ -50,7 +43,7 @@ export const getFgbToGeojson = async (url: string, index?: number): Promise<Feat
 		}
 
 		for await (const feature of featureIterator) {
-			geojson.features.push(feature);
+			geojson.features.push(feature as Feature);
 		}
 
 		return geojson;
@@ -82,15 +75,16 @@ export const convertToGeoJSONFeature = (
 ): Feature | null => {
 	const { geometry, properties, id } = feature;
 
-	// 特定のIDに一致するか確認
-	if (id === featureId) {
-		return {
-			type: 'Feature',
-			geometry: geometry,
-			properties: properties,
-			id: id
-		};
-	}
+	if (geometry.type !== 'GeometryCollection')
+		if (id === featureId) {
+			// 特定のIDに一致するか確認
+			return {
+				type: 'Feature',
+				geometry: geometry as AnyGeometry,
+				properties: properties,
+				id: id
+			};
+		}
 
 	return null; // 条件に一致しない場合は無効な値を返す
 };
@@ -132,15 +126,15 @@ export const downloadGeojson = (
 
 /** GeoJSONのキャッシュを管理するクラス */
 export class GeojsonCache {
-	private static cache: Map<string, FeatureCollection<Geometry, GeoJsonProperties>> = new Map();
+	private static cache: Map<string, FeatureCollection> = new Map();
 
 	// GeoJSONをキャッシュに保存する
-	static set(key: string, data: FeatureCollection<Geometry, GeoJsonProperties>) {
+	static set(key: string, data: FeatureCollection) {
 		this.cache.set(key, data);
 	}
 
 	// キャッシュからGeoJSONを取得する
-	static get(key: string): FeatureCollection<Geometry, GeoJsonProperties> | undefined {
+	static get(key: string): FeatureCollection | undefined {
 		return this.cache.get(key);
 	}
 
@@ -165,9 +159,7 @@ export class GeojsonCache {
 	}
 }
 
-export const geoJsonFileToGeoJson = async (
-	file: File
-): Promise<FeatureCollection<Geometry, GeoJsonProperties>> => {
+export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
 		const geojson = JSON.parse(text);

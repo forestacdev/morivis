@@ -1,3 +1,11 @@
+export type GeometryType =
+	| 'Point'
+	| 'LineString'
+	| 'Polygon'
+	| 'MultiPoint'
+	| 'MultiPolygon'
+	| 'MultiLineString';
+
 export type PointGeometry = {
 	type: 'Point';
 	coordinates: [number, number];
