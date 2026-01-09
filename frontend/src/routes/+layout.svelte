@@ -11,7 +11,7 @@
 
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 
-	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
+	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 
 	import { page } from '$app/state';
@@ -108,7 +108,7 @@
 </svelte:head>
 
 {#if deviceType === 'mobile' && !$isMobile}
-	<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
+	<div class="bg-main absolute z-100 flex h-full w-full items-center justify-center text-base">
 		<p class="text-2xl">端末を縦向きにしてください。</p>
 		<Icon icon="circum:mobile-3" class="h-16 w-16" />
 	</div>

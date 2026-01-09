@@ -67,13 +67,11 @@
 		});
 
 		// 平面ジオメトリとメッシュ
-
-		const sprite = new THREE.Sprite(material);
-		// カメラ視野にぴったり合わせるスケーリング
 		const camWidth = camera.right - camera.left;
 		const camHeight = camera.top - camera.bottom;
-		sprite.scale.set(camWidth, camHeight, 1);
-		scene.add(sprite);
+		const geometry = new THREE.PlaneGeometry(camWidth, camHeight);
+		const mesh = new THREE.Mesh(geometry, material);
+		scene.add(mesh);
 
 		// TODO:地図の更新イベントでテクスチャ更新を指示
 		// mapStore.onRender(() => {
