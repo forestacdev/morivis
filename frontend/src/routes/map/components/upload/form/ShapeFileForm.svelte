@@ -10,17 +10,12 @@
 	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { readPrjFileContent, transformBbox } from '$routes/map/utils/proj';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import turfBbox from '@turf/bbox';
 
 	import type { UseEventTriggerType } from '$routes/map/types/ui';
 	import { fade } from 'svelte/transition';
-	import { isBboxValid } from '$routes/map/utils/map';
-	import FileForm from '$routes/map/components/atoms/FileForm.svelte';
-
-	import gsap from 'gsap';
-
-	import * as THREE from 'three';
+	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -88,28 +83,42 @@
 			'filenames-match', // テスト名
 			'各ファイル名が一致しません', // エラーメッセージ
 			(values) => {
-				if (!values.shpName || !values.dbfName || !values.prjName || !values.shxName) {
+				if (!values.shpName || !values.dbfName || !values.shxName) {
 					return true; // いずれかの名前がない場合は、個別のrequiredエラーで処理される
 				}
 
 				const shpBaseName = values.shpName.replace(/\.shp$/i, '');
 				const dbfBaseName = values.dbfName.replace(/\.dbf$/i, '');
-				const prjBaseName = values.prjName.replace(/\.prj$/i, '');
 				const shxBaseName = values.shxName.replace(/\.shx$/i, '');
 
-				return (
-					shpBaseName === dbfBaseName && shpBaseName === prjBaseName && shpBaseName === shxBaseName
-				);
+				// prjは任意なので、存在する場合のみチェック
+				if (values.prjName) {
+					const prjBaseName = values.prjName.replace(/\.prj$/i, '');
+					if (shpBaseName !== prjBaseName) {
+						return false;
+					}
+				}
+
+				return shpBaseName === dbfBaseName && shpBaseName === shxBaseName;
 			}
 		);
 
-	type ShpFormSchema = yup.InferType<typeof shpValidation>;
+	type ShpFormSchema = {
+		shpFile: File | null;
+		dbfFile: File | null;
+		shxFile: File | null;
+		prjFile: File | null;
+		shpName: string;
+		dbfName: string;
+		shxName: string;
+		prjName: string;
+	};
 
 	let forms = $state<ShpFormSchema>({
 		shpFile: null,
 		dbfFile: null,
 		shxFile: null,
-		prjFile: '',
+		prjFile: null,
 		shpName: '',
 		dbfName: '',
 		shxName: '',
@@ -120,7 +129,7 @@
 		forms.shpFile = null;
 		forms.dbfFile = null;
 		forms.shxFile = null;
-		forms.prjFile = '';
+		forms.prjFile = null;
 		forms.shpName = '';
 		forms.dbfName = '';
 		forms.shxName = '';
@@ -212,7 +221,14 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpName);
+		const bbox = turfBbox(geojsonData);
+		if (!isBbox2D(bbox) || !isBboxValid(bbox)) {
+			showNotification('ジオメトリの座標系が不明確です。', 'error');
+			isProcessing.set(false);
+			return;
+		}
+
+		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpName, bbox);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -233,9 +249,9 @@
 			}
 			const bbox = turfBbox(geojsonData);
 
-			if (!isBboxValid(bbox as [number, number, number, number])) {
+			if (!isBbox2D(bbox) || !isBboxValid(bbox)) {
 				showZoneForm = true;
-				focusBbox = bbox as [number, number, number, number];
+				focusBbox = isBbox2D(bbox) ? bbox : null;
 				return;
 			}
 
@@ -275,19 +291,6 @@
 		}
 	});
 
-	const clock = new THREE.Clock();
-
-	// const animate = () => {
-	// 	requestAnimationFrame(animate);
-	// 	const elapsedTime = clock.getElapsedTime();
-	// 	const loadingItems = document.querySelectorAll('.loading-item');
-	// 	loadingItems.forEach((item, index) => {
-	// 		distance = 300 + Math.sin(elapsedTime + index) * 50; // 距離をアニメーションで変化させる
-	// 	});
-	// 	// ここで必要なアニメーション処理を追加
-	// };
-	// animate();
-
 	$effect(() => {
 		if (showDialogType !== 'shp') {
 			// ダイアログが非表示になったときにアニメーションを停止
@@ -318,54 +321,10 @@
 		class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/70
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 	>
-		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4 pt-8">
+		<div class="flex shrink-0 items-center justify-between overflow-auto pt-8 pb-4">
 			<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
 		</div>
 
-		<!-- TODO 表現方法 -->
-		<!-- 
-		<div
-			class="c-main relative m-0 grid aspect-square h-[400px] place-items-center"
-			style="--distance: 100px;"
-		>
-			<div class="c-triangle"></div>
-			<div class="c-file-item" style="--index: 0;">
-				<ShapeFileFormInput
-					label=".shp"
-					bind:file={forms.shpFile}
-					accept=".shp"
-					error={errors.shpFile}
-					bind:name={forms.shpName}
-				/>
-			</div>
-			<div class="c-file-item" style="--index: 1;">
-				<ShapeFileFormInput
-					label=".dbf"
-					bind:file={forms.dbfFile}
-					accept=".dbf"
-					error={errors.dbfFile}
-					bind:name={forms.dbfName}
-				/>
-			</div>
-			<div class="c-file-item" style="--index: 2;">
-				<ShapeFileFormInput
-					label=".shx"
-					bind:file={forms.shxFile}
-					accept=".shx"
-					error={errors.shxFile}
-					bind:name={forms.shxName}
-				/>
-			</div>
-			<div class="absolute" style="--index: 2;">
-				<ShapeFileFormInput
-					label=".prj(任意)"
-					bind:file={forms.prjFile}
-					accept=".prj"
-					error={errors.prjFile}
-					bind:name={forms.prjName}
-				/>
-			</div>
-		</div> -->
 		<div class="flex gap-2">
 			<ShapeFileFormInput
 				label=".shp"

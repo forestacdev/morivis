@@ -1,5 +1,6 @@
 import type { LngLat, LngLatBoundsLike, Coordinates } from 'maplibre-gl';
 import type { Map as MapLibreMap } from 'maplibre-gl';
+import type { BBox as GeoJsonBBox } from 'geojson';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -11,6 +12,25 @@ import {
 } from '$routes/map/data/location_bbox';
 
 type BBox = [number, number, number, number];
+type BBox3D = [number, number, number, number, number, number];
+
+/**
+ * Check if a BBox is 2D (4 elements).
+ * @param bbox - The bounding box from GeoJSON.
+ * @returns true if bbox is 2D [minX, minY, maxX, maxY].
+ */
+export const isBbox2D = (bbox: GeoJsonBBox): bbox is BBox => {
+	return bbox.length === 4;
+};
+
+/**
+ * Check if a BBox is 3D (6 elements).
+ * @param bbox - The bounding box from GeoJSON.
+ * @returns true if bbox is 3D [minX, minY, minZ, maxX, maxY, maxZ].
+ */
+export const isBbox3D = (bbox: GeoJsonBBox): bbox is BBox3D => {
+	return bbox.length === 6;
+};
 
 /**
  * Check if a point is inside a bounding box.
