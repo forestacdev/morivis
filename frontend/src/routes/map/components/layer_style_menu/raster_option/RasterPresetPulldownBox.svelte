@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { fly } from 'svelte/transition';
+
 	import type { RasterStylePreset } from '$routes/map/utils/raster';
 	import { getPresetCSSStyle } from '$routes/map/utils/raster';
 
-	import { fly } from 'svelte/transition';
 
 	interface Props {
 		preset: RasterStylePreset;

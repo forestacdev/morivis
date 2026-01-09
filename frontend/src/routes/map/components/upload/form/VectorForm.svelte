@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/map/types';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createVectorTileEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+	import type { DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
-	import { showPwaManuelDialog, showTermsDialog } from '$routes/stores/ui';
 	import { saveToTermsAccepted } from '$routes/map/utils/local_storage';
+	import { showPwaManuelDialog, showTermsDialog } from '$routes/stores/ui';
 </script>
 
 {#if $showPwaManuelDialog}

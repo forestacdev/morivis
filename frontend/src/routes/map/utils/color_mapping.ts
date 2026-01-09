@@ -171,7 +171,7 @@ export class ColorMapManager {
 			alpha: 1
 		};
 
-		let colors = colormap(options as any);
+		const colors = colormap(options as any);
 
 		// RGBデータの格納
 		let ptr = 0;
@@ -201,7 +201,7 @@ export class ColorMapManager {
 			alpha: 1
 		};
 
-		let colors = colormap(options as any);
+		const colors = colormap(options as any);
 
 		const gradient = `linear-gradient(${direction}, ${colors.join(', ')})`;
 		return gradient;

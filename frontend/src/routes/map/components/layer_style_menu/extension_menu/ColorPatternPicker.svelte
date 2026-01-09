@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { mapStore } from '$routes/stores/map';
-	import type { StyleImage } from 'maplibre-gl';
-	import chroma from 'chroma-js';
-	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
-	import { fly } from 'svelte/transition';
 	import Icon from '@iconify/svelte';
+	import chroma from 'chroma-js';
+	import type { StyleImage } from 'maplibre-gl';
+	import { fly } from 'svelte/transition';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		label?: string | null;

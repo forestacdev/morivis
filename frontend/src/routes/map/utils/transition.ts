@@ -56,7 +56,7 @@ export const anticipatedFly = (node: Element, { delay = 0, duration = 400, x = 0
 };
 
 export const gsapTweenMe = (node: Element) => {
-	let tl = gsap.timeline();
+	const tl = gsap.timeline();
 	const duration = 1;
 
 	tl.from(node, {

@@ -1,24 +1,23 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import Fuse from 'fuse.js';
+	import { cubicIn } from 'svelte/easing';
+	import { fly, slide, scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
-	import type { DialogType } from '$routes/map/types';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStyleEdit } from '$routes/stores';
-	import { isMobile, showDataMenu } from '$routes/stores/ui';
-	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { TAG_LIST, type Tag } from '$routes/map/data/types/tags';
-
-	import Fuse from 'fuse.js';
-	import { fly, slide, scale } from 'svelte/transition';
-	import { cubicIn } from 'svelte/easing';
-	import { checkMobile } from '$routes/map/utils/ui';
+	import type { DialogType } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/normalized';
+	import { checkMobile } from '$routes/map/utils/ui';
+	import { isStyleEdit } from '$routes/stores';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

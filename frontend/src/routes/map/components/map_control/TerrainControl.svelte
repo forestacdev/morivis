@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-
 	import { onMount } from 'svelte';
 
 	import { isTerrain3d } from '$routes/stores/map';

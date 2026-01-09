@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { fade } from 'svelte/transition';
 
 	interface Props {
 		dataEntry: GeoDataEntry;

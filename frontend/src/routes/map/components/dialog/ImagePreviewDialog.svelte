@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
+	import JSZip from 'jszip';
 	import { fade, scale } from 'svelte/transition';
+
 	import { downloadImage, imageExport } from '$routes/map/utils/file/image';
 	import { generateWorldFile } from '$routes/map/utils/file/worldfile';
-	import JSZip from 'jszip';
+	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

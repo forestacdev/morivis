@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
+
 	import type { DemStyleMode, RasterDemEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
-	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
 
 	interface Props {
 		isMode: DemStyleMode;

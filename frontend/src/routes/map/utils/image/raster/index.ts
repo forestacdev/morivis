@@ -105,7 +105,7 @@ const loadImagePmtiles = async (
 	tile: { x: number; y: number; z: number }
 ): Promise<ImageBitmap> => {
 	try {
-		let pmtiles = new PMTiles(src);
+		const pmtiles = new PMTiles(src);
 
 		// タイルデータを取得
 		const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y);

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { MeshStyleEntry } from '$routes/map/data/types/model';
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import type { MeshStyleEntry } from '$routes/map/data/types/model';
 
 	interface Props {
 		layerEntry: MeshStyleEntry;

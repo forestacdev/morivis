@@ -4,12 +4,12 @@
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 	import { lonLatToAddress } from '$routes/map/api/address';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/stores/map';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		clickedLayerIds: string[];

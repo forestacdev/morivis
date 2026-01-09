@@ -1,22 +1,22 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
+	import { fade } from 'svelte/transition';
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/map/types';
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
+
+	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
+	import type { UseEventTriggerType } from '$routes/map/types/ui';
+	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
-	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
-	import turfBbox from '@turf/bbox';
-
-	import type { UseEventTriggerType } from '$routes/map/types/ui';
-	import { fade } from 'svelte/transition';
-	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
-	import DropContainer from '$routes/map/components/DropContainer.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

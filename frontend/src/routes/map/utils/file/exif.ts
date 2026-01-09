@@ -2,7 +2,7 @@
 import * as exifr from 'exifr';
 
 // only GPS
-let { latitude, longitude } = await exifr.gps('./myimage.jpg');
+const { latitude, longitude } = await exifr.gps('./myimage.jpg');
 // only orientation
 // let num = await exifr.orientation(blob);
 // // only three tags

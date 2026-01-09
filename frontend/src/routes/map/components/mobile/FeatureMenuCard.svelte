@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
+	import Icon from '@iconify/svelte';
 	import gsap from 'gsap';
+	import { onMount, type Snippet } from 'svelte';
+	import { fly } from 'svelte/transition';
+
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { checkMobile } from '$routes/map/utils/ui';
-	import { fly } from 'svelte/transition';
-	import Icon from '@iconify/svelte';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { checkMobile } from '$routes/map/utils/ui';
 	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {

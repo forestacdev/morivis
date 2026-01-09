@@ -1,17 +1,14 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { flip } from 'svelte/animate';
 	import { fly, slide, scale } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
-
 	import LayerItem from '$routes/map/components/layer_menu/LayerItem.svelte';
-
-	import { flip } from 'svelte/animate';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 	import { isStyleEdit } from '$routes/stores';
 	import { showDataMenu } from '$routes/stores/ui';
-	import type { FeatureMenuData } from '$routes/map/types';
 
 	interface Props {
 		layerType: LayerType;

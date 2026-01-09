@@ -1,11 +1,13 @@
 <script lang="ts">
-	import type { ContextMenuState } from '../types/ui';
-	import { getGoogleMapLink, getGoogleStreetViewLink } from '$routes/map/api/google';
-	import { getOsmLink } from '$routes/map/api/osm';
-	import { mapStore } from '$routes/stores/map';
 	import { fade } from 'svelte/transition';
+
+	import type { ContextMenuState } from '../types/ui';
+
+	import { getGoogleMapLink, getGoogleStreetViewLink } from '$routes/map/api/google';
 	import { gsiGetElevation } from '$routes/map/api/gsi';
+	import { getOsmLink } from '$routes/map/api/osm';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
+	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 
 	let { contextMenuState = $bindable() }: { contextMenuState: ContextMenuState | null } = $props();

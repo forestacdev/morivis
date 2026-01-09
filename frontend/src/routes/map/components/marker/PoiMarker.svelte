@@ -2,9 +2,10 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { mapStore } from '$routes/stores/map';
 	import { fade, fly } from 'svelte/transition';
+
 	import { checkMobile } from '$routes/map/utils/ui';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		map: maplibregl.Map;

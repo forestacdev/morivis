@@ -13,24 +13,50 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+
+	import DropContainer from './DropContainer.svelte';
+	import type {
+		ResultData,
+		SearchGeojsonData,
+		ResultPoiData,
+		ResultAddressData
+	} from '../utils/feature';
+	import { threeJsManager } from '../utils/threejs';
+
+	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
+	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import LayerControl from '$routes/map/components/LayerControl.svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 
+	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
-	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
+	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
+	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
-	import Compass from '$routes/map/components/map_control/Compass.svelte';
-	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-
+	import {
+		type FeatureMenuData,
+		type ClickedLayerFeaturesData,
+		type DialogType
+	} from '$routes/map/types';
+	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
+	import type { ContextMenuState } from '$routes/map/types/ui';
+	import { createDeckOverlay } from '$routes/map/utils/deckgl';
+	import { createLayersItems } from '$routes/map/utils/layers';
+	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import {
@@ -43,33 +69,8 @@
 		showBoundaryLayer,
 		showPoiLayer
 	} from '$routes/stores/layers';
-
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
-	import type { DrawGeojsonData } from '$routes/map/types/draw';
-	import {
-		type FeatureMenuData,
-		type ClickedLayerFeaturesData,
-		type DialogType
-	} from '$routes/map/types';
-	import { createLayersItems } from '$routes/map/utils/layers';
-	import { createSourcesItems } from '$routes/map/utils/sources';
-	import PoiManager from '$routes/map/components/PoiManager.svelte';
-	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
-	import type { EpsgCode } from '$routes/map/utils/proj/dict';
-	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import type { ContextMenuState } from '$routes/map/types/ui';
-	import type {
-		ResultData,
-		SearchGeojsonData,
-		ResultPoiData,
-		ResultAddressData
-	} from '../utils/feature';
-	import { createDeckOverlay } from '$routes/map/utils/deckgl';
-	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
-	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import { threeJsManager } from '../utils/threejs';
-	import DropContainer from './DropContainer.svelte';
-	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -77,8 +78,6 @@
 		streetViewLineData: FeatureCollection;
 		streetViewPointData: StreetViewPointGeoJson;
 		drawGeojsonData: DrawGeojsonData;
-		demEntries: RasterEntry<RasterDemStyle>[]; // DEMデータのエントリー
-		streetViewPoint: any;
 		showMapCanvas: boolean;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
@@ -110,7 +109,6 @@
 		featureMenuData = $bindable(),
 		streetViewLineData,
 		streetViewPointData,
-		streetViewPoint,
 		showMapCanvas,
 		showSelectionMarker = $bindable(),
 		showAngleMarker = $bindable(),
@@ -120,7 +118,6 @@
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
-		demEntries,
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
@@ -156,16 +153,16 @@
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
-	let webGLCanvasSource = $state<CanvasSourceSpecification>({
-		type: 'canvas',
-		canvas: 'canvas-layer',
-		coordinates: [
-			[bbox[0], bbox[3]],
-			[bbox[2], bbox[3]],
-			[bbox[2], bbox[1]],
-			[bbox[0], bbox[1]]
-		]
-	}); // WebGLキャンバスソース
+	// let webGLCanvasSource = $state<CanvasSourceSpecification>({
+	// 	type: 'canvas',
+	// 	canvas: 'canvas-layer',
+	// 	coordinates: [
+	// 		[bbox[0], bbox[3]],
+	// 		[bbox[2], bbox[3]],
+	// 		[bbox[2], bbox[1]],
+	// 		[bbox[0], bbox[1]]
+	// 	]
+	// });
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成

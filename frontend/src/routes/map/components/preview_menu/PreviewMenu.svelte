@@ -2,16 +2,16 @@
 	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
 	import { fade, fly } from 'svelte/transition';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { getAttributionName } from '$routes/map/data/attribution';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { getAttributionName } from '$routes/map/data/attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import { mapStore } from '$routes/stores/map';
-	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

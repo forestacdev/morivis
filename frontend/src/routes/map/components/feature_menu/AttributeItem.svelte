@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import { stripHTMLTags } from '$routes/map/utils/sanitize';
 
+	import { stripHTMLTags } from '$routes/map/utils/sanitize';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { showNotification } from '$routes/stores/notification';
 
 	let { key, value } = $props();

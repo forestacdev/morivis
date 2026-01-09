@@ -1,8 +1,9 @@
 <script>
+	import { slide } from 'svelte/transition';
+
 	import Attribution from '$routes/map/components/Attribution.svelte';
 	import ScaleControl from '$routes/map/components/map_control/ScaleControl.svelte';
 	import { showLayerMenu } from '$routes/stores/ui';
-	import { slide } from 'svelte/transition';
 </script>
 
 <!-- フッター余白 出典表示 -->

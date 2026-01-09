@@ -1,19 +1,20 @@
 <script lang="ts">
-	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-	import type { DialogType } from '$routes/map/types';
+
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showNotification } from '$routes/stores/notification';
+	import type { DialogType } from '$routes/map/types';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { isBboxValid } from '$routes/map/utils/map';
-	import turfBbox from '@turf/bbox';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext } from '$routes/map/utils/proj/dict';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		map: maplibregl.Map;

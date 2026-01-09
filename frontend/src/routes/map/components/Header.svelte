@@ -1,24 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
-	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
-
-	import { mapMode } from '$routes/stores';
-	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { type LngLat } from 'maplibre-gl';
-
-	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
-	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import Fuse from 'fuse.js';
-	import { DATA_PATH } from '$routes/constants';
+	import { type LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
-	import { showNotification } from '$routes/stores/notification';
+
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
+
+	import { DATA_PATH } from '$routes/constants';
+	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
+	import { mapMode } from '$routes/stores';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

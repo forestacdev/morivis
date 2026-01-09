@@ -1,6 +1,5 @@
 <script lang="ts">
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type { StreetViewPoint } from '$routes/map/types/street-view';
 

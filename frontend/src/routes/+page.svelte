@@ -1,24 +1,20 @@
 <script lang="ts">
-	import { fromArrayBuffer, rgb } from 'geotiff';
-	import gsap from 'gsap';
+	import Icon from '@iconify/svelte';
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
-	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+
 	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
 	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
+	import { showTermsDialog, showInfoDialog } from './stores/ui';
+	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
+
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-
-	import { isBlocked, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
-	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
-
-	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
-	import { showTermsDialog, showInfoDialog } from './stores/ui';
-	import Icon from '@iconify/svelte';
-	import { checkMobile } from './map/utils/ui';
+	import { isBlocked } from '$routes/stores/ui';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -31,8 +27,6 @@
 	let bufferScene: THREE.Scene;
 
 	let postMesh: THREE.Mesh;
-	let isLoading = $state<boolean>(false);
-	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
 		showButton = false;

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
@@ -14,7 +16,6 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
-	import { slide } from 'svelte/transition';
 
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;

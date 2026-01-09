@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { Marker, LngLatLike } from 'maplibre-gl';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { showSearchSuggest } from '$routes/stores/ui';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		searchResults: ResultData[] | null;

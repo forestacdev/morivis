@@ -337,7 +337,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		}
 	} as GeoDataEntry;
 
-	let sources = await createSourcesItems([minimumEntry], 'preview');
+	const sources = await createSourcesItems([minimumEntry], 'preview');
 	const layers = await createLayersItems([minimumEntry], 'preview');
 
 	const style: maplibregl.StyleSpecification = {

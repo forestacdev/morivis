@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { mapAttributions } from '$routes/stores/attributions';
 	import Icon from '@iconify/svelte';
+	import { onMount, onDestroy } from 'svelte';
+
+	import { mapAttributions } from '$routes/stores/attributions';
 
 	const systemAttributionss = [
 		'国土地理院',

@@ -42,8 +42,8 @@ export const placePointData = (nextPointData: NextPointData[]): CurrentPointData
  * @returns 0〜360度の X Y Z 軸回転角度
  */
 export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: number } => {
-	let xDegrees = -THREE.MathUtils.radToDeg(camera.rotation.x); // ラジアン→度に変換
-	let yDegrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
+	const xDegrees = -THREE.MathUtils.radToDeg(camera.rotation.x); // ラジアン→度に変換
+	const yDegrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
 	return {
 		x: (xDegrees + 360) % 360, // 0〜360度の範囲に調整
 		y: (yDegrees + 360) % 360 // 0〜360度の範囲に調整
@@ -73,7 +73,7 @@ export const setCameraXYRotation = (
  * @returns 0〜360度の Y 軸回転角度
  */
 export const getCameraYRotation = (camera: THREE.Camera): number => {
-	let degrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
+	const degrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
 	return (degrees + 360) % 360; // 0〜360度の範囲に調整
 };
 

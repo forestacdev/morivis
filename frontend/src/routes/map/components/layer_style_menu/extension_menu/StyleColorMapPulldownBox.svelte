@@ -1,10 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { Snippet } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import { type ColorMapType } from '$routes/map/data/types/raster';
-
-	import type { Snippet } from 'svelte';
 	import { type SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
 	interface Props {

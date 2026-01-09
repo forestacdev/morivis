@@ -2,22 +2,22 @@
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
+	import type { ResultData } from '../utils/feature';
+	import { setStreetViewParams } from '../utils/params';
+	import { checkMobile } from '../utils/ui';
+
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
-	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
-
-	import { mapStore } from '$routes/stores/map';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
+	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
-	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
-	import type { FeatureMenuData } from '$routes/map/types';
+	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 
-	import { setStreetViewParams } from '../utils/params';
-	import type { ResultData } from '../utils/feature';
-	import type { ContextMenuState } from '$routes/map/types/ui';
-	import { checkMobile } from '../utils/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;

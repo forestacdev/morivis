@@ -1,19 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
 	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import RecommendedData from './RecommendedData.svelte';
+
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
-	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
-
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
-
-	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
-	import RecommendedData from './RecommendedData.svelte';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

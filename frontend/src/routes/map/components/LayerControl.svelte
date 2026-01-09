@@ -1,6 +1,10 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { fly } from 'svelte/transition';
+
 	import Checkbox from './layer_menu/Checkbox.svelte';
 
+	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
 		selectedBaseMap,
 		showLabelLayer,
@@ -9,12 +13,7 @@
 		showBoundaryLayer,
 		showPoiLayer
 	} from '$routes/stores/layers';
-
-	import { fly } from 'svelte/transition';
-	import { baseMapList } from '$routes/map/utils/layers/base_map';
-	import { set3dParams } from '$routes/map/utils/params';
 	import { mapStore, isTerrain3d } from '$routes/stores/map';
-	import Icon from '@iconify/svelte';
 
 	isTerrain3d.subscribe((is3d) => {
 		mapStore.toggleTerrain(is3d);

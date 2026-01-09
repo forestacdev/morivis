@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { scale } from 'svelte/transition';
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
+	import { scale } from 'svelte/transition';
+
 	import type {
 		ResultAddressData,
 		ResultCoordinateData,

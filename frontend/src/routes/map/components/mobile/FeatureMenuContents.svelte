@@ -1,13 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { fade } from 'svelte/transition';
-	import { propData } from '$routes/map/data/prop_data';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
+	import { fade } from 'svelte/transition';
+
 	import AttributeItem from '../feature_menu/AttributeItem.svelte';
+
+	import { propData } from '$routes/map/data/prop_data';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+
+
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { PointCloudStyleEntry } from '$routes/map/data/types/model';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import type { PointCloudStyleEntry } from '$routes/map/data/types/model';
 
 	interface Props {
 		layerEntry: PointCloudStyleEntry;

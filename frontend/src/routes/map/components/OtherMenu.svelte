@@ -1,9 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { checkPWA, pwaInstall } from '$routes/map/utils/device';
+	import { imageExport, getMapCanvasImage } from '$routes/map/utils/file/image';
+	import { checkPc } from '$routes/map/utils/ui';
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 	import {
 		showOtherMenu,
 		showDataMenu,
@@ -11,17 +19,8 @@
 		showTermsDialog,
 		isMobile
 	} from '$routes/stores/ui';
-	import { mapStore } from '$routes/stores/map';
-	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import { imageExport, getMapCanvasImage } from '$routes/map/utils/file/image';
-	import { goto } from '$app/navigation';
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import { onMount, onDestroy } from 'svelte';
-
 	import { isBlocked } from '$routes/stores/ui';
-	import { checkPc } from '$routes/map/utils/ui';
-	import { checkPWA, pwaInstall } from '$routes/map/utils/device';
 	interface Props {
 		imagePreviewUrl: string | null;
 	}

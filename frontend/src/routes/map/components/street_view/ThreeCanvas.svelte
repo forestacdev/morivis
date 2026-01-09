@@ -1,25 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { IN_CAMERA_FOV } from './constants';
 
+	import { IN_CAMERA_FOV } from './constants';
 	import DebugControl from './DebugControl.svelte';
 	import InteractionManager from './InteractionManager.svelte';
-
 	import { degreesToRadians, TextureCache, placePointData } from './utils';
 	import { uniforms } from './utils/material';
-	import type { CurrentPointData } from '$routes/map/types/street-view';
-
-	import { isStreetView, isDebugMode } from '$routes/stores';
-
-	import { setStreetViewParams } from '$routes/map/utils/params';
-	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
-	import { isMobile, showOtherMenu } from '$routes/stores/ui';
-	import { fade } from 'svelte/transition';
-	import { getStreetViewCameraParams } from '$routes/map/utils/params';
 	import { fadeShaderMaterial, debugBoxMaterial } from './utils/material';
+
+	import type { CurrentPointData } from '$routes/map/types/street-view';
+	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
+	import { setStreetViewParams } from '$routes/map/utils/params';
+	import { getStreetViewCameraParams } from '$routes/map/utils/params';
+	import { isStreetView, isDebugMode } from '$routes/stores';
+	import { isMobile, showOtherMenu } from '$routes/stores/ui';
+
 
 	interface Props {
 		streetViewPoint: StreetViewPoint | null;

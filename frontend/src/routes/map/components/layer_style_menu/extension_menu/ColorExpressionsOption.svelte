@@ -1,16 +1,17 @@
 <script lang="ts">
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
-	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 	import ColorPatternPicker from './ColorPatternPicker.svelte';
 	import ColorScaleStep from './ColorScaleStep.svelte';
+	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
+
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
 
-	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
 	interface Props {
 		setExpression: ColorsExpression;
 	}

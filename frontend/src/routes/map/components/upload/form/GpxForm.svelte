@@ -1,12 +1,13 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/map/types';
+	import turfBbox from '@turf/bbox';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showNotification } from '$routes/stores/notification';
+	import type { DialogType } from '$routes/map/types';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/file/gpx';
-	import turfBbox from '@turf/bbox';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

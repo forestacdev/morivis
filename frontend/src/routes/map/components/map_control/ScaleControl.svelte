@@ -2,10 +2,10 @@
 	import { type Map as MapLibreMap } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import { getMapScale } from '$routes/map/utils/map';
+	import { checkMobileWidth } from '$routes/map/utils/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
-	import { checkMobileWidth } from '$routes/map/utils/ui';
-	import { getMapScale } from '$routes/map/utils/map';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);

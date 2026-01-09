@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import LabelPulldownBox from '$routes/map/components/atoms/LabelPulldownBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-
 	import type { LabelsExpressions, Labels } from '$routes/map/data/types/vector/style';
-	import { slide } from 'svelte/transition';
 
 	interface Props {
 		labels: Labels;

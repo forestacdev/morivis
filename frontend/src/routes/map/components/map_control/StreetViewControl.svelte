@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { LngLatBoundsLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import { isBBoxInside } from '$routes/map/utils/map';
 	import { showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
-	import { isBBoxInside } from '$routes/map/utils/map';
-	import type { LngLatBoundsLike } from 'maplibre-gl';
 
 	const toggleLayer = () => {
 		showStreetViewLayer.set(!$showStreetViewLayer);

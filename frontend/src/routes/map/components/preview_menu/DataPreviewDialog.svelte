@@ -3,15 +3,11 @@
 
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
-
+	import { getLayerType } from '$routes/map/utils/entries';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification } from '$routes/stores/notification';
-
-	import { getLayerType } from '$routes/map/utils/entries';
-
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
+	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

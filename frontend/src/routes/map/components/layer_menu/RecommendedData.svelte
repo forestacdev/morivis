@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { geoDataEntries } from '$routes/map/data';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import Autoplay from 'embla-carousel-autoplay';
-	import RecommendedDataImage from './RecommendedDataImage.svelte';
-	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { showNotification } from '$routes/stores/notification';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/stores/map';
-	import { isBBoxOverlapping } from '$routes/map/utils/map';
-	import type { Region } from '$routes/map/data/types/location';
-	import { flip } from 'svelte/animate';
-	import { checkMobileWidth } from '$routes/map/utils/ui';
+	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy } from 'svelte';
-	import { slide, fly, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
+
+	import RecommendedDataImage from './RecommendedDataImage.svelte';
+
+	import { geoDataEntries } from '$routes/map/data';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { Region } from '$routes/map/data/types/location';
+	import { isBBoxOverlapping } from '$routes/map/utils/map';
+	import { checkMobileWidth } from '$routes/map/utils/ui';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -40,18 +40,18 @@
 	];
 
 	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-		loop: true,
-		containScroll: 'keepSnaps',
-		dragFree: true
-	};
-	let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
+	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
+	// 	loop: true,
+	// 	containScroll: 'keepSnaps',
+	// 	dragFree: true
+	// };
+	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 	let selectedIndex = $state(0);
 
-	const onThumbnailClick = (index: number) => {
-		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
-		emblaMainCarousel.scrollTo(index);
-	};
+	// const onThumbnailClick = (index: number) => {
+	// 	if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+	// 	emblaMainCarousel.scrollTo(index);
+	// };
 
 	const onSelect = () => {
 		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;

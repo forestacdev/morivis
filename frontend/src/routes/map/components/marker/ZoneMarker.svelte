@@ -2,8 +2,8 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-
 	import { fly } from 'svelte/transition';
+
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { checkMobile } from '$routes/map/utils/ui';
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { generateStepGradient } from '$routes/map/utils/color_mapping';
 	import {
 		getSequentSchemeColors,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
+	import { generateStepGradient } from '$routes/map/utils/color_mapping';
 	interface Props {
 		isColorMap: SequentialScheme;
 	}

@@ -1,30 +1,27 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-
+	import turfBbox, { bbox } from '@turf/bbox';
 	import type { LngLat } from 'maplibre-gl';
+	import maplibregl from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
-	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type {
 		ResultData,
 		ResultPoiData,
 		ResultAddressData,
 		SearchGeojsonData
 	} from '$routes/map/utils/feature';
+	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import { lonLatToTileCoords } from '$routes/map/utils/tile';
-	import turfBbox, { bbox } from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
-	import maplibregl from 'maplibre-gl';
+	import { mapStore } from '$routes/stores/map';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
 		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;

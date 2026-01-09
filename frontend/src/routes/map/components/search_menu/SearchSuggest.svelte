@@ -1,25 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
-
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
+	import { detectCoordinateOrder } from './search';
+
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { layerDataFuse } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import type { ResultData } from '$routes/map/utils/feature';
-	import { detectCoordinateOrder } from './search';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { encode } from '$routes/map/utils/normalized';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { encode } from '$routes/map/utils/normalized';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

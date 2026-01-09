@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/map/types';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
 	import { loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
 
 	interface Props {

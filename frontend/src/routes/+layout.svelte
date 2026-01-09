@@ -1,23 +1,23 @@
 <script lang="ts">
 	import '../app.css';
-	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	// @ts-ignore - virtual module provided by @vite-pwa/sveltekit
-	import { pwaInfo } from 'virtual:pwa-info';
-	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
-	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
-	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import Icon from '@iconify/svelte';
-
+	import { delay } from 'es-toolkit';
 	import { onMount } from 'svelte';
+	import { pwaInfo } from 'virtual:pwa-info';
 
+	import { MOBILE_WIDTH } from './constants';
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
 
 	import { beforeNavigate, onNavigate } from '$app/navigation';
-	import InfoDialog from '$lib/components/InfoDialog.svelte';
-
 	import { page } from '$app/state';
-
-	import { delay } from 'es-toolkit';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
+	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
+	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
+	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import {
 		isBlocked,
@@ -26,9 +26,6 @@
 		showLayerMenu,
 		showOtherMenu
 	} from '$routes/stores/ui';
-	import { MOBILE_WIDTH } from './constants';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
 
 	let { children } = $props();
 

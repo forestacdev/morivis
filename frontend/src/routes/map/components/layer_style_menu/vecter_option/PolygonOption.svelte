@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
+	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
@@ -12,8 +15,6 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
-	import { slide } from 'svelte/transition';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	interface Props {
 		layerEntry: PolygonEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;

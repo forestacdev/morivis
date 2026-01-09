@@ -1,23 +1,22 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
-
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showNotification } from '$routes/stores/notification';
-
-	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { getLayerImage } from '$routes/map/utils/image';
-	import type { ImageResult } from '$routes/map/utils/image';
-	import { getPrefectureCode } from '$routes/map/data/pref';
-	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { fade } from 'svelte/transition';
+
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
-	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { getAttributionName } from '$routes/map/data/attribution';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { getPrefectureCode } from '$routes/map/data/pref';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import type { ImageResult } from '$routes/map/utils/image';
+	import { getLayerImage } from '$routes/map/utils/image';
 	import { CoverImageManager } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { checkPc, checkMobile } from '$routes/map/utils/ui';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { showNotification } from '$routes/stores/notification';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		dataEntry: GeoDataEntry;

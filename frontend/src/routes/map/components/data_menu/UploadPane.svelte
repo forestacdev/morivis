@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/map/types';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

@@ -1,15 +1,13 @@
 <script lang="ts">
-	import turfBbox from '@turf/bbox';
 	import turfBboxPlygon from '@turf/bbox-polygon';
 	import { Map } from 'maplibre-gl';
 	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 
-	import { MAP_FONT_DATA_PATH, MAP_POSITION } from '$routes/constants';
+	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/stores/map';
-
 	import { isBBoxInside } from '$routes/map/utils/map';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

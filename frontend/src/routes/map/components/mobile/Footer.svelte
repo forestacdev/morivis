@@ -1,16 +1,18 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { fly } from 'svelte/transition';
+
+	import MobileCompass from './MobileCompass.svelte';
+
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import {
 		showLayerMenu,
 		showDataMenu,
 		showOtherMenu,
 		isActiveMobileMenu
 	} from '$routes/stores/ui';
-	import Icon from '@iconify/svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { fly } from 'svelte/transition';
-	import { isStreetView, isStyleEdit } from '$routes/stores';
-	import MobileCompass from './MobileCompass.svelte';
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		featureMenuData: FeatureMenuData | null;

@@ -2,14 +2,14 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import ModelOptionMenu from './ModelOptionMenu.svelte';
+
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
-	import ModelOptionMenu from './ModelOptionMenu.svelte';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;

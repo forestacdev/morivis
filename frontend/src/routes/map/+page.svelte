@@ -1,34 +1,56 @@
 <script lang="ts">
 	import turfBearing from '@turf/bearing';
-
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
 
+	import { type WikiArticle } from './api/wikipedia';
+	import Processing from './Processing.svelte';
+	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
+	import type { ContextMenuState } from './types/ui';
+	import type {
+		ResultAddressData,
+		ResultData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from './utils/feature';
+	import { getPropertiesFromPMTiles } from './utils/pmtiles';
+	import { lonLatToTileCoords } from './utils/tile';
+	import { checkPc } from './utils/ui';
+
+	import { page } from '$app/state';
+	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
-
+	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
+	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
+	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
-	import Footer from '$routes/map/components/Footer.svelte';
+	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
+	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
+	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
+	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
-
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
-
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
-	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
+	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -41,34 +63,9 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-	import type { DrawGeojsonData } from '$routes/map/types/draw';
-	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
-	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
-	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
-	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
-	import Processing from './Processing.svelte';
-	import { slide } from 'svelte/transition';
-	import type {
-		ResultAddressData,
-		ResultData,
-		ResultPoiData,
-		SearchGeojsonData
-	} from './utils/feature';
-	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
-	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
-	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
-	import { checkPc } from './utils/ui';
-	import { page } from '$app/state';
-	import { getPropertiesFromPMTiles } from './utils/pmtiles';
-	import { lonLatToTileCoords } from './utils/tile';
-	import { type WikiArticle } from './api/wikipedia';
-	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import type { ContextMenuState } from './types/ui';
-	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -522,10 +519,8 @@
 					bind:isDragover
 					{searchResults}
 					{selectedEpsgCode}
-					{demEntries}
 					{streetViewLineData}
 					{streetViewPointData}
-					{streetViewPoint}
 					{showMapCanvas}
 					{searchGeojsonData}
 					{focusFeature}

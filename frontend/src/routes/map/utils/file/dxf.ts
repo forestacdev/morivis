@@ -196,7 +196,7 @@ const approximateArc = (
 	const coords: number[][] = [];
 
 	// 角度を正規化（DXFはラジアン）
-	let angle1 = startAngle;
+	const angle1 = startAngle;
 	let angle2 = endAngle;
 
 	if (angle2 < angle1) {
@@ -234,7 +234,7 @@ const approximateEllipse = (
 	const minorRadius = majorRadius * axisRatio;
 	const rotation = Math.atan2(majorAxisEndPoint.y, majorAxisEndPoint.x);
 
-	let angle1 = startAngle;
+	const angle1 = startAngle;
 	let angle2 = endAngle;
 
 	if (angle2 < angle1) {
