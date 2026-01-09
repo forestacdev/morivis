@@ -1,17 +1,12 @@
 import { HIGHLIGHT_LAYER_COLOR, INT_ADD_LAYER_IDS } from '$routes/constants';
 
 import type {
-	SourceSpecification,
 	LayerSpecification,
 	FillLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
-	HeatmapLayerSpecification,
 	FillExtrusionLayerSpecification,
-	RasterLayerSpecification,
-	HillshadeLayerSpecification,
-	BackgroundLayerSpecification,
 	FilterSpecification,
 	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
@@ -28,19 +23,14 @@ import type {
 	VectorStyle,
 	ColorsStyle,
 	NumbersStyle,
-	NumbersExpression,
-	NumberSingleExpression,
 	NumberLinearExpression,
 	NumberMatchExpression,
 	NumberStepExpression,
-	ColorsExpression,
-	ColorSingleExpression,
 	ColorMatchExpression,
 	ColorStepExpression,
 	PointStyle,
 	PolygonStyle,
-	LineStringStyle,
-	PolygonOutLine
+	LineStringStyle
 } from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
@@ -274,9 +264,11 @@ const generateNumberStepExpression = (
 	expressionData: NumberStepExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
+	const { range, divisions, values } = expressionData.mapping;
+	const [min, max] = range;
 
 	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
-	const expression = [
+	const expression: unknown[] = [
 		'step',
 		[
 			'case',
@@ -288,7 +280,16 @@ const generateNumberStepExpression = (
 		] // 数値以外の場合に -9999 を使用
 	];
 
-	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
+	// データ範囲に応じた適切な桁数を自動決定
+	const dataRange = max - min;
+	const decimalPlaces = dataRange >= 100 ? 0 : dataRange >= 10 ? 1 : dataRange >= 1 ? 2 : 3;
+
+	// 均等分割してカテゴリを生成
+	const categories = Array.from({ length: divisions }, (_, i) => {
+		const ratio = i / (divisions - 1);
+		const value = min + (max - min) * ratio;
+		return Number(value.toFixed(decimalPlaces));
+	});
 
 	if (categories.length !== values.length) {
 		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
@@ -298,13 +299,8 @@ const generateNumberStepExpression = (
 	// 最初のカテゴリの色を追加（数値が -9999 の場合のデフォルト色）
 	expression.push(0);
 
-	// 残りのカテゴリと対応する色を追加
-	// for (let i = 0; i < categories.length; i++) {
-	// 	expression.push(categories[i], values[i]);
-	// }
-
+	// カテゴリと対応する値を追加
 	categories.forEach((category, index) => {
-		// カテゴリの値と対応する色をステップ式に追加
 		expression.push(category, values[index]);
 	});
 
@@ -353,19 +349,29 @@ const getSelectedColorExpression = (
 		['boolean', ['feature-state', 'selected'], false],
 		HIGHLIGHT_LAYER_COLOR,
 		colorExpression
-	];
+	] as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
 const getSelectedOpacityExpression = (
 	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
 ): DataDrivenPropertyValueSpecification<number> => {
-	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.8, numbercolorExpression];
+	return [
+		'case',
+		['boolean', ['feature-state', 'selected'], false],
+		0.8,
+		numbercolorExpression
+	] as DataDrivenPropertyValueSpecification<number>;
 };
 
 const getSelectedIconSizeExpression = (
 	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
 ): DataDrivenPropertyValueSpecification<number> => {
-	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.12, numbercolorExpression];
+	return [
+		'case',
+		['boolean', ['feature-state', 'selected'], false],
+		0.12,
+		numbercolorExpression
+	] as DataDrivenPropertyValueSpecification<number>;
 };
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {

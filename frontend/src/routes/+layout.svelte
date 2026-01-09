@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
+	// @ts-ignore - virtual module provided by @vite-pwa/sveltekit
 	import { pwaInfo } from 'virtual:pwa-info';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';

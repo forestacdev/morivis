@@ -20,14 +20,14 @@ export const fgbFileToGeojson = async (file: File, index?: number): Promise<Feat
 			let featureIndex = 0;
 			for await (const feature of featureIterator) {
 				if (featureIndex === index) {
-					geojson.features.push(feature);
+					geojson.features.push(feature as FeatureCollection['features'][number]);
 					break;
 				}
 				featureIndex++;
 			}
 		} else {
 			for await (const feature of featureIterator) {
-				geojson.features.push(feature);
+				geojson.features.push(feature as FeatureCollection['features'][number]);
 			}
 		}
 
