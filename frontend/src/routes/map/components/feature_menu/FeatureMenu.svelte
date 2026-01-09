@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
-
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -10,8 +9,7 @@
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import { isOnlySpaces, stripHTMLTags } from '$routes/map/utils/sanitize';
+	import { checkPc } from '$routes/map/utils/ui';
 	import { getFullName } from '$routes/map/utils/city_code';
 	import { getImageByName } from '$routes/map/api/inaturalist';
 
@@ -320,13 +318,14 @@
 						</div>
 
 						<!-- 市区町村情報 -->
-						{#if cityCodeKey && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
-							<div class="flex w-full justify-start gap-2">
-								<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
-								<span class="text-accent"
-									>{getFullName(featureMenuData.properties[cityCodeKey])}</span
-								>
-							</div>
+						{#if cityCodeKey && featureMenuData && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
+							{@const cityCode = featureMenuData.properties[cityCodeKey]}
+							{#if typeof cityCode === 'string' || typeof cityCode === 'number'}
+								<div class="flex w-full justify-start gap-2">
+									<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+									<span class="text-accent">{getFullName(cityCode)}</span>
+								</div>
+							{/if}
 						{/if}
 
 						<!-- url -->

@@ -93,9 +93,4 @@
 </div>
 
 <style>
-	.c-grid {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(4, 200px);
-	}
 </style>

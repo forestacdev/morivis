@@ -1,29 +1,21 @@
 <script lang="ts">
-	import type { map } from 'es-toolkit/compat';
-
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 
-	import type { Map as MapLibreMap } from 'maplibre-gl';
-	import type { Marker, LngLat } from 'maplibre-gl';
+	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { slide, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
+	import { layerDataFuse } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 
-	import { mapStore } from '$routes/stores/map';
-	import { isProcessing, showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
-	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData, ResultPoiData } from '$routes/map/utils/feature';
-	import { debounce } from 'es-toolkit';
-	import { lonLatToTileCoords } from '$routes/map/utils/tile';
+	import type { ResultData } from '$routes/map/utils/feature';
 	import { detectCoordinateOrder } from './search';
-	import maplibregl from 'maplibre-gl';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
@@ -124,7 +116,7 @@
 			const coordinateInfo = detectCoordinateOrder(encodedSearchWord);
 
 			if (coordinateInfo.isCoordinate) {
-				let point: [number, number];
+				let point: [number, number] = [0, 0];
 
 				if (coordinateInfo.order === 'lng_lat') {
 					point = [coordinateInfo.lng, coordinateInfo.lat] as [number, number];
@@ -153,13 +145,13 @@
 				const data = item.item;
 
 				return {
-					type: 'poi',
+					type: 'poi' as const,
 					name: data.name,
-					location: dict[data.layer_id] || null,
+					location: dict[data.layer_id] || '---',
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,
-					propId: data.prop_id
+					propId: data.prop_id ?? ''
 				};
 			});
 

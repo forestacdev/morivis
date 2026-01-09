@@ -19,7 +19,6 @@
 	import { showNotification } from '$routes/stores/notification';
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
-	import { detectCoordinateOrder } from './search_menu/search';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

@@ -12,7 +12,7 @@
 
 		if ($showStreetViewLayer) {
 			const bounds = mapStore.getMapBounds();
-			const defaultBounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+			const defaultBounds: LngLatBoundsLike = [136.91278, 35.543576, 136.92986, 35.556704];
 
 			if (!isBBoxInside(bounds, defaultBounds)) {
 				mapStore.fitBounds(defaultBounds, {
