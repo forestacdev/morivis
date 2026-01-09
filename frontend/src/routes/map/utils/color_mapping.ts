@@ -1,66 +1,13 @@
-import type { DataDrivenPropertyValueSpecification, ColorSpecification } from 'maplibre-gl';
-import type {
-	VectorLayerType,
-	ColorsExpression,
-	LabelsExpressions,
-	ColorStepExpression
-} from '$routes/map/data/types/vector/style';
+import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
 import colormap from 'colormap';
 
-import { scaleLinear, scaleQuantize } from 'd3-scale';
-import { range as d3Range, ticks } from 'd3-array';
-import { interpolateRgb } from 'd3-interpolate';
-import { color, color as d3Color } from 'd3-color';
 import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
-
-// export const generateNumberAndColorMap = (
-// 	mapping: ColorStepExpression['mapping']
-// ): {
-// 	categories: number[];
-// 	values: string[];
-// } => {
-// 	const { range, divisions } = mapping;
-
-// 	if (divisions <= 0) {
-// 		console.warn('divisions は 0 より大きくなければなりません。');
-// 		throw new Error('divisions must be greater than 0');
-// 	}
-
-// 	// 数値スケールの生成
-// 	const scale = scaleLinear<string>()
-// 		.domain(range) // データの範囲
-// 		.nice() // きれいな値に調整
-// 		.ticks(divisions);
-
-// 	const minColor = mapping.values[0];
-// 	const maxColor = mapping.values[1];
-
-// 	// 色スケールの生成
-// 	// const colorScale = scaleSequential(interpolatePRGn).domain([range[0], range[1]]);
-// 	const colorScale = scaleLinear<string>()
-// 		.domain([range[0], range[1]]) // データ範囲
-// 		.interpolate(interpolateRgb) // 色の補間方法
-// 		.range([minColor, maxColor]); // 最小色と最大色
-
-// 	// 各値に対応する色を生成
-// 	const colors = scale.map((value: number) => {
-// 		const rgbColor = colorScale(value);
-
-// 		const hexColor = d3Color(rgbColor).formatHex();
-// 		return hexColor;
-// 	});
-
-// 	return {
-// 		categories: scale,
-// 		values: colors
-// 	};
-// };
 
 export const generateNumberAndColorMap = (
 	mapping: ColorStepExpression['mapping']
 ): {
 	categories: number[];
-	values: string[];
+	values: readonly string[];
 } => {
 	const { range, divisions, scheme } = mapping;
 	const [min, max] = range;
@@ -93,35 +40,6 @@ export const generateStepGradient = (colors: string[]): string => {
 		return `${color} ${start}%, ${color} ${end}%`;
 	});
 	return `linear-gradient(to right, ${stops.join(', ')})`;
-};
-
-/**
- * カラーパレットを生成する関数
- * @param rows 縦方向の段階数（明度）
- * @param cols 横方向の段階数（色相）
- * @returns 2次元配列としてのカラーパレット
- */
-export const generateColorPalette = (rows: number, cols: number): string[][] => {
-	// 色相スケール (横方向)
-	const hueScale = scaleLinear().domain([0, cols]).range([0, 360]);
-
-	// 明度スケール (縦方向)
-	const lightnessScale = scaleLinear().domain([0, rows]).range([90, 30]);
-
-	// 2次元配列のカラーパレットを生成
-	const palette: string[][] = [];
-	for (let i = 0; i < rows; i++) {
-		const row: string[] = [];
-		for (let j = 0; j < cols; j++) {
-			const hue = hueScale(j) as number; // scaleLinear の戻り値は number | undefined
-			const lightness = lightnessScale(i) as number;
-			const hexColor = color(`hsl(${hue}, 100%, ${lightness}%)`).formatHex();
-
-			row.push(hexColor);
-		}
-		palette.push(row);
-	}
-	return palette;
 };
 
 /** ランダムなHEXカラーを生成する関数 */
