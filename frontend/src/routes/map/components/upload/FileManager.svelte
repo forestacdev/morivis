@@ -135,10 +135,20 @@
 			}
 		}
 
+		if (!geojsonData) {
+			showNotification('データが不正です', 'error');
+			return;
+		}
+
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 
 		if (!entryGeometryType) {
 			showNotification('対応していないジオメトリタイプです', 'error');
+			return;
+		}
+
+		if (!geojsonData) {
+			showNotification('データが不正です', 'error');
 			return;
 		}
 

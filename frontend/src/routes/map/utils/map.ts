@@ -67,7 +67,13 @@ export const isBBoxInside = (inner: BBox, outer: BBox): boolean => {
  * @param bbox - The bounding box as [minLng, minLat, maxLng, maxLat].
  * @returns true if the bbox is valid, false otherwise.
  */
-export const isBboxValid = (bbox: [number, number, number, number]): boolean => {
+export const isBboxValid = (
+	bbox: [number, number, number, number] | [number, number, number, number, number, number]
+): boolean => {
+	if (bbox.length === 6) {
+		// 3D bboxの場合、Z軸の値を無視して2Dチェックを行う
+		bbox = [bbox[0], bbox[1], bbox[3], bbox[4]];
+	}
 	const [minLng, minLat, maxLng, maxLat] = bbox;
 
 	// 緯度が制限範囲内にあるかチェック
