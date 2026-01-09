@@ -1,5 +1,5 @@
 import type { BaseMetaData, GeoDataEntry } from '$routes/map/data/types';
-import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import type { SimpleFeatureCollection } from '$routes/map/types/geojson';
 import type {
 	VectorEntry,
 	GeoJsonMetaData,
@@ -117,7 +117,7 @@ export class EntryIdToTypeMap {
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (
-	geojson: FeatureCollection<Geometry, GeoJsonProperties>
+	geojson: SimpleFeatureCollection
 ): VectorEntryGeometryType | undefined => {
 	const geometryTypes = new Set<string>();
 	geojson.features.forEach((feature) => {
@@ -154,7 +154,7 @@ const defaultCustomMetaData: BaseMetaData = {
 };
 
 export const createGeoJsonEntry = (
-	data: FeatureCollection,
+	data: SimpleFeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
 	bbox: [number, number, number, number],

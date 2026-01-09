@@ -42,6 +42,11 @@ export interface PolygonFeatureCollection<_Properties = FeatureProp> {
 	features: Feature<PolygonGeometry | MultiPolygonGeometry, _Properties>[];
 }
 
+export type SimpleFeatureCollection =
+	| PointFeatureCollection
+	| LineStringFeatureCollection
+	| PolygonFeatureCollection;
+
 export interface GeometryCollectionFeatureCollection<_Properties = FeatureProp> {
 	type: 'FeatureCollection';
 	features: Feature<GeometryCollection, _Properties>[];
