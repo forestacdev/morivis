@@ -9,7 +9,7 @@ import importPlugin from 'eslint-plugin-import';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
-export default ts.config(
+export default [
 	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
@@ -62,4 +62,4 @@ export default ts.config(
 			camelcase: ['error', { properties: 'never' }]
 		}
 	}
-);
+];

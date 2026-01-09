@@ -98,13 +98,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-letter-spacing': 0.1,
 			'text-rotation-alignment': 'map',
-			'text-size': {
-				base: 1.4,
-				stops: [
-					[10, 8],
-					[20, 14]
-				]
-			},
+			'text-size': ['interpolate', ['exponential', 1.4], ['zoom'], 10, 8, 20, 14],
 			'text-transform': 'uppercase',
 			visibility: 'visible'
 		},
@@ -130,12 +124,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-field': '{name}',
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-max-width': 6,
-			'text-size': {
-				stops: [
-					[6, 10],
-					[12, 14]
-				]
-			},
+			'text-size': ['interpolate', ['linear'], ['zoom'], 6, 10, 12, 14],
 			visibility: 'visible'
 		},
 		paint: {
@@ -156,12 +145,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-field': '{name:ja}',
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-max-width': 10,
-			'text-size': {
-				stops: [
-					[3, 12],
-					[8, 16]
-				]
-			}
+			'text-size': ['interpolate', ['linear'], ['zoom'], 3, 12, 8, 16]
 		},
 		paint: {
 			'text-color': 'rgba(255, 255, 255, 1)',
@@ -181,12 +165,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-field': '{name}',
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-max-width': 10,
-			'text-size': {
-				stops: [
-					[3, 12],
-					[8, 22]
-				]
-			},
+			'text-size': ['interpolate', ['linear'], ['zoom'], 3, 12, 8, 22],
 			visibility: 'visible'
 		},
 		paint: {
@@ -207,12 +186,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-field': '{name:ja}',
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-max-width': 10,
-			'text-size': {
-				stops: [
-					[3, 12],
-					[8, 22]
-				]
-			},
+			'text-size': ['interpolate', ['linear'], ['zoom'], 3, 12, 8, 22],
 			visibility: 'visible'
 		},
 		paint: {
@@ -229,12 +203,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 		'source-layer': 'island',
 		layout: {
 			'text-field': '{name}',
-			'text-size': {
-				stops: [
-					[10, 14],
-					[15, 24]
-				]
-			}
+			'text-size': ['interpolate', ['linear'], ['zoom'], 10, 14, 15, 24]
 		},
 		paint: {
 			'text-color': '#333',
@@ -249,12 +218,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 		'source-layer': 'island',
 		layout: {
 			'text-field': '{name}',
-			'text-size': {
-				stops: [
-					[10, 14],
-					[15, 24]
-				]
-			}
+			'text-size': ['interpolate', ['linear'], ['zoom'], 10, 14, 15, 24]
 		},
 		paint: {
 			'text-color': '#333',
@@ -270,12 +234,7 @@ export const labelLayers: SymbolLayerSpecification[] = [
 		layout: {
 			'text-field': '{name}',
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-			'text-size': {
-				stops: [
-					[10, 14],
-					[15, 24]
-				]
-			}
+			'text-size': ['interpolate', ['linear'], ['zoom'], 10, 14, 15, 24]
 		},
 		paint: {
 			'text-color': '#333',
