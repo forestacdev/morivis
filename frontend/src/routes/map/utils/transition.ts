@@ -29,7 +29,7 @@ export const anticipatedFly = (node: Element, { delay = 0, duration = 400, x = 0
 	return {
 		delay,
 		duration: duration * 1.3, // 予備動作分の時間延長
-		css: (t, u) => {
+		css: (t: number, u: number) => {
 			// 予備動作期間（最初の30%）
 			if (t < 0.3) {
 				const anticipationT = t / 0.3;

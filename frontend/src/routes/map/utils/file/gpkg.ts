@@ -1,9 +1,4 @@
-import { GeoPackageManager } from '@ngageoint/geopackage';
-import { GeoPackage } from '@ngageoint/geopackage';
-import { FeatureColumn } from '@ngageoint/geopackage';
-import { FeatureRow } from '@ngageoint/geopackage';
-import { FeatureDao } from '@ngageoint/geopackage';
-import { GeometryType } from '@ngageoint/simple-features-js';
+import { GeoPackageAPI, GeoPackage } from '@ngageoint/geopackage';
 
 /**
  * GPKGファイルから読み込んだGeoJSONフィーチャーの型定義
@@ -63,7 +58,7 @@ export class GpkgToGeoJsonConverter {
 	 */
 	async open(filePath: string | Uint8Array): Promise<void> {
 		try {
-			this.geoPackage = await GeoPackageManager.open(filePath);
+			this.geoPackage = await GeoPackageAPI.open(filePath);
 		} catch (error) {
 			throw new Error(`GPKGファイルの読み込みに失敗しました: ${error}`);
 		}
@@ -97,9 +92,9 @@ export class GpkgToGeoJsonConverter {
 			tableInfo[tableName] = {
 				type: 'feature',
 				count: featureDao.count(),
-				columns: featureDao.getColumnNames(),
-				geometryType: featureDao.getGeometryType(),
-				srs: featureDao.getSrs()
+				columns: featureDao.table.columns.getColumnNames(),
+				geometryType: featureDao.geometryType,
+				srs: featureDao.srs
 			};
 		});
 
@@ -109,9 +104,9 @@ export class GpkgToGeoJsonConverter {
 			tableInfo[tableName] = {
 				type: 'tile',
 				count: tileDao.count(),
-				minZoom: tileDao.getMinZoom(),
-				maxZoom: tileDao.getMaxZoom(),
-				srs: tileDao.getSrs()
+				minZoom: tileDao.minZoom,
+				maxZoom: tileDao.maxZoom,
+				srs: tileDao.srs
 			};
 		});
 
@@ -177,11 +172,14 @@ export class GpkgToGeoJsonConverter {
 
 		// GeoJSONフィーチャーの直接取得を試行
 		try {
-			const geoJSONResultSet = this.geoPackage.queryForGeoJSONFeatures(tableName);
+			const geoJSONIterator = this.geoPackage.iterateGeoJSONFeatures(tableName);
 
-			for (const feature of geoJSONResultSet) {
+			for (const feature of geoJSONIterator) {
 				// プロパティのフィルタリング
-				const filteredProperties = this.filterProperties(feature.properties, options);
+				const filteredProperties = this.filterProperties(
+					feature.properties as { [key: string]: any },
+					options
+				);
 
 				const processedFeature: GeoJSONFeature = {
 					type: 'Feature',
@@ -197,8 +195,6 @@ export class GpkgToGeoJsonConverter {
 					break;
 				}
 			}
-
-			geoJSONResultSet.close();
 		} catch (error) {
 			console.warn(`テーブル ${tableName} のGeoJSON直接取得に失敗、手動変換を試行:`, error);
 
@@ -207,7 +203,7 @@ export class GpkgToGeoJsonConverter {
 
 			for (const featureRow of featureResultSet) {
 				try {
-					const feature = this.convertFeatureRowToGeoJSON(featureRow, options);
+					const feature = this.convertFeatureRowToGeoJSON(featureRow as any, featureDao, options);
 					if (feature) {
 						features.push(feature);
 					}
@@ -220,8 +216,6 @@ export class GpkgToGeoJsonConverter {
 					console.warn(`フィーチャー変換エラー:`, conversionError);
 				}
 			}
-
-			featureResultSet.close();
 		}
 
 		return features;
@@ -230,14 +224,19 @@ export class GpkgToGeoJsonConverter {
 	/**
 	 * FeatureRowをGeoJSONフィーチャーに変換
 	 * @param featureRow フィーチャー行
+	 * @param featureDao フィーチャーDAO
 	 * @param options 読み込みオプション
 	 */
 	private convertFeatureRowToGeoJSON(
-		featureRow: FeatureRow,
+		featureRow: { geometry: any; id: number; getValueWithColumnName: (name: string) => any },
+		featureDao: {
+			table: { columns: { getColumnNames: () => string[] } };
+			getGeometryColumnName: () => string;
+		},
 		options: GpkgReadOptions
 	): GeoJSONFeature | null {
 		try {
-			const geometry = featureRow.getGeometry();
+			const geometry = featureRow.geometry;
 			if (!geometry) {
 				return null;
 			}
@@ -247,12 +246,12 @@ export class GpkgToGeoJsonConverter {
 
 			// プロパティを取得
 			const properties: { [key: string]: any } = {};
-			const columns = featureRow.getColumns();
+			const columnNames = featureDao.table.columns.getColumnNames();
+			const geometryColumnName = featureDao.getGeometryColumnName();
 
-			for (const column of columns) {
-				const columnName = column.getName();
-				if (columnName !== featureRow.getGeometryColumnName()) {
-					const value = featureRow.getValue(columnName);
+			for (const columnName of columnNames) {
+				if (columnName !== geometryColumnName) {
+					const value = featureRow.getValueWithColumnName(columnName);
 					properties[columnName] = value;
 				}
 			}
@@ -264,7 +263,7 @@ export class GpkgToGeoJsonConverter {
 				type: 'Feature',
 				geometry: geoJsonGeometry,
 				properties: filteredProperties,
-				id: featureRow.getId()
+				id: featureRow.id
 			};
 		} catch (error) {
 			console.warn('フィーチャー変換エラー:', error);
@@ -344,9 +343,6 @@ export async function getGpkgInfo(filePath: string | Uint8Array): Promise<GpkgIn
 
 /**
  * 使用例:
- *
- * // Node.js
- * const geoJson = await gpkgToGeoJson('/path/to/file.gpkg');
  *
  * // ブラウザ（File APIと組み合わせ）
  * const fileInput = document.getElementById('fileInput') as HTMLInputElement;

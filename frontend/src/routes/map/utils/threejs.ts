@@ -132,7 +132,7 @@ export class ThreeJsLayerManager {
 					const projectionMatrix = new THREE.Matrix4().fromArray(
 						args.defaultProjectionData.mainMatrix
 					);
-					this.camera.projectionMatrix = projectionMatrix.multiply(modelMatrix);
+					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
 
 					// このモデルだけ表示して描画
 					this.modelGroup!.traverse((child) => {
