@@ -61,7 +61,7 @@ importers:
         specifier: ^9.2.5
         version: 9.2.5(@deck.gl/core@9.2.5)(@luma.gl/constants@9.2.5)(@luma.gl/core@9.2.5)(@math.gl/web-mercator@4.1.0)
       '@mapbox/tilebelt':
-        specifier: ^2.0.2
+        specifier: ^2.0.3
         version: 2.0.3
       '@mapbox/vector-tile':
         specifier: ^2.0.3
@@ -123,6 +123,9 @@ importers:
       '@types/geojson':
         specifier: ^7946.0.15
         version: 7946.0.16
+      '@types/mapbox__tilebelt':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@types/proj4':
         specifier: ^2.5.6
         version: 2.19.0
@@ -298,6 +301,9 @@ importers:
       '@types/earcut':
         specifier: ^3.0.0
         version: 3.0.0
+      '@types/geojson-vt':
+        specifier: ^3.2.5
+        version: 3.2.5
       '@types/jsoneditor':
         specifier: ^9.9.5
         version: 9.9.6
@@ -307,6 +313,9 @@ importers:
       '@types/three':
         specifier: ^0.172.0
         version: 0.172.0
+      '@types/vt-pbf':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@vite-pwa/sveltekit':
         specifier: ^1.0.0
         version: 1.1.0(@sveltejs/kit@2.49.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(@vite-pwa/assets-generator@0.2.6)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1))(workbox-build@7.4.0)(workbox-window@7.4.0)
@@ -2525,6 +2534,9 @@ packages:
   '@types/mapbox-gl@2.7.21':
     resolution: {integrity: sha512-Dx9MuF2kKgT/N22LsMUB4b3acFZh9clVqz9zv1fomoiPoBrJolwYxpWA/9LPO/2N0xWbKi4V+pkjTaFkkx/4wA==}
 
+  '@types/mapbox__tilebelt@1.0.4':
+    resolution: {integrity: sha512-0bFeefnaxWLeQOf+7srPLYqOGu5LqMq+KaZp3r/y8mxhIBHbOD8GcEf8EDxxgLTlo6LBZV/9obQf7nCTL0o4Ew==}
+
   '@types/node@16.9.1':
     resolution: {integrity: sha512-QpLcX9ZSsq3YYUUnD3nFDY8H7wctAhQj/TFKL8Ya8v5fMm3CFXxo8zStsLAl780ltoYoo1WvKUVGBQK+1ifr7g==}
 
@@ -2587,6 +2599,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/vt-pbf@3.1.1':
+    resolution: {integrity: sha512-JcTqsvtX5z+P5zITZTx6nALaW86oVwFpATfHakiWIjvH8AWEuhJpa/8xKHAHd37I5A3ZK3TbeA/yJ3rJYHjwzg==}
 
   '@types/webxr@0.5.24':
     resolution: {integrity: sha512-h8fgEd/DpoS9CBrjEQXR+dIDraopAEfu4wYVNY2tEPwk60stPWhvZMf4Foo5FakuQ7HFZoa8WceaWFervK2Ovg==}
@@ -9296,6 +9311,10 @@ snapshots:
     dependencies:
       '@types/geojson': 7946.0.16
 
+  '@types/mapbox__tilebelt@1.0.4':
+    dependencies:
+      '@types/geojson': 7946.0.16
+
   '@types/node@16.9.1': {}
 
   '@types/node@18.19.130':
@@ -9357,6 +9376,11 @@ snapshots:
   '@types/trusted-types@2.0.7': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/vt-pbf@3.1.1':
+    dependencies:
+      '@types/geojson': 7946.0.16
+      '@types/geojson-vt': 3.2.5
 
   '@types/webxr@0.5.24': {}
 

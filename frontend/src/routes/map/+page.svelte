@@ -414,7 +414,7 @@
 		setPoint(Number(streetViewNodeId));
 	});
 
-	const focusFeature = async (result: ResultPoiData | ResultAddressData) => {
+	const focusFeature = async (result: ResultData) => {
 		if (result.type === 'poi') {
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
@@ -510,16 +510,16 @@
 				<!-- 上部余白 -->
 				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
 				<HeaderMenu
-					{resetlayerEntries}
-					{focusFeature}
+					{layerEntries}
+					bind:inputSearchWord
 					bind:featureMenuData
 					bind:selectedSearchResultData
-					bind:inputSearchWord
 					bind:searchResults
-					{layerEntries}
 					bind:showSelectionMarker
 					bind:selectionMarkerLngLat
 					bind:showDataEntry
+					{resetlayerEntries}
+					{focusFeature}
 				/>
 
 				<MapLibreMap
@@ -542,6 +542,7 @@
 					bind:selectedSearchId
 					bind:selectedSearchResultData
 					bind:contextMenuState
+					bind:isDragover
 					{searchResults}
 					{selectedEpsgCode}
 					{demEntries}

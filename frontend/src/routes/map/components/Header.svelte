@@ -29,9 +29,9 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
+		showDataEntry: GeoDataEntry | null;
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 		focusFeature: (result: ResultData) => void;
-		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
@@ -193,7 +193,7 @@
 	let showSearchForm = $state<boolean>(true);
 </script>
 
-<div class="bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
+<div class="bg-main top-2 right-2 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
@@ -202,7 +202,7 @@
 	{#if !$showDataMenu}
 		<div
 			bind:this={searchContainerRef}
-			class="border-sub border-1 relative flex max-w-[400px] flex-1 items-center rounded-full {showDataEntry
+			class="border-sub relative flex max-w-[400px] flex-1 items-center rounded-full border-1 {showDataEntry
 				? 'pointer-events-none opacity-0'
 				: ''}"
 		>

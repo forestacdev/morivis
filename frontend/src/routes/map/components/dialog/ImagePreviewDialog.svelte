@@ -97,14 +97,7 @@
 				<h2 class="text-lg font-bold">画像プレビュー</h2>
 			</div>
 			<div class="flex h-full w-full justify-center p-2">
-				<img
-					src={imagePreviewUrl}
-					alt="Image Preview"
-					class="h-full w-full object-contain"
-					aria-label="Image Preview"
-					role="img"
-					tabindex="0"
-				/>
+				<img src={imagePreviewUrl} alt="Preview" class="h-full w-full object-contain" />
 			</div>
 
 			<div class="flex shrink-0 items-center justify-center gap-4 pt-4">

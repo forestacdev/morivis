@@ -1,16 +1,16 @@
+import type { PointGeometry } from './geometry';
+
+export interface StreetViewProp {
+	node_id: number;
+	photo_id: string;
+	ID: string;
+	name: string;
+	Date: string;
+}
 export interface StreetViewPoint {
 	type: 'Feature';
-	geometry: {
-		type: 'Point';
-		coordinates: [number, number];
-	};
-	properties: {
-		node_id: number;
-		photo_id: string;
-		ID: string;
-		name: string;
-		Date: string;
-	};
+	geometry: PointGeometry;
+	properties: StreetViewProp;
 }
 export interface NextPointData {
 	featureData: StreetViewPoint;

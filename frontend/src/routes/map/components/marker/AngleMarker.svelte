@@ -19,7 +19,7 @@
 				marker.remove();
 				marker = null;
 			}
-		} else {
+		} else if (container) {
 			marker = new maplibregl.Marker({
 				element: container,
 				pitchAlignment: 'map',

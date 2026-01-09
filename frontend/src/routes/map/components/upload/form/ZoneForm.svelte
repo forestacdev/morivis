@@ -5,7 +5,7 @@
 	import { mapStore } from '$routes/stores/map';
 	import { useEventTrigger } from '$routes/stores/ui';
 	import type { Geometry, GeoJsonProperties, Feature, FeatureCollection, Polygon } from 'geojson';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import turfCenter from '@turf/center';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
 	import maplibregl from 'maplibre-gl';
@@ -48,6 +48,8 @@
 		properties: {
 			name: string;
 			code: EpsgCode;
+			name_ja: string;
+			prefecture?: string;
 		};
 	}
 
@@ -149,14 +151,14 @@
 {#if showZoneForm}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="w-side-menu bg-main absolute left-0 top-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
+		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
 		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 			<span class="text-2xl font-bold">投影法の選択</span>
 		</div>
 
 		<div
-			class="c-scroll flex h-full w-full grow flex-col items-center overflow-y-auto overflow-x-hidden"
+			class="c-scroll flex h-full w-full grow flex-col items-center overflow-x-hidden overflow-y-auto"
 		>
 			{#each poiData as info}
 				<label
@@ -172,10 +174,10 @@
 						class="hidden"
 					/>
 					<div class="flex flex-col">
-						<span class="select-none transition-colors duration-200"
+						<span class="transition-colors duration-200 select-none"
 							>{info.properties.name_ja}
 						</span>
-						<span class="text select-none text-xs text-gray-300 transition-colors duration-200"
+						<span class="text text-xs text-gray-300 transition-colors duration-200 select-none"
 							>{info.properties.prefecture ?? ''}
 						</span>
 					</div>
