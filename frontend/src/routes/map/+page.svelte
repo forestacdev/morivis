@@ -194,9 +194,8 @@
 		}
 
 		isInitialized = true;
-		streetViewPointData = (await getFgbToGeojson(
-			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
-		)) as StreetViewPointGeoJson;
+		const geojson = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/nodes.fgb`);
+		streetViewPointData = geojson as unknown as StreetViewPointGeoJson;
 
 		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
 

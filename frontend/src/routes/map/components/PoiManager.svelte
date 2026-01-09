@@ -66,7 +66,7 @@
 
 			const coords = feature.geometry.coordinates as [number, number];
 
-			const featureId = feature.id as string;
+			const featureId = feature.id as number;
 
 			if (propId) {
 				featureDataArray.push({

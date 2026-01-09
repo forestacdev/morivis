@@ -1,22 +1,40 @@
 import proj4 from 'proj4';
 
-const flattenCoordinates = (coordinates, flattened = []) => {
-	coordinates.forEach((coord) => {
+type Coordinate = number[];
+type NestedCoordinates = Coordinate | NestedCoordinates[];
+
+interface GeoJSONFeature {
+	type: string;
+	geometry: {
+		type: string;
+		coordinates: NestedCoordinates;
+	};
+	properties?: Record<string, unknown>;
+}
+
+interface WorkerMessageData {
+	feature: GeoJSONFeature;
+	prjContent: string;
+	featureIndex: number;
+}
+
+const flattenCoordinates = (coordinates: NestedCoordinates, flattened: number[] = []): number[] => {
+	(coordinates as NestedCoordinates[]).forEach((coord) => {
 		if (Array.isArray(coord[0])) {
-			flattenCoordinates(coord, flattened);
+			flattenCoordinates(coord as NestedCoordinates, flattened);
 		} else {
-			flattened.push(...coord);
+			flattened.push(...(coord as number[]));
 		}
 	});
 	return flattened;
 };
 
-const unflattenCoordinates = (flattened, originalStructure) => {
+const unflattenCoordinates = (flattened: number[], originalStructure: NestedCoordinates): NestedCoordinates => {
 	let index = 0;
-	const unflattenRecursive = (structure) => {
-		return structure.map((item) => {
+	const unflattenRecursive = (structure: NestedCoordinates): NestedCoordinates => {
+		return (structure as NestedCoordinates[]).map((item) => {
 			if (Array.isArray(item[0])) {
-				return unflattenRecursive(item);
+				return unflattenRecursive(item as NestedCoordinates);
 			} else {
 				// 元の構造が[num, num]のような単一座標の場合、item.lengthは未定義になる可能性があるため、
 				// 座標の次元数（通常は2または3）を考慮する必要があります。
@@ -31,7 +49,7 @@ const unflattenCoordinates = (flattened, originalStructure) => {
 	return unflattenRecursive(originalStructure);
 };
 
-onmessage = (event) => {
+onmessage = (event: MessageEvent<WorkerMessageData>) => {
 	const { feature, prjContent, featureIndex } = event.data;
 	// console.log(`Worker processing featureIndex: ${featureIndex}`);
 
@@ -62,7 +80,7 @@ onmessage = (event) => {
 		console.error(`Error in worker processing featureIndex ${featureIndex}:`, error);
 		postMessage({
 			type: 'ERROR',
-			error: error.message,
+			error: error instanceof Error ? error.message : String(error),
 			featureIndex: featureIndex
 		});
 	}
