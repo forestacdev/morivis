@@ -307,6 +307,9 @@ importers:
       '@types/jsoneditor':
         specifier: ^9.9.5
         version: 9.9.6
+      '@types/moji':
+        specifier: ^0.5.3
+        version: 0.5.3
       '@types/papaparse':
         specifier: ^5.3.15
         version: 5.5.1
@@ -2539,6 +2542,9 @@ packages:
 
   '@types/mapbox__tilebelt@1.0.4':
     resolution: {integrity: sha512-0bFeefnaxWLeQOf+7srPLYqOGu5LqMq+KaZp3r/y8mxhIBHbOD8GcEf8EDxxgLTlo6LBZV/9obQf7nCTL0o4Ew==}
+
+  '@types/moji@0.5.3':
+    resolution: {integrity: sha512-x0qWIflmLQkob4rmSEjeHoEFT33vMHfM859X5Ej5QYRwUA1yv+3fJACidBMeUyFZRt9TjX2HXdi3T6FHf8eUAg==}
 
   '@types/node@16.9.1':
     resolution: {integrity: sha512-QpLcX9ZSsq3YYUUnD3nFDY8H7wctAhQj/TFKL8Ya8v5fMm3CFXxo8zStsLAl780ltoYoo1WvKUVGBQK+1ifr7g==}
@@ -9320,6 +9326,8 @@ snapshots:
   '@types/mapbox__tilebelt@1.0.4':
     dependencies:
       '@types/geojson': 7946.0.16
+
+  '@types/moji@0.5.3': {}
 
   '@types/node@16.9.1': {}
 
