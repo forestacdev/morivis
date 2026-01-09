@@ -1,0 +1,30 @@
+name: frontend-pull-request-check
+
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+      - name: build Svelte project
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run format
+          pnpm run check
+          pnpm run lint
+          pnpm run build
