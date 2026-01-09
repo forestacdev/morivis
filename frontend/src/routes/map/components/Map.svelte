@@ -52,9 +52,9 @@
 		type DialogType
 	} from '$routes/map/types';
 	import { createLayersItems } from '$routes/map/utils/layers';
-	import { createSourcesItems, createTerrainSources } from '$routes/map/utils/sources';
+	import { createSourcesItems } from '$routes/map/utils/sources';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
-	import type { StreetViewPoint, StreetViewPointGeoJson } from '$routes/map/types/street-view';
+	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import type { ContextMenuState } from '$routes/map/types/ui';
@@ -69,6 +69,7 @@
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { threeJsManager } from '../utils/threejs';
 	import DropContainer from './DropContainer.svelte';
+	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
 		layerEntries: GeoDataEntry[];
@@ -303,7 +304,7 @@
 						},
 						layout: {
 							'text-field': ['to-string', ['get', 'index']],
-							'text-font': ['Noto Sans JP Regular'],
+							'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 							'text-max-width': 12,
 							'text-size': 24,
 							'text-justify': 'auto'
@@ -450,7 +451,7 @@
 						'text-field': '{name}',
 						'text-size': 11,
 						'text-max-width': 10,
-						'text-font': ['Noto Sans JP Regular'],
+						'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 						'text-variable-anchor': ['bottom-left', 'bottom-right'],
 						'text-radial-offset': 2,
 						'text-justify': 'auto'

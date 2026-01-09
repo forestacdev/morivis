@@ -69,6 +69,7 @@ import { get } from 'svelte/store';
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -677,7 +678,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
-			'text-font': ['Noto Sans JP Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// 自動オフセット

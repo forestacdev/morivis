@@ -1,5 +1,6 @@
 import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
 export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
 export const DATA_PATH =
@@ -43,11 +44,6 @@ export interface MapPosition {
 }
 
 /* スマホ判定の幅 */
-// export const MOBILE_WIDTH = Number(
-// 	getComputedStyle(document.documentElement).getPropertyValue('--breakpoint-lg').replace('px', '')
-// );
-
-/* スマホ判定の幅 */
 export const MOBILE_WIDTH = 768;
 
 /** マップの初期位置 */
@@ -58,6 +54,11 @@ export const MAP_POSITION: MapPosition = {
 	bearing: 0,
 	bounds: [136.91917, 35.54692, 136.926817, 35.555122]
 };
+
+/** デフォルトのシンボルテキストフォント */
+export const DEFAULT_SYMBOL_TEXT_FONT: DataDrivenPropertyValueSpecification<string[]> = [
+	'Noto Sans JP Regular'
+];
 
 /** アイコン用画像タイルのXYZ */
 export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
