@@ -11,7 +11,7 @@
 	interface Props {
 		key: string;
 		value: string | number | true;
-		field: FieldDef;
+		field: FieldDef | undefined;
 	}
 
 	let { key, value, field }: Props = $props();

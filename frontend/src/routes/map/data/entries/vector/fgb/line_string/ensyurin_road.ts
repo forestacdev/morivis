@@ -23,8 +23,14 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 		xyzImageTile: { x: 115387, y: 51671, z: 17 }
 	},
 	properties: {
-		keys: ['種類', '道の長さ_m'],
-		titles: []
+		attributeView: {
+			popupKeys: ['種類', '道の長さ_m'],
+			titles: []
+		},
+		fields: [
+			{ key: '種類', type: 'string', label: '道の種類' },
+			{ key: '道の長さ_m', type: 'number', label: '道の長さ', unit: 'm' }
+		]
 	},
 	interaction: {
 		clickable: true
@@ -84,13 +90,11 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 			expressions: [
 				{
 					key: '種類',
-					name: '道の種類',
-					value: '{種類}'
+					name: '道の種類'
 				},
 				{
 					key: '道の長さ_m',
-					name: '道の長さ',
-					value: '{道の長さ_m} m'
+					name: '道の長さ'
 				}
 			]
 		},

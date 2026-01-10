@@ -102,7 +102,7 @@
 		});
 
 		if (!import.meta.env.PROD) {
-			console.log('Filtered Data Entries:', results);
+			console.log('debug:Filtered Data Entries:', results);
 		}
 	});
 

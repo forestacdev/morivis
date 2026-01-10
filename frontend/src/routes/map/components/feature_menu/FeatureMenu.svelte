@@ -306,7 +306,7 @@
 						<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>
 						<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
 					{:else}
-						<!-- その他 -->
+						<!-- その他タイトル -->
 						<span class="text-[22px] font-bold"
 							>{targetLayer &&
 							targetLayer.type === 'vector' &&
@@ -329,11 +329,11 @@
 				<!-- 詳細情報 -->
 				<div class="flex h-full w-full flex-col gap-2 pr-2">
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
-						<!-- 座標 -->
+						<!-- 座標 （緯度, 経度） -->
 						<div class="flex w-full justify-start gap-2">
 							<Icon icon="mdi:crosshairs-gps" class="h-6 w-6 shrink-0 text-base" />
 							<span class="text-accent"
-								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
+								>{featureMenuData.point[1].toFixed(6)}, {featureMenuData.point[0].toFixed(6)}</span
 							>
 						</div>
 

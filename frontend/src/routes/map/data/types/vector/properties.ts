@@ -67,6 +67,48 @@ export interface EmptyValueRule {
 	text: string;
 }
 
+export interface NormalizeRule {
+	/**
+	 * 正規化の種類
+	 */
+	type:
+		| 'trim' // 前後空白除去
+		| 'replace' // 文字置換
+		| 'removePattern'; // 正規表現で削除
+
+	/**
+	 * replace / removePattern 用
+	 */
+	pattern?: string | RegExp;
+
+	/**
+	 * replace 用
+	 */
+	replaceWith?: string;
+}
+
+type DatePrecision = 'day' | 'month' | 'year';
+
+export interface DateFormatSpec {
+	/** 入力のパターン候補（複数） */
+	inputPatterns?: string[]; // 例: ['YYYY/MM/DD', 'YYYY-MM-DD', 'YYYYMMDD', 'YYYY年M月D日']
+
+	/** タイムゾーン扱い（日時が来る場合） */
+	timezone?: 'local' | 'utc'; // or 'Asia/Tokyo'
+
+	/** 入力が「年月」しかない等のときの補完ルール */
+	fill?: {
+		month?: 1 | 12; // 例: 年のみ→1月 or 12月
+		day?: 1 | 28 | 30 | 31; // 例: 月まで→1日 or 月末
+	};
+
+	/** 表示フォーマット */
+	displayPattern?: string; // 例: 'YYYY年M月D日'
+
+	/** 解析できないとき */
+	invalidText?: string; // 例: '不明'
+}
+
 /** 追加: 属性(フィールド)の意味を1箇所に集約 */
 type FieldType = 'string' | 'number' | 'integer' | 'date';
 
@@ -134,7 +176,17 @@ export interface FieldDef {
 		 * 無効値・欠損値として扱う値の定義と表示文字列。
 		 */
 		empty?: EmptyValueRule[];
+
+		/**
+		 * 日付フォーマット仕様
+		 */
+		date?: DateFormatSpec;
 	};
+
+	/**
+	 * 表示・比較前に行う文字列正規化ルール
+	 */
+	normalize?: NormalizeRule[];
 
 	/**
 	 * コード値などをを人間向け表示名に変換する辞書。
@@ -162,7 +214,12 @@ export interface VectorProperties {
  * 4. affix適用（prefix/suffix）
  * 5. 単位付与（unit）
  */
-export const formatFieldValue = (rawValue: unknown, field: FieldDef): string => {
+export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string => {
+	// fieldがundefinedの場合は単純に文字列化
+	if (!field) {
+		return rawValue != null ? String(rawValue) : '';
+	}
+
 	// 1. 無効値ルール
 	for (const rule of field.format?.empty ?? []) {
 		if (rule.values.includes(rawValue as string | number | null | undefined)) {

@@ -23,12 +23,30 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		xyzImageTile: { x: 115387, y: 51670, z: 17 }
 	},
 	properties: {
-		keys: ['樹種', '状態'],
-		titles: [
-			{
-				conditions: [],
-				template: '{樹種} {状態}'
-			}
+		attributeView: {
+			popupKeys: ['樹種', '胸高直径（ｃｍ）', '状態', '調査日時', '備考'],
+			titles: [
+				{
+					conditions: ['樹種', '状態'],
+					template: '{樹種} {状態}'
+				},
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '危険木'
+				}
+			]
+		},
+		fields: [
+			{ key: '樹種', type: 'string' },
+			{ key: '胸高直径（ｃｍ）', type: 'number', label: '胸高直径', unit: 'cm' },
+			{ key: '状態', type: 'string' },
+			{ key: '調査日時', type: 'string' },
+			{ key: '調査者／調査法', type: 'string' },
+			{ key: '備考', type: 'string' }
 		]
 	},
 	interaction: {
@@ -49,6 +67,16 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					mapping: {
 						value: '#e31a1c'
 					}
+				},
+				{
+					type: 'step',
+					key: '胸高直径（ｃｍ）',
+					name: '胸高直径ごとの色分け',
+					mapping: {
+						scheme: 'YlOrRd',
+						range: [10, 50],
+						divisions: 5
+					}
 				}
 			]
 		},
@@ -62,6 +90,15 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					mapping: {
 						value: 8
 					}
+				},
+				{
+					type: 'linear',
+					key: '胸高直径（ｃｍ）',
+					name: '胸高直径',
+					mapping: {
+						range: [10, 50],
+						values: [5, 10]
+					}
 				}
 			]
 		},
@@ -71,13 +108,28 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			width: 2
 		},
 		labels: {
-			key: 'name',
+			key: '樹種',
 			show: false,
 			expressions: [
 				{
-					key: 'name',
-					name: 'name',
-					value: '{name}'
+					key: '樹種',
+					name: '樹種'
+				},
+				{
+					key: '胸高直径（ｃｍ）',
+					name: '胸高直径'
+				},
+				{
+					key: '状態',
+					name: '状態'
+				},
+				{
+					key: '調査日時',
+					name: '調査日時'
+				},
+				{
+					key: '備考',
+					name: '備考'
 				}
 			]
 		}

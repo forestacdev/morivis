@@ -223,66 +223,68 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					]
 				}
 			]
+		},
+		default: {
+			symbol: {
+				paint: {
+					'text-color': '#ffffff',
+					'text-halo-color': '#151515',
+					'text-halo-width': 2,
+					'text-halo-blur': 1,
+					'text-opacity': 0.9
+				},
+				layout: {}
+			}
 		}
-		// default: {
-		// 	symbol: {
-		// 		paint: {},
-		// 		layout: {
-		// 			'text-padding': 4,
-		// 			'symbol-spacing': 400 // デフォルト: 400px
+		// auxiliaryLayers: {
+		// 	source: {
+		// 		ensyurin_syouhan_rinhan: {
+		// 			type: 'geojson',
+		// 			data: `${ENTRY_GEOJSON_PATH}/ensyurin_rinhan.geojson`,
+		// 			maxzoom: 14
 		// 		}
-		// 	}
+		// 	},
+		// 	layers: [
+		// 		{
+		// 			id: 'ensyurin_rinhan_fill_layer',
+		// 			type: 'fill',
+		// 			maxzoom: 14,
+		// 			source: 'ensyurin_syouhan_rinhan',
+		// 			paint: {
+		// 				'fill-color': '#b2df8a',
+		// 				'fill-opacity': 0.5
+		// 			}
+		// 		},
+		// 		{
+		// 			id: 'ensyurin_rinhan_line_layer',
+		// 			type: 'line',
+		// 			maxzoom: 14,
+		// 			source: 'ensyurin_syouhan_rinhan',
+		// 			paint: {
+		// 				'line-color': '#ffffff',
+		// 				'line-width': 2
+		// 			}
+		// 		},
+		// 		{
+		// 			id: 'ensyurin_rinhan_label_layer',
+		// 			type: 'symbol',
+		// 			maxzoom: 14,
+		// 			source: 'ensyurin_syouhan_rinhan',
+		// 			layout: {
+		// 				'text-field': '{林班}林班',
+		// 				'text-font': ['Noto Sans JP Regular'],
+		// 				'text-size': 12,
+		// 				'text-anchor': 'center'
+		// 			},
+		// 			paint: {
+		// 				'text-color': '#000000',
+		// 				'text-halo-color': '#ffffff',
+		// 				'text-halo-width': 1
+		// 			}
+		// 		}
+		// 	]
 		// }
 	}
-	// auxiliaryLayers: {
-	// 	source: {
-	// 		ensyurin_syouhan_rinhan: {
-	// 			type: 'geojson',
-	// 			data: `${ENTRY_GEOJSON_PATH}/ensyurin_rinhan.geojson`,
-	// 			maxzoom: 14
-	// 		}
-	// 	},
-	// 	layers: [
-	// 		{
-	// 			id: 'ensyurin_rinhan_fill_layer',
-	// 			type: 'fill',
-	// 			maxzoom: 14,
-	// 			source: 'ensyurin_syouhan_rinhan',
-	// 			paint: {
-	// 				'fill-color': '#b2df8a',
-	// 				'fill-opacity': 0.5
-	// 			}
-	// 		},
-	// 		{
-	// 			id: 'ensyurin_rinhan_line_layer',
-	// 			type: 'line',
-	// 			maxzoom: 14,
-	// 			source: 'ensyurin_syouhan_rinhan',
-	// 			paint: {
-	// 				'line-color': '#ffffff',
-	// 				'line-width': 2
-	// 			}
-	// 		},
-	// 		{
-	// 			id: 'ensyurin_rinhan_label_layer',
-	// 			type: 'symbol',
-	// 			maxzoom: 14,
-	// 			source: 'ensyurin_syouhan_rinhan',
-	// 			layout: {
-	// 				'text-field': '{林班}林班',
-	// 				'text-font': ['Noto Sans JP Regular'],
-	// 				'text-size': 12,
-	// 				'text-anchor': 'center'
-	// 			},
-	// 			paint: {
-	// 				'text-color': '#000000',
-	// 				'text-halo-color': '#ffffff',
-	// 				'text-halo-width': 1
-	// 			}
-	// 		}
-	// 	]
-	// }
-	// default: {
 };
 
 export default entry;

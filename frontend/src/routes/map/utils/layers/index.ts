@@ -1,4 +1,5 @@
 import { HIGHLIGHT_LAYER_COLOR, INT_ADD_LAYER_IDS } from '$routes/constants';
+import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/symbol';
 
 import type {
 	LayerSpecification,
@@ -14,12 +15,11 @@ import type {
 } from 'maplibre-gl';
 
 import { streetViewLineLayer, streetViewCircleLayer } from '$routes/map/utils/layers/street_view';
-import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
+import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 
 import { geoDataEntries } from '$routes/map/data';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type {
-	Labels,
 	VectorStyle,
 	ColorsStyle,
 	NumbersStyle,
@@ -59,7 +59,6 @@ import { get } from 'svelte/store';
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
-import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -80,7 +79,7 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 	}
 });
 
-interface LayerItem {
+export interface LayerItem {
 	id: string;
 	source: string;
 	maxzoom: number;
@@ -608,103 +607,6 @@ const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpec
 	return circleLayer;
 };
 
-// ポイントのicon用レイヤーの作成
-// TODO: 廃止予定
-const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerSpecification => {
-	const defaultStyle = style.default;
-	const key = style.labels.key as keyof Labels;
-	const showLabel = style.labels.show;
-	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
-	const labelPaint = {
-		'text-opacity': 1,
-		'text-color': '#000000',
-		'text-halo-color': '#FFFFFF',
-		'text-halo-width': 2
-	};
-	const labelLayout = {
-		'text-field': textField,
-		'text-size': 12,
-		'text-max-width': 12
-	};
-
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}`,
-		type: 'symbol',
-		paint: {
-			...(showLabel ? labelPaint : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {}),
-			'icon-opacity': style.opacity
-		},
-		layout: {
-			...(showLabel ? labelLayout : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
-			'icon-image': ['get', '_prop_id'],
-			'icon-size': style.icon?.size ?? 0.1,
-			'icon-anchor': 'bottom'
-
-			// ...(symbolStyle.layout ?? {})
-
-			// "text-variable-anchor": ["top", "bottom", "left", "right"],
-			// "text-radial-offset": 0.5,
-			// "text-justify": "auto",
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	// TODO: text-halo-color text-halo-width text-size
-	return symbolLayer;
-};
-
-// symbolレイヤーの作成
-// TODO: フォント
-const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const defaultStyle = style.default;
-	const key = style.labels.key as keyof Labels;
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}_label`,
-		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
-		type: 'symbol',
-		paint: {
-			'text-opacity': 1,
-			'icon-opacity': 1,
-			'text-color': '#000000',
-			'text-halo-color': '#e8e8e8',
-			'text-halo-width': 2,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
-		},
-		layout: {
-			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
-			'text-size': 12,
-			'text-max-width': 12,
-			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
-
-			// 自動オフセット
-			// 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-			// 'text-radial-offset': 0.5,
-			// 'text-justify': 'auto'
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	// TODO: text-halo-color text-halo-width text-size
-	return symbolLayer;
-};
-
 // ベクターレイヤーの作成
 const createVectorLayer = (
 	layer: LayerItem,
@@ -915,7 +817,8 @@ export const createLayersItems = (
 						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
 					) {
 						// ラベルを追加
-						const symbolLayer = createSymbolLayer(layer, style);
+						const fields = entry.properties.fields;
+						const symbolLayer = createSymbolLayer(layer, style, fields);
 						symbolLayerItems.push(symbolLayer);
 					}
 

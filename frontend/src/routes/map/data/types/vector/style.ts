@@ -210,6 +210,11 @@ export interface LabelsExpressions {
 export interface Labels {
 	key: string;
 	show: boolean;
+	opacity?: number;
+	color?: string;
+	size?: number;
+	haloColor?: string;
+	haloWidth?: number;
 	minZoom?: number;
 	expressions: LabelsExpressions[];
 }

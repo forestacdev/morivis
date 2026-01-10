@@ -1,4 +1,14 @@
-import type { DataDrivenPropertyValueSpecification, FormattedSpecification } from 'maplibre-gl';
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+
+import type {
+	DataDrivenPropertyValueSpecification,
+	FormattedSpecification,
+	SymbolLayerSpecification
+} from 'maplibre-gl';
+
+import type { Labels, VectorStyle, PointStyle } from '$routes/map/data/types/vector/style';
+
+import type { LayerItem } from '$routes/map/utils/layers/index';
 
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
@@ -137,4 +147,110 @@ export const compileLabelExpr = (le: LabelsExpressions, fields: FieldDef[]): Exp
 	}
 
 	return buildFieldExpression(field);
+};
+
+// ポイントのicon用レイヤーの作成
+// TODO: 廃止予定
+export const createPointIconLayer = (
+	layer: LayerItem,
+	style: PointStyle
+): SymbolLayerSpecification => {
+	const defaultStyle = style.default;
+	const key = style.labels.key as keyof Labels;
+	const showLabel = style.labels.show;
+	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
+	const labelPaint = {
+		'text-opacity': 1,
+		'text-color': '#000000',
+		'text-halo-color': '#FFFFFF',
+		'text-halo-width': 2
+	};
+	const labelLayout = {
+		'text-field': textField,
+		'text-size': 12,
+		'text-max-width': 12
+	};
+
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+		id: `${layer.id}`,
+		type: 'symbol',
+		paint: {
+			...(showLabel ? labelPaint : {}),
+			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {}),
+			'icon-opacity': style.opacity
+		},
+		layout: {
+			...(showLabel ? labelLayout : {}),
+			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
+			'icon-image': ['get', '_prop_id'],
+			'icon-size': style.icon?.size ?? 0.1,
+			'icon-anchor': 'bottom'
+
+			// ...(symbolStyle.layout ?? {})
+
+			// "text-variable-anchor": ["top", "bottom", "left", "right"],
+			// "text-radial-offset": 0.5,
+			// "text-justify": "auto",
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
+	};
+
+	// TODO: text-halo-color text-halo-width text-size
+	return symbolLayer;
+};
+
+// symbolレイヤーの作成
+// TODO: フォント
+export const createSymbolLayer = (
+	layer: LayerItem,
+	style: VectorStyle,
+	fields: FieldDef[]
+): SymbolLayerSpecification => {
+	const defaultStyle = style.default;
+	const key = style.labels.key as keyof Labels;
+
+	const LabelsExpression = style.labels.expressions.find((label) => label.key === key);
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+		id: `${layer.id}_label`,
+		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
+		type: 'symbol',
+		paint: {
+			'text-opacity': 1,
+			'icon-opacity': 1,
+			'text-color': '#000000',
+			'text-halo-color': '#e8e8e8',
+			'text-halo-width': 2,
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
+		},
+		layout: {
+			'text-field': compileLabelExpr(LabelsExpression!, fields),
+			'text-size': 12,
+			'text-max-width': 12,
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
+
+			// 自動オフセット
+			// 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+			// 'text-radial-offset': 0.5,
+			// 'text-justify': 'auto'
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
+	};
+
+	// TODO: text-halo-color text-halo-width text-size
+	return symbolLayer;
 };
