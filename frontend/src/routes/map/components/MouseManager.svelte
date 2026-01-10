@@ -30,6 +30,7 @@
 		isExternalCameraUpdate: boolean;
 		searchResults: ResultData[] | null;
 		focusFeature: (result: ResultData) => void;
+		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		contextMenuState: ContextMenuState | null;
 	}
 
@@ -45,6 +46,7 @@
 		isExternalCameraUpdate = $bindable(),
 		searchResults,
 		focusFeature,
+		toggleTooltip,
 		contextMenuState = $bindable()
 	}: Props = $props();
 	let hoveredId: number | null = null;
