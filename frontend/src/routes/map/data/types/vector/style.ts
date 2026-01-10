@@ -204,7 +204,7 @@ export type ExpressionType = 'color' | 'number';
 export interface LabelsExpressions {
 	key: string;
 	name: string;
-	value: DataDrivenPropertyValueSpecification<FormattedSpecification>;
+	expression?: DataDrivenPropertyValueSpecification<FormattedSpecification>;
 }
 
 export interface Labels {

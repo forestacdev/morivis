@@ -33,19 +33,25 @@ const entry: PolygonEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification2.webp`
 	},
 	properties: {
-		keys: [],
-		titles: [
-			{
-				conditions: [],
-				template: '地形分類（人工地形）'
-			}
-		],
-		dict: {
-			code: '図式コード',
-			name: '地形分類名',
-			description: '成因など',
-			risk: 'リスク'
+		attributeView: {
+			popupKeys: ['name', 'description', 'risk', 'code'],
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: '地形分類（人工地形）'
+				}
+			]
 		},
+		fields: [
+			{ key: 'code', type: 'string', label: '図式コード' },
+			{ key: 'name', type: 'string', label: '地形分類名' },
+			{ key: 'description', type: 'string', label: '成因など' },
+			{ key: 'risk', type: 'string', label: 'リスク' }
+		],
 		joinDataUrl: `${TABLE_JOIN_DATA_PATH}/experimental_landformclassification1.json`
 	},
 	interaction: {
@@ -90,8 +96,19 @@ const entry: PolygonEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'code',
-					name: 'code',
-					value: '{code}'
+					name: '図式コード'
+				},
+				{
+					key: 'name',
+					name: '地形分類名'
+				},
+				{
+					key: 'description',
+					name: '成因など'
+				},
+				{
+					key: 'risk',
+					name: 'リスク'
 				}
 			]
 		}

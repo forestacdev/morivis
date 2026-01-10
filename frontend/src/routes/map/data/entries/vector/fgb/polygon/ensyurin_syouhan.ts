@@ -24,25 +24,35 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		xyzImageTile: { x: 115387, y: 51671, z: 17 }
 	},
 	properties: {
-		keys: ['小林班ID', '樹種', '林齢', '面積', '林班'],
-		titles: [
-			{
-				template: '{樹種}林 {林齢}年生',
-				conditions: ['樹種', '林齢']
-			},
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '演習林小班'
-			}
-		]
+		fields: [
+			{ key: '林班', type: 'number', affix: { prefix: '第', suffix: '林班' } },
+			{ key: '小班', type: 'number', affix: { prefix: '第', suffix: '小班' } },
+			{ key: '小林班ID', type: 'string' },
+			{ key: '樹種', type: 'string' },
+			{ key: '林齢', type: 'number', unit: '年生' },
+			{ key: '面積', type: 'number', unit: 'ha' },
+			{ key: '植栽年', type: 'number', unit: '年' }
+		],
+		attributeView: {
+			popupKeys: ['小林班ID', '樹種', '林齢', '植栽年', '面積', '林班', '小班'],
+			titles: [
+				{
+					conditions: ['樹種', '林齢'],
+					template: '{樹種}林 {林齢}年生'
+				},
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '演習林小班'
+				}
+			]
+		}
 	},
 	interaction: {
-		// インタラクションの設定
-		clickable: true // クリック可能かどうか
+		clickable: true
 	},
 	style: {
 		type: 'fill',
@@ -123,7 +133,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 				{
 					key: '小林班ID_樹種_林齢',
 					name: '小林班ID・樹種・林齢',
-					value: [
+					expression: [
 						'step',
 						['zoom'],
 						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
@@ -165,7 +175,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 				{
 					key: '樹種',
 					name: '樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種']],
 						'', // プロパティが存在しない場合
@@ -182,23 +192,20 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 				},
 				{
 					key: '面積',
-					name: '面積',
-					value: '{面積} ha'
+					name: '面積'
 				},
 				{
 					key: '小林班ID',
-					name: '小林班ID',
-					value: '{小林班ID}'
+					name: '小林班ID'
 				},
 				{
 					key: '林班',
-					name: '林班',
-					value: '{林班}林班'
+					name: '林班'
 				},
 				{
 					key: '林齢',
 					name: '林齢',
-					value: [
+					expression: [
 						'case',
 						['all', ['has', '林齢'], ['!=', ['get', '林齢'], '']],
 						['concat', ['get', '林齢'], '年生'],
@@ -208,7 +215,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 				{
 					key: '植栽年',
 					name: '植栽年',
-					value: [
+					expression: [
 						'case',
 						['all', ['has', '植栽年'], ['!=', ['get', '植栽年'], '']],
 						['concat', ['get', '植栽年'], '年'],

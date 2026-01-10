@@ -13,6 +13,7 @@
 	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -83,15 +84,22 @@
 		return null;
 	});
 
-	let propDict = $derived.by(() => {
-		const dict: Record<string, string | number | null> = {};
-		layerEntries.forEach((entry) => {
-			if (entry.type === 'vector' && entry.properties && entry.properties.dict) {
-				Object.assign(dict, entry.properties.dict);
-			}
-		});
-		return dict;
+	let fields = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.fields;
+		}
+		return [];
 	});
+
+	// let propDict = $derived.by(() => {
+	// 	const dict: Record<string, string | number | null> = {};
+	// 	layerEntries.forEach((entry) => {
+	// 		if (entry.type === 'vector' && entry.properties && entry.properties.dict) {
+	// 			Object.assign(dict, entry.properties.dict);
+	// 		}
+	// 	});
+	// 	return dict;
+	// });
 
 	let propId = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
@@ -111,21 +119,29 @@
 
 	let imageKey = $derived.by(() => {
 		if (targetLayer && targetLayer.type === 'vector') {
-			return targetLayer.properties.imageKey;
+			return targetLayer.properties.attributeView.imageKey;
 		}
 		return null;
 	});
 
 	let iNaturalistNameKey = $derived.by(() => {
-		if (targetLayer && targetLayer.type === 'vector') {
-			return targetLayer.properties.iNaturalistNameKey;
+		if (
+			targetLayer &&
+			targetLayer.type === 'vector' &&
+			targetLayer.properties.attributeView.relations
+		) {
+			return targetLayer.properties.attributeView.relations?.iNaturalistNameKey;
 		}
 		return null;
 	});
 
 	let cityCodeKey = $derived.by(() => {
-		if (targetLayer && targetLayer.type === 'vector') {
-			return targetLayer.properties.cityCodeKey;
+		if (
+			targetLayer &&
+			targetLayer.type === 'vector' &&
+			targetLayer.properties.attributeView.relations
+		) {
+			return targetLayer.properties.attributeView.relations?.cityCodeKey;
 		}
 		return null;
 	});
@@ -294,9 +310,12 @@
 						<span class="text-[22px] font-bold"
 							>{targetLayer &&
 							targetLayer.type === 'vector' &&
-							targetLayer.properties.titles.length &&
+							targetLayer.properties.attributeView.titles.length &&
 							featureMenuData.properties
-								? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+								? generatePopupTitle(
+										featureMenuData.properties,
+										targetLayer.properties.attributeView.titles
+									)
 								: targetLayer?.metaData.name}</span
 						>
 						<span class="text-[14px] text-gray-300"
@@ -358,11 +377,12 @@
 				{#if !propId}
 					<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
 					<div class="mb-56 flex h-full w-full flex-col gap-3">
-						{#if featureMenuData.properties}
-							{#each Object.entries(featureMenuData.properties) as [key, value]}
+						{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
+							{#each Object.entries(filterByPopupKeys(featureMenuData.properties, targetLayer.properties.attributeView.popupKeys)) as [key, value]}
 								{#if key !== '_prop_id' && value && imageKey !== key}
-									{@const dictKey = propDict[key] ?? key}
-									<AttributeItem key={dictKey} {value} />
+									{@const field = fields.find((f) => f.key === key)}
+									<!-- TODO:辞書による属性名書き換え -->
+									<AttributeItem {key} {value} {field} />
 								{/if}
 							{/each}
 						{/if}

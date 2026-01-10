@@ -12,37 +12,11 @@ import type {
 	PolygonFeatureCollection
 } from '$routes/map/types/geojson';
 
+import type { VectorProperties } from '$routes/map/data/types/vector/properties';
+
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb' | 'geojsontile';
 
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
-
-export interface Title {
-	conditions: string[];
-	template: string;
-}
-
-export interface FieldDef {
-	key: string;
-	label?: string;
-	type?: 'string' | 'number' | 'integer';
-	unit?: string;
-	format?: {
-		digits?: number;
-		emptyText?: string;
-	};
-	dict?: Record<number | string, string>;
-}
-
-export interface VectorProperties {
-	keys: string[];
-	fields?: FieldDef[];
-	titles: Title[];
-	dict?: Record<string, any>;
-	joinDataUrl?: string;
-	imageKey?: string;
-	cityCodeKey?: string;
-	iNaturalistNameKey?: string;
-}
 
 export interface VectorInteraction {
 	clickable: boolean;

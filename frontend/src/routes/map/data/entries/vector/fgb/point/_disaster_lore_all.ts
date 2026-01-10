@@ -22,49 +22,55 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		tags: ['自然災害伝承碑'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: { x: 225, y: 100, z: 8 },
-		downloadUrl: 'https://github.com/gsi-cyberjapan/experimental_landformclassification'
+		downloadUrl: 'https://www.gsi.go.jp/bousaichiri/denshouhi.html'
 		// mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification1.webp`
 	},
 	properties: {
-		keys: [
-			'ID',
-			'LoreName',
-			'LoreYear',
-			'Address',
-			'DisasterName',
-			'DisasterKind',
-			'DisasterInfo',
-			'ReleaseDate',
-			'ModifyReleaseDate',
-			'Limitations',
-			'Image',
-			'ImageWidth',
-			'ImageHeight',
-			'id'
-		],
-		titles: [
-			{
-				conditions: ['LoreName'],
-				template: '{LoreName}'
-			},
-			{
-				conditions: [],
-				template: '自然災害伝承碑'
-			}
-		],
-		dict: {
-			ID: 'ID',
-			LoreName: '碑名',
-			LoreYear: '建立年',
-			Address: '所在地',
-			DisasterName: '災害名',
-			DisasterKind: '災害種別',
-			DisasterInfo: '伝承内容',
-			ReleaseDate: '公開日',
-			ModifyReleaseDate: '更新日',
-			Limitations: '制約事項'
+		attributeView: {
+			popupKeys: [
+				'ID',
+				'LoreName',
+				'LoreYear',
+				'Address',
+				'DisasterName',
+				'DisasterKind',
+				'DisasterInfo',
+				'ReleaseDate',
+				'ModifyReleaseDate',
+				'Limitations',
+				'Image',
+				'ImageWidth',
+				'ImageHeight',
+				'id'
+			],
+			titles: [
+				{
+					conditions: ['LoreName'],
+					template: '{LoreName}'
+				},
+				{
+					conditions: [],
+					template: '自然災害伝承碑'
+				}
+			],
+			imageKey: 'Image'
 		},
-		imageKey: 'Image'
+		fields: [
+			{ key: 'ID', type: 'string', label: 'ID' },
+			{ key: 'LoreName', type: 'string', label: '碑名' },
+			{ key: 'LoreYear', type: 'string', label: '建立年' },
+			{ key: 'Address', type: 'string', label: '所在地' },
+			{ key: 'DisasterName', type: 'string', label: '災害名' },
+			{ key: 'DisasterKind', type: 'string', label: '災害種別' },
+			{ key: 'DisasterInfo', type: 'string', label: '伝承内容' },
+			{ key: 'ReleaseDate', type: 'string', label: '公開日' },
+			{ key: 'ModifyReleaseDate', type: 'string', label: '更新日' },
+			{ key: 'Limitations', type: 'string', label: '制約事項' },
+			{ key: 'Image', type: 'string', label: '画像URL' },
+			{ key: 'ImageWidth', type: 'number', label: '画像幅' },
+			{ key: 'ImageHeight', type: 'number', label: '画像高さ' },
+			{ key: 'id', type: 'string', label: 'id' }
+		]
 	},
 	interaction: {
 		clickable: true
@@ -111,73 +117,59 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			expressions: [
 				{
 					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					name: 'ID'
 				},
 				{
 					key: 'LoreName',
-					name: 'LoreName',
-					value: '{LoreName}'
+					name: 'LoreName'
 				},
 				{
 					key: 'LoreYear',
-					name: 'LoreYear',
-					value: '{LoreYear}'
+					name: 'LoreYear'
 				},
 				{
 					key: 'Address',
-					name: 'Address',
-					value: '{Address}'
+					name: 'Address'
 				},
 				{
 					key: 'DisasterName',
-					name: 'DisasterName',
-					value: '{DisasterName}'
+					name: 'DisasterName'
 				},
 				{
 					key: 'DisasterKind',
-					name: 'DisasterKind',
-					value: '{DisasterKind}'
+					name: 'DisasterKind'
 				},
 				{
 					key: 'DisasterInfo',
-					name: 'DisasterInfo',
-					value: '{DisasterInfo}'
+					name: 'DisasterInfo'
 				},
 				{
 					key: 'ReleaseDate',
-					name: 'ReleaseDate',
-					value: '{ReleaseDate}'
+					name: 'ReleaseDate'
 				},
 				{
 					key: 'ModifyReleaseDate',
-					name: 'ModifyReleaseDate',
-					value: '{ModifyReleaseDate}'
+					name: 'ModifyReleaseDate'
 				},
 				{
 					key: 'Limitations',
-					name: 'Limitations',
-					value: '{Limitations}'
+					name: 'Limitations'
 				},
 				{
 					key: 'Image',
-					name: 'Image',
-					value: '{Image}'
+					name: 'Image'
 				},
 				{
 					key: 'ImageWidth',
-					name: 'ImageWidth',
-					value: '{ImageWidth}'
+					name: 'ImageWidth'
 				},
 				{
 					key: 'ImageHeight',
-					name: 'ImageHeight',
-					value: '{ImageHeight}'
+					name: 'ImageHeight'
 				},
 				{
 					key: 'id',
-					name: 'id',
-					value: '{id}'
+					name: 'id'
 				}
 			]
 		}

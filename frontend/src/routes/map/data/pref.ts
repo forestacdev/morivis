@@ -1,4 +1,3 @@
-import { locationBboxData } from './location_bbox';
 import type { Region } from './types/location';
 export const prefCodeDict = {
 	'01': '北海道',
