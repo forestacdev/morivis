@@ -23,16 +23,19 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/fac_sisetuannaitou.webp`
 	},
 	properties: {
-		keys: [],
-		titles: [
-			{
-				conditions: [],
-				template: '施設案内棟'
-			}
-		]
+		attributeView: {
+			popupKeys: ['name'],
+			titles: [
+				{
+					conditions: [],
+					template: '施設案内棟'
+				}
+			]
+		},
+		fields: [{ key: 'name', type: 'string' }]
 	},
 	interaction: {
-		clickable: true
+		clickable: false
 	},
 	style: {
 		type: 'circle',
@@ -76,8 +79,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			expressions: [
 				{
 					key: 'name',
-					name: 'name',
-					value: '{name}'
+					name: 'name'
 				}
 			]
 		}

@@ -63,7 +63,7 @@ const validateId = (id: string) => {
 };
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
-		validateId(id); // ここでエラーが発生します
+		validateId(id);
 	} catch (error) {
 		if (error instanceof Error) {
 			console.warn(`無効なidです: ${id}`);
