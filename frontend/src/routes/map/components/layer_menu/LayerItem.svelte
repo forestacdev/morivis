@@ -10,11 +10,10 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
+	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { layerAttributions } from '$routes/stores/attributions';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';

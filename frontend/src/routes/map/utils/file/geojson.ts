@@ -1,5 +1,5 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
-import type { AnyGeometry, GeometryType } from '$routes/map/types/geometry';
+import type { AnyGeometry } from '$routes/map/types/geometry';
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { MapGeoJSONFeature } from 'maplibre-gl';

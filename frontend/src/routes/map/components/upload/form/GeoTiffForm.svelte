@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { loadToGeotiffFile } from '$routes/map/utils/file/geotiff';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -21,7 +20,6 @@
 		const fileName = file.name.toLowerCase();
 		setFileName = fileName;
 		const id = `${file.name}_${file.size}_${file.lastModified}`;
-		const hoge = await loadToGeotiffFile(id, file);
 	};
 	$effect(() => {
 		if (dropFile) {

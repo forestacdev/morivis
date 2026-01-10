@@ -6,7 +6,6 @@ import maplibregl from 'maplibre-gl';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 
 export interface MapImageOptions {
 	name: string;

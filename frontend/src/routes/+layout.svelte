@@ -1,9 +1,9 @@
 <script lang="ts">
 	import '../app.css';
-	// @ts-ignore - virtual module provided by @vite-pwa/sveltekit
 	import Icon from '@iconify/svelte';
 	import { delay } from 'es-toolkit';
 	import { onMount } from 'svelte';
+	// @ts-expect-error - virtual module provided by @vite-pwa/sveltekit
 	import { pwaInfo } from 'virtual:pwa-info';
 
 	import { MOBILE_WIDTH } from './constants';

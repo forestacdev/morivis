@@ -26,10 +26,8 @@
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import LayerControl from '$routes/map/components/LayerControl.svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
-
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
@@ -545,9 +543,11 @@
 				? (showDataEntry as ModelMeshEntry<MeshStyle>)
 				: null;
 
-		previewMeshEntry
-			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
-			: mapStore.setThreeLayer(meshEntries, 'main');
+		if (previewMeshEntry) {
+			mapStore.setThreeLayer([previewMeshEntry], 'preview');
+		} else {
+			mapStore.setThreeLayer(meshEntries, 'main');
+		}
 
 		mapStore.terrainReload();
 

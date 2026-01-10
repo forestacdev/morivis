@@ -22,12 +22,12 @@
 	const dragover: (e: DragEvent) => void = (e) => {
 		e.preventDefault();
 		isDragover = true;
-		onDragover && onDragover(e);
+		if (onDragover) onDragover(e);
 	};
 	const dragleave: (e: DragEvent) => void = (e) => {
 		e.preventDefault();
 		isDragover = false;
-		onDragleave && onDragleave(e);
+		if (onDragleave) onDragleave(e);
 	};
 
 	// ドロップ完了時にファイルを取得
@@ -42,7 +42,7 @@
 		if (!files || files.length === 0) return;
 
 		// ファイル処理は親コンポーネントで行うため、ここでは何もしない
-		onDropFile && onDropFile(files);
+		if (onDropFile) onDropFile(files);
 	};
 </script>
 

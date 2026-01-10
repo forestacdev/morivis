@@ -3,7 +3,7 @@ import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_BASEMAP_STYLE
 } from '$routes/map/data/style';
-import { TOCHIGI_BBOX, WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'tochigi_ls_standtype',

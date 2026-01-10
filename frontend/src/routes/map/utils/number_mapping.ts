@@ -1,8 +1,4 @@
-import type {
-	NumberLinearExpression,
-	NumberStepExpression
-} from '$routes/map/data/types/vector/style';
-import { scaleLinear } from 'd3-scale';
+import type { NumberStepExpression } from '$routes/map/data/types/vector/style';
 
 export const generateNumberToNumberMap = (
 	mapping: NumberStepExpression['mapping']

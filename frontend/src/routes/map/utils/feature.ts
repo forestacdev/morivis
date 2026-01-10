@@ -1,5 +1,4 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type { FeatureCollection, Point, Feature } from 'geojson';
 export type ResultData = ResultPoiData | ResultCoordinateData | ResultAddressData | ResultLayerData;
 
 export type ResultDataType = 'poi' | 'coordinate' | 'address' | 'layer';

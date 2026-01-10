@@ -38,21 +38,11 @@
 
 	$effect(() => {
 		if (contextMenuState && contextMenuState.show) {
-			new Promise<number>(async (resolve, reject) => {
-				try {
-					const elev = await gsiGetElevation(
-						contextMenuState.lngLat.lng,
-						contextMenuState.lngLat.lat
-					);
-					resolve(elev);
-				} catch (error) {
-					reject(error);
-				}
-			})
+			gsiGetElevation(contextMenuState.lngLat.lng, contextMenuState.lngLat.lat)
 				.then((elev) => {
 					elevation = elev;
 				})
-				.catch((error) => {
+				.catch(() => {
 					elevation = 'error';
 				});
 		} else {

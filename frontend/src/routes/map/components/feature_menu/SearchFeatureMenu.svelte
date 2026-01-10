@@ -1,15 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { result } from 'es-toolkit/compat';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
-	import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
+	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
 	import { normalizeSchoolName } from '$routes/map/utils/normalized';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | null;

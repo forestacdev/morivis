@@ -1,8 +1,4 @@
-import {
-	COVER_IMAGE_BASE_PATH,
-	MAP_IMAGE_BASE_PATH,
-	ENTRY_PMTILES_VECTOR_PATH
-} from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
 const entry: PointEntry<TileMetaData> = {
 	id: 'fac_phenology_2020',

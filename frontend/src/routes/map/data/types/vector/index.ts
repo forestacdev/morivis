@@ -4,8 +4,6 @@ import type {
 	PointStyle
 } from '$routes/map/data/types/vector/style';
 
-import type { FeatureCollection } from 'geojson';
-
 import type { BaseMetaData } from '$routes/map/data/types';
 import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 import type {

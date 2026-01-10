@@ -1,4 +1,4 @@
-import type { HillshadeLayerSpecification } from 'maplibre-gl';
+// import type { HillshadeLayerSpecification } from 'maplibre-gl';
 
 // export const terrainSource = {
 // 	id: 'basemap-terrain',

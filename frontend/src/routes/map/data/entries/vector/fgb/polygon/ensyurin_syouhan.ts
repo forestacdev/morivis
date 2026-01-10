@@ -1,9 +1,4 @@
-import {
-	COVER_IMAGE_BASE_PATH,
-	ENTRY_FGB_PATH,
-	ENTRY_GEOJSON_PATH,
-	MAP_IMAGE_BASE_PATH
-} from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 

@@ -1,5 +1,5 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
-import type { VectorEntry, TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
+import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
+import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 
 const entry: PointEntry<TileMetaData> = {

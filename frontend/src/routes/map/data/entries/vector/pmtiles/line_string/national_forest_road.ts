@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 

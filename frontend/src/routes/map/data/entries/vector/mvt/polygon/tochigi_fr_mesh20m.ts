@@ -1,8 +1,7 @@
-import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import type { expressions } from 'maplibre-gl';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'tochigi_fr_mesh20m',

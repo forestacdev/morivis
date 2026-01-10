@@ -6,7 +6,6 @@
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
-	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
