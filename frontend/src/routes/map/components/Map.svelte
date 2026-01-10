@@ -27,7 +27,6 @@
 	import LayerControl from '$routes/map/components/LayerControl.svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
-	import StreetViewLayer from '$routes/map/components/map_layer/StreetViewLayer.svelte';
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
@@ -719,8 +718,6 @@
 		bind:showZoneForm
 		bind:focusBbox
 	/>
-
-	<StreetViewLayer map={maplibreMap} />
 
 	<!-- <WebGLCanvasLayer map={maplibreMap} canvasSource={webGLCanvasSource} /> -->
 	<MouseManager
