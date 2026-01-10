@@ -11,12 +11,12 @@
 </script>
 
 <label
-	class="flex w-full shrink-0 cursor-pointer select-none items-center justify-start gap-2 {disabled
+	class="flex w-full shrink-0 cursor-pointer items-center justify-start gap-2 select-none {disabled
 		? 'cursor-not-allowed opacity-50'
 		: ''}"
 >
 	<span
-		class="border-1 block aspect-square h-4 rounded-sm {value
+		class="block aspect-square h-4 rounded-sm border-1 {value
 			? ' bg-accent border-accent'
 			: 'border-base/80'}"
 	></span>

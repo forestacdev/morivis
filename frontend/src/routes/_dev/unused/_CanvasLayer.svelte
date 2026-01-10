@@ -1,33 +1,24 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import turfBbox from '@turf/bbox';
 	import turfDissolve from '@turf/dissolve';
-	import turfUnion from '@turf/union';
 	import earcut from 'earcut'; // earcutをインポート
-	import { set } from 'es-toolkit/compat';
-	import type { FeatureCollection, Feature } from 'geojson';
-	import type {
-		CanvasSourceSpecification,
-		CanvasSource,
-		MapGeoJSONFeature,
-		LngLatLike,
-		LngLatBounds
-	} from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
+	import type { CanvasSourceSpecification, CanvasSource } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import fragmentShaderSource from '$routes/CanvasLayer/shader/fragment.glsl?raw';
 	import vertexShaderSource from '$routes/CanvasLayer/shader/vertex.glsl?raw';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import type { PolygonGeometry } from '$routes/map/types/geometry';
+	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/file/geojson';
 	import { selectedHighlightData, type SelectedHighlightData } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
-	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/file/geojson';
 
 	let element = $state<HTMLCanvasElement | null>(null);
 	let { canvasSource = $bindable() }: { canvasSource: CanvasSourceSpecification } = $props();
-	let vertices = [];
-	let indices = [];
-	let resolution = [];
-	let geojson = $state<FeatureCollection | null>(null);
+	let vertices: number[] = [];
+	let indices: number[] = [];
+	let resolution: number[] = [];
+	let geojson = $state<FeatureCollection<PolygonGeometry> | null>(null);
 	let color: [number, number, number, number] = [0.0, 1.0, 0.0, 0.5];
 
 	onMount(() => {
@@ -129,7 +120,7 @@
 			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 		};
 
-		const resetAndDrawPolygon = (_geojson: FeatureCollection): void => {
+		const resetAndDrawPolygon = (_geojson: FeatureCollection<PolygonGeometry>): void => {
 			console.log('resetAndDrawPolygon');
 			const map = mapStore.getMap();
 			if (!map) return;
@@ -209,9 +200,9 @@
 			if (data.features.length === 0) return;
 
 			if (data.features.length > 1) {
-				geojson = turfDissolve(data);
+				geojson = turfDissolve(data as any) as FeatureCollection<PolygonGeometry>;
 			} else {
-				geojson = data;
+				geojson = data as unknown as FeatureCollection<PolygonGeometry>;
 			}
 		};
 

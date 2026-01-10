@@ -1,14 +1,6 @@
-import type {
-	RasterBaseMapStyle,
-	RasterCadStyle,
-	RasterPMTilesEntry
-} from '$routes/map/data/types/raster';
-import {
-	DEFAULT_RASTER_BASEMAP_INTERACTION,
-	DEFAULT_RASTER_BASEMAP_STYLE
-} from '$routes/map/data/style';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
-import { ENTRY_PMTILES_RASTER_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/style';
+import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterCadStyle> = {
 	id: 'ziriki_floor_plan',

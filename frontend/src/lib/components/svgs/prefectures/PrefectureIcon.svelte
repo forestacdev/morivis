@@ -106,7 +106,7 @@
 
 	let { code, width = '100px' }: Props = $props();
 
-	let Component = $state(components[code] || null);
+	let Component = $derived(components[code] || null);
 </script>
 
 <Component {width} />

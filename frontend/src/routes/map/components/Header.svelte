@@ -1,25 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
-	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
-
-	import { mapMode } from '$routes/stores';
-	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { type LngLat } from 'maplibre-gl';
-
-	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
-	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
-	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import Fuse from 'fuse.js';
-	import { DATA_PATH } from '$routes/constants';
+	import { type LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
-	import { showNotification } from '$routes/stores/notification';
+
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
-	import { detectCoordinateOrder } from './search_menu/search';
+
+	import { DATA_PATH } from '$routes/constants';
+	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
+	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
+	import { mapMode } from '$routes/stores';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -29,9 +28,9 @@
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
+		showDataEntry: GeoDataEntry | null;
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 		focusFeature: (result: ResultData) => void;
-		showDataEntry: GeoDataEntry | null;
 	}
 
 	let {
@@ -119,13 +118,13 @@
 				const data = item.item;
 
 				return {
-					type: 'poi',
+					type: 'poi' as const,
 					name: data.name,
-					location: dict[data.layer_id] || null,
+					location: dict[data.layer_id] || '---',
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,
-					propId: data.prop_id
+					propId: data.prop_id ?? ''
 				};
 			});
 
@@ -137,18 +136,22 @@
 
 				const addressSearchResponse = await addressSearch(searchWord);
 
+				if (!addressSearchResponse) {
+					throw new Error('住所検索に失敗しました');
+				}
+
 				addressSearchData = addressSearchResponse
 					.slice(0, LIMIT - result.length)
 					.map(({ geometry: { coordinates: center }, properties }) => {
 						const address = properties.addressCode
 							? addressCodeToAddress(properties.addressCode)
-							: null;
+							: '---';
 
 						return {
-							type: 'address',
+							type: 'address' as const,
 							point: center,
 							name: properties.title,
-							location: address
+							location: address ?? '---'
 						};
 					});
 			}
@@ -193,7 +196,7 @@
 	let showSearchForm = $state<boolean>(true);
 </script>
 
-<div class="bg-main right-2 top-2 flex w-full items-center justify-between p-2 max-lg:hidden">
+<div class="bg-main top-2 right-2 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
@@ -202,7 +205,7 @@
 	{#if !$showDataMenu}
 		<div
 			bind:this={searchContainerRef}
-			class="border-sub border-1 relative flex max-w-[400px] flex-1 items-center rounded-full {showDataEntry
+			class="border-sub relative flex max-w-[400px] flex-1 items-center rounded-full border-1 {showDataEntry
 				? 'pointer-events-none opacity-0'
 				: ''}"
 		>
@@ -233,6 +236,7 @@
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>
+		<TerrainControl />
 		<GeolocateControl />
 		<StreetViewControl />
 

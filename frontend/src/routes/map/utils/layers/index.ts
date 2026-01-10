@@ -1,17 +1,12 @@
 import { HIGHLIGHT_LAYER_COLOR, INT_ADD_LAYER_IDS } from '$routes/constants';
 
 import type {
-	SourceSpecification,
 	LayerSpecification,
 	FillLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
-	HeatmapLayerSpecification,
 	FillExtrusionLayerSpecification,
-	RasterLayerSpecification,
-	HillshadeLayerSpecification,
-	BackgroundLayerSpecification,
 	FilterSpecification,
 	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
@@ -28,19 +23,14 @@ import type {
 	VectorStyle,
 	ColorsStyle,
 	NumbersStyle,
-	NumbersExpression,
-	NumberSingleExpression,
 	NumberLinearExpression,
 	NumberMatchExpression,
-	NumberStepExpressions,
-	ColorsExpression,
-	ColorSingleExpression,
+	NumberStepExpression,
 	ColorMatchExpression,
 	ColorStepExpression,
 	PointStyle,
 	PolygonStyle,
-	LineStringStyle,
-	PolygonOutLine
+	LineStringStyle
 } from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
@@ -69,6 +59,7 @@ import { get } from 'svelte/store';
 import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -88,36 +79,6 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 		}
 	}
 });
-
-const highlightFillPaint: FillLayerSpecification['paint'] = {
-	'fill-opacity': 0.4,
-	'fill-color': HIGHLIGHT_LAYER_COLOR,
-	'fill-outline-color': '#ffffff'
-};
-
-const highlightLinePaint: LineLayerSpecification['paint'] = {
-	'line-color': HIGHLIGHT_LAYER_COLOR,
-	'line-opacity': 1,
-	'line-width': 5
-};
-
-const highlightCirclePaint: CircleLayerSpecification['paint'] = {
-	'circle-color': HIGHLIGHT_LAYER_COLOR,
-	'circle-radius': 10,
-	'circle-stroke-width': 5,
-	'circle-stroke-color': '#ffffff'
-};
-
-const highlightSymbolPaint: SymbolLayerSpecification['paint'] = {
-	'text-color': HIGHLIGHT_LAYER_COLOR,
-	'text-halo-color': '#FFFFFF',
-	'text-halo-width': 10,
-	'text-opacity': 1
-};
-
-const highlightSymbolLayout: SymbolLayerSpecification['layout'] = {
-	'text-size': 20
-};
 
 interface LayerItem {
 	id: string;
@@ -139,77 +100,6 @@ interface LayerItem {
 	'source-layer'?: string;
 	filter?: FilterSpecification;
 }
-
-// TODO: 使ってないので消す
-/* ハイライトレイヤー */
-export const createHighlightLayer = (
-	_selectedHighlightData: SelectedHighlightData | null
-):
-	| FillLayerSpecification
-	| LineLayerSpecification
-	| CircleLayerSpecification
-	| SymbolLayerSpecification
-	| undefined => {
-	if (!_selectedHighlightData) return undefined;
-	const entry = _selectedHighlightData.layerEntry;
-	const { format, style, metaData, type } = entry;
-
-	if (entry.type === 'raster') return undefined;
-	const layerId = `@highlight_${entry.id}`;
-
-	// TODO 元のデータが削除されたらハイライトを消す必要がある
-	const sourceId = `${entry.id}_source`;
-
-	const layer: LayerItem = {
-		id: layerId,
-		source: sourceId,
-		maxzoom: 24,
-		minzoom: metaData.minZoom ?? 1
-	};
-
-	// case 'vector': {
-
-	// TODO idとして決めるkey
-	// if (layerEntry.idField) {
-	// 	baseLayer.filter = ['==', ['get', layerEntry.idField], selectedhighlightData.featureId];
-	// }
-	// filter: ['==', ['get', layerEntry.id_field], selectedhighlightData.featureId]
-
-	// }
-
-	let vectorLayer;
-
-	if (type === 'vector') {
-		if (format.type === 'mvt' || format.type === 'pmtiles') {
-			if ('sourceLayer' in metaData) {
-				layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
-			}
-		}
-
-		vectorLayer = createVectorLayer(layer, style);
-		if (!vectorLayer) return undefined;
-		switch (vectorLayer.type) {
-			case 'fill':
-				vectorLayer.paint = highlightFillPaint;
-				break;
-			case 'line':
-				vectorLayer.paint = highlightLinePaint;
-				break;
-			case 'circle':
-				vectorLayer.paint = highlightCirclePaint;
-				break;
-			case 'symbol':
-				vectorLayer.paint = highlightSymbolPaint;
-				// vectorLayer.layout = highlightSymbolLayout;
-				break;
-			default:
-				break;
-		}
-
-		vectorLayer.filter = ['==', ['id'], _selectedHighlightData.featureId];
-	}
-	return vectorLayer;
-};
 
 const generateMatchExpression = (
 	expressionData: ColorMatchExpression
@@ -302,24 +192,6 @@ const getColorExpression = (colors: ColorsStyle) => {
 	}
 };
 
-const getPatternSingleExpression = (
-	colors: ColorsStyle
-): DataDrivenPropertyValueSpecification<ColorSpecification> | undefined => {
-	const key = colors.key;
-	const expressionData = colors.expressions.find((expression) => expression.key === key);
-	if (!expressionData) {
-		return undefined;
-	}
-
-	if (expressionData.type === 'single' || expressionData.type === 'raw') {
-		console.warn(expressionData.mapping.pattern);
-		if (!expressionData.mapping.pattern) {
-			return undefined;
-		}
-		return ['get', expressionData.mapping.pattern];
-	}
-};
-
 const getPatternMatchExpression = (
 	expressionData: ColorMatchExpression
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
@@ -389,12 +261,14 @@ const generateNumberMatchExpression = (
 };
 
 const generateNumberStepExpression = (
-	expressionData: NumberStepExpressions
+	expressionData: NumberStepExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
+	const { range, divisions, values } = expressionData.mapping;
+	const [min, max] = range;
 
 	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
-	const expression = [
+	const expression: unknown[] = [
 		'step',
 		[
 			'case',
@@ -406,7 +280,16 @@ const generateNumberStepExpression = (
 		] // 数値以外の場合に -9999 を使用
 	];
 
-	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
+	// データ範囲に応じた適切な桁数を自動決定
+	const dataRange = max - min;
+	const decimalPlaces = dataRange >= 100 ? 0 : dataRange >= 10 ? 1 : dataRange >= 1 ? 2 : 3;
+
+	// 均等分割してカテゴリを生成
+	const categories = Array.from({ length: divisions }, (_, i) => {
+		const ratio = i / (divisions - 1);
+		const value = min + (max - min) * ratio;
+		return Number(value.toFixed(decimalPlaces));
+	});
 
 	if (categories.length !== values.length) {
 		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
@@ -416,13 +299,8 @@ const generateNumberStepExpression = (
 	// 最初のカテゴリの色を追加（数値が -9999 の場合のデフォルト色）
 	expression.push(0);
 
-	// 残りのカテゴリと対応する色を追加
-	// for (let i = 0; i < categories.length; i++) {
-	// 	expression.push(categories[i], values[i]);
-	// }
-
+	// カテゴリと対応する値を追加
 	categories.forEach((category, index) => {
-		// カテゴリの値と対応する色をステップ式に追加
 		expression.push(category, values[index]);
 	});
 
@@ -471,19 +349,29 @@ const getSelectedColorExpression = (
 		['boolean', ['feature-state', 'selected'], false],
 		HIGHLIGHT_LAYER_COLOR,
 		colorExpression
-	];
+	] as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
 
 const getSelectedOpacityExpression = (
 	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
 ): DataDrivenPropertyValueSpecification<number> => {
-	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.8, numbercolorExpression];
+	return [
+		'case',
+		['boolean', ['feature-state', 'selected'], false],
+		0.8,
+		numbercolorExpression
+	] as DataDrivenPropertyValueSpecification<number>;
 };
 
 const getSelectedIconSizeExpression = (
 	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
 ): DataDrivenPropertyValueSpecification<number> => {
-	return ['case', ['boolean', ['feature-state', 'selected'], false], 0.12, numbercolorExpression];
+	return [
+		'case',
+		['boolean', ['feature-state', 'selected'], false],
+		0.12,
+		numbercolorExpression
+	] as DataDrivenPropertyValueSpecification<number>;
 };
 // fillレイヤーの作成
 const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
@@ -796,7 +684,7 @@ const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpe
 			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
 			'text-size': 12,
 			'text-max-width': 12,
-			'text-font': ['Noto Sans JP Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 
 			// 自動オフセット
@@ -886,7 +774,7 @@ export const createLayersItems = (
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
 			const sourceId = `${entry.id}_source`;
-			const { format, style, metaData, interaction, type, auxiliaryLayers } = entry;
+			const { format, style, metaData, interaction, type } = entry;
 
 			const layer: LayerItem = {
 				id: layerId,
@@ -1032,8 +920,8 @@ export const createLayersItems = (
 					}
 
 					// 補助レイヤーの追加
-					if (auxiliaryLayers) {
-						auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
+					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
+						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
 							const type = auxiliaryLayer.type;
 							if (type === 'fill') {
 								fillLayerItems.push(auxiliaryLayer);

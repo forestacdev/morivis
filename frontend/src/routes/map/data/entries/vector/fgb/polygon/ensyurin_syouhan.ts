@@ -1,9 +1,4 @@
-import {
-	COVER_IMAGE_BASE_PATH,
-	ENTRY_FGB_PATH,
-	ENTRY_GEOJSON_PATH,
-	MAP_IMAGE_BASE_PATH
-} from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 
@@ -122,9 +117,51 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 			lineStyle: 'dashed'
 		},
 		labels: {
-			key: '樹種', // 現在選択されているラベルのキー
+			key: '小林班ID_樹種_林齢', // 現在選択されているラベルのキー
 			show: true, // ラベル表示状態の色
 			expressions: [
+				{
+					key: '小林班ID_樹種_林齢',
+					name: '小林班ID・樹種・林齢',
+					value: [
+						'step',
+						['zoom'],
+						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
+						[
+							'case',
+							['all', ['has', '樹種'], ['has', '林齢'], ['!=', ['get', '林齢'], '']],
+							['concat', ['get', '樹種'], '林'],
+							['has', '樹種'],
+							['get', '樹種'],
+							''
+						],
+						15, // zoom >= 15 から以下を表示
+						// zoom >= 15: 小林班ID + 樹種・林齢
+						[
+							'case',
+							[
+								'all',
+								['has', '小林班ID'],
+								['has', '樹種'],
+								['has', '林齢'],
+								['!=', ['get', '林齢'], '']
+							],
+							[
+								'concat',
+								['get', '小林班ID'],
+								'\n',
+								['get', '樹種'],
+								'林',
+								'\n',
+								['get', '林齢'],
+								'年生'
+							],
+							['all', ['has', '小林班ID'], ['has', '樹種']],
+							['concat', ['get', '小林班ID'], '\n', ['get', '樹種']],
+							''
+						]
+					]
+				},
 				{
 					key: '樹種',
 					name: '樹種',

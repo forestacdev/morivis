@@ -2,9 +2,10 @@
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
-	import { mapStore } from '$routes/stores/map';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
+
 	import { checkMobile } from '$routes/map/utils/ui';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -127,7 +128,6 @@
 	});
 
 	// フォールバック画像またはプレースホルダーを表示するかどうか
-	const showPlaceholder = $derived(!imageLoaded && !imageError);
 	const showImage = $derived(imageLoaded && !imageError);
 </script>
 
@@ -148,7 +148,7 @@
 				{#if showImage}
 					<img
 						transition:fade={{ duration: 100 }}
-						class="hover:scale-120 absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150"
+						class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-120"
 						src={imageUrl}
 						alt={properties.name}
 					/>
@@ -181,7 +181,7 @@
 				{#if showImage}
 					<img
 						transition:fade={{ duration: 100 }}
-						class="border-base bg-main border-3 absolute h-full w-full rounded-full object-cover transition-all duration-150 {isHover ||
+						class="border-base bg-main absolute h-full w-full rounded-full border-3 object-cover transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-120'
 							: ''}"
@@ -192,7 +192,7 @@
 					<!-- エラー時のフォールバック -->
 					<div
 						transition:fade={{ duration: 100 }}
-						class="border-base border-3 absolute flex h-full w-full items-center justify-center rounded-full bg-gray-400 transition-all duration-150 {isHover ||
+						class="border-base absolute flex h-full w-full items-center justify-center rounded-full border-3 bg-gray-400 transition-all duration-150 {isHover ||
 						clickId === featureId
 							? 'scale-120'
 							: ''}"

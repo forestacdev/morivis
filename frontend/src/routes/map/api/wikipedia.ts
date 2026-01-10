@@ -51,6 +51,16 @@ interface WikipediaPage {
 	redirect?: string;
 }
 
+// 画像ライセンス情報
+export interface ImageLicenseInfo {
+	license: string;
+	licenseShortName: string;
+	licenseUrl?: string;
+	artist?: string;
+	attributionRequired: boolean;
+	isAllowed: boolean;
+}
+
 // 簡略化された型（実際に使う部分のみ）
 export interface WikiArticle {
 	pageId: number;
@@ -71,7 +81,77 @@ export interface WikiArticle {
 	lastModified?: string;
 	wasRedirected?: boolean;
 	originalTitle?: string;
+	imageLicense?: ImageLicenseInfo;
 }
+
+// 教育目的で二次利用可能なライセンス
+const ALLOWED_LICENSES = [
+	'pd', // パブリックドメイン
+	'public domain',
+	'cc0', // CC0
+	'cc-by', // CC BY（帰属表示のみ）
+	'cc-by-sa', // CC BY-SA（帰属表示・継承）
+	'cc-by-2.0',
+	'cc-by-2.5',
+	'cc-by-3.0',
+	'cc-by-4.0',
+	'cc-by-sa-2.0',
+	'cc-by-sa-2.5',
+	'cc-by-sa-3.0',
+	'cc-by-sa-4.0',
+	'gfdl' // GNU Free Documentation License
+];
+
+// ライセンスが許可されているかチェック
+const isLicenseAllowed = (license: string): boolean => {
+	if (!license) return false;
+	const normalized = license.toLowerCase().replace(/\s+/g, '-');
+	return ALLOWED_LICENSES.some((allowed) => normalized.includes(allowed));
+};
+
+// 画像のライセンス情報を取得
+const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo | null> => {
+	const endpoint = 'https://commons.wikimedia.org/w/api.php';
+	const params = new URLSearchParams({
+		action: 'query',
+		format: 'json',
+		titles: `File:${pageimage}`,
+		prop: 'imageinfo',
+		iiprop: 'extmetadata',
+		origin: '*'
+	});
+
+	try {
+		const response = await fetch(`${endpoint}?${params}`);
+		const data = await response.json();
+
+		const pages = data.query?.pages;
+		if (!pages) return null;
+
+		const pageId = Object.keys(pages)[0];
+		const page = pages[pageId];
+
+		if (pageId === '-1' || !page.imageinfo?.[0]?.extmetadata) {
+			return null;
+		}
+
+		const metadata = page.imageinfo[0].extmetadata;
+		const license = metadata.License?.value || metadata.LicenseShortName?.value || '';
+		const licenseShortName = metadata.LicenseShortName?.value || license;
+
+		return {
+			license,
+			licenseShortName,
+			licenseUrl: metadata.LicenseUrl?.value,
+			artist: metadata.Artist?.value?.replace(/<[^>]*>/g, ''), // HTMLタグを除去
+			attributionRequired: metadata.AttributionRequired?.value === 'true',
+			isAllowed: isLicenseAllowed(license)
+		};
+	} catch (error) {
+		console.error('License API Error:', error);
+		return null;
+	}
+};
 
 // Wikipedia APIで記事情報を取得
 export const getWikipediaArticle = async (title: string): Promise<WikiArticle | null> => {
@@ -137,18 +217,34 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		// 	);
 		// }
 
+		// 画像のライセンス情報を取得
+		let imageLicense: ImageLicenseInfo | undefined;
+		let thumbnail = page.thumbnail;
+
+		if (page.pageimage) {
+			const licenseInfo = await getImageLicenseInfo(page.pageimage);
+			if (licenseInfo) {
+				imageLicense = licenseInfo;
+				// ライセンスが許可されていない場合はサムネイルを除外
+				if (!licenseInfo.isAllowed) {
+					thumbnail = undefined;
+				}
+			}
+		}
+
 		return {
 			pageId: page.pageid,
 			title: page.title,
 			extract: page.extract,
-			thumbnail: page.thumbnail,
+			thumbnail,
 			url: page.fullurl,
 			coordinates: page.coordinates?.[0],
 			categories,
 			prefecture: prefecture || undefined,
 			lastModified: page.revisions?.[0]?.timestamp,
 			wasRedirected: !!redirectInfo,
-			originalTitle: redirectInfo ? redirectInfo.from : title
+			originalTitle: redirectInfo ? redirectInfo.from : title,
+			imageLicense
 		};
 	} catch (error) {
 		console.error('Wikipedia API Error:', error);

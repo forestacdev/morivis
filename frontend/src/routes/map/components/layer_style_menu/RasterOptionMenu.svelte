@@ -1,8 +1,12 @@
 <script lang="ts">
-	import DemOption from './raster_option/DemOption.svelte';
-	import TiffOption from './raster_option/TiffOption.svelte';
+	import Icon from '@iconify/svelte';
 
-	import RasterPresetPulldownBox from '$routes/map/components/layer_style_menu/raster_option/RasterPresetPullDownBox.svelte';
+	import DemOption from './raster_option/DemOption.svelte';
+	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
+	import TiffOption from './raster_option/TiffOption.svelte';
+	import Accordion from '../atoms/Accordion.svelte';
+
+	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,
@@ -12,11 +16,8 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
-	import Accordion from '../atoms/Accordion.svelte';
-	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
-	import Icon from '@iconify/svelte';
-	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
+	import { getRasterStylePreset, type RasterStylePreset } from '$routes/map/utils/raster';
 
 	interface Props {
 		layerEntry: RasterEntry<

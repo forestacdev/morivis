@@ -1,16 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
-	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-	import { normalizeSchoolName } from '$routes/map/utils/normalized';
-	import type { result } from 'es-toolkit/compat';
+	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
+	import { normalizeSchoolName } from '$routes/map/utils/normalized';
+	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
@@ -60,7 +55,7 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col max-lg:hidden"
+		class="bg-main w-side-menu max absolute top-0 left-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
@@ -84,7 +79,7 @@
 		{:then wikiMenuData}
 			<div
 				in:fade={{ duration: 100 }}
-				class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2"
+				class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2"
 			>
 				<!-- 画像 -->
 				<div class="b relative w-full p-2">
@@ -96,6 +91,27 @@
 								alt="画像"
 								src={wikiMenuData.thumbnail.source}
 							/>
+							<!-- ライセンス表示 -->
+							{#if wikiMenuData.imageLicense}
+								<div class="mt-1 text-xs text-gray-400">
+									{#if wikiMenuData.imageLicense.artist}
+										<span>{wikiMenuData.imageLicense.artist}</span>
+										<span class="mx-1">/</span>
+									{/if}
+									{#if wikiMenuData.imageLicense.licenseUrl}
+										<a
+											href={wikiMenuData.imageLicense.licenseUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="text-accent hover:underline"
+										>
+											{wikiMenuData.imageLicense.licenseShortName}
+										</a>
+									{:else}
+										<span>{wikiMenuData.imageLicense.licenseShortName}</span>
+									{/if}
+								</div>
+							{/if}
 						{/if}
 					{/if}
 
@@ -139,7 +155,7 @@
 							<span class="my-2 text-justify text-base">{wikiMenuData.extract}</span>
 							<div class="flex w-full items-center justify-center">
 								<a
-									class="c-btn-confirm mt-4 flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+									class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
 									href={wikiMenuData.url}
 									target="_blank"
 									rel="noopener noreferrer"

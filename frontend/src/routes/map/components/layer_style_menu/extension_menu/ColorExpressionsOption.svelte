@@ -1,26 +1,17 @@
 <script lang="ts">
-	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import type {
-		VectorLayerType,
-		ColorsExpression,
-		LabelsExpressions,
-		ColorsStyle,
-		ColorSingleExpression,
-		NumbersStyle
-	} from '$routes/map/data/types/vector/style';
-	import { generateNumberAndColorMap, generateColorPalette } from '$routes/map/utils/color_mapping';
 	import ColorPatternPicker from './ColorPatternPicker.svelte';
 	import ColorScaleStep from './ColorScaleStep.svelte';
+	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
+
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
-		getSequentSchemeColors,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
-	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
-	import { generateStepGradient } from '$routes/map/utils/color_mapping';
-	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
+	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
+
 	interface Props {
 		setExpression: ColorsExpression;
 	}
@@ -91,7 +82,7 @@
 	/>
 	{#if stepPallet}
 		{#each stepPallet.categories as _, index}
-			<div class="flex-between flex w-full select-none gap-2 text-base">
+			<div class="flex-between flex w-full gap-2 text-base select-none">
 				<div class="w-full">{stepPallet.categories[index]}</div>
 				<div class="p-2" style="background-color: {stepPallet.values[index]};"></div>
 			</div>

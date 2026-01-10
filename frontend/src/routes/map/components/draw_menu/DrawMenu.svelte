@@ -16,10 +16,9 @@
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { mapStore } from '$routes/stores/map';
-
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
 	import { downloadGeojson } from '$routes/map/utils/file/geojson';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];

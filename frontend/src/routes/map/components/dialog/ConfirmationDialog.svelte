@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
 	import { fade, scale } from 'svelte/transition';
+
+	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
 
 	const handleConfirm = () => {
 		resolveConfirmDialog(true);

@@ -1,5 +1,5 @@
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_FGB_PATH } from '$routes/constants';
 
 import type { PointEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 
@@ -82,7 +82,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#e70000'
+						value: '#e31a1c'
 					}
 				}
 			]

@@ -1,11 +1,12 @@
 <script lang="ts">
+	import MeshOption from './model_option/MeshOption.svelte';
+	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
+
 	import type {
 		AnyModelEntry,
 		MeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
-	import MeshOption from './model_option/MeshOption.svelte';
-	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 
 	interface Props {
 		layerEntry: AnyModelEntry;

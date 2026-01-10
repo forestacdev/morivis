@@ -2,16 +2,16 @@
 	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
 	import { fade, fly } from 'svelte/transition';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { getAttributionName } from '$routes/map/data/attribution';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { getAttributionName } from '$routes/map/data/attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import { mapStore } from '$routes/stores/map';
-	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -59,11 +59,11 @@
 {#if showDataEntry}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="bg-main lg:w-side-menu absolute left-0 top-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
+		class="bg-main lg:w-side-menu absolute top-0 left-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
 	>
 		<div class="flex w-full justify-start gap-2 p-2 py-4">
 			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
-			<span class="select-none text-base text-lg max-lg:hidden">データプレビュー</span>
+			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
 		<div class="flex h-full flex-col text-base">
 			<!-- ヘッダー -->
@@ -76,7 +76,7 @@
 					<!-- タイプアイコン -->
 					{#if layertype}
 						<div
-							class="bounded-full bg-base absolute bottom-1 right-1 aspect-square rounded-full border-2 border-gray-900 p-2 text-black"
+							class="bounded-full bg-base absolute right-1 bottom-1 aspect-square rounded-full border-2 border-gray-900 p-2 text-black"
 						>
 							<Icon icon={getLayerIcon(layertype)} class="h-7 w-7" />
 						</div>
@@ -92,7 +92,7 @@
 
 					{#if showDataEntry?.metaData.downloadUrl}
 						<a
-							class="c-btn-confirm mt-4 flex select-none items-center justify-start gap-2 rounded-full p-2 px-4"
+							class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
 							href={showDataEntry?.metaData.downloadUrl}
 							target="_blank"
 							rel="noopener noreferrer"
@@ -130,7 +130,7 @@
 				</div>
 			</div>
 
-			<div class="c-scroll gap-2 overflow-y-auto overflow-x-hidden">
+			<div class="c-scroll gap-2 overflow-x-hidden overflow-y-auto">
 				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
 					{#if showDataEntry}
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -140,6 +140,7 @@
 							{/if}
 
 							{#if showDataEntry?.metaData.description}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html formatDescription(showDataEntry?.metaData.description)}
 							{/if}
 						</div>

@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { fade } from 'svelte/transition';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -85,7 +86,7 @@
 		<div class="text-accent">データが取得できませんでした</div>
 	{/await}
 	<div
-		class="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 p-1 text-center text-xs text-white"
+		class="bg-opacity-50 absolute bottom-0 left-0 w-full bg-black p-1 text-center text-xs text-white"
 	>
 		{dataEntry.metaData.name}
 	</div>

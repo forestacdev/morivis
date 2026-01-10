@@ -1,13 +1,14 @@
 <script lang="ts">
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import Accordion from '../../atoms/Accordion.svelte';
+	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
+	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
+
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import type { ColorMapType, RasterDemEntry } from '$routes/map/data/types/raster';
-	import Accordion from '../../atoms/Accordion.svelte';
-	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
-	import { ColorMapManager } from '$routes/map/utils/color_mapping';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
-	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
+	import { ColorMapManager } from '$routes/map/utils/color_mapping';
+
 	const colorMapManager = new ColorMapManager();
 
 	interface Props {

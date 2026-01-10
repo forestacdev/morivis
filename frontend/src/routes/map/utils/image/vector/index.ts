@@ -6,7 +6,6 @@ import maplibregl from 'maplibre-gl';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/location_bbox';
 
 export interface MapImageOptions {
 	name: string;
@@ -179,7 +178,7 @@ async function _generateMapImageParallel(
 
 		map.setBearing(bearing);
 		map.setPitch(pitch);
-		map.fitBounds(mapBounds, {
+		map.fitBounds(mapBounds as [number, number, number, number], {
 			duration: 0,
 			animate: false
 		});
@@ -248,7 +247,7 @@ async function _generateMapImageParallel(
 			try {
 				map.setBearing(bearing);
 				map.setPitch(pitch);
-				map.fitBounds(mapBounds, {
+				map.fitBounds(mapBounds as [number, number, number, number], {
 					duration: 0,
 					animate: false
 				});
@@ -337,7 +336,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		}
 	} as GeoDataEntry;
 
-	let sources = await createSourcesItems([minimumEntry], 'preview');
+	const sources = await createSourcesItems([minimumEntry], 'preview');
 	const layers = await createLayersItems([minimumEntry], 'preview');
 
 	const style: maplibregl.StyleSpecification = {

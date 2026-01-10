@@ -1,0 +1,11 @@
+[**morivis TypeDoc**](../../../../README.md)
+
+***
+
+[morivis TypeDoc](../../../../README.md) / [data/types/tags](../README.md) / TAG\_LIST
+
+# Variable: TAG\_LIST
+
+> `const` **TAG\_LIST**: readonly \[`"森林"`, `"森林歩道"`, `"林道"`, `"地図"`, `"地形"`, `"田んぼ"`, `"地質図"`, `"河川"`, `"鳥獣保護区"`, `"道路"`, `"建物"`, `"国有林"`, `"街路樹"`, `"土壌図"`, `"微地形図"`, `"赤色立体地図"`, `"傾斜区分図"`, `"傾斜量図"`, `"基本図"`, `"背景地図"`, `"国有林"`, `"植生図"`, `"林班"`, `"小班"`, `"林相図"`, `"レーザ林相図"`, `"単木"`, `"看板"`, `"写真"`, `"地すべり"`, `"フェノロジー"`, `"DEM"`, `"DSM"`, `"DCHM"`, `"TWI"`, `"樹冠高"`, `"メッシュ"`, `"10m解像度"`, `"5m解像度"`, `"2.5m解像度"`, `"1m解像度"`, `"0.5m解像度"`, `"0.25m解像度"`, `"地形分類"`, `"磁気図"`, `"自然災害伝承碑"`, `"ジオイド高"`, `"土地被覆"`, `"樹木被覆率"`, `"標高段彩図"`, `"施設平面図"`, `"CAD"`, `"点群"`, `"3Dモデル"`\]
+
+Defined in: [frontend/src/routes/map/data/types/tags.ts:2](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/tags.ts#L2)

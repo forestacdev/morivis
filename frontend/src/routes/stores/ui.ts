@@ -1,11 +1,6 @@
 import type { UseEventTriggerType } from '$routes/map/types/ui';
 import { get, writable } from 'svelte/store';
-import {
-	checkMobile,
-	checkMobileWidth,
-	checkPc,
-	type MobileActiveMenu
-} from '$routes/map/utils/ui';
+import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
 import { isStreetView, isStyleEdit } from '$routes/stores';

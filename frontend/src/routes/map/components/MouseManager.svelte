@@ -1,33 +1,22 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
-	import type { LngLat, MapMouseEvent, Popup, MapGeoJSONFeature } from 'maplibre-gl';
+	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
-	import { mount } from 'svelte';
+	import type { ResultData } from '../utils/feature';
+	import { setStreetViewParams } from '../utils/params';
+	import { checkMobile } from '../utils/ui';
 
-	import LegendPopup from '$routes/map/components/popup/LegendPopup.svelte';
-	import TablePopup from '$routes/map/components/popup/TablePopup.svelte';
-	import { MAPLIBRE_POPUP_OPTIONS } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { CategoryLegend, GradientLegend, ZoomLevel } from '$routes/map/data/types/raster';
-	import {
-		isStreetView,
-		clickableVectorIds,
-		clickableRasterIds,
-		isStyleEdit
-	} from '$routes/stores';
-
-	import { selectedLayerId } from '$routes/stores';
-	import { mapStore } from '$routes/stores/map';
+	import type { ZoomLevel } from '$routes/map/data/types/raster';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
+	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
-	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
-	import type { FeatureMenuData } from '$routes/map/types';
-
-	import { setStreetViewParams } from '../utils/params';
-	import type { ResultAddressData, ResultData, ResultPoiData } from '../utils/feature';
-	import type { ContextMenuState } from '$routes/map/types/ui';
+	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -37,11 +26,11 @@
 		featureMenuData: FeatureMenuData | null;
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
-		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
 		searchResults: ResultData[] | null;
-		focusFeature: (result: ResultPoiData | ResultAddressData) => void;
+		focusFeature: (result: ResultData) => void;
+		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
 		contextMenuState: ContextMenuState | null;
 	}
 
@@ -53,63 +42,15 @@
 		streetViewPointData,
 		layerEntries,
 		showDataEntry,
-		toggleTooltip,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
 		searchResults,
 		focusFeature,
+		toggleTooltip,
 		contextMenuState = $bindable()
 	}: Props = $props();
-	let currentLayerIds: string[] = [];
 	let hoveredId: number | null = null;
 	let hoveredFeatureState: FeatureStateData | null = null;
-	let maplibrePopup = $state<Popup | null>(null); // ポップアップ
-
-	// ベクターポップアップの作成
-	const generatePopup = (feature: MapGeoJSONFeature, _lngLat: LngLat) => {
-		const popupContainer = document.createElement('div');
-		mount(TablePopup, {
-			target: popupContainer,
-			props: {
-				feature
-			}
-		});
-		if (maplibrePopup) {
-			maplibrePopup.remove();
-		}
-
-		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
-			.setLngLat(_lngLat)
-			.setDOMContent(popupContainer)
-			.addTo(mapStore.getMap() as maplibregl.Map);
-	};
-
-	// ラスターの色のガイドポップアップの作成
-	const generateLegendPopup = (
-		data: {
-			color: string;
-			label: string;
-		},
-		legend: CategoryLegend | GradientLegend,
-		_lngLat: LngLat
-	) => {
-		const popupContainer = document.createElement('div');
-		mount(LegendPopup, {
-			target: popupContainer,
-			props: {
-				data,
-				legend
-			}
-		});
-		if (maplibrePopup) {
-			maplibrePopup.remove();
-		}
-
-		maplibrePopup = new maplibregl.Popup(MAPLIBRE_POPUP_OPTIONS)
-			.setLngLat(_lngLat)
-			.setDOMContent(popupContainer)
-			.addTo(mapStore.getMap() as maplibregl.Map);
-	};
 
 	// ラスターのクリックイベント
 	const onRasterClick = async (lngLat: LngLat) => {
@@ -144,7 +85,7 @@
 			if (legend.type === 'category') {
 				const data = getGuide(pixelColor, legend);
 
-				generateLegendPopup(data, legend, lngLat);
+				// TODO: ラステーの凡例ポップアップ表示
 			}
 		}
 	};
@@ -225,15 +166,17 @@
 					showMarker = true;
 					markerLngLat = e.lngLat;
 
-					const windowX = e.originalEvent.clientX;
-					const windowY = e.originalEvent.clientY;
+					if (!checkMobile()) {
+						const windowX = e.originalEvent.clientX;
+						const windowY = e.originalEvent.clientY;
 
-					contextMenuState = {
-						show: true,
-						x: windowX,
-						y: windowY,
-						lngLat: e.lngLat
-					};
+						contextMenuState = {
+							show: true,
+							x: windowX,
+							y: windowY,
+							lngLat: e.lngLat
+						};
+					}
 				}
 				return;
 			}
@@ -336,7 +279,7 @@
 				const { properties } = searchFeatures[0];
 
 				const result = searchResults?.find((result) => result.id === properties.id);
-				focusFeature(result);
+				if (result) focusFeature(result);
 
 				// mapStore.panTo(feature.geometry.coordinates as [number, number], {
 				// 	duration: 500
@@ -355,9 +298,9 @@
 				const point =
 					feature.geometry.type === 'Point'
 						? feature.geometry.coordinates
-						: ([e.lngLat.lng, e.lngLat.lat] as [number, number]);
+						: [e.lngLat.lng, e.lngLat.lat];
 
-				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point);
+				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point as [number, number]);
 
 				featureMenuData = geojsonFeature;
 
@@ -431,12 +374,8 @@
 
 		if (features.length > 0) {
 			mapStore.setCursor('pointer');
-
-			// TODO: ツールチップの表示
-			// toggleTooltip(e, features[0]);
 		} else {
 			mapStore.setCursor('default');
-			// toggleTooltip();
 		}
 	});
 

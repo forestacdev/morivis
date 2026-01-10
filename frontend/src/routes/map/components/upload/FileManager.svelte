@@ -1,22 +1,19 @@
 <script lang="ts">
-	import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-	import type { DialogType } from '$routes/map/types';
 	import { createGeoJsonEntry } from '$routes/map/data';
 	import { geometryTypeToEntryType } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { showNotification } from '$routes/stores/notification';
-	import { csvFileToGeojson } from '$routes/map/utils/file/csv';
+	import type { DialogType } from '$routes/map/types';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { isBboxValid } from '$routes/map/utils/map';
-	import turfBbox from '@turf/bbox';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext } from '$routes/map/utils/proj/dict';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -43,7 +40,7 @@
 	let fileName = $state<string>('');
 
 	const setFile = async (file: File | FileList) => {
-		let geojsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
+		let geojsonData: FeatureCollection = { type: 'FeatureCollection', features: [] };
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
@@ -138,6 +135,11 @@
 			}
 		}
 
+		if (!geojsonData) {
+			showNotification('データが不正です', 'error');
+			return;
+		}
+
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 
 		if (!entryGeometryType) {
@@ -156,7 +158,12 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, fileName, bbox);
+		const entry = createGeoJsonEntry(
+			geojsonData,
+			entryGeometryType,
+			fileName,
+			bbox as [number, number, number, number]
+		);
 
 		if (!entry) {
 			showNotification('データが不正です', 'error');

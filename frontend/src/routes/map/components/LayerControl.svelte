@@ -1,6 +1,10 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { fly } from 'svelte/transition';
+
 	import Checkbox from './layer_menu/Checkbox.svelte';
 
+	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
 		selectedBaseMap,
 		showLabelLayer,
@@ -9,12 +13,7 @@
 		showBoundaryLayer,
 		showPoiLayer
 	} from '$routes/stores/layers';
-
-	import { fly } from 'svelte/transition';
-	import { baseMapList } from '$routes/map/utils/layers/base_map';
-	import { set3dParams } from '$routes/map/utils/params';
 	import { mapStore, isTerrain3d } from '$routes/stores/map';
-	import Icon from '@iconify/svelte';
 
 	isTerrain3d.subscribe((is3d) => {
 		mapStore.toggleTerrain(is3d);
@@ -45,7 +44,7 @@
 	});
 </script>
 
-<div bind:this={containerRef} class="absolute bottom-3 right-3 w-[400px] max-lg:hidden">
+<div bind:this={containerRef} class="absolute right-3 bottom-3 w-[400px] max-lg:hidden">
 	{#if showMenu}
 		<div
 			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
@@ -79,7 +78,7 @@
 								if ($selectedBaseMap === baseMap.type) return;
 								$selectedBaseMap = baseMap.type;
 							}}
-							class="flex cursor-pointer select-none flex-col items-center justify-start gap-2 rounded-md border-2 p-2 transition-colors duration-150 {$selectedBaseMap ===
+							class="flex cursor-pointer flex-col items-center justify-start gap-2 rounded-md border-2 p-2 transition-colors duration-150 select-none {$selectedBaseMap ===
 							baseMap.type
 								? 'border-accent'
 								: 'border-transparent'}"
@@ -101,7 +100,7 @@
 		onclick={() => {
 			showMenu = !showMenu;
 		}}
-		class="bg-base pointer-events-auto absolute bottom-0 right-0 grid shrink-0 cursor-pointer place-items-center items-center justify-end rounded-lg p-1 shadow-md"
+		class="bg-base pointer-events-auto absolute right-0 bottom-0 grid shrink-0 cursor-pointer place-items-center items-center justify-end rounded-lg p-1 shadow-md"
 	>
 		<img
 			src={baseMapList.find((map) => map.type === $selectedBaseMap)?.src}

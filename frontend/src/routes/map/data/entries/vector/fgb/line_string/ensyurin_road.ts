@@ -1,9 +1,4 @@
-import {
-	COVER_IMAGE_BASE_PATH,
-	ENTRY_FGB_PATH,
-	ENTRY_PMTILES_VECTOR_PATH,
-	MAP_IMAGE_BASE_PATH
-} from '$routes/constants';
+import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { GeoJsonMetaData, LineStringEntry } from '$routes/map/data/types/vector';
 
 const entry: LineStringEntry<GeoJsonMetaData> = {
@@ -21,7 +16,7 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 		location: '森林文化アカデミー',
 		tags: ['森林歩道', '林道'],
 		maxZoom: 17,
-		minZoom: 8,
+		minZoom: 12,
 		bounds: [136.919335, 35.546981, 136.92684, 35.555131],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_road.webp`,
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_road.webp`,
@@ -46,7 +41,7 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#cacaca'
+						value: '#d9d9d9'
 					}
 				},
 				{

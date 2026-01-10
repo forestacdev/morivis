@@ -1,12 +1,8 @@
-import { createSourcesItems } from '$routes/map/utils/sources';
-
 import type { GeoDataEntry } from '$routes/map/data/types';
 
-import { createLayersItems } from '$routes/map/utils/layers';
-import { generateMapImageDOM, generateVectorImageUrl, type MapImageOptions } from './vector';
+import { generateVectorImageUrl } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
-import * as tilebelt from '@mapbox/tilebelt';
-import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
+
 /** BlobURLかどうかを判定 */
 const isBlobUrl = (url: string): boolean => url.startsWith('blob:');
 

@@ -1,10 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { Snippet } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import { type ColorMapType } from '$routes/map/data/types/raster';
-
-	import type { Snippet } from 'svelte';
 	import { type SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
 	interface Props {
@@ -42,7 +41,7 @@
 		class="c-select flex w-full justify-between"
 	>
 		<div class="flex w-full items-center justify-center gap-2">
-			<span class="w-[180px] select-none text-start">{isColorMap}</span>
+			<span class="w-[180px] text-start select-none">{isColorMap}</span>
 
 			{@render children(isColorMap)}
 		</div>
@@ -52,7 +51,7 @@
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub c-scroll-sub absolute left-0 top-[60px] z-10 max-h-60 w-full divide-y divide-gray-300 overflow-hidden overflow-y-auto rounded-lg shadow-md"
+			class="bg-sub c-scroll-sub absolute top-[60px] left-0 z-10 max-h-60 w-full divide-y divide-gray-300 overflow-hidden overflow-y-auto rounded-lg shadow-md"
 		>
 			{#each mutableColorMapType as key (key)}
 				<label

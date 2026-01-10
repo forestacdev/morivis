@@ -1,33 +1,24 @@
 <script lang="ts">
-	import type { map } from 'es-toolkit/compat';
-
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
-
-	import type { Map as MapLibreMap } from 'maplibre-gl';
-	import type { Marker, LngLat } from 'maplibre-gl';
+	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
-	import { slide, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+	import { detectCoordinateOrder } from './search';
+
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
+	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { layerDataFuse } from '$routes/map/data';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { mapStore } from '$routes/stores/map';
-	import { isProcessing, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
-	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import type { ResultData, ResultPoiData } from '$routes/map/utils/feature';
-	import { debounce } from 'es-toolkit';
-	import { lonLatToTileCoords } from '$routes/map/utils/tile';
-	import { detectCoordinateOrder } from './search';
-	import maplibregl from 'maplibre-gl';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import type { ResultData } from '$routes/map/utils/feature';
+	import { encode } from '$routes/map/utils/normalized';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { encode } from '$routes/map/utils/normalized';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -124,7 +115,7 @@
 			const coordinateInfo = detectCoordinateOrder(encodedSearchWord);
 
 			if (coordinateInfo.isCoordinate) {
-				let point: [number, number];
+				let point: [number, number] = [0, 0];
 
 				if (coordinateInfo.order === 'lng_lat') {
 					point = [coordinateInfo.lng, coordinateInfo.lat] as [number, number];
@@ -153,13 +144,13 @@
 				const data = item.item;
 
 				return {
-					type: 'poi',
+					type: 'poi' as const,
 					name: data.name,
-					location: dict[data.layer_id] || null,
+					location: dict[data.layer_id] || '---',
 					point: data.point,
 					layerId: data.layer_id,
 					featureId: data.feature_id,
-					propId: data.prop_id
+					propId: data.prop_id ?? ''
 				};
 			});
 
@@ -187,8 +178,6 @@
 		}
 	};
 
-	const searchWards = ['アカデミー施設', '自力建設', '演習林'];
-
 	$effect(() => {
 		if (inputSearchWord) {
 			suggestWord(inputSearchWord);
@@ -206,7 +195,7 @@
 	});
 </script>
 
-{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0}
+{#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0 && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
 		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
@@ -219,7 +208,7 @@
 			</div>
 		{:else if searchSuggests && inputSearchWord.trim() !== ''}
 			<div
-				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-y-auto overflow-x-hidden px-2"
+				class="c-scroll-hidden flex grow flex-col divide-y-2 divide-gray-600 overflow-x-hidden overflow-y-auto px-2"
 			>
 				{#if searchSuggests.some((result) => result.type === 'poi' || result.type === 'coordinate')}
 					<div class="p-2 pt-3 text-white">場所検索</div>
@@ -289,7 +278,7 @@
 								<div
 									class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150"
 								>
-									<div class="scale-200 h-full w-full">
+									<div class="h-full w-full scale-200">
 										<LayerIcon layerEntry={result.data} />
 									</div>
 								</div>

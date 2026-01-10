@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
-	import type { DialogType } from '$routes/map/types';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
-	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -20,6 +19,7 @@
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		isDragover: boolean;
 	}
 
 	let {
@@ -29,7 +29,8 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode,
 		dropFile = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		isDragover = $bindable()
 	}: Props = $props();
 </script>
 
@@ -68,6 +69,7 @@
 		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile
+		bind:isDragover
 		bind:showZoneForm
 		bind:focusBbox
 		{selectedEpsgCode}

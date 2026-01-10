@@ -1,6 +1,6 @@
 import type { RasterPMTilesEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
-import { ENTRY_PMTILES_RASTER_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterDemStyle> = {
 	id: 'twi_ooita',

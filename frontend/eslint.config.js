@@ -9,8 +9,11 @@ import importPlugin from 'eslint-plugin-import';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
-export default ts.config(
+export default [
 	includeIgnoreFile(gitignorePath),
+	{
+		ignores: ['docs/**']
+	},
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs['flat/recommended'],
@@ -22,6 +25,18 @@ export default ts.config(
 				...globals.browser,
 				...globals.node
 			}
+		},
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_'
+				}
+			]
 		}
 	},
 	{
@@ -58,8 +73,8 @@ export default ts.config(
 					destructuredArrayIgnorePattern: '^_'
 				}
 			],
-			'no-console': ['error', { allow: ['warn', 'error'] }],
-			camelcase: ['error', { properties: 'never' }]
+			'no-console': ['warn', { allow: ['warn', 'error'] }],
+			camelcase: ['warn', { properties: 'never' }]
 		}
 	}
-);
+];

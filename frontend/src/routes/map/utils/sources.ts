@@ -40,7 +40,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
-import { ENTRY_TIFF_DATA_PATH } from '$routes/constants';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -61,7 +61,7 @@ export const createSourcesItems = async (
 		_dataEntries.map(async (entry, index) => {
 			const items: { [_: string]: SourceSpecification } = {};
 			const sourceId = `${entry.id}_source`;
-			const { metaData, format, type, style, auxiliaryLayers, properties } = entry;
+			const { metaData, format, type, style } = entry;
 
 			switch (type) {
 				case 'raster': {
@@ -100,7 +100,9 @@ export const createSourcesItems = async (
 							const mode = visualization.mode;
 							if (mode !== 'default') {
 								const demType = visualization.demType;
-								const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+								const uniformsDataParam = objectToUrlParams(
+									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
+								);
 								demUrlCache.addUrlcache(entry.id, format.url); // TODO 消す処理
 
 								items[sourceId] = {
@@ -143,7 +145,9 @@ export const createSourcesItems = async (
 							const mode = visualization.mode;
 							if (mode !== 'default') {
 								const demType = visualization.demType;
-								const uniformsDataParam = objectToUrlParams(visualization.uniformsData[mode]);
+								const uniformsDataParam = objectToUrlParams(
+									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
+								);
 
 								items[sourceId] = {
 									type: 'raster',
@@ -193,7 +197,7 @@ export const createSourcesItems = async (
 				}
 				case 'vector': {
 					if (format.type === 'geojson' || format.type === 'fgb') {
-						let geojson: GeoJSON.GeoJSON | undefined;
+						let geojson: FeatureCollection | undefined;
 						if (GeojsonCache.has(entry.id)) {
 							geojson = GeojsonCache.get(entry.id);
 						} else if (format.type === 'fgb') {
@@ -246,8 +250,8 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 
-						if ('joinDataUrl' in properties && properties.joinDataUrl) {
-							const joinData = await fetch(properties.joinDataUrl).then((res) => res.json());
+						if ('joinDataUrl' in entry.properties && entry.properties.joinDataUrl) {
+							const joinData = await fetch(entry.properties.joinDataUrl).then((res) => res.json());
 							JoinDataCache.set(entry.id, joinData);
 						}
 					}
@@ -258,8 +262,8 @@ export const createSourcesItems = async (
 					break;
 			}
 
-			if (auxiliaryLayers) {
-				const { source } = auxiliaryLayers;
+			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
+				const { source } = entry.auxiliaryLayers;
 
 				Object.entries(source).forEach(([auxiliarySourceId, auxiliarySource]) => {
 					const sourceKey = `${auxiliarySourceId}`;
@@ -284,8 +288,6 @@ export const createSourcesItems = async (
 	let baseSourcesItem;
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
-	} else if (get(selectedBaseMap) === 'hillshade') {
-		baseSourcesItem = baseMaphillshadeSources;
 	} else if (get(selectedBaseMap) === 'hillshade') {
 		baseSourcesItem = baseMaphillshadeSources;
 	} else if (get(selectedBaseMap) === 'osm') {

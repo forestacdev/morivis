@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { HYOGO_BBOX } from '$routes/map/data/location_bbox';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -69,7 +69,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#349f1c',
+						value: '#33a02c',
 						pattern: null
 					}
 				},

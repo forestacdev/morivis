@@ -1,19 +1,18 @@
 <script lang="ts">
+	import { throttle } from 'es-toolkit';
+	import { debounce } from 'es-toolkit';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { mapStore } from '$routes/stores/map';
-	import { showPoiLayer } from '$routes/stores/layers';
-
-	import { poiLayersIds } from '$routes/map/utils/layers/poi';
-	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { throttle } from 'es-toolkit';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isStyleEdit } from '$routes/stores';
-	import { showSearchMenu } from '$routes/stores/ui';
-	import { debounce } from 'es-toolkit';
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
+	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { poiLayersIds } from '$routes/map/utils/layers/poi';
+	import { isStyleEdit } from '$routes/stores';
+	import { showPoiLayer } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
+	import { showSearchMenu } from '$routes/stores/ui';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -66,7 +65,7 @@
 
 			const coords = feature.geometry.coordinates as [number, number];
 
-			const featureId = feature.id as string;
+			const featureId = feature.id as number;
 
 			if (propId) {
 				featureDataArray.push({

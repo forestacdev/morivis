@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DialogType } from '$routes/map/types';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -93,9 +93,4 @@
 </div>
 
 <style>
-	.c-grid {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(4, 200px);
-	}
 </style>

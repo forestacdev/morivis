@@ -89,7 +89,7 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff00ea'
+					value: '#ff7f00'
 				}
 			}
 		]
@@ -138,7 +138,7 @@ export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#cf42cc'
+					value: '#ff7f00'
 				}
 			}
 		]
@@ -183,7 +183,7 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#349f1c'
+					value: '#ff7f00'
 				}
 			}
 		]

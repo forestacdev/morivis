@@ -21,7 +21,8 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: [],
 		sourceLayer: 'hoge',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		coverImage: `${COVER_IMAGE_BASE_PATH}/hoge.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/hoge.webp`,
+		xyzImageTile: { x: 0, y: 0, z: 0 }
 	},
 	properties: {
 		keys: [],
@@ -47,7 +48,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#002fff'
+						value: '#33a02c'
 					}
 				}
 			]

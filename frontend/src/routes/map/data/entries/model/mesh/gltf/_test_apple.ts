@@ -1,4 +1,4 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_GLTF_PATH } from '$routes/constants';
+import { ENTRY_GLTF_PATH } from '$routes/constants';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 
 const entry: ModelMeshEntry<MeshStyle> = {

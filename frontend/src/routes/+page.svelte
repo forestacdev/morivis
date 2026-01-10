@@ -1,24 +1,20 @@
 <script lang="ts">
-	import { fromArrayBuffer, rgb } from 'geotiff';
-	import gsap from 'gsap';
+	import Icon from '@iconify/svelte';
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
-	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+
 	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
 	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
+	import { showTermsDialog, showInfoDialog } from './stores/ui';
+	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
+
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-
-	import { isBlocked, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
-	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
-
-	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
-	import { showTermsDialog, showInfoDialog } from './stores/ui';
-	import Icon from '@iconify/svelte';
-	import { checkMobile } from './map/utils/ui';
+	import { isBlocked } from '$routes/stores/ui';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let scene: THREE.Scene;
@@ -31,8 +27,6 @@
 	let bufferScene: THREE.Scene;
 
 	let postMesh: THREE.Mesh;
-	let isLoading = $state<boolean>(false);
-	let controlDiv = $state<HTMLDivElement | null>(null);
 
 	const goMap = () => {
 		showButton = false;
@@ -237,7 +231,7 @@
 		bind:this={canvas}
 	></canvas>
 
-	<div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full">
+	<div class="pointer-events-none absolute top-0 left-0 z-10 h-full w-full">
 		<div class="flex h-full w-full flex-col items-center justify-center">
 			<span class="c-text-shadow font-bold text-white max-lg:text-[75px] lg:text-[100px]"
 				>morivis</span
@@ -285,7 +279,7 @@
 			class="pointer-events-auto flex shrink-0 cursor-pointer items-center p-2 text-white max-lg:hidden"
 			onclick={toggleTermsDialog}
 		>
-			<span class="select-none underline">利用規約</span>
+			<span class="underline select-none">利用規約</span>
 		</button>
 	</div>
 </div>

@@ -1,6 +1,5 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dem_gsi_geoid',

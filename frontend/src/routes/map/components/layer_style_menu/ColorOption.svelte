@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type { ColorsStyle } from '$routes/map/data/types/vector/style';
-	import { slide } from 'svelte/transition';
 	interface Props {
 		colorStyle: ColorsStyle;
 		showColorOption: boolean;

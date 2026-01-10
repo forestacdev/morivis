@@ -1,22 +1,23 @@
 <script lang="ts">
 	import '../app.css';
-	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
+	import Icon from '@iconify/svelte';
+	import { delay } from 'es-toolkit';
+	import { onMount } from 'svelte';
+	// @ts-expect-error - virtual module provided by @vite-pwa/sveltekit
 	import { pwaInfo } from 'virtual:pwa-info';
-	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+
+	import { MOBILE_WIDTH } from './constants';
+	import GoogleAnalytics from './GoogleAnalytics.svelte';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
+
+	import { beforeNavigate, onNavigate } from '$app/navigation';
+	import { page } from '$app/state';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
-	import Icon from '@iconify/svelte';
-
-	import { onMount } from 'svelte';
-
-	import GoogleAnalytics from './GoogleAnalytics.svelte';
-
-	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
-	import InfoDialog from '$lib/components/InfoDialog.svelte';
-
-	import { page } from '$app/state';
-
-	import { delay } from 'es-toolkit';
+	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import {
 		isBlocked,
@@ -25,9 +26,6 @@
 		showLayerMenu,
 		showOtherMenu
 	} from '$routes/stores/ui';
-	import { MOBILE_WIDTH } from './constants';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
 
 	let { children } = $props();
 
@@ -46,6 +44,7 @@
 			transitionPageScreen.set(1);
 			delay(1000).then(() => {
 				resolve();
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				navigation.complete;
 				delay(300).then(() => {
 					transitionPageScreen.set(-1);
@@ -104,11 +103,12 @@
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html webManifestLink}
 </svelte:head>
 
 {#if deviceType === 'mobile' && !$isMobile}
-	<div class="bg-main z-100 absolute flex h-full w-full items-center justify-center text-base">
+	<div class="bg-main absolute z-100 flex h-full w-full items-center justify-center text-base">
 		<p class="text-2xl">端末を縦向きにしてください。</p>
 		<Icon icon="circum:mobile-3" class="h-16 w-16" />
 	</div>

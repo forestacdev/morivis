@@ -4,10 +4,13 @@ import type {
 	PointStyle
 } from '$routes/map/data/types/vector/style';
 
-import type { FeatureCollection } from 'geojson';
-
 import type { BaseMetaData } from '$routes/map/data/types';
 import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
+import type {
+	PointFeatureCollection,
+	LineStringFeatureCollection,
+	PolygonFeatureCollection
+} from '$routes/map/types/geojson';
 
 export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'fgb' | 'geojsontile';
 
@@ -18,12 +21,27 @@ export interface Title {
 	template: string;
 }
 
+export interface FieldDef {
+	key: string;
+	label?: string;
+	type?: 'string' | 'number' | 'integer';
+	unit?: string;
+	format?: {
+		digits?: number;
+		emptyText?: string;
+	};
+	dict?: Record<number | string, string>;
+}
+
 export interface VectorProperties {
 	keys: string[];
+	fields?: FieldDef[];
 	titles: Title[];
 	dict?: Record<string, any>;
 	joinDataUrl?: string;
 	imageKey?: string;
+	cityCodeKey?: string;
+	iNaturalistNameKey?: string;
 }
 
 export interface VectorInteraction {
@@ -59,7 +77,7 @@ export interface PolygonEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Polygon';
 		url: string;
-		data?: FeatureCollection;
+		data?: PolygonFeatureCollection;
 	};
 	style: PolygonStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;
@@ -71,7 +89,7 @@ export interface LineStringEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'LineString';
 		url: string;
-		data?: FeatureCollection;
+		data?: LineStringFeatureCollection;
 	};
 	style: LineStringStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;
@@ -83,7 +101,7 @@ export interface PointEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Point';
 		url: string;
-		data?: FeatureCollection;
+		data?: PointFeatureCollection;
 	};
 	style: PointStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;

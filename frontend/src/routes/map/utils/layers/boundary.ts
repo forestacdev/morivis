@@ -40,13 +40,7 @@ export const boundaryLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'hsl(0, 0%, 60%)',
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[3, 0.5],
-					[22, 15]
-				]
-			}
+			'line-width': ['interpolate', ['exponential', 1.3], ['zoom'], 3, 0.5, 22, 15]
 		}
 	},
 	{
@@ -63,13 +57,7 @@ export const boundaryLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'hsl(0, 0%, 60%)',
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[3, 0.5],
-					[22, 15]
-				]
-			}
+			'line-width': ['interpolate', ['exponential', 1.3], ['zoom'], 3, 0.5, 22, 15]
 		}
 	}
 ];

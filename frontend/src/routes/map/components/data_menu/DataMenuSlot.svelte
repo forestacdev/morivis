@@ -1,23 +1,22 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { showNotification } from '$routes/stores/notification';
-
-	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { getLayerImage } from '$routes/map/utils/image';
-	import type { ImageResult } from '$routes/map/utils/image';
-	import { getPrefectureCode } from '$routes/map/data/pref';
-	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { fade, fly } from 'svelte/transition';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
-	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { getAttributionName } from '$routes/map/data/attribution';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { getPrefectureCode } from '$routes/map/data/pref';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
+	import type { ImageResult } from '$routes/map/utils/image';
+	import { getLayerImage } from '$routes/map/utils/image';
 	import { CoverImageManager } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { checkPc, checkMobile } from '$routes/map/utils/ui';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { showNotification } from '$routes/stores/notification';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -135,7 +134,7 @@
 </script>
 
 <div
-	class="aspect-3/4 relative flex shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
+	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
 	style="transform-origin: {getTransformOrigin()}"
 	bind:this={container}
 	onmouseover={() => (checkPc() ? (isHover = true) : null)}
@@ -153,7 +152,7 @@
 >
 	<!-- 追加ボタン -->
 	{#if isHover}
-		<div transition:fade={{ duration: 200 }} class="absolute right-2 top-2 z-10 shrink-0">
+		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
 					onclick={(e) => {
@@ -288,7 +287,7 @@
 
 			{#if layerType}
 				<div
-					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:left-1 max-lg:top-1 lg:left-2 lg:top-2"
+					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
 				>
 					<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 				</div>
@@ -309,7 +308,7 @@
 					{getAttributionName(dataEntry.metaData.attribution)}</span
 				>
 				<div
-					class="absolute bottom-0 right-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
+					class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
 				>
 					{#if dataEntry.metaData.location === '森林文化アカデミー'}
 						<div class="grid place-items-center [&_path]:fill-white">

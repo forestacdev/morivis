@@ -24,7 +24,7 @@
 					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
 				</button>
 			</div>
-			<div class="flex-flex-col c-scroll overflow-y-auto overflow-x-hidden">
+			<div class="flex-flex-col c-scroll overflow-x-hidden overflow-y-auto">
 				<div class="pb-4">
 					<div class="text-justify">
 						morivis（モリビス）は、岐阜県立森林文化アカデミー演習林の森林地理情報をWebGIS上で表示するシステムです。演習林の地形、植生、林道などの基本情報を地図上で確認できるほか、全国の森林オープンデータも閲覧可能です。
@@ -42,7 +42,7 @@
 
 					<div class="flex max-w-[300px] flex-col gap-2">
 						<a
-							class="lg:hover:bg-accent border-1 flex cursor-pointer items-center justify-start gap-2 rounded-full border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
+							class="lg:hover:bg-accent flex cursor-pointer items-center justify-start gap-2 rounded-full border-1 border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
 							href="https://github.com/satoshi7190"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -61,7 +61,7 @@
 							</div>
 						</a>
 						<a
-							class="lg:hover:bg-accent border-1 flex cursor-pointer items-center justify-start gap-2 rounded-full border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
+							class="lg:hover:bg-accent flex cursor-pointer items-center justify-start gap-2 rounded-full border-1 border-gray-500 bg-black p-2 transition-colors lg:hover:text-white"
 							href="https://www.forest.ac.jp/"
 							target="_blank"
 							rel="noopener noreferrer"

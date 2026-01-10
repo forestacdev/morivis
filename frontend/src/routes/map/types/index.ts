@@ -1,5 +1,6 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { FeatureProp } from '$routes/map/types/properties';
 
 export type CSSCursor =
 	// 基本カーソル
@@ -47,8 +48,6 @@ export type CSSCursor =
 // アップロードのダイアログのタイプ
 export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | null;
 
-// 選択ポップアップ
-// TODO 使用していない
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;
 	feature: MapGeoJSONFeature;
@@ -58,7 +57,7 @@ export interface ClickedLayerFeaturesData {
 // サイドメニューのポップアップデータ
 export interface FeatureMenuData {
 	point: [number, number];
-	properties: { [key: string]: string | number | null | undefined } | null;
+	properties: FeatureProp | null;
 	featureId: number;
 	layerId: string;
 }

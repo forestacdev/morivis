@@ -17,7 +17,8 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 		tags: ['DEM', '地形'],
 		maxZoom: 22,
 		minZoom: 1,
-		bounds: [136.91683974376355, 35.540611389073774, 136.9346116207808, 35.55838201305548]
+		bounds: [136.91683974376355, 35.540611389073774, 136.9346116207808, 35.55838201305548],
+		xyzImageTile: { x: 230769, y: 103340, z: 18 }
 	},
 	interaction: {
 		clickable: false

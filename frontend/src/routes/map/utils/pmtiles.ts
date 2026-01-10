@@ -1,6 +1,7 @@
 import { PMTiles } from 'pmtiles';
 import Pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
+import type { FeatureProp } from '$routes/map/types/properties';
 
 interface Tile {
 	z: number;
@@ -13,7 +14,7 @@ export const getPropertiesFromPMTiles = async (
 	{ z, x, y }: Tile,
 	layerName: string,
 	featureId: number
-) => {
+): Promise<FeatureProp | null> => {
 	const pmtiles = new PMTiles(url);
 	const tileData = await pmtiles.getZxy(z, x, y);
 

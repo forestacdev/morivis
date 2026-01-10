@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { mapStore } from '$routes/stores/map';
-	import type { StyleImage } from 'maplibre-gl';
-	import chroma from 'chroma-js';
-	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
-	import { fly } from 'svelte/transition';
 	import Icon from '@iconify/svelte';
+	import chroma from 'chroma-js';
+	import type { StyleImage } from 'maplibre-gl';
+	import { fly } from 'svelte/transition';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		label?: string | null;
@@ -198,7 +199,7 @@
 		class="group flex cursor-pointer items-center justify-between pr-2 transition-colors duration-100"
 	>
 		{#if label}
-			<span class="group-hover:text-accent select-none text-base">{label}</span>
+			<span class="group-hover:text-accent text-base select-none">{label}</span>
 		{/if}
 		<div
 			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full {value ===
@@ -253,7 +254,7 @@
 					{/if}
 				</div>
 				<button
-					class="absolute bottom-0 right-[5px] flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pl-2 pr-3"
+					class="absolute right-[5px] bottom-0 flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pr-3 pl-2"
 					onclick={() => {
 						value = 'transparent';
 						showColorPallet = false;

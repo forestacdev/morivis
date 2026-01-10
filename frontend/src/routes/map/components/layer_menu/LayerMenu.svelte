@@ -1,19 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { flip } from 'svelte/animate';
 	import { slide, fly, fade } from 'svelte/transition';
 
 	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
+	import RecommendedData from './RecommendedData.svelte';
+
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
-	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
-
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
-
-	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
-	import RecommendedData from './RecommendedData.svelte';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: GeoDataEntry[];
@@ -120,7 +118,7 @@
 				{#if !$isStyleEdit && !$showDataMenu}
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
-						class="flex shrink-0 select-none items-center justify-center text-base max-lg:hidden"
+						class="flex shrink-0 items-center justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
 					</div>
@@ -289,13 +287,13 @@
 							}
 						}
 					}}
-					class="transform-[width, transform, translate, scale, rotate, height, background] translate-z-0 relative flex translate-y-[10px] cursor-pointer select-none justify-center text-clip text-nowrap rounded-full p-2 text-left duration-200 max-lg:hidden {$showDataMenu
+					class="transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] translate-z-0 cursor-pointer justify-center rounded-full p-2 text-left text-nowrap text-clip duration-200 select-none max-lg:hidden {$showDataMenu
 						? 'w-[66px]'
 						: $isStyleEdit
 							? 'w-[400px]'
 							: 'hover:bg-accent bg-main max-lg:w-full lg:w-[330px]'} {!$isStyleEdit &&
 					!$showDataMenu
-						? 'not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] opacity-100'
+						? 'opacity-100 not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
 						: 'opacity-0'}"
 				>
 					<div class="flex w-full items-center justify-start gap-2 bg-transparent">

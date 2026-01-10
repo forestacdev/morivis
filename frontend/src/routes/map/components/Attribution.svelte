@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { mapAttributions } from '$routes/stores/attributions';
 	import Icon from '@iconify/svelte';
+	import { onMount, onDestroy } from 'svelte';
+
+	import { mapAttributions } from '$routes/stores/attributions';
 
 	const systemAttributionss = [
 		'国土地理院',
@@ -18,7 +19,7 @@
 	let currentIndex = $state<number>(0);
 	const INTERVAL = 10000; //
 
-	let timeoutId: NodeJS.Timeout | null = null;
+	let timeoutId: ReturnType<typeof setTimeout> | null = null;
 	function scheduleNext() {
 		timeoutId = setTimeout(() => {
 			currentIndex = (currentIndex + 1) % newAttributions.length;

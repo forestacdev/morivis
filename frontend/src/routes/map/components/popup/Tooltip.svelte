@@ -4,6 +4,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
+	import type { Title } from '$routes/map/data/types/vector';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
 
 	interface Props {
@@ -15,6 +16,10 @@
 	let { lngLat = $bindable(), map, show = $bindable(), feature }: Props = $props();
 	let container = $state<HTMLElement | null>(null);
 	let marker: maplibregl.Marker | null = $state.raw(null);
+
+	const metadata = $derived(
+		feature?.layer?.metadata as { titles: Title[]; name: string } | undefined
+	);
 
 	onMount(() => {
 		if (container && show && lngLat) {
@@ -35,9 +40,9 @@
 				marker = null;
 			}
 		} else {
-			if (marker) {
+			if (marker && lngLat) {
 				marker.setLngLat(lngLat);
-			} else {
+			} else if (container && lngLat) {
 				marker = new maplibregl.Marker({
 					element: container,
 					anchor: 'center',
@@ -68,11 +73,9 @@
 		class="pointer-events-none relative z-50 grid h-[100px] w-[100px] place-items-center"
 	>
 		<!-- <div class="css-ripple-effect"></div> -->
-		{#if feature.layer.metadata}
+		{#if metadata}
 			<div class="absolute translate-y-10 text-base font-bold">
-				{feature.layer.metadata.titles
-					? generatePopupTitle(feature.properties, feature.layer.metadata.titles)
-					: feature.layer.metadata.name}
+				{metadata.titles ? generatePopupTitle(feature.properties, metadata.titles) : metadata.name}
 			</div>
 		{/if}
 		<div class="css-rotate-effect absolute h-[30px] w-[30px] rotate-45 border-2 border-white"></div>

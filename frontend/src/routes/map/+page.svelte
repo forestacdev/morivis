@@ -1,34 +1,59 @@
 <script lang="ts">
 	import turfBearing from '@turf/bearing';
-
 	import { delay } from 'es-toolkit';
-	import type { FeatureCollection, Point } from 'geojson';
+	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
 
+	import { type WikiArticle } from './api/wikipedia';
+	import Processing from './Processing.svelte';
+	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
+	import type { ContextMenuState } from './types/ui';
+	import type {
+		ResultAddressData,
+		ResultData,
+		ResultPoiData,
+		SearchGeojsonData
+	} from './utils/feature';
+	import { getPropertiesFromPMTiles } from './utils/pmtiles';
+	import { lonLatToTileCoords } from './utils/tile';
+	import { checkPc } from './utils/ui';
+
+	import { page } from '$app/state';
+	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
-
+	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
+	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
+	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
-	import Footer from '$routes/map/components/Footer.svelte';
+	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
+	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
+	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
+	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
-
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
-
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
-	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import { geoDataEntries } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
+	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
+	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
+	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -41,34 +66,6 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-	import type { DrawGeojsonData } from '$routes/map/types/draw';
-	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
-	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
-	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
-	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
-	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
-	import type { EpsgCode } from '$routes/map/utils/proj/dict';
-	import Processing from './Processing.svelte';
-	import { slide } from 'svelte/transition';
-	import type {
-		ResultAddressData,
-		ResultData,
-		ResultPoiData,
-		SearchGeojsonData
-	} from './utils/feature';
-	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
-	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
-	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
-	import { checkPc } from './utils/ui';
-	import { page } from '$app/state';
-	import { getPropertiesFromPMTiles } from './utils/pmtiles';
-	import { lonLatToTileCoords } from './utils/tile';
-	import { type WikiArticle } from './api/wikipedia';
-	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import type { ContextMenuState } from './types/ui';
-	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -167,6 +164,8 @@
 	// 右クリックメニュー
 	let contextMenuState = $state<ContextMenuState | null>(null);
 
+	let isDragover = $state(false);
+
 	$effect(() => {
 		if (selectedSearchId) {
 			mapStore.setFilter('@search_result', ['!=', ['id'], selectedSearchId]);
@@ -192,9 +191,8 @@
 		}
 
 		isInitialized = true;
-		streetViewPointData = (await getFgbToGeojson(
-			`${STREET_VIEW_DATA_PATH}/nodes.fgb`
-		)) as StreetViewPointGeoJson;
+		const geojson = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/nodes.fgb`);
+		streetViewPointData = geojson as unknown as StreetViewPointGeoJson;
 
 		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
 
@@ -285,19 +283,6 @@
 		selectedLayerId.set('');
 		mapStore.jumpToFac();
 	};
-
-	// TODO: ストリートビュー用のクリックイベント
-	// mapStore.onClick((e) => {
-	// 	if (!e || $mapMode === 'edit') return;
-	// 	if (streetViewPointData.features.length > 0) {
-	// 		const point = turfNearestPoint([e.lngLat.lng, e.lngLat.lat], streetViewPointData);
-	// 		const distance = turfDistance(point, [e.lngLat.lng, e.lngLat.lat], { units: 'meters' });
-	// 		if (distance < 100) {
-	// 			// streetViewPoint = point;
-	// 			setPoint(point as StreetViewPoint);
-	// 		}
-	// 	}
-	// });
 
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
@@ -412,7 +397,7 @@
 		setPoint(Number(streetViewNodeId));
 	});
 
-	const focusFeature = async (result: ResultPoiData | ResultAddressData) => {
+	const focusFeature = async (result: ResultData) => {
 		if (result.type === 'poi') {
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
@@ -434,14 +419,16 @@
 			};
 			featureMenuData = data;
 			selectedSearchResultData = result;
-			selectedSearchId = result.id;
+			if (result.id) selectedSearchId = result.id;
 		} else if (result.type === 'address') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
-			selectedSearchId = result.id;
+			if (result.id) selectedSearchId = result.id;
 		}
 
-		mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));
+		if (result.type !== 'layer') {
+			mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));
+		}
 
 		//github.com/maplibre/maplibre-gl-js/issues/4891
 		// mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
@@ -457,17 +444,6 @@
 		// コンポーネントが破棄されるときに実行される処理
 		isInitialized = false;
 	});
-
-	// $effect(() => {
-	// 	if (!selectedSearchId) {
-	// 		selectedSearchResultData = null;
-	// 	} else if (searchResults && selectedSearchId) {
-	// 		const result = searchResults.find((res) => res.id === selectedSearchId);
-	// 		if ((result && result.type === 'address') || (result && result.type === 'poi')) {
-	// 			focusFeature(result as ResultPoiData | ResultAddressData);
-	// 		}
-	// 	}
-	// });
 </script>
 
 {#if isInitialized && isInitialStreetViewEntry}
@@ -497,7 +473,7 @@
 			<!-- スマホ用その他メニュー -->
 			<div
 				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
-					? 'opacity-500 pointer-events-auto'
+					? 'pointer-events-auto opacity-500'
 					: 'pointer-events-none opacity-0'}"
 			>
 				<OtherMenu bind:imagePreviewUrl />
@@ -508,16 +484,16 @@
 				<!-- 上部余白 -->
 				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
 				<HeaderMenu
-					{resetlayerEntries}
-					{focusFeature}
+					{layerEntries}
+					bind:inputSearchWord
 					bind:featureMenuData
 					bind:selectedSearchResultData
-					bind:inputSearchWord
 					bind:searchResults
-					{layerEntries}
 					bind:showSelectionMarker
 					bind:selectionMarkerLngLat
 					bind:showDataEntry
+					{resetlayerEntries}
+					{focusFeature}
 				/>
 
 				<MapLibreMap
@@ -540,12 +516,11 @@
 					bind:selectedSearchId
 					bind:selectedSearchResultData
 					bind:contextMenuState
+					bind:isDragover
 					{searchResults}
 					{selectedEpsgCode}
-					{demEntries}
 					{streetViewLineData}
 					{streetViewPointData}
-					{streetViewPoint}
 					{showMapCanvas}
 					{searchGeojsonData}
 					{focusFeature}
@@ -561,7 +536,6 @@
 		<SearchMenu
 			bind:featureMenuData
 			bind:inputSearchWord
-			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 			bind:searchResults
@@ -609,6 +583,7 @@
 	bind:dropFile
 	bind:showZoneForm
 	bind:focusBbox
+	bind:isDragover
 	{selectedEpsgCode}
 />
 

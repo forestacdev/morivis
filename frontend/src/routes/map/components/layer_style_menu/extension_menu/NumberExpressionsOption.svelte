@@ -1,7 +1,6 @@
 <script lang="ts">
-	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import type { NumbersStyle, NumbersExpression } from '$routes/map/data/types/vector/style';
+	import type { NumbersExpression } from '$routes/map/data/types/vector/style';
 	import { generateNumberToNumberMap } from '$routes/map/utils/number_mapping';
 
 	interface Props {
@@ -42,7 +41,7 @@
 	{/if}
 	{#if setExpression.type === 'linear'}
 		{#each setExpression.mapping.range as _, index}
-			<div class="flex w-full select-none flex-col gap-2">
+			<div class="flex w-full flex-col gap-2 select-none">
 				<!-- <div class="text-base">
 					<span>{index === 0 ? '最小' : '最大'}値: {setExpression.mapping.range[index]}</span>
 				</div> -->
@@ -81,7 +80,7 @@
 		/>
 		{#if stepPallet}
 			{#each stepPallet.categories as _, index}
-				<div class="flex-between flex w-full select-none gap-2">
+				<div class="flex-between flex w-full gap-2 select-none">
 					<div class="w-full">{stepPallet.categories[index]}</div>
 					<div class="p-2">{stepPallet.values[index]}</div>
 				</div>

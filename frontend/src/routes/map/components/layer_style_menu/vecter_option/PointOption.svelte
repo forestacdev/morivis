@@ -1,20 +1,15 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
 	import NumberOption from '$routes/map/components/layer_style_menu/NumberOption.svelte';
-	import type {
-		VectorEntryGeometryType,
-		PointEntry,
-		GeoJsonMetaData,
-		TileMetaData
-	} from '$routes/map/data/types/vector';
-	import { slide } from 'svelte/transition';
+	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;

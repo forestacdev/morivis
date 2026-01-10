@@ -1,13 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import { fade } from 'svelte/transition';
-	import { propData } from '$routes/map/data/prop_data';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
+	import { fade } from 'svelte/transition';
+
 	import AttributeItem from '../feature_menu/AttributeItem.svelte';
+
+	import { propData } from '$routes/map/data/prop_data';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -21,6 +23,8 @@
 		showSelectionMarker = $bindable()
 	}: Props = $props();
 
+	let selectedIndex = $state(0);
+
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
@@ -29,18 +33,17 @@
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
 
 	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-		loop: true,
-		containScroll: 'keepSnaps',
-		dragFree: true
-	};
-	let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
-	let selectedIndex = $state(0);
+	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
+	// 	loop: true,
+	// 	containScroll: 'keepSnaps',
+	// 	dragFree: true
+	// };
+	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 
-	function onThumbnailClick(index: number) {
-		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
-		emblaMainCarousel.scrollTo(index);
-	}
+	// function onThumbnailClick(index: number) {
+	// 	if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+	// 	emblaMainCarousel.scrollTo(index);
+	// }
 
 	function onSelect() {
 		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
@@ -53,18 +56,18 @@
 		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
 	}
 
-	function onInitEmblaThumbnailCarousel(event: CustomEvent<EmblaCarouselType>) {
-		emblaThumbnailCarousel = event.detail;
-	}
+	// function onInitEmblaThumbnailCarousel(event: CustomEvent<EmblaCarouselType>) {
+	// 	emblaThumbnailCarousel = event.detail;
+	// }
 
-	function onClickNext() {
-		if (!emblaMainCarousel) return;
-		emblaMainCarousel.scrollNext();
-	}
-	function onClickPrev() {
-		if (!emblaMainCarousel) return;
-		emblaMainCarousel.scrollPrev();
-	}
+	// function onClickNext() {
+	// 	if (!emblaMainCarousel) return;
+	// 	emblaMainCarousel.scrollNext();
+	// }
+	// function onClickPrev() {
+	// 	if (!emblaMainCarousel) return;
+	// 	emblaMainCarousel.scrollPrev();
+	// }
 
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {

@@ -40,7 +40,7 @@ export const checkMobileWidth = () => {
 
 export type MobileActiveMenu = 'map' | 'layer' | 'data' | 'other';
 
-type MappingType = 'single' | 'match' | 'linear' | 'step';
+type MappingType = 'single' | 'match' | 'linear' | 'step' | 'raw';
 
 /**
  * アイコンのスタイルを取得する
@@ -67,6 +67,8 @@ export const getIconStyle = (type: MappingType, expressionType: ExpressionType) 
 			return 'subway:step-1';
 		case 'linear':
 			return 'mdi:graph-bell-curve-cumulative';
+		case 'raw':
+			return 'mdi:multiplication';
 		default:
 			return defaultIcon;
 	}

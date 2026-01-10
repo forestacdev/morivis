@@ -2,14 +2,14 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import ModelOptionMenu from './ModelOptionMenu.svelte';
+
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
-	import ModelOptionMenu from './ModelOptionMenu.svelte';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -88,7 +88,7 @@
 				<div class="flex h-[80px] items-center gap-2 pr-2">
 					<div class="flex items-center gap-2 max-lg:hidden">
 						<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
-						<span class="select-none text-base text-lg">カスタマイズ</span>
+						<span class="text-base text-lg select-none">カスタマイズ</span>
 					</div>
 					<!-- モバイル用タイトル -->
 					<div class="truncate text-2xl text-base lg:hidden">
@@ -108,7 +108,7 @@
 				<!-- PC用タイトル -->
 				<div class="text-2xl text-base max-lg:hidden">{layerEntry.metaData.name}</div>
 
-				<div class="c-scroll h-full grow overflow-x-hidden rounded-lg pb-[300px] pr-2">
+				<div class="c-scroll h-full grow overflow-x-hidden rounded-lg pr-2 pb-[300px]">
 					<div class="flex w-full justify-between rounded-lg bg-black p-2">
 						<!-- 表示 -->
 						<button
@@ -125,11 +125,11 @@
 									? 'bg-accent'
 									: ''}"
 							>
-								<Icon icon={'akar-icons:eye-slashed'} class="text-base/90 h-8 w-8" />
+								<Icon icon={'akar-icons:eye-slashed'} class="h-8 w-8 text-base/90" />
 							</div>
 
 							<span
-								class="select-none rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 {!layerEntry
+								class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {!layerEntry
 									.style.visible
 									? 'bg-accent text-black'
 									: 'border-base'}">隠す</span
@@ -157,20 +157,20 @@
 										{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
 											<img
 												src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
-												class="c-basemap-img scale-200 absolute left-0 top-0 h-full w-full cursor-pointer object-cover text-left text-sm"
+												class="c-basemap-img absolute top-0 left-0 h-full w-full scale-200 cursor-pointer object-cover text-left text-sm"
 												alt="背景地図画像"
 											/>
 										{/if}
 										<img
 											{src}
 											alt={layerEntry.metaData.name}
-											class="c-no-drag-icon scale-200 absolute left-0 top-0 h-full w-full cursor-pointer text-left text-sm"
+											class="c-no-drag-icon absolute top-0 left-0 h-full w-full scale-200 cursor-pointer text-left text-sm"
 											style="opacity: {item.value};"
 										/>
 									</div>
 								{/if}
 								<span
-									class="select-none rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 {layerEntry
+									class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {layerEntry
 										.style.opacity === item.value && layerEntry.style.visible
 										? 'bg-accent text-black'
 										: 'border-base'}">{item.label}</span

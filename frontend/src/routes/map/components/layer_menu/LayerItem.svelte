@@ -1,23 +1,22 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { getAttributionName } from '$routes/map/data/attribution';
+	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FeatureMenuData } from '$routes/map/types';
+	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import { isBBoxOverlapping } from '$routes/map/utils/map';
+	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
-	import { isBBoxOverlapping } from '$routes/map/utils/map';
-	import { onMount } from 'svelte';
-	import { layerAttributions } from '$routes/stores/attributions';
-	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
-	import { getAttributionName } from '$routes/map/data/attribution';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import type { FeatureMenuData } from '$routes/map/types';
-	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
-	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { getPrefectureCode } from '$routes/map/data/pref';
 
 	interface Props {
 		index: number;

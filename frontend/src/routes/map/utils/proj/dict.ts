@@ -3,12 +3,11 @@ export type EpsgCode = keyof typeof epsg_definitions;
 
 export interface EpsgInfo {
 	name_ja: string;
-	prefecture?: string;
+	prefecture: string;
 	zone?: string;
 	citation: string;
 	proj_context: string;
 	wkt: string;
-	name: string;
 	area_of_use: {
 		name: string;
 		bounds: [number, number, number, number];
@@ -19,7 +18,7 @@ export interface EpsgInfo {
 		semi_major_axis: number;
 		inverse_flattening: number;
 	};
-	projection_method: string;
+	projection_method: string | null;
 }
 
 export interface EpsgInfoWithCode extends EpsgInfo {
@@ -47,13 +46,13 @@ export const getEpsgInfoArray = (options?: Options): EpsgInfoWithCode[] => {
 			return true;
 		})
 		.map(([code, info]) => ({
-			code: code,
-			...info
+			code: code as EpsgCode,
+			...(info as EpsgInfo)
 		}));
 };
 
 export const getEpsgInfo = (epsgCode: EpsgCode): EpsgInfo => {
-	return epsg_definitions[epsgCode];
+	return epsg_definitions[epsgCode] as EpsgInfo;
 };
 
 export const getCitation = (epsgCode: EpsgCode): string => {
@@ -73,11 +72,11 @@ export const getPrefecture = (epsgCode: EpsgCode): string | undefined => {
 };
 
 export const getZone = (epsgCode: EpsgCode): string | undefined => {
-	return epsg_definitions[epsgCode].zone || undefined;
+	return (epsg_definitions[epsgCode] as EpsgInfo).zone || undefined;
 };
 
 export const getBbox = (epsgCode: EpsgCode): [number, number, number, number] => {
-	return epsg_definitions[epsgCode].area_of_use.bounds || [0, 0, 0, 0];
+	return (epsg_definitions[epsgCode] as EpsgInfo).area_of_use.bounds;
 };
 
 export const getWkt = (epsgCode: EpsgCode): string => {

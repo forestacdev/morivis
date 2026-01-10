@@ -1,14 +1,15 @@
 <script lang="ts">
-	import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import * as THREE from 'three';
-
-	import { IN_CAMERA_FOV, MIN_CAMERA_FOV, MAX_CAMERA_FOV } from './constants';
-	import { setStreetViewCameraParams } from '$routes/map/utils/params';
-	import { checkPc } from '$routes/map/utils/ui';
-	import { getCameraXYRotation } from './utils';
-	import { isStreetView } from '$routes/stores';
 	import { cubicOut } from 'svelte/easing';
 	import { Tween } from 'svelte/motion';
+	import * as THREE from 'three';
+	import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+	import { IN_CAMERA_FOV, MIN_CAMERA_FOV, MAX_CAMERA_FOV } from './constants';
+	import { getCameraXYRotation } from './utils';
+
+	import { setStreetViewCameraParams } from '$routes/map/utils/params';
+	import { checkPc } from '$routes/map/utils/ui';
+	import { isStreetView } from '$routes/stores';
 
 	interface Props {
 		canvas: HTMLCanvasElement;
@@ -139,9 +140,9 @@
 		}
 	});
 
-	isStreetView.subscribe(async (value) => {
-		onResize();
+	isStreetView.subscribe(async () => {
+		onResize?.();
 	});
 
-	window.addEventListener('resize', onResize);
+	window.addEventListener('resize', () => onResize?.());
 </script>

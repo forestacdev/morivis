@@ -1,8 +1,4 @@
-import {
-	COVER_IMAGE_BASE_PATH,
-	MAP_IMAGE_BASE_PATH,
-	ENTRY_PMTILES_VECTOR_PATH
-} from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 
@@ -53,7 +49,8 @@ const entry: VectorEntry<TileMetaData> = {
 				conditions: [],
 				template: '街路樹 東京都23区'
 			}
-		]
+		],
+		iNaturalistNameKey: '樹種'
 	},
 	interaction: {
 		clickable: true

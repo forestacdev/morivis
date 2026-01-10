@@ -1,17 +1,18 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
+	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import { getImageByName } from '$routes/map/api/inaturalist';
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import { getFullName } from '$routes/map/utils/city_code';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import emblaCarouselSvelte from 'embla-carousel-svelte';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
-	import { isOnlySpaces, stripHTMLTags } from '$routes/map/utils/sanitize';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -25,6 +26,8 @@
 		showSelectionMarker = $bindable()
 	}: Props = $props();
 
+	let isLoading = $state(true);
+
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
@@ -33,12 +36,12 @@
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
 
 	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-		loop: true,
-		containScroll: 'keepSnaps',
-		dragFree: true
-	};
-	let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
+	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
+	// 	loop: true,
+	// 	containScroll: 'keepSnaps',
+	// 	dragFree: true
+	// };
+	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 	let selectedIndex = $state(0);
 
 	function onThumbnailClick(index: number) {
@@ -113,6 +116,20 @@
 		return null;
 	});
 
+	let iNaturalistNameKey = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.iNaturalistNameKey;
+		}
+		return null;
+	});
+
+	let cityCodeKey = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.cityCodeKey;
+		}
+		return null;
+	});
+
 	let srcData = $derived.by(() => {
 		if (data) {
 			if (data.image) {
@@ -123,6 +140,18 @@
 		}
 		return null;
 	});
+
+	const promise = async () => {
+		if (iNaturalistNameKey && featureMenuData && featureMenuData.properties) {
+			const name = featureMenuData.properties[iNaturalistNameKey] as string;
+			const res = await getImageByName(name);
+			console.log('iNaturalist image data:', res);
+			isLoading = false;
+			return Promise.resolve(res);
+		}
+		isLoading = false;
+		return Promise.resolve(null);
+	};
 
 	const edit = () => {
 		if (targetLayer && targetLayer.type === 'vector') {
@@ -214,8 +243,43 @@
 							{/each}
 						</div>
 					</div>
-				{:else}
-					<!-- !タイトルが長い場合 -->
+				{:else if iNaturalistNameKey}
+					{#await promise()}
+						<!-- ローディング中 -->
+						<div class="flex aspect-video h-full w-full flex-col items-center justify-center gap-4">
+							<div
+								class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
+							></div>
+							<p class="text-gray-400">読み込み中...</p>
+						</div>
+					{:then inatData}
+						{#if inatData && inatData.url}
+							<img
+								in:fade
+								class="block aspect-video h-full w-full rounded-lg object-cover"
+								alt="画像"
+								src={inatData.url}
+							/>
+							<!-- ライセンス表示 -->
+							<div class="mt-1 text-xs text-gray-400">
+								{#if inatData.attribution}
+									<span>{inatData.attribution}</span>
+								{/if}
+								{#if inatData.licenseCode}
+									<span class="ml-1">({inatData.licenseCode})</span>
+								{/if}
+								<span class="ml-1">via</span>
+								<a
+									href="https://www.inaturalist.org/taxa/{inatData.taxonId}"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-accent hover:underline"
+								>
+									iNaturalist
+								</a>
+							</div>
+						{/if}
+					{/await}
 				{/if}
 
 				<div
@@ -248,11 +312,22 @@
 					<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 						<!-- 座標 -->
 						<div class="flex w-full justify-start gap-2">
-							<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+							<Icon icon="mdi:crosshairs-gps" class="h-6 w-6 shrink-0 text-base" />
 							<span class="text-accent"
 								>{featureMenuData.point[0].toFixed(6)}, {featureMenuData.point[1].toFixed(6)}</span
 							>
 						</div>
+
+						<!-- 市区町村情報 -->
+						{#if cityCodeKey && featureMenuData && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
+							{@const cityCode = featureMenuData.properties[cityCodeKey]}
+							{#if typeof cityCode === 'string' || typeof cityCode === 'number'}
+								<div class="flex w-full justify-start gap-2">
+									<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+									<span class="text-accent">{getFullName(cityCode)}</span>
+								</div>
+							{/if}
+						{/if}
 
 						<!-- url -->
 						{#if data}
@@ -281,11 +356,7 @@
 
 				<!-- 通常の地物の属性情報 -->
 				{#if !propId}
-					<div class="my-4 flex items-center gap-1 text-base text-lg">
-						<Icon icon="iconamoon:attention-circle-fill" class="h-5 w-5 shrink-0 text-base" /><span
-							>データ内容</span
-						>
-					</div>
+					<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
 					<div class="mb-56 flex h-full w-full flex-col gap-3">
 						{#if featureMenuData.properties}
 							{#each Object.entries(featureMenuData.properties) as [key, value]}

@@ -1,18 +1,18 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import type { LngLatBoundsLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import { isBBoxInside } from '$routes/map/utils/map';
 	import { showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
-	import { isBBoxInside } from '$routes/map/utils/map';
-	import type { LngLatBoundsLike } from 'maplibre-gl';
 
 	const toggleLayer = () => {
 		showStreetViewLayer.set(!$showStreetViewLayer);
 
 		if ($showStreetViewLayer) {
 			const bounds = mapStore.getMapBounds();
-			const defaultBounds = [136.91278, 35.543576, 136.92986, 35.556704] as LngLatBoundsLike;
+			const defaultBounds: LngLatBoundsLike = [136.91278, 35.543576, 136.92986, 35.556704];
 
 			if (!isBBoxInside(bounds, defaultBounds)) {
 				mapStore.fitBounds(defaultBounds, {

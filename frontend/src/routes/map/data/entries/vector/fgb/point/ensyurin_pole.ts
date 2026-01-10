@@ -53,7 +53,7 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#e70000'
+						value: '#e31a1c'
 					}
 				}
 			]

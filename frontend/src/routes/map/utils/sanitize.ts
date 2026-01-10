@@ -21,5 +21,6 @@ export const isOnlySpaces = (str: unknown): boolean => {
 	}
 
 	// 半角スペース、全角スペース、タブなどの空白文字のみかチェック
+	// eslint-disable-next-line no-irregular-whitespace
 	return /^[\s　]*$/.test(str);
 };

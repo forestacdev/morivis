@@ -1,32 +1,24 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-
+	import turfBbox from '@turf/bbox';
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-
 	import { propData } from '$routes/map/data/prop_data';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-
-	import { mapStore } from '$routes/stores/map';
-	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	import { type FeatureMenuData } from '$routes/map/types';
-	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
 	import type {
 		ResultData,
 		ResultPoiData,
 		ResultAddressData,
 		SearchGeojsonData
 	} from '$routes/map/utils/feature';
-	import { lonLatToTileCoords } from '$routes/map/utils/tile';
-	import turfBbox, { bbox } from '@turf/bbox';
 	import { isStyleEdit } from '$routes/stores';
-	import maplibregl from 'maplibre-gl';
+	import { mapStore } from '$routes/stores/map';
+	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
-		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
@@ -38,7 +30,6 @@
 	}
 
 	let {
-		layerEntries,
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),
@@ -98,43 +89,26 @@
 		if (searchResults && searchResults.length > 0) {
 			const geojson: SearchGeojsonData = {
 				type: 'FeatureCollection',
-				features: searchResults.map((result: ResultData) => {
-					let prop;
-					if (result.type === 'poi' || result.type === 'address') {
-						if (result.type === 'poi') {
-							prop = {
-								id: result.id,
-								name: result.name,
-								location: result.location,
-								layerId: result.layerId,
-								featureId: result.featureId,
-								propId: result.propId
-							};
-						} else if (result.type === 'address') {
-							prop = {
-								id: result.id,
-								name: result.name,
-								location: result.location,
-								propId: null
-							};
-						}
-						return {
-							id: result.id,
-							type: 'Feature',
-							geometry: {
-								type: 'Point',
-								coordinates: result.point as [number, number]
-							},
-							properties: prop
-						};
-					}
-				})
+				features: searchResults
+					.filter(
+						(result): result is ResultPoiData | ResultAddressData =>
+							result.type === 'poi' || result.type === 'address'
+					)
+					.map((result) => ({
+						id: result.id,
+						type: 'Feature' as const,
+						geometry: {
+							type: 'Point' as const,
+							coordinates: result.point as [number, number]
+						},
+						properties: result
+					}))
 			};
 			searchGeojsonData = geojson;
 			// mapStore.setData('search_result', geojson);
 
 			const bbox = turfBbox(geojson);
-			mapStore.fitBounds(bbox, {
+			mapStore.fitBounds(bbox as [number, number, number, number], {
 				duration: 500,
 				padding: 100
 			});
@@ -183,11 +157,11 @@
 			</button>
 		</div>
 		{#if searchResults}
-			<div class="c-scroll flex grow flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 pb-4">
+			<div class="c-scroll flex grow flex-col gap-3 overflow-x-hidden overflow-y-auto px-2 pb-4">
 				{#each searchResults as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
-						class="border-1 border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-black p-2 text-left text-base {result.id &&
+						class="border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base {result.id &&
 						selectedSearchId === result.id
 							? 'bg-accent'
 							: ''}"

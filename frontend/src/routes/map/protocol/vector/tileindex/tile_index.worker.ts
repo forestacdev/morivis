@@ -16,7 +16,7 @@ self.onmessage = async (e) => {
 
 		if (tile) {
 			const pbf = vtpbf.fromGeojsonVt(
-				{ geojsonLayer: tile },
+				{ geojsonLayer: tile as any },
 				{
 					version: 2
 				}

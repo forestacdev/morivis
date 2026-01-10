@@ -1,5 +1,4 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type { FeatureCollection, Point, Feature } from 'geojson';
 export type ResultData = ResultPoiData | ResultCoordinateData | ResultAddressData | ResultLayerData;
 
 export type ResultDataType = 'poi' | 'coordinate' | 'address' | 'layer';
@@ -23,12 +22,14 @@ export interface ResultAddressData {
 }
 
 export interface ResultCoordinateData {
+	id?: number;
 	type: 'coordinate';
 	name: string;
 	point: [number, number];
 }
 
 export interface ResultLayerData {
+	id?: number;
 	type: 'layer';
 	name: string;
 	layerId: string;
@@ -45,6 +46,6 @@ export type SearchGeojsonData = {
 			type: 'Point';
 			coordinates: [number, number];
 		};
-		properties: ResultPoiData | ResultAddressData;
+		properties: ResultData;
 	}[];
 };

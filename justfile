@@ -36,11 +36,8 @@ preview:
 
 # リント
 lint:
-    cd frontend && pnpm run lint
+    cd frontend && pnpm run format && pnpm run check && pnpm run lint
 
-# チェック
-check:
-    cd frontend && pnpm run check
 
 # 座標変換
 proj:

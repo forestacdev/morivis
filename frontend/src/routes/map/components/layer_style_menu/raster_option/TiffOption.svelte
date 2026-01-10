@@ -1,9 +1,10 @@
 <script lang="ts">
+	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
+
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
 	import TiffStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/TiffStyleModePulldownBox.svelte';
 	import { COLOR_MAP_TYPE, type RasterTiffStyle } from '$routes/map/data/types/raster';
-	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
 	interface Props {
 		style: RasterTiffStyle;

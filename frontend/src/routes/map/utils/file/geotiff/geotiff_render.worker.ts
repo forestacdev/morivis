@@ -154,7 +154,10 @@ self.onmessage = async (e) => {
 		canvas.height = height;
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
-		const program = programs[type];
+		if (!programs) {
+			throw new Error('WebGL programs not initialized');
+		}
+		const program = programs[type as keyof typeof programs];
 
 		gl.useProgram(program);
 		gl.clearColor(0, 0, 0, 0);

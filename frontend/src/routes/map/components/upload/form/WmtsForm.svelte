@@ -1,10 +1,9 @@
 <script lang="ts">
 	import * as yup from 'yup';
 
-	import type { DialogType } from '$routes/map/types';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import { createRasterEntry } from '$routes/map/data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { DialogType } from '$routes/map/types';
 	import { parseWmtsCapabilities } from '$routes/map/utils/file/wmts';
 
 	interface Props {
@@ -63,7 +62,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-y-auto overflow-x-hidden"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
 	<TextForm bind:value={forms.url} label="タイルURL" error={errors.url} />
 </div>

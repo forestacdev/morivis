@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { scale } from 'svelte/transition';
 	import type { LngLat } from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
+	import { scale } from 'svelte/transition';
+
 	import type {
 		ResultAddressData,
 		ResultCoordinateData,
@@ -64,47 +65,4 @@
 {/if} -->
 
 <style>
-	/* エフェクト要素 */
-	.c-ripple-effect {
-		width: 70px;
-		height: 70px;
-		position: absolute;
-		border-radius: 100%;
-		pointer-events: none;
-		opacity: 0;
-		animation: ripple 1.5s ease-out infinite;
-		background-color: var(--color-base);
-	}
-
-	.c-scale-effect {
-		animation: scale 0.15s ease-out;
-	}
-
-	@keyframes scale {
-		0% {
-			scale: 6;
-			opacity: 0;
-		}
-
-		100% {
-			scale: 1;
-			opacity: 1;
-		}
-	}
-
-	/* アニメーションの定義 */
-	@keyframes ripple {
-		0% {
-			opacity: 0.5;
-			scale: 0;
-		}
-		60% {
-			scale: 1.5;
-			opacity: 0;
-		}
-		100% {
-			scale: 1.5;
-			opacity: 0;
-		}
-	}
 </style>

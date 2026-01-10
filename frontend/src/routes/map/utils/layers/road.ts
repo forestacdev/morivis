@@ -4,6 +4,8 @@ import type {
 	VectorSourceSpecification
 } from 'maplibre-gl';
 
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+
 export const roadSources: Record<string, VectorSourceSpecification> = {
 	v: {
 		type: 'vector',
@@ -65,7 +67,7 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 			],
 			'symbol-sort-key': ['match', ['get', 'vt_code'], 2901, 88, 2903, 50, 2904, 49, 7701, 111, 0],
 			'text-allow-overlap': false,
-			'text-font': ['Noto Sans JP Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'auto',
 			'text-size': [
 				'let',

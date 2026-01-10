@@ -1,6 +1,8 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 
-interface ModelMetaData extends BaseMetaData {}
+interface ModelMetaData extends BaseMetaData {
+	altitude?: number;
+}
 
 interface BaseModelEntry {
 	id: string;
