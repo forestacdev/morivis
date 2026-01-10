@@ -24,18 +24,20 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_pole.webp`
 	},
 	properties: {
-		keys: ['name'],
-
-		titles: [
-			{
-				conditions: ['name'],
-				template: '{name}'
-			},
-			{
-				conditions: [],
-				template: 'サインポール'
-			}
-		]
+		attributeView: {
+			popupKeys: ['name'],
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: 'サインポール'
+				}
+			]
+		},
+		fields: [{ key: 'name', type: 'string' }]
 	},
 	interaction: {
 		clickable: true
@@ -77,13 +79,12 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 			width: 2
 		},
 		labels: {
-			key: '名前',
+			key: 'name',
 			show: false,
 			expressions: [
 				{
-					key: '名前',
-					name: 'ポールの名前',
-					value: '{name}'
+					key: 'name',
+					name: 'ポールの名称'
 				}
 			]
 		}

@@ -96,7 +96,15 @@ export const generateNumberLinearExpression = (
 	const [inputMin, inputMax] = mapping.range;
 	const [outputMin, outputMax] = mapping.values;
 
-	return ['interpolate', ['linear'], ['get', key], inputMin, outputMin, inputMax, outputMax];
+	return [
+		'interpolate',
+		['linear'],
+		['to-number', ['get', key], inputMin], // 文字列数字にも対応
+		inputMin,
+		outputMin,
+		inputMax,
+		outputMax
+	] as DataDrivenPropertyValueSpecification<number>;
 };
 
 export const getNumberExpression = (numbers: NumbersStyle) => {

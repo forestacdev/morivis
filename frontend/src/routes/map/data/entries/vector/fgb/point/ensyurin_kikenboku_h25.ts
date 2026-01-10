@@ -10,7 +10,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		url: `${ENTRY_FGB_PATH}/ensyurin_kikenboku_h25.fgb`
 	},
 	metaData: {
-		name: '演習林 危険木調査2013年度',
+		name: '演習林 危険木調査 2013年度',
 		description: '',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
@@ -26,10 +26,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		attributeView: {
 			popupKeys: ['樹種', '胸高直径（ｃｍ）', '状態', '調査日時', '備考'],
 			titles: [
-				{
-					conditions: ['樹種', '状態'],
-					template: '{樹種} {状態}'
-				},
 				{
 					conditions: ['樹種'],
 					template: '{樹種}'
@@ -58,7 +54,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		markerType: 'circle',
 		colors: {
 			show: true,
-			key: '単色',
+			key: '胸高直径（ｃｍ）',
 			expressions: [
 				{
 					type: 'single',
@@ -96,7 +92,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '胸高直径（ｃｍ）',
 					name: '胸高直径',
 					mapping: {
-						range: [10, 50],
+						range: [1, 50],
 						values: [5, 10]
 					}
 				}

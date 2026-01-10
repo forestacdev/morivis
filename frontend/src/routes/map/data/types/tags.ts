@@ -53,7 +53,8 @@ export const TAG_LIST = [
 	'施設平面図',
 	'CAD',
 	'点群',
-	'3Dモデル'
+	'3Dモデル',
+	'鳥類'
 ] as const;
 
 // 配列から型を生成
