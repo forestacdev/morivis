@@ -1,16 +1,21 @@
 {
     "folders": [
         {
-            "path": ".",
+            "name": "設定",
+            "path": "frontend/src/routes/constants",
+        },
+        {
+            "name": "データ定義",
+            "path": "frontend/src/routes/map/data/entries",
         },
         {
             "path": "frontend",
         },
         {
-            "path": "frontend/src/routes/map/data/entries",
+            "path": "data",
         },
         {
-            "path": "data",
+            "path": ".",
         },
     ],
     "settings": {},

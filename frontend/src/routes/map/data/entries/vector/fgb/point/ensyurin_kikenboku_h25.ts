@@ -81,7 +81,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			]
 		},
 		radius: {
-			key: '単一',
+			key: '胸高直径（ｃｍ）',
 			expressions: [
 				{
 					type: 'single',
