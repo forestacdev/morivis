@@ -1,5 +1,5 @@
 {
-	"entryPoints": ["src/routes/map/data/types/*"],
+	"entryPoints": ["src/routes/map/data/types/*", "src/routes/map/utils/*"],
 	"exclude": ["test/*", "**/node_modules/*", "**/dist/**", "src/*.d.ts"],
 	"out": "docs",
 	"name": "morivis TypeDoc",
