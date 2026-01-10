@@ -265,7 +265,7 @@
 		if (!pointsData || pointsData.length === 0) return;
 
 		textureCache.preloadTextures(pointsData.map((point) => point.texture)).then(() => {
-			pointsData.forEach(async (pointData, index) => {
+			pointsData.forEach(async (pointData) => {
 				// 読み込み完了リストに追加
 				isLoadedNodeIdList = [...isLoadedNodeIdList, pointData.node_id];
 			});

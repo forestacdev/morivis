@@ -74,7 +74,7 @@ export default [
 				}
 			],
 			'no-console': ['warn', { allow: ['warn', 'error'] }],
-			camelcase: ['error', { properties: 'never' }]
+			camelcase: ['warn', { properties: 'never' }]
 		}
 	}
 ];

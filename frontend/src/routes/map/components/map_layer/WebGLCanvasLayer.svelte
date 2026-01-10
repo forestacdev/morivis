@@ -1,9 +1,6 @@
 <script lang="ts">
-	import earcut from 'earcut'; // earcutをインポート
-	import type { FeatureCollection, Feature } from 'geojson';
 	import { mat4 } from 'gl-matrix';
 	import type { CanvasSourceSpecification, CanvasSource, Map as MapLibreMap } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import fragmentShaderSource from './shaders/fragment.glsl?raw';

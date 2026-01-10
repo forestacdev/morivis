@@ -1,6 +1,5 @@
-import { COVER_IMAGE_BASE_PATH, IMAGE_TILE_XYZ_SETS, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { KANAGAWA_BBOX } from '$routes/map/data/location_bbox';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {

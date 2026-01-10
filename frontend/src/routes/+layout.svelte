@@ -44,6 +44,7 @@
 			transitionPageScreen.set(1);
 			delay(1000).then(() => {
 				resolve();
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				navigation.complete;
 				delay(300).then(() => {
 					transitionPageScreen.set(-1);

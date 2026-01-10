@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import proj4 from 'proj4';
-import { PANORAMA_IMAGE_URL, SCENE_CENTER_COORDS } from '../constants';
+import { PANORAMA_IMAGE_URL } from '../constants';
 import type {
 	NextPointData,
 	CurrentPointData,

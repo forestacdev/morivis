@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-	import type { BandTypeKey, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import type { BandTypeKey } from '$routes/map/data/types/raster';
 
 	interface Props {
 		isMode: BandTypeKey;

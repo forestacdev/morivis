@@ -536,7 +536,6 @@
 		<SearchMenu
 			bind:featureMenuData
 			bind:inputSearchWord
-			{layerEntries}
 			bind:showSelectionMarker
 			bind:selectionMarkerLngLat
 			bind:searchResults

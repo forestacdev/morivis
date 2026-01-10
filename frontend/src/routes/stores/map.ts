@@ -755,8 +755,6 @@ const createMapStore = () => {
 	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map || !isMapValid(map)) return;
 
-		const padding = checkPc() ? 20 : 0;
-
 		if (_entry.metaData.center) {
 			// 中心座標が指定されている場合は、中心にズーム
 			map.easeTo({

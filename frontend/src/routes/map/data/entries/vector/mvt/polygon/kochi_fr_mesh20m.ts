@@ -1,5 +1,4 @@
-import { COVER_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { KOCHI_BBOX } from '$routes/map/data/location_bbox';
 

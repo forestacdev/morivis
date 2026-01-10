@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type { MeshStyleEntry } from '$routes/map/data/types/model';
 

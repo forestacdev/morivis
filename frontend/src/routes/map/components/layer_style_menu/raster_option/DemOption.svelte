@@ -3,7 +3,6 @@
 	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import type { ColorMapType, RasterDemEntry } from '$routes/map/data/types/raster';

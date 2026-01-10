@@ -1,8 +1,6 @@
-import type { LngLat, LngLatBoundsLike, Coordinates } from 'maplibre-gl';
+import type { LngLat, Coordinates } from 'maplibre-gl';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { BBox as GeoJsonBBox } from 'geojson';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 import {
 	WEB_MERCATOR_MIN_LAT,

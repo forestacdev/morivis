@@ -1,4 +1,3 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_3DTILES_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { ModelTiles3DEntry, PointCloudStyle } from '$routes/map/data/types/model';
 
 const entry: ModelTiles3DEntry<PointCloudStyle> = {

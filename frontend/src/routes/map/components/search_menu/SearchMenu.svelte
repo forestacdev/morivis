@@ -1,15 +1,13 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import turfBbox, { bbox } from '@turf/bbox';
+	import turfBbox from '@turf/bbox';
 	import type { LngLat } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { propData } from '$routes/map/data/prop_data';
-	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import type {
 		ResultData,
@@ -17,13 +15,10 @@
 		ResultAddressData,
 		SearchGeojsonData
 	} from '$routes/map/utils/feature';
-	import { getPropertiesFromPMTiles } from '$routes/map/utils/pmtiles';
-	import { lonLatToTileCoords } from '$routes/map/utils/tile';
 	import { isStyleEdit } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
-		layerEntries: GeoDataEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
@@ -35,7 +30,6 @@
 	}
 
 	let {
-		layerEntries,
 		featureMenuData = $bindable(),
 		inputSearchWord = $bindable(),
 		showSelectionMarker = $bindable(),

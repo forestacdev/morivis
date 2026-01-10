@@ -19,7 +19,7 @@
 	let currentIndex = $state<number>(0);
 	const INTERVAL = 10000; //
 
-	let timeoutId: NodeJS.Timeout | null = null;
+	let timeoutId: ReturnType<typeof setTimeout> | null = null;
 	function scheduleNext() {
 		timeoutId = setTimeout(() => {
 			currentIndex = (currentIndex + 1) % newAttributions.length;

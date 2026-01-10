@@ -128,7 +128,6 @@
 	});
 
 	// フォールバック画像またはプレースホルダーを表示するかどうか
-	const showPlaceholder = $derived(!imageLoaded && !imageError);
 	const showImage = $derived(imageLoaded && !imageError);
 </script>
 

@@ -96,6 +96,8 @@ export const pwaInstall = () => {
 		deferredPrompt.prompt();
 		deferredPrompt.userChoice.then((choiceResult) => {
 			if (choiceResult.outcome === 'accepted') {
+				// ユーザーがインストールを受け入れた場合
+				showNotification('アプリがホーム画面に追加されました。', 'success');
 			}
 			deferredPrompt = null;
 		});
