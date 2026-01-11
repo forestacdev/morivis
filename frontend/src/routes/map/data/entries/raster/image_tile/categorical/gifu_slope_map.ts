@@ -1,4 +1,4 @@
-import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {

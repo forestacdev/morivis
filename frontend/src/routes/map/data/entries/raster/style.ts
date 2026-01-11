@@ -1,8 +1,7 @@
 import type {
 	RasterBaseMapStyle,
 	RasterCategoricalStyle,
-	RasterDemStyle,
-	RasterInteraction
+	RasterDemStyle
 } from '$routes/map/data/types/raster';
 
 export const DEFAULT_RASTER_BASEMAP_STYLE: RasterBaseMapStyle = {
@@ -62,8 +61,4 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			// }
 		}
 	}
-};
-
-export const DEFAULT_RASTER_BASEMAP_INTERACTION: RasterInteraction = {
-	clickable: false
 };

@@ -1,6 +1,6 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
-import { KANAGAWA_BBOX } from '$routes/map/data/location_bbox';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/style';
+import { KANAGAWA_BBOX } from '$routes/map/data/entries/meta_data/bounds';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dsm_kanagawa',

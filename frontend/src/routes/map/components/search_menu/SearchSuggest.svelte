@@ -10,8 +10,8 @@
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import { layerDataFuse } from '$routes/map/data';
-	import { propData } from '$routes/map/data/prop_data';
+	import { layerDataFuse } from '$routes/map/data/entries';
+	import { propData } from '$routes/map/data/entries/vector/prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import type { ResultData } from '$routes/map/utils/feature';

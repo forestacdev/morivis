@@ -1,6 +1,6 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/style';
-import { YAMANASHI_BBOX } from '$routes/map/data/location_bbox';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/style';
+import { YAMANASHI_BBOX } from '$routes/map/data/entries/meta_data/bounds';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dem_yamanashi',

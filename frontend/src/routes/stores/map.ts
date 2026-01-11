@@ -38,7 +38,7 @@ import {
 	WEB_MERCATOR_MAX_LAT,
 	WEB_MERCATOR_MIN_LNG,
 	WEB_MERCATOR_MAX_LNG
-} from '$routes/map/data/location_bbox';
+} from '$routes/map/data/entries/meta_data/bounds';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';

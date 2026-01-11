@@ -1,5 +1,5 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/meta_data/bounds';
 import { LEGEND_DATA_PATH } from '$routes/constants';
 
 const IMG = LEGEND_DATA_PATH + '/landslide';

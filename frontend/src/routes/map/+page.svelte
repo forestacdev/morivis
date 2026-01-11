@@ -46,7 +46,7 @@
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
-	import { geoDataEntries } from '$routes/map/data';
+	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';

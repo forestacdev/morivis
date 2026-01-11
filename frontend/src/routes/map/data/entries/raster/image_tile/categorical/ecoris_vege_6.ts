@@ -1,9 +1,9 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/meta_data/bounds';
 import {
 	DEFAULT_RASTER_BASEMAP_INTERACTION,
 	DEFAULT_RASTER_CATEGORICAL_STYLE
-} from '$routes/map/data/style';
+} from '$routes/map/data/entries/raster/style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ecoris_vege_6',

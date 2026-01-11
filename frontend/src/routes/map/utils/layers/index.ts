@@ -14,7 +14,7 @@ import type {
 import { streetViewLineLayer, streetViewCircleLayer } from '$routes/map/utils/layers/street_view';
 import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 
-import { geoDataEntries } from '$routes/map/data';
+import { geoDataEntries } from '$routes/map/data/entries';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 
@@ -50,7 +50,10 @@ import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
 
 import { get } from 'svelte/store';
 
-import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
+import {
+	getAttribution,
+	type AttributionKey
+} from '$routes/map/data/entries/meta_data/attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
 

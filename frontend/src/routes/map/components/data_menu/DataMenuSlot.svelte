@@ -5,7 +5,7 @@
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { getAttributionName } from '$routes/map/data/attribution';
+	import { getAttributionName } from '$routes/map/data/entries/meta_data/attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';

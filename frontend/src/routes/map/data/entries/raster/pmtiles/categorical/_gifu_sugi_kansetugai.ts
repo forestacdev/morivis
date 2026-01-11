@@ -1,6 +1,6 @@
 import type { RasterCategoricalStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
-import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/style';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/style';
 
 const entry: RasterPMTilesEntry<RasterCategoricalStyle> = {
 	id: 'gifu_sugi_kansetugai',

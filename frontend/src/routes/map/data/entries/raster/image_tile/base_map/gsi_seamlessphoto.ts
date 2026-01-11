@@ -1,10 +1,8 @@
-import {
-	DEFAULT_RASTER_BASEMAP_INTERACTION,
-	DEFAULT_RASTER_BASEMAP_STYLE
-} from '$routes/map/data/style';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/style';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/interaction';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/meta_data/bounds';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gsi_seamlessphoto',

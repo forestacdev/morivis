@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/meta_data/bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {

@@ -2,7 +2,7 @@
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import { createRasterEntry } from '$routes/map/data';
+	import { createRasterEntry } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 

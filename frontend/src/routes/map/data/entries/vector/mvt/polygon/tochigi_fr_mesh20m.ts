@@ -1,6 +1,6 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { TOCHIGI_BBOX } from '$routes/map/data/location_bbox';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
+import { TOCHIGI_BBOX } from '$routes/map/data/entries/meta_data/bounds';
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/raster/style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
