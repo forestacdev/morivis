@@ -171,6 +171,9 @@ export const createLabelsExpressions = (keys: string[]): Labels => {
 	};
 };
 
+// =============================================================================
+// 樹種ポリゴン (Tree Species Polygon)
+// =============================================================================
 export const TREE_SINGLE_COLOR_STYLE: ColorSingleExpression = {
 	type: 'single',
 	key: '単色',
@@ -353,6 +356,236 @@ export const TREE_SPECIES_STYLE: PolygonStyle = {
 	},
 	labels: {
 		...TREE_SPECIES_LABELS
+	},
+	default: {
+		...DEFAULT_POLYGON_STYLE
+	}
+};
+
+// =============================================================================
+// 森林資源量集計メッシュ (Forest Resource Mesh 20m)
+// =============================================================================
+
+export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression = [
+	{
+		type: 'step',
+		key: '立木本数',
+		name: '立木本数による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 50],
+			divisions: 5
+		}
+	},
+	{
+		type: 'step',
+		key: '立木密度',
+		name: '立木密度による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 1500],
+			divisions: 5
+		}
+	},
+	{
+		type: 'step',
+		key: '平均樹高',
+		name: '平均樹高による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 30],
+			divisions: 5
+		}
+	},
+	{
+		type: 'step',
+		key: '平均直径',
+		name: '平均直径による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 50],
+			divisions: 5
+		}
+	},
+	{
+		type: 'step',
+		key: '合計材積',
+		name: '合計材積による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 50],
+			divisions: 5
+		}
+	},
+
+	{
+		type: 'step',
+		key: '平均標高',
+		name: '平均標高による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 1000],
+			divisions: 5
+		}
+	},
+	{
+		type: 'step',
+		key: '平均傾斜',
+		name: '平均傾斜による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: [0, 90],
+			divisions: 5
+		}
+	}
+];
+
+export const FOREST_MESH_OUTLINE: PolygonOutLine = {
+	show: true,
+	color: '#000000',
+	width: 0.1,
+	lineStyle: 'solid'
+};
+
+export const FOREST_MESH_LABELS: Labels = {
+	key: '樹種',
+	show: false,
+	minZoom: 14,
+	expressions: [
+		{
+			key: '解析樹種ID',
+			name: '解析樹種ID'
+		},
+		{
+			key: '解析樹種',
+			name: '解析樹種'
+		},
+		{
+			key: '樹種ID',
+			name: '樹種ID'
+		},
+		{
+			key: '樹種',
+			name: '樹種'
+		},
+		{
+			key: '面積_ha',
+			name: '面積_ha'
+		},
+		{
+			key: '立木本数',
+			name: '立木本数'
+		},
+		{
+			key: '立木密度',
+			name: '立木密度'
+		},
+		{
+			key: '平均樹高',
+			name: '平均樹高'
+		},
+		{
+			key: '平均直径',
+			name: '平均直径'
+		},
+		{
+			key: '合計材積',
+			name: '合計材積'
+		},
+		{
+			key: 'ha材積',
+			name: 'ha材積'
+		},
+		{
+			key: '収量比数',
+			name: '収量比数'
+		},
+		{
+			key: '相対幹距比',
+			name: '相対幹距比'
+		},
+		{
+			key: '形状比',
+			name: '形状比'
+		},
+		{
+			key: '樹冠長率',
+			name: '樹冠長率'
+		},
+		{
+			key: '森林計測年',
+			name: '森林計測年'
+		},
+		{
+			key: '森林計測法',
+			name: '森林計測法'
+		},
+		{
+			key: '平均傾斜',
+			name: '平均傾斜'
+		},
+		{
+			key: '最大傾斜',
+			name: '最大傾斜'
+		},
+		{
+			key: '最小傾斜',
+			name: '最小傾斜'
+		},
+		{
+			key: '最頻傾斜',
+			name: '最頻傾斜'
+		},
+		{
+			key: '県code',
+			name: '県code'
+		},
+		{
+			key: '市町村code',
+			name: '市町村code'
+		}
+		// {
+		// 	key: 'ID',
+		// 	name: 'ID'
+		// },
+		// {
+		// 	key: '樹冠高90',
+		// 	name: '樹冠高90'
+		// },
+		// {
+		// 	key: '最大樹冠高',
+		// 	name: '最大樹冠高'
+		// }
+	]
+};
+
+export const FOREST_MESH_STYLE_COLORS: ColorsStyle = {
+	key: '解析樹種',
+	show: true,
+	expressions: [
+		{
+			...FOREST_MESH_SINGLE_COLOR_STYLE
+		},
+		{
+			...FOREST_MESH_MATCH_COLOR_STYLE
+		},
+		{
+			...FOREST_MESH_STEP_COLOR_STYLE
+		}
+	]
+};
+
+export const FOREST_MESH_STYLE: PolygonStyle = {
+	type: 'fill',
+	opacity: 0.5,
+	colors: {
+		...FOREST_MESH_STYLE_COLORS
+	},
+	outline: {
+		...FOREST_MESH_OUTLINE
+	},
+	labels: {
+		...FOREST_MESH_LABELS
 	},
 	default: {
 		...DEFAULT_POLYGON_STYLE
