@@ -1,7 +1,7 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 import type {} from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
-import { KOCHI_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
+import { KOCHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'kochi_slope',
 	type: 'raster',

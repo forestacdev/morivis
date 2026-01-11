@@ -1,6 +1,14 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { TREE_SPECIES_PROPERTIES } from '$routes/map/data/entries/vector/_properties';
+import {
+	DEFAULT_POLYGON_STYLE,
+	TREE_SPECIES_LABELS,
+	TREE_SPECIES_OUTLINE,
+	TREE_SPECIES_STYLE,
+	TREE_SINGLE_COLOR_STYLE
+} from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hyogo_fr_mesh20m',

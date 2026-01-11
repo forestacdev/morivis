@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { TOCHIGI_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
+import { TOCHIGI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 

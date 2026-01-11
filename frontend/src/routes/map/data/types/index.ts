@@ -9,7 +9,7 @@ import type {
 	TileXYZ
 } from '$routes/map/data/types/raster';
 import type { AnyModelEntry } from '$routes/map/data/types/model';
-import type { AttributionKey } from '$routes/map/data/entries/meta_data/_attribution';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
 import type { Region } from './location';
 import type { Tag } from './tags';
 

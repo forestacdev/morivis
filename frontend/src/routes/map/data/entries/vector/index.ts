@@ -17,7 +17,7 @@ import {
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
-import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/meta_data';
+import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 

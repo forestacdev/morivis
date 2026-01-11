@@ -1,6 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
+import { DEFAULT_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
 
 const entry: PolygonEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_syouhan',
@@ -225,16 +226,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 			]
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#ffffff',
-					'text-halo-color': '#151515',
-					'text-halo-width': 2,
-					'text-halo-blur': 1,
-					'text-opacity': 0.9
-				},
-				layout: {}
-			}
+			...DEFAULT_POLYGON_STYLE
 		}
 		// auxiliaryLayers: {
 		// 	source: {

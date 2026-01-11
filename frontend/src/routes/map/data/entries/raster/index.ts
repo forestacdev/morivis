@@ -3,8 +3,8 @@ import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/ras
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
-import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/meta_data';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 // TODO: タイルサイズ指定
 export const createRasterEntry = (name: string, url: string): RasterEntry<RasterBaseMapStyle> => {

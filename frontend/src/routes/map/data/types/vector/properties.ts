@@ -109,6 +109,121 @@ export interface DateFormatSpec {
 	invalidText?: string; // 例: '不明'
 }
 
+/** デフォルトの日付フォーマット設定 */
+const DEFAULT_DATE_FORMAT: Required<Pick<DateFormatSpec, 'inputPatterns' | 'displayPattern' | 'invalidText'>> = {
+	inputPatterns: ['YYYY-MM-DD'],
+	displayPattern: 'YYYY年M月D日',
+	invalidText: ''
+};
+
+/** 入力パターンに対応する正規表現 */
+const PATTERN_REGEX_MAP: Record<string, RegExp> = {
+	'YYYY-MM-DDTHH:mm:ss': /^(\d{4})-(\d{1,2})-(\d{1,2})T\d{2}:\d{2}:\d{2}$/,
+	'YYYY-MM-DD': /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+	'YYYY/MM/DD': /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
+	YYYYMMDD: /^(\d{4})(\d{2})(\d{2})$/,
+	'YYYY年M月D日': /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
+	'YYYY年MM月DD日': /^(\d{4})年(\d{2})月(\d{2})日$/,
+	'YYYY-MM': /^(\d{4})-(\d{1,2})$/,
+	'YYYY/MM': /^(\d{4})\/(\d{1,2})$/,
+	'YYYY年M月': /^(\d{4})年(\d{1,2})月$/,
+	YYYY: /^(\d{4})$/
+};
+
+interface ParsedDate {
+	year: number;
+	month?: number;
+	day?: number;
+}
+
+/**
+ * 入力パターンから日付をパースする
+ */
+const parseDate = (value: string, patterns: string[]): ParsedDate | null => {
+	for (const pattern of patterns) {
+		const regex = PATTERN_REGEX_MAP[pattern];
+		if (!regex) continue;
+
+		const match = value.match(regex);
+		if (match) {
+			const year = parseInt(match[1], 10);
+			const month = match[2] ? parseInt(match[2], 10) : undefined;
+			const day = match[3] ? parseInt(match[3], 10) : undefined;
+			return { year, month, day };
+		}
+	}
+	return null;
+};
+
+/**
+ * パースした日付を指定フォーマットで出力する
+ */
+const formatParsedDate = (
+	parsed: ParsedDate,
+	displayPattern: string,
+	fill?: DateFormatSpec['fill']
+): string => {
+	const { year } = parsed;
+	let { month, day } = parsed;
+
+	// fillルールの適用
+	if (month === undefined && fill?.month !== undefined) {
+		month = fill.month;
+	}
+	if (day === undefined && fill?.day !== undefined) {
+		day = fill.day;
+	}
+
+	// 表示パターンに応じて出力
+	return displayPattern
+		.replace('YYYY', String(year))
+		.replace('MM', month !== undefined ? String(month).padStart(2, '0') : '')
+		.replace('M', month !== undefined ? String(month) : '')
+		.replace('DD', day !== undefined ? String(day).padStart(2, '0') : '')
+		.replace('D', day !== undefined ? String(day) : '')
+		// 月日がない場合の不要な区切り文字を除去
+		.replace(/年月$/, '年')
+		.replace(/月日$/, '月')
+		.replace(/-+$/, '')
+		.replace(/\/+$/, '');
+};
+
+/**
+ * DateFormatSpecに基づいて日付文字列を正規化する。
+ *
+ * @param value - 入力日付文字列
+ * @param spec - 日付フォーマット仕様（省略時はデフォルト設定を使用）
+ * @returns フォーマット済み日付文字列
+ *
+ * @example
+ * // デフォルト: YYYY-MM-DD → YYYY年M月D日
+ * formatDate('2024-01-15') // '2024年1月15日'
+ *
+ * @example
+ * // カスタム設定
+ * formatDate('2024/03/05', {
+ *   inputPatterns: ['YYYY/MM/DD'],
+ *   displayPattern: 'YYYY年MM月DD日'
+ * }) // '2024年03月05日'
+ */
+export const formatDate = (value: unknown, spec?: DateFormatSpec): string => {
+	if (value == null || value === '') {
+		return spec?.invalidText ?? DEFAULT_DATE_FORMAT.invalidText;
+	}
+
+	const strValue = String(value).trim();
+	const inputPatterns = spec?.inputPatterns ?? DEFAULT_DATE_FORMAT.inputPatterns;
+	const displayPattern = spec?.displayPattern ?? DEFAULT_DATE_FORMAT.displayPattern;
+	const invalidText = spec?.invalidText ?? DEFAULT_DATE_FORMAT.invalidText;
+
+	const parsed = parseDate(strValue, inputPatterns);
+	if (!parsed) {
+		return invalidText;
+	}
+
+	return formatParsedDate(parsed, displayPattern, spec?.fill);
+};
+
 /** 追加: 属性(フィールド)の意味を1箇所に集約 */
 type FieldType = 'string' | 'number' | 'integer' | 'date';
 
@@ -209,10 +324,11 @@ export interface VectorProperties {
  *
  * 処理順序:
  * 1. 無効値チェック（format.empty）
- * 2. 辞書変換（valueDict）
- * 3. 数値フォーマット（format.digits）
- * 4. affix適用（prefix/suffix）
- * 5. 単位付与（unit）
+ * 2. 日付フォーマット（type='date' または format.date）
+ * 3. 辞書変換（valueDict）
+ * 4. 数値フォーマット（format.digits）
+ * 5. affix適用（prefix/suffix）
+ * 6. 単位付与（unit）
  */
 export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string => {
 	// fieldがundefinedの場合は単純に文字列化
@@ -234,7 +350,12 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 
 	let formatted: string;
 
-	// 2. 辞書変換
+	// 2. 日付フォーマット（type='date' または format.date が指定されている場合）
+	if (field.type === 'date' || field.format?.date) {
+		return formatDate(rawValue, field.format?.date);
+	}
+
+	// 3. 辞書変換
 	if (field.valueDict) {
 		const mapped = field.valueDict[rawValue as string | number];
 		if (mapped != null) {
@@ -243,7 +364,7 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 			formatted = String(rawValue);
 		}
 	} else if (typeof rawValue === 'number') {
-		// 3. 数値フォーマット
+		// 4. 数値フォーマット
 		if (field.format?.digits != null) {
 			formatted = rawValue.toFixed(field.format.digits);
 		} else {
@@ -253,14 +374,14 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 		formatted = String(rawValue);
 	}
 
-	// 4. affix適用
+	// 5. affix適用
 	if (field.affix) {
 		const prefix = field.affix.prefix ?? '';
 		const suffix = field.affix.suffix ?? '';
 		formatted = `${prefix}${formatted}${suffix}`;
 	}
 
-	// 5. 単位付与
+	// 6. 単位付与
 	if (field.unit) {
 		formatted = `${formatted} ${field.unit}`;
 	}

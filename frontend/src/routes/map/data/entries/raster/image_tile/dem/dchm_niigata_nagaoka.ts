@@ -1,6 +1,6 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
-import { NIIGATA_NAGAOKA_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
+import { NIIGATA_NAGAOKA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dchm_niigata_nagaoka',

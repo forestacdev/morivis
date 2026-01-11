@@ -53,7 +53,7 @@ import { get } from 'svelte/store';
 import {
 	getAttribution,
 	type AttributionKey
-} from '$routes/map/data/entries/meta_data/_attribution';
+} from '$routes/map/data/entries/_meta_data/_attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
 

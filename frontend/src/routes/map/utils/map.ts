@@ -7,7 +7,7 @@ import {
 	WEB_MERCATOR_MAX_LAT,
 	WEB_MERCATOR_MIN_LNG,
 	WEB_MERCATOR_MAX_LNG
-} from '$routes/map/data/entries/meta_data/_bounds';
+} from '$routes/map/data/entries/_meta_data/_bounds';
 
 type BBox = [number, number, number, number];
 type BBox3D = [number, number, number, number, number, number];
