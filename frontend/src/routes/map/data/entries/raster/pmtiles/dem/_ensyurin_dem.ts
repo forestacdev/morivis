@@ -1,5 +1,5 @@
 import type { RasterPMTilesEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/style';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import { ENTRY_PMTILES_RASTER_PATH, IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterDemStyle> = {

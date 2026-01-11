@@ -1,6 +1,6 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { HYOGO_BBOX } from '$routes/map/data/entries/meta_data/bounds';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/style';
+import { HYOGO_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {

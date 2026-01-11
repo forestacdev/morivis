@@ -1,9 +1,9 @@
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/style';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 
 import type { RasterEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/meta_data/bounds';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/meta_data';
 
 // TODO: タイルサイズ指定

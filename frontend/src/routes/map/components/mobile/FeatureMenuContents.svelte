@@ -6,7 +6,7 @@
 
 	import AttributeItem from '../feature_menu/AttributeItem.svelte';
 
-	import { propData } from '$routes/map/data/entries/vector/prop_data';
+	import { propData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';

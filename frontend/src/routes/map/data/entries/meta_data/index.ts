@@ -1,6 +1,6 @@
 import type { BaseMetaData } from '$routes/map/data/types';
 
-import { WEB_MERCATOR_WORLD_BBOX } from './bounds';
+import { WEB_MERCATOR_WORLD_BBOX } from './_bounds';
 
 export const DEFAULT_CUSTOM_META_DATA: BaseMetaData = {
 	name: 'カスタムデータ',

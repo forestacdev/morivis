@@ -1,6 +1,6 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { KOCHI_BBOX } from '$routes/map/data/entries/meta_data/bounds';
+import { KOCHI_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'kochi_fr_mesh20m',

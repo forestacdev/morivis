@@ -13,10 +13,10 @@ import {
 	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE
-} from '$routes/map/data/entries/vector/style';
+} from '$routes/map/data/entries/vector/_style';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
-import { createLabelsExpressions } from '$routes/map/data/entries/vector/style';
+import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';

@@ -1,4 +1,4 @@
-import type { AttributionKey } from '$routes/map/data/entries/meta_data/attribution';
+import type { AttributionKey } from '$routes/map/data/entries/meta_data/_attribution';
 import { writable } from 'svelte/store';
 
 export const mapAttributions = writable<AttributionKey[]>([]);

@@ -1,5 +1,5 @@
 import type { RasterImageEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/style';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'dem_hyogo',

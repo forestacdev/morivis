@@ -1,6 +1,6 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { TOCHIGI_BBOX } from '$routes/map/data/entries/meta_data/bounds';
-import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/style';
+import { TOCHIGI_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'tochigi_slope',

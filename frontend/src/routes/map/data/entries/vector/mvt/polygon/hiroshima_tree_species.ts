@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { HIROSHIMA_BBOX } from '$routes/map/data/entries/meta_data/bounds';
+import { HIROSHIMA_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
