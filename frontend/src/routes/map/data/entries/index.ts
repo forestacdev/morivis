@@ -21,10 +21,8 @@ const initData = (data: GeoDataEntry[]) => {
 };
 
 const entryModules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
-	'$routes/map/data/entries/**/[!_]*.ts',
-	{
-		eager: true
-	}
+	['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts'],
+	{ eager: true }
 );
 
 export const entries: GeoDataEntry[] = Object.values(entryModules)

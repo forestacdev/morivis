@@ -6,8 +6,8 @@
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
-	import { createGeoJsonEntry } from '$routes/map/data/entries';
-	import { geometryTypeToEntryType } from '$routes/map/data/entries';
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { UseEventTriggerType } from '$routes/map/types/ui';

@@ -2,8 +2,8 @@
 	import turfBbox from '@turf/bbox';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import { createGeoJsonEntry } from '$routes/map/data/entries';
-	import { geometryTypeToEntryType } from '$routes/map/data/entries';
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/file/gpx';
