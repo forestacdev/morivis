@@ -1,4 +1,5 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
+import { activeLayerIdsStore } from '$routes/stores/layers';
 
 import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
@@ -20,11 +21,21 @@ const initData = (data: GeoDataEntry[]) => {
 	return data;
 };
 
-const entryModules: Record<string, { default: GeoDataEntry }> = import.meta.glob(
-	['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts'],
-	{ eager: true }
-);
+const isDev = !import.meta.env.PROD;
 
+// デバッグ用ファイル（!プレフィックス）があるかチェック
+const debugModules = import.meta.glob('$routes/map/data/entries/**/!*.ts', { eager: true });
+const hasDebugFiles = Object.keys(debugModules).length > 0;
+
+const entryModules =
+	isDev && hasDebugFiles
+		? debugModules
+		: import.meta.glob(['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts'], { eager: true });
+
+if (hasDebugFiles) {
+	console.warn('デバッグ用データエントリが読み込まれました。');
+	activeLayerIdsStore.setLayers(Object.values(entryModules).map((mod) => mod.default.id));
+}
 export const entries: GeoDataEntry[] = Object.values(entryModules)
 	.map((mod) => mod.default)
 	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));

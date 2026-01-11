@@ -1,6 +1,7 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { TREE_SPECIES_FIELDS } from '$routes/map/data/entries/vector/_fields';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hiroshima_tree_species',
@@ -50,54 +51,7 @@ const entry: VectorEntry<TileMetaData> = {
 				cityCodeKey: '市町村code'
 			}
 		},
-		fields: [
-			{
-				key: '解析樹種ID',
-				label: '解析樹種ID',
-				type: 'number'
-			},
-			{
-				key: '解析樹種',
-				label: '解析樹種',
-				type: 'string'
-			},
-			{
-				key: '樹種ID',
-				label: '樹種ID',
-				type: 'number'
-			},
-			{
-				key: '樹種',
-				label: '樹種',
-				type: 'string'
-			},
-			{
-				key: '面積_ha',
-				label: '面積',
-				type: 'number',
-				unit: 'ha'
-			},
-			{
-				key: '森林計測年',
-				label: '森林計測年',
-				type: 'number'
-			},
-			{
-				key: '森林計測法',
-				label: '森林計測法',
-				type: 'string'
-			},
-			{
-				key: '県code',
-				label: '県code',
-				type: 'number'
-			},
-			{
-				key: '市町村code',
-				label: '市町村code',
-				type: 'number'
-			}
-		]
+		fields: [...TREE_SPECIES_FIELDS]
 	},
 	interaction: {
 		clickable: true

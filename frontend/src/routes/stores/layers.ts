@@ -1,10 +1,10 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { EntryIdToTypeMap } from '$routes/map/data/entries';
-import { writable, derived, get } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { layerAttributions } from './attributions';
-import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+import { type LayerType } from '$routes/map/utils/entries';
 import { JoinDataCache } from '$routes/map/utils/join_data';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
