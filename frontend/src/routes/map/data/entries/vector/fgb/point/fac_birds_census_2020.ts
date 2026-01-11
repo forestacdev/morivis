@@ -11,7 +11,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	metaData: {
 		name: '鳥類調査 2020年度',
-		description: '森林環境教育選考 「生物同定の基礎」より実施',
+		description: '森林環境教育選考「生物同定の基礎」より実施',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		minZoom: 10,
@@ -23,7 +23,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	properties: {
 		attributeView: {
-			popupKeys: ['ele', 'time', 'name', 'kashmir3d_icon', 'kashmir3d_dir', 'id'],
+			popupKeys: ['name', 'time', 'ele'],
 			titles: [
 				{
 					conditions: ['name'],
@@ -33,22 +33,26 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					conditions: [],
 					template: '鳥類'
 				}
-			]
+			],
+			relations: {
+				iNaturalistNameKey: 'name'
+			}
 		},
 		fields: [
 			{
 				key: 'ele',
-				label: '標高',
+				label: '観測地点標高',
 				type: 'number'
 			},
 			{
 				key: 'time',
-				label: '時間',
+				label: '観測時間',
 				type: 'date'
 			},
 			{
 				key: 'name',
-				label: '種名'
+				label: '種名',
+				type: 'string'
 			},
 			{
 				key: 'kashmir3d_icon',

@@ -25,28 +25,58 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/geological_survey.webp`
 	},
 	properties: {
-		keys: [
-			'ser',
-			'symbol',
-			'凡例記号',
-			'r',
-			'g',
-			'b',
-			'形成時代',
-			'formationAge',
-			'大区分',
-			'group',
-			'岩相',
-			'lithology'
-		],
-		titles: [
+		attributeView: {
+			popupKeys: ['凡例記号', '形成時代', '大区分', '岩相'],
+			titles: [
+				{
+					conditions: ['symbol'],
+					template: '{symbol}'
+				},
+				{
+					conditions: [],
+					template: '全国地質図'
+				}
+			]
+		},
+		fields: [
 			{
-				conditions: ['symbol'],
-				template: '{symbol}'
+				key: 'ser',
+				type: 'string'
 			},
 			{
-				conditions: [],
-				template: '広島県の樹種ポリゴン'
+				key: 'symbol',
+				type: 'string'
+			},
+			{
+				key: '凡例記号',
+				type: 'string'
+			},
+			{
+				key: 'r',
+				label: 'R値',
+				type: 'number'
+			},
+			{
+				key: 'g',
+				label: 'G値',
+				type: 'number'
+			},
+			{
+				key: 'b',
+				label: 'B値',
+				type: 'number'
+			},
+			{
+				key: 'formationAge',
+				type: 'string'
+			},
+			{
+				key: 'group',
+				type: 'string'
+			},
+			{
+				key: 'lithology',
+				type: 'string'
 			}
 		]
 	},
@@ -2188,63 +2218,39 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'ser',
-					name: 'ser',
-					value: '{ser}'
+					name: 'ser'
 				},
 				{
 					key: 'symbol',
-					name: 'symbol',
-					value: '{symbol}'
+					name: 'symbol'
 				},
 				{
 					key: '凡例記号',
-					name: '凡例記号',
-					value: '{凡例記号}'
-				},
-				{
-					key: 'r',
-					name: 'r',
-					value: '{r}'
-				},
-				{
-					key: 'g',
-					name: 'g',
-					value: '{g}'
-				},
-				{
-					key: 'b',
-					name: 'b',
-					value: '{b}'
+					name: '凡例記号'
 				},
 				{
 					key: '形成時代',
-					name: '形成時代',
-					value: '{形成時代}'
+					name: '形成時代'
 				},
 				{
 					key: 'formationAge',
-					name: 'formationAge',
-					value: '{formationAge}'
+					name: 'formationAge'
 				},
 				{
 					key: '大区分',
-					name: '大区分',
-					value: '{大区分}'
+					name: '大区分'
 				},
 				{
 					key: 'group',
-					name: 'group',
-					value: '{group}'
+					name: 'group'
 				},
 				{
 					key: '岩相',
-					name: '岩相',
-					value: '{岩相}'
+					name: '岩相'
 				},
 				{
 					key: 'lithology',
-					name: 'lithology',
-					value: '{lithology}'
+					name: 'lithology'
 				}
 			]
 		}

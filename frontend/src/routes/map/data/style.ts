@@ -118,8 +118,7 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 		expressions: [
 			{
 				key: 'name',
-				name: 'name',
-				value: '{name}'
+				name: 'name'
 			}
 		]
 	}
@@ -163,8 +162,7 @@ export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 		expressions: [
 			{
 				key: 'name',
-				name: 'name',
-				value: '{name}'
+				name: 'name'
 			}
 		]
 	}
@@ -200,8 +198,7 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 		expressions: [
 			{
 				key: 'name',
-				name: 'name',
-				value: '{name}'
+				name: 'name'
 			}
 		]
 	}

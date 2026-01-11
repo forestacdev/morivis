@@ -24,15 +24,24 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
 	},
 	properties: {
-		keys: [],
-		titles: [
+		attributeView: {
+			popupKeys: ['樹種'],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: ''
+				}
+			]
+		},
+		fields: [
 			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: ''
+				key: '樹種',
+				label: '解析樹種',
+				type: 'string'
 			}
 		]
 	},

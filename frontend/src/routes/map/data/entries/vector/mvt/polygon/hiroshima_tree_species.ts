@@ -24,25 +24,78 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/hiroshima_tree_species.webp`
 	},
 	properties: {
-		keys: [
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'森林計測年',
-			'森林計測法',
-			'県code',
-			'市町村code',
-			'解析樹種ID',
-			'解析樹種'
-		],
-		titles: [
+		attributeView: {
+			popupKeys: [
+				'樹種ID',
+				'樹種',
+				'面積_ha',
+				'森林計測年',
+				'森林計測法',
+				'県code',
+				'市町村code',
+				'解析樹種ID',
+				'解析樹種'
+			],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '広島県の樹種ポリゴン'
+				}
+			],
+			relations: {
+				cityCodeKey: '市町村code'
+			}
+		},
+		fields: [
 			{
-				conditions: ['樹種'],
-				template: '{樹種}'
+				key: '解析樹種ID',
+				label: '解析樹種ID',
+				type: 'number'
 			},
 			{
-				conditions: [],
-				template: '広島県の樹種ポリゴン'
+				key: '解析樹種',
+				label: '解析樹種',
+				type: 'string'
+			},
+			{
+				key: '樹種ID',
+				label: '樹種ID',
+				type: 'number'
+			},
+			{
+				key: '樹種',
+				label: '樹種',
+				type: 'string'
+			},
+			{
+				key: '面積_ha',
+				label: '面積',
+				type: 'number',
+				unit: 'ha'
+			},
+			{
+				key: '森林計測年',
+				label: '森林計測年',
+				type: 'number'
+			},
+			{
+				key: '森林計測法',
+				label: '森林計測法',
+				type: 'string'
+			},
+			{
+				key: '県code',
+				label: '県code',
+				type: 'number'
+			},
+			{
+				key: '市町村code',
+				label: '市町村code',
+				type: 'number'
 			}
 		]
 	},
@@ -106,48 +159,39 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
+					name: '樹種ID'
 				},
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '面積_ha',
-					name: '面積',
-					value: '{面積_ha} ha'
+					name: '面積'
 				},
 				{
 					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
+					name: '森林計測年'
 				},
 				{
 					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
+					name: '森林計測法'
 				},
 				{
 					key: '県code',
-					name: '県code',
-					value: '{県code}'
+					name: '県code'
 				},
 				{
 					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
+					name: '市町村code'
 				},
 				{
 					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
+					name: '解析樹種ID'
 				},
 				{
 					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
+					name: '解析樹種'
 				}
 			]
 		},

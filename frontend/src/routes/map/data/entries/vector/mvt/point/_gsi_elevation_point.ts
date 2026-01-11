@@ -24,11 +24,25 @@ const entry: PointEntry<TileMetaData> = {
 		xyzImageTile: { x: 0, y: 0, z: 0 }
 	},
 	properties: {
-		keys: ['vt_code', 'vt_text'],
-		titles: [
+		attributeView: {
+			popupKeys: ['vt_code', 'vt_text'],
+			titles: [
+				{
+					conditions: [],
+					template: '標高点'
+				}
+			]
+		},
+		fields: [
 			{
-				conditions: [],
-				template: '標高点'
+				key: 'vt_code',
+				label: '標高点コード',
+				type: 'number'
+			},
+			{
+				key: 'vt_text',
+				label: '標高値(m)',
+				type: 'number'
 			}
 		]
 	},
