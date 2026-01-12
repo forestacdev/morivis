@@ -1,20 +1,7 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import {
-	TREE_SPECIES_PROPERTIES,
-	FOREST_MESH_TITLES,
-	FOREST_MESH_POPUP_KEYS,
-	FOREST_MESH_RELATIONS,
-	FOREST_MESH_FIELDS
-} from '$routes/map/data/entries/vector/_properties';
-import {
-	DEFAULT_POLYGON_STYLE,
-	TREE_SPECIES_LABELS,
-	TREE_SPECIES_OUTLINE,
-	TREE_SPECIES_STYLE,
-	TREE_SINGLE_COLOR_STYLE
-} from '$routes/map/data/entries/vector/_style';
+import { FOREST_MESH_PROPERTIES } from '$routes/map/data/entries/vector/_properties';
+import { FOREST_MESH_STYLE } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hyogo_fr_mesh20m',
@@ -40,18 +27,20 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	properties: {
 		fields: {
-			...FOREST_MESH_FIELDS
+			...FOREST_MESH_PROPERTIES.fields
 		},
 		attributeView: {
-			popupKeys: [...FOREST_MESH_POPUP_KEYS, 'ID', '樹冠高90', '最大樹冠高'],
+			popupKeys: [
+				...FOREST_MESH_PROPERTIES.attributeView.popupKeys,
+				'ID',
+				'樹冠高90',
+				'最大樹冠高'
+			],
 			relations: {
-				...FOREST_MESH_RELATIONS
+				...FOREST_MESH_PROPERTIES.attributeView.relations
 			},
 			titles: [
-				{
-					conditions: ['樹種'],
-					template: '{樹種}'
-				},
+				...FOREST_MESH_PROPERTIES.attributeView.titles,
 				{
 					conditions: [],
 					template: '兵庫県の森林資源メッシュ'
@@ -63,166 +52,19 @@ const entry: VectorEntry<TileMetaData> = {
 		clickable: true
 	},
 	style: {
-		type: 'fill',
-		opacity: 0.7,
+		...FOREST_MESH_STYLE,
 		colors: {
-			key: '最大樹冠高',
-			show: true,
-			expressions: [
-				{
-					type: 'single',
-					key: '単色',
-					name: '単色',
-					mapping: {
-						value: '#33a02c'
-					}
-				},
-				{
-					...TREE_MATCH_COLOR_STYLE
-				},
-				{
-					type: 'step',
-					key: '最大樹冠高',
-					name: '最大樹冠高による色分け',
-					mapping: {
-						scheme: 'RdPu',
-						range: [1.0, 50],
-						divisions: 5
-					}
-				}
-			]
+			...FOREST_MESH_STYLE.colors
 		},
 		outline: {
-			show: true,
-			color: '#000000',
-			width: 0.1,
-			lineStyle: 'solid'
+			...FOREST_MESH_STYLE.outline
 		},
 		labels: {
-			key: '樹種',
-			show: false,
-			expressions: [
-				{
-					key: '解析樹種ID',
-					name: '解析樹種ID'
-				},
-				{
-					key: '解析樹種',
-					name: '解析樹種'
-				},
-				{
-					key: '樹種ID',
-					name: '樹種ID'
-				},
-				{
-					key: '樹種',
-					name: '樹種'
-				},
-				{
-					key: '面積_ha',
-					name: '面積_ha'
-				},
-				{
-					key: '立木本数',
-					name: '立木本数'
-				},
-				{
-					key: '立木密度',
-					name: '立木密度'
-				},
-				{
-					key: '平均樹高',
-					name: '平均樹高'
-				},
-				{
-					key: '平均直径',
-					name: '平均直径'
-				},
-				{
-					key: '合計材積',
-					name: '合計材積'
-				},
-				{
-					key: 'ha材積',
-					name: 'ha材積'
-				},
-				{
-					key: '収量比数',
-					name: '収量比数'
-				},
-				{
-					key: '相対幹距比',
-					name: '相対幹距比'
-				},
-				{
-					key: '形状比',
-					name: '形状比'
-				},
-				{
-					key: '樹冠長率',
-					name: '樹冠長率'
-				},
-				{
-					key: '森林計測年',
-					name: '森林計測年'
-				},
-				{
-					key: '森林計測法',
-					name: '森林計測法'
-				},
-				{
-					key: '平均傾斜',
-					name: '平均傾斜'
-				},
-				{
-					key: '最大傾斜',
-					name: '最大傾斜'
-				},
-				{
-					key: '最小傾斜',
-					name: '最小傾斜'
-				},
-				{
-					key: '最頻傾斜',
-					name: '最頻傾斜'
-				},
-				{
-					key: '県code',
-					name: '県code'
-				},
-				{
-					key: '市町村code',
-					name: '市町村code'
-				},
-				{
-					key: 'ID',
-					name: 'ID'
-				},
-				{
-					key: '樹冠高90',
-					name: '樹冠高90'
-				},
-				{
-					key: '最大樹冠高',
-					name: '最大樹冠高'
-				}
-			]
+			...FOREST_MESH_STYLE.labels,
+			expressions: [...FOREST_MESH_STYLE.labels.expressions]
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#FFFFFF',
-					'text-halo-width': 1,
-					'text-opacity': 1
-				},
-				layout: {
-					'text-max-width': 12,
-					'text-size': 12,
-					'text-anchor': 'center',
-					'text-padding': 10
-				}
-			}
+			...FOREST_MESH_STYLE.default
 		}
 	}
 };

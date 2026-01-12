@@ -366,7 +366,7 @@ export const TREE_SPECIES_STYLE: PolygonStyle = {
 // 森林資源量集計メッシュ (Forest Resource Mesh 20m)
 // =============================================================================
 
-export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression = [
+export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 	{
 		type: 'step',
 		key: '立木本数',
@@ -564,14 +564,12 @@ export const FOREST_MESH_STYLE_COLORS: ColorsStyle = {
 	show: true,
 	expressions: [
 		{
-			...FOREST_MESH_SINGLE_COLOR_STYLE
+			...TREE_SINGLE_COLOR_STYLE
 		},
 		{
-			...FOREST_MESH_MATCH_COLOR_STYLE
+			...TREE_MATCH_COLOR_STYLE
 		},
-		{
-			...FOREST_MESH_STEP_COLOR_STYLE
-		}
+		...FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS
 	]
 };
 

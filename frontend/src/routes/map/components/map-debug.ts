@@ -9,6 +9,7 @@ export const clickDebug = (e: MapMouseEvent) => {
 
 		if (features.length) {
 			console.log('debug:Clicked features:', features);
+			console.log('debug:Clicked prop', features[0].properties);
 
 			const prop = features[0].properties;
 

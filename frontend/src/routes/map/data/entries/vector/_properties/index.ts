@@ -310,3 +310,14 @@ export const FOREST_MESH_FIELDS: FieldDef[] = [
 		unit: '度'
 	}
 ];
+
+export const FOREST_MESH_PROPERTIES: VectorProperties = {
+	attributeView: {
+		popupKeys: [...FOREST_MESH_POPUP_KEYS],
+		titles: [...FOREST_MESH_TITLES],
+		relations: {
+			...FOREST_MESH_RELATIONS
+		}
+	},
+	fields: [...FOREST_MESH_FIELDS]
+};
