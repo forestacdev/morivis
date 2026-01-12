@@ -187,148 +187,119 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
+					name: '解析樹種ID'
 				},
 				{
 					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
+					name: '解析樹種'
 				},
 				{
 					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
+					name: '樹種ID'
 				},
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '面積_ha',
-					name: '面積_ha',
-					value: '{面積_ha} ha'
+					name: '面積_ha'
 				},
 				{
 					key: '立木本数',
-					name: '立木本数',
-					value: '{立木本数} 本'
+					name: '立木本数'
 				},
 				{
 					key: '立木密度',
-					name: '立木密度',
-					value: '{立木密度} 本/ha'
+					name: '立木密度'
 				},
 				{
 					key: '平均樹高',
-					name: '平均樹高',
-					value: '{平均樹高} m'
+					name: '平均樹高'
 				},
 				{
 					key: '平均直径',
-					name: '平均直径',
-					value: '{平均直径} cm'
+					name: '平均直径'
 				},
 				{
 					key: '合計材積',
-					name: '合計材積',
-					value: '{合計材積} m3'
+					name: '合計材積'
 				},
 				{
 					key: 'ha材積',
-					name: 'ha材積',
-					value: '{ha材積} m3/ha'
+					name: 'ha材積'
 				},
 				{
 					key: '収量比数',
-					name: '収量比数',
-					value: '{収量比数}'
+					name: '収量比数'
 				},
 				{
 					key: '相対幹距比',
-					name: '相対幹距比',
-					value: '{相対幹距比} %'
+					name: '相対幹距比'
 				},
 				{
 					key: '形状比',
-					name: '形状比',
-					value: '{形状比}'
+					name: '形状比'
 				},
 				{
 					key: '樹冠長率',
-					name: '樹冠長率',
-					value: '{樹冠長率} %'
+					name: '樹冠長率'
 				},
 				{
 					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
+					name: '森林計測年'
 				},
 				{
 					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
+					name: '森林計測法'
 				},
 				{
 					key: '平均傾斜',
-					name: '平均傾斜',
-					value: '{平均傾斜 度}'
+					name: '平均傾斜'
 				},
 				{
 					key: '最大傾斜',
-					name: '最大傾斜',
-					value: '{最大傾斜} 度'
+					name: '最大傾斜'
 				},
 				{
 					key: '最小傾斜',
-					name: '最小傾斜',
-					value: '{最小傾斜} 度'
+					name: '最小傾斜'
 				},
 				{
 					key: '最頻傾斜',
-					name: '最頻傾斜',
-					value: '{最頻傾斜}'
+					name: '最頻傾斜'
 				},
 				{
 					key: '県code',
-					name: '県code',
-					value: '{県code}'
+					name: '県code'
 				},
 				{
 					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
+					name: '市町村code'
 				},
 				{
 					key: 'メッシュID',
-					name: 'メッシュID',
-					value: '{メッシュID}'
+					name: 'メッシュID'
 				},
 				{
 					key: '平均標高',
-					name: '平均標高',
-					value: '{平均標高} m'
+					name: '平均標高'
 				},
 				{
 					key: '道から距離',
-					name: '道から距離',
-					value: '{道から距離}'
+					name: '道から距離'
 				},
 				{
 					key: '樹冠疎密度',
-					name: '樹冠疎密度',
-					value: '{樹冠疎密度}'
+					name: '樹冠疎密度'
 				},
 				{
 					key: 'Shape_Length',
-					name: 'Shape_Length',
-					value: '{Shape_Length}'
+					name: 'Shape_Length'
 				},
 				{
 					key: 'Shape_Area',
-					name: 'Shape_Area',
-					value: '{Shape_Area}'
+					name: 'Shape_Area'
 				}
 			]
 		},

@@ -190,6 +190,9 @@ export const FOREST_MESH_FIELDS: FieldDef[] = [
 		label: '立木本数',
 		type: 'integer',
 		unit: '本'
+		// format: {
+		// 	empty: [{ values: [0], text: '不明' }]
+		// }
 	},
 	{
 		key: '立木密度',

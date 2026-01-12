@@ -449,17 +449,6 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 			divisions: 5
 		}
 	},
-
-	{
-		type: 'step',
-		key: '平均標高',
-		name: '平均標高による色分け',
-		mapping: {
-			scheme: 'YlOrRd',
-			range: [0, 1000],
-			divisions: 5
-		}
-	},
 	{
 		type: 'step',
 		key: '平均傾斜',
