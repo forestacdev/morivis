@@ -252,6 +252,38 @@ export const TREE_MATCH_COLOR_STYLE: ColorMatchExpression = {
 	}
 };
 
+/**
+ * TREE_MATCH_COLOR_STYLEから指定したcategoriesのみのmappingを作成する
+ * @param categories - 抽出したいcategoryの配列
+ * @returns 抽出後のColorMatchExpression['mapping']
+ */
+export const createFilteredTreeMatchColorStyleMapping = (
+	categories: string[]
+): ColorMatchExpression['mapping'] => {
+	const sourceCategories = TREE_MATCH_COLOR_STYLE.mapping.categories as string[];
+	const sourceValues = TREE_MATCH_COLOR_STYLE.mapping.values;
+	const sourcePatterns = TREE_MATCH_COLOR_STYLE.mapping.patterns;
+
+	const filteredCategories: string[] = [];
+	const filteredValues: string[] = [];
+	const filteredPatterns: NonNullable<typeof sourcePatterns> = [];
+
+	for (const category of categories) {
+		const index = sourceCategories.indexOf(category);
+		if (index !== -1) {
+			filteredCategories.push(sourceCategories[index]);
+			filteredValues.push(sourceValues[index]);
+			filteredPatterns.push(sourcePatterns?.[index] ?? null);
+		}
+	}
+
+	return {
+		categories: filteredCategories,
+		values: filteredValues,
+		patterns: filteredPatterns
+	};
+};
+
 export const TREE_STEP_COLOR_STYLE: ColorStepExpression = {
 	type: 'step',
 	key: '面積_ha',
@@ -441,7 +473,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 ];
 
 export const FOREST_MESH_OUTLINE: PolygonOutLine = {
-	show: true,
+	show: false,
 	color: '#000000',
 	width: 0.1,
 	lineStyle: 'solid'
