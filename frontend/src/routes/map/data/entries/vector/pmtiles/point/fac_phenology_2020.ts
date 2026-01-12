@@ -23,18 +23,34 @@ const entry: PointEntry<TileMetaData> = {
 		xyzImageTile: { x: 230773, y: 103338, z: 18 }
 	},
 	properties: {
-		keys: ['種名'],
-		iNaturalistNameKey: '種名',
-		titles: [
+		fields: [
 			{
-				conditions: ['種名'],
-				template: '{種名}'
+				key: '種名',
+				label: '種名',
+				type: 'string'
 			},
 			{
-				conditions: [],
-				template: 'フェノロジー調査_2020のポイント'
+				key: '分類',
+				label: '分類',
+				type: 'string'
 			}
-		]
+		],
+		attributeView: {
+			popupKeys: ['種名', '分類'],
+			titles: [
+				{
+					conditions: ['種名'],
+					template: '{種名}'
+				},
+				{
+					conditions: [],
+					template: 'フェノロジー調査_2020のポイント'
+				}
+			],
+			relations: {
+				iNaturalistNameKey: '種名'
+			}
+		}
 	},
 	interaction: {
 		clickable: true
@@ -82,13 +98,11 @@ const entry: PointEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '種名',
-					name: '種名',
-					value: '{種名}'
+					name: '種名'
 				},
 				{
 					key: '分類',
-					name: '分類',
-					value: '{分類}'
+					name: '分類'
 				}
 			]
 		},

@@ -26,31 +26,99 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
-		keys: [
-			'樹種',
-			'区分',
-			'樹高(m)',
-			'枝張(m)',
-			'幹周(cm）',
-			'行政区',
-			'種別',
-			'整理番号',
-			'路線名',
-			'通称道路名',
-			'経度',
-			'緯度'
-		],
-		titles: [
+		fields: [
 			{
-				conditions: ['樹種'],
-				template: '{樹種}'
+				key: '樹種',
+				type: 'string',
+				label: '樹種'
 			},
 			{
-				conditions: [],
-				template: '街路樹 東京都23区'
+				key: '区分',
+				type: 'string',
+				label: '区分'
+			},
+			{
+				key: '樹高(m)',
+				type: 'number',
+				label: '樹高',
+				unit: 'm'
+			},
+			{
+				key: '枝張(m)',
+				type: 'number',
+				label: '枝張',
+				unit: 'm'
+			},
+			{
+				key: '幹周(cm）',
+				type: 'number',
+				label: '幹周',
+				unit: 'cm'
+			},
+			{
+				key: '行政区',
+				type: 'string',
+				label: '行政区'
+			},
+			{
+				key: '種別',
+				type: 'string',
+				label: '種別'
+			},
+			{
+				key: '整理番号',
+				type: 'string',
+				label: '整理番号'
+			},
+			{
+				key: '路線名',
+				type: 'string',
+				label: '路線名'
+			},
+			{
+				key: '通称道路名',
+				type: 'string',
+
+				label: '通称道路名'
+			},
+			{
+				key: '経度',
+				type: 'number',
+				label: '経度'
+			},
+			{
+				key: '緯度',
+				type: 'number',
+				label: '緯度'
 			}
 		],
-		iNaturalistNameKey: '樹種'
+		attributeView: {
+			popupKeys: [
+				'樹種',
+				'区分',
+				'樹高(m)',
+				'枝張(m)',
+				'幹周(cm）',
+				'行政区',
+				'種別',
+				'整理番号',
+				'路線名',
+				'通称道路名'
+			],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '街路樹 東京都23区'
+				}
+			],
+			relations: {
+				iNaturalistNameKey: '樹種'
+			}
+		}
 	},
 	interaction: {
 		clickable: true
@@ -527,58 +595,39 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '区分',
-					name: '区分',
-					value: '{区分}'
+					name: '区分'
 				},
 				{
 					key: '樹高(m)',
-					name: '樹高',
-					value: '{樹高(m)} m'
+					name: '樹高'
 				},
 				{
 					key: '枝張(m)',
-					name: '枝張',
-					value: '{枝張(m)} m'
+					name: '枝張'
 				},
 				{
 					key: '幹周(cm）',
-					name: '幹周',
-					value: '{幹周(cm）} cm'
+					name: '幹周'
 				},
 				{
 					key: '行政区',
-					name: '行政区',
-					value: '{行政区}'
+					name: '行政区'
 				},
 				{
 					key: '種別',
-					name: '種別',
-					value: '{種別}'
+					name: '種別'
 				},
 				{
 					key: '整理番号',
-					name: '整理番号',
-					value: '{整理番号}'
+					name: '整理番号'
 				},
 				{
 					key: '路線名',
-					name: '路線名',
-					value: '{路線名}'
-				},
-				{
-					key: '経度',
-					name: '経度',
-					value: '{経度}'
-				},
-				{
-					key: '緯度',
-					name: '緯度',
-					value: '{緯度}'
+					name: '路線名'
 				}
 			]
 		}

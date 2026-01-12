@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'http://127.0.0.1:5500/hyogo_fr_mesh20m.pmtiles'
+		url: 'https://d2g6co14qozqgp.cloudfront.net/pmtiles/fr_mesh20m_hyogo.pmtiles'
 	},
 	metaData: {
 		name: '兵庫県 森林資源量集計メッシュ',
