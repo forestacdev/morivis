@@ -128,6 +128,10 @@ const attributionData = {
 	['PLATEAU']: {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
+	},
+	DoboX: {
+		name: 'DoboX',
+		url: 'https://hiroshima-dobox.jp/index2'
 	}
 } as const;
 
