@@ -25,29 +25,32 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/tochigi_tree_species.webp`
 	},
 	properties: {
-		keys: [
-			'解析樹種ID',
-			'解析樹種',
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'森林計測年',
-			'森林計測法',
-			'県code',
-			'市町村code',
-			'年度'
-		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '栃木県の樹種ポリゴン'
-			}
-		],
-		cityCodeKey: '市町村code'
+		attributeView: {
+			popupKeys: [
+				'解析樹種ID',
+				'解析樹種',
+				'樹種ID',
+				'樹種',
+				'面積_ha',
+				'森林計測年',
+				'森林計測法',
+				'県code',
+				'市町村code',
+				'年度'
+			],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '栃木県の樹種ポリゴン'
+				}
+			],
+			relations: { cityCodeKey: '市町村code' }
+		},
+		fields: []
 	},
 	interaction: {
 		clickable: true
@@ -95,53 +98,43 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
+					name: '解析樹種ID'
 				},
 				{
 					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
+					name: '解析樹種'
 				},
 				{
 					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
+					name: '樹種ID'
 				},
 				{
 					key: '面積_ha',
-					name: '面積',
-					value: '{面積_ha} ha'
+					name: '面積'
 				},
 				{
 					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
+					name: '森林計測年'
 				},
 				{
 					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
+					name: '森林計測法'
 				},
 				{
 					key: '県code',
-					name: '県code',
-					value: '{県code}'
+					name: '県code'
 				},
 				{
 					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
+					name: '市町村code'
 				},
 				{
 					key: '年度',
-					name: '年度',
-					value: '{年度}'
+					name: '年度'
 				}
 			]
 		},

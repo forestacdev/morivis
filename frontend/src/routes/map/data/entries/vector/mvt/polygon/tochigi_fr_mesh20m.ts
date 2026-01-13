@@ -26,48 +26,54 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/tochigi_fr_mesh20m.webp`
 	},
 	properties: {
-		keys: [
-			'解析樹種ID',
-			'解析樹種',
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'立木本数',
-			'立木密度',
-			'平均樹高',
-			'平均直径',
-			'合計材積',
-			'ha材積',
-			'収量比数',
-			'相対幹距比',
-			'形状比',
-			'樹冠長率',
-			'森林計測年',
-			'森林計測法',
-			'平均傾斜',
-			'最大傾斜',
-			'最小傾斜',
-			'最頻傾斜',
-			'県code',
-			'市町村code',
-			'メッシュID',
-			'平均標高',
-			'道から距離',
-			'樹冠疎密度',
-			'Shape_Length',
-			'Shape_Area'
-		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '栃木県の森林資源メッシュ'
+		attributeView: {
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '栃木県の森林資源メッシュ'
+				}
+			],
+			popupKeys: [
+				'解析樹種ID',
+				'解析樹種',
+				'樹種ID',
+				'樹種',
+				'面積_ha',
+				'立木本数',
+				'立木密度',
+				'平均樹高',
+				'平均直径',
+				'合計材積',
+				'ha材積',
+				'収量比数',
+				'相対幹距比',
+				'形状比',
+				'樹冠長率',
+				'森林計測年',
+				'森林計測法',
+				'平均傾斜',
+				'最大傾斜',
+				'最小傾斜',
+				'最頻傾斜',
+				'県code',
+				'市町村code',
+				'メッシュID',
+				'平均標高',
+				'道から距離',
+				'樹冠疎密度',
+				'Shape_Length',
+				'Shape_Area'
+			],
+			relations: {
+				cityCodeKey: '市町村code'
 			}
-		],
-		cityCodeKey: '市町村code'
+		},
+
+		fields: [{ key: '解析樹種ID', type: 'number' }]
 	},
 	interaction: {
 		clickable: true
