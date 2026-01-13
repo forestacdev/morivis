@@ -8,7 +8,7 @@ import {
 import { createFilteredTreeMatchColorStyleMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
-	id: 'tree_point_hiroshima',
+	id: 'hiroshima_tree_point',
 	type: 'vector',
 	format: {
 		type: 'pmtiles',
