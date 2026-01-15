@@ -30,7 +30,10 @@ const hasDebugFiles = Object.keys(debugModules).length > 0;
 const entryModules =
 	isDev && hasDebugFiles
 		? debugModules
-		: import.meta.glob(['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts'], { eager: true });
+		: import.meta.glob(
+				['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+				{ eager: true }
+			);
 
 if (hasDebugFiles) {
 	console.warn('デバッグ用データエントリが読み込まれました。');

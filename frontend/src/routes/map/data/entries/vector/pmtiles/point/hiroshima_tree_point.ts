@@ -1,10 +1,7 @@
 import { ENTRY_PMTILES_VECTOR_PATH, ENTRY_DATA_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
-import {
-	HIROSHIMA_BBOX,
-	WEB_MERCATOR_WORLD_BBOX
-} from '$routes/map/data/entries/_meta_data/_bounds';
+import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createFilteredTreeMatchColorStyleMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -26,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		minZoom: 14,
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
-		bounds: WEB_MERCATOR_WORLD_BBOX,
+		bounds: HIROSHIMA_BBOX,
 		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
