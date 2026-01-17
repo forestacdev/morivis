@@ -1,6 +1,7 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { DEFAULT_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'national_forest_stand',
@@ -813,23 +814,11 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '樹立年度'
 				}
 			]
-		}
+		},
 
-		// default: {
-		// 	symbol: {
-		// 		paint: {
-		// 			'text-color': '#000000',
-		// 			'text-halo-color': '#FFFFFF',
-		// 			'text-halo-width': 1,
-		// 			'text-opacity': 1
-		// 		},
-		// 		layout: {
-		// 			'text-max-width': 12,
-		// 			'text-size': 12,
-		// 			'text-padding': 10
-		// 		}
-		// 	}
-		// }
+		default: {
+			...DEFAULT_POLYGON_STYLE
+		}
 	}
 	// auxiliaryLayers: {
 	// 	source: {
