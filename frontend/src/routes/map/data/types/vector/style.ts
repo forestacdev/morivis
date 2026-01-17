@@ -245,6 +245,7 @@ export interface PointOutLine {
 	show: boolean;
 	color: string;
 	width: number;
+	minzoom?: number;
 }
 
 export interface PointIcon {

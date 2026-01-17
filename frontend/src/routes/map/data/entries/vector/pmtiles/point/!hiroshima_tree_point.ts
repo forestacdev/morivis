@@ -1,4 +1,4 @@
-import { ENTRY_PMTILES_VECTOR_PATH, ENTRY_DATA_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, ENTRY_DATA_PATH, ENTRY_DEV_DATA_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
@@ -10,7 +10,8 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
+		// url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
+		url: `${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
 	},
 	metaData: {
 		name: '広島県 単木データ',
@@ -24,87 +25,83 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
+		center: [132.578928, 34.548617],
 		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
 		fields: [
+			{
+				key: '樹種ID',
+				type: 'string',
+				label: '樹種ID'
+			},
 			{
 				key: '樹種',
 				type: 'string',
 				label: '樹種'
 			},
 			{
-				key: '区分',
-				type: 'string',
-				label: '区分'
-			},
-			{
-				key: '樹高(m)',
+				key: '樹高',
 				type: 'number',
 				label: '樹高',
 				unit: 'm'
 			},
 			{
-				key: '枝張(m)',
+				key: '胸高直径',
 				type: 'number',
-				label: '枝張',
-				unit: 'm'
-			},
-			{
-				key: '幹周(cm）',
-				type: 'number',
-				label: '幹周',
+				label: '胸高直径',
 				unit: 'cm'
 			},
 			{
-				key: '行政区',
-				type: 'string',
-				label: '行政区'
-			},
-			{
-				key: '種別',
-				type: 'string',
-				label: '種別'
-			},
-			{
-				key: '整理番号',
-				type: 'string',
-				label: '整理番号'
-			},
-			{
-				key: '路線名',
-				type: 'string',
-				label: '路線名'
-			},
-			{
-				key: '通称道路名',
-				type: 'string',
-
-				label: '通称道路名'
-			},
-			{
-				key: '経度',
+				key: '単木材積',
 				type: 'number',
-				label: '経度'
+				label: '単木材積',
+				unit: 'm³'
 			},
 			{
-				key: '緯度',
+				key: '形状比',
 				type: 'number',
-				label: '緯度'
+				label: '形状比',
+				unit: '%'
+			},
+			{
+				key: '樹冠長率',
+				type: 'number'
+			},
+			{
+				key: '樹冠面積',
+				type: 'number'
+			},
+			{
+				key: '森林計測年',
+				type: 'number'
+			},
+			{
+				key: '森林計測法',
+				type: 'string'
+			},
+			{
+				key: '県code',
+				type: 'string'
+			},
+			{
+				key: '市町村code',
+				type: 'string'
 			}
 		],
 		attributeView: {
 			popupKeys: [
 				'樹種',
-				'区分',
-				'樹高(m)',
-				'枝張(m)',
-				'幹周(cm）',
-				'行政区',
-				'種別',
-				'整理番号',
-				'路線名',
-				'通称道路名'
+				'樹高',
+				'胸高直径',
+				'単木材積',
+				'形状比',
+				'樹冠長率',
+				'樹冠面積',
+				'森林計測年',
+				'森林計測法',
+				'県code',
+				'市町村code'
 			],
 			titles: [
 				{
@@ -230,6 +227,45 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			]
 		}
+	},
+	auxiliaryLayers: {
+		source: {
+			tree_point_hiroshima_aux: {
+				type: 'vector',
+				url: `pmtiles://${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
+			}
+		},
+		layers: [
+			{
+				id: 'tree_point_hiroshima_aux_layer_sugi',
+				type: 'heatmap',
+				source: 'tree_point_hiroshima_aux',
+				'source-layer': 'tree_point_hiroshima',
+				maxzoom: 14,
+				minzoom: 6,
+				paint: {
+					'heatmap-opacity': 0.6,
+					'heatmap-color': [
+						'interpolate',
+						['linear'],
+						['heatmap-density'],
+						0,
+						'rgba(255,255,255,0)',
+						0.2,
+						'#c7e9c0',
+						0.4,
+						'#74c476',
+						0.6,
+						'#31a354',
+						0.8,
+						'#006d2c',
+						1,
+						'#00441b'
+					],
+					'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
+				}
+			}
+		]
 	}
 };
 

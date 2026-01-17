@@ -311,11 +311,11 @@ export const createLayersItems = (
 					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
 						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
 							const type = auxiliaryLayer.type;
-							if (type === 'fill') {
+							if (type === 'fill' || type === 'fill-extrusion') {
 								fillLayerItems.push(auxiliaryLayer);
 							} else if (type === 'line') {
 								lineLayerItems.push(auxiliaryLayer);
-							} else if (type === 'circle') {
+							} else if (type === 'circle' || type === 'heatmap') {
 								circleLayerItems.push(auxiliaryLayer);
 							} else if (type === 'symbol') {
 								symbolLayerItems.push(auxiliaryLayer);

@@ -12,6 +12,7 @@ export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
 export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
+export const ENTRY_DEV_DATA_PATH = ENTRY_DATA_PATH + '/_dev';
 export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
 export const ENTRY_FGB_PATH = ENTRY_DATA_PATH + '/fgb';
