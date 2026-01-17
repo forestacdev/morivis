@@ -501,6 +501,323 @@ export const TAXON_IDS = {
 } as const;
 
 // ============================================================
+// 分類体系（Taxonomy）関連の関数
+// ============================================================
+
+/**
+ * リンネ式分類体系の階級
+ */
+export type TaxonomicRank =
+	| 'kingdom'
+	| 'phylum'
+	| 'class'
+	| 'order'
+	| 'family'
+	| 'genus'
+	| 'species';
+
+/**
+ * リンネ式分類体系の情報
+ */
+export interface LinnaeanTaxonomy {
+	/** 界（例: 植物界） */
+	kingdom?: { name: string; commonName?: string };
+	/** 門（例: 被子植物門） */
+	phylum?: { name: string; commonName?: string };
+	/** 綱（例: 双子葉植物綱） */
+	class?: { name: string; commonName?: string };
+	/** 目（例: マツ目） */
+	order?: { name: string; commonName?: string };
+	/** 科（例: ヒノキ科） */
+	family?: { name: string; commonName?: string };
+	/** 属（例: スギ属） */
+	genus?: { name: string; commonName?: string };
+	/** 種（例: スギ） */
+	species?: { name: string; commonName?: string };
+}
+
+/**
+ * 分類階級の日本語名マッピング
+ */
+export const RANK_NAMES_JA: Record<TaxonomicRank, string> = {
+	kingdom: '界',
+	phylum: '門',
+	class: '綱',
+	order: '目',
+	family: '科',
+	genus: '属',
+	species: '種'
+};
+
+/**
+ * 和名からリンネ式分類体系を取得
+ *
+ * 生物の和名を指定すると、界・門・綱・目・科・属・種の分類情報を
+ * 日本語名（和名）付きで取得します。
+ *
+ * @param japaneseName - 生物の和名（例: "スギ", "ヒノキ", "メジロ"）
+ * @returns リンネ式分類体系の情報（見つからない場合はnull）
+ *
+ * @example
+ * const taxonomy = await getTaxonomyByJapaneseName('スギ');
+ * if (taxonomy) {
+ *   console.log(taxonomy.kingdom?.commonName); // "植物"
+ *   console.log(taxonomy.family?.commonName);  // "ヒノキ科"
+ *   console.log(taxonomy.genus?.commonName);   // "スギ属"
+ *   console.log(taxonomy.species?.commonName); // "スギ"
+ * }
+ *
+ * @example
+ * // 分類階級を日本語でラベル付け
+ * const taxonomy = await getTaxonomyByJapaneseName('ヒノキ');
+ * if (taxonomy) {
+ *   Object.entries(taxonomy).forEach(([rank, info]) => {
+ *     if (info) {
+ *       console.log(`${RANK_NAMES_JA[rank]}: ${info.commonName || info.name}`);
+ *     }
+ *   });
+ *   // 界: 植物
+ *   // 門: 維管束植物
+ *   // 綱: 球果植物
+ *   // 目: ヒノキ目
+ *   // 科: ヒノキ科
+ *   // 属: ヒノキ属
+ *   // 種: ヒノキ
+ * }
+ */
+export const getTaxonomyByJapaneseName = async (
+	japaneseName: string
+): Promise<LinnaeanTaxonomy | null> => {
+	try {
+		// 1. 和名で分類群を検索
+		const taxa = await searchTaxa(japaneseName, { limit: 1 });
+
+		if (taxa.length === 0) {
+			return null;
+		}
+
+		const taxon = taxa[0];
+
+		// 2. 詳細情報（祖先の分類を含む）を取得
+		const detailedTaxon = await getTaxonById(taxon.id);
+
+		if (!detailedTaxon) {
+			return null;
+		}
+
+		// 3. リンネ式分類体系の階級のみ抽出
+		const linnaeanRanks: TaxonomicRank[] = [
+			'kingdom',
+			'phylum',
+			'class',
+			'order',
+			'family',
+			'genus',
+			'species'
+		];
+
+		const taxonomy: LinnaeanTaxonomy = {};
+
+		// 祖先から分類情報を抽出
+		if (detailedTaxon.ancestors) {
+			for (const ancestor of detailedTaxon.ancestors) {
+				if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
+					taxonomy[ancestor.rank as TaxonomicRank] = {
+						name: ancestor.name,
+						commonName: ancestor.preferred_common_name
+					};
+				}
+			}
+		}
+
+		// 検索した分類群自体も追加（種の場合など）
+		if (linnaeanRanks.includes(detailedTaxon.rank as TaxonomicRank)) {
+			taxonomy[detailedTaxon.rank as TaxonomicRank] = {
+				name: detailedTaxon.name,
+				commonName: detailedTaxon.preferred_common_name
+			};
+		}
+
+		return taxonomy;
+	} catch (error) {
+		console.error('iNaturalist getTaxonomyByJapaneseName Error:', error);
+		return null;
+	}
+};
+
+/**
+ * 分類群IDからリンネ式分類体系を取得
+ *
+ * @param taxonId - 分類群のID
+ * @returns リンネ式分類体系の情報（見つからない場合はnull）
+ *
+ * @example
+ * // スギ（ID: 54436）の分類体系を取得
+ * const taxonomy = await getTaxonomyByTaxonId(54436);
+ */
+export const getTaxonomyByTaxonId = async (taxonId: number): Promise<LinnaeanTaxonomy | null> => {
+	try {
+		const taxon = await getTaxonById(taxonId);
+
+		if (!taxon) {
+			return null;
+		}
+
+		const linnaeanRanks: TaxonomicRank[] = [
+			'kingdom',
+			'phylum',
+			'class',
+			'order',
+			'family',
+			'genus',
+			'species'
+		];
+
+		const taxonomy: LinnaeanTaxonomy = {};
+
+		if (taxon.ancestors) {
+			for (const ancestor of taxon.ancestors) {
+				if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
+					taxonomy[ancestor.rank as TaxonomicRank] = {
+						name: ancestor.name,
+						commonName: ancestor.preferred_common_name
+					};
+				}
+			}
+		}
+
+		if (linnaeanRanks.includes(taxon.rank as TaxonomicRank)) {
+			taxonomy[taxon.rank as TaxonomicRank] = {
+				name: taxon.name,
+				commonName: taxon.preferred_common_name
+			};
+		}
+
+		return taxonomy;
+	} catch (error) {
+		console.error('iNaturalist getTaxonomyByTaxonId Error:', error);
+		return null;
+	}
+};
+
+// ============================================================
+// 生物概要（Summary）関連の関数
+// ============================================================
+
+/**
+ * 生物の概要情報
+ */
+export interface TaxonSummary {
+	/** 分類群ID */
+	id: number;
+	/** 学名 */
+	scientificName: string;
+	/** 和名/一般名 */
+	commonName?: string;
+	/** 分類階級（species, genus, familyなど） */
+	rank: string;
+	/** Wikipedia概要（日本語） */
+	wikipediaSummary?: string;
+	/** WikipediaのURL */
+	wikipediaUrl?: string;
+	/** 観察数 */
+	observationsCount?: number;
+	/** 代表画像URL（medium） */
+	imageUrl?: string;
+	/** 画像の帰属表示 */
+	imageAttribution?: string;
+}
+
+/**
+ * 和名から生物の概要情報を取得
+ *
+ * 生物の和名を指定すると、Wikipedia概要や基本情報を取得します。
+ *
+ * @param japaneseName - 生物の和名（例: "スギ", "ヒノキ", "メジロ"）
+ * @returns 生物の概要情報（見つからない場合はnull）
+ *
+ * @example
+ * const summary = await getSummaryByJapaneseName('スギ');
+ * if (summary) {
+ *   console.log(summary.commonName);       // "スギ"
+ *   console.log(summary.scientificName);   // "Cryptomeria japonica"
+ *   console.log(summary.wikipediaSummary); // "スギ（杉、椙、学名: Cryptomeria japonica）は..."
+ *   console.log(summary.wikipediaUrl);     // "https://ja.wikipedia.org/wiki/スギ"
+ * }
+ */
+export const getSummaryByJapaneseName = async (
+	japaneseName: string
+): Promise<TaxonSummary | null> => {
+	try {
+		// 1. 和名で分類群を検索
+		const taxa = await searchTaxa(japaneseName, { limit: 1 });
+
+		if (taxa.length === 0) {
+			return null;
+		}
+
+		const taxon = taxa[0];
+
+		// 2. 詳細情報（Wikipedia概要を含む）を取得
+		const detailedTaxon = await getTaxonById(taxon.id);
+
+		if (!detailedTaxon) {
+			return null;
+		}
+
+		return {
+			id: detailedTaxon.id,
+			scientificName: detailedTaxon.name,
+			commonName: detailedTaxon.preferred_common_name,
+			rank: detailedTaxon.rank,
+			wikipediaSummary: detailedTaxon.wikipedia_summary,
+			wikipediaUrl: detailedTaxon.wikipedia_url,
+			observationsCount: detailedTaxon.observations_count,
+			imageUrl: detailedTaxon.default_photo?.medium_url,
+			imageAttribution: detailedTaxon.default_photo?.attribution
+		};
+	} catch (error) {
+		console.error('iNaturalist getSummaryByJapaneseName Error:', error);
+		return null;
+	}
+};
+
+/**
+ * 分類群IDから生物の概要情報を取得
+ *
+ * @param taxonId - 分類群のID
+ * @returns 生物の概要情報（見つからない場合はnull）
+ *
+ * @example
+ * // スギ（ID: 54436）の概要を取得
+ * const summary = await getSummaryByTaxonId(54436);
+ */
+export const getSummaryByTaxonId = async (taxonId: number): Promise<TaxonSummary | null> => {
+	try {
+		const taxon = await getTaxonById(taxonId);
+
+		if (!taxon) {
+			return null;
+		}
+
+		return {
+			id: taxon.id,
+			scientificName: taxon.name,
+			commonName: taxon.preferred_common_name,
+			rank: taxon.rank,
+			wikipediaSummary: taxon.wikipedia_summary,
+			wikipediaUrl: taxon.wikipedia_url,
+			observationsCount: taxon.observations_count,
+			imageUrl: taxon.default_photo?.medium_url,
+			imageAttribution: taxon.default_photo?.attribution
+		};
+	} catch (error) {
+		console.error('iNaturalist getSummaryByTaxonId Error:', error);
+		return null;
+	}
+};
+
+// ============================================================
 // 画像取得関連の関数
 // ============================================================
 

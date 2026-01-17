@@ -24,7 +24,9 @@ export const createCircleLayer = (
 		type: 'circle',
 		paint: {
 			'circle-opacity': style.colors.show ? style.opacity : 0,
-			'circle-stroke-opacity': style.opacity,
+			'circle-stroke-opacity': outline.minzoom
+				? ['step', ['zoom'], 0, outline.minzoom, style.opacity]
+				: style.opacity,
 			'circle-color': style.colors.show ? colorExpression : '#00000000',
 			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',

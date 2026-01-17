@@ -21,11 +21,11 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://hiroshima-dobox.jp/datasets/1520',
 		location: '広島県',
-		minZoom: 14,
+		minZoom: 13,
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
-		center: [132.578928, 34.548617],
+		center: [132.651492, 34.664373],
 		xyzImageTile: { x: 14552, y: 6452, z: 14 }
 	},
 	properties: {
@@ -74,19 +74,36 @@ const entry: VectorEntry<TileMetaData> = {
 			},
 			{
 				key: '森林計測年',
-				type: 'number'
+				label: '森林計測年',
+				type: 'date',
+				format: {
+					date: {
+						inputPatterns: ['YYYY-MM-DDTHH:mm:ss'],
+						invalidText: '不明'
+					}
+				}
 			},
 			{
 				key: '森林計測法',
-				type: 'string'
+				label: '森林計測法',
+				type: 'string',
+				valueDict: {
+					'1': '航空レーザ',
+					'2': '航空写真',
+					'3': 'UAVレーザ',
+					'4': 'UAV写真',
+					'5': '地上レーザ'
+				}
 			},
 			{
 				key: '県code',
-				type: 'string'
+				label: '県code',
+				type: 'number'
 			},
 			{
 				key: '市町村code',
-				type: 'string'
+				label: '市町村code',
+				type: 'number'
 			}
 		],
 		attributeView: {
@@ -114,6 +131,7 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			],
 			relations: {
+				cityCodeKey: '市町村code',
 				iNaturalistNameKey: '樹種'
 			}
 		}
@@ -159,7 +177,7 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		radius: {
-			key: '樹高',
+			key: '胸高直径',
 			expressions: [
 				{
 					type: 'single',
@@ -167,6 +185,15 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '単一',
 					mapping: {
 						value: 8
+					}
+				},
+				{
+					type: 'linear',
+					key: '胸高直径',
+					name: '胸高直径',
+					mapping: {
+						range: [7, 40],
+						values: [5, 10]
 					}
 				},
 				{
@@ -183,50 +210,71 @@ const entry: VectorEntry<TileMetaData> = {
 		outline: {
 			show: true,
 			color: '#FFFFFF',
-			width: 2
+			width: 1,
+			minzoom: 16
 		},
 		labels: {
 			key: '樹種',
 			show: false,
 			expressions: [
 				{
+					key: '樹種ID',
+					name: '樹種ID'
+				},
+				{
 					key: '樹種',
 					name: '樹種'
 				},
 				{
-					key: '区分',
-					name: '区分'
-				},
-				{
-					key: '樹高(m)',
+					key: '樹高',
 					name: '樹高'
 				},
 				{
-					key: '枝張(m)',
-					name: '枝張'
+					key: '胸高直径',
+					name: '胸高直径'
 				},
 				{
-					key: '幹周(cm）',
-					name: '幹周'
+					key: '単木材積',
+					name: '単木材積'
 				},
 				{
-					key: '行政区',
-					name: '行政区'
+					key: '形状比',
+					name: '形状比'
 				},
 				{
-					key: '種別',
-					name: '種別'
+					key: '樹冠長率',
+					name: '樹冠長率'
 				},
 				{
-					key: '整理番号',
-					name: '整理番号'
+					key: '樹冠面積',
+					name: '樹冠面積'
 				},
 				{
-					key: '路線名',
-					name: '路線名'
+					key: '森林計測年',
+					name: '森林計測年'
+				},
+				{
+					key: '森林計測法',
+					name: '森林計測法'
+				},
+				{
+					key: '県code',
+					name: '県code'
+				},
+				{
+					key: '市町村code',
+					name: '市町村code'
 				}
 			]
 		}
+		// default: {
+		// 	circle: {
+		// 		paint: {
+		// 			'circle-blur': 0.1
+		// 		},
+		// 		layout: {}
+		// 	}
+		// }
 	},
 	auxiliaryLayers: {
 		source: {
@@ -241,7 +289,7 @@ const entry: VectorEntry<TileMetaData> = {
 				type: 'heatmap',
 				source: 'tree_point_hiroshima_aux',
 				'source-layer': 'tree_point_hiroshima',
-				maxzoom: 14,
+				maxzoom: 13,
 				minzoom: 6,
 				paint: {
 					'heatmap-opacity': 0.6,
@@ -251,16 +299,9 @@ const entry: VectorEntry<TileMetaData> = {
 						['heatmap-density'],
 						0,
 						'rgba(255,255,255,0)',
-						0.2,
-						'#c7e9c0',
-						0.4,
-						'#74c476',
-						0.6,
-						'#31a354',
-						0.8,
-						'#006d2c',
+
 						1,
-						'#00441b'
+						'#31a354'
 					],
 					'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
 				}
