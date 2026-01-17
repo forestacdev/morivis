@@ -122,8 +122,8 @@ const entry: VectorEntry<TileMetaData> = {
 			],
 			titles: [
 				{
-					conditions: ['樹種'],
-					template: '{樹種}'
+					conditions: ['樹種', '樹高'],
+					template: '{樹種} ({樹高} m)'
 				},
 				{
 					conditions: [],

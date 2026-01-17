@@ -47,7 +47,13 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			{
 				key: 'time',
 				label: '観測時間',
-				type: 'date'
+				type: 'date',
+				format: {
+					date: {
+						inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ'],
+						displayPattern: 'YYYY/MM/DD HH:mm'
+					}
+				}
 			},
 			{
 				key: 'name',

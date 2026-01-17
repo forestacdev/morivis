@@ -49,7 +49,10 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					conditions: [],
 					template: '演習林小班'
 				}
-			]
+			],
+			relations: {
+				iNaturalistNameKey: '樹種'
+			}
 		}
 	},
 	interaction: {

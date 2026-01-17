@@ -4,7 +4,12 @@
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import { getImageByName } from '$routes/map/api/inaturalist';
+	import {
+		getImageByName,
+		getSummaryByJapaneseName,
+		getTaxonomyByJapaneseName,
+		type INatImage
+	} from '$routes/map/api/inaturalist';
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -26,8 +31,6 @@
 		layerEntries,
 		showSelectionMarker = $bindable()
 	}: Props = $props();
-
-	let isLoading = $state(true);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -146,28 +149,63 @@
 		return null;
 	});
 
-	let srcData = $derived.by(() => {
-		if (data) {
-			if (data.image) {
-				return data.image;
-			}
-		} else if (featureMenuData && featureMenuData.properties && imageKey) {
-			return featureMenuData.properties[imageKey] as string;
-		}
-		return null;
-	});
+	/**
+	 * 画像データの共通型
+	 */
+	type ImageData =
+		| {
+				type: 'static';
+				url: string;
+		  }
+		| {
+				type: 'inaturalist';
+				data: INatImage;
+		  }
+		| null;
 
-	const promise = async () => {
-		if (iNaturalistNameKey && featureMenuData && featureMenuData.properties) {
-			const name = featureMenuData.properties[iNaturalistNameKey] as string;
-			const res = await getImageByName(name);
-			console.log('iNaturalist image data:', res);
-			isLoading = false;
-			return Promise.resolve(res);
+	/**
+	 * 画像データを取得する共通Promise
+	 * - data.image: propDataからの画像
+	 * - imageKey: featureMenuDataのプロパティからの画像
+	 * - iNaturalistNameKey: iNaturalist APIからの画像
+	 */
+	const getImageData = async (): Promise<ImageData> => {
+		// 1. propDataからの画像
+		if (data?.image) {
+			return { type: 'static', url: data.image };
 		}
-		isLoading = false;
-		return Promise.resolve(null);
+
+		// 2. featureMenuDataのプロパティからの画像
+		if (featureMenuData?.properties && imageKey) {
+			const url = featureMenuData.properties[imageKey] as string;
+			if (url) {
+				return { type: 'static', url };
+			}
+		}
+
+		// 3. iNaturalist APIからの画像
+		if (iNaturalistNameKey && featureMenuData?.properties) {
+			const name = featureMenuData.properties[iNaturalistNameKey] as string;
+			if (name) {
+				const res = await getImageByName(name);
+				const res2 = await getTaxonomyByJapaneseName(name);
+				console.log(res2);
+				if (res) {
+					return { type: 'inaturalist', data: res };
+				}
+			}
+		}
+
+		return null;
 	};
+
+	// 画像データのPromise（featureMenuDataが変わったら再取得）
+	let imagePromise = $derived.by(() => {
+		if (featureMenuData) {
+			return getImageData();
+		}
+		return Promise.resolve(null as ImageData);
+	});
 
 	const edit = () => {
 		if (targetLayer && targetLayer.type === 'vector') {
@@ -211,15 +249,9 @@
 
 		<div class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2">
 			<!-- 画像 -->
-			<div class="b relative w-full p-2">
-				{#if srcData}
-					<img
-						in:fade
-						class="block aspect-video h-full w-full rounded-lg object-cover"
-						alt="画像"
-						src={srcData}
-					/>
-				{:else if data && data.medias && data.medias.length > 0}
+			<div class="relative w-full p-2">
+				{#if data && data.medias && data.medias.length > 0}
+					<!-- メディアカルーセル -->
 					<div
 						use:emblaCarouselSvelte={{
 							plugins: emblaMainCarouselPlugins,
@@ -229,25 +261,18 @@
 						onemblaInit={onInitEmblaMainCarousel}
 					>
 						<div class="flex">
-							<img
-								in:fade
-								class="c-no-drag-icon block aspect-video h-full w-full object-cover"
-								alt="画像"
-								src={srcData}
-							/>
 							{#each data.medias as media (media.url)}
-								<!--TODO: メディア表示-->
 								{#if media.type === 'image'}
 									<img
 										src={media.url}
 										width={1920}
 										height={1080}
 										alt="画像"
-										class="ml-2 aspect-video min-w-0 flex-[0_0_100%] object-cover"
+										class="aspect-video min-w-0 flex-[0_0_100%] object-cover"
 									/>
 								{:else if media.type === 'youtube'}
 									<iframe
-										class="ml-2 aspect-video min-w-0 flex-[0_0_100%]"
+										class="aspect-video min-w-0 flex-[0_0_100%]"
 										src={`${media.url}?mute=0&controls=1`}
 										title="YouTube video player"
 										frameborder="0"
@@ -259,43 +284,52 @@
 							{/each}
 						</div>
 					</div>
-				{:else if iNaturalistNameKey}
-					{#await promise()}
-						<!-- ローディング中 -->
-						<div class="flex aspect-video h-full w-full flex-col items-center justify-center gap-4">
-							<div
-								class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
-							></div>
-							<p class="text-gray-400">読み込み中...</p>
+				{:else}
+					<!-- 共通画像表示 -->
+					<div class="w-full">
+						<div class="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-800">
+							{#await imagePromise}
+								<!-- ローディング中 -->
+								<div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+									<div
+										class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
+									></div>
+									<p class="text-gray-400">読み込み中...</p>
+								</div>
+							{:then imageData}
+								{#if imageData}
+									<img
+										in:fade
+										class="absolute inset-0 h-full w-full object-cover"
+										alt="画像"
+										src={imageData.type === 'static' ? imageData.url : imageData.data.url}
+									/>
+								{/if}
+							{/await}
 						</div>
-					{:then inatData}
-						{#if inatData && inatData.url}
-							<img
-								in:fade
-								class="block aspect-video h-full w-full rounded-lg object-cover"
-								alt="画像"
-								src={inatData.url}
-							/>
-							<!-- ライセンス表示 -->
-							<div class="mt-1 text-xs text-gray-400">
-								{#if inatData.attribution}
-									<span>{inatData.attribution}</span>
-								{/if}
-								{#if inatData.licenseCode}
-									<span class="ml-1">({inatData.licenseCode})</span>
-								{/if}
-								<span class="ml-1">via</span>
-								<a
-									href="https://www.inaturalist.org/taxa/{inatData.taxonId}"
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-accent hover:underline"
-								>
-									iNaturalist
-								</a>
-							</div>
-						{/if}
-					{/await}
+						<!-- iNaturalistのライセンス表示 -->
+						{#await imagePromise then imageData}
+							{#if imageData?.type === 'inaturalist'}
+								<div class="mt-1 text-xs text-gray-400">
+									{#if imageData.data.attribution}
+										<span>{imageData.data.attribution}</span>
+									{/if}
+									{#if imageData.data.licenseCode}
+										<span class="ml-1">({imageData.data.licenseCode})</span>
+									{/if}
+									<span class="ml-1">via</span>
+									<a
+										href="https://www.inaturalist.org/taxa/{imageData.data.taxonId}"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-accent hover:underline"
+									>
+										iNaturalist
+									</a>
+								</div>
+							{/if}
+						{/await}
+					</div>
 				{/if}
 
 				<div

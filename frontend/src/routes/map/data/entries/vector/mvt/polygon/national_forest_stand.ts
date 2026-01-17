@@ -60,14 +60,17 @@ const entry: VectorEntry<TileMetaData> = {
 			],
 			titles: [
 				{
-					conditions: ['樹種'],
-					template: '国有林 {樹種}'
+					conditions: ['樹種１'],
+					template: '{樹種１}林 {樹立林齢１}年生'
 				},
 				{
 					conditions: [],
 					template: '国有林'
 				}
-			]
+			],
+			relations: {
+				iNaturalistNameKey: '樹種１'
+			}
 		},
 		fields: []
 	},
@@ -609,7 +612,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: 'auto',
 					name: '小班名・樹種・林齢',
-					value: [
+					expression: [
 						'step',
 						['zoom'],
 						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
@@ -655,83 +658,68 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					name: 'ID'
 				},
 				{
 					key: '森林管理局',
-					name: '森林管理局',
-					value: '{森林管理局}'
+					name: '森林管理局'
 				},
 				{
 					key: '森林管理署',
-					name: '森林管理署',
-					value: '{森林管理署}'
+					name: '森林管理署'
 				},
 				{
 					key: '林班主番',
-					name: '林班主番',
-					value: '{林班主番}'
+					name: '林班主番'
 				},
 				{
 					key: '林班枝番',
-					name: '林班枝番',
-					value: '{林班枝番}'
+					name: '林班枝番'
 				},
 				{
 					key: '小班主番',
-					name: '小班主番',
-					value: '{小班主番}'
+					name: '小班主番'
 				},
 				{
 					key: '小班枝番',
-					name: '小班枝番',
-					value: '{小班枝番}'
+					name: '小班枝番'
 				},
 				{
 					key: '局名称',
-					name: '局名称',
-					value: '{局名称}'
+					name: '局名称'
 				},
 				{
 					key: '署名称',
-					name: '署名称',
-					value: '{署名称}'
+					name: '署名称'
 				},
 				{
 					key: '小班名',
-					name: '小班名',
-					value: '{小班名}'
+					name: '小班名'
 				},
 				{
 					key: '林小班名称',
-					name: '林小班名称',
-					value: '{林小班名称}'
+					name: '林小班名称'
 				},
 				{
 					key: '材積',
-					name: '材積',
-					value: '{材積} m3'
+					name: '材積'
 				},
 				{
 					key: '国有林名',
-					name: '国有林名',
-					value: '{国有林名}'
+					name: '国有林名'
 				},
 				{
 					key: '担当区',
-					name: '担当区',
-					value: '{担当区}'
+					name: '担当区'
 				},
 				{
 					key: '県市町村',
-					name: '県市町村',
-					value: '{県市町村}'
+					name: '県市町村'
 				},
 				{
 					key: '樹種１',
 					name: '第一樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種１']],
 						'', // プロパティが存在しない場合
@@ -743,7 +731,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢１',
 					name: '第一樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢１']],
 						'', // プロパティが存在しない場合
@@ -755,7 +743,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹種２',
 					name: '第二樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種２']],
 						'', // プロパティが存在しない場合
@@ -767,7 +755,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢２',
 					name: '第二樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢２']],
 						'', // プロパティが存在しない場合
@@ -779,7 +767,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹種３',
 					name: '第三樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種３']],
 						'', // プロパティが存在しない場合
@@ -791,7 +779,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢３',
 					name: '第三樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢３']],
 						'', // プロパティが存在しない場合
@@ -802,33 +790,27 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '計画区',
-					name: '計画区',
-					value: '{計画区}'
+					name: '計画区'
 				},
 				{
 					key: '林種の細分',
-					name: '林種の細分',
-					value: '{林種の細分}'
+					name: '林種の細分'
 				},
 				{
 					key: '機能類型',
-					name: '機能類型',
-					value: '{機能類型}'
+					name: '機能類型'
 				},
 				{
 					key: '面積',
-					name: '面積',
-					value: '{面積} ha'
+					name: '面積'
 				},
 				{
 					key: '保安林１',
-					name: '保安林種別１',
-					value: '{保安林１}'
+					name: '保安林種別１'
 				},
 				{
 					key: '樹立年度',
-					name: '樹立年度',
-					value: '{樹立年度}'
+					name: '樹立年度'
 				}
 			]
 		}

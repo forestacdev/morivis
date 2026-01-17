@@ -116,24 +116,101 @@ const DEFAULT_DATE_FORMAT: Required<Pick<DateFormatSpec, 'inputPatterns' | 'disp
 	invalidText: ''
 };
 
-/** 入力パターンに対応する正規表現 */
-const PATTERN_REGEX_MAP: Record<string, RegExp> = {
-	'YYYY-MM-DDTHH:mm:ss': /^(\d{4})-(\d{1,2})-(\d{1,2})T\d{2}:\d{2}:\d{2}$/,
-	'YYYY-MM-DD': /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
-	'YYYY/MM/DD': /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
-	YYYYMMDD: /^(\d{4})(\d{2})(\d{2})$/,
-	'YYYY年M月D日': /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
-	'YYYY年MM月DD日': /^(\d{4})年(\d{2})月(\d{2})日$/,
-	'YYYY-MM': /^(\d{4})-(\d{1,2})$/,
-	'YYYY/MM': /^(\d{4})\/(\d{1,2})$/,
-	'YYYY年M月': /^(\d{4})年(\d{1,2})月$/,
-	YYYY: /^(\d{4})$/
+/**
+ * 入力パターンに対応する正規表現
+ * グループ: (year)(month?)(day?)(hour?)(minute?)(second?)
+ */
+interface PatternConfig {
+	regex: RegExp;
+	groups: {
+		year: number;
+		month?: number;
+		day?: number;
+		hour?: number;
+		minute?: number;
+		second?: number;
+	};
+}
+
+const PATTERN_CONFIG_MAP: Record<string, PatternConfig> = {
+	// ISO 8601 形式（タイムゾーン付き）
+	'YYYY-MM-DDTHH:mm:ssZ': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})Z$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6 }
+	},
+	// ISO 8601 形式（タイムゾーンオフセット付き）
+	'YYYY-MM-DDTHH:mm:ss+HH:mm': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})[+-]\d{2}:\d{2}$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6 }
+	},
+	// ISO 8601 形式（タイムゾーンなし）
+	'YYYY-MM-DDTHH:mm:ss': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6 }
+	},
+	// 日付と時刻（スペース区切り）
+	'YYYY-MM-DD HH:mm:ss': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6 }
+	},
+	'YYYY/MM/DD HH:mm:ss': {
+		regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2}) (\d{2}):(\d{2}):(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6 }
+	},
+	'YYYY-MM-DD HH:mm': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5 }
+	},
+	'YYYY/MM/DD HH:mm': {
+		regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2}) (\d{2}):(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5 }
+	},
+	// 日付のみ
+	'YYYY-MM-DD': {
+		regex: /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+		groups: { year: 1, month: 2, day: 3 }
+	},
+	'YYYY/MM/DD': {
+		regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
+		groups: { year: 1, month: 2, day: 3 }
+	},
+	YYYYMMDD: {
+		regex: /^(\d{4})(\d{2})(\d{2})$/,
+		groups: { year: 1, month: 2, day: 3 }
+	},
+	'YYYY年M月D日': {
+		regex: /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
+		groups: { year: 1, month: 2, day: 3 }
+	},
+	'YYYY年MM月DD日': {
+		regex: /^(\d{4})年(\d{2})月(\d{2})日$/,
+		groups: { year: 1, month: 2, day: 3 }
+	},
+	'YYYY-MM': {
+		regex: /^(\d{4})-(\d{1,2})$/,
+		groups: { year: 1, month: 2 }
+	},
+	'YYYY/MM': {
+		regex: /^(\d{4})\/(\d{1,2})$/,
+		groups: { year: 1, month: 2 }
+	},
+	'YYYY年M月': {
+		regex: /^(\d{4})年(\d{1,2})月$/,
+		groups: { year: 1, month: 2 }
+	},
+	YYYY: {
+		regex: /^(\d{4})$/,
+		groups: { year: 1 }
+	}
 };
 
 interface ParsedDate {
 	year: number;
 	month?: number;
 	day?: number;
+	hour?: number;
+	minute?: number;
+	second?: number;
 }
 
 /**
@@ -141,15 +218,20 @@ interface ParsedDate {
  */
 const parseDate = (value: string, patterns: string[]): ParsedDate | null => {
 	for (const pattern of patterns) {
-		const regex = PATTERN_REGEX_MAP[pattern];
-		if (!regex) continue;
+		const config = PATTERN_CONFIG_MAP[pattern];
+		if (!config) continue;
 
-		const match = value.match(regex);
+		const match = value.match(config.regex);
 		if (match) {
-			const year = parseInt(match[1], 10);
-			const month = match[2] ? parseInt(match[2], 10) : undefined;
-			const day = match[3] ? parseInt(match[3], 10) : undefined;
-			return { year, month, day };
+			const { groups } = config;
+			return {
+				year: parseInt(match[groups.year], 10),
+				month: groups.month ? parseInt(match[groups.month], 10) : undefined,
+				day: groups.day ? parseInt(match[groups.day], 10) : undefined,
+				hour: groups.hour ? parseInt(match[groups.hour], 10) : undefined,
+				minute: groups.minute ? parseInt(match[groups.minute], 10) : undefined,
+				second: groups.second ? parseInt(match[groups.second], 10) : undefined
+			};
 		}
 	}
 	return null;
@@ -163,7 +245,7 @@ const formatParsedDate = (
 	displayPattern: string,
 	fill?: DateFormatSpec['fill']
 ): string => {
-	const { year } = parsed;
+	const { year, hour, minute, second } = parsed;
 	let { month, day } = parsed;
 
 	// fillルールの適用
@@ -175,13 +257,34 @@ const formatParsedDate = (
 	}
 
 	// 表示パターンに応じて出力
-	return displayPattern
+	let result = displayPattern
+		// 年
 		.replace('YYYY', String(year))
+		.replace('yyyy', String(year))
+		// 月
 		.replace('MM', month !== undefined ? String(month).padStart(2, '0') : '')
 		.replace('M', month !== undefined ? String(month) : '')
+		// 日
 		.replace('DD', day !== undefined ? String(day).padStart(2, '0') : '')
+		.replace('dd', day !== undefined ? String(day).padStart(2, '0') : '')
 		.replace('D', day !== undefined ? String(day) : '')
-		// 月日がない場合の不要な区切り文字を除去
+		// 時
+		.replace('HH', hour !== undefined ? String(hour).padStart(2, '0') : '')
+		.replace('H', hour !== undefined ? String(hour) : '')
+		// 分
+		.replace('mm', minute !== undefined ? String(minute).padStart(2, '0') : '')
+		.replace('m', minute !== undefined ? String(minute) : '')
+		// 秒
+		.replace('ss', second !== undefined ? String(second).padStart(2, '0') : '')
+		.replace('s', second !== undefined ? String(second) : '');
+
+	// 時刻がない場合の不要な区切り文字を除去
+	if (hour === undefined) {
+		result = result.replace(/\s*:\s*$/, '').replace(/\s+$/, '');
+	}
+
+	// 月日がない場合の不要な区切り文字を除去
+	return result
 		.replace(/年月$/, '年')
 		.replace(/月日$/, '月')
 		.replace(/-+$/, '')
