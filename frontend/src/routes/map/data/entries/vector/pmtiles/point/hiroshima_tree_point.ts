@@ -61,12 +61,13 @@ const entry: VectorEntry<TileMetaData> = {
 			{
 				key: '形状比',
 				type: 'number',
-				label: '形状比',
-				unit: '%'
+				label: '形状比'
 			},
 			{
 				key: '樹冠長率',
-				type: 'number'
+				label: '樹冠長率',
+				type: 'number',
+				unit: '%'
 			},
 			{
 				key: '樹冠面積',

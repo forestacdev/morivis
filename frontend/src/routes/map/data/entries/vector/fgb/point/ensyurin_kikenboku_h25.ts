@@ -24,6 +24,9 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	properties: {
 		attributeView: {
+			relations: {
+				iNaturalistNameKey: '樹種'
+			},
 			popupKeys: ['樹種', '胸高直径（ｃｍ）', '状態', '調査日時', '備考'],
 			titles: [
 				{

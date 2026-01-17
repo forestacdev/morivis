@@ -29,7 +29,8 @@ export const TREE_SPECIES_TITLES: Title[] = [
 ];
 
 export const TREE_SPECIES_RELATIONS: Relations = {
-	cityCodeKey: '市町村code'
+	cityCodeKey: '市町村code',
+	iNaturalistNameKey: '樹種'
 };
 
 export const TREE_SPECIES_FIELDS: FieldDef[] = [

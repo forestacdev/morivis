@@ -46,7 +46,10 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					conditions: [],
 					template: 'OWL利用研修立木計測データ'
 				}
-			]
+			],
+			relations: {
+				iNaturalistNameKey: '樹種'
+			}
 		},
 		fields: [
 			{
