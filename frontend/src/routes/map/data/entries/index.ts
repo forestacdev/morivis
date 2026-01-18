@@ -23,16 +23,23 @@ const initData = (data: GeoDataEntry[]) => {
 
 const isDev = !import.meta.env.PROD;
 
+type EntryModule = { default: GeoDataEntry };
+
 // デバッグ用ファイル（!プレフィックス）があるかチェック
-const debugModules = import.meta.glob('$routes/map/data/entries/**/!*.ts', { eager: true });
+const debugModules = import.meta.glob<EntryModule>('$routes/map/data/entries/**/!*.ts', {
+	eager: true
+});
 const hasDebugFiles = Object.keys(debugModules).length > 0;
 
 const entryModules =
 	isDev && hasDebugFiles
 		? debugModules
-		: import.meta.glob(['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'], {
-				eager: true
-			});
+		: import.meta.glob<EntryModule>(
+				['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+				{
+					eager: true
+				}
+			);
 
 if (hasDebugFiles) {
 	console.warn('デバッグ用データエントリが読み込まれました。');

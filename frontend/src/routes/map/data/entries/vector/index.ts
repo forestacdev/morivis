@@ -63,13 +63,16 @@ export const createGeoJsonEntry = (
 			clickable: true as const
 		},
 		properties: {
-			keys: propKeys,
-			titles: [
-				{
-					conditions: [],
-					template: name
-				}
-			]
+			fields: propKeys.map((key) => ({ key, label: key })),
+			attributeView: {
+				popupKeys: propKeys,
+				titles: [
+					{
+						conditions: [],
+						template: name
+					}
+				]
+			}
 		}
 	};
 
@@ -151,13 +154,16 @@ export const createVectorTileEntry = (
 			clickable: true as const
 		},
 		properties: {
-			keys: [],
-			titles: [
-				{
-					conditions: [],
-					template: name
-				}
-			]
+			fields: [],
+			attributeView: {
+				popupKeys: [],
+				titles: [
+					{
+						conditions: [],
+						template: name
+					}
+				]
+			}
 		}
 	};
 
