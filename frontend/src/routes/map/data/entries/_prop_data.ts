@@ -278,17 +278,17 @@ export const propData: PropData = {
 		description: `
             2021年度自力建設。
             樹状架構が人と人をつなげる「みち」となる。ウッド・ラボ棟前面に広がるウッドデッキは、学生たちがグリーンウッドワーク（生木を使った木工製作）を行う場。そして、休憩や昼食を取る交流の場でもある。この空間に、庇・屋根付き通路から構成する「木立（こだち）のこみち」を建設した。アカデミーの雰囲気に適した形態として「樹状」で庇・通路のデザインを統一し、柱梁・方杖を細い部材としたことで、既存の校舎や植栽空間にも馴染む軽やかな架構となり、快適な軒下通路・休憩の場・木工製作の場が生まれた。`,
-		url: 'https://www.forest.ac.jp/facilities/self/jiriki-kodachi/',
-		medias: [
-			{
-				type: 'image',
-				url: `https://www.youtube.com/embed/u0nOKq0QdSY`
-			},
-			{
-				type: 'youtube',
-				url: `https://www.youtube.com/embed/u0nOKq0QdSY`
-			}
-		]
+		url: 'https://www.forest.ac.jp/facilities/self/jiriki-kodachi/'
+		// medias: [
+		// 	{
+		// 		type: 'image',
+		// 		url: `${FEATURE_IMAGE_BASE_PATH}/ziriki_21.webp`
+		// 	},
+		// 	{
+		// 		type: 'youtube',
+		// 		url: `https://www.youtube.com/embed/u0nOKq0QdSY`
+		// 	}
+		// ]
 	},
 	ziriki_22: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_22.webp`,
