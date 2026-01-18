@@ -15,8 +15,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		// url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
-		url: `${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
+		url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
 	},
 	metaData: {
 		name: '広島県 単木データ',

@@ -12,7 +12,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	metaData: {
 		name: '鳥類調査 2020年度',
-		description: '森林環境教育選考「生物同定の基礎」より実施',
+		description:
+			'クリエーター科森林環境教育専攻の専門科目「生物同定の基礎」より実施した鳥類調査のデータ',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		minZoom: 10,
