@@ -91,8 +91,7 @@ const entry: PointEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'vt_text',
-					name: '標高値',
-					value: '{vt_text}'
+					name: '標高値'
 				}
 			]
 		},
