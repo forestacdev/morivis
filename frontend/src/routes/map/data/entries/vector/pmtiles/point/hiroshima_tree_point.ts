@@ -286,7 +286,7 @@ const entry: VectorEntry<TileMetaData> = {
 		source: {
 			tree_point_hiroshima_aux: {
 				type: 'vector',
-				url: `pmtiles://${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
+				url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
 			}
 		},
 		layers: [
