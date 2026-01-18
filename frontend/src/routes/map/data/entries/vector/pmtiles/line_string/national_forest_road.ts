@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -25,11 +25,20 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_road.webp`
 	},
 	properties: {
-		keys: ['種類'],
-		titles: []
+		attributeView: {
+			popupKeys: ['林道名', '森林管理局', '森林管理署', '路線番号'],
+			titles: []
+		},
+		fields: [
+			{ key: '林道名', label: '林道名', type: 'string' },
+			{ key: '森林管理局', label: '森林管理局', type: 'string' },
+			{ key: '森林管理署', label: '森林管理署', type: 'string' },
+			{ key: '路線番号', label: '路線番号', type: 'string' },
+			{ key: 'ID', label: 'ID', type: 'string' }
+		]
 	},
 	interaction: {
-		clickable: false
+		clickable: true
 	},
 	style: {
 		type: 'line',
@@ -68,8 +77,7 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '林道名',
-					name: '林道名',
-					value: '{林道名}'
+					name: '林道名'
 				}
 			]
 		},

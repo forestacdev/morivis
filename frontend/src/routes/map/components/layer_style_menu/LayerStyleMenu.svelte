@@ -88,7 +88,7 @@
 				<div class="flex h-[80px] items-center gap-2 pr-2">
 					<div class="flex items-center gap-2 max-lg:hidden">
 						<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
-						<span class="text-base text-lg select-none">カスタマイズ</span>
+						<span class="text-base text-lg select-none">スタイルの変更</span>
 					</div>
 					<!-- モバイル用タイトル -->
 					<div class="truncate text-2xl text-base lg:hidden">

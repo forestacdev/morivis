@@ -25,23 +25,37 @@ const entry: PolygonEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ksj_tmplt_a15.webp`
 	},
 	properties: {
-		keys: [
-			'鳥獣保護区名',
-			'都道府県コード',
-			'指定機関コード',
-			'保護区分コード',
-			'指定日',
-			'解除日',
-			'ID',
-			'指定機関',
-			'保護区分',
-			'都道府県'
-		],
-		titles: [
-			{
-				conditions: ['鳥獣保護区名', '保護区分'],
-				template: '{鳥獣保護区名} {保護区分}'
-			}
+		attributeView: {
+			popupKeys: [
+				'鳥獣保護区名',
+				'都道府県コード',
+				'指定機関コード',
+				'保護区分コード',
+				'指定日',
+				'解除日',
+				'ID',
+				'指定機関',
+				'保護区分',
+				'都道府県'
+			],
+			titles: [
+				{
+					conditions: ['鳥獣保護区名', '保護区分'],
+					template: '{鳥獣保護区名} {保護区分}'
+				}
+			]
+		},
+		fields: [
+			{ key: '鳥獣保護区名', type: 'string', label: '鳥獣保護区名' },
+			{ key: '都道府県コード', type: 'string', label: '都道府県コード' },
+			{ key: '指定機関コード', type: 'string', label: '指定機関コード' },
+			{ key: '保護区分コード', type: 'string', label: '保護区分コード' },
+			{ key: '指定日', type: 'string', label: '指定日' },
+			{ key: '解除日', type: 'string', label: '解除日' },
+			{ key: 'ID', type: 'string', label: 'ID' },
+			{ key: '指定機関', type: 'string', label: '指定機関' },
+			{ key: '保護区分', type: 'string', label: '保護区分' },
+			{ key: '都道府県', type: 'string', label: '都道府県' }
 		]
 	},
 	interaction: {
@@ -86,53 +100,43 @@ const entry: PolygonEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '鳥獣保護区名',
-					name: '鳥獣保護区名',
-					value: '{鳥獣保護区名}'
+					name: '鳥獣保護区名'
 				},
 				{
 					key: '都道府県コード',
-					name: '都道府県コード',
-					value: '{都道府県コード}'
+					name: '都道府県コード'
 				},
 				{
 					key: '指定機関コード',
-					name: '指定機関コード',
-					value: '{指定機関コード}'
+					name: '指定機関コード'
 				},
 				{
 					key: '保護区分コード',
-					name: '保護区分コード',
-					value: '{保護区分コード}'
+					name: '保護区分コード'
 				},
 				{
 					key: '指定日',
-					name: '指定日',
-					value: '{指定日}'
+					name: '指定日'
 				},
 				{
 					key: '解除日',
-					name: '解除日',
-					value: '{解除日}'
+					name: '解除日'
 				},
 				{
 					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					name: 'ID'
 				},
 				{
 					key: '指定機関',
-					name: '指定機関',
-					value: '{指定機関}'
+					name: '指定機関'
 				},
 				{
 					key: '保護区分',
-					name: '保護区分',
-					value: '{保護区分}'
+					name: '保護区分'
 				},
 				{
 					key: '都道府県',
-					name: '都道府県',
-					value: '{都道府県}'
+					name: '都道府県'
 				}
 			]
 		}

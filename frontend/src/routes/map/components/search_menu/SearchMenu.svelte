@@ -7,7 +7,7 @@
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { propData } from '$routes/map/data/prop_data';
+	import { propData } from '$routes/map/data/entries/_prop_data';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import type {
 		ResultData,

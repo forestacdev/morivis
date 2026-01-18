@@ -1,5 +1,5 @@
 import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/style';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 
 const entry: RasterPMTilesEntry<RasterCadStyle> = {

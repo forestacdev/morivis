@@ -128,6 +128,14 @@ const attributionData = {
 	['PLATEAU']: {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
+	},
+	DoboX: {
+		name: 'DoboX',
+		url: 'https://hiroshima-dobox.jp/index2'
+	},
+	['登記所備付地図データ（法務省）']: {
+		name: '登記所備付地図データ（法務省）',
+		url: 'https://front.geospatial.jp/houmu-chiseki/'
 	}
 } as const;
 

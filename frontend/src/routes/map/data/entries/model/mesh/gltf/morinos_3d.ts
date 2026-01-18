@@ -20,7 +20,7 @@ const entry: ModelMeshEntry<MeshStyle> = {
 
 		xyzImageTile: { x: 923099, y: 413380, z: 20 },
 		mapImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`,
-		coverImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/morinos.webp`
 	},
 	interaction: {
 		clickable: false

@@ -1,9 +1,6 @@
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
-import {
-	DEFAULT_RASTER_BASEMAP_INTERACTION,
-	DEFAULT_RASTER_BASEMAP_STYLE
-} from '$routes/map/data/style';
-import { IMAGE_TILE_XYZ } from '$routes/constants';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gifu_pref',

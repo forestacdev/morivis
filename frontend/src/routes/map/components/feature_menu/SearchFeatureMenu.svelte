@@ -82,7 +82,7 @@
 				class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2"
 			>
 				<!-- 画像 -->
-				<div class="b relative w-full p-2">
+				<div class="relative w-full p-2">
 					{#if wikiMenuData}
 						{#if wikiMenuData.thumbnail && wikiMenuData.thumbnail.source}
 							<img

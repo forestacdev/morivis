@@ -1,7 +1,21 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { HYOGO_BBOX } from '$routes/map/data/location_bbox';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
+import { HYOGO_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import {
+	TREE_SPECIES_FIELDS,
+	TREE_SPECIES_POPUP_KEYS,
+	TREE_SPECIES_RELATIONS,
+	TREE_SPECIES_TITLES,
+	TREE_SPECIES_PROPERTIES
+} from '$routes/map/data/entries/vector/_properties';
+import {
+	DEFAULT_POLYGON_STYLE,
+	TREE_SPECIES_LABELS,
+	TREE_SPECIES_OUTLINE,
+	TREE_SPECIES_STYLE,
+	TREE_SINGLE_COLOR_STYLE
+} from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hyogo_tree_species',
@@ -26,33 +40,36 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/hyogo_tree_species.webp`
 	},
 	properties: {
-		keys: [
-			'解析樹種ID',
-			'解析樹種',
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'森林計測年',
-			'森林計測法',
-			'県code',
-			'市町村code',
-			'ID',
-			'樹冠高90',
-			'最大樹冠高',
-			'平均傾斜',
-			'最大傾斜',
-			'旧市町村名'
+		fields: [
+			...TREE_SPECIES_FIELDS,
+			{ key: 'ID', type: 'number' },
+			{ key: '樹冠高90', type: 'number', unit: 'm' },
+			{ key: '最大樹冠高', type: 'number', unit: 'm' },
+			{ key: '平均傾斜', type: 'number', unit: '度' },
+			{ key: '最大傾斜', type: 'number', unit: '度' },
+			{ key: '旧市町村名', type: 'string' }
 		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '兵庫県の樹種ポリゴン'
+		attributeView: {
+			popupKeys: [
+				...TREE_SPECIES_POPUP_KEYS,
+				'ID',
+				'樹冠高90',
+				'最大樹冠高',
+				'平均傾斜',
+				'最大傾斜',
+				'旧市町村名'
+			],
+			titles: [
+				...TREE_SPECIES_TITLES,
+				{
+					conditions: [],
+					template: '兵庫県の樹種ポリゴン'
+				}
+			],
+			relations: {
+				...TREE_SPECIES_RELATIONS
 			}
-		]
+		}
 	},
 	interaction: {
 		clickable: true
@@ -65,13 +82,7 @@ const entry: VectorEntry<TileMetaData> = {
 			show: true,
 			expressions: [
 				{
-					type: 'single',
-					key: '単色',
-					name: '単色',
-					mapping: {
-						value: '#33a02c',
-						pattern: null
-					}
+					...TREE_SINGLE_COLOR_STYLE
 				},
 				{
 					...TREE_MATCH_COLOR_STYLE
@@ -89,106 +100,40 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		outline: {
-			show: false,
-			color: '#000000',
-			width: 1,
-			lineStyle: 'solid'
+			...TREE_SPECIES_OUTLINE
 		},
 		labels: {
-			key: '樹種',
-			show: false,
+			...TREE_SPECIES_LABELS,
 			expressions: [
-				{
-					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
-				},
-				{
-					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
-				},
-				{
-					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
-				},
-				{
-					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
-				},
-				{
-					key: '面積_ha',
-					name: '面積',
-					value: '{面積_ha} ha'
-				},
-				{
-					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
-				},
-				{
-					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
-				},
-				{
-					key: '県code',
-					name: '県code',
-					value: '{県code}'
-				},
-				{
-					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
-				},
+				...TREE_SPECIES_LABELS.expressions,
 				{
 					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					name: 'ID'
 				},
 				{
 					key: '樹冠高90',
-					name: '樹冠高90',
-					value: '{樹冠高90}'
+					name: '樹冠高90'
 				},
 				{
 					key: '最大樹冠高',
-					name: '最大樹冠高',
-					value: '{最大樹冠高}'
+					name: '最大樹冠高'
 				},
 				{
 					key: '平均傾斜',
-					name: '平均傾斜',
-					value: '{平均傾斜}'
+					name: '平均傾斜'
 				},
 				{
 					key: '最大傾斜',
-					name: '最大傾斜',
-					value: '{最大傾斜}'
+					name: '最大傾斜'
 				},
 				{
 					key: '旧市町村名',
-					name: '旧市町村名',
-					value: '{旧市町村名}'
+					name: '旧市町村名'
 				}
 			]
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#FFFFFF',
-					'text-halo-width': 1,
-					'text-opacity': 1
-				},
-				layout: {
-					'text-max-width': 12,
-					'text-size': 12,
-					'text-padding': 10
-				}
-			}
+			...DEFAULT_POLYGON_STYLE
 		}
 	}
 };

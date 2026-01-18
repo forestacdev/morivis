@@ -1,4 +1,5 @@
-import { HIGHLIGHT_LAYER_COLOR, INT_ADD_LAYER_IDS } from '$routes/constants';
+import { INT_ADD_LAYER_IDS } from '$routes/constants';
+import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/label';
 
 import type {
 	LayerSpecification,
@@ -7,31 +8,15 @@ import type {
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
 	FillExtrusionLayerSpecification,
-	FilterSpecification,
-	ColorSpecification,
-	DataDrivenPropertyValueSpecification,
-	ResolvedImageSpecification
+	FilterSpecification
 } from 'maplibre-gl';
 
 import { streetViewLineLayer, streetViewCircleLayer } from '$routes/map/utils/layers/street_view';
-import { clickableVectorIds, clickableRasterIds, type SelectedHighlightData } from '$routes/stores';
+import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 
-import { geoDataEntries } from '$routes/map/data';
+import { geoDataEntries } from '$routes/map/data/entries';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type {
-	Labels,
-	VectorStyle,
-	ColorsStyle,
-	NumbersStyle,
-	NumberLinearExpression,
-	NumberMatchExpression,
-	NumberStepExpression,
-	ColorMatchExpression,
-	ColorStepExpression,
-	PointStyle,
-	PolygonStyle,
-	LineStringStyle
-} from '$routes/map/data/types/vector/style';
+import type { VectorStyle } from '$routes/map/data/types/vector/style';
 
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { labelLayers } from '$routes/map/utils/layers/label';
@@ -53,13 +38,24 @@ import {
 	selectedBaseMap
 } from '$routes/stores/layers';
 
-import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
+import {
+	createFillExtrusionPatternLayer,
+	createFillPatternLayer,
+	createFillLayer,
+	createFillExtrusionLayer,
+	createOutLineLayer
+} from '$routes/map/utils/layers/vector/polygon';
+import { createLineLayer } from '$routes/map/utils/layers/vector/line_string';
+import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
+
 import { get } from 'svelte/store';
 
-import { getAttribution, type AttributionKey } from '$routes/map/data/attribution';
+import {
+	getAttribution,
+	type AttributionKey
+} from '$routes/map/data/entries/_meta_data/_attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
-import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -70,7 +66,7 @@ const validateId = (id: string) => {
 };
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
-		validateId(id); // ここでエラーが発生します
+		validateId(id);
 	} catch (error) {
 		if (error instanceof Error) {
 			console.warn(`無効なidです: ${id}`);
@@ -80,7 +76,7 @@ INT_ADD_LAYER_IDS.forEach((id) => {
 	}
 });
 
-interface LayerItem {
+export interface LayerItem {
 	id: string;
 	source: string;
 	maxzoom: number;
@@ -100,610 +96,6 @@ interface LayerItem {
 	'source-layer'?: string;
 	filter?: FilterSpecification;
 }
-
-const generateMatchExpression = (
-	expressionData: ColorMatchExpression
-): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	const key = expressionData.key;
-	const expression = ['match', ['get', key]];
-
-	const { categories, values } = expressionData.mapping;
-
-	if (categories.length !== values.length) {
-		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
-		return '#ff0000';
-	}
-
-	// categories と values のペアをループ処理
-	for (let i = 0; i < categories.length; i++) {
-		expression.push(categories[i] as string, values[i]);
-	}
-
-	// デフォルト値を最後に追加
-	if (expressionData.noData) {
-		expression.push(expressionData.noData.value);
-	} else {
-		expression.push('transparent');
-	}
-
-	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
-};
-
-const generateStepExpression = (
-	expressionData: ColorStepExpression
-): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	const key = expressionData.key;
-
-	const { categories, values } = generateNumberAndColorMap(expressionData.mapping);
-
-	if (categories.length !== values.length) {
-		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
-		return '#ff0000';
-	}
-
-	// 数値変換した値
-	const numericValue = ['to-number', ['get', key]];
-
-	// step式の部分を構築
-	const stepExpression: any[] = ['step', numericValue];
-
-	// 最初の色（最小値未満）
-	stepExpression.push(values[0]);
-
-	// 2番目以降
-	for (let i = 1; i < categories.length; i++) {
-		stepExpression.push(categories[i], values[i]);
-	}
-
-	// プロパティの存在と型をチェック
-	const expression = [
-		'case',
-		['!', ['has', key]], // プロパティが存在しない
-		'#00000000',
-		['==', ['get', key], null], // nullの場合
-		'#00000000',
-		['==', ['typeof', numericValue], 'number'], // to-numberの結果が数値か
-		stepExpression,
-		'#00000000' // その他は透明
-	];
-
-	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
-};
-
-const getColorExpression = (colors: ColorsStyle) => {
-	const key = colors.key;
-	const expressionData = colors.expressions.find((expression) => expression.key === key);
-	if (!expressionData) {
-		console.warn(`カラー設定が見つかりません: ${key}`);
-		return '#ff0000';
-	}
-	switch (expressionData.type) {
-		case 'single':
-			return expressionData.mapping.value;
-		case 'raw':
-			return expressionData.mapping.expression;
-		case 'match':
-			return generateMatchExpression(expressionData);
-		case 'step':
-			return generateStepExpression(expressionData);
-		default:
-			console.warn(`カラー設定が見つかりません: ${key}`);
-			return '#ff0000';
-	}
-};
-
-const getPatternMatchExpression = (
-	expressionData: ColorMatchExpression
-): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
-	const key = expressionData.key;
-
-	const { categories, patterns } = expressionData.mapping;
-	if (!patterns) return null;
-
-	const patternFilter = patterns.filter((item) => item !== null);
-
-	if (!patternFilter.length) {
-		return null;
-	}
-
-	const expression: (string | string[] | null)[] = ['match', ['get', key]];
-
-	for (let i = 0; i < categories.length; i++) {
-		if (patterns[i] !== null) expression.push(categories[i] as string, patterns[i]);
-	}
-
-	expression.push(''); // デフォルト値
-
-	return expression as DataDrivenPropertyValueSpecification<ColorSpecification>;
-};
-
-const getPatternExpression = (colors: ColorsStyle) => {
-	const key = colors.key;
-	const expressionData = colors.expressions.find((expression) => expression.key === key);
-	if (!expressionData) {
-		return null;
-	}
-
-	switch (expressionData.type) {
-		case 'single':
-			return expressionData.mapping.pattern;
-		case 'raw':
-			return expressionData.mapping.expression;
-		case 'match':
-			return getPatternMatchExpression(expressionData);
-		default:
-			return null;
-	}
-};
-
-const generateNumberMatchExpression = (
-	expressionData: NumberMatchExpression
-): DataDrivenPropertyValueSpecification<number> => {
-	const key = expressionData.key;
-	const expression: (string | string[] | number)[] = ['match', ['get', key]];
-
-	const { categories, values } = expressionData.mapping;
-
-	if (categories.length !== values.length) {
-		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
-		return 0;
-	}
-
-	// categories と values のペアをループ処理
-	for (let i = 0; i < categories.length; i++) {
-		expression.push(categories[i] as number, values[i]);
-	}
-
-	// デフォルト値を最後に追加
-	expression.push(0);
-
-	return expression as DataDrivenPropertyValueSpecification<number>;
-};
-
-const generateNumberStepExpression = (
-	expressionData: NumberStepExpression
-): DataDrivenPropertyValueSpecification<number> => {
-	const key = expressionData.key;
-	const { range, divisions, values } = expressionData.mapping;
-	const [min, max] = range;
-
-	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
-	const expression: unknown[] = [
-		'step',
-		[
-			'case',
-			['==', ['get', key], null],
-			-9999, // 値が null の場合
-			['!=', ['to-number', ['get', key], -9999], -9999], // 数値に変換可能な場合
-			['to-number', ['get', key], -9999], // 数値を使用
-			-9999 // デフォルトは -9999
-		] // 数値以外の場合に -9999 を使用
-	];
-
-	// データ範囲に応じた適切な桁数を自動決定
-	const dataRange = max - min;
-	const decimalPlaces = dataRange >= 100 ? 0 : dataRange >= 10 ? 1 : dataRange >= 1 ? 2 : 3;
-
-	// 均等分割してカテゴリを生成
-	const categories = Array.from({ length: divisions }, (_, i) => {
-		const ratio = i / (divisions - 1);
-		const value = min + (max - min) * ratio;
-		return Number(value.toFixed(decimalPlaces));
-	});
-
-	if (categories.length !== values.length) {
-		console.warn('ステップ式のカテゴリーと値の長さが一致しません。');
-		return 0;
-	}
-
-	// 最初のカテゴリの色を追加（数値が -9999 の場合のデフォルト色）
-	expression.push(0);
-
-	// カテゴリと対応する値を追加
-	categories.forEach((category, index) => {
-		expression.push(category, values[index]);
-	});
-
-	return expression as DataDrivenPropertyValueSpecification<number>;
-};
-
-export const generateNumberLinearExpression = (
-	expr: NumberLinearExpression
-): DataDrivenPropertyValueSpecification<number> => {
-	const { key, mapping } = expr;
-	const [inputMin, inputMax] = mapping.range;
-	const [outputMin, outputMax] = mapping.values;
-
-	return ['interpolate', ['linear'], ['get', key], inputMin, outputMin, inputMax, outputMax];
-};
-
-const getNumberExpression = (numbers: NumbersStyle) => {
-	const key = numbers.key;
-	const expressionData = numbers.expressions.find((expression) => expression.key === key);
-	if (!expressionData) {
-		console.warn(`数値設定が見つかりません: ${key}`);
-		return 0;
-	}
-	switch (expressionData.type) {
-		case 'single':
-			return expressionData.mapping.value;
-		case 'raw':
-			return expressionData.mapping.expression;
-		case 'match':
-			return generateNumberMatchExpression(expressionData);
-		case 'linear':
-			return generateNumberLinearExpression(expressionData);
-		case 'step':
-			return generateNumberStepExpression(expressionData);
-		default:
-			console.warn(`数値設定が見つかりません: ${key}`);
-			return 0;
-	}
-};
-
-const getSelectedColorExpression = (
-	colorExpression: DataDrivenPropertyValueSpecification<ColorSpecification>
-): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		HIGHLIGHT_LAYER_COLOR,
-		colorExpression
-	] as DataDrivenPropertyValueSpecification<ColorSpecification>;
-};
-
-const getSelectedOpacityExpression = (
-	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
-): DataDrivenPropertyValueSpecification<number> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		0.8,
-		numbercolorExpression
-	] as DataDrivenPropertyValueSpecification<number>;
-};
-
-const getSelectedIconSizeExpression = (
-	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
-): DataDrivenPropertyValueSpecification<number> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		0.12,
-		numbercolorExpression
-	] as DataDrivenPropertyValueSpecification<number>;
-};
-// fillレイヤーの作成
-const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
-	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const opacity = getSelectedOpacityExpression(style.opacity);
-	const fillLayer: FillLayerSpecification = {
-		...layer,
-		type: 'fill',
-		paint: {
-			'fill-opacity': opacity,
-			'fill-outline-color': '#00000000',
-			'fill-color': style.colors.show ? colorExpression : '#00000000',
-			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})
-		},
-		layout: {
-			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fill?.filter) {
-				return { filter: defaultStyle.fill.filter };
-			}
-			return {};
-		})()
-	};
-
-	return fillLayer;
-};
-
-// ポリゴンのパターンレイヤーの作成
-const createFillPatternLayer = (
-	layer: LayerItem,
-	style: PolygonStyle
-): FillLayerSpecification | undefined => {
-	const patternExpression = getPatternExpression(style.colors);
-	if (!patternExpression) {
-		return undefined;
-	}
-	const opacity = getSelectedOpacityExpression(style.opacity);
-	const defaultStyle = style.default;
-
-	const fillPatternLayer: FillLayerSpecification = {
-		...layer,
-		id: `${layer.id}_fill_pattern`,
-		type: 'fill',
-		paint: {
-			'fill-pattern': patternExpression,
-			'fill-opacity': opacity
-		},
-		layout: {},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fill?.filter) {
-				return { filter: defaultStyle.fill.filter };
-			}
-			return {};
-		})()
-	};
-
-	return fillPatternLayer;
-};
-
-// ポリゴンのアウトラインレイヤーの作成
-const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
-	const defaultStyle = style.default;
-	// TODO ライン幅固定関数
-	const _createExponentialLineWidth = (baseWidth: number, baseZoom: number) => {
-		return [
-			'interpolate',
-			['exponential', 2],
-			['zoom'],
-			0,
-			baseWidth * Math.pow(2, 0 - baseZoom),
-			24,
-			baseWidth * Math.pow(2, 24 - baseZoom)
-		];
-	};
-
-	const outlineLayer: LineLayerSpecification = {
-		...layer,
-		id: `${layer.id}_outline`,
-		minzoom: style.outline.minZoom ? style.outline.minZoom : layer.minzoom,
-		type: 'line',
-		paint: {
-			'line-color': style.outline.color,
-			'line-width': style.outline.width,
-			'line-opacity': style.opacity,
-			...(style.outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.line?.filter) {
-				return { filter: defaultStyle.line.filter };
-			}
-			return {};
-		})()
-	};
-	return outlineLayer;
-};
-
-// fillExtrusionレイヤーの作成
-const createFillExtrusionLayer = (
-	layer: LayerItem,
-	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
-	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
-	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
-		...layer,
-		type: 'fill-extrusion',
-		id: `${layer.id}_fill_extrusion`,
-		paint: {
-			'fill-extrusion-height': height,
-			'fill-extrusion-opacity': style.opacity,
-			'fill-extrusion-color': style.colors.show ? colorExpression : '#00000000',
-			'fill-extrusion-vertical-gradient': true,
-			// 'fill-extrusion-base': 10,
-
-			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
-		},
-		layout: {
-			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fillExtrusion?.filter) {
-				return { filter: defaultStyle.fillExtrusion.filter };
-			}
-			return {};
-		})()
-	};
-
-	return fillExtrusionLayer;
-};
-
-const createFillExtrusionPatternLayer = (
-	layer: LayerItem,
-	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
-	const defaultStyle = style.default;
-	const patternExpression = getPatternExpression(style.colors);
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
-	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
-		...layer,
-		id: `${layer.id}_fill_extrusion_pattern`,
-		type: 'fill-extrusion',
-		paint: {
-			'fill-extrusion-height': height,
-			'fill-extrusion-opacity': style.opacity,
-			'fill-extrusion-pattern': patternExpression ? patternExpression : '#00000000',
-			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
-		},
-		layout: {
-			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fillExtrusion?.filter) {
-				return { filter: defaultStyle.fillExtrusion.filter };
-			}
-			return {};
-		})()
-	};
-
-	return fillExtrusionLayer;
-};
-
-// lineレイヤーの作成
-const createLineLayer = (layer: LayerItem, style: LineStringStyle): LineLayerSpecification => {
-	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const width = getNumberExpression(style.width);
-	const lineLayer: LineLayerSpecification = {
-		...layer,
-		type: 'line',
-		paint: {
-			'line-opacity': style.colors.show ? style.opacity : 0,
-			'line-color': style.colors.show ? colorExpression : '#00000000',
-			'line-width': width,
-			...(style.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] }),
-			...(defaultStyle && defaultStyle.line ? defaultStyle.line.paint : {})
-		},
-		layout: {
-			...(defaultStyle && defaultStyle.line ? defaultStyle.line.layout : {})
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.line?.filter) {
-				return { filter: defaultStyle.line.filter };
-			}
-			return {};
-		})()
-	};
-
-	// TODO width line-gradient
-	return lineLayer;
-};
-
-// pointレイヤーの作成
-const createCircleLayer = (layer: LayerItem, style: PointStyle): CircleLayerSpecification => {
-	const outline = style.outline;
-	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const radius = getNumberExpression(style.radius);
-	const circleLayer: CircleLayerSpecification = {
-		...layer,
-		type: 'circle',
-		paint: {
-			'circle-opacity': style.colors.show ? style.opacity : 0,
-			'circle-stroke-opacity': style.opacity,
-			'circle-color': style.colors.show ? colorExpression : '#00000000',
-			'circle-radius': radius,
-			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
-			'circle-stroke-width': outline.show ? style.outline.width : 0,
-			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.paint : {})
-		},
-		layout: {
-			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.layout : {})
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.circle?.filter) {
-				return { filter: defaultStyle.circle.filter };
-			}
-			return {};
-		})()
-	};
-	return circleLayer;
-};
-
-// ポイントのicon用レイヤーの作成
-// TODO: 廃止予定
-const createPointIconLayer = (layer: LayerItem, style: PointStyle): SymbolLayerSpecification => {
-	const defaultStyle = style.default;
-	const key = style.labels.key as keyof Labels;
-	const showLabel = style.labels.show;
-	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
-	const labelPaint = {
-		'text-opacity': 1,
-		'text-color': '#000000',
-		'text-halo-color': '#FFFFFF',
-		'text-halo-width': 2
-	};
-	const labelLayout = {
-		'text-field': textField,
-		'text-size': 12,
-		'text-max-width': 12
-	};
-
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}`,
-		type: 'symbol',
-		paint: {
-			...(showLabel ? labelPaint : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {}),
-			'icon-opacity': style.opacity
-		},
-		layout: {
-			...(showLabel ? labelLayout : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
-			'icon-image': ['get', '_prop_id'],
-			'icon-size': style.icon?.size ?? 0.1,
-			'icon-anchor': 'bottom'
-
-			// ...(symbolStyle.layout ?? {})
-
-			// "text-variable-anchor": ["top", "bottom", "left", "right"],
-			// "text-radial-offset": 0.5,
-			// "text-justify": "auto",
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	// TODO: text-halo-color text-halo-width text-size
-	return symbolLayer;
-};
-
-// symbolレイヤーの作成
-// TODO: フォント
-const createSymbolLayer = (layer: LayerItem, style: VectorStyle): SymbolLayerSpecification => {
-	const defaultStyle = style.default;
-	const key = style.labels.key as keyof Labels;
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}_label`,
-		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
-		type: 'symbol',
-		paint: {
-			'text-opacity': 1,
-			'icon-opacity': 1,
-			'text-color': '#000000',
-			'text-halo-color': '#e8e8e8',
-			'text-halo-width': 2,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
-		},
-		layout: {
-			'text-field': style.labels.expressions.find((label) => label.key === key)?.value ?? '',
-			'text-size': 12,
-			'text-max-width': 12,
-			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
-
-			// 自動オフセット
-			// 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-			// 'text-radial-offset': 0.5,
-			// 'text-justify': 'auto'
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	// TODO: text-halo-color text-halo-width text-size
-	return symbolLayer;
-};
 
 // ベクターレイヤーの作成
 const createVectorLayer = (
@@ -780,12 +172,7 @@ export const createLayersItems = (
 				id: layerId,
 				source: sourceId,
 				maxzoom: 24,
-				minzoom: metaData.minZoom ?? 1,
-				metadata: {
-					name: metaData.name,
-					location: metaData.location,
-					titles: entry.type === 'vector' ? entry.properties.titles : null
-				}
+				minzoom: metaData.minZoom ?? 1
 			};
 
 			const attributionItem = getAttribution(metaData.attribution);
@@ -915,7 +302,8 @@ export const createLayersItems = (
 						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
 					) {
 						// ラベルを追加
-						const symbolLayer = createSymbolLayer(layer, style);
+						const fields = entry.properties.fields;
+						const symbolLayer = createSymbolLayer(layer, style, fields);
 						symbolLayerItems.push(symbolLayer);
 					}
 
@@ -923,11 +311,11 @@ export const createLayersItems = (
 					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
 						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
 							const type = auxiliaryLayer.type;
-							if (type === 'fill') {
+							if (type === 'fill' || type === 'fill-extrusion') {
 								fillLayerItems.push(auxiliaryLayer);
 							} else if (type === 'line') {
 								lineLayerItems.push(auxiliaryLayer);
-							} else if (type === 'circle') {
+							} else if (type === 'circle' || type === 'heatmap') {
 								circleLayerItems.push(auxiliaryLayer);
 							} else if (type === 'symbol') {
 								symbolLayerItems.push(auxiliaryLayer);

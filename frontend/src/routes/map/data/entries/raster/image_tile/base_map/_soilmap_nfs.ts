@@ -1,8 +1,6 @@
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
-import {
-	DEFAULT_RASTER_BASEMAP_STYLE,
-	DEFAULT_RASTER_BASEMAP_INTERACTION
-} from '$routes/map/data/style';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {

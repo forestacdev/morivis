@@ -1,5 +1,10 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
+import { DEFAULT_POINT_LABEL_STYLE } from '../../_style';
 const entry: PointEntry<TileMetaData> = {
 	id: 'fac_phenology_2020',
 	type: 'vector',
@@ -19,22 +24,38 @@ const entry: PointEntry<TileMetaData> = {
 		tags: ['フェノロジー'],
 		bounds: [136.918075, 35.554408, 136.9268, 35.558411],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
-		// mapImage: `${MAP_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
 		xyzImageTile: { x: 230773, y: 103338, z: 18 }
 	},
 	properties: {
-		keys: ['種名'],
-		iNaturalistNameKey: '種名',
-		titles: [
+		fields: [
 			{
-				conditions: ['種名'],
-				template: '{種名}'
+				key: '種名',
+				label: '種名',
+				type: 'string'
 			},
 			{
-				conditions: [],
-				template: 'フェノロジー調査_2020のポイント'
+				key: '分類群',
+				label: '分類群',
+				type: 'string'
 			}
-		]
+		],
+		attributeView: {
+			popupKeys: ['種名', '分類群', '日付', '日時'],
+			titles: [
+				{
+					conditions: ['種名'],
+					template: '{種名}'
+				},
+				{
+					conditions: [],
+					template: 'フェノロジー調査_2020のポイント'
+				}
+			],
+			relations: {
+				iNaturalistNameKey: '種名'
+			}
+		}
 	},
 	interaction: {
 		clickable: true
@@ -77,34 +98,21 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		labels: {
 			key: '種名',
-			show: false,
-			minZoom: 10,
+			show: true,
+			minZoom: 12,
 			expressions: [
 				{
 					key: '種名',
-					name: '種名',
-					value: '{種名}'
+					name: '種名'
 				},
 				{
-					key: '分類',
-					name: '分類',
-					value: '{分類}'
+					key: '分類群',
+					name: '分類群'
 				}
 			]
 		},
 		default: {
-			circle: {
-				paint: {},
-				layout: {}
-			},
-			symbol: {
-				paint: {},
-				layout: {}
-			},
-			heatmap: {
-				paint: {},
-				layout: {}
-			}
+			symbol: DEFAULT_POINT_LABEL_STYLE
 		}
 	}
 };

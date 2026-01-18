@@ -24,20 +24,27 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		xyzImageTile: { x: 230774, y: 103341, z: 18 }
 	},
 	properties: {
-		keys: ['活用内容', '活用期間', '番号'],
-		titles: [
-			{
-				conditions: ['活用内容', '活用期間'],
-				template: '{活用内容} {活用期間}'
-			},
-			{
-				conditions: ['活用内容'],
-				template: '{活用内容}'
-			},
-			{
-				conditions: [],
-				template: '演習林林班'
-			}
+		attributeView: {
+			popupKeys: ['活用内容', '活用期間', '番号'],
+			titles: [
+				{
+					conditions: ['活用内容', '活用期間'],
+					template: '{活用内容} {活用期間}'
+				},
+				{
+					conditions: ['活用内容'],
+					template: '{活用内容}'
+				},
+				{
+					conditions: [],
+					template: '演習林林班'
+				}
+			]
+		},
+		fields: [
+			{ key: '活用内容', type: 'string' },
+			{ key: '活用期間', type: 'string' },
+			{ key: '番号', type: 'number' }
 		]
 	},
 	interaction: {
@@ -55,7 +62,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#cab2d6'
+						value: '#1f78b4'
 					}
 				}
 			]
@@ -72,13 +79,11 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 			expressions: [
 				{
 					key: '活用内容',
-					name: '活用内容',
-					value: '{活用内容}'
+					name: '活用内容'
 				},
 				{
 					key: '活用期間',
-					name: '活用期間',
-					value: '{活用期間}'
+					name: '活用期間'
 				}
 			]
 		}

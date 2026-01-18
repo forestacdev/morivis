@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { TOKYO_23KU_BBOX } from '$routes/map/data/location_bbox';
+import { TOKYO_23KU_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -27,13 +27,16 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/plateau_lod2_mvt.webp`
 	},
 	properties: {
-		keys: [],
-		titles: [
-			{
-				conditions: [],
-				template: '3D都市モデル 東京都23区 LOD2'
-			}
-		]
+		attributeView: {
+			popupKeys: ['z'],
+			titles: [
+				{
+					conditions: [],
+					template: '3D都市モデル 東京都23区 LOD2'
+				}
+			]
+		},
+		fields: [{ key: 'z', type: 'number', label: '建物の高さ', unit: 'm' }]
 	},
 	interaction: {
 		clickable: false
@@ -102,8 +105,7 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'z',
-					name: '建物の高さ',
-					value: '{z} m'
+					name: '建物の高さ'
 				}
 			]
 		},

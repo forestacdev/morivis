@@ -501,6 +501,421 @@ export const TAXON_IDS = {
 } as const;
 
 // ============================================================
+// 和名の正規化
+// ============================================================
+
+/**
+ * 和名の正規化設定
+ */
+export const NAME_NORMALIZE_CONFIG = {
+	/** これらの文字を含む場合は除外（nullを返す） */
+	excludeIfContains: ['広葉樹', '針葉樹', '草地', 'その他', '岩石'],
+	/** これらの文字で終わる場合は除外（nullを返す） */
+	excludeIfEndsWith: [],
+	/** これらの文字列を除去する（文字列から取り除く） */
+	remove: ['？', '?', '天然', '類']
+} as const;
+
+/**
+ * 和名を正規化する
+ *
+ * 以下の処理を行います：
+ * - NAME_NORMALIZE_CONFIG.excludeIfContains に含まれる文字がある場合は除外（nullを返す）
+ * - NAME_NORMALIZE_CONFIG.excludeIfEndsWith で終わる場合は除外（nullを返す）
+ * - NAME_NORMALIZE_CONFIG.remove の文字列を除去
+ * - 全角/半角スペースを除去
+ * - 括弧（全角・半角）とその中身を除去
+ * - その他の記号を除去
+ *
+ * @param name - 正規化前の和名
+ * @returns 正規化後の和名（除外対象の場合はnull）
+ *
+ * @example
+ * normalizeJapaneseName('スギ')        // 'スギ'
+ * normalizeJapaneseName('スギ類')      // null（「類」で終わるため除外）
+ * normalizeJapaneseName('スギ？')      // 'スギ'（「？」を除去）
+ * normalizeJapaneseName('天然スギ')    // 'スギ'（「天然」を除去）
+ * normalizeJapaneseName('広葉樹林')    // null（「広葉樹」を含むため除外）
+ * normalizeJapaneseName('スギ (杉)')   // 'スギ'
+ * normalizeJapaneseName(' スギ ')      // 'スギ'
+ */
+export const normalizeJapaneseName = (name: string): string | null => {
+	// 空文字チェック
+	if (!name || name.trim() === '') {
+		return null;
+	}
+
+	// 除外ワード（含む）のチェック
+	for (const word of NAME_NORMALIZE_CONFIG.excludeIfContains) {
+		if (name.includes(word)) {
+			return null;
+		}
+	}
+
+	// 除外ワード（末尾）のチェック
+	for (const suffix of NAME_NORMALIZE_CONFIG.excludeIfEndsWith) {
+		if (name.endsWith(suffix)) {
+			return null;
+		}
+	}
+
+	let normalized = name;
+
+	// 指定ワードを除去
+	for (const word of NAME_NORMALIZE_CONFIG.remove) {
+		normalized = normalized.replaceAll(word, '');
+	}
+
+	// 括弧（全角・半角）とその中身を除去
+	normalized = normalized.replace(/[（(][^）)]*[）)]/g, '');
+
+	// 全角/半角スペースを除去
+	normalized = normalized.replace(/[\s\u3000]+/g, '');
+
+	// その他の記号を除去（ひらがな、カタカナ、漢字、アルファベット以外）
+	normalized = normalized.replace(
+		/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}a-zA-Z]/gu,
+		''
+	);
+
+	// 正規化後が空になった場合はnull
+	if (normalized === '') {
+		return null;
+	}
+
+	return normalized;
+};
+
+// ============================================================
+// 分類体系（Taxonomy）関連の関数
+// ============================================================
+
+/**
+ * リンネ式分類体系の階級
+ */
+export type TaxonomicRank =
+	| 'kingdom'
+	| 'phylum'
+	| 'class'
+	| 'order'
+	| 'family'
+	| 'genus'
+	| 'species';
+
+/**
+ * リンネ式分類体系の情報
+ */
+export interface LinnaeanTaxonomy {
+	/** 界（例: 植物界） */
+	kingdom?: { name: string; commonName?: string };
+	/** 門（例: 被子植物門） */
+	phylum?: { name: string; commonName?: string };
+	/** 綱（例: 双子葉植物綱） */
+	class?: { name: string; commonName?: string };
+	/** 目（例: マツ目） */
+	order?: { name: string; commonName?: string };
+	/** 科（例: ヒノキ科） */
+	family?: { name: string; commonName?: string };
+	/** 属（例: スギ属） */
+	genus?: { name: string; commonName?: string };
+	/** 種（例: スギ） */
+	species?: { name: string; commonName?: string };
+}
+
+/**
+ * 分類階級の日本語名マッピング
+ */
+export const RANK_NAMES_JA: Record<TaxonomicRank, string> = {
+	kingdom: '界',
+	phylum: '門',
+	class: '綱',
+	order: '目',
+	family: '科',
+	genus: '属',
+	species: '種'
+};
+
+/**
+ * 和名からリンネ式分類体系を取得
+ *
+ * 生物の和名を指定すると、界・門・綱・目・科・属・種の分類情報を
+ * 日本語名（和名）付きで取得します。
+ *
+ * @param japaneseName - 生物の和名（例: "スギ", "ヒノキ", "メジロ"）
+ * @returns リンネ式分類体系の情報（見つからない場合はnull）
+ *
+ * @example
+ * const taxonomy = await getTaxonomyByJapaneseName('スギ');
+ * if (taxonomy) {
+ *   console.log(taxonomy.kingdom?.commonName); // "植物"
+ *   console.log(taxonomy.family?.commonName);  // "ヒノキ科"
+ *   console.log(taxonomy.genus?.commonName);   // "スギ属"
+ *   console.log(taxonomy.species?.commonName); // "スギ"
+ * }
+ *
+ * @example
+ * // 分類階級を日本語でラベル付け
+ * const taxonomy = await getTaxonomyByJapaneseName('ヒノキ');
+ * if (taxonomy) {
+ *   Object.entries(taxonomy).forEach(([rank, info]) => {
+ *     if (info) {
+ *       console.log(`${RANK_NAMES_JA[rank]}: ${info.commonName || info.name}`);
+ *     }
+ *   });
+ *   // 界: 植物
+ *   // 門: 維管束植物
+ *   // 綱: 球果植物
+ *   // 目: ヒノキ目
+ *   // 科: ヒノキ科
+ *   // 属: ヒノキ属
+ *   // 種: ヒノキ
+ * }
+ */
+export const getTaxonomyByJapaneseName = async (
+	japaneseName: string
+): Promise<LinnaeanTaxonomy | null> => {
+	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(japaneseName);
+		if (!normalizedName) {
+			return null;
+		}
+
+		// 1. 和名で分類群を検索
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
+
+		if (taxa.length === 0) {
+			return null;
+		}
+
+		const taxon = taxa[0];
+
+		// 2. 詳細情報（祖先の分類を含む）を取得
+		const detailedTaxon = await getTaxonById(taxon.id);
+
+		if (!detailedTaxon) {
+			return null;
+		}
+
+		// 3. リンネ式分類体系の階級のみ抽出
+		const linnaeanRanks: TaxonomicRank[] = [
+			'kingdom',
+			'phylum',
+			'class',
+			'order',
+			'family',
+			'genus',
+			'species'
+		];
+
+		const taxonomy: LinnaeanTaxonomy = {};
+
+		// 祖先から分類情報を抽出
+		if (detailedTaxon.ancestors) {
+			for (const ancestor of detailedTaxon.ancestors) {
+				if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
+					taxonomy[ancestor.rank as TaxonomicRank] = {
+						name: ancestor.name,
+						commonName: ancestor.preferred_common_name
+					};
+				}
+			}
+		}
+
+		// 検索した分類群自体も追加（種の場合など）
+		if (linnaeanRanks.includes(detailedTaxon.rank as TaxonomicRank)) {
+			taxonomy[detailedTaxon.rank as TaxonomicRank] = {
+				name: detailedTaxon.name,
+				commonName: detailedTaxon.preferred_common_name
+			};
+		}
+
+		return taxonomy;
+	} catch (error) {
+		console.error('iNaturalist getTaxonomyByJapaneseName Error:', error);
+		return null;
+	}
+};
+
+/**
+ * 分類群IDからリンネ式分類体系を取得
+ *
+ * @param taxonId - 分類群のID
+ * @returns リンネ式分類体系の情報（見つからない場合はnull）
+ *
+ * @example
+ * // スギ（ID: 54436）の分類体系を取得
+ * const taxonomy = await getTaxonomyByTaxonId(54436);
+ */
+export const getTaxonomyByTaxonId = async (taxonId: number): Promise<LinnaeanTaxonomy | null> => {
+	try {
+		const taxon = await getTaxonById(taxonId);
+
+		if (!taxon) {
+			return null;
+		}
+
+		const linnaeanRanks: TaxonomicRank[] = [
+			'kingdom',
+			'phylum',
+			'class',
+			'order',
+			'family',
+			'genus',
+			'species'
+		];
+
+		const taxonomy: LinnaeanTaxonomy = {};
+
+		if (taxon.ancestors) {
+			for (const ancestor of taxon.ancestors) {
+				if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
+					taxonomy[ancestor.rank as TaxonomicRank] = {
+						name: ancestor.name,
+						commonName: ancestor.preferred_common_name
+					};
+				}
+			}
+		}
+
+		if (linnaeanRanks.includes(taxon.rank as TaxonomicRank)) {
+			taxonomy[taxon.rank as TaxonomicRank] = {
+				name: taxon.name,
+				commonName: taxon.preferred_common_name
+			};
+		}
+
+		return taxonomy;
+	} catch (error) {
+		console.error('iNaturalist getTaxonomyByTaxonId Error:', error);
+		return null;
+	}
+};
+
+// ============================================================
+// 生物概要（Summary）関連の関数
+// ============================================================
+
+/**
+ * 生物の概要情報
+ */
+export interface TaxonSummary {
+	/** 分類群ID */
+	id: number;
+	/** 学名 */
+	scientificName: string;
+	/** 和名/一般名 */
+	commonName?: string;
+	/** 分類階級（species, genus, familyなど） */
+	rank: string;
+	/** Wikipedia概要（日本語） */
+	wikipediaSummary?: string;
+	/** WikipediaのURL */
+	wikipediaUrl?: string;
+	/** 観察数 */
+	observationsCount?: number;
+	/** 代表画像URL（medium） */
+	imageUrl?: string;
+	/** 画像の帰属表示 */
+	imageAttribution?: string;
+}
+
+/**
+ * 和名から生物の概要情報を取得
+ *
+ * 生物の和名を指定すると、Wikipedia概要や基本情報を取得します。
+ *
+ * @param japaneseName - 生物の和名（例: "スギ", "ヒノキ", "メジロ"）
+ * @returns 生物の概要情報（見つからない場合はnull）
+ *
+ * @example
+ * const summary = await getSummaryByJapaneseName('スギ');
+ * if (summary) {
+ *   console.log(summary.commonName);       // "スギ"
+ *   console.log(summary.scientificName);   // "Cryptomeria japonica"
+ *   console.log(summary.wikipediaSummary); // "スギ（杉、椙、学名: Cryptomeria japonica）は..."
+ *   console.log(summary.wikipediaUrl);     // "https://ja.wikipedia.org/wiki/スギ"
+ * }
+ */
+export const getSummaryByJapaneseName = async (
+	japaneseName: string
+): Promise<TaxonSummary | null> => {
+	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(japaneseName);
+		if (!normalizedName) {
+			return null;
+		}
+
+		// 1. 和名で分類群を検索
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
+
+		if (taxa.length === 0) {
+			return null;
+		}
+
+		const taxon = taxa[0];
+
+		// 2. 詳細情報（Wikipedia概要を含む）を取得
+		const detailedTaxon = await getTaxonById(taxon.id);
+
+		if (!detailedTaxon) {
+			return null;
+		}
+
+		return {
+			id: detailedTaxon.id,
+			scientificName: detailedTaxon.name,
+			commonName: detailedTaxon.preferred_common_name,
+			rank: detailedTaxon.rank,
+			wikipediaSummary: detailedTaxon.wikipedia_summary,
+			wikipediaUrl: detailedTaxon.wikipedia_url,
+			observationsCount: detailedTaxon.observations_count,
+			imageUrl: detailedTaxon.default_photo?.medium_url,
+			imageAttribution: detailedTaxon.default_photo?.attribution
+		};
+	} catch (error) {
+		console.error('iNaturalist getSummaryByJapaneseName Error:', error);
+		return null;
+	}
+};
+
+/**
+ * 分類群IDから生物の概要情報を取得
+ *
+ * @param taxonId - 分類群のID
+ * @returns 生物の概要情報（見つからない場合はnull）
+ *
+ * @example
+ * // スギ（ID: 54436）の概要を取得
+ * const summary = await getSummaryByTaxonId(54436);
+ */
+export const getSummaryByTaxonId = async (taxonId: number): Promise<TaxonSummary | null> => {
+	try {
+		const taxon = await getTaxonById(taxonId);
+
+		if (!taxon) {
+			return null;
+		}
+
+		return {
+			id: taxon.id,
+			scientificName: taxon.name,
+			commonName: taxon.preferred_common_name,
+			rank: taxon.rank,
+			wikipediaSummary: taxon.wikipedia_summary,
+			wikipediaUrl: taxon.wikipedia_url,
+			observationsCount: taxon.observations_count,
+			imageUrl: taxon.default_photo?.medium_url,
+			imageAttribution: taxon.default_photo?.attribution
+		};
+	} catch (error) {
+		console.error('iNaturalist getSummaryByTaxonId Error:', error);
+		return null;
+	}
+};
+
+// ============================================================
 // 画像取得関連の関数
 // ============================================================
 
@@ -570,6 +985,26 @@ const createImageUrls = (
 	};
 };
 
+/** getImageByName のキャッシュ（LRU方式、最大50件） */
+const IMAGE_CACHE_LIMIT = 50;
+const imageByNameCache = new Map<string, INatImage | null>();
+
+/** キャッシュに追加（制限を超えたら古いものから削除） */
+const setImageCache = (key: string, value: INatImage | null) => {
+	// 既存のキーを削除して末尾に再追加（アクセス順を更新）
+	if (imageByNameCache.has(key)) {
+		imageByNameCache.delete(key);
+	}
+	// 制限を超えていたら最も古いエントリを削除
+	if (imageByNameCache.size >= IMAGE_CACHE_LIMIT) {
+		const oldestKey = imageByNameCache.keys().next().value;
+		if (oldestKey) {
+			imageByNameCache.delete(oldestKey);
+		}
+	}
+	imageByNameCache.set(key, value);
+};
+
 /**
  * 生物名から画像を取得（日本での観察優先）
  *
@@ -611,10 +1046,29 @@ export const getImageByName = async (
 	}
 ): Promise<INatImage | null> => {
 	const size = options?.size || 'medium';
+	const japanOnly = options?.japanOnly !== false;
+	const researchGradeOnly = options?.researchGradeOnly ?? false;
+
+	// キャッシュキーを生成
+	const cacheKey = `${name}:${size}:${japanOnly}:${researchGradeOnly}`;
+
+	// キャッシュに存在すればそれを返す（LRU順序を更新）
+	if (imageByNameCache.has(cacheKey)) {
+		const cached = imageByNameCache.get(cacheKey)!;
+		imageByNameCache.delete(cacheKey);
+		imageByNameCache.set(cacheKey, cached);
+		return cached;
+	}
 
 	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(name);
+		if (!normalizedName) {
+			return null;
+		}
+
 		// 1. まず分類群を検索
-		const taxa = await searchTaxa(name, { limit: 1 });
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
 
 		if (taxa.length === 0) {
 			return null;
@@ -625,7 +1079,7 @@ export const getImageByName = async (
 		// 2. 分類群にデフォルト写真があればそれを使用
 		if (taxon.default_photo?.medium_url) {
 			const urls = createImageUrls(taxon.default_photo.medium_url, size);
-			return {
+			const result: INatImage = {
 				...urls,
 				attribution: taxon.default_photo.attribution,
 				licenseCode: taxon.default_photo.license_code,
@@ -634,14 +1088,15 @@ export const getImageByName = async (
 				commonName: taxon.preferred_common_name,
 				observationsCount: taxon.observations_count
 			};
+			setImageCache(cacheKey, result);
+			return result;
 		}
 
 		// 3. デフォルト写真がなければ、観察記録から取得
-		const japanOnly = options?.japanOnly !== false; // デフォルトtrue
 		const observations = await searchObservations({
 			taxonId: taxon.id,
 			placeId: japanOnly ? PLACE_IDS.JAPAN : undefined,
-			qualityGrade: options?.researchGradeOnly ? 'research' : undefined,
+			qualityGrade: researchGradeOnly ? 'research' : undefined,
 			hasPhotos: true,
 			limit: 1
 		});
@@ -649,7 +1104,7 @@ export const getImageByName = async (
 		if (observations.length > 0 && observations[0].photos?.[0]) {
 			const photo = observations[0].photos[0];
 			const urls = createImageUrls(photo.url, size);
-			return {
+			const result: INatImage = {
 				...urls,
 				attribution: photo.attribution,
 				licenseCode: photo.license_code,
@@ -658,8 +1113,11 @@ export const getImageByName = async (
 				commonName: taxon.preferred_common_name,
 				observationsCount: taxon.observations_count
 			};
+			setImageCache(cacheKey, result);
+			return result;
 		}
 
+		setImageCache(cacheKey, null);
 		return null;
 	} catch (error) {
 		console.error('iNaturalist getImageByName Error:', error);

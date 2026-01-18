@@ -7,7 +7,7 @@
 
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
-	import { geoDataEntries } from '$routes/map/data';
+	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';

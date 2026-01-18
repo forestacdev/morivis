@@ -1,6 +1,6 @@
 import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
 import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: PointEntry<TileMetaData> = {
 	id: 'gsi_elevation_point',
@@ -24,11 +24,25 @@ const entry: PointEntry<TileMetaData> = {
 		xyzImageTile: { x: 0, y: 0, z: 0 }
 	},
 	properties: {
-		keys: ['vt_code', 'vt_text'],
-		titles: [
+		attributeView: {
+			popupKeys: ['vt_code', 'vt_text'],
+			titles: [
+				{
+					conditions: [],
+					template: '標高点'
+				}
+			]
+		},
+		fields: [
 			{
-				conditions: [],
-				template: '標高点'
+				key: 'vt_code',
+				label: '標高点コード',
+				type: 'number'
+			},
+			{
+				key: 'vt_text',
+				label: '標高値(m)',
+				type: 'number'
 			}
 		]
 	},
@@ -77,8 +91,7 @@ const entry: PointEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'vt_text',
-					name: '標高値',
-					value: '{vt_text}'
+					name: '標高値'
 				}
 			]
 		},

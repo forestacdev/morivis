@@ -7,7 +7,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
-	import { geoDataEntries, layerDataFuse } from '$routes/map/data';
+	import { geoDataEntries, layerDataFuse } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type Tag } from '$routes/map/data/types/tags';
 	import type { DialogType } from '$routes/map/types';
@@ -102,7 +102,7 @@
 		});
 
 		if (!import.meta.env.PROD) {
-			console.log('Filtered Data Entries:', results);
+			console.log('debug:Filtered Data Entries:', results);
 		}
 	});
 

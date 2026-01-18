@@ -2,8 +2,8 @@
 	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-	import { createGeoJsonEntry } from '$routes/map/data';
-	import { geometryTypeToEntryType } from '$routes/map/data';
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';

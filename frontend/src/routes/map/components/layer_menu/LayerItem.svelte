@@ -6,7 +6,7 @@
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import { getAttributionName } from '$routes/map/data/attribution';
+	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
@@ -505,7 +505,7 @@
 							<Icon icon="lucide:copy" />
 						</button> -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
+							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -544,7 +544,7 @@
 							<Icon icon="lucide:copy" />
 						</button> -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="mdi:mixer-settings" class="ml-4 h-8 w-8" />
+							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />

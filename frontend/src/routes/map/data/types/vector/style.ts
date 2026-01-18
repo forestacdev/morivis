@@ -204,12 +204,17 @@ export type ExpressionType = 'color' | 'number';
 export interface LabelsExpressions {
 	key: string;
 	name: string;
-	value: DataDrivenPropertyValueSpecification<FormattedSpecification>;
+	expression?: DataDrivenPropertyValueSpecification<FormattedSpecification>;
 }
 
 export interface Labels {
 	key: string;
 	show: boolean;
+	opacity?: number;
+	color?: string;
+	size?: number;
+	haloColor?: string;
+	haloWidth?: number;
 	minZoom?: number;
 	expressions: LabelsExpressions[];
 }
@@ -240,6 +245,7 @@ export interface PointOutLine {
 	show: boolean;
 	color: string;
 	width: number;
+	minzoom?: number;
 }
 
 export interface PointIcon {

@@ -1,6 +1,9 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { KOCHI_BBOX } from '$routes/map/data/location_bbox';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
+import { KOCHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import {
+	TREE_MATCH_COLOR_STYLE,
+	DEFAULT_POLYGON_STYLE
+} from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -25,28 +28,31 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/kochi_tree_species.webp`
 	},
 	properties: {
-		keys: [
-			'解析樹種ID',
-			'解析樹種',
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'森林計測年',
-			'森林計測法',
-			'県code',
-			'市町村code',
-			'ORG_ID'
-		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '高知県の樹種ポリゴン'
-			}
-		]
+		attributeView: {
+			popupKeys: [
+				'解析樹種ID',
+				'解析樹種',
+				'樹種ID',
+				'樹種',
+				'面積_ha',
+				'森林計測年',
+				'森林計測法',
+				'県code',
+				'市町村code',
+				'ORG_ID'
+			],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: '高知県の樹種ポリゴン'
+				}
+			]
+		},
+		fields: []
 	},
 	interaction: {
 		clickable: true
@@ -94,70 +100,48 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
+					name: '解析樹種ID'
 				},
 				{
 					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
+					name: '解析樹種'
 				},
 				{
 					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
+					name: '樹種ID'
 				},
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '面積_ha',
-					name: '面積_ha',
-					value: '{面積_ha}'
+					name: '面積_ha'
 				},
 				{
 					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
+					name: '森林計測年'
 				},
 				{
 					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
+					name: '森林計測法'
 				},
 				{
 					key: '県code',
-					name: '県code',
-					value: '{県code}'
+					name: '県code'
 				},
 				{
 					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
+					name: '市町村code'
 				},
 				{
 					key: 'ORG_ID',
-					name: 'ORG_ID',
-					value: '{ORG_ID}'
+					name: 'ORG_ID'
 				}
 			]
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#FFFFFF',
-					'text-halo-width': 1,
-					'text-opacity': 1
-				},
-				layout: {
-					'text-max-width': 12,
-					'text-size': 12,
-					'text-padding': 10
-				}
-			}
+			...DEFAULT_POLYGON_STYLE
 		}
 	}
 };

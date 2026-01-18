@@ -1,6 +1,14 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { HIROSHIMA_BBOX } from '$routes/map/data/location_bbox';
+import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { TREE_SPECIES_PROPERTIES } from '$routes/map/data/entries/vector/_properties';
+import {
+	DEFAULT_POLYGON_STYLE,
+	TREE_SPECIES_LABELS,
+	TREE_SPECIES_OUTLINE,
+	TREE_SPECIES_STYLE,
+	TREE_SINGLE_COLOR_STYLE
+} from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hiroshima_tree_species',
@@ -15,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '広島県林業課（林野庁加工）',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-hiroshima-maptiles',
 		location: '広島県',
-		tags: [],
+		tags: ['森林', '林相図'],
 		minZoom: 8,
 		maxZoom: 16,
 		sourceLayer: 'tree_species_hiroshima',
@@ -24,46 +32,19 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/hiroshima_tree_species.webp`
 	},
 	properties: {
-		keys: [
-			'樹種ID',
-			'樹種',
-			'面積_ha',
-			'森林計測年',
-			'森林計測法',
-			'県code',
-			'市町村code',
-			'解析樹種ID',
-			'解析樹種'
-		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: '広島県の樹種ポリゴン'
-			}
-		]
+		...TREE_SPECIES_PROPERTIES
 	},
 	interaction: {
 		clickable: true
 	},
 	style: {
-		type: 'fill',
-		opacity: 0.5,
+		...TREE_SPECIES_STYLE,
 		colors: {
 			key: '解析樹種',
 			show: true,
 			expressions: [
 				{
-					type: 'single',
-					key: '単色',
-					name: '単色',
-					mapping: {
-						value: '#33a02c',
-						pattern: null
-					}
+					...TREE_SINGLE_COLOR_STYLE
 				},
 				{
 					type: 'match',
@@ -95,76 +76,13 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		outline: {
-			show: false,
-			color: '#000000',
-			width: 1,
-			lineStyle: 'solid'
+			...TREE_SPECIES_OUTLINE
 		},
 		labels: {
-			key: '樹種',
-			show: false,
-			expressions: [
-				{
-					key: '樹種ID',
-					name: '樹種ID',
-					value: '{樹種ID}'
-				},
-				{
-					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
-				},
-				{
-					key: '面積_ha',
-					name: '面積',
-					value: '{面積_ha} ha'
-				},
-				{
-					key: '森林計測年',
-					name: '森林計測年',
-					value: '{森林計測年}'
-				},
-				{
-					key: '森林計測法',
-					name: '森林計測法',
-					value: '{森林計測法}'
-				},
-				{
-					key: '県code',
-					name: '県code',
-					value: '{県code}'
-				},
-				{
-					key: '市町村code',
-					name: '市町村code',
-					value: '{市町村code}'
-				},
-				{
-					key: '解析樹種ID',
-					name: '解析樹種ID',
-					value: '{解析樹種ID}'
-				},
-				{
-					key: '解析樹種',
-					name: '解析樹種',
-					value: '{解析樹種}'
-				}
-			]
+			...TREE_SPECIES_LABELS
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#FFFFFF',
-					'text-halo-width': 1,
-					'text-opacity': 1
-				},
-				layout: {
-					'text-max-width': 12,
-					'text-size': 12,
-					'text-padding': 10
-				}
-			}
+			...DEFAULT_POLYGON_STYLE
 		}
 	}
 };

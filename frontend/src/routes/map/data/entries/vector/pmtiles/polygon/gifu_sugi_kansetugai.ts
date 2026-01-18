@@ -26,12 +26,19 @@ const entry: PolygonEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/gifu_sugi_kansetugai.webp`
 	},
 	properties: {
-		keys: ['code', '20冬期中の危険日判定', '冠雪害危険日の頻度の目安'],
-		titles: [
-			{
-				conditions: [],
-				template: 'スギ人工林冠雪害危険度'
-			}
+		attributeView: {
+			popupKeys: ['code', '20冬期中の危険日判定', '冠雪害危険日の頻度の目安'],
+			titles: [
+				{
+					conditions: [],
+					template: 'スギ人工林冠雪害危険度'
+				}
+			]
+		},
+		fields: [
+			{ key: 'code', type: 'string', label: '図式コード' },
+			{ key: '20冬期中の危険日判定', type: 'string', label: '20冬期中の危険日判定' },
+			{ key: '冠雪害危険日の頻度の目安', type: 'string', label: '冠雪害危険日の頻度の目安' }
 		]
 	},
 	interaction: {
@@ -77,18 +84,15 @@ const entry: PolygonEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'code',
-					name: 'code',
-					value: '{code}'
+					name: 'code'
 				},
 				{
 					key: '20冬期中の危険日判定',
-					name: '20冬期中の危険日判定',
-					value: '{20冬期中の危険日判定}'
+					name: '20冬期中の危険日判定'
 				},
 				{
 					key: '冠雪害危険日の頻度の目安',
-					name: '冠雪害危険日の頻度の目安',
-					value: '{冠雪害危険日の頻度の目安}'
+					name: '冠雪害危険日の頻度の目安'
 				}
 			]
 		}

@@ -23,32 +23,118 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_owl.webp`
 	},
 	properties: {
-		keys: [
-			'id',
-			'矢高cm',
-			'材積m3',
-			'樹冠半径m',
-			'バイオマスkg',
-			'樹高m',
-			'2cm括約胸高直径cm',
-			'バイオマス（2cm括約）[kg]',
-			'樹種',
-			'2cm括約材積m3',
-			'X',
-			'Y',
-			'幹周cm',
-			'Z',
-			'胸高直径cm',
-			'ID2'
-		],
-		titles: [
+		attributeView: {
+			popupKeys: [
+				'樹種',
+				'樹高m',
+				'胸高直径cm',
+				'材積m3',
+				'幹周cm',
+				'樹冠半径m',
+				'矢高cm',
+				'2cm括約胸高直径cm',
+				'2cm括約材積m3',
+				'バイオマスkg',
+				'バイオマス（2cm括約）[kg]'
+			],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: 'OWL利用研修立木計測データ'
+				}
+			],
+			relations: {
+				iNaturalistNameKey: '樹種'
+			}
+		},
+		fields: [
 			{
-				conditions: ['樹種'],
-				template: '{樹種}'
+				key: 'id',
+				label: 'id'
 			},
 			{
-				conditions: [],
-				template: 'OWL利用研修立木計測データ'
+				key: '矢高cm',
+				label: '矢高',
+				type: 'number',
+				unit: 'cm'
+			},
+			{
+				key: '材積m3',
+				label: '材積',
+				type: 'number',
+				unit: 'm3'
+			},
+			{
+				key: '樹冠半径m',
+				label: '樹冠半径',
+				type: 'number',
+				unit: 'm'
+			},
+			{
+				key: 'バイオマスkg',
+				label: 'バイオマス',
+				type: 'number',
+				unit: 'kg'
+			},
+			{
+				key: '樹高m',
+				label: '樹高',
+				type: 'number',
+				unit: 'm'
+			},
+			{
+				key: '2cm括約胸高直径cm',
+				label: '2cm括約胸高直径',
+				type: 'number',
+				unit: 'cm'
+			},
+			{
+				key: 'バイオマス（2cm括約）[kg]',
+				label: 'バイオマス（2cm括約）',
+				type: 'number',
+				unit: 'kg'
+			},
+			{
+				key: '樹種',
+				label: '樹種'
+			},
+			{
+				key: '2cm括約材積m3',
+				label: '2cm括約材積',
+				type: 'number',
+				unit: 'm3'
+			},
+			{
+				key: 'X',
+				label: 'X'
+			},
+			{
+				key: 'Y',
+				label: 'Y'
+			},
+			{
+				key: '幹周cm',
+				label: '幹周',
+				type: 'number',
+				unit: 'cm'
+			},
+			{
+				key: 'Z',
+				label: 'Z'
+			},
+			{
+				key: '胸高直径cm',
+				label: '胸高直径',
+				type: 'number',
+				unit: 'cm'
+			},
+			{
+				key: 'ID2',
+				label: 'ID2'
 			}
 		]
 	},
@@ -115,65 +201,48 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			show: false,
 			expressions: [
 				{
-					key: 'id',
-					name: 'id',
-					value: '{id}'
-				},
-				{
 					key: '矢高cm',
-					name: '矢高',
-					value: '{矢高cm} cm'
+					name: '矢高'
 				},
 				{
 					key: '材積m3',
-					name: '材積',
-					value: '{材積m3} m3'
+					name: '材積'
 				},
 				{
 					key: '樹冠半径m',
-					name: '樹冠半径',
-					value: '{樹冠半径m} m'
+					name: '樹冠半径'
 				},
 				{
 					key: 'バイオマスkg',
-					name: 'バイオマス',
-					value: '{バイオマスkg}'
+					name: 'バイオマス'
 				},
 				{
 					key: '樹高m',
-					name: '樹高',
-					value: '{樹高m}m'
+					name: '樹高'
 				},
 				{
 					key: '2cm括約胸高直径cm',
-					name: '2cm括約胸高直径cm',
-					value: '{2cm括約胸高直径cm}'
+					name: '2cm括約胸高直径cm'
 				},
 				{
 					key: 'バイオマス（2cm括約）[kg]',
-					name: 'バイオマス',
-					value: '{バイオマス（2cm括約）[kg]} kg'
+					name: 'バイオマス'
 				},
 				{
 					key: '樹種',
-					name: '樹種',
-					value: '{樹種}'
+					name: '樹種'
 				},
 				{
 					key: '2cm括約材積m3',
-					name: '2cm括約材積',
-					value: '{2cm括約材積m3} m3'
+					name: '2cm括約材積'
 				},
-
 				{
 					key: '幹周cm',
-					name: '幹周',
-					value: '{幹周cm} cm'
+					name: '幹周'
 				},
 				{
 					key: '胸高直径cm',
-					name: '胸高直径',
-					value: '{胸高直径cm} cm'
+					name: '胸高直径'
 				}
 			]
 		},

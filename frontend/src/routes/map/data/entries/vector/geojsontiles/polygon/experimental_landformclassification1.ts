@@ -1,5 +1,5 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { TABLE_JOIN_DATA_PATH } from '$routes/constants/index';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
@@ -29,23 +29,25 @@ const entry: PolygonEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification1.webp`
 	},
 	properties: {
-		keys: [],
-		titles: [
-			{
-				conditions: ['name'],
-				template: '{name}'
-			},
-			{
-				conditions: [],
-				template: '地形分類（自然地形）'
-			}
-		],
-		dict: {
-			code: '図式コード',
-			name: '地形分類名',
-			description: '成因など',
-			risk: 'リスク'
+		attributeView: {
+			popupKeys: ['name', 'description', 'risk', 'code'],
+			titles: [
+				{
+					conditions: ['name'],
+					template: '{name}'
+				},
+				{
+					conditions: [],
+					template: '地形分類（自然地形）'
+				}
+			]
 		},
+		fields: [
+			{ key: 'code', type: 'string', label: '図式コード' },
+			{ key: 'name', type: 'string', label: '地形分類名' },
+			{ key: 'description', type: 'string', label: '成因など' },
+			{ key: 'risk', type: 'string', label: 'リスク' }
+		],
 		joinDataUrl: `${TABLE_JOIN_DATA_PATH}/experimental_landformclassification1.json`
 	},
 	interaction: {
@@ -186,23 +188,19 @@ const entry: PolygonEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'code',
-					name: '図式コード',
-					value: '{code}'
+					name: '図式コード'
 				},
 				{
 					key: 'name',
-					name: '地形分類名',
-					value: '{name}'
+					name: '地形分類名'
 				},
 				{
 					key: 'description',
-					name: '成因など',
-					value: '{description}'
+					name: '成因など'
 				},
 				{
 					key: 'risk',
-					name: 'リスク',
-					value: '{risk}'
+					name: 'リスク'
 				}
 			]
 		}

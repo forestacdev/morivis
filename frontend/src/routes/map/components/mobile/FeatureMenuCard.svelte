@@ -513,9 +513,12 @@
 					<span class="text-base text-[22px] font-bold"
 						>{targetLayer &&
 						targetLayer.type === 'vector' &&
-						targetLayer.properties.titles.length &&
+						targetLayer.properties.attributeView.titles.length &&
 						featureMenuData.properties
-							? generatePopupTitle(featureMenuData.properties, targetLayer.properties.titles)
+							? generatePopupTitle(
+									featureMenuData.properties,
+									targetLayer.properties.attributeView.titles
+								)
 							: targetLayer?.metaData.name}</span
 					>
 				{/if}

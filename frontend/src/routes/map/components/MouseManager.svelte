@@ -2,6 +2,7 @@
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
+	import { clickDebug } from './map-debug';
 	import type { ResultData } from '../utils/feature';
 	import { setStreetViewParams } from '../utils/params';
 	import { checkMobile } from '../utils/ui';
@@ -95,42 +96,7 @@
 		if (showDataEntry) return;
 		try {
 			// デバッグ用コード
-			if (import.meta.env.DEV) {
-				const features = mapStore.queryRenderedFeatures(e.point);
-
-				if (features.length) {
-					console.log('debug:Clicked features:', features);
-
-					const prop = features[0].properties;
-
-					// keyを配列で取得
-					const keys = Object.keys(prop);
-					console.log(keys);
-
-					// expressions配列を作成
-					const expressions = keys.map((key) => {
-						return {
-							key: key,
-							name: key,
-							value: `{${key}}`
-						};
-					});
-
-					console.log(expressions);
-
-					if (features[0].layer.id === '@tile_index_layer') {
-						const xyz = {
-							x: prop.x,
-							y: prop.y,
-							z: prop.z
-						};
-
-						console.log(xyz);
-
-						//クリップボードにコピー
-					}
-				}
-			}
+			clickDebug(e);
 
 			const clickLayerIds = [...$clickableVectorIds, '@search_result'];
 			// 存在するレイヤーIDのみをフィルタリング
@@ -293,14 +259,19 @@
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
+			let clickLngLat: [number, number] | null = null;
+
 			if (features.length > 0) {
 				const feature = features[0];
-				const point =
+				clickLngLat =
 					feature.geometry.type === 'Point'
-						? feature.geometry.coordinates
+						? (feature.geometry.coordinates as [number, number])
 						: [e.lngLat.lng, e.lngLat.lat];
 
-				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point as [number, number]);
+				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(
+					feature,
+					clickLngLat as [number, number]
+				);
 
 				featureMenuData = geojsonFeature;
 
@@ -314,7 +285,7 @@
 			const id = feature.id;
 			const featureStateData = FeatureStateManager.get(feature.layer.id);
 
-			markerLngLat = e.lngLat;
+			markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
 			showMarker = true;
 
 			if (hoveredFeatureState) {

@@ -1,6 +1,7 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { DEFAULT_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'national_forest_stand',
@@ -25,48 +26,84 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_stand.webp`
 	},
 	properties: {
-		keys: [
-			'ID',
-			'森林管理局',
-			'森林管理署',
-			'林班主番',
-			'林班枝番',
-			'小班主番',
-			'小班枝番',
-			'局名称',
-			'署名称',
-			'小班名',
-			'林小班名称',
-			'材積',
-			'国有林名',
-			'担当区',
-			'県市町村',
-			'樹種１',
-			'樹立林齢１',
-			'樹種２',
-			'樹立林齢２',
-			'樹種３',
-			'樹立林齢３',
-			'計画区',
-			'林種の細分',
-			'機能類型',
-			'面積',
-			'保安林１',
-			'保安林２',
-			'保安林３',
-			'保安林４',
-			'樹立年度'
+		fields: [
+			{ key: 'ID', type: 'number' },
+			{ key: '森林管理局', type: 'string' },
+			{ key: '森林管理署', type: 'string' },
+			{ key: '林班主番', type: 'string' },
+			{ key: '林班枝番', type: 'string' },
+			{ key: '小班主番', type: 'string' },
+			{ key: '小班枝番', type: 'string' },
+			{ key: '局名称', type: 'string' },
+			{ key: '署名称', type: 'string' },
+			{ key: '小班名', type: 'string' },
+			{ key: '林小班名称', type: 'string' },
+			{ key: '材積', type: 'number', unit: 'm3' },
+			{ key: '国有林名', type: 'string' },
+			{ key: '担当区', type: 'string' },
+			{ key: '県市町村', type: 'string' },
+			{ key: '樹種１', type: 'string' },
+			{ key: '樹立林齢１', type: 'number', unit: '年' },
+			{ key: '樹種２', type: 'string' },
+			{ key: '樹立林齢２', type: 'number', unit: '年' },
+			{ key: '樹種３', type: 'string' },
+			{ key: '樹立林齢３', type: 'number', unit: '年' },
+			{ key: '計画区', type: 'string' },
+			{ key: '林種の細分', type: 'string' },
+			{ key: '機能類型', type: 'string' },
+			{ key: '面積', type: 'number', unit: 'ha' },
+			{ key: '保安林１', type: 'string' },
+			{ key: '保安林２', type: 'string' },
+			{ key: '保安林３', type: 'string' },
+			{ key: '保安林４', type: 'string' },
+			{ key: '樹立年度', type: 'number' }
 		],
-		titles: [
-			{
-				conditions: ['樹種'],
-				template: '国有林 {樹種}'
-			},
-			{
-				conditions: [],
-				template: '国有林'
+		attributeView: {
+			popupKeys: [
+				'国有林名',
+				'林小班名称',
+				'林種の細分',
+				'機能類型',
+				'樹種１',
+				'樹立林齢１',
+				'樹種２',
+				'樹立林齢２',
+				'樹種３',
+				'樹立林齢３',
+				'計画区',
+				'面積',
+				'材積',
+				'保安林１',
+				'保安林２',
+				'保安林３',
+				'保安林４',
+				'樹立年度',
+				'森林管理局',
+				'森林管理署',
+				'林班主番',
+				'林班枝番',
+				'小班主番',
+				'小班枝番',
+				'局名称',
+				'署名称',
+				'小班名',
+				'担当区',
+				'県市町村'
+			],
+			titles: [
+				{
+					conditions: ['樹種１'],
+					template: '{樹種１}林 {樹立林齢１}年生'
+				},
+				{
+					conditions: [],
+					template: '国有林'
+				}
+			],
+			relations: {
+				iNaturalistNameKey: '樹種１'
 			}
-		]
+		}
 	},
 	interaction: {
 		clickable: true
@@ -105,7 +142,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'ブナ',
 							'その他広葉樹',
 							'マダケ',
-
 							'リキダマツ',
 							'天然ヒノキ',
 							'天然スギ',
@@ -117,7 +153,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'エドヒガン',
 							'ダフリカカラマツ',
 							'キハダ',
-
 							'シベリアカラマツ',
 							'イタヤカエデ',
 							'サワラ',
@@ -540,6 +575,77 @@ const entry: VectorEntry<TileMetaData> = {
 					}
 				},
 				{
+					type: 'match',
+					key: '森林管理局',
+					name: '森林管理局ごとの色分け',
+					mapping: {
+						categories: [
+							'北海道森林管理局',
+							'東北森林管理局',
+							'関東森林管理局',
+							'九州森林管理局',
+							'中部森林管理局',
+							'近畿中国森林管理局',
+							'四国森林管理局'
+						],
+						values: ['#33a02c', '#1f78b4', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#b2df8a'],
+						patterns: [null, null, null, null, null, null, null]
+					}
+				},
+				{
+					type: 'match',
+					key: '林種の細分',
+					name: '林種の細分ごとの色分け',
+					mapping: {
+						categories: [
+							'単層林',
+							'単層林（主伐実行後で更新未了林分）',
+							'複層林',
+							'複層林（主伐実行後で更新未了林分）',
+							'天然生林',
+							'天然生林（主伐実行後で更新未了林分）',
+							'育成天然林',
+							'育成天然林（主伐実行後で更新未了林分）',
+							'天然林伐採跡地',
+							'竹林',
+							'人工林伐採跡地',
+							'未立木地',
+							'改植予定地'
+						],
+						values: [
+							'#33a02c',
+							'#33a02c',
+							'#b2df8a',
+							'#b2df8a',
+							'#a6cee3',
+							'#a6cee3',
+							'#1f78b4',
+							'#1f78b4',
+							'#fb9a99',
+							'#e31a1c',
+							'#fdbf6f',
+							'#ffff99',
+							'#cab2d6'
+						],
+						patterns: [
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							null,
+							null,
+							null,
+							null
+						]
+					}
+				},
+
+				{
 					type: 'step',
 					key: '材積',
 					name: '材積による色分け',
@@ -606,7 +712,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: 'auto',
 					name: '小班名・樹種・林齢',
-					value: [
+					expression: [
 						'step',
 						['zoom'],
 						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
@@ -652,83 +758,68 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: 'ID',
-					name: 'ID',
-					value: '{ID}'
+					name: 'ID'
 				},
 				{
 					key: '森林管理局',
-					name: '森林管理局',
-					value: '{森林管理局}'
+					name: '森林管理局'
 				},
 				{
 					key: '森林管理署',
-					name: '森林管理署',
-					value: '{森林管理署}'
+					name: '森林管理署'
 				},
 				{
 					key: '林班主番',
-					name: '林班主番',
-					value: '{林班主番}'
+					name: '林班主番'
 				},
 				{
 					key: '林班枝番',
-					name: '林班枝番',
-					value: '{林班枝番}'
+					name: '林班枝番'
 				},
 				{
 					key: '小班主番',
-					name: '小班主番',
-					value: '{小班主番}'
+					name: '小班主番'
 				},
 				{
 					key: '小班枝番',
-					name: '小班枝番',
-					value: '{小班枝番}'
+					name: '小班枝番'
 				},
 				{
 					key: '局名称',
-					name: '局名称',
-					value: '{局名称}'
+					name: '局名称'
 				},
 				{
 					key: '署名称',
-					name: '署名称',
-					value: '{署名称}'
+					name: '署名称'
 				},
 				{
 					key: '小班名',
-					name: '小班名',
-					value: '{小班名}'
+					name: '小班名'
 				},
 				{
 					key: '林小班名称',
-					name: '林小班名称',
-					value: '{林小班名称}'
+					name: '林小班名称'
 				},
 				{
 					key: '材積',
-					name: '材積',
-					value: '{材積} m3'
+					name: '材積'
 				},
 				{
 					key: '国有林名',
-					name: '国有林名',
-					value: '{国有林名}'
+					name: '国有林名'
 				},
 				{
 					key: '担当区',
-					name: '担当区',
-					value: '{担当区}'
+					name: '担当区'
 				},
 				{
 					key: '県市町村',
-					name: '県市町村',
-					value: '{県市町村}'
+					name: '県市町村'
 				},
 				{
 					key: '樹種１',
 					name: '第一樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種１']],
 						'', // プロパティが存在しない場合
@@ -740,7 +831,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢１',
 					name: '第一樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢１']],
 						'', // プロパティが存在しない場合
@@ -752,7 +843,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹種２',
 					name: '第二樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種２']],
 						'', // プロパティが存在しない場合
@@ -764,7 +855,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢２',
 					name: '第二樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢２']],
 						'', // プロパティが存在しない場合
@@ -776,7 +867,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹種３',
 					name: '第三樹種',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹種３']],
 						'', // プロパティが存在しない場合
@@ -788,7 +879,7 @@ const entry: VectorEntry<TileMetaData> = {
 				{
 					key: '樹立林齢３',
 					name: '第三樹種樹立林齢',
-					value: [
+					expression: [
 						'case',
 						['!', ['has', '樹立林齢３']],
 						'', // プロパティが存在しない場合
@@ -799,52 +890,34 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					key: '計画区',
-					name: '計画区',
-					value: '{計画区}'
+					name: '計画区'
 				},
 				{
 					key: '林種の細分',
-					name: '林種の細分',
-					value: '{林種の細分}'
+					name: '林種の細分'
 				},
 				{
 					key: '機能類型',
-					name: '機能類型',
-					value: '{機能類型}'
+					name: '機能類型'
 				},
 				{
 					key: '面積',
-					name: '面積',
-					value: '{面積} ha'
+					name: '面積'
 				},
 				{
 					key: '保安林１',
-					name: '保安林種別１',
-					value: '{保安林１}'
+					name: '保安林種別１'
 				},
 				{
 					key: '樹立年度',
-					name: '樹立年度',
-					value: '{樹立年度}'
+					name: '樹立年度'
 				}
 			]
-		}
+		},
 
-		// default: {
-		// 	symbol: {
-		// 		paint: {
-		// 			'text-color': '#000000',
-		// 			'text-halo-color': '#FFFFFF',
-		// 			'text-halo-width': 1,
-		// 			'text-opacity': 1
-		// 		},
-		// 		layout: {
-		// 			'text-max-width': 12,
-		// 			'text-size': 12,
-		// 			'text-padding': 10
-		// 		}
-		// 	}
-		// }
+		default: {
+			...DEFAULT_POLYGON_STYLE
+		}
 	}
 	// auxiliaryLayers: {
 	// 	source: {

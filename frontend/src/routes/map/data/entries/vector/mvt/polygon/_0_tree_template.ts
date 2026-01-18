@@ -1,6 +1,6 @@
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/style';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
+import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -24,15 +24,24 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
 	},
 	properties: {
-		keys: [],
-		titles: [
+		attributeView: {
+			popupKeys: ['樹種'],
+			titles: [
+				{
+					conditions: ['樹種'],
+					template: '{樹種}'
+				},
+				{
+					conditions: [],
+					template: ''
+				}
+			]
+		},
+		fields: [
 			{
-				conditions: ['樹種'],
-				template: '{樹種}'
-			},
-			{
-				conditions: [],
-				template: ''
+				key: '樹種',
+				label: '解析樹種',
+				type: 'string'
 			}
 		]
 	},

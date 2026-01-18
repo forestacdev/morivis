@@ -23,8 +23,11 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: { x: 115388, y: 51671, z: 17 }
 	},
 	properties: {
-		keys: ['種類'],
-		titles: []
+		attributeView: {
+			popupKeys: ['種類'],
+			titles: []
+		},
+		fields: [{ key: '種類', label: '種類', type: 'string' }]
 	},
 	interaction: {
 		clickable: false
@@ -84,8 +87,7 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: '種類',
-					name: '道の種類',
-					value: '{種類}'
+					name: '道の種類'
 				}
 			]
 		},

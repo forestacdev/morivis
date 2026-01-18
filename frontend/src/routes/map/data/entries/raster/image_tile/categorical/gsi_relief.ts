@@ -1,5 +1,5 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/location_bbox';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
