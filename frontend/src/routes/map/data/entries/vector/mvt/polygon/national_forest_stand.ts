@@ -26,9 +26,58 @@ const entry: VectorEntry<TileMetaData> = {
 		mapImage: `${MAP_IMAGE_BASE_PATH}/national_forest_stand.webp`
 	},
 	properties: {
+		fields: [
+			{ key: 'ID', type: 'number' },
+			{ key: '森林管理局', type: 'string' },
+			{ key: '森林管理署', type: 'string' },
+			{ key: '林班主番', type: 'string' },
+			{ key: '林班枝番', type: 'string' },
+			{ key: '小班主番', type: 'string' },
+			{ key: '小班枝番', type: 'string' },
+			{ key: '局名称', type: 'string' },
+			{ key: '署名称', type: 'string' },
+			{ key: '小班名', type: 'string' },
+			{ key: '林小班名称', type: 'string' },
+			{ key: '材積', type: 'number', unit: 'm3' },
+			{ key: '国有林名', type: 'string' },
+			{ key: '担当区', type: 'string' },
+			{ key: '県市町村', type: 'string' },
+			{ key: '樹種１', type: 'string' },
+			{ key: '樹立林齢１', type: 'number', unit: '年' },
+			{ key: '樹種２', type: 'string' },
+			{ key: '樹立林齢２', type: 'number', unit: '年' },
+			{ key: '樹種３', type: 'string' },
+			{ key: '樹立林齢３', type: 'number', unit: '年' },
+			{ key: '計画区', type: 'string' },
+			{ key: '林種の細分', type: 'string' },
+			{ key: '機能類型', type: 'string' },
+			{ key: '面積', type: 'number', unit: 'ha' },
+			{ key: '保安林１', type: 'string' },
+			{ key: '保安林２', type: 'string' },
+			{ key: '保安林３', type: 'string' },
+			{ key: '保安林４', type: 'string' },
+			{ key: '樹立年度', type: 'number' }
+		],
 		attributeView: {
 			popupKeys: [
-				'ID',
+				'国有林名',
+				'林小班名称',
+				'林種の細分',
+				'機能類型',
+				'樹種１',
+				'樹立林齢１',
+				'樹種２',
+				'樹立林齢２',
+				'樹種３',
+				'樹立林齢３',
+				'計画区',
+				'面積',
+				'材積',
+				'保安林１',
+				'保安林２',
+				'保安林３',
+				'保安林４',
+				'樹立年度',
 				'森林管理局',
 				'森林管理署',
 				'林班主番',
@@ -38,26 +87,8 @@ const entry: VectorEntry<TileMetaData> = {
 				'局名称',
 				'署名称',
 				'小班名',
-				'林小班名称',
-				'材積',
-				'国有林名',
 				'担当区',
-				'県市町村',
-				'樹種１',
-				'樹立林齢１',
-				'樹種２',
-				'樹立林齢２',
-				'樹種３',
-				'樹立林齢３',
-				'計画区',
-				'林種の細分',
-				'機能類型',
-				'面積',
-				'保安林１',
-				'保安林２',
-				'保安林３',
-				'保安林４',
-				'樹立年度'
+				'県市町村'
 			],
 			titles: [
 				{
@@ -72,8 +103,7 @@ const entry: VectorEntry<TileMetaData> = {
 			relations: {
 				iNaturalistNameKey: '樹種１'
 			}
-		},
-		fields: []
+		}
 	},
 	interaction: {
 		clickable: true
@@ -112,7 +142,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'ブナ',
 							'その他広葉樹',
 							'マダケ',
-
 							'リキダマツ',
 							'天然ヒノキ',
 							'天然スギ',
@@ -124,7 +153,6 @@ const entry: VectorEntry<TileMetaData> = {
 							'エドヒガン',
 							'ダフリカカラマツ',
 							'キハダ',
-
 							'シベリアカラマツ',
 							'イタヤカエデ',
 							'サワラ',
@@ -546,6 +574,77 @@ const entry: VectorEntry<TileMetaData> = {
 						pattern: null
 					}
 				},
+				{
+					type: 'match',
+					key: '森林管理局',
+					name: '森林管理局ごとの色分け',
+					mapping: {
+						categories: [
+							'北海道森林管理局',
+							'東北森林管理局',
+							'関東森林管理局',
+							'九州森林管理局',
+							'中部森林管理局',
+							'近畿中国森林管理局',
+							'四国森林管理局'
+						],
+						values: ['#33a02c', '#1f78b4', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#b2df8a'],
+						patterns: [null, null, null, null, null, null, null]
+					}
+				},
+				{
+					type: 'match',
+					key: '林種の細分',
+					name: '林種の細分ごとの色分け',
+					mapping: {
+						categories: [
+							'単層林',
+							'単層林（主伐実行後で更新未了林分）',
+							'複層林',
+							'複層林（主伐実行後で更新未了林分）',
+							'天然生林',
+							'天然生林（主伐実行後で更新未了林分）',
+							'育成天然林',
+							'育成天然林（主伐実行後で更新未了林分）',
+							'天然林伐採跡地',
+							'竹林',
+							'人工林伐採跡地',
+							'未立木地',
+							'改植予定地'
+						],
+						values: [
+							'#33a02c',
+							'#33a02c',
+							'#b2df8a',
+							'#b2df8a',
+							'#a6cee3',
+							'#a6cee3',
+							'#1f78b4',
+							'#1f78b4',
+							'#fb9a99',
+							'#e31a1c',
+							'#fdbf6f',
+							'#ffff99',
+							'#cab2d6'
+						],
+						patterns: [
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							'tmpoly-line-vertical-down-light-200-black',
+							null,
+							null,
+							null,
+							null,
+							null
+						]
+					}
+				},
+
 				{
 					type: 'step',
 					key: '材積',

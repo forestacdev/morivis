@@ -316,9 +316,7 @@
 									<!-- iNaturalistのライセンス表示 -->
 
 									{#if imageData?.type === 'inaturalist'}
-										<div
-											class="absolute right-2 bottom-2 mt-1 rounded bg-black/50 p-1 text-xs text-gray-400"
-										>
+										<div class="absolute bottom-0 mt-1 bg-black/50 p-1 text-xs text-gray-300">
 											{#if imageData.data.attribution}
 												<span>{imageData.data.attribution}</span>
 											{/if}
