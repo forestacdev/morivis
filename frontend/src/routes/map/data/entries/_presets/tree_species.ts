@@ -94,9 +94,7 @@ export interface TreeSpeciesEntryConfig {
 	opacity?: 0.3 | 0.5 | 0.7 | 1;
 }
 
-export function createTreeSpeciesEntry(
-	config: TreeSpeciesEntryConfig
-): PolygonEntry<TileMetaData> {
+export function createTreeSpeciesEntry(config: TreeSpeciesEntryConfig): PolygonEntry<TileMetaData> {
 	const {
 		id,
 		prefecture,

@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
+	import { delay } from 'es-toolkit';
 	import { fade, fly } from 'svelte/transition';
 
 	import {
@@ -13,13 +14,12 @@
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import { propData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getFullName } from '$routes/map/utils/city_code';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
-	import { delay } from 'es-toolkit';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;

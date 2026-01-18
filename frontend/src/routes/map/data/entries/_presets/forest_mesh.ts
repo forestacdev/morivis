@@ -95,9 +95,7 @@ export interface ForestMeshEntryConfig {
 	opacity?: 0.3 | 0.5 | 0.7 | 1;
 }
 
-export function createForestMeshEntry(
-	config: ForestMeshEntryConfig
-): PolygonEntry<TileMetaData> {
+export function createForestMeshEntry(config: ForestMeshEntryConfig): PolygonEntry<TileMetaData> {
 	const {
 		id,
 		prefecture,

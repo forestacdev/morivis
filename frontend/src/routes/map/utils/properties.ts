@@ -1,6 +1,6 @@
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 
-import type { Title } from '$routes/map/data/types/vector';
+import type { Title } from '$routes/map/data/types/vector/properties';
 
 /** ポップアップ用のタイトルを生成 */
 export const generatePopupTitle = (prop: { [key: string]: any }, titles: Title[]): string => {

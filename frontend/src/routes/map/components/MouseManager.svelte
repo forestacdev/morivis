@@ -2,10 +2,10 @@
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
+	import { clickDebug } from './map-debug';
 	import type { ResultData } from '../utils/feature';
 	import { setStreetViewParams } from '../utils/params';
 	import { checkMobile } from '../utils/ui';
-	import { clickDebug } from './map-debug';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';

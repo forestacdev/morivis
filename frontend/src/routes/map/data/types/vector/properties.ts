@@ -110,7 +110,9 @@ export interface DateFormatSpec {
 }
 
 /** デフォルトの日付フォーマット設定 */
-const DEFAULT_DATE_FORMAT: Required<Pick<DateFormatSpec, 'inputPatterns' | 'displayPattern' | 'invalidText'>> = {
+const DEFAULT_DATE_FORMAT: Required<
+	Pick<DateFormatSpec, 'inputPatterns' | 'displayPattern' | 'invalidText'>
+> = {
 	inputPatterns: ['YYYY-MM-DD'],
 	displayPattern: 'YYYY年M月D日',
 	invalidText: ''
@@ -178,11 +180,11 @@ const PATTERN_CONFIG_MAP: Record<string, PatternConfig> = {
 		regex: /^(\d{4})(\d{2})(\d{2})$/,
 		groups: { year: 1, month: 2, day: 3 }
 	},
-	'YYYY年M月D日': {
+	YYYY年M月D日: {
 		regex: /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
 		groups: { year: 1, month: 2, day: 3 }
 	},
-	'YYYY年MM月DD日': {
+	YYYY年MM月DD日: {
 		regex: /^(\d{4})年(\d{2})月(\d{2})日$/,
 		groups: { year: 1, month: 2, day: 3 }
 	},
@@ -194,7 +196,7 @@ const PATTERN_CONFIG_MAP: Record<string, PatternConfig> = {
 		regex: /^(\d{4})\/(\d{1,2})$/,
 		groups: { year: 1, month: 2 }
 	},
-	'YYYY年M月': {
+	YYYY年M月: {
 		regex: /^(\d{4})年(\d{1,2})月$/,
 		groups: { year: 1, month: 2 }
 	},

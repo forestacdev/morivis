@@ -2,11 +2,10 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import { checkPc } from '$routes/map/utils/ui';
-	import { showNotification } from '$routes/stores/notification';
-
 	import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 	import type { FieldDef } from '$routes/map/data/types/vector/properties';
+	import { checkPc } from '$routes/map/utils/ui';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		key: string;

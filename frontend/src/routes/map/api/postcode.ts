@@ -40,7 +40,10 @@ export async function getPostcodeInfo(postcode: string): Promise<PostcodeInfo | 
  * const pref = await getPostcodeText('1600022', 1);
  * // '東京都'
  */
-export async function getPostcodeText(postcode: string, part?: AddressPart): Promise<string | null> {
+export async function getPostcodeText(
+	postcode: string,
+	part?: AddressPart
+): Promise<string | null> {
 	const normalized = postcode.replace(/-/g, '');
 	const url = part
 		? `${BASE_URL}/postcodes/${normalized}.txt?part=${part}`

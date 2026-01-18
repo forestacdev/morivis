@@ -45,7 +45,9 @@ export interface BasemapEntryConfig {
 	xyzImageTile?: XYZPresetKey;
 }
 
-export function createBasemapEntry(config: BasemapEntryConfig): RasterImageEntry<RasterBaseMapStyle> {
+export function createBasemapEntry(
+	config: BasemapEntryConfig
+): RasterImageEntry<RasterBaseMapStyle> {
 	const {
 		id,
 		name,
