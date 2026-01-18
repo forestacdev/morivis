@@ -303,41 +303,42 @@
 						</div>
 					{:else}
 						<!-- 共通画像表示 -->
-						<div class="w-full">
-							<div class="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-800">
-								{#if imageData}
+						{#if imageData}
+							<div class="w-full">
+								<div class="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-800">
 									<img
 										in:fade
 										class="absolute inset-0 h-full w-full object-cover"
 										alt="画像"
 										src={imageData.type === 'static' ? imageData.url : imageData.data.url}
 									/>
-								{/if}
-								<!-- iNaturalistのライセンス表示 -->
 
-								{#if imageData?.type === 'inaturalist'}
-									<div
-										class="absolute right-2 bottom-2 mt-1 rounded bg-black/50 p-1 text-xs text-gray-400"
-									>
-										{#if imageData.data.attribution}
-											<span>{imageData.data.attribution}</span>
-										{/if}
-										{#if imageData.data.licenseCode}
-											<span class="ml-1">({imageData.data.licenseCode})</span>
-										{/if}
-										<span class="ml-1">via</span>
-										<a
-											href="https://www.inaturalist.org/taxa/{imageData.data.taxonId}"
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-accent hover:underline"
+									<!-- iNaturalistのライセンス表示 -->
+
+									{#if imageData?.type === 'inaturalist'}
+										<div
+											class="absolute right-2 bottom-2 mt-1 rounded bg-black/50 p-1 text-xs text-gray-400"
 										>
-											iNaturalist
-										</a>
-									</div>
-								{/if}
+											{#if imageData.data.attribution}
+												<span>{imageData.data.attribution}</span>
+											{/if}
+											{#if imageData.data.licenseCode}
+												<span class="ml-1">({imageData.data.licenseCode})</span>
+											{/if}
+											<span class="ml-1">via</span>
+											<a
+												href="https://www.inaturalist.org/taxa/{imageData.data.taxonId}"
+												target="_blank"
+												rel="noopener noreferrer"
+												class="text-accent hover:underline"
+											>
+												iNaturalist
+											</a>
+										</div>
+									{/if}
+								</div>
 							</div>
-						</div>
+						{/if}
 					{/if}
 
 					<div

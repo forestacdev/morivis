@@ -501,6 +501,92 @@ export const TAXON_IDS = {
 } as const;
 
 // ============================================================
+// 和名の正規化
+// ============================================================
+
+/**
+ * 和名の正規化設定
+ */
+export const NAME_NORMALIZE_CONFIG = {
+	/** これらの文字を含む場合は除外（nullを返す） */
+	excludeIfContains: ['広葉樹', '針葉樹', '草地', 'その他', '岩石'],
+	/** これらの文字で終わる場合は除外（nullを返す） */
+	excludeIfEndsWith: [],
+	/** これらの文字列を除去する（文字列から取り除く） */
+	remove: ['？', '?', '天然', '類']
+} as const;
+
+/**
+ * 和名を正規化する
+ *
+ * 以下の処理を行います：
+ * - NAME_NORMALIZE_CONFIG.excludeIfContains に含まれる文字がある場合は除外（nullを返す）
+ * - NAME_NORMALIZE_CONFIG.excludeIfEndsWith で終わる場合は除外（nullを返す）
+ * - NAME_NORMALIZE_CONFIG.remove の文字列を除去
+ * - 全角/半角スペースを除去
+ * - 括弧（全角・半角）とその中身を除去
+ * - その他の記号を除去
+ *
+ * @param name - 正規化前の和名
+ * @returns 正規化後の和名（除外対象の場合はnull）
+ *
+ * @example
+ * normalizeJapaneseName('スギ')        // 'スギ'
+ * normalizeJapaneseName('スギ類')      // null（「類」で終わるため除外）
+ * normalizeJapaneseName('スギ？')      // 'スギ'（「？」を除去）
+ * normalizeJapaneseName('天然スギ')    // 'スギ'（「天然」を除去）
+ * normalizeJapaneseName('広葉樹林')    // null（「広葉樹」を含むため除外）
+ * normalizeJapaneseName('スギ (杉)')   // 'スギ'
+ * normalizeJapaneseName(' スギ ')      // 'スギ'
+ */
+export const normalizeJapaneseName = (name: string): string | null => {
+	// 空文字チェック
+	if (!name || name.trim() === '') {
+		return null;
+	}
+
+	// 除外ワード（含む）のチェック
+	for (const word of NAME_NORMALIZE_CONFIG.excludeIfContains) {
+		if (name.includes(word)) {
+			return null;
+		}
+	}
+
+	// 除外ワード（末尾）のチェック
+	for (const suffix of NAME_NORMALIZE_CONFIG.excludeIfEndsWith) {
+		if (name.endsWith(suffix)) {
+			return null;
+		}
+	}
+
+	let normalized = name;
+
+	// 指定ワードを除去
+	for (const word of NAME_NORMALIZE_CONFIG.remove) {
+		normalized = normalized.replaceAll(word, '');
+	}
+
+	// 括弧（全角・半角）とその中身を除去
+	normalized = normalized.replace(/[（(][^）)]*[）)]/g, '');
+
+	// 全角/半角スペースを除去
+	normalized = normalized.replace(/[\s\u3000]+/g, '');
+
+	// その他の記号を除去（ひらがな、カタカナ、漢字、アルファベット以外）
+	normalized = normalized.replace(
+		/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}a-zA-Z]/gu,
+		''
+	);
+
+	// 正規化後が空になった場合はnull
+	if (normalized === '') {
+		return null;
+	}
+
+	return normalized;
+};
+
+// ============================================================
 // 分類体系（Taxonomy）関連の関数
 // ============================================================
 
@@ -589,8 +675,14 @@ export const getTaxonomyByJapaneseName = async (
 	japaneseName: string
 ): Promise<LinnaeanTaxonomy | null> => {
 	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(japaneseName);
+		if (!normalizedName) {
+			return null;
+		}
+
 		// 1. 和名で分類群を検索
-		const taxa = await searchTaxa(japaneseName, { limit: 1 });
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
 
 		if (taxa.length === 0) {
 			return null;
@@ -749,8 +841,14 @@ export const getSummaryByJapaneseName = async (
 	japaneseName: string
 ): Promise<TaxonSummary | null> => {
 	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(japaneseName);
+		if (!normalizedName) {
+			return null;
+		}
+
 		// 1. 和名で分類群を検索
-		const taxa = await searchTaxa(japaneseName, { limit: 1 });
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
 
 		if (taxa.length === 0) {
 			return null;
@@ -930,8 +1028,14 @@ export const getImageByName = async (
 	const size = options?.size || 'medium';
 
 	try {
+		// 0. 和名を正規化
+		const normalizedName = normalizeJapaneseName(name);
+		if (!normalizedName) {
+			return null;
+		}
+
 		// 1. まず分類群を検索
-		const taxa = await searchTaxa(name, { limit: 1 });
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
 
 		if (taxa.length === 0) {
 			return null;
