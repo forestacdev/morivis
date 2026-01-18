@@ -437,8 +437,8 @@
 							onclick={edit}
 							class="c-btn-confirm absolute left-3 top-3 z-10 flex items-center justify-center gap-2 px-3"
 						>
-							<Icon icon="mdi:mixer-settings" class="h-6 w-6" />
-							<span class="select-none">カスタマイズ</span>
+							<Icon icon="streamline:paint-palette-solid" class="h-6 w-6" />
+							<span class="select-none">スタイルの変更</span>
 						</button>
 					{/if}
 				</div>

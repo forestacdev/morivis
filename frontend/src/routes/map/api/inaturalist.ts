@@ -985,6 +985,26 @@ const createImageUrls = (
 	};
 };
 
+/** getImageByName のキャッシュ（LRU方式、最大50件） */
+const IMAGE_CACHE_LIMIT = 50;
+const imageByNameCache = new Map<string, INatImage | null>();
+
+/** キャッシュに追加（制限を超えたら古いものから削除） */
+const setImageCache = (key: string, value: INatImage | null) => {
+	// 既存のキーを削除して末尾に再追加（アクセス順を更新）
+	if (imageByNameCache.has(key)) {
+		imageByNameCache.delete(key);
+	}
+	// 制限を超えていたら最も古いエントリを削除
+	if (imageByNameCache.size >= IMAGE_CACHE_LIMIT) {
+		const oldestKey = imageByNameCache.keys().next().value;
+		if (oldestKey) {
+			imageByNameCache.delete(oldestKey);
+		}
+	}
+	imageByNameCache.set(key, value);
+};
+
 /**
  * 生物名から画像を取得（日本での観察優先）
  *
@@ -1026,6 +1046,19 @@ export const getImageByName = async (
 	}
 ): Promise<INatImage | null> => {
 	const size = options?.size || 'medium';
+	const japanOnly = options?.japanOnly !== false;
+	const researchGradeOnly = options?.researchGradeOnly ?? false;
+
+	// キャッシュキーを生成
+	const cacheKey = `${name}:${size}:${japanOnly}:${researchGradeOnly}`;
+
+	// キャッシュに存在すればそれを返す（LRU順序を更新）
+	if (imageByNameCache.has(cacheKey)) {
+		const cached = imageByNameCache.get(cacheKey)!;
+		imageByNameCache.delete(cacheKey);
+		imageByNameCache.set(cacheKey, cached);
+		return cached;
+	}
 
 	try {
 		// 0. 和名を正規化
@@ -1046,7 +1079,7 @@ export const getImageByName = async (
 		// 2. 分類群にデフォルト写真があればそれを使用
 		if (taxon.default_photo?.medium_url) {
 			const urls = createImageUrls(taxon.default_photo.medium_url, size);
-			return {
+			const result: INatImage = {
 				...urls,
 				attribution: taxon.default_photo.attribution,
 				licenseCode: taxon.default_photo.license_code,
@@ -1055,14 +1088,15 @@ export const getImageByName = async (
 				commonName: taxon.preferred_common_name,
 				observationsCount: taxon.observations_count
 			};
+			setImageCache(cacheKey, result);
+			return result;
 		}
 
 		// 3. デフォルト写真がなければ、観察記録から取得
-		const japanOnly = options?.japanOnly !== false; // デフォルトtrue
 		const observations = await searchObservations({
 			taxonId: taxon.id,
 			placeId: japanOnly ? PLACE_IDS.JAPAN : undefined,
-			qualityGrade: options?.researchGradeOnly ? 'research' : undefined,
+			qualityGrade: researchGradeOnly ? 'research' : undefined,
 			hasPhotos: true,
 			limit: 1
 		});
@@ -1070,7 +1104,7 @@ export const getImageByName = async (
 		if (observations.length > 0 && observations[0].photos?.[0]) {
 			const photo = observations[0].photos[0];
 			const urls = createImageUrls(photo.url, size);
-			return {
+			const result: INatImage = {
 				...urls,
 				attribution: photo.attribution,
 				licenseCode: photo.license_code,
@@ -1079,8 +1113,11 @@ export const getImageByName = async (
 				commonName: taxon.preferred_common_name,
 				observationsCount: taxon.observations_count
 			};
+			setImageCache(cacheKey, result);
+			return result;
 		}
 
+		setImageCache(cacheKey, null);
 		return null;
 	} catch (error) {
 		console.error('iNaturalist getImageByName Error:', error);
