@@ -25,7 +25,7 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://hiroshima-dobox.jp/datasets/1520',
 		location: '広島県',
-		minZoom: 13,
+		minZoom: 10,
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
@@ -281,39 +281,33 @@ const entry: VectorEntry<TileMetaData> = {
 		// 		layout: {}
 		// 	}
 		// }
-	},
-	auxiliaryLayers: {
-		source: {
-			tree_point_hiroshima_aux: {
-				type: 'vector',
-				url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
-			}
-		},
-		layers: [
-			{
-				id: 'tree_point_hiroshima_aux_layer_sugi',
-				type: 'heatmap',
-				source: 'tree_point_hiroshima_aux',
-				'source-layer': 'tree_point_hiroshima',
-				maxzoom: 13,
-				minzoom: 6,
-				paint: {
-					'heatmap-opacity': 0.6,
-					'heatmap-color': [
-						'interpolate',
-						['linear'],
-						['heatmap-density'],
-						0,
-						'rgba(255,255,255,0)',
-
-						1,
-						'#31a354'
-					],
-					'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
-				}
-			}
-		]
 	}
+	// auxiliaryLayers: {
+	// 	layers: [
+	// 		{
+	// 			id: 'tree_point_hiroshima_aux_layer',
+	// 			type: 'heatmap',
+	// 			source: 'hiroshima_tree_point_source',
+	// 			'source-layer': 'tree_point_hiroshima',
+	// 			maxzoom: 13,
+	// 			minzoom: 6,
+	// 			paint: {
+	// 				'heatmap-opacity': 0.6,
+	// 				'heatmap-color': [
+	// 					'interpolate',
+	// 					['linear'],
+	// 					['heatmap-density'],
+	// 					0,
+	// 					'rgba(255,255,255,0)',
+
+	// 					1,
+	// 					'#31a354'
+	// 				],
+	// 				'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
+	// 			}
+	// 		}
+	// 	]
+	// }
 };
 
 export default entry;

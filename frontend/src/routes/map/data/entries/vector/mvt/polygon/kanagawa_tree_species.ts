@@ -138,6 +138,7 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: '解析樹種',
 			show: false,
+			minZoom: 10,
 			expressions: [
 				{
 					key: '面積_ha',

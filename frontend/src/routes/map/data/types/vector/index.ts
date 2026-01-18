@@ -31,7 +31,7 @@ export type GeoJsonMetaData = BaseMetaData;
 
 export interface AuxiliaryLayersData {
 	// MapLibreのソース定義をそのまま使用
-	source: {
+	sources?: {
 		[key: string]: SourceSpecification; // MapLibre SourceSpecification
 	};
 	// MapLibreのレイヤー定義をそのまま使用

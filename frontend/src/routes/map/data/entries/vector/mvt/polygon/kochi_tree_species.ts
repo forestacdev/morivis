@@ -97,6 +97,7 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: '樹種',
 			show: true,
+			minZoom: 10,
 			expressions: [
 				{
 					key: '解析樹種ID',

@@ -262,10 +262,10 @@ export const createSourcesItems = async (
 					break;
 			}
 
-			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
-				const { source } = entry.auxiliaryLayers;
+			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers && entry.auxiliaryLayers.sources) {
+				const { sources } = entry.auxiliaryLayers;
 
-				Object.entries(source).forEach(([auxiliarySourceId, auxiliarySource]) => {
+				Object.entries(sources).forEach(([auxiliarySourceId, auxiliarySource]) => {
 					const sourceKey = `${auxiliarySourceId}`;
 					items[sourceKey] = auxiliarySource as SourceSpecification;
 				});
