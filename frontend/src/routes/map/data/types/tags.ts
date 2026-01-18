@@ -54,7 +54,8 @@ export const TAG_LIST = [
 	'CAD',
 	'点群',
 	'3Dモデル',
-	'鳥類'
+	'鳥類',
+	'登記所備付地図'
 ] as const;
 
 // 配列から型を生成

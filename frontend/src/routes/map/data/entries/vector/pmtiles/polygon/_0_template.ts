@@ -25,13 +25,16 @@ const entry: VectorEntry<TileMetaData> = {
 		xyzImageTile: { x: 0, y: 0, z: 0 }
 	},
 	properties: {
-		keys: [],
-		titles: [
-			{
-				conditions: ['hoge'],
-				template: '{hoge}'
-			}
-		]
+		attributeView: {
+			popupKeys: [],
+			titles: [
+				{
+					conditions: ['hoge'],
+					template: '{hoge}'
+				}
+			]
+		},
+		fields: []
 	},
 	interaction: {
 		clickable: true
@@ -65,8 +68,7 @@ const entry: VectorEntry<TileMetaData> = {
 			expressions: [
 				{
 					key: 'hoge',
-					name: 'hoge',
-					value: '{hoge}'
+					name: 'hoge'
 				}
 			]
 		}

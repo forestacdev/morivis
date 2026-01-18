@@ -244,7 +244,7 @@
 			x: -100,
 			opacity: 0
 		}}
-		class="bg-main w-side-menu max absolute top-0 left-0 z-20 flex h-full flex-col max-lg:hidden"
+		class="bg-main w-side-menu max absolute left-0 top-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex w-full justify-between p-3 px-4">
 			<button
@@ -255,7 +255,7 @@
 			</button>
 		</div>
 
-		<div class="c-scroll h-full overflow-x-hidden overflow-y-auto pl-2">
+		<div class="c-scroll h-full overflow-y-auto overflow-x-hidden pl-2">
 			{#await imagePromise}
 				<!-- ローディング中 -->
 				<div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
@@ -418,13 +418,13 @@
 
 					<!-- 通常の地物の属性情報 -->
 					{#if !propId}
-						<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
+						<div class="w-hull bg-base mb-8 mt-4 h-[1px] rounded-full opacity-60"></div>
 						<div class="mb-56 flex h-full w-full flex-col gap-3">
 							{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
 								{#each Object.entries(filterByPopupKeys(featureMenuData.properties, targetLayer.properties.attributeView.popupKeys)) as [key, value]}
 									{#if key !== '_prop_id' && value && imageKey !== key}
 										{@const field = fields.find((f) => f.key === key)}
-										<!-- TODO:辞書による属性名書き換え -->
+										<!-- 辞書による属性名書き換え -->
 										<AttributeItem {key} {value} {field} />
 									{/if}
 								{/each}
@@ -435,7 +435,7 @@
 					{#if featureMenuData.layerId !== 'fac_poi'}
 						<button
 							onclick={edit}
-							class="c-btn-confirm absolute top-3 left-3 z-10 flex items-center justify-center gap-2 px-3"
+							class="c-btn-confirm absolute left-3 top-3 z-10 flex items-center justify-center gap-2 px-3"
 						>
 							<Icon icon="mdi:mixer-settings" class="h-6 w-6" />
 							<span class="select-none">カスタマイズ</span>

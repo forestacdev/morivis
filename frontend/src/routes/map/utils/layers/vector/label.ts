@@ -158,7 +158,7 @@ export const createPointIconLayer = (
 	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
 	const showLabel = style.labels.show;
-	const textField = style.labels.expressions.find((label) => label.key === key)?.value ?? '';
+	const textField = style.labels.expressions.find((label) => label.key === key)?.expression ?? '';
 	const labelPaint = {
 		'text-opacity': 1,
 		'text-color': '#000000',

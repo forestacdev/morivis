@@ -79,6 +79,13 @@
 		return null;
 	});
 
+	let fields = $derived.by(() => {
+		if (targetLayer && targetLayer.type === 'vector') {
+			return targetLayer.properties.fields;
+		}
+		return [];
+	});
+
 	let propId = $derived.by(() => {
 		if (featureMenuData && featureMenuData.properties) {
 			return featureMenuData.properties._prop_id;
@@ -217,7 +224,9 @@
 				{#if featureMenuData.properties}
 					{#each Object.entries(featureMenuData.properties) as [key, value]}
 						{#if key !== '_prop_id' && value}
-							<AttributeItem {key} {value} />
+							<!-- 辞書による属性名書き換え -->
+							{@const field = fields.find((f) => f.key === key)}
+							<AttributeItem {key} {value} {field} />
 						{/if}
 					{/each}
 				{/if}
