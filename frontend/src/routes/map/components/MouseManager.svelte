@@ -259,14 +259,19 @@
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
+			let clickLngLat: [number, number] | null = null;
+
 			if (features.length > 0) {
 				const feature = features[0];
-				const point =
+				clickLngLat =
 					feature.geometry.type === 'Point'
-						? feature.geometry.coordinates
+						? (feature.geometry.coordinates as [number, number])
 						: [e.lngLat.lng, e.lngLat.lat];
 
-				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(feature, point as [number, number]);
+				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(
+					feature,
+					clickLngLat as [number, number]
+				);
 
 				featureMenuData = geojsonFeature;
 
@@ -280,7 +285,7 @@
 			const id = feature.id;
 			const featureStateData = FeatureStateManager.get(feature.layer.id);
 
-			markerLngLat = e.lngLat;
+			markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
 			showMarker = true;
 
 			if (hoveredFeatureState) {
