@@ -1,5 +1,6 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
+import { DEFAULT_POINT_LABEL_STYLE } from '../../_style';
 const entry: PointEntry<TileMetaData> = {
 	id: 'fac_phenology_2020',
 	type: 'vector',
@@ -93,8 +94,8 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		labels: {
 			key: '種名',
-			show: false,
-			minZoom: 10,
+			show: true,
+			minZoom: 12,
 			expressions: [
 				{
 					key: '種名',
@@ -107,18 +108,7 @@ const entry: PointEntry<TileMetaData> = {
 			]
 		},
 		default: {
-			circle: {
-				paint: {},
-				layout: {}
-			},
-			symbol: {
-				paint: {},
-				layout: {}
-			},
-			heatmap: {
-				paint: {},
-				layout: {}
-			}
+			symbol: DEFAULT_POINT_LABEL_STYLE
 		}
 	}
 };

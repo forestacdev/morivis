@@ -386,7 +386,7 @@
 	{/if}
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height] c-rounded translate-z-0 relative flex cursor-move select-none justify-center text-clip text-nowrap p-2 text-left duration-200
+		class="transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex translate-z-0 cursor-move justify-center p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -413,7 +413,7 @@
 		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
 			<div
 				transition:fade={{ duration: 100 }}
-				class="absolute right-4 top-2 grid place-items-center opacity-10"
+				class="absolute top-2 right-4 grid place-items-center opacity-10"
 			>
 				{#if layerEntry.metaData.location === '森林文化アカデミー'}
 					<div class="grid place-items-center [&_path]:fill-white">
@@ -449,7 +449,7 @@
 					: ''}"
 			>
 				<div
-					class="scale-200 h-full w-full {layerEntry.style.visible
+					class="h-full w-full scale-200 {layerEntry.style.visible
 						? ''
 						: 'brightness-75 grayscale'}"
 				>
@@ -462,7 +462,7 @@
 				{#if !$isStyleEdit}
 					<!-- レイヤー名 -->
 					<div class="flex h-full w-full flex-col gap-[2px]">
-						<span class="truncate pl-1 pt-2 text-base">{layerEntry.metaData.name}</span>
+						<span class="truncate pt-2 pl-1 text-base">{layerEntry.metaData.name}</span>
 						<div class="mt-auto flex pl-1">
 							<!-- <Icon icon="lets-icons:info-alt-fill" class="h-4 w-4 text-gray-500" /> -->
 							<span class="truncate text-xs text-gray-400"
@@ -504,7 +504,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
@@ -543,7 +543,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						<button onclick={editLayer} class="ml-auto mr-4 cursor-pointer">
+						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">

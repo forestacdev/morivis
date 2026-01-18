@@ -207,7 +207,7 @@ export const createPointIconLayer = (
 };
 
 // symbolレイヤーの作成
-// TODO: フォント
+
 export const createSymbolLayer = (
 	layer: LayerItem,
 	style: VectorStyle,

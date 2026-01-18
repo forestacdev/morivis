@@ -1,3 +1,4 @@
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 import type {
 	PolygonStyle,
 	LineStringStyle,
@@ -371,6 +372,21 @@ export const DEFAULT_POLYGON_LABEL_STYLE: PolygonDefaultStyle['symbol'] = {
 		'text-opacity': 0.9
 	},
 	layout: {}
+};
+
+export const DEFAULT_POINT_LABEL_STYLE: PointDefaultStyle['symbol'] = {
+	paint: {
+		'text-color': '#000000',
+		'text-halo-color': '#e8e8e8',
+		'text-halo-width': 2,
+		'text-halo-blur': 1
+	},
+	layout: {
+		'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+		'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+		'text-radial-offset': 1.0,
+		'text-justify': 'auto'
+	}
 };
 
 export const DEFAULT_POLYGON_STYLE: PolygonDefaultStyle = {

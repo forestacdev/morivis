@@ -28,7 +28,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	properties: {
 		attributeView: {
 			popupKeys: [
-				'ID',
 				'LoreName',
 				'LoreYear',
 				'Address',
@@ -38,10 +37,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 				'ReleaseDate',
 				'ModifyReleaseDate',
 				'Limitations',
-				'Image',
-				'ImageWidth',
-				'ImageHeight',
-				'id'
+				'Image'
 			],
 			titles: [
 				{
@@ -58,14 +54,53 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		fields: [
 			{ key: 'ID', type: 'string', label: 'ID' },
 			{ key: 'LoreName', type: 'string', label: '碑名' },
-			{ key: 'LoreYear', type: 'string', label: '建立年' },
+			{
+				key: 'LoreYear',
+				type: 'string',
+				label: '建立年',
+				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
+			},
 			{ key: 'Address', type: 'string', label: '所在地' },
-			{ key: 'DisasterName', type: 'string', label: '災害名' },
+			{
+				key: 'DisasterName',
+				type: 'string',
+				label: '災害名',
+				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
+			},
 			{ key: 'DisasterKind', type: 'string', label: '災害種別' },
-			{ key: 'DisasterInfo', type: 'string', label: '伝承内容' },
+			{
+				key: 'DisasterInfo',
+				type: 'string',
+				label: '伝承内容',
+				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
+			},
 			{ key: 'ReleaseDate', type: 'string', label: '公開日' },
-			{ key: 'ModifyReleaseDate', type: 'string', label: '更新日' },
-			{ key: 'Limitations', type: 'string', label: '制約事項' },
+			{
+				key: 'ModifyReleaseDate',
+				type: 'string',
+				label: '更新日',
+				format: {
+					empty: [
+						{
+							values: [' '],
+							text: 'なし'
+						}
+					]
+				}
+			},
+			{
+				key: 'Limitations',
+				type: 'string',
+				label: '制約事項',
+				format: {
+					empty: [
+						{
+							values: [' '],
+							text: 'なし'
+						}
+					]
+				}
+			},
 			{ key: 'Image', type: 'string', label: '画像URL' },
 			{ key: 'ImageWidth', type: 'number', label: '画像幅' },
 			{ key: 'ImageHeight', type: 'number', label: '画像高さ' },
@@ -121,55 +156,39 @@ const entry: PointEntry<GeoJsonMetaData> = {
 				},
 				{
 					key: 'LoreName',
-					name: 'LoreName'
+					name: '碑名'
 				},
 				{
 					key: 'LoreYear',
-					name: 'LoreYear'
+					name: '建立年'
 				},
 				{
 					key: 'Address',
-					name: 'Address'
+					name: '所在地'
 				},
 				{
 					key: 'DisasterName',
-					name: 'DisasterName'
+					name: '災害名'
 				},
 				{
 					key: 'DisasterKind',
-					name: 'DisasterKind'
+					name: '災害種別'
 				},
 				{
 					key: 'DisasterInfo',
-					name: 'DisasterInfo'
+					name: '伝承内容'
 				},
 				{
 					key: 'ReleaseDate',
-					name: 'ReleaseDate'
+					name: '公開日'
 				},
 				{
 					key: 'ModifyReleaseDate',
-					name: 'ModifyReleaseDate'
+					name: '更新日'
 				},
 				{
 					key: 'Limitations',
-					name: 'Limitations'
-				},
-				{
-					key: 'Image',
-					name: 'Image'
-				},
-				{
-					key: 'ImageWidth',
-					name: 'ImageWidth'
-				},
-				{
-					key: 'ImageHeight',
-					name: 'ImageHeight'
-				},
-				{
-					key: 'id',
-					name: 'id'
+					name: '制約事項'
 				}
 			]
 		}

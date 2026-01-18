@@ -1,5 +1,6 @@
 import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/types/vector';
 import { FEATURE_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { DEFAULT_POINT_LABEL_STYLE } from '../../_style';
 
 const entry: VectorEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_pole',
@@ -87,6 +88,9 @@ const entry: VectorEntry<GeoJsonMetaData> = {
 					name: 'ポールの名称'
 				}
 			]
+		},
+		default: {
+			symbol: DEFAULT_POINT_LABEL_STYLE
 		}
 	}
 };

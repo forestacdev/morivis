@@ -429,11 +429,12 @@ export interface VectorProperties {
  *
  * 処理順序:
  * 1. 無効値チェック（format.empty）
- * 2. 日付フォーマット（type='date' または format.date）
- * 3. 辞書変換（valueDict）
- * 4. 数値フォーマット（format.digits）
- * 5. affix適用（prefix/suffix）
- * 6. 単位付与（unit）
+ * 2. 正規化（normalize）
+ * 3. 日付フォーマット（type='date' または format.date）
+ * 4. 辞書変換（valueDict）
+ * 5. 数値フォーマット（format.digits）
+ * 6. affix適用（prefix/suffix）
+ * 7. 単位付与（unit）
  */
 export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string => {
 	// fieldがundefinedの場合は単純に文字列化
@@ -453,40 +454,68 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 		return '';
 	}
 
-	let formatted: string;
-
-	// 2. 日付フォーマット（type='date' または format.date が指定されている場合）
-	if (field.type === 'date' || field.format?.date) {
-		return formatDate(rawValue, field.format?.date);
+	// 2. 正規化（文字列の場合のみ）
+	let normalizedValue: unknown = rawValue;
+	if (typeof rawValue === 'string' && field.normalize) {
+		let str = rawValue;
+		for (const rule of field.normalize) {
+			switch (rule.type) {
+				case 'trim':
+					str = str.trim();
+					break;
+				case 'replace':
+					if (rule.pattern != null) {
+						const pattern =
+							typeof rule.pattern === 'string' ? new RegExp(rule.pattern, 'g') : rule.pattern;
+						str = str.replace(pattern, rule.replaceWith ?? '');
+					}
+					break;
+				case 'removePattern':
+					if (rule.pattern != null) {
+						const pattern =
+							typeof rule.pattern === 'string' ? new RegExp(rule.pattern, 'g') : rule.pattern;
+						str = str.replace(pattern, '');
+					}
+					break;
+			}
+		}
+		normalizedValue = str;
 	}
 
-	// 3. 辞書変換
+	let formatted: string;
+
+	// 3. 日付フォーマット（type='date' または format.date が指定されている場合）
+	if (field.type === 'date' || field.format?.date) {
+		return formatDate(normalizedValue, field.format?.date);
+	}
+
+	// 4. 辞書変換
 	if (field.valueDict) {
-		const mapped = field.valueDict[rawValue as string | number];
+		const mapped = field.valueDict[normalizedValue as string | number];
 		if (mapped != null) {
 			formatted = String(mapped);
 		} else {
-			formatted = String(rawValue);
+			formatted = String(normalizedValue);
 		}
-	} else if (typeof rawValue === 'number') {
-		// 4. 数値フォーマット
+	} else if (typeof normalizedValue === 'number') {
+		// 5. 数値フォーマット
 		if (field.format?.digits != null) {
-			formatted = rawValue.toFixed(field.format.digits);
+			formatted = normalizedValue.toFixed(field.format.digits);
 		} else {
-			formatted = String(rawValue);
+			formatted = String(normalizedValue);
 		}
 	} else {
-		formatted = String(rawValue);
+		formatted = String(normalizedValue);
 	}
 
-	// 5. affix適用
+	// 6. affix適用
 	if (field.affix) {
 		const prefix = field.affix.prefix ?? '';
 		const suffix = field.affix.suffix ?? '';
 		formatted = `${prefix}${formatted}${suffix}`;
 	}
 
-	// 6. 単位付与
+	// 7. 単位付与
 	if (field.unit) {
 		formatted = `${formatted} ${field.unit}`;
 	}

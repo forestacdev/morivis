@@ -1,4 +1,9 @@
-import { ENTRY_PMTILES_VECTOR_PATH, ENTRY_DATA_PATH, ENTRY_DEV_DATA_PATH } from '$routes/constants';
+import {
+	ENTRY_PMTILES_VECTOR_PATH,
+	ENTRY_DATA_PATH,
+	ENTRY_DEV_DATA_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
@@ -26,7 +31,8 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
 		center: [132.651492, 34.664373],
-		xyzImageTile: { x: 14552, y: 6452, z: 14 }
+		xyzImageTile: { x: 56906, y: 26027, z: 16 },
+		mapImage: `${MAP_IMAGE_BASE_PATH}/hiroshima_tree_point.webp`
 	},
 	properties: {
 		fields: [
