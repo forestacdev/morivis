@@ -1,6 +1,9 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { KOCHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { TREE_MATCH_COLOR_STYLE } from '$routes/map/data/entries/vector/_style';
+import {
+	TREE_MATCH_COLOR_STYLE,
+	DEFAULT_POLYGON_STYLE
+} from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -138,19 +141,7 @@ const entry: VectorEntry<TileMetaData> = {
 			]
 		},
 		default: {
-			symbol: {
-				paint: {
-					'text-color': '#000000',
-					'text-halo-color': '#FFFFFF',
-					'text-halo-width': 1,
-					'text-opacity': 1
-				},
-				layout: {
-					'text-max-width': 12,
-					'text-size': 12,
-					'text-padding': 10
-				}
-			}
+			...DEFAULT_POLYGON_STYLE
 		}
 	}
 };

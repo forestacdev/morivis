@@ -1,4 +1,8 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
 import { DEFAULT_POINT_LABEL_STYLE } from '../../_style';
 const entry: PointEntry<TileMetaData> = {
@@ -20,7 +24,7 @@ const entry: PointEntry<TileMetaData> = {
 		tags: ['フェノロジー'],
 		bounds: [136.918075, 35.554408, 136.9268, 35.558411],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
-		// mapImage: `${MAP_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
+		mapImage: `${MAP_IMAGE_BASE_PATH}/fac_phenology_2020.webp`,
 		xyzImageTile: { x: 230773, y: 103338, z: 18 }
 	},
 	properties: {
@@ -31,13 +35,13 @@ const entry: PointEntry<TileMetaData> = {
 				type: 'string'
 			},
 			{
-				key: '分類',
-				label: '分類',
+				key: '分類群',
+				label: '分類群',
 				type: 'string'
 			}
 		],
 		attributeView: {
-			popupKeys: ['種名', '分類'],
+			popupKeys: ['種名', '分類群', '日付', '日時'],
 			titles: [
 				{
 					conditions: ['種名'],
@@ -102,8 +106,8 @@ const entry: PointEntry<TileMetaData> = {
 					name: '種名'
 				},
 				{
-					key: '分類',
-					name: '分類'
+					key: '分類群',
+					name: '分類群'
 				}
 			]
 		},

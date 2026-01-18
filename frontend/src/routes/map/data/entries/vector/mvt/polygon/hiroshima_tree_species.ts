@@ -23,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		attribution: '広島県林業課（林野庁加工）',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-hiroshima-maptiles',
 		location: '広島県',
-		tags: [],
+		tags: ['森林', '林相図'],
 		minZoom: 8,
 		maxZoom: 16,
 		sourceLayer: 'tree_species_hiroshima',
