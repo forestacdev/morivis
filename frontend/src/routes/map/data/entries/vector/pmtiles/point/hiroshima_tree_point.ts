@@ -27,6 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
+		center: [132.651492, 34.664373],
 		xyzImageTile: { x: 56906, y: 26027, z: 16 },
 		mapImage: `${MAP_IMAGE_BASE_PATH}/hiroshima_tree_point.webp`
 	},
