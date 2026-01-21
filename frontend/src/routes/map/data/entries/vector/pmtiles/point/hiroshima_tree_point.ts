@@ -5,9 +5,7 @@ import {
 	MAP_IMAGE_BASE_PATH
 } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { createFilteredTreeMatchColorStyleMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hiroshima_tree_point',
@@ -25,11 +23,10 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://hiroshima-dobox.jp/datasets/1520',
 		location: '広島県',
-		minZoom: 10,
+		minZoom: 6,
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
-		center: [132.651492, 34.664373],
 		xyzImageTile: { x: 56906, y: 26027, z: 16 },
 		mapImage: `${MAP_IMAGE_BASE_PATH}/hiroshima_tree_point.webp`
 	},
@@ -129,7 +126,7 @@ const entry: VectorEntry<TileMetaData> = {
 			titles: [
 				{
 					conditions: ['樹種', '樹高'],
-					template: '{樹種} ({樹高} m)'
+					template: '{樹種}'
 				},
 				{
 					conditions: [],
@@ -148,6 +145,7 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
+		minZoom: 13,
 		markerType: 'circle',
 		colors: {
 			key: '樹種',
@@ -177,6 +175,26 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						scheme: 'YlOrRd',
 						range: [7, 40],
+						divisions: 6
+					}
+				},
+				{
+					type: 'step',
+					key: '胸高直径',
+					name: '胸高直径の範囲による色分け',
+					mapping: {
+						scheme: 'YlOrRd',
+						range: [0, 100],
+						divisions: 6
+					}
+				},
+				{
+					type: 'step',
+					key: '単木材積',
+					name: '単木材積の範囲による色分け',
+					mapping: {
+						scheme: 'YlOrRd',
+						range: [0, 5],
 						divisions: 6
 					}
 				}
@@ -281,33 +299,33 @@ const entry: VectorEntry<TileMetaData> = {
 		// 		layout: {}
 		// 	}
 		// }
-	}
-	// auxiliaryLayers: {
-	// 	layers: [
-	// 		{
-	// 			id: 'tree_point_hiroshima_aux_layer',
-	// 			type: 'heatmap',
-	// 			source: 'hiroshima_tree_point_source',
-	// 			'source-layer': 'tree_point_hiroshima',
-	// 			maxzoom: 13,
-	// 			minzoom: 6,
-	// 			paint: {
-	// 				'heatmap-opacity': 0.6,
-	// 				'heatmap-color': [
-	// 					'interpolate',
-	// 					['linear'],
-	// 					['heatmap-density'],
-	// 					0,
-	// 					'rgba(255,255,255,0)',
+	},
+	auxiliaryLayers: {
+		layers: [
+			{
+				id: 'tree_point_hiroshima_aux_layer',
+				type: 'heatmap',
+				source: 'hiroshima_tree_point_source',
+				'source-layer': 'tree_point_hiroshima',
+				maxzoom: 13,
+				minzoom: 6,
+				paint: {
+					'heatmap-opacity': 0.6,
+					'heatmap-color': [
+						'interpolate',
+						['linear'],
+						['heatmap-density'],
+						0,
+						'rgba(255,255,255,0)',
 
-	// 					1,
-	// 					'#31a354'
-	// 				],
-	// 				'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
-	// 			}
-	// 		}
-	// 	]
-	// }
+						1,
+						'#31a354'
+					],
+					'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 6, 3, 13, 23]
+				}
+			}
+		]
+	}
 };
 
 export default entry;

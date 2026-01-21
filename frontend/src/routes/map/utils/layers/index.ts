@@ -171,8 +171,9 @@ export const createLayersItems = (
 			const layer: LayerItem = {
 				id: layerId,
 				source: sourceId,
-				maxzoom: 24,
-				minzoom: metaData.minZoom ?? 1
+				maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
+				minzoom:
+					'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
 			};
 
 			const attributionItem = getAttribution(metaData.attribution);
