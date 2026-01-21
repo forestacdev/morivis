@@ -111,7 +111,7 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'fill',
 		opacity: 0.5,
-		minZoom: 10,
+		minZoom: 10.1,
 		colors: {
 			key: '樹種１',
 			show: true,
@@ -939,16 +939,7 @@ const entry: VectorEntry<TileMetaData> = {
 				'source-layer': 'national_forest_compartment',
 				paint: {
 					'fill-color': '#b2df8a',
-					'fill-opacity': 0.5,
-					'fill-outline-color': [
-						'interpolate',
-						['linear'],
-						['zoom'],
-						6,
-						'transparent', // ズーム8以下：透明
-						10,
-						'#dcdcdc' // ズーム8以下：透明
-					]
+					'fill-outline-color': 'transparent'
 				}
 			}
 

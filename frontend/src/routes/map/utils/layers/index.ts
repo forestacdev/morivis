@@ -312,14 +312,40 @@ export const createLayersItems = (
 					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
 						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
 							const type = auxiliaryLayer.type;
-							if (type === 'fill' || type === 'fill-extrusion') {
-								fillLayerItems.push(auxiliaryLayer);
+							if (type === 'fill') {
+								fillLayerItems.push({
+									...auxiliaryLayer,
+									paint: { ...auxiliaryLayer.paint, 'fill-opacity': style.opacity }
+								});
+							} else if (type === 'fill-extrusion') {
+								fillLayerItems.push({
+									...auxiliaryLayer,
+									paint: { ...auxiliaryLayer.paint, 'fill-extrusion-opacity': style.opacity }
+								});
 							} else if (type === 'line') {
-								lineLayerItems.push(auxiliaryLayer);
-							} else if (type === 'circle' || type === 'heatmap') {
-								circleLayerItems.push(auxiliaryLayer);
+								lineLayerItems.push({
+									...auxiliaryLayer,
+									paint: { ...auxiliaryLayer.paint, 'line-opacity': style.opacity }
+								});
+							} else if (type === 'circle') {
+								circleLayerItems.push({
+									...auxiliaryLayer,
+									paint: { ...auxiliaryLayer.paint, 'circle-opacity': style.opacity }
+								});
+							} else if (type === 'heatmap') {
+								circleLayerItems.push({
+									...auxiliaryLayer,
+									paint: { ...auxiliaryLayer.paint, 'heatmap-opacity': style.opacity }
+								});
 							} else if (type === 'symbol') {
-								symbolLayerItems.push(auxiliaryLayer);
+								symbolLayerItems.push({
+									...auxiliaryLayer,
+									paint: {
+										...auxiliaryLayer.paint,
+										'icon-opacity': style.opacity,
+										'text-opacity': style.opacity
+									}
+								});
 							}
 						});
 					}
