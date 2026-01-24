@@ -7,13 +7,17 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
+	// compilerOptions: {
+	// 	runes: true
+	// },
+
 	kit: {
 		adapter: adapter({
 			pages: 'build',
 			assets: 'build',
-			fallback: 'index.html',
+			fallback: '404.html',
 			precompress: false,
-			strict: false
+			strict: true
 		}),
 		paths: {
 			base: process.argv.includes('dev') ? '' : '/morivis'
