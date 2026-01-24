@@ -1,9 +1,6 @@
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import { getWkt, getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { getWkt, type EpsgCode } from '$routes/map/utils/proj/dict';
 
-/**
- * 画像の統計情報を計算
- */
 /**
  * 画像の統計情報を計算
  */
@@ -86,15 +83,18 @@ const calculateGeoTransform = (
 /**
  * PAMDataset (GDAL Auxiliary File) を生成
  */
-export const generateAuxXml = (
-	canvas: HTMLCanvasElement,
-	map: MapLibreMap,
-	epsg: number = 4326
-): string => {
-	const ctx = canvas.getContext('2d');
+export const generateAuxXml = (map: MapLibreMap, epsg: number = 4326): string => {
+	const canvas = map.getCanvas();
+
+	// WebGLキャンバスから2Dキャンバスにコピーして画像データを取得
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = canvas.width;
+	tempCanvas.height = canvas.height;
+	const ctx = tempCanvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas context取得失敗');
 
-	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(canvas, 0, 0);
+	const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
 	// RGB各バンドの統計を計算
 	const redStats = calculateImageStatistics(imageData, 0);
@@ -157,12 +157,11 @@ export const generateAuxXml = (
  * .aux.xmlファイルをダウンロード
  */
 export const downloadAuxXml = (
-	canvas: HTMLCanvasElement,
 	map: MapLibreMap,
 	epsg: number = 4326,
 	filename: string = 'map.png.aux.xml'
 ) => {
-	const xmlContent = generateAuxXml(canvas, map, epsg);
+	const xmlContent = generateAuxXml(map, epsg);
 
 	const blob = new Blob([xmlContent], { type: 'application/xml' });
 	const url = URL.createObjectURL(blob);

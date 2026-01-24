@@ -2,10 +2,9 @@
 	import JSZip from 'jszip';
 	import { fade, scale } from 'svelte/transition';
 
-	import { downloadImage, imageExport } from '$routes/map/utils/file/image';
-	import { generateWorldFile } from '$routes/map/utils/file/worldfile';
-	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
+	import { confirmationDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
+	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
 
 	interface Props {
 		imagePreviewUrl: string | null;
@@ -36,11 +35,9 @@
 			const map = mapStore.getMap();
 			if (!map) return;
 
-			const canvas = map.getCanvas();
+			const auxXmlContent = generateAuxXml(map);
 
-			const worldFileContent = await generateWorldFile(map, canvas.width, canvas.height, epsg);
-
-			zip.file(baseName + '.pgw', worldFileContent);
+			zip.file(baseName + '.png.aux.xml', auxXmlContent);
 
 			// ZIPファイルを生成してダウンロード
 			const zipBlob = await zip.generateAsync({ type: 'blob' });
