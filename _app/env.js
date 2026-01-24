@@ -1,1 +1,1 @@
-export const env={}
+export const env={"PUBLIC_GA_UA":"G-3PB2G7NDPL","PUBLIC_BASE_PATH":"https://forestacdev.github.io/morivis-data","PUBLIC_XENO_CANTO_API_KEY":"b30a0c71197015a914f7ca9785918418957810d9"}
