@@ -47,37 +47,42 @@ const calculateImageStatistics = (
 };
 
 /**
- * GeoTransformパラメータを計算
+ * GeoTransformパラメータを計算（回転対応）
  */
 const calculateGeoTransform = (
 	map: MapLibreMap,
 	imageWidth: number,
 	imageHeight: number
 ): number[] => {
-	const bounds = map.getBounds();
+	const canvas = map.getCanvas();
 
-	const west = bounds.getWest();
-	const south = bounds.getSouth();
-	const east = bounds.getEast();
-	const north = bounds.getNorth();
+	// 四隅の座標を取得
+	const topLeft = map.unproject([0, 0]);
+	const topRight = map.unproject([canvas.width, 0]);
+	const bottomLeft = map.unproject([0, canvas.height]);
 
-	// ピクセルサイズ
-	const pixelSizeX = (east - west) / imageWidth;
-	const pixelSizeY = -(north - south) / imageHeight;
+	const x1 = topLeft.lng;
+	const y1 = topLeft.lat;
+	const x2 = topRight.lng;
+	const y2 = topRight.lat;
+	const x3 = bottomLeft.lng;
+	const y3 = bottomLeft.lat;
 
-	// 左上座標
-	const upperLeftX = west;
-	const upperLeftY = north;
+	// アフィン変換パラメータを計算
+	// A, D: X方向の変換（1ピクセル右に移動したときの座標変化）
+	const A = (x2 - x1) / imageWidth;
+	const D = (y2 - y1) / imageWidth;
 
-	// GeoTransform: [originX, pixelWidth, rotation1, originY, rotation2, pixelHeight]
-	return [
-		upperLeftX,
-		pixelSizeX,
-		0, // rotation (X)
-		upperLeftY,
-		0, // rotation (Y)
-		pixelSizeY
-	];
+	// B, E: Y方向の変換（1ピクセル下に移動したときの座標変化）
+	const B = (x3 - x1) / imageHeight;
+	const E = (y3 - y1) / imageHeight;
+
+	// C, F: 左上ピクセル中心の座標
+	const C = x1 + A * 0.5 + B * 0.5;
+	const F = y1 + D * 0.5 + E * 0.5;
+
+	// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
+	return [C, A, B, F, D, E];
 };
 
 /**

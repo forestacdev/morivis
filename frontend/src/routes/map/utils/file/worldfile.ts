@@ -21,9 +21,6 @@ export const generateWorldFile = (
 	imageHeight: number,
 	epsg: number = 4326
 ): string => {
-	const bearing = map.getBearing(); // 回転角度（度）
-	const bearingRad = (-bearing * Math.PI) / 180; // ラジアンに変換（MapLibreは時計回りなので負にする）
-
 	// 四隅の座標を取得
 	const canvas = map.getCanvas();
 	const topLeft = map.unproject([0, 0]);
