@@ -26,6 +26,7 @@
 		showLayerMenu,
 		showOtherMenu
 	} from '$routes/stores/ui';
+	import { PUBLIC_GA_UA } from '$env/static/public';
 
 	let { children } = $props();
 
@@ -99,7 +100,7 @@
 </script>
 
 <!-- Googleアナリティクスの設定 -->
-<GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
+<GoogleAnalytics id={PUBLIC_GA_UA} />
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->

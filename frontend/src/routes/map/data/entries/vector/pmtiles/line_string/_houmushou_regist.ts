@@ -83,12 +83,6 @@ const entry: VectorEntry<TileMetaData> = {
 		}
 	},
 	auxiliaryLayers: {
-		source: {
-			houmushou_regist_fill: {
-				type: 'vector',
-				tiles: ['pmtiles://https://d2g6co14qozqgp.cloudfront.net/a.pmtiles']
-			}
-		},
 		layers: [
 			{
 				id: 'houmushou_regist-fill',
@@ -97,7 +91,7 @@ const entry: VectorEntry<TileMetaData> = {
 					'fill-color': 'rgba(254,217,192,1)',
 					'fill-outline-color': 'rgba(255,0,0,1)'
 				},
-				source: 'houmushou_regist_fill',
+				source: 'houmushou_regist_source',
 				'source-layer': 'daihyo'
 			}
 		]

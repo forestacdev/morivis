@@ -10,6 +10,7 @@
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import type { Opacity } from '$routes/map/data/types';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -22,7 +23,7 @@
 
 	interface OpacityButton {
 		label: string;
-		value: number;
+		value: Opacity;
 	}
 
 	const opacityButtons: OpacityButton[] = [
