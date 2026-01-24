@@ -83,17 +83,26 @@ const calculateGeoTransform = (
 /**
  * PAMDataset (GDAL Auxiliary File) を生成
  */
-export const generateAuxXml = (map: MapLibreMap, epsg: number = 4326): string => {
-	const canvas = map.getCanvas();
+export const generateAuxXml = async (
+	map: MapLibreMap,
+	imageDataUrl: string,
+	epsg: number = 4326
+): Promise<string> => {
+	// data URLから画像を読み込んで統計情報を取得
+	const img = new Image();
+	await new Promise<void>((resolve, reject) => {
+		img.onload = () => resolve();
+		img.onerror = reject;
+		img.src = imageDataUrl;
+	});
 
-	// WebGLキャンバスから2Dキャンバスにコピーして画像データを取得
 	const tempCanvas = document.createElement('canvas');
-	tempCanvas.width = canvas.width;
-	tempCanvas.height = canvas.height;
+	tempCanvas.width = img.width;
+	tempCanvas.height = img.height;
 	const ctx = tempCanvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas context取得失敗');
 
-	ctx.drawImage(canvas, 0, 0);
+	ctx.drawImage(img, 0, 0);
 	const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
 	// RGB各バンドの統計を計算
@@ -108,7 +117,7 @@ export const generateAuxXml = (map: MapLibreMap, epsg: number = 4326): string =>
 	];
 
 	// GeoTransformを計算
-	const geoTransform = calculateGeoTransform(map, canvas.width, canvas.height);
+	const geoTransform = calculateGeoTransform(map, img.width, img.height);
 
 	// WKT定義を取得
 	const wkt = getWkt(epsg.toString() as EpsgCode);
@@ -156,12 +165,13 @@ export const generateAuxXml = (map: MapLibreMap, epsg: number = 4326): string =>
 /**
  * .aux.xmlファイルをダウンロード
  */
-export const downloadAuxXml = (
+export const downloadAuxXml = async (
 	map: MapLibreMap,
+	imageDataUrl: string,
 	epsg: number = 4326,
 	filename: string = 'map.png.aux.xml'
 ) => {
-	const xmlContent = generateAuxXml(map, epsg);
+	const xmlContent = await generateAuxXml(map, imageDataUrl, epsg);
 
 	const blob = new Blob([xmlContent], { type: 'application/xml' });
 	const url = URL.createObjectURL(blob);

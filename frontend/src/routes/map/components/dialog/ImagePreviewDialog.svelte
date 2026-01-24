@@ -35,7 +35,7 @@
 			const map = mapStore.getMap();
 			if (!map) return;
 
-			const auxXmlContent = generateAuxXml(map);
+			const auxXmlContent = await generateAuxXml(map, imagePreviewUrl);
 
 			zip.file(baseName + '.png.aux.xml', auxXmlContent);
 
