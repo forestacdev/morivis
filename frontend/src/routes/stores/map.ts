@@ -759,7 +759,7 @@ const createMapStore = () => {
 			// 中心座標が指定されている場合は、中心にズーム
 			map.easeTo({
 				center: _entry.metaData.center,
-				zoom: _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
+				zoom: ('minZoom' in _entry.style ? _entry.style.minZoom : null) ?? _entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				duration: 500
