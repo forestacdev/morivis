@@ -13,7 +13,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		name: '神奈川県 数値標高データ',
 		sourceDataName: '神奈川県数値標高モデル',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-kanagawa-maptiles2',
-		attribution: '神奈川県森林再生課（林野庁加工）',
+		attribution: '神奈川県森林再生課_林野庁加工',
 		location: '神奈川県',
 		tags: ['DEM', '地形', '0.5m解像度'],
 		minZoom: 8,

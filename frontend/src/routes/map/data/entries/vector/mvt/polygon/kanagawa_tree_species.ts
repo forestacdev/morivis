@@ -27,7 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '神奈川県 樹種ポリゴン',
-		attribution: '神奈川県森林再生課（林野庁加工）',
+		attribution: '神奈川県森林再生課_林野庁加工',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-kanagawa-maptiles2',
 		location: '神奈川県',
 		tags: ['森林', '林相図'],

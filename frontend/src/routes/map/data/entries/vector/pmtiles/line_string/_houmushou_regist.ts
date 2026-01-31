@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '法務省登記所備付地図データ',
-		attribution: '登記所備付地図データ（法務省）',
+		attribution: '登記所備付地図データ',
 		description: '法務省の「登記所備付地図データ」をベクトルタイルに加工したもの',
 		location: '全国',
 		tags: ['登記所備付地図'],

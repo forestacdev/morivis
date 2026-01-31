@@ -1,10 +1,11 @@
 export type Attribution = {
 	name: string;
 	url: string;
+	sources?: readonly Attribution[];
 };
 
-//TODO: キー名が日本語のものは、英語に変換する必要があるかも
-const attributionData = {
+// 基本的なAttributionデータ（部品）
+const baseAttributions = {
 	森林文化アカデミー: {
 		name: '森林文化アカデミー',
 		url: 'https://www.forest.ac.jp/'
@@ -97,9 +98,9 @@ const attributionData = {
 		name: '兵庫県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
 	},
-	'大阪府（林野庁加工）': {
-		name: '大阪府（林野庁加工）',
-		url: 'https://www.geospatial.jp/ckan/organization/rinya'
+	大阪府: {
+		name: '大阪府',
+		url: 'https://www.pref.osaka.lg.jp/'
 	},
 	森林総合研究所: {
 		name: '森林総合研究所',
@@ -113,19 +114,19 @@ const attributionData = {
 		name: '長野県林業総合センター',
 		url: 'https://www.pref.nagano.lg.jp/ringyosogo/'
 	},
-	['広島県林業課（林野庁加工）']: {
-		name: '広島県林業課（林野庁加工）',
-		url: 'https://www.rinya.maff.go.jp/index.html'
+	広島県林業課: {
+		name: '広島県林業課',
+		url: 'https://www.pref.hiroshima.lg.jp/'
 	},
-	['神奈川県森林再生課（林野庁加工）']: {
-		name: '神奈川県森林再生課（林野庁加工）',
-		url: 'https://www.geospatial.jp/ckan/organization/rinya'
+	神奈川県森林再生課: {
+		name: '神奈川県森林再生課',
+		url: 'https://www.pref.kanagawa.jp/'
 	},
 	兵庫県: {
 		name: '兵庫県',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
 	},
-	['PLATEAU']: {
+	PLATEAU: {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
 	},
@@ -133,9 +134,31 @@ const attributionData = {
 		name: 'DoboX',
 		url: 'https://hiroshima-dobox.jp/index2'
 	},
-	['登記所備付地図データ（法務省）']: {
+	登記所備付地図データ: {
 		name: '登記所備付地図データ（法務省）',
 		url: 'https://front.geospatial.jp/houmu-chiseki/'
+	}
+} as const;
+
+// 二次加工データを含む完全なAttributionデータ
+const attributionData = {
+	...baseAttributions,
+
+	// 二次加工データ
+	大阪府_林野庁加工: {
+		name: '大阪府（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.大阪府, baseAttributions.林野庁]
+	},
+	広島県林業課_林野庁加工: {
+		name: '広島県林業課（林野庁加工）',
+		url: 'https://www.rinya.maff.go.jp/index.html',
+		sources: [baseAttributions.広島県林業課, baseAttributions.林野庁]
+	},
+	神奈川県森林再生課_林野庁加工: {
+		name: '神奈川県森林再生課（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.神奈川県森林再生課, baseAttributions.林野庁]
 	}
 } as const;
 
