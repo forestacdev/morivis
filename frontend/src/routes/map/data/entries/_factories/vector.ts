@@ -121,16 +121,16 @@ function createColorsStyleFromExpressions(
 }
 
 // ========================================
-// ポイントエントリ用ファクトリー
+// タイルポイントエントリ用ファクトリー
 // ========================================
-export interface PointEntryConfig extends BaseVectorConfig {
+export interface TilePointEntryConfig extends BaseVectorConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	radius?: number;
 	radiusExpressions?: NumbersStyle['expressions'];
 }
 
-export function createPointEntry(config: PointEntryConfig): PointEntry<TileMetaData> {
+export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<TileMetaData> {
 	const {
 		id,
 		name,
@@ -203,9 +203,9 @@ export function createPointEntry(config: PointEntryConfig): PointEntry<TileMetaD
 }
 
 // ========================================
-// ラインエントリ用ファクトリー
+// タイルラインエントリ用ファクトリー
 // ========================================
-export interface LineEntryConfig extends BaseVectorConfig {
+export interface TileLineEntryConfig extends BaseVectorConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	width?: number;
@@ -213,7 +213,7 @@ export interface LineEntryConfig extends BaseVectorConfig {
 	lineStyle?: 'solid' | 'dashed';
 }
 
-export function createLineEntry(config: LineEntryConfig): LineStringEntry<TileMetaData> {
+export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntry<TileMetaData> {
 	const {
 		id,
 		name,
@@ -288,9 +288,9 @@ export function createLineEntry(config: LineEntryConfig): LineStringEntry<TileMe
 }
 
 // ========================================
-// ポリゴンエントリ用ファクトリー
+// タイルポリゴンエントリ用ファクトリー
 // ========================================
-export interface PolygonEntryConfig extends BaseVectorConfig {
+export interface TilePolygonEntryConfig extends BaseVectorConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	outline?: {
@@ -301,7 +301,7 @@ export interface PolygonEntryConfig extends BaseVectorConfig {
 	};
 }
 
-export function createPolygonEntry(config: PolygonEntryConfig): PolygonEntry<TileMetaData> {
+export function createTilePolygonEntry(config: TilePolygonEntryConfig): PolygonEntry<TileMetaData> {
 	const {
 		id,
 		name,

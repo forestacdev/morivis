@@ -10,14 +10,14 @@ export {
 	type CadRasterEntryConfig
 } from './raster';
 
-// Vector factories (for TileMetaData - MVT/PMTiles)
+// Tile factories (for TileMetaData - MVT/PMTiles)
 export {
-	createPointEntry,
-	createLineEntry,
-	createPolygonEntry,
-	type PointEntryConfig,
-	type LineEntryConfig,
-	type PolygonEntryConfig
+	createTilePointEntry,
+	createTileLineEntry,
+	createTilePolygonEntry,
+	type TilePointEntryConfig,
+	type TileLineEntryConfig,
+	type TilePolygonEntryConfig
 } from './vector';
 
 // GeoJSON factories (for GeoJsonMetaData - GeoJSON/FGB)
