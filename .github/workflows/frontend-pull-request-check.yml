@@ -21,6 +21,7 @@ jobs:
         working-directory: frontend
         run: |
           pnpm install --frozen-lockfile
+          cp .env.example .env
           pnpm run format
           pnpm run check
           pnpm run lint
