@@ -1,3 +1,20 @@
+# MinIOを起動
+minio:
+    docker compose up -d
+
+# MinIOを停止
+minio-stop:
+    docker compose down
+
+# MinIOを再起動
+minio-restart:
+    docker compose down
+    docker compose up -d
+
+# MinIOのログを表示
+minio-logs:
+    docker compose logs -f minio
+
 # 開発サーバーの起動
 dev:
     @echo "Checking if port 5173 is in use..."
