@@ -7,10 +7,10 @@
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { Opacity } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import type { Opacity } from '$routes/map/data/types';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;

@@ -2,9 +2,9 @@
 	import JSZip from 'jszip';
 	import { fade, scale } from 'svelte/transition';
 
+	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
 	import { confirmationDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
-	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
 
 	interface Props {
 		imagePreviewUrl: string | null;
