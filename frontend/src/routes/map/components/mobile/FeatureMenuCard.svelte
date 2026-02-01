@@ -28,6 +28,9 @@
 	let isDragging = $state(false);
 	let startY = $state(0);
 	let currentY = $state(0);
+	// 注意: translateYはSvelteのリアクティブバインディング経由でのみ更新すること
+	// iOS 26ではcardElement.style.transformで直接DOMを更新すると、
+	// Svelteのstyle属性バインディングと競合してスワイプが動作しなくなる
 	let translateY = $state(50); // 初期位置：50%下に配置
 	let isExpanded = $state(false);
 	let isAnimating = $state(false); // アニメーション中フラグ
@@ -186,7 +189,6 @@
 			y: event.touches[0].clientY
 		};
 	};
-
 	// タッチ移動
 	const handleTouchMove = (event: TouchEvent) => {
 		if (!cardElement) return;
@@ -258,13 +260,8 @@
 				const newScrollTop = initialScrollTop + scrollDelta;
 				contentElement.scrollTop = Math.max(0, newScrollTop);
 			}
-
-			// スタイルを直接更新
-			cardElement.style.transform = `translateY(0%)`;
 		} else {
 			translateY = newTranslateY;
-			// スタイルを直接更新
-			cardElement.style.transform = `translateY(${translateY}%)`;
 
 			// スクロール移行の基準点をリセット
 			scrollTransitionStartY = 0;
@@ -400,14 +397,11 @@
 				isExpanded = true;
 				isFullyAnimated = true;
 			}
-			cardElement.style.transform = `translateY(0%)`;
 		} else if (newTranslateY > 100) {
 			// マウスでも100%を超えることを許可
 			translateY = Math.min(newTranslateY, 120);
-			cardElement.style.transform = `translateY(${translateY}%)`;
 		} else {
 			translateY = newTranslateY;
-			cardElement.style.transform = `translateY(${translateY}%)`;
 		}
 	};
 

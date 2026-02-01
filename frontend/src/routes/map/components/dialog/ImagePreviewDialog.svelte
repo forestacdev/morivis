@@ -2,9 +2,8 @@
 	import JSZip from 'jszip';
 	import { fade, scale } from 'svelte/transition';
 
-	import { downloadImage, imageExport } from '$routes/map/utils/file/image';
-	import { generateWorldFile } from '$routes/map/utils/file/worldfile';
-	import { confirmationDialog, resolveConfirmDialog } from '$routes/stores/confirmation';
+	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
+	import { confirmationDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -36,11 +35,9 @@
 			const map = mapStore.getMap();
 			if (!map) return;
 
-			const canvas = map.getCanvas();
+			const auxXmlContent = await generateAuxXml(map, imagePreviewUrl);
 
-			const worldFileContent = await generateWorldFile(map, canvas.width, canvas.height, epsg);
-
-			zip.file(baseName + '.pgw', worldFileContent);
+			zip.file(baseName + '.png.aux.xml', auxXmlContent);
 
 			// ZIPファイルを生成してダウンロード
 			const zipBlob = await zip.generateAsync({ type: 'blob' });
@@ -92,13 +89,13 @@
 	>
 		<div
 			transition:scale={{ duration: 300, start: 0.9 }}
-			class="bg-opacity-8 flex max-h-[700px] max-w-[800px] grow flex-col rounded-md bg-black p-4 text-base"
+			class="bg-opacity-8 flex max-h-[90vh] max-w-[90vw] grow flex-col rounded-md bg-black p-4 text-base"
 		>
-			<div class="flex justify-center p-2">
+			<div class="flex shrink-0 justify-center p-2">
 				<h2 class="text-lg font-bold">画像プレビュー</h2>
 			</div>
-			<div class="flex h-full w-full justify-center p-2">
-				<img src={imagePreviewUrl} alt="Preview" class="h-full w-full object-contain" />
+			<div class="relative flex min-h-0 flex-1 justify-center overflow-hidden p-2">
+				<img src={imagePreviewUrl} alt="Preview" class="max-h-full max-w-full object-contain" />
 			</div>
 
 			<div class="flex shrink-0 items-center justify-center gap-4 pt-4">

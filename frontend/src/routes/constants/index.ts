@@ -2,7 +2,9 @@ import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
-export const BASE_PATH = import.meta.env.VITE_BASE_PATH;
+import { PUBLIC_BASE_PATH } from '$env/static/public';
+
+export const BASE_PATH = PUBLIC_BASE_PATH;
 export const DATA_PATH =
 	import.meta.env.MODE === 'production' || import.meta.env.MODE === 'mobile'
 		? BASE_PATH

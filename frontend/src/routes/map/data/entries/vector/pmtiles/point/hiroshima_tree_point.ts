@@ -5,9 +5,7 @@ import {
 	MAP_IMAGE_BASE_PATH
 } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { generateHueBasedHexColors } from '$routes/map/utils/color_mapping';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { createFilteredTreeMatchColorStyleMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'hiroshima_tree_point',
@@ -15,8 +13,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		// url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
-		url: `${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
+		url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
 	},
 	metaData: {
 		name: '広島県 単木データ',
@@ -26,7 +23,7 @@ const entry: VectorEntry<TileMetaData> = {
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://hiroshima-dobox.jp/datasets/1520',
 		location: '広島県',
-		minZoom: 13,
+		minZoom: 6,
 		maxZoom: 16,
 		sourceLayer: 'tree_point_hiroshima',
 		bounds: HIROSHIMA_BBOX,
@@ -130,7 +127,7 @@ const entry: VectorEntry<TileMetaData> = {
 			titles: [
 				{
 					conditions: ['樹種', '樹高'],
-					template: '{樹種} ({樹高} m)'
+					template: '{樹種}'
 				},
 				{
 					conditions: [],
@@ -149,6 +146,7 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
+		minZoom: 13,
 		markerType: 'circle',
 		colors: {
 			key: '樹種',
@@ -178,6 +176,26 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						scheme: 'YlOrRd',
 						range: [7, 40],
+						divisions: 6
+					}
+				},
+				{
+					type: 'step',
+					key: '胸高直径',
+					name: '胸高直径の範囲による色分け',
+					mapping: {
+						scheme: 'YlOrRd',
+						range: [0, 100],
+						divisions: 6
+					}
+				},
+				{
+					type: 'step',
+					key: '単木材積',
+					name: '単木材積の範囲による色分け',
+					mapping: {
+						scheme: 'YlOrRd',
+						range: [0, 5],
 						divisions: 6
 					}
 				}
@@ -284,17 +302,11 @@ const entry: VectorEntry<TileMetaData> = {
 		// }
 	},
 	auxiliaryLayers: {
-		source: {
-			tree_point_hiroshima_aux: {
-				type: 'vector',
-				url: `pmtiles://${ENTRY_DEV_DATA_PATH}/tree_point_hiroshima.pmtiles`
-			}
-		},
 		layers: [
 			{
-				id: 'tree_point_hiroshima_aux_layer_sugi',
+				id: 'tree_point_hiroshima_aux_layer',
 				type: 'heatmap',
-				source: 'tree_point_hiroshima_aux',
+				source: 'hiroshima_tree_point_source',
 				'source-layer': 'tree_point_hiroshima',
 				maxzoom: 13,
 				minzoom: 6,

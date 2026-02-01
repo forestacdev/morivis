@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '法務省登記所備付地図データ',
-		attribution: '登記所備付地図データ（法務省）',
+		attribution: '登記所備付地図データ',
 		description: '法務省の「登記所備付地図データ」をベクトルタイルに加工したもの',
 		location: '全国',
 		tags: ['登記所備付地図'],
@@ -83,12 +83,6 @@ const entry: VectorEntry<TileMetaData> = {
 		}
 	},
 	auxiliaryLayers: {
-		source: {
-			houmushou_regist_fill: {
-				type: 'vector',
-				tiles: ['pmtiles://https://d2g6co14qozqgp.cloudfront.net/a.pmtiles']
-			}
-		},
 		layers: [
 			{
 				id: 'houmushou_regist-fill',
@@ -97,7 +91,7 @@ const entry: VectorEntry<TileMetaData> = {
 					'fill-color': 'rgba(254,217,192,1)',
 					'fill-outline-color': 'rgba(255,0,0,1)'
 				},
-				source: 'houmushou_regist_fill',
+				source: 'houmushou_regist_source',
 				'source-layer': 'daihyo'
 			}
 		]

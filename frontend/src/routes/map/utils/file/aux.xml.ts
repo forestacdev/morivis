@@ -1,9 +1,6 @@
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import { getWkt, getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { getWkt, type EpsgCode } from '$routes/map/utils/proj/dict';
 
-/**
- * 画像の統計情報を計算
- */
 /**
  * 画像の統計情報を計算
  */
@@ -50,51 +47,68 @@ const calculateImageStatistics = (
 };
 
 /**
- * GeoTransformパラメータを計算
+ * GeoTransformパラメータを計算（回転対応）
  */
 const calculateGeoTransform = (
 	map: MapLibreMap,
 	imageWidth: number,
 	imageHeight: number
 ): number[] => {
-	const bounds = map.getBounds();
+	const canvas = map.getCanvas();
 
-	const west = bounds.getWest();
-	const south = bounds.getSouth();
-	const east = bounds.getEast();
-	const north = bounds.getNorth();
+	// 四隅の座標を取得
+	const topLeft = map.unproject([0, 0]);
+	const topRight = map.unproject([canvas.width, 0]);
+	const bottomLeft = map.unproject([0, canvas.height]);
 
-	// ピクセルサイズ
-	const pixelSizeX = (east - west) / imageWidth;
-	const pixelSizeY = -(north - south) / imageHeight;
+	const x1 = topLeft.lng;
+	const y1 = topLeft.lat;
+	const x2 = topRight.lng;
+	const y2 = topRight.lat;
+	const x3 = bottomLeft.lng;
+	const y3 = bottomLeft.lat;
 
-	// 左上座標
-	const upperLeftX = west;
-	const upperLeftY = north;
+	// アフィン変換パラメータを計算
+	// A, D: X方向の変換（1ピクセル右に移動したときの座標変化）
+	const A = (x2 - x1) / imageWidth;
+	const D = (y2 - y1) / imageWidth;
 
-	// GeoTransform: [originX, pixelWidth, rotation1, originY, rotation2, pixelHeight]
-	return [
-		upperLeftX,
-		pixelSizeX,
-		0, // rotation (X)
-		upperLeftY,
-		0, // rotation (Y)
-		pixelSizeY
-	];
+	// B, E: Y方向の変換（1ピクセル下に移動したときの座標変化）
+	const B = (x3 - x1) / imageHeight;
+	const E = (y3 - y1) / imageHeight;
+
+	// C, F: 左上ピクセル中心の座標
+	const C = x1 + A * 0.5 + B * 0.5;
+	const F = y1 + D * 0.5 + E * 0.5;
+
+	// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
+	return [C, A, B, F, D, E];
 };
 
 /**
  * PAMDataset (GDAL Auxiliary File) を生成
  */
-export const generateAuxXml = (
-	canvas: HTMLCanvasElement,
+export const generateAuxXml = async (
 	map: MapLibreMap,
+	imageDataUrl: string,
 	epsg: number = 4326
-): string => {
-	const ctx = canvas.getContext('2d');
+): Promise<string> => {
+	// data URLから画像を読み込んで統計情報を取得
+	const img = new Image();
+	await new Promise<void>((resolve, reject) => {
+		img.onload = () => resolve();
+		img.onerror = reject;
+		img.src = imageDataUrl;
+	});
+
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = img.width;
+	tempCanvas.height = img.height;
+	const ctx = tempCanvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas context取得失敗');
 
-	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, 0, 0);
+	const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
 	// RGB各バンドの統計を計算
 	const redStats = calculateImageStatistics(imageData, 0);
@@ -108,7 +122,7 @@ export const generateAuxXml = (
 	];
 
 	// GeoTransformを計算
-	const geoTransform = calculateGeoTransform(map, canvas.width, canvas.height);
+	const geoTransform = calculateGeoTransform(map, img.width, img.height);
 
 	// WKT定義を取得
 	const wkt = getWkt(epsg.toString() as EpsgCode);
@@ -156,13 +170,13 @@ export const generateAuxXml = (
 /**
  * .aux.xmlファイルをダウンロード
  */
-export const downloadAuxXml = (
-	canvas: HTMLCanvasElement,
+export const downloadAuxXml = async (
 	map: MapLibreMap,
+	imageDataUrl: string,
 	epsg: number = 4326,
 	filename: string = 'map.png.aux.xml'
 ) => {
-	const xmlContent = generateAuxXml(canvas, map, epsg);
+	const xmlContent = await generateAuxXml(map, imageDataUrl, epsg);
 
 	const blob = new Blob([xmlContent], { type: 'application/xml' });
 	const url = URL.createObjectURL(blob);

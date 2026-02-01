@@ -10,6 +10,7 @@ import type {
 	ExpressionSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
+import type { Opacity } from '$routes/map/data/types';
 import type {
 	SequentialScheme,
 	SequentialCount,
@@ -222,8 +223,10 @@ export interface Labels {
 export type VectorLayerType = 'circle' | 'line' | 'fill' | 'symbol' | 'heatmap' | 'fill-extrusion';
 
 interface BaseVectorStyle {
-	opacity: number | 1 | 0.7 | 0.5 | 0.3;
+	opacity: Opacity;
 	visible?: boolean; // NOTE: 動的追加
+	minZoom?: number;
+	maxZoom?: number;
 	labels: Labels;
 	colors: ColorsStyle;
 }

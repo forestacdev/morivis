@@ -3,20 +3,16 @@ import type { Tag } from '$routes/map/data/types/tags';
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
 import type {
 	VectorFormatType,
-	TileMetaData,
+	GeoJsonMetaData,
 	PolygonEntry,
 	LineStringEntry,
 	PointEntry
 } from '$routes/map/data/types/vector';
 import type {
-	PolygonStyle,
-	LineStringStyle,
-	PointStyle,
 	ColorsStyle,
 	NumbersStyle,
 	Labels,
-	ColorsExpression,
-	ColorSingleExpression
+	ColorsExpression
 } from '$routes/map/data/types/vector/style';
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type { FieldDef, AttributeView } from '$routes/map/data/types/vector/properties';
@@ -31,22 +27,24 @@ import {
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
 // ========================================
-// 共通設定型
+// GeoJSON用共通設定型
 // ========================================
-interface BaseVectorConfig {
+interface BaseGeoJsonConfig {
 	id: string;
 	name: string;
 	url: string;
 	format: VectorFormatType;
-	sourceLayer?: string;
 	attribution: AttributionKey;
 	location: Region;
 	bounds?: Region | Bounds;
 	tags?: Tag[];
+	description?: string;
 	downloadUrl?: string;
 	sourceDataName?: string;
 	zoom?: { min: number; max: number };
 	xyzImageTile?: XYZPresetKey;
+	coverImage?: string;
+	mapImage?: string;
 	fields?: FieldDef[];
 	popupKeys?: string[];
 	titleTemplate?: string;
@@ -121,30 +119,34 @@ function createColorsStyleFromExpressions(
 }
 
 // ========================================
-// タイルポイントエントリ用ファクトリー
+// GeoJSONポイントエントリ用ファクトリー
 // ========================================
-export interface TilePointEntryConfig extends BaseVectorConfig {
+export interface GeoJsonPointEntryConfig extends BaseGeoJsonConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	radius?: number;
 	radiusExpressions?: NumbersStyle['expressions'];
 }
 
-export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<TileMetaData> {
+export function createGeoJsonPointEntry(
+	config: GeoJsonPointEntryConfig
+): PointEntry<GeoJsonMetaData> {
 	const {
 		id,
 		name,
 		url,
 		format,
-		sourceLayer = id,
 		attribution,
 		location,
 		bounds = location,
 		tags = [],
+		description,
 		downloadUrl,
 		sourceDataName,
 		zoom = { min: 0, max: 24 },
 		xyzImageTile = 'zoom_15',
+		coverImage,
+		mapImage,
 		fields = [],
 		popupKeys,
 		titleTemplate,
@@ -176,6 +178,7 @@ export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<T
 		},
 		metaData: {
 			name,
+			description,
 			sourceDataName,
 			attribution,
 			downloadUrl,
@@ -184,8 +187,9 @@ export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<T
 			minZoom: zoom.min,
 			maxZoom: zoom.max,
 			bounds: resolveBounds(bounds),
-			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
-			sourceLayer
+			coverImage,
+			mapImage,
+			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile]
 		},
 		properties: {
 			fields,
@@ -203,9 +207,9 @@ export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<T
 }
 
 // ========================================
-// タイルラインエントリ用ファクトリー
+// GeoJSONラインエントリ用ファクトリー
 // ========================================
-export interface TileLineEntryConfig extends BaseVectorConfig {
+export interface GeoJsonLineEntryConfig extends BaseGeoJsonConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	width?: number;
@@ -213,21 +217,25 @@ export interface TileLineEntryConfig extends BaseVectorConfig {
 	lineStyle?: 'solid' | 'dashed';
 }
 
-export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntry<TileMetaData> {
+export function createGeoJsonLineEntry(
+	config: GeoJsonLineEntryConfig
+): LineStringEntry<GeoJsonMetaData> {
 	const {
 		id,
 		name,
 		url,
 		format,
-		sourceLayer = id,
 		attribution,
 		location,
 		bounds = location,
 		tags = [],
+		description,
 		downloadUrl,
 		sourceDataName,
 		zoom = { min: 0, max: 24 },
 		xyzImageTile = 'zoom_15',
+		coverImage,
+		mapImage,
 		fields = [],
 		popupKeys,
 		titleTemplate,
@@ -260,6 +268,7 @@ export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntr
 		},
 		metaData: {
 			name,
+			description,
 			sourceDataName,
 			attribution,
 			downloadUrl,
@@ -268,8 +277,9 @@ export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntr
 			minZoom: zoom.min,
 			maxZoom: zoom.max,
 			bounds: resolveBounds(bounds),
-			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
-			sourceLayer
+			coverImage,
+			mapImage,
+			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile]
 		},
 		properties: {
 			fields,
@@ -288,9 +298,9 @@ export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntr
 }
 
 // ========================================
-// タイルポリゴンエントリ用ファクトリー
+// GeoJSONポリゴンエントリ用ファクトリー
 // ========================================
-export interface TilePolygonEntryConfig extends BaseVectorConfig {
+export interface GeoJsonPolygonEntryConfig extends BaseGeoJsonConfig {
 	color?: string;
 	colors?: ColorsExpression[];
 	outline?: {
@@ -301,21 +311,25 @@ export interface TilePolygonEntryConfig extends BaseVectorConfig {
 	};
 }
 
-export function createTilePolygonEntry(config: TilePolygonEntryConfig): PolygonEntry<TileMetaData> {
+export function createGeoJsonPolygonEntry(
+	config: GeoJsonPolygonEntryConfig
+): PolygonEntry<GeoJsonMetaData> {
 	const {
 		id,
 		name,
 		url,
 		format,
-		sourceLayer = id,
 		attribution,
 		location,
 		bounds = location,
 		tags = [],
+		description,
 		downloadUrl,
 		sourceDataName,
 		zoom = { min: 0, max: 24 },
 		xyzImageTile = 'zoom_15',
+		coverImage,
+		mapImage,
 		fields = [],
 		popupKeys,
 		titleTemplate,
@@ -346,6 +360,7 @@ export function createTilePolygonEntry(config: TilePolygonEntryConfig): PolygonE
 		},
 		metaData: {
 			name,
+			description,
 			sourceDataName,
 			attribution,
 			downloadUrl,
@@ -354,8 +369,9 @@ export function createTilePolygonEntry(config: TilePolygonEntryConfig): PolygonE
 			minZoom: zoom.min,
 			maxZoom: zoom.max,
 			bounds: resolveBounds(bounds),
-			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
-			sourceLayer
+			coverImage,
+			mapImage,
+			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile]
 		},
 		properties: {
 			fields,

@@ -73,10 +73,15 @@ export type TileSize = 512 | 256;
 
 export type RasterStyleType = 'basemap' | 'categorical' | 'dem' | 'tiff' | 'cad';
 
-export interface RasterBaseMapStyle {
-	type: 'basemap';
+export interface BaseRasterStyle {
 	opacity: Opacity;
-	visible?: boolean;
+	visible?: boolean; // NOTE: 動的追加
+	minZoom?: number;
+	maxZoom?: number;
+}
+
+export interface RasterBaseMapStyle extends BaseRasterStyle {
+	type: 'basemap';
 	preset: RasterStylePreset;
 	hueRotate: number;
 	brightnessMin: number;
@@ -86,10 +91,8 @@ export interface RasterBaseMapStyle {
 }
 
 // TODO: グループ化したスタイルの型を定義する
-export interface RasterBaseGroupMapStyle {
+export interface RasterBaseGroupMapStyle extends BaseRasterStyle {
 	type: 'basemap';
-	opacity: Opacity;
-	visible?: boolean;
 	hueRotate: number;
 	brightnessMin: number;
 	brightnessMax: number;
@@ -105,18 +108,14 @@ export interface RasterBaseGroupMapStyle {
 	};
 }
 
-export interface RasterCategoricalStyle {
+export interface RasterCategoricalStyle extends BaseRasterStyle {
 	type: 'categorical';
-	opacity: Opacity;
-	visible?: boolean;
 	resampling?: 'nearest' | 'linear';
 	legend: CategoryLegend | GradientLegend | ImageLegend;
 }
 
-export interface RasterCadStyle {
+export interface RasterCadStyle extends BaseRasterStyle {
 	type: 'cad';
-	opacity: Opacity;
-	visible?: boolean;
 	color: string;
 }
 
@@ -180,10 +179,8 @@ export const DEM_STYLE_TYPE = {
 export type DemStyleMode = keyof typeof DEM_STYLE_TYPE;
 export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYPE];
 
-export interface RasterDemStyle {
+export interface RasterDemStyle extends BaseRasterStyle {
 	type: 'dem';
-	opacity: Opacity;
-	visible?: boolean;
 	visualization: {
 		demType: DemDataTypeKey;
 		mode: DemStyleMode;
@@ -232,10 +229,8 @@ export interface MultiBandData {
 	b: { index: number; min: number; max: number }; // B
 }
 
-export interface RasterTiffStyle {
+export interface RasterTiffStyle extends BaseRasterStyle {
 	type: 'tiff';
-	opacity: Opacity;
-	visible?: boolean;
 	visualization: {
 		numBands: number;
 		mode: BandTypeKey;

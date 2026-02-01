@@ -206,8 +206,8 @@ export const labelLayers: SymbolLayerSpecification[] = [
 			'text-size': ['interpolate', ['linear'], ['zoom'], 10, 14, 15, 24]
 		},
 		paint: {
-			'text-color': '#333',
-			'text-halo-color': 'rgba(255, 255, 255, 0.8)',
+			'text-color': 'rgba(255, 255, 255, 1)',
+			'text-halo-color': 'rgba(0, 0, 0, 0.75)',
 			'text-halo-width': 1.2
 		}
 	},

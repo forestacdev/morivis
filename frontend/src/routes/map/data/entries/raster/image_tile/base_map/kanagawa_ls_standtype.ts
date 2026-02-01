@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '神奈川県 レーザ林相図',
-		attribution: '神奈川県森林再生課（林野庁加工）',
+		attribution: '神奈川県森林再生課_林野庁加工',
 		location: '神奈川県',
 		minZoom: 8,
 		maxZoom: 18,

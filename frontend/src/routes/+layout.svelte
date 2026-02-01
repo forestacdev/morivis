@@ -12,6 +12,7 @@
 
 	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { PUBLIC_GA_UA } from '$env/static/public';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
@@ -99,7 +100,7 @@
 </script>
 
 <!-- Googleアナリティクスの設定 -->
-<GoogleAnalytics id={import.meta.env.VITE_GA_UA} />
+<GoogleAnalytics id={PUBLIC_GA_UA} />
 
 <svelte:head>
 	<!-- <link rel="icon" href={faviconHref} /> -->
