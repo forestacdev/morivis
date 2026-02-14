@@ -185,7 +185,7 @@
 		{/if}
 	</div>
 
-	<div class="pt-3">
+	<div class="pt-3 pb-56">
 		<!-- 詳細情報 -->
 		<div class="flex h-full w-full flex-col gap-2">
 			<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
@@ -219,7 +219,7 @@
 
 		<!-- 通常の地物の属性情報 -->
 		{#if !propId}
-			<div class="mb-56 flex h-full w-full flex-col gap-2">
+			<div class="flex h-full w-full flex-col gap-2">
 				<div class="my-4 text-base text-lg">属性情報</div>
 				{#if featureMenuData.properties}
 					{#each Object.entries(featureMenuData.properties) as [key, value]}

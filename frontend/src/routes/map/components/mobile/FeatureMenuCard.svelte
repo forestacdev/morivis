@@ -32,16 +32,16 @@
 	$effect(() => {
 		if (featureMenuData && $isMobile) {
 			sheetOpen = true;
-			debugLog.info('ボトムシート: 開く');
 		}
 	});
 
+	// 閉じるときにfeatureMenuDataをクリアする
 	const handleClose = () => {
-		debugLog.info('ボトムシート: 閉じる');
 		sheetOpen = false;
 		featureMenuData = null;
 	};
 
+	// スナップイベントのハンドラー
 	const handleSnap = (progress: number) => {
 		debugLog.info(`ボトムシート: snap progress=${progress.toFixed(2)}`);
 	};
@@ -76,9 +76,14 @@
 		flat
 		onclose={handleClose}
 		onsnap={handleSnap}
+		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10;"
 	>
 		{#snippet header()}
-			<div class="flex w-full items-center justify-between px-4 pb-2 pt-1">
+			<!-- ハンドルバー -->
+			<div class="flex justify-center py-2">
+				<div class="h-1.5 w-13 rounded-full bg-gray-400/50"></div>
+			</div>
+			<div class="flex w-full items-center justify-between px-4 pb-2">
 				<div class="min-w-0 flex-1">
 					{#if featureMenuData}
 						{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
