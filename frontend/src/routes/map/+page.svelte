@@ -36,7 +36,6 @@
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
-	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 
@@ -555,7 +554,7 @@
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-			<MobileFeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 		</MobileFeatureMenuCard>
 
 		<PreviewMenu bind:showDataEntry />

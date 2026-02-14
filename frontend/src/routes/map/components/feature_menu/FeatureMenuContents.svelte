@@ -247,7 +247,7 @@
 		</div>
 	{:then imageData}
 		<!-- 画像 -->
-		<div in:fade={{ duration: 100 }} class="relative w-full p-2">
+		<div in:fade={{ duration: 100 }} class="relative w-full max-lg:py-2 lg:p-2">
 			{#if data && data.medias && data.medias.length > 0}
 				<!-- メディアカルーセル -->
 				<div
@@ -328,7 +328,7 @@
 			{/if}
 
 			<div
-				class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base"
+				class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base max-lg:hidden"
 			>
 				{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 					<!-- poiタイトル -->
@@ -354,9 +354,9 @@
 			</div>
 		</div>
 
-		<div in:fade={{ duration: 100 }} class="pl-2">
+		<div in:fade={{ duration: 100 }} class="lg:pl-2">
 			<!-- 詳細情報 -->
-			<div class="flex h-full w-full flex-col gap-2 pr-2">
+			<div class="flex h-full w-full flex-col gap-2 lg:pr-2">
 				<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 					<!-- 座標 （緯度, 経度） -->
 					<div class="flex w-full justify-start gap-2">
@@ -421,7 +421,7 @@
 			{#if featureMenuData.layerId !== 'fac_poi'}
 				<button
 					onclick={edit}
-					class="c-btn-confirm absolute top-3 left-3 z-10 flex items-center justify-center gap-2 px-3"
+					class="c-btn-confirm absolute top-3 left-3 z-10 flex items-center justify-center gap-2 px-3 max-lg:hidden"
 				>
 					<Icon icon="streamline:paint-palette-solid" class="h-6 w-6" />
 					<span class="select-none">スタイルの変更</span>
