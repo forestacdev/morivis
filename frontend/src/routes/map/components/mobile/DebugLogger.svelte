@@ -28,7 +28,7 @@
 </script>
 
 {#if showDebugWindow && $isDebugMode}
-	<div class="absolute top-0 left-0 z-50 w-full max-w-md p-2">
+	<div class="absolute top-0 left-0 z-50 w-full max-w-md p-2 lg:hidden">
 		<div class="max-h-64 overflow-y-auto rounded bg-black/80 p-2 text-white">
 			<div class="mb-2 flex items-center justify-between">
 				<h3 class="text-sm font-bold">Debug Logger</h3>
