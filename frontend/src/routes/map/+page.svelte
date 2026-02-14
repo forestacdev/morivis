@@ -28,6 +28,7 @@
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
+	import FeatureMenuContents from '$routes/map/components/feature_menu/FeatureMenuContents.svelte';
 	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
@@ -547,7 +548,9 @@
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
+			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		</FeatureMenu>
 		<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
 
 		<!-- スマホ用地物情報 -->
@@ -608,7 +611,7 @@
 
 <Processing />
 <ConfirmationDialog />
-<MobileDebugLogger bind:showDebugWindow />
+<MobileDebugLogger />
 
 <!-- TODO -->
 <svelte:window
