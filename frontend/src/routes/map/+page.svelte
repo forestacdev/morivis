@@ -28,14 +28,15 @@
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
 	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
+	import FeatureMenuContents from '$routes/map/components/feature_menu/FeatureMenuContents.svelte';
 	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
-	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
@@ -545,12 +546,14 @@
 		/>
 
 		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
+			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+		</FeatureMenu>
 		<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
 
 		<!-- スマホ用地物情報 -->
 		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-			<MobileFeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 		</MobileFeatureMenuCard>
 
 		<PreviewMenu bind:showDataEntry />
@@ -606,6 +609,7 @@
 
 <Processing />
 <ConfirmationDialog />
+<MobileDebugLogger />
 
 <!-- TODO -->
 <svelte:window

@@ -87,7 +87,7 @@ export class GpkgToGeoJsonConverter {
 		const tableInfo: { [tableName: string]: any } = {};
 
 		// フィーチャーテーブルの情報を取得
-		featureTables.forEach((tableName) => {
+		featureTables.forEach((tableName: any) => {
 			const featureDao = this.geoPackage!.getFeatureDao(tableName);
 			tableInfo[tableName] = {
 				type: 'feature',
@@ -99,7 +99,7 @@ export class GpkgToGeoJsonConverter {
 		});
 
 		// タイルテーブルの情報を取得
-		tileTables.forEach((tableName) => {
+		tileTables.forEach((tableName: any) => {
 			const tileDao = this.geoPackage!.getTileDao(tableName);
 			tableInfo[tableName] = {
 				type: 'tile',

@@ -100,7 +100,7 @@
 							isStyleEdit.set(false);
 							selectedLayerId.set('');
 						}}
-						class="bg-base ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
 						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
 					</button>
