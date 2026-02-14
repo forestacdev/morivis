@@ -37,6 +37,8 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFeatureMenuContents from '$routes/map/components/mobile/FeatureMenuContents.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
+	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
+
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
@@ -606,6 +608,7 @@
 
 <Processing />
 <ConfirmationDialog />
+<MobileDebugLogger bind:showDebugWindow />
 
 <!-- TODO -->
 <svelte:window

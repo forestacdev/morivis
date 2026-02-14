@@ -1,9 +1,10 @@
 import { writable } from 'svelte/store';
+import { PUBLIC_INIT_DEBUG_MODE } from '$env/static/public';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
 
 /**  デバッグモード 開発時のみ */
-export const isDebugMode = writable<boolean>(false);
+export const isDebugMode = writable<boolean>(PUBLIC_INIT_DEBUG_MODE === '1');
 
 /* クリックイベントを除外するレイヤーID */
 export const excludeIdsClickLayer = writable<string[]>(['HighlightFeatureId']);
