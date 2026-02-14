@@ -60,6 +60,9 @@ importers:
       '@deck.gl/mapbox':
         specifier: ^9.2.5
         version: 9.2.5(@deck.gl/core@9.2.5)(@luma.gl/constants@9.2.5)(@luma.gl/core@9.2.5)(@math.gl/web-mercator@4.1.0)
+      '@devantic/diaper':
+        specifier: ^2.2.2
+        version: 2.2.2(@sveltejs/kit@2.49.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)
       '@mapbox/tilebelt':
         specifier: ^2.0.3
         version: 2.0.3
@@ -979,6 +982,12 @@ packages:
       '@luma.gl/engine': ~9.2.4
       '@luma.gl/gltf': ~9.2.4
       '@luma.gl/shadertools': ~9.2.4
+
+  '@devantic/diaper@2.2.2':
+    resolution: {integrity: sha512-pcf+WblVG2H3VUF92+FHXRiK8V7daohlOvXTDXElDkp2yaXql9KzuENqGU2uc4LeS+//xdhZ5n2bHI1iCLNIXw==}
+    peerDependencies:
+      '@sveltejs/kit': ^2.20.7
+      svelte: ^5.27.0
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -4031,6 +4040,7 @@ packages:
   glob@11.1.0:
     resolution: {integrity: sha512-vuNwKSaKiqm7g0THUBu2x7ckSs3XJLXE+2ssL7/MfTGPLLcrJQ/4Uq1CjPTtO5cCIiRxqvN6Twy1qOwhL0Xjcw==}
     engines: {node: 20 || >=22}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
@@ -7545,6 +7555,11 @@ snapshots:
       '@luma.gl/shadertools': 9.2.5(@luma.gl/core@9.2.5)
     transitivePeerDependencies:
       - '@loaders.gl/core'
+
+  '@devantic/diaper@2.2.2(@sveltejs/kit@2.49.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)':
+    dependencies:
+      '@sveltejs/kit': 2.49.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1)))(svelte@5.45.5)(vite@5.4.21(@types/node@24.10.1)(lightningcss@1.30.2)(terser@5.44.1))
+      svelte: 5.45.5
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.1)':
     dependencies:
