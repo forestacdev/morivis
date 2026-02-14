@@ -44,12 +44,12 @@
 		<div
 			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType === layerType
 				? 'bg-accent text-base'
-				: 'bg-base'} duration-200"
+				: 'bg-base text-main'} duration-200"
 		>
 			<Icon icon={getLayerIcon(layerType)} class="h-5 w-5" />
 		</div>
 		<div
-			class="bg-base pointer-events-none absolute top-10 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
+			class="bg-base text-main pointer-events-none absolute top-10 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
 		>
 			{TYPE_LABELS[layerType]}
 		</div>

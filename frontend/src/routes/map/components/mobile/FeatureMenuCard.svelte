@@ -43,7 +43,7 @@
 
 	// スナップイベントのハンドラー
 	const handleSnap = (progress: number) => {
-		debugLog.info(`ボトムシート: snap progress=${progress.toFixed(2)}`);
+		// debugLog.info(`ボトムシート: snap progress=${progress.toFixed(2)}`);
 	};
 
 	let propId = $derived.by(() => {
