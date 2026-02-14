@@ -41,9 +41,22 @@
 		featureMenuData = null;
 	};
 
+	// 現在のスナップ位置を追跡（0=全画面, 0.5=ハーフ, 1=閉じる）
+	let currentSnap = $state(0.5);
+
 	// スナップイベントのハンドラー
 	const handleSnap = (progress: number) => {
-		// debugLog.info(`ボトムシート: snap progress=${progress.toFixed(2)}`);
+		currentSnap = progress;
+	};
+
+	// ハンドルバーのトグル（全画面 ↔ ハーフ）
+	const toggleExpand = () => {
+		if (!sheetRef) return;
+		if (currentSnap === 0) {
+			sheetRef.snapTo(1); // ハーフへ
+		} else {
+			sheetRef.snapTo(0); // 全画面へ
+		}
 	};
 
 	let propId = $derived.by(() => {
@@ -76,13 +89,13 @@
 		flat
 		onclose={handleClose}
 		onsnap={handleSnap}
-		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10; overflow-x: hidden;"
+		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10; overflow-x: hidden; --diaper-duration: 0.3s;"
 	>
 		{#snippet header()}
-			<!-- ハンドルバー -->
-			<div class="flex justify-center py-2">
+			<!-- ハンドルバー（タップで展開/折りたたみ） -->
+			<button class="flex w-full cursor-pointer justify-center py-2" onclick={toggleExpand}>
 				<div class="h-1.5 w-13 rounded-full bg-gray-400/50"></div>
-			</div>
+			</button>
 			<div class="flex w-full items-center justify-between px-4 pb-2">
 				<div class="min-w-0 flex-1">
 					{#if featureMenuData}
