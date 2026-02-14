@@ -14,6 +14,19 @@ body {
 	overflow: hidden;
 }
 
+/* diaperのグローバルCSS（diaper.css/bottomsheet.css）による副作用を打ち消す */
+/* html {
+	background-color: var(--color-main) !important;
+}
+
+body {
+	scale: none !important;
+	clip-path: none !important;
+	transition: none !important;
+	transform-origin: unset !important;
+	position: static !important;
+} */
+
 @theme {
 	--color-base: #f1f1f1;
 	--color-main: #0c221d;
