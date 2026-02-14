@@ -32,6 +32,8 @@
 	$effect(() => {
 		if (featureMenuData && $isMobile) {
 			sheetOpen = true;
+		} else {
+			sheetOpen = false;
 		}
 	});
 
