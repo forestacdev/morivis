@@ -35,10 +35,9 @@
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
-	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
-
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';

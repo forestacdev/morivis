@@ -1,12 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-
-	import { fade, fly } from 'svelte/transition';
 	import type { Snippet } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-
 	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {

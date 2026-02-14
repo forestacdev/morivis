@@ -1,14 +1,13 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { Bottomsheet } from '@devantic/diaper';
+	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/properties';
-	import { isMobile } from '$routes/stores/ui';
-
 	import { debugLog } from '$routes/stores/debug';
+	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
@@ -95,7 +94,11 @@
 	>
 		{#snippet header()}
 			<!-- ハンドルバー（タップで展開/折りたたみ） -->
-			<button class="flex w-full cursor-pointer justify-center py-2" onclick={toggleExpand}>
+			<button
+				class="flex w-full cursor-pointer justify-center py-2"
+				onclick={toggleExpand}
+				aria-label="カードを展開/折りたたみ"
+			>
 				<div class="h-1.5 w-13 rounded-full bg-gray-400/50"></div>
 			</button>
 			<div class="flex w-full items-center justify-between px-4 pb-2">

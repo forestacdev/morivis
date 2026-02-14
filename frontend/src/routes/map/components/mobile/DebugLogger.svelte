@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { debugLog, type DebugLogEntry } from '$routes/stores/debug';
 	import { isDebugMode } from '$routes/stores';
+	import { debugLog, type DebugLogEntry } from '$routes/stores/debug';
 
 	let showDebugWindow = $state(true);
 
