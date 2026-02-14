@@ -76,7 +76,7 @@
 		flat
 		onclose={handleClose}
 		onsnap={handleSnap}
-		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10;"
+		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10; overflow-x: hidden;"
 	>
 		{#snippet header()}
 			<!-- ハンドルバー -->
