@@ -239,7 +239,7 @@
 			{#if !$isBlocked && showButton}
 				<button
 					transition:slide={{ duration: 300, axis: 'y' }}
-					class="bg-base lg:hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 max-lg:text-lg lg:text-2xl lg:hover:text-white {$isBlocked
+					class="bg-base text-main lg:hover:bg-main pointer-events-auto shrink-0 cursor-pointer rounded-full px-8 py-4 transition-all duration-200 max-lg:text-lg lg:text-2xl lg:hover:text-white {$isBlocked
 						? 'pointer-events-none'
 						: 'pointer-events-auto'}"
 					onclick={goMap}

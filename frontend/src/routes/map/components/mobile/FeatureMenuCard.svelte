@@ -91,7 +91,7 @@
 		flat
 		onclose={handleClose}
 		onsnap={handleSnap}
-		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10; overflow-x: hidden; --diaper-duration: 0.3s;"
+		style="background-color: var(--color-main); border-radius: 20px 20px 0 0; padding-top: 5px; z-index: 10; overflow-x: hidden; --diaper-duration: 0.3s; --diaper-shadow-color: rgba(0,0,0,0.25);"
 	>
 		{#snippet header()}
 			<!-- ハンドルバー（タップで展開/折りたたみ） -->
