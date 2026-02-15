@@ -15,6 +15,13 @@
 	import { getProjContext } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 
+	import {
+		cprClpToOrbitTrackGeojson,
+		cprFmrToOrbitTrackGeojson,
+		msiClpToOrbitTrackGeojson,
+		getHdf5FileInfo
+	} from '$routes/map/utils/file/hdf5';
+
 	interface Props {
 		map: maplibregl.Map;
 		isDragover: boolean;
@@ -65,10 +72,26 @@
 				case 'prj':
 					showDialogType = 'shp';
 					return;
-				// case 'tiff':
-				// case 'tif':
-				// 	showDialogType = 'tiff';
-				// 	return;
+				case 'h5':
+					// データセット一覧を確認
+
+					if (import.meta.env.MODE !== 'production') {
+						const info = await getHdf5FileInfo(file);
+						console.log(info);
+					}
+
+					if (file.name.includes('ECA_J_CPR_CLP')) {
+						geojsonData = await cprClpToOrbitTrackGeojson(file);
+					} else if (file.name.includes('ECA_E_CPR_FMR')) {
+						geojsonData = await cprFmrToOrbitTrackGeojson(file);
+					} else if (file.name.includes('ECA_J_MSI_CLP')) {
+						geojsonData = await msiClpToOrbitTrackGeojson(file);
+						console.log(geojsonData);
+					} else {
+						showNotification('対応していないHDF5プロダクトです', 'error');
+						return;
+					}
+					break;
 
 				default:
 					showNotification('対応していないファイル形式です', 'error');
