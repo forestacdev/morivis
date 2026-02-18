@@ -577,10 +577,10 @@
 			></div>
 		{/if}
 
-		<!-- タイプ -->
+		<!-- レイヤータイプ -->
 		{#if $showDataMenu}
 			<div
-				class="bg-base pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
+				class="bg-base text-main pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
 			>
 				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
 			</div>

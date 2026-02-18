@@ -135,7 +135,7 @@
 						>
 							<Icon
 								icon="ep:back"
-								class="h-6 w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
+								class="text-main h-6 w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
 							/>
 						</button>
 					</div>
