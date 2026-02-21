@@ -156,7 +156,7 @@ export const baseMapHillshadeLayers: (
 	{
 		id: 'earthhillshade_layer',
 		type: 'hillshade',
-		source: 'mapterhorn',
+		source: 'terrain', // terrainソースを使用
 		paint: {
 			'hillshade-method': 'standard',
 			'hillshade-illumination-direction': 315,
