@@ -1,6 +1,7 @@
 packages:
   - frontend
   - data
+  - api
   - data/scripts/node
 
 ignoredBuiltDependencies:
