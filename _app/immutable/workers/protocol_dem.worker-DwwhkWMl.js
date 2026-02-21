@@ -1,4 +1,4 @@
-(function(){"use strict";var D=`#version 300 es
+(function(){"use strict";let h=null;function E(){if(h!==null)return h;h=!1;const e=5,o=new OffscreenCanvas(e,e).getContext("2d",{willReadFrequently:!0});if(!o)return!1;for(let n=0;n<e*e;n++){const a=n*4;o.fillStyle=`rgb(${a},${a+1},${a+2})`,o.fillRect(n%e,Math.floor(n/e),1,1)}const r=o.getImageData(0,0,e,e).data;for(let n=0;n<e*e*4;n++)if(n%4!==3&&r[n]!==n){h=!0;break}return h}async function b(e){if(E())try{return e.transferToImageBitmap()}catch{}return await e.convertToBlob()}var w=`#version 300 es
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
@@ -30,6 +30,9 @@ uniform float u_min_slope;
 // aspect
 uniform float u_max_aspect;
 uniform float u_min_aspect;
+
+// tile size
+uniform float u_tile_size;
 
 
 in vec2 v_tex_coord ;
@@ -74,7 +77,7 @@ float getLatitudeFromTileUV(float tileY, float uv_y, float zoom) {
 
 // 地球の周囲長を基に、ズームレベルに応じた解像度を計算
 float getResolution(float zoom) {
-    return 40075016.68557849 / (256.0 * pow(2.0, float(zoom)));
+    return 40075016.68557849 / (u_tile_size * pow(2.0, float(zoom)));
 }
 
 // 緯度に応じたピクセルあたりの東西方向の地上解像度を計算
@@ -240,7 +243,7 @@ mat3 calculateTerrainData(vec2 uv, float center_h) {
     // |        | bottom |        |
     // ----------------------------
 
-    vec2 pixel_size = vec2(1.0) / 256.0;
+    vec2 pixel_size = vec2(1.0) / u_tile_size;
     mat3 _h_mat = mat3(0.0);
 
 
@@ -494,11 +497,11 @@ void main() {
 }
 
 
-`,E=`#version 300 es
+`,A=`#version 300 es
 in vec4 a_position;
 out vec2 v_tex_coord;
 
 void main() {
     gl_Position = a_position;
     v_tex_coord = vec2(a_position.x * 0.5 + 0.5, a_position.y * -0.5 + 0.5); // Y軸を反転
-}`;let t=null,n=null,f=null;const R=e=>{if(t=e.getContext("webgl2"),!t)throw new Error("WebGL not supported");const i=(r,s,h)=>{const o=r.createShader(s);return o?(r.shaderSource(o,h),r.compileShader(o),r.getShaderParameter(o,r.COMPILE_STATUS)?o:(console.error("An error occurred compiling the shaders: "+r.getShaderInfoLog(o)),r.deleteShader(o),null)):(console.error("Unable to create shader"),null)},_=i(t,t.VERTEX_SHADER,E),a=i(t,t.FRAGMENT_SHADER,D);if(!_||!a)throw new Error("Failed to load shaders");if(n=t.createProgram(),!n)throw new Error("Failed to create program");if(t.attachShader(n,_),t.attachShader(n,a),t.linkProgram(n),!t.getProgramParameter(n,t.LINK_STATUS))throw console.error("Unable to initialize the shader program: "+t.getProgramInfoLog(n)),new Error("Failed to link program");t.useProgram(n),f=t.createBuffer(),t.bindBuffer(t.ARRAY_BUFFER,f);const l=new Float32Array([-1,-1,1,-1,-1,1,1,1]);t.bufferData(t.ARRAY_BUFFER,l,t.STATIC_DRAW);const u=t.getAttribLocation(n,"a_position");t.enableVertexAttribArray(u),t.vertexAttribPointer(u,2,t.FLOAT,!1,0,0)},v=(e,i,_)=>{let a=e.TEXTURE0;Object.entries(_).forEach(([l,{image:u,type:r}])=>{const s=e.createTexture();e.activeTexture(a),e.bindTexture(e.TEXTURE_2D,s);const h=e.getUniformLocation(i,l);e.uniform1i(h,a-e.TEXTURE0),r==="height"?e.texImage2D(e.TEXTURE_2D,0,e.RGBA,e.RGBA,e.UNSIGNED_BYTE,u):e.texImage2D(e.TEXTURE_2D,0,e.RGB,256,1,0,e.RGB,e.UNSIGNED_BYTE,u),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_S,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_T,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MIN_FILTER,e.LINEAR),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MAG_FILTER,e.LINEAR),a+=1})},x=(e,i,_)=>{for(const[a,{type:l,value:u}]of Object.entries(_)){const r=e.getUniformLocation(i,a);r!==null&&e[`uniform${l}`](r,u)}},z=new OffscreenCanvas(256,256);self.onmessage=async e=>{const{tileId:i,center:_,left:a,right:l,top:u,bottom:r,demTypeNumber:s,modeNumber:h,mode:o,max:g,min:d,elevationColorArray:y,tile:m,encodeType:T}=e.data;try{if(t||R(z),!t||!n||!f)throw new Error("WebGL initialization failed");if(t.useProgram(n),o==="relief")x(t,n,{u_dem_type:{type:"1f",value:s},u_mode:{type:"1f",value:h},u_max_height:{type:"1f",value:g},u_min_height:{type:"1f",value:d}}),v(t,n,{u_height_map_center:{image:_,type:"height"},u_color_map:{image:y,type:"colormap"}});else if(o==="slope"||o==="curvature"){const c={u_dem_type:{type:"1f",value:s},u_mode:{type:"1f",value:h},u_max_slope:{type:"1f",value:g},u_min_slope:{type:"1f",value:d},u_tile_y:{type:"1f",value:m.y},u_tile_z:{type:"1f",value:m.z}};x(t,n,c),v(t,n,{u_height_map_center:{image:_,type:"height"},u_height_map_left:{image:a,type:"height"},u_height_map_right:{image:l,type:"height"},u_height_map_top:{image:u,type:"height"},u_height_map_bottom:{image:r,type:"height"},u_color_map:{image:y,type:"colormap"}})}else if(o==="aspect"){const c={u_dem_type:{type:"1f",value:s},u_mode:{type:"1f",value:h},u_max_aspect:{type:"1f",value:g},u_min_aspect:{type:"1f",value:d},u_tile_y:{type:"1f",value:m.y},u_tile_z:{type:"1f",value:m.z}};x(t,n,c),v(t,n,{u_height_map_center:{image:_,type:"height"},u_height_map_left:{image:a,type:"height"},u_height_map_right:{image:l,type:"height"},u_height_map_top:{image:u,type:"height"},u_height_map_bottom:{image:r,type:"height"},u_color_map:{image:y,type:"colormap"}})}t.clear(t.COLOR_BUFFER_BIT),t.drawArrays(t.TRIANGLE_STRIP,0,4);const p=await z.convertToBlob();if(!p)throw new Error("Failed to convert canvas to blob");if(T==="buffar"){const c=await p.arrayBuffer();self.postMessage({id:i,buffer:c})}else T==="blob"&&self.postMessage({id:i,blob:p})}catch(p){p instanceof Error&&self.postMessage({id:i,error:p.message})}}})();
+}`;const D=new Map,C=(e,t,o)=>{const r=e.createShader(t);return r?(e.shaderSource(r,o),e.compileShader(r),e.getShaderParameter(r,e.COMPILE_STATUS)?r:(console.error("An error occurred compiling the shaders: "+e.getShaderInfoLog(r)),e.deleteShader(r),null)):(console.error("Unable to create shader"),null)},U=e=>{const t=e.getContext("webgl2");if(!t)throw new Error("WebGL not supported");const o=C(t,t.VERTEX_SHADER,A),r=C(t,t.FRAGMENT_SHADER,w);if(!o||!r)throw new Error("Failed to load shaders");const n=t.createProgram();if(!n)throw new Error("Failed to create program");if(t.attachShader(n,o),t.attachShader(n,r),t.linkProgram(n),!t.getProgramParameter(n,t.LINK_STATUS))throw console.error("Unable to initialize the shader program: "+t.getProgramInfoLog(n)),new Error("Failed to link program");t.useProgram(n);const a=t.createBuffer();if(!a)throw new Error("Failed to create position buffer");t.bindBuffer(t.ARRAY_BUFFER,a);const _=new Float32Array([-1,-1,1,-1,-1,1,1,1]);t.bufferData(t.ARRAY_BUFFER,_,t.STATIC_DRAW);const u=t.getAttribLocation(n,"a_position");return t.enableVertexAttribArray(u),t.vertexAttribPointer(u,2,t.FLOAT,!1,0,0),{canvas:e,gl:t,program:n,positionBuffer:a}},H=e=>{let t=D.get(e);if(!t){const o=new OffscreenCanvas(e,e);t=U(o),D.set(e,t)}return t},g=(e,t,o)=>{let r=e.TEXTURE0;Object.entries(o).forEach(([n,{image:a,type:_}])=>{const u=e.createTexture();e.activeTexture(r),e.bindTexture(e.TEXTURE_2D,u);const p=e.getUniformLocation(t,n);e.uniform1i(p,r-e.TEXTURE0),_==="height"?e.texImage2D(e.TEXTURE_2D,0,e.RGBA,e.RGBA,e.UNSIGNED_BYTE,a):e.texImage2D(e.TEXTURE_2D,0,e.RGB,256,1,0,e.RGB,e.UNSIGNED_BYTE,a),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_S,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_T,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MIN_FILTER,e.LINEAR),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MAG_FILTER,e.LINEAR),r+=1})},d=(e,t,o)=>{for(const[r,{type:n,value:a}]of Object.entries(o)){const _=e.getUniformLocation(t,r);_!==null&&e[`uniform${n}`](_,a)}};self.onmessage=async e=>{const{tileId:t,center:o,left:r,right:n,top:a,bottom:_,demTypeNumber:u,modeNumber:p,mode:f,max:y,min:z,elevationColorArray:T,tile:v,tileSize:s=256,encodeType:R}=e.data;try{const x=H(s),{canvas:L,gl:i,program:l}=x;if(i.viewport(0,0,s,s),i.useProgram(l),f==="relief")d(i,l,{u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:p},u_max_height:{type:"1f",value:y},u_min_height:{type:"1f",value:z},u_tile_size:{type:"1f",value:s}}),g(i,l,{u_height_map_center:{image:o,type:"height"},u_color_map:{image:T,type:"colormap"}});else if(f==="slope"||f==="curvature"){const c={u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:p},u_max_slope:{type:"1f",value:y},u_min_slope:{type:"1f",value:z},u_tile_y:{type:"1f",value:v.y},u_tile_z:{type:"1f",value:v.z},u_tile_size:{type:"1f",value:s}};d(i,l,c),g(i,l,{u_height_map_center:{image:o,type:"height"},u_height_map_left:{image:r,type:"height"},u_height_map_right:{image:n,type:"height"},u_height_map_top:{image:a,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:T,type:"colormap"}})}else if(f==="aspect"){const c={u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:p},u_max_aspect:{type:"1f",value:y},u_min_aspect:{type:"1f",value:z},u_tile_y:{type:"1f",value:v.y},u_tile_z:{type:"1f",value:v.z},u_tile_size:{type:"1f",value:s}};d(i,l,c),g(i,l,{u_height_map_center:{image:o,type:"height"},u_height_map_left:{image:r,type:"height"},u_height_map_right:{image:n,type:"height"},u_height_map_top:{image:a,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:T,type:"colormap"}})}i.clear(i.COLOR_BUFFER_BIT),i.drawArrays(i.TRIANGLE_STRIP,0,4);const m=await b(L);if(m instanceof ImageBitmap)self.postMessage({id:t,imageBitmap:m},{transfer:[m]});else if(R==="buffar"){const c=await m.arrayBuffer();self.postMessage({id:t,buffer:c})}else R==="blob"&&self.postMessage({id:t,blob:m})}catch(x){x instanceof Error&&self.postMessage({id:t,error:x.message})}}})();
