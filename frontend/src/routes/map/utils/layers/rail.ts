@@ -138,6 +138,24 @@ const railLineOpacity: ExpressionSpecification = [
 	0.1
 ];
 
+/** 地下・トンネル用 line-opacity（既存のcase式 × railLineOpacityのフェード） */
+const tunnelBaseOpacity: ExpressionSpecification = [
+	'case',
+	['==', ['get', 'vt_sngldbl'], '駅部分'],
+	1,
+	['case', ['==', ['get', 'vt_railstate'], '雪覆い'], 0.75, 0.5]
+];
+
+const railTunnelLineOpacity: ExpressionSpecification = [
+	'interpolate',
+	['linear'],
+	['zoom'],
+	13,
+	tunnelBaseOpacity,
+	18,
+	['*', 0.1, tunnelBaseOpacity]
+];
+
 export const railLineLayers = [
 	{
 		id: '鉄道中心線ZL4-10',
@@ -255,21 +273,9 @@ export const railLineLayers = [
 		source: 'v',
 		'source-layer': 'RailCL',
 		filter: [
-			'step',
-			['zoom'],
-			[
-				'all',
-				['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
-				['==', ['get', 'vt_sngldbl'], '駅部分'],
-				['any', ['!', ['has', 'vt_flag17']], ['in', ['get', 'vt_flag17'], ['literal', [0, 1]]]]
-			],
-			17,
-			[
-				'all',
-				['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
-				['==', ['get', 'vt_sngldbl'], '駅部分'],
-				['in', ['get', 'vt_flag17'], ['literal', [1, 2]]]
-			]
+			'all',
+			['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
+			['==', ['get', 'vt_sngldbl'], '駅部分']
 		],
 		paint: {
 			'line-color': [
@@ -279,12 +285,7 @@ export const railLineLayers = [
 				'rgba(255,255,255,1)',
 				'rgb(180, 180, 180)'
 			],
-			'line-opacity': [
-				'case',
-				['==', ['get', 'vt_sngldbl'], '駅部分'],
-				1,
-				['case', ['==', ['get', 'vt_railstate'], '雪覆い'], 0.75, 0.5]
-			],
+			'line-opacity': railTunnelLineOpacity,
 			'line-width': [
 				'let',
 				'width',
@@ -314,21 +315,7 @@ export const railLineLayers = [
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
-		filter: [
-			'step',
-			['zoom'],
-			[
-				'all',
-				['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
-				['any', ['!', ['has', 'vt_flag17']], ['in', ['get', 'vt_flag17'], ['literal', [0, 1]]]]
-			],
-			17,
-			[
-				'all',
-				['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
-				['in', ['get', 'vt_flag17'], ['literal', [1, 2]]]
-			]
-		],
+		filter: ['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]],
 		paint: {
 			'line-color': [
 				'match',
@@ -337,12 +324,7 @@ export const railLineLayers = [
 				'rgba(0,155,191,1)',
 				['case', ['==', ['get', 'vt_sngldbl'], '駅部分'], 'rgb(173,173,173)', 'rgb(180, 180, 180)']
 			],
-			'line-opacity': [
-				'case',
-				['==', ['get', 'vt_sngldbl'], '駅部分'],
-				1,
-				['case', ['==', ['get', 'vt_railstate'], '雪覆い'], 0.75, 0.5]
-			],
+			'line-opacity': railTunnelLineOpacity,
 			'line-width': [
 				'let',
 				'width',
