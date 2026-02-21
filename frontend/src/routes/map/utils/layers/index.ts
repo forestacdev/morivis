@@ -149,7 +149,7 @@ const createVectorLayer = (
 export const createLayersItems = (
 	_dataEntries: GeoDataEntry[],
 	_type: 'main' | 'preview' = 'main'
-) => {
+): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
 	const lineLayerItems: LayerSpecification[] = [];

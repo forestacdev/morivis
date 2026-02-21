@@ -381,7 +381,7 @@
 			layers: [
 				{
 					id: '@background_layer',
-					type: 'background',
+					type: 'background' as const,
 					paint: {
 						'background-opacity': 1,
 						'background-color': '#000'
@@ -392,7 +392,7 @@
 				...previewLayers,
 				{
 					id: 'deck-reference-layer',
-					type: 'background',
+					type: 'background' as const,
 					paint: {
 						'background-opacity': 0
 					}

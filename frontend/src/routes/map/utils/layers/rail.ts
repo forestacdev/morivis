@@ -1,4 +1,4 @@
-import type { ExpressionSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, LineLayerSpecification } from 'maplibre-gl';
 
 /** vt_rtcode に基づく線幅の共通式 */
 const railWidthByRtcode: ExpressionSpecification = [
@@ -156,7 +156,7 @@ const railTunnelLineOpacity: ExpressionSpecification = [
 	['*', 0.1, tunnelBaseOpacity]
 ];
 
-export const railLineLayers = [
+export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線ZL4-10',
 		minzoom: 7,
