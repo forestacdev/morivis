@@ -1,5 +1,4 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
-import { min } from 'three/src/nodes/TSL.js';
 
 /** vt_rtcode に基づく線幅の共通式 */
 const railWidthByRtcode: ExpressionSpecification = [
@@ -178,6 +177,17 @@ const notTunnelOrBridge: ExpressionSpecification = [
 	['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下', '橋・高架']]]
 ];
 
+/** line-opacity */
+const railLineOpacity: ExpressionSpecification = [
+	'interpolate',
+	['linear'],
+	['zoom'],
+	13,
+	1,
+	18,
+	0.1
+];
+
 export const railLineLayers = [
 	{
 		id: '鉄道中心線ZL4-10',
@@ -217,33 +227,35 @@ export const railLineLayers = [
 	{
 		id: '鉄道中心線駅ククリ',
 		minzoom: 11,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
 		filter: ['all', notTunnelOrBridge, ['==', ['get', 'vt_sngldbl'], '駅部分']],
 		paint: {
 			'line-color': 'rgb(180, 180, 180)',
-			'line-width': railStationKukriWidth
+			'line-width': railStationKukriWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 	{
 		id: '鉄道中心線',
 		minzoom: 11,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
 		filter: ['all', notTunnelOrBridge],
 		paint: {
 			'line-color': railCenterLineColor,
-			'line-width': railCenterLineWidth
+			'line-width': railCenterLineWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 	{
 		id: '鉄道中心線旗竿',
 		minzoom: 14,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -256,7 +268,8 @@ export const railLineLayers = [
 		paint: {
 			'line-color': 'rgb(255,255,255)',
 			'line-dasharray': ['literal', [5, 5]],
-			'line-width': railFlagpoleWidth
+			'line-width': railFlagpoleWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 
@@ -264,7 +277,7 @@ export const railLineLayers = [
 	{
 		id: '鉄道中心線橋ククリ黒',
 		minzoom: 15,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -278,20 +291,21 @@ export const railLineLayers = [
 	{
 		id: '鉄道中心線橋ククリ白',
 		minzoom: 14,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
 		filter: ['==', ['get', 'vt_railstate'], '橋・高架'],
 		paint: {
 			'line-color': 'rgba(255,255,255,1)',
-			'line-width': railBridgeKukriWhiteWidth
+			'line-width': railBridgeKukriWhiteWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 	{
 		id: '鉄道中心線橋駅ククリ',
 		minzoom: 11,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -302,26 +316,28 @@ export const railLineLayers = [
 		],
 		paint: {
 			'line-color': 'rgb(180, 180, 180)',
-			'line-width': railBridgeStationKukriWidth
+			'line-width': railBridgeStationKukriWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 	{
 		id: '鉄道中心線橋',
 		minzoom: 11,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
 		filter: ['==', ['get', 'vt_railstate'], '橋・高架'],
 		paint: {
 			'line-color': railCenterLineColor,
-			'line-width': railCenterLineWidth
+			'line-width': railCenterLineWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 	{
 		id: '鉄道中心線旗竿橋',
 		minzoom: 14,
-		maxzoom: 17,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -334,7 +350,8 @@ export const railLineLayers = [
 		paint: {
 			'line-color': 'rgb(255,255,255)',
 			'line-dasharray': ['literal', [5, 5]],
-			'line-width': railFlagpoleWidth
+			'line-width': railFlagpoleWidth,
+			'line-opacity': railLineOpacity
 		}
 	},
 
@@ -342,6 +359,7 @@ export const railLineLayers = [
 	{
 		id: '鉄道中心線地下トンネルククリ',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -401,6 +419,7 @@ export const railLineLayers = [
 	{
 		id: '鉄道中心線地下トンネル',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
