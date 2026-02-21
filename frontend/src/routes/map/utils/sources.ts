@@ -25,11 +25,7 @@ import { labelSources } from '$routes/map/utils/layers/label';
 import { roadSources } from '$routes/map/utils/layers/road';
 import { boundarySources } from '$routes/map/utils/layers/boundary';
 import { cloudSources } from '$routes/map/utils/layers/cloud';
-import {
-	baseMapSatelliteSources,
-	baseMapHillshadeSources,
-	baseMapOsmSources
-} from '$routes/map/utils/layers/base_map';
+import { baseMapSatelliteSources, baseMapOsmSources } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
@@ -288,7 +284,7 @@ export const createSourcesItems = async (
 	let baseSourcesItem;
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
-	} else if (get(selectedBaseMap) === 'hillshade') {
+	} else if (get(selectedBaseMap) === 'relief') {
 		baseSourcesItem = {};
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;

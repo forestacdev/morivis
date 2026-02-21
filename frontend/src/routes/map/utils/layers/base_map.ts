@@ -24,9 +24,9 @@ export const baseMapList: {
 			.replace('{z}', String(basemapXYZ.z))
 	},
 	{
-		type: 'hillshade',
+		type: 'relief',
 		label: '地形図',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
 			.replace('{x}', String(basemapXYZ.x))
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
@@ -111,37 +111,8 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 	// }
 ];
 
-/** 地形図 */
-// export const baseMapHillshadeSources: Record<string, RasterSourceSpecification> = {
-// 	earthhillshade: {
-// 		type: 'raster',
-// 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/earthhillshade/{z}/{x}/{y}.png'],
-// 		tileSize: 256,
-// 		minzoom: 0,
-// 		maxzoom: 18,
-// 		attribution: '地理院タイル'
-// 	},
-// 	hillshademap: {
-// 		type: 'raster',
-// 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
-// 		tileSize: 256,
-// 		minzoom: 2,
-// 		maxzoom: 16,
-// 		attribution: '地理院タイル'
-// 	}
-// };
-
-export const baseMapHillshadeSources: Record<string, RasterDEMSourceSpecification> = {
-	mapterhorn: {
-		type: 'raster-dem',
-		tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
-		tileSize: 512,
-		encoding: 'terrarium',
-		attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
-	}
-};
-
-export const baseMapHillshadeLayers: (
+/** 標高段彩図 */
+export const baseMapReliefLayers: (
 	| RasterLayerSpecification
 	| ColorReliefLayerSpecification
 	| BackgroundLayerSpecification
