@@ -21,6 +21,7 @@ import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { labelLayers } from '$routes/map/utils/layers/label';
 import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
+import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { poiLayers } from '$routes/map/utils/layers/poi';
@@ -403,6 +404,7 @@ export const createLayersItems = (
 		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLabelLayers : [];
 	const roadLineLayerItems =
 		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLineLayers : [];
+	const railLayerItems = get(showRoadLayer) && _type === 'main' && isNotOsm ? railLineLayers : [];
 	const boundaryLayerItems =
 		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
 
@@ -415,6 +417,7 @@ export const createLayersItems = (
 		...fillLayerItems,
 		...boundaryLayerItems,
 		...roadLineLayerItems,
+		...railLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
 		...circleLayerItems,
