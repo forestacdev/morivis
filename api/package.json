@@ -16,6 +16,8 @@
     },
     "dependencies": {
         "@hono/node-server": "^1.19.9",
+        "@hono/swagger-ui": "^0.5.3",
+        "@hono/zod-openapi": "^1.2.2",
         "hono": "^4.12.1",
         "pmtiles": "^4.3.0"
     }

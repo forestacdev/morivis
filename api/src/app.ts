@@ -1,4 +1,5 @@
-import { Hono } from "hono";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
 import { PMTiles, TileType } from "pmtiles";
 
@@ -7,37 +8,83 @@ const PMTILES_BASE_URL =
     "http://localhost:9000/data/entries/pmtiles";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 
-export const app = new Hono();
+export const app = new OpenAPIHono();
 
 app.use("*", cors({ origin: CORS_ORIGIN }));
 
-app.get("/", (c) => {
-    return c.text("Hello Hono!");
+// --- スキーマ定義 ---
+
+const TileParams = z.object({
+    file_name: z.string().openapi({ description: "PMTilesファイル名", example: "example" }),
+    z: z.string().openapi({ description: "ズームレベル", example: "14" }),
+    x: z.string().openapi({ description: "タイルX座標", example: "14423" }),
+    y: z.string().openapi({ description: "タイルY座標", example: "6459" }),
 });
 
-app.get("/health", (c) => {
-    return c.json({ status: "ok" });
+// --- ルート定義 ---
+
+const healthRoute = createRoute({
+    method: "get",
+    path: "/health",
+    responses: {
+        200: {
+            content: { "application/json": { schema: z.object({ status: z.string() }) } },
+            description: "ヘルスチェック",
+        },
+    },
+    tags: ["System"],
 });
 
-// PMTilesのベクタタイルを取得するエンドポイント
-app.get("/vector/:file_name/:z/:x/:y", async (c) => {
-    const { file_name, z, x, y } = c.req.param();
+const vectorTileRoute = createRoute({
+    method: "get",
+    path: "/vector/{file_name}/{z}/{x}/{y}",
+    request: { params: TileParams },
+    responses: {
+        200: {
+            description: "ベクタタイルデータ",
+            content: { "application/octet-stream": { schema: z.string() } },
+        },
+        404: { description: "タイルが見つかりません" },
+    },
+    tags: ["Tiles"],
+});
 
+const rasterTileRoute = createRoute({
+    method: "get",
+    path: "/raster/{file_name}/{z}/{x}/{y}",
+    request: { params: TileParams },
+    responses: {
+        200: {
+            description: "ラスタタイルデータ (PNG/JPEG/WebP/AVIF)",
+            content: { "application/octet-stream": { schema: z.string() } },
+        },
+        404: { description: "タイルが見つかりません" },
+    },
+    tags: ["Tiles"],
+});
+
+// --- ハンドラ ---
+
+app.openapi(healthRoute, (c) => {
+    return c.json({ status: "ok" }, 200);
+});
+
+app.openapi(vectorTileRoute, async (c) => {
+    const { file_name, z, x, y } = c.req.valid("param");
     const pmtiles = new PMTiles(
         `${PMTILES_BASE_URL}/vector/${file_name}.pmtiles`,
     );
 
     const tile = await pmtiles.getZxy(Number(z), Number(x), Number(y));
-
     if (tile === undefined) return c.text("tile not found", 404);
+
     return c.body(Buffer.from(tile.data), 200, {
         "Content-Type": "application/vnd.mapbox-vector-tile",
     });
 });
 
-// PMTilesのラスタタイルを取得するエンドポイント
-app.get("/raster/:file_name/:z/:x/:y", async (c) => {
-    const { file_name, z, x, y } = c.req.param();
+app.openapi(rasterTileRoute, async (c) => {
+    const { file_name, z, x, y } = c.req.valid("param");
     const pmtiles = new PMTiles(
         `${PMTILES_BASE_URL}/raster/${file_name}.pmtiles`,
     );
@@ -57,3 +104,16 @@ app.get("/raster/:file_name/:z/:x/:y", async (c) => {
         "Content-Type": contentType[header.tileType] || "application/octet-stream",
     });
 });
+
+// --- OpenAPI ドキュメント & Swagger UI ---
+
+app.doc("/doc", {
+    openapi: "3.0.0",
+    info: {
+        title: "Morivis Tile API",
+        version: "1.0.0",
+        description: "PMTilesベースのタイル配信API",
+    },
+});
+
+app.get("/ui", swaggerUI({ url: "/doc" }));
