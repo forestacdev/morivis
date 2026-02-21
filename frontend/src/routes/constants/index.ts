@@ -2,7 +2,7 @@ import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
-import { PUBLIC_BASE_PATH } from '$env/static/public';
+import { PUBLIC_BASE_PATH, PUBLIC_ENTRY_PATH, PUBLIC_PANORAMA_PATH } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
 export const DATA_PATH =
@@ -13,7 +13,7 @@ export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
-export const ENTRY_DATA_PATH = DATA_PATH + '/entries';
+export const ENTRY_DATA_PATH = PUBLIC_ENTRY_PATH;
 export const ENTRY_DEV_DATA_PATH = ENTRY_DATA_PATH + '/_dev';
 export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
@@ -28,6 +28,7 @@ export const MAP_IMAGE_BASE_PATH = DATA_PATH + '/images/map';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
+export const STREET_VIEW_PANORAMA_PATH = PUBLIC_PANORAMA_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
 export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 // export const MAP_FONT_DATA_PATH = 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf';

@@ -1,9 +1,4 @@
-import {
-	ENTRY_PMTILES_VECTOR_PATH,
-	ENTRY_DATA_PATH,
-	ENTRY_DEV_DATA_PATH,
-	MAP_IMAGE_BASE_PATH
-} from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
@@ -13,7 +8,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Point',
-		url: `https://d2g6co14qozqgp.cloudfront.net/pmtiles/tree_point_hiroshima.pmtiles`
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/tree_point_hiroshima.pmtiles`
 	},
 	metaData: {
 		name: '広島県 単木データ',

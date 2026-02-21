@@ -1,7 +1,9 @@
 import { checkPc } from '$routes/map/utils/ui';
+import { PUBLIC_PANORAMA_PATH } from '$env/static/public';
 import * as THREE from 'three';
 
-export const PANORAMA_IMAGE_URL = 'https://forestacdev.github.io/360photo-data-webp/webp/';
+export const PANORAMA_IMAGE_URL = PUBLIC_PANORAMA_PATH + '/';
+
 export const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 export const OUT_CAMERA_FOV = 150;
 export const MIN_CAMERA_FOV = 20; // 最小FOV
