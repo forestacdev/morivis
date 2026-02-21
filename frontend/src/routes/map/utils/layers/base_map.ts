@@ -5,7 +5,6 @@ import type {
 	RasterLayerSpecification,
 	BackgroundLayerSpecification,
 	RasterSourceSpecification,
-	RasterDEMSourceSpecification,
 	ColorReliefLayerSpecification
 } from 'maplibre-gl';
 
@@ -31,6 +30,15 @@ export const baseMapList: {
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
 	},
+	{
+		type: 'slope',
+		label: '傾斜量図',
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png'
+			.replace('{x}', String(basemapXYZ.x))
+			.replace('{y}', String(basemapXYZ.y))
+			.replace('{z}', String(basemapXYZ.z))
+	},
+
 	{
 		type: 'osm',
 		label: 'OpenStreetMap',
@@ -112,18 +120,7 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 ];
 
 /** 標高段彩図 */
-export const baseMapReliefLayers: (
-	| RasterLayerSpecification
-	| ColorReliefLayerSpecification
-	| BackgroundLayerSpecification
-)[] = [
-	{
-		id: 'background_layer',
-		type: 'background',
-		paint: {
-			'background-color': '#FFFFEE'
-		}
-	},
+export const baseMapReliefLayers: ColorReliefLayerSpecification[] = [
 	{
 		id: 'color-relief',
 		type: 'color-relief',
@@ -156,6 +153,32 @@ export const baseMapReliefLayers: (
 				4000,
 				'#B43D09'
 			]
+		}
+	}
+];
+
+/** 傾斜量図 */
+export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
+	slope: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=slope_layer&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 15,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+
+export const baseMapSlopeLayers: RasterLayerSpecification[] = [
+	{
+		id: 'slope_layer',
+		source: 'slope',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
 		}
 	}
 ];

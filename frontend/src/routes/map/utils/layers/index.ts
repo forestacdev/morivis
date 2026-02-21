@@ -29,6 +29,7 @@ import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import {
 	baseMapSatelliteLayers,
 	baseMapReliefLayers,
+	baseMapSlopeLayers,
 	baseMapOsmLayers
 } from '$routes/map/utils/layers/base_map';
 import {
@@ -389,6 +390,8 @@ export const createLayersItems = (
 			baseMapLayerItems = baseMapSatelliteLayers;
 		} else if (get(selectedBaseMap) === 'relief') {
 			baseMapLayerItems = baseMapReliefLayers;
+		} else if (get(selectedBaseMap) === 'slope') {
+			baseMapLayerItems = baseMapSlopeLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
