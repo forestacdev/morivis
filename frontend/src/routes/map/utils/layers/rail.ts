@@ -65,34 +65,6 @@ const railCenterLineColor: ExpressionSpecification = [
 	['match', ['get', 'vt_rtcode'], '地下鉄', 'rgba(0,155,191,1)', 'rgb(180, 180, 180)']
 ];
 
-/** 駅ククリの共通 line-width */
-const railStationKukriWidth: ExpressionSpecification = [
-	'let',
-	'width',
-	['+', 400, ['*', railWidthByRtcode, railDoubleMul]],
-	[
-		'interpolate',
-		['exponential', 2],
-		['zoom'],
-		0,
-		[
-			'match',
-			['get', 'vt_rtcode'],
-			'JR',
-			['case', ['==', ['get', 'vt_sngldbl'], '複線以上'], 5, 4],
-			'索道',
-			0.5,
-			'特殊鉄道',
-			0.5,
-			['case', ['==', ['get', 'vt_sngldbl'], '複線以上'], 4, 3]
-		],
-		14,
-		['*', ['^', 2, -8], ['var', 'width']],
-		23,
-		['var', 'width']
-	]
-];
-
 /** 旗竿の共通 line-width */
 const railFlagpoleWidth: ExpressionSpecification = [
 	'let',
@@ -111,23 +83,7 @@ const railFlagpoleWidth: ExpressionSpecification = [
 	]
 ];
 
-/** 橋ククリ黒の共通 line-width */
-const railBridgeKukriBlackWidth: ExpressionSpecification = [
-	'let',
-	'width',
-	['+', 500, ['*', railWidthByRtcode, ['case', ['==', ['get', 'vt_sngldbl'], '複線以上'], 2, 1]]],
-	[
-		'interpolate',
-		['exponential', 2],
-		['zoom'],
-		14,
-		['*', ['^', 2, -8], ['var', 'width']],
-		23,
-		['*', ['match', ['get', 'vt_rtcode'], 'JR以外', 0.6, '地下鉄', 0.6, 1], ['var', 'width']]
-	]
-];
-
-/** 橋ククリ白の共通 line-width */
+/** 橋ククリの共通 line-width */
 const railBridgeKukriWhiteWidth: ExpressionSpecification = [
 	'let',
 	'width',
@@ -169,12 +125,6 @@ const railBridgeStationKukriWidth: ExpressionSpecification = [
 		23,
 		['*', ['match', ['get', 'vt_rtcode'], 'JR以外', 0.6, '地下鉄', 0.6, 1], ['var', 'width']]
 	]
-];
-
-/** 非トンネル・非橋のフィルタ */
-const notTunnelOrBridge: ExpressionSpecification = [
-	'!',
-	['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下', '橋・高架']]]
 ];
 
 /** line-opacity */
@@ -231,10 +181,14 @@ export const railLineLayers = [
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
-		filter: ['all', notTunnelOrBridge, ['==', ['get', 'vt_sngldbl'], '駅部分']],
+		filter: [
+			'all',
+			['!', ['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]]],
+			['==', ['get', 'vt_sngldbl'], '駅部分']
+		],
 		paint: {
 			'line-color': 'rgb(180, 180, 180)',
-			'line-width': railStationKukriWidth,
+			'line-width': railBridgeStationKukriWidth,
 			'line-opacity': railLineOpacity
 		}
 	},
@@ -245,7 +199,10 @@ export const railLineLayers = [
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
-		filter: ['all', notTunnelOrBridge],
+		filter: [
+			'!',
+			['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]]
+		],
 		paint: {
 			'line-color': railCenterLineColor,
 			'line-width': railCenterLineWidth,
@@ -262,7 +219,7 @@ export const railLineLayers = [
 		filter: [
 			'all',
 			['==', ['get', 'vt_rtcode'], 'JR'],
-			notTunnelOrBridge,
+			['!', ['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]]],
 			['!=', ['get', 'vt_sngldbl'], '駅部分']
 		],
 		paint: {
@@ -275,8 +232,8 @@ export const railLineLayers = [
 
 	// --- 橋・高架 ---
 	{
-		id: '鉄道中心線橋ククリ黒',
-		minzoom: 15,
+		id: '鉄道中心線橋ククリ',
+		minzoom: 14,
 		maxzoom: 24,
 		type: 'line',
 		source: 'v',
@@ -284,73 +241,7 @@ export const railLineLayers = [
 		filter: ['==', ['get', 'vt_railstate'], '橋・高架'],
 		paint: {
 			'line-color': 'rgba(0,0,0,1)',
-			'line-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, 1],
-			'line-width': railBridgeKukriBlackWidth
-		}
-	},
-	{
-		id: '鉄道中心線橋ククリ白',
-		minzoom: 14,
-		maxzoom: 24,
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RailCL',
-		filter: ['==', ['get', 'vt_railstate'], '橋・高架'],
-		paint: {
-			'line-color': 'rgba(255,255,255,1)',
 			'line-width': railBridgeKukriWhiteWidth,
-			'line-opacity': railLineOpacity
-		}
-	},
-	{
-		id: '鉄道中心線橋駅ククリ',
-		minzoom: 11,
-		maxzoom: 24,
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RailCL',
-		filter: [
-			'all',
-			['==', ['get', 'vt_railstate'], '橋・高架'],
-			['==', ['get', 'vt_sngldbl'], '駅部分']
-		],
-		paint: {
-			'line-color': 'rgb(180, 180, 180)',
-			'line-width': railBridgeStationKukriWidth,
-			'line-opacity': railLineOpacity
-		}
-	},
-	{
-		id: '鉄道中心線橋',
-		minzoom: 11,
-		maxzoom: 24,
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RailCL',
-		filter: ['==', ['get', 'vt_railstate'], '橋・高架'],
-		paint: {
-			'line-color': railCenterLineColor,
-			'line-width': railCenterLineWidth,
-			'line-opacity': railLineOpacity
-		}
-	},
-	{
-		id: '鉄道中心線旗竿橋',
-		minzoom: 14,
-		maxzoom: 24,
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RailCL',
-		filter: [
-			'all',
-			['==', ['get', 'vt_rtcode'], 'JR'],
-			['==', ['get', 'vt_railstate'], '橋・高架'],
-			['!=', ['get', 'vt_sngldbl'], '駅部分']
-		],
-		paint: {
-			'line-color': 'rgb(255,255,255)',
-			'line-dasharray': ['literal', [5, 5]],
-			'line-width': railFlagpoleWidth,
 			'line-opacity': railLineOpacity
 		}
 	},
