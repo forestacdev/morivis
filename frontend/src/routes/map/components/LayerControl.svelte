@@ -3,7 +3,6 @@
 	import { fly } from 'svelte/transition';
 
 	import Checkbox from './layer_menu/Checkbox.svelte';
-	import { isMobile } from '$routes/stores/ui';
 
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
@@ -17,6 +16,7 @@
 		showStreetViewLayer
 	} from '$routes/stores/layers';
 	import { mapStore, isTerrain3d } from '$routes/stores/map';
+	import { isMobile } from '$routes/stores/ui';
 
 	isTerrain3d.subscribe((is3d) => {
 		mapStore.toggleTerrain(is3d);

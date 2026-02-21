@@ -9,18 +9,17 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
-	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { isBboxValid } from '$routes/map/utils/map';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
-	import { getProjContext } from '$routes/map/utils/proj/dict';
-	import { showNotification } from '$routes/stores/notification';
-
 	import {
 		cprClpToOrbitTrackGeojson,
 		cprFmrToOrbitTrackGeojson,
 		msiClpToOrbitTrackGeojson,
 		getHdf5FileInfo
 	} from '$routes/map/utils/file/hdf5';
+	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { getProjContext } from '$routes/map/utils/proj/dict';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		map: maplibregl.Map;

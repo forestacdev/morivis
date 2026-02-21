@@ -217,10 +217,7 @@ export const railLineLayers = [
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
-		filter: [
-			'!',
-			['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]]
-		],
+		filter: ['!', ['in', ['get', 'vt_railstate'], ['literal', ['トンネル', '雪覆い', '地下']]]],
 		paint: {
 			'line-color': railCenterLineColor,
 			'line-width': railCenterLineWidth,

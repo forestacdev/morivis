@@ -43,9 +43,7 @@ export function isFarblingDetected(): boolean {
  * farbling検出時はtransferToImageBitmap()を使用（Canvas serializationを完全に回避）。
  * 通常時はconvertToBlob()を使用。
  */
-export async function convertCanvasToResult(
-	canvas: OffscreenCanvas
-): Promise<Blob | ImageBitmap> {
+export async function convertCanvasToResult(canvas: OffscreenCanvas): Promise<Blob | ImageBitmap> {
 	if (isFarblingDetected()) {
 		try {
 			return canvas.transferToImageBitmap();
