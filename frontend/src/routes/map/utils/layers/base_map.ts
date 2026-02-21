@@ -163,7 +163,7 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 	slope: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=slope_layer&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 15,
 		minzoom: 0,
@@ -176,7 +176,7 @@ export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
 	aspect: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=aspect_layer&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 15,
 		minzoom: 0,

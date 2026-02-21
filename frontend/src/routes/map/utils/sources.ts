@@ -292,8 +292,12 @@ export const createSourcesItems = async (
 	} else if (get(selectedBaseMap) === 'relief') {
 		baseSourcesItem = {};
 	} else if (get(selectedBaseMap) === 'slope') {
+		// TODO: 共通化
+		demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapSlopeSources;
 	} else if (get(selectedBaseMap) === 'aspect') {
+		// TODO: 共通化
+		demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapAspectSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
