@@ -15,7 +15,9 @@ app.use("*", cors({ origin: CORS_ORIGIN }));
 // --- スキーマ定義 ---
 
 const TileParams = z.object({
-    file_name: z.string().openapi({ description: "PMTilesファイル名", example: "example" }),
+    file_name: z
+        .string()
+        .openapi({ description: "PMTilesファイル名", example: "example" }),
     z: z.string().openapi({ description: "ズームレベル", example: "14" }),
     x: z.string().openapi({ description: "タイルX座標", example: "14423" }),
     y: z.string().openapi({ description: "タイルY座標", example: "6459" }),
@@ -28,7 +30,11 @@ const healthRoute = createRoute({
     path: "/health",
     responses: {
         200: {
-            content: { "application/json": { schema: z.object({ status: z.string() }) } },
+            content: {
+                "application/json": {
+                    schema: z.object({ status: z.string() }),
+                },
+            },
             description: "ヘルスチェック",
         },
     },
@@ -101,7 +107,8 @@ app.openapi(rasterTileRoute, async (c) => {
     };
 
     return c.body(Buffer.from(tile.data), 200, {
-        "Content-Type": contentType[header.tileType] || "application/octet-stream",
+        "Content-Type":
+            contentType[header.tileType] || "application/octet-stream",
     });
 });
 
@@ -110,7 +117,7 @@ app.openapi(rasterTileRoute, async (c) => {
 app.doc("/doc", {
     openapi: "3.0.0",
     info: {
-        title: "Morivis Tile API",
+        title: "morivis Tile API",
         version: "1.0.0",
         description: "PMTilesベースのタイル配信API",
     },
