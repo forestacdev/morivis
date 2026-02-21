@@ -1,4 +1,5 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
+import { min } from 'three/src/nodes/TSL.js';
 
 /** vt_rtcode に基づく線幅の共通式 */
 const railWidthByRtcode: ExpressionSpecification = [
@@ -62,7 +63,7 @@ const railCenterLineColor: ExpressionSpecification = [
 	'case',
 	['==', ['get', 'vt_sngldbl'], '駅部分'],
 	'rgb(255,255,255)',
-	['match', ['get', 'vt_rtcode'], '地下鉄', 'rgba(0,155,191,1)', 'rgb(100,100,100)']
+	['match', ['get', 'vt_rtcode'], '地下鉄', 'rgba(0,155,191,1)', 'rgb(180, 180, 180)']
 ];
 
 /** 駅ククリの共通 line-width */
@@ -180,6 +181,7 @@ const notTunnelOrBridge: ExpressionSpecification = [
 export const railLineLayers = [
 	{
 		id: '鉄道中心線ZL4-10',
+		minzoom: 7,
 		maxzoom: 11,
 		type: 'line',
 		source: 'v',
@@ -190,7 +192,7 @@ export const railLineLayers = [
 				['get', 'vt_rtcode'],
 				'地下鉄',
 				'rgba(200,160,60,1)',
-				'rgb(100,100,100)'
+				'rgb(180, 180, 180)'
 			],
 			'line-opacity': ['match', ['get', 'vt_railstate'], ['トンネル', '地下'], 0.5, 1],
 			'line-width': [
@@ -221,7 +223,7 @@ export const railLineLayers = [
 		'source-layer': 'RailCL',
 		filter: ['all', notTunnelOrBridge, ['==', ['get', 'vt_sngldbl'], '駅部分']],
 		paint: {
-			'line-color': 'rgb(100,100,100)',
+			'line-color': 'rgb(180, 180, 180)',
 			'line-width': railStationKukriWidth
 		}
 	},
@@ -299,7 +301,7 @@ export const railLineLayers = [
 			['==', ['get', 'vt_sngldbl'], '駅部分']
 		],
 		paint: {
-			'line-color': 'rgb(100,100,100)',
+			'line-color': 'rgb(180, 180, 180)',
 			'line-width': railBridgeStationKukriWidth
 		}
 	},
@@ -366,7 +368,7 @@ export const railLineLayers = [
 				['get', 'vt_rtcode'],
 				'地下鉄',
 				'rgba(255,255,255,1)',
-				'rgb(100,100,100)'
+				'rgb(180, 180, 180)'
 			],
 			'line-opacity': [
 				'case',
@@ -423,7 +425,7 @@ export const railLineLayers = [
 				['get', 'vt_rtcode'],
 				'地下鉄',
 				'rgba(0,155,191,1)',
-				['case', ['==', ['get', 'vt_sngldbl'], '駅部分'], 'rgb(173,173,173)', 'rgb(100,100,100)']
+				['case', ['==', ['get', 'vt_sngldbl'], '駅部分'], 'rgb(173,173,173)', 'rgb(180, 180, 180)']
 			],
 			'line-opacity': [
 				'case',

@@ -96,7 +96,13 @@ const roadColorAbove14: ExpressionSpecification = [
 ];
 
 /** 道路中心線 line-color（step by zoom） */
-const roadLineColor: ExpressionSpecification = ['step', ['zoom'], roadColorBelow14, 14, roadColorAbove14];
+const roadLineColor: ExpressionSpecification = [
+	'step',
+	['zoom'],
+	roadColorBelow14,
+	14,
+	roadColorAbove14
+];
 
 /** 道路中心線 line-opacity */
 const roadLineOpacity: ExpressionSpecification = [
@@ -529,6 +535,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RdCL',
+		minzoom: 6,
 		maxzoom: 11,
 		filter: ['==', ['get', 'vt_rdctg'], '高速自動車国道等'],
 		layout: {
