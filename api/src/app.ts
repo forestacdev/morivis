@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { Compression, PMTiles } from "pmtiles";
+import { PMTiles, TileType } from "pmtiles";
 
 const PMTILES_BASE_URL =
     process.env.PMTILES_BASE_URL ||
@@ -42,9 +42,18 @@ app.get("/raster/:file_name/:z/:x/:y", async (c) => {
         `${PMTILES_BASE_URL}/raster/${file_name}.pmtiles`,
     );
 
+    const header = await pmtiles.getHeader();
     const tile = await pmtiles.getZxy(Number(z), Number(x), Number(y));
     if (tile === undefined) return c.text("tile not found", 404);
 
-    c.header("Content-Type", "image/png");
-    return c.body(tile.data);
+    const contentType: Record<number, string> = {
+        [TileType.Png]: "image/png",
+        [TileType.Jpeg]: "image/jpeg",
+        [TileType.Webp]: "image/webp",
+        [TileType.Avif]: "image/avif",
+    };
+
+    return c.body(Buffer.from(tile.data), 200, {
+        "Content-Type": contentType[header.tileType] || "application/octet-stream",
+    });
 });
