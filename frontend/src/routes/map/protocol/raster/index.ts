@@ -30,7 +30,11 @@ class WorkerProtocol {
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
-		const baseUrl = url.origin + url.pathname;
+		// MapLibreがURL内の{z}/{x}/{y}を座標値で置換済みのため、隣接タイル取得用にプレースホルダを復元
+		const baseUrl = (url.origin + url.pathname).replace(
+			new RegExp(`/${z}/${x}/${y}(?=\\.|$)`),
+			'/{z}/{x}/{y}'
+		);
 		const tileId = `${entryId}_${x}_${y}_${z}`;
 		const formatType = url.searchParams.get('formatType') as 'image' | 'pmtiles';
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
