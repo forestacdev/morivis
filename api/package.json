@@ -5,7 +5,7 @@
         "dev": "npx tsx watch --env-file=.env src/dev.ts",
         "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
         "zip": "zip -j lambda.zip dist/index.js",
-        "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
+        "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name morivis-api --region ap-northeast-1",
         "deploy": "run-s build zip update"
     },
     "devDependencies": {
