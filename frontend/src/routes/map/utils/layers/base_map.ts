@@ -1,4 +1,5 @@
 import type { BaseMapType } from '$routes/stores/layers';
+import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 
 import type {
 	RasterLayerSpecification,
@@ -45,7 +46,7 @@ export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> 
 		// tiles: [
 		// 	'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
 		// ],
-		tiles: ['https://forestacdev.github.io/tiles-usgs-imagery-only/tiles/{z}/{x}/{y}.webp'],
+		url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/usgs_imagery_only.pmtiles`,
 
 		tileSize: 256,
 		maxzoom: 8,
