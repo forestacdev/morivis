@@ -3,36 +3,41 @@ import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 
-let gl: WebGL2RenderingContext | null = null;
-let program: WebGLProgram | null = null;
-let positionBuffer: WebGLBuffer | null = null;
+interface GLContext {
+	canvas: OffscreenCanvas;
+	gl: WebGL2RenderingContext;
+	program: WebGLProgram;
+	positionBuffer: WebGLBuffer;
+}
 
-const initWebGL = (canvas: OffscreenCanvas) => {
-	gl = canvas.getContext('webgl2');
+const glContexts = new Map<number, GLContext>();
+
+const loadShader = (
+	gl: WebGL2RenderingContext,
+	type: number,
+	source: string
+): WebGLShader | null => {
+	const shader = gl.createShader(type);
+	if (!shader) {
+		console.error('Unable to create shader');
+		return null;
+	}
+	gl.shaderSource(shader, source);
+	gl.compileShader(shader);
+
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+		gl.deleteShader(shader);
+		return null;
+	}
+	return shader;
+};
+
+const initWebGL = (canvas: OffscreenCanvas): GLContext => {
+	const gl = canvas.getContext('webgl2');
 	if (!gl) {
 		throw new Error('WebGL not supported');
 	}
-
-	const loadShader = (
-		gl: WebGL2RenderingContext,
-		type: number,
-		source: string
-	): WebGLShader | null => {
-		const shader = gl.createShader(type);
-		if (!shader) {
-			console.error('Unable to create shader');
-			return null;
-		}
-		gl.shaderSource(shader, source);
-		gl.compileShader(shader);
-
-		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-			gl.deleteShader(shader);
-			return null;
-		}
-		return shader;
-	};
 
 	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
 	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -40,7 +45,7 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 		throw new Error('Failed to load shaders');
 	}
 
-	program = gl.createProgram();
+	const program = gl.createProgram();
 	if (!program) {
 		throw new Error('Failed to create program');
 	}
@@ -55,13 +60,28 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 
 	gl.useProgram(program);
 
-	positionBuffer = gl.createBuffer();
+	const positionBuffer = gl.createBuffer();
+	if (!positionBuffer) {
+		throw new Error('Failed to create position buffer');
+	}
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 	const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
 	gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 	const positionLocation = gl.getAttribLocation(program, 'a_position');
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+	return { canvas, gl, program, positionBuffer };
+};
+
+const getOrCreateContext = (tileSize: number): GLContext => {
+	let ctx = glContexts.get(tileSize);
+	if (!ctx) {
+		const canvas = new OffscreenCanvas(tileSize, tileSize);
+		ctx = initWebGL(canvas);
+		glContexts.set(tileSize, ctx);
+	}
+	return ctx;
 };
 
 const bindTextures = (
@@ -141,8 +161,6 @@ const calculateLightDirection = (azimuth: number, altitude: number) => {
 	return [x, y, z];
 };
 
-const canvas = new OffscreenCanvas(256, 256);
-
 self.onmessage = async (e) => {
 	const {
 		tileId,
@@ -158,17 +176,15 @@ self.onmessage = async (e) => {
 		min,
 		elevationColorArray,
 		tile,
+		tileSize = 256,
 		encodeType
 	} = e.data;
 
 	try {
-		if (!gl) {
-			initWebGL(canvas);
-		}
+		const ctx = getOrCreateContext(tileSize);
+		const { canvas, gl, program } = ctx;
 
-		if (!gl || !program || !positionBuffer) {
-			throw new Error('WebGL initialization failed');
-		}
+		gl.viewport(0, 0, tileSize, tileSize);
 
 		// シェーダーを別のもにする
 		gl.useProgram(program);
@@ -178,7 +194,8 @@ self.onmessage = async (e) => {
 				u_dem_type: { type: '1f', value: demTypeNumber },
 				u_mode: { type: '1f', value: modeNumber },
 				u_max_height: { type: '1f', value: max },
-				u_min_height: { type: '1f', value: min }
+				u_min_height: { type: '1f', value: min },
+				u_tile_size: { type: '1f', value: tileSize }
 			};
 
 			setUniforms(gl, program, uniforms);
@@ -195,7 +212,8 @@ self.onmessage = async (e) => {
 				u_max_slope: { type: '1f', value: max },
 				u_min_slope: { type: '1f', value: min },
 				u_tile_y: { type: '1f', value: tile.y },
-				u_tile_z: { type: '1f', value: tile.z }
+				u_tile_z: { type: '1f', value: tile.z },
+				u_tile_size: { type: '1f', value: tileSize }
 			};
 
 			setUniforms(gl, program, uniforms);
@@ -216,7 +234,8 @@ self.onmessage = async (e) => {
 				u_max_aspect: { type: '1f', value: max },
 				u_min_aspect: { type: '1f', value: min },
 				u_tile_y: { type: '1f', value: tile.y },
-				u_tile_z: { type: '1f', value: tile.z }
+				u_tile_z: { type: '1f', value: tile.z },
+				u_tile_size: { type: '1f', value: tileSize }
 			};
 
 			setUniforms(gl, program, uniforms);

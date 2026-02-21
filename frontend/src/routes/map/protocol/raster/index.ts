@@ -37,6 +37,7 @@ class WorkerProtocol {
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 		const mode = url.searchParams.get('mode') || 'default'; // デフォルト値を設定
 		const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
+		const tileSize = parseInt(url.searchParams.get('tileSize') || '256', 10);
 		const encodeType: 'buffar' | 'blob' = 'buffar';
 
 		if (mode === 'relief') {
@@ -66,6 +67,7 @@ class WorkerProtocol {
 					elevationColorArray,
 					max,
 					min,
+					tileSize,
 					encodeType
 				});
 			});
@@ -110,6 +112,7 @@ class WorkerProtocol {
 					max,
 					min,
 					tile: { x, y, z },
+					tileSize,
 					encodeType
 				});
 			});
@@ -131,7 +134,8 @@ class WorkerProtocol {
 					tileId,
 					center: image,
 					z,
-					demTypeNumber
+					demTypeNumber,
+					tileSize
 				});
 			});
 		}

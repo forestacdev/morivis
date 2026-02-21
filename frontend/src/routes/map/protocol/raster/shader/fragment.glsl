@@ -31,6 +31,9 @@ uniform float u_min_slope;
 uniform float u_max_aspect;
 uniform float u_min_aspect;
 
+// tile size
+uniform float u_tile_size;
+
 
 in vec2 v_tex_coord ;
 out vec4 fragColor;
@@ -74,7 +77,7 @@ float getLatitudeFromTileUV(float tileY, float uv_y, float zoom) {
 
 // 地球の周囲長を基に、ズームレベルに応じた解像度を計算
 float getResolution(float zoom) {
-    return 40075016.68557849 / (256.0 * pow(2.0, float(zoom)));
+    return 40075016.68557849 / (u_tile_size * pow(2.0, float(zoom)));
 }
 
 // 緯度に応じたピクセルあたりの東西方向の地上解像度を計算
@@ -240,7 +243,7 @@ mat3 calculateTerrainData(vec2 uv, float center_h) {
     // |        | bottom |        |
     // ----------------------------
 
-    vec2 pixel_size = vec2(1.0) / 256.0;
+    vec2 pixel_size = vec2(1.0) / u_tile_size;
     mat3 _h_mat = mat3(0.0);
 
 

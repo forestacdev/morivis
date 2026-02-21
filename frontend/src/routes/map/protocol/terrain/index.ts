@@ -84,6 +84,7 @@ class WorkerProtocol {
 			const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
 			const formatType = url.searchParams.get('formatType') || 'image'; // デフォルト値を設定
 			const demType = url.searchParams.get('demType') || 'mapbox'; // デフォルト値を設定
+			const tileSize = parseInt(url.searchParams.get('tileSize') || '256', 10);
 			let image: ImageBitmap;
 			if (formatType === 'pmtiles') {
 				image = await loadImagePmtiles(baseUrl, { x, y, z }, controller.signal);
@@ -94,7 +95,7 @@ class WorkerProtocol {
 			return new Promise((resolve, reject) => {
 				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 				this.pendingRequests.set(tileId, { resolve, reject, controller });
-				this.worker.postMessage({ image, demTypeNumber, id: tileId });
+				this.worker.postMessage({ image, demTypeNumber, id: tileId, tileSize });
 
 				controller.signal.addEventListener('abort', () => {
 					this.pendingRequests.delete(tileId);

@@ -172,6 +172,7 @@ export const generateDemCoverImage = async (
 	const demTypeNumber = DEM_DATA_TYPE[demType];
 	const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
 	const baseUrl = _entry.format.url;
+	const tileSize = metaData.tileSize;
 	const encodeType: 'blob' | 'buffar' = 'blob';
 
 	try {
@@ -208,6 +209,7 @@ export const generateDemCoverImage = async (
 					elevationColorArray,
 					max,
 					min,
+					tileSize,
 					encodeType
 				});
 
@@ -254,6 +256,7 @@ export const generateDemCoverImage = async (
 					max,
 					min,
 					tile: { x, y, z },
+					tileSize,
 					encodeType
 				});
 
@@ -277,7 +280,8 @@ export const generateDemCoverImage = async (
 					tileId,
 					center: image,
 					z,
-					demTypeNumber
+					demTypeNumber,
+					tileSize
 				});
 
 				worker.onmessage = async (e) => {

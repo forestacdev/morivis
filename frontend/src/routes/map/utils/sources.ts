@@ -104,7 +104,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
+										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -148,7 +148,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&x={x}&y={y}&z={z}`
+										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -329,7 +329,7 @@ export const createTerrainSources = async (
 	sourceItems['terrain'] = {
 		type: 'raster-dem',
 		tiles: [
-			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&x={x}&y={y}&z={z}`
+			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
 		],
 		maxzoom: metaData.maxZoom,
 		minzoom: metaData.minZoom,
