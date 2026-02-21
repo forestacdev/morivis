@@ -702,7 +702,9 @@
 			</div>
 
 			<!-- PC用ベースマップコントロール -->
-			<LayerControl />
+			<div class="max-lg:hidden">
+				<LayerControl />
+			</div>
 
 			<!-- スマホ用地図コントロール -->
 			<MobileMapControl />
