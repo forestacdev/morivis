@@ -30,6 +30,7 @@ import {
 	baseMapSatelliteLayers,
 	baseMapReliefLayers,
 	baseMapSlopeLayers,
+	baseMapAspectLayers,
 	baseMapOsmLayers
 } from '$routes/map/utils/layers/base_map';
 import {
@@ -392,6 +393,8 @@ export const createLayersItems = (
 			baseMapLayerItems = baseMapReliefLayers;
 		} else if (get(selectedBaseMap) === 'slope') {
 			baseMapLayerItems = baseMapSlopeLayers;
+		} else if (get(selectedBaseMap) === 'aspect') {
+			baseMapLayerItems = baseMapAspectLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
@@ -402,7 +405,10 @@ export const createLayersItems = (
 	}
 
 	const isNotOsm = get(selectedBaseMap) !== 'osm';
-	const isNotSatellite = get(selectedBaseMap) !== 'satellite';
+	const isNotHillshade =
+		get(selectedBaseMap) !== 'satellite' &&
+		get(selectedBaseMap) !== 'slope' &&
+		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
 	const poiLayerItems = get(showPoiLayer) && _type === 'main' && isNotOsm ? poiLayers : [];
@@ -415,7 +421,7 @@ export const createLayersItems = (
 	const boundaryLayerItems =
 		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
 	const hillshadeLayerItems =
-		get(showHillshadeLayer) && _type === 'main' && isNotSatellite ? hillshadeLayers : [];
+		get(showHillshadeLayer) && _type === 'main' && isNotHillshade ? hillshadeLayers : [];
 
 	const cloudLayerItems =
 		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];

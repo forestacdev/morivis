@@ -28,7 +28,8 @@ import { cloudSources } from '$routes/map/utils/layers/cloud';
 import {
 	baseMapSatelliteSources,
 	baseMapOsmSources,
-	baseMapSlopeSources
+	baseMapSlopeSources,
+	baseMapAspectSources
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
@@ -292,6 +293,8 @@ export const createSourcesItems = async (
 		baseSourcesItem = {};
 	} else if (get(selectedBaseMap) === 'slope') {
 		baseSourcesItem = baseMapSlopeSources;
+	} else if (get(selectedBaseMap) === 'aspect') {
+		baseSourcesItem = baseMapAspectSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {

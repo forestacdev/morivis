@@ -33,12 +33,13 @@ export const baseMapList: {
 	{
 		type: 'slope',
 		label: '傾斜量図',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/slopemap/{z}/{x}/{y}.png'
-			.replace('{x}', String(basemapXYZ.x))
-			.replace('{y}', String(basemapXYZ.y))
-			.replace('{z}', String(basemapXYZ.z))
+		src: './images/base_map/slope.png'
 	},
-
+	{
+		type: 'aspect',
+		label: '傾斜方位図',
+		src: './images/base_map/aspect.png'
+	},
 	{
 		type: 'osm',
 		label: 'OpenStreetMap',
@@ -170,10 +171,36 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 	}
 };
 
+/** 傾斜方位図 */
+export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
+	aspect: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=aspect_layer&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 15,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+
 export const baseMapSlopeLayers: RasterLayerSpecification[] = [
 	{
 		id: 'slope_layer',
 		source: 'slope',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
+		}
+	}
+];
+
+export const baseMapAspectLayers: RasterLayerSpecification[] = [
+	{
+		id: 'aspect_layer',
+		source: 'aspect',
 		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
