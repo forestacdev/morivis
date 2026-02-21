@@ -57,6 +57,7 @@
 	import {
 		selectedBaseMap,
 		showLabelLayer,
+		showHillshadeLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRoadLayer,
@@ -573,6 +574,9 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 	showBoundaryLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+	showHillshadeLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 	showLabelLayer.subscribe(() => {

@@ -6,7 +6,7 @@ import type {
 	BackgroundLayerSpecification,
 	RasterSourceSpecification,
 	RasterDEMSourceSpecification,
-	HillshadeLayerSpecification
+	ColorReliefLayerSpecification
 } from 'maplibre-gl';
 
 const basemapXYZ = { x: 28846, y: 12917, z: 15 };
@@ -143,7 +143,7 @@ export const baseMapHillshadeSources: Record<string, RasterDEMSourceSpecificatio
 
 export const baseMapHillshadeLayers: (
 	| RasterLayerSpecification
-	| HillshadeLayerSpecification
+	| ColorReliefLayerSpecification
 	| BackgroundLayerSpecification
 )[] = [
 	{
@@ -154,16 +154,37 @@ export const baseMapHillshadeLayers: (
 		}
 	},
 	{
-		id: 'earthhillshade_layer',
-		type: 'hillshade',
-		source: 'terrain', // terrainソースを使用
+		id: 'color-relief',
+		type: 'color-relief',
+		source: 'terrain',
 		paint: {
-			'hillshade-method': 'standard',
-			'hillshade-illumination-direction': 315,
-			'hillshade-shadow-color': '#000000',
-			'hillshade-highlight-color': '#FFFFFF',
-			'hillshade-accent-color': '#000000',
-			'hillshade-exaggeration': 0.5
+			'color-relief-color': [
+				'interpolate',
+				['linear'],
+				['elevation'],
+				-12000,
+				'#000060',
+				-8000,
+				'#0000A0',
+				-4000,
+				'#0040C0',
+				-2000,
+				'#0080D0',
+				-1000,
+				'#00B0E0',
+				-500,
+				'#40D0E0',
+				0,
+				'#46BABA',
+				300,
+				'#B5A42D',
+				1000,
+				'#B4562D',
+				2000,
+				'#B4491C',
+				4000,
+				'#B43D09'
+			]
 		}
 	}
 ];

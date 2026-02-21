@@ -8,6 +8,7 @@
 	import {
 		selectedBaseMap,
 		showLabelLayer,
+		showHillshadeLayer,
 		showXYZTileLayer,
 		showRoadLayer,
 		showBoundaryLayer,
@@ -63,6 +64,7 @@
 					<Checkbox label="境界線" bind:value={$showBoundaryLayer} disabled={isOsm} />
 					<Checkbox label="地名等" bind:value={$showLabelLayer} disabled={isOsm} />
 					<Checkbox label="道路・線路" bind:value={$showRoadLayer} disabled={isOsm} />
+					<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isOsm} />
 					<Checkbox label="3D地形" bind:value={$isTerrain3d} />
 					{#if import.meta.env.DEV}
 						<Checkbox label="タイル座標" bind:value={$showXYZTileLayer} />

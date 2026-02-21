@@ -25,6 +25,7 @@ import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { poiLayers } from '$routes/map/utils/layers/poi';
+import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import {
 	baseMapSatelliteLayers,
 	baseMapHillshadeLayers,
@@ -33,6 +34,7 @@ import {
 import {
 	showPoiLayer,
 	showLabelLayer,
+	showHillshadeLayer,
 	showBoundaryLayer,
 	showRoadLayer,
 	showStreetViewLayer,
@@ -407,6 +409,8 @@ export const createLayersItems = (
 	const railLayerItems = get(showRoadLayer) && _type === 'main' && isNotOsm ? railLineLayers : [];
 	const boundaryLayerItems =
 		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
+	const hillshadeLayerItems =
+		get(showHillshadeLayer) && _type === 'main' && isNotOsm ? hillshadeLayers : [];
 
 	const cloudLayerItems =
 		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
@@ -416,11 +420,12 @@ export const createLayersItems = (
 		...rasterLayerItems,
 		...fillLayerItems,
 		...boundaryLayerItems,
-		...roadLineLayerItems,
 		...railLayerItems,
+		...roadLineLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
 		...circleLayerItems,
+		...hillshadeLayerItems,
 		...streetViewLayers,
 		...cloudLayerItems,
 		...labelLayerItems,
