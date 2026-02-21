@@ -4,7 +4,9 @@ import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 import type {
 	RasterLayerSpecification,
 	BackgroundLayerSpecification,
-	RasterSourceSpecification
+	RasterSourceSpecification,
+	RasterDEMSourceSpecification,
+	HillshadeLayerSpecification
 } from 'maplibre-gl';
 
 const basemapXYZ = { x: 28846, y: 12917, z: 15 };
@@ -110,26 +112,40 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 ];
 
 /** 地形図 */
-export const baseMaphillshadeSources: Record<string, RasterSourceSpecification> = {
-	earthhillshade: {
-		type: 'raster',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/earthhillshade/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 0,
-		maxzoom: 18,
-		attribution: '地理院タイル'
-	},
-	hillshademap: {
-		type: 'raster',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 2,
-		maxzoom: 16,
-		attribution: '地理院タイル'
+// export const baseMapHillshadeSources: Record<string, RasterSourceSpecification> = {
+// 	earthhillshade: {
+// 		type: 'raster',
+// 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/earthhillshade/{z}/{x}/{y}.png'],
+// 		tileSize: 256,
+// 		minzoom: 0,
+// 		maxzoom: 18,
+// 		attribution: '地理院タイル'
+// 	},
+// 	hillshademap: {
+// 		type: 'raster',
+// 		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
+// 		tileSize: 256,
+// 		minzoom: 2,
+// 		maxzoom: 16,
+// 		attribution: '地理院タイル'
+// 	}
+// };
+
+export const baseMapHillshadeSources: Record<string, RasterDEMSourceSpecification> = {
+	mapterhorn: {
+		type: 'raster-dem',
+		tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+		tileSize: 512,
+		encoding: 'terrarium',
+		attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
 	}
 };
 
-export const baseMaphillshadeLayers: (RasterLayerSpecification | BackgroundLayerSpecification)[] = [
+export const baseMapHillshadeLayers: (
+	| RasterLayerSpecification
+	| HillshadeLayerSpecification
+	| BackgroundLayerSpecification
+)[] = [
 	{
 		id: 'background_layer',
 		type: 'background',
@@ -139,21 +155,15 @@ export const baseMaphillshadeLayers: (RasterLayerSpecification | BackgroundLayer
 	},
 	{
 		id: 'earthhillshade_layer',
-		source: 'earthhillshade',
-		type: 'raster',
-		maxzoom: 8,
+		type: 'hillshade',
+		source: 'mapterhorn',
 		paint: {
-			'raster-opacity': 0.7
-		}
-	},
-	{
-		id: 'hillshademap_layer',
-		source: 'hillshademap',
-		type: 'raster',
-		minzoom: 2,
-		maxzoom: 24,
-		paint: {
-			'raster-opacity': 0.7
+			'hillshade-method': 'standard',
+			'hillshade-illumination-direction': 315,
+			'hillshade-shadow-color': '#000000',
+			'hillshade-highlight-color': '#FFFFFF',
+			'hillshade-accent-color': '#000000',
+			'hillshade-exaggeration': 0.5
 		}
 	}
 ];

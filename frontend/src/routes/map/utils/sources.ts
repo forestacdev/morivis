@@ -27,7 +27,7 @@ import { boundarySources } from '$routes/map/utils/layers/boundary';
 import { cloudSources } from '$routes/map/utils/layers/cloud';
 import {
 	baseMapSatelliteSources,
-	baseMaphillshadeSources,
+	baseMapHillshadeSources,
 	baseMapOsmSources
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
@@ -289,7 +289,7 @@ export const createSourcesItems = async (
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
 	} else if (get(selectedBaseMap) === 'hillshade') {
-		baseSourcesItem = baseMaphillshadeSources;
+		baseSourcesItem = baseMapHillshadeSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {

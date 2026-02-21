@@ -26,7 +26,7 @@ import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { poiLayers } from '$routes/map/utils/layers/poi';
 import {
 	baseMapSatelliteLayers,
-	baseMaphillshadeLayers,
+	baseMapHillshadeLayers,
 	baseMapOsmLayers
 } from '$routes/map/utils/layers/base_map';
 import {
@@ -385,7 +385,7 @@ export const createLayersItems = (
 		if (get(selectedBaseMap) === 'satellite') {
 			baseMapLayerItems = baseMapSatelliteLayers;
 		} else if (get(selectedBaseMap) === 'hillshade') {
-			baseMapLayerItems = baseMaphillshadeLayers;
+			baseMapLayerItems = baseMapHillshadeLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
