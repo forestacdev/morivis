@@ -81,7 +81,7 @@
 			</div>
 			<div class="flex flex-col gap-2">
 				<div>ベースマップ</div>
-				<div class="flex w-full items-center justify-center gap-4">
+				<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">
 					{#each baseMapList as baseMap}
 						<button
 							onclick={() => {
