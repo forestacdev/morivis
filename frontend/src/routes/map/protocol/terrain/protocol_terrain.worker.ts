@@ -1,3 +1,4 @@
+import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 
@@ -95,12 +96,13 @@ self.onmessage = async (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-		const blob = await canvas.convertToBlob();
-		if (!blob) {
-			throw new Error('Failed to convert canvas to blob');
+		const result = await convertCanvasToResult(canvas);
+		if (result instanceof ImageBitmap) {
+			self.postMessage({ id: id, imageBitmap: result }, { transfer: [result] });
+		} else {
+			const buffer = await result.arrayBuffer();
+			self.postMessage({ id: id, buffer });
 		}
-		const buffer = await blob.arrayBuffer();
-		self.postMessage({ id: id, buffer });
 	} catch (error) {
 		if (error instanceof Error) {
 			self.postMessage({ id: id, error: error.message });

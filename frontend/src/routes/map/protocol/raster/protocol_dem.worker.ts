@@ -1,4 +1,5 @@
 import type { image } from 'html2canvas/dist/types/css/types/image';
+import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 
@@ -234,16 +235,15 @@ self.onmessage = async (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-		const blob = await canvas.convertToBlob();
-		if (!blob) {
-			throw new Error('Failed to convert canvas to blob');
-		}
+		const result = await convertCanvasToResult(canvas);
 
-		if (encodeType === 'buffar') {
-			const buffer = await blob.arrayBuffer();
+		if (result instanceof ImageBitmap) {
+			self.postMessage({ id: tileId, imageBitmap: result }, { transfer: [result] });
+		} else if (encodeType === 'buffar') {
+			const buffer = await result.arrayBuffer();
 			self.postMessage({ id: tileId, buffer });
 		} else if (encodeType === 'blob') {
-			self.postMessage({ id: tileId, blob });
+			self.postMessage({ id: tileId, blob: result });
 		}
 	} catch (error) {
 		if (error instanceof Error) {

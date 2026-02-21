@@ -138,7 +138,7 @@ class WorkerProtocol {
 	}
 
 	private handleMessage = (e: MessageEvent) => {
-		const { id, buffer, error } = e.data;
+		const { id, buffer, imageBitmap, error } = e.data;
 
 		const request = this.pendingRequests.get(id);
 		if (error) {
@@ -148,7 +148,8 @@ class WorkerProtocol {
 				this.pendingRequests.delete(id);
 			}
 		} else if (request) {
-			request.resolve({ data: buffer });
+			// ImageBitmapはMapLibreが直接利用可能（farbling回避パス）
+			request.resolve({ data: imageBitmap ?? buffer });
 			this.pendingRequests.delete(id);
 		}
 	};

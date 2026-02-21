@@ -1,3 +1,4 @@
+import { convertCanvasToResult } from '$routes/map/protocol/farbling';
 import fsSource from './shaders/fragment.glsl?raw';
 import vsSource from './shaders/vertex.glsl?raw';
 import chroma from 'chroma-js';
@@ -109,16 +110,15 @@ self.onmessage = async (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-		const blob = await canvas.convertToBlob();
-		if (!blob) {
-			throw new Error('Failed to convert canvas to blob');
-		}
+		const result = await convertCanvasToResult(canvas);
 
-		if (encodeType === 'buffar') {
-			const buffer = await blob.arrayBuffer();
+		if (result instanceof ImageBitmap) {
+			self.postMessage({ id: tileId, imageBitmap: result }, { transfer: [result] });
+		} else if (encodeType === 'buffar') {
+			const buffer = await result.arrayBuffer();
 			self.postMessage({ id: tileId, buffer });
 		} else if (encodeType === 'blob') {
-			self.postMessage({ id: tileId, blob });
+			self.postMessage({ id: tileId, blob: result });
 		}
 	} catch (e) {
 		console.error(e);

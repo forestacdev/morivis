@@ -20,6 +20,26 @@ import { ColorMapManager } from '$routes/map/utils/color_mapping';
 import type { TileImageManager } from '$routes/map/protocol/image';
 import { PMTiles } from 'pmtiles';
 
+/** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
+const createObjectURLFromWorkerResult = async (data: {
+	blob?: Blob;
+	imageBitmap?: ImageBitmap;
+}): Promise<string> => {
+	if (data.imageBitmap) {
+		// farbling回避パス: ImageBitmapをcanvas経由でBlob化
+		const canvas = new OffscreenCanvas(data.imageBitmap.width, data.imageBitmap.height);
+		const ctx = canvas.getContext('2d')!;
+		ctx.drawImage(data.imageBitmap, 0, 0);
+		data.imageBitmap.close();
+		const blob = await canvas.convertToBlob();
+		return URL.createObjectURL(blob);
+	}
+	if (data.blob) {
+		return URL.createObjectURL(data.blob);
+	}
+	throw new Error('No blob or imageBitmap in worker response');
+};
+
 // TODO クリーンアップ
 // raster + image タイプの処理
 export const getRasterImageUrl = async (
@@ -191,13 +211,13 @@ export const generateDemCoverImage = async (
 					encodeType
 				});
 
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
+				worker.onmessage = async (e) => {
+					const { id, blob, imageBitmap, error } = e.data;
 					if (id === tileId) {
 						if (error) {
 							reject(new Error(error));
 						} else {
-							resolve(URL.createObjectURL(blob));
+							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
 						}
 					}
 
@@ -237,14 +257,14 @@ export const generateDemCoverImage = async (
 					encodeType
 				});
 
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
+				worker.onmessage = async (e) => {
+					const { id, blob, imageBitmap, error } = e.data;
 
 					if (id === tileId) {
 						if (error) {
 							reject(new Error(error));
 						} else {
-							resolve(URL.createObjectURL(blob));
+							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
 						}
 					}
 
@@ -260,13 +280,13 @@ export const generateDemCoverImage = async (
 					demTypeNumber
 				});
 
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
+				worker.onmessage = async (e) => {
+					const { id, blob, imageBitmap, error } = e.data;
 					if (id === tileId) {
 						if (error) {
 							reject(new Error(error));
 						} else {
-							resolve(URL.createObjectURL(blob));
+							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
 						}
 					}
 
@@ -333,13 +353,13 @@ const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Pr
 			encodeType
 		});
 
-		worker.onmessage = (e) => {
-			const { id, blob, error } = e.data;
+		worker.onmessage = async (e) => {
+			const { id, blob, imageBitmap, error } = e.data;
 			if (id === tileId) {
 				if (error) {
 					reject(new Error(error));
 				} else {
-					resolve(URL.createObjectURL(blob));
+					resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
 				}
 			}
 
