@@ -1,4 +1,4 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import {
 	FOREST_MESH_PROPERTIES,
@@ -17,7 +17,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'https://d2g6co14qozqgp.cloudfront.net/pmtiles/fr_mesh20m_hyogo.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/fr_mesh20m_hyogo.pmtiles`
 	},
 	metaData: {
 		name: '兵庫県 森林資源量集計メッシュ',

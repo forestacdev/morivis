@@ -1,4 +1,4 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
@@ -8,7 +8,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'LineString',
-		url: 'https://d2g6co14qozqgp.cloudfront.net/pmtiles/a.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/a.pmtiles`
 	},
 	metaData: {
 		name: '法務省登記所備付地図データ',
