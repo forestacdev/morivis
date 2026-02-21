@@ -2,7 +2,7 @@ import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
-import { PUBLIC_BASE_PATH, PUBLIC_ENTRY_PATH } from '$env/static/public';
+import { PUBLIC_BASE_PATH, PUBLIC_ENTRY_PATH, PUBLIC_PANORAMA_PATH } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
 export const DATA_PATH =
@@ -28,6 +28,7 @@ export const MAP_IMAGE_BASE_PATH = DATA_PATH + '/images/map';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
+export const STREET_VIEW_PANORAMA_PATH = PUBLIC_PANORAMA_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
 export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 // export const MAP_FONT_DATA_PATH = 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf';
