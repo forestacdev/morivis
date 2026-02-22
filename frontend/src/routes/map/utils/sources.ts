@@ -28,6 +28,7 @@ import { cloudSources } from '$routes/map/utils/layers/cloud';
 import {
 	baseMapSatelliteSources,
 	baseMapOsmSources,
+	baseMapReliefSources,
 	baseMapSlopeSources,
 	baseMapAspectSources
 } from '$routes/map/utils/layers/base_map';
@@ -51,7 +52,7 @@ export const convertTmsToXyz = (url: string): string => {
 	return url.replace('{-y}', '{y}');
 };
 
-const demUrlCache = TileImageManager.getInstance();
+// const demUrlCache = TileImageManager.getInstance();
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[],
@@ -104,7 +105,7 @@ export const createSourcesItems = async (
 								const uniformsDataParam = objectToUrlParams(
 									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
 								);
-								demUrlCache.addUrlcache(entry.id, format.url); // TODO 消す処理
+								// demUrlCache.addUrlcache(entry.id, format.url); // TODO 消す処理
 
 								items[sourceId] = {
 									type: 'raster',
@@ -290,14 +291,14 @@ export const createSourcesItems = async (
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
 	} else if (get(selectedBaseMap) === 'relief') {
-		baseSourcesItem = {};
+		baseSourcesItem = baseMapReliefSources;
 	} else if (get(selectedBaseMap) === 'slope') {
 		// TODO: 共通化
-		demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
+		// demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapSlopeSources;
 	} else if (get(selectedBaseMap) === 'aspect') {
 		// TODO: 共通化
-		demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
+		// demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapAspectSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;

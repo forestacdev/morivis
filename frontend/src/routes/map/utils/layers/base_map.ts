@@ -121,42 +121,65 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 ];
 
 /** 標高段彩図 */
-export const baseMapReliefLayers: ColorReliefLayerSpecification[] = [
+export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
+	relief: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+export const baseMapReliefLayers: RasterLayerSpecification[] = [
 	{
-		id: 'color-relief',
-		type: 'color-relief',
-		source: 'terrain',
+		id: 'relief_layer',
+		source: 'relief',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
 		paint: {
-			'color-relief-color': [
-				'interpolate',
-				['linear'],
-				['elevation'],
-				-12000,
-				'#000060',
-				-8000,
-				'#0000A0',
-				-4000,
-				'#0040C0',
-				-2000,
-				'#0080D0',
-				-1000,
-				'#00B0E0',
-				-500,
-				'#40D0E0',
-				0,
-				'#46BABA',
-				300,
-				'#B5A42D',
-				1000,
-				'#B4562D',
-				2000,
-				'#B4491C',
-				4000,
-				'#B43D09'
-			]
+			'raster-opacity': 1
 		}
 	}
 ];
+// export const baseMapReliefLayers: ColorReliefLayerSpecification[] = [
+// 	{
+// 		id: 'color-relief',
+// 		type: 'color-relief',
+// 		source: 'terrain',
+// 		paint: {
+// 			'color-relief-color': [
+// 				'interpolate',
+// 				['linear'],
+// 				['elevation'],
+// 				-12000,
+// 				'#000060',
+// 				-8000,
+// 				'#0000A0',
+// 				-4000,
+// 				'#0040C0',
+// 				-2000,
+// 				'#0080D0',
+// 				-1000,
+// 				'#00B0E0',
+// 				-500,
+// 				'#40D0E0',
+// 				0,
+// 				'#46BABA',
+// 				300,
+// 				'#B5A42D',
+// 				1000,
+// 				'#B4562D',
+// 				2000,
+// 				'#B4491C',
+// 				4000,
+// 				'#B43D09'
+// 			]
+// 		}
+// 	}
+// ];
 
 /** 傾斜量図 */
 export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
@@ -165,25 +188,11 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 		tiles: [
 			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&x={x}&y={y}&z={z}'
 		],
-		maxzoom: 15,
+		maxzoom: 16,
 		minzoom: 0,
 		tileSize: 512
 	}
 };
-
-/** 傾斜方位図 */
-export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
-	aspect: {
-		type: 'raster',
-		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
-		],
-		maxzoom: 15,
-		minzoom: 0,
-		tileSize: 512
-	}
-};
-
 export const baseMapSlopeLayers: RasterLayerSpecification[] = [
 	{
 		id: 'slope_layer',
@@ -197,6 +206,18 @@ export const baseMapSlopeLayers: RasterLayerSpecification[] = [
 	}
 ];
 
+/** 傾斜方位図 */
+export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
+	aspect: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
 export const baseMapAspectLayers: RasterLayerSpecification[] = [
 	{
 		id: 'aspect_layer',

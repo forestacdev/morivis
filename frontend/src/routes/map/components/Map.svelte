@@ -338,6 +338,7 @@
 				terrain: {
 					type: 'raster-dem',
 					tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+					maxzoom: 16,
 					tileSize: 512,
 					encoding: 'terrarium',
 					attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'

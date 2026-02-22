@@ -16,7 +16,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		tags: ['DEM', '地形', 'ジオイド高'],
 		location: '全国',
 		minZoom: 0,
-		maxZoom: 15,
+		maxZoom: 16,
 		tileSize: 512,
 		bounds: [120, 20, 150, 50],
 		xyzImageTile: { x: 28846, y: 12917, z: 15 } // 画像タイルのXYZ座標
