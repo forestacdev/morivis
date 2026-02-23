@@ -1,4 +1,4 @@
-(function(){"use strict";let p=null;function w(){if(p!==null)return p;p=!1;const e=5,r=new OffscreenCanvas(e,e).getContext("2d",{willReadFrequently:!0});if(!r)return!1;for(let n=0;n<e*e;n++){const a=n*4;r.fillStyle=`rgb(${a},${a+1},${a+2})`,r.fillRect(n%e,Math.floor(n/e),1,1)}const o=r.getImageData(0,0,e,e).data;for(let n=0;n<e*e*4;n++)if(n%4!==3&&o[n]!==n){p=!0;break}return p}async function b(e){if(w())try{return e.transferToImageBitmap()}catch{}return await e.convertToBlob()}var A=`#version 300 es
+(function(){"use strict";let f=null;function A(){if(f!==null)return f;f=!1;const n=5,e=new OffscreenCanvas(n,n).getContext("2d",{willReadFrequently:!0});if(!e)return!1;for(let r=0;r<n*n;r++){const i=r*4;e.fillStyle=`rgb(${i},${i+1},${i+2})`,e.fillRect(r%n,Math.floor(r/n),1,1)}const o=e.getImageData(0,0,n,n).data;for(let r=0;r<n*n*4;r++)if(r%4!==3&&o[r]!==r){f=!0;break}return f}async function P(n){if(A())try{return n.transferToImageBitmap()}catch{}return await n.convertToBlob()}var I=`#version 300 es
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
@@ -115,68 +115,14 @@ float computeSlopeHorn(mat3 h, float ewres, float nsres, float scale, bool asDeg
     }
 }
 
-const float CURVATURE_NODATA = -9999.0; // 曲率計算におけるNoDataを示す値
-
-// Zevenbergen & Thorne 法による曲率計算
-// 引数:
-//   h: 3x3の標高マトリックス (h[column][row])
-//   ewres: 東西方向の地上解像度 (メートル/ピクセル)
-//   nsres: 南北方向の地上解像度 (メートル/ピクセル)
-//   curvatureMode: 計算する曲率のタイプ (1: プロファイル曲率, 2: 平面曲率)
-// 戻り値:
-//   計算された曲率値 (100倍スケール後)、またはNoDataの場合は CURVATURE_NODATA
-float computeCurvatureZT(mat3 h, float ewres, float nsres, int curvatureMode) {
-    // NoData値チェック (入力された3x3マトリックス内にNoDataがあれば計算しない)
-    for (int col = 0; col < 3; col++) {
-        for (int row = 0; row < 3; row++) {
-            if (h[col][row] == -9999.0) { // NoData値の条件
-                return CURVATURE_NODATA;
-            }
-        }
-    }
-
-    // 3x3ウィンドウの標高値を分かりやすい変数名に割り当て
-    // GLSLのmat3は h[column][row] でアクセス
-    // z0 z1 z2   (h[0][0] h[1][0] h[2][0])
-    // z3 z4 z5   (h[0][1] h[1][1] h[2][1])  (z4 = h[1][1] が中心)
-    // z6 z7 z8   (h[0][2] h[1][2] h[2][2])
-    float z0 = h[0][0]; float z1 = h[1][0]; float z2 = h[2][0]; // Top row
-    float z3 = h[0][1]; float z4 = h[1][1]; float z5 = h[2][1]; // Middle row (z4 is center)
-    float z6 = h[0][2]; float z7 = h[1][2]; float z8 = h[2][2]; // Bottom row
-
-    // 偏導関数の計算
-    // Dx = (MidRight - MidLeft) / (2 * ewres)
-    float Dx  = (z5 - z3) / (2.0 * ewres);
-    // Dy = (TopCenter - BottomCenter) / (2 * nsres)
-    // (DEMのY軸が上向き正と仮定。z1がz7より「上」にある)
-    float Dy  = (z1 - z7) / (2.0 * nsres);
-
-    // Dxx = (MidLeft + MidRight - 2 * Center) / (ewres^2)
-    float Dxx = (z3 + z5 - 2.0 * z4) / (ewres * ewres);
-    // Dyy = (TopCenter + BottomCenter - 2 * Center) / (nsres^2)
-    float Dyy = (z1 + z7 - 2.0 * z4) / (nsres * nsres);
-
-    // Dxy = (TopLeft - TopRight - BottomLeft + BottomRight) / (4 * ewres * nsres)
-    float Dxy = (z0 - z2 - z6 + z8) / (4.0 * ewres * nsres);
-
-    float curvatureVal = 0.0;
-    float P_denominator = Dx*Dx + Dy*Dy; // 共通の分母の一部
-
-    if (P_denominator > 1.0e-9) { // ほぼ平坦な場所でのゼロ除算を避ける
-        if (curvatureMode == 1) { // Profile Curvature (プロファイル曲率)
-            curvatureVal = (Dxx * Dx*Dx + 2.0 * Dxy * Dx*Dy + Dyy * Dy*Dy) / P_denominator;
-        } else if (curvatureMode == 2) { // Planform Curvature (平面曲率)
-            curvatureVal = (Dxx * Dy*Dy - 2.0 * Dxy * Dx*Dy + Dyy * Dx*Dx) / P_denominator;
-        } else {
-            // 未定義の curvatureMode の場合は NoData を返す
-            return CURVATURE_NODATA;
-        }
+// 3色グラデーション（min→mid→max）
+vec3 colorRamp3(float value, float minVal, float maxVal, vec3 minColor, vec3 midColor, vec3 maxColor) {
+    float t = clamp((value - minVal) / (maxVal - minVal), 0.0, 1.0);
+    if (t < 0.5) {
+        return mix(minColor, midColor, t * 2.0);
     } else {
-        curvatureVal = 0.0; // 平坦な領域では曲率0
+        return mix(midColor, maxColor, (t - 0.5) * 2.0);
     }
-
-    // GDALの出力に合わせて100倍する
-    return curvatureVal * 100.0;
 }
 
 // 傾斜方位を計算する関数
@@ -430,78 +376,141 @@ void main() {
     return;
 }
 
-    // curvature
+    // curvature (dem2CsProtocol方式: ガウス平滑化 + 一般曲率 + 青→黄→赤グラデーション)
     if(u_mode == 4.0) {
 
         float center_h = convertToHeight(color);
         if(center_h == -9999.0) {
-            // 無効地の場合
             fragColor = vec4(0.0, 0.0, 0.0, 0.0);
             return;
         }
-        mat3 h_mat = calculateTerrainData(v_tex_coord, center_h);
 
-        // 南北方向の解像度 (nsres)
-        // ユーザー提供コードでは定数でしたが、一般的にはズームレベルから計算できます。
-        // float nsres = 9.5546; // ユーザー指定の定数
-        float nsres = getResolution(u_tile_z); // こちらが一般的（メルカトル図法タイルの場合）
-
-        // タイルのY座標とuv座標から緯度を取得 (あなたの関数)
+        // ピクセルあたりの地上解像度を計算
+        float nsres = getResolution(u_tile_z);
         float latitude_deg = getLatitudeFromTileUV(u_tile_y, uv.y, u_tile_z);
-
-        // 東西方向の解像度 (ewres) (あなたの関数)
         float ewres = getEwRes(u_tile_z, latitude_deg);
+        float cellSize = (ewres + nsres) / 2.0;
 
-        // プロファイル曲率を計算 (mode = 1)
-        float profileCurvature = computeCurvatureZT(h_mat, ewres, nsres, 1);
+        // dem2CsProtocol方式: ガウスぼかし後の5点で曲率を計算
+        // シェーダーでは5x5近傍をサンプリングし、3x3ガウスカーネルで平滑化
+        // σ ≈ clamp(3/cellSize, 1.6, 7) をピクセル単位に換算（1ピクセル=cellSize m）
+        // σ_pixel = σ_meter / cellSize = clamp(3/cellSize, 1.6, 7) / 1.0
+        // 3x3カーネルで表現可能な範囲に制限されるため、近似的なガウス重みを使用
 
-        // 平面曲率を計算 (mode = 2)
-        float planformCurvature = computeCurvatureZT(h_mat, ewres, nsres, 2);
+        vec2 pixel_size = vec2(1.0) / u_tile_size;
 
-        // 結果の出力 (例: プロファイル曲率を赤、平面曲率を緑で表示)
-      // 結果の出力 (尾根と谷に色を付ける)
-        vec4 outputColor = vec4(0.5, 0.5, 0.5, 1.0); // デフォルトは中間色 (グレー)
+        // 5x5近傍の高さをサンプリング（行: -2〜+2, 列: -2〜+2 ピクセル）
+        // ただし曲率計算に必要な5点（中心、上、下、左、右）の各3x3近傍のみ取得
+        // 必要な座標: 中心(0,0)の3x3 + 上(0,-1)の上(0,-2) + 下(0,+1)の下(0,+2)
+        //            + 左(-1,0)の左(-2,0) + 右(+1,0)の右(+2,0)
 
-        // NoDataでない場合のみ色付け処理
-        if (planformCurvature != CURVATURE_NODATA) {
-            float ridgeThreshold = 0.1;  // 尾根と判断する平面曲率の閾値 (正の値)
-            float valleyThreshold = -0.1; // 谷と判断する平面曲率の閾値 (負の値)
+        // サンプリングヘルパー: 隣接タイルを考慮した高さ取得
+        // 行[-2..+2], 列[-2..+2] の各オフセットに対して
+        // タイル境界をまたぐ場合は隣接タイルからサンプリング
+        #define SAMPLE_HEIGHT(dx, dy) convertToHeight( \\
+            (uv.x + float(dx) * pixel_size.x < 0.0) ? \\
+                texture(u_height_map_left, uv + vec2(float(dx) * pixel_size.x + 1.0, float(dy) * pixel_size.y)) : \\
+            (uv.x + float(dx) * pixel_size.x > 1.0) ? \\
+                texture(u_height_map_right, uv + vec2(float(dx) * pixel_size.x - 1.0, float(dy) * pixel_size.y)) : \\
+            (uv.y + float(dy) * pixel_size.y < 0.0) ? \\
+                texture(u_height_map_top, uv + vec2(float(dx) * pixel_size.x, float(dy) * pixel_size.y + 1.0)) : \\
+            (uv.y + float(dy) * pixel_size.y > 1.0) ? \\
+                texture(u_height_map_bottom, uv + vec2(float(dx) * pixel_size.x, float(dy) * pixel_size.y - 1.0)) : \\
+                texture(u_height_map_center, uv + vec2(float(dx) * pixel_size.x, float(dy) * pixel_size.y)) \\
+        )
 
-            vec3 ridgeColor = vec3(1.0, 0.0, 0.0);   // 尾根の色 (例: 赤)
-            vec3 valleyColor = vec3(0.0, 0.0, 1.0);  // 谷の色 (例: 青)
-            vec3 neutralColor = vec3(0.8, 0.8, 0.7); // 中間的な斜面の色 (例: 明るいベージュ)
-            // vec3 neutralColor = texture(u_terrain_texture, v_tex_coord).rgb; // 元の地形の色を使う場合
+        // 3x3ガウスカーネルの重み（σ ≈ 0.85 に相当、合計 = 1.0 に正規化）
+        // dem2CsProtocolのsigmaはメートル単位で最小1.6mだが、
+        // ピクセル単位では cellSize によって変わる。
+        // 3x3カーネルの場合 σ=0.85 pixel が最適な近似。
+        // w_corner=0.0625, w_edge=0.125, w_center=0.25 (ガウス近似)
+        const float wC = 0.25;   // 中央
+        const float wE = 0.125;  // 辺（上下左右）
+        const float wK = 0.0625; // 角
 
-            if (planformCurvature > ridgeThreshold) {
-                // 尾根: 曲率が大きいほど色を濃くする (オプション)
-                float intensity = clamp((planformCurvature - ridgeThreshold) / (2.0 - ridgeThreshold), 0.0, 1.0); // 例: 0.5～2.0の範囲を0～1に
-                outputColor.rgb = mix(neutralColor, ridgeColor, intensity * 0.8 + 0.2); // 0.2は最低限の色味
-            } else if (planformCurvature < valleyThreshold) {
-                // 谷: 曲率が小さい(より負の方向に大きい)ほど色を濃くする (オプション)
-                float intensity = clamp((abs(planformCurvature) - abs(valleyThreshold)) / (2.0 - abs(valleyThreshold)), 0.0, 1.0); // 例: 0.5～2.0の範囲を0～1に
-                outputColor.rgb = mix(neutralColor, valleyColor, intensity * 0.8 + 0.2);
-            } else {
-                // 中間的な斜面
-                outputColor.rgb = neutralColor;
-            }
-            outputColor.a = 1.0; // 不透明
-        } else {
-            // NoDataの場合は完全に透明にするなど
-            outputColor = vec4(0.0, 0.0, 0.0, 0.0);
+        // 5点の平滑化値を計算（中心、上、下、左、右）
+        // 各点の3x3近傍にガウス重みを適用
+
+        // 中心 (0,0) の3x3近傍
+        float s_center = center_h * wC
+            + SAMPLE_HEIGHT( 0,-1) * wE + SAMPLE_HEIGHT( 0, 1) * wE
+            + SAMPLE_HEIGHT(-1, 0) * wE + SAMPLE_HEIGHT( 1, 0) * wE
+            + SAMPLE_HEIGHT(-1,-1) * wK + SAMPLE_HEIGHT( 1,-1) * wK
+            + SAMPLE_HEIGHT(-1, 1) * wK + SAMPLE_HEIGHT( 1, 1) * wK;
+
+        // 上 (0,-1) の3x3近傍
+        float s_top = SAMPLE_HEIGHT( 0,-1) * wC
+            + SAMPLE_HEIGHT( 0,-2) * wE + center_h * wE
+            + SAMPLE_HEIGHT(-1,-1) * wE + SAMPLE_HEIGHT( 1,-1) * wE
+            + SAMPLE_HEIGHT(-1,-2) * wK + SAMPLE_HEIGHT( 1,-2) * wK
+            + SAMPLE_HEIGHT(-1, 0) * wK + SAMPLE_HEIGHT( 1, 0) * wK;
+
+        // 下 (0,+1) の3x3近傍
+        float s_bottom = SAMPLE_HEIGHT( 0, 1) * wC
+            + center_h * wE + SAMPLE_HEIGHT( 0, 2) * wE
+            + SAMPLE_HEIGHT(-1, 1) * wE + SAMPLE_HEIGHT( 1, 1) * wE
+            + SAMPLE_HEIGHT(-1, 0) * wK + SAMPLE_HEIGHT( 1, 0) * wK
+            + SAMPLE_HEIGHT(-1, 2) * wK + SAMPLE_HEIGHT( 1, 2) * wK;
+
+        // 左 (-1,0) の3x3近傍
+        float s_left = SAMPLE_HEIGHT(-1, 0) * wC
+            + SAMPLE_HEIGHT(-1,-1) * wE + SAMPLE_HEIGHT(-1, 1) * wE
+            + SAMPLE_HEIGHT(-2, 0) * wE + center_h * wE
+            + SAMPLE_HEIGHT(-2,-1) * wK + SAMPLE_HEIGHT( 0,-1) * wK
+            + SAMPLE_HEIGHT(-2, 1) * wK + SAMPLE_HEIGHT( 0, 1) * wK;
+
+        // 右 (+1,0) の3x3近傍
+        float s_right = SAMPLE_HEIGHT( 1, 0) * wC
+            + SAMPLE_HEIGHT( 1,-1) * wE + SAMPLE_HEIGHT( 1, 1) * wE
+            + center_h * wE + SAMPLE_HEIGHT( 2, 0) * wE
+            + SAMPLE_HEIGHT( 0,-1) * wK + SAMPLE_HEIGHT( 2,-1) * wK
+            + SAMPLE_HEIGHT( 0, 1) * wK + SAMPLE_HEIGHT( 2, 1) * wK;
+
+        // NoData チェック（平滑化後の値が無効なら描画しない）
+        if (s_center <= -9000.0 || s_top <= -9000.0 || s_bottom <= -9000.0
+            || s_left <= -9000.0 || s_right <= -9000.0) {
+            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            return;
         }
 
-        fragColor = outputColor;
+        // dem2CsProtocol方式の一般曲率を計算（平滑化済みの5点から）
+        float cellArea = cellSize * cellSize;
+        float r = ((s_left + s_right) / 2.0 - s_center) / cellArea;
+        float t = ((s_top + s_bottom) / 2.0 - s_center) / cellArea;
+        float curvature = -2.0 * (r + t);
+
+        // dem2CsProtocolの曲率係数（ピクセル解像度に応じた色の濃さ調整）
+        float curvatureCoefficient;
+        if (cellSize < 68.0) {
+            curvatureCoefficient = max(cellSize / 2.0, 1.1);
+        } else {
+            curvatureCoefficient = 0.188 * pow(cellSize, 1.232);
+        }
+
+        // 色付け範囲: ±0.2/curvatureCoefficient を 0〜1 に正規化してカラーマップテクスチャで色付け
+        float rangeVal = 0.2 / curvatureCoefficient;
+        float normalized_curvature = clamp((curvature + rangeVal) / (2.0 * rangeVal), 0.0, 1.0);
+
+        vec4 curvature_color = getColorFromMap(u_color_map, normalized_curvature);
+
+        //  // 青→黄白→赤 のグラデーションの場合
+        // vec3 blueColor  = vec3(0.0, 0.0, 1.0);         // 谷（負の曲率）
+        // vec3 midColor   = vec3(1.0, 1.0, 0.94);         // 中間（黄白: rgb(255,255,240)）
+        // vec3 redColor   = vec3(1.0, 0.0, 0.0);          // 尾根（正の曲率）
+
+        // vec3 outputRgb = colorRamp3(curvature, -rangeVal, rangeVal, blueColor, midColor, redColor);
+        fragColor = curvature_color;
         return;
 
     }
 }
 
 
-`,U=`#version 300 es
+`,L=`#version 300 es
 in vec4 a_position;
 out vec2 v_tex_coord;
 
 void main() {
     gl_Position = a_position;
     v_tex_coord = vec2(a_position.x * 0.5 + 0.5, a_position.y * -0.5 + 0.5); // Y軸を反転
-}`;const D=new Map,C=(e,t,r)=>{const o=e.createShader(t);return o?(e.shaderSource(o,r),e.compileShader(o),e.getShaderParameter(o,e.COMPILE_STATUS)?o:(console.error("An error occurred compiling the shaders: "+e.getShaderInfoLog(o)),e.deleteShader(o),null)):(console.error("Unable to create shader"),null)},H=e=>{const t=e.getContext("webgl2");if(!t)throw new Error("WebGL not supported");const r=C(t,t.VERTEX_SHADER,U),o=C(t,t.FRAGMENT_SHADER,A);if(!r||!o)throw new Error("Failed to load shaders");const n=t.createProgram();if(!n)throw new Error("Failed to create program");if(t.attachShader(n,r),t.attachShader(n,o),t.linkProgram(n),!t.getProgramParameter(n,t.LINK_STATUS))throw console.error("Unable to initialize the shader program: "+t.getProgramInfoLog(n)),new Error("Failed to link program");t.useProgram(n);const a=t.createBuffer();if(!a)throw new Error("Failed to create position buffer");t.bindBuffer(t.ARRAY_BUFFER,a);const _=new Float32Array([-1,-1,1,-1,-1,1,1,1]);t.bufferData(t.ARRAY_BUFFER,_,t.STATIC_DRAW);const u=t.getAttribLocation(n,"a_position");return t.enableVertexAttribArray(u),t.vertexAttribPointer(u,2,t.FLOAT,!1,0,0),{canvas:e,gl:t,program:n,positionBuffer:a}},L=e=>{let t=D.get(e);if(!t){const r=new OffscreenCanvas(e,e);t=H(r),D.set(e,t)}return t},R=new Map,M=(e,t)=>{let r=R.get(t);return r||(r=e.createTexture(),R.set(t,r)),r},g=(e,t,r)=>{let o=0;Object.entries(r).forEach(([n,{image:a,type:_}])=>{const u=e.TEXTURE0+o,m=M(e,o);e.activeTexture(u),e.bindTexture(e.TEXTURE_2D,m);const s=e.getUniformLocation(t,n);e.uniform1i(s,o),_==="height"?e.texImage2D(e.TEXTURE_2D,0,e.RGBA,e.RGBA,e.UNSIGNED_BYTE,a):e.texImage2D(e.TEXTURE_2D,0,e.RGB,256,1,0,e.RGB,e.UNSIGNED_BYTE,a),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_S,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_T,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MIN_FILTER,e.LINEAR),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MAG_FILTER,e.LINEAR),o++})},d=(e,t,r)=>{for(const[o,{type:n,value:a}]of Object.entries(r)){const _=e.getUniformLocation(t,o);_!==null&&e[`uniform${n}`](_,a)}};self.onmessage=async e=>{const{tileId:t,center:r,left:o,right:n,top:a,bottom:_,demTypeNumber:u,modeNumber:m,mode:s,max:y,min:z,elevationColorArray:T,tile:v,tileSize:c=256,encodeType:E}=e.data;try{const x=L(c),{canvas:P,gl:i,program:l}=x;if(i.viewport(0,0,c,c),i.useProgram(l),s==="relief")d(i,l,{u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:m},u_max_height:{type:"1f",value:y},u_min_height:{type:"1f",value:z},u_tile_size:{type:"1f",value:c}}),g(i,l,{u_height_map_center:{image:r,type:"height"},u_color_map:{image:T,type:"colormap"}});else if(s==="slope"||s==="curvature"){const h={u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:m},u_max_slope:{type:"1f",value:y},u_min_slope:{type:"1f",value:z},u_tile_y:{type:"1f",value:v.y},u_tile_z:{type:"1f",value:v.z},u_tile_size:{type:"1f",value:c}};d(i,l,h),g(i,l,{u_height_map_center:{image:r,type:"height"},u_height_map_left:{image:o,type:"height"},u_height_map_right:{image:n,type:"height"},u_height_map_top:{image:a,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:T,type:"colormap"}})}else if(s==="aspect"){const h={u_dem_type:{type:"1f",value:u},u_mode:{type:"1f",value:m},u_max_aspect:{type:"1f",value:y},u_min_aspect:{type:"1f",value:z},u_tile_y:{type:"1f",value:v.y},u_tile_z:{type:"1f",value:v.z},u_tile_size:{type:"1f",value:c}};d(i,l,h),g(i,l,{u_height_map_center:{image:r,type:"height"},u_height_map_left:{image:o,type:"height"},u_height_map_right:{image:n,type:"height"},u_height_map_top:{image:a,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:T,type:"colormap"}})}i.clear(i.COLOR_BUFFER_BIT),i.drawArrays(i.TRIANGLE_STRIP,0,4);const f=await b(P);if(f instanceof ImageBitmap)self.postMessage({id:t,imageBitmap:f},{transfer:[f]});else if(E==="buffar"){const h=await f.arrayBuffer();self.postMessage({id:t,buffer:h})}else E==="blob"&&self.postMessage({id:t,blob:f})}catch(x){x instanceof Error&&self.postMessage({id:t,error:x.message})}}})();
+}`;const T=new Map,H=(n,t,e)=>{const o=n.createShader(t);return o?(n.shaderSource(o,e),n.compileShader(o),n.getShaderParameter(o,n.COMPILE_STATUS)?o:(console.error("An error occurred compiling the shaders: "+n.getShaderInfoLog(o)),n.deleteShader(o),null)):(console.error("Unable to create shader"),null)},C=n=>{const t=n.getContext("webgl2");if(!t)throw new Error("WebGL not supported");const e=H(t,t.VERTEX_SHADER,L),o=H(t,t.FRAGMENT_SHADER,I);if(!e||!o)throw new Error("Failed to load shaders");const r=t.createProgram();if(!r)throw new Error("Failed to create program");if(t.attachShader(r,e),t.attachShader(r,o),t.linkProgram(r),!t.getProgramParameter(r,t.LINK_STATUS))throw console.error("Unable to initialize the shader program: "+t.getProgramInfoLog(r)),new Error("Failed to link program");t.useProgram(r);const i=t.createBuffer();if(!i)throw new Error("Failed to create position buffer");t.bindBuffer(t.ARRAY_BUFFER,i);const _=new Float32Array([-1,-1,1,-1,-1,1,1,1]);t.bufferData(t.ARRAY_BUFFER,_,t.STATIC_DRAW);const a=t.getAttribLocation(r,"a_position");return t.enableVertexAttribArray(a),t.vertexAttribPointer(a,2,t.FLOAT,!1,0,0),{canvas:n,gl:t,program:r,positionBuffer:i,texturePool:new Map}},M=n=>{let t=T.get(n);if(!t){const e=new OffscreenCanvas(n,n);t=C(e),T.set(n,t)}return t},y=(n,t)=>{const{gl:e,program:o,texturePool:r}=n;let i=0;Object.entries(t).forEach(([_,{image:a,type:x}])=>{const c=e.TEXTURE0+i;let u=r.get(i)??null;const p=!u;p&&(u=e.createTexture(),r.set(i,u)),e.activeTexture(c),e.bindTexture(e.TEXTURE_2D,u);const v=e.getUniformLocation(o,_);e.uniform1i(v,i),x==="height"?e.texImage2D(e.TEXTURE_2D,0,e.RGBA,e.RGBA,e.UNSIGNED_BYTE,a):e.texImage2D(e.TEXTURE_2D,0,e.RGB,256,1,0,e.RGB,e.UNSIGNED_BYTE,a),p&&(e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_S,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_T,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MIN_FILTER,e.NEAREST),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MAG_FILTER,e.NEAREST)),i++})},z=(n,t,e)=>{for(const[o,{type:r,value:i}]of Object.entries(e)){const _=n.getUniformLocation(t,o);_!==null&&n[`uniform${r}`](_,i)}};let w=Promise.resolve();self.onmessage=n=>{w=w.then(()=>G(n))};async function G(n){const{tileId:t,center:e,left:o,right:r,top:i,bottom:_,demTypeNumber:a,modeNumber:x,mode:c,max:u,min:p,elevationColorArray:v,tile:E,tileSize:m=256,encodeType:S}=n.data;try{const s=M(m),{canvas:b,gl:l,program:d}=s;if(l.viewport(0,0,m,m),l.useProgram(d),c==="relief")z(l,d,{u_dem_type:{type:"1f",value:a},u_mode:{type:"1f",value:x},u_max_height:{type:"1f",value:u},u_min_height:{type:"1f",value:p},u_tile_size:{type:"1f",value:m}}),y(s,{u_height_map_center:{image:e,type:"height"},u_color_map:{image:v,type:"colormap"}});else if(c==="slope"||c==="curvature"){const h={u_dem_type:{type:"1f",value:a},u_mode:{type:"1f",value:x},u_max_slope:{type:"1f",value:u},u_min_slope:{type:"1f",value:p},u_tile_y:{type:"1f",value:E.y},u_tile_z:{type:"1f",value:E.z},u_tile_size:{type:"1f",value:m}};z(l,d,h),y(s,{u_height_map_center:{image:e,type:"height"},u_height_map_left:{image:o,type:"height"},u_height_map_right:{image:r,type:"height"},u_height_map_top:{image:i,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:v,type:"colormap"}})}else if(c==="aspect"){const h={u_dem_type:{type:"1f",value:a},u_mode:{type:"1f",value:x},u_max_aspect:{type:"1f",value:u},u_min_aspect:{type:"1f",value:p},u_tile_y:{type:"1f",value:E.y},u_tile_z:{type:"1f",value:E.z},u_tile_size:{type:"1f",value:m}};z(l,d,h),y(s,{u_height_map_center:{image:e,type:"height"},u_height_map_left:{image:o,type:"height"},u_height_map_right:{image:r,type:"height"},u_height_map_top:{image:i,type:"height"},u_height_map_bottom:{image:_,type:"height"},u_color_map:{image:v,type:"colormap"}})}l.clear(l.COLOR_BUFFER_BIT),l.drawArrays(l.TRIANGLE_STRIP,0,4);const g=await P(b);if(g instanceof ImageBitmap)self.postMessage({id:t,imageBitmap:g},{transfer:[g]});else if(S==="buffar"){const h=await g.arrayBuffer();self.postMessage({id:t,buffer:h})}else S==="blob"&&self.postMessage({id:t,blob:g})}catch(s){s instanceof Error&&self.postMessage({id:t,error:s.message})}}})();
