@@ -126,7 +126,7 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 	relief: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,

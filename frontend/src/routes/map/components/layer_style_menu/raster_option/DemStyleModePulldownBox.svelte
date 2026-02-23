@@ -19,10 +19,8 @@
 	const allDemStyleModes: DemStyleModeOptions[] = [
 		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
-		{ key: 'aspect', name: '傾斜方位' }
-		// { key: 'default', name: 'なし' }
-		// { key: 'curvature', name: '曲率' },
-		// { key: 'shadow', name: '陰影' },
+		{ key: 'aspect', name: '傾斜方位' },
+		{ key: 'curvature', name: '曲率' }
 	];
 
 	// 2. uniformsDataに基づいてフィルタリング
@@ -40,8 +38,8 @@
 					return uniformsData.slope !== undefined;
 				case 'aspect':
 					return uniformsData.aspect !== undefined;
-				// case 'curvature':
-				//     return uniformsData.curvature !== undefined;
+				case 'curvature':
+					return uniformsData.curvature !== undefined;
 				// case 'shadow':
 				//     return uniformsData.shadow !== undefined;
 				// case 'default':

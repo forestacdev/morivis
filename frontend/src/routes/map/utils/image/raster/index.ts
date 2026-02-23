@@ -236,7 +236,7 @@ export const generateDemCoverImage = async (
 				tileSize,
 				encodeType
 			});
-		} else if (mode === 'slope' || mode === 'aspect') {
+		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
 			const elevationColorArray = colorMapCache.createColorArray(
 				visualization.uniformsData[mode]?.colorMap || 'bone'
 			);

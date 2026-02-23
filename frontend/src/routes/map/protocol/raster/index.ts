@@ -15,6 +15,7 @@ class WorkerProtocol {
 	>;
 	private tileCache: TileImageManager;
 	private colorMapCache: ColorMapManager;
+	private requestCounter = 0;
 
 	constructor(worker: Worker) {
 		this.worker = worker;
@@ -35,7 +36,10 @@ class WorkerProtocol {
 			new RegExp(`/${z}/${x}/${y}(?=\\.|$)`),
 			'/{z}/{x}/{y}'
 		);
-		const tileId = `${entryId}_${x}_${y}_${z}`;
+		// タイルキャッシュ用のキー（座標ベース）
+		const cacheKey = `${entryId}_${x}_${y}_${z}`;
+		// ユニークなリクエストID（同一タイルの重複リクエストでpendingRequests上書きを防止）
+		const requestId = `${cacheKey}_${this.requestCounter++}`;
 		const formatType = url.searchParams.get('formatType') as 'image' | 'pmtiles';
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
@@ -46,7 +50,7 @@ class WorkerProtocol {
 
 		if (mode === 'relief') {
 			const image = await this.tileCache.getSingleTileImage(
-				tileId,
+				cacheKey,
 				x,
 				y,
 				z,
@@ -60,10 +64,10 @@ class WorkerProtocol {
 			const max = parseFloat(url.searchParams.get('max') || '10000');
 			const min = parseFloat(url.searchParams.get('min') || '0');
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: image,
 					demTypeNumber,
 					modeNumber,
@@ -91,7 +95,6 @@ class WorkerProtocol {
 			);
 
 			const center = images.center; // 中央のタイル
-			const tileId = center.tileId; // ワーカー用ID
 			const left = images.left; // 左のタイル
 			const right = images.right; // 右のタイル
 			const top = images.top; // 上のタイル
@@ -100,10 +103,10 @@ class WorkerProtocol {
 			const min = parseFloat(url.searchParams.get('min') || '0');
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: center.image,
 					left: left.image,
 					right: right.image,
@@ -122,7 +125,7 @@ class WorkerProtocol {
 			});
 		} else {
 			const image = await this.tileCache.getSingleTileImage(
-				entryId,
+				cacheKey,
 				x,
 				y,
 				z,
@@ -132,10 +135,10 @@ class WorkerProtocol {
 			);
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: image,
 					z,
 					demTypeNumber,
