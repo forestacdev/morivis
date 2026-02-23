@@ -116,7 +116,6 @@ float computeSlopeHorn(mat3 h, float ewres, float nsres, float scale, bool asDeg
 }
 
 // 3色グラデーション（min→mid→max）
-// 青→黄→赤
 vec3 colorRamp3(float value, float minVal, float maxVal, vec3 minColor, vec3 midColor, vec3 maxColor) {
     float t = clamp((value - minVal) / (maxVal - minVal), 0.0, 1.0);
     if (t < 0.5) {
@@ -488,16 +487,19 @@ void main() {
             curvatureCoefficient = 0.188 * pow(cellSize, 1.232);
         }
 
-        // 色付け範囲: dem2CsProtocolと同じ ±0.2/curvatureCoefficient
+        // 色付け範囲: ±0.2/curvatureCoefficient を 0〜1 に正規化してカラーマップテクスチャで色付け
         float rangeVal = 0.2 / curvatureCoefficient;
+        float normalized_curvature = clamp((curvature + rangeVal) / (2.0 * rangeVal), 0.0, 1.0);
 
-        // 青→黄白→赤 のグラデーション
-        vec3 blueColor  = vec3(0.0, 0.0, 1.0);         // 谷（負の曲率）
-        vec3 midColor   = vec3(1.0, 1.0, 0.94);         // 中間（黄白: rgb(255,255,240)）
-        vec3 redColor   = vec3(1.0, 0.0, 0.0);          // 尾根（正の曲率）
+        vec4 curvature_color = getColorFromMap(u_color_map, normalized_curvature);
 
-        vec3 outputRgb = colorRamp3(curvature, -rangeVal, rangeVal, blueColor, midColor, redColor);
-        fragColor = vec4(outputRgb, 1.0);
+        //  // 青→黄白→赤 のグラデーションの場合
+        // vec3 blueColor  = vec3(0.0, 0.0, 1.0);         // 谷（負の曲率）
+        // vec3 midColor   = vec3(1.0, 1.0, 0.94);         // 中間（黄白: rgb(255,255,240)）
+        // vec3 redColor   = vec3(1.0, 0.0, 0.0);          // 尾根（正の曲率）
+
+        // vec3 outputRgb = colorRamp3(curvature, -rangeVal, rangeVal, blueColor, midColor, redColor);
+        fragColor = curvature_color;
         return;
 
     }

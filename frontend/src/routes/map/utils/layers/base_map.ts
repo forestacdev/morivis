@@ -42,6 +42,11 @@ export const baseMapList: {
 		src: './images/base_map/aspect.png'
 	},
 	{
+		type: 'curvature',
+		label: '曲率図',
+		src: './images/base_map/curvature.png'
+	},
+	{
 		type: 'osm',
 		label: 'OpenStreetMap',
 		src: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -126,14 +131,14 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 	relief: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
 		tileSize: 512
 	}
 };
-export const baseMapReliefLayers: RasterLayerSpecification | FillLayerSpecification[] = [
+export const baseMapReliefLayers: RasterLayerSpecification[] = [
 	{
 		id: 'relief_layer',
 		source: 'relief',
@@ -235,6 +240,31 @@ export const baseMapAspectLayers: RasterLayerSpecification[] = [
 	{
 		id: 'aspect_layer',
 		source: 'aspect',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
+		}
+	}
+];
+
+/** 曲率図 */
+export const baseMapCurvatureSources: Record<string, RasterSourceSpecification> = {
+	curvature: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=rdbu&tileSize=512&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+export const baseMapCurvatureLayers: RasterLayerSpecification[] = [
+	{
+		id: 'curvature_layer',
+		source: 'curvature',
 		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',

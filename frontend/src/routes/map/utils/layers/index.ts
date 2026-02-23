@@ -31,6 +31,7 @@ import {
 	baseMapReliefLayers,
 	baseMapSlopeLayers,
 	baseMapAspectLayers,
+	baseMapCurvatureLayers,
 	baseMapOsmLayers
 } from '$routes/map/utils/layers/base_map';
 import {
@@ -395,6 +396,8 @@ export const createLayersItems = (
 			baseMapLayerItems = baseMapSlopeLayers;
 		} else if (get(selectedBaseMap) === 'aspect') {
 			baseMapLayerItems = baseMapAspectLayers;
+		} else if (get(selectedBaseMap) === 'curvature') {
+			baseMapLayerItems = baseMapCurvatureLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {

@@ -30,7 +30,8 @@ import {
 	baseMapOsmSources,
 	baseMapReliefSources,
 	baseMapSlopeSources,
-	baseMapAspectSources
+	baseMapAspectSources,
+	baseMapCurvatureSources
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
@@ -300,6 +301,8 @@ export const createSourcesItems = async (
 		// TODO: 共通化
 		// demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapAspectSources;
+	} else if (get(selectedBaseMap) === 'curvature') {
+		baseSourcesItem = baseMapCurvatureSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {
