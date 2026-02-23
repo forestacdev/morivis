@@ -31,11 +31,8 @@ class WorkerProtocol {
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
-		// MapLibreがURL内の{z}/{x}/{y}を座標値で置換済みのため、隣接タイル取得用にプレースホルダを復元
-		const baseUrl = (url.origin + url.pathname).replace(
-			new RegExp(`/${z}/${x}/${y}(?=\\.|$)`),
-			'/{z}/{x}/{y}'
-		);
+		// searchParamsからプレースホルダ付き元URLを取得（{z}/{y}/{x}順のURLにも対応）
+		const baseUrl = url.searchParams.get('baseUrl') || (url.origin + url.pathname);
 		// タイルキャッシュ用のキー（座標ベース）
 		const cacheKey = `${entryId}_${x}_${y}_${z}`;
 		// ユニークなリクエストID（同一タイルの重複リクエストでpendingRequests上書きを防止）

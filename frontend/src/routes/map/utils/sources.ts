@@ -111,7 +111,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
+										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(format.url)}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -155,7 +155,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
+										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(format.url)}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,

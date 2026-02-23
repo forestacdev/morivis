@@ -131,7 +131,7 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 	relief: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl=' + encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') + '&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -204,7 +204,7 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 	slope: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl=' + encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') + '&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -229,7 +229,7 @@ export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
 	aspect: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl=' + encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') + '&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -254,7 +254,7 @@ export const baseMapCurvatureSources: Record<string, RasterSourceSpecification> 
 	curvature: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=rdbu&tileSize=512&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=rdbu&tileSize=512&baseUrl=' + encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') + '&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
