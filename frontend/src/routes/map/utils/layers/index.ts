@@ -408,10 +408,7 @@ export const createLayersItems = (
 	}
 
 	const isNotOsm = get(selectedBaseMap) !== 'osm';
-	const isNotHillshade =
-		get(selectedBaseMap) !== 'satellite' &&
-		get(selectedBaseMap) !== 'slope' &&
-		get(selectedBaseMap) !== 'aspect';
+	const isNotHillshade = get(selectedBaseMap) !== 'satellite';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
 	const poiLayerItems = get(showPoiLayer) && _type === 'main' && isNotOsm ? poiLayers : [];

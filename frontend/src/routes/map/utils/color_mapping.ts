@@ -156,6 +156,12 @@ export class ColorMapManager {
 			'gsi_relief',
 			[0, 300, 1000, 2000, 4000],
 			['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09']
+        );
+		this.registerThreeColorGradient(
+			'cs',
+			'#0000FF', // 谷（負の曲率）: blue
+			'#FFFFF0', // 中間: ivory
+			'#FF0000'  // 尾根（正の曲率）: red
 		);
 	}
 	public createColorArray(colorMapName: string): Uint8Array {
@@ -303,6 +309,56 @@ export class ColorMapManager {
 			pixels[ptr++] = Math.round(lower.r + (upper.r - lower.r) * t);
 			pixels[ptr++] = Math.round(lower.g + (upper.g - lower.g) * t);
 			pixels[ptr++] = Math.round(lower.b + (upper.b - lower.b) * t);
+		}
+
+		this.cache.set(name, pixels);
+	}
+
+	/**
+	 * 3色グラデーション（min→mid→max）のカラーマップテクスチャを作成しキャッシュに登録する
+	 * シェーダーのcolorRamp3と同じ色分布になる
+	 * @param name カラーマップ名
+	 * @param minColor HEXカラー（0.0側）
+	 * @param midColor HEXカラー（0.5）
+	 * @param maxColor HEXカラー（1.0側）
+	 */
+	public registerThreeColorGradient(
+		name: string,
+		minColor: string,
+		midColor: string,
+		maxColor: string
+	): void {
+		const parseHex = (hex: string) => ({
+			r: parseInt(hex.slice(1, 3), 16),
+			g: parseInt(hex.slice(3, 5), 16),
+			b: parseInt(hex.slice(5, 7), 16)
+		});
+
+		const cMin = parseHex(minColor);
+		const cMid = parseHex(midColor);
+		const cMax = parseHex(maxColor);
+
+		const width = 256;
+		const pixels = new Uint8Array(width * 3);
+
+		let ptr = 0;
+		for (let i = 0; i < width; i++) {
+			const t = i / (width - 1); // 0.0 〜 1.0
+			let r: number, g: number, b: number;
+			if (t < 0.5) {
+				const s = t * 2.0; // 0.0 〜 1.0
+				r = cMin.r + (cMid.r - cMin.r) * s;
+				g = cMin.g + (cMid.g - cMin.g) * s;
+				b = cMin.b + (cMid.b - cMin.b) * s;
+			} else {
+				const s = (t - 0.5) * 2.0; // 0.0 〜 1.0
+				r = cMid.r + (cMax.r - cMid.r) * s;
+				g = cMid.g + (cMax.g - cMid.g) * s;
+				b = cMid.b + (cMax.b - cMid.b) * s;
+			}
+			pixels[ptr++] = Math.round(r);
+			pixels[ptr++] = Math.round(g);
+			pixels[ptr++] = Math.round(b);
 		}
 
 		this.cache.set(name, pixels);

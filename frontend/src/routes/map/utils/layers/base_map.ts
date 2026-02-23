@@ -25,7 +25,7 @@ export const baseMapList: {
 	},
 	{
 		type: 'relief',
-		label: '標高地形図',
+		label: '標高段彩図',
 		src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
 			.replace('{x}', String(basemapXYZ.x))
 			.replace('{y}', String(basemapXYZ.y))

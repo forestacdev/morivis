@@ -94,8 +94,9 @@ const bindTextures = (
 
 	Object.entries(textures).forEach(([uniformName, { image, type }]) => {
 		const textureUnit = gl.TEXTURE0 + unitIndex;
-		let texture = texturePool.get(unitIndex);
-		if (!texture) {
+		let texture = texturePool.get(unitIndex) ?? null;
+		const isNew = !texture;
+		if (isNew) {
 			texture = gl.createTexture()!;
 			texturePool.set(unitIndex, texture);
 		}
@@ -122,10 +123,13 @@ const bindTextures = (
 			);
 		}
 
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		// テクスチャパラメータは初回作成時のみ設定（毎回同じ値なので）
+		if (isNew) {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		}
 
 		unitIndex++;
 	});
