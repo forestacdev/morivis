@@ -84,21 +84,34 @@ const getOrCreateContext = (tileSize: number): GLContext => {
 	return ctx;
 };
 
+// テクスチャユニットごとに事前作成したテクスチャを保持（リーク防止）
+const texturePool = new Map<number, WebGLTexture>();
+
+const getOrCreateTexture = (gl: WebGL2RenderingContext, unit: number): WebGLTexture => {
+	let tex = texturePool.get(unit);
+	if (!tex) {
+		tex = gl.createTexture()!;
+		texturePool.set(unit, tex);
+	}
+	return tex;
+};
+
 const bindTextures = (
 	gl: WebGL2RenderingContext,
 	program: WebGLProgram,
 	textures: { [name: string]: { image: ImageBitmap | Uint8Array; type: 'height' | 'colormap' } }
 ) => {
-	let textureUnit = gl.TEXTURE0;
+	let unitIndex = 0;
 
 	Object.entries(textures).forEach(([uniformName, { image, type }]) => {
-		// テクスチャをバインド
-		const texture = gl.createTexture();
-		gl.activeTexture(textureUnit); // 現在のテクスチャユニットをアクティブ
+		const textureUnit = gl.TEXTURE0 + unitIndex;
+		const texture = getOrCreateTexture(gl, unitIndex);
+
+		gl.activeTexture(textureUnit);
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 
 		const location = gl.getUniformLocation(program, uniformName);
-		gl.uniform1i(location, textureUnit - gl.TEXTURE0);
+		gl.uniform1i(location, unitIndex);
 
 		if (type === 'height') {
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image as ImageBitmap);
@@ -116,13 +129,12 @@ const bindTextures = (
 			);
 		}
 
-		// ラッピングとフィルタリングの設定
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-		textureUnit += 1; // 次のテクスチャユニットへ
+		unitIndex++;
 	});
 };
 

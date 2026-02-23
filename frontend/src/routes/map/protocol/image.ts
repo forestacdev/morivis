@@ -18,7 +18,7 @@ export class TileImageManager {
 	}
 
 	// TileImageManager のインスタンスを取得する静的メソッド
-	public static getInstance(cacheSizeLimit = 500): TileImageManager {
+	public static getInstance(cacheSizeLimit = 150): TileImageManager {
 		if (!TileImageManager.instance) {
 			TileImageManager.instance = new TileImageManager(cacheSizeLimit);
 		}

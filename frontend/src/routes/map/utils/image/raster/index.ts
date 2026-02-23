@@ -156,6 +156,18 @@ const createEmptyBitmap = async (): Promise<ImageBitmap> => {
 
 const colorMapCache = new ColorMapManager();
 
+// カバー画像生成用の共有Worker（毎回生成を避ける）
+let sharedDemWorker: Worker | null = null;
+const getSharedDemWorker = (): Worker => {
+	if (!sharedDemWorker) {
+		sharedDemWorker = new Worker(
+			new URL('../../../protocol/raster/protocol_dem.worker.ts', import.meta.url),
+			{ type: 'module' }
+		);
+	}
+	return sharedDemWorker;
+};
+
 /**  demデータ用のカバー画像を作成 */
 // TODO 共通化
 export const generateDemCoverImage = async (
@@ -186,12 +198,25 @@ export const generateDemCoverImage = async (
 			image = await createEmptyBitmap();
 		}
 
-		const worker = new Worker(
-			new URL('../../../protocol/raster/protocol_dem.worker.ts', import.meta.url),
-			{
-				type: 'module'
-			}
-		);
+		const worker = getSharedDemWorker();
+
+		// tileIdで応答を振り分けるヘルパー（共有Workerなので onmessage 上書きはNG）
+		const waitForResult = (message: Record<string, unknown>): Promise<string> => {
+			return new Promise((resolve, reject) => {
+				const handler = async (e: MessageEvent) => {
+					const { id, blob, imageBitmap, error } = e.data;
+					if (id !== tileId) return;
+					worker.removeEventListener('message', handler);
+					if (error) {
+						reject(new Error(error));
+					} else {
+						resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
+					}
+				};
+				worker.addEventListener('message', handler);
+				worker.postMessage(message);
+			});
+		};
 
 		if (mode === 'relief') {
 			const elevationColorArray = colorMapCache.createColorArray(
@@ -199,32 +224,17 @@ export const generateDemCoverImage = async (
 			);
 			const max = visualization.uniformsData.relief.max;
 			const min = visualization.uniformsData.relief.min;
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					demTypeNumber,
-					modeNumber,
-					mode,
-					elevationColorArray,
-					max,
-					min,
-					tileSize,
-					encodeType
-				});
-
-				worker.onmessage = async (e) => {
-					const { id, blob, imageBitmap, error } = e.data;
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				demTypeNumber,
+				modeNumber,
+				mode,
+				elevationColorArray,
+				max,
+				min,
+				tileSize,
+				encodeType
 			});
 		} else if (mode === 'slope' || mode === 'aspect') {
 			const elevationColorArray = colorMapCache.createColorArray(
@@ -241,61 +251,30 @@ export const generateDemCoverImage = async (
 				max = visualization.uniformsData.slope.max;
 			}
 
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					left: emptyImage,
-					right: emptyImage,
-					top: emptyImage,
-					bottom: emptyImage,
-					demTypeNumber,
-					modeNumber,
-					mode,
-					elevationColorArray,
-					max,
-					min,
-					tile: { x, y, z },
-					tileSize,
-					encodeType
-				});
-
-				worker.onmessage = async (e) => {
-					const { id, blob, imageBitmap, error } = e.data;
-
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				left: emptyImage,
+				right: emptyImage,
+				top: emptyImage,
+				bottom: emptyImage,
+				demTypeNumber,
+				modeNumber,
+				mode,
+				elevationColorArray,
+				max,
+				min,
+				tile: { x, y, z },
+				tileSize,
+				encodeType
 			});
 		} else {
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					z,
-					demTypeNumber,
-					tileSize
-				});
-
-				worker.onmessage = async (e) => {
-					const { id, blob, imageBitmap, error } = e.data;
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				z,
+				demTypeNumber,
+				tileSize
 			});
 		}
 

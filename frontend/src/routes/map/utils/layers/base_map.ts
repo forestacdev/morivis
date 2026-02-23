@@ -5,7 +5,8 @@ import type {
 	RasterLayerSpecification,
 	BackgroundLayerSpecification,
 	RasterSourceSpecification,
-	ColorReliefLayerSpecification
+	ColorReliefLayerSpecification,
+	FillLayerSpecification
 } from 'maplibre-gl';
 
 const basemapXYZ = { x: 28846, y: 12917, z: 15 };
@@ -17,7 +18,7 @@ export const baseMapList: {
 	{
 		type: 'satellite',
 		label: '航空写真',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto2018/{z}/{x}/{y}.png'
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'
 			.replace('{x}', String(basemapXYZ.x))
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
@@ -132,7 +133,7 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 		tileSize: 512
 	}
 };
-export const baseMapReliefLayers: RasterLayerSpecification[] = [
+export const baseMapReliefLayers: RasterLayerSpecification | FillLayerSpecification[] = [
 	{
 		id: 'relief_layer',
 		source: 'relief',
@@ -143,6 +144,18 @@ export const baseMapReliefLayers: RasterLayerSpecification[] = [
 			'raster-opacity': 1
 		}
 	}
+	// 	{
+	// 	id: 'landcover_wood',
+	// 	type: 'fill',
+	// 	source: 'openmaptiles',
+	// 	'source-layer': 'landcover',
+	// 	filter: ['all', ['==', 'class', 'wood']],
+	// 	paint: {
+	// 		'fill-antialias': false,
+	// 		'fill-color': 'hsla(98, 61%, 72%, 0.7)',
+	// 		'fill-opacity': 0.4
+	// 	}
+	// },
 ];
 // export const baseMapReliefLayers: ColorReliefLayerSpecification[] = [
 // 	{
