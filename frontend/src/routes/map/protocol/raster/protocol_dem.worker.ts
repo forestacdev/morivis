@@ -8,6 +8,7 @@ interface GLContext {
 	gl: WebGL2RenderingContext;
 	program: WebGLProgram;
 	positionBuffer: WebGLBuffer;
+	texturePool: Map<number, WebGLTexture>;
 }
 
 const glContexts = new Map<number, GLContext>();
@@ -71,7 +72,7 @@ const initWebGL = (canvas: OffscreenCanvas): GLContext => {
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-	return { canvas, gl, program, positionBuffer };
+	return { canvas, gl, program, positionBuffer, texturePool: new Map() };
 };
 
 const getOrCreateContext = (tileSize: number): GLContext => {
@@ -84,28 +85,20 @@ const getOrCreateContext = (tileSize: number): GLContext => {
 	return ctx;
 };
 
-// テクスチャユニットごとに事前作成したテクスチャを保持（リーク防止）
-const texturePool = new Map<number, WebGLTexture>();
-
-const getOrCreateTexture = (gl: WebGL2RenderingContext, unit: number): WebGLTexture => {
-	let tex = texturePool.get(unit);
-	if (!tex) {
-		tex = gl.createTexture()!;
-		texturePool.set(unit, tex);
-	}
-	return tex;
-};
-
 const bindTextures = (
-	gl: WebGL2RenderingContext,
-	program: WebGLProgram,
+	ctx: GLContext,
 	textures: { [name: string]: { image: ImageBitmap | Uint8Array; type: 'height' | 'colormap' } }
 ) => {
+	const { gl, program, texturePool } = ctx;
 	let unitIndex = 0;
 
 	Object.entries(textures).forEach(([uniformName, { image, type }]) => {
 		const textureUnit = gl.TEXTURE0 + unitIndex;
-		const texture = getOrCreateTexture(gl, unitIndex);
+		let texture = texturePool.get(unitIndex);
+		if (!texture) {
+			texture = gl.createTexture()!;
+			texturePool.set(unitIndex, texture);
+		}
 
 		gl.activeTexture(textureUnit);
 		gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -173,7 +166,17 @@ const calculateLightDirection = (azimuth: number, altitude: number) => {
 	return [x, y, z];
 };
 
-self.onmessage = async (e) => {
+// リクエストキュー: async onmessage のレースコンディション防止
+// onmessageはawait中に次のメッセージで再入するため、
+// WebGLコンテキスト（テクスチャ・uniforms）が上書きされる。
+// キューで直列化して1つずつ処理する。
+let processingQueue: Promise<void> = Promise.resolve();
+
+self.onmessage = (e) => {
+	processingQueue = processingQueue.then(() => processMessage(e));
+};
+
+async function processMessage(e: MessageEvent) {
 	const {
 		tileId,
 		center,
@@ -213,7 +216,7 @@ self.onmessage = async (e) => {
 			setUniforms(gl, program, uniforms);
 
 			// テクスチャ
-			bindTextures(gl, program, {
+			bindTextures(ctx, {
 				u_height_map_center: { image: center, type: 'height' },
 				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
@@ -231,7 +234,7 @@ self.onmessage = async (e) => {
 			setUniforms(gl, program, uniforms);
 
 			// テクスチャ
-			bindTextures(gl, program, {
+			bindTextures(ctx, {
 				u_height_map_center: { image: center, type: 'height' },
 				u_height_map_left: { image: left, type: 'height' },
 				u_height_map_right: { image: right, type: 'height' },
@@ -253,7 +256,7 @@ self.onmessage = async (e) => {
 			setUniforms(gl, program, uniforms);
 
 			// テクスチャ
-			bindTextures(gl, program, {
+			bindTextures(ctx, {
 				u_height_map_center: { image: center, type: 'height' },
 				u_height_map_left: { image: left, type: 'height' },
 				u_height_map_right: { image: right, type: 'height' },
@@ -281,4 +284,4 @@ self.onmessage = async (e) => {
 			self.postMessage({ id: tileId, error: error.message });
 		}
 	}
-};
+}
