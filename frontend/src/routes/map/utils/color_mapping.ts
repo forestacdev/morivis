@@ -156,12 +156,12 @@ export class ColorMapManager {
 			'gsi_relief',
 			[0, 300, 1000, 2000, 4000],
 			['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09']
-        );
+		);
 		this.registerThreeColorGradient(
 			'cs',
-			'#0000FF', // 谷（負の曲率）: blue
+			'#8383ff', // 谷（負の曲率）: blue
 			'#FFFFF0', // 中間: ivory
-			'#FF0000'  // 尾根（正の曲率）: red
+			'#ff8484' // 尾根（正の曲率）: red
 		);
 	}
 	public createColorArray(colorMapName: string): Uint8Array {
