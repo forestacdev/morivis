@@ -47,7 +47,11 @@
 	});
 
 	let isNotHillshade = $derived.by(() => {
-		return $selectedBaseMap === 'satellite';
+		return (
+			$selectedBaseMap === 'satellite' ||
+			$selectedBaseMap === 'slope' ||
+			$selectedBaseMap === 'aspect'
+		);
 	});
 </script>
 
