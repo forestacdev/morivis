@@ -7,8 +7,6 @@ import {
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
 
-import { TileImageManager } from '$routes/map/protocol/image';
-
 import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -52,8 +50,6 @@ const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 export const convertTmsToXyz = (url: string): string => {
 	return url.replace('{-y}', '{y}');
 };
-
-// const demUrlCache = TileImageManager.getInstance();
 
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[],
@@ -106,8 +102,6 @@ export const createSourcesItems = async (
 								const uniformsDataParam = objectToUrlParams(
 									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
 								);
-								// demUrlCache.addUrlcache(entry.id, format.url); // TODO 消す処理
-
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
@@ -295,11 +289,9 @@ export const createSourcesItems = async (
 		baseSourcesItem = baseMapReliefSources;
 	} else if (get(selectedBaseMap) === 'slope') {
 		// TODO: 共通化
-		// demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapSlopeSources;
 	} else if (get(selectedBaseMap) === 'aspect') {
 		// TODO: 共通化
-		// demUrlCache.addUrlcache('base_map', 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'); // TODO 消す処理
 		baseSourcesItem = baseMapAspectSources;
 	} else if (get(selectedBaseMap) === 'curvature') {
 		baseSourcesItem = baseMapCurvatureSources;
@@ -346,7 +338,7 @@ export const createTerrainSources = async (
 	sourceItems['terrain'] = {
 		type: 'raster-dem',
 		tiles: [
-			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`
+			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(format.url)}&x={x}&y={y}&z={z}`
 		],
 		maxzoom: metaData.maxZoom,
 		minzoom: metaData.minZoom,
