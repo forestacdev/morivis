@@ -66,9 +66,6 @@
 			getDMZoneInfo(dmFile).then((info) => {
 				zoneInfo = info;
 				selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
-				if (info.bbox) {
-					focusBbox = info.bbox;
-				}
 			});
 
 			convertDMFileToGeoJSON(dmFile, { zoneNumber: 2 })
@@ -100,6 +97,7 @@
 	// 「決定」→ ZoneFormを表示
 	const openZoneForm = () => {
 		showZoneForm = true;
+		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
 	};
 
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
