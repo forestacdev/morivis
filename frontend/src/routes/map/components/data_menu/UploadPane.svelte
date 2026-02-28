@@ -61,7 +61,7 @@
 			: 'border-dashed bg-black/70'}"
 	>
 		<span class="text-2xl">ここにファイルをドロップしてください </span>
-		<span class="text-sm">.geojson .fgb .gpx .shp .dbf .shx .prj </span>
+		<span class="text-sm">.geojson .fgb .gpx .shp .dbf .shx .prj .dm</span>
 		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
 			<span>またはファイルを選択</span>
 			<input
