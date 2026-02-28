@@ -396,6 +396,7 @@ interface ElementRecord {
 	dataType: string; // "面" | "線" | "点" | "注記" | "円" | "円弧" | "方向"
 	elementId: number;
 	coordinateCount: number;
+	is3D?: boolean; // 拡張DM: 座標次元が3Dかどうか
 }
 
 interface CoordRecord2D {
@@ -653,8 +654,9 @@ function parseExtElementRecord(
 	// [9-12] 間断区分 I4
 	// [13-16] 要素識別番号 I4
 	// [17]   精度区分 I1
-	// [18]   ? I1
-	// [19-23] 地図情報レベルコード I5
+	// [18-19] 予備 I2
+	// [20]   座標次元 (0=埋込, 2=2D, 3=3D, 4=注記座標)
+	// [21-23] 地図情報レベルコード等
 	// [24-27] フラグ等
 	// [28-31] 座標数 I4
 	// [32-35] 座標レコード数 I4
@@ -663,7 +665,9 @@ function parseExtElementRecord(
 	const dataTypeCode = line.substring(1, 2);
 	const classCode = line.substring(2, 6).trim().padStart(4, '0');
 	const elementId = parseInt(line.substring(12, 16).trim(), 10) || 0;
+	const coordDimension = line.substring(20, 21).trim();
 	const coordinateCount = parseInt(line.substring(27, 31).trim(), 10) || 0;
+	const is3D = coordDimension === '3';
 
 	// 点(5)や注記(7)など座標が埋め込まれている場合
 	let embeddedX: number | undefined;
@@ -685,6 +689,7 @@ function parseExtElementRecord(
 		dataType: EXT_DATA_TYPE_MAP[dataTypeCode] ?? '不明',
 		elementId,
 		coordinateCount,
+		is3D,
 		embeddedX,
 		embeddedY
 	};
@@ -709,6 +714,27 @@ function parseExtCoord2DRecord(line: string): CoordRecord2D {
 		}
 	}
 	return { type: 'COORD2D', coordinates: coords };
+}
+
+function parseExtCoord3DRecord(line: string): CoordRecord3D {
+	// 拡張DM 3D座標レコード: 7バイト×3値(X,Y,Z) = 21バイト/座標, 最大4座標/行
+	const coords: Array<[number, number, number]> = [];
+	for (let i = 0; i < 4; i++) {
+		const offset = i * 21;
+		const xStr = line.substring(offset, offset + 7).trim();
+		const yStr = line.substring(offset + 7, offset + 14).trim();
+		const zStr = line.substring(offset + 14, offset + 21).trim();
+		if (xStr === '' || xStr === '0') break;
+		const x = parseInt(xStr, 10);
+		const y = parseInt(yStr, 10);
+		const z = parseInt(zStr, 10);
+		if (!isNaN(x) && !isNaN(y) && (x !== 0 || y !== 0)) {
+			coords.push([x, y, isNaN(z) ? 0 : z]);
+		} else {
+			break;
+		}
+	}
+	return { type: 'COORD3D', coordinates: coords };
 }
 
 function parseExtAnnotationDataRecord(line: string): AnnotationRecord {
@@ -762,6 +788,8 @@ function parseRecords(text: string): ParseResult {
 
 	// 拡張DM用: 直前のEレコードが注記(E7)だったかを追跡
 	let lastWasExtAnnotation = false;
+	// 拡張DM用: 直前のEレコードが3D座標かを追跡
+	let lastElementIs3D = false;
 	// 拡張DM用: M レコード直後の行（図郭座標行）を追跡
 	let afterMRecord = 0; // 0=通常, 1=M直後(図郭座標行), 2=図郭座標行直後(メタ行)
 
@@ -830,14 +858,18 @@ function parseRecords(text: string): ParseResult {
 							});
 						}
 						lastWasExtAnnotation = extElem.dataType === '注記';
+						lastElementIs3D = extElem.is3D === true;
 					} else if (line.charAt(0) === ' ' || /^[0-9]/.test(line)) {
 						// 座標レコードまたは注記データレコード
 						if (lastWasExtAnnotation) {
 							// 注記データレコード
 							records.push(parseExtAnnotationDataRecord(line));
 							lastWasExtAnnotation = false;
+						} else if (lastElementIs3D) {
+							// 3D座標レコード (7バイト×3値(X,Y,Z) × 4座標/行)
+							records.push(parseExtCoord3DRecord(line));
 						} else {
-							// 座標レコード (7バイト×6ペア)
+							// 2D座標レコード (7バイト×2値(X,Y) × 6座標/行)
 							records.push(parseExtCoord2DRecord(line));
 						}
 					} else {
