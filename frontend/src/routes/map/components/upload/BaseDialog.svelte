@@ -7,6 +7,7 @@
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
+	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
@@ -74,6 +75,16 @@
 			{/if}
 			{#if showDialogType === 'dxf'}
 				<DxfForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'sima'}
+				<SimaForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

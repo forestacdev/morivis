@@ -77,6 +77,9 @@
                 case 'dxf':
 					showDialogType = 'dxf';
 					return;
+				case 'sim':
+					showDialogType = 'sima';
+					return;
 				case 'shp':
 				case 'dbf':
 				case 'shx':

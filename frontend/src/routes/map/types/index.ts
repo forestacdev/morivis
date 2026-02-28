@@ -55,6 +55,7 @@ export type DialogType =
 	| 'tiff'
 	| 'dm'
 	| 'dxf'
+	| 'sima'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
@@ -67,7 +68,8 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.shx',
 	'.prj',
 	'.dxf',
-	'.dm'
+	'.dm',
+	'.sim'
 ] as const;
 
 /** input[accept] 用のカンマ区切り文字列 */
