@@ -134,7 +134,7 @@
 				}
 				fileName = shpFile.name;
 			} else if (shpFile && dbfFile && shxFile && !prjFile) {
-				const tempGeojsonData = await shpFileToGeojson(shpFile as File);
+				const tempGeojsonData = await shpFileToGeojson(shpFile as File, dbfFile as File);
 				if (!tempGeojsonData) {
 					showNotification('シェープファイルの読み込みに失敗しました', 'error');
 					return;

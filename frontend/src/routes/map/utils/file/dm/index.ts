@@ -58,7 +58,6 @@ export interface DMGeoJSON {
 	};
 }
 
-
 // ============================================================
 // 分類コード → 分類名 マッピング
 // 公共測量標準図式 数値地形図データ取得分類基準表より
@@ -339,33 +338,6 @@ function toMeters(rawValue: number, mapLevel: number): number {
 }
 
 // ============================================================
-// 平面直角座標系の原点定義
-// ============================================================
-
-/** 平面直角座標系の原点（系番号 → [緯度°, 経度°]） */
-const ZONE_ORIGINS: Record<number, [number, number]> = {
-	1: [33.0, 129.5],
-	2: [33.0, 131.0],
-	3: [36.0, 132.1667],
-	4: [33.0, 133.5],
-	5: [36.0, 134.3333],
-	6: [36.0, 136.0],
-	7: [36.0, 137.1667],
-	8: [36.0, 138.5],
-	9: [36.0, 139.8333],
-	10: [40.0, 140.8333],
-	11: [44.0, 140.25],
-	12: [44.0, 142.25],
-	13: [44.0, 144.25],
-	14: [26.0, 142.0],
-	15: [26.0, 127.5],
-	16: [26.0, 124.0],
-	17: [26.0, 131.0],
-	18: [20.0, 136.0],
-	19: [26.0, 154.0]
-};
-
-// ============================================================
 // テキスト行パーサー群
 // ============================================================
 
@@ -507,9 +479,12 @@ function parseDrawingRecord(line: string): DrawingRecord {
 	};
 }
 
-function parseDrawingCoordRecord(
-	line: string
-): { originX: number; originY: number; topRightX: number; topRightY: number } {
+function parseDrawingCoordRecord(line: string): {
+	originX: number;
+	originY: number;
+	topRightX: number;
+	topRightY: number;
+} {
 	// レコード(b): 図郭座標
 	// [3-9]  左下X I7  [10-16] 左下Y I7  [17-19] 座標値単位 I3
 	// [20-26] 要素数  [27-32] レコード数  [33-39] 右上X I7  [40-46] 右上Y I7
@@ -664,7 +639,9 @@ const EXT_DATA_TYPE_MAP: Record<string, string> = {
 	'7': '注記'
 };
 
-function parseExtElementRecord(line: string): ElementRecord & { embeddedX?: number; embeddedY?: number } {
+function parseExtElementRecord(
+	line: string
+): ElementRecord & { embeddedX?: number; embeddedY?: number } {
 	// 拡張DM 要素レコード
 	// [1]    "E" 固定
 	// [2]    データタイプ (1=面,2=線,3=円,4=円弧,5=点,6=方向,7=注記)
@@ -1279,4 +1256,3 @@ export const ZONE_REGIONS: Record<number, string> = {
 	18: '沖ノ鳥島',
 	19: '南鳥島'
 };
-
