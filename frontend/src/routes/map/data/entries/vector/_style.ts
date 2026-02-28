@@ -157,6 +157,50 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 	}
 };
 
+export const DEFAULT_CAD_STYLE: LineStringStyle = {
+	type: 'line',
+	opacity: 1,
+	visible: true,
+	colors: {
+		show: true,
+		key: '単色',
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: '#ff7f00'
+				}
+			}
+		]
+	},
+	width: {
+		key: '単一',
+		expressions: [
+			{
+				type: 'single',
+				key: '単一',
+				name: '単一',
+				mapping: {
+					value: 1
+				}
+			}
+		]
+	},
+	lineStyle: 'solid',
+	labels: {
+		key: 'name',
+		show: false,
+		expressions: [
+			{
+				key: 'name',
+				name: 'name'
+			}
+		]
+	}
+};
+
 export const createLabelsExpressions = (keys: string[]): Labels => {
 	const labelsExpressions = keys.map((label) => {
 		return {

@@ -98,7 +98,8 @@
 			geojsonData,
 			entryGeometryType,
 			setFileName,
-			bbox as [number, number, number, number]
+			bbox as [number, number, number, number],
+			'default'
 		);
 		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
 		if (entry) {

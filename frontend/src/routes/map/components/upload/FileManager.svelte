@@ -8,6 +8,7 @@
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
+	import type { VecterStyleType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -51,6 +52,7 @@
 
 	const setFile = async (file: File | FileList) => {
 		let geojsonData: FeatureCollection = { type: 'FeatureCollection', features: [] };
+		let styleType: VecterStyleType = 'default';
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
@@ -200,7 +202,8 @@
 			geojsonData,
 			entryGeometryType,
 			fileName,
-			bbox as [number, number, number, number]
+			bbox as [number, number, number, number],
+			styleType
 		);
 
 		if (!entry) {

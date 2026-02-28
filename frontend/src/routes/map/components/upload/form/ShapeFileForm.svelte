@@ -236,7 +236,13 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpName, bbox);
+		const entry = createGeoJsonEntry(
+			geojsonData,
+			entryGeometryType,
+			forms.shpName,
+			bbox,
+			'default'
+		);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;

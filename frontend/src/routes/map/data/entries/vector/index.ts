@@ -12,7 +12,8 @@ import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import {
 	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
-	DEFAULT_VECTOR_POLYGON_STYLE
+	DEFAULT_VECTOR_POLYGON_STYLE,
+	DEFAULT_CAD_STYLE
 } from '$routes/map/data/entries/vector/_style';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -21,11 +22,14 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
+export type VecterStyleType = 'cad' | 'default';
+
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
 	bbox: [number, number, number, number],
+	styleType: VecterStyleType,
 	color: string = getRandomColor()
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const metaData: GeoJsonMetaData = {
@@ -88,16 +92,30 @@ export const createGeoJsonEntry = (
 			style
 		};
 	} else if (entryGeometryType === 'LineString') {
-		const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
-		return {
-			...baseEntry,
-			format: {
-				type: 'geojson' as const,
-				geometryType: 'LineString' as const,
-				url: ''
-			},
-			style
-		};
+		alert(styleType);
+		if (styleType === 'cad') {
+			const style = { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
+			return {
+				...baseEntry,
+				format: {
+					type: 'geojson' as const,
+					geometryType: 'LineString' as const,
+					url: ''
+				},
+				style
+			};
+		} else {
+			const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
+			return {
+				...baseEntry,
+				format: {
+					type: 'geojson' as const,
+					geometryType: 'LineString' as const,
+					url: ''
+				},
+				style
+			};
+		}
 	} else if (entryGeometryType === 'Polygon') {
 		const style = { ...DEFAULT_VECTOR_POLYGON_STYLE, colors: colorsConfig, labels: labelsConfig };
 		return {

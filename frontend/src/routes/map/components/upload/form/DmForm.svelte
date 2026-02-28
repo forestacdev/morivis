@@ -95,7 +95,8 @@
 				geojsonData,
 				entryGeometryType,
 				dmFile.name,
-				bbox as [number, number, number, number]
+				bbox as [number, number, number, number],
+				'cad'
 			);
 
 			if (entry) {
