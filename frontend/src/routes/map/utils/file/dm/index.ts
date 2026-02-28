@@ -52,14 +52,12 @@ export interface DMGeoJSON {
 	features: DMFeature[];
 	properties?: {
 		coordinateSystem: number; // 平面直角座標系 系番号
+		epsgCode: number; // EPSG コード (6668 + 系番号)
 		planningOrganization: string;
 		mapLevel: number;
 	};
 }
 
-// 座標変換関数の型（proj4jsなど外部ライブラリに渡す想定）
-// 引数: [x, y] 平面直角座標 (m)  → 戻り値: [lon, lat] WGS84度
-export type CoordTransformer = (xy: [number, number]) => [number, number];
 
 // ============================================================
 // 分類コード → 分類名 マッピング（主要なもの）
@@ -127,116 +125,6 @@ function toMeters(rawValue: number, mapLevel: number): number {
 		// m単位
 		return rawValue;
 	}
-}
-
-// ============================================================
-// 平面直角座標系 → WGS84 変換
-// ============================================================
-
-// 系番号 → 原点 (latitude_deg, longitude_deg) の対応
-// 測量法施行令 第2条より
-const JPRECT_ORIGIN: Record<number, [number, number]> = {
-	1: [33.0, 129 + 30 / 60],
-	2: [33.0, 131.0],
-	3: [36.0, 132 + 10 / 60],
-	4: [33.0, 133 + 30 / 60],
-	5: [36.0, 134 + 20 / 60],
-	6: [36.0, 136.0],
-	7: [36.0, 137 + 10 / 60],
-	8: [36.0, 138 + 30 / 60],
-	9: [36.0, 139 + 50 / 60],
-	10: [40.0, 140 + 50 / 60],
-	11: [44.0, 140 + 15 / 60],
-	12: [44.0, 142 + 15 / 60],
-	13: [44.0, 144 + 15 / 60],
-	14: [26.0, 142.0],
-	15: [26.0, 127 + 30 / 60],
-	16: [26.0, 124.0],
-	17: [26.0, 131.0],
-	18: [20.0, 136.0],
-	19: [26.0, 154.0]
-};
-
-// GRS80楕円体パラメータ
-const A = 6378137.0; // 長半径 (m)
-const F = 1 / 298.257222101; // 扁平率
-const E2 = 2 * F - F * F; // 第一離心率の二乗
-const E_PRIME2 = E2 / (1 - E2); // 第二離心率の二乗
-
-/**
- * 子午線弧長（赤道から緯度phiまでの距離）
- */
-function meridianArc(phi: number): number {
-	const e4 = E2 * E2;
-	const e6 = e4 * E2;
-	const a0 = 1 - E2 / 4 - (3 * e4) / 64 - (5 * e6) / 256;
-	const a2 = (3 / 8) * (E2 + e4 / 4 + (15 * e6) / 128);
-	const a4 = (15 / 256) * (e4 + (3 * e6) / 4);
-	const a6 = (35 * e6) / 3072;
-	return A * (a0 * phi - a2 * Math.sin(2 * phi) + a4 * Math.sin(4 * phi) - a6 * Math.sin(6 * phi));
-}
-
-/**
- * 平面直角座標 (X, Y) → WGS84 (lon, lat)
- * X: 北方向 (m), Y: 東方向 (m)
- * 系番号: JIS X 0410 に従う1～19
- *
- * TM逆変換（Bowring/Snyder方式）
- */
-function jpRectToWgs84(x: number, y: number, zoneNumber: number): [number, number] {
-	const origin = JPRECT_ORIGIN[zoneNumber];
-	if (!origin) {
-		console.warn(`Unknown zone number: ${zoneNumber}`);
-		return [y, x];
-	}
-
-	const lat0 = (origin[0] * Math.PI) / 180;
-	const lon0 = (origin[1] * Math.PI) / 180;
-	const k0 = 0.9999;
-
-	const M0 = meridianArc(lat0);
-	const M1 = M0 + x / k0;
-
-	// フット点緯度 (footpoint latitude)
-	const mu1 = M1 / (A * (1 - E2 / 4 - (3 * E2 * E2) / 64 - (5 * E2 * E2 * E2) / 256));
-	const e1 = (1 - Math.sqrt(1 - E2)) / (1 + Math.sqrt(1 - E2));
-	const phi1 =
-		mu1 +
-		((3 * e1) / 2 - (27 * e1 * e1 * e1) / 32) * Math.sin(2 * mu1) +
-		((21 * e1 * e1) / 16 - (55 * e1 * e1 * e1 * e1) / 32) * Math.sin(4 * mu1) +
-		((151 * e1 * e1 * e1) / 96) * Math.sin(6 * mu1);
-
-	const sinPhi1 = Math.sin(phi1);
-	const cosPhi1 = Math.cos(phi1);
-	const N1 = A / Math.sqrt(1 - E2 * sinPhi1 * sinPhi1);
-	const T1 = Math.tan(phi1) * Math.tan(phi1);
-	const C1 = E_PRIME2 * cosPhi1 * cosPhi1;
-	const R1 = (A * (1 - E2)) / Math.pow(1 - E2 * sinPhi1 * sinPhi1, 1.5);
-	const D = y / (N1 * k0);
-
-	const D2 = D * D;
-	const D4 = D2 * D2;
-	const D6 = D4 * D2;
-
-	const latRad =
-		phi1 -
-		((N1 * Math.tan(phi1)) / R1) *
-			(D2 / 2 -
-				((5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * E_PRIME2) * D4) / 24 +
-				((61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * E_PRIME2 - 3 * C1 * C1) * D6) /
-					720);
-
-	const lonRad =
-		lon0 +
-		(D -
-			((1 + 2 * T1 + C1) * D * D2) / 6 +
-			((5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * E_PRIME2 + 24 * T1 * T1) * D * D4) / 120) /
-			cosPhi1;
-
-	const lat = (latRad * 180) / Math.PI;
-	const lon = (lonRad * 180) / Math.PI;
-
-	return [lon, lat]; // GeoJSON は [lon, lat] 順
 }
 
 // ============================================================
@@ -767,13 +655,6 @@ function parseRecords(text: string): ParseResult {
 
 export interface ConvertOptions {
 	/**
-	 * 平面直角座標 → WGS84 の変換関数
-	 * 省略時は内蔵の簡易変換を使用
-	 * proj4js等を使う場合はここに渡す
-	 */
-	coordTransformer?: CoordTransformer;
-
-	/**
 	 * 平面直角座標系の系番号 (1～19)
 	 * 省略時はファイル内のIレコードから取得、なければデフォルト2
 	 */
@@ -785,7 +666,7 @@ export interface ConvertOptions {
 	includeAnnotations?: boolean;
 
 	/**
-	 * 変換後に座標精度を小数点以下何桁に丸めるか (default: 8)
+	 * 座標精度を小数点以下何桁に丸めるか (default: 8)
 	 */
 	coordinatePrecision?: number;
 }
@@ -834,21 +715,14 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 	let figureOriginX = 0;
 	let figureOriginY = 0;
 
-	// 座標変換ラッパー
-	const transform = (x: number, y: number): [number, number] => {
-		let xM: number, yM: number;
+	// 座標をメートル単位の平面直角座標に変換（WGS84変換は呼び出し側で行う）
+	const toAbsoluteMeters = (x: number, y: number): [number, number] => {
 		if (isExtended) {
 			// 拡張DM: 座標はmm単位で図郭原点からの相対値
-			xM = figureOriginX + x / 1000;
-			yM = figureOriginY + y / 1000;
-		} else {
-			xM = toMeters(x, mapLevel);
-			yM = toMeters(y, mapLevel);
+			return [figureOriginY + y / 1000, figureOriginX + x / 1000];
 		}
-		if (options.coordTransformer) {
-			return options.coordTransformer([xM, yM]);
-		}
-		return jpRectToWgs84(xM, yM, coordSystem);
+		// 旧DM: mapLevelに応じた単位変換
+		return [toMeters(y, mapLevel), toMeters(x, mapLevel)];
 	};
 
 	const roundCoord = (v: number) => Math.round(v * precision) / precision;
@@ -873,25 +747,25 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 		let geometry: DMFeature['geometry'] | null = null;
 
 		const rawCoords = is3D
-			? coord3DBuffer.map(([x, y]) => transform(x, y))
-			: coordBuffer.map(([x, y]) => transform(x, y));
+			? coord3DBuffer.map(([x, y]) => toAbsoluteMeters(x, y))
+			: coordBuffer.map(([x, y]) => toAbsoluteMeters(x, y));
 
-		const lonlat = rawCoords.map(([lon, lat]) => [roundCoord(lon), roundCoord(lat)]);
+		const coords = rawCoords.map(([e, n]) => [roundCoord(e), roundCoord(n)]);
 
 		if (dataType === '点' || dataType === '方向') {
-			if (lonlat.length === 1) {
-				geometry = { type: 'Point', coordinates: lonlat[0] };
-			} else if (lonlat.length > 1) {
-				geometry = { type: 'MultiPoint', coordinates: lonlat };
+			if (coords.length === 1) {
+				geometry = { type: 'Point', coordinates: coords[0] };
+			} else if (coords.length > 1) {
+				geometry = { type: 'MultiPoint', coordinates: coords };
 			}
 		} else if (dataType === '線' || dataType === '円弧') {
-			if (lonlat.length >= 2) {
-				geometry = { type: 'LineString', coordinates: lonlat };
+			if (coords.length >= 2) {
+				geometry = { type: 'LineString', coordinates: coords };
 			}
 		} else if (dataType === '面') {
-			if (lonlat.length >= 3) {
+			if (coords.length >= 3) {
 				// 閉じていない場合は閉じる
-				const ring = [...lonlat];
+				const ring = [...coords];
 				const first = ring[0],
 					last = ring[ring.length - 1];
 				if (first[0] !== last[0] || first[1] !== last[1]) {
@@ -901,8 +775,8 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 			}
 		} else if (dataType === '円') {
 			// 円は中心点として扱う（半径情報は別途 properties に格納）
-			if (lonlat.length >= 1) {
-				geometry = { type: 'Point', coordinates: lonlat[0] };
+			if (coords.length >= 1) {
+				geometry = { type: 'Point', coordinates: coords[0] };
 			}
 		}
 
@@ -980,12 +854,12 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 
 			case 'ANNOTATION': {
 				if (!includeAnnotations) break;
-				const [lon, lat] = transform(record.x, record.y);
+				const [e, n] = toAbsoluteMeters(record.x, record.y);
 				features.push({
 					type: 'Feature',
 					geometry: {
 						type: 'Point',
-						coordinates: [roundCoord(lon), roundCoord(lat)]
+						coordinates: [roundCoord(e), roundCoord(n)]
 					},
 					properties: {
 						classCode: currentClassCode || '1100',
@@ -1019,6 +893,7 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 		features,
 		properties: {
 			coordinateSystem: coordSystem,
+			epsgCode: 6668 + coordSystem,
 			planningOrganization: planningOrg,
 			mapLevel
 		}
@@ -1054,44 +929,3 @@ export async function convertDMFileToGeoJSON(
 	return convertDMtoGeoJSON(text, options);
 }
 
-// ============================================================
-// 使用例 (JSDoc)
-// ============================================================
-
-/*
---- ブラウザでの使用例 ---
-
-import { convertDMFileToGeoJSON } from './dm2geojson';
-
-const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
-input.addEventListener('change', async () => {
-  const file = input.files?.[0];
-  if (!file) return;
-
-  const geojson = await convertDMFileToGeoJSON(file);
-  console.log(geojson);
-
-  // MapLibre GL JS に渡す
-  map.addSource('dm', { type: 'geojson', data: geojson });
-});
-
---- proj4js を使った高精度座標変換例 ---
-
-import proj4 from 'proj4';
-import { convertDMtoGeoJSON, decodeShiftJIS } from './dm2geojson';
-
-// 系番号9（東京）の例
-proj4.defs('EPSG:6677', '+proj=tmerc +lat_0=36 +lon_0=139.8333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs');
-const fromProj = 'EPSG:6677';
-const toProj = 'EPSG:4326';
-
-const buffer = await fetch('sample.dm').then(r => r.arrayBuffer());
-const text = decodeShiftJIS(buffer);
-const geojson = convertDMtoGeoJSON(text, {
-  coordTransformer: ([x, y]) => {
-    // DM座標は X=北(緯度方向), Y=東(経度方向) なので注意
-    const [lon, lat] = proj4(fromProj, toProj, [y, x]);
-    return [lon, lat];
-  }
-});
-*/
