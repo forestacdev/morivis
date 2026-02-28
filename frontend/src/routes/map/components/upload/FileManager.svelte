@@ -74,6 +74,9 @@
 				case 'dm':
 					showDialogType = 'dm';
 					return;
+                case 'dxf':
+					showDialogType = 'dxf';
+					return;
 				case 'shp':
 				case 'dbf':
 				case 'shx':

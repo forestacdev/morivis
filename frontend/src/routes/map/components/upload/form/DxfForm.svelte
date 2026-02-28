@@ -1,0 +1,289 @@
+<script lang="ts">
+	import turfBbox from '@turf/bbox';
+
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import {
+		createGeoJsonEntry,
+		getGeometryTypes,
+		filterByGeometryType,
+		filterByClassNames
+	} from '$routes/map/data/entries/vector';
+	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
+	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+	import type { DialogType } from '$routes/map/types';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { dxfFileToGeoJsonBrowser } from '$routes/map/utils/file/dxf';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
+	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { showNotification } from '$routes/stores/notification';
+	import { useEventTrigger } from '$routes/stores/ui';
+
+	interface Props {
+		showDataEntry: GeoDataEntry | null;
+		showDialogType: DialogType;
+		dropFile: File | FileList | null;
+		showZoneForm: boolean;
+		selectedEpsgCode: EpsgCode;
+		focusBbox: [number, number, number, number] | null;
+	}
+
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		dropFile = $bindable(),
+		showZoneForm = $bindable(),
+		selectedEpsgCode = $bindable(),
+		focusBbox = $bindable()
+	}: Props = $props();
+
+	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
+		Point: 'ポイント',
+		LineString: 'ライン',
+		Polygon: 'ポリゴン',
+		Label: 'ラベル'
+	};
+
+	let loading = $state(false);
+	let rawGeojson = $state<FeatureCollection | null>(null);
+	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
+	let selectedGeometryType = $state<string>('');
+
+	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
+	let layerChecked = $state<Record<string, boolean>>({});
+
+	const selectedLayers = $derived(
+		Object.entries(layerChecked)
+			.filter(([, v]) => v)
+			.map(([k]) => k)
+	);
+
+	// ジオメトリタイプ変更時にレイヤー一覧を全選択で初期化
+	$effect(() => {
+		if (layersByGeometryType && selectedGeometryType) {
+			const names = layersByGeometryType[selectedGeometryType] ?? [];
+			layerChecked = Object.fromEntries(names.map((n) => [n, true]));
+		}
+	});
+
+	const dxfFile = $derived.by(() => {
+		if (!dropFile) return null;
+		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+	});
+
+	/**
+	 * GeoJSON から ジオメトリタイプごとの layer 一覧を取得
+	 */
+	function getLayersByGeometryType(geojson: FeatureCollection): Record<string, string[]> {
+		const map = new Map<string, Set<string>>();
+		for (const feature of geojson.features) {
+			const geomType = feature.geometry?.type;
+			if (!geomType) continue;
+			const key =
+				geomType === 'MultiPoint'
+					? 'Point'
+					: geomType === 'MultiLineString'
+						? 'LineString'
+						: geomType === 'MultiPolygon'
+							? 'Polygon'
+							: geomType;
+			const layer = (feature.properties as any)?.layer;
+			if (!layer) continue;
+			if (!map.has(key)) map.set(key, new Set());
+			map.get(key)!.add(layer);
+		}
+		const result: Record<string, string[]> = {};
+		for (const [key, set] of map) {
+			result[key] = [...set].sort();
+		}
+		return result;
+	}
+
+	/**
+	 * layer プロパティでフィルタリング
+	 */
+	function filterByLayers(
+		geojson: FeatureCollection,
+		layers: string[]
+	): FeatureCollection {
+		return {
+			type: 'FeatureCollection',
+			features: geojson.features.filter((f) =>
+				layers.includes((f.properties as any)?.layer)
+			)
+		};
+	}
+
+	// ファイルドロップ時: DXF変換 → ジオメトリタイプ確認
+	$effect(() => {
+		if (dxfFile) {
+			loading = true;
+			dxfFileToGeoJsonBrowser(dxfFile)
+				.then((geojson) => {
+					rawGeojson = geojson;
+					const types = getGeometryTypes(rawGeojson);
+
+					if (types.length === 1) {
+						selectedGeometryType = types[0];
+						geometryTypeOptions = [];
+					} else {
+						geometryTypeOptions = types.map((t) => ({
+							key: t,
+							name: GEOMETRY_TYPE_LABELS[t] ?? t
+						}));
+						selectedGeometryType = types[0];
+					}
+
+					layersByGeometryType = getLayersByGeometryType(rawGeojson);
+				})
+				.catch((e) => {
+					showNotification('DXFファイルの読み込みに失敗しました', 'error');
+					console.error(e);
+				})
+				.finally(() => {
+					loading = false;
+				});
+		}
+	});
+
+	// 「決定」→ ZoneFormを表示
+	const openZoneForm = () => {
+		showZoneForm = true;
+		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
+	};
+
+	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
+		if (!dxfFile || !rawGeojson || !selectedGeometryType) return;
+		loading = true;
+
+		try {
+			const prjContent = getProjContext(epsgCode);
+			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
+
+			const geojsonData = (await transformGeoJSONParallel(
+				plainGeojson,
+				prjContent
+			)) as FeatureCollection;
+
+			if (!geojsonData || geojsonData.features.length === 0) {
+				showNotification('DXFファイルの変換に失敗しました', 'error');
+				return;
+			}
+
+			let filtered = filterByGeometryType(
+				geojsonData,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedLayers.length > 0) {
+				filtered = filterByLayers(filtered, selectedLayers);
+			}
+			const entryGeometryType = geometryTypeToEntryType(filtered);
+			if (!entryGeometryType) {
+				showNotification('対応していないジオメトリタイプです', 'error');
+				return;
+			}
+
+			const bbox = turfBbox(filtered);
+			if (!bbox || !isBboxValid(bbox)) {
+				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+				return;
+			}
+
+			const entry = createGeoJsonEntry(
+				filtered,
+				entryGeometryType,
+				dxfFile.name,
+				bbox as [number, number, number, number],
+				'cad'
+			);
+
+			if (entry) {
+				showDataEntry = entry;
+				showDialogType = null;
+				showNotification('ファイルを読み込みました', 'success');
+			}
+		} catch (e) {
+			showNotification('DXFファイルの変換中にエラーが発生しました', 'error');
+			console.error(e);
+		} finally {
+			loading = false;
+		}
+	};
+
+	const cancel = () => {
+		showDialogType = null;
+	};
+
+	useEventTrigger.subscribe((eventName) => {
+		if (eventName === 'setZone' && showDialogType === 'dxf') {
+			convertAndCreateEntry(selectedEpsgCode);
+		}
+	});
+</script>
+
+<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+	<span class="text-2xl font-bold">DXFファイルの登録</span>
+</div>
+
+<div
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
+>
+	{#if loading}
+		<div class="text-sm text-gray-300">変換中...</div>
+	{/if}
+
+	{#if geometryTypeOptions.length > 1}
+		<div class="w-full p-2">
+			<HorizontalSelectBox
+				label="ジオメトリタイプを選択"
+				bind:group={selectedGeometryType}
+				bind:options={geometryTypeOptions}
+			/>
+		</div>
+	{/if}
+
+	{#if layersByGeometryType && layersByGeometryType[selectedGeometryType]?.length}
+		<div class="w-full px-2">
+			<div class="mb-2 flex items-center justify-between">
+				<span class="text-sm text-gray-300">レイヤー</span>
+				<div class="flex gap-2">
+					<button
+						class="text-xs text-gray-400 hover:text-white"
+						onclick={() => {
+							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
+							layerChecked = Object.fromEntries(names.map((n) => [n, true]));
+						}}>全選択</button
+					>
+					<button
+						class="text-xs text-gray-400 hover:text-white"
+						onclick={() => {
+							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
+							layerChecked = Object.fromEntries(names.map((n) => [n, false]));
+						}}>全解除</button
+					>
+				</div>
+			</div>
+			<div class="flex flex-col gap-1">
+				{#each layersByGeometryType[selectedGeometryType] as layer}
+					<Checkbox label={layer} bind:value={layerChecked[layer]} />
+				{/each}
+			</div>
+		</div>
+	{/if}
+</div>
+
+<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+	<button
+		onclick={openZoneForm}
+		disabled={loading || !selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {loading || !selectedGeometryType
+			? 'cursor-not-allowed opacity-50'
+			: ''}"
+	>
+		決定
+	</button>
+</div>

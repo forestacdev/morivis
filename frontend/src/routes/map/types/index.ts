@@ -46,7 +46,16 @@ export type CSSCursor =
 	| 'all-scroll';
 
 // アップロードのダイアログのタイプ
-export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | 'dm' | null;
+export type DialogType =
+	| 'raster'
+	| 'vector'
+	| 'shp'
+	| 'gpx'
+	| 'wmts'
+	| 'tiff'
+	| 'dm'
+	| 'dxf'
+	| null;
 
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;

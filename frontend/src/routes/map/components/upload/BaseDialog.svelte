@@ -2,6 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
+	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
@@ -63,6 +64,16 @@
 			{/if}
 			{#if showDialogType === 'dm'}
 				<DmForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'dxf'}
+				<DxfForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
