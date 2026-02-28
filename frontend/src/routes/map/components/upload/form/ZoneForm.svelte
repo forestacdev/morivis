@@ -134,7 +134,6 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					maxZoom: 10,
 					duration: 500
 				});
 			}
