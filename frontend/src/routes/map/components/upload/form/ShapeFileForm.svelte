@@ -61,6 +61,7 @@
 				}),
 			prjFile: yup
 				.mixed()
+				.nullable()
 				.optional()
 				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
 					if (value instanceof File) {
@@ -256,7 +257,7 @@
 
 		if (!forms.prjFile) {
 			// 世界測地系かどうかを確認
-			const geojsonData = await shpFileToGeojson(forms.shpFile as File);
+			const geojsonData = await shpFileToGeojson(forms.shpFile as File, forms.dbfFile as File);
 			if (!geojsonData) {
 				showNotification('シェープファイルの読み込みに失敗しました', 'error');
 				return;

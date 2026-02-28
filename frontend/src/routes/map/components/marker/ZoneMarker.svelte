@@ -85,7 +85,7 @@
 			onmouseleave={() => onHover(false)}
 		>
 			<span class="text-xs text-gray-600">EPSG</span>
-			<span class="text-sm">{properties.code}</span>
+			<span class="text-main text-sm">{properties.code}</span>
 		</button>
 	{/if}
 </div>
