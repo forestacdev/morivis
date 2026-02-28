@@ -62,7 +62,14 @@
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'dm'}
-				<DmForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<DmForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					{selectedEpsgCode}
+				/>
 			{/if}
 		</div>
 	</div>

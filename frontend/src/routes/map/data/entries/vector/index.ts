@@ -92,7 +92,6 @@ export const createGeoJsonEntry = (
 			style
 		};
 	} else if (entryGeometryType === 'LineString') {
-		alert(styleType);
 		if (styleType === 'cad') {
 			const style = { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 			return {

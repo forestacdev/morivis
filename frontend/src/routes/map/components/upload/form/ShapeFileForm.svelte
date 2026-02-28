@@ -286,7 +286,7 @@
 	};
 
 	useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
-		if (eventName === 'setZone') {
+		if (eventName === 'setZone' && showDialogType === 'shp') {
 			// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
 			const prjContent = getProjContext(selectedEpsgCode);
 			if (prjContent) {

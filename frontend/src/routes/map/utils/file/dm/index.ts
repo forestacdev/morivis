@@ -396,6 +396,8 @@ interface DrawingRecord {
 	title: string;
 	originX: number; // m
 	originY: number; // m
+	topRightX: number; // m (右上X座標、0の場合は未取得)
+	topRightY: number; // m (右上Y座標、0の場合は未取得)
 	coordUnit: number; // 座標値単位 (1=mm, 10=cm, 1000=m)
 	version: number;
 }
@@ -498,19 +500,24 @@ function parseDrawingRecord(line: string): DrawingRecord {
 		title: substr(line, 36, 30),
 		originX: 0,
 		originY: 0,
+		topRightX: 0,
+		topRightY: 0,
 		coordUnit: 0,
 		version: parseIntField(line, 68, 1)
 	};
 }
 
-function parseDrawingCoordRecord(line: string): { originX: number; originY: number } {
+function parseDrawingCoordRecord(
+	line: string
+): { originX: number; originY: number; topRightX: number; topRightY: number } {
 	// レコード(b): 図郭座標
 	// [3-9]  左下X I7  [10-16] 左下Y I7  [17-19] 座標値単位 I3
 	// [20-26] 要素数  [27-32] レコード数  [33-39] 右上X I7  [40-46] 右上Y I7
-	// ※左下座標を原点として使用
 	return {
 		originX: parseIntField(line, 3, 7),
-		originY: parseIntField(line, 10, 7)
+		originY: parseIntField(line, 10, 7),
+		topRightX: parseIntField(line, 33, 7),
+		topRightY: parseIntField(line, 40, 7)
 	};
 }
 
@@ -803,7 +810,9 @@ function parseRecords(text: string): ParseResult {
 						// ... [45-47] 座標値単位
 						const coord = {
 							originX: parseIntField(line, 1, 7),
-							originY: parseIntField(line, 8, 7)
+							originY: parseIntField(line, 8, 7),
+							topRightX: parseIntField(line, 15, 7),
+							topRightY: parseIntField(line, 22, 7)
 						};
 						const coordUnit = parseIntField(line, 45, 3);
 						records.push({
@@ -1214,6 +1223,8 @@ export interface DMZoneInfo {
 	defaultZone: number;
 	/** 図郭名称 */
 	drawingName: string;
+	/** 図郭の平面直角座標bbox [originX, originY, topRightX, topRightY] */
+	bbox: [number, number, number, number] | null;
 }
 
 /**
@@ -1227,6 +1238,7 @@ export async function getDMZoneInfo(file: File): Promise<DMZoneInfo> {
 
 	let indexZone: number | null = null;
 	let drawingName = '';
+	let bbox: [number, number, number, number] | null = null;
 
 	for (const record of records) {
 		if (record.type === 'INDEX') {
@@ -1235,11 +1247,14 @@ export async function getDMZoneInfo(file: File): Promise<DMZoneInfo> {
 		if (record.type === 'DRAWING' && record.drawingName && !drawingName) {
 			drawingName = record.drawingName;
 		}
+		if (record.type === 'DRAWING' && record.originX !== 0 && record.topRightX !== 0 && !bbox) {
+			bbox = [record.originX, record.originY, record.topRightX, record.topRightY];
+		}
 	}
 
 	const defaultZone = indexZone ?? (isExtended ? 2 : 9);
 
-	return { indexZone, defaultZone, drawingName };
+	return { indexZone, defaultZone, drawingName, bbox };
 }
 
 /** 平面直角座標系の系番号と主な地域の対応 */
