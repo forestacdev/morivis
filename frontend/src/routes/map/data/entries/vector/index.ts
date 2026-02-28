@@ -207,6 +207,33 @@ export const createVectorTileEntry = (
 	}
 };
 
+/** GeoJSON に含まれるジオメトリタイプの一覧を返す */
+export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
+	const types = new Set<VectorEntryGeometryType>();
+	for (const feature of geojson.features) {
+		if (!feature.geometry?.type) continue;
+		const t = feature.geometry.type;
+		if (t === 'Point' || t === 'MultiPoint') types.add('Point');
+		else if (t === 'LineString' || t === 'MultiLineString') types.add('LineString');
+		else if (t === 'Polygon' || t === 'MultiPolygon') types.add('Polygon');
+	}
+	return [...types];
+};
+
+/** GeoJSON を指定ジオメトリタイプのフィーチャのみにフィルターする */
+export const filterByGeometryType = (
+	geojson: FeatureCollection,
+	geometryType: VectorEntryGeometryType
+): FeatureCollection => {
+	const multiType = `Multi${geometryType}`;
+	return {
+		type: 'FeatureCollection',
+		features: geojson.features.filter(
+			(f) => f.geometry?.type === geometryType || f.geometry?.type === multiType
+		)
+	};
+};
+
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (
 	geojson: FeatureCollection

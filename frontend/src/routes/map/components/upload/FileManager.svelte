@@ -2,7 +2,11 @@
 	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import {
+		createGeoJsonEntry,
+		getGeometryTypes,
+		filterByGeometryType
+	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
@@ -68,12 +72,10 @@
 					return;
 				case 'dm': {
 					const dmResult = await convertDMFileToGeoJSON(file);
-					console.log(dmResult);
 					const prjContent = getProjContext(
 						String(dmResult.properties?.epsgCode ?? 6670) as EpsgCode
 					);
 
-					console.log(dmResult.properties?.epsgCode);
 					geojsonData = (await transformGeoJSONParallel(
 						dmResult as any,
 						prjContent
@@ -100,7 +102,6 @@
 						geojsonData = await cprFmrToOrbitTrackGeojson(file);
 					} else if (file.name.includes('ECA_J_MSI_CLP')) {
 						geojsonData = await msiClpToOrbitTrackGeojson(file);
-						console.log(geojsonData);
 					} else {
 						showNotification('対応していないHDF5プロダクトです', 'error');
 						return;
@@ -175,6 +176,16 @@
 		if (!geojsonData) {
 			showNotification('データが不正です', 'error');
 			return;
+		}
+
+		const checkGeometryTypes = getGeometryTypes(geojsonData);
+
+		if (checkGeometryTypes.length > 1) {
+			geojsonData = filterByGeometryType(geojsonData, checkGeometryTypes[0]);
+		}
+
+		if (import.meta.env.MODE !== 'production') {
+			console.log(geojsonData);
 		}
 
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);

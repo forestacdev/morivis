@@ -158,6 +158,7 @@ interface DrawingRecord {
 	title: string;
 	originX: number; // m
 	originY: number; // m
+	coordUnit: number; // 座標値単位 (1=mm, 10=cm, 1000=m)
 	version: number;
 }
 
@@ -259,6 +260,7 @@ function parseDrawingRecord(line: string): DrawingRecord {
 		title: substr(line, 36, 30),
 		originX: 0,
 		originY: 0,
+		coordUnit: 0,
 		version: parseIntField(line, 68, 1)
 	};
 }
@@ -558,13 +560,21 @@ function parseRecords(text: string): ParseResult {
 					// M レコード直後の付属行（図郭座標・メタ情報等）をスキップ
 					if (afterMRecord === 1) {
 						// 図郭座標行: 左下座標を図郭原点として取得
-						const coord = parseDrawingCoordRecord(line);
+						// 拡張DMの付属行は先頭に "MB" プレフィックスがないため
+						// 位置が2文字分前にずれる → [1-7] 左下X, [8-14] 左下Y
+						const coord = {
+							originX: parseIntField(line, 1, 7),
+							originY: parseIntField(line, 8, 7)
+						};
+						// [15-17] 座標値単位 (1=mm, 10=cm, 1000=m)
+						const coordUnit = parseIntField(line, 15, 3);
 						records.push({
 							type: 'DRAWING',
 							...coord,
 							drawingId: '',
 							drawingName: '',
 							mapLevel: 0,
+							coordUnit,
 							title: '',
 							version: 0
 						});
@@ -623,6 +633,7 @@ function parseRecords(text: string): ParseResult {
 						drawingId: '',
 						drawingName: '',
 						mapLevel: 0,
+						coordUnit: 0,
 						title: '',
 						version: 0
 					});
@@ -714,12 +725,14 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 	// 拡張DM: 図郭原点（メートル単位）
 	let figureOriginX = 0;
 	let figureOriginY = 0;
+	// 拡張DM: 座標値単位 (1=mm, 10=cm, 1000=m), デフォルト1(mm)
+	let coordUnitDivisor = 1000; // mm→m
 
 	// 座標をメートル単位の平面直角座標に変換（WGS84変換は呼び出し側で行う）
 	const toAbsoluteMeters = (x: number, y: number): [number, number] => {
 		if (isExtended) {
-			// 拡張DM: 座標はmm単位で図郭原点からの相対値
-			return [figureOriginY + y / 1000, figureOriginX + x / 1000];
+			// 拡張DM: 座標値単位に基づいて図郭原点からの相対値をメートルに変換
+			return [figureOriginY + y / coordUnitDivisor, figureOriginX + x / coordUnitDivisor];
 		}
 		// 旧DM: mapLevelに応じた単位変換
 		return [toMeters(y, mapLevel), toMeters(x, mapLevel)];
@@ -815,6 +828,16 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 				if (isExtended && (record.originX !== 0 || record.originY !== 0)) {
 					figureOriginX = record.originX;
 					figureOriginY = record.originY;
+				}
+				// 座標値単位から除算器を決定 (1=mm→/1000, 10=cm→/100, 1000=m→/1)
+				if (isExtended && record.coordUnit > 0) {
+					if (record.coordUnit >= 1000) {
+						coordUnitDivisor = 1; // m単位
+					} else if (record.coordUnit >= 10) {
+						coordUnitDivisor = 100; // cm単位
+					} else {
+						coordUnitDivisor = 1000; // mm単位
+					}
 				}
 				break;
 			}
