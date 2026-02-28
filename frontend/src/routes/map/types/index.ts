@@ -57,6 +57,25 @@ export type DialogType =
 	| 'dxf'
 	| null;
 
+/** ドロップ/ファイル選択で受け付ける拡張子 */
+export const SUPPORTED_FILE_EXTENSIONS = [
+	'.geojson',
+	'.fgb',
+	'.gpx',
+	'.shp',
+	'.dbf',
+	'.shx',
+	'.prj',
+	'.dxf',
+	'.dm'
+] as const;
+
+/** input[accept] 用のカンマ区切り文字列 */
+export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS.join(',');
+
+/** 表示ラベル用のスペース区切り文字列 */
+export const SUPPORTED_FILE_LABEL = SUPPORTED_FILE_EXTENSIONS.join(' ');
+
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;
 	feature: MapGeoJSONFeature;
