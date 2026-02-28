@@ -157,6 +157,14 @@ export class GeojsonCache {
 	static keys(): IterableIterator<string> {
 		return this.cache.keys();
 	}
+
+	static export(key: string, filename: string): void {
+		if (!this.cache.has(key)) {
+			throw new Error(`Key "${key}" not found in GeojsonCache.`);
+		}
+		const data = this.cache.get(key);
+		downloadGeojson(data!, `${filename}.geojson`);
+	}
 }
 
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {

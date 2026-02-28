@@ -11,7 +11,6 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { convertDMFileToGeoJSON } from '$routes/map/utils/file/dm';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import {
@@ -22,8 +21,8 @@
 	} from '$routes/map/utils/file/hdf5';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 	import { isBboxValid } from '$routes/map/utils/map';
-	import { readPrjFileContent, transformGeoJSONParallel } from '$routes/map/utils/proj';
-	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { getProjContext } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
@@ -70,18 +69,9 @@
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;
-				case 'dm': {
-					const dmResult = await convertDMFileToGeoJSON(file);
-					const prjContent = getProjContext(
-						String(dmResult.properties?.epsgCode ?? 6670) as EpsgCode
-					);
-
-					geojsonData = (await transformGeoJSONParallel(
-						dmResult as any,
-						prjContent
-					)) as FeatureCollection;
-					break;
-				}
+				case 'dm':
+					showDialogType = 'dm';
+					return;
 				case 'shp':
 				case 'dbf':
 				case 'shx':

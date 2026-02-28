@@ -128,6 +128,33 @@ function toMeters(rawValue: number, mapLevel: number): number {
 }
 
 // ============================================================
+// 平面直角座標系の原点定義
+// ============================================================
+
+/** 平面直角座標系の原点（系番号 → [緯度°, 経度°]） */
+const ZONE_ORIGINS: Record<number, [number, number]> = {
+	1: [33.0, 129.5],
+	2: [33.0, 131.0],
+	3: [36.0, 132.1667],
+	4: [33.0, 133.5],
+	5: [36.0, 134.3333],
+	6: [36.0, 136.0],
+	7: [36.0, 137.1667],
+	8: [36.0, 138.5],
+	9: [36.0, 139.8333],
+	10: [40.0, 140.8333],
+	11: [44.0, 140.25],
+	12: [44.0, 142.25],
+	13: [44.0, 144.25],
+	14: [26.0, 142.0],
+	15: [26.0, 127.5],
+	16: [26.0, 124.0],
+	17: [26.0, 131.0],
+	18: [20.0, 136.0],
+	19: [26.0, 154.0]
+};
+
+// ============================================================
 // テキスト行パーサー群
 // ============================================================
 
@@ -711,7 +738,7 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 	const features: DMFeature[] = [];
 
 	// パース状態
-	let coordSystem = options.zoneNumber ?? (isExtended ? 2 : 9); // 拡張DMデフォルト: 2系
+	let coordSystem = options.zoneNumber ?? 0; // 0 = 未確定（後で推定または旧DMデフォルト適用）
 	let mapLevel = 2500;
 	let currentDrawingId = '';
 	let currentClassCode = '';
@@ -911,6 +938,11 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 	// 最後の要素をフラッシュ
 	flushFeature();
 
+	// 系番号が未確定の場合のフォールバック
+	if (coordSystem === 0) {
+		coordSystem = isExtended ? 2 : 9;
+	}
+
 	return {
 		type: 'FeatureCollection',
 		features,
@@ -951,4 +983,63 @@ export async function convertDMFileToGeoJSON(
 	const text = decodeShiftJIS(buffer);
 	return convertDMtoGeoJSON(text, options);
 }
+
+/** 系番号の情報 */
+export interface DMZoneInfo {
+	/** INDEXレコードの系番号（存在する場合） */
+	indexZone: number | null;
+	/** デフォルトの系番号 */
+	defaultZone: number;
+	/** 図郭名称 */
+	drawingName: string;
+}
+
+/**
+ * DMファイルから座標系情報を取得する（軽量パース）。
+ * UIでユーザーに確認を求める前に呼び出す。
+ */
+export async function getDMZoneInfo(file: File): Promise<DMZoneInfo> {
+	const buffer = await file.arrayBuffer();
+	const text = decodeShiftJIS(buffer);
+	const { records, isExtended } = parseRecords(text);
+
+	let indexZone: number | null = null;
+	let drawingName = '';
+
+	for (const record of records) {
+		if (record.type === 'INDEX') {
+			indexZone = record.coordSystem || null;
+		}
+		if (record.type === 'DRAWING' && record.drawingName && !drawingName) {
+			drawingName = record.drawingName;
+		}
+	}
+
+	const defaultZone = indexZone ?? (isExtended ? 2 : 9);
+
+	return { indexZone, defaultZone, drawingName };
+}
+
+/** 平面直角座標系の系番号と主な地域の対応 */
+export const ZONE_REGIONS: Record<number, string> = {
+	1: '長崎・鹿児島西部',
+	2: '福岡・佐賀・大分・熊本・鹿児島東部',
+	3: '山口・島根・広島',
+	4: '香川・愛媛・徳島・高知',
+	5: '兵庫・鳥取・岡山',
+	6: '京都・大阪・福井・滋賀・三重・奈良・和歌山',
+	7: '石川・富山・岐阜・愛知',
+	8: '新潟・長野・山梨・静岡',
+	9: '東京・福島・栃木・茨城・埼玉・千葉・群馬・神奈川',
+	10: '青森・秋田・山形・岩手・宮城',
+	11: '北海道（西部）',
+	12: '北海道（中部）',
+	13: '北海道（東部）',
+	14: '小笠原諸島',
+	15: '沖縄',
+	16: '先島諸島',
+	17: '大東諸島',
+	18: '沖ノ鳥島',
+	19: '南鳥島'
+};
 

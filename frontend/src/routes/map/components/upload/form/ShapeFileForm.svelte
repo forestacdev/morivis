@@ -171,8 +171,13 @@
 		}
 	};
 
+	const isShapeFileRelated = (file: File | FileList): boolean => {
+		const files = file instanceof FileList ? Array.from(file) : [file];
+		return files.some((f) => /\.(shp|dbf|prj|shx)$/i.test(f.name));
+	};
+
 	$effect(() => {
-		if (dropFile) {
+		if (dropFile && isShapeFileRelated(dropFile)) {
 			setFiles(dropFile);
 			dropFile = null; // ドロップ後はnullにリセット
 		}

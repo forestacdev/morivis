@@ -11,6 +11,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
@@ -59,6 +60,15 @@
 		return layerEntry?.metaData.bounds;
 	});
 
+	let isGeojsonCustomLayer = $derived.by(() => {
+		return (
+			layerEntry.type === 'vector' &&
+			layerEntry.format.geometryType &&
+			layerEntry.format.type === 'geojson' &&
+			layerEntry?.metaData.attribution === 'カスタムデータ'
+		);
+	});
+
 	const selectedLayer = () => {
 		if (!layerEntry) return;
 		selectedLayerId.set(layerEntry.id);
@@ -102,6 +112,12 @@
 		tempLayerEntries = [...tempLayerEntries, copy];
 
 		activeLayerIdsStore.add(uuid);
+	};
+
+	const downloadLayer = () => {
+		if (!layerEntry || !isGeojsonCustomLayer) return;
+
+		GeojsonCache.export(layerEntry.id, layerEntry.metaData.name);
 	};
 
 	// レイヤーの削除
@@ -504,6 +520,11 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
+						{#if isGeojsonCustomLayer}
+							<button onclick={downloadLayer}>
+								<Icon icon="material-symbols:download-rounded" class="h-8 w-8" />
+							</button>
+						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
