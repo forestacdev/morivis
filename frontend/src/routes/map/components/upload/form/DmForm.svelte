@@ -171,7 +171,7 @@
 				entryGeometryType,
 				dmFile.name,
 				bbox as [number, number, number, number],
-				'cad'
+				'dm'
 			);
 
 			if (entry) {

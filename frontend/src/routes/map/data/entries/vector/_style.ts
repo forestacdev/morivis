@@ -14,6 +14,7 @@ import type {
 	PolygonOutLine,
 	ColorsStyle
 } from '$routes/map/data/types/vector/style';
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { color } from 'd3-color';
 
 import type {
@@ -27,6 +28,20 @@ import type {
 	FormattedSpecification,
 	ExpressionSpecification
 } from 'maplibre-gl';
+
+/** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
+export const createMatchColorStyleMapping = (
+	categories: string[]
+): ColorMatchExpression['mapping'] => {
+	const values = categories.map((category) => {
+		return getRandomColor();
+	});
+	return {
+		categories,
+		values,
+		patterns: categories.map(() => null) // パターンは使用しない場合はnull
+	};
+};
 
 export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 	type: 'circle',

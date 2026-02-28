@@ -13,8 +13,11 @@ import {
 	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE,
-	DEFAULT_CAD_STYLE
+	DEFAULT_CAD_STYLE,
+	createMatchColorStyleMapping
 } from '$routes/map/data/entries/vector/_style';
+
+import { getClassNamesByGeometryType } from '$routes/map/utils/file/dm';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
@@ -22,7 +25,7 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
-export type VecterStyleType = 'cad' | 'default';
+export type VecterStyleType = 'cad' | 'dm' | 'default';
 
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
@@ -52,6 +55,18 @@ export const createGeoJsonEntry = (
 			}
 		]
 	};
+
+	if (styleType === 'dm') {
+		const classNames = getClassNamesByGeometryType(data);
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'className',
+			name: '分類ごとの色分け',
+			mapping: createMatchColorStyleMapping(classNames[entryGeometryType])
+		});
+
+		colorsConfig.key = 'className';
+	}
 
 	const propKeys = getUniquePropertyKeys(data as any);
 	const labelsConfig = createLabelsExpressions(propKeys);
@@ -92,7 +107,7 @@ export const createGeoJsonEntry = (
 			style
 		};
 	} else if (entryGeometryType === 'LineString') {
-		if (styleType === 'cad') {
+		if (styleType === 'cad' || styleType === 'dm') {
 			const style = { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 			return {
 				...baseEntry,
@@ -256,9 +271,7 @@ export const filterByClassNames = (
 	classNames: string[]
 ): FeatureCollection => ({
 	type: 'FeatureCollection',
-	features: geojson.features.filter((f) =>
-		classNames.includes((f.properties as any)?.className)
-	)
+	features: geojson.features.filter((f) => classNames.includes((f.properties as any)?.className))
 });
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
