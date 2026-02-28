@@ -120,7 +120,7 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
-	<div class="p-2">
+	<div class="w-full p-2">
 		<HorizontalSelectBox
 			label="データタイプを選択"
 			bind:group={dataType}
