@@ -189,43 +189,7 @@ M レコード直後の行（図郭座標行）から左下座標と座標値単
 | 73xx | 基準点 | 三角点, 水準点, 多角点, 電子基準点, 標高点 |
 | 81xx | 注記 | 地名, 道路名, 建物名, 標高注記 等 |
 
-## 使用方法
 
-```typescript
-import { convertDMFileToGeoJSON } from './dm';
-import { transformGeoJSONParallel } from '$routes/map/utils/proj';
-import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-
-// 1. DM → GeoJSON（平面直角座標系のメートル座標）
-const dmResult = await convertDMFileToGeoJSON(file, {
-  zoneNumber: 3,  // 平面直角座標系の系番号
-});
-
-// 2. 平面直角座標 → WGS84 経緯度
-const epsgCode = String(dmResult.properties?.epsgCode ?? 6668 + zoneNumber);
-const projContext = getProjContext(epsgCode as EpsgCode);
-const geojson = await transformGeoJSONParallel(dmResult, projContext);
-```
-
-### ConvertOptions
-
-| オプション | 型 | デフォルト | 説明 |
-|------------|-----|-----------|------|
-| `zoneNumber` | `number` | I レコードから取得、なければ拡張DM: 2, 旧DM: 9 | 平面直角座標系の系番号 (1〜19) |
-| `includeAnnotations` | `boolean` | `true` | 注記フィーチャの出力 |
-| `coordinatePrecision` | `number` | `8` | 座標の丸め精度 |
-
-### 系番号の事前取得
-
-```typescript
-import { getDMZoneInfo, ZONE_REGIONS } from './dm';
-
-const info = await getDMZoneInfo(file);
-// info.indexZone: INDEXレコードの系番号（存在する場合）
-// info.defaultZone: デフォルトの系番号
-// info.drawingName: 図郭名称
-// ZONE_REGIONS[3] → '山口・島根・広島'
-```
 
 ## 平面直角座標系の系番号と主な地域
 

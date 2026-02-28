@@ -251,6 +251,16 @@ export const filterByGeometryType = (
 	};
 };
 
+export const filterByClassNames = (
+	geojson: FeatureCollection,
+	classNames: string[]
+): FeatureCollection => ({
+	type: 'FeatureCollection',
+	features: geojson.features.filter((f) =>
+		classNames.includes((f.properties as any)?.className)
+	)
+});
+
 /** geojsonのジオメトリ対応からEntryTypeを取得 */
 export const geometryTypeToEntryType = (
 	geojson: FeatureCollection

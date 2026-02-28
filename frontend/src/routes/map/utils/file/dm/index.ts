@@ -23,6 +23,8 @@
  *   - 地図情報レベル500/1000: 座標単位mm, 2500/5000: cm, 10000: m
  */
 
+import type { FeatureCollection } from 'geojson';
+
 // ============================================================
 // 型定義
 // ============================================================
@@ -890,12 +892,6 @@ function parseRecords(text: string): ParseResult {
 
 export interface ConvertOptions {
 	/**
-	 * 平面直角座標系の系番号 (1～19)
-	 * 省略時はファイル内のIレコードから取得、なければデフォルト2
-	 */
-	zoneNumber?: number;
-
-	/**
 	 * 注記をフィーチャとして含めるか (default: true)
 	 */
 	includeAnnotations?: boolean;
@@ -935,7 +931,7 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 	const features: DMFeature[] = [];
 
 	// パース状態
-	let coordSystem = options.zoneNumber ?? 0; // 0 = 未確定（後で推定または旧DMデフォルト適用）
+	let coordSystem = 0; // 0 = 未確定（後で推定または旧DMデフォルト適用）
 	let mapLevel = 2500;
 	let currentDrawingId = '';
 	let currentClassCode = '';
@@ -1193,11 +1189,9 @@ export async function convertDMFileToGeoJSON(
 }
 
 /** 系番号の情報 */
-export interface DMZoneInfo {
+export interface DMInfo {
 	/** INDEXレコードの系番号（存在する場合） */
 	indexZone: number | null;
-	/** デフォルトの系番号 */
-	defaultZone: number;
 	/** 図郭名称 */
 	drawingName: string;
 	/** 図郭の平面直角座標bbox [originX, originY, topRightX, topRightY] */
@@ -1208,7 +1202,7 @@ export interface DMZoneInfo {
  * DMファイルから座標系情報を取得する（軽量パース）。
  * UIでユーザーに確認を求める前に呼び出す。
  */
-export async function getDMZoneInfo(file: File): Promise<DMZoneInfo> {
+export async function getDMInfo(file: File): Promise<DMInfo> {
 	const buffer = await file.arrayBuffer();
 	const text = decodeShiftJIS(buffer);
 	const { records, isExtended } = parseRecords(text);
@@ -1229,9 +1223,35 @@ export async function getDMZoneInfo(file: File): Promise<DMZoneInfo> {
 		}
 	}
 
-	const defaultZone = indexZone ?? (isExtended ? 2 : 9);
+	return { indexZone, drawingName, bbox };
+}
 
-	return { indexZone, defaultZone, drawingName, bbox };
+/**
+ * GeoJSON から ジオメトリタイプごとの className 一覧を取得
+ */
+export function getClassNamesByGeometryType(geojson: FeatureCollection): Record<string, string[]> {
+	const map = new Map<string, Set<string>>();
+	for (const feature of geojson.features) {
+		const geomType = feature.geometry?.type;
+		if (!geomType) continue;
+		const key =
+			geomType === 'MultiPoint'
+				? 'Point'
+				: geomType === 'MultiLineString'
+					? 'LineString'
+					: geomType === 'MultiPolygon'
+						? 'Polygon'
+						: geomType;
+		const className = (feature.properties as any)?.className;
+		if (!className) continue;
+		if (!map.has(key)) map.set(key, new Set());
+		map.get(key)!.add(className);
+	}
+	const result: Record<string, string[]> = {};
+	for (const [key, set] of map) {
+		result[key] = [...set].sort();
+	}
+	return result;
 }
 
 /** 平面直角座標系の系番号と主な地域の対応 */

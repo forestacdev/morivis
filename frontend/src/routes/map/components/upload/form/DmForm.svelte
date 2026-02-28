@@ -2,10 +2,12 @@
 	import turfBbox from '@turf/bbox';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
-		filterByGeometryType
+		filterByGeometryType,
+		filterByClassNames
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -14,8 +16,9 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
 		convertDMFileToGeoJSON,
-		getDMZoneInfo,
-		type DMZoneInfo
+		getDMInfo,
+		getClassNamesByGeometryType,
+		type DMInfo
 	} from '$routes/map/utils/file/dm';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
@@ -48,12 +51,35 @@
 		Label: 'ラベル'
 	};
 
-	let zoneInfo = $state<DMZoneInfo | null>(null);
+	let zoneInfo = $state<DMInfo | null>(null);
 	let loading = $state(false);
 	// 平面直角座標のままのGeoJSON（座標変換前）
 	let rawGeojson = $state<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<string>('');
+	// let classNamesByGeometryType = $derived.by(() => {
+	// 	if (!rawGeojson) return null;
+	// 	return getClassNamesByGeometryType(rawGeojson);
+	// });
+
+	let classNamesByGeometryType = $state<Record<string, string[]> | null>(null);
+	let classNameChecked = $state<Record<string, boolean>>({});
+
+	// 選択されたclassName一覧（チェック済みのもの）
+	const selectedClassNames = $derived(
+		Object.entries(classNameChecked)
+			.filter(([, v]) => v)
+			.map(([k]) => k)
+	);
+
+	// ジオメトリタイプ変更時にclassName一覧を全選択で初期化
+	$effect(() => {
+		if (classNamesByGeometryType && selectedGeometryType) {
+			const names = classNamesByGeometryType[selectedGeometryType] ?? [];
+			classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
+		}
+	});
+
 	const dmFile = $derived.by(() => {
 		if (!dropFile) return null;
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
@@ -63,12 +89,12 @@
 	$effect(() => {
 		if (dmFile) {
 			loading = true;
-			getDMZoneInfo(dmFile).then((info) => {
+			getDMInfo(dmFile).then((info) => {
 				zoneInfo = info;
-				selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
+				// selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
 			});
 
-			convertDMFileToGeoJSON(dmFile, { zoneNumber: 2 })
+			convertDMFileToGeoJSON(dmFile, {})
 				.then((dmResult) => {
 					rawGeojson = dmResult as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson);
@@ -83,6 +109,8 @@
 						}));
 						selectedGeometryType = types[0];
 					}
+
+					classNamesByGeometryType = getClassNamesByGeometryType(rawGeojson);
 				})
 				.catch((e) => {
 					showNotification('DMファイルの読み込みに失敗しました', 'error');
@@ -101,15 +129,13 @@
 	};
 
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
-	const convertAndCreateEntry = async (zoneNumber: number) => {
+	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!dmFile || !selectedGeometryType) return;
 		loading = true;
 
 		try {
-			const dmResult = await convertDMFileToGeoJSON(dmFile, { zoneNumber });
-			const prjContent = getProjContext(
-				String(dmResult.properties?.epsgCode ?? 6668 + zoneNumber) as EpsgCode
-			);
+			const dmResult = await convertDMFileToGeoJSON(dmFile, {});
+			const prjContent = getProjContext(epsgCode as EpsgCode);
 
 			const geojsonData = (await transformGeoJSONParallel(
 				dmResult as any,
@@ -121,10 +147,13 @@
 				return;
 			}
 
-			const filtered = filterByGeometryType(
+			let filtered = filterByGeometryType(
 				geojsonData,
 				selectedGeometryType as VectorEntryGeometryType
 			);
+			if (selectedClassNames.length > 0) {
+				filtered = filterByClassNames(filtered, selectedClassNames);
+			}
 			const entryGeometryType = geometryTypeToEntryType(filtered);
 			if (!entryGeometryType) {
 				showNotification('対応していないジオメトリタイプです', 'error');
@@ -164,10 +193,7 @@
 
 	useEventTrigger.subscribe((eventName) => {
 		if (eventName === 'setZone' && showDialogType === 'dm') {
-			const zoneNumber = Number(selectedEpsgCode) - 6668;
-			if (zoneNumber >= 1 && zoneNumber <= 19) {
-				convertAndCreateEntry(zoneNumber);
-			}
+			convertAndCreateEntry(selectedEpsgCode);
 		}
 	});
 </script>
@@ -196,6 +222,35 @@
 				bind:group={selectedGeometryType}
 				bind:options={geometryTypeOptions}
 			/>
+		</div>
+	{/if}
+
+	{#if classNamesByGeometryType && classNamesByGeometryType[selectedGeometryType]?.length}
+		<div class="w-full px-2">
+			<div class="mb-2 flex items-center justify-between">
+				<span class="text-sm text-gray-300">クラス名</span>
+				<div class="flex gap-2">
+					<button
+						class="text-xs text-gray-400 hover:text-white"
+						onclick={() => {
+							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
+							classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
+						}}>全選択</button
+					>
+					<button
+						class="text-xs text-gray-400 hover:text-white"
+						onclick={() => {
+							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
+							classNameChecked = Object.fromEntries(names.map((n) => [n, false]));
+						}}>全解除</button
+					>
+				</div>
+			</div>
+			<div class="flex flex-col gap-1">
+				{#each classNamesByGeometryType[selectedGeometryType] as className}
+					<Checkbox label={className} bind:value={classNameChecked[className]} />
+				{/each}
+			</div>
 		</div>
 	{/if}
 </div>
