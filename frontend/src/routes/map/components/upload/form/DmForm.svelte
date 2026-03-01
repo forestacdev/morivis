@@ -7,24 +7,20 @@
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType,
-		filterByClassNames
+		filterByProperty,
+		groupPropertyByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import {
-		convertDMFileToGeoJSON,
-		getDMInfo,
-		getClassNamesByGeometryType,
-		type DMInfo
-	} from '$routes/map/utils/file/dm';
+	import { convertDMFileToGeoJSON, getDMInfo, type DMInfo } from '$routes/map/utils/file/dm';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -52,15 +48,12 @@
 	};
 
 	let zoneInfo = $state<DMInfo | null>(null);
-	let loading = $state(false);
 	// 平面直角座標のままのGeoJSON（座標変換前）
 	let rawGeojson = $state<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<string>('');
-	// let classNamesByGeometryType = $derived.by(() => {
-	// 	if (!rawGeojson) return null;
-	// 	return getClassNamesByGeometryType(rawGeojson);
-	// });
+	const extractClassName = (props: Record<string, unknown>) =>
+		props?.className != null ? String(props.className) : undefined;
 
 	let classNamesByGeometryType = $state<Record<string, string[]> | null>(null);
 	let classNameChecked = $state<Record<string, boolean>>({});
@@ -88,7 +81,7 @@
 	// ファイルドロップ時: DM変換（座標変換なし）→ ジオメトリタイプ確認
 	$effect(() => {
 		if (dmFile) {
-			loading = true;
+			isProcessing.set(true);
 			getDMInfo(dmFile).then((info) => {
 				zoneInfo = info;
 				// selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
@@ -110,14 +103,14 @@
 						selectedGeometryType = types[0];
 					}
 
-					classNamesByGeometryType = getClassNamesByGeometryType(rawGeojson);
+					classNamesByGeometryType = groupPropertyByGeometryType(rawGeojson, extractClassName);
 				})
 				.catch((e) => {
 					showNotification('DMファイルの読み込みに失敗しました', 'error');
 					console.error(e);
 				})
 				.finally(() => {
-					loading = false;
+					isProcessing.set(false);
 				});
 		}
 	});
@@ -125,20 +118,45 @@
 	// 「決定」→ ZoneFormを表示
 	const openZoneForm = () => {
 		showZoneForm = true;
-		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
+
+		// フィルタ結果でbboxを計算（rawGeojsonは上書きしない）
+		if (rawGeojson && selectedGeometryType) {
+			let filtered = filterByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedClassNames.length > 0) {
+				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
+			}
+			focusBbox = turfBbox(filtered) as [number, number, number, number];
+		} else {
+			focusBbox = rawGeojson
+				? (turfBbox(rawGeojson) as [number, number, number, number])
+				: null;
+		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// ZoneFormで座標系選択後 → フィルタ → 座標変換 → エントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!dmFile || !selectedGeometryType) return;
-		loading = true;
+		if (!dmFile || !rawGeojson || !selectedGeometryType) return;
+		isProcessing.set(true);
 
 		try {
-			const dmResult = await convertDMFileToGeoJSON(dmFile, {});
 			const prjContent = getProjContext(epsgCode as EpsgCode);
 
+			// ジオメトリタイプ + className でフィルタリングしてから座標変換
+			let filtered = filterByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedClassNames.length > 0) {
+				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
+			}
+
+			const plainGeojson = JSON.parse(JSON.stringify(filtered));
+
 			const geojsonData = (await transformGeoJSONParallel(
-				dmResult as any,
+				plainGeojson,
 				prjContent
 			)) as FeatureCollection;
 
@@ -147,27 +165,21 @@
 				return;
 			}
 
-			let filtered = filterByGeometryType(
-				geojsonData,
-				selectedGeometryType as VectorEntryGeometryType
-			);
-			if (selectedClassNames.length > 0) {
-				filtered = filterByClassNames(filtered, selectedClassNames);
-			}
-			const entryGeometryType = geometryTypeToEntryType(filtered);
-			if (!entryGeometryType) {
-				showNotification('対応していないジオメトリタイプです', 'error');
-				return;
-			}
-
-			const bbox = turfBbox(filtered);
+			const bbox = turfBbox(geojsonData);
 			if (!bbox || !isBboxValid(bbox)) {
 				showNotification('座標変換に失敗しました。系番号を確認してください', 'error');
 				return;
 			}
 
+			const entryGeometryType = geometryTypeToEntryType(geojsonData);
+
+			if (!entryGeometryType) {
+				showNotification('対応していないジオメトリタイプです', 'error');
+				return;
+			}
+
 			const entry = createGeoJsonEntry(
-				filtered,
+				geojsonData,
 				entryGeometryType,
 				dmFile.name,
 				bbox as [number, number, number, number],
@@ -183,7 +195,7 @@
 			showNotification('DMファイルの変換中にエラーが発生しました', 'error');
 			console.error(e);
 		} finally {
-			loading = false;
+			isProcessing.set(false);
 		}
 	};
 
@@ -209,10 +221,6 @@
 		<div class="w-full px-2 text-sm text-gray-300">
 			図郭名称: {zoneInfo.drawingName}
 		</div>
-	{/if}
-
-	{#if loading}
-		<div class="text-sm text-gray-300">変換中...</div>
 	{/if}
 
 	{#if geometryTypeOptions.length > 1}
@@ -259,8 +267,8 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={loading || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {loading || !selectedGeometryType
+		disabled={!selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

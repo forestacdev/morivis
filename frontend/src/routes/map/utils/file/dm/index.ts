@@ -1258,34 +1258,6 @@ export async function getDMInfo(file: File): Promise<DMInfo> {
 	return { indexZone, drawingName, bbox };
 }
 
-/**
- * GeoJSON から ジオメトリタイプごとの className 一覧を取得
- */
-export function getClassNamesByGeometryType(geojson: FeatureCollection): Record<string, string[]> {
-	const map = new Map<string, Set<string>>();
-	for (const feature of geojson.features) {
-		const geomType = feature.geometry?.type;
-		if (!geomType) continue;
-		const key =
-			geomType === 'MultiPoint'
-				? 'Point'
-				: geomType === 'MultiLineString'
-					? 'LineString'
-					: geomType === 'MultiPolygon'
-						? 'Polygon'
-						: geomType;
-		const className = (feature.properties as any)?.className;
-		if (!className) continue;
-		if (!map.has(key)) map.set(key, new Set());
-		map.get(key)!.add(className);
-	}
-	const result: Record<string, string[]> = {};
-	for (const [key, set] of map) {
-		result[key] = [...set].sort();
-	}
-	return result;
-}
-
 /** 平面直角座標系の系番号と主な地域の対応 */
 export const ZONE_REGIONS: Record<number, string> = {
 	1: '長崎・鹿児島西部',

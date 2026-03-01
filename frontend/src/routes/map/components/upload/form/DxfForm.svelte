@@ -7,7 +7,8 @@
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType,
-		filterByClassNames
+		filterByProperty,
+		groupPropertyByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -73,48 +74,8 @@
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
-	/**
-	 * GeoJSON から ジオメトリタイプごとの layer 一覧を取得
-	 */
-	function getLayersByGeometryType(geojson: FeatureCollection): Record<string, string[]> {
-		const map = new Map<string, Set<string>>();
-		for (const feature of geojson.features) {
-			const geomType = feature.geometry?.type;
-			if (!geomType) continue;
-			const key =
-				geomType === 'MultiPoint'
-					? 'Point'
-					: geomType === 'MultiLineString'
-						? 'LineString'
-						: geomType === 'MultiPolygon'
-							? 'Polygon'
-							: geomType;
-			const layer = (feature.properties as any)?.layer;
-			if (!layer) continue;
-			if (!map.has(key)) map.set(key, new Set());
-			map.get(key)!.add(layer);
-		}
-		const result: Record<string, string[]> = {};
-		for (const [key, set] of map) {
-			result[key] = [...set].sort();
-		}
-		return result;
-	}
-
-	/**
-	 * layer プロパティでフィルタリング
-	 */
-	function filterByLayers(
-		geojson: FeatureCollection,
-		layers: string[]
-	): FeatureCollection {
-		return {
-			type: 'FeatureCollection',
-			features: geojson.features.filter((f) =>
-				layers.includes((f.properties as any)?.layer)
-			)
-		};
-	}
+	const extractLayer = (props: Record<string, unknown>) =>
+		props?.layer != null ? String(props.layer) : undefined;
 
 	// ファイルドロップ時: DXF変換 → ジオメトリタイプ確認
 	$effect(() => {
@@ -136,7 +97,7 @@
 						selectedGeometryType = types[0];
 					}
 
-					layersByGeometryType = getLayersByGeometryType(rawGeojson);
+					layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractLayer);
 				})
 				.catch((e) => {
 					showNotification('DXFファイルの読み込みに失敗しました', 'error');
@@ -178,7 +139,7 @@
 				selectedGeometryType as VectorEntryGeometryType
 			);
 			if (selectedLayers.length > 0) {
-				filtered = filterByLayers(filtered, selectedLayers);
+				filtered = filterByProperty(filtered, selectedLayers, extractLayer);
 			}
 			const entryGeometryType = geometryTypeToEntryType(filtered);
 			if (!entryGeometryType) {

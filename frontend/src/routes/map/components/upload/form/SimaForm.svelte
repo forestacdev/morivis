@@ -6,7 +6,9 @@
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
-		filterByGeometryType
+		filterByGeometryType,
+		filterByProperty,
+		groupPropertyByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -98,49 +100,10 @@
 		}
 	}
 
-	/**
-	 * GeoJSON から ジオメトリタイプごとの featureType/code 一覧を取得
-	 */
-	function getLayersByGeometryType(geojson: FeatureCollection): Record<string, string[]> {
-		console.log('getLayersByGeometryType called', geojson);
-		const map = new Map<string, Set<string>>();
-		for (const feature of geojson.features) {
-			const geomType = feature.geometry?.type;
-			if (!geomType) continue;
-			const key =
-				geomType === 'MultiPoint'
-					? 'Point'
-					: geomType === 'MultiLineString'
-						? 'LineString'
-						: geomType === 'MultiPolygon'
-							? 'Polygon'
-							: geomType;
-			const props = feature.properties as any;
-			const layer = props?.featureType ?? props?.lineType ?? props?.areaType ?? props?.code;
-			if (!layer) continue;
-			if (!map.has(key)) map.set(key, new Set());
-			map.get(key)!.add(String(layer));
-		}
-		const result: Record<string, string[]> = {};
-		for (const [key, set] of map) {
-			result[key] = [...set].sort();
-		}
-		return result;
-	}
-
-	/**
-	 * featureType/code プロパティでフィルタリング
-	 */
-	function filterByLayers(geojson: FeatureCollection, layers: string[]): FeatureCollection {
-		return {
-			type: 'FeatureCollection',
-			features: geojson.features.filter((f) => {
-				const props = f.properties as any;
-				const layer = props?.featureType ?? props?.lineType ?? props?.areaType ?? props?.code;
-				return layers.includes(String(layer));
-			})
-		};
-	}
+	const extractSimaLayer = (props: Record<string, unknown>) => {
+		const v = props?.featureType ?? props?.lineType ?? props?.areaType ?? props?.code;
+		return v != null ? String(v) : undefined;
+	};
 
 	// ファイルドロップ時: SIMA変換 → ジオメトリタイプ確認
 	$effect(() => {
@@ -165,7 +128,7 @@
 						selectedGeometryType = types[0];
 					}
 
-					layersByGeometryType = getLayersByGeometryType(rawGeojson);
+					layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractSimaLayer);
 				} catch (err) {
 					showNotification('SIMAファイルの読み込みに失敗しました', 'error');
 					console.error(err);
@@ -211,7 +174,7 @@
 				selectedGeometryType as VectorEntryGeometryType
 			);
 			if (selectedLayers.length > 0) {
-				filtered = filterByLayers(filtered, selectedLayers);
+				filtered = filterByProperty(filtered, selectedLayers, extractSimaLayer);
 			}
 			const entryGeometryType = geometryTypeToEntryType(filtered);
 			if (!entryGeometryType) {

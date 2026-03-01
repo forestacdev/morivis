@@ -53,3 +53,5 @@ export type GeometryMultiCollection = {
 };
 
 export type GeometryCollection = GeometrySingleCollection | GeometryMultiCollection;
+
+export type Geometry = SingleGeometry | MultiGeometry | GeometryCollection;
