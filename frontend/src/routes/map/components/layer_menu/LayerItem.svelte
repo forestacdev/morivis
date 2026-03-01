@@ -521,7 +521,7 @@
 							<Icon icon="lucide:copy" />
 						</button> -->
 						{#if isGeojsonCustomLayer}
-							<button onclick={downloadLayer}>
+							<button onclick={downloadLayer} class="cursor-pointer">
 								<Icon icon="material-symbols:download-rounded" class="h-8 w-8" />
 							</button>
 						{/if}
