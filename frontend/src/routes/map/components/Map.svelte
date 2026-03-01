@@ -57,6 +57,7 @@
 	import {
 		selectedBaseMap,
 		showLabelLayer,
+		showHillshadeLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRoadLayer,
@@ -324,15 +325,23 @@
 				type: 'mercator'
 			},
 			sources: {
+				// terrain: {
+				// 	type: 'raster-dem',
+				// 	tiles: [
+				// 		'terrain://https://tiles.gsj.jp/tiles/elev/land/{z}/{y}/{x}.png?entryId=dem_land&formatType=image&demType=gsi&x={x}&y={y}&z={z}'
+				// 	],
+				// 	maxzoom: 15,
+				// 	minzoom: 1,
+				// 	tileSize: 256,
+				// 	attribution: '国土地理院'
+				// },
 				terrain: {
 					type: 'raster-dem',
-					tiles: [
-						'terrain://https://tiles.gsj.jp/tiles/elev/land/{z}/{y}/{x}.png?entryId=dem_land&formatType=image&demType=gsi&x={x}&y={y}&z={z}'
-					],
-					maxzoom: 15,
-					minzoom: 1,
-					tileSize: 256,
-					attribution: '国土地理院'
+					tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+					maxzoom: 16,
+					tileSize: 512,
+					encoding: 'terrarium',
+					attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
 				},
 				street_view_node_sources: {
 					type: 'geojson',
@@ -373,7 +382,7 @@
 			layers: [
 				{
 					id: '@background_layer',
-					type: 'background',
+					type: 'background' as const,
 					paint: {
 						'background-opacity': 1,
 						'background-color': '#000'
@@ -384,7 +393,7 @@
 				...previewLayers,
 				{
 					id: 'deck-reference-layer',
-					type: 'background',
+					type: 'background' as const,
 					paint: {
 						'background-opacity': 0
 					}
@@ -568,6 +577,9 @@
 	showBoundaryLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
+	showHillshadeLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 	showLabelLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
@@ -691,7 +703,9 @@
 			</div>
 
 			<!-- PC用ベースマップコントロール -->
-			<LayerControl />
+			<div class="max-lg:hidden">
+				<LayerControl />
+			</div>
 
 			<!-- スマホ用地図コントロール -->
 			<MobileMapControl />

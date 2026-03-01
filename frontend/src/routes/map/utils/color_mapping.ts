@@ -152,6 +152,17 @@ export class ColorMapManager {
 	private cache: Map<string, Uint8Array>;
 	public constructor() {
 		this.cache = new Map();
+		this.registerCustomColorMap(
+			'gsi_relief',
+			[0, 300, 1000, 2000, 4000],
+			['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09']
+		);
+		this.registerThreeColorGradient(
+			'cs',
+			'#8383ff', // 谷（負の曲率）: blue
+			'#FFFFF0', // 中間: ivory
+			'#ff8484' // 尾根（正の曲率）: red
+		);
 	}
 	public createColorArray(colorMapName: string): Uint8Array {
 		const cacheKey = `${colorMapName}`;
@@ -241,6 +252,116 @@ export class ColorMapManager {
 
 		const colors = colormap(options as any);
 		return colors[colors.length - 1] as string; // 最後の色（最大値）
+	}
+
+	/**
+	 * 数値と色の配列から自作カラーマップを作成しキャッシュに登録する
+	 * @param name カラーマップ名
+	 * @param values 数値配列（昇順）
+	 * @param colors HEXカラー配列（valuesと同じ長さ）
+	 * @example
+	 * manager.registerCustomColorMap(
+	 *   'elevation',
+	 *   [0, 300, 1000, 2000, 4000],
+	 *   ['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09']
+	 * );
+	 */
+	public registerCustomColorMap(name: string, values: number[], colors: string[]): void {
+		if (values.length < 2 || values.length !== colors.length) {
+			throw new Error('values and colors must have the same length (>= 2)');
+		}
+
+		const width = 256;
+		const pixels = new Uint8Array(width * 3);
+
+		const minVal = values[0];
+		const maxVal = values[values.length - 1];
+		const range = maxVal - minVal;
+
+		// HEX→RGB変換
+		const rgbStops = values.map((val, i) => {
+			const hex = colors[i];
+			const r = parseInt(hex.slice(1, 3), 16);
+			const g = parseInt(hex.slice(3, 5), 16);
+			const b = parseInt(hex.slice(5, 7), 16);
+			return { val, r, g, b };
+		});
+
+		let ptr = 0;
+		for (let i = 0; i < width; i++) {
+			// 0-255を元の数値範囲にマッピング
+			const value = minVal + (i / (width - 1)) * range;
+
+			// 該当する区間を探す
+			let lower = rgbStops[0];
+			let upper = rgbStops[rgbStops.length - 1];
+			for (let j = 0; j < rgbStops.length - 1; j++) {
+				if (value >= rgbStops[j].val && value <= rgbStops[j + 1].val) {
+					lower = rgbStops[j];
+					upper = rgbStops[j + 1];
+					break;
+				}
+			}
+
+			// 線形補間
+			const segRange = upper.val - lower.val;
+			const t = segRange === 0 ? 0 : (value - lower.val) / segRange;
+			pixels[ptr++] = Math.round(lower.r + (upper.r - lower.r) * t);
+			pixels[ptr++] = Math.round(lower.g + (upper.g - lower.g) * t);
+			pixels[ptr++] = Math.round(lower.b + (upper.b - lower.b) * t);
+		}
+
+		this.cache.set(name, pixels);
+	}
+
+	/**
+	 * 3色グラデーション（min→mid→max）のカラーマップテクスチャを作成しキャッシュに登録する
+	 * シェーダーのcolorRamp3と同じ色分布になる
+	 * @param name カラーマップ名
+	 * @param minColor HEXカラー（0.0側）
+	 * @param midColor HEXカラー（0.5）
+	 * @param maxColor HEXカラー（1.0側）
+	 */
+	public registerThreeColorGradient(
+		name: string,
+		minColor: string,
+		midColor: string,
+		maxColor: string
+	): void {
+		const parseHex = (hex: string) => ({
+			r: parseInt(hex.slice(1, 3), 16),
+			g: parseInt(hex.slice(3, 5), 16),
+			b: parseInt(hex.slice(5, 7), 16)
+		});
+
+		const cMin = parseHex(minColor);
+		const cMid = parseHex(midColor);
+		const cMax = parseHex(maxColor);
+
+		const width = 256;
+		const pixels = new Uint8Array(width * 3);
+
+		let ptr = 0;
+		for (let i = 0; i < width; i++) {
+			const t = i / (width - 1); // 0.0 〜 1.0
+			let r: number, g: number, b: number;
+			if (t < 0.5) {
+				const s = t * 2.0; // 0.0 〜 1.0
+				r = cMin.r + (cMid.r - cMin.r) * s;
+				g = cMin.g + (cMid.g - cMin.g) * s;
+				b = cMin.b + (cMid.b - cMin.b) * s;
+			} else {
+				const s = (t - 0.5) * 2.0; // 0.0 〜 1.0
+				r = cMid.r + (cMax.r - cMid.r) * s;
+				g = cMid.g + (cMax.g - cMid.g) * s;
+				b = cMid.b + (cMax.b - cMid.b) * s;
+			}
+			pixels[ptr++] = Math.round(r);
+			pixels[ptr++] = Math.round(g);
+			pixels[ptr++] = Math.round(b);
+		}
+
+		this.cache.set(name, pixels);
 	}
 
 	add(cacheKey: string, pixels: Uint8Array): void {

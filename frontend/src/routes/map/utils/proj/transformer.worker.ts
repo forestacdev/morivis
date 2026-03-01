@@ -19,6 +19,11 @@ interface WorkerMessageData {
 }
 
 const flattenCoordinates = (coordinates: NestedCoordinates, flattened: number[] = []): number[] => {
+	// Point: coordinates = [x, y] (数値の配列)
+	if (typeof coordinates[0] === 'number') {
+		flattened.push(...(coordinates as number[]));
+		return flattened;
+	}
 	(coordinates as NestedCoordinates[]).forEach((coord) => {
 		if (Array.isArray(coord[0])) {
 			flattenCoordinates(coord as NestedCoordinates, flattened);
@@ -35,14 +40,18 @@ const unflattenCoordinates = (
 ): NestedCoordinates => {
 	let index = 0;
 	const unflattenRecursive = (structure: NestedCoordinates): NestedCoordinates => {
+		// Point: structure = [x, y] (数値の配列)
+		if (typeof structure[0] === 'number') {
+			const coordLength = structure.length;
+			const coord = flattened.slice(index, index + coordLength);
+			index += coordLength;
+			return coord;
+		}
 		return (structure as NestedCoordinates[]).map((item) => {
 			if (Array.isArray(item[0])) {
 				return unflattenRecursive(item as NestedCoordinates);
 			} else {
-				// 元の構造が[num, num]のような単一座標の場合、item.lengthは未定義になる可能性があるため、
-				// 座標の次元数（通常は2または3）を考慮する必要があります。
-				// ここでは単純に2次元座標を想定します。
-				const coordLength = Array.isArray(item) ? item.length : 2; // デフォルト2次元
+				const coordLength = Array.isArray(item) ? item.length : 2;
 				const coord = flattened.slice(index, index + coordLength);
 				index += coordLength;
 				return coord;

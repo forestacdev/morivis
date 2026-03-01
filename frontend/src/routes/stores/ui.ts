@@ -1,5 +1,5 @@
 import type { UseEventTriggerType } from '$routes/map/types/ui';
-import { get, writable } from 'svelte/store';
+import { get, writable, readable } from 'svelte/store';
 import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
@@ -35,26 +35,25 @@ export const showSearchSuggest = writable<boolean>(false);
 /** モバイルフッターの状態 */
 export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
 
-/** モバイルデバイスかどうか */
-export const isMobile = writable<boolean>(false);
-
 /** PWAのインストール手順 */
 export const showPwaManuelDialog = writable<boolean>(false);
 
-// メディアクエリをチェックして更新する関数
-export const setupMediaQueries = (): void => {
+/** モバイルデバイスかどうか */
+
+export const isMobile = readable(false, (set) => {
 	if (!browser) return;
+	const mediaQuery = window.matchMedia('(max-width: 1024px)');
 
-	// 各メディアクエリのチェック関数
-	const setMobileState = (): void => {
-		const mql = window.matchMedia(`(max-width: ${MOBILE_WIDTH}px)`);
-		isMobile.set(mql.matches);
-		mql.addEventListener('change', (e) => isMobile.set(e.matches));
-	};
+	// 初期値を設定
+	set(mediaQuery.matches);
 
-	setMobileState();
-};
-setupMediaQueries();
+	// 変更を監視
+	const handler = (e: MediaQueryListEvent) => set(e.matches);
+	mediaQuery.addEventListener('change', handler);
+
+	// クリーンアップ
+	return () => mediaQuery.removeEventListener('change', handler);
+});
 
 // 初期化
 

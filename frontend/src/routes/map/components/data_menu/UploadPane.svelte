@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_LABEL, type DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -61,12 +61,12 @@
 			: 'border-dashed bg-black/70'}"
 	>
 		<span class="text-2xl">ここにファイルをドロップしてください </span>
-		<span class="text-sm">.geojson .fgb .gpx .shp .dbf .shx .prj </span>
+		<span class="text-sm">{SUPPORTED_FILE_LABEL}</span>
 		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
 			<span>またはファイルを選択</span>
 			<input
 				type="file"
-				accept=".geojson,.fgb,.gpx,.shp,.dbf,.shx,.prj"
+				accept={SUPPORTED_FILE_ACCEPT}
 				class="hidden"
 				onchange={(e) => inputFile(e)}
 			/>
@@ -75,12 +75,12 @@
 	<div class="flex grow items-center justify-center gap-4">
 		<button
 			onclick={() => showUploadDialog('raster')}
-			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4"
+			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
 			>ラスタータイルの登録
 		</button>
 		<button
 			onclick={() => showUploadDialog('vector')}
-			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4"
+			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
 			>ベクタータイルの登録
 		</button>
 	</div>

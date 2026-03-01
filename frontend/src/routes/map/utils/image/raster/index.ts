@@ -20,6 +20,26 @@ import { ColorMapManager } from '$routes/map/utils/color_mapping';
 import type { TileImageManager } from '$routes/map/protocol/image';
 import { PMTiles } from 'pmtiles';
 
+/** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
+const createObjectURLFromWorkerResult = async (data: {
+	blob?: Blob;
+	imageBitmap?: ImageBitmap;
+}): Promise<string> => {
+	if (data.imageBitmap) {
+		// farbling回避パス: ImageBitmapをcanvas経由でBlob化
+		const canvas = new OffscreenCanvas(data.imageBitmap.width, data.imageBitmap.height);
+		const ctx = canvas.getContext('2d')!;
+		ctx.drawImage(data.imageBitmap, 0, 0);
+		data.imageBitmap.close();
+		const blob = await canvas.convertToBlob();
+		return URL.createObjectURL(blob);
+	}
+	if (data.blob) {
+		return URL.createObjectURL(data.blob);
+	}
+	throw new Error('No blob or imageBitmap in worker response');
+};
+
 // TODO クリーンアップ
 // raster + image タイプの処理
 export const getRasterImageUrl = async (
@@ -136,6 +156,18 @@ const createEmptyBitmap = async (): Promise<ImageBitmap> => {
 
 const colorMapCache = new ColorMapManager();
 
+// カバー画像生成用の共有Worker（毎回生成を避ける）
+let sharedDemWorker: Worker | null = null;
+const getSharedDemWorker = (): Worker => {
+	if (!sharedDemWorker) {
+		sharedDemWorker = new Worker(
+			new URL('../../../protocol/raster/protocol_dem.worker.ts', import.meta.url),
+			{ type: 'module' }
+		);
+	}
+	return sharedDemWorker;
+};
+
 /**  demデータ用のカバー画像を作成 */
 // TODO 共通化
 export const generateDemCoverImage = async (
@@ -152,6 +184,7 @@ export const generateDemCoverImage = async (
 	const demTypeNumber = DEM_DATA_TYPE[demType];
 	const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
 	const baseUrl = _entry.format.url;
+	const tileSize = metaData.tileSize;
 	const encodeType: 'blob' | 'buffar' = 'blob';
 
 	try {
@@ -165,12 +198,25 @@ export const generateDemCoverImage = async (
 			image = await createEmptyBitmap();
 		}
 
-		const worker = new Worker(
-			new URL('../../../protocol/raster/protocol_dem.worker.ts', import.meta.url),
-			{
-				type: 'module'
-			}
-		);
+		const worker = getSharedDemWorker();
+
+		// tileIdで応答を振り分けるヘルパー（共有Workerなので onmessage 上書きはNG）
+		const waitForResult = (message: Record<string, unknown>): Promise<string> => {
+			return new Promise((resolve, reject) => {
+				const handler = async (e: MessageEvent) => {
+					const { id, blob, imageBitmap, error } = e.data;
+					if (id !== tileId) return;
+					worker.removeEventListener('message', handler);
+					if (error) {
+						reject(new Error(error));
+					} else {
+						resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
+					}
+				};
+				worker.addEventListener('message', handler);
+				worker.postMessage(message);
+			});
+		};
 
 		if (mode === 'relief') {
 			const elevationColorArray = colorMapCache.createColorArray(
@@ -178,33 +224,19 @@ export const generateDemCoverImage = async (
 			);
 			const max = visualization.uniformsData.relief.max;
 			const min = visualization.uniformsData.relief.min;
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					demTypeNumber,
-					modeNumber,
-					mode,
-					elevationColorArray,
-					max,
-					min,
-					encodeType
-				});
-
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(URL.createObjectURL(blob));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				demTypeNumber,
+				modeNumber,
+				mode,
+				elevationColorArray,
+				max,
+				min,
+				tileSize,
+				encodeType
 			});
-		} else if (mode === 'slope' || mode === 'aspect') {
+		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
 			const elevationColorArray = colorMapCache.createColorArray(
 				visualization.uniformsData[mode]?.colorMap || 'bone'
 			);
@@ -219,59 +251,30 @@ export const generateDemCoverImage = async (
 				max = visualization.uniformsData.slope.max;
 			}
 
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					left: emptyImage,
-					right: emptyImage,
-					top: emptyImage,
-					bottom: emptyImage,
-					demTypeNumber,
-					modeNumber,
-					mode,
-					elevationColorArray,
-					max,
-					min,
-					tile: { x, y, z },
-					encodeType
-				});
-
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
-
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(URL.createObjectURL(blob));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				left: emptyImage,
+				right: emptyImage,
+				top: emptyImage,
+				bottom: emptyImage,
+				demTypeNumber,
+				modeNumber,
+				mode,
+				elevationColorArray,
+				max,
+				min,
+				tile: { x, y, z },
+				tileSize,
+				encodeType
 			});
 		} else {
-			return new Promise((resolve, reject) => {
-				worker.postMessage({
-					tileId,
-					center: image,
-					z,
-					demTypeNumber
-				});
-
-				worker.onmessage = (e) => {
-					const { id, blob, error } = e.data;
-					if (id === tileId) {
-						if (error) {
-							reject(new Error(error));
-						} else {
-							resolve(URL.createObjectURL(blob));
-						}
-					}
-
-					worker.terminate(); // Workerを終了
-				};
+			return waitForResult({
+				tileId,
+				center: image,
+				z,
+				demTypeNumber,
+				tileSize
 			});
 		}
 
@@ -333,13 +336,13 @@ const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Pr
 			encodeType
 		});
 
-		worker.onmessage = (e) => {
-			const { id, blob, error } = e.data;
+		worker.onmessage = async (e) => {
+			const { id, blob, imageBitmap, error } = e.data;
 			if (id === tileId) {
 				if (error) {
 					reject(new Error(error));
 				} else {
-					resolve(URL.createObjectURL(blob));
+					resolve(await createObjectURLFromWorkerResult({ blob, imageBitmap }));
 				}
 			}
 

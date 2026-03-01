@@ -4,7 +4,9 @@ import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
 import type {
 	RasterLayerSpecification,
 	BackgroundLayerSpecification,
-	RasterSourceSpecification
+	RasterSourceSpecification,
+	ColorReliefLayerSpecification,
+	FillLayerSpecification
 } from 'maplibre-gl';
 
 const basemapXYZ = { x: 28846, y: 12917, z: 15 };
@@ -16,18 +18,33 @@ export const baseMapList: {
 	{
 		type: 'satellite',
 		label: '航空写真',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto2018/{z}/{x}/{y}.png'
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'
 			.replace('{x}', String(basemapXYZ.x))
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
 	},
 	{
-		type: 'hillshade',
-		label: '地形図',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'
+		type: 'relief',
+		label: '標高段彩図',
+		src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
 			.replace('{x}', String(basemapXYZ.x))
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
+	},
+	{
+		type: 'slope',
+		label: '傾斜量図',
+		src: './images/base_map/slope.png'
+	},
+	{
+		type: 'aspect',
+		label: '傾斜方位図',
+		src: './images/base_map/aspect.png'
+	},
+	{
+		type: 'curvature',
+		label: '曲率図',
+		src: './images/base_map/curvature.png'
 	},
 	{
 		type: 'osm',
@@ -109,51 +126,158 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 	// }
 ];
 
-/** 地形図 */
-export const baseMaphillshadeSources: Record<string, RasterSourceSpecification> = {
-	earthhillshade: {
+/** 標高段彩図 */
+export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
+	relief: {
 		type: 'raster',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/earthhillshade/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 0,
-		maxzoom: 18,
-		attribution: '地理院タイル'
-	},
-	hillshademap: {
-		type: 'raster',
-		tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
-		tileSize: 256,
-		minzoom: 2,
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
+		],
 		maxzoom: 16,
-		attribution: '地理院タイル'
+		minzoom: 0,
+		tileSize: 512
 	}
 };
-
-export const baseMaphillshadeLayers: (RasterLayerSpecification | BackgroundLayerSpecification)[] = [
+export const baseMapReliefLayers: RasterLayerSpecification[] = [
 	{
-		id: 'background_layer',
-		type: 'background',
-		paint: {
-			'background-color': '#FFFFEE'
-		}
-	},
-	{
-		id: 'earthhillshade_layer',
-		source: 'earthhillshade',
-		type: 'raster',
-		maxzoom: 8,
-		paint: {
-			'raster-opacity': 0.7
-		}
-	},
-	{
-		id: 'hillshademap_layer',
-		source: 'hillshademap',
-		type: 'raster',
-		minzoom: 2,
+		id: 'relief_layer',
+		source: 'relief',
 		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
 		paint: {
-			'raster-opacity': 0.7
+			'raster-opacity': 1
+		}
+	}
+	// 	{
+	// 	id: 'landcover_wood',
+	// 	type: 'fill',
+	// 	source: 'openmaptiles',
+	// 	'source-layer': 'landcover',
+	// 	filter: ['all', ['==', 'class', 'wood']],
+	// 	paint: {
+	// 		'fill-antialias': false,
+	// 		'fill-color': 'hsla(98, 61%, 72%, 0.7)',
+	// 		'fill-opacity': 0.4
+	// 	}
+	// },
+];
+// export const baseMapReliefLayers: ColorReliefLayerSpecification[] = [
+// 	{
+// 		id: 'color-relief',
+// 		type: 'color-relief',
+// 		source: 'terrain',
+// 		paint: {
+// 			'color-relief-color': [
+// 				'interpolate',
+// 				['linear'],
+// 				['elevation'],
+// 				-12000,
+// 				'#000060',
+// 				-8000,
+// 				'#0000A0',
+// 				-4000,
+// 				'#0040C0',
+// 				-2000,
+// 				'#0080D0',
+// 				-1000,
+// 				'#00B0E0',
+// 				-500,
+// 				'#40D0E0',
+// 				0,
+// 				'#46BABA',
+// 				300,
+// 				'#B5A42D',
+// 				1000,
+// 				'#B4562D',
+// 				2000,
+// 				'#B4491C',
+// 				4000,
+// 				'#B43D09'
+// 			]
+// 		}
+// 	}
+// ];
+
+/** 傾斜量図 */
+export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
+	slope: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+export const baseMapSlopeLayers: RasterLayerSpecification[] = [
+	{
+		id: 'slope_layer',
+		source: 'slope',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
+		}
+	}
+];
+
+/** 傾斜方位図 */
+export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
+	aspect: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+export const baseMapAspectLayers: RasterLayerSpecification[] = [
+	{
+		id: 'aspect_layer',
+		source: 'aspect',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
+		}
+	}
+];
+
+/** 曲率図 */
+export const baseMapCurvatureSources: Record<string, RasterSourceSpecification> = {
+	curvature: {
+		type: 'raster',
+		tiles: [
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=cs&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
+		],
+		maxzoom: 16,
+		minzoom: 0,
+		tileSize: 512
+	}
+};
+export const baseMapCurvatureLayers: RasterLayerSpecification[] = [
+	{
+		id: 'curvature_layer',
+		source: 'curvature',
+		maxzoom: 24,
+		minzoom: 0,
+		type: 'raster',
+		paint: {
+			'raster-opacity': 1
 		}
 	}
 ];

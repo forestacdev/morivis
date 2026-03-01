@@ -1,6 +1,7 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 	import turfCenter from '@turf/center';
+	import turfNearestPoint from '@turf/nearest-point';
 	import maplibregl from 'maplibre-gl';
 	import { fly } from 'svelte/transition';
 
@@ -33,9 +34,8 @@
 
 	const registration = () => {
 		showZoneForm = false;
+		focusBbox = null; // リセットして次回のeffect再実行を保証
 		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
-
-		// 選択されたEPSGコードを使用して何らかの処理を行う
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
@@ -57,65 +57,81 @@
 	let poiData = $state<PoiData[]>([]);
 
 	$effect(() => {
-		if (originalBbox) {
-			geojsonData = {
-				type: 'FeatureCollection',
-				features: getEpsgInfoArray({
-					exclude4326: true
-				})
-					.flatMap((info) => {
-						const prj = info.proj_context;
-						const transformedBbox = transformBbox(originalBbox, prj);
-
-						if (isBboxValid(transformedBbox)) {
-							// ポリゴンフィーチャーを作成
-							const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
-								type: 'Feature',
-								geometry: {
-									type: 'Polygon',
-									coordinates: [
-										[
-											[transformedBbox[0], transformedBbox[1]],
-											[transformedBbox[2], transformedBbox[1]],
-											[transformedBbox[2], transformedBbox[3]],
-											[transformedBbox[0], transformedBbox[3]],
-											[transformedBbox[0], transformedBbox[1]]
-										]
-									]
-								},
-								properties: {
-									...info
-								}
-							};
-
-							// 中心ポイントを計算
-							const centerPoint: Feature<PointGeometry, PoiData['properties']> = {
-								type: 'Feature',
-								geometry: turfCenter(polygonFeature).geometry as PointGeometry,
-								properties: {
-									...info
-								}
-							};
-
-							// ポリゴンと中心ポイントの両方を返す
-							return [polygonFeature, centerPoint];
-						}
-					})
-					.filter((feature) => feature !== undefined)
-			};
-
-			poiData = geojsonData.features
-				.filter((feature) => feature.geometry.type === 'Point')
-				.map((feature) => ({
-					coordinates: feature.geometry.coordinates as [number, number],
-					properties: feature.properties || {}
-				}));
-
-			// TODO
-			setTimeout(() => {
-				mapStore.setData('zone_bbox', geojsonData);
-			}, 500); // 1秒後にデータを設定
+		if (!originalBbox) {
+			// bboxリセット時にデータもクリア
+			geojsonData = { type: 'FeatureCollection', features: [] };
+			poiData = [];
+			return;
 		}
+
+		geojsonData = {
+			type: 'FeatureCollection',
+			features: getEpsgInfoArray({
+				exclude4326: true
+			})
+				.flatMap((info) => {
+					const prj = info.proj_context;
+					const transformedBbox = transformBbox(originalBbox, prj);
+
+					if (isBboxValid(transformedBbox)) {
+						const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
+							type: 'Feature',
+							geometry: {
+								type: 'Polygon',
+								coordinates: [
+									[
+										[transformedBbox[0], transformedBbox[1]],
+										[transformedBbox[2], transformedBbox[1]],
+										[transformedBbox[2], transformedBbox[3]],
+										[transformedBbox[0], transformedBbox[3]],
+										[transformedBbox[0], transformedBbox[1]]
+									]
+								]
+							},
+							properties: {
+								...info
+							}
+						};
+
+						const centerPoint: Feature<PointGeometry, PoiData['properties']> = {
+							type: 'Feature',
+							geometry: turfCenter(polygonFeature).geometry as PointGeometry,
+							properties: {
+								...info
+							}
+						};
+
+						return [polygonFeature, centerPoint];
+					}
+				})
+				.filter((feature) => feature !== undefined)
+		};
+
+		poiData = geojsonData.features
+			.filter((feature) => feature.geometry.type === 'Point')
+			.map((feature) => ({
+				coordinates: feature.geometry.coordinates as [number, number],
+				properties: feature.properties || {}
+			}));
+
+		// 現在の地図の中心から一番近いフィーチャーを見つけて、そのpoiDataの座標系を選択する
+		const mapCenter = map.getCenter();
+		const points = geojsonData.features.filter(
+			(f) => f.geometry.type === 'Point'
+		) as Feature<PointGeometry, PoiData['properties']>[];
+		if (points.length > 0) {
+			const nearest = turfNearestPoint(
+				[mapCenter.lng, mapCenter.lat],
+				{ type: 'FeatureCollection', features: points }
+			);
+			const idx = nearest.properties.featureIndex;
+			selectedEpsgCode = points[idx].properties.code;
+		}
+
+		// TODO
+		setTimeout(() => {
+			mapStore.setData('zone_bbox', geojsonData);
+		}, 500);
 	});
 
 	$effect(() => {
@@ -134,7 +150,6 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					maxZoom: 10,
 					duration: 500
 				});
 			}
@@ -193,7 +208,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button onclick={() => (showZoneForm = false)} class="c-btn-sub cursor-pointer p-4 text-lg">
+				<button onclick={() => { showZoneForm = false; focusBbox = null; }} class="c-btn-sub cursor-pointer p-4 text-lg">
 					キャンセル
 				</button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">

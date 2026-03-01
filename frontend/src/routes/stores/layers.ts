@@ -111,7 +111,7 @@ export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
 };
 
 /** ベースマップ */
-export type BaseMapType = 'satellite' | 'hillshade' | 'osm';
+export type BaseMapType = 'satellite' | 'relief' | 'slope' | 'aspect' | 'curvature' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
 /** アカデミーPOI */
@@ -119,6 +119,9 @@ export const showPoiLayer = writable<boolean>(true);
 
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
+
+/** 陰影レイヤー */
+export const showHillshadeLayer = writable<boolean>(true);
 
 /** 境界 */
 export const showBoundaryLayer = writable<boolean>(true);

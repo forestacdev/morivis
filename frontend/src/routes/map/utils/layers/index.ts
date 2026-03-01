@@ -21,17 +21,23 @@ import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { labelLayers } from '$routes/map/utils/layers/label';
 import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
+import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { poiLayers } from '$routes/map/utils/layers/poi';
+import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import {
 	baseMapSatelliteLayers,
-	baseMaphillshadeLayers,
+	baseMapReliefLayers,
+	baseMapSlopeLayers,
+	baseMapAspectLayers,
+	baseMapCurvatureLayers,
 	baseMapOsmLayers
 } from '$routes/map/utils/layers/base_map';
 import {
 	showPoiLayer,
 	showLabelLayer,
+	showHillshadeLayer,
 	showBoundaryLayer,
 	showRoadLayer,
 	showStreetViewLayer,
@@ -144,7 +150,7 @@ const createVectorLayer = (
 export const createLayersItems = (
 	_dataEntries: GeoDataEntry[],
 	_type: 'main' | 'preview' = 'main'
-) => {
+): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
 	const lineLayerItems: LayerSpecification[] = [];
@@ -384,8 +390,14 @@ export const createLayersItems = (
 	if (_type === 'main') {
 		if (get(selectedBaseMap) === 'satellite') {
 			baseMapLayerItems = baseMapSatelliteLayers;
-		} else if (get(selectedBaseMap) === 'hillshade') {
-			baseMapLayerItems = baseMaphillshadeLayers;
+		} else if (get(selectedBaseMap) === 'relief') {
+			baseMapLayerItems = baseMapReliefLayers;
+		} else if (get(selectedBaseMap) === 'slope') {
+			baseMapLayerItems = baseMapSlopeLayers;
+		} else if (get(selectedBaseMap) === 'aspect') {
+			baseMapLayerItems = baseMapAspectLayers;
+		} else if (get(selectedBaseMap) === 'curvature') {
+			baseMapLayerItems = baseMapCurvatureLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
@@ -396,6 +408,11 @@ export const createLayersItems = (
 	}
 
 	const isNotOsm = get(selectedBaseMap) !== 'osm';
+	const isNotHillshade =
+		get(selectedBaseMap) !== 'satellite' &&
+		get(selectedBaseMap) !== 'slope' &&
+		get(selectedBaseMap) !== 'aspect';
+	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
 	const poiLayerItems = get(showPoiLayer) && _type === 'main' && isNotOsm ? poiLayers : [];
 	const labelLayerItems = get(showLabelLayer) && _type === 'main' && isNotOsm ? labelLayers : [];
@@ -403,8 +420,11 @@ export const createLayersItems = (
 		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLabelLayers : [];
 	const roadLineLayerItems =
 		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLineLayers : [];
+	const railLayerItems = get(showRoadLayer) && _type === 'main' && isNotOsm ? railLineLayers : [];
 	const boundaryLayerItems =
 		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
+	const hillshadeLayerItems =
+		get(showHillshadeLayer) && _type === 'main' && isNotHillshade ? hillshadeLayers : [];
 
 	const cloudLayerItems =
 		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
@@ -414,10 +434,12 @@ export const createLayersItems = (
 		...rasterLayerItems,
 		...fillLayerItems,
 		...boundaryLayerItems,
+		...railLayerItems,
 		...roadLineLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
 		...circleLayerItems,
+		...hillshadeLayerItems,
 		...streetViewLayers,
 		...cloudLayerItems,
 		...labelLayerItems,

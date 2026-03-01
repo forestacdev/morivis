@@ -84,6 +84,7 @@ class WorkerProtocol {
 			const tileId = `${baseUrl}_${entryId}_${x}_${y}_${z}`;
 			const formatType = url.searchParams.get('formatType') || 'image'; // デフォルト値を設定
 			const demType = url.searchParams.get('demType') || 'mapbox'; // デフォルト値を設定
+			const tileSize = parseInt(url.searchParams.get('tileSize') || '256', 10);
 			let image: ImageBitmap;
 			if (formatType === 'pmtiles') {
 				image = await loadImagePmtiles(baseUrl, { x, y, z }, controller.signal);
@@ -94,7 +95,7 @@ class WorkerProtocol {
 			return new Promise((resolve, reject) => {
 				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 				this.pendingRequests.set(tileId, { resolve, reject, controller });
-				this.worker.postMessage({ image, demTypeNumber, id: tileId });
+				this.worker.postMessage({ image, demTypeNumber, id: tileId, tileSize });
 
 				controller.signal.addEventListener('abort', () => {
 					this.pendingRequests.delete(tileId);
@@ -107,7 +108,7 @@ class WorkerProtocol {
 	}
 
 	private handleMessage = (e: MessageEvent) => {
-		const { id, buffer, error } = e.data;
+		const { id, buffer, imageBitmap, error } = e.data;
 		const request = this.pendingRequests.get(id);
 		if (error) {
 			console.error(`Error processing tile ${id}:`, error);
@@ -116,7 +117,8 @@ class WorkerProtocol {
 				this.pendingRequests.delete(id);
 			}
 		} else if (request) {
-			request.resolve({ data: buffer });
+			// ImageBitmapはMapLibreが直接利用可能（farbling回避パス）
+			request.resolve({ data: imageBitmap ?? buffer });
 			this.pendingRequests.delete(id);
 		} else {
 			// console.warn(`No pending request found for tile ${id}`);

@@ -15,6 +15,7 @@ class WorkerProtocol {
 	>;
 	private tileCache: TileImageManager;
 	private colorMapCache: ColorMapManager;
+	private requestCounter = 0;
 
 	constructor(worker: Worker) {
 		this.worker = worker;
@@ -30,18 +31,23 @@ class WorkerProtocol {
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
-		const baseUrl = url.origin + url.pathname;
-		const tileId = `${entryId}_${x}_${y}_${z}`;
+		// searchParamsからプレースホルダ付き元URLを取得（{z}/{y}/{x}順のURLにも対応）
+		const baseUrl = url.searchParams.get('baseUrl') || (url.origin + url.pathname);
+		// タイルキャッシュ用のキー（座標ベース）
+		const cacheKey = `${entryId}_${x}_${y}_${z}`;
+		// ユニークなリクエストID（同一タイルの重複リクエストでpendingRequests上書きを防止）
+		const requestId = `${cacheKey}_${this.requestCounter++}`;
 		const formatType = url.searchParams.get('formatType') as 'image' | 'pmtiles';
 		const demType = url.searchParams.get('demType'); // デフォルト値を設定
 		const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
 		const mode = url.searchParams.get('mode') || 'default'; // デフォルト値を設定
 		const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
+		const tileSize = parseInt(url.searchParams.get('tileSize') || '256', 10);
 		const encodeType: 'buffar' | 'blob' = 'buffar';
 
 		if (mode === 'relief') {
 			const image = await this.tileCache.getSingleTileImage(
-				tileId,
+				cacheKey,
 				x,
 				y,
 				z,
@@ -55,10 +61,10 @@ class WorkerProtocol {
 			const max = parseFloat(url.searchParams.get('max') || '10000');
 			const min = parseFloat(url.searchParams.get('min') || '0');
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: image,
 					demTypeNumber,
 					modeNumber,
@@ -66,6 +72,7 @@ class WorkerProtocol {
 					elevationColorArray,
 					max,
 					min,
+					tileSize,
 					encodeType
 				});
 			});
@@ -85,7 +92,6 @@ class WorkerProtocol {
 			);
 
 			const center = images.center; // 中央のタイル
-			const tileId = center.tileId; // ワーカー用ID
 			const left = images.left; // 左のタイル
 			const right = images.right; // 右のタイル
 			const top = images.top; // 上のタイル
@@ -94,10 +100,10 @@ class WorkerProtocol {
 			const min = parseFloat(url.searchParams.get('min') || '0');
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: center.image,
 					left: left.image,
 					right: right.image,
@@ -110,12 +116,13 @@ class WorkerProtocol {
 					max,
 					min,
 					tile: { x, y, z },
+					tileSize,
 					encodeType
 				});
 			});
 		} else {
 			const image = await this.tileCache.getSingleTileImage(
-				entryId,
+				cacheKey,
 				x,
 				y,
 				z,
@@ -125,20 +132,21 @@ class WorkerProtocol {
 			);
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
+				this.pendingRequests.set(requestId, { resolve, reject, controller });
 
 				this.worker.postMessage({
-					tileId,
+					tileId: requestId,
 					center: image,
 					z,
-					demTypeNumber
+					demTypeNumber,
+					tileSize
 				});
 			});
 		}
 	}
 
 	private handleMessage = (e: MessageEvent) => {
-		const { id, buffer, error } = e.data;
+		const { id, buffer, imageBitmap, error } = e.data;
 
 		const request = this.pendingRequests.get(id);
 		if (error) {
@@ -148,7 +156,8 @@ class WorkerProtocol {
 				this.pendingRequests.delete(id);
 			}
 		} else if (request) {
-			request.resolve({ data: buffer });
+			// ImageBitmapはMapLibreが直接利用可能（farbling回避パス）
+			request.resolve({ data: imageBitmap ?? buffer });
 			this.pendingRequests.delete(id);
 		}
 	};

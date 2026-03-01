@@ -91,6 +91,17 @@
 			{/snippet}
 		</StyleColorMapPulldownBox>
 	{/if}
+
+	{#if layerEntry.style?.visualization.uniformsData['curvature'] && layerEntry.style.visualization.mode === 'curvature'}
+		<StyleColorMapPulldownBox
+			bind:isColorMap={layerEntry.style.visualization.uniformsData['curvature'].colorMap}
+			mutableColorMapType={[...COLOR_MAP_TYPE]}
+		>
+			{#snippet children(_isColorMap)}
+				<ColorScaleDem isColorMap={_isColorMap as ColorMapType} />
+			{/snippet}
+		</StyleColorMapPulldownBox>
+	{/if}
 </Accordion>
 
 <style>

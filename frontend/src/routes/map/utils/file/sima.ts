@@ -1,6 +1,78 @@
 import type { Feature, FeatureCollection } from 'geojson';
 
 // SIMA-S（シンプル形式）
+// SIMA CSV形式（標準 .sim フォーマット）
+export const simaCsvToGeoJson = (simaText: string): FeatureCollection => {
+	const lines = simaText
+		.split('\n')
+		.map((l) => l.trim())
+		.filter((l) => l);
+
+	const points = new Map<string, { x: number; y: number }>();
+	const features: Feature[] = [];
+
+	// Phase 1: 座標点を収集
+	for (const line of lines) {
+		if (line.startsWith('A01,')) {
+			const parts = line.split(',');
+			// A01,番号,名前,X,Y
+			if (parts.length >= 5) {
+				const id = parts[1];
+				const x = parseFloat(parts[3]);
+				const y = parseFloat(parts[4]);
+				if (!isNaN(x) && !isNaN(y)) {
+					points.set(id, { x, y });
+				}
+			}
+		}
+	}
+
+	// Phase 2: 筆（区画）を構築
+	let currentParcel: { id: string; name: string; pointIds: string[] } | null = null;
+
+	for (const line of lines) {
+		if (line.startsWith('D00,')) {
+			const parts = line.split(',');
+			// D00,番号,地番名,タイプ
+			currentParcel = {
+				id: parts[1] || '',
+				name: parts[2] || '',
+				pointIds: []
+			};
+		} else if (line.startsWith('B01,') && currentParcel) {
+			const parts = line.split(',');
+			// B01,点番号,参照番号
+			const pointId = parts[1] || '';
+			currentParcel.pointIds.push(pointId);
+		} else if (line.startsWith('D99') && currentParcel) {
+			const coordinates = currentParcel.pointIds
+				.map((id) => points.get(id))
+				.filter((p): p is { x: number; y: number } => !!p)
+				.map((p) => [p.x, p.y]);
+
+			if (coordinates.length >= 3) {
+				// ポリゴンを閉じる
+				coordinates.push(coordinates[0]);
+				features.push({
+					type: 'Feature',
+					geometry: {
+						type: 'Polygon',
+						coordinates: [coordinates]
+					},
+					properties: {
+						id: currentParcel.id,
+						name: currentParcel.name,
+						parcelName: currentParcel.name
+					}
+				});
+			}
+			currentParcel = null;
+		}
+	}
+
+	return { type: 'FeatureCollection', features };
+};
+
 export const simaSimpleToGeoJson = (simaText: string): FeatureCollection => {
 	const lines = simaText
 		.split('\n')

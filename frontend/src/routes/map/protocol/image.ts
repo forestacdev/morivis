@@ -10,7 +10,7 @@ export class TileImageManager {
 	private cacheSizeLimit: number;
 	private cacheOrder: string[];
 
-	private constructor(cacheSizeLimit = 500) {
+	private constructor(cacheSizeLimit = 150) {
 		this.cache = new Map();
 		this.cacheSizeLimit = cacheSizeLimit;
 		this.cacheOrder = [];
@@ -18,7 +18,7 @@ export class TileImageManager {
 	}
 
 	// TileImageManager のインスタンスを取得する静的メソッド
-	public static getInstance(cacheSizeLimit = 500): TileImageManager {
+	public static getInstance(cacheSizeLimit = 150): TileImageManager {
 		if (!TileImageManager.instance) {
 			TileImageManager.instance = new TileImageManager(cacheSizeLimit);
 		}
@@ -177,6 +177,8 @@ export class TileImageManager {
 		if (this.cacheOrder.length >= this.cacheSizeLimit) {
 			const oldestTileId = this.cacheOrder.shift();
 			if (oldestTileId) {
+				const oldImage = this.cache.get(oldestTileId);
+				oldImage?.close();
 				this.cache.delete(oldestTileId);
 			}
 		}

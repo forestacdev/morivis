@@ -254,7 +254,7 @@
 					{/if}
 				</div>
 				<button
-					class="absolute right-[5px] bottom-0 flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pr-3 pl-2"
+					class="absolute right-[5px] bottom-0 flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pr-3 pl-2 text-black"
 					onclick={() => {
 						value = 'transparent';
 						showColorPallet = false;
@@ -314,7 +314,7 @@
 							pattern = null;
 							showColorPallet = false;
 						}}
-						aria-label="Remove pattern"><span class="text-sm">パターンなし</span></button
+						aria-label="Remove pattern"><span class="text-sm text-black">パターンなし</span></button
 					>
 				</div>
 			{/if}

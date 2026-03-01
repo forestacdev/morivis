@@ -48,17 +48,10 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			},
 			aspect: {
 				colorMap: 'rainbow-soft'
+			},
+			curvature: {
+				colorMap: 'rdbu'
 			}
-			// shadow: {
-			// 	azimuth: 180,
-			// 	altitude: 45
-			// },
-			// curvature: {
-			// 	ridgeThreshold: 0.7,
-			// 	valleyThreshold: 0.3,
-			// 	ridgeColor: '#980707',
-			// 	valleyColor: '#137c83'
-			// }
 		}
 	}
 };

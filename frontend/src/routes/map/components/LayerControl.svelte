@@ -8,12 +8,15 @@
 	import {
 		selectedBaseMap,
 		showLabelLayer,
+		showHillshadeLayer,
 		showXYZTileLayer,
 		showRoadLayer,
 		showBoundaryLayer,
-		showPoiLayer
+		showPoiLayer,
+		showStreetViewLayer
 	} from '$routes/stores/layers';
 	import { mapStore, isTerrain3d } from '$routes/stores/map';
+	import { isMobile } from '$routes/stores/ui';
 
 	isTerrain3d.subscribe((is3d) => {
 		mapStore.toggleTerrain(is3d);
@@ -42,13 +45,24 @@
 	let isOsm = $derived.by(() => {
 		return $selectedBaseMap === 'osm';
 	});
+
+	let isNotHillshade = $derived.by(() => {
+		return (
+			$selectedBaseMap === 'satellite' ||
+			$selectedBaseMap === 'slope' ||
+			$selectedBaseMap === 'aspect'
+		);
+	});
 </script>
 
-<div bind:this={containerRef} class="absolute right-3 bottom-3 w-[400px] max-lg:hidden">
+<div
+	bind:this={containerRef}
+	class="pointer-events-auto max-lg:w-full lg:absolute lg:right-3 lg:bottom-3 lg:w-[400px]"
+>
 	{#if showMenu}
 		<div
 			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
-			class="bg-main absolute bottom-[80px] z-10 flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg"
+			class="bg-main absolute flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg max-lg:bottom-0 max-lg:z-30 lg:bottom-[80px] lg:z-10"
 		>
 			<div class="flex flex-col gap-2">
 				<div class="flex w-full justify-between">
@@ -62,8 +76,13 @@
 					<Checkbox label="アカデミー施設等" bind:value={$showPoiLayer} />
 					<Checkbox label="境界線" bind:value={$showBoundaryLayer} disabled={isOsm} />
 					<Checkbox label="地名等" bind:value={$showLabelLayer} disabled={isOsm} />
-					<Checkbox label="道路" bind:value={$showRoadLayer} disabled={isOsm} />
+					<Checkbox label="道路・線路" bind:value={$showRoadLayer} disabled={isOsm} />
+					<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 					<Checkbox label="3D地形" bind:value={$isTerrain3d} />
+					{#if $isMobile}
+						<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
+					{/if}
+
 					{#if import.meta.env.DEV}
 						<Checkbox label="タイル座標" bind:value={$showXYZTileLayer} />
 					{/if}
@@ -71,7 +90,7 @@
 			</div>
 			<div class="flex flex-col gap-2">
 				<div>ベースマップ</div>
-				<div class="flex w-full items-center justify-center gap-4">
+				<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">
 					{#each baseMapList as baseMap}
 						<button
 							onclick={() => {
@@ -100,7 +119,8 @@
 		onclick={() => {
 			showMenu = !showMenu;
 		}}
-		class="bg-base pointer-events-auto absolute right-0 bottom-0 grid shrink-0 cursor-pointer place-items-center items-center justify-end rounded-lg p-1 shadow-md"
+		class="bg-base pointer-events-auto grid shrink-0 place-items-center items-center justify-end rounded-lg p-1 shadow-md max-lg:m-3 lg:absolute lg:right-0 lg:bottom-0 lg:cursor-pointer"
+		style="margin-top: calc(16px + env(safe-area-inset-top));"
 	>
 		<img
 			src={baseMapList.find((map) => map.type === $selectedBaseMap)?.src}

@@ -2,25 +2,29 @@
 	import turfBbox from '@turf/bbox';
 	import maplibregl from 'maplibre-gl';
 
-	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import {
+		createGeoJsonEntry,
+		getGeometryTypes,
+		filterByGeometryType
+	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
+	import type { VecterStyleType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
-	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
-	import { isBboxValid } from '$routes/map/utils/map';
-	import { readPrjFileContent } from '$routes/map/utils/proj';
-	import { getProjContext } from '$routes/map/utils/proj/dict';
-	import { showNotification } from '$routes/stores/notification';
-
 	import {
 		cprClpToOrbitTrackGeojson,
 		cprFmrToOrbitTrackGeojson,
 		msiClpToOrbitTrackGeojson,
 		getHdf5FileInfo
 	} from '$routes/map/utils/file/hdf5';
+	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { isBboxValid } from '$routes/map/utils/map';
+	import { readPrjFileContent } from '$routes/map/utils/proj';
+	import { getProjContext } from '$routes/map/utils/proj/dict';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -48,6 +52,7 @@
 
 	const setFile = async (file: File | FileList) => {
 		let geojsonData: FeatureCollection = { type: 'FeatureCollection', features: [] };
+		let styleType: VecterStyleType = 'default';
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
 			fileName = file.name;
@@ -65,6 +70,15 @@
 					break;
 				case 'gpx':
 					showDialogType = 'gpx';
+					return;
+				case 'dm':
+					showDialogType = 'dm';
+					return;
+                case 'dxf':
+					showDialogType = 'dxf';
+					return;
+				case 'sim':
+					showDialogType = 'sima';
 					return;
 				case 'shp':
 				case 'dbf':
@@ -86,7 +100,6 @@
 						geojsonData = await cprFmrToOrbitTrackGeojson(file);
 					} else if (file.name.includes('ECA_J_MSI_CLP')) {
 						geojsonData = await msiClpToOrbitTrackGeojson(file);
-						console.log(geojsonData);
 					} else {
 						showNotification('対応していないHDF5プロダクトです', 'error');
 						return;
@@ -127,7 +140,7 @@
 				}
 				fileName = shpFile.name;
 			} else if (shpFile && dbfFile && shxFile && !prjFile) {
-				const tempGeojsonData = await shpFileToGeojson(shpFile as File);
+				const tempGeojsonData = await shpFileToGeojson(shpFile as File, dbfFile as File);
 				if (!tempGeojsonData) {
 					showNotification('シェープファイルの読み込みに失敗しました', 'error');
 					return;
@@ -163,6 +176,16 @@
 			return;
 		}
 
+		const checkGeometryTypes = getGeometryTypes(geojsonData);
+
+		if (checkGeometryTypes.length > 1) {
+			geojsonData = filterByGeometryType(geojsonData, checkGeometryTypes[0]);
+		}
+
+		if (import.meta.env.MODE !== 'production') {
+			console.log(geojsonData);
+		}
+
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 
 		if (!entryGeometryType) {
@@ -185,7 +208,8 @@
 			geojsonData,
 			entryGeometryType,
 			fileName,
-			bbox as [number, number, number, number]
+			bbox as [number, number, number, number],
+			styleType
 		);
 
 		if (!entry) {

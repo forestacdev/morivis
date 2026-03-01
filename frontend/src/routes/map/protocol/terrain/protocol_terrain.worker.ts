@@ -1,14 +1,21 @@
+import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 
-let gl: WebGL2RenderingContext | null = null;
-let program: WebGLProgram | null = null;
-let positionBuffer: WebGLBuffer | null = null;
-let heightMapLocation: WebGLUniformLocation | null = null;
-let demTypeLocation: WebGLUniformLocation | null = null;
+interface GLContext {
+	canvas: OffscreenCanvas;
+	gl: WebGL2RenderingContext;
+	program: WebGLProgram;
+	positionBuffer: WebGLBuffer;
+	heightMapLocation: WebGLUniformLocation;
+	demTypeLocation: WebGLUniformLocation;
+}
 
-const initWebGL = (canvas: OffscreenCanvas) => {
-	gl = canvas.getContext('webgl2');
+const glContexts = new Map<number, GLContext>();
+let reusableTexture: WebGLTexture | null = null;
+
+const initWebGL = (canvas: OffscreenCanvas): GLContext => {
+	const gl = canvas.getContext('webgl2');
 	if (!gl) {
 		throw new Error('WebGL not supported');
 	}
@@ -40,7 +47,7 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 		throw new Error('Failed to load shaders');
 	}
 
-	program = gl.createProgram();
+	const program = gl.createProgram();
 	if (!program) {
 		throw new Error('Failed to create program');
 	}
@@ -53,7 +60,10 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 		throw new Error('Failed to link program');
 	}
 
-	positionBuffer = gl.createBuffer();
+	const positionBuffer = gl.createBuffer();
+	if (!positionBuffer) {
+		throw new Error('Failed to create position buffer');
+	}
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 	const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
 	gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
@@ -61,27 +71,39 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-	heightMapLocation = gl.getUniformLocation(program, 'u_height_map');
-	demTypeLocation = gl.getUniformLocation(program, 'u_dem_type');
+	const heightMapLocation = gl.getUniformLocation(program, 'u_height_map');
+	const demTypeLocation = gl.getUniformLocation(program, 'u_dem_type');
+	if (!heightMapLocation || !demTypeLocation) {
+		throw new Error('Failed to get uniform locations');
+	}
+
+	return { canvas, gl, program, positionBuffer, heightMapLocation, demTypeLocation };
 };
 
-const canvas = new OffscreenCanvas(256, 256);
+const getOrCreateContext = (tileSize: number): GLContext => {
+	let ctx = glContexts.get(tileSize);
+	if (!ctx) {
+		const canvas = new OffscreenCanvas(tileSize, tileSize);
+		ctx = initWebGL(canvas);
+		glContexts.set(tileSize, ctx);
+	}
+	return ctx;
+};
 
 self.onmessage = async (e) => {
-	const { id, image, demTypeNumber } = e.data;
+	const { id, image, demTypeNumber, tileSize = 256 } = e.data;
 
 	try {
-		if (!gl) {
-			initWebGL(canvas);
-		}
+		const ctx = getOrCreateContext(tileSize);
+		const { canvas, gl, program, heightMapLocation, demTypeLocation } = ctx;
 
-		if (!gl || !program || !positionBuffer || !heightMapLocation) {
-			throw new Error('WebGL initialization failed');
-		}
+		gl.viewport(0, 0, tileSize, tileSize);
 
-		const heightMap = gl.createTexture();
+		if (!reusableTexture) {
+			reusableTexture = gl.createTexture();
+		}
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, heightMap);
+		gl.bindTexture(gl.TEXTURE_2D, reusableTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -95,12 +117,13 @@ self.onmessage = async (e) => {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-		const blob = await canvas.convertToBlob();
-		if (!blob) {
-			throw new Error('Failed to convert canvas to blob');
+		const result = await convertCanvasToResult(canvas);
+		if (result instanceof ImageBitmap) {
+			self.postMessage({ id: id, imageBitmap: result }, { transfer: [result] });
+		} else {
+			const buffer = await result.arrayBuffer();
+			self.postMessage({ id: id, buffer });
 		}
-		const buffer = await blob.arrayBuffer();
-		self.postMessage({ id: id, buffer });
 	} catch (error) {
 		if (error instanceof Error) {
 			self.postMessage({ id: id, error: error.message });

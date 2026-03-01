@@ -61,6 +61,7 @@
 				}),
 			prjFile: yup
 				.mixed()
+				.nullable()
 				.optional()
 				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
 					if (value instanceof File) {
@@ -171,8 +172,13 @@
 		}
 	};
 
+	const isShapeFileRelated = (file: File | FileList): boolean => {
+		const files = file instanceof FileList ? Array.from(file) : [file];
+		return files.some((f) => /\.(shp|dbf|prj|shx)$/i.test(f.name));
+	};
+
 	$effect(() => {
-		if (dropFile) {
+		if (dropFile && isShapeFileRelated(dropFile)) {
 			setFiles(dropFile);
 			dropFile = null; // ドロップ後はnullにリセット
 		}
@@ -231,7 +237,13 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(geojsonData, entryGeometryType, forms.shpName, bbox);
+		const entry = createGeoJsonEntry(
+			geojsonData,
+			entryGeometryType,
+			forms.shpName,
+			bbox,
+			'default'
+		);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -245,7 +257,7 @@
 
 		if (!forms.prjFile) {
 			// 世界測地系かどうかを確認
-			const geojsonData = await shpFileToGeojson(forms.shpFile as File);
+			const geojsonData = await shpFileToGeojson(forms.shpFile as File, forms.dbfFile as File);
 			if (!geojsonData) {
 				showNotification('シェープファイルの読み込みに失敗しました', 'error');
 				return;
@@ -273,14 +285,17 @@
 		showDialogType = null;
 	};
 
-	useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
-		if (eventName === 'setZone') {
-			// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
-			const prjContent = getProjContext(selectedEpsgCode);
-			if (prjContent) {
-				setEntryData(prjContent);
+	$effect(() => {
+		const unsubscribe = useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
+			if (eventName === 'setZone' && showDialogType === 'shp') {
+				// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
+				const prjContent = getProjContext(selectedEpsgCode);
+				if (prjContent) {
+					setEntryData(prjContent);
+				}
 			}
-		}
+		});
+		return unsubscribe;
 	});
 
 	let distance = $state<number>(0); // 円の半径

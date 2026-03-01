@@ -12,7 +12,10 @@ import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import {
 	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
-	DEFAULT_VECTOR_POLYGON_STYLE
+	DEFAULT_VECTOR_POLYGON_STYLE,
+	DEFAULT_CAD_STYLE,
+	createMatchColorStyleRandomMapping,
+	createColorStyleDXFMapping
 } from '$routes/map/data/entries/vector/_style';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -20,12 +23,16 @@ import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style'
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
+import type { ColorsStyle } from '../../types/vector/style';
+
+export type VecterStyleType = 'cad' | 'dm' | 'dxf' | 'default';
 
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
 	bbox: [number, number, number, number],
+	styleType: VecterStyleType,
 	color: string = getRandomColor()
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const metaData: GeoJsonMetaData = {
@@ -34,7 +41,7 @@ export const createGeoJsonEntry = (
 		bounds: bbox
 	};
 
-	const colorsConfig = {
+	const colorsConfig: ColorsStyle = {
 		key: '単色',
 		show: true,
 		expressions: [
@@ -48,6 +55,45 @@ export const createGeoJsonEntry = (
 			}
 		]
 	};
+
+	if (styleType === 'dm') {
+		const classNames = groupPropertyByGeometryType(data, (props) =>
+			props?.className != null ? String(props.className) : undefined
+		);
+
+		const layers = groupPropertyByGeometryType(data, (props) =>
+			props?.layer != null ? String(props.layer) : undefined
+		);
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'className',
+			name: '分類ごとの色分け',
+			mapping: createMatchColorStyleRandomMapping(classNames[entryGeometryType])
+		});
+
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'layer',
+			name: 'レイヤごとの色分け',
+			mapping: createMatchColorStyleRandomMapping(layers[entryGeometryType])
+		});
+
+		colorsConfig.key = 'layer';
+	}
+
+	if (styleType === 'dxf') {
+		const colors = groupPropertyByGeometryType(data, (props) =>
+			props?.color != null ? String(props.color) : undefined
+		);
+		const dxfColorMapping = createColorStyleDXFMapping(colors[entryGeometryType] ?? []);
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'color',
+			name: 'カラーコードによる色分け',
+			mapping: dxfColorMapping
+		});
+		colorsConfig.key = 'color';
+	}
 
 	const propKeys = getUniquePropertyKeys(data as any);
 	const labelsConfig = createLabelsExpressions(propKeys);
@@ -88,16 +134,29 @@ export const createGeoJsonEntry = (
 			style
 		};
 	} else if (entryGeometryType === 'LineString') {
-		const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
-		return {
-			...baseEntry,
-			format: {
-				type: 'geojson' as const,
-				geometryType: 'LineString' as const,
-				url: ''
-			},
-			style
-		};
+		if (styleType === 'cad' || styleType === 'dm' || styleType === 'dxf') {
+			const style = { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
+			return {
+				...baseEntry,
+				format: {
+					type: 'geojson' as const,
+					geometryType: 'LineString' as const,
+					url: ''
+				},
+				style
+			};
+		} else {
+			const style = { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
+			return {
+				...baseEntry,
+				format: {
+					type: 'geojson' as const,
+					geometryType: 'LineString' as const,
+					url: ''
+				},
+				style
+			};
+		}
 	} else if (entryGeometryType === 'Polygon') {
 		const style = { ...DEFAULT_VECTOR_POLYGON_STYLE, colors: colorsConfig, labels: labelsConfig };
 		return {
@@ -205,6 +264,78 @@ export const createVectorTileEntry = (
 		console.error('不明なジオメトリタイプです。');
 		return undefined;
 	}
+};
+
+/** GeoJSON に含まれるジオメトリタイプの一覧を返す */
+export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
+	const types = new Set<VectorEntryGeometryType>();
+	for (const feature of geojson.features) {
+		if (!feature.geometry?.type) continue;
+		const t = feature.geometry.type;
+		if (t === 'Point' || t === 'MultiPoint') types.add('Point');
+		else if (t === 'LineString' || t === 'MultiLineString') types.add('LineString');
+		else if (t === 'Polygon' || t === 'MultiPolygon') types.add('Polygon');
+	}
+	return [...types];
+};
+
+/** GeoJSON を指定ジオメトリタイプのフィーチャのみにフィルターする */
+export const filterByGeometryType = (
+	geojson: FeatureCollection,
+	geometryType: VectorEntryGeometryType
+): FeatureCollection => {
+	const multiType = `Multi${geometryType}`;
+	return {
+		type: 'FeatureCollection',
+		features: geojson.features.filter(
+			(f) => f.geometry?.type === geometryType || f.geometry?.type === multiType
+		)
+	};
+};
+
+/** プロパティからグルーピングキーを取得する関数型 */
+export type PropertyKeyExtractor = (properties: Record<string, unknown>) => string | undefined;
+
+/** GeoJSON のフィーチャを指定プロパティの値でフィルターする */
+export const filterByProperty = (
+	geojson: FeatureCollection,
+	values: string[],
+	extractor: PropertyKeyExtractor
+): FeatureCollection => ({
+	type: 'FeatureCollection',
+	features: geojson.features.filter((f) => {
+		const v = extractor((f.properties as Record<string, unknown>) ?? {});
+		return v !== undefined && values.includes(v);
+	})
+});
+
+/** ジオメトリタイプごとに指定プロパティの値一覧を返す */
+export const groupPropertyByGeometryType = (
+	geojson: FeatureCollection,
+	extractor: PropertyKeyExtractor
+): Record<string, string[]> => {
+	const map = new Map<string, Set<string>>();
+	for (const feature of geojson.features) {
+		const geomType = feature.geometry?.type;
+		if (!geomType) continue;
+		const key =
+			geomType === 'MultiPoint'
+				? 'Point'
+				: geomType === 'MultiLineString'
+					? 'LineString'
+					: geomType === 'MultiPolygon'
+						? 'Polygon'
+						: geomType;
+		const v = extractor((feature.properties as Record<string, unknown>) ?? {});
+		if (!v) continue;
+		if (!map.has(key)) map.set(key, new Set());
+		map.get(key)!.add(v);
+	}
+	const result: Record<string, string[]> = {};
+	for (const [key, set] of map) {
+		result[key] = [...set].sort();
+	}
+	return result;
 };
 
 /** geojsonのジオメトリ対応からEntryTypeを取得 */

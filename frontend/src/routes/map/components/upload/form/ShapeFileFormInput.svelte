@@ -34,7 +34,7 @@
 
 <div class="relative">
 	<label
-		class="relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg bg-white p-4"
+		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg bg-white p-4"
 		><span class="absolute">{label}</span>
 
 		<div class="p-12 {file ? '' : ''}"></div>

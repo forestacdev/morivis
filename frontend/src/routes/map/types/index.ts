@@ -46,7 +46,37 @@ export type CSSCursor =
 	| 'all-scroll';
 
 // アップロードのダイアログのタイプ
-export type DialogType = 'raster' | 'vector' | 'shp' | 'gpx' | 'wmts' | 'tiff' | null;
+export type DialogType =
+	| 'raster'
+	| 'vector'
+	| 'shp'
+	| 'gpx'
+	| 'wmts'
+	| 'tiff'
+	| 'dm'
+	| 'dxf'
+	| 'sima'
+	| null;
+
+/** ドロップ/ファイル選択で受け付ける拡張子 */
+export const SUPPORTED_FILE_EXTENSIONS = [
+	'.geojson',
+	'.fgb',
+	'.gpx',
+	'.shp',
+	'.dbf',
+	'.shx',
+	'.prj',
+	'.dxf',
+	'.dm',
+	'.sim'
+] as const;
+
+/** input[accept] 用のカンマ区切り文字列 */
+export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS.join(',');
+
+/** 表示ラベル用のスペース区切り文字列 */
+export const SUPPORTED_FILE_LABEL = SUPPORTED_FILE_EXTENSIONS.join(' ');
 
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;

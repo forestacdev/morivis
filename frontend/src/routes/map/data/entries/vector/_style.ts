@@ -14,6 +14,7 @@ import type {
 	PolygonOutLine,
 	ColorsStyle
 } from '$routes/map/data/types/vector/style';
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { color } from 'd3-color';
 
 import type {
@@ -27,6 +28,31 @@ import type {
 	FormattedSpecification,
 	ExpressionSpecification
 } from 'maplibre-gl';
+
+/** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
+export const createMatchColorStyleRandomMapping = (
+	categories: string[]
+): ColorMatchExpression['mapping'] => {
+	const values = categories.map((category) => {
+		return getRandomColor();
+	});
+	return {
+		categories,
+		values,
+		patterns: categories.map(() => null) // パターンは使用しない場合はnull
+	};
+};
+
+/** カラーコード配列に基づいてランダム色スタイルのマッピングを作成する */
+export const createColorStyleDXFMapping = (
+	categories: string[]
+): ColorMatchExpression['mapping'] => {
+	return {
+		categories,
+		values: categories.map((c) => (c.startsWith('#') ? c : '#000000')),
+		patterns: categories.map(() => null)
+	};
+};
 
 export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 	type: 'circle',
@@ -145,6 +171,50 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 		width: 1,
 		lineStyle: 'solid'
 	},
+	labels: {
+		key: 'name',
+		show: false,
+		expressions: [
+			{
+				key: 'name',
+				name: 'name'
+			}
+		]
+	}
+};
+
+export const DEFAULT_CAD_STYLE: LineStringStyle = {
+	type: 'line',
+	opacity: 1,
+	visible: true,
+	colors: {
+		show: true,
+		key: '単色',
+		expressions: [
+			{
+				type: 'single',
+				key: '単色',
+				name: '単色',
+				mapping: {
+					value: '#ff7f00'
+				}
+			}
+		]
+	},
+	width: {
+		key: '単一',
+		expressions: [
+			{
+				type: 'single',
+				key: '単一',
+				name: '単一',
+				mapping: {
+					value: 1
+				}
+			}
+		]
+	},
+	lineStyle: 'solid',
 	labels: {
 		key: 'name',
 		show: false,
