@@ -1,6 +1,8 @@
 import type { LngLat, Coordinates } from 'maplibre-gl';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { BBox as GeoJsonBBox } from 'geojson';
+import * as tilebelt from '@mapbox/tilebelt';
+import type { TileXYZ } from '$routes/map/data/types/raster';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -58,6 +60,25 @@ export const isBBoxInside = (inner: BBox, outer: BBox): boolean => {
 	const [minX2, minY2, maxX2, maxY2] = outer;
 
 	return minX1 >= minX2 && maxX1 <= maxX2 && minY1 >= minY2 && maxY1 <= maxY2;
+};
+
+/**
+ * bboxの中心に最も近い、bboxより小さいタイル座標を求める。
+ * bboxの中心座標からpointToTileで指定ズームレベルのタイルを直接取得する。
+ * @param bbox - データのbbox [west, south, east, north]
+ * @param zoomOffset - 包含タイルからどれだけズームを上げるか（デフォルト: 2）
+ */
+export const findCenterTile = (bbox: BBox, zoomOffset: number = 2): TileXYZ => {
+	const parentTile = tilebelt.bboxToTile(bbox) as [number, number, number];
+	const baseZoom = parentTile[2];
+	const targetZoom = baseZoom + zoomOffset;
+
+	const centerLon = (bbox[0] + bbox[2]) / 2;
+	const centerLat = (bbox[1] + bbox[3]) / 2;
+
+	const tile = tilebelt.pointToTile(centerLon, centerLat, targetZoom) as [number, number, number];
+
+	return { x: tile[0], y: tile[1], z: tile[2] };
 };
 
 /**
