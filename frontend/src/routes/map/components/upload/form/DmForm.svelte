@@ -169,10 +169,11 @@
 				return;
 			}
 
+			const entryName = zoneInfo?.drawingName || dmFile.name;
 			const entry = createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
-				dmFile.name,
+				entryName,
 				bbox as [number, number, number, number],
 				'dm'
 			);

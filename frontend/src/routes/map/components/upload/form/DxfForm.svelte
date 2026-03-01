@@ -150,10 +150,11 @@
 				return;
 			}
 
+			const entryName = dxfFile.name.replace(/\.[^.]+$/, '');
 			const entry = createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
-				dxfFile.name,
+				entryName,
 				bbox as [number, number, number, number],
 				'dxf'
 			);
