@@ -29,7 +29,7 @@
  *     https://www.rinya.maff.go.jp/kanto/apply/publicsale/kanri/pdf/furoku8-1.pdf
  */
 
-import type { FeatureCollection } from 'geojson';
+import { getClassName } from './classCode';
 
 // ============================================================
 // 型定義
@@ -67,278 +67,10 @@ export interface DMGeoJSON {
 }
 
 // ============================================================
-// 分類コード → 分類名 マッピング
-// 公共測量標準図式 数値地形図データ取得分類基準表より
-// (PLATEAU GML Common_dmCode.xml 準拠)
-//
-// コード体系: 4桁 = レイヤ番号(2桁) + データ項目(2桁)
-//   11xx: 境界・所属界(都府県界,郡市界,町村界,大字界)
-//   21xx: 道路(真幅道路,徒歩道,庭園路)  22xx: 道路施設(道路橋,歩道,石段,トンネル)
-//   23xx: 鉄道(普通鉄道,路面電車)        24xx: 鉄道施設(鉄道橋,跨線橋,停留所)
-//   30xx: 建物(普通建物,堅ろう建物,無壁舎)
-//   34xx-35xx: 建物付属物・記号(門,官公署,学校,病院,工場等)
-//   42xx: 小物体(墓碑,鳥居,タンク,煙突,灯台,送電線等)
-//   51xx: 水部(水がい線,一条河川,かれ川,用水路,湖池)
-//   52xx: 水部構造物(桟橋,滝,せき,水門)
-//   61xx: 人工斜面・構囲(人工斜面,土堤,かき,へい)
-//   62xx: 諸地・場地(駐車場,墓地,太陽光発電設備)
-//   63xx: 植生・耕地(田,畑,茶畑,果樹園,広葉樹林,竹林等)
-//   65xx: 場地（拡張）     71xx: 等高線・変形地  72xx: 変形地
-//   73xx: 基準点・標高点   81xx: 注記
-// ============================================================
-
-const CLASS_CODE_MAP: Record<string, string> = {
-	// ---- 11xx: 境界・所属界 ----
-	'1100': '境界',
-	'1101': '都府県界',
-	'1102': '北海道の支庁界',
-	'1103': '郡市・東京都の区界',
-	'1104': '町村・指定都市の区界',
-	'1106': '大字・町（丁）界',
-	'1110': '所属界',
-
-	// ---- 21xx: 道路 ----
-	'2100': '道路',
-	'2101': '真幅道路',
-	'2103': '徒歩道',
-	'2106': '庭園路',
-	'2109': '建設中の道路',
-
-	// ---- 22xx: 道路施設 ----
-	'2200': '道路施設',
-	'2203': '道路橋',
-	'2205': '徒橋',
-	'2211': '横断歩道橋',
-	'2213': '歩道',
-	'2214': '石段',
-	'2215': '地下街・地下鉄等出入口',
-	'2219': '道路のトンネル',
-	'2226': '分離帯',
-	'2228': '道路の雪覆い等',
-	'2238': '並木',
-
-	// ---- 23xx: 鉄道 ----
-	'2300': '鉄道',
-	'2301': '普通鉄道',
-	'2303': '路面電車',
-	'2305': '特殊鉄道',
-	'2306': '索道',
-	'2309': '建設中の鉄道',
-
-	// ---- 24xx: 鉄道施設 ----
-	'2400': '鉄道施設',
-	'2401': '鉄道橋',
-	'2411': '跨線橋',
-	'2419': '鉄道のトンネル',
-	'2421': '停留所',
-	'2424': 'プラットホーム',
-	'2428': '鉄道の雪覆い等',
-
-	// ---- 30xx: 建物 ----
-	'3000': '建物（未分類）',
-	'3001': '普通建物',
-	'3002': '堅ろう建物',
-	'3003': '普通無壁舎',
-	'3004': '堅ろう無壁舎',
-
-	// ---- 34xx: 建物付属物 ----
-	'3400': '建物付属物',
-	'3401': '門',
-	'3402': '屋門',
-
-	// ---- 35xx: 建物記号 ----
-	'3500': '建物記号',
-	'3503': '官公署',
-	'3504': '裁判所',
-	'3505': '検察庁',
-	'3507': '税務署',
-	'3509': '郵便局',
-	'3510': '森林管理署',
-	'3515': '交番・駐在所',
-	'3516': '消防署',
-	'3517': '職業安定所',
-	'3519': '役場支所及び出張所',
-	'3521': '神社',
-	'3522': '寺院',
-	'3523': 'キリスト教会',
-	'3524': '学校',
-	'3525': '幼稚園・保育園',
-	'3526': '公会堂・公民館',
-	'3530': '老人ホーム',
-	'3531': '保健所',
-	'3532': '病院',
-	'3534': '銀行',
-	'3536': '協同組合',
-	'3545': '倉庫',
-	'3546': '火薬庫',
-	'3548': '工場',
-	'3550': '変電所',
-	'3556': '揚排水ポンプ場',
-	'3560': 'ガソリンスタンド',
-
-	// ---- 42xx: 小物体 ----
-	'4200': '小物体',
-	'4201': '墓碑',
-	'4202': '記念碑',
-	'4203': '立像',
-	'4204': '路傍祠',
-	'4205': '灯ろう',
-	'4207': '鳥居',
-	'4208': '自然災害伝承碑',
-	'4219': '坑口',
-	'4221': '独立樹（広葉樹）',
-	'4222': '独立樹（針葉樹）',
-	'4225': '油井・ガス井',
-	'4228': '起重機',
-	'4231': 'タンク',
-	'4234': '煙突',
-	'4235': '高塔',
-	'4236': '電波塔',
-	'4241': '灯台',
-	'4243': '灯標',
-	'4251': '水位観測所',
-	'4261': '輸送管（地上）',
-	'4262': '輸送管（空間）',
-	'4265': '送電線',
-
-	// ---- 51xx: 水部 ----
-	'5100': '水部',
-	'5101': '水がい線（河川・湖池・海岸線）',
-	'5102': '一条河川',
-	'5103': 'かれ川',
-	'5104': '用水路',
-	'5105': '湖池',
-
-	// ---- 52xx: 水部構造物 ----
-	'5200': '水部構造物',
-	'5203': '桟橋（木製・浮桟橋）',
-	'5221': '渡船発着所',
-	'5226': '滝',
-	'5227': 'せき',
-	'5228': '水門',
-	'5232': '透過水制',
-	'5239': '敷石斜坂',
-	'5241': '流水方向',
-	'5299': '桟橋（鉄・コンクリート）',
-
-	// ---- 61xx: 人工斜面・構囲 ----
-	'6100': '人工斜面・構囲',
-	'6101': '人工斜面',
-	'6102': '土堤等',
-	'6110': '被覆',
-	'6130': 'かき',
-	'6140': 'へい',
-
-	// ---- 62xx: 諸地・場地 ----
-	'6200': '諸地・場地',
-	'6201': '区域界',
-	'6212': '駐車場',
-	'6214': '園庭',
-	'6215': '墓地',
-	'6216': '材料置場',
-	'6217': '太陽光発電設備',
-	'6221': '噴火口・噴気口',
-	'6222': '温泉・鉱泉',
-
-	// ---- 63xx: 植生・耕地 ----
-	'6300': '植生・耕地',
-	'6301': '植生界',
-	'6302': '耕地界',
-	'6311': '田',
-	'6313': '畑',
-	'6314': 'さとうきび畑',
-	'6315': 'パイナップル畑',
-	'6317': '桑畑',
-	'6318': '茶畑',
-	'6319': '果樹園',
-	'6321': 'その他の樹木畑',
-	'6323': '芝地',
-	'6331': '広葉樹林',
-	'6332': '針葉樹林',
-	'6333': '竹林',
-	'6334': '荒地',
-	'6335': 'はい松地',
-	'6336': 'しの地（笹地）',
-	'6337': 'やし科樹林',
-	'6338': '湿地',
-	'6340': '砂れき地',
-
-	// ---- 71xx: 等高線 ----
-	'7100': '等高線',
-	'7101': '等高線（計曲線）',
-	'7102': '等高線（主曲線）',
-	'7103': '等高線（補助曲線）',
-	'7105': '凹地（計曲線）',
-	'7106': '凹地（主曲線）',
-	'7107': '凹地（補助曲線）',
-	'7199': '凹地（矢印）',
-
-	// ---- 72xx: 変形地 ----
-	'7200': '変形地',
-	'7201': '土がけ',
-	'7202': '雨裂',
-	'7206': '洞口',
-	'7211': '岩がけ',
-	'7212': '露岩',
-	'7213': '散岩',
-	'7214': 'さんご礁',
-
-	// ---- 73xx: 基準点・標高点 ----
-	'7300': '基準点',
-	'7301': '三角点',
-	'7302': '水準点',
-	'7303': '多角点等',
-	'7304': '公共基準点（三角点）',
-	'7305': '公共基準点（水準点）',
-	'7308': '電子基準点',
-	'7311': '標石を有しない標高点',
-	'7312': '図化機測定による標高点',
-
-	// ---- 81xx: 注記 ----
-	'8100': '注記',
-	'8110': '市・東京都の区',
-	'8111': '町・村・指定都市の区',
-	'8112': '市町村の飛び地',
-	'8113': '大区域',
-	'8114': '小区域',
-	'8115': '大字・町・丁目',
-	'8116': '小字・丁目',
-	'8117': 'その他の地名（大）',
-	'8118': 'その他の地名（中）',
-	'8119': 'その他の地名（小）',
-	'8121': '道路の路線名',
-	'8122': '道路施設・坂・峠・IC',
-	'8123': '鉄道の路線名',
-	'8124': '鉄道施設・駅・操車場・信号所',
-	'8125': '橋',
-	'8126': 'トンネル',
-	'8131': '建物の名称',
-	'8134': '建物の付属物',
-	'8140': 'マンホール',
-	'8141': '電柱',
-	'8142': 'その他小物体',
-	'8151': '水部',
-	'8152': '水部施設',
-	'8153': '地下水部',
-	'8161': '法面・構囲',
-	'8162': '諸地・場地',
-	'8163': '植生',
-	'8171': '山地',
-	'8173': '標高注記',
-	'8181': '説明注記',
-	'8199': '指示点'
-};
-
-function getClassName(classCode: string): string {
-	// 下2桁が00の場合は大分類
-	return CLASS_CODE_MAP[classCode] ?? CLASS_CODE_MAP[classCode.slice(0, 2) + '00'] ?? '不明';
-}
-
-// ============================================================
 // 座標単位変換: レコードから読んだ整数値 → メートル
 // ============================================================
 
-function toMeters(rawValue: number, mapLevel: number): number {
+const toMeters = (rawValue: number, mapLevel: number): number => {
 	if (mapLevel <= 1000) {
 		// mm単位
 		return rawValue / 1000;
@@ -349,20 +81,18 @@ function toMeters(rawValue: number, mapLevel: number): number {
 		// m単位
 		return rawValue;
 	}
-}
+};
 
 // ============================================================
 // テキスト行パーサー群
 // ============================================================
 
 // 行を固定位置でパース (1-indexed, bytes)
-function substr(line: string, start: number, length: number): string {
-	return line.substring(start - 1, start - 1 + length).trim();
-}
+const substr = (line: string, start: number, length: number): string =>
+	line.substring(start - 1, start - 1 + length).trim();
 
-function parseIntField(line: string, start: number, length: number): number {
-	return parseInt(substr(line, start, length), 10) || 0;
-}
+const parseIntField = (line: string, start: number, length: number): number =>
+	parseInt(substr(line, start, length), 10) || 0;
 
 interface IndexRecord {
 	type: 'INDEX';
@@ -444,7 +174,7 @@ type ParsedRecord =
 // 各レコードのパーサー
 // ============================================================
 
-function parseIndexRecord(line: string): IndexRecord {
+const parseIndexRecord = (line: string): IndexRecord => {
 	// バイト位置は仕様書の図に基づく
 	// [1-2] "I " 固定
 	// [3-4] 座標系番号 I2
@@ -467,9 +197,9 @@ function parseIndexRecord(line: string): IndexRecord {
 		classCodeCount: parseIntField(line, 43, 3),
 		version: parseIntField(line, 81, 1)
 	};
-}
+};
 
-function parseDrawingRecord(line: string): DrawingRecord {
+const parseDrawingRecord = (line: string): DrawingRecord => {
 	// レコード(a): "M " + 図郭識別番号(A8) + 図郭名称(A20) + 地図情報レベル(I5) + ...
 	// [1-2] "M " 固定
 	// [3-10] 図郭識別番号 A8
@@ -492,7 +222,7 @@ function parseDrawingRecord(line: string): DrawingRecord {
 		coordUnit: 0,
 		version: parseIntField(line, 68, 1)
 	};
-}
+};
 
 // M レコード直後の図郭座標行から左下座標・右上座標・座標値単位を取得する。
 // 拡張DMの付属行には旧DMの "MB" プレフィックスがないため、フィールド位置が異なる。
@@ -510,12 +240,14 @@ function parseDrawingRecord(line: string): DrawingRecord {
 //   1(mm)→1000, 10(cm)→100, 1000(m)→1
 //   取得できない場合は mapLevel から推定するフォールバックが適用される
 
-function parseDrawingCoordRecord(line: string): {
+const parseDrawingCoordRecord = (
+	line: string
+): {
 	originX: number;
 	originY: number;
 	topRightX: number;
 	topRightY: number;
-} {
+} => {
 	// レコード(b): 図郭座標
 	// [3-9]  左下X I7  [10-16] 左下Y I7  [17-19] 座標値単位 I3
 	// [20-26] 要素数  [27-32] レコード数  [33-39] 右上X I7  [40-46] 右上Y I7
@@ -525,9 +257,9 @@ function parseDrawingCoordRecord(line: string): {
 		topRightX: parseIntField(line, 33, 7),
 		topRightY: parseIntField(line, 40, 7)
 	};
-}
+};
 
-function parseGroupHeaderRecord(line: string): GroupHeaderRecord {
+const parseGroupHeaderRecord = (line: string): GroupHeaderRecord => {
 	// [1-2] "H " 固定
 	// [3-4] 地図分類コード A2
 	// [5-8] 分類コード A4 (上2桁+下2桁)
@@ -556,7 +288,7 @@ function parseGroupHeaderRecord(line: string): GroupHeaderRecord {
 			annotation: parseIntField(line, 54, 4)
 		}
 	};
-}
+};
 
 // データタイプコード → 日本語
 const DATA_TYPE_MAP: Record<string, string> = {
@@ -572,7 +304,7 @@ const DATA_TYPE_MAP: Record<string, string> = {
 	'9': 'グリッド/TIN'
 };
 
-function parseElementRecord(line: string): ElementRecord {
+const parseElementRecord = (line: string): ElementRecord => {
 	// [1-2] "F " 固定
 	// [3-4] 地図分類コード A2
 	// [5-8] 分類コード A4
@@ -599,9 +331,9 @@ function parseElementRecord(line: string): ElementRecord {
 		elementId: parseIntField(line, 9, 8),
 		coordinateCount: parseIntField(line, 33, 4)
 	};
-}
+};
 
-function parseCoord2DRecord(line: string): CoordRecord2D {
+const parseCoord2DRecord = (line: string): CoordRecord2D => {
 	// [1-2] "D2" 固定 (または旧DMでは省略される場合も)
 	// [3-12]  X1 I10  [13-22] Y1 I10
 	// [23-32] X2 I10  [33-42] Y2 I10
@@ -621,9 +353,9 @@ function parseCoord2DRecord(line: string): CoordRecord2D {
 		}
 	}
 	return { type: 'COORD2D', coordinates: coords };
-}
+};
 
-function parseCoord3DRecord(line: string): CoordRecord3D {
+const parseCoord3DRecord = (line: string): CoordRecord3D => {
 	// [3-12] X I10  [13-22] Y I10  [23-32] Z I10 → 1レコードに最大2点
 	const coords: Array<[number, number, number]> = [];
 	for (let i = 0; i < 2; i++) {
@@ -640,9 +372,9 @@ function parseCoord3DRecord(line: string): CoordRecord3D {
 		}
 	}
 	return { type: 'COORD3D', coordinates: coords };
-}
+};
 
-function parseAnnotationRecord(line: string): AnnotationRecord {
+const parseAnnotationRecord = (line: string): AnnotationRecord => {
 	// [3-12] X I10  [13-22] Y I10  [23-26] 角度 I4 (デシ度)
 	// [27-30] 文字高さ I4  [31-84] テキスト A54
 	return {
@@ -653,7 +385,7 @@ function parseAnnotationRecord(line: string): AnnotationRecord {
 		height: parseIntField(line, 27, 4),
 		text: substr(line, 31, 54)
 	};
-}
+};
 
 // ============================================================
 // 拡張DM パーサー群
@@ -670,9 +402,9 @@ const EXT_DATA_TYPE_MAP: Record<string, string> = {
 	'7': '注記'
 };
 
-function parseExtElementRecord(
+const parseExtElementRecord = (
 	line: string
-): ElementRecord & { embeddedX?: number; embeddedY?: number } {
+): ElementRecord & { embeddedX?: number; embeddedY?: number } => {
 	// 拡張DM 要素レコード
 	// [1]    "E" 固定
 	// [2]    データタイプ (1=面,2=線,3=円,4=円弧,5=点,6=方向,7=注記)
@@ -721,7 +453,7 @@ function parseExtElementRecord(
 		embeddedX,
 		embeddedY
 	};
-}
+};
 
 // 拡張DM 座標レコード（Eレコードの座標次元[20]に応じて2D/3Dを切り替え）
 // 座標値 0 はパディング（無効値）。単位は図郭座標行の座標値単位フィールドにより決定。
@@ -733,7 +465,7 @@ function parseExtElementRecord(
 //   [1-7]X1 [8-14]Y1 [15-21]Z1 [22-28]X2 ... [64-70]X4 [71-77]Y4 [78-84]Z4
 //   ※等高線など標高情報を持つ要素で使用。Z値は標高。GeoJSON変換時はX,Yのみ使用。
 
-function parseExtCoord2DRecord(line: string): CoordRecord2D {
+const parseExtCoord2DRecord = (line: string): CoordRecord2D => {
 	// 7バイト×2値(X,Y) × 最大6座標/行
 	const coords: Array<[number, number]> = [];
 	for (let i = 0; i < 6; i++) {
@@ -751,9 +483,9 @@ function parseExtCoord2DRecord(line: string): CoordRecord2D {
 		}
 	}
 	return { type: 'COORD2D', coordinates: coords };
-}
+};
 
-function parseExtCoord3DRecord(line: string): CoordRecord3D {
+const parseExtCoord3DRecord = (line: string): CoordRecord3D => {
 	// 拡張DM 3D座標レコード: 7バイト×3値(X,Y,Z) = 21バイト/座標, 最大4座標/行
 	const coords: Array<[number, number, number]> = [];
 	for (let i = 0; i < 4; i++) {
@@ -772,9 +504,9 @@ function parseExtCoord3DRecord(line: string): CoordRecord3D {
 		}
 	}
 	return { type: 'COORD3D', coordinates: coords };
-}
+};
 
-function parseExtAnnotationDataRecord(line: string): AnnotationRecord {
+const parseExtAnnotationDataRecord = (line: string): AnnotationRecord => {
 	// 拡張DM 注記データレコード (E7レコードの次行)
 	// 角度や文字高、テキストなどが含まれる
 	// フォーマットはファイルによって異なるが、テキスト部分を抽出
@@ -787,7 +519,7 @@ function parseExtAnnotationDataRecord(line: string): AnnotationRecord {
 		height: parseInt(line.substring(11, 15).trim(), 10) || 0,
 		text
 	};
-}
+};
 
 // ============================================================
 // フォーマット自動判定
@@ -804,7 +536,7 @@ function parseExtAnnotationDataRecord(line: string): AnnotationRecord {
 // 判定: E1〜E7 で始まるレコードがあれば拡張DM、F / I レコードがあれば旧DM
 // ============================================================
 
-function isExtendedDM(text: string): boolean {
+const isExtendedDM = (text: string): boolean => {
 	const lines = text.split(/\r?\n/);
 	for (const line of lines) {
 		if (line.length < 2) continue;
@@ -818,7 +550,7 @@ function isExtendedDM(text: string): boolean {
 		if (trimmed.startsWith('I ')) return false;
 	}
 	return false;
-}
+};
 
 // ============================================================
 // メインパーサー: DM テキスト → ParsedRecord[]
@@ -829,7 +561,7 @@ interface ParseResult {
 	isExtended: boolean;
 }
 
-function parseRecords(text: string): ParseResult {
+const parseRecords = (text: string): ParseResult => {
 	const extended = isExtendedDM(text);
 	const lines = text.split(/\r?\n/);
 	const records: ParsedRecord[] = [];
@@ -964,7 +696,7 @@ function parseRecords(text: string): ParseResult {
 	}
 
 	return { records, isExtended: extended };
-}
+};
 
 // ============================================================
 // GeoJSON 変換
@@ -1007,7 +739,7 @@ export interface ConvertOptions {
  * const text = iconv.decode(buffer, 'shift-jis');
  * const geojson = convertDMtoGeoJSON(text);
  */
-export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {}): DMGeoJSON {
+export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {}): DMGeoJSON => {
 	const { includeAnnotations = true, coordinatePrecision = 8 } = options;
 
 	const precision = Math.pow(10, coordinatePrecision);
@@ -1242,7 +974,7 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
 			mapLevel
 		}
 	};
-}
+};
 
 // ============================================================
 // ブラウザ / Node.js 両対応の文字コード変換ヘルパー
@@ -1252,26 +984,26 @@ export function convertDMtoGeoJSON(dmText: string, options: ConvertOptions = {})
  * ArrayBuffer (Shift-JIS) → DM テキスト文字列に変換
  * ブラウザ標準 TextDecoder を使用
  */
-export function decodeShiftJIS(buffer: ArrayBuffer): string {
+export const decodeShiftJIS = (buffer: ArrayBuffer): string => {
 	try {
 		return new TextDecoder('shift-jis').decode(buffer);
 	} catch {
 		// 一部環境で "shift-jis" が通らない場合の fallback
 		return new TextDecoder('sjis').decode(buffer);
 	}
-}
+};
 
 /**
  * ファイルから直接変換（ブラウザのFile API対応）
  */
-export async function convertDMFileToGeoJSON(
+export const convertDMFileToGeoJSON = async (
 	file: File,
 	options?: ConvertOptions
-): Promise<DMGeoJSON> {
+): Promise<DMGeoJSON> => {
 	const buffer = await file.arrayBuffer();
 	const text = decodeShiftJIS(buffer);
 	return convertDMtoGeoJSON(text, options);
-}
+};
 
 /** 系番号の情報 */
 export interface DMInfo {
@@ -1287,7 +1019,7 @@ export interface DMInfo {
  * DMファイルから座標系情報を取得する（軽量パース）。
  * UIでユーザーに確認を求める前に呼び出す。
  */
-export async function getDMInfo(file: File): Promise<DMInfo> {
+export const getDMInfo = async (file: File): Promise<DMInfo> => {
 	const buffer = await file.arrayBuffer();
 	const text = decodeShiftJIS(buffer);
 	const { records, isExtended } = parseRecords(text);
@@ -1309,27 +1041,4 @@ export async function getDMInfo(file: File): Promise<DMInfo> {
 	}
 
 	return { indexZone, drawingName, bbox };
-}
-
-/** 平面直角座標系の系番号と主な地域の対応 */
-export const ZONE_REGIONS: Record<number, string> = {
-	1: '長崎・鹿児島西部',
-	2: '福岡・佐賀・大分・熊本・鹿児島東部',
-	3: '山口・島根・広島',
-	4: '香川・愛媛・徳島・高知',
-	5: '兵庫・鳥取・岡山',
-	6: '京都・大阪・福井・滋賀・三重・奈良・和歌山',
-	7: '石川・富山・岐阜・愛知',
-	8: '新潟・長野・山梨・静岡',
-	9: '東京・福島・栃木・茨城・埼玉・千葉・群馬・神奈川',
-	10: '青森・秋田・山形・岩手・宮城',
-	11: '北海道（西部）',
-	12: '北海道（中部）',
-	13: '北海道（東部）',
-	14: '小笠原諸島',
-	15: '沖縄',
-	16: '先島諸島',
-	17: '大東諸島',
-	18: '沖ノ鳥島',
-	19: '南鳥島'
 };
