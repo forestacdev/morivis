@@ -20,7 +20,7 @@
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -47,10 +47,9 @@
 		Label: 'ラベル'
 	};
 
-	let loading = $state(false);
 	let rawGeojson = $state<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<string>('');
+	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
@@ -80,7 +79,7 @@
 	// ファイルドロップ時: DXF変換 → ジオメトリタイプ確認
 	$effect(() => {
 		if (dxfFile) {
-			loading = true;
+			isProcessing.set(true);
 			dxfFileToGeoJsonBrowser(dxfFile)
 				.then((geojson) => {
 					rawGeojson = geojson;
@@ -104,7 +103,7 @@
 					console.error(e);
 				})
 				.finally(() => {
-					loading = false;
+					isProcessing.set(false);
 				});
 		}
 	});
@@ -112,13 +111,24 @@
 	// 「決定」→ ZoneFormを表示
 	const openZoneForm = () => {
 		showZoneForm = true;
-		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
+		if (rawGeojson && selectedGeometryType) {
+			let filtered = filterByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedLayers.length > 0) {
+				filtered = filterByProperty(filtered, selectedLayers, extractLayer);
+			}
+			focusBbox = turfBbox(filtered) as [number, number, number, number];
+		} else {
+			focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
+		}
 	};
 
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!dxfFile || !rawGeojson || !selectedGeometryType) return;
-		loading = true;
+		isProcessing.set(true);
 
 		try {
 			const prjContent = getProjContext(epsgCode);
@@ -134,31 +144,18 @@
 				return;
 			}
 
-			let filtered = filterByGeometryType(
-				geojsonData,
-				selectedGeometryType as VectorEntryGeometryType
-			);
-			if (selectedLayers.length > 0) {
-				filtered = filterByProperty(filtered, selectedLayers, extractLayer);
-			}
-			const entryGeometryType = geometryTypeToEntryType(filtered);
-			if (!entryGeometryType) {
-				showNotification('対応していないジオメトリタイプです', 'error');
-				return;
-			}
-
-			const bbox = turfBbox(filtered);
+			const bbox = turfBbox(geojsonData);
 			if (!bbox || !isBboxValid(bbox)) {
 				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
 				return;
 			}
 
 			const entry = createGeoJsonEntry(
-				filtered,
-				entryGeometryType,
+				geojsonData,
+				selectedGeometryType,
 				dxfFile.name,
 				bbox as [number, number, number, number],
-				'cad'
+				'dxf'
 			);
 
 			if (entry) {
@@ -170,7 +167,7 @@
 			showNotification('DXFファイルの変換中にエラーが発生しました', 'error');
 			console.error(e);
 		} finally {
-			loading = false;
+			isProcessing.set(false);
 		}
 	};
 
@@ -192,10 +189,6 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
-	{#if loading}
-		<div class="text-sm text-gray-300">変換中...</div>
-	{/if}
-
 	{#if geometryTypeOptions.length > 1}
 		<div class="w-full p-2">
 			<HorizontalSelectBox
@@ -240,8 +233,8 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={loading || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {loading || !selectedGeometryType
+		disabled={!selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

@@ -32,9 +32,13 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
  */
 const entityToFeature = (entity: any): Feature | null => {
 	let geometry: Geometry | null = null;
+	const colorHex =
+		entity.color != null
+			? `#${(entity.color as number).toString(16).padStart(6, '0')}`
+			: undefined;
 	const properties: Record<string, any> = {
 		layer: entity.layer,
-		color: entity.color,
+		color: colorHex,
 		type: entity.type
 	};
 

@@ -51,7 +51,7 @@
 	// 平面直角座標のままのGeoJSON（座標変換前）
 	let rawGeojson = $state<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<string>('');
+	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	const extractClassName = (props: Record<string, unknown>) =>
 		props?.className != null ? String(props.className) : undefined;
 
@@ -130,9 +130,7 @@
 			}
 			focusBbox = turfBbox(filtered) as [number, number, number, number];
 		} else {
-			focusBbox = rawGeojson
-				? (turfBbox(rawGeojson) as [number, number, number, number])
-				: null;
+			focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
 		}
 	};
 
@@ -171,16 +169,9 @@
 				return;
 			}
 
-			const entryGeometryType = geometryTypeToEntryType(geojsonData);
-
-			if (!entryGeometryType) {
-				showNotification('対応していないジオメトリタイプです', 'error');
-				return;
-			}
-
 			const entry = createGeoJsonEntry(
 				geojsonData,
-				entryGeometryType,
+				selectedGeometryType,
 				dmFile.name,
 				bbox as [number, number, number, number],
 				'dm'

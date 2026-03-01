@@ -14,7 +14,8 @@ import {
 	DEFAULT_VECTOR_LINE_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE,
 	DEFAULT_CAD_STYLE,
-	createMatchColorStyleMapping
+	createMatchColorStyleRandomMapping,
+	createColorStyleDXFMapping
 } from '$routes/map/data/entries/vector/_style';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -24,7 +25,7 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type { ColorsStyle } from '../../types/vector/style';
 
-export type VecterStyleType = 'cad' | 'dm' | 'default';
+export type VecterStyleType = 'cad' | 'dm' | 'dxf' | 'default';
 
 export const createGeoJsonEntry = (
 	data: FeatureCollection,
@@ -67,17 +68,31 @@ export const createGeoJsonEntry = (
 			type: 'match',
 			key: 'className',
 			name: '分類ごとの色分け',
-			mapping: createMatchColorStyleMapping(classNames[entryGeometryType])
+			mapping: createMatchColorStyleRandomMapping(classNames[entryGeometryType])
 		});
 
 		colorsConfig.expressions.push({
 			type: 'match',
 			key: 'layer',
 			name: 'レイヤごとの色分け',
-			mapping: createMatchColorStyleMapping(layers[entryGeometryType])
+			mapping: createMatchColorStyleRandomMapping(layers[entryGeometryType])
 		});
 
 		colorsConfig.key = 'layer';
+	}
+
+	if (styleType === 'dxf') {
+		const colors = groupPropertyByGeometryType(data, (props) =>
+			props?.color != null ? String(props.color) : undefined
+		);
+		const dxfColorMapping = createColorStyleDXFMapping(colors[entryGeometryType] ?? []);
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'color',
+			name: 'カラーコードによる色分け',
+			mapping: dxfColorMapping
+		});
+		colorsConfig.key = 'color';
 	}
 
 	const propKeys = getUniquePropertyKeys(data as any);
@@ -119,7 +134,7 @@ export const createGeoJsonEntry = (
 			style
 		};
 	} else if (entryGeometryType === 'LineString') {
-		if (styleType === 'cad' || styleType === 'dm') {
+		if (styleType === 'cad' || styleType === 'dm' || styleType === 'dxf') {
 			const style = { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 			return {
 				...baseEntry,

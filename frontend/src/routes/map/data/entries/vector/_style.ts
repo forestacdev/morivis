@@ -30,7 +30,7 @@ import type {
 } from 'maplibre-gl';
 
 /** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
-export const createMatchColorStyleMapping = (
+export const createMatchColorStyleRandomMapping = (
 	categories: string[]
 ): ColorMatchExpression['mapping'] => {
 	const values = categories.map((category) => {
@@ -40,6 +40,17 @@ export const createMatchColorStyleMapping = (
 		categories,
 		values,
 		patterns: categories.map(() => null) // パターンは使用しない場合はnull
+	};
+};
+
+/** カラーコード配列に基づいてランダム色スタイルのマッピングを作成する */
+export const createColorStyleDXFMapping = (
+	categories: string[]
+): ColorMatchExpression['mapping'] => {
+	return {
+		categories,
+		values: categories.map((c) => (c.startsWith('#') ? c : '#000000')),
+		patterns: categories.map(() => null)
 	};
 };
 
