@@ -1,5 +1,5 @@
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import { ENTRY_FGB_PATH } from '$routes/constants';
+import { ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { PointEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 
@@ -22,8 +22,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		tags: ['自然災害伝承碑'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: { x: 225, y: 100, z: 8 },
-		downloadUrl: 'https://www.gsi.go.jp/bousaichiri/denshouhi.html'
-		// mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification1.webp`
+		downloadUrl: 'https://www.gsi.go.jp/bousaichiri/denshouhi.html',
+		mapImage: `${MAP_IMAGE_BASE_PATH}/disaster_lore_all.webp`
 	},
 	properties: {
 		attributeView: {
