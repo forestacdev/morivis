@@ -194,10 +194,13 @@
 		showDialogType = null;
 	};
 
-	useEventTrigger.subscribe((eventName) => {
-		if (eventName === 'setZone' && showDialogType === 'dm') {
-			convertAndCreateEntry(selectedEpsgCode);
-		}
+	$effect(() => {
+		const unsubscribe = useEventTrigger.subscribe((eventName) => {
+			if (eventName === 'setZone' && showDialogType === 'dm') {
+				convertAndCreateEntry(selectedEpsgCode);
+			}
+		});
+		return unsubscribe;
 	});
 </script>
 

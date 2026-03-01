@@ -213,10 +213,13 @@
 		showDialogType = null;
 	};
 
-	useEventTrigger.subscribe((eventName) => {
-		if (eventName === 'setZone' && showDialogType === 'sima') {
-			convertAndCreateEntry(selectedEpsgCode);
-		}
+	$effect(() => {
+		const unsubscribe = useEventTrigger.subscribe((eventName) => {
+			if (eventName === 'setZone' && showDialogType === 'sima') {
+				convertAndCreateEntry(selectedEpsgCode);
+			}
+		});
+		return unsubscribe;
 	});
 </script>
 

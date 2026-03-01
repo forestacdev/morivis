@@ -175,10 +175,13 @@
 		showDialogType = null;
 	};
 
-	useEventTrigger.subscribe((eventName) => {
-		if (eventName === 'setZone' && showDialogType === 'dxf') {
-			convertAndCreateEntry(selectedEpsgCode);
-		}
+	$effect(() => {
+		const unsubscribe = useEventTrigger.subscribe((eventName) => {
+			if (eventName === 'setZone' && showDialogType === 'dxf') {
+				convertAndCreateEntry(selectedEpsgCode);
+			}
+		});
+		return unsubscribe;
 	});
 </script>
 

@@ -285,14 +285,17 @@
 		showDialogType = null;
 	};
 
-	useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
-		if (eventName === 'setZone' && showDialogType === 'shp') {
-			// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
-			const prjContent = getProjContext(selectedEpsgCode);
-			if (prjContent) {
-				setEntryData(prjContent);
+	$effect(() => {
+		const unsubscribe = useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
+			if (eventName === 'setZone' && showDialogType === 'shp') {
+				// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
+				const prjContent = getProjContext(selectedEpsgCode);
+				if (prjContent) {
+					setEntryData(prjContent);
+				}
 			}
-		}
+		});
+		return unsubscribe;
 	});
 
 	let distance = $state<number>(0); // 円の半径

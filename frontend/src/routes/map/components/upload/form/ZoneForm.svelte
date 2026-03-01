@@ -1,6 +1,7 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 	import turfCenter from '@turf/center';
+	import turfNearestPoint from '@turf/nearest-point';
 	import maplibregl from 'maplibre-gl';
 	import { fly } from 'svelte/transition';
 
@@ -33,9 +34,8 @@
 
 	const registration = () => {
 		showZoneForm = false;
+		focusBbox = null; // リセットして次回のeffect再実行を保証
 		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
-
-		// 選択されたEPSGコードを使用して何らかの処理を行う
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
@@ -110,6 +110,20 @@
 					coordinates: feature.geometry.coordinates as [number, number],
 					properties: feature.properties || {}
 				}));
+
+			// 現在の地図の中心から一番近いフィーチャーを見つけて、そのpoiDataの座標系を選択する
+			const mapCenter = map.getCenter();
+			const points = geojsonData.features.filter(
+				(f) => f.geometry.type === 'Point'
+			) as Feature<PointGeometry, PoiData['properties']>[];
+			if (points.length > 0) {
+				const nearest = turfNearestPoint(
+					[mapCenter.lng, mapCenter.lat],
+					{ type: 'FeatureCollection', features: points }
+				);
+				const idx = nearest.properties.featureIndex;
+				selectedEpsgCode = points[idx].properties.code;
+			}
 
 			// TODO
 			setTimeout(() => {
@@ -192,7 +206,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button onclick={() => (showZoneForm = false)} class="c-btn-sub cursor-pointer p-4 text-lg">
+				<button onclick={() => { showZoneForm = false; focusBbox = null; }} class="c-btn-sub cursor-pointer p-4 text-lg">
 					キャンセル
 				</button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
