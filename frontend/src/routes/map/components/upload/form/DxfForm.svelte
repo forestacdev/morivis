@@ -82,8 +82,8 @@
 			isProcessing.set(true);
 			dxfFileToGeoJsonBrowser(dxfFile)
 				.then((geojson) => {
-					rawGeojson = geojson;
-					const types = getGeometryTypes(rawGeojson);
+					rawGeojson = geojson as unknown as FeatureCollection;
+					const types = getGeometryTypes(rawGeojson!);
 
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
@@ -96,7 +96,7 @@
 						selectedGeometryType = types[0];
 					}
 
-					layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractLayer);
+					layersByGeometryType = groupPropertyByGeometryType(rawGeojson!, extractLayer);
 				})
 				.catch((e) => {
 					showNotification('DXFファイルの読み込みに失敗しました', 'error');

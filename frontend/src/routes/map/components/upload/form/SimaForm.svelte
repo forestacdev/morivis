@@ -87,16 +87,16 @@
 		const trimmed = text.trim();
 		if (trimmed.startsWith('<')) {
 			simaFormat = 'SIMA-XML';
-			return simaXmlToGeoJson(trimmed);
+			return simaXmlToGeoJson(trimmed) as unknown as FeatureCollection;
 		} else if (trimmed.startsWith('G00,') || trimmed.startsWith('Z00,')) {
 			simaFormat = 'SIMA-CSV';
-			return simaCsvToGeoJson(trimmed);
+			return simaCsvToGeoJson(trimmed) as unknown as FeatureCollection;
 		} else if (trimmed.startsWith('10') || trimmed.startsWith('20') || trimmed.startsWith('30')) {
 			simaFormat = 'SIMA-DM';
-			return simaDmToGeoJson(trimmed);
+			return simaDmToGeoJson(trimmed) as unknown as FeatureCollection;
 		} else {
 			simaFormat = 'SIMA-S';
-			return simaSimpleToGeoJson(trimmed);
+			return simaSimpleToGeoJson(trimmed) as unknown as FeatureCollection;
 		}
 	}
 
