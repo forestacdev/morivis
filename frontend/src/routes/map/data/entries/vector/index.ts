@@ -24,6 +24,7 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type { ColorsStyle } from '../../types/vector/style';
+import { findCenterTile } from '$routes/map/utils/map';
 
 export type VecterStyleType = 'cad' | 'dm' | 'dxf' | 'default';
 
@@ -38,7 +39,8 @@ export const createGeoJsonEntry = (
 	const metaData: GeoJsonMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
 		name,
-		bounds: bbox
+		bounds: bbox,
+		xyzImageTile: findCenterTile(bbox)
 	};
 
 	const colorsConfig: ColorsStyle = {
