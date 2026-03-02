@@ -396,11 +396,13 @@ const createMapStore = () => {
 		map.on('data', () => {
 			//your code here
 			isLoadingEvent.set(true);
+			(window as any).__morivis_map_idle = false;
 			// console.log(e);
 		});
 		map.on('idle', () => {
 			//your code here
 			isLoadingEvent.set(false);
+			(window as any).__morivis_map_idle = true;
 			// console.log(e);
 		});
 		map.on('rotate', () => {
