@@ -1,3 +1,6 @@
+docker:
+    @docker compose up -d
+
 # 開発サーバーの起動
 dev:
     @echo "Checking if port 5173 is in use..."
@@ -79,3 +82,6 @@ update_360:
 # typedocの更新
 typedoc:
     cd frontend && pnpm run typedoc
+
+api:
+    pnpm run api
