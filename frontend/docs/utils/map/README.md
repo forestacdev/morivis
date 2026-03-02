@@ -10,6 +10,7 @@
 
 - [bboxToPolygonCoordinates](functions/bboxToPolygonCoordinates.md)
 - [detectLongitudeDomain](functions/detectLongitudeDomain.md)
+- [findCenterTile](functions/findCenterTile.md)
 - [getBoundingBoxCorners](functions/getBoundingBoxCorners.md)
 - [getFieldDictJson](functions/getFieldDictJson.md)
 - [getMapScale](functions/getMapScale.md)

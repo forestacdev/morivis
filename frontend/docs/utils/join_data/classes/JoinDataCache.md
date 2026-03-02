@@ -6,7 +6,7 @@
 
 # Class: JoinDataCache
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:2](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L2)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:2](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L2)
 
 Join Dataのキャッシュを管理するクラス
 
@@ -26,7 +26,7 @@ Join Dataのキャッシュを管理するクラス
 
 > `static` **clear**(): `void`
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:21](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L21)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:21](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L21)
 
 #### Returns
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/utils/join\_data.ts:21](https://github.com/
 
 > `static` **get**(`key`): `Record`\<`string`, `Record`\<`string`, `any`\>\> \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:11](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L11)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:11](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L11)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: [frontend/src/routes/map/utils/join\_data.ts:11](https://github.com/
 
 > `static` **has**(`key`): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:26](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L26)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:26](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L26)
 
 #### Parameters
 
@@ -74,7 +74,7 @@ Defined in: [frontend/src/routes/map/utils/join\_data.ts:26](https://github.com/
 
 > `static` **keys**(): `IterableIterator`\<`string`\>
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:31](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L31)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:31](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L31)
 
 #### Returns
 
@@ -86,7 +86,7 @@ Defined in: [frontend/src/routes/map/utils/join\_data.ts:31](https://github.com/
 
 > `static` **remove**(`key`): `void`
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:16](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L16)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:16](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L16)
 
 #### Parameters
 
@@ -104,7 +104,7 @@ Defined in: [frontend/src/routes/map/utils/join\_data.ts:16](https://github.com/
 
 > `static` **set**(`key`, `data`): `void`
 
-Defined in: [frontend/src/routes/map/utils/join\_data.ts:6](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/join_data.ts#L6)
+Defined in: [frontend/src/routes/map/utils/join\_data.ts:6](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/join_data.ts#L6)
 
 #### Parameters
 

@@ -8,7 +8,7 @@
 
 > **detectLongitudeDomain**(`first`, `last`): `"180"` \| `"360"` \| `"indeterminate"`
 
-Defined in: [frontend/src/routes/map/utils/map.ts:164](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/map.ts#L164)
+Defined in: [frontend/src/routes/map/utils/map.ts:194](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/map.ts#L194)
 
 Detect the longitude domain based on the first and last longitude values.
 

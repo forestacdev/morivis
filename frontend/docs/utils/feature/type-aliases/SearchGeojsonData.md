@@ -8,7 +8,7 @@
 
 > **SearchGeojsonData** = `object`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:40](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature.ts#L40)
+Defined in: [frontend/src/routes/map/utils/feature.ts:40](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L40)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:40](https://github.com/for
 
 > **features**: `object`[]
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:42](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature.ts#L42)
+Defined in: [frontend/src/routes/map/utils/feature.ts:42](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L42)
 
 #### geometry
 
@@ -48,4 +48,4 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:42](https://github.com/for
 
 > **type**: `"FeatureCollection"`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:41](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature.ts#L41)
+Defined in: [frontend/src/routes/map/utils/feature.ts:41](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L41)

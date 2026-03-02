@@ -6,7 +6,7 @@
 
 # Class: TileProxy
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:95](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L95)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:95](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L95)
 
 ## Constructors
 
@@ -24,7 +24,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:95](https://github.com
 
 > `static` **toProxyUrl**(`originalUrl`): `string`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:96](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L96)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:96](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L96)
 
 #### Parameters
 

@@ -6,7 +6,10 @@
 
 # utils/layers
 
+## Interfaces
+
+- [LayerItem](interfaces/LayerItem.md)
+
 ## Functions
 
 - [createLayersItems](functions/createLayersItems.md)
-- [generateNumberLinearExpression](functions/generateNumberLinearExpression.md)

@@ -6,7 +6,7 @@
 
 # Class: CoverImageManager
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:10](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L10)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:10](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L10)
 
 画像の管理クラス
 
@@ -26,7 +26,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:10](https://github.com
 
 > `static` **add**(`id`, `url`): `void`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:20](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L20)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:20](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L20)
 
 #### Parameters
 
@@ -48,7 +48,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:20](https://github.com
 
 > `static` **clear**(): `void`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:67](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L67)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:67](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L67)
 
 #### Returns
 
@@ -60,7 +60,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:67](https://github.com
 
 > `static` **export**(`id`): `void`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:74](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L74)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:74](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L74)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:74](https://github.com
 
 > `static` **get**(`id`): `string` \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:43](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L43)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:43](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L43)
 
 #### Parameters
 
@@ -96,7 +96,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:43](https://github.com
 
 > `static` **getAll**(): `Map`\<`string`, `string`\>
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:89](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L89)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:89](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L89)
 
 #### Returns
 
@@ -108,7 +108,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:89](https://github.com
 
 > `static` **has**(`id`): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:53](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L53)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:53](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L53)
 
 #### Parameters
 
@@ -126,7 +126,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:53](https://github.com
 
 > `static` **remove**(`id`): `void`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:57](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L57)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:57](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L57)
 
 #### Parameters
 
@@ -144,7 +144,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:57](https://github.com
 
 > `static` **size**(): `number`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:85](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/image/index.ts#L85)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:85](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/image/index.ts#L85)
 
 #### Returns
 

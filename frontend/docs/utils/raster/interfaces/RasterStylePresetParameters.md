@@ -6,7 +6,7 @@
 
 # Interface: RasterStylePresetParameters
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:244](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L244)
+Defined in: [frontend/src/routes/map/utils/raster.ts:244](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L244)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/raster.ts:244](https://github.com/for
 
 > **brightnessMax**: `number`
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:247](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L247)
+Defined in: [frontend/src/routes/map/utils/raster.ts:247](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L247)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/utils/raster.ts:247](https://github.com/for
 
 > **brightnessMin**: `number`
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:246](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L246)
+Defined in: [frontend/src/routes/map/utils/raster.ts:246](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L246)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/utils/raster.ts:246](https://github.com/for
 
 > **contrast**: `number`
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:249](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L249)
+Defined in: [frontend/src/routes/map/utils/raster.ts:249](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L249)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/utils/raster.ts:249](https://github.com/for
 
 > **hueRotate**: `number`
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:245](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L245)
+Defined in: [frontend/src/routes/map/utils/raster.ts:245](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L245)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [frontend/src/routes/map/utils/raster.ts:245](https://github.com/for
 
 > **saturation**: `number`
 
-Defined in: [frontend/src/routes/map/utils/raster.ts:248](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/raster.ts#L248)
+Defined in: [frontend/src/routes/map/utils/raster.ts:248](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/raster.ts#L248)
