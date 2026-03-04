@@ -35,6 +35,8 @@
 		focusBbox = $bindable(),
 		isDragover = $bindable()
 	}: Props = $props();
+
+    let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
 </script>
 
 {#if showDialogType && showDialogType !== 'shp'}
@@ -46,7 +48,7 @@
 	>
 		<div
 			transition:scale={{ duration: 300, start: 0.9 }}
-			class="bg-opacity-8 bg-main flex max-h-[600px] max-w-[600px] grow flex-col rounded-md p-4 text-base"
+			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight ? 'h-[600px]' : 'max-h-[600px]'}"
 		>
 			<!-- {#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
