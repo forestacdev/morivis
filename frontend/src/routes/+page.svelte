@@ -29,8 +29,11 @@
 	let postMesh: THREE.Mesh;
 
 	const goMap = () => {
+		// ローカルホストかどうか
+		const isLocalhost = window.location.hostname === 'localhost';
+
 		showButton = false;
-		if (import.meta.env.MODE === 'production') {
+		if (import.meta.env.MODE === 'production' && !isLocalhost) {
 			goto('/morivis/map');
 		} else {
 			goto('/map');

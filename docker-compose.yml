@@ -1,0 +1,21 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PUBLIC_BASE_PATH=http://host.docker.internal:9000
+
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api/.env
+    environment:
+      - FRONTEND_BASE_URL=http://frontend:5173
+      - FRONTEND_BASE_PATH=
+    depends_on:
+      - frontend

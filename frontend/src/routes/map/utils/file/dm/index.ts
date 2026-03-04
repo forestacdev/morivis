@@ -47,6 +47,7 @@ export interface DMFeature {
 		classCode: string; // 分類コード (例: "2101"=真幅道路, "3001"=普通建物)
 		className: string; // 分類名 (例: "建物")
 		dataType: string; // データタイプ (面/線/点/注記/etc.)
+		dataTypeCode: string; // データタイプコード (0-9)
 		elementId: number; // 要素識別番号
 		layer: string; // レイヤコード
 		mapLevel: number; // 地図情報レベル
@@ -136,6 +137,7 @@ interface ElementRecord {
 	type: 'ELEMENT';
 	classCode: string;
 	dataType: string; // "面" | "線" | "点" | "注記" | "円" | "円弧" | "方向"
+	dataTypeCode: string; // 元のデータタイプコード (0-9)
 	elementId: number;
 	coordinateCount: number;
 	is3D?: boolean; // 拡張DM: 座標次元が3Dかどうか
@@ -328,6 +330,7 @@ const parseElementRecord = (line: string): ElementRecord => {
 		type: 'ELEMENT',
 		classCode,
 		dataType: DATA_TYPE_MAP[dataTypeCode] ?? '不明',
+		dataTypeCode,
 		elementId: parseIntField(line, 9, 8),
 		coordinateCount: parseIntField(line, 33, 4)
 	};
@@ -447,6 +450,7 @@ const parseExtElementRecord = (
 		type: 'ELEMENT',
 		classCode,
 		dataType: EXT_DATA_TYPE_MAP[dataTypeCode] ?? '不明',
+		dataTypeCode,
 		elementId,
 		coordinateCount,
 		is3D,
@@ -782,12 +786,13 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 		if (!currentElementRecord) return;
 		if (coordBuffer.length === 0 && coord3DBuffer.length === 0) return;
 
-		const { classCode, dataType, elementId } = currentElementRecord;
+		const { classCode, dataType, dataTypeCode, elementId } = currentElementRecord;
 		const className = getClassName(classCode);
 		const baseProps = {
 			classCode,
 			className,
 			dataType,
+			dataTypeCode,
 			elementId,
 			layer: currentClassCode,
 			mapLevel,
@@ -936,6 +941,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 						classCode: currentClassCode || '8100',
 						className: '注記',
 						dataType: '注記',
+						dataTypeCode: '7',
 						elementId: 0,
 						layer: currentClassCode,
 						mapLevel,

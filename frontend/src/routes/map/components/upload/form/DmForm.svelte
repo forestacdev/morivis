@@ -234,14 +234,14 @@
 				<span class="text-sm text-gray-300">クラス名</span>
 				<div class="flex gap-2">
 					<button
-						class="text-xs text-gray-400 hover:text-white"
+						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="text-xs text-gray-400 hover:text-white"
+						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, false]));

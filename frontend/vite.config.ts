@@ -86,6 +86,7 @@ export default defineConfig({
 		noExternal: ['svelte-hero-icons']
 	},
 	server: {
+		allowedHosts: true,
 		proxy: {
 			'/api/qchizu': {
 				target: 'https://mapdata.qchizu.xyz',

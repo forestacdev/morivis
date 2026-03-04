@@ -6,7 +6,7 @@
 
 # Interface: RasterImageEntry\<T\>
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:266](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L266)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:257](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L257)
 
 ## Extends
 
@@ -24,7 +24,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:266](https://git
 
 > **format**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:267](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L267)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:258](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L258)
 
 #### type
 
@@ -40,7 +40,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:267](https://git
 
 > **id**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:260](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L260)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L251)
 
 #### Inherited from
 
@@ -52,7 +52,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:260](https://git
 
 > **interaction**: [`RasterInteraction`](RasterInteraction.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:263](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L263)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:254](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L254)
 
 #### Inherited from
 
@@ -64,7 +64,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:263](https://git
 
 > **metaData**: `RasterMetaData`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:262](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L262)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L253)
 
 #### Inherited from
 
@@ -76,7 +76,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:262](https://git
 
 > **style**: `T`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:271](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L271)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:262](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L262)
 
 ***
 
@@ -84,7 +84,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:271](https://git
 
 > **type**: `"raster"`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:261](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/raster/index.ts#L261)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:252](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/raster/index.ts#L252)
 
 #### Inherited from
 

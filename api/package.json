@@ -4,6 +4,7 @@
     "scripts": {
         "dev": "npx tsx watch --env-file=.env src/dev.ts",
         "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
+        "build:docker": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 --external:playwright --external:playwright-core ./src/dev.ts",
         "zip": "zip -j lambda.zip dist/index.js",
         "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name morivis-api --region ap-northeast-1",
         "deploy": "run-s build zip update"
@@ -19,6 +20,7 @@
         "@hono/swagger-ui": "^0.5.3",
         "@hono/zod-openapi": "^1.2.2",
         "hono": "^4.12.1",
+        "playwright": "^1.45.0",
         "pmtiles": "^4.3.0"
     }
 }

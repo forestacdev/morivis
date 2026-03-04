@@ -6,7 +6,7 @@
 
 # Interface: AuxiliaryLayersData
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:58](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/vector/index.ts#L58)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:32](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/vector/index.ts#L32)
 
 ## Properties
 
@@ -14,15 +14,15 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:58](https://gith
 
 > **layers**: `LayerSpecification`[]
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:64](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/vector/index.ts#L64)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:38](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/vector/index.ts#L38)
 
 ***
 
-### source
+### sources?
 
-> **source**: `object`
+> `optional` **sources**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:60](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/vector/index.ts#L60)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:34](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/vector/index.ts#L34)
 
 #### Index Signature
 

@@ -6,7 +6,7 @@
 
 # Interface: MeshStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:16](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L16)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:16](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L16)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:16](https://githu
 
 > **color**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:21](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L21)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:21](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L21)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:21](https://githu
 
 > **opacity**: [`Opacity`](../../type-aliases/Opacity.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:18](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L18)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:18](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L18)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:18](https://githu
 
 > **transform**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:22](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L22)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:22](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L22)
 
 #### altitude
 
@@ -58,7 +58,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:22](https://githu
 
 > **type**: `"mesh"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:17](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L17)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:17](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L17)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:17](https://githu
 
 > `optional` **visible**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:19](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L19)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:19](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L19)
 
 ***
 
@@ -74,4 +74,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:19](https://githu
 
 > **wireframe**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:20](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/data/types/model/index.ts#L20)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:20](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L20)

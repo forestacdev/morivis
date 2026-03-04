@@ -8,7 +8,7 @@
 
 > **isIOSSafari**(): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/device.ts:25](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/device.ts#L25)
+Defined in: [frontend/src/routes/map/utils/device.ts:25](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/device.ts#L25)
 
 iOSのSafariかどうかを判定する
 

@@ -6,7 +6,7 @@
 
 # Interface: FeatureStateData
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:1](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature_state.ts#L1)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:1](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L1)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:1](https://github.c
 
 > **source**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:2](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature_state.ts#L2)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:2](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L2)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:2](https://github.c
 
 > `optional` **sourceLayer**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:3](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/feature_state.ts#L3)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:3](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L3)

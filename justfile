@@ -1,3 +1,6 @@
+docker:
+    @docker compose up -d
+
 # 開発サーバーの起動
 dev:
     @echo "Checking if port 5173 is in use..."
@@ -75,3 +78,10 @@ update_360:
     cd data/scripts/python && \
     uv run node.py && \
     tippecanoe -o ../../assets/street_view/panorama.pmtiles -L panorama_nodes:../../assets/street_view/nodes.fgb -L panorama_links:../../assets/street_view/links.fgb -ai --force
+
+# typedocの更新
+typedoc:
+    cd frontend && pnpm run typedoc
+
+api:
+    pnpm run api

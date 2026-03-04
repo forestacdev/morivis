@@ -6,7 +6,7 @@
 
 # Class: ColorMapManager
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:151](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L151)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:151](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L151)
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:151](https://github
 
 > **new ColorMapManager**(): `ColorMapManager`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:153](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L153)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:153](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L153)
 
 #### Returns
 
@@ -26,7 +26,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:153](https://github
 
 > **add**(`cacheKey`, `pixels`): `void`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:246](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L246)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:367](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L367)
 
 #### Parameters
 
@@ -48,7 +48,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:246](https://github
 
 > **createColorArray**(`colorMapName`): `Uint8Array`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:156](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L156)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:167](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L167)
 
 #### Parameters
 
@@ -66,7 +66,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:156](https://github
 
 > **createSimpleCSSGradient**(`colorMapName`, `steps`, `direction`): `string`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:191](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L191)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:202](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L202)
 
 #### Parameters
 
@@ -92,7 +92,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:191](https://github
 
 > **get**(`cacheKey`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:250](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L250)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:371](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L371)
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:250](https://github
 
 > **getMaxColor**(`colorMapName`, `format`): `string`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:234](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L234)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:245](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L245)
 
 カラーマップの最大値の色を取得
 
@@ -140,7 +140,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:234](https://github
 
 > **getMinColor**(`colorMapName`, `format`): `string`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:216](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L216)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:227](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L227)
 
 カラーマップの最小値の色を取得
 
@@ -170,7 +170,7 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:216](https://github
 
 > **has**(`cacheKey`): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:254](https://github.com/forestacdev/morivis/blob/7130c0fc1485e879ee8f8cd5e93ba1810b50e1b0/frontend/src/routes/map/utils/color_mapping.ts#L254)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:375](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L375)
 
 #### Parameters
 
@@ -181,3 +181,88 @@ Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:254](https://github
 #### Returns
 
 `boolean`
+
+***
+
+### registerCustomColorMap()
+
+> **registerCustomColorMap**(`name`, `values`, `colors`): `void`
+
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:269](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L269)
+
+数値と色の配列から自作カラーマップを作成しキャッシュに登録する
+
+#### Parameters
+
+##### name
+
+`string`
+
+カラーマップ名
+
+##### values
+
+`number`[]
+
+数値配列（昇順）
+
+##### colors
+
+`string`[]
+
+HEXカラー配列（valuesと同じ長さ）
+
+#### Returns
+
+`void`
+
+#### Example
+
+```ts
+manager.registerCustomColorMap(
+  'elevation',
+  [0, 300, 1000, 2000, 4000],
+  ['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09']
+);
+```
+
+***
+
+### registerThreeColorGradient()
+
+> **registerThreeColorGradient**(`name`, `minColor`, `midColor`, `maxColor`): `void`
+
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:325](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L325)
+
+3色グラデーション（min→mid→max）のカラーマップテクスチャを作成しキャッシュに登録する
+シェーダーのcolorRamp3と同じ色分布になる
+
+#### Parameters
+
+##### name
+
+`string`
+
+カラーマップ名
+
+##### minColor
+
+`string`
+
+HEXカラー（0.0側）
+
+##### midColor
+
+`string`
+
+HEXカラー（0.5）
+
+##### maxColor
+
+`string`
+
+HEXカラー（1.0側）
+
+#### Returns
+
+`void`

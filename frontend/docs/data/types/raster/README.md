@@ -8,6 +8,7 @@
 
 ## Interfaces
 
+- [BaseRasterStyle](interfaces/BaseRasterStyle.md)
 - [CategoryLegend](interfaces/CategoryLegend.md)
 - [GradientLegend](interfaces/GradientLegend.md)
 - [ImageLegend](interfaces/ImageLegend.md)

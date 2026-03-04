@@ -177,6 +177,9 @@
 		}
 	});
 
+	// スクリーンショットモード
+	const isScreenshotMode = $derived(page.url.searchParams.get('mode') === 'screenshot');
+
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
 
@@ -192,6 +195,13 @@
 		}
 
 		isInitialized = true;
+
+		// スクリーンショットモードではストリートビューデータの読み込みをスキップ
+		if (isScreenshotMode) {
+			isInitialStreetViewEntry = true;
+			return;
+		}
+
 		const geojson = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/nodes.fgb`);
 		streetViewPointData = geojson as unknown as StreetViewPointGeoJson;
 
@@ -448,6 +458,40 @@
 </script>
 
 {#if isInitialized && isInitialStreetViewEntry}
+	{#if isScreenshotMode}
+		<!-- スクリーンショットモード: マップのみ表示 -->
+		<div class="fixed h-dvh w-full">
+			<MapLibreMap
+				bind:maplibreMap={map}
+				bind:layerEntries
+				bind:tempLayerEntries
+				bind:showDataEntry
+				bind:featureMenuData
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+				bind:showAngleMarker
+				bind:angleMarkerLngLat
+				bind:cameraBearing
+				bind:dropFile
+				bind:showDialogType
+				bind:drawGeojsonData
+				bind:showZoneForm
+				bind:focusBbox
+				bind:isExternalCameraUpdate
+				bind:selectedSearchId
+				bind:selectedSearchResultData
+				bind:contextMenuState
+				bind:isDragover
+				{searchResults}
+				{selectedEpsgCode}
+				{streetViewLineData}
+				{streetViewPointData}
+				{showMapCanvas}
+				{searchGeojsonData}
+				{focusFeature}
+			/>
+		</div>
+	{:else}
 	<div class="fixed flex h-dvh w-full flex-col">
 		<div class="flex h-full w-full flex-1">
 			<!-- マップのオフセット調整用 -->
@@ -578,6 +622,7 @@
 
 		<MobileFooter {showDataEntry} {featureMenuData} />
 	</div>
+	{/if}
 {/if}
 <UploadDialog
 	bind:showDialogType
