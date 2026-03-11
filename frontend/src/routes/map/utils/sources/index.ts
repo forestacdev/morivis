@@ -75,7 +75,7 @@ export const createSourcesItems = async (
 								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}`;
 							} else if (mode === 'multi') {
 								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}`;
+								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}`;
 							}
 
 							let imageData: string | undefined;
@@ -87,6 +87,8 @@ export const createSourcesItems = async (
 
 							if (imageData) {
 								GeoTiffImageCache.set(styleID as string, imageData);
+								// 古いモードのキャッシュエントリ（blob URL）を解放
+								GeoTiffImageCache.revokeOldEntries(entry.id, styleID as string);
 
 								items[sourceId] = {
 									type: 'image',

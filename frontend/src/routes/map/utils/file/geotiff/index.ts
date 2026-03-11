@@ -145,6 +145,21 @@ export class GeoTiffImageCache {
 	static clear(): void {
 		this.cache.clear();
 	}
+
+	/**
+	 * 指定されたエントリIDに関連する古いキャッシュエントリを削除し、blob URLを解放する。
+	 * 現在のstyleIDのエントリは保持する。
+	 */
+	static revokeOldEntries(entryId: string, currentStyleID: string): void {
+		for (const [key, url] of this.cache.entries()) {
+			if (key.startsWith(entryId) && key !== currentStyleID) {
+				if (url.startsWith('blob:')) {
+					URL.revokeObjectURL(url);
+				}
+				this.cache.delete(key);
+			}
+		}
+	}
 }
 
 export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: number } => {
@@ -299,25 +314,57 @@ export const loadRasterData = async (
 		const uniformsData = visualization.uniformsData;
 		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
 
+		// rasters をフラット化してワーカーに渡す
+		// texImage3D は連続した Float32Array を要求するため
+		let flatRasters: Float32Array;
+		if (bandCount === 1) {
+			// シングルバンド: rasters は実質 Float32Array（配列ではない）
+			flatRasters = rasters as unknown as Float32Array;
+		} else {
+			flatRasters = new Float32Array(width * height * bandCount);
+			for (let i = 0; i < bandCount; i++) {
+				flatRasters.set(rasters[i], i * width * height);
+			}
+		}
+
+		// モードに応じたワーカーメッセージを構築
+		const workerMessage: Record<string, unknown> = {
+			rasters: flatRasters,
+			size: bandCount,
+			type: mode,
+			width,
+			height,
+			colorArray
+		};
+
+		if (mode === 'single') {
+			workerMessage.min = uniformsData.single.min;
+			workerMessage.max = uniformsData.single.max;
+			workerMessage.bandIndex = uniformsData.single.index;
+		} else if (mode === 'multi') {
+			workerMessage.min = 0;
+			workerMessage.max = 255;
+			workerMessage.redIndex = uniformsData.multi.r.index;
+			workerMessage.greenIndex = uniformsData.multi.g.index;
+			workerMessage.blueIndex = uniformsData.multi.b.index;
+			workerMessage.redMin = uniformsData.multi.r.min;
+			workerMessage.redMax = uniformsData.multi.r.max;
+			workerMessage.greenMin = uniformsData.multi.g.min;
+			workerMessage.greenMax = uniformsData.multi.g.max;
+			workerMessage.blueMin = uniformsData.multi.b.min;
+			workerMessage.blueMax = uniformsData.multi.b.max;
+		}
+
 		return new Promise((resolve, reject) => {
-			rebderWorker.postMessage({
-				rasters,
-				size: bandCount,
-				type: mode,
-				min: uniformsData.single.min,
-				max: uniformsData.single.max,
-				width,
-				height,
-				colorArray
-			});
+			rebderWorker.postMessage(workerMessage);
 
 			// Define message handler once
 			rebderWorker.onmessage = async (e) => {
-				const { blob } = e.data;
+				const { blob, error } = e.data;
 
-				const existingUrl = GeoTiffCache.getBlobUrl(id);
-				if (existingUrl) {
-					URL.revokeObjectURL(existingUrl); // ✅ 古いURLを明示的に解放
+				if (error) {
+					reject(new Error(`Render worker error: ${error}`));
+					return;
 				}
 
 				const url = URL.createObjectURL(blob);
