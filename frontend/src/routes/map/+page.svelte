@@ -154,10 +154,14 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('3857'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
-	let zoneBboxGeojsonData = $state<AppFeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>>({
+	let zoneBboxGeojsonData = $state<
+		AppFeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>
+	>({
 		type: 'FeatureCollection',
 		features: []
 	});
+
+	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -499,137 +503,137 @@
 			/>
 		</div>
 	{:else}
-	<div class="fixed flex h-dvh w-full flex-col">
-		<div class="flex h-full w-full flex-1">
-			<!-- マップのオフセット調整用 -->
-			{#if $showLayerMenu}
-				<div
-					in:slide={{ duration: 1, delay: 200, axis: 'x' }}
-					class="bg-main w-side-menu flex h-full shrink-0 flex-col max-lg:hidden"
-				></div>
-			{/if}
+		<div class="fixed flex h-dvh w-full flex-col">
+			<div class="flex h-full w-full flex-1">
+				<!-- マップのオフセット調整用 -->
+				{#if $showLayerMenu}
+					<div
+						in:slide={{ duration: 1, delay: 200, axis: 'x' }}
+						class="bg-main w-side-menu flex h-full shrink-0 flex-col max-lg:hidden"
+					></div>
+				{/if}
 
-			<LayerMenu
-				bind:layerEntries
-				bind:tempLayerEntries
-				bind:showDataEntry
-				bind:featureMenuData
-				{resetlayerEntries}
-			/>
-
-			<!-- 左側余白 -->
-			{#if !$showLayerMenu}
-				<div class="bg-main p-2 max-lg:hidden"></div>
-			{/if}
-
-			<!-- スマホ用その他メニュー -->
-			<div
-				class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
-					? 'pointer-events-auto opacity-500'
-					: 'pointer-events-none opacity-0'}"
-			>
-				<OtherMenu bind:imagePreviewUrl />
-			</div>
-
-			<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
-			<div class="flex w-full flex-1 flex-col overflow-hidden">
-				<!-- 上部余白 -->
-				<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
-				<HeaderMenu
-					{layerEntries}
-					bind:inputSearchWord
-					bind:featureMenuData
-					bind:selectedSearchResultData
-					bind:searchResults
-					bind:showSelectionMarker
-					bind:selectionMarkerLngLat
-					bind:showDataEntry
-					{resetlayerEntries}
-					{focusFeature}
-				/>
-
-				<MapLibreMap
-					bind:maplibreMap={map}
+				<LayerMenu
 					bind:layerEntries
 					bind:tempLayerEntries
 					bind:showDataEntry
 					bind:featureMenuData
-					bind:showSelectionMarker
-					bind:selectionMarkerLngLat
-					bind:showAngleMarker
-					bind:angleMarkerLngLat
-					bind:cameraBearing
-					bind:dropFile
-					bind:showDialogType
-					bind:drawGeojsonData
-					bind:showZoneForm
-					bind:focusBbox
-					bind:isExternalCameraUpdate
-					bind:selectedSearchId
-					bind:selectedSearchResultData
-					bind:contextMenuState
-					bind:isDragover
-					{searchResults}
-					{selectedEpsgCode}
-					{zoneBboxGeojsonData}
-					{streetViewLineData}
-					{streetViewPointData}
-					{showMapCanvas}
-					{searchGeojsonData}
-					{focusFeature}
+					{resetlayerEntries}
 				/>
+
+				<!-- 左側余白 -->
+				{#if !$showLayerMenu}
+					<div class="bg-main p-2 max-lg:hidden"></div>
+				{/if}
+
+				<!-- スマホ用その他メニュー -->
+				<div
+					class="absolute z-10 h-full w-full lg:hidden {$showOtherMenu
+						? 'pointer-events-auto opacity-500'
+						: 'pointer-events-none opacity-0'}"
+				>
+					<OtherMenu bind:imagePreviewUrl />
+				</div>
+
+				<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
+				<div class="flex w-full flex-1 flex-col overflow-hidden">
+					<!-- 上部余白 -->
+					<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
+					<HeaderMenu
+						{layerEntries}
+						bind:inputSearchWord
+						bind:featureMenuData
+						bind:selectedSearchResultData
+						bind:searchResults
+						bind:showSelectionMarker
+						bind:selectionMarkerLngLat
+						bind:showDataEntry
+						{resetlayerEntries}
+						{focusFeature}
+					/>
+
+					<MapLibreMap
+						bind:maplibreMap={map}
+						bind:layerEntries
+						bind:tempLayerEntries
+						bind:showDataEntry
+						bind:featureMenuData
+						bind:showSelectionMarker
+						bind:selectionMarkerLngLat
+						bind:showAngleMarker
+						bind:angleMarkerLngLat
+						bind:cameraBearing
+						bind:dropFile
+						bind:showDialogType
+						bind:drawGeojsonData
+						bind:showZoneForm
+						bind:focusBbox
+						bind:isExternalCameraUpdate
+						bind:selectedSearchId
+						bind:selectedSearchResultData
+						bind:contextMenuState
+						bind:isDragover
+						{searchResults}
+						{selectedEpsgCode}
+						{zoneBboxGeojsonData}
+						{streetViewLineData}
+						{streetViewPointData}
+						{showMapCanvas}
+						{searchGeojsonData}
+						{focusFeature}
+					/>
+				</div>
+				<!-- 右側余白 -->
+				<div class="bg-main p-2 max-lg:hidden"></div>
 			</div>
-			<!-- 右側余白 -->
-			<div class="bg-main p-2 max-lg:hidden"></div>
-		</div>
 
-		<!-- フッター -->
-		<Footer />
+			<!-- フッター -->
+			<Footer />
 
-		<SearchMenu
-			bind:featureMenuData
-			bind:inputSearchWord
-			bind:showSelectionMarker
-			bind:selectionMarkerLngLat
-			bind:searchResults
-			bind:searchGeojsonData
-			{selectedSearchId}
-			{focusFeature}
-		/>
-
-		<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
-		<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-		</FeatureMenu>
-		<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
-
-		<!-- スマホ用地物情報 -->
-		<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-			<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-		</MobileFeatureMenuCard>
-
-		<PreviewMenu bind:showDataEntry />
-
-		{#if !showDataEntry && !showZoneForm}
-			<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
-		{/if}
-		{#if showDataEntry}
-			<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
-		{/if}
-
-		{#if showStreetViewLayer}
-			<StreetViewCanvas
-				{streetViewPoint}
-				{nextPointData}
-				{showThreeCanvas}
-				bind:cameraBearing
-				bind:showAngleMarker
-				bind:isExternalCameraUpdate
+			<SearchMenu
+				bind:featureMenuData
+				bind:inputSearchWord
+				bind:showSelectionMarker
+				bind:selectionMarkerLngLat
+				bind:searchResults
+				bind:searchGeojsonData
+				{selectedSearchId}
+				{focusFeature}
 			/>
-		{/if}
 
-		<MobileFooter {showDataEntry} {featureMenuData} />
-	</div>
+			<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
+			<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
+				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+			</FeatureMenu>
+			<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
+
+			<!-- スマホ用地物情報 -->
+			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
+				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+			</MobileFeatureMenuCard>
+
+			<PreviewMenu bind:showDataEntry />
+
+			{#if !showDataEntry && !showZoneForm}
+				<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
+			{/if}
+			{#if showDataEntry}
+				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
+			{/if}
+
+			{#if showStreetViewLayer}
+				<StreetViewCanvas
+					{streetViewPoint}
+					{nextPointData}
+					{showThreeCanvas}
+					bind:cameraBearing
+					bind:showAngleMarker
+					bind:isExternalCameraUpdate
+				/>
+			{/if}
+
+			<MobileFooter {showDataEntry} {featureMenuData} />
+		</div>
 	{/if}
 {/if}
 <UploadDialog
@@ -640,13 +644,23 @@
 	bind:showZoneForm
 	bind:focusBbox
 	bind:isDragover
+	bind:zoneConfirmedEpsg
 	{selectedEpsgCode}
 />
 
 <ImagePreviewDialog bind:imagePreviewUrl />
 
 {#if map}
-	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox bind:zoneBboxGeojsonData />
+	<ZoneForm
+		{map}
+		bind:showZoneForm
+		bind:selectedEpsgCode
+		bind:focusBbox
+		bind:zoneBboxGeojsonData
+		onConfirm={(epsgCode) => {
+			zoneConfirmedEpsg = epsgCode;
+		}}
+	/>
 {/if}
 
 {#if contextMenuState}

@@ -9,9 +9,6 @@ export type BasemapImageTile = {
 	Y: number;
 };
 
-/** イベントトリガーの種類 */
-export type UseEventTriggerType = '' | 'setZone'; // 初期表示に戻す
-
 /** コンテキストメニューの状態 */
 export interface ContextMenuState {
 	x: number;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import { untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -10,13 +11,12 @@
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import type { UseEventTriggerType } from '$routes/map/types/ui';
 	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -26,6 +26,7 @@
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		isDragover: boolean;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		isDragover = $bindable()
+		isDragover = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
 	const shpValidation = yup
@@ -286,16 +288,16 @@
 	};
 
 	$effect(() => {
-		const unsubscribe = useEventTrigger.subscribe((eventName: UseEventTriggerType) => {
-			if (eventName === 'setZone' && showDialogType === 'shp') {
-				// 座標系フォームが表示された場合、選択されたEPSGコードを使用してエントリを作成
-				const prjContent = getProjContext(selectedEpsgCode);
+		if (zoneConfirmedEpsg && showDialogType === 'shp') {
+			const epsg = zoneConfirmedEpsg;
+			untrack(() => {
+				zoneConfirmedEpsg = null;
+				const prjContent = getProjContext(epsg);
 				if (prjContent) {
 					setEntryData(prjContent);
 				}
-			}
-		});
-		return unsubscribe;
+			});
+		}
 	});
 
 	let distance = $state<number>(0); // 円の半径

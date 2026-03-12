@@ -1,5 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
@@ -20,7 +21,7 @@
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -29,6 +30,7 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -37,7 +39,8 @@
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -196,12 +199,13 @@
 	};
 
 	$effect(() => {
-		const unsubscribe = useEventTrigger.subscribe((eventName) => {
-			if (eventName === 'setZone' && showDialogType === 'dm') {
-				convertAndCreateEntry(selectedEpsgCode);
-			}
-		});
-		return unsubscribe;
+		if (zoneConfirmedEpsg && showDialogType === 'dm') {
+			const epsg = zoneConfirmedEpsg;
+			untrack(() => {
+				zoneConfirmedEpsg = null;
+				convertAndCreateEntry(epsg);
+			});
+		}
 	});
 </script>
 

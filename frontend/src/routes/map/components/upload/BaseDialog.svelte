@@ -21,8 +21,9 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
-		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -33,7 +34,8 @@
 		selectedEpsgCode,
 		dropFile = $bindable(),
 		focusBbox = $bindable(),
-		isDragover = $bindable()
+		isDragover = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
     let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
@@ -72,6 +74,7 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -82,6 +85,7 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -92,6 +96,7 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -107,6 +112,7 @@
 		bind:isDragover
 		bind:showZoneForm
 		bind:focusBbox
+		bind:zoneConfirmedEpsg
 		{selectedEpsgCode}
 	/>
 {/if}

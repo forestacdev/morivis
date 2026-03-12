@@ -1,4 +1,3 @@
-import type { UseEventTriggerType } from '$routes/map/types/ui';
 import { get, writable, readable } from 'svelte/store';
 import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
 import { browser } from '$app/environment';
@@ -57,18 +56,6 @@ export const isMobile = readable(false, (set) => {
 
 // 初期化
 
-/** 外部コンポーネントからイベントを発火させるストア */
-const eventStore = () => {
-	const { subscribe, set } = writable<UseEventTriggerType>('');
-	return {
-		subscribe,
-		trigger: (eventKey: UseEventTriggerType) => {
-			set(eventKey);
-			setTimeout(() => set(''), 0);
-		}
-	};
-};
-export const useEventTrigger = eventStore();
 
 //TODO: 履歴管理の整理
 

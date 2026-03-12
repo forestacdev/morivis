@@ -16,7 +16,6 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
-	import { useEventTrigger } from '$routes/stores/ui';
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
@@ -24,6 +23,7 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
+		onConfirm: (epsgCode: EpsgCode) => void;
 	}
 
 	let {
@@ -31,7 +31,8 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneBboxGeojsonData = $bindable()
+		zoneBboxGeojsonData = $bindable(),
+		onConfirm
 	}: Props = $props();
 
     // リセット処理
@@ -46,8 +47,9 @@
 
 
 	const registration = () => {
+		const code = selectedEpsgCode;
 		reset();
-		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
+		onConfirm(code);
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
