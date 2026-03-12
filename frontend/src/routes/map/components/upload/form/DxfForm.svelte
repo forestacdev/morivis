@@ -134,10 +134,19 @@
 			const prjContent = getProjContext(epsgCode);
 			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
 
-			const geojsonData = (await transformGeoJSONParallel(
+			const transformedGeojson = (await transformGeoJSONParallel(
 				plainGeojson,
 				prjContent
 			)) as FeatureCollection;
+
+			// ジオメトリタイプとレイヤーでフィルター
+			let geojsonData = filterByGeometryType(
+				transformedGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedLayers.length > 0) {
+				geojsonData = filterByProperty(geojsonData, selectedLayers, extractLayer);
+			}
 
 			if (!geojsonData || geojsonData.features.length === 0) {
 				showNotification('DXFファイルの変換に失敗しました', 'error');

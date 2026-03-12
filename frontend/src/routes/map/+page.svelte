@@ -52,9 +52,11 @@
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
+	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
+	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
-	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -152,6 +154,10 @@
 	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('3857'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
+	let zoneBboxGeojsonData = $state<AppFeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>>({
+		type: 'FeatureCollection',
+		features: []
+	});
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -484,6 +490,7 @@
 				bind:isDragover
 				{searchResults}
 				{selectedEpsgCode}
+				{zoneBboxGeojsonData}
 				{streetViewLineData}
 				{streetViewPointData}
 				{showMapCanvas}
@@ -564,6 +571,7 @@
 					bind:isDragover
 					{searchResults}
 					{selectedEpsgCode}
+					{zoneBboxGeojsonData}
 					{streetViewLineData}
 					{streetViewPointData}
 					{showMapCanvas}
@@ -638,7 +646,7 @@
 <ImagePreviewDialog bind:imagePreviewUrl />
 
 {#if map}
-	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox />
+	<ZoneForm {map} bind:showZoneForm bind:selectedEpsgCode bind:focusBbox bind:zoneBboxGeojsonData />
 {/if}
 
 {#if contextMenuState}

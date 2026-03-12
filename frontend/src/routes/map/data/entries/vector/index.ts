@@ -87,14 +87,18 @@ export const createGeoJsonEntry = (
 		const colors = groupPropertyByGeometryType(data, (props) =>
 			props?.color != null ? String(props.color) : undefined
 		);
-		const dxfColorMapping = createColorStyleDXFMapping(colors[entryGeometryType] ?? []);
-		colorsConfig.expressions.push({
-			type: 'match',
-			key: 'color',
-			name: 'カラーコードによる色分け',
-			mapping: dxfColorMapping
-		});
-		colorsConfig.key = 'color';
+		const dxfCategories = colors[entryGeometryType] ?? [];
+		if (dxfCategories.length > 0) {
+			const dxfColorMapping = createColorStyleDXFMapping(dxfCategories);
+			colorsConfig.expressions.push({
+				type: 'match',
+				key: 'color',
+				name: 'カラーコードによる色分け',
+				mapping: dxfColorMapping
+			});
+			colorsConfig.key = 'color';
+		}
+		// カテゴリが空の場合はデフォルトのシングルカラースタイルを維持
 	}
 
 	const propKeys = getUniquePropertyKeys(data as any);

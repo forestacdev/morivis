@@ -87,6 +87,7 @@
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
+		zoneBboxGeojsonData: FeatureCollection; // 座標系選択用GeoJSON
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 		searchGeojsonData: SearchGeojsonData | null;
 		selectedSearchResultData: ResultData | null;
@@ -117,6 +118,7 @@
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
+		zoneBboxGeojsonData,
 		isExternalCameraUpdate = $bindable(),
 		selectedSearchResultData = $bindable(),
 		searchGeojsonData,
@@ -367,7 +369,7 @@
 				...previewSources,
 				zone_bbox: {
 					type: 'geojson',
-					data: { type: 'FeatureCollection', features: [] }
+					data: zoneBboxGeojsonData as FeatureCollection
 				},
 				search_result: {
 					type: 'geojson',
@@ -398,6 +400,8 @@
 						'background-opacity': 0
 					}
 				},
+
+                // 座標系選択のフィーチャー
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
@@ -405,7 +409,7 @@
 					filter: [
 						'all',
 						['==', '$type', 'Polygon'],
-						['==', 'code', selectedEpsgCode] // 最もシンプルで確実な方法
+						['==', 'code', selectedEpsgCode] 
 					],
 					paint: {
 						'fill-color': 'red',
@@ -615,12 +619,10 @@
 
 	// 座標系選択
 	$effect(() => {
-		if (showZoneForm) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		} else {
-			// 座標系選択ダイアログが閉じられた場合、レイヤーのスタイルを更新
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}
+		if(zoneBboxGeojsonData.features.length > 0 || !zoneBboxGeojsonData.features.length === 0) {
+            alert('座標系選択のフィーチャーが更新されました。');
+            setStyleDebounce(layerEntries as GeoDataEntry[]);
+        }
 	});
 
 	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {

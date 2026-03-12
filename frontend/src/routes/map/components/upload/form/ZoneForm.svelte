@@ -23,18 +23,25 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 	}
 
 	let {
 		map,
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		zoneBboxGeojsonData = $bindable()
 	}: Props = $props();
+
 
 	const registration = () => {
 		showZoneForm = false;
 		focusBbox = null; // リセットして次回のeffect再実行を保証
+        zoneBboxGeojsonData = {
+            type: 'FeatureCollection',
+            features: []
+        }; // リセットして次回のeffect再実行を保証
 		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
 	};
 	let originalBbox = $derived.by(() => {
@@ -49,7 +56,7 @@
 		properties: EpsgInfoWithCode;
 	}
 
-	let geojsonData: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
+	let _internalGeojson: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
 		type: 'FeatureCollection',
 		features: []
 	};
@@ -59,12 +66,12 @@
 	$effect(() => {
 		if (!originalBbox) {
 			// bboxリセット時にデータもクリア
-			geojsonData = { type: 'FeatureCollection', features: [] };
+			_internalGeojson = { type: 'FeatureCollection', features: [] };
 			poiData = [];
 			return;
 		}
 
-		geojsonData = {
+		_internalGeojson = {
 			type: 'FeatureCollection',
 			features: getEpsgInfoArray({
 				exclude4326: true
@@ -107,7 +114,7 @@
 				.filter((feature) => feature !== undefined)
 		};
 
-		poiData = geojsonData.features
+		poiData = _internalGeojson.features
 			.filter((feature) => feature.geometry.type === 'Point')
 			.map((feature) => ({
 				coordinates: feature.geometry.coordinates as [number, number],
@@ -116,7 +123,7 @@
 
 		// 現在の地図の中心から一番近いフィーチャーを見つけて、そのpoiDataの座標系を選択する
 		const mapCenter = map.getCenter();
-		const points = geojsonData.features.filter(
+		const points = _internalGeojson.features.filter(
 			(f) => f.geometry.type === 'Point'
 		) as Feature<PointGeometry, PoiData['properties']>[];
 		if (points.length > 0) {
@@ -128,15 +135,16 @@
 			selectedEpsgCode = points[idx].properties.code;
 		}
 
-		// TODO
-		setTimeout(() => {
-			mapStore.setData('zone_bbox', geojsonData);
-		}, 500);
+		
+		zoneBboxGeojsonData = {
+            type: 'FeatureCollection',
+            features: _internalGeojson.features.filter((feature) => feature.geometry.type === 'Polygon')
+        } as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
 	});
 
 	$effect(() => {
 		if (selectedEpsgCode) {
-			const feature = geojsonData.features.find(
+			const feature = _internalGeojson.features.find(
 				(feature) =>
 					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
 			);
@@ -150,7 +158,7 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					duration: 500
+					duration: 750
 				});
 			}
 
