@@ -164,8 +164,8 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
-		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
+		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
+		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
@@ -619,8 +619,7 @@
 
 	// 座標系選択
 	$effect(() => {
-		if(zoneBboxGeojsonData.features.length > 0 || !zoneBboxGeojsonData.features.length === 0) {
-            alert('座標系選択のフィーチャーが更新されました。');
+		if(zoneBboxGeojsonData.features.length || !zoneBboxGeojsonData.features.length) {
             setStyleDebounce(layerEntries as GeoDataEntry[]);
         }
 	});

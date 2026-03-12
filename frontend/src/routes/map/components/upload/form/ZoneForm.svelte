@@ -34,14 +34,19 @@
 		zoneBboxGeojsonData = $bindable()
 	}: Props = $props();
 
-
-	const registration = () => {
-		showZoneForm = false;
-		focusBbox = null; // リセットして次回のeffect再実行を保証
+    // リセット処理
+    const reset = () => {
+        showZoneForm = false;
+        focusBbox = null; // リセットして次回のeffect再実行を保証
         zoneBboxGeojsonData = {
             type: 'FeatureCollection',
             features: []
-        }; // リセットして次回のeffect再実行を保証
+        };
+    };
+
+
+	const registration = () => {
+		reset();
 		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
 	};
 	let originalBbox = $derived.by(() => {
@@ -216,7 +221,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button onclick={() => { showZoneForm = false; focusBbox = null; }} class="c-btn-sub cursor-pointer p-4 text-lg">
+				<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg">
 					キャンセル
 				</button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
