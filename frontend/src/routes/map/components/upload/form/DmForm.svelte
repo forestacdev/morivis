@@ -234,14 +234,14 @@
 				<span class="text-sm text-gray-300">クラス名</span>
 				<div class="flex gap-2">
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, false]));
@@ -262,8 +262,9 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={!selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!selectedGeometryType
+		disabled={$isProcessing || !selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+		!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
