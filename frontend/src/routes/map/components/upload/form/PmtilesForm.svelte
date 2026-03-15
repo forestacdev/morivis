@@ -107,6 +107,9 @@
 		isVector = false;
 		vectorLayers = [];
 		selectedLayerId = '';
+		pmtilesBbox = null;
+		pmtilesMinZoom = 0;
+		pmtilesMaxZoom = 24;
 
 		try {
 			const pm = new PMTiles(url);
