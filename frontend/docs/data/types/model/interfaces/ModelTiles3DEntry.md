@@ -6,7 +6,7 @@
 
 # Interface: ModelTiles3DEntry\<T\>
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L49)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L49)
 
 ## Extends
 
@@ -24,7 +24,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://githu
 
 > **format**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L50)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L50)
 
 #### type
 
@@ -40,7 +40,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://githu
 
 > **id**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:8](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L8)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:8](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L8)
 
 #### Inherited from
 
@@ -52,7 +52,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:8](https://github
 
 > **interaction**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:11](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L11)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:11](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L11)
 
 #### clickable
 
@@ -68,7 +68,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:11](https://githu
 
 > **metaData**: `ModelMetaData`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:10](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L10)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:10](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L10)
 
 #### Inherited from
 
@@ -80,7 +80,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:10](https://githu
 
 > **style**: `T`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:54](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L54)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:54](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L54)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:54](https://githu
 
 > **type**: `"model"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:9](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/model/index.ts#L9)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:9](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/model/index.ts#L9)
 
 #### Inherited from
 

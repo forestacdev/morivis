@@ -6,7 +6,7 @@
 
 # Interface: BeforeInstallPromptEvent
 
-Defined in: [frontend/src/routes/map/utils/device.ts:39](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/device.ts#L39)
+Defined in: [frontend/src/routes/map/utils/device.ts:39](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/device.ts#L39)
 
 ## Extends
 
@@ -280,7 +280,7 @@ The **`type`** read-only property of the Event interface returns a string contai
 
 > **userChoice**: `Promise`\<\{ `outcome`: `"accepted"` \| `"dismissed"`; `platform`: `string`; \}\>
 
-Defined in: [frontend/src/routes/map/utils/device.ts:41](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/device.ts#L41)
+Defined in: [frontend/src/routes/map/utils/device.ts:41](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/device.ts#L41)
 
 ## Methods
 
@@ -364,7 +364,7 @@ The **`preventDefault()`** method of the Event interface tells the user agent th
 
 > **prompt**(): `Promise`\<`void`\>
 
-Defined in: [frontend/src/routes/map/utils/device.ts:40](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/device.ts#L40)
+Defined in: [frontend/src/routes/map/utils/device.ts:40](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/device.ts#L40)
 
 #### Returns
 

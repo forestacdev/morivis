@@ -8,7 +8,7 @@
 
 > **generateHueBasedHexColors**(`count`): `string`[]
 
-Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:132](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/color_mapping.ts#L132)
+Defined in: [frontend/src/routes/map/utils/color\_mapping.ts:132](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/color_mapping.ts#L132)
 
 HSLベースで色相を均等分割して生成する関数
 

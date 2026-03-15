@@ -6,7 +6,7 @@
 
 # Interface: ResultCoordinateData
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:24](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L24)
+Defined in: [frontend/src/routes/map/utils/feature.ts:24](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L24)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:24](https://github.com/for
 
 > `optional` **id**: `number`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:25](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L25)
+Defined in: [frontend/src/routes/map/utils/feature.ts:25](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L25)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:25](https://github.com/for
 
 > **name**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:27](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L27)
+Defined in: [frontend/src/routes/map/utils/feature.ts:27](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L27)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:27](https://github.com/for
 
 > **point**: \[`number`, `number`\]
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:28](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L28)
+Defined in: [frontend/src/routes/map/utils/feature.ts:28](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L28)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:28](https://github.com/for
 
 > **type**: `"coordinate"`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:26](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L26)
+Defined in: [frontend/src/routes/map/utils/feature.ts:26](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L26)
