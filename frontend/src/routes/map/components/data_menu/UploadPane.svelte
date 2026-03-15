@@ -84,17 +84,16 @@
 			>ベクタータイルの登録
 		</button>
 		<button
+			onclick={() => showUploadDialog('wmts')}
+			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
+			>WMS/WMTSの登録
+		</button>
+		<button
 			onclick={() => showUploadDialog('3dtiles')}
 			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
 			>3D Tilesの登録（実験的）
 		</button>
 	</div>
-
-	<!-- <button
-		onclick={() => showUploadDialog('wmts')}
-		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
-		>wmstの登録
-	</button> -->
 </div>
 
 <style>

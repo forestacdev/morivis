@@ -14,6 +14,7 @@
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
+	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -59,9 +60,9 @@
 				? 'h-[600px]'
 				: 'max-h-[600px]'}"
 		>
-			<!-- {#if showDialogType === 'wmts'}
+			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
-			{/if} -->
+			{/if}
 			{#if showDialogType === 'csv'}
 				<CsvForm
 					bind:showDataEntry
