@@ -122,7 +122,7 @@ export function createPointCloudEntry(
 		sourceDataName,
 		xyzImageTile = 'zoom_15',
 		opacity = 0.7,
-		pointSize = 0.1
+		pointSize = 1
 	} = config;
 
 	return {

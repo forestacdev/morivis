@@ -61,6 +61,7 @@ export type DialogType =
 	| 'hdf5'
 	| 'csv'
 	| 'gpkg'
+	| '3dtiles'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */

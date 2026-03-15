@@ -535,6 +535,15 @@
 			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
 		) as AnyModelTiles3DEntry[];
 
+		// プレビュー中の3D Tilesエントリも含める
+		if (
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			(showDataEntry as AnyModelTiles3DEntry).format.type === '3d-tiles'
+		) {
+			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
+		}
+
 		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
 		mapStore.setDeckOverlay(deckOverlayLayers);
 

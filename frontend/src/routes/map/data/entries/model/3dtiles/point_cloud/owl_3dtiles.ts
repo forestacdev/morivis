@@ -27,7 +27,7 @@ const entry: ModelTiles3DEntry<PointCloudStyle> = {
 	style: {
 		type: 'point-cloud',
 		opacity: 0.7,
-		pointSize: 0.1
+		pointSize: 1
 	}
 };
 
