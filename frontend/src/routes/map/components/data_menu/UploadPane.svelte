@@ -68,8 +68,8 @@
 			? 'border-white bg-black'
 			: 'border-dashed bg-black/70'}"
 	>
-		<span class="text-2xl">ここにファイルをドロップしてください </span>
-		<span class="text-sm">{SUPPORTED_FILE_LABEL}</span>
+		<span class="text-3xl">ここにファイルをドロップしてください </span>
+		<span class="">{SUPPORTED_FILE_LABEL}</span>
 		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
 			<span>またはファイルを選択</span>
 			<input
