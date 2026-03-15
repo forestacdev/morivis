@@ -5,6 +5,7 @@
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
+	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
@@ -102,6 +103,9 @@
 					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
+			{/if}
+			{#if showDialogType === 'hdf5'}
+				<Hdf5Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'sima'}
 				<SimaForm

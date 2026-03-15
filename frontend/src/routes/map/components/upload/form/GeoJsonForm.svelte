@@ -12,6 +12,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
@@ -55,13 +56,18 @@
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
+	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
+	const isFgb = $derived(fileExt === 'fgb');
 	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
 
-	// ファイルドロップ時: GeoJSON → ジオメトリタイプ確認
+	const readFile = (file: File): Promise<FeatureCollection> =>
+		isFgb ? fgbFileToGeojson(file) : geoJsonFileToGeoJson(file) as Promise<FeatureCollection>;
+
+	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
 	$effect(() => {
 		if (geojsonFile) {
 			isProcessing.set(true);
-			geoJsonFileToGeoJson(geojsonFile)
+			readFile(geojsonFile)
 				.then((geojson) => {
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson!);
@@ -191,7 +197,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">GeoJSONファイルの登録</span>
+	<span class="text-2xl font-bold">{isFgb ? 'FlatGeobuf' : 'GeoJSON'}ファイルの登録</span>
 </div>
 
 <div

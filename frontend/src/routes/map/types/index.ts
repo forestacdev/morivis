@@ -58,6 +58,7 @@ export type DialogType =
 	| 'dm'
 	| 'dxf'
 	| 'sima'
+	| 'hdf5'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */

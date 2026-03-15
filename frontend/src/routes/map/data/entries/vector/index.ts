@@ -282,7 +282,8 @@ export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometr
 		else if (t === 'LineString' || t === 'MultiLineString') types.add('LineString');
 		else if (t === 'Polygon' || t === 'MultiPolygon') types.add('Polygon');
 	}
-	return [...types];
+	const order: VectorEntryGeometryType[] = ['Point', 'LineString', 'Polygon'];
+	return order.filter((t) => types.has(t));
 };
 
 /** GeoJSON を指定ジオメトリタイプのフィーチャのみにフィルターする */
