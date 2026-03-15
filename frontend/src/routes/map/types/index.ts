@@ -62,6 +62,7 @@ export type DialogType =
 	| 'csv'
 	| 'gpkg'
 	| '3dtiles'
+	| 'pmtiles'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
@@ -77,7 +78,8 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.prj',
 	'.dxf',
 	'.dm',
-	'.sim'
+	'.sim',
+	'.pmtiles'
 ] as const;
 
 /** input[accept] 用のカンマ区切り文字列 */

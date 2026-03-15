@@ -266,10 +266,30 @@ export const createVectorTileEntry = (
 			style
 		};
 	} else {
-		// Label またはその他の不明なタイプ
 		console.error('不明なジオメトリタイプです。');
 		return undefined;
 	}
+};
+
+export const createVectorPmtilesEntry = (
+	name: string,
+	url: string,
+	sourceLayer: string,
+	entryGeometryType: VectorEntryGeometryType,
+	color: string = getRandomColor()
+): VectorEntry<TileMetaData> | undefined => {
+	// createVectorTileEntryと同じ構造でformat.typeだけ'pmtiles'にする
+	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
+	if (!entry) return undefined;
+
+	return {
+		...entry,
+		id: 'pmtiles_' + crypto.randomUUID(),
+		format: {
+			...entry.format,
+			type: 'pmtiles' as const
+		}
+	} as VectorEntry<TileMetaData>;
 };
 
 /** GeoJSON に含まれるジオメトリタイプの一覧を返す */

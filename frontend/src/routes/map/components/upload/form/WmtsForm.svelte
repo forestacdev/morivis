@@ -12,6 +12,7 @@
 	} from '$routes/map/utils/file/wmts';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -154,7 +155,7 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
 	<div class="flex w-full items-center gap-2 p-2">
 		<div class="grow">
@@ -163,13 +164,13 @@
 	</div>
 
 	{#if serviceType}
-		<div class="w-full px-2 text-sm text-gray-300">
+		<div transition:slide class="w-full px-2 text-sm text-gray-300">
 			検出: {serviceType.toUpperCase()} ({layers.length}レイヤー)
 		</div>
 	{/if}
 
 	{#if layers.length > 0}
-		<div class="w-full p-2">
+		<div transition:slide class="w-full p-2">
 			<div class="flex flex-col gap-1">
 				<label for="layer-select" class="text-sm text-gray-300">レイヤーを選択</label>
 				<select
@@ -209,7 +210,7 @@
 	<button
 		onclick={fetchLayers}
 		disabled={isUrlDisabled || $isProcessing}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {isUrlDisabled || $isProcessing
+		class="c-btn-confirm min-w-[150px] cursor-pointer p-4 text-lg {isUrlDisabled || $isProcessing
 			? 'cursor-not-allowed px-8 opacity-50'
 			: ''}"
 	>
