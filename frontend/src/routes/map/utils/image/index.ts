@@ -181,7 +181,15 @@ export const getLayerImage = async (
 		return undefined;
 	} catch (error) {
 		console.error('Error getting layer image:', error);
-		throw error;
+		const label =
+			_layerEntry.type === 'raster'
+				? 'Raster'
+				: _layerEntry.type === 'vector'
+					? 'Vector'
+					: _layerEntry.type === 'model'
+						? '3D'
+						: 'Data';
+		return { url: generatePlaceholderImage(label) };
 	}
 };
 
