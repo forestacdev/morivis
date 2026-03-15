@@ -60,6 +60,7 @@ export type DialogType =
 	| 'sima'
 	| 'hdf5'
 	| 'csv'
+	| 'gpkg'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
@@ -67,6 +68,7 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.csv',
 	'.geojson',
 	'.fgb',
+	'.gpkg',
 	'.gpx',
 	'.shp',
 	'.dbf',

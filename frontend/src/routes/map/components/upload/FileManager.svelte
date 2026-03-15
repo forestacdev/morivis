@@ -59,6 +59,9 @@
 				case 'prj':
 					showDialogType = 'shp';
 					return;
+				case 'gpkg':
+					showDialogType = 'gpkg';
+					return;
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;

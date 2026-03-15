@@ -1,4 +1,8 @@
 import { GeoPackageAPI, GeoPackage } from '@ngageoint/geopackage';
+import { SqljsAdapter } from '@ngageoint/geopackage/dist/lib/db/sqljsAdapter';
+
+// WASMファイルのパスを設定（staticディレクトリから配信）
+SqljsAdapter.setSqljsWasmLocateFile((filename: string) => `/${filename}`);
 
 /**
  * GPKGファイルから読み込んだGeoJSONフィーチャーの型定義
