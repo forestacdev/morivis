@@ -34,6 +34,9 @@
 			const ext = file.name.split('.').pop()?.toLowerCase();
 
 			switch (ext) {
+				case 'csv':
+					showDialogType = 'csv';
+					return;
 				case 'geojson':
 				case 'fgb':
 					showDialogType = 'geojson';

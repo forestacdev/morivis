@@ -59,10 +59,12 @@ export type DialogType =
 	| 'dxf'
 	| 'sima'
 	| 'hdf5'
+	| 'csv'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
 export const SUPPORTED_FILE_EXTENSIONS = [
+	'.csv',
 	'.geojson',
 	'.fgb',
 	'.gpx',

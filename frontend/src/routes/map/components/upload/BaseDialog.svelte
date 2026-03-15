@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
+	import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
@@ -59,6 +60,17 @@
 			<!-- {#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
 			{/if} -->
+			{#if showDialogType === 'csv'}
+				<CsvForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
 			{#if showDialogType === 'raster'}
 				<RasterForm bind:showDataEntry bind:showDialogType />
 			{/if}

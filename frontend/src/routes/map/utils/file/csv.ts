@@ -1,9 +1,176 @@
+import Encoding from 'encoding-japanese';
 import Papa from 'papaparse';
 
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 
 import type { ParseResult } from 'papaparse';
 import { showNotification } from '$routes/stores/notification';
+
+/**
+ * CSVファイルのバイナリからエンコードを検出しUTF-8文字列に変換する
+ * @param file - CSVファイル
+ * @returns UTF-8にデコードされた文字列
+ */
+export const readCsvAsUtf8 = async (file: File): Promise<string> => {
+	const buffer = await file.arrayBuffer();
+	const uint8 = new Uint8Array(buffer);
+	const detected = Encoding.detect(uint8);
+	const unicodeArray = Encoding.convert(uint8, {
+		to: 'UNICODE',
+		from: detected || 'AUTO'
+	});
+	return Encoding.codeToString(unicodeArray);
+};
+
+/**
+ * CSVファイルのヘッダー情報をエンコード自動判定で取得する
+ * @param file - CSVファイル
+ * @returns Promise<string[]> - カラム名の配列
+ */
+export const getCSVHeadersWithEncoding = async (file: File): Promise<string[]> => {
+	const text = await readCsvAsUtf8(file);
+	return new Promise((resolve, reject) => {
+		Papa.parse(text, {
+			header: true,
+			preview: 1,
+			complete: (results) => {
+				if (results.errors.length > 0) {
+					reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
+					return;
+				}
+				resolve(results.meta.fields || []);
+			},
+			error: (error: Error) => {
+				reject(new Error(`Failed to read CSV file: ${error.message}`));
+			}
+		});
+	});
+};
+
+export interface CSVPreview {
+	headers: string[];
+	rows: Record<string, string | number>[];
+}
+
+/**
+ * UTF-8変換済みCSVテキストからヘッダーとプレビュー行を取得する
+ * @param text - UTF-8テキスト
+ * @param previewRows - プレビューする行数（デフォルト: 5）
+ * @returns ヘッダーとプレビュー行
+ */
+export const getCSVPreview = (text: string, previewRows = 5): Promise<CSVPreview> => {
+	return new Promise((resolve, reject) => {
+		Papa.parse(text, {
+			header: true,
+			preview: previewRows,
+			dynamicTyping: true,
+			skipEmptyLines: true,
+			complete: (results: ParseResult<Record<string, string | number>>) => {
+				if (results.errors.length > 0 && (!results.meta.fields || results.meta.fields.length === 0)) {
+					reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
+					return;
+				}
+				resolve({
+					headers: results.meta.fields || [],
+					rows: results.data
+				});
+			},
+			error: (error: Error) => {
+				reject(new Error(`Failed to read CSV file: ${error.message}`));
+			}
+		});
+	});
+};
+
+/**
+ * CSVテキスト（UTF-8変換済み）からGeoJSON形式に変換する
+ * @param text - UTF-8テキスト
+ * @param latColumn - 緯度のカラム名
+ * @param lonColumn - 経度のカラム名
+ * @returns GeoJSON形式のデータ
+ */
+export const csvTextToGeojson = (
+	text: string,
+	latColumn: string,
+	lonColumn: string
+): Promise<FeatureCollection> => {
+	return new Promise((resolve, reject) => {
+		Papa.parse(text, {
+			complete: (results: ParseResult<Record<string, string | number>>) => {
+				const headers = results.meta.fields || [];
+				if (!headers.includes(latColumn)) {
+					const message = `指定された緯度カラム '${latColumn}' が見つかりません。`;
+					showNotification(message, 'error');
+					reject(new Error(`Latitude column '${latColumn}' not found`));
+					return;
+				}
+				if (!headers.includes(lonColumn)) {
+					const message = `指定された経度カラム '${lonColumn}' が見つかりません。`;
+					showNotification(message, 'error');
+					reject(new Error(`Longitude column '${lonColumn}' not found`));
+					return;
+				}
+
+				const json = results.data.filter(
+					(item: Record<string, string | number>) =>
+						item[latColumn] != null &&
+						item[lonColumn] != null &&
+						item[latColumn] !== '' &&
+						item[lonColumn] !== ''
+				);
+
+				if (json.length === 0) {
+					showNotification('CSVに有効な緯度経度のデータがありません。', 'error');
+					reject(new Error('No valid latitude and longitude data found'));
+					return;
+				}
+				if (json.length > 100000) {
+					showNotification('10万件以上のデータは表示できません。', 'error');
+					reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
+					return;
+				}
+
+				const features: Feature[] = [];
+				const invalidRows: number[] = [];
+
+				json.forEach((item, index) => {
+					const lat = Number(item[latColumn]);
+					const lon = Number(item[lonColumn]);
+
+					if (isNaN(lat) || isNaN(lon)) {
+						invalidRows.push(index + 1);
+						return;
+					}
+
+					features.push({
+						type: 'Feature',
+						properties: item,
+						geometry: {
+							type: 'Point',
+							coordinates: [lon, lat]
+						}
+					});
+				});
+
+				if (invalidRows.length > 0) {
+					const message = `${invalidRows.length}行の無効な座標データをスキップしました。`;
+					showNotification(message, 'warning');
+				}
+
+				if (features.length === 0) {
+					showNotification('有効な座標データがありません。', 'error');
+					reject(new Error('No valid coordinate data found'));
+					return;
+				}
+
+				resolve({ type: 'FeatureCollection', features });
+			},
+			header: true,
+			dynamicTyping: true,
+			skipEmptyLines: true
+		});
+	});
+};
 
 /**
  * CSVファイルから読み込んだデータをGeoJSON形式に変換する
