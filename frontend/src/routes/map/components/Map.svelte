@@ -65,7 +65,7 @@
 		showBoundaryLayer,
 		showPoiLayer
 	} from '$routes/stores/layers';
-	import { isTerrain3d, mapStore } from '$routes/stores/map';
+	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -319,12 +319,8 @@
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
 			glyphs: MAP_FONT_DATA_PATH,
-			//TODO: 投影法の切り替え対応
-			// projection: {
-			// 	type: checkPc() && zoom && zoom < 9 ? 'globe' : 'mercator'
-			// },
 			projection: {
-				type: 'mercator'
+				type: $isGlobe ? 'globe' : 'mercator'
 			},
 			sources: {
 				// terrain: {

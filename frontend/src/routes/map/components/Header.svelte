@@ -10,6 +10,7 @@
 	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
+	import GlobeControl from '$routes/map/components/map_control/GlobeControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -236,9 +237,10 @@
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>
-		<TerrainControl />
 		<GeolocateControl />
 		<StreetViewControl />
+		<TerrainControl />
+		<GlobeControl />
 
 		<!-- ハンバーガーメニュー -->
 		<button
