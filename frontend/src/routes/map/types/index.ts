@@ -63,6 +63,7 @@ export type DialogType =
 	| 'gpkg'
 	| '3dtiles'
 	| 'pmtiles'
+	| 'glb'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
@@ -79,7 +80,8 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.dxf',
 	'.dm',
 	'.sim',
-	'.pmtiles'
+	'.pmtiles',
+	'.glb'
 ] as const;
 
 /** input[accept] 用のカンマ区切り文字列 */

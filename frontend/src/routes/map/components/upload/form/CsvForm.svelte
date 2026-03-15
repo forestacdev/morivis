@@ -6,7 +6,12 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { readCsvAsUtf8, getCSVPreview, csvTextToGeojson, type CSVPreview } from '$routes/map/utils/file/csv';
+	import {
+		readCsvAsUtf8,
+		getCSVPreview,
+		csvTextToGeojson,
+		type CSVPreview
+	} from '$routes/map/utils/file/csv';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -204,7 +209,8 @@
 							<tr>
 								{#each headers as header}
 									<th
-										class="whitespace-nowrap px-3 py-1.5 font-medium {header === latColumn || header === lonColumn
+										class="px-3 py-1.5 font-medium whitespace-nowrap {header === latColumn ||
+										header === lonColumn
 											? 'bg-blue-900/40 text-blue-300'
 											: ''}"
 									>
@@ -218,7 +224,8 @@
 								<tr class="border-t border-gray-700/50">
 									{#each headers as header}
 										<td
-											class="whitespace-nowrap px-3 py-1 {header === latColumn || header === lonColumn
+											class="px-3 py-1 whitespace-nowrap {header === latColumn ||
+											header === lonColumn
 												? 'bg-blue-900/20 text-blue-200'
 												: ''}"
 										>

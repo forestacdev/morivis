@@ -65,6 +65,9 @@
 				case 'pmtiles':
 					showDialogType = 'pmtiles';
 					return;
+				case 'glb':
+					showDialogType = 'glb';
+					return;
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;

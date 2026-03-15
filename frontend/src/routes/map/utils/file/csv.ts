@@ -66,7 +66,10 @@ export const getCSVPreview = (text: string, previewRows = 5): Promise<CSVPreview
 			dynamicTyping: true,
 			skipEmptyLines: true,
 			complete: (results: ParseResult<Record<string, string | number>>) => {
-				if (results.errors.length > 0 && (!results.meta.fields || results.meta.fields.length === 0)) {
+				if (
+					results.errors.length > 0 &&
+					(!results.meta.fields || results.meta.fields.length === 0)
+				) {
 					reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
 					return;
 				}

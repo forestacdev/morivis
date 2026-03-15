@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
@@ -12,7 +13,6 @@
 	} from '$routes/map/utils/file/wmts';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import { slide } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

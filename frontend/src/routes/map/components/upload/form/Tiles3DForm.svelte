@@ -2,9 +2,9 @@
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { createTiles3DEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { createTiles3DEntry } from '$routes/map/data/entries/model';
 	import { fetchTileset3DBbox } from '$routes/map/utils/3dtiles';
 	import { isProcessing } from '$routes/stores/ui';
 

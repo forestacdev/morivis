@@ -61,7 +61,7 @@
 	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
 
 	const readFile = (file: File): Promise<FeatureCollection> =>
-		isFgb ? fgbFileToGeojson(file) : geoJsonFileToGeoJson(file) as Promise<FeatureCollection>;
+		isFgb ? fgbFileToGeojson(file) : (geoJsonFileToGeoJson(file) as Promise<FeatureCollection>);
 
 	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
 	$effect(() => {

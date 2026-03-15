@@ -81,8 +81,7 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 		}
 
 		// GetMap URLのベースを取得
-		const getMapUrl =
-			result.Capability?.Request?.GetMap?.DCPType?.[0]?.HTTP?.Get?.OnlineResource;
+		const getMapUrl = result.Capability?.Request?.GetMap?.DCPType?.[0]?.HTTP?.Get?.OnlineResource;
 
 		if (!getMapUrl) {
 			console.error('GetMap URL not found in Capabilities');

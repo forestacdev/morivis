@@ -17,20 +17,13 @@ const ecefToLngLat = (x: number, y: number, z: number): [number, number, number]
 		lat = Math.atan2(z, p * (1 - (e2 * N) / (N + h)));
 	}
 
-	return [
-		(lon * 180) / Math.PI,
-		(lat * 180) / Math.PI,
-		Math.sqrt(x * x + y * y + z * z) - a
-	];
+	return [(lon * 180) / Math.PI, (lat * 180) / Math.PI, Math.sqrt(x * x + y * y + z * z) - a];
 };
 
 /**
  * boundingVolume.box + transform からLngLatBoundsを計算
  */
-const boxToBbox = (
-	box: number[],
-	transform?: number[]
-): [number, number, number, number] => {
+const boxToBbox = (box: number[], transform?: number[]): [number, number, number, number] => {
 	// box: [cx, cy, cz, xx, xy, xz, yx, yy, yz, zx, zy, zz]
 	const cx = box[0],
 		cy = box[1],
@@ -79,10 +72,7 @@ const regionToBbox = (region: number[]): [number, number, number, number] => {
 /**
  * boundingVolume.sphere + transform からbboxを計算
  */
-const sphereToBbox = (
-	sphere: number[],
-	transform?: number[]
-): [number, number, number, number] => {
+const sphereToBbox = (sphere: number[], transform?: number[]): [number, number, number, number] => {
 	const [cx, cy, cz, radius] = sphere;
 
 	// 中心をECEFに変換

@@ -6,9 +6,10 @@
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
+	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
-	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
+	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
@@ -83,6 +84,9 @@
 			{/if}
 			{#if showDialogType === 'pmtiles'}
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'glb'}
+				<GlbForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'tiff'}
 				<GeoTiffForm bind:showDataEntry bind:showDialogType bind:dropFile />

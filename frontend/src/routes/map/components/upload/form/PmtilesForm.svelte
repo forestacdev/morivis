@@ -1,7 +1,7 @@
 <script lang="ts">
-	import * as yup from 'yup';
 	import { PMTiles, TileType } from 'pmtiles';
 	import { slide } from 'svelte/transition';
+	import * as yup from 'yup';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';

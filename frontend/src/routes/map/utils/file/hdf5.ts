@@ -122,9 +122,7 @@ const crossesAntimeridian = (lon1: number, lon2: number): boolean => Math.abs(lo
 /**
  * 座標配列を日付変更線で分割してLineStringセグメントの配列を返す
  */
-const splitLineAtAntimeridian = (
-	coords: [number, number][]
-): [number, number][][] => {
+const splitLineAtAntimeridian = (coords: [number, number][]): [number, number][][] => {
 	if (coords.length < 2) return [coords];
 
 	const segments: [number, number][][] = [];
@@ -208,8 +206,10 @@ const buildSwathPolygons = (
 	// 分割ポイントのインデックスを収集
 	const splitIndices: number[] = [];
 	for (let i = 1; i < left.length; i++) {
-		if (crossesAntimeridian(left[i - 1][0], left[i][0]) ||
-			crossesAntimeridian(right[i - 1][0], right[i][0])) {
+		if (
+			crossesAntimeridian(left[i - 1][0], left[i][0]) ||
+			crossesAntimeridian(right[i - 1][0], right[i][0])
+		) {
 			splitIndices.push(i);
 		}
 	}
