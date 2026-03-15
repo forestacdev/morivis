@@ -56,7 +56,6 @@ export const isMobile = readable(false, (set) => {
 
 // 初期化
 
-
 //TODO: 履歴管理の整理
 
 // メニュー状態の型定義

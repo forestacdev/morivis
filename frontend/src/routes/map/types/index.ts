@@ -1,3 +1,4 @@
+import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureProp } from '$routes/map/types/properties';
@@ -51,6 +52,7 @@ export type DialogType =
 	| 'vector'
 	| 'shp'
 	| 'gpx'
+	| 'geojson'
 	| 'wmts'
 	| 'tiff'
 	| 'dm'

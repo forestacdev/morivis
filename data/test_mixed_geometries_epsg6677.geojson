@@ -1,0 +1,14 @@
+{
+"type": "FeatureCollection",
+"name": "test_mixed_geometries",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::6677" } },
+"features": [
+{ "type": "Feature", "properties": { "name": "東京駅", "category": "station", "value": 100 }, "geometry": { "type": "Point", "coordinates": [ -12818.777026406511141, -34439.18883227846527 ] } },
+{ "type": "Feature", "properties": { "name": "品川駅", "category": "station", "value": 80 }, "geometry": { "type": "Point", "coordinates": [ -12027.041711376263265, -37934.973656429996481 ] } },
+{ "type": "Feature", "properties": { "name": "秋葉原駅", "category": "station", "value": 60 }, "geometry": { "type": "Point", "coordinates": [ -11922.119454691435749, -33963.383980955819425 ] } },
+{ "type": "Feature", "properties": { "name": "路線A", "category": "railway", "value": 200 }, "geometry": { "type": "LineString", "coordinates": [ [ -12818.777026406511141, -34439.18883227846527 ], [ -12520.807616777607109, -34938.854540788321174 ], [ -12027.041711376263265, -37934.973656429996481 ] ] } },
+{ "type": "Feature", "properties": { "name": "路線B", "category": "railway", "value": 150 }, "geometry": { "type": "LineString", "coordinates": [ [ -12818.777026406511141, -34439.18883227846527 ], [ -12248.201756010435929, -34162.637129866205214 ], [ -11922.119454691435749, -33963.383980955819425 ] ] } },
+{ "type": "Feature", "properties": { "name": "エリアA", "category": "district", "value": 500 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -13153.241898435073381, -34161.343845402006991 ], [ -12429.209774596831267, -34162.385845659606275 ], [ -12429.985453434248484, -34717.097158732285607 ], [ -13154.062762728734015, -34716.055220037793333 ], [ -13153.241898435073381, -34161.343845402006991 ] ] ] } },
+{ "type": "Feature", "properties": { "name": "エリアB", "category": "district", "value": 300 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -12338.089672354548384, -33718.742571818176657 ], [ -11614.093788320851672, -33719.718264016424655 ], [ -11614.963677101519352, -34385.372149225942849 ], [ -12339.013788264726827, -34384.396526176096813 ], [ -12338.089672354548384, -33718.742571818176657 ] ] ] } }
+]
+}

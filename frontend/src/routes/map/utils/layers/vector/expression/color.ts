@@ -28,8 +28,8 @@ export const generateMatchExpression = (
 	}
 
 	// カテゴリが空の場合はmatch式を生成せずフォールバック値を返す
-    if (categories.length === 0) {
-        console.warn('カテゴリーが空のため、match式を生成できません。');
+	if (categories.length === 0) {
+		console.warn('カテゴリーが空のため、match式を生成できません。');
 		return expressionData.noData?.value ?? 'transparent';
 	}
 

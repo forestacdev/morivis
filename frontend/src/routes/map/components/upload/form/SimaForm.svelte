@@ -122,6 +122,12 @@
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
 						geometryTypeOptions = [];
+						layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractSimaLayer);
+						const layers = layersByGeometryType[selectedGeometryType] ?? [];
+						if (layers.length <= 1) {
+							openZoneForm();
+							return;
+						}
 					} else {
 						geometryTypeOptions = types.map((t) => ({
 							key: t,

@@ -63,8 +63,10 @@
 				// 	geojsonData = await csvFileToGeojson(file);
 				// 	break;
 				case 'geojson':
-					geojsonData = await geoJsonFileToGeoJson(file);
-					break;
+					showDialogType = 'geojson';
+					return;
+				// geojsonData = await geoJsonFileToGeoJson(file);
+
 				case 'fgb':
 					geojsonData = await fgbFileToGeojson(file);
 					break;
@@ -74,7 +76,7 @@
 				case 'dm':
 					showDialogType = 'dm';
 					return;
-                case 'dxf':
+				case 'dxf':
 					showDialogType = 'dxf';
 					return;
 				case 'sim':

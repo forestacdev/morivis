@@ -401,16 +401,12 @@
 					}
 				},
 
-                // 座標系選択のフィーチャー
+				// 座標系選択のフィーチャー
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
 					source: 'zone_bbox',
-					filter: [
-						'all',
-						['==', '$type', 'Polygon'],
-						['==', 'code', selectedEpsgCode] 
-					],
+					filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
 					paint: {
 						'fill-color': 'red',
 						'fill-opacity': 0.5
@@ -619,9 +615,9 @@
 
 	// 座標系選択
 	$effect(() => {
-		if(zoneBboxGeojsonData.features.length || !zoneBboxGeojsonData.features.length) {
-            setStyleDebounce(layerEntries as GeoDataEntry[]);
-        }
+		if (zoneBboxGeojsonData.features.length || !zoneBboxGeojsonData.features.length) {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}
 	});
 
 	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {

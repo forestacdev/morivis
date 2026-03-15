@@ -35,16 +35,15 @@
 		onConfirm
 	}: Props = $props();
 
-    // リセット処理
-    const reset = () => {
-        showZoneForm = false;
-        focusBbox = null; // リセットして次回のeffect再実行を保証
-        zoneBboxGeojsonData = {
-            type: 'FeatureCollection',
-            features: []
-        };
-    };
-
+	// リセット処理
+	const reset = () => {
+		showZoneForm = false;
+		focusBbox = null; // リセットして次回のeffect再実行を保証
+		zoneBboxGeojsonData = {
+			type: 'FeatureCollection',
+			features: []
+		};
+	};
 
 	const registration = () => {
 		const code = selectedEpsgCode;
@@ -63,10 +62,11 @@
 		properties: EpsgInfoWithCode;
 	}
 
-	let _internalGeojson: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
-		type: 'FeatureCollection',
-		features: []
-	};
+	let _internalGeojson: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> =
+		{
+			type: 'FeatureCollection',
+			features: []
+		};
 
 	let poiData = $state<PoiData[]>([]);
 
@@ -130,23 +130,23 @@
 
 		// 現在の地図の中心から一番近いフィーチャーを見つけて、そのpoiDataの座標系を選択する
 		const mapCenter = map.getCenter();
-		const points = _internalGeojson.features.filter(
-			(f) => f.geometry.type === 'Point'
-		) as Feature<PointGeometry, PoiData['properties']>[];
+		const points = _internalGeojson.features.filter((f) => f.geometry.type === 'Point') as Feature<
+			PointGeometry,
+			PoiData['properties']
+		>[];
 		if (points.length > 0) {
-			const nearest = turfNearestPoint(
-				[mapCenter.lng, mapCenter.lat],
-				{ type: 'FeatureCollection', features: points }
-			);
+			const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
+				type: 'FeatureCollection',
+				features: points
+			});
 			const idx = nearest.properties.featureIndex;
 			selectedEpsgCode = points[idx].properties.code;
 		}
 
-		
 		zoneBboxGeojsonData = {
-            type: 'FeatureCollection',
-            features: _internalGeojson.features.filter((feature) => feature.geometry.type === 'Polygon')
-        } as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
+			type: 'FeatureCollection',
+			features: _internalGeojson.features.filter((feature) => feature.geometry.type === 'Polygon')
+		} as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
 	});
 
 	$effect(() => {
@@ -223,9 +223,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg">
-					キャンセル
-				</button>
+				<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
 					決定
 				</button>

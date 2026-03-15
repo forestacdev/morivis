@@ -3,6 +3,7 @@
 
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
+	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
@@ -38,7 +39,7 @@
 		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
-    let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
+	let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
 </script>
 
 {#if showDialogType && showDialogType !== 'shp'}
@@ -50,7 +51,9 @@
 	>
 		<div
 			transition:scale={{ duration: 300, start: 0.9 }}
-			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight ? 'h-[600px]' : 'max-h-[600px]'}"
+			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
+				? 'h-[600px]'
+				: 'max-h-[600px]'}"
 		>
 			<!-- {#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
@@ -63,6 +66,17 @@
 			{/if}
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'geojson'}
+				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
