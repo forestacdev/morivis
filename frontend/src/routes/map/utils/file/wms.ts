@@ -107,17 +107,18 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 
 		// MapLibreラスターソース用のURLテンプレートを生成
 		return allLayers.map((layer) => {
-			// WMS 1.3.0ではCRS=EPSG:3857、1.1.1ではSRS=EPSG:3857
 			const isV13 = version.startsWith('1.3');
 			const srsParam = isV13 ? 'CRS' : 'SRS';
-			// WMS 1.3.0ではEPSG:4326の軸順がlat,lon
-			const bboxParam = isV13 ? '{bbox-epsg-3857}' : '{bbox-epsg-3857}';
+
+			// ベースURLの末尾の?や&を正規化
+			const baseUrl = getMapUrl.replace(/[?&]+$/, '');
+			const separator = baseUrl.includes('?') ? '&' : '?';
 
 			const tileUrl =
-				`${getMapUrl}?service=WMS&version=${version}&request=GetMap` +
+				`${baseUrl}${separator}service=WMS&version=${version}&request=GetMap` +
 				`&layers=${encodeURIComponent(layer.name)}` +
 				`&${srsParam}=EPSG:3857` +
-				`&bbox=${bboxParam}` +
+				`&bbox={bbox-epsg-3857}` +
 				`&width=256&height=256` +
 				`&format=${encodeURIComponent(preferredFormat)}` +
 				`&transparent=true`;

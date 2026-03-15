@@ -160,16 +160,6 @@
 		<div class="grow">
 			<TextForm bind:value={forms.url} label="Capabilities URL" error={urlErrors.url} />
 		</div>
-		<button
-			onclick={fetchLayers}
-			disabled={isUrlDisabled || $isProcessing}
-			class="c-btn-confirm shrink-0 cursor-pointer rounded-lg p-2 text-sm {isUrlDisabled ||
-			$isProcessing
-				? 'cursor-not-allowed px-8 opacity-50'
-				: ''}"
-		>
-			取得
-		</button>
 	</div>
 
 	{#if serviceType}
@@ -216,12 +206,20 @@
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+	<button
+		onclick={fetchLayers}
+		disabled={isUrlDisabled || $isProcessing}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {isUrlDisabled || $isProcessing
+			? 'cursor-not-allowed px-8 opacity-50'
+			: ''}"
+	>
+		{layers.length > 0 ? 'レイヤーを再取得' : 'レイヤーを取得'}
+	</button>
 	{#if layers.length > 0}
 		<button
 			onclick={registration}
 			disabled={$isProcessing || !selectedLayer}
-			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-			!selectedLayer
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing || !selectedLayer
 				? 'cursor-not-allowed opacity-50'
 				: ''}"
 		>

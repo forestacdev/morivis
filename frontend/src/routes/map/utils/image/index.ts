@@ -126,6 +126,29 @@ export interface ImageResult {
 }
 
 /**
+ * ダミーのプレースホルダー画像を生成する
+ */
+const generatePlaceholderImage = (label: string, color = '#495a54'): string => {
+	const size = 128;
+	const canvas = document.createElement('canvas');
+	canvas.width = size;
+	canvas.height = size;
+	const ctx = canvas.getContext('2d');
+	if (!ctx) return '';
+
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, size, size);
+
+	ctx.fillStyle = '#ffffff';
+	ctx.font = 'bold 14px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.fillText(label, size / 2, size / 2);
+
+	return canvas.toDataURL('image/png');
+};
+
+/**
  * レイヤーの画像URLを取得する関数
  * @param _layerEntry - レイヤーエントリ
  * @returns 画像URLまたはundefined
@@ -135,26 +158,27 @@ export const getLayerImage = async (
 ): Promise<ImageResult | undefined> => {
 	try {
 		if (_layerEntry.metaData.mapImage) {
-			// 地図画像が指定されている場合はそれを使用
 			const url = getMapImageUrl(_layerEntry);
 			return url ? { url } : undefined;
 		} else if (_layerEntry.type === 'raster') {
-			// タイプとフォーマットによる分岐
 			if (_layerEntry.format.type === 'image') {
 				const url = await getRasterImageUrl(_layerEntry);
-				return url ? { url } : undefined;
+				if (url) return { url };
+				return { url: generatePlaceholderImage('Raster') };
 			} else if (_layerEntry.format.type === 'pmtiles') {
 				const url = await generatePmtilesImageUrl(_layerEntry);
-				return url ? { url } : undefined;
+				if (url) return { url };
+				return { url: generatePlaceholderImage('PMTiles') };
 			}
 		} else if (_layerEntry.type === 'vector') {
 			const url = await generateVectorImageUrl(_layerEntry);
-			return url ? { url } : undefined;
-		} else {
-			// それ以外のタイプは未対応
-			console.warn(`Unsupported layer type: ${_layerEntry.type}`);
-			return undefined;
+			if (url) return { url };
+			return { url: generatePlaceholderImage('Vector') };
+		} else if (_layerEntry.type === 'model') {
+			return { url: generatePlaceholderImage('3D', '#2a4a3a') };
 		}
+
+		return undefined;
 	} catch (error) {
 		console.error('Error getting layer image:', error);
 		throw error;
