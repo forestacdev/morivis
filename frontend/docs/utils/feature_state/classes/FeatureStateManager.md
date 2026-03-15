@@ -6,7 +6,7 @@
 
 # Class: FeatureStateManager
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:7](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L7)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:7](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L7)
 
 featureStateを管理するクラス
 
@@ -26,7 +26,7 @@ featureStateを管理するクラス
 
 > `static` **clear**(): `void`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:26](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L26)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:26](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L26)
 
 #### Returns
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:26](https://github.
 
 > `static` **get**(`key`): [`FeatureStateData`](../interfaces/FeatureStateData.md) \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:16](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L16)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:16](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L16)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:16](https://github.
 
 > `static` **has**(`key`): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:31](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L31)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:31](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L31)
 
 #### Parameters
 
@@ -74,7 +74,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:31](https://github.
 
 > `static` **keys**(): `IterableIterator`\<`string`\>
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:36](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L36)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:36](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L36)
 
 #### Returns
 
@@ -86,7 +86,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:36](https://github.
 
 > `static` **remove**(`key`): `void`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:21](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L21)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:21](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L21)
 
 #### Parameters
 
@@ -104,7 +104,7 @@ Defined in: [frontend/src/routes/map/utils/feature\_state.ts:21](https://github.
 
 > `static` **set**(`key`, `data`): `void`
 
-Defined in: [frontend/src/routes/map/utils/feature\_state.ts:11](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature_state.ts#L11)
+Defined in: [frontend/src/routes/map/utils/feature\_state.ts:11](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature_state.ts#L11)
 
 #### Parameters
 

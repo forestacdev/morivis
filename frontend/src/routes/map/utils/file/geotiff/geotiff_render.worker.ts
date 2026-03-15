@@ -136,7 +136,26 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 };
 
 self.onmessage = async (e) => {
-	const { rasters, size, type, min, max, width, height, colorArray } = e.data;
+	const {
+		rasters,
+		size,
+		type,
+		min,
+		max,
+		width,
+		height,
+		colorArray,
+		bandIndex,
+		redIndex,
+		greenIndex,
+		blueIndex,
+		redMin,
+		redMax,
+		greenMin,
+		greenMax,
+		blueMin,
+		blueMax
+	} = e.data;
 
 	try {
 		// const canvas = new OffscreenCanvas(width, height);
@@ -199,7 +218,7 @@ self.onmessage = async (e) => {
 
 		if (type === 'single') {
 			const uBandIndexLoc = gl.getUniformLocation(program, 'u_bandIndex');
-			gl.uniform1i(uBandIndexLoc, 0);
+			gl.uniform1i(uBandIndexLoc, bandIndex ?? 0);
 
 			const uMinLoc = gl.getUniformLocation(program, 'u_min');
 			const uMaxLoc = gl.getUniformLocation(program, 'u_max');
@@ -210,9 +229,9 @@ self.onmessage = async (e) => {
 			const uRedIndexLoc = gl.getUniformLocation(program, 'u_redIndex');
 			const uGreenIndexLoc = gl.getUniformLocation(program, 'u_greenIndex');
 			const uBlueIndexLoc = gl.getUniformLocation(program, 'u_blueIndex');
-			gl.uniform1i(uRedIndexLoc, 0); // バンド4（index = 3）
-			gl.uniform1i(uGreenIndexLoc, 1); // バンド3
-			gl.uniform1i(uBlueIndexLoc, 2); // バンド2
+			gl.uniform1i(uRedIndexLoc, redIndex ?? 0);
+			gl.uniform1i(uGreenIndexLoc, greenIndex ?? 1);
+			gl.uniform1i(uBlueIndexLoc, blueIndex ?? 2);
 
 			const uMinLoc = gl.getUniformLocation(program, 'u_min');
 			const uMaxLoc = gl.getUniformLocation(program, 'u_max');
@@ -226,7 +245,8 @@ self.onmessage = async (e) => {
 
 		const blob = await canvas.convertToBlob({ type: 'image/png' });
 		self.postMessage({ blob }); // worker から転送
-	} catch (e) {
-		console.error(e);
+	} catch (err) {
+		console.error(err);
+		self.postMessage({ error: err instanceof Error ? err.message : String(err) });
 	}
 };

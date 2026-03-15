@@ -8,4 +8,4 @@
 
 > `const` **TAG\_LIST**: readonly \[`"森林"`, `"森林歩道"`, `"林道"`, `"地図"`, `"地形"`, `"田んぼ"`, `"地質図"`, `"河川"`, `"鳥獣保護区"`, `"道路"`, `"建物"`, `"国有林"`, `"街路樹"`, `"土壌図"`, `"微地形図"`, `"赤色立体地図"`, `"傾斜区分図"`, `"傾斜量図"`, `"基本図"`, `"背景地図"`, `"国有林"`, `"植生図"`, `"林班"`, `"小班"`, `"林相図"`, `"レーザ林相図"`, `"単木"`, `"看板"`, `"写真"`, `"地すべり"`, `"フェノロジー"`, `"DEM"`, `"DSM"`, `"DCHM"`, `"TWI"`, `"樹冠高"`, `"メッシュ"`, `"10m解像度"`, `"5m解像度"`, `"2.5m解像度"`, `"1m解像度"`, `"0.5m解像度"`, `"0.25m解像度"`, `"地形分類"`, `"磁気図"`, `"自然災害伝承碑"`, `"ジオイド高"`, `"土地被覆"`, `"樹木被覆率"`, `"標高段彩図"`, `"施設平面図"`, `"CAD"`, `"点群"`, `"3Dモデル"`, `"鳥類"`, `"登記所備付地図"`\]
 
-Defined in: [frontend/src/routes/map/data/types/tags.ts:2](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/data/types/tags.ts#L2)
+Defined in: [frontend/src/routes/map/data/types/tags.ts:2](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/tags.ts#L2)

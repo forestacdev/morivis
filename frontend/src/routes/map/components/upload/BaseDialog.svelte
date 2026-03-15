@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
+	import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
+	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
+	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
+	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
+	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
+	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
+	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
+	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -21,8 +29,9 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
-		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -33,10 +42,11 @@
 		selectedEpsgCode,
 		dropFile = $bindable(),
 		focusBbox = $bindable(),
-		isDragover = $bindable()
+		isDragover = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
-    let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
+	let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
 </script>
 
 {#if showDialogType && showDialogType !== 'shp'}
@@ -48,19 +58,52 @@
 	>
 		<div
 			transition:scale={{ duration: 300, start: 0.9 }}
-			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight ? 'h-[600px]' : 'max-h-[600px]'}"
+			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
+				? 'h-[600px]'
+				: 'max-h-[600px]'}"
 		>
-			<!-- {#if showDialogType === 'wmts'}
+			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
-			{/if} -->
+			{/if}
+			{#if showDialogType === 'csv'}
+				<CsvForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
 			{#if showDialogType === 'raster'}
 				<RasterForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === '3dtiles'}
+				<Tiles3DForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'pmtiles'}
+				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'glb'}
+				<GlbForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'tiff'}
 				<GeoTiffForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'geojson'}
+				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
@@ -72,6 +115,7 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -82,8 +126,23 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
+			{/if}
+			{#if showDialogType === 'gpkg'}
+				<GpkgForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'hdf5'}
+				<Hdf5Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'sima'}
 				<SimaForm
@@ -92,6 +151,7 @@
 					bind:dropFile
 					bind:showZoneForm
 					bind:focusBbox
+					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -107,6 +167,7 @@
 		bind:isDragover
 		bind:showZoneForm
 		bind:focusBbox
+		bind:zoneConfirmedEpsg
 		{selectedEpsgCode}
 	/>
 {/if}

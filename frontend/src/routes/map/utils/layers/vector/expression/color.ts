@@ -27,6 +27,12 @@ export const generateMatchExpression = (
 		return '#ff0000';
 	}
 
+	// カテゴリが空の場合はmatch式を生成せずフォールバック値を返す
+	if (categories.length === 0) {
+		console.warn('カテゴリーが空のため、match式を生成できません。');
+		return expressionData.noData?.value ?? 'transparent';
+	}
+
 	// categories と values のペアをループ処理
 	for (let i = 0; i < categories.length; i++) {
 		expression.push(categories[i] as string, values[i]);

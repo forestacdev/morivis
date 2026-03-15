@@ -24,6 +24,14 @@
 	const showUploadDialog = (type: DialogType) => {
 		showDialogType = type;
 	};
+
+	const urlDialogs: { type: DialogType; label: string }[] = [
+		{ type: 'raster', label: 'ラスタータイル' },
+		{ type: 'vector', label: 'ベクタータイル' },
+		{ type: 'pmtiles', label: 'PMTiles' },
+		{ type: 'wmts', label: 'WMS/WMTS' },
+		{ type: '3dtiles', label: '3D Tiles' }
+	];
 	let isDragover = $state(false);
 
 	// ドラッグ中のイベント
@@ -60,8 +68,8 @@
 			? 'border-white bg-black'
 			: 'border-dashed bg-black/70'}"
 	>
-		<span class="text-2xl">ここにファイルをドロップしてください </span>
-		<span class="text-sm">{SUPPORTED_FILE_LABEL}</span>
+		<span class="text-3xl">ここにファイルをドロップしてください </span>
+		<span class="">{SUPPORTED_FILE_LABEL}</span>
 		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
 			<span>またはファイルを選択</span>
 			<input
@@ -73,23 +81,15 @@
 		</label>
 	</div>
 	<div class="flex grow items-center justify-center gap-4">
-		<button
-			onclick={() => showUploadDialog('raster')}
-			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
-			>ラスタータイルの登録
-		</button>
-		<button
-			onclick={() => showUploadDialog('vector')}
-			class="grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg bg-black p-4 transition hover:bg-gray-800"
-			>ベクタータイルの登録
-		</button>
+		{#each urlDialogs as dialog}
+			<button
+				onclick={() => showUploadDialog(dialog.type)}
+				class="border-sub grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg border-1 bg-black p-4 transition hover:bg-gray-800"
+			>
+				{dialog.label}の登録
+			</button>
+		{/each}
 	</div>
-
-	<!-- <button
-		onclick={() => showUploadDialog('wmts')}
-		class="bg-sub grid w-full max-w-[300px] cursor-pointer place-items-center rounded-full p-4"
-		>wmstの登録
-	</button> -->
 </div>
 
 <style>

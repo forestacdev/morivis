@@ -336,7 +336,7 @@
 					<span class="text-[14px] text-gray-300">{featureMenuData.properties.category}</span>
 				{:else}
 					<!-- その他タイトル -->
-					<span class="text-[22px] font-bold"
+					<span class="text-[22px] font-bold break-all"
 						>{targetLayer &&
 						targetLayer.type === 'vector' &&
 						targetLayer.properties.attributeView.titles.length &&
@@ -347,7 +347,7 @@
 								)
 							: targetLayer?.metaData.name}</span
 					>
-					<span class="text-[14px] text-gray-300"
+					<span class="text-[14px] break-all text-gray-300"
 						>{targetLayer && targetLayer.metaData.name ? targetLayer.metaData.name : ''}</span
 					>
 				{/if}

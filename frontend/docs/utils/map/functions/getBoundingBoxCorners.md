@@ -8,7 +8,7 @@
 
 > **getBoundingBoxCorners**(`bbox`): `Coordinates`
 
-Defined in: [frontend/src/routes/map/utils/map.ts:151](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/map.ts#L151)
+Defined in: [frontend/src/routes/map/utils/map.ts:151](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/map.ts#L151)
 
 [minLon, minLat, maxLon, maxLat] の形式のバウンディングボックスから、
 その4隅の座標ペアの配列 [[minLon, minLat], [maxLon, maxLat], [maxLon, minLat], [minLon, minLat]] を生成。

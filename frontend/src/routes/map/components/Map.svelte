@@ -65,7 +65,7 @@
 		showBoundaryLayer,
 		showPoiLayer
 	} from '$routes/stores/layers';
-	import { isTerrain3d, mapStore } from '$routes/stores/map';
+	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -87,6 +87,7 @@
 		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
+		zoneBboxGeojsonData: FeatureCollection; // 座標系選択用GeoJSON
 		isExternalCameraUpdate: boolean; // 外部からのカメラ更新かどうか
 		searchGeojsonData: SearchGeojsonData | null;
 		selectedSearchResultData: ResultData | null;
@@ -117,6 +118,7 @@
 		showZoneForm = $bindable(),
 		focusBbox = $bindable(),
 		selectedEpsgCode,
+		zoneBboxGeojsonData,
 		isExternalCameraUpdate = $bindable(),
 		selectedSearchResultData = $bindable(),
 		searchGeojsonData,
@@ -162,8 +164,8 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = !showDataEntry ? await createSourcesItems(_dataEntries) : {};
-		const layers = !showDataEntry ? await createLayersItems(_dataEntries) : [];
+		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
+		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
@@ -317,12 +319,8 @@
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
 			glyphs: MAP_FONT_DATA_PATH,
-			//TODO: 投影法の切り替え対応
-			// projection: {
-			// 	type: checkPc() && zoom && zoom < 9 ? 'globe' : 'mercator'
-			// },
 			projection: {
-				type: 'mercator'
+				type: $isGlobe ? 'globe' : 'mercator'
 			},
 			sources: {
 				// terrain: {
@@ -367,7 +365,7 @@
 				...previewSources,
 				zone_bbox: {
 					type: 'geojson',
-					data: { type: 'FeatureCollection', features: [] }
+					data: zoneBboxGeojsonData as FeatureCollection
 				},
 				search_result: {
 					type: 'geojson',
@@ -398,15 +396,13 @@
 						'background-opacity': 0
 					}
 				},
+
+				// 座標系選択のフィーチャー
 				{
 					id: '@zone_bbox_select',
 					type: 'fill',
 					source: 'zone_bbox',
-					filter: [
-						'all',
-						['==', '$type', 'Polygon'],
-						['==', 'code', selectedEpsgCode] // 最もシンプルで確実な方法
-					],
+					filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
 					paint: {
 						'fill-color': 'red',
 						'fill-opacity': 0.5
@@ -539,6 +535,15 @@
 			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
 		) as AnyModelTiles3DEntry[];
 
+		// プレビュー中の3D Tilesエントリも含める
+		if (
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			(showDataEntry as AnyModelTiles3DEntry).format.type === '3d-tiles'
+		) {
+			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
+		}
+
 		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
 		mapStore.setDeckOverlay(deckOverlayLayers);
 
@@ -615,10 +620,7 @@
 
 	// 座標系選択
 	$effect(() => {
-		if (showZoneForm) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		} else {
-			// 座標系選択ダイアログが閉じられた場合、レイヤーのスタイルを更新
+		if (zoneBboxGeojsonData.features.length || !zoneBboxGeojsonData.features.length) {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}
 	});

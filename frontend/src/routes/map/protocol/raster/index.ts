@@ -32,7 +32,7 @@ class WorkerProtocol {
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
 		// searchParamsからプレースホルダ付き元URLを取得（{z}/{y}/{x}順のURLにも対応）
-		const baseUrl = url.searchParams.get('baseUrl') || (url.origin + url.pathname);
+		const baseUrl = url.searchParams.get('baseUrl') || url.origin + url.pathname;
 		// タイルキャッシュ用のキー（座標ベース）
 		const cacheKey = `${entryId}_${x}_${y}_${z}`;
 		// ユニークなリクエストID（同一タイルの重複リクエストでpendingRequests上書きを防止）

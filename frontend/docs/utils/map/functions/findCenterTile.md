@@ -8,7 +8,7 @@
 
 > **findCenterTile**(`bbox`, `maxZoom`): [`TileXYZ`](../../../data/types/raster/interfaces/TileXYZ.md)
 
-Defined in: [frontend/src/routes/map/utils/map.ts:71](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/map.ts#L71)
+Defined in: [frontend/src/routes/map/utils/map.ts:71](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/map.ts#L71)
 
 bboxの中心に最も近い、bboxより小さいタイル座標を求める。
 ズームレベルを上げていき、タイルがbboxより小さくなった最初のタイルを返す。

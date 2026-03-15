@@ -1,0 +1,12 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[139.6917,35.6895]},"properties":{"name":"東京駅","category":"station","value":100}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[139.7005,35.6580]},"properties":{"name":"品川駅","category":"station","value":80}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[139.7016,35.6938]},"properties":{"name":"秋葉原駅","category":"station","value":60}},
+    {"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[139.6950,35.6850],[139.7005,35.6580]]},"properties":{"name":"路線A","category":"railway","value":200}},
+    {"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[139.6980,35.6920],[139.7016,35.6938]]},"properties":{"name":"路線B","category":"railway","value":150}},
+    {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[139.6880,35.6920],[139.6960,35.6920],[139.6960,35.6870],[139.6880,35.6870],[139.6880,35.6920]]]},"properties":{"name":"エリアA","category":"district","value":500}},
+    {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[139.6970,35.6960],[139.7050,35.6960],[139.7050,35.6900],[139.6970,35.6900],[139.6970,35.6960]]]},"properties":{"name":"エリアB","category":"district","value":300}}
+  ]
+}

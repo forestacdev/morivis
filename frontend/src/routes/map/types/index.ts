@@ -1,3 +1,4 @@
+import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureProp } from '$routes/map/types/properties';
@@ -51,17 +52,26 @@ export type DialogType =
 	| 'vector'
 	| 'shp'
 	| 'gpx'
+	| 'geojson'
 	| 'wmts'
 	| 'tiff'
 	| 'dm'
 	| 'dxf'
 	| 'sima'
+	| 'hdf5'
+	| 'csv'
+	| 'gpkg'
+	| '3dtiles'
+	| 'pmtiles'
+	| 'glb'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */
 export const SUPPORTED_FILE_EXTENSIONS = [
+	'.csv',
 	'.geojson',
 	'.fgb',
+	'.gpkg',
 	'.gpx',
 	'.shp',
 	'.dbf',
@@ -69,7 +79,9 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.prj',
 	'.dxf',
 	'.dm',
-	'.sim'
+	'.sim',
+	'.pmtiles',
+	'.glb'
 ] as const;
 
 /** input[accept] 用のカンマ区切り文字列 */

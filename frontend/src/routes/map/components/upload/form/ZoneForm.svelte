@@ -16,26 +16,39 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
-	import { useEventTrigger } from '$routes/stores/ui';
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
+		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
+		onConfirm: (epsgCode: EpsgCode) => void;
 	}
 
 	let {
 		map,
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		zoneBboxGeojsonData = $bindable(),
+		onConfirm
 	}: Props = $props();
 
-	const registration = () => {
+	// リセット処理
+	const reset = () => {
 		showZoneForm = false;
 		focusBbox = null; // リセットして次回のeffect再実行を保証
-		useEventTrigger.trigger('setZone'); // 座標系を設定したイベントをトリガー
+		zoneBboxGeojsonData = {
+			type: 'FeatureCollection',
+			features: []
+		};
+	};
+
+	const registration = () => {
+		const code = selectedEpsgCode;
+		reset();
+		onConfirm(code);
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
@@ -49,22 +62,23 @@
 		properties: EpsgInfoWithCode;
 	}
 
-	let geojsonData: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> = {
-		type: 'FeatureCollection',
-		features: []
-	};
+	let _internalGeojson: FeatureCollection<PolygonGeometry | PointGeometry, PoiData['properties']> =
+		{
+			type: 'FeatureCollection',
+			features: []
+		};
 
 	let poiData = $state<PoiData[]>([]);
 
 	$effect(() => {
 		if (!originalBbox) {
 			// bboxリセット時にデータもクリア
-			geojsonData = { type: 'FeatureCollection', features: [] };
+			_internalGeojson = { type: 'FeatureCollection', features: [] };
 			poiData = [];
 			return;
 		}
 
-		geojsonData = {
+		_internalGeojson = {
 			type: 'FeatureCollection',
 			features: getEpsgInfoArray({
 				exclude4326: true
@@ -107,7 +121,7 @@
 				.filter((feature) => feature !== undefined)
 		};
 
-		poiData = geojsonData.features
+		poiData = _internalGeojson.features
 			.filter((feature) => feature.geometry.type === 'Point')
 			.map((feature) => ({
 				coordinates: feature.geometry.coordinates as [number, number],
@@ -116,27 +130,28 @@
 
 		// 現在の地図の中心から一番近いフィーチャーを見つけて、そのpoiDataの座標系を選択する
 		const mapCenter = map.getCenter();
-		const points = geojsonData.features.filter(
-			(f) => f.geometry.type === 'Point'
-		) as Feature<PointGeometry, PoiData['properties']>[];
+		const points = _internalGeojson.features.filter((f) => f.geometry.type === 'Point') as Feature<
+			PointGeometry,
+			PoiData['properties']
+		>[];
 		if (points.length > 0) {
-			const nearest = turfNearestPoint(
-				[mapCenter.lng, mapCenter.lat],
-				{ type: 'FeatureCollection', features: points }
-			);
+			const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
+				type: 'FeatureCollection',
+				features: points
+			});
 			const idx = nearest.properties.featureIndex;
 			selectedEpsgCode = points[idx].properties.code;
 		}
 
-		// TODO
-		setTimeout(() => {
-			mapStore.setData('zone_bbox', geojsonData);
-		}, 500);
+		zoneBboxGeojsonData = {
+			type: 'FeatureCollection',
+			features: _internalGeojson.features.filter((feature) => feature.geometry.type === 'Polygon')
+		} as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
 	});
 
 	$effect(() => {
 		if (selectedEpsgCode) {
-			const feature = geojsonData.features.find(
+			const feature = _internalGeojson.features.find(
 				(feature) =>
 					feature.properties?.code === selectedEpsgCode && feature.geometry.type === 'Polygon'
 			);
@@ -150,7 +165,7 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					duration: 500
+					duration: 750
 				});
 			}
 
@@ -208,9 +223,7 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex gap-2">
-				<button onclick={() => { showZoneForm = false; focusBbox = null; }} class="c-btn-sub cursor-pointer p-4 text-lg">
-					キャンセル
-				</button>
+				<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
 					決定
 				</button>

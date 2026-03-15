@@ -1,5 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
@@ -20,7 +21,7 @@
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing, useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -29,6 +30,7 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -37,7 +39,8 @@
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -134,10 +137,19 @@
 			const prjContent = getProjContext(epsgCode);
 			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
 
-			const geojsonData = (await transformGeoJSONParallel(
+			const transformedGeojson = (await transformGeoJSONParallel(
 				plainGeojson,
 				prjContent
 			)) as FeatureCollection;
+
+			// ジオメトリタイプとレイヤーでフィルター
+			let geojsonData = filterByGeometryType(
+				transformedGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedLayers.length > 0) {
+				geojsonData = filterByProperty(geojsonData, selectedLayers, extractLayer);
+			}
 
 			if (!geojsonData || geojsonData.features.length === 0) {
 				showNotification('DXFファイルの変換に失敗しました', 'error');
@@ -177,12 +189,13 @@
 	};
 
 	$effect(() => {
-		const unsubscribe = useEventTrigger.subscribe((eventName) => {
-			if (eventName === 'setZone' && showDialogType === 'dxf') {
-				convertAndCreateEntry(selectedEpsgCode);
-			}
-		});
-		return unsubscribe;
+		if (zoneConfirmedEpsg && showDialogType === 'dxf') {
+			const epsg = zoneConfirmedEpsg;
+			untrack(() => {
+				zoneConfirmedEpsg = null;
+				convertAndCreateEntry(epsg);
+			});
+		}
 	});
 </script>
 
@@ -209,14 +222,14 @@
 				<span class="text-sm text-gray-300">レイヤー</span>
 				<div class="flex gap-2">
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, false]));
@@ -237,8 +250,9 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={!selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!selectedGeometryType
+		disabled={$isProcessing || !selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+		!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

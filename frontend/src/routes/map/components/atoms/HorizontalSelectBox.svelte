@@ -17,7 +17,7 @@
 		</div>
 	{/if}
 	{#if options.length === 2}
-		<div class="border-sub relative flex w-full overflow-hidden rounded-full border-1 bg-black">
+		<div class="border-sub relative flex w-full overflow-hidden rounded-full border bg-black">
 			<div
 				class="bg-base absolute h-full w-1/2 rounded-full transition-transform duration-200 {options[0]
 					.key === group
@@ -38,7 +38,7 @@
 		</div>
 	{/if}
 	{#if options.length === 3}
-		<div class="relative flex w-full overflow-hidden rounded-full bg-black">
+		<div class="border-sub relative flex w-full overflow-hidden rounded-full border bg-black">
 			<div
 				class="bg-base absolute h-full w-1/3 rounded-full transition-transform duration-200 {options[0]
 					.key === group
@@ -52,7 +52,7 @@
 					<input type="radio" bind:group value={line.key} class="hidden" />
 					<span
 						class="transition-colors duration-200 select-none {line.key === group
-							? 'text-black'
+							? ' text-black'
 							: ''}"
 						>{line.name}
 					</span>

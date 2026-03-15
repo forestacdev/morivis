@@ -1,5 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
@@ -25,7 +26,7 @@
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
-	import { useEventTrigger } from '$routes/stores/ui';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -34,6 +35,7 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
+		zoneConfirmedEpsg: EpsgCode | null;
 	}
 
 	let {
@@ -42,7 +44,8 @@
 		dropFile = $bindable(),
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
-		focusBbox = $bindable()
+		focusBbox = $bindable(),
+		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -52,7 +55,6 @@
 		Label: 'ラベル'
 	};
 
-	let loading = $state(false);
 	let rawGeojson = $state<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<string>('');
@@ -108,7 +110,7 @@
 	// ファイルドロップ時: SIMA変換 → ジオメトリタイプ確認
 	$effect(() => {
 		if (simaFile) {
-			loading = true;
+			isProcessing.set(true);
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				try {
@@ -120,6 +122,12 @@
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
 						geometryTypeOptions = [];
+						layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractSimaLayer);
+						const layers = layersByGeometryType[selectedGeometryType] ?? [];
+						if (layers.length <= 1) {
+							openZoneForm();
+							return;
+						}
 					} else {
 						geometryTypeOptions = types.map((t) => ({
 							key: t,
@@ -133,12 +141,12 @@
 					showNotification('SIMAファイルの読み込みに失敗しました', 'error');
 					console.error(err);
 				} finally {
-					loading = false;
+					isProcessing.set(false);
 				}
 			};
 			reader.onerror = () => {
 				showNotification('SIMAファイルの読み込みに失敗しました', 'error');
-				loading = false;
+				isProcessing.set(false);
 			};
 			reader.readAsText(simaFile);
 		}
@@ -153,7 +161,7 @@
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!simaFile || !rawGeojson || !selectedGeometryType) return;
-		loading = true;
+		isProcessing.set(true);
 
 		try {
 			const prjContent = getProjContext(epsgCode);
@@ -205,7 +213,7 @@
 			showNotification('SIMAファイルの変換中にエラーが発生しました', 'error');
 			console.error(e);
 		} finally {
-			loading = false;
+			isProcessing.set(false);
 		}
 	};
 
@@ -214,12 +222,13 @@
 	};
 
 	$effect(() => {
-		const unsubscribe = useEventTrigger.subscribe((eventName) => {
-			if (eventName === 'setZone' && showDialogType === 'sima') {
-				convertAndCreateEntry(selectedEpsgCode);
-			}
-		});
-		return unsubscribe;
+		if (zoneConfirmedEpsg && showDialogType === 'sima') {
+			const epsg = zoneConfirmedEpsg;
+			untrack(() => {
+				zoneConfirmedEpsg = null;
+				convertAndCreateEntry(epsg);
+			});
+		}
 	});
 </script>
 
@@ -234,10 +243,6 @@
 		<div class="w-full px-2 text-sm text-gray-300">
 			形式: {simaFormat}
 		</div>
-	{/if}
-
-	{#if loading}
-		<div class="text-sm text-gray-300">変換中...</div>
 	{/if}
 
 	{#if geometryTypeOptions.length > 1}
@@ -256,14 +261,14 @@
 				<span class="text-sm text-gray-300">地物タイプ</span>
 				<div class="flex gap-2">
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="text-xs text-gray-400 hover:text-white pointer-events-auto"
+						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, false]));
@@ -284,8 +289,9 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={loading || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {loading || !selectedGeometryType
+		disabled={$isProcessing || !selectedGeometryType}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+		!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

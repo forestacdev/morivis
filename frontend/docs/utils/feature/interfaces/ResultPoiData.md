@@ -6,7 +6,7 @@
 
 # Interface: ResultPoiData
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:5](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L5)
+Defined in: [frontend/src/routes/map/utils/feature.ts:5](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L5)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:5](https://github.com/fore
 
 > **featureId**: `number`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:10](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L10)
+Defined in: [frontend/src/routes/map/utils/feature.ts:10](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:10](https://github.com/for
 
 > `optional` **id**: `number`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:6](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L6)
+Defined in: [frontend/src/routes/map/utils/feature.ts:6](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L6)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:6](https://github.com/fore
 
 > **layerId**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:12](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L12)
+Defined in: [frontend/src/routes/map/utils/feature.ts:12](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L12)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:12](https://github.com/for
 
 > **location**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:13](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L13)
+Defined in: [frontend/src/routes/map/utils/feature.ts:13](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L13)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:13](https://github.com/for
 
 > **name**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:8](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L8)
+Defined in: [frontend/src/routes/map/utils/feature.ts:8](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L8)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:8](https://github.com/fore
 
 > **point**: \[`number`, `number`\]
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:9](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L9)
+Defined in: [frontend/src/routes/map/utils/feature.ts:9](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L9)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:9](https://github.com/fore
 
 > **propId**: `string`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:11](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L11)
+Defined in: [frontend/src/routes/map/utils/feature.ts:11](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L11)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [frontend/src/routes/map/utils/feature.ts:11](https://github.com/for
 
 > **type**: `"poi"`
 
-Defined in: [frontend/src/routes/map/utils/feature.ts:7](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/feature.ts#L7)
+Defined in: [frontend/src/routes/map/utils/feature.ts:7](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/feature.ts#L7)

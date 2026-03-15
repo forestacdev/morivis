@@ -6,7 +6,7 @@
 
 # Class: ThreeJsLayerManager
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:50](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L50)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:50](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L50)
 
 Three.js レイヤーマネージャー
 scene/camera/renderer は一度だけ初期化し、モデルの追加/削除のみを行う
@@ -29,7 +29,7 @@ scene/camera/renderer は一度だけ初期化し、モデルの追加/削除の
 
 > **get** **initialized**(): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:424](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L424)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:424](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L424)
 
 初期化済みかどうか
 
@@ -45,7 +45,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:424](https://github.com/fo
 
 > **get** **modelIds**(): `string`[]
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:431](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L431)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:431](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L431)
 
 ロード済みモデルのIDリスト
 
@@ -59,7 +59,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:431](https://github.com/fo
 
 > **addModel**(`entry`, `_type`): `Promise`\<`void`\>
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:160](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L160)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:160](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L160)
 
 モデルを追加
 プレビューに同じIDのモデルがあれば再利用する
@@ -84,7 +84,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:160](https://github.com/fo
 
 > **addModels**(`entries`): `Promise`\<`void`\>
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:244](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L244)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:244](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L244)
 
 複数のモデルを追加
 
@@ -104,7 +104,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:244](https://github.com/fo
 
 > **clearAllModels**(): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:281](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L281)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:281](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L281)
 
 すべてのモデルを削除
 
@@ -118,7 +118,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:281](https://github.com/fo
 
 > **clearPreview**(`entryId?`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:386](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L386)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:386](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L386)
 
 プレビューモデルをクリア（確定しない場合）
 
@@ -138,7 +138,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:386](https://github.com/fo
 
 > **createLayer**(): `CustomLayerInterface`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:63](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L63)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:63](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L63)
 
 カスタムレイヤーを作成（初期化用）
 
@@ -152,7 +152,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:63](https://github.com/for
 
 > **dispose**(): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:410](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L410)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:410](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L410)
 
 完全に破棄（ページ離脱時など）
 
@@ -166,7 +166,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:410](https://github.com/fo
 
 > **promotePreviewToMain**(`entryId`): `boolean`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:371](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L371)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:371](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L371)
 
 プレビューモデルをメイングループに移動（再読み込み不要）
 
@@ -186,7 +186,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:371](https://github.com/fo
 
 > **removeModel**(`entryId`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:261](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L261)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:261](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L261)
 
 モデルを削除
 
@@ -206,7 +206,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:261](https://github.com/fo
 
 > **replaceModels**(`entries`): `Promise`\<`void`\>
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:290](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L290)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:290](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L290)
 
 モデルを入れ替え（既存をすべて削除して新しいモデルを追加）
 
@@ -226,7 +226,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:290](https://github.com/fo
 
 > **setGroupVisibility**(`visible`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:363](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L363)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:363](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L363)
 
 #### Parameters
 
@@ -244,7 +244,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:363](https://github.com/fo
 
 > **setModelColor**(`entryId`, `color`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:347](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L347)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:347](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L347)
 
 #### Parameters
 
@@ -266,7 +266,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:347](https://github.com/fo
 
 > **setModelOpacity**(`entryId`, `opacity`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:316](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L316)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:316](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L316)
 
 モデルの不透明度を変更
 
@@ -290,7 +290,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:316](https://github.com/fo
 
 > **setModelVisibility**(`entryId`, `visible`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:298](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L298)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:298](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L298)
 
 モデルの表示/非表示を切り替え
 
@@ -314,7 +314,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:298](https://github.com/fo
 
 > **setModelWireframe**(`entryId`, `wireframe`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:331](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L331)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:331](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L331)
 
 #### Parameters
 
@@ -336,7 +336,7 @@ Defined in: [frontend/src/routes/map/utils/threejs.ts:331](https://github.com/fo
 
 > **updateTransform**(`entries`): `void`
 
-Defined in: [frontend/src/routes/map/utils/threejs.ts:248](https://github.com/forestacdev/morivis/blob/c4874b62871f939aa8111012adfc001e4ac1dae6/frontend/src/routes/map/utils/threejs.ts#L248)
+Defined in: [frontend/src/routes/map/utils/threejs.ts:248](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/threejs.ts#L248)
 
 #### Parameters
 

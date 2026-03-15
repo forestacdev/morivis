@@ -40,7 +40,22 @@ const createObjectURLFromWorkerResult = async (data: {
 	throw new Error('No blob or imageBitmap in worker response');
 };
 
-// TODO クリーンアップ
+/**
+ * XYZタイル座標からEPSG:3857のbboxを計算する
+ */
+const tileToBbox3857 = (x: number, y: number, z: number): string => {
+	const EXTENT = 20037508.342789244;
+	const tileCount = Math.pow(2, z);
+	const tileSize = (2 * EXTENT) / tileCount;
+
+	const minX = -EXTENT + x * tileSize;
+	const maxX = -EXTENT + (x + 1) * tileSize;
+	const maxY = EXTENT - y * tileSize;
+	const minY = EXTENT - (y + 1) * tileSize;
+
+	return `${minX},${minY},${maxX},${maxY}`;
+};
+
 // raster + image タイプの処理
 export const getRasterImageUrl = async (
 	_layerEntry: AnyRasterEntry
@@ -53,20 +68,24 @@ export const getRasterImageUrl = async (
 		tile = xyzToWMSXYZ(tile);
 	}
 
+	// WMS URL（{bbox-epsg-3857}を含む）の場合はbboxを計算して置換
+	if (_layerEntry.format.url.includes('{bbox-epsg-3857}')) {
+		const bbox = tileToBbox3857(tile.x, tile.y, tile.z);
+		const url = _layerEntry.format.url.replace('{bbox-epsg-3857}', bbox);
+		return url;
+	}
+
 	// URLを生成
 	const url = convertTmsToXyz(_layerEntry.format.url)
 		.replace('{z}', tile.z.toString())
 		.replace('{x}', tile.x.toString())
 		.replace('{y}', tile.y.toString());
 
-	// URLを生成して返す
-
 	if (_layerEntry.style.type === 'dem') {
 		const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
 
 		if (demType) {
 			const convertUrl = await generateDemCoverImage(url, _layerEntry as RasterDemEntry);
-
 			return convertUrl;
 		}
 	} else {

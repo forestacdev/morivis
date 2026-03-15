@@ -65,6 +65,8 @@
 			{:else if layerEntry.format.geometryType === 'Polygon'}
 				<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
 			{/if}
+		{:else if layerEntry.type === 'model'}
+			<Icon icon="mdi:cube-outline" class="pointer-events-none" width={30} />
 		{/if}
 	{/await}
 {/if}

@@ -6,7 +6,11 @@
         },
         {
             "name": "データ定義",
-            "path": "frontend/src/routes/map/data/entries",
+            "path": "frontend/src/routes/map/data",
+        },
+        {
+            "name": "アップロードフォーム",
+            "path": "frontend/src/routes/map/components/upload",
         },
         {
             "path": "frontend",

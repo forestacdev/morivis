@@ -87,14 +87,18 @@ export const createGeoJsonEntry = (
 		const colors = groupPropertyByGeometryType(data, (props) =>
 			props?.color != null ? String(props.color) : undefined
 		);
-		const dxfColorMapping = createColorStyleDXFMapping(colors[entryGeometryType] ?? []);
-		colorsConfig.expressions.push({
-			type: 'match',
-			key: 'color',
-			name: 'カラーコードによる色分け',
-			mapping: dxfColorMapping
-		});
-		colorsConfig.key = 'color';
+		const dxfCategories = colors[entryGeometryType] ?? [];
+		if (dxfCategories.length > 0) {
+			const dxfColorMapping = createColorStyleDXFMapping(dxfCategories);
+			colorsConfig.expressions.push({
+				type: 'match',
+				key: 'color',
+				name: 'カラーコードによる色分け',
+				mapping: dxfColorMapping
+			});
+			colorsConfig.key = 'color';
+		}
+		// カテゴリが空の場合はデフォルトのシングルカラースタイルを維持
 	}
 
 	const propKeys = getUniquePropertyKeys(data as any);
@@ -262,10 +266,30 @@ export const createVectorTileEntry = (
 			style
 		};
 	} else {
-		// Label またはその他の不明なタイプ
 		console.error('不明なジオメトリタイプです。');
 		return undefined;
 	}
+};
+
+export const createVectorPmtilesEntry = (
+	name: string,
+	url: string,
+	sourceLayer: string,
+	entryGeometryType: VectorEntryGeometryType,
+	color: string = getRandomColor()
+): VectorEntry<TileMetaData> | undefined => {
+	// createVectorTileEntryと同じ構造でformat.typeだけ'pmtiles'にする
+	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
+	if (!entry) return undefined;
+
+	return {
+		...entry,
+		id: 'pmtiles_' + crypto.randomUUID(),
+		format: {
+			...entry.format,
+			type: 'pmtiles' as const
+		}
+	} as VectorEntry<TileMetaData>;
 };
 
 /** GeoJSON に含まれるジオメトリタイプの一覧を返す */
@@ -278,7 +302,8 @@ export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometr
 		else if (t === 'LineString' || t === 'MultiLineString') types.add('LineString');
 		else if (t === 'Polygon' || t === 'MultiPolygon') types.add('Polygon');
 	}
-	return [...types];
+	const order: VectorEntryGeometryType[] = ['Point', 'LineString', 'Polygon'];
+	return order.filter((t) => types.has(t));
 };
 
 /** GeoJSON を指定ジオメトリタイプのフィーチャのみにフィルターする */

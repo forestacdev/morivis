@@ -81,13 +81,13 @@ export const findCenterTile = (bbox: BBox, maxZoom: number = 18): TileXYZ => {
 		const tileH = tileBbox[3] - tileBbox[1];
 
 		if (tileW < bboxW && tileH < bboxH) {
-			return { x: tile[0], y: tile[1], z: tile[2] };
+			return { x: tile[0], y: tile[1], z: tile[2] as TileXYZ['z'] };
 		}
 	}
 
 	// maxZoomでも小さくならない場合はmaxZoomの中心タイルを返す
 	const tile = tilebelt.pointToTile(centerLon, centerLat, maxZoom) as [number, number, number];
-	return { x: tile[0], y: tile[1], z: tile[2] };
+	return { x: tile[0], y: tile[1], z: tile[2] as TileXYZ['z'] };
 };
 
 /**
