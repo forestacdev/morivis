@@ -116,6 +116,195 @@ export const msiClpToOrbitTrackGeojson = async (file: File): Promise<FeatureColl
 /** HDF5のfill valueかどうかを判定する */
 const isFillValue = (v: number): boolean => Math.abs(v) > 1e36 || isNaN(v);
 
+/** 日付変更線をまたぐかどうかを判定する（経度差が180度超） */
+const crossesAntimeridian = (lon1: number, lon2: number): boolean => Math.abs(lon2 - lon1) > 180;
+
+/**
+ * 座標配列を日付変更線で分割してLineStringセグメントの配列を返す
+ */
+const splitLineAtAntimeridian = (
+	coords: [number, number][]
+): [number, number][][] => {
+	if (coords.length < 2) return [coords];
+
+	const segments: [number, number][][] = [];
+	let current: [number, number][] = [coords[0]];
+
+	for (let i = 1; i < coords.length; i++) {
+		if (crossesAntimeridian(coords[i - 1][0], coords[i][0])) {
+			// 前のセグメントを閉じる（p1側の境界点）
+			current.push(interpolateAtAntimeridian(coords[i - 1], coords[i]));
+			segments.push(current);
+
+			// 新しいセグメントを開始（p2側の境界点）
+			current = [interpolateAtAntimeridian(coords[i], coords[i - 1]), coords[i]];
+		} else {
+			current.push(coords[i]);
+		}
+	}
+
+	if (current.length > 0) {
+		segments.push(current);
+	}
+
+	return segments;
+};
+
+/**
+ * 座標配列から日付変更線で分割された軌道トラックGeoJSONを生成する
+ */
+const buildOrbitTrackFeatures = (coords: [number, number][]): FeatureCollection => {
+	const segments = splitLineAtAntimeridian(coords);
+
+	return {
+		type: 'FeatureCollection',
+		features: segments.map((seg) => ({
+			type: 'Feature' as const,
+			geometry: { type: 'LineString' as const, coordinates: seg },
+			properties: { type: 'orbit_track', num_points: seg.length }
+		}))
+	};
+};
+
+/**
+ * 2点間の日付変更線上の緯度を線形補間する
+ * p1 → p2 が日付変更線をまたぐとき、p1側の±180境界上の点を返す
+ */
+const interpolateAtAntimeridian = (
+	p1: [number, number],
+	p2: [number, number]
+): [number, number] => {
+	const [lon1, lat1] = p1;
+	const [lon2, lat2] = p2;
+
+	// p1からの距離（±180境界まで）と p2からの距離を計算
+	const d1 = lon1 < 0 ? 180 + lon1 : 180 - lon1; // p1から境界までの距離
+	const d2 = lon2 < 0 ? 180 + lon2 : 180 - lon2; // p2から境界までの距離
+	const t = d1 / (d1 + d2);
+	const latMid = lat1 + (lat2 - lat1) * t;
+	return [lon1 < 0 ? -180 : 180, latMid];
+};
+
+/**
+ * スキャンラインの左辺と右辺が日付変更線の同じ側にあるか判定
+ * 両方が同じ符号 → same side, 異なる符号で差が180超 → straddle
+ */
+const straddlesAntimeridian = (leftLon: number, rightLon: number): boolean =>
+	(leftLon < 0 && rightLon > 0 && rightLon - leftLon > 180) ||
+	(rightLon < 0 && leftLon > 0 && leftLon - rightLon > 180);
+
+/**
+ * 左端・右端の座標ペアから日付変更線で分割されたポリゴン群を生成する
+ *
+ * 3つのケースを処理:
+ * 1. 日付変更線をまたがないセグメント → 通常のポリゴン
+ * 2. スワスが日付変更線にまたがるセグメント → 西側(-180境界)と東側(+180境界)に分割
+ * 3. セグメント境界 → 補間点を追加
+ */
+const buildSwathPolygons = (
+	left: [number, number][],
+	right: [number, number][]
+): [number, number][][][] => {
+	// 分割ポイントのインデックスを収集
+	const splitIndices: number[] = [];
+	for (let i = 1; i < left.length; i++) {
+		if (crossesAntimeridian(left[i - 1][0], left[i][0]) ||
+			crossesAntimeridian(right[i - 1][0], right[i][0])) {
+			splitIndices.push(i);
+		}
+	}
+
+	if (splitIndices.length === 0) {
+		const ring: [number, number][] = [...left, ...[...right].reverse(), left[0]];
+		return [[ring]];
+	}
+
+	const polygons: [number, number][][][] = [];
+	const boundaries = [0, ...splitIndices, left.length];
+
+	for (let b = 0; b < boundaries.length - 1; b++) {
+		const start = boundaries[b];
+		const end = boundaries[b + 1];
+		if (end - start < 2) continue;
+
+		// このセグメントがスワスとして日付変更線をまたいでいるか判定
+		const isStraddling = straddlesAntimeridian(left[start][0], right[start][0]);
+
+		if (isStraddling) {
+			// スワスが日付変更線をまたぐ: 西側と東側に分割
+			const westLeft: [number, number][] = [];
+			const westRight: [number, number][] = []; // -180境界
+			const eastLeft: [number, number][] = []; // +180境界
+			const eastRight: [number, number][] = [];
+
+			for (let i = start; i < end; i++) {
+				// 左辺は負の経度側（西側）
+				if (left[i][0] < 0) {
+					westLeft.push(left[i]);
+					westRight.push([-180, left[i][1]]);
+				} else {
+					westLeft.push(left[i]);
+					westRight.push([-180, left[i][1]]);
+				}
+				// 右辺は正の経度側（東側）
+				if (right[i][0] > 0) {
+					eastRight.push(right[i]);
+					eastLeft.push([180, right[i][1]]);
+				} else {
+					eastRight.push(right[i]);
+					eastLeft.push([180, right[i][1]]);
+				}
+			}
+
+			// 西側ポリゴン: 左辺 → -180境界を逆順 → 閉じる
+			if (westLeft.length >= 2) {
+				const ring: [number, number][] = [...westLeft, ...[...westRight].reverse(), westLeft[0]];
+				polygons.push([ring]);
+			}
+			// 東側ポリゴン: +180境界 → 右辺を逆順 → 閉じる
+			if (eastRight.length >= 2) {
+				const ring: [number, number][] = [...eastLeft, ...[...eastRight].reverse(), eastLeft[0]];
+				polygons.push([ring]);
+			}
+		} else {
+			// 日付変更線をまたがない通常のセグメント
+			const segLeft: [number, number][] = [];
+			const segRight: [number, number][] = [];
+
+			// 境界での補間点
+			if (start > 0) {
+				if (crossesAntimeridian(left[start - 1][0], left[start][0])) {
+					segLeft.push(interpolateAtAntimeridian(left[start], left[start - 1]));
+				}
+				if (crossesAntimeridian(right[start - 1][0], right[start][0])) {
+					segRight.push(interpolateAtAntimeridian(right[start], right[start - 1]));
+				}
+			}
+
+			for (let i = start; i < end; i++) {
+				segLeft.push(left[i]);
+				segRight.push(right[i]);
+			}
+
+			if (end < left.length) {
+				if (crossesAntimeridian(left[end - 1][0], left[end][0])) {
+					segLeft.push(interpolateAtAntimeridian(left[end - 1], left[end]));
+				}
+				if (crossesAntimeridian(right[end - 1][0], right[end][0])) {
+					segRight.push(interpolateAtAntimeridian(right[end - 1], right[end]));
+				}
+			}
+
+			if (segLeft.length > 0 && segRight.length > 0) {
+				const ring: [number, number][] = [...segLeft, ...[...segRight].reverse(), segLeft[0]];
+				polygons.push([ring]);
+			}
+		}
+	}
+
+	return polygons;
+};
+
 /**
  * 2D flat arrayの各行から有効な最左端/最右端のインデックスを探す
  */
@@ -183,21 +372,29 @@ const buildMsiClpSwathGeojson = (f: InstanceType<typeof hdf5.File>): FeatureColl
 		throw new Error('有効な座標データがありません');
 	}
 
-	// 左端を順方向 → 右端を逆方向 → 始点に戻して閉じる
-	const coordinates: [number, number][] = [...left, ...[...right].reverse(), left[0]];
+	// 日付変更線で分割してポリゴンを生成
+	const polygons = buildSwathPolygons(left, right);
+
+	if (polygons.length === 1) {
+		return {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					geometry: { type: 'Polygon', coordinates: polygons[0] },
+					properties: { type: 'swath', num_scanlines: rows, num_pixels: cols }
+				}
+			]
+		};
+	}
 
 	return {
 		type: 'FeatureCollection',
-		features: [
-			{
-				type: 'Feature',
-				geometry: {
-					type: 'Polygon',
-					coordinates: [coordinates]
-				},
-				properties: { type: 'swath', num_scanlines: rows, num_pixels: cols }
-			}
-		]
+		features: polygons.map((ring) => ({
+			type: 'Feature' as const,
+			geometry: { type: 'Polygon' as const, coordinates: ring },
+			properties: { type: 'swath', num_scanlines: rows, num_pixels: cols }
+		}))
 	};
 };
 
@@ -228,31 +425,8 @@ const buildCprClpOrbitTrackGeojson = (f: InstanceType<typeof hdf5.File>): Featur
 	const latitude = latDataset.value as number[];
 	const longitude = lonDataset.value as number[];
 
-	const features: FeatureCollection['features'] = [];
-
-	// // 各観測点をPointとして追加
-	// for (let i = 0; i < latitude.length; i++) {
-	// 	features.push({
-	// 		type: 'Feature',
-	// 		geometry: {
-	// 			type: 'Point',
-	// 			coordinates: [longitude[i], latitude[i]]
-	// 		},
-	// 		properties: { index: i }
-	// 	});
-	// }
-
-	// 軌道全体をLineStringとして追加
-	features.push({
-		type: 'Feature',
-		geometry: {
-			type: 'LineString',
-			coordinates: latitude.map((lat, i) => [longitude[i], lat])
-		},
-		properties: { type: 'orbit_track', num_points: latitude.length }
-	});
-
-	return { type: 'FeatureCollection', features };
+	const coords: [number, number][] = latitude.map((lat, i) => [longitude[i], lat]);
+	return buildOrbitTrackFeatures(coords);
 };
 
 /**
@@ -282,17 +456,6 @@ const buildCprFmrOrbitTrackGeojson = (f: InstanceType<typeof hdf5.File>): Featur
 	const latitude = latDataset.value as number[];
 	const longitude = lonDataset.value as number[];
 
-	const features: FeatureCollection['features'] = [];
-
-	// 軌道全体をLineStringとして追加
-	features.push({
-		type: 'Feature',
-		geometry: {
-			type: 'LineString',
-			coordinates: latitude.map((lat, i) => [longitude[i], lat])
-		},
-		properties: { type: 'orbit_track', num_points: latitude.length }
-	});
-
-	return { type: 'FeatureCollection', features };
+	const coords: [number, number][] = latitude.map((lat, i) => [longitude[i], lat]);
+	return buildOrbitTrackFeatures(coords);
 };

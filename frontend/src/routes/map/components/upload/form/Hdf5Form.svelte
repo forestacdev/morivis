@@ -117,6 +117,8 @@
 			return;
 		}
 
+		console.log('Filtered GeoJSON:', filtered);
+
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
