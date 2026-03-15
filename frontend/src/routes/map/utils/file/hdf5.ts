@@ -231,37 +231,31 @@ const buildSwathPolygons = (
 		const isStraddling = straddlesAntimeridian(left[start][0], right[start][0]);
 
 		if (isStraddling) {
-			// スワスが日付変更線をまたぐ: 西側と東側に分割
+			// スワスが日付変更線をまたぐ: 各スキャンラインのleft-right間で
+			// 日付変更線との交点を求め、西側(-180)と東側(+180)に分割
 			const westLeft: [number, number][] = [];
-			const westRight: [number, number][] = []; // -180境界
-			const eastLeft: [number, number][] = []; // +180境界
+			const westRight: [number, number][] = [];
+			const eastLeft: [number, number][] = [];
 			const eastRight: [number, number][] = [];
 
 			for (let i = start; i < end; i++) {
-				// 左辺は負の経度側（西側）
-				if (left[i][0] < 0) {
-					westLeft.push(left[i]);
-					westRight.push([-180, left[i][1]]);
-				} else {
-					westLeft.push(left[i]);
-					westRight.push([-180, left[i][1]]);
-				}
-				// 右辺は正の経度側（東側）
-				if (right[i][0] > 0) {
-					eastRight.push(right[i]);
-					eastLeft.push([180, right[i][1]]);
-				} else {
-					eastRight.push(right[i]);
-					eastLeft.push([180, right[i][1]]);
-				}
+				// left→right の線分が日付変更線と交わる緯度を補間
+				const crossPt = interpolateAtAntimeridian(left[i], right[i]);
+				const crossLat = crossPt[1];
+
+				// 西側: left座標 → -180境界
+				westLeft.push(left[i]);
+				westRight.push([-180, crossLat]);
+
+				// 東側: +180境界 → right座標
+				eastLeft.push([180, crossLat]);
+				eastRight.push(right[i]);
 			}
 
-			// 西側ポリゴン: 左辺 → -180境界を逆順 → 閉じる
 			if (westLeft.length >= 2) {
 				const ring: [number, number][] = [...westLeft, ...[...westRight].reverse(), westLeft[0]];
 				polygons.push([ring]);
 			}
-			// 東側ポリゴン: +180境界 → 右辺を逆順 → 閉じる
 			if (eastRight.length >= 2) {
 				const ring: [number, number][] = [...eastLeft, ...[...eastRight].reverse(), eastLeft[0]];
 				polygons.push([ring]);
