@@ -7,6 +7,23 @@ import * as tilebelt from '@mapbox/tilebelt';
  * 例: esri-feature://https://example.com/arcgis/rest/services/Foo/FeatureServer/1?x=0&y=0&z=0
  */
 
+// タイルキャッシュ（LRU方式）
+const TILE_CACHE_LIMIT = 256;
+const tileCache = new Map<string, Uint8Array>();
+
+const setTileCache = (key: string, value: Uint8Array) => {
+	if (tileCache.has(key)) {
+		tileCache.delete(key);
+	}
+	if (tileCache.size >= TILE_CACHE_LIMIT) {
+		const oldestKey = tileCache.keys().next().value;
+		if (oldestKey) {
+			tileCache.delete(oldestKey);
+		}
+	}
+	tileCache.set(key, value);
+};
+
 class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<
@@ -31,12 +48,22 @@ class WorkerProtocol {
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
 			const z = parseInt(url.searchParams.get('z') || '0', 10);
 
+			// FeatureServerのレイヤーURLを取得（クエリパラメータを除去）
+			const layerUrl = url.origin + url.pathname;
+			const cacheKey = `${layerUrl}/${z}/${x}/${y}`;
+
+			// キャッシュヒットならそのまま返す
+			if (tileCache.has(cacheKey)) {
+				const cached = tileCache.get(cacheKey)!;
+				// LRU順序更新
+				tileCache.delete(cacheKey);
+				tileCache.set(cacheKey, cached);
+				return { data: cached };
+			}
+
 			// タイルのbboxを算出 [minLng, minLat, maxLng, maxLat]
 			const bbox = tilebelt.tileToBBOX([x, y, z]);
 			const [minLng, minLat, maxLng, maxLat] = bbox;
-
-			// FeatureServerのレイヤーURLを取得（クエリパラメータを除去）
-			const layerUrl = url.origin + url.pathname;
 
 			const { signal } = abortController;
 
@@ -45,15 +72,10 @@ class WorkerProtocol {
 				`${minLng},${minLat},${maxLng},${maxLat}`
 			);
 
-			// 低ズームではジオメトリを簡略化して転送量を削減
-			// maxAllowableOffset: ズームレベルに応じた許容誤差（度単位）
-			const maxAllowableOffset = z < 10 ? 360 / (256 * Math.pow(2, z)) : 0;
-			const simplifyParam = maxAllowableOffset > 0
-				? `&maxAllowableOffset=${maxAllowableOffset}`
-				: '';
 
-			// 取得件数を制限（低ズームで大量データを防ぐ）
-			const recordCount = z < 8 ? 500 : z < 12 ? 2000 : 5000;
+			// ズームレベルに応じた座標精度（小数桁数）
+			// z=0〜5: 3桁(~111m), z=6〜10: 5桁(~1.1m), z=11〜14: 6桁(~0.11m), z=15+: 7桁
+			const geometryPrecision = z < 6 ? 3 : z < 11 ? 5 : z < 15 ? 6 : 7;
 
 			const queryUrl =
 				`${layerUrl}/query?f=geojson&where=1%3D1` +
@@ -61,8 +83,7 @@ class WorkerProtocol {
 				`&geometryType=esriGeometryEnvelope` +
 				`&inSR=4326&outFields=*&outSR=4326` +
 				`&spatialRel=esriSpatialRelIntersects` +
-				`&resultRecordCount=${recordCount}` +
-				simplifyParam;
+				`&geometryPrecision=${geometryPrecision}`;
 
 			const res = await fetch(queryUrl, { signal });
 			if (!res.ok) {
@@ -72,13 +93,24 @@ class WorkerProtocol {
 			const geojson = await res.json();
 
 			if (geojson.error || !geojson.features || geojson.features.length === 0) {
-				return { data: new Uint8Array() };
+				// 空タイルもキャッシュ
+				const empty = new Uint8Array();
+				setTileCache(cacheKey, empty);
+				return { data: empty };
 			}
 
 			const id = `${z}/${x}/${y}_esri_feature`;
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(id, { resolve, reject });
+				this.pendingRequests.set(id, {
+					resolve: (result) => {
+						// Worker結果をキャッシュ
+						const data = 'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+						setTileCache(cacheKey, data);
+						resolve(result);
+					},
+					reject
+				});
 
 				signal.addEventListener('abort', () => {
 					this.pendingRequests.delete(id);

@@ -167,7 +167,7 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
-	<div class="flex w-full items-center gap-2 p-2">
+	<div class="flex w-full items-center p-2">
 		<div class="grow">
 			<TextForm bind:value={forms.url} label="Capabilities URL" error={urlErrors.url} />
 		</div>
@@ -202,7 +202,7 @@
 		</div>
 
 		{#if selectedLayer}
-			<div class="w-full px-2 text-xs text-gray-400">
+			<div transition:slide class="w-full px-2 text-xs text-gray-400">
 				{#if selectedLayer.format}
 					<div>フォーマット: {selectedLayer.format}</div>
 				{/if}
