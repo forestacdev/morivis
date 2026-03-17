@@ -789,7 +789,7 @@
 {/if}
 
 <style>
-	@media (width >= 64rem /* 1024px */) {
+	@media (width >= 48rem /* 768px */) {
 		:global(.maplibregl-canvas) {
 			border-radius: 0.5rem !important;
 			overflow: hidden !important;
