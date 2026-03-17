@@ -6,13 +6,16 @@
  * transferToImageBitmap()はCanvas serialization APIを経由しないため
  * farblingの影響を受けない。
  *
- * 参考: REPORT_canvas_farbling_fallback.md
+ * 参考:
+ * - Braveのfarbling対象API: https://github.com/brave/brave-browser/issues/9186
+ * - MapLibreでの同様の問題: https://github.com/maplibre/maplibre-gl-js/issues/3110
+ * - MapLibreのVideoFrame APIによる修正: https://github.com/maplibre/maplibre-gl-js/pull/3185
  */
 
 let farblingDetected: boolean | null = null;
 
 /** Canvas getImageData()がfarblingされているか検出する（結果キャッシュ） */
-export function isFarblingDetected(): boolean {
+export const isFarblingDetected = (): boolean => {
 	if (farblingDetected !== null) return farblingDetected;
 	farblingDetected = false;
 
@@ -36,14 +39,16 @@ export function isFarblingDetected(): boolean {
 	}
 
 	return farblingDetected;
-}
+};
 
 /**
  * OffscreenCanvasからBlobまたはImageBitmapを取得する。
  * farbling検出時はtransferToImageBitmap()を使用（Canvas serializationを完全に回避）。
  * 通常時はconvertToBlob()を使用。
  */
-export async function convertCanvasToResult(canvas: OffscreenCanvas): Promise<Blob | ImageBitmap> {
+export const convertCanvasToResult = async (
+	canvas: OffscreenCanvas
+): Promise<Blob | ImageBitmap> => {
 	if (isFarblingDetected()) {
 		try {
 			return canvas.transferToImageBitmap();
@@ -52,4 +57,4 @@ export async function convertCanvasToResult(canvas: OffscreenCanvas): Promise<Bl
 		}
 	}
 	return await canvas.convertToBlob();
-}
+};
