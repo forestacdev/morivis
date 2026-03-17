@@ -1,10 +1,11 @@
 import * as tilebelt from '@mapbox/tilebelt';
+import arcgisPbfDecode from 'arcgis-pbf-parser';
 
 /**
  * ArcGIS FeatureServer からタイルごとにbboxクエリしてベクタータイルを返すプロトコル
+ * f=pbf（Esri PBF形式）で取得し、arcgis-pbf-parserでGeoJSONに変換してからタイル化する
  *
  * URL形式: esri-feature://{featureServerLayerUrl}?x={x}&y={y}&z={z}
- * 例: esri-feature://https://example.com/arcgis/rest/services/Foo/FeatureServer/1?x=0&y=0&z=0
  */
 
 // タイルキャッシュ（LRU方式）
@@ -73,27 +74,41 @@ class WorkerProtocol {
 			);
 
 
-			// ズームレベルに応じた座標精度（小数桁数）
-			// z=0〜5: 3桁(~111m), z=6〜10: 5桁(~1.1m), z=11〜14: 6桁(~0.11m), z=15+: 7桁
-			const geometryPrecision = z < 6 ? 3 : z < 11 ? 5 : z < 15 ? 6 : 7;
-
+			// PBF形式でクエリ（GeoJSONより転送量が大幅に小さい）
 			const queryUrl =
-				`${layerUrl}/query?f=geojson&where=1%3D1` +
+				`${layerUrl}/query?f=pbf&where=1%3D1` +
 				`&geometry=${geometryParam}` +
 				`&geometryType=esriGeometryEnvelope` +
 				`&inSR=4326&outFields=*&outSR=4326` +
-				`&spatialRel=esriSpatialRelIntersects` +
-				`&geometryPrecision=${geometryPrecision}`;
+				`&spatialRel=esriSpatialRelIntersects`;
 
 			const res = await fetch(queryUrl, { signal });
 			if (!res.ok) {
-				return { data: new Uint8Array() };
+				// PBF非対応の場合、GeoJSONにフォールバック
+				return this.requestGeoJsonFallback(layerUrl, geometryParam, z, x, y, cacheKey, signal);
 			}
 
-			const geojson = await res.json();
+			const contentType = res.headers.get('content-type') || '';
 
-			if (geojson.error || !geojson.features || geojson.features.length === 0) {
-				// 空タイルもキャッシュ
+			let geojson: GeoJSON.FeatureCollection;
+
+			if (contentType.includes('application/x-protobuf') || contentType.includes('application/octet-stream')) {
+				// PBFレスポンスをデコード
+				const buffer = await res.arrayBuffer();
+				const result = arcgisPbfDecode(new Uint8Array(buffer));
+				geojson = result.featureCollection;
+			} else {
+				// JSONが返ってきた場合（エラーレスポンス等）
+				const json = await res.json();
+				if (json.error || !json.features) {
+					const empty = new Uint8Array();
+					setTileCache(cacheKey, empty);
+					return { data: empty };
+				}
+				geojson = json;
+			}
+
+			if (!geojson.features || geojson.features.length === 0) {
 				const empty = new Uint8Array();
 				setTileCache(cacheKey, empty);
 				return { data: empty };
@@ -122,6 +137,57 @@ class WorkerProtocol {
 		} catch (error) {
 			return Promise.reject(error);
 		}
+	}
+
+	/** PBF非対応時のGeoJSONフォールバック */
+	private async requestGeoJsonFallback(
+		layerUrl: string,
+		geometryParam: string,
+		z: number,
+		x: number,
+		y: number,
+		cacheKey: string,
+		signal: AbortSignal
+	): Promise<{ data: Uint8Array }> {
+		const queryUrl =
+			`${layerUrl}/query?f=geojson&where=1%3D1` +
+			`&geometry=${geometryParam}` +
+			`&geometryType=esriGeometryEnvelope` +
+			`&inSR=4326&outFields=*&outSR=4326` +
+			`&spatialRel=esriSpatialRelIntersects`;
+
+		const res = await fetch(queryUrl, { signal });
+		if (!res.ok) {
+			return { data: new Uint8Array() };
+		}
+
+		const geojson = await res.json();
+
+		if (geojson.error || !geojson.features || geojson.features.length === 0) {
+			const empty = new Uint8Array();
+			setTileCache(cacheKey, empty);
+			return { data: empty };
+		}
+
+		const id = `${z}/${x}/${y}_esri_feature`;
+
+		return new Promise((resolve, reject) => {
+			this.pendingRequests.set(id, {
+				resolve: (result) => {
+					const data = 'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+					setTileCache(cacheKey, data);
+					resolve(result);
+				},
+				reject
+			});
+
+			signal.addEventListener('abort', () => {
+				this.pendingRequests.delete(id);
+				reject(new Error('Request aborted'));
+			});
+
+			this.worker.postMessage({ id, z, x, y, geojson });
+		});
 	}
 
 	private handleMessage = (e: MessageEvent) => {

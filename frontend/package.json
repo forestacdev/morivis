@@ -95,6 +95,7 @@
 		"@types/mapbox__tilebelt": "^1.0.4",
 		"@types/proj4": "^2.5.6",
 		"@vite-pwa/assets-generator": "^0.2.6",
+		"arcgis-pbf-parser": "^0.0.4",
 		"chroma-js": "^3.1.2",
 		"colormap": "^2.3.2",
 		"copc": "^0.0.8",

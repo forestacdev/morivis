@@ -169,6 +169,9 @@ importers:
       '@vite-pwa/assets-generator':
         specifier: ^0.2.6
         version: 0.2.6
+      arcgis-pbf-parser:
+        specifier: ^0.0.4
+        version: 0.0.4
       chroma-js:
         specifier: ^3.1.2
         version: 3.2.0
@@ -3060,6 +3063,9 @@ packages:
 
   any-base@1.1.0:
     resolution: {integrity: sha512-uMgjozySS8adZZYePpaWs8cxB9/kdzmpX6SgJZ+wbz1K5eYk5QMYDVJaZKhxyIHUdnnJkfR7SVgStgH7LkGUyg==}
+
+  arcgis-pbf-parser@0.0.4:
+    resolution: {integrity: sha512-ngieRsLNct1dPyH85DnASiierr+hYO+9ow3zC22lYvNcKtFxVrtd1jbfizwWs9Kp3NpKP4iNnPAONp3acCcceA==}
 
   arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
@@ -10138,6 +10144,10 @@ snapshots:
       - moment
 
   any-base@1.1.0: {}
+
+  arcgis-pbf-parser@0.0.4:
+    dependencies:
+      pbf: 3.3.0
 
   arg@4.1.3: {}
 
