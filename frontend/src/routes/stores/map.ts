@@ -42,6 +42,7 @@ import {
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
 import { isPointInBbox } from '$routes/map/utils/map';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
@@ -59,6 +60,9 @@ maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
 
 const geojsonProt = geojsonProtocol('geojson');
 maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
+
+const esriFeatureProt = esriFeatureProtocol('esri-feature');
+maplibregl.addProtocol(esriFeatureProt.protocolName, esriFeatureProt.request);
 
 if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');

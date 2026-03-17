@@ -78,12 +78,23 @@ export const parseWmtsCapabilities = async (
 						return; // このレイヤーはスキップ
 					}
 
+					// Dimensionのデフォルト値を取得して置換（例: {Time} → 2025-12-01）
+					if (layer.Dimension) {
+						for (const dim of layer.Dimension) {
+							const dimId = dim.Identifier;
+							const dimDefault = dim.Default;
+							if (dimId && dimDefault) {
+								templateUrl = templateUrl.replace(`{${dimId}}`, dimDefault);
+							}
+						}
+					}
+
 					// WMTSテンプレート変数をMapLibre形式に変換し、スタイルとTileMatrixSetを置換
 					templateUrl = templateUrl
 						.replace('{Style}', selectedStyleIdentifier)
 						.replace('{TileMatrixSet}', selectedTileMatrixSetIdentifier)
 						.replace('{TileMatrix}', '{z}')
-						.replace('{TileCol}', '{x}') // ArcGIS形式は {TileRow}/{TileCol} の順が多いことに注意
+						.replace('{TileCol}', '{x}')
 						.replace('{TileRow}', '{y}');
 
 					// TileMatrixSetLinkから対応するTileMatrixSetを探し、min/maxズームを取得

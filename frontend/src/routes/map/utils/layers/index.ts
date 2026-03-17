@@ -260,7 +260,7 @@ export const createLayersItems = (
 							});
 						}
 					}
-					if (format.type === 'mvt' || format.type === 'pmtiles' || format.type === 'geojsontile') {
+					if (format.type === 'mvt' || format.type === 'pmtiles' || format.type === 'geojsontile' || format.type === 'esri-feature') {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
 						}

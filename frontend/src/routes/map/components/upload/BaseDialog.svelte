@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
+	import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
 	import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
@@ -16,7 +17,6 @@
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
-	import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
