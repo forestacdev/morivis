@@ -517,6 +517,44 @@ export const NAME_NORMALIZE_CONFIG = {
 } as const;
 
 /**
+ * 和名の別名→正式名への変換辞書
+ *
+ * 植生図や文献で使われる略称・俗称・古名を
+ * iNaturalistで検索可能な正式和名に変換するための辞書。
+ * キーは正規化後の名前（スペース・記号除去済み）で照合される。
+ */
+export const NAME_ALIAS_MAP: Record<string, string> = {
+	// 針葉樹
+	シラベ: 'シラビソ',
+	オオシラベ: 'オオシラビソ',
+	トドマツ: 'トドマツ',
+	ネズコ: 'クロベ',
+	アスナロ: 'アスナロ',
+	サワラ: 'サワラ',
+	コメツガ: 'コメツガ',
+	ツガ: 'ツガ',
+
+	// 広葉樹
+	ナラ: 'ミズナラ',
+	ブナ: 'ブナ',
+	シイ: 'ツブラジイ',
+	カシ: 'アラカシ',
+	イタヤ: 'イタヤカエデ',
+	カンバ: 'シラカンバ',
+
+	// 竹・笹
+	ササ: 'ササ',
+	スズタケ: 'スズタケ',
+	チシマザサ: 'チシマザサ',
+	ネマガリダケ: 'チシマザサ',
+
+	// 草本・低木
+	ハイマツ: 'ハイマツ',
+	シャクナゲ: 'ツクシシャクナゲ',
+	ミヤマハンノキ: 'ミヤマハンノキ'
+};
+
+/**
  * 和名を正規化する
  *
  * 以下の処理を行います：
@@ -581,6 +619,11 @@ export const normalizeJapaneseName = (name: string): string | null => {
 	// 正規化後が空になった場合はnull
 	if (normalized === '') {
 		return null;
+	}
+
+	// 別名辞書で正式名に変換
+	if (normalized in NAME_ALIAS_MAP) {
+		normalized = NAME_ALIAS_MAP[normalized];
 	}
 
 	return normalized;
