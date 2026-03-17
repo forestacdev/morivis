@@ -150,6 +150,7 @@ const createMapStore = () => {
 	const setStyleEvent = writable<StyleSpecification | null>(null);
 	const isStyleLoadEvent = writable<maplibregl.Map | null>(null);
 	const onStyleDataEvent = writable<MapLibreEvent | null>(null);
+	const moveStartEvent = writable<MapLibreEvent | null>(null);
 	const moveEndEvent = writable<MapLibreEvent | null>(null);
 	const resizeEvent = writable<MapLibreEvent | null>(null);
 	const initEvent = writable<maplibregl.Map | null>(null);
@@ -496,6 +497,9 @@ const createMapStore = () => {
 			// });
 		}, 100);
 
+		map.on('movestart', (e) => {
+			moveStartEvent.set(e);
+		});
 		map.on('moveend', debounceMapMoveEnd);
 
 		map.on('zoom', (e: MouseEvent) => {
@@ -1133,6 +1137,7 @@ const createMapStore = () => {
 		onMouseUp: createEventSubscriber(mouseupEvent), // マウスアップイベントの購読用メソッド
 		onRotate: createEventSubscriber(rotateEvent), // 回転イベントの購読用メソッド
 		onZoom: createEventSubscriber(zoomEvent), // ズームイベントの購読用メソッド
+		onMoveStart: createEventSubscriber(moveStartEvent), // マップ移動開始イベントの購読用メソッド
 		onMoveEnd: createEventSubscriber(moveEndEvent), // マップ移動イベントの購読用メソッド
 		onLoading: createEventSubscriber(isLoadingEvent), // ローディングイベントの購読用メソッド
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
