@@ -51,6 +51,9 @@
 	let vectorLayers = $state<{ id: string; fields: Record<string, string> }[]>([]);
 	let selectedLayerId = $state<string>('');
 	let analyzed = $state<boolean>(false);
+	let pmtilesBbox = $state<[number, number, number, number] | null>(null);
+	let pmtilesMinZoom = $state<number>(0);
+	let pmtilesMaxZoom = $state<number>(24);
 
 	// ジオメトリタイプ選択
 	let geometryType = $state<VectorEntryGeometryType>('Point');
@@ -104,6 +107,9 @@
 		isVector = false;
 		vectorLayers = [];
 		selectedLayerId = '';
+		pmtilesBbox = null;
+		pmtilesMinZoom = 0;
+		pmtilesMaxZoom = 24;
 
 		try {
 			const pm = new PMTiles(url);
@@ -111,6 +117,13 @@
 
 			const tileType = header.tileType;
 			isVector = tileType === TileType.Mvt;
+
+			// bboxとズームレベルを取得
+			if (header.minLon !== 0 || header.maxLon !== 0) {
+				pmtilesBbox = [header.minLon, header.minLat, header.maxLon, header.maxLat];
+			}
+			pmtilesMinZoom = header.minZoom;
+			pmtilesMaxZoom = header.maxZoom;
 
 			const typeNames: Record<number, string> = {
 				[TileType.Unknown]: '不明',
@@ -167,13 +180,21 @@
 	};
 
 	const registration = () => {
+		const opts = {
+			bounds: pmtilesBbox ?? undefined,
+			minZoom: pmtilesMinZoom,
+			maxZoom: pmtilesMaxZoom
+		};
+
 		if (isVector) {
 			if (!selectedLayerId) return;
 			const entry = createVectorPmtilesEntry(
 				forms.name,
 				forms.url.trim(),
 				selectedLayerId,
-				geometryType
+				geometryType,
+				undefined,
+				opts
 			);
 			if (entry) {
 				showDataEntry = entry;
@@ -181,7 +202,7 @@
 				dropFile = null;
 			}
 		} else {
-			const entry = createPmtilesEntry(forms.name, forms.url.trim());
+			const entry = createPmtilesEntry(forms.name, forms.url.trim(), opts);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;

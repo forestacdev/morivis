@@ -64,6 +64,7 @@ export type DialogType =
 	| '3dtiles'
 	| 'pmtiles'
 	| 'glb'
+	| 'arcgis'
 	| null;
 
 /** ドロップ/ファイル選択で受け付ける拡張子 */

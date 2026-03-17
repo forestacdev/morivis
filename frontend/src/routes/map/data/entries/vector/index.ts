@@ -186,12 +186,16 @@ export const createVectorTileEntry = (
 	url: string,
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
-	color: string = getRandomColor()
+	color: string = getRandomColor(),
+	options?: { bounds?: [number, number, number, number] }
 ): VectorEntry<TileMetaData> | undefined => {
+	const bounds = options?.bounds ?? DEFAULT_CUSTOM_META_DATA.bounds;
 	const metaData: TileMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
 		name,
-		sourceLayer
+		sourceLayer,
+		bounds,
+		xyzImageTile: findCenterTile(bounds)
 	};
 
 	const colorsConfig = {
@@ -276,9 +280,9 @@ export const createVectorPmtilesEntry = (
 	url: string,
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
-	color: string = getRandomColor()
+	color: string = getRandomColor(),
+	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number }
 ): VectorEntry<TileMetaData> | undefined => {
-	// createVectorTileEntryと同じ構造でformat.typeだけ'pmtiles'にする
 	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
 	if (!entry) return undefined;
 
@@ -288,6 +292,13 @@ export const createVectorPmtilesEntry = (
 		format: {
 			...entry.format,
 			type: 'pmtiles' as const
+		},
+		metaData: {
+			...entry.metaData,
+			bounds: options?.bounds ?? entry.metaData.bounds,
+			minZoom: options?.minZoom ?? entry.metaData.minZoom,
+			maxZoom: options?.maxZoom ?? entry.metaData.maxZoom,
+			xyzImageTile: options?.bounds ? findCenterTile(options.bounds) : entry.metaData.xyzImageTile
 		}
 	} as VectorEntry<TileMetaData>;
 };

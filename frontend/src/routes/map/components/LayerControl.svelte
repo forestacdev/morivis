@@ -13,7 +13,8 @@
 		showRoadLayer,
 		showBoundaryLayer,
 		showPoiLayer,
-		showStreetViewLayer
+		showStreetViewLayer,
+		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, isTerrain3d } from '$routes/stores/map';
 	import { isMobile } from '$routes/stores/ui';
@@ -44,6 +45,10 @@
 
 	let isOsm = $derived.by(() => {
 		return $selectedBaseMap === 'osm';
+	});
+
+	let isNotSatellite = $derived.by(() => {
+		return $selectedBaseMap !== 'satellite';
 	});
 
 	let isNotHillshade = $derived.by(() => {
@@ -79,6 +84,7 @@
 					<Checkbox label="道路・線路" bind:value={$showRoadLayer} disabled={isOsm} />
 					<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 					<Checkbox label="3D地形" bind:value={$isTerrain3d} />
+					<Checkbox label="雲" bind:value={$showCloudLayer} disabled={isNotSatellite} />
 					{#if $isMobile}
 						<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
 					{/if}

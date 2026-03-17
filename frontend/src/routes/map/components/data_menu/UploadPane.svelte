@@ -30,6 +30,7 @@
 		{ type: 'vector', label: 'ベクタータイル' },
 		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: 'wmts', label: 'WMS/WMTS' },
+		{ type: 'arcgis', label: 'ArcGIS' },
 		{ type: '3dtiles', label: '3D Tiles' }
 	];
 	let isDragover = $state(false);
@@ -86,7 +87,7 @@
 				onclick={() => showUploadDialog(dialog.type)}
 				class="border-sub grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg border-1 bg-black p-4 transition hover:bg-gray-800"
 			>
-				{dialog.label}の登録
+				{dialog.label}
 			</button>
 		{/each}
 	</div>

@@ -15,7 +15,8 @@ import {
 	showPoiLayer,
 	showBoundaryLayer,
 	showRoadLayer,
-	selectedBaseMap
+	selectedBaseMap,
+	showCloudLayer
 } from '$routes/stores/layers';
 
 import { poiSources } from '$routes/map/utils/layers/poi';
@@ -253,6 +254,15 @@ export const createSourcesItems = async (
 							const joinData = await fetch(entry.properties.joinDataUrl).then((res) => res.json());
 							JoinDataCache.set(entry.id, joinData);
 						}
+					} else if (format.type === 'esri-feature') {
+						items[sourceId] = {
+							type: 'vector',
+							tiles: [`esri-feature://${format.url}?x={x}&y={y}&z={z}`],
+							maxzoom: metaData.maxZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as VectorSourceSpecification;
 					}
 					break;
 				}
@@ -307,6 +317,7 @@ export const createSourcesItems = async (
 	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
 	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
 	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
+	const cloudSourcesItem = get(showCloudLayer) ? cloudSources : {};
 
 	return {
 		...sourceItems,
@@ -315,7 +326,7 @@ export const createSourcesItems = async (
 		...labelSourcesItem,
 		...roadSourcesItem,
 		...boundarySourcesItem,
-		...cloudSources
+		...cloudSourcesItem
 	} as {
 		[_: string]: SourceSpecification;
 	};

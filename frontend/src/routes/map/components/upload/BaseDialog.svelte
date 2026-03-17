@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
+	import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
 	import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
@@ -64,6 +65,9 @@
 		>
 			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'arcgis'}
+				<ArcGisForm bind:showDataEntry bind:showDialogType />
 			{/if}
 			{#if showDialogType === 'csv'}
 				<CsvForm

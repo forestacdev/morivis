@@ -9,11 +9,12 @@ import type {
 
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+import { findCenterTile } from '$routes/map/utils/map';
 
 export const createRasterEntry = (
 	name: string,
 	url: string,
-	options?: { tileSize?: number; minZoom?: number; maxZoom?: number }
+	options?: { tileSize?: number; minZoom?: number; maxZoom?: number; bounds?: [number, number, number, number] }
 ): RasterEntry<RasterBaseMapStyle> => {
 	const entry: RasterEntry<RasterBaseMapStyle> = {
 		id: 'raster_' + crypto.randomUUID(),
@@ -28,7 +29,7 @@ export const createRasterEntry = (
 			tileSize: (options?.tileSize ?? 256) as 256 | 512,
 			minZoom: options?.minZoom ?? 0,
 			maxZoom: options?.maxZoom ?? 24,
-			bounds: WEB_MERCATOR_WORLD_BBOX
+			bounds: options?.bounds ?? WEB_MERCATOR_WORLD_BBOX
 		},
 		interaction: {
 			...DEFAULT_RASTER_BASEMAP_INTERACTION
@@ -43,7 +44,8 @@ export const createRasterEntry = (
 
 export const createPmtilesEntry = (
 	name: string,
-	url: string
+	url: string,
+	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number }
 ): RasterPMTilesEntry<RasterBaseMapStyle> => ({
 	id: 'pmtiles_' + crypto.randomUUID(),
 	type: 'raster',
@@ -55,7 +57,10 @@ export const createPmtilesEntry = (
 		...DEFAULT_CUSTOM_META_DATA,
 		name,
 		tileSize: 256,
-		bounds: WEB_MERCATOR_WORLD_BBOX
+		minZoom: options?.minZoom ?? 0,
+		maxZoom: options?.maxZoom ?? 24,
+		bounds: options?.bounds ?? WEB_MERCATOR_WORLD_BBOX,
+		xyzImageTile: options?.bounds ? findCenterTile(options.bounds) : { x: 0, y: 0, z: 0 }
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

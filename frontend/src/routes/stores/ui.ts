@@ -41,7 +41,7 @@ export const showPwaManuelDialog = writable<boolean>(false);
 
 export const isMobile = readable(false, (set) => {
 	if (!browser) return;
-	const mediaQuery = window.matchMedia('(max-width: 1024px)');
+	const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_WIDTH}px)`);
 
 	// 初期値を設定
 	set(mediaQuery.matches);

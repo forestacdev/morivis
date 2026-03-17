@@ -41,6 +41,7 @@
 		tileSize?: number;
 		minZoom?: number;
 		maxZoom?: number;
+		bounds?: [number, number, number, number];
 		format?: string;
 		detail?: string;
 	}
@@ -83,6 +84,7 @@
 		tileSize: info.source.tileSize,
 		minZoom: info.source.minzoom,
 		maxZoom: info.source.maxzoom,
+		bounds: info.bounds,
 		format: info.format,
 		detail: info.tileMatrixSet ? `TileMatrixSet: ${info.tileMatrixSet}` : undefined
 	});
@@ -104,7 +106,14 @@
 			const url = forms.url.trim();
 
 			// まずWMTSを試行
-			const wmtsResult = await parseWmtsCapabilities(url);
+			let wmtsResult = await parseWmtsCapabilities(url);
+
+			// EPSG:4326のみのCapabilitiesで結果が空の場合、epsg3857版にリトライ
+			if ((!wmtsResult || wmtsResult.length === 0) && /epsg4326/i.test(url)) {
+				const mercatorUrl = url.replace(/epsg4326/gi, 'epsg3857');
+				wmtsResult = await parseWmtsCapabilities(mercatorUrl);
+			}
+
 			if (wmtsResult && wmtsResult.length > 0) {
 				serviceType = 'wmts';
 				layers = wmtsResult.map(wmtsToLayerItem);
@@ -137,7 +146,8 @@
 		const entry = createRasterEntry(selectedLayer.title, selectedLayer.tileUrl, {
 			tileSize: selectedLayer.tileSize,
 			minZoom: selectedLayer.minZoom,
-			maxZoom: selectedLayer.maxZoom
+			maxZoom: selectedLayer.maxZoom,
+			bounds: selectedLayer.bounds
 		});
 
 		showDataEntry = entry;

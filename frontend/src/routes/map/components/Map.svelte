@@ -61,6 +61,7 @@
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRoadLayer,
+		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
 		showPoiLayer
@@ -594,6 +595,9 @@
 	showXYZTileLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
+	showCloudLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
 	// ストリートビューの表示
 	showStreetViewLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
@@ -785,7 +789,7 @@
 {/if}
 
 <style>
-	@media (width >= 64rem /* 1024px */) {
+	@media (width >= 48rem /* 768px */) {
 		:global(.maplibregl-canvas) {
 			border-radius: 0.5rem !important;
 			overflow: hidden !important;
