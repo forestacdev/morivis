@@ -332,10 +332,24 @@
 		showMarker = true;
 	});
 
+	let isDragging = false;
+	let isMouseDown = false;
+
+	mapStore.onMouseDown(() => {
+		isMouseDown = true;
+	});
+
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	mapStore.onMousemove((e) => {
-		const clickLayerIds = [...$clickableVectorIds];
+		// ドラッグ開始検知（mousedown後に初めてmousemoveが来た時）
+		if (isMouseDown && !isDragging) {
+			isDragging = true;
+			mapStore.setCursor('move');
+			return;
+		}
+		if (isDragging) return;
 
+		const clickLayerIds = [...$clickableVectorIds];
 		const existingLayerIds = clickLayerIds.filter((layerId) => {
 			return mapStore.getLayer(layerId) !== undefined;
 		});
@@ -346,16 +360,21 @@
 		if (features.length > 0) {
 			mapStore.setCursor('pointer');
 		} else {
-			mapStore.setCursor('default');
+			mapStore.setCursor('');
 		}
 	});
 
-	mapStore.onMouseDown((e) => {
-		mapStore.setCursor('move');
-	});
-
 	mapStore.onMouseUp((e) => {
-		mapStore.setCursor('default');
+		isMouseDown = false;
+		isDragging = false;
+		// ドラッグ終了後、地物上ならpointerに戻す
+		const existingLayerIds = [...$clickableVectorIds].filter(
+			(layerId) => mapStore.getLayer(layerId) !== undefined
+		);
+		const features = mapStore.queryRenderedFeatures(e.point, {
+			layers: existingLayerIds
+		});
+		mapStore.setCursor(features.length > 0 ? 'pointer' : '');
 	});
 
 	// // マウスカーソルの変更

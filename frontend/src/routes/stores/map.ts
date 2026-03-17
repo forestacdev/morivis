@@ -930,11 +930,15 @@ const createMapStore = () => {
 		terrainReload();
 	};
 
-	const setCursor = (cursor: CSSCursor) => {
+	const setCursor = (cursor: CSSCursor | '') => {
 		if (!map || !isMapValid(map)) return;
-		const canvas = map.getCanvas();
-		if (canvas) {
-			canvas.style.cursor = cursor;
+		const container = map.getCanvasContainer();
+		if (!container) return;
+		container.classList.remove('cursor-pointer-override', 'cursor-move-override');
+		if (cursor === 'pointer') {
+			container.classList.add('cursor-pointer-override');
+		} else if (cursor === 'move') {
+			container.classList.add('cursor-move-override');
 		}
 	};
 
