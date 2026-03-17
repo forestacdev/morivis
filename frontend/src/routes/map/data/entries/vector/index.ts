@@ -51,9 +51,10 @@ export const createGeoJsonEntry = (
 				type: 'single' as const,
 				key: '単色',
 				name: '単色',
-				mapping: {
-					value: color as BaseSingleColor
-				}
+				mapping:
+					entryGeometryType === 'Polygon'
+						? { value: color as BaseSingleColor, pattern: null }
+						: { value: color as BaseSingleColor }
 			}
 		]
 	};
@@ -66,19 +67,42 @@ export const createGeoJsonEntry = (
 		const layers = groupPropertyByGeometryType(data, (props) =>
 			props?.layer != null ? String(props.layer) : undefined
 		);
+
+		const dataTypes = groupPropertyByGeometryType(data, (props) =>
+			props?.dataType != null ? String(props.dataType) : undefined
+		);
+
 		colorsConfig.expressions.push({
 			type: 'match',
 			key: 'className',
 			name: '分類ごとの色分け',
-			mapping: createMatchColorStyleRandomMapping(classNames[entryGeometryType])
+			mapping: createMatchColorStyleRandomMapping(
+				classNames[entryGeometryType],
+				entryGeometryType === 'Polygon'
+			)
 		});
 
 		colorsConfig.expressions.push({
 			type: 'match',
 			key: 'layer',
 			name: 'レイヤごとの色分け',
-			mapping: createMatchColorStyleRandomMapping(layers[entryGeometryType])
+			mapping: createMatchColorStyleRandomMapping(
+				layers[entryGeometryType],
+				entryGeometryType === 'Polygon'
+			)
 		});
+
+		if (dataTypes[entryGeometryType]?.length > 0) {
+			colorsConfig.expressions.push({
+				type: 'match',
+				key: 'dataType',
+				name: 'データタイプごとの色分け',
+				mapping: createMatchColorStyleRandomMapping(
+					dataTypes[entryGeometryType],
+					entryGeometryType === 'Polygon'
+				)
+			});
+		}
 
 		colorsConfig.key = 'layer';
 	}
@@ -87,6 +111,11 @@ export const createGeoJsonEntry = (
 		const colors = groupPropertyByGeometryType(data, (props) =>
 			props?.color != null ? String(props.color) : undefined
 		);
+
+		const entityTypes = groupPropertyByGeometryType(data, (props) =>
+			props?.type != null ? String(props.type) : undefined
+		);
+
 		const dxfCategories = colors[entryGeometryType] ?? [];
 		if (dxfCategories.length > 0) {
 			const dxfColorMapping = createColorStyleDXFMapping(dxfCategories);
@@ -98,7 +127,18 @@ export const createGeoJsonEntry = (
 			});
 			colorsConfig.key = 'color';
 		}
-		// カテゴリが空の場合はデフォルトのシングルカラースタイルを維持
+
+		if (entityTypes[entryGeometryType]?.length > 0) {
+			colorsConfig.expressions.push({
+				type: 'match',
+				key: 'type',
+				name: 'エンティティごとの色分け',
+				mapping: createMatchColorStyleRandomMapping(
+					entityTypes[entryGeometryType],
+					entryGeometryType === 'Polygon'
+				)
+			});
+		}
 	}
 
 	const propKeys = getUniquePropertyKeys(data as any);
