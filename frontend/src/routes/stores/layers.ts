@@ -129,6 +129,9 @@ export const showBoundaryLayer = writable<boolean>(true);
 /** 道路レイヤー */
 export const showRoadLayer = writable<boolean>(true);
 
+/** 雲レイヤー */
+export const showCloudLayer = writable<boolean>(true);
+
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);
 
