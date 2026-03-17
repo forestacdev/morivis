@@ -199,12 +199,12 @@
 	});
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+<div class="flex shrink-0 items-center justify-between overflow-auto pb-2">
 	<span class="text-2xl font-bold">DXFファイルの登録</span>
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
 >
 	{#if geometryTypeOptions.length > 1}
 		<div class="w-full p-2">
@@ -222,14 +222,14 @@
 				<span class="text-sm text-gray-300">レイヤー</span>
 				<div class="flex gap-2">
 					<button
-						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
+						class="c-btn-sub pointer-events-auto text-xs"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
+						class="c-btn-sub pointer-events-auto text-xs"
 						onclick={() => {
 							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
 							layerChecked = Object.fromEntries(names.map((n) => [n, false]));
@@ -250,9 +250,10 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={$isProcessing || !selectedGeometryType}
+		disabled={$isProcessing || !selectedGeometryType || selectedLayers.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
+		!selectedGeometryType ||
+		selectedLayers.length === 0
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
