@@ -56,6 +56,8 @@
 
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
+	// ジオメトリタイプ → DXFエンティティタイプのマッピング
+	let entityTypesByGeometryType = $state<Record<string, string[]>>({});
 
 	const selectedLayers = $derived(
 		Object.entries(layerChecked)
@@ -100,6 +102,25 @@
 					}
 
 					layersByGeometryType = groupPropertyByGeometryType(rawGeojson!, extractLayer);
+
+					// ジオメトリタイプ → エンティティタイプのマッピングを構築
+					const etMap: Record<string, Set<string>> = {};
+					for (const feature of rawGeojson!.features) {
+						const props = feature.properties as Record<string, unknown>;
+						const et = props?.type != null ? String(props.type) : undefined;
+						const geomType = feature.geometry?.type;
+						if (!et || !geomType) continue;
+						const key =
+							geomType === 'Point' || geomType === 'MultiPoint' ? 'Point'
+							: geomType === 'LineString' || geomType === 'MultiLineString' ? 'LineString'
+							: geomType === 'Polygon' || geomType === 'MultiPolygon' ? 'Polygon'
+							: geomType;
+						if (!etMap[key]) etMap[key] = new Set();
+						etMap[key].add(et);
+					}
+					entityTypesByGeometryType = Object.fromEntries(
+						Object.entries(etMap).map(([k, v]) => [k, [...v].sort()])
+					);
 				})
 				.catch((e) => {
 					showNotification('DXFファイルの読み込みに失敗しました', 'error');
@@ -214,6 +235,15 @@
 				bind:options={geometryTypeOptions}
 			/>
 		</div>
+
+		{#if entityTypesByGeometryType[selectedGeometryType]?.length}
+			<div class="flex w-full flex-wrap items-center gap-1 px-2">
+				<span class="text-xs text-gray-400">含まれる要素:</span>
+				{#each entityTypesByGeometryType[selectedGeometryType] as et}
+					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{et}</span>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 
 	{#if layersByGeometryType && layersByGeometryType[selectedGeometryType]?.length}

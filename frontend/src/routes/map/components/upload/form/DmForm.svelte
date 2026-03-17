@@ -62,6 +62,8 @@
 	let classNameChecked = $state<Record<string, boolean>>({});
 	// className → classCode のマッピング
 	let classCodeMap = $state<Record<string, string>>({});
+	// ジオメトリタイプ → DMデータタイプ（面/線/点/注記等）のマッピング
+	let dataTypesByGeometryType = $state<Record<string, string[]>>({});
 
 	// 選択されたclassName一覧（チェック済みのもの）
 	const selectedClassNames = $derived(
@@ -121,6 +123,25 @@
 						}
 					}
 					classCodeMap = codeMap;
+
+					// ジオメトリタイプ → DMデータタイプのマッピングを構築
+					const dtMap: Record<string, Set<string>> = {};
+					for (const feature of rawGeojson.features) {
+						const props = feature.properties as Record<string, unknown>;
+						const dt = props?.dataType != null ? String(props.dataType) : undefined;
+						const geomType = feature.geometry?.type;
+						if (!dt || !geomType) continue;
+						const key =
+							geomType === 'Point' || geomType === 'MultiPoint' ? 'Point'
+							: geomType === 'LineString' || geomType === 'MultiLineString' ? 'LineString'
+							: geomType === 'Polygon' || geomType === 'MultiPolygon' ? 'Polygon'
+							: geomType;
+						if (!dtMap[key]) dtMap[key] = new Set();
+						dtMap[key].add(dt);
+					}
+					dataTypesByGeometryType = Object.fromEntries(
+						Object.entries(dtMap).map(([k, v]) => [k, [...v].sort()])
+					);
 				})
 				.catch((e) => {
 					showNotification('DMファイルの読み込みに失敗しました', 'error');
@@ -244,6 +265,15 @@
 				bind:options={geometryTypeOptions}
 			/>
 		</div>
+
+		{#if dataTypesByGeometryType[selectedGeometryType]?.length}
+			<div class="flex w-full flex-wrap items-center gap-1 px-2">
+				<span class="text-xs text-gray-400">含まれる要素:</span>
+				{#each dataTypesByGeometryType[selectedGeometryType] as dt}
+					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{dt}</span>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 
 	{#if classNamesByGeometryType && classNamesByGeometryType[selectedGeometryType]?.length}
