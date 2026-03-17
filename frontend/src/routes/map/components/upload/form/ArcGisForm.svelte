@@ -212,14 +212,13 @@
 			selectedLayer.name,
 			layerUrl,
 			'geojsonLayer',
-			geojsonGeomType
+			geojsonGeomType,
+			undefined,
+			{ bounds: selectedLayer.bounds }
 		);
 
 		if (entry) {
 			entry.format.type = 'esri-feature';
-			if (selectedLayer.bounds) {
-				entry.metaData.bounds = selectedLayer.bounds;
-			}
 			const fields = selectedLayer.fields
 				.filter((f) => f.type !== 'esriFieldTypeOID' && f.type !== 'esriFieldTypeGlobalID')
 				.map((f) => ({ key: f.name, label: f.alias || f.name }));

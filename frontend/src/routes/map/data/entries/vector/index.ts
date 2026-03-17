@@ -186,12 +186,16 @@ export const createVectorTileEntry = (
 	url: string,
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
-	color: string = getRandomColor()
+	color: string = getRandomColor(),
+	options?: { bounds?: [number, number, number, number] }
 ): VectorEntry<TileMetaData> | undefined => {
+	const bounds = options?.bounds ?? DEFAULT_CUSTOM_META_DATA.bounds;
 	const metaData: TileMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
 		name,
-		sourceLayer
+		sourceLayer,
+		bounds,
+		xyzImageTile: findCenterTile(bounds)
 	};
 
 	const colorsConfig = {
