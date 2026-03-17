@@ -11,6 +11,7 @@ export type MapLibreRasterSourceInfo = {
 		maxzoom?: number; // 最大ズームレベル (オプション)
 		attribution?: string; // 帰属表示 (オプション, Capabilitiesにない場合は別途指定が必要)
 	};
+	bounds?: [number, number, number, number]; // WGS84BoundingBox [minLon, minLat, maxLon, maxLat]
 	// その他、Capabilitiesから取得したい情報があればここに追加
 	format?: string;
 	tileMatrixSet?: string;
@@ -115,20 +116,26 @@ export const parseWmtsCapabilities = async (
 						// minzoom, maxzoom, tileSize は undefined のままになる
 					}
 
+					// WGS84BoundingBoxからboundsを取得
+					let bounds: [number, number, number, number] | undefined;
+					if (layer.WGS84BoundingBox && layer.WGS84BoundingBox.length === 4) {
+						bounds = layer.WGS84BoundingBox as [number, number, number, number];
+					}
+
 					layersInfo.push({
 						id: layerId,
 						title: layerTitle,
 						source: {
 							type: 'raster',
-							tiles: [templateUrl], // MapLibreはtilesにURLの配列を取る
+							tiles: [templateUrl],
 							tileSize: tileSize,
 							minzoom: minzoom,
 							maxzoom: maxzoom
-							// attribution: '...', // 必要に応じて追加
 						},
-						format: layer.Format?.[0], // レイヤーのフォーマット
-						tileMatrixSet: selectedTileMatrixSetIdentifier, // 使用しているTileMatrixSetのIdentifier
-						style: selectedStyleIdentifier // 使用しているスタイルのIdentifier
+						bounds,
+						format: layer.Format?.[0],
+						tileMatrixSet: selectedTileMatrixSetIdentifier,
+						style: selectedStyleIdentifier
 					});
 				} else {
 					console.warn(`Layer "${layerTitle}" (${layerId}) does not have a tile ResourceURL.`);

@@ -14,7 +14,7 @@ import { findCenterTile } from '$routes/map/utils/map';
 export const createRasterEntry = (
 	name: string,
 	url: string,
-	options?: { tileSize?: number; minZoom?: number; maxZoom?: number }
+	options?: { tileSize?: number; minZoom?: number; maxZoom?: number; bounds?: [number, number, number, number] }
 ): RasterEntry<RasterBaseMapStyle> => {
 	const entry: RasterEntry<RasterBaseMapStyle> = {
 		id: 'raster_' + crypto.randomUUID(),
@@ -29,7 +29,7 @@ export const createRasterEntry = (
 			tileSize: (options?.tileSize ?? 256) as 256 | 512,
 			minZoom: options?.minZoom ?? 0,
 			maxZoom: options?.maxZoom ?? 24,
-			bounds: WEB_MERCATOR_WORLD_BBOX
+			bounds: options?.bounds ?? WEB_MERCATOR_WORLD_BBOX
 		},
 		interaction: {
 			...DEFAULT_RASTER_BASEMAP_INTERACTION

@@ -41,6 +41,7 @@
 		tileSize?: number;
 		minZoom?: number;
 		maxZoom?: number;
+		bounds?: [number, number, number, number];
 		format?: string;
 		detail?: string;
 	}
@@ -83,6 +84,7 @@
 		tileSize: info.source.tileSize,
 		minZoom: info.source.minzoom,
 		maxZoom: info.source.maxzoom,
+		bounds: info.bounds,
 		format: info.format,
 		detail: info.tileMatrixSet ? `TileMatrixSet: ${info.tileMatrixSet}` : undefined
 	});
@@ -137,7 +139,8 @@
 		const entry = createRasterEntry(selectedLayer.title, selectedLayer.tileUrl, {
 			tileSize: selectedLayer.tileSize,
 			minZoom: selectedLayer.minZoom,
-			maxZoom: selectedLayer.maxZoom
+			maxZoom: selectedLayer.maxZoom,
+			bounds: selectedLayer.bounds
 		});
 
 		showDataEntry = entry;
