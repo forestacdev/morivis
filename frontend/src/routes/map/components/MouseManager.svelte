@@ -332,10 +332,23 @@
 		showMarker = true;
 	});
 
+	let isDragging = false;
+
+	mapStore.onMoveStart(() => {
+		isDragging = true;
+		mapStore.setCursor('move');
+	});
+
+	mapStore.onMoveEnd(() => {
+		isDragging = false;
+		mapStore.setCursor('');
+	});
+
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	mapStore.onMousemove((e) => {
-		const clickLayerIds = [...$clickableVectorIds];
+		if (isDragging) return;
 
+		const clickLayerIds = [...$clickableVectorIds];
 		const existingLayerIds = clickLayerIds.filter((layerId) => {
 			return mapStore.getLayer(layerId) !== undefined;
 		});
@@ -346,16 +359,8 @@
 		if (features.length > 0) {
 			mapStore.setCursor('pointer');
 		} else {
-			mapStore.setCursor('default');
+			mapStore.setCursor('');
 		}
-	});
-
-	mapStore.onMouseDown((e) => {
-		mapStore.setCursor('move');
-	});
-
-	mapStore.onMouseUp((e) => {
-		mapStore.setCursor('default');
 	});
 
 	// // マウスカーソルの変更

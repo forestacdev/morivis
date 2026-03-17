@@ -264,23 +264,35 @@ const approximateEllipse = (
 };
 
 /**
+ * ファイルのバイナリからテキストを読み取る
+ * UTF-8で読み、置換文字（U+FFFD）が含まれていたらShift_JISで再デコードする
+ */
+const readFileAsText = async (file: File): Promise<string> => {
+	const buffer = await file.arrayBuffer();
+
+	// まずUTF-8で試行
+	const utf8Text = new TextDecoder('utf-8').decode(buffer);
+	if (!utf8Text.includes('\uFFFD')) {
+		return utf8Text;
+	}
+
+	// UTF-8で文字化け（U+FFFD）があればShift_JISで再デコード
+	try {
+		return new TextDecoder('shift-jis').decode(buffer);
+	} catch {
+		try {
+			return new TextDecoder('sjis').decode(buffer);
+		} catch {
+			// フォールバック: UTF-8のまま返す
+			return utf8Text;
+		}
+	}
+};
+
+/**
  * ブラウザでのファイル読み込み用
  */
-export const dxfFileToGeoJsonBrowser = (file: File): Promise<FeatureCollection> => {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-
-		reader.onload = (e) => {
-			try {
-				const text = e.target?.result as string;
-				const geoJson = dxfToGeoJson(text);
-				resolve(geoJson);
-			} catch (error) {
-				reject(error);
-			}
-		};
-
-		reader.onerror = () => reject(reader.error);
-		reader.readAsText(file);
-	});
+export const dxfFileToGeoJsonBrowser = async (file: File): Promise<FeatureCollection> => {
+	const text = await readFileAsText(file);
+	return dxfToGeoJson(text);
 };

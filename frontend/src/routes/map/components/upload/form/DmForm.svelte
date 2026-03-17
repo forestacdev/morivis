@@ -60,6 +60,8 @@
 
 	let classNamesByGeometryType = $state<Record<string, string[]> | null>(null);
 	let classNameChecked = $state<Record<string, boolean>>({});
+	// className → classCode のマッピング
+	let classCodeMap = $state<Record<string, string>>({});
 
 	// 選択されたclassName一覧（チェック済みのもの）
 	const selectedClassNames = $derived(
@@ -107,6 +109,18 @@
 					}
 
 					classNamesByGeometryType = groupPropertyByGeometryType(rawGeojson, extractClassName);
+
+					// className → classCode のマッピングを構築
+					const codeMap: Record<string, string> = {};
+					for (const feature of rawGeojson.features) {
+						const props = feature.properties as Record<string, unknown>;
+						const name = props?.className != null ? String(props.className) : undefined;
+						const code = props?.classCode != null ? String(props.classCode) : undefined;
+						if (name && code && !codeMap[name]) {
+							codeMap[name] = code;
+						}
+					}
+					classCodeMap = codeMap;
 				})
 				.catch((e) => {
 					showNotification('DMファイルの読み込みに失敗しました', 'error');
@@ -209,15 +223,15 @@
 	});
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+<div class="flex shrink-0 items-center justify-between overflow-auto pb-2">
 	<span class="text-2xl font-bold">DMファイルの登録</span>
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
 >
 	{#if zoneInfo?.drawingName}
-		<div class="w-full px-2 text-sm text-gray-300">
+		<div class="w-full px-2 text-gray-300">
 			図郭名称: {zoneInfo.drawingName}
 		</div>
 	{/if}
@@ -238,14 +252,14 @@
 				<span class="text-sm text-gray-300">クラス名</span>
 				<div class="flex gap-2">
 					<button
-						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
+						class="c-btn-sub pointer-events-auto cursor-pointer text-xs"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
 						}}>全選択</button
 					>
 					<button
-						class="pointer-events-auto text-xs text-gray-400 hover:text-white"
+						class="c-btn-sub pointer-events-auto cursor-pointer text-xs"
 						onclick={() => {
 							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
 							classNameChecked = Object.fromEntries(names.map((n) => [n, false]));
@@ -254,8 +268,17 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each classNamesByGeometryType[selectedGeometryType] as className}
-					<Checkbox label={className} bind:value={classNameChecked[className]} />
+				{#each [...classNamesByGeometryType[selectedGeometryType]].sort((a, b) => {
+				const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
+				const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
+				return codeA - codeB;
+			}) as className}
+					<Checkbox
+						label={classCodeMap[className]
+							? `${className} (${classCodeMap[className]})`
+							: className}
+						bind:value={classNameChecked[className]}
+					/>
 				{/each}
 			</div>
 		</div>
@@ -266,9 +289,10 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneForm}
-		disabled={$isProcessing || !selectedGeometryType}
+		disabled={$isProcessing || !selectedGeometryType || selectedClassNames.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
+		!selectedGeometryType ||
+		selectedClassNames.length === 0
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

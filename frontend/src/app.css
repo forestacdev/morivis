@@ -210,3 +210,16 @@ body {
 @utility c-basemap-img {
 	@apply c-no-drag-icon brightness-80 invert-100;
 }
+
+/* MapLibreのcanvasカーソルを強制する */
+.maplibregl-canvas {
+	cursor: default !important;
+}
+
+.cursor-pointer-override .maplibregl-canvas {
+	cursor: pointer !important;
+}
+
+.cursor-move-override .maplibregl-canvas {
+	cursor: move !important;
+}
