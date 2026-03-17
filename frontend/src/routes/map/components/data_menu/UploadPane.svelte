@@ -65,31 +65,35 @@
 		ondrop={drop}
 		ondragover={dragover}
 		ondragleave={dragleave}
-		class="flex h-full w-full grow flex-col items-center justify-center gap-4 rounded-lg border-2 decoration-amber-200 transition-all {isDragover
+		class="flex h-full w-full grow flex-col items-center justify-center gap-16 rounded-lg border-2 decoration-amber-200 transition-all {isDragover
 			? 'border-white bg-black'
 			: 'border-dashed bg-black/70'}"
 	>
-		<span class="text-3xl">ここにファイルをドロップしてください </span>
-		<span class="">{SUPPORTED_FILE_LABEL}</span>
-		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
-			<span>またはファイルを選択</span>
-			<input
-				type="file"
-				accept={SUPPORTED_FILE_ACCEPT}
-				class="hidden"
-				onchange={(e) => inputFile(e)}
-			/>
-		</label>
-	</div>
-	<div class="flex grow items-center justify-center gap-4">
-		{#each urlDialogs as dialog}
-			<button
-				onclick={() => showUploadDialog(dialog.type)}
-				class="border-sub grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg border-1 bg-black p-4 transition hover:bg-gray-800"
+		<div class="grid place-items-center gap-6">
+			<span class="text-3xl">ここにファイルをドロップしてください </span>
+			<span class="">{SUPPORTED_FILE_LABEL}</span>
+			<label
+				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
 			>
-				{dialog.label}
-			</button>
-		{/each}
+				<span>またはファイルを選択</span>
+				<input
+					type="file"
+					accept={SUPPORTED_FILE_ACCEPT}
+					class="hidden"
+					onchange={(e) => inputFile(e)}
+				/>
+			</label>
+		</div>
+		<div class="flex items-center justify-center gap-4">
+			{#each urlDialogs as dialog}
+				<button
+					onclick={() => showUploadDialog(dialog.type)}
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
+				>
+					{dialog.label}
+				</button>
+			{/each}
+		</div>
 	</div>
 </div>
 
