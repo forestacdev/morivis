@@ -15,7 +15,8 @@ import {
 	showPoiLayer,
 	showBoundaryLayer,
 	showRoadLayer,
-	selectedBaseMap
+	selectedBaseMap,
+	showCloudLayer
 } from '$routes/stores/layers';
 
 import { poiSources } from '$routes/map/utils/layers/poi';
@@ -316,6 +317,7 @@ export const createSourcesItems = async (
 	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
 	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
 	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
+	const cloudSourcesItem = get(showCloudLayer) ? cloudSources : {};
 
 	return {
 		...sourceItems,
@@ -324,7 +326,7 @@ export const createSourcesItems = async (
 		...labelSourcesItem,
 		...roadSourcesItem,
 		...boundarySourcesItem,
-		...cloudSources
+		...cloudSourcesItem
 	} as {
 		[_: string]: SourceSpecification;
 	};

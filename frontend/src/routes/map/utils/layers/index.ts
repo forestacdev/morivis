@@ -41,7 +41,8 @@ import {
 	showBoundaryLayer,
 	showRoadLayer,
 	showStreetViewLayer,
-	selectedBaseMap
+	selectedBaseMap,
+	showCloudLayer
 } from '$routes/stores/layers';
 
 import {
@@ -260,7 +261,12 @@ export const createLayersItems = (
 							});
 						}
 					}
-					if (format.type === 'mvt' || format.type === 'pmtiles' || format.type === 'geojsontile' || format.type === 'esri-feature') {
+					if (
+						format.type === 'mvt' ||
+						format.type === 'pmtiles' ||
+						format.type === 'geojsontile' ||
+						format.type === 'esri-feature'
+					) {
 						if ('sourceLayer' in metaData) {
 							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
 						}
@@ -427,7 +433,9 @@ export const createLayersItems = (
 		get(showHillshadeLayer) && _type === 'main' && isNotHillshade ? hillshadeLayers : [];
 
 	const cloudLayerItems =
-		_type === 'main' && get(selectedBaseMap) === 'satellite' ? cloudLayers : [];
+		get(showCloudLayer) && _type === 'main' && get(selectedBaseMap) === 'satellite'
+			? cloudLayers
+			: [];
 
 	return [
 		...baseMapLayerItems,

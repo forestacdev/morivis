@@ -61,6 +61,7 @@
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRoadLayer,
+		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
 		showPoiLayer
@@ -592,6 +593,9 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 	showXYZTileLayer.subscribe(() => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	});
+	showCloudLayer.subscribe(() => {
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 	// ストリートビューの表示
