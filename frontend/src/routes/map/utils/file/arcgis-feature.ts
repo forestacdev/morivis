@@ -3,6 +3,7 @@
  */
 
 import type { FeatureCollection } from 'geojson';
+import type { ArcGisRenderer } from '$routes/map/utils/file/arcgis-webmap';
 
 // ============================
 // カタログ関連
@@ -78,6 +79,11 @@ export const fetchArcGisCatalog = async (url: string): Promise<ArcGisCatalogInfo
 	};
 };
 
+export interface ArcGisFeatureTypeInfo {
+	id: number | string;
+	name: string;
+}
+
 export interface ArcGisFeatureLayerInfo {
 	id: number;
 	name: string;
@@ -86,6 +92,9 @@ export interface ArcGisFeatureLayerInfo {
 	bounds?: [number, number, number, number];
 	maxRecordCount: number;
 	description?: string;
+	drawingInfo?: { renderer?: ArcGisRenderer };
+	typeIdField?: string;
+	types?: ArcGisFeatureTypeInfo[];
 }
 
 export interface ArcGisFeatureServerInfo {
@@ -181,6 +190,12 @@ export const fetchArcGisFeatureServerInfo = async (
 					}
 				}
 
+				// types情報の取得
+				const types: ArcGisFeatureTypeInfo[] | undefined =
+					layerData.types?.length > 0
+						? layerData.types.map((t: any) => ({ id: t.id, name: t.name }))
+						: undefined;
+
 				return {
 					id: layer.id,
 					name: layerData.name || layer.name || `Layer ${layer.id}`,
@@ -192,7 +207,10 @@ export const fetchArcGisFeatureServerInfo = async (
 					})),
 					bounds,
 					maxRecordCount: layerData.maxRecordCount ?? maxRecordCount,
-					description: layerData.description || undefined
+					description: layerData.description || undefined,
+					drawingInfo: layerData.drawingInfo ?? undefined,
+					typeIdField: layerData.typeIdField || undefined,
+					types
 				} satisfies ArcGisFeatureLayerInfo;
 			} catch {
 				return {
