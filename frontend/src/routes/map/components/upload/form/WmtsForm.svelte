@@ -167,11 +167,14 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
-	<div class="flex w-full items-center p-2">
+	<form
+		class="flex w-full items-center p-2"
+		onsubmit={(e) => { e.preventDefault(); if (!isUrlDisabled && !$isProcessing) fetchLayers(); }}
+	>
 		<div class="grow">
 			<TextForm bind:value={forms.url} label="Capabilities URL" error={urlErrors.url} />
 		</div>
-	</div>
+	</form>
 
 	{#if serviceType}
 		<div transition:slide class="w-full px-2 text-sm text-gray-300">

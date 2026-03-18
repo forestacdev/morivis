@@ -112,12 +112,36 @@
 		return cleaned.endsWith('/MapServer') || /\/MapServer\/\d+$/.test(cleaned);
 	};
 
+	/**
+	 * URLを正規化し、レイヤーIDがあれば抽出する
+	 */
+	const parseArcGisUrl = (url: string): { url: string; layerId: string | null } => {
+		let cleaned = url.split('?')[0].replace(/\/+$/, '');
+		// /query を除去
+		cleaned = cleaned.replace(/\/query$/i, '');
+
+		// レイヤーIDを抽出してから除去
+		let layerId: string | null = null;
+		const featureMatch = cleaned.match(/\/FeatureServer\/(\d+)$/i);
+		const mapMatch = cleaned.match(/\/MapServer\/(\d+)$/i);
+		if (featureMatch) {
+			layerId = featureMatch[1];
+			cleaned = cleaned.replace(/(\/FeatureServer)\/\d+$/i, '$1');
+		} else if (mapMatch) {
+			layerId = mapMatch[1];
+			cleaned = cleaned.replace(/(\/MapServer)\/\d+$/i, '$1');
+		}
+
+		return { url: cleaned, layerId };
+	};
+
 	const fetchInfo = async () => {
 		isProcessing.set(true);
 		resetState();
 
 		try {
-			const url = forms.url.trim();
+			const parsed = parseArcGisUrl(forms.url.trim());
+			const url = parsed.url;
 
 			if (isArcGisCatalogUrl(url)) {
 				// カタログURL
@@ -135,6 +159,15 @@
 			} else {
 				// FeatureServer URL
 				await fetchFeatureServerInfo(url);
+				// URLにレイヤーIDが指定されていた場合、自動選択
+				if (parsed.layerId && featureServerInfo) {
+					const exists = featureServerInfo.layers.some(
+						(l) => String(l.id) === parsed.layerId
+					);
+					if (exists) {
+						selectedLayerId = parsed.layerId;
+					}
+				}
 			}
 		} catch (e) {
 			showNotification('情報の取得に失敗しました', 'error');
@@ -204,7 +237,7 @@
 			return;
 		}
 
-		const serviceUrl = selectedServiceUrl || forms.url.trim();
+		const serviceUrl = selectedServiceUrl || parseArcGisUrl(forms.url.trim()).url;
 		const baseUrl = serviceUrl.split('?')[0].replace(/\/+$/, '');
 		const layerUrl = `${baseUrl}/${selectedLayer.id}`;
 
@@ -268,7 +301,10 @@
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
 	<!-- URL入力 -->
-	<div class="flex w-full items-center gap-2 p-2">
+	<form
+		class="flex w-full items-center gap-2 p-2"
+		onsubmit={(e) => { e.preventDefault(); if (!isUrlDisabled && !$isProcessing) fetchInfo(); }}
+	>
 		<div class="grow">
 			<TextForm
 				bind:value={forms.url}
@@ -276,7 +312,7 @@
 				error={urlErrors.url}
 			/>
 		</div>
-	</div>
+	</form>
 
 	<!-- カタログ: サービス一覧 -->
 	{#if step === 'catalog' && catalogServices.length > 0}
