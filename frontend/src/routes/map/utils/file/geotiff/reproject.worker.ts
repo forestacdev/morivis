@@ -262,8 +262,12 @@ self.onmessage = async (e) => {
 			gl.uniform1i(gl.getUniformLocation(program, 'u_redIndex'), redIndex ?? 0);
 			gl.uniform1i(gl.getUniformLocation(program, 'u_greenIndex'), greenIndex ?? 1);
 			gl.uniform1i(gl.getUniformLocation(program, 'u_blueIndex'), blueIndex ?? 2);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_min'), min);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), max);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_redMin'), redMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_redMax'), redMax ?? 255);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMin'), greenMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMax'), greenMax ?? 255);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMin'), blueMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMax'), blueMax ?? 255);
 		}
 
 		// --- 描画 ---

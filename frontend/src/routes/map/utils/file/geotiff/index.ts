@@ -204,6 +204,10 @@ export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: 
 		}
 	}
 
+	// 有効な値が見つからなかった場合のフォールバック
+	if (!Number.isFinite(min)) min = 0;
+	if (!Number.isFinite(max)) max = 255;
+
 	return { min, max };
 };
 

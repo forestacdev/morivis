@@ -42,6 +42,15 @@
 	let rawBbox = $state<[number, number, number, number] | null>(null);
 	let resolvedBbox = $state<[number, number, number, number] | null>(null);
 	let bandMinMax = $state<{ min: number; max: number }>({ min: 0, max: 255 });
+	let multiBandMinMax = $state<{
+		r: { min: number; max: number };
+		g: { min: number; max: number };
+		b: { min: number; max: number };
+	}>({
+		r: { min: 0, max: 255 },
+		g: { min: 0, max: 255 },
+		b: { min: 0, max: 255 }
+	});
 	let analyzed = $state<boolean>(false);
 	let entryId = $state<string>('');
 	let hasTfw = $state<boolean>(false);
@@ -172,11 +181,21 @@
 					? parseFloat(image.fileDirectory.GDAL_NODATA)
 					: null;
 
-			// 最初のバンドのmin/max
+			// バンドのmin/max
 			if (size === 1) {
 				bandMinMax = getMinMax(rastersData as unknown as Float32Array, nodata);
 			} else {
-				bandMinMax = getMinMax(rastersData[0], nodata);
+				// マルチバンド: rastersDataはフラットなFloat32Array（band0, band1, ...が連結）
+				const flat = rastersData as unknown as Float32Array;
+				const pixelCount = width * height;
+				const band0 = flat.subarray(0, pixelCount);
+				const band1 = size >= 2 ? flat.subarray(pixelCount, pixelCount * 2) : band0;
+				const band2 = size >= 3 ? flat.subarray(pixelCount * 2, pixelCount * 3) : band0;
+				bandMinMax = getMinMax(band0, nodata);
+				const rMinMax = getMinMax(band0, nodata);
+				const gMinMax = getMinMax(band1, nodata);
+				const bMinMax = getMinMax(band2, nodata);
+				multiBandMinMax = { r: rMinMax, g: gMinMax, b: bMinMax };
 			}
 
 			analyzed = true;
@@ -283,9 +302,17 @@
 							colorMap: 'jet'
 						},
 						multi: {
-							r: { index: 0, min: 0, max: 255 },
-							g: { index: numBands >= 2 ? 1 : 0, min: 0, max: 255 },
-							b: { index: numBands >= 3 ? 2 : 0, min: 0, max: 255 }
+							r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
+							g: {
+								index: numBands >= 2 ? 1 : 0,
+								min: multiBandMinMax.g.min,
+								max: multiBandMinMax.g.max
+							},
+							b: {
+								index: numBands >= 3 ? 2 : 0,
+								min: multiBandMinMax.b.min,
+								max: multiBandMinMax.b.max
+							}
 						}
 					}
 				}
