@@ -28,6 +28,7 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx)$/i.test(file.name);
+	const isTiffRelated = (file: File): boolean => /\.(tiff?|tfw|tifw|tiffw|wld)$/i.test(file.name);
 
 	const setFile = (file: File | FileList) => {
 		if (file instanceof File) {
@@ -83,6 +84,9 @@
 			const files = Array.from(file);
 			if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
+			} else if (files.some(isTiffRelated)) {
+				// tiff + tfw等のセット → FileListのまま渡す
+				showDialogType = 'geotiff';
 			} else {
 				setFile(files[0]);
 			}

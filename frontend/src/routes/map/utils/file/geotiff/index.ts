@@ -251,10 +251,9 @@ export const getRasters = async (
 			// Added error handling
 			worker.onerror = (error) => {
 				console.error('Worker error:', error);
+				worker.terminate();
 				reject(new Error(`Worker error: ${error.message}`));
 			};
-
-			worker.terminate(); // Workerを終了
 		});
 	} catch (error) {
 		console.error(`Error processing image`, error);

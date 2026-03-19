@@ -44,11 +44,66 @@
 	let bandMinMax = $state<{ min: number; max: number }>({ min: 0, max: 255 });
 	let analyzed = $state<boolean>(false);
 	let entryId = $state<string>('');
+	let hasTfw = $state<boolean>(false);
 
 	const tiffFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		if (dropFile instanceof FileList) {
+			return Array.from(dropFile).find((f) => /\.(tiff?|tif)$/i.test(f.name)) ?? null;
+		}
+		return dropFile;
 	});
+
+	/**
+	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
+	 * フォーマット:
+	 *   行1: x方向ピクセルサイズ (A)
+	 *   行2: 回転 (D)
+	 *   行3: 回転 (B)
+	 *   行4: y方向ピクセルサイズ (E) ※通常負
+	 *   行5: 左上ピクセルの中心x座標 (C)
+	 *   行6: 左上ピクセルの中心y座標 (F)
+	 */
+	const parseTfw = async (
+		file: File,
+		width: number,
+		height: number
+	): Promise<[number, number, number, number] | null> => {
+		try {
+			const text = await file.text();
+			const lines = text.trim().split(/\r?\n/);
+			if (lines.length < 6) return null;
+
+			const a = parseFloat(lines[0]); // x pixel size
+			const d = parseFloat(lines[1]); // rotation
+			const b = parseFloat(lines[2]); // rotation
+			const e = parseFloat(lines[3]); // y pixel size (negative)
+			const c = parseFloat(lines[4]); // x of upper-left pixel center
+			const f = parseFloat(lines[5]); // y of upper-left pixel center
+
+			if ([a, b, c, d, e, f].some((v) => !Number.isFinite(v))) return null;
+
+			// 4隅を計算（回転を考慮）
+			const corners = [
+				[c, f], // 左上
+				[c + a * width + b * 0, f + d * width + e * 0], // 右上
+				[c + a * 0 + b * height, f + d * 0 + e * height], // 左下
+				[c + a * width + b * height, f + d * width + e * height] // 右下
+			];
+
+			const xs = corners.map(([x]) => x);
+			const ys = corners.map(([, y]) => y);
+
+			return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+		} catch {
+			return null;
+		}
+	};
+
+	/** FileListからワールドファイルを探す */
+	const findTfwFile = (files: FileList): File | null => {
+		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|wld)$/i.test(f.name)) ?? null;
+	};
 
 	// ファイルドロップ時: GeoTIFF解析
 	$effect(() => {
@@ -62,6 +117,7 @@
 		isProcessing.set(true);
 		analyzed = false;
 		resolvedBbox = null;
+		hasTfw = false;
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
@@ -73,10 +129,24 @@
 			imageWidth = width;
 			imageHeight = height;
 
-			// bbox取得（GeoTIFFのタイアポイント + スケールから計算）
-			const imageBbox = image.getBoundingBox();
-			if (imageBbox && imageBbox.length === 4) {
-				rawBbox = imageBbox as [number, number, number, number];
+			// bbox取得: まずGeoTIFF内蔵のメタデータを試す
+			try {
+				const imageBbox = image.getBoundingBox();
+				if (imageBbox && imageBbox.length === 4) {
+					rawBbox = imageBbox as [number, number, number, number];
+				}
+			} catch {
+				// アフィン変換情報がない → ワールドファイルからbbox取得を試みる
+				rawBbox = null;
+			}
+
+			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
+			if (!rawBbox && dropFile instanceof FileList) {
+				const tfwFile = findTfwFile(dropFile);
+				if (tfwFile) {
+					rawBbox = await parseTfw(tfwFile, width, height);
+					hasTfw = true;
+				}
 			}
 
 			// ラスターデータ読み込み
@@ -113,13 +183,19 @@
 
 			// bboxの有効性チェック
 			if (rawBbox && isBboxValid(rawBbox)) {
-				// 有効なbbox → そのまま使用
+				// 有効なbbox（WGS84/経緯度）→ そのまま使用
 				resolvedBbox = rawBbox;
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox) {
-				// 無効なbbox → ZoneFormで投影法を選択してもらう
+				// 無効なbbox（平面直角座標系等）→ ZoneFormで投影法を選択してもらう
 				showZoneForm = true;
 				focusBbox = rawBbox;
+			} else {
+				// bboxが一切ない → 通知のみ（ZoneFormは出せない）
+				showNotification(
+					'位置情報がありません。.tfwファイルと一緒にドロップしてください。',
+					'error'
+				);
 			}
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'GeoTIFFの解析に失敗しました', 'error');
@@ -250,6 +326,9 @@
 			{#if numBands === 1}
 				<div>値の範囲: {bandMinMax.min.toFixed(2)} ~ {bandMinMax.max.toFixed(2)}</div>
 			{/if}
+			{#if hasTfw}
+				<div class="text-blue-300">ワールドファイル(.tfw)から位置情報を取得しました</div>
+			{/if}
 			{#if resolvedBbox}
 				<div>
 					範囲: [{resolvedBbox[0].toFixed(6)}, {resolvedBbox[1].toFixed(6)}, {resolvedBbox[2].toFixed(
@@ -258,6 +337,10 @@
 				</div>
 			{:else if rawBbox}
 				<div class="text-yellow-400">座標系が不明です。投影法を選択してください。</div>
+			{:else}
+				<div class="text-red-400">
+					位置情報がありません。.tfwファイルと一緒にドロップしてください。
+				</div>
 			{/if}
 		</div>
 	{/if}
