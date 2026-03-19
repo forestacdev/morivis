@@ -92,8 +92,16 @@
 			{#if showDialogType === 'glb'}
 				<GlbForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
-			{#if showDialogType === 'tiff'}
-				<GeoTiffForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{#if showDialogType === 'geotiff'}
+				<GeoTiffForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'vector'}
 				<VectorForm bind:showDataEntry bind:showDialogType />

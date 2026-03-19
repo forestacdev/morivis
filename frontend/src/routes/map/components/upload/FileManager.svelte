@@ -71,6 +71,10 @@
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;
+				case 'tiff':
+				case 'tif':
+					showDialogType = 'geotiff';
+					return;
 				default:
 					showNotification('対応していないファイル形式です', 'error');
 					return;

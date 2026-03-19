@@ -4,11 +4,17 @@ import type { ReadRasterResult } from 'geotiff';
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
 
+export interface ReprojectInfo {
+	projDef: string;
+	srcBbox: [number, number, number, number];
+}
+
 export class GeoTiffCache {
 	private static dataUrlCache: Map<string, string> = new Map();
 	private static rastersCache: Map<string, Float32Array[]> = new Map();
 	private static bboxCache: Map<string, [number, number, number, number]> = new Map();
 	private static numBandsCache: Map<string, number> = new Map();
+	private static reprojectCache: Map<string, ReprojectInfo> = new Map();
 
 	private static sizeCache: Map<
 		string,
@@ -91,6 +97,22 @@ export class GeoTiffCache {
 		this.numBandsCache.delete(key);
 	}
 
+	static setReproject(key: string, info: ReprojectInfo) {
+		this.reprojectCache.set(key, info);
+	}
+
+	static getReproject(key: string): ReprojectInfo | undefined {
+		return this.reprojectCache.get(key);
+	}
+
+	static hasReproject(key: string): boolean {
+		return this.reprojectCache.has(key);
+	}
+
+	static removeReproject(key: string): void {
+		this.reprojectCache.delete(key);
+	}
+
 	static revokeBlob(id: string): void {
 		const entry = this.blobCache.get(id);
 		if (entry) {
@@ -106,6 +128,7 @@ export class GeoTiffCache {
 		this.sizeCache.clear();
 		this.numBandsCache.clear();
 		this.blobCache.clear();
+		this.reprojectCache.clear();
 	}
 	static hasDataUrl(key: string): boolean {
 		return this.dataUrlCache.has(key);
@@ -262,6 +285,106 @@ export const loadToGeotiffFile = async (id: string, file: File): Promise<void> =
 	GeoTiffCache.setRasters(id, rastersData);
 	GeoTiffCache.setSize(id, width, height);
 	GeoTiffCache.setNumBands(id, size);
+};
+
+const reprojectWorker = new Worker(new URL('./reproject.worker.ts', import.meta.url), {
+	type: 'module'
+});
+
+/**
+ * 再投影付きラスターデータの読み込み
+ * ソース座標系のラスターをWGS84上にリサンプリングしてレンダリングする
+ */
+export const loadRasterDataReprojected = async (
+	id: string,
+	visualization: RasterTiffStyle['visualization'],
+	reprojectInfo: ReprojectInfo,
+	dstBbox: [number, number, number, number]
+): Promise<string | undefined> => {
+	try {
+		if (!GeoTiffCache.hasRasters(id)) {
+			throw new Error('Raster data not found in cache');
+		}
+
+		const rasters = GeoTiffCache.getRasters(id) as Float32Array[];
+		const srcWidth = GeoTiffCache.getSize(id)?.width ?? 0;
+		const srcHeight = GeoTiffCache.getSize(id)?.height ?? 0;
+		const bandCount = GeoTiffCache.getNumBands(id) ?? 1;
+
+		const mode = visualization.mode;
+		const uniformsData = visualization.uniformsData;
+		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
+
+		// ラスターをフラット化（postMessageでの転送用にコピーを作成）
+		let flatRasters: Float32Array;
+		if (bandCount === 1) {
+			const src = rasters as unknown as Float32Array;
+			flatRasters = new Float32Array(src);
+		} else {
+			flatRasters = new Float32Array(srcWidth * srcHeight * bandCount);
+			for (let i = 0; i < bandCount; i++) {
+				flatRasters.set(rasters[i], i * srcWidth * srcHeight);
+			}
+		}
+
+		// 出力サイズはソースと同じ
+		const dstWidth = srcWidth;
+		const dstHeight = srcHeight;
+
+		const workerMessage: Record<string, unknown> = {
+			rasters: flatRasters,
+			size: bandCount,
+			type: mode,
+			srcWidth,
+			srcHeight,
+			srcBbox: Array.from(reprojectInfo.srcBbox),
+			dstWidth,
+			dstHeight,
+			dstBbox: Array.from(dstBbox),
+			projDef: reprojectInfo.projDef,
+			colorArray: new Uint8Array(colorArray)
+		};
+
+		if (mode === 'single') {
+			workerMessage.min = uniformsData.single.min;
+			workerMessage.max = uniformsData.single.max;
+			workerMessage.bandIndex = uniformsData.single.index;
+		} else if (mode === 'multi') {
+			workerMessage.min = 0;
+			workerMessage.max = 255;
+			workerMessage.redIndex = uniformsData.multi.r.index;
+			workerMessage.greenIndex = uniformsData.multi.g.index;
+			workerMessage.blueIndex = uniformsData.multi.b.index;
+			workerMessage.redMin = uniformsData.multi.r.min;
+			workerMessage.redMax = uniformsData.multi.r.max;
+			workerMessage.greenMin = uniformsData.multi.g.min;
+			workerMessage.greenMax = uniformsData.multi.g.max;
+			workerMessage.blueMin = uniformsData.multi.b.min;
+			workerMessage.blueMax = uniformsData.multi.b.max;
+		}
+
+		return new Promise((resolve, reject) => {
+			reprojectWorker.postMessage(workerMessage);
+
+			reprojectWorker.onmessage = async (e) => {
+				const { blob, error } = e.data;
+				if (error) {
+					reject(new Error(`Reproject worker error: ${error}`));
+					return;
+				}
+				const url = URL.createObjectURL(blob);
+				GeoTiffCache.setBlob(id, blob, url);
+				resolve(url);
+			};
+
+			reprojectWorker.onerror = (error) => {
+				console.error('Reproject worker error:', error);
+				reject(new Error(`Reproject worker error: ${error.message}`));
+			};
+		});
+	} catch (error) {
+		console.error('Error in reprojected rendering', error);
+	}
 };
 
 // ラスターデータの読み込み

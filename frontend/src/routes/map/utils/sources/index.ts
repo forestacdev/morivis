@@ -41,7 +41,12 @@ import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
-import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
+import {
+	loadRasterData,
+	loadRasterDataReprojected,
+	GeoTiffImageCache,
+	GeoTiffCache
+} from '$routes/map/utils/file/geotiff';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
@@ -82,6 +87,14 @@ export const createSourcesItems = async (
 							let imageData: string | undefined;
 							if (GeoTiffImageCache.has(styleID as string)) {
 								imageData = GeoTiffImageCache.get(styleID as string);
+							} else if (GeoTiffCache.hasReproject(entry.id)) {
+								const reprojectInfo = GeoTiffCache.getReproject(entry.id)!;
+								imageData = await loadRasterDataReprojected(
+									entry.id,
+									visualization,
+									reprojectInfo,
+									metaData.bounds
+								);
 							} else {
 								imageData = await loadRasterData(entry.id, format.url, visualization);
 							}
