@@ -8,7 +8,14 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import { GeoTiffCache, getRasters, getMinMax } from '$routes/map/utils/file/geotiff';
+	import {
+		GeoTiffCache,
+		parseRasterBands,
+		getMinMax,
+		encodeAllBandsToTerrarium,
+		type RasterBands,
+		type BandDataRange
+	} from '$routes/map/utils/file/geotiff';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -55,6 +62,11 @@
 	let entryId = $state<string>('');
 	let hasTfw = $state<boolean>(false);
 
+	// 一時的に保持する解析済みデータ（Terrariumエンコード後に解放）
+	let parsedBands = $state<RasterBands | null>(null);
+	let parsedNodata = $state<number | null>(null);
+	let dataRanges = $state<BandDataRange[]>([]);
+
 	const tiffFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
@@ -65,13 +77,6 @@
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
-	 * フォーマット:
-	 *   行1: x方向ピクセルサイズ (A)
-	 *   行2: 回転 (D)
-	 *   行3: 回転 (B)
-	 *   行4: y方向ピクセルサイズ (E) ※通常負
-	 *   行5: 左上ピクセルの中心x座標 (C)
-	 *   行6: 左上ピクセルの中心y座標 (F)
 	 */
 	const parseTfw = async (
 		file: File,
@@ -83,21 +88,20 @@
 			const lines = text.trim().split(/\r?\n/);
 			if (lines.length < 6) return null;
 
-			const a = parseFloat(lines[0]); // x pixel size
-			const d = parseFloat(lines[1]); // rotation
-			const b = parseFloat(lines[2]); // rotation
-			const e = parseFloat(lines[3]); // y pixel size (negative)
-			const c = parseFloat(lines[4]); // x of upper-left pixel center
-			const f = parseFloat(lines[5]); // y of upper-left pixel center
+			const a = parseFloat(lines[0]);
+			const d = parseFloat(lines[1]);
+			const b = parseFloat(lines[2]);
+			const e = parseFloat(lines[3]);
+			const c = parseFloat(lines[4]);
+			const f = parseFloat(lines[5]);
 
 			if ([a, b, c, d, e, f].some((v) => !Number.isFinite(v))) return null;
 
-			// 4隅を計算（回転を考慮）
 			const corners = [
-				[c, f], // 左上
-				[c + a * width + b * 0, f + d * width + e * 0], // 右上
-				[c + a * 0 + b * height, f + d * 0 + e * height], // 左下
-				[c + a * width + b * height, f + d * width + e * height] // 右下
+				[c, f],
+				[c + a * width + b * 0, f + d * width + e * 0],
+				[c + a * 0 + b * height, f + d * 0 + e * height],
+				[c + a * width + b * height, f + d * width + e * height]
 			];
 
 			const xs = corners.map(([x]) => x);
@@ -109,7 +113,6 @@
 		}
 	};
 
-	/** FileListからワールドファイルを探す */
 	const findTfwFile = (files: FileList): File | null => {
 		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|wld)$/i.test(f.name)) ?? null;
 	};
@@ -127,6 +130,7 @@
 		analyzed = false;
 		resolvedBbox = null;
 		hasTfw = false;
+		parsedBands = null;
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
@@ -145,7 +149,6 @@
 					rawBbox = imageBbox as [number, number, number, number];
 				}
 			} catch {
-				// アフィン変換情報がない → ワールドファイルからbbox取得を試みる
 				rawBbox = null;
 			}
 
@@ -160,57 +163,50 @@
 
 			// ラスターデータ読み込み
 			const rasterData = await image.readRasters({ interleave: false });
-			const result = await getRasters(rasterData, width, height);
-			if (!result) {
-				throw new Error('ラスターデータの処理に失敗しました');
-			}
+			const bands = parseRasterBands(rasterData);
+			numBands = bands.length;
 
-			const { rastersData, size } = result;
-			numBands = size;
-
-			// キャッシュに保存
 			const id = `geotiff_${crypto.randomUUID()}`;
 			entryId = id;
-			GeoTiffCache.setRasters(id, rastersData);
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, size);
 
 			// nodataの取得
 			const nodata =
 				image.fileDirectory.GDAL_NODATA !== undefined
 					? parseFloat(image.fileDirectory.GDAL_NODATA)
 					: null;
+			parsedNodata = nodata;
 
-			// バンドのmin/max
-			if (size === 1) {
-				bandMinMax = getMinMax(rastersData as unknown as Float32Array, nodata);
-			} else {
-				// マルチバンド: rastersDataはフラットなFloat32Array（band0, band1, ...が連結）
-				const flat = rastersData as unknown as Float32Array;
-				const pixelCount = width * height;
-				const band0 = flat.subarray(0, pixelCount);
-				const band1 = size >= 2 ? flat.subarray(pixelCount, pixelCount * 2) : band0;
-				const band2 = size >= 3 ? flat.subarray(pixelCount * 2, pixelCount * 3) : band0;
-				bandMinMax = getMinMax(band0, nodata);
-				const rMinMax = getMinMax(band0, nodata);
-				const gMinMax = getMinMax(band1, nodata);
-				const bMinMax = getMinMax(band2, nodata);
-				multiBandMinMax = { r: rMinMax, g: gMinMax, b: bMinMax };
+			// 各バンドのmin/max計算
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, nodata));
+			dataRanges = ranges;
+
+			// 表示用min/max
+			bandMinMax = ranges[0];
+			if (bands.length > 1) {
+				multiBandMinMax = {
+					r: ranges[0],
+					g: ranges.length >= 2 ? ranges[1] : ranges[0],
+					b: ranges.length >= 3 ? ranges[2] : ranges[0]
+				};
 			}
+
+			// 一時的にバンドデータを保持（registration時にTerrariumエンコード）
+			parsedBands = bands;
+
+			// サイズとバンド数をキャッシュ
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, bands.length);
 
 			analyzed = true;
 
 			// bboxの有効性チェック
 			if (rawBbox && isBboxValid(rawBbox)) {
-				// 有効なbbox（WGS84/経緯度）→ そのまま使用
 				resolvedBbox = rawBbox;
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox) {
-				// 無効なbbox（平面直角座標系等）→ ZoneFormで投影法を選択してもらう
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
-				// bboxが一切ない → 通知のみ（ZoneFormは出せない）
 				showNotification(
 					'位置情報がありません。.tfwファイルと一緒にドロップしてください。',
 					'error'
@@ -250,11 +246,6 @@
 			resolvedBbox = transformed;
 			if (entryId) {
 				GeoTiffCache.setBbox(entryId, transformed);
-				// 再投影情報を保存（レンダリング時にUVマップ生成に使用）
-				GeoTiffCache.setReproject(entryId, {
-					projDef: prjContent,
-					srcBbox: rawBbox
-				});
 			}
 		} catch (e) {
 			showNotification('座標変換中にエラーが発生しました', 'error');
@@ -262,72 +253,98 @@
 		}
 	};
 
-	const registration = () => {
-		if (!analyzed || !entryId || !resolvedBbox) return;
+	const registration = async () => {
+		if (!analyzed || !entryId || !resolvedBbox || !parsedBands) return;
 
-		const blobUrl = tiffFile ? URL.createObjectURL(tiffFile) : '';
-		GeoTiffCache.setDataUrl(entryId, blobUrl);
+		isProcessing.set(true);
 
-		const isSingleBand = numBands === 1;
+		try {
+			// TODO: 再投影が必要な場合はここで生データを再投影してからエンコード
+			// 現時点では再投影なしでTerrarium化
 
-		const entry: RasterImageEntry<RasterTiffStyle> = {
-			id: entryId,
-			type: 'raster',
-			format: {
-				type: 'image',
-				url: blobUrl
-			},
-			metaData: {
-				...DEFAULT_CUSTOM_META_DATA,
-				name: entryName || 'GeoTIFFデータ',
-				tileSize: 256,
-				bounds: resolvedBbox,
-				xyzImageTile: findCenterTile(resolvedBbox)
-			},
-			interaction: {
-				...DEFAULT_RASTER_BASEMAP_INTERACTION
-			},
-			style: {
-				type: 'tiff',
-				opacity: 1.0,
-				visible: true,
-				visualization: {
-					numBands,
-					mode: isSingleBand ? 'single' : 'multi',
-					uniformsData: {
-						single: {
-							index: 0,
-							min: bandMinMax.min,
-							max: bandMinMax.max,
-							colorMap: 'jet'
-						},
-						multi: {
-							r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
-							g: {
-								index: numBands >= 2 ? 1 : 0,
-								min: multiBandMinMax.g.min,
-								max: multiBandMinMax.g.max
+			// 全バンドをTerrariumエンコード
+			await encodeAllBandsToTerrarium(
+				entryId,
+				parsedBands,
+				imageWidth,
+				imageHeight,
+				parsedNodata,
+				dataRanges
+			);
+
+			// 生データを解放（メモリ節約）
+			parsedBands = null;
+
+			const isSingleBand = numBands === 1;
+
+			const entry: RasterImageEntry<RasterTiffStyle> = {
+				id: entryId,
+				type: 'raster',
+				format: {
+					type: 'image',
+					url: '' // Terrarium PNGはキャッシュ経由で使用
+				},
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					name: entryName || 'GeoTIFFデータ',
+					tileSize: 256,
+					bounds: resolvedBbox,
+					xyzImageTile: findCenterTile(resolvedBbox)
+				},
+				interaction: {
+					...DEFAULT_RASTER_BASEMAP_INTERACTION
+				},
+				style: {
+					type: 'tiff',
+					opacity: 1.0,
+					visible: true,
+					visualization: {
+						numBands,
+						mode: isSingleBand ? 'single' : 'multi',
+						uniformsData: {
+							single: {
+								index: 0,
+								min: bandMinMax.min,
+								max: bandMinMax.max,
+								colorMap: 'jet'
 							},
-							b: {
-								index: numBands >= 3 ? 2 : 0,
-								min: multiBandMinMax.b.min,
-								max: multiBandMinMax.b.max
+							multi: {
+								r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
+								g: {
+									index: numBands >= 2 ? 1 : 0,
+									min: multiBandMinMax.g.min,
+									max: multiBandMinMax.g.max
+								},
+								b: {
+									index: numBands >= 3 ? 2 : 0,
+									min: multiBandMinMax.b.min,
+									max: multiBandMinMax.b.max
+								}
 							}
 						}
 					}
 				}
-			}
-		};
+			};
 
-		showDataEntry = entry;
-		showDialogType = null;
-		dropFile = null;
-		showNotification('GeoTIFFファイルを読み込みました', 'success');
+			showDataEntry = entry;
+			showDialogType = null;
+			dropFile = null;
+			showNotification('GeoTIFFファイルを読み込みました', 'success');
+		} catch (e) {
+			showNotification(
+				e instanceof Error ? e.message : 'エンコードに失敗しました',
+				'error'
+			);
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+		}
 	};
 
 	const cancel = () => {
 		showDialogType = null;
 		dropFile = null;
+		parsedBands = null;
 	};
 </script>
 
