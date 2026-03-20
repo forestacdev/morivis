@@ -32,11 +32,21 @@
 	// ベクター用
 	let selectedLayerId = $state('');
 	let geometryType = $state<VectorEntryGeometryType>('Polygon');
-	const geometryTypeOptions = [
+
+	const ALL_GEOMETRY_OPTIONS = [
 		{ key: 'Point', name: 'ポイント' },
 		{ key: 'LineString', name: 'ライン' },
 		{ key: 'Polygon', name: 'ポリゴン' }
 	];
+
+	const geometryTypeOptions = $derived.by(() => {
+		const layer = metadata?.vectorLayers.find((l) => l.id === selectedLayerId);
+		if (!layer?.geometryType) return ALL_GEOMETRY_OPTIONS;
+		const gt = layer.geometryType.toLowerCase();
+		if (gt.includes('point')) return ALL_GEOMETRY_OPTIONS.filter((o) => o.key === 'Point');
+		if (gt.includes('line')) return ALL_GEOMETRY_OPTIONS.filter((o) => o.key !== 'Polygon');
+		return ALL_GEOMETRY_OPTIONS;
+	});
 
 	const mbtilesFile = $derived.by(() => {
 		if (!dropFile) return null;
