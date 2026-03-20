@@ -1,9 +1,9 @@
 <script lang="ts">
-	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
-	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
-	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
+	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
 	import TiffStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/TiffStyleModePulldownBox.svelte';
 	import { COLOR_MAP_TYPE, type RasterTiffStyle } from '$routes/map/data/types/raster';

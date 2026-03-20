@@ -7,7 +7,10 @@
 	import { createVectorTileEntry } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { fetchArcGisMapServerInfo, type ArcGisMapServerInfo } from '$routes/map/utils/file/arcgis';
+	import {
+		fetchArcGisMapServerInfo,
+		type ArcGisMapServerInfo
+	} from '$routes/map/utils/file/arcgis';
 	import {
 		fetchArcGisFeatureServerInfo,
 		fetchArcGisCatalog,
@@ -200,9 +203,7 @@
 				await fetchFeatureServerInfo(url);
 				// URLにレイヤーIDが指定されていた場合、自動選択
 				if (parsed.layerId && featureServerInfo) {
-					const exists = featureServerInfo.layers.some(
-						(l) => String(l.id) === parsed.layerId
-					);
+					const exists = featureServerInfo.layers.some((l) => String(l.id) === parsed.layerId);
 					if (exists) {
 						selectedLayerId = parsed.layerId;
 					}
@@ -270,9 +271,7 @@
 			await fetchFeatureServerInfo(parsed.url);
 			// レイヤーIDが指定されていた場合、自動選択
 			if (parsed.layerId && featureServerInfo) {
-				const exists = featureServerInfo.layers.some(
-					(l) => String(l.id) === parsed.layerId
-				);
+				const exists = featureServerInfo.layers.some((l) => String(l.id) === parsed.layerId);
 				if (exists) {
 					selectedLayerId = parsed.layerId;
 				}
@@ -342,8 +341,16 @@
 				if (colorsStyle) {
 					entry.style.colors = colorsStyle;
 				}
-			} else if (selectedLayer.typeIdField && selectedLayer.types && selectedLayer.types.length > 0) {
-				const colorsStyle = typesToColorsStyle(selectedLayer.typeIdField, selectedLayer.types, isPolygon);
+			} else if (
+				selectedLayer.typeIdField &&
+				selectedLayer.types &&
+				selectedLayer.types.length > 0
+			) {
+				const colorsStyle = typesToColorsStyle(
+					selectedLayer.typeIdField,
+					selectedLayer.types,
+					isPolygon
+				);
 				if (colorsStyle) {
 					entry.style.colors = colorsStyle;
 				}
@@ -352,7 +359,8 @@
 				// Opacity型に最も近い値にマップ
 				const opacityMap = [0.3, 0.5, 0.7, 1] as const;
 				entry.style.opacity = opacityMap.reduce((prev, curr) =>
-					Math.abs(curr - selectedWebMapLayerOpacity!) < Math.abs(prev - selectedWebMapLayerOpacity!)
+					Math.abs(curr - selectedWebMapLayerOpacity!) <
+					Math.abs(prev - selectedWebMapLayerOpacity!)
 						? curr
 						: prev
 				);
@@ -404,14 +412,13 @@
 	<!-- URL入力 -->
 	<form
 		class="flex w-full items-center gap-2 p-2"
-		onsubmit={(e) => { e.preventDefault(); if (!isUrlDisabled && !$isProcessing) fetchInfo(); }}
+		onsubmit={(e) => {
+			e.preventDefault();
+			if (!isUrlDisabled && !$isProcessing) fetchInfo();
+		}}
 	>
 		<div class="grow">
-			<TextForm
-				bind:value={forms.url}
-				label="ArcGIS REST URL / WebMap URL"
-				error={urlErrors.url}
-			/>
+			<TextForm bind:value={forms.url} label="ArcGIS REST URL / WebMap URL" error={urlErrors.url} />
 		</div>
 	</form>
 
@@ -430,7 +437,7 @@
 					<button
 						onclick={() => selectService(service)}
 						disabled={$isProcessing}
-						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition hover:bg-gray-700 last:border-b-0 disabled:opacity-50"
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition last:border-b-0 hover:bg-gray-700 disabled:opacity-50"
 					>
 						<span class="truncate">{service.displayName}</span>
 						<span
@@ -458,11 +465,13 @@
 					<button
 						onclick={() => selectWebMapLayer(layer)}
 						disabled={$isProcessing}
-						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition hover:bg-gray-700 last:border-b-0 disabled:opacity-50"
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition last:border-b-0 hover:bg-gray-700 disabled:opacity-50"
 					>
 						<span class="min-w-0 grow truncate">{layer.title}</span>
 						{#if layer.renderer?.type === 'uniqueValue'}
-							<span class="ml-2 shrink-0 rounded bg-purple-900 px-1.5 py-0.5 text-xs text-purple-300">
+							<span
+								class="ml-2 shrink-0 rounded bg-purple-900 px-1.5 py-0.5 text-xs text-purple-300"
+							>
 								スタイル付き
 							</span>
 						{/if}
@@ -501,20 +510,20 @@
 				{#if featureServerInfo.layers.length > 1}
 					<div class="mb-2">
 						<label class="mb-1 block text-sm text-gray-300">
-						レイヤーを選択
-						<select
-							bind:value={selectedLayerId}
-							class="mt-1 w-full rounded border border-gray-600 bg-gray-800 p-2 text-sm text-white"
-						>
-							<option value="" disabled>選択してください</option>
-							{#each featureServerInfo.layers as layer}
-								<option value={String(layer.id)}>
-									{layer.name}
-									({esriGeometryTypeToGeoJSON(layer.geometryType) ?? layer.geometryType})
-								</option>
-							{/each}
-						</select>
-					</label>
+							レイヤーを選択
+							<select
+								bind:value={selectedLayerId}
+								class="mt-1 w-full rounded border border-gray-600 bg-gray-800 p-2 text-sm text-white"
+							>
+								<option value="" disabled>選択してください</option>
+								{#each featureServerInfo.layers as layer}
+									<option value={String(layer.id)}>
+										{layer.name}
+										({esriGeometryTypeToGeoJSON(layer.geometryType) ?? layer.geometryType})
+									</option>
+								{/each}
+							</select>
+						</label>
 					</div>
 				{/if}
 

@@ -1,4 +1,7 @@
-import { DEFAULT_RASTER_BASEMAP_STYLE, DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
+import {
+	DEFAULT_RASTER_BASEMAP_STYLE,
+	DEFAULT_RASTER_DEM_STYLE
+} from '$routes/map/data/entries/raster/_style';
 import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 
 import type {
@@ -16,7 +19,12 @@ import { findCenterTile } from '$routes/map/utils/map';
 export const createRasterEntry = (
 	name: string,
 	url: string,
-	options?: { tileSize?: number; minZoom?: number; maxZoom?: number; bounds?: [number, number, number, number] }
+	options?: {
+		tileSize?: number;
+		minZoom?: number;
+		maxZoom?: number;
+		bounds?: [number, number, number, number];
+	}
 ): RasterEntry<RasterBaseMapStyle> => {
 	const entry: RasterEntry<RasterBaseMapStyle> = {
 		id: 'raster_' + crypto.randomUUID(),

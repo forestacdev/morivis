@@ -49,12 +49,26 @@ const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 	for (let i = 0; i < pointCount; i++) {
 		const posIdx = i * 3;
 		data[i] = {
-			position: [positions[posIdx], positions[posIdx + 1], positions[posIdx + 2]] as [number, number, number],
+			position: [positions[posIdx], positions[posIdx + 1], positions[posIdx + 2]] as [
+				number,
+				number,
+				number
+			],
 			color: colors
 				? colorChannels === 4
-					? [colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]] as [number, number, number, number]
-					: [colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2], 255] as [number, number, number, number]
-				: [255, 255, 255, 255] as [number, number, number, number]
+					? ([colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]] as [
+							number,
+							number,
+							number,
+							number
+						])
+					: ([colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2], 255] as [
+							number,
+							number,
+							number,
+							number
+						])
+				: ([255, 255, 255, 255] as [number, number, number, number])
 		};
 	}
 

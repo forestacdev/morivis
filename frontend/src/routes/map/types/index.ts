@@ -99,8 +99,13 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 /** input[accept] 用（主要ファイル + 補助ファイルも受け入れる） */
 export const SUPPORTED_FILE_ACCEPT = [
 	...SUPPORTED_FILE_EXTENSIONS,
-	'.dbf', '.shx', '.prj',       // Shapefile補助
-	'.tfw', '.pgw', '.jgw', '.wld' // ワールドファイル
+	'.dbf',
+	'.shx',
+	'.prj', // Shapefile補助
+	'.tfw',
+	'.pgw',
+	'.jgw',
+	'.wld' // ワールドファイル
 ].join(',');
 
 /** 表示ラベル用のスペース区切り文字列 */

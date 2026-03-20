@@ -69,10 +69,7 @@ class WorkerProtocol {
 			const { signal } = abortController;
 
 			// ArcGIS FeatureServer に bbox でクエリ
-			const geometryParam = encodeURIComponent(
-				`${minLng},${minLat},${maxLng},${maxLat}`
-			);
-
+			const geometryParam = encodeURIComponent(`${minLng},${minLat},${maxLng},${maxLat}`);
 
 			// PBF形式でクエリ（GeoJSONより転送量が大幅に小さい）
 			const queryUrl =
@@ -92,7 +89,10 @@ class WorkerProtocol {
 
 			let geojson: GeoJSON.FeatureCollection;
 
-			if (contentType.includes('application/x-protobuf') || contentType.includes('application/octet-stream')) {
+			if (
+				contentType.includes('application/x-protobuf') ||
+				contentType.includes('application/octet-stream')
+			) {
 				// PBFレスポンスをデコード
 				const buffer = await res.arrayBuffer();
 				const result = arcgisPbfDecode(new Uint8Array(buffer));
@@ -120,7 +120,8 @@ class WorkerProtocol {
 				this.pendingRequests.set(id, {
 					resolve: (result) => {
 						// Worker結果をキャッシュ
-						const data = 'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+						const data =
+							'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
 						setTileCache(cacheKey, data);
 						resolve(result);
 					},
@@ -221,10 +222,9 @@ let _workerProtocol: WorkerProtocol | null = null;
 
 const getWorkerProtocol = (): WorkerProtocol => {
 	if (!_workerProtocol) {
-		_worker = new Worker(
-			new URL('./protocol_esri_feature.worker.ts', import.meta.url),
-			{ type: 'module' }
-		);
+		_worker = new Worker(new URL('./protocol_esri_feature.worker.ts', import.meta.url), {
+			type: 'module'
+		});
 		_workerProtocol = new WorkerProtocol(_worker);
 	}
 	return _workerProtocol;

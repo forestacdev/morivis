@@ -3,7 +3,13 @@ import JSZip from 'jszip';
 
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
-import { calculateGeoTransformFromBbox, buildAuxXml, calculateBandStatsFromBlob, lngToMercX, latToMercY } from '$routes/map/utils/file/aux.xml';
+import {
+	calculateGeoTransformFromBbox,
+	buildAuxXml,
+	calculateBandStatsFromBlob,
+	lngToMercX,
+	latToMercY
+} from '$routes/map/utils/file/aux.xml';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {
@@ -297,20 +303,18 @@ let _renderWorker: Worker | null = null;
 
 const getEncodeWorker = (): Worker => {
 	if (!_encodeWorker) {
-		_encodeWorker = new Worker(
-			new URL('./terrarium_encode.worker.ts', import.meta.url),
-			{ type: 'module' }
-		);
+		_encodeWorker = new Worker(new URL('./terrarium_encode.worker.ts', import.meta.url), {
+			type: 'module'
+		});
 	}
 	return _encodeWorker;
 };
 
 const getRenderWorker = (): Worker => {
 	if (!_renderWorker) {
-		_renderWorker = new Worker(
-			new URL('./terrarium_render.worker.ts', import.meta.url),
-			{ type: 'module' }
-		);
+		_renderWorker = new Worker(new URL('./terrarium_render.worker.ts', import.meta.url), {
+			type: 'module'
+		});
 	}
 	return _renderWorker;
 };
@@ -449,8 +453,7 @@ export const loadRasterData = async (
 
 				// メルカトルのアスペクト比で出力画像サイズを計算
 				const DEG2RAD = Math.PI / 180;
-				const latToMercY = (lat: number) =>
-					Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
+				const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
 				const mercYMax = latToMercY(bbox[3]);
 				const mercYMin = latToMercY(bbox[1]);
 				const lngRange = bbox[2] - bbox[0];

@@ -40,11 +40,9 @@ body {
 	/* --breakpoint-lg: 1024px; */
 	--breakpoint-lg: 768px;
 
-	
-    --cursor-pointer: pointer;
+	--cursor-pointer: pointer;
 	--cursor-move: move;
-    --cursor-default: url('/cursor_icon.png'), default;
-	
+	--cursor-default: url('/cursor_icon.png'), default;
 }
 
 @layer base {
@@ -218,8 +216,6 @@ body {
 	@apply c-no-drag-icon brightness-80 invert-100;
 }
 
-
-
 .cursor-pointer-override .maplibregl-canvas {
 	cursor: var(--cursor-pointer) !important;
 }
@@ -233,7 +229,6 @@ body {
 	cursor: var(--cursor-default) !important;
 }
 
-
 @utility cursor-pointer {
 	cursor: var(--cursor-pointer);
 }
@@ -246,4 +241,3 @@ body {
 @utility cursor-default {
 	cursor: var(--cursor-default);
 }
-

@@ -14,7 +14,14 @@ import type {
 
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 
-export type VectorFormatType = 'geojson' | 'mvt' | 'pmtiles' | 'mbtiles' | 'fgb' | 'geojsontile' | 'esri-feature';
+export type VectorFormatType =
+	| 'geojson'
+	| 'mvt'
+	| 'pmtiles'
+	| 'mbtiles'
+	| 'fgb'
+	| 'geojsontile'
+	| 'esri-feature';
 
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
 

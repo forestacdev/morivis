@@ -1,6 +1,7 @@
 <script lang="ts">
-	import * as yup from 'yup';
 	import { slide } from 'svelte/transition';
+	import * as yup from 'yup';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry, createDemRasterEntry } from '$routes/map/data/entries/raster';

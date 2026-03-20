@@ -2,7 +2,11 @@
  * ArcGIS Online WebMap からレイヤー情報とスタイルを取得するユーティリティ
  */
 
-import type { ColorMatchExpression, ColorSingleExpression, ColorsStyle } from '$routes/map/data/types/vector/style';
+import type {
+	ColorMatchExpression,
+	ColorSingleExpression,
+	ColorsStyle
+} from '$routes/map/data/types/vector/style';
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import type { ArcGisFeatureTypeInfo } from '$routes/map/utils/file/arcgis-feature';
@@ -196,9 +200,7 @@ export const rendererToColorsStyle = (
 		const categories: string[] | number[] = allNumeric
 			? infos.map((i) => Number(i.value))
 			: infos.map((i) => i.value);
-		const values = infos.map((i) =>
-			i.symbol.color ? rgbaToHex(i.symbol.color) : '#888888'
-		);
+		const values = infos.map((i) => (i.symbol.color ? rgbaToHex(i.symbol.color) : '#888888'));
 
 		const matchExpr: ColorMatchExpression = {
 			type: 'match',
@@ -212,7 +214,7 @@ export const rendererToColorsStyle = (
 		if (renderer.defaultSymbol?.color) {
 			matchExpr.noData = {
 				value: rgbaToHex(renderer.defaultSymbol.color),
-				pattern: isPolygon ? null : undefined as any
+				pattern: isPolygon ? null : (undefined as any)
 			};
 		}
 
@@ -247,7 +249,8 @@ export const typesToColorsStyle = (
 	if (types.length === 0) return null;
 
 	const allNumeric = types.every(
-		(t) => typeof t.id === 'number' || (typeof t.id === 'string' && t.id !== '' && !isNaN(Number(t.id)))
+		(t) =>
+			typeof t.id === 'number' || (typeof t.id === 'string' && t.id !== '' && !isNaN(Number(t.id)))
 	);
 	const categories: string[] | number[] = allNumeric
 		? types.map((t) => Number(t.id))

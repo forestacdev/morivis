@@ -77,16 +77,12 @@
 	const imageFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return (
-				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g)$/i.test(f.name)) ?? null
-			);
+			return Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g)$/i.test(f.name)) ?? null;
 		}
 		return dropFile;
 	});
 
-	const isPlainImage = $derived(
-		imageFile ? /\.(png|jpe?g)$/i.test(imageFile.name) : false
-	);
+	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g)$/i.test(imageFile.name) : false);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -127,9 +123,7 @@
 	};
 
 	const findWorldFile = (files: FileList): File | null => {
-		return (
-			Array.from(files).find((f) => /\.(tfw|tifw|tiffw|pgw|jgw|wld)$/i.test(f.name)) ?? null
-		);
+		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|pgw|jgw|wld)$/i.test(f.name)) ?? null;
 	};
 
 	const findAuxXmlFile = (files: FileList): File | null => {
@@ -548,12 +542,12 @@
 			showDataEntry = entry;
 			showDialogType = null;
 			dropFile = null;
-			showNotification(isPlainImage ? '画像ファイルを読み込みました' : 'GeoTIFFファイルを読み込みました', 'success');
-		} catch (e) {
 			showNotification(
-				e instanceof Error ? e.message : 'エンコードに失敗しました',
-				'error'
+				isPlainImage ? '画像ファイルを読み込みました' : 'GeoTIFFファイルを読み込みました',
+				'success'
 			);
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : 'エンコードに失敗しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);

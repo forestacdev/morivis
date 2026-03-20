@@ -13,7 +13,10 @@ export interface MapCaptureResult {
 /**
  * mercator投影でキャプチャしてboundsも取得する
  */
-const captureMercator = (map: MapLibreMap, originalProjection: ReturnType<MapLibreMap['getProjection']>): Promise<MapCaptureResult> =>
+const captureMercator = (
+	map: MapLibreMap,
+	originalProjection: ReturnType<MapLibreMap['getProjection']>
+): Promise<MapCaptureResult> =>
 	new Promise((resolve, reject) => {
 		map.once('render', async () => {
 			try {
@@ -84,7 +87,8 @@ export const getMapCanvasImage = async (map: MapLibreMap): Promise<MapCaptureRes
 
 	// globe等の場合、ユーザーに選択させる
 	const useMercator = await showConfirmDialog({
-		message: '現在の地図はグローブ表示です。メルカトル投影に切り替えてエクスポートすると、位置情報ファイル（aux.xml）が付属します。',
+		message:
+			'現在の地図はグローブ表示です。メルカトル投影に切り替えてエクスポートすると、位置情報ファイル（aux.xml）が付属します。',
 		confirmText: 'メルカトルで出力',
 		cancelText: 'そのまま出力'
 	});

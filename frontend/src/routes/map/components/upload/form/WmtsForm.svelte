@@ -169,7 +169,10 @@
 >
 	<form
 		class="flex w-full items-center p-2"
-		onsubmit={(e) => { e.preventDefault(); if (!isUrlDisabled && !$isProcessing) fetchLayers(); }}
+		onsubmit={(e) => {
+			e.preventDefault();
+			if (!isUrlDisabled && !$isProcessing) fetchLayers();
+		}}
 	>
 		<div class="grow">
 			<TextForm bind:value={forms.url} label="Capabilities URL" error={urlErrors.url} />

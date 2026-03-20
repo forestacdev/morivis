@@ -48,7 +48,9 @@
 	// PMTiles解析結果
 	let tileTypeLabel = $state<string>('');
 	let isVector = $state<boolean>(false);
-	let vectorLayers = $state<{ id: string; fields: Record<string, string>; geometryType?: string }[]>([]);
+	let vectorLayers = $state<
+		{ id: string; fields: Record<string, string>; geometryType?: string }[]
+	>([]);
 	let selectedLayerId = $state<string>('');
 	let analyzed = $state<boolean>(false);
 	let pmtilesBbox = $state<[number, number, number, number] | null>(null);
@@ -149,9 +151,17 @@
 			if (isVector) {
 				const metadata = (await pm.getMetadata()) as Record<string, unknown>;
 				const vlayers = metadata?.vector_layers as
-					| { id: string; fields: Record<string, string>; geometry_type?: string; minzoom?: number; maxzoom?: number }[]
+					| {
+							id: string;
+							fields: Record<string, string>;
+							geometry_type?: string;
+							minzoom?: number;
+							maxzoom?: number;
+					  }[]
 					| undefined;
-				const tilestats = metadata?.tilestats as { layers: { layer: string; geometry: string }[] } | undefined;
+				const tilestats = metadata?.tilestats as
+					| { layers: { layer: string; geometry: string }[] }
+					| undefined;
 
 				if (vlayers && Array.isArray(vlayers)) {
 					vectorLayers = vlayers.map((l) => ({
@@ -296,7 +306,8 @@
 					{#each vectorLayers as layer}
 						<option value={layer.id}>
 							{layer.id}
-							{#if layer.geometryType} [{layer.geometryType}]{/if}
+							{#if layer.geometryType}
+								[{layer.geometryType}]{/if}
 							{#if Object.keys(layer.fields).length > 0}
 								({Object.keys(layer.fields).length}フィールド)
 							{/if}

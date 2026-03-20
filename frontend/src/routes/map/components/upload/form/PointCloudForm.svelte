@@ -157,12 +157,12 @@
 			const col = data.attributes?.COLOR_0?.value;
 			if (col) resolvedColors = col instanceof Uint8Array ? col : new Uint8Array(col);
 
-			showNotification(`EPSG:${epsgCode} で座標変換しました（${pointCount?.toLocaleString()}点）`, 'success');
-		} catch (e) {
 			showNotification(
-				e instanceof Error ? e.message : '座標変換に失敗しました',
-				'error'
+				`EPSG:${epsgCode} で座標変換しました（${pointCount?.toLocaleString()}点）`,
+				'success'
 			);
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : '座標変換に失敗しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -244,12 +244,16 @@
 			{/if}
 			{#if resolvedBbox}
 				<div>
-					範囲: [{resolvedBbox[0].toFixed(6)}, {resolvedBbox[1].toFixed(6)}, {resolvedBbox[2].toFixed(6)}, {resolvedBbox[3].toFixed(6)}]
+					範囲: [{resolvedBbox[0].toFixed(6)}, {resolvedBbox[1].toFixed(6)}, {resolvedBbox[2].toFixed(
+						6
+					)}, {resolvedBbox[3].toFixed(6)}]
 				</div>
 			{:else if rawBbox && needsTransform}
 				<div class="text-yellow-400">座標系が不明です。投影法を選択してください。</div>
 				<div class="text-xs text-gray-500">
-					元の範囲: [{rawBbox[0].toFixed(2)}, {rawBbox[1].toFixed(2)}, {rawBbox[2].toFixed(2)}, {rawBbox[3].toFixed(2)}]
+					元の範囲: [{rawBbox[0].toFixed(2)}, {rawBbox[1].toFixed(2)}, {rawBbox[2].toFixed(2)}, {rawBbox[3].toFixed(
+						2
+					)}]
 				</div>
 			{/if}
 		</div>

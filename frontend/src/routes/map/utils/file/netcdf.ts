@@ -43,7 +43,9 @@ const findCoordVar = (variables: NetCDFVariableInfo[], candidates: string[]): st
 /**
  * NetCDFファイルを解析してメタデータを取得
  */
-export const parseNetCDF = (arrayBuffer: ArrayBuffer): { reader: NetCDFReader; info: NetCDFInfo } => {
+export const parseNetCDF = (
+	arrayBuffer: ArrayBuffer
+): { reader: NetCDFReader; info: NetCDFInfo } => {
 	const reader = new NetCDFReader(arrayBuffer);
 
 	const dimensions: NetCDFDimensionInfo[] = reader.dimensions.map((d: any) => ({
@@ -184,7 +186,9 @@ export const extractRasterData = (
 					height = latSize;
 					width = lonSize;
 				}
-			} catch { /* ignore */ }
+			} catch {
+				/* ignore */
+			}
 		}
 		// それでもダメなら正方形を推定
 		if (width === 0 || height === 0) {

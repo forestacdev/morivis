@@ -4,17 +4,16 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import {
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT,
+		WEB_MERCATOR_MIN_LNG,
+		WEB_MERCATOR_MAX_LNG
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import {
-		parseNetCDF,
-		extractRasterData,
-		getDimensionValues,
-		type NetCDFInfo,
-		type NetCDFVariableInfo
-	} from '$routes/map/utils/file/netcdf';
 	import {
 		GeoTiffCache,
 		encodeAllBandsToTerrarium,
@@ -23,11 +22,12 @@
 		type RasterBands
 	} from '$routes/map/utils/file/geotiff';
 	import {
-		WEB_MERCATOR_MIN_LAT,
-		WEB_MERCATOR_MAX_LAT,
-		WEB_MERCATOR_MIN_LNG,
-		WEB_MERCATOR_MAX_LNG
-	} from '$routes/map/data/entries/_meta_data/_bounds';
+		parseNetCDF,
+		extractRasterData,
+		getDimensionValues,
+		type NetCDFInfo,
+		type NetCDFVariableInfo
+	} from '$routes/map/utils/file/netcdf';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -51,7 +51,9 @@
 	let analyzed = $state(false);
 
 	// 3D以上の次元のスライス選択
-	let extraDimensions = $state<{ name: string; size: number; values: number[] | string[] | null }[]>([]);
+	let extraDimensions = $state<
+		{ name: string; size: number; values: number[] | string[] | null }[]
+	>([]);
 	let sliceIndices = $state<Record<string, number>>({});
 
 	const ncFile = $derived.by(() => {
@@ -92,10 +94,7 @@
 				updateExtraDimensions(info.rasterVariables[0]);
 			}
 		} catch (e) {
-			showNotification(
-				e instanceof Error ? e.message : 'NetCDFの解析に失敗しました',
-				'error'
-			);
+			showNotification(e instanceof Error ? e.message : 'NetCDFの解析に失敗しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -145,10 +144,24 @@
 				sliceIndices
 			);
 
-			console.log('[NetCDF] variable:', selectedVariable, 'width:', width, 'height:', height, 'data length:', data.length, 'bbox:', bbox);
+			console.log(
+				'[NetCDF] variable:',
+				selectedVariable,
+				'width:',
+				width,
+				'height:',
+				height,
+				'data length:',
+				data.length,
+				'bbox:',
+				bbox
+			);
 
 			if (width === 0 || height === 0) {
-				showNotification(`データサイズが不正です (${width}x${height})。変数の次元構造を確認してください。`, 'error');
+				showNotification(
+					`データサイズが不正です (${width}x${height})。変数の次元構造を確認してください。`,
+					'error'
+				);
 				return;
 			}
 
@@ -229,10 +242,7 @@
 				'success'
 			);
 		} catch (e) {
-			showNotification(
-				e instanceof Error ? e.message : 'データの変換に失敗しました',
-				'error'
-			);
+			showNotification(e instanceof Error ? e.message : 'データの変換に失敗しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -296,9 +306,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="w-full px-2 text-sm text-red-400">
-				2D以上の変数が見つかりません
-			</div>
+			<div class="w-full px-2 text-sm text-red-400">2D以上の変数が見つかりません</div>
 		{/if}
 
 		<!-- 追加次元のスライス選択（time等） -->

@@ -124,7 +124,19 @@ const uploadBandTextures = (
 
 	// 各バンドの ImageBitmap をスライスにアップロード
 	for (let i = 0; i < images.length; i++) {
-		gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
+		gl.texSubImage3D(
+			gl.TEXTURE_2D_ARRAY,
+			0,
+			0,
+			0,
+			i,
+			width,
+			height,
+			1,
+			gl.RGBA,
+			gl.UNSIGNED_BYTE,
+			images[i]
+		);
 	}
 
 	gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -180,8 +192,8 @@ interface RenderMessage {
 	// 4326→メルカトル再投影
 	reproject4326?: boolean;
 	bboxDisplay?: [number, number, number, number]; // 表示側bbox（クリップ済み）度数
-	bboxSource?: [number, number, number, number];  // ソーステクスチャのbbox（元の範囲）度数
-	outputWidth?: number;   // 再投影時の出力サイズ
+	bboxSource?: [number, number, number, number]; // ソーステクスチャのbbox（元の範囲）度数
+	outputWidth?: number; // 再投影時の出力サイズ
 	outputHeight?: number;
 	// エントリ削除
 	action?: 'release';
@@ -242,7 +254,10 @@ self.onmessage = async (e) => {
 		if (msg.bboxDisplay) {
 			gl.uniform4f(
 				gl.getUniformLocation(program, 'u_bbox_display'),
-				msg.bboxDisplay[0], msg.bboxDisplay[1], msg.bboxDisplay[2], msg.bboxDisplay[3]
+				msg.bboxDisplay[0],
+				msg.bboxDisplay[1],
+				msg.bboxDisplay[2],
+				msg.bboxDisplay[3]
 			);
 		} else {
 			gl.uniform4f(gl.getUniformLocation(program, 'u_bbox_display'), 0, 0, 0, 0);
@@ -250,7 +265,10 @@ self.onmessage = async (e) => {
 		if (msg.bboxSource) {
 			gl.uniform4f(
 				gl.getUniformLocation(program, 'u_bbox_source'),
-				msg.bboxSource[0], msg.bboxSource[1], msg.bboxSource[2], msg.bboxSource[3]
+				msg.bboxSource[0],
+				msg.bboxSource[1],
+				msg.bboxSource[2],
+				msg.bboxSource[3]
 			);
 		} else {
 			gl.uniform4f(gl.getUniformLocation(program, 'u_bbox_source'), 0, 0, 0, 0);

@@ -132,10 +132,13 @@
 						const geomType = feature.geometry?.type;
 						if (!dt || !geomType) continue;
 						const key =
-							geomType === 'Point' || geomType === 'MultiPoint' ? 'Point'
-							: geomType === 'LineString' || geomType === 'MultiLineString' ? 'LineString'
-							: geomType === 'Polygon' || geomType === 'MultiPolygon' ? 'Polygon'
-							: geomType;
+							geomType === 'Point' || geomType === 'MultiPoint'
+								? 'Point'
+								: geomType === 'LineString' || geomType === 'MultiLineString'
+									? 'LineString'
+									: geomType === 'Polygon' || geomType === 'MultiPolygon'
+										? 'Polygon'
+										: geomType;
 						if (!dtMap[key]) dtMap[key] = new Set();
 						dtMap[key].add(dt);
 					}
@@ -299,10 +302,10 @@
 			</div>
 			<div class="flex flex-col gap-1">
 				{#each [...classNamesByGeometryType[selectedGeometryType]].sort((a, b) => {
-				const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
-				const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
-				return codeA - codeB;
-			}) as className}
+					const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
+					const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
+					return codeA - codeB;
+				}) as className}
 					<Checkbox
 						label={classCodeMap[className]
 							? `${className} (${classCodeMap[className]})`

@@ -3,14 +3,14 @@
 
 	import type { ContextMenuState } from '../types/ui';
 
+	import { lonLatToAddress } from '$routes/map/api/address';
+	import { getGSIGeology } from '$routes/map/api/gbank';
 	import { getGoogleMapLink, getGoogleStreetViewLink } from '$routes/map/api/google';
 	import { gsiGetElevation } from '$routes/map/api/gsi';
 	import { getOsmLink } from '$routes/map/api/osm';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { lonLatToAddress } from '$routes/map/api/address';
-	import { getGSIGeology } from '$routes/map/api/gbank';
 	let { contextMenuState = $bindable() }: { contextMenuState: ContextMenuState | null } = $props();
 
 	let containerRef = $state<HTMLElement>();

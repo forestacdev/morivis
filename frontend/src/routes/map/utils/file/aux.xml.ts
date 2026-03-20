@@ -203,7 +203,8 @@ export const calculateBandStatsFromBlob = async (blob: Blob): Promise<BandStats[
 const DEG2RAD = Math.PI / 180;
 const R = 6378137;
 export const lngToMercX = (lng: number) => R * lng * DEG2RAD;
-export const latToMercY = (lat: number) => R * Math.log(Math.tan(Math.PI / 4 + (lat * DEG2RAD) / 2));
+export const latToMercY = (lat: number) =>
+	R * Math.log(Math.tan(Math.PI / 4 + (lat * DEG2RAD) / 2));
 
 /**
  * GeoTransformパラメータを計算（回転対応、メルカトル座標）

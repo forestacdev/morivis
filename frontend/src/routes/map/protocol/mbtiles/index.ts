@@ -46,10 +46,7 @@ export interface MBTilesMetadata {
 	description?: string;
 }
 
-export const registerMBTiles = async (
-	entryId: string,
-	file: File
-): Promise<MBTilesMetadata> => {
+export const registerMBTiles = async (entryId: string, file: File): Promise<MBTilesMetadata> => {
 	const SQL = await getSql();
 	const arrayBuffer = await file.arrayBuffer();
 	const db = new SQL.Database(new Uint8Array(arrayBuffer));

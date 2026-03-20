@@ -101,10 +101,7 @@
 			const typeLabel = meta.isVector ? 'ベクター (PBF)' : `ラスター (${meta.format})`;
 			showNotification(`MBTiles: ${typeLabel}`, 'success');
 		} catch (e) {
-			showNotification(
-				e instanceof Error ? e.message : 'MBTilesの解析に失敗しました',
-				'error'
-			);
+			showNotification(e instanceof Error ? e.message : 'MBTilesの解析に失敗しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -174,7 +171,9 @@
 			<div>タイプ: {metadata.isVector ? 'ベクター (PBF)' : `ラスター (${metadata.format})`}</div>
 			{#if metadata.bounds}
 				<div>
-					範囲: [{metadata.bounds[0].toFixed(4)}, {metadata.bounds[1].toFixed(4)}, {metadata.bounds[2].toFixed(4)}, {metadata.bounds[3].toFixed(4)}]
+					範囲: [{metadata.bounds[0].toFixed(4)}, {metadata.bounds[1].toFixed(4)}, {metadata.bounds[2].toFixed(
+						4
+					)}, {metadata.bounds[3].toFixed(4)}]
 				</div>
 			{/if}
 			{#if metadata.minZoom !== undefined && metadata.maxZoom !== undefined}
@@ -186,7 +185,9 @@
 			{#if metadata.vectorLayers.length > 0}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
-						<label for="mbtiles-layer-select" class="text-sm text-gray-300">ソースレイヤーを選択</label>
+						<label for="mbtiles-layer-select" class="text-sm text-gray-300"
+							>ソースレイヤーを選択</label
+						>
 						<select
 							id="mbtiles-layer-select"
 							bind:value={selectedLayerId}
@@ -205,7 +206,8 @@
 							{#each metadata.vectorLayers as layer}
 								<option value={layer.id}>
 									{layer.id}
-									{#if layer.geometryType} [{layer.geometryType}]{/if}
+									{#if layer.geometryType}
+										[{layer.geometryType}]{/if}
 									{#if Object.keys(layer.fields).length > 0}
 										({Object.keys(layer.fields).length}フィールド)
 									{/if}
