@@ -216,11 +216,29 @@ class WorkerProtocol {
 	};
 }
 
-const worker = new Worker(
-	new URL('./protocol_esri_feature.worker.ts', import.meta.url),
-	{ type: 'module' }
-);
-const workerProtocol = new WorkerProtocol(worker);
+let _worker: Worker | null = null;
+let _workerProtocol: WorkerProtocol | null = null;
+
+const getWorkerProtocol = (): WorkerProtocol => {
+	if (!_workerProtocol) {
+		_worker = new Worker(
+			new URL('./protocol_esri_feature.worker.ts', import.meta.url),
+			{ type: 'module' }
+		);
+		_workerProtocol = new WorkerProtocol(_worker);
+	}
+	return _workerProtocol;
+};
+
+/** Workerを停止してキャッシュをクリアする */
+export const terminateEsriFeatureWorker = () => {
+	if (_worker) {
+		_worker.terminate();
+		_worker = null;
+		_workerProtocol = null;
+	}
+	tileCache.clear();
+};
 
 export const esriFeatureProtocol = (protocolName: 'esri-feature') => {
 	return {
@@ -228,7 +246,7 @@ export const esriFeatureProtocol = (protocolName: 'esri-feature') => {
 		request: (params: { url: string }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
-			return workerProtocol.request(url, abortController);
+			return getWorkerProtocol().request(url, abortController);
 		}
 	};
 };

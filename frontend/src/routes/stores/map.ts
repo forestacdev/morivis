@@ -42,7 +42,10 @@ import {
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
-import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
+import {
+	esriFeatureProtocol,
+	terminateEsriFeatureWorker
+} from '$routes/map/protocol/vector/esri-feature';
 import { isPointInBbox } from '$routes/map/utils/map';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
@@ -56,14 +59,31 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 const webglProt = demProtocol('webgl');
 maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
-const terrainProt = terrainProtocol('terrain');
-maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
+// NOTE: 停止しているプロトコル
+// const terrainProt = terrainProtocol('terrain');
+// maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
 
 const geojsonProt = geojsonProtocol('geojson');
 maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
 
+// esri-featureプロトコルは必要時に動的に登録/解除
 const esriFeatureProt = esriFeatureProtocol('esri-feature');
-maplibregl.addProtocol(esriFeatureProt.protocolName, esriFeatureProt.request);
+let _esriProtocolRegistered = false;
+
+const ensureEsriProtocol = () => {
+	if (!_esriProtocolRegistered) {
+		maplibregl.addProtocol(esriFeatureProt.protocolName, esriFeatureProt.request);
+		_esriProtocolRegistered = true;
+	}
+};
+
+const releaseEsriProtocol = () => {
+	if (_esriProtocolRegistered) {
+		maplibregl.removeProtocol(esriFeatureProt.protocolName);
+		terminateEsriFeatureWorker();
+		_esriProtocolRegistered = false;
+	}
+};
 
 if (import.meta.env.DEV) {
 	const tileIndex = tileIndexProtocol('tile_index');
@@ -790,15 +810,19 @@ const createMapStore = () => {
 		const targetW = bounds[2] - bounds[0];
 		const targetH = bounds[3] - bounds[1];
 		const targetArea = targetW * targetH;
-		const scaleRatio = currentArea > 0 && targetArea > 0
-			? Math.max(currentArea / targetArea, targetArea / currentArea)
-			: 1;
+		const scaleRatio =
+			currentArea > 0 && targetArea > 0
+				? Math.max(currentArea / targetArea, targetArea / currentArea)
+				: 1;
 
 		// 距離ベース: 近い→短い、遠い→長い
 		const distDuration = dist * 100;
 		// スケール差ベース: 比率が大きいほど長く（対数スケール）
 		const scaleDuration = Math.log2(Math.max(1, scaleRatio)) * 120;
-		const duration = Math.max(300, Math.min(MAP_ANIMATION_DURATION, Math.max(distDuration, scaleDuration)));
+		const duration = Math.max(
+			300,
+			Math.min(MAP_ANIMATION_DURATION, Math.max(distDuration, scaleDuration))
+		);
 
 		if (_entry.metaData.center) {
 			map.easeTo({
@@ -1176,7 +1200,11 @@ const createMapStore = () => {
 		onInitialized: createEventSubscriber(initEvent), // 初期化イベントの購読用メソッド
 		onStyleLoad: createEventSubscriber(isStyleLoadEvent), // スタイルロードイベントの購読用メソッド
 		onStateChange: state.subscribe, // マップの状態を購読するメソッド
-		onTerrain: createEventSubscriber(onTerrainEvent) // 地形イベントの購読用メソッド
+		onTerrain: createEventSubscriber(onTerrainEvent), // 地形イベントの購読用メソッド
+
+		// プロトコル管理
+		ensureEsriProtocol,
+		releaseEsriProtocol
 	};
 };
 

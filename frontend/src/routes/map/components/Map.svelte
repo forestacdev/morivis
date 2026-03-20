@@ -314,8 +314,6 @@
 			exaggeration: 1
 		};
 
-		// const terrainSources = await createTerrainSources(demEntries, 'dem_5a');
-
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -324,16 +322,6 @@
 				type: $isGlobe ? 'globe' : 'mercator'
 			},
 			sources: {
-				// terrain: {
-				// 	type: 'raster-dem',
-				// 	tiles: [
-				// 		'terrain://https://tiles.gsj.jp/tiles/elev/land/{z}/{y}/{x}.png?entryId=dem_land&formatType=image&demType=gsi&x={x}&y={y}&z={z}'
-				// 	],
-				// 	maxzoom: 15,
-				// 	minzoom: 1,
-				// 	tileSize: 256,
-				// 	attribution: '国土地理院'
-				// },
 				terrain: {
 					type: 'raster-dem',
 					tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
@@ -527,6 +515,19 @@
 	// マップのスタイルの更新
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
+
+		// esri-featureプロトコルの動的管理
+		const isEsriEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'esri-feature';
+		const hasEsriLayer = entries.some(isEsriEntry) || (showDataEntry && isEsriEntry(showDataEntry));
+
+		if (hasEsriLayer) {
+			mapStore.ensureEsriProtocol();
+		} else {
+			mapStore.releaseEsriProtocol();
+		}
 
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
 
