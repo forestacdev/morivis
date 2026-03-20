@@ -28,7 +28,7 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 		if (response.ok) {
 			const data: Address = await response.json();
 			const address = addressCodeToAddress(data.results.muniCd);
-			return `${address}${data.results.lv01Nm === '－' ? '' : data.results.lv01Nm}`;
+			return `${address}${data.results.lv01Nm === '−' ? '' : data.results.lv01Nm}`;
 		} else {
 			throw new Error('Failed to fetch');
 		}

@@ -19,7 +19,7 @@ interface GSISeamless {
  * @param lat 緯度
  * @returns 地質情報
  */
-export const getGSISeamless = async (lng: number, lat: number): Promise<GSISeamless> => {
+export const getGSIGeology = async (lng: number, lat: number): Promise<GSISeamless> => {
 	const url = `https://gbank.gsj.jp/seamless/v2/api/1.3.1/legend.json?point=${lat},${lng}`;
 	try {
 		const response = await fetch(url);
