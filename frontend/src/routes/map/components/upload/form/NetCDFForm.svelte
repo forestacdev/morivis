@@ -140,31 +140,53 @@
 		height: number,
 		dataMin: number,
 		dataMax: number,
-		nodataVal: number | null
+		nodataVal: number | null,
+		dataBbox: [number, number, number, number]
 	): string => {
-		const size = Math.min(width, height);
-		const sx = Math.floor((width - size) / 2);
-		const sy = Math.floor((height - size) / 2);
+		// メルカトルのアスペクト比を計算
+		const DEG2RAD = Math.PI / 180;
+		const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
+		const mercYMin = latToMercY(dataBbox[1]);
+		const mercYMax = latToMercY(dataBbox[3]);
+		const lngRange = dataBbox[2] - dataBbox[0];
+		const mercYRange = mercYMax - mercYMin;
+		const mercAspect = mercYRange / (lngRange * DEG2RAD);
 
 		const thumbSize = 512;
-		const canvas = new OffscreenCanvas(thumbSize, thumbSize);
+		let thumbW: number, thumbH: number;
+		if (mercAspect > 1) {
+			thumbH = thumbSize;
+			thumbW = Math.round(thumbSize / mercAspect);
+		} else {
+			thumbW = thumbSize;
+			thumbH = Math.round(thumbSize * mercAspect);
+		}
+
+		const canvas = new OffscreenCanvas(thumbW, thumbH);
 		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbSize, thumbSize);
+		const imgData = ctx.createImageData(thumbW, thumbH);
 		const pixels = imgData.data;
 
-		const range = dataMax - dataMin;
-		const invRange = range !== 0 ? 255 / range : 0;
+		const invRange = dataMax !== dataMin ? 255 / (dataMax - dataMin) : 0;
 
-		for (let ty = 0; ty < thumbSize; ty++) {
-			for (let tx = 0; tx < thumbSize; tx++) {
-				const srcX = sx + Math.floor((tx * size) / thumbSize);
-				const srcY = sy + Math.floor((ty * size) / thumbSize);
-				const srcIdx = srcY * width + srcX;
-				const dstIdx = (ty * thumbSize + tx) * 4;
+		for (let ty = 0; ty < thumbH; ty++) {
+			// サムネイルY → メルカトルY → 緯度 → 元データのY
+			const mercY = mercYMax - (ty / thumbH) * mercYRange;
+			const lat = (2 * Math.atan(Math.exp(mercY)) - Math.PI / 2) / DEG2RAD;
+			const srcY = Math.floor(((dataBbox[3] - lat) / (dataBbox[3] - dataBbox[1])) * height);
 
-				const val = bandData[srcIdx];
+			for (let tx = 0; tx < thumbW; tx++) {
+				const srcX = Math.floor((tx / thumbW) * width);
+				const dstIdx = (ty * thumbW + tx) * 4;
+
+				if (srcX < 0 || srcX >= width || srcY < 0 || srcY >= height) {
+					pixels[dstIdx + 3] = 0;
+					continue;
+				}
+
+				const val = bandData[srcY * width + srcX];
 				if (nodataVal !== null && val === nodataVal) {
-					pixels[dstIdx + 3] = 0; // 透明
+					pixels[dstIdx + 3] = 0;
 				} else {
 					const normalized = Math.max(0, Math.min(255, (val - dataMin) * invRange));
 					pixels[dstIdx] = normalized;
@@ -177,8 +199,8 @@
 
 		ctx.putImageData(imgData, 0, 0);
 		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbSize;
-		tempCanvas.height = thumbSize;
+		tempCanvas.width = thumbW;
+		tempCanvas.height = thumbH;
 		const tempCtx = tempCanvas.getContext('2d')!;
 		tempCtx.putImageData(imgData, 0, 0);
 		return tempCanvas.toDataURL('image/png');
@@ -224,16 +246,18 @@
 			const bands: RasterBands = [data];
 			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
-			// サムネイル画像を生成
-			const mapImage = generateThumbnail(data, width, height, ranges[0].min, ranges[0].max, nodata);
+			// NetCDFの座標はWGS84（4326）
+			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
+
+			// サムネイル画像を生成（メルカトル補正）
+			const mapImage = generateThumbnail(data, width, height, ranges[0].min, ranges[0].max, nodata, rawBbox);
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, 1);
 
-			// NetCDFの座標はWGS84（4326）→ WebMercator範囲にクリップして4326再投影を有効化
-			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
+			// WebMercator範囲にクリップして4326再投影を有効化
 			const resolvedBbox: [number, number, number, number] = [
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[0])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[1])),

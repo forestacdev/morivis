@@ -39,7 +39,8 @@
 		{ type: 'wmts', label: 'WMS/WMTS' },
 		{ type: 'arcgis', label: 'ArcGIS' },
 		{ type: 'pmtiles', label: 'PMTiles' },
-		{ type: '3dtiles', label: '3D Tiles' }
+		{ type: '3dtiles', label: '3D Tiles' },
+		{ type: 'demxml', label: '基盤地図DEM' }
 	];
 	let isDragover = $state(false);
 

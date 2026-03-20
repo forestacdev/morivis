@@ -68,6 +68,7 @@ export type DialogType =
 	| 'pointcloud'
 	| 'mbtiles'
 	| 'netcdf'
+	| 'demxml'
 	| null;
 
 /** ファイル選択/ラベルに表示する主要ファイル拡張子 */
@@ -78,9 +79,11 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.gpkg',
 	'.gpx',
 	'.shp',
+	'.xml',
 	'.dxf',
 	'.dm',
 	'.sim',
+	'.mbtiles',
 	'.pmtiles',
 	'.glb',
 	'.tif',
@@ -91,9 +94,11 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.h5',
 	'.las',
 	'.laz',
-	'.mbtiles',
+
 	'.nc',
-	'.nc4'
+	'.nc4',
+
+	'.zip'
 ] as const;
 
 /** input[accept] 用（主要ファイル + 補助ファイルも受け入れる） */
