@@ -769,23 +769,53 @@ const createMapStore = () => {
 	const focusLayer = async (_entry: GeoDataEntry) => {
 		if (!map || !isMapValid(map)) return;
 
+		// 現在の中心とターゲットの距離に応じてdurationを調整
+		const currentCenter = map.getCenter();
+		const bounds = _entry.metaData.bounds;
+		const targetLng = _entry.metaData.center
+			? _entry.metaData.center[0]
+			: (bounds[0] + bounds[2]) / 2;
+		const targetLat = _entry.metaData.center
+			? _entry.metaData.center[1]
+			: (bounds[1] + bounds[3]) / 2;
+		const dLng = currentCenter.lng - targetLng;
+		const dLat = currentCenter.lat - targetLat;
+		const dist = Math.sqrt(dLng * dLng + dLat * dLat);
+
+		// 現在のビューポートとターゲットbboxのスケール差
+		const currentBounds = map.getBounds();
+		const currentW = currentBounds.getEast() - currentBounds.getWest();
+		const currentH = currentBounds.getNorth() - currentBounds.getSouth();
+		const currentArea = currentW * currentH;
+		const targetW = bounds[2] - bounds[0];
+		const targetH = bounds[3] - bounds[1];
+		const targetArea = targetW * targetH;
+		const scaleRatio = currentArea > 0 && targetArea > 0
+			? Math.max(currentArea / targetArea, targetArea / currentArea)
+			: 1;
+
+		// 距離ベース: 近い→短い、遠い→長い
+		const distDuration = dist * 100;
+		// スケール差ベース: 比率が大きいほど長く（対数スケール）
+		const scaleDuration = Math.log2(Math.max(1, scaleRatio)) * 120;
+		const duration = Math.max(300, Math.min(MAP_ANIMATION_DURATION, Math.max(distDuration, scaleDuration)));
+
 		if (_entry.metaData.center) {
-			// 中心座標が指定されている場合は、中心にズーム
 			map.easeTo({
 				center: _entry.metaData.center,
 				zoom:
 					('minZoom' in _entry.style ? _entry.style.minZoom : null) ??
-					_entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
+					_entry.metaData.minZoom + 1.5,
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				duration: MAP_ANIMATION_DURATION,
+				duration,
 				easing: MAP_EASING
 			});
 		} else {
-			map.fitBounds(_entry.metaData.bounds, {
+			map.fitBounds(bounds, {
 				bearing: map.getBearing(),
 				padding: -100,
-				duration: MAP_ANIMATION_DURATION,
+				duration,
 				easing: MAP_EASING
 			});
 		}

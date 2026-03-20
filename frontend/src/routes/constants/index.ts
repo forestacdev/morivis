@@ -41,7 +41,7 @@ export const HIGHLIGHT_LAYER_COLOR = '#00d4fe';
 
 /** マップアニメーションのデフォルト設定 */
 export const MAP_ANIMATION_DURATION = 1250;
-export const MAP_EASING = (t: number) => t * (2 - t);
+export const MAP_EASING = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
 export interface MapPosition {
 	center: [number, number];
