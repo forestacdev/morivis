@@ -315,6 +315,26 @@ export const createVectorTileEntry = (
 	}
 };
 
+export const createGeoJsonTileEntry = (
+	name: string,
+	url: string,
+	entryGeometryType: VectorEntryGeometryType,
+	color: string = getRandomColor(),
+	options?: { bounds?: [number, number, number, number] }
+): VectorEntry<TileMetaData> | undefined => {
+	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	if (!entry) return undefined;
+
+	return {
+		...entry,
+		id: 'geojsontile_' + crypto.randomUUID(),
+		format: {
+			...entry.format,
+			type: 'geojsontile' as const
+		}
+	} as VectorEntry<TileMetaData>;
+};
+
 export const createVectorPmtilesEntry = (
 	name: string,
 	url: string,
