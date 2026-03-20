@@ -67,7 +67,7 @@ export type DialogType =
 	| 'arcgis'
 	| null;
 
-/** ドロップ/ファイル選択で受け付ける拡張子 */
+/** ファイル選択/ラベルに表示する主要ファイル拡張子 */
 export const SUPPORTED_FILE_EXTENSIONS = [
 	'.csv',
 	'.geojson',
@@ -75,9 +75,6 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.gpkg',
 	'.gpx',
 	'.shp',
-	'.dbf',
-	'.shx',
-	'.prj',
 	'.dxf',
 	'.dm',
 	'.sim',
@@ -85,17 +82,18 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.glb',
 	'.tif',
 	'.tiff',
-	'.tfw',
 	'.png',
 	'.jpg',
 	'.jpeg',
-	'.pgw',
-	'.jgw',
 	'.h5'
 ] as const;
 
-/** input[accept] 用のカンマ区切り文字列 */
-export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS.join(',');
+/** input[accept] 用（主要ファイル + 補助ファイルも受け入れる） */
+export const SUPPORTED_FILE_ACCEPT = [
+	...SUPPORTED_FILE_EXTENSIONS,
+	'.dbf', '.shx', '.prj',       // Shapefile補助
+	'.tfw', '.pgw', '.jgw', '.wld' // ワールドファイル
+].join(',');
 
 /** 表示ラベル用のスペース区切り文字列 */
 export const SUPPORTED_FILE_LABEL = SUPPORTED_FILE_EXTENSIONS.join(' ');

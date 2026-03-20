@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_LABEL, type DialogType } from '$routes/map/types';
+	import {
+		SUPPORTED_FILE_ACCEPT,
+		SUPPORTED_FILE_EXTENSIONS,
+		SUPPORTED_FILE_LABEL,
+		type DialogType
+	} from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -74,7 +79,12 @@
 	>
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
-			<span class="">{SUPPORTED_FILE_LABEL}</span>
+			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
+				{#each SUPPORTED_FILE_EXTENSIONS as label}
+					<span class="bg-sub rounded-full p-1 px-3 text-xs">{label}</span>
+				{/each}
+			</div>
+
 			<label
 				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
 			>
@@ -88,7 +98,7 @@
 				/>
 			</label>
 		</div>
-		<div class="flex items-center justify-center gap-4">
+		<div class="flex flex-wrap items-center justify-center gap-4">
 			{#each urlDialogs as dialog}
 				<button
 					onclick={() => showUploadDialog(dialog.type)}

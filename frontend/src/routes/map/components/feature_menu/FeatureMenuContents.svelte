@@ -171,7 +171,7 @@
 	 * - iNaturalistNameKey: iNaturalist APIからの画像
 	 */
 	const getImageData = async (): Promise<ImageData> => {
-		const delay = new Promise((resolve) => setTimeout(resolve, 200));
+		const delay = new Promise((resolve) => setTimeout(resolve, 300));
 
 		const fetchImage = async (): Promise<ImageData> => {
 			// 1. propDataからの画像
