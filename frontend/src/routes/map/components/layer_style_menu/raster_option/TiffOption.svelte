@@ -20,8 +20,6 @@
 	];
 </script>
 
-<RangeSlider label="不透明度" bind:value={style.opacity} min={0} max={1} step={0.01} />
-
 <TiffStyleModePulldownBox bind:isMode={style.visualization.mode} />
 
 {#if style.visualization.mode === 'single'}

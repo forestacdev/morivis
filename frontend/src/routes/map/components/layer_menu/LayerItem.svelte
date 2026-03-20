@@ -521,7 +521,9 @@
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
 						<button
-							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							onclick={() => {
+								layerEntry.style.visible = !layerEntry.style.visible;
+							}}
 							class="cursor-pointer"
 						>
 							<Icon
