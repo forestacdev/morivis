@@ -198,8 +198,9 @@ export class GeoTiffCache {
 		this.textureTransferredSet.clear();
 		this.is4326Set.clear();
 		this.rawBboxCache.clear();
-		// render worker にテクスチャ解放を通知
-		terrariumRenderWorker.postMessage({ action: 'release', entryId: '__all__' });
+		// Workerを停止（テクスチャも解放される）
+		terminateEncodeWorker();
+		terminateRenderWorker();
 	}
 
 	static release(key: string): void {
@@ -212,7 +213,10 @@ export class GeoTiffCache {
 		this.textureTransferredSet.delete(key);
 		this.is4326Set.delete(key);
 		this.rawBboxCache.delete(key);
-		terrariumRenderWorker.postMessage({ action: 'release', entryId: key });
+		// Workerが存在する場合のみテクスチャ解放を通知
+		if (_renderWorker) {
+			_renderWorker.postMessage({ action: 'release', entryId: key });
+		}
 	}
 }
 
@@ -282,17 +286,46 @@ export const parseRasterBands = (rasterData: ReadRasterResult): RasterBands => {
 	return [rasterData as TypedArray];
 };
 
-// --- Workers ---
+// --- Workers (遅延初期化) ---
 
-const terrariumEncodeWorker = new Worker(
-	new URL('./terrarium_encode.worker.ts', import.meta.url),
-	{ type: 'module' }
-);
+let _encodeWorker: Worker | null = null;
+let _renderWorker: Worker | null = null;
 
-const terrariumRenderWorker = new Worker(
-	new URL('./terrarium_render.worker.ts', import.meta.url),
-	{ type: 'module' }
-);
+const getEncodeWorker = (): Worker => {
+	if (!_encodeWorker) {
+		_encodeWorker = new Worker(
+			new URL('./terrarium_encode.worker.ts', import.meta.url),
+			{ type: 'module' }
+		);
+	}
+	return _encodeWorker;
+};
+
+const getRenderWorker = (): Worker => {
+	if (!_renderWorker) {
+		_renderWorker = new Worker(
+			new URL('./terrarium_render.worker.ts', import.meta.url),
+			{ type: 'module' }
+		);
+	}
+	return _renderWorker;
+};
+
+/** エンコードWorkerを停止する（全エンコード完了後に呼ぶ） */
+export const terminateEncodeWorker = () => {
+	if (_encodeWorker) {
+		_encodeWorker.terminate();
+		_encodeWorker = null;
+	}
+};
+
+/** レンダーWorkerを停止する（全TIFFエントリ解放後に呼ぶ） */
+export const terminateRenderWorker = () => {
+	if (_renderWorker) {
+		_renderWorker.terminate();
+		_renderWorker = null;
+	}
+};
 
 const colorMapManager = new ColorMapManager();
 
@@ -310,7 +343,7 @@ export const encodeBandToTerrarium = (
 	dataMax: number
 ): Promise<Blob> =>
 	new Promise((resolve, reject) => {
-		terrariumEncodeWorker.postMessage({
+		getEncodeWorker().postMessage({
 			band,
 			width,
 			height,
@@ -319,7 +352,7 @@ export const encodeBandToTerrarium = (
 			dataMax
 		});
 
-		terrariumEncodeWorker.onmessage = (e) => {
+		getEncodeWorker().onmessage = (e) => {
 			const { blob, error } = e.data;
 			if (error) {
 				reject(new Error(`Encode error: ${error}`));
@@ -328,7 +361,7 @@ export const encodeBandToTerrarium = (
 			resolve(blob);
 		};
 
-		terrariumEncodeWorker.onerror = (error) => {
+		getEncodeWorker().onerror = (error) => {
 			reject(new Error(`Encode worker error: ${error.message}`));
 		};
 	});
@@ -362,6 +395,9 @@ export const encodeAllBandsToTerrarium = async (
 	GeoTiffCache.setDataRanges(id, dataRanges);
 	GeoTiffCache.setSize(id, width, height);
 	GeoTiffCache.setNumBands(id, bands.length);
+
+	// エンコード完了後にWorkerを停止
+	terminateEncodeWorker();
 };
 
 // --- Rendering ---
@@ -479,9 +515,9 @@ export const loadRasterData = async (
 		}
 
 		return new Promise((resolve, reject) => {
-			terrariumRenderWorker.postMessage(workerMessage);
+			getRenderWorker().postMessage(workerMessage);
 
-			terrariumRenderWorker.onmessage = async (e) => {
+			getRenderWorker().onmessage = async (e) => {
 				const { blob, error } = e.data;
 				if (error) {
 					reject(new Error(`Render worker error: ${error}`));
@@ -492,7 +528,7 @@ export const loadRasterData = async (
 				resolve(url);
 			};
 
-			terrariumRenderWorker.onerror = (error) => {
+			getRenderWorker().onerror = (error) => {
 				console.error('Render worker error:', error);
 				reject(new Error(`Render worker error: ${error.message}`));
 			};

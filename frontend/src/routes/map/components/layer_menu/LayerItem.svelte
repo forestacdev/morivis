@@ -145,6 +145,10 @@
 			GeoTiffCache.release(layerEntry.id);
 		} else if (isGeojsonCustomLayer) {
 			GeojsonCache.remove(layerEntry.id);
+		} else if (layerEntry.type === 'model' && layerEntry.format.type === 'point-cloud') {
+			// 点群データの明示的な解放
+			layerEntry.format.positions = undefined;
+			layerEntry.format.colors = undefined;
 		}
 
 		activeLayerIdsStore.remove(layerEntry.id);
