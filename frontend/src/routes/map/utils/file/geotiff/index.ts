@@ -1,7 +1,9 @@
 import type { TypedArray, ReadRasterResult } from 'geotiff';
+import JSZip from 'jszip';
 
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
+import { calculateGeoTransformFromBbox, buildAuxXml, calculateBandStatsFromBlob, lngToMercX, latToMercY } from '$routes/map/utils/file/aux.xml';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {
@@ -135,51 +137,46 @@ export class GeoTiffCache {
 	// --- エクスポート ---
 
 	/**
-	 * レンダリング済み画像 + aux.xml をダウンロードする
+	 * レンダリング済み画像 + aux.xml を zip にまとめてダウンロードする
 	 */
 	static async exportRenderedPng(key: string): Promise<void> {
 		const entry = this.blobCache.get(key);
 		if (!entry) return;
 
 		const bbox = this.bboxCache.get(key);
-		const size = this.sizeCache.get(key);
 		const filename = `rendered_${key}.png`;
 
-		// PNG ダウンロード
-		const a = document.createElement('a');
-		a.href = entry.url;
-		a.download = filename;
-		a.click();
+		const zip = new JSZip();
+		zip.file(filename, entry.blob);
 
-		// aux.xml 生成・ダウンロード
-		if (bbox && size) {
-			const [minLng, minLat, maxLng, maxLat] = bbox;
-			const pixelWidth = (maxLng - minLng) / size.width;
-			const pixelHeight = (minLat - maxLat) / size.height; // 負の値
-			// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
-			const geoTransform = [
-				minLng + pixelWidth * 0.5,
-				pixelWidth,
-				0,
-				maxLat + pixelHeight * 0.5,
-				0,
-				pixelHeight
+		// aux.xml 生成（メルカトル座標 EPSG:3857、統計情報付き）
+		if (bbox) {
+			const bitmap = await createImageBitmap(entry.blob);
+			const actualWidth = bitmap.width;
+			const actualHeight = bitmap.height;
+			bitmap.close();
+
+			// WGS84 bbox → Web Mercator (EPSG:3857) に変換
+			const mercBbox: [number, number, number, number] = [
+				lngToMercX(bbox[0]),
+				latToMercY(bbox[1]),
+				lngToMercX(bbox[2]),
+				latToMercY(bbox[3])
 			];
 
-			const xml =
-				`<PAMDataset>\n` +
-				`  <SRS dataAxisToSRSAxisMapping="1,2">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]</SRS>\n` +
-				`  <GeoTransform>${geoTransform.map((v) => v.toFixed(16)).join(', ')}</GeoTransform>\n` +
-				`</PAMDataset>`;
-
-			const blob = new Blob([xml], { type: 'application/xml' });
-			const url = URL.createObjectURL(blob);
-			const b = document.createElement('a');
-			b.href = url;
-			b.download = `${filename}.aux.xml`;
-			b.click();
-			URL.revokeObjectURL(url);
+			const geoTransform = calculateGeoTransformFromBbox(mercBbox, actualWidth, actualHeight);
+			const bandStats = await calculateBandStatsFromBlob(entry.blob);
+			const xml = buildAuxXml(geoTransform, 3857, bandStats);
+			zip.file(`${filename}.aux.xml`, xml);
 		}
+
+		const zipBlob = await zip.generateAsync({ type: 'blob' });
+		const url = URL.createObjectURL(zipBlob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `rendered_${key}.zip`;
+		a.click();
+		URL.revokeObjectURL(url);
 	}
 
 	// --- Clear ---

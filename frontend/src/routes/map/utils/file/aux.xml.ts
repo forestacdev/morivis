@@ -1,5 +1,81 @@
-import type { Map as MapLibreMap } from 'maplibre-gl';
 import { getWkt, type EpsgCode } from '$routes/map/utils/proj/dict';
+
+// ============================
+// GeoTransform 計算
+// ============================
+
+/**
+ * bboxとサイズからGeoTransformパラメータを計算（回転なし）
+ */
+export const calculateGeoTransformFromBbox = (
+	bbox: [number, number, number, number],
+	width: number,
+	height: number
+): number[] => {
+	const [minLng, minLat, maxLng, maxLat] = bbox;
+	const pixelWidth = (maxLng - minLng) / width;
+	const pixelHeight = (minLat - maxLat) / height; // 負の値
+	return [minLng + pixelWidth * 0.5, pixelWidth, 0, maxLat + pixelHeight * 0.5, 0, pixelHeight];
+};
+
+// ============================
+// aux.xml 生成
+// ============================
+
+interface BandStats {
+	band: number;
+	name: string;
+	min: number;
+	max: number;
+	mean: number;
+	stddev: number;
+}
+
+/**
+ * PAMDataset XML を生成する共通関数
+ * bandStats を渡せば統計情報付き、省略すれば最小限のXMLを生成
+ */
+export const buildAuxXml = (
+	geoTransform: number[],
+	epsg: number = 4326,
+	bandStats?: BandStats[]
+): string => {
+	const wkt = getWkt(epsg.toString() as EpsgCode);
+
+	let xml = `<PAMDataset>\n`;
+	xml += `  <SRS dataAxisToSRSAxisMapping="1,2">${wkt}</SRS>\n`;
+	xml += `  <GeoTransform>${geoTransform.map((v) => v.toFixed(16)).join(', ')}</GeoTransform>\n`;
+
+	if (bandStats && bandStats.length > 0) {
+		xml += `  <Metadata domain="IMAGE_STRUCTURE">\n`;
+		xml += `    <MDI key="INTERLEAVE">PIXEL</MDI>\n`;
+		xml += `  </Metadata>\n`;
+		xml += `  <Metadata>\n`;
+		xml += `    <MDI key="AREA_OR_POINT">Area</MDI>\n`;
+		xml += `  </Metadata>\n`;
+
+		bandStats.forEach(({ band, name, min, max, mean, stddev }) => {
+			xml += `  <PAMRasterBand band="${band}">\n`;
+			xml += `    <Description>${name}</Description>\n`;
+			xml += `    <Metadata>\n`;
+			xml += `      <MDI key="STATISTICS_APPROXIMATE">YES</MDI>\n`;
+			xml += `      <MDI key="STATISTICS_MAXIMUM">${Math.round(max)}</MDI>\n`;
+			xml += `      <MDI key="STATISTICS_MEAN">${mean.toFixed(12)}</MDI>\n`;
+			xml += `      <MDI key="STATISTICS_MINIMUM">${Math.round(min)}</MDI>\n`;
+			xml += `      <MDI key="STATISTICS_STDDEV">${stddev.toFixed(12)}</MDI>\n`;
+			xml += `      <MDI key="STATISTICS_VALID_PERCENT">100</MDI>\n`;
+			xml += `    </Metadata>\n`;
+			xml += `  </PAMRasterBand>\n`;
+		});
+	}
+
+	xml += `</PAMDataset>`;
+	return xml;
+};
+
+// ============================
+// 画像統計
+// ============================
 
 /**
  * 画像の統計情報を計算
@@ -47,51 +123,63 @@ const calculateImageStatistics = (
 };
 
 /**
- * GeoTransformパラメータを計算（回転対応）
+ * Blob画像からRGB各バンドの統計情報を計算
  */
-const calculateGeoTransform = (
-	map: MapLibreMap,
+export const calculateBandStatsFromBlob = async (blob: Blob): Promise<BandStats[]> => {
+	const bitmap = await createImageBitmap(blob);
+	const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('OffscreenCanvas context取得失敗');
+
+	ctx.drawImage(bitmap, 0, 0);
+	const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+	bitmap.close();
+
+	const redStats = calculateImageStatistics(imageData, 0);
+	const greenStats = calculateImageStatistics(imageData, 1);
+	const blueStats = calculateImageStatistics(imageData, 2);
+
+	return [
+		{ band: 1, name: 'Red', ...redStats },
+		{ band: 2, name: 'Green', ...greenStats },
+		{ band: 3, name: 'Blue', ...blueStats }
+	];
+};
+
+// WGS84 → Web Mercator (EPSG:3857) 変換
+const DEG2RAD = Math.PI / 180;
+const R = 6378137;
+export const lngToMercX = (lng: number) => R * lng * DEG2RAD;
+export const latToMercY = (lat: number) => R * Math.log(Math.tan(Math.PI / 4 + (lat * DEG2RAD) / 2));
+
+/**
+ * GeoTransformパラメータを計算（回転対応、メルカトル座標）
+ */
+/**
+ * WGS84 bboxをメルカトルに変換してGeoTransformを計算
+ */
+const calculateMercatorGeoTransform = (
+	wgs84Bounds: [number, number, number, number],
 	imageWidth: number,
 	imageHeight: number
 ): number[] => {
-	const canvas = map.getCanvas();
-
-	// 四隅の座標を取得
-	const topLeft = map.unproject([0, 0]);
-	const topRight = map.unproject([canvas.width, 0]);
-	const bottomLeft = map.unproject([0, canvas.height]);
-
-	const x1 = topLeft.lng;
-	const y1 = topLeft.lat;
-	const x2 = topRight.lng;
-	const y2 = topRight.lat;
-	const x3 = bottomLeft.lng;
-	const y3 = bottomLeft.lat;
-
-	// アフィン変換パラメータを計算
-	// A, D: X方向の変換（1ピクセル右に移動したときの座標変化）
-	const A = (x2 - x1) / imageWidth;
-	const D = (y2 - y1) / imageWidth;
-
-	// B, E: Y方向の変換（1ピクセル下に移動したときの座標変化）
-	const B = (x3 - x1) / imageHeight;
-	const E = (y3 - y1) / imageHeight;
-
-	// C, F: 左上ピクセル中心の座標
-	const C = x1 + A * 0.5 + B * 0.5;
-	const F = y1 + D * 0.5 + E * 0.5;
-
-	// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
-	return [C, A, B, F, D, E];
+	const [west, south, east, north] = wgs84Bounds;
+	const mercBbox: [number, number, number, number] = [
+		lngToMercX(west),
+		latToMercY(south),
+		lngToMercX(east),
+		latToMercY(north)
+	];
+	return calculateGeoTransformFromBbox(mercBbox, imageWidth, imageHeight);
 };
 
 /**
  * PAMDataset (GDAL Auxiliary File) を生成
  */
 export const generateAuxXml = async (
-	map: MapLibreMap,
+	bounds: [number, number, number, number],
 	imageDataUrl: string,
-	epsg: number = 4326
+	epsg: number = 3857
 ): Promise<string> => {
 	// data URLから画像を読み込んで統計情報を取得
 	const img = new Image();
@@ -115,68 +203,27 @@ export const generateAuxXml = async (
 	const greenStats = calculateImageStatistics(imageData, 1);
 	const blueStats = calculateImageStatistics(imageData, 2);
 
-	const bands = [
-		{ band: 1, stats: redStats },
-		{ band: 2, stats: greenStats },
-		{ band: 3, stats: blueStats }
+	const bandStats: BandStats[] = [
+		{ band: 1, name: 'Red', ...redStats },
+		{ band: 2, name: 'Green', ...greenStats },
+		{ band: 3, name: 'Blue', ...blueStats }
 	];
 
-	// GeoTransformを計算
-	const geoTransform = calculateGeoTransform(map, img.width, img.height);
+	const geoTransform = calculateMercatorGeoTransform(bounds, img.width, img.height);
 
-	// WKT定義を取得
-	const wkt = getWkt(epsg.toString() as EpsgCode);
-
-	// XML生成
-	let xml = `<PAMDataset>\n`;
-
-	// SRS（座標系）
-	xml += `  <SRS dataAxisToSRSAxisMapping="1,2">${wkt}</SRS>\n`;
-
-	// GeoTransform
-	xml += `  <GeoTransform>${geoTransform.map((v) => v.toFixed(16)).join(', ')}</GeoTransform>\n`;
-
-	// 画像構造のメタデータ
-	xml += `  <Metadata domain="IMAGE_STRUCTURE">\n`;
-	xml += `    <MDI key="INTERLEAVE">PIXEL</MDI>\n`;
-	xml += `  </Metadata>\n`;
-
-	// 追加メタデータ
-	xml += `  <Metadata>\n`;
-	xml += `    <MDI key="AREA_OR_POINT">Area</MDI>\n`;
-	xml += `  </Metadata>\n`;
-
-	// 各バンドの統計情報
-	bands.forEach(({ band, stats }) => {
-		const bandName = band === 1 ? 'Red' : band === 2 ? 'Green' : 'Blue';
-		xml += `  <PAMRasterBand band="${band}">\n`;
-		xml += `    <Description>${bandName}</Description>\n`;
-		xml += `    <Metadata>\n`;
-		xml += `      <MDI key="STATISTICS_APPROXIMATE">YES</MDI>\n`;
-		xml += `      <MDI key="STATISTICS_MAXIMUM">${Math.round(stats.max)}</MDI>\n`;
-		xml += `      <MDI key="STATISTICS_MEAN">${stats.mean.toFixed(12)}</MDI>\n`;
-		xml += `      <MDI key="STATISTICS_MINIMUM">${Math.round(stats.min)}</MDI>\n`;
-		xml += `      <MDI key="STATISTICS_STDDEV">${stats.stddev.toFixed(12)}</MDI>\n`;
-		xml += `      <MDI key="STATISTICS_VALID_PERCENT">100</MDI>\n`;
-		xml += `    </Metadata>\n`;
-		xml += `  </PAMRasterBand>\n`;
-	});
-
-	xml += `</PAMDataset>`;
-
-	return xml;
+	return buildAuxXml(geoTransform, epsg, bandStats);
 };
 
 /**
  * .aux.xmlファイルをダウンロード
  */
 export const downloadAuxXml = async (
-	map: MapLibreMap,
+	bounds: [number, number, number, number],
 	imageDataUrl: string,
-	epsg: number = 4326,
+	epsg: number = 3857,
 	filename: string = 'map.png.aux.xml'
 ) => {
-	const xmlContent = await generateAuxXml(map, imageDataUrl, epsg);
+	const xmlContent = await generateAuxXml(bounds, imageDataUrl, epsg);
 
 	const blob = new Blob([xmlContent], { type: 'application/xml' });
 	const url = URL.createObjectURL(blob);

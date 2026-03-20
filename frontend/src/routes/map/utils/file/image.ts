@@ -5,46 +5,95 @@ import JSZip from 'jszip';
 
 import { showConfirmDialog } from '$routes/stores/confirmation';
 
-export const getMapCanvasImage = (map: MapLibreMap): Promise<string> => {
-	return new Promise((resolve, reject) => {
-		// 傾きチェックを最初に行う
-		if (map.getPitch() > 0) {
-			const result = showConfirmDialog({
-				message: '地図が傾いているため、画像の地理的な正確性が損なわれます。',
-				confirmOnly: true
-			});
+export interface MapCaptureResult {
+	imageUrl: string;
+	bounds: [number, number, number, number] | null; // [west, south, east, north] in WGS84, null if globe capture
+}
 
-			if (!result) {
-				// キャンセルされた場合はrejectで終了
-				reject(new Error('ユーザーによってキャンセルされました'));
-				return;
-			}
-		}
-
-		// 確認OKまたは傾きなしの場合のみ処理続行
+/**
+ * mercator投影でキャプチャしてboundsも取得する
+ */
+const captureMercator = (map: MapLibreMap, originalProjection: ReturnType<MapLibreMap['getProjection']>): Promise<MapCaptureResult> =>
+	new Promise((resolve, reject) => {
 		map.once('render', async () => {
 			try {
 				const mapCanvas = map.getCanvas();
 				const mapImage = mapCanvas.toDataURL('image/png');
 
-				// 画像取得後にglobeに戻す
-				await map.setProjection({
-					type: 'globe'
-				});
+				const b = map.getBounds();
+				const bounds: [number, number, number, number] = [
+					b.getWest(),
+					b.getSouth(),
+					b.getEast(),
+					b.getNorth()
+				];
 
-				resolve(mapImage);
+				// 元のプロジェクションに戻す
+				map.setProjection(originalProjection);
+
+				resolve({ imageUrl: mapImage, bounds });
 			} catch (error) {
 				reject(error);
 			}
 		});
 
-		// mercatorに変更してレンダリングをトリガー
-		map.setProjection({
-			type: 'mercator'
-		});
-
+		map.setProjection({ type: 'mercator' });
 		map.triggerRepaint();
 	});
+
+/**
+ * 現在の表示のままキャプチャする（boundsなし）
+ */
+const captureAsIs = (map: MapLibreMap): Promise<MapCaptureResult> =>
+	new Promise((resolve) => {
+		map.once('render', () => {
+			const mapCanvas = map.getCanvas();
+			const mapImage = mapCanvas.toDataURL('image/png');
+			resolve({ imageUrl: mapImage, bounds: null });
+		});
+		map.triggerRepaint();
+	});
+
+export const getMapCanvasImage = async (map: MapLibreMap): Promise<MapCaptureResult> => {
+	// 傾きチェック
+	if (map.getPitch() > 0) {
+		await showConfirmDialog({
+			message: '地図が傾いているため、画像の地理的な正確性が損なわれます。',
+			confirmOnly: true
+		});
+	}
+
+	const projection = map.getProjection();
+	const isMercator = projection.type === 'mercator';
+
+	// mercator投影ならそのままキャプチャ
+	if (isMercator) {
+		return new Promise((resolve) => {
+			map.once('render', () => {
+				const mapCanvas = map.getCanvas();
+				const mapImage = mapCanvas.toDataURL('image/png');
+				const b = map.getBounds();
+				resolve({
+					imageUrl: mapImage,
+					bounds: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
+				});
+			});
+			map.triggerRepaint();
+		});
+	}
+
+	// globe等の場合、ユーザーに選択させる
+	const useMercator = await showConfirmDialog({
+		message: '現在の地図はグローブ表示です。メルカトル投影に切り替えてエクスポートすると、位置情報ファイル（aux.xml）が付属します。',
+		confirmText: 'メルカトルで出力',
+		cancelText: 'そのまま出力'
+	});
+
+	if (useMercator) {
+		return captureMercator(map, projection);
+	}
+
+	return captureAsIs(map);
 };
 
 export const downloadImage = async (src: string, filename: string): Promise<void> => {

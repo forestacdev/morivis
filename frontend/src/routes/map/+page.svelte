@@ -171,6 +171,7 @@
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
+	let imageBounds = $state<[number, number, number, number] | null>(null);
 
 	// 右クリックメニュー
 	let contextMenuState = $state<ContextMenuState | null>(null);
@@ -532,7 +533,7 @@
 						? 'pointer-events-auto opacity-500'
 						: 'pointer-events-none opacity-0'}"
 				>
-					<OtherMenu bind:imagePreviewUrl />
+					<OtherMenu bind:imagePreviewUrl bind:imageBounds />
 				</div>
 
 				<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
@@ -648,7 +649,7 @@
 	{selectedEpsgCode}
 />
 
-<ImagePreviewDialog bind:imagePreviewUrl />
+<ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
 {#if map}
 	<ZoneForm
@@ -670,7 +671,7 @@
 
 <!-- PC用その他メニュー -->
 <div class="max-lg:hidden">
-	<OtherMenu bind:imagePreviewUrl />
+	<OtherMenu bind:imagePreviewUrl bind:imageBounds />
 </div>
 <NotificationMessage />
 
