@@ -98,7 +98,7 @@
 				/>
 			</label>
 		</div>
-		<div class="flex flex-wrap items-center justify-center gap-4">
+		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
 			{#each urlDialogs as dialog}
 				<button
 					onclick={() => showUploadDialog(dialog.type)}
