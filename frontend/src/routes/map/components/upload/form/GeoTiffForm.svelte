@@ -4,6 +4,12 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import {
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT,
+		WEB_MERCATOR_MIN_LNG,
+		WEB_MERCATOR_MAX_LNG
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
@@ -235,8 +241,20 @@
 		if (!rawBbox) return;
 
 		try {
-			const prjContent = getProjContext(epsgCode);
-			const transformed = transformBbox(rawBbox, prjContent);
+			let transformed: [number, number, number, number];
+
+			if (epsgCode === '4326') {
+				// 4326の場合は座標変換不要、WebMercator範囲にクリップ
+				transformed = [
+					Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[0])),
+					Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[1])),
+					Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[2])),
+					Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[3]))
+				];
+			} else {
+				const prjContent = getProjContext(epsgCode);
+				transformed = transformBbox(rawBbox, prjContent);
+			}
 
 			if (!isBboxValid(transformed)) {
 				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
@@ -246,6 +264,10 @@
 			resolvedBbox = transformed;
 			if (entryId) {
 				GeoTiffCache.setBbox(entryId, transformed);
+				if (epsgCode === '4326' && rawBbox) {
+					GeoTiffCache.markAs4326(entryId);
+					GeoTiffCache.setRawBbox(entryId, rawBbox);
+				}
 			}
 		} catch (e) {
 			showNotification('座標変換中にエラーが発生しました', 'error');

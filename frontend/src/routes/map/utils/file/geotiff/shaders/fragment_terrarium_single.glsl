@@ -14,8 +14,41 @@ uniform int u_bandIndex;
 uniform float u_min;
 uniform float u_max;
 
+// 4326→メルカトル再投影
+uniform bool u_reproject4326;
+uniform vec4 u_bbox_display;  // 表示側bbox [minLng, minLat, maxLng, maxLat]（クリップ済み）
+uniform vec4 u_bbox_source;   // ソーステクスチャのbbox [minLng, minLat, maxLng, maxLat]（元の範囲）
+
 in vec2 v_tex_coord;
 out vec4 fragColor;
+
+float R = 6378137.0;
+
+float latToY(float lat) {
+    return R * log(tan(radians(lat) * 0.5 + 3.14159265 / 4.0));
+}
+
+float yToLat(float y) {
+    return degrees(2.0 * atan(exp(y / R)) - 3.14159265 / 2.0);
+}
+
+// メルカトルUV → 正距円筒UV
+vec2 reprojectUV(vec2 uv) {
+    if (!u_reproject4326) return uv;
+
+    // 出力UV → メルカトル座標 → 経緯度
+    float maxY = latToY(u_bbox_display.w);
+    float minY = latToY(u_bbox_display.y);
+    float y = mix(maxY, minY, uv.y);
+    float lng = mix(u_bbox_display.x, u_bbox_display.z, uv.x);
+    float lat = yToLat(y);
+
+    // 経緯度 → ソーステクスチャのUV
+    float u = (lng - u_bbox_source.x) / (u_bbox_source.z - u_bbox_source.x);
+    float v = (u_bbox_source.w - lat) / (u_bbox_source.w - u_bbox_source.y);
+
+    return vec2(u, v);
+}
 
 // Terrarium デコード → 正規化値 (0〜1)
 float decodeTerrariumNormalized(vec4 color) {
@@ -24,7 +57,8 @@ float decodeTerrariumNormalized(vec4 color) {
 }
 
 void main() {
-    vec4 encoded = texture(u_terrarium_bands, vec3(v_tex_coord, u_bandIndex));
+    vec2 uv = reprojectUV(v_tex_coord);
+    vec4 encoded = texture(u_terrarium_bands, vec3(uv, u_bandIndex));
 
     // nodata チェック（alpha = 0）
     if (encoded.a == 0.0) {

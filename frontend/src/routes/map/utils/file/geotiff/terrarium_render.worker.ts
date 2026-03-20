@@ -177,6 +177,10 @@ interface RenderMessage {
 	greenMax?: number;
 	blueMin?: number;
 	blueMax?: number;
+	// 4326→メルカトル再投影
+	reproject4326?: boolean;
+	bboxDisplay?: [number, number, number, number]; // 表示側bbox（クリップ済み）度数
+	bboxSource?: [number, number, number, number];  // ソーステクスチャのbbox（元の範囲）度数
 	// エントリ削除
 	action?: 'release';
 }
@@ -228,6 +232,25 @@ self.onmessage = async (e) => {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, cached.texture);
 		gl.uniform1i(gl.getUniformLocation(program, 'u_terrarium_bands'), 0);
+
+		// 4326→メルカトル再投影ユニフォーム
+		gl.uniform1i(gl.getUniformLocation(program, 'u_reproject4326'), msg.reproject4326 ? 1 : 0);
+		if (msg.bboxDisplay) {
+			gl.uniform4f(
+				gl.getUniformLocation(program, 'u_bbox_display'),
+				msg.bboxDisplay[0], msg.bboxDisplay[1], msg.bboxDisplay[2], msg.bboxDisplay[3]
+			);
+		} else {
+			gl.uniform4f(gl.getUniformLocation(program, 'u_bbox_display'), 0, 0, 0, 0);
+		}
+		if (msg.bboxSource) {
+			gl.uniform4f(
+				gl.getUniformLocation(program, 'u_bbox_source'),
+				msg.bboxSource[0], msg.bboxSource[1], msg.bboxSource[2], msg.bboxSource[3]
+			);
+		} else {
+			gl.uniform4f(gl.getUniformLocation(program, 'u_bbox_source'), 0, 0, 0, 0);
+		}
 
 		// ユニフォーム設定（min/max は CPU側で正規化済み: 0〜1）
 		if (msg.type === 'single') {

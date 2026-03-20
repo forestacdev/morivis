@@ -120,6 +120,85 @@ export class GeoTiffCache {
 		return this.textureTransferredSet.has(key);
 	}
 
+	// --- 4326 再投影 ---
+	private static is4326Set: Set<string> = new Set();
+	private static rawBboxCache: Map<string, [number, number, number, number]> = new Map();
+
+	static markAs4326(key: string) {
+		this.is4326Set.add(key);
+	}
+	static is4326(key: string): boolean {
+		return this.is4326Set.has(key);
+	}
+	static setRawBbox(key: string, bbox: [number, number, number, number]) {
+		this.rawBboxCache.set(key, bbox);
+	}
+	static getRawBbox(key: string): [number, number, number, number] | undefined {
+		return this.rawBboxCache.get(key);
+	}
+
+	// --- Debug: エクスポート ---
+
+	/**
+	 * Terrarium PNG をダウンロードする（デバッグ用）
+	 */
+	static exportTerrariumPng(key: string, bandIndex = 0): void {
+		const urls = this.terrariumCache.get(key);
+		if (!urls || !urls[bandIndex]) return;
+		const a = document.createElement('a');
+		a.href = urls[bandIndex];
+		a.download = `terrarium_band${bandIndex}.png`;
+		a.click();
+	}
+
+	/**
+	 * レンダリング済み画像 + aux.xml をダウンロードする
+	 */
+	static async exportRenderedPng(key: string): Promise<void> {
+		const entry = this.blobCache.get(key);
+		if (!entry) return;
+
+		const bbox = this.bboxCache.get(key);
+		const size = this.sizeCache.get(key);
+		const filename = `rendered_${key}.png`;
+
+		// PNG ダウンロード
+		const a = document.createElement('a');
+		a.href = entry.url;
+		a.download = filename;
+		a.click();
+
+		// aux.xml 生成・ダウンロード
+		if (bbox && size) {
+			const [minLng, minLat, maxLng, maxLat] = bbox;
+			const pixelWidth = (maxLng - minLng) / size.width;
+			const pixelHeight = (minLat - maxLat) / size.height; // 負の値
+			// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
+			const geoTransform = [
+				minLng + pixelWidth * 0.5,
+				pixelWidth,
+				0,
+				maxLat + pixelHeight * 0.5,
+				0,
+				pixelHeight
+			];
+
+			const xml =
+				`<PAMDataset>\n` +
+				`  <SRS dataAxisToSRSAxisMapping="1,2">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]</SRS>\n` +
+				`  <GeoTransform>${geoTransform.map((v) => v.toFixed(16)).join(', ')}</GeoTransform>\n` +
+				`</PAMDataset>`;
+
+			const blob = new Blob([xml], { type: 'application/xml' });
+			const url = URL.createObjectURL(blob);
+			const b = document.createElement('a');
+			b.href = url;
+			b.download = `${filename}.aux.xml`;
+			b.click();
+			URL.revokeObjectURL(url);
+		}
+	}
+
 	// --- Clear ---
 	static clear(): void {
 		// Terrarium blob URL を revoke
@@ -137,6 +216,8 @@ export class GeoTiffCache {
 		}
 		this.blobCache.clear();
 		this.textureTransferredSet.clear();
+		this.is4326Set.clear();
+		this.rawBboxCache.clear();
 		// render worker にテクスチャ解放を通知
 		terrariumRenderWorker.postMessage({ action: 'release', entryId: '__all__' });
 	}
@@ -149,6 +230,8 @@ export class GeoTiffCache {
 		this.numBandsCache.delete(key);
 		this.revokeBlob(key);
 		this.textureTransferredSet.delete(key);
+		this.is4326Set.delete(key);
+		this.rawBboxCache.delete(key);
 		terrariumRenderWorker.postMessage({ action: 'release', entryId: key });
 	}
 }
@@ -334,6 +417,17 @@ export const loadRasterData = async (
 			width: size.width,
 			height: size.height
 		};
+
+		// 4326→メルカトル再投影
+		if (GeoTiffCache.is4326(id)) {
+			const bbox = GeoTiffCache.getBbox(id); // クリップ済み（表示用）
+			const rawBbox = GeoTiffCache.getRawBbox(id); // 元の範囲（テクスチャUV計算用）
+			if (bbox && rawBbox) {
+				workerMessage.reproject4326 = true;
+				workerMessage.bboxDisplay = [bbox[0], bbox[1], bbox[2], bbox[3]];
+				workerMessage.bboxSource = [rawBbox[0], rawBbox[1], rawBbox[2], rawBbox[3]];
+			}
+		}
 
 		// 初回: ImageBitmap を転送
 		if (!GeoTiffCache.isTextureTransferred(id)) {
