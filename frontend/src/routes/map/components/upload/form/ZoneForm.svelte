@@ -5,6 +5,7 @@
 	import maplibregl from 'maplibre-gl';
 	import { fly } from 'svelte/transition';
 
+	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -99,7 +100,10 @@
 							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, originalBbox[3]))
 						];
 						// クリップ後に有効でなければスキップ
-						if (transformedBbox[0] >= transformedBbox[2] || transformedBbox[1] >= transformedBbox[3]) {
+						if (
+							transformedBbox[0] >= transformedBbox[2] ||
+							transformedBbox[1] >= transformedBbox[3]
+						) {
 							return [];
 						}
 					} else {
@@ -184,7 +188,8 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					duration: 750
+					duration: MAP_ANIMATION_DURATION,
+					easing: MAP_EASING
 				});
 			}
 

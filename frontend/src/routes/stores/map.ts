@@ -48,6 +48,7 @@ import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/threejs';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -777,13 +778,15 @@ const createMapStore = () => {
 					_entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				duration: 800
+				duration: MAP_ANIMATION_DURATION,
+				easing: MAP_EASING
 			});
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
 				padding: -100,
-				duration: 800
+				duration: MAP_ANIMATION_DURATION,
+				easing: MAP_EASING
 			});
 		}
 	};

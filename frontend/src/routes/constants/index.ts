@@ -39,6 +39,10 @@ export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp'
 /** ハイライトさせるレイヤーの色 */
 export const HIGHLIGHT_LAYER_COLOR = '#00d4fe';
 
+/** マップアニメーションのデフォルト設定 */
+export const MAP_ANIMATION_DURATION = 1250;
+export const MAP_EASING = (t: number) => t * (2 - t);
+
 export interface MapPosition {
 	center: [number, number];
 	zoom: number;
