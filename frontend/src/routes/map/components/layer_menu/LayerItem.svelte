@@ -139,6 +139,14 @@
 	const removeLayer = () => {
 		$isStyleEdit = false;
 		if (!layerEntry) return;
+
+		// キャッシュの解放
+		if (isTiffCustomLayer) {
+			GeoTiffCache.release(layerEntry.id);
+		} else if (isGeojsonCustomLayer) {
+			GeojsonCache.remove(layerEntry.id);
+		}
+
 		activeLayerIdsStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
