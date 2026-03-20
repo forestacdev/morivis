@@ -3,11 +3,6 @@ import type { TypedArray, ReadRasterResult } from 'geotiff';
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
 
-export interface ReprojectInfo {
-	projDef: string;
-	srcBbox: [number, number, number, number];
-}
-
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {
 	min: number;
@@ -137,19 +132,7 @@ export class GeoTiffCache {
 		return this.rawBboxCache.get(key);
 	}
 
-	// --- Debug: エクスポート ---
-
-	/**
-	 * Terrarium PNG をダウンロードする（デバッグ用）
-	 */
-	static exportTerrariumPng(key: string, bandIndex = 0): void {
-		const urls = this.terrariumCache.get(key);
-		if (!urls || !urls[bandIndex]) return;
-		const a = document.createElement('a');
-		a.href = urls[bandIndex];
-		a.download = `terrarium_band${bandIndex}.png`;
-		a.click();
-	}
+	// --- エクスポート ---
 
 	/**
 	 * レンダリング済み画像 + aux.xml をダウンロードする
