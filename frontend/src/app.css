@@ -12,6 +12,7 @@ body {
 	overscroll-behavior-y: contain;
 	background-color: var(--color-main);
 	overflow: hidden;
+	cursor: var(--cursor-default);
 }
 
 /* diaperのグローバルCSS（diaper.css/bottomsheet.css）による副作用を打ち消す */
@@ -38,6 +39,12 @@ body {
 	--text-color-primary: #f1f1f1;
 	/* --breakpoint-lg: 1024px; */
 	--breakpoint-lg: 768px;
+
+	
+    --cursor-pointer: pointer;
+	--cursor-move: move;
+    --cursor-default: url('/cursor_icon.png'), default;
+	
 }
 
 @layer base {
@@ -211,15 +218,32 @@ body {
 	@apply c-no-drag-icon brightness-80 invert-100;
 }
 
-/* MapLibreのcanvasカーソルを強制する */
-.maplibregl-canvas {
-	cursor: default !important;
-}
+
 
 .cursor-pointer-override .maplibregl-canvas {
-	cursor: pointer !important;
+	cursor: var(--cursor-pointer) !important;
 }
 
 .cursor-move-override .maplibregl-canvas {
-	cursor: move !important;
+	cursor: var(--cursor-move) !important;
 }
+
+/* MapLibreのcanvasカーソルを強制する */
+.maplibregl-canvas {
+	cursor: var(--cursor-default) !important;
+}
+
+
+@utility cursor-pointer {
+	cursor: var(--cursor-pointer);
+}
+
+@utility cursor-move {
+	cursor: var(--cursor-move);
+}
+
+/* Tailwindのcursorユーティリティをテーマ変数でオーバーライド */
+@utility cursor-default {
+	cursor: var(--cursor-default);
+}
+
