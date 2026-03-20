@@ -271,6 +271,9 @@ importers:
       moji:
         specifier: ^0.5.1
         version: 0.5.1
+      netcdfjs:
+        specifier: ^4.0.0
+        version: 4.0.0
       ol:
         specifier: ^10.5.0
         version: 10.7.0
@@ -4501,6 +4504,9 @@ packages:
   iobuffer@5.4.0:
     resolution: {integrity: sha512-DRebOWuqDvxunfkNJAlc3IzWIPD5xVxwUNbHr7xKB8E6aLJxIPfNX3CoMJghcFjpv6RWQsrcJbghtEwSPoJqMA==}
 
+  iobuffer@6.0.1:
+    resolution: {integrity: sha512-SZWYkWNfjIXIBYSDpXDYIgshqtbOPsi4lviawAEceR1Kqk+sHDlcQjWrzNQsii80AyBY0q5c8HCTNjqo74ul+Q==}
+
   ip-regex@2.1.0:
     resolution: {integrity: sha512-58yWmlHpp7VYfcdTwMTvwMmqx/Elfxjd9RXTDyMsbL7lLWmhMylLEqiYVLKuLzOZqVgiWXD9MfR62Vv89VRxkw==}
     engines: {node: '>=4'}
@@ -5119,6 +5125,9 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  netcdfjs@4.0.0:
+    resolution: {integrity: sha512-98DBig9KmiCZC6kU0Y8OXR5Gj39KenMgp6sblpSdg+5oVscTjhm5r5oLiznlqBZyhRGQqlAMEyWjQnMh4/iPOA==}
 
   node-abi@3.85.0:
     resolution: {integrity: sha512-zsFhmbkAzwhTft6nd3VxcG0cvJsT70rL+BIGHWVq5fi6MwGrHwzqKaxXE+Hl2GmnGItnDKPPkO5/LQqjVkIdFg==}
@@ -11822,6 +11831,8 @@ snapshots:
 
   iobuffer@5.4.0: {}
 
+  iobuffer@6.0.1: {}
+
   ip-regex@2.1.0: {}
 
   is-array-buffer@3.0.5:
@@ -12412,6 +12423,10 @@ snapshots:
   napi-build-utils@2.0.0: {}
 
   natural-compare@1.4.0: {}
+
+  netcdfjs@4.0.0:
+    dependencies:
+      iobuffer: 6.0.1
 
   node-abi@3.85.0:
     dependencies:

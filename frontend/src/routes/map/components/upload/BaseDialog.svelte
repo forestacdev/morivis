@@ -12,6 +12,7 @@
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
+	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
@@ -101,6 +102,9 @@
 			{/if}
 			{#if showDialogType === 'mbtiles'}
 				<MBTilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'netcdf'}
+				<NetCDFForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'pmtiles'}
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />

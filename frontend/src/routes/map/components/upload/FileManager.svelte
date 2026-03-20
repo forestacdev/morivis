@@ -88,6 +88,10 @@
 				case 'mbtiles':
 					showDialogType = 'mbtiles';
 					return;
+				case 'nc':
+				case 'nc4':
+					showDialogType = 'netcdf';
+					return;
 				case 'tfw':
 				case 'tifw':
 				case 'tiffw':
