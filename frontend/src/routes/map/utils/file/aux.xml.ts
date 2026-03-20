@@ -1,4 +1,31 @@
-import { getWkt, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { getWkt, isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+
+// ============================
+// aux.xml パース
+// ============================
+
+/**
+ * aux.xmlファイルからEPSGコードを抽出する
+ * SRS内の AUTHORITY["EPSG","XXXX"] パターンからトップレベルのEPSGコードを取得
+ */
+export const parseEpsgFromAuxXml = (xmlContent: string): EpsgCode | null => {
+	// SRSタグの中身を取得
+	const srsMatch = xmlContent.match(/<SRS[^>]*>([\s\S]*?)<\/SRS>/);
+	if (!srsMatch) return null;
+
+	const srs = srsMatch[1];
+
+	// AUTHORITY["EPSG","XXXX"] の最後のもの（トップレベルの座標系）を取得
+	const authorityMatches = [...srs.matchAll(/AUTHORITY\["EPSG","(\d+)"\]/g)];
+	if (authorityMatches.length === 0) return null;
+
+	const epsgCode = authorityMatches[authorityMatches.length - 1][1];
+	if (isValidEpsg(epsgCode)) {
+		return epsgCode as EpsgCode;
+	}
+
+	return null;
+};
 
 // ============================
 // GeoTransform 計算

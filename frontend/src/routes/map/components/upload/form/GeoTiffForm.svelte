@@ -14,6 +14,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
+	import { parseEpsgFromAuxXml } from '$routes/map/utils/file/aux.xml';
 	import {
 		GeoTiffCache,
 		parseRasterBands,
@@ -123,6 +124,10 @@
 		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|wld)$/i.test(f.name)) ?? null;
 	};
 
+	const findAuxXmlFile = (files: FileList): File | null => {
+		return Array.from(files).find((f) => /\.aux\.xml$/i.test(f.name)) ?? null;
+	};
+
 	// ファイルドロップ時: GeoTIFF解析
 	$effect(() => {
 		if (tiffFile) {
@@ -203,12 +208,26 @@
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, bands.length);
 
+			// aux.xmlからEPSGコードを取得
+			let auxEpsg: EpsgCode | null = null;
+			if (dropFile instanceof FileList) {
+				const auxFile = findAuxXmlFile(dropFile);
+				if (auxFile) {
+					const auxContent = await auxFile.text();
+					auxEpsg = parseEpsgFromAuxXml(auxContent);
+				}
+			}
+
 			analyzed = true;
 
 			// bboxの有効性チェック
 			if (rawBbox && isBboxValid(rawBbox)) {
 				resolvedBbox = rawBbox;
 				GeoTiffCache.setBbox(id, rawBbox);
+			} else if (rawBbox && auxEpsg) {
+				// aux.xmlに座標系があれば自動変換
+				convertBboxWithEpsg(auxEpsg);
+				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
 			} else if (rawBbox) {
 				showZoneForm = true;
 				focusBbox = rawBbox;
@@ -226,13 +245,14 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → bbox座標変換
+	// ZoneFormで座標系選択後 → bbox座標変換 → 自動登録
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'geotiff') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
 				convertBboxWithEpsg(epsg);
+				registration();
 			});
 		}
 	});

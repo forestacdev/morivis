@@ -777,13 +777,13 @@ const createMapStore = () => {
 					_entry.metaData.minZoom + 1.5, // 最小ズームレベルに1.5を加える
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				duration: 500
+				duration: 800
 			});
 		} else {
 			map.fitBounds(_entry.metaData.bounds, {
 				bearing: map.getBearing(),
 				padding: -100,
-				duration: 500
+				duration: 800
 			});
 		}
 	};
