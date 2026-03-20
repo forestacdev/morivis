@@ -131,6 +131,59 @@
 		}
 	};
 
+	/**
+	 * 単バンドFloat32Arrayから512x512サムネイルを生成（中心正方形切り抜き）
+	 */
+	const generateThumbnail = (
+		bandData: Float32Array,
+		width: number,
+		height: number,
+		dataMin: number,
+		dataMax: number,
+		nodataVal: number | null
+	): string => {
+		const size = Math.min(width, height);
+		const sx = Math.floor((width - size) / 2);
+		const sy = Math.floor((height - size) / 2);
+
+		const thumbSize = 512;
+		const canvas = new OffscreenCanvas(thumbSize, thumbSize);
+		const ctx = canvas.getContext('2d')!;
+		const imgData = ctx.createImageData(thumbSize, thumbSize);
+		const pixels = imgData.data;
+
+		const range = dataMax - dataMin;
+		const invRange = range !== 0 ? 255 / range : 0;
+
+		for (let ty = 0; ty < thumbSize; ty++) {
+			for (let tx = 0; tx < thumbSize; tx++) {
+				const srcX = sx + Math.floor((tx * size) / thumbSize);
+				const srcY = sy + Math.floor((ty * size) / thumbSize);
+				const srcIdx = srcY * width + srcX;
+				const dstIdx = (ty * thumbSize + tx) * 4;
+
+				const val = bandData[srcIdx];
+				if (nodataVal !== null && val === nodataVal) {
+					pixels[dstIdx + 3] = 0; // 透明
+				} else {
+					const normalized = Math.max(0, Math.min(255, (val - dataMin) * invRange));
+					pixels[dstIdx] = normalized;
+					pixels[dstIdx + 1] = normalized;
+					pixels[dstIdx + 2] = normalized;
+					pixels[dstIdx + 3] = 255;
+				}
+			}
+		}
+
+		ctx.putImageData(imgData, 0, 0);
+		const tempCanvas = document.createElement('canvas');
+		tempCanvas.width = thumbSize;
+		tempCanvas.height = thumbSize;
+		const tempCtx = tempCanvas.getContext('2d')!;
+		tempCtx.putImageData(imgData, 0, 0);
+		return tempCanvas.toDataURL('image/png');
+	};
+
 	const registration = async () => {
 		if (!ncReader || !ncInfo || !selectedVariable) return;
 
@@ -171,6 +224,9 @@
 			const bands: RasterBands = [data];
 			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
+			// サムネイル画像を生成
+			const mapImage = generateThumbnail(data, width, height, ranges[0].min, ranges[0].max, nodata);
+
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
 			GeoTiffCache.setSize(id, width, height);
@@ -205,7 +261,8 @@
 					name: entryName || `${longName}`,
 					tileSize: 256,
 					bounds: resolvedBbox,
-					xyzImageTile: findCenterTile(resolvedBbox)
+					xyzImageTile: findCenterTile(resolvedBbox),
+					mapImage
 				},
 				interaction: {
 					...DEFAULT_RASTER_BASEMAP_INTERACTION

@@ -31,6 +31,16 @@
 	const singleRange = $derived(dataRanges?.[style.visualization.uniformsData.single.index]);
 	const rangeMin = $derived(singleRange?.min ?? 0);
 	const rangeMax = $derived(singleRange?.max ?? 65535);
+
+	/** min/maxからスライダーのstepを動的に算出 */
+	const calcStep = (min: number, max: number): number => {
+		const range = Math.abs(max - min);
+		if (range === 0) return 1;
+		// 約1000段階になるstepを算出し、きれいな数値に丸める
+		const raw = range / 1000;
+		const magnitude = Math.pow(10, Math.floor(Math.log10(raw)));
+		return Math.max(magnitude, 0.001);
+	};
 </script>
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
@@ -63,7 +73,7 @@
 			bind:upperValue={style.visualization.uniformsData['single'].max}
 			max={rangeMax}
 			min={rangeMin}
-			step={0.1}
+			step={calcStep(rangeMin, rangeMax)}
 			primaryColor={colorMapManager.createSimpleCSSGradient(
 				style.visualization.uniformsData['single'].colorMap
 			)}
@@ -99,7 +109,7 @@
 							bind:upperValue={style.visualization.uniformsData.multi[key].max}
 							min={range?.min ?? 0}
 							max={range?.max ?? 65535}
-							step={0.1}
+							step={calcStep(range?.min ?? 0, range?.max ?? 65535)}
 							primaryColor={color}
 						/>
 					</div>

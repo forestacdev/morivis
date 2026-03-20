@@ -33,6 +33,16 @@
 
 	const secondaryColor = 'black';
 
+	/** 値の範囲に応じて適切な小数桁数でフォーマット */
+	const fmt = (v: number): string => {
+		const range = Math.abs(max - min);
+		if (range === 0) return v.toString();
+		if (range >= 1000) return Math.round(v).toString();
+		if (range >= 10) return v.toFixed(1);
+		if (range >= 1) return v.toFixed(2);
+		return v.toFixed(3);
+	};
+
 	// 内部状態管理用
 	let lowerSliderElement: HTMLInputElement;
 	let upperSliderElement: HTMLInputElement;
@@ -112,7 +122,7 @@
 	<div class="mb-4 text-base">
 		{label}
 		<span class="">
-			{lowerValue} - {upperValue}
+			{fmt(lowerValue)} - {fmt(upperValue)}
 		</span>
 	</div>
 {/if}
@@ -177,10 +187,10 @@
 <!-- 値表示（詳細版） -->
 <div class="mt-2 flex justify-between px-2 text-base text-sm">
 	<div class="">
-		<span class="">{min}</span>
+		<span class="">{fmt(min)}</span>
 	</div>
 	<div class="">
-		<span class="">{max}</span>
+		<span class="">{fmt(max)}</span>
 	</div>
 </div>
 
