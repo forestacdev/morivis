@@ -3,6 +3,7 @@
  */
 
 import type { FeatureCollection } from 'geojson';
+import type { ArcGisRenderer } from '$routes/map/utils/file/arcgis-webmap';
 
 // ============================
 // カタログ関連
@@ -26,10 +27,12 @@ export interface ArcGisCatalogInfo {
  */
 export const isArcGisCatalogUrl = (url: string): boolean => {
 	const cleaned = url.replace(/\/+$/, '').split('?')[0];
-	return !cleaned.endsWith('/FeatureServer') &&
+	return (
+		!cleaned.endsWith('/FeatureServer') &&
 		!cleaned.endsWith('/MapServer') &&
-		!(/\/FeatureServer\/\d+$/.test(cleaned)) &&
-		!(/\/MapServer\/\d+$/.test(cleaned));
+		!/\/FeatureServer\/\d+$/.test(cleaned) &&
+		!/\/MapServer\/\d+$/.test(cleaned)
+	);
 };
 
 /**
@@ -55,9 +58,8 @@ export const fetchArcGisCatalog = async (url: string): Promise<ArcGisCatalogInfo
 	// ベースURLは /services まで遡る
 	const cleanUrl = baseUrl.split('?')[0];
 	const servicesIdx = cleanUrl.toLowerCase().indexOf('/services');
-	const catalogBaseUrl = servicesIdx !== -1
-		? cleanUrl.substring(0, servicesIdx + '/services'.length)
-		: cleanUrl;
+	const catalogBaseUrl =
+		servicesIdx !== -1 ? cleanUrl.substring(0, servicesIdx + '/services'.length) : cleanUrl;
 
 	const services: ArcGisCatalogService[] = (data.services ?? [])
 		.filter((s: any) => s.type === 'FeatureServer' || s.type === 'MapServer')
@@ -78,6 +80,11 @@ export const fetchArcGisCatalog = async (url: string): Promise<ArcGisCatalogInfo
 	};
 };
 
+export interface ArcGisFeatureTypeInfo {
+	id: number | string;
+	name: string;
+}
+
 export interface ArcGisFeatureLayerInfo {
 	id: number;
 	name: string;
@@ -86,6 +93,9 @@ export interface ArcGisFeatureLayerInfo {
 	bounds?: [number, number, number, number];
 	maxRecordCount: number;
 	description?: string;
+	drawingInfo?: { renderer?: ArcGisRenderer };
+	typeIdField?: string;
+	types?: ArcGisFeatureTypeInfo[];
 }
 
 export interface ArcGisFeatureServerInfo {
@@ -181,6 +191,12 @@ export const fetchArcGisFeatureServerInfo = async (
 					}
 				}
 
+				// types情報の取得
+				const types: ArcGisFeatureTypeInfo[] | undefined =
+					layerData.types?.length > 0
+						? layerData.types.map((t: any) => ({ id: t.id, name: t.name }))
+						: undefined;
+
 				return {
 					id: layer.id,
 					name: layerData.name || layer.name || `Layer ${layer.id}`,
@@ -192,7 +208,10 @@ export const fetchArcGisFeatureServerInfo = async (
 					})),
 					bounds,
 					maxRecordCount: layerData.maxRecordCount ?? maxRecordCount,
-					description: layerData.description || undefined
+					description: layerData.description || undefined,
+					drawingInfo: layerData.drawingInfo ?? undefined,
+					typeIdField: layerData.typeIdField || undefined,
+					types
 				} satisfies ArcGisFeatureLayerInfo;
 			} catch {
 				return {

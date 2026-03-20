@@ -31,16 +31,24 @@ import type {
 
 /** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
 export const createMatchColorStyleRandomMapping = (
-	categories: string[]
+	categories: string[],
+	isPattern: boolean = false // パターンを使用するかどうかのフラグ
 ): ColorMatchExpression['mapping'] => {
 	const values = categories.map((category) => {
 		return getRandomColor();
 	});
-	return {
-		categories,
-		values,
-		patterns: categories.map(() => null) // パターンは使用しない場合はnull
-	};
+	if (isPattern) {
+		return {
+			categories,
+			values,
+			patterns: categories.map(() => null) // パターンは使用しない場合はnull
+		};
+	} else {
+		return {
+			categories,
+			values
+		};
+	}
 };
 
 /** カラーコード配列に基づいてランダム色スタイルのマッピングを作成する */

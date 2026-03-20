@@ -25,6 +25,10 @@ export interface EpsgInfoWithCode extends EpsgInfo {
 	code: EpsgCode;
 }
 
+export const isValidEpsg = (code: string): code is EpsgCode => {
+	return code in epsg_definitions;
+};
+
 type Options = {
 	exclude4326?: boolean;
 	exclude3857?: boolean;

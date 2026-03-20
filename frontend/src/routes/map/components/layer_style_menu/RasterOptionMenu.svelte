@@ -190,7 +190,7 @@
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
-		<TiffOption bind:style />
+		<TiffOption bind:style entryId={layerEntry.id} bind:showColorOption />
 	{:else if style.type === 'cad'}
 		<div class="mt-8">
 			<ColorPicker bind:value={style.color} label={'ラインの色'} />

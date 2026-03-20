@@ -11,10 +11,11 @@
 	interface TiffStyleModeOptions {
 		key: BandTypeKey;
 		name: string;
+		icon: string;
 	}
 	let demStyleModes = $state<TiffStyleModeOptions[]>([
-		{ key: 'single', name: '単バンド擬似カラー' },
-		{ key: 'multi', name: 'マルチバンドカラー' }
+		{ key: 'single', name: 'カラーマップ', icon: 'mdi:format-color-highlight' },
+		{ key: 'multi', name: 'RGB合成', icon: 'boxicons:rgb-filled' }
 		// { key: 'shadow', name: '陰影' },
 		// { key: 'slope', name: '傾斜量' },
 		// { key: 'aspect', name: '傾斜方向' },
@@ -31,11 +32,11 @@
 		class="c-select flex w-full justify-between"
 	>
 		<div class="flex items-center gap-2">
-			<Icon icon={'ic:round-terrain'} width={20} />
+			<Icon icon={demStyleModes.find((mode) => mode.key === isMode)?.icon as string} width={20} />
 
 			<span>{demStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 		</div>
-		<Icon icon="bi:chevron-down" class="h-6 w-6" />
+		<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
 	</button>
 
 	{#if showPullDown}
@@ -43,7 +44,7 @@
 			transition:fly={{ duration: 200, y: -20 }}
 			class="bg-sub absolute top-[60px] left-0 z-10 w-full divide-y divide-gray-400 overflow-hidden rounded-lg shadow-md"
 		>
-			{#each demStyleModes as { key, name } (key)}
+			{#each demStyleModes as { key, name, icon } (key)}
 				<label
 					class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {isMode ===
 					key
@@ -58,7 +59,7 @@
 						onchange={() => (showPullDown = false)}
 					/>
 					<div class="flex items-center gap-2">
-						<Icon icon={'ic:round-terrain'} width={20} />
+						<Icon {icon} width={20} />
 						<span class="select-none">{name}</span>
 					</div>
 				</label>

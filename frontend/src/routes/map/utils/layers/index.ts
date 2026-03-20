@@ -264,6 +264,7 @@ export const createLayersItems = (
 					if (
 						format.type === 'mvt' ||
 						format.type === 'pmtiles' ||
+						format.type === 'mbtiles' ||
 						format.type === 'geojsontile' ||
 						format.type === 'esri-feature'
 					) {

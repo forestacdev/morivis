@@ -12,6 +12,7 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
+	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
@@ -69,6 +70,16 @@
 		);
 	});
 
+	let isTiffCustomLayer = $derived.by(() => {
+		return (
+			layerEntry.type === 'raster' &&
+			layerEntry.format.type === 'image' &&
+			'style' in layerEntry &&
+			(layerEntry as { style: { type: string } }).style.type === 'tiff' &&
+			layerEntry?.metaData.attribution === 'カスタムデータ'
+		);
+	});
+
 	const selectedLayer = () => {
 		if (!layerEntry) return;
 		selectedLayerId.set(layerEntry.id);
@@ -115,15 +126,31 @@
 	};
 
 	const downloadLayer = () => {
-		if (!layerEntry || !isGeojsonCustomLayer) return;
+		if (!layerEntry) return;
 
-		GeojsonCache.export(layerEntry.id, layerEntry.metaData.name);
+		if (isGeojsonCustomLayer) {
+			GeojsonCache.export(layerEntry.id, layerEntry.metaData.name);
+		} else if (isTiffCustomLayer) {
+			GeoTiffCache.exportRenderedPng(layerEntry.id);
+		}
 	};
 
 	// レイヤーの削除
 	const removeLayer = () => {
 		$isStyleEdit = false;
 		if (!layerEntry) return;
+
+		// キャッシュの解放
+		if (isTiffCustomLayer) {
+			GeoTiffCache.release(layerEntry.id);
+		} else if (isGeojsonCustomLayer) {
+			GeojsonCache.remove(layerEntry.id);
+		} else if (layerEntry.type === 'model' && layerEntry.format.type === 'point-cloud') {
+			// 点群データの明示的な解放
+			layerEntry.format.positions = undefined;
+			layerEntry.format.colors = undefined;
+		}
+
 		activeLayerIdsStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
@@ -498,7 +525,9 @@
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
 						<button
-							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							onclick={() => {
+								layerEntry.style.visible = !layerEntry.style.visible;
+							}}
 							class="cursor-pointer"
 						>
 							<Icon
@@ -520,7 +549,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer}
 							<button onclick={downloadLayer} class="cursor-pointer">
 								<Icon icon="material-symbols:download-rounded" class="h-8 w-8" />
 							</button>

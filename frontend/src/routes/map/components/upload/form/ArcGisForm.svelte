@@ -7,7 +7,10 @@
 	import { createVectorTileEntry } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { fetchArcGisMapServerInfo, type ArcGisMapServerInfo } from '$routes/map/utils/file/arcgis';
+	import {
+		fetchArcGisMapServerInfo,
+		type ArcGisMapServerInfo
+	} from '$routes/map/utils/file/arcgis';
 	import {
 		fetchArcGisFeatureServerInfo,
 		fetchArcGisCatalog,
@@ -16,6 +19,14 @@
 		type ArcGisFeatureServerInfo,
 		type ArcGisCatalogService
 	} from '$routes/map/utils/file/arcgis-feature';
+	import {
+		extractWebMapItemId,
+		fetchArcGisWebMap,
+		rendererToColorsStyle,
+		typesToColorsStyle,
+		type ArcGisWebMapLayer,
+		type ArcGisRenderer
+	} from '$routes/map/utils/file/arcgis-webmap';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -32,6 +43,8 @@
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
 				if (!value) return false;
+				// WebMap アイテムID (32文字hex)
+				if (/^[0-9a-f]{32}$/i.test(value.trim())) return true;
 				return value.startsWith('http://') || value.startsWith('https://');
 			})
 	});
@@ -58,8 +71,13 @@
 	// MapServer状態
 	let mapServerInfo = $state<ArcGisMapServerInfo | null>(null);
 
-	// ステップ: 'input' | 'catalog' | 'service'
-	let step = $state<'input' | 'catalog' | 'service'>('input');
+	// WebMap状態
+	let webMapLayers = $state<ArcGisWebMapLayer[]>([]);
+	let selectedWebMapLayerRenderer = $state<ArcGisRenderer | undefined>(undefined);
+	let selectedWebMapLayerOpacity = $state<number | undefined>(undefined);
+
+	// ステップ: 'input' | 'catalog' | 'webmap' | 'service'
+	let step = $state<'input' | 'catalog' | 'webmap' | 'service'>('input');
 
 	const selectedLayer = $derived(
 		featureServerInfo?.layers.find((l) => String(l.id) === selectedLayerId)
@@ -102,6 +120,9 @@
 		selectedServiceUrl = '';
 		searchQuery = '';
 		detectedType = null;
+		webMapLayers = [];
+		selectedWebMapLayerRenderer = undefined;
+		selectedWebMapLayerOpacity = undefined;
 	};
 
 	/**
@@ -112,12 +133,57 @@
 		return cleaned.endsWith('/MapServer') || /\/MapServer\/\d+$/.test(cleaned);
 	};
 
+	/**
+	 * URLを正規化し、レイヤーIDがあれば抽出する
+	 */
+	const parseArcGisUrl = (url: string): { url: string; layerId: string | null } => {
+		let cleaned = url.split('?')[0].replace(/\/+$/, '');
+		// /query を除去
+		cleaned = cleaned.replace(/\/query$/i, '');
+
+		// レイヤーIDを抽出してから除去
+		let layerId: string | null = null;
+		const featureMatch = cleaned.match(/\/FeatureServer\/(\d+)$/i);
+		const mapMatch = cleaned.match(/\/MapServer\/(\d+)$/i);
+		if (featureMatch) {
+			layerId = featureMatch[1];
+			cleaned = cleaned.replace(/(\/FeatureServer)\/\d+$/i, '$1');
+		} else if (mapMatch) {
+			layerId = mapMatch[1];
+			cleaned = cleaned.replace(/(\/MapServer)\/\d+$/i, '$1');
+		}
+
+		return { url: cleaned, layerId };
+	};
+
 	const fetchInfo = async () => {
 		isProcessing.set(true);
 		resetState();
 
 		try {
-			const url = forms.url.trim();
+			const rawUrl = forms.url.trim();
+
+			// WebMap判定
+			const webMapInfo = extractWebMapItemId(rawUrl);
+			if (webMapInfo) {
+				const webMap = await fetchArcGisWebMap(webMapInfo.portalUrl, webMapInfo.itemId);
+				const featureLayers = webMap.layers.filter(
+					(l) => l.url && l.layerType === 'ArcGISFeatureLayer'
+				);
+
+				if (featureLayers.length === 0) {
+					showNotification('FeatureLayerが見つかりませんでした', 'error');
+					step = 'input';
+					return;
+				}
+
+				webMapLayers = featureLayers;
+				step = 'webmap';
+				return;
+			}
+
+			const parsed = parseArcGisUrl(rawUrl);
+			const url = parsed.url;
 
 			if (isArcGisCatalogUrl(url)) {
 				// カタログURL
@@ -135,6 +201,13 @@
 			} else {
 				// FeatureServer URL
 				await fetchFeatureServerInfo(url);
+				// URLにレイヤーIDが指定されていた場合、自動選択
+				if (parsed.layerId && featureServerInfo) {
+					const exists = featureServerInfo.layers.some((l) => String(l.id) === parsed.layerId);
+					if (exists) {
+						selectedLayerId = parsed.layerId;
+					}
+				}
 			}
 		} catch (e) {
 			showNotification('情報の取得に失敗しました', 'error');
@@ -187,6 +260,41 @@
 		step = 'service';
 	};
 
+	const selectWebMapLayer = async (layer: ArcGisWebMapLayer) => {
+		isProcessing.set(true);
+		selectedWebMapLayerRenderer = layer.renderer;
+		selectedWebMapLayerOpacity = layer.opacity;
+
+		try {
+			const parsed = parseArcGisUrl(layer.url);
+			selectedServiceUrl = parsed.url;
+			await fetchFeatureServerInfo(parsed.url);
+			// レイヤーIDが指定されていた場合、自動選択
+			if (parsed.layerId && featureServerInfo) {
+				const exists = featureServerInfo.layers.some((l) => String(l.id) === parsed.layerId);
+				if (exists) {
+					selectedLayerId = parsed.layerId;
+				}
+			}
+		} catch (e) {
+			showNotification('サービス情報の取得に失敗しました', 'error');
+			console.error(e);
+			step = 'webmap';
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
+	const backToWebMap = () => {
+		featureServerInfo = null;
+		mapServerInfo = null;
+		selectedLayerId = '';
+		detectedType = null;
+		selectedWebMapLayerRenderer = undefined;
+		selectedWebMapLayerOpacity = undefined;
+		step = 'webmap';
+	};
+
 	const backToCatalog = () => {
 		featureServerInfo = null;
 		mapServerInfo = null;
@@ -204,7 +312,7 @@
 			return;
 		}
 
-		const serviceUrl = selectedServiceUrl || forms.url.trim();
+		const serviceUrl = selectedServiceUrl || parseArcGisUrl(forms.url.trim()).url;
 		const baseUrl = serviceUrl.split('?')[0].replace(/\/+$/, '');
 		const layerUrl = `${baseUrl}/${selectedLayer.id}`;
 
@@ -224,6 +332,40 @@
 				.map((f) => ({ key: f.name, label: f.alias || f.name }));
 			entry.properties.fields = fields;
 			entry.properties.attributeView.popupKeys = fields.map((f) => f.key);
+
+			// スタイル適用: WebMapのrenderer > レイヤーのdrawingInfo > typesによるランダム色分け
+			const renderer = selectedWebMapLayerRenderer ?? selectedLayer.drawingInfo?.renderer;
+			const isPolygon = geojsonGeomType === 'Polygon';
+			if (renderer) {
+				const colorsStyle = rendererToColorsStyle(renderer, isPolygon);
+				if (colorsStyle) {
+					entry.style.colors = colorsStyle;
+				}
+			} else if (
+				selectedLayer.typeIdField &&
+				selectedLayer.types &&
+				selectedLayer.types.length > 0
+			) {
+				const colorsStyle = typesToColorsStyle(
+					selectedLayer.typeIdField,
+					selectedLayer.types,
+					isPolygon
+				);
+				if (colorsStyle) {
+					entry.style.colors = colorsStyle;
+				}
+			}
+			if (selectedWebMapLayerOpacity != null) {
+				// Opacity型に最も近い値にマップ
+				const opacityMap = [0.3, 0.5, 0.7, 1] as const;
+				entry.style.opacity = opacityMap.reduce((prev, curr) =>
+					Math.abs(curr - selectedWebMapLayerOpacity!) <
+					Math.abs(prev - selectedWebMapLayerOpacity!)
+						? curr
+						: prev
+				);
+			}
+
 			showDataEntry = entry;
 			showDialogType = null;
 			showNotification('FeatureServerレイヤーを登録しました', 'success');
@@ -268,15 +410,17 @@
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
 	<!-- URL入力 -->
-	<div class="flex w-full items-center gap-2 p-2">
+	<form
+		class="flex w-full items-center gap-2 p-2"
+		onsubmit={(e) => {
+			e.preventDefault();
+			if (!isUrlDisabled && !$isProcessing) fetchInfo();
+		}}
+	>
 		<div class="grow">
-			<TextForm
-				bind:value={forms.url}
-				label="ArcGIS REST URL (カタログ / FeatureServer / MapServer)"
-				error={urlErrors.url}
-			/>
+			<TextForm bind:value={forms.url} label="ArcGIS REST URL / WebMap URL" error={urlErrors.url} />
 		</div>
-	</div>
+	</form>
 
 	<!-- カタログ: サービス一覧 -->
 	{#if step === 'catalog' && catalogServices.length > 0}
@@ -293,7 +437,7 @@
 					<button
 						onclick={() => selectService(service)}
 						disabled={$isProcessing}
-						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition hover:bg-gray-700 last:border-b-0 disabled:opacity-50"
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition last:border-b-0 hover:bg-gray-700 disabled:opacity-50"
 					>
 						<span class="truncate">{service.displayName}</span>
 						<span
@@ -312,10 +456,42 @@
 		</div>
 	{/if}
 
+	<!-- WebMap: レイヤー一覧 -->
+	{#if step === 'webmap' && webMapLayers.length > 0}
+		<div transition:slide class="flex w-full flex-col gap-2 px-2">
+			<div class="text-sm text-gray-400">{webMapLayers.length} 件のレイヤー (WebMap)</div>
+			<div class="max-h-[300px] overflow-y-auto rounded border border-gray-700">
+				{#each webMapLayers as layer}
+					<button
+						onclick={() => selectWebMapLayer(layer)}
+						disabled={$isProcessing}
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-700 px-3 py-2 text-left text-sm text-gray-200 transition last:border-b-0 hover:bg-gray-700 disabled:opacity-50"
+					>
+						<span class="min-w-0 grow truncate">{layer.title}</span>
+						{#if layer.renderer?.type === 'uniqueValue'}
+							<span
+								class="ml-2 shrink-0 rounded bg-purple-900 px-1.5 py-0.5 text-xs text-purple-300"
+							>
+								スタイル付き
+							</span>
+						{/if}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	<!-- サービス情報表示 -->
 	{#if step === 'service'}
 		<div transition:slide class="w-full px-2">
-			{#if catalogServices.length > 0}
+			{#if webMapLayers.length > 0}
+				<button
+					onclick={backToWebMap}
+					class="mb-2 cursor-pointer text-sm text-blue-400 hover:underline"
+				>
+					← レイヤー一覧に戻る
+				</button>
+			{:else if catalogServices.length > 0}
 				<button
 					onclick={backToCatalog}
 					class="mb-2 cursor-pointer text-sm text-blue-400 hover:underline"
@@ -334,20 +510,20 @@
 				{#if featureServerInfo.layers.length > 1}
 					<div class="mb-2">
 						<label class="mb-1 block text-sm text-gray-300">
-						レイヤーを選択
-						<select
-							bind:value={selectedLayerId}
-							class="mt-1 w-full rounded border border-gray-600 bg-gray-800 p-2 text-sm text-white"
-						>
-							<option value="" disabled>選択してください</option>
-							{#each featureServerInfo.layers as layer}
-								<option value={String(layer.id)}>
-									{layer.name}
-									({esriGeometryTypeToGeoJSON(layer.geometryType) ?? layer.geometryType})
-								</option>
-							{/each}
-						</select>
-					</label>
+							レイヤーを選択
+							<select
+								bind:value={selectedLayerId}
+								class="mt-1 w-full rounded border border-gray-600 bg-gray-800 p-2 text-sm text-white"
+							>
+								<option value="" disabled>選択してください</option>
+								{#each featureServerInfo.layers as layer}
+									<option value={String(layer.id)}>
+										{layer.name}
+										({esriGeometryTypeToGeoJSON(layer.geometryType) ?? layer.geometryType})
+									</option>
+								{/each}
+							</select>
+						</label>
 					</div>
 				{/if}
 

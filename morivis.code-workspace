@@ -13,6 +13,10 @@
             "path": "frontend/src/routes/map/components/upload",
         },
         {
+            "name": "レイヤースタイルメニュー",
+            "path": "frontend/src/routes/map/components/layer_style_menu",
+        },
+        {
             "path": "frontend",
         },
         {

@@ -72,7 +72,11 @@ export const fetchArcGisMapServerInfo = async (url: string): Promise<ArcGisMapSe
 	}
 
 	const name =
-		data.documentInfo?.Title || data.documentInfo?.title || data.mapName || data.serviceDescription || 'ArcGIS Layer';
+		data.documentInfo?.Title ||
+		data.documentInfo?.title ||
+		data.mapName ||
+		data.serviceDescription ||
+		'ArcGIS Layer';
 
 	return {
 		name: name.length > 100 ? name.substring(0, 100) : name,

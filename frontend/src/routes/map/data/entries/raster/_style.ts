@@ -31,6 +31,7 @@ export const DEFAULT_RASTER_CATEGORICAL_STYLE: RasterCategoricalStyle = {
 export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 	type: 'dem',
 	opacity: 1.0,
+	visible: true,
 	visualization: {
 		demType: 'gsi',
 		mode: 'relief',

@@ -5,7 +5,14 @@
 	import maplibregl from 'maplibre-gl';
 	import { fly } from 'svelte/transition';
 
+	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
+	import {
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT,
+		WEB_MERCATOR_MIN_LNG,
+		WEB_MERCATOR_MAX_LNG
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { isBboxValid } from '$routes/map/utils/map';
@@ -80,43 +87,59 @@
 
 		_internalGeojson = {
 			type: 'FeatureCollection',
-			features: getEpsgInfoArray({
-				exclude4326: true
-			})
+			features: getEpsgInfoArray()
 				.flatMap((info) => {
-					const prj = info.proj_context;
-					const transformedBbox = transformBbox(originalBbox, prj);
+					let transformedBbox: [number, number, number, number];
 
-					if (isBboxValid(transformedBbox)) {
-						const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
-							type: 'Feature',
-							geometry: {
-								type: 'Polygon',
-								coordinates: [
-									[
-										[transformedBbox[0], transformedBbox[1]],
-										[transformedBbox[2], transformedBbox[1]],
-										[transformedBbox[2], transformedBbox[3]],
-										[transformedBbox[0], transformedBbox[3]],
-										[transformedBbox[0], transformedBbox[1]]
-									]
-								]
-							},
-							properties: {
-								...info
-							}
-						};
-
-						const centerPoint: Feature<PointGeometry, PoiData['properties']> = {
-							type: 'Feature',
-							geometry: turfCenter(polygonFeature).geometry as PointGeometry,
-							properties: {
-								...info
-							}
-						};
-
-						return [polygonFeature, centerPoint];
+					if (info.code === '4326') {
+						// 4326の場合は座標変換不要、WebMercator範囲にクリップして表示
+						transformedBbox = [
+							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, originalBbox[0])),
+							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, originalBbox[1])),
+							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, originalBbox[2])),
+							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, originalBbox[3]))
+						];
+						// クリップ後に有効でなければスキップ
+						if (
+							transformedBbox[0] >= transformedBbox[2] ||
+							transformedBbox[1] >= transformedBbox[3]
+						) {
+							return [];
+						}
+					} else {
+						const prj = info.proj_context;
+						transformedBbox = transformBbox(originalBbox, prj);
+						if (!isBboxValid(transformedBbox)) return [];
 					}
+
+					const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
+						type: 'Feature',
+						geometry: {
+							type: 'Polygon',
+							coordinates: [
+								[
+									[transformedBbox[0], transformedBbox[1]],
+									[transformedBbox[2], transformedBbox[1]],
+									[transformedBbox[2], transformedBbox[3]],
+									[transformedBbox[0], transformedBbox[3]],
+									[transformedBbox[0], transformedBbox[1]]
+								]
+							]
+						},
+						properties: {
+							...info
+						}
+					};
+
+					const centerPoint: Feature<PointGeometry, PoiData['properties']> = {
+						type: 'Feature',
+						geometry: turfCenter(polygonFeature).geometry as PointGeometry,
+						properties: {
+							...info
+						}
+					};
+
+					return [polygonFeature, centerPoint];
 				})
 				.filter((feature) => feature !== undefined)
 		};
@@ -165,7 +188,8 @@
 			if (feature) {
 				mapStore.fitBounds(bbox as [number, number, number, number], {
 					padding: 100,
-					duration: 750
+					duration: MAP_ANIMATION_DURATION,
+					easing: MAP_EASING
 				});
 			}
 

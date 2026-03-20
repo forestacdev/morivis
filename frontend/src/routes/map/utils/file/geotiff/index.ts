@@ -1,96 +1,112 @@
-import { fromArrayBuffer } from 'geotiff';
-import type { ReadRasterResult } from 'geotiff';
+import type { TypedArray, ReadRasterResult } from 'geotiff';
+import JSZip from 'jszip';
 
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
+import {
+	calculateGeoTransformFromBbox,
+	buildAuxXml,
+	calculateBandStatsFromBlob,
+	lngToMercX,
+	latToMercY
+} from '$routes/map/utils/file/aux.xml';
+
+/** バンドごとの min/max データ範囲 */
+export interface BandDataRange {
+	min: number;
+	max: number;
+}
+
+/** バンドごとのTypedArray配列 */
+export type RasterBands = TypedArray[];
+
+// --- Cache ---
 
 export class GeoTiffCache {
-	private static dataUrlCache: Map<string, string> = new Map();
-	private static rastersCache: Map<string, Float32Array[]> = new Map();
+	// Terrarium PNG Blob URL（バンドごと）
+	private static terrariumCache: Map<string, string[]> = new Map();
+	// バンドごとのデータ範囲（正規化逆変換用）
+	private static dataRangeCache: Map<string, BandDataRange[]> = new Map();
+	// 画像サイズ
+	private static sizeCache: Map<string, { width: number; height: number }> = new Map();
+	// bbox (WGS84)
 	private static bboxCache: Map<string, [number, number, number, number]> = new Map();
+	// バンド数
 	private static numBandsCache: Map<string, number> = new Map();
+	// 最終レンダリング済み画像
+	private static blobCache: Map<string, { blob: Blob; url: string }> = new Map();
+	// render worker にテクスチャ転送済みか
+	private static textureTransferredSet: Set<string> = new Set();
 
-	private static sizeCache: Map<
-		string,
-		{
-			width: number;
-			height: number;
+	// --- Terrarium PNG ---
+	static setTerrarium(key: string, urls: string[]) {
+		this.terrariumCache.set(key, urls);
+	}
+	static getTerrarium(key: string): string[] | undefined {
+		return this.terrariumCache.get(key);
+	}
+	static hasTerrarium(key: string): boolean {
+		return this.terrariumCache.has(key);
+	}
+	static revokeTerrarium(key: string): void {
+		const urls = this.terrariumCache.get(key);
+		if (urls) {
+			urls.forEach((u) => URL.revokeObjectURL(u));
+			this.terrariumCache.delete(key);
 		}
-	> = new Map();
-	private static blobCache: Map<
-		string,
-		{
-			blob: Blob;
-			url: string;
-		}
-	> = new Map();
-
-	static setDataUrl(key: string, url: string) {
-		this.dataUrlCache.set(key, url);
 	}
 
-	static setRasters(key: string, rasters: Float32Array[]) {
-		this.rastersCache.set(key, rasters);
+	// --- Data Range ---
+	static setDataRanges(key: string, ranges: BandDataRange[]) {
+		this.dataRangeCache.set(key, ranges);
+	}
+	static getDataRanges(key: string): BandDataRange[] | undefined {
+		return this.dataRangeCache.get(key);
+	}
+	static hasDataRanges(key: string): boolean {
+		return this.dataRangeCache.has(key);
 	}
 
-	static setBbox(key: string, bbox: [number, number, number, number]) {
-		this.bboxCache.set(key, bbox);
-	}
-
+	// --- Size ---
 	static setSize(key: string, width: number, height: number) {
 		this.sizeCache.set(key, { width, height });
 	}
-
-	static setNumBands(key: string, numBands: number) {
-		this.numBandsCache.set(key, numBands);
-	}
-
-	static setBlob(key: string, blob: Blob, url: string) {
-		this.blobCache.set(key, { blob, url });
-	}
-
-	static getDataUrl(key: string): string | undefined {
-		return this.dataUrlCache.get(key);
-	}
-
-	static getRasters(key: string): Float32Array[] | undefined {
-		return this.rastersCache.get(key);
-	}
-
-	static getBbox(key: string): [number, number, number, number] | undefined {
-		return this.bboxCache.get(key);
-	}
-
 	static getSize(key: string): { width: number; height: number } | undefined {
 		return this.sizeCache.get(key);
 	}
+	static hasSize(key: string): boolean {
+		return this.sizeCache.has(key);
+	}
 
+	// --- Bbox ---
+	static setBbox(key: string, bbox: [number, number, number, number]) {
+		this.bboxCache.set(key, bbox);
+	}
+	static getBbox(key: string): [number, number, number, number] | undefined {
+		return this.bboxCache.get(key);
+	}
+	static hasBbox(key: string): boolean {
+		return this.bboxCache.has(key);
+	}
+
+	// --- NumBands ---
+	static setNumBands(key: string, numBands: number) {
+		this.numBandsCache.set(key, numBands);
+	}
 	static getNumBands(key: string): number | undefined {
 		return this.numBandsCache.get(key);
 	}
+	static hasNumBands(key: string): boolean {
+		return this.numBandsCache.has(key);
+	}
 
+	// --- Blob (rendered image) ---
+	static setBlob(key: string, blob: Blob, url: string) {
+		this.blobCache.set(key, { blob, url });
+	}
 	static getBlobUrl(id: string): string | undefined {
 		return this.blobCache.get(id)?.url;
 	}
-
-	static removeDataUrl(key: string): void {
-		this.dataUrlCache.delete(key);
-	}
-	static removeRasters(key: string): void {
-		this.rastersCache.delete(key);
-	}
-	static removeBbox(key: string): void {
-		this.bboxCache.delete(key);
-	}
-
-	static removeSize(key: string): void {
-		this.sizeCache.delete(key);
-	}
-
-	static removeNumBands(key: string): void {
-		this.numBandsCache.delete(key);
-	}
-
 	static revokeBlob(id: string): void {
 		const entry = this.blobCache.get(id);
 		if (entry) {
@@ -99,31 +115,118 @@ export class GeoTiffCache {
 		}
 	}
 
+	// --- Texture transfer tracking ---
+	static markTextureTransferred(key: string) {
+		this.textureTransferredSet.add(key);
+	}
+	static isTextureTransferred(key: string): boolean {
+		return this.textureTransferredSet.has(key);
+	}
+
+	// --- 4326 再投影 ---
+	private static is4326Set: Set<string> = new Set();
+	private static rawBboxCache: Map<string, [number, number, number, number]> = new Map();
+
+	static markAs4326(key: string) {
+		this.is4326Set.add(key);
+	}
+	static is4326(key: string): boolean {
+		return this.is4326Set.has(key);
+	}
+	static setRawBbox(key: string, bbox: [number, number, number, number]) {
+		this.rawBboxCache.set(key, bbox);
+	}
+	static getRawBbox(key: string): [number, number, number, number] | undefined {
+		return this.rawBboxCache.get(key);
+	}
+
+	// --- エクスポート ---
+
+	/**
+	 * レンダリング済み画像 + aux.xml を zip にまとめてダウンロードする
+	 */
+	static async exportRenderedPng(key: string): Promise<void> {
+		const entry = this.blobCache.get(key);
+		if (!entry) return;
+
+		const bbox = this.bboxCache.get(key);
+		const filename = `rendered_${key}.png`;
+
+		const zip = new JSZip();
+		zip.file(filename, entry.blob);
+
+		// aux.xml 生成（メルカトル座標 EPSG:3857、統計情報付き）
+		if (bbox) {
+			const bitmap = await createImageBitmap(entry.blob);
+			const actualWidth = bitmap.width;
+			const actualHeight = bitmap.height;
+			bitmap.close();
+
+			// WGS84 bbox → Web Mercator (EPSG:3857) に変換
+			const mercBbox: [number, number, number, number] = [
+				lngToMercX(bbox[0]),
+				latToMercY(bbox[1]),
+				lngToMercX(bbox[2]),
+				latToMercY(bbox[3])
+			];
+
+			const geoTransform = calculateGeoTransformFromBbox(mercBbox, actualWidth, actualHeight);
+			const bandStats = await calculateBandStatsFromBlob(entry.blob);
+			const xml = buildAuxXml(geoTransform, 3857, bandStats);
+			zip.file(`${filename}.aux.xml`, xml);
+		}
+
+		const zipBlob = await zip.generateAsync({ type: 'blob' });
+		const url = URL.createObjectURL(zipBlob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `rendered_${key}.zip`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	// --- Clear ---
 	static clear(): void {
-		this.dataUrlCache.clear();
-		this.rastersCache.clear();
-		this.bboxCache.clear();
+		// Terrarium blob URL を revoke
+		for (const urls of this.terrariumCache.values()) {
+			urls.forEach((u) => URL.revokeObjectURL(u));
+		}
+		this.terrariumCache.clear();
+		this.dataRangeCache.clear();
 		this.sizeCache.clear();
+		this.bboxCache.clear();
 		this.numBandsCache.clear();
+		// Rendered blob URL を revoke
+		for (const entry of this.blobCache.values()) {
+			URL.revokeObjectURL(entry.url);
+		}
 		this.blobCache.clear();
+		this.textureTransferredSet.clear();
+		this.is4326Set.clear();
+		this.rawBboxCache.clear();
+		// Workerを停止（テクスチャも解放される）
+		terminateEncodeWorker();
+		terminateRenderWorker();
 	}
-	static hasDataUrl(key: string): boolean {
-		return this.dataUrlCache.has(key);
-	}
-	static hasRasters(key: string): boolean {
-		return this.rastersCache.has(key);
-	}
-	static hasBbox(key: string): boolean {
-		return this.bboxCache.has(key);
-	}
-	static hasSize(key: string): boolean {
-		return this.sizeCache.has(key);
-	}
-	static hasNumBands(key: string): boolean {
-		return this.numBandsCache.has(key);
-	}
-	static hasBlob(key: string): boolean {
-		return this.blobCache.has(key);
+
+	static release(key: string): void {
+		this.revokeTerrarium(key);
+		this.dataRangeCache.delete(key);
+		this.sizeCache.delete(key);
+		this.bboxCache.delete(key);
+		this.numBandsCache.delete(key);
+		this.revokeBlob(key);
+		this.textureTransferredSet.delete(key);
+		this.is4326Set.delete(key);
+		this.rawBboxCache.delete(key);
+		// Workerが存在する場合のみテクスチャ解放を通知
+		if (_renderWorker) {
+			_renderWorker.postMessage({ action: 'release', entryId: key });
+			// キャッシュが空になったらWorkerを停止
+			if (this.terrariumCache.size === 0) {
+				terminateRenderWorker();
+			}
+		}
 	}
 }
 
@@ -146,10 +249,6 @@ export class GeoTiffImageCache {
 		this.cache.clear();
 	}
 
-	/**
-	 * 指定されたエントリIDに関連する古いキャッシュエントリを削除し、blob URLを解放する。
-	 * 現在のstyleIDのエントリは保持する。
-	 */
 	static revokeOldEntries(entryId: string, currentStyleID: string): void {
 		for (const [key, url] of this.cache.entries()) {
 			if (key.startsWith(entryId) && key !== currentStyleID) {
@@ -162,224 +261,286 @@ export class GeoTiffImageCache {
 	}
 }
 
-export const getMinMax = (band: Float32Array, nodata: any): { min: number; max: number } => {
+// --- Utilities ---
+
+export const getMinMax = (
+	band: TypedArray,
+	nodata: number | null
+): { min: number; max: number } => {
 	let min = Infinity;
 	let max = -Infinity;
 
 	for (let i = 0; i < band.length; i++) {
 		const value = band[i];
-
 		const isValid =
 			Number.isFinite(value) &&
 			(nodata === null ||
 				(!Number.isNaN(nodata) && value !== nodata) ||
 				(Number.isNaN(nodata) && !Number.isNaN(value)));
-
 		if (isValid) {
 			min = Math.min(min, value);
 			max = Math.max(max, value);
 		}
 	}
 
+	if (!Number.isFinite(min)) min = 0;
+	if (!Number.isFinite(max)) max = 255;
+
 	return { min, max };
 };
 
-export const getRasters = async (
-	rasters: ReadRasterResult,
-	width: number,
-	height: number
-): Promise<
-	| {
-			rastersData: Float32Array[];
-			size: number;
-	  }
-	| undefined
-> => {
-	const worker = new Worker(new URL('./convert.worker.ts', import.meta.url), {
-		type: 'module'
-	});
-	try {
-		return new Promise((resolve, reject) => {
-			if (rasters.length === 1) {
-				return resolve({
-					rastersData: rasters[0] as unknown as Float32Array[],
-					size: 1
-				});
-			}
+export const parseRasterBands = (rasterData: ReadRasterResult): RasterBands => {
+	if (Array.isArray(rasterData)) {
+		return rasterData as RasterBands;
+	}
+	return [rasterData as TypedArray];
+};
 
-			worker.postMessage({
-				rasters,
-				width,
-				height
-			});
+// --- Workers (遅延初期化) ---
 
-			// Define message handler once
-			worker.onmessage = async (e) => {
-				const { result } = e.data;
+let _encodeWorker: Worker | null = null;
+let _renderWorker: Worker | null = null;
 
-				resolve({
-					rastersData: result,
-					size: rasters.length
-				});
-
-				worker.terminate(); // Workerを終了
-			};
-
-			// Added error handling
-			worker.onerror = (error) => {
-				console.error('Worker error:', error);
-				reject(new Error(`Worker error: ${error.message}`));
-			};
-
-			worker.terminate(); // Workerを終了
+const getEncodeWorker = (): Worker => {
+	if (!_encodeWorker) {
+		_encodeWorker = new Worker(new URL('./terrarium_encode.worker.ts', import.meta.url), {
+			type: 'module'
 		});
-	} catch (error) {
-		console.error(`Error processing image`, error);
+	}
+	return _encodeWorker;
+};
+
+const getRenderWorker = (): Worker => {
+	if (!_renderWorker) {
+		_renderWorker = new Worker(new URL('./terrarium_render.worker.ts', import.meta.url), {
+			type: 'module'
+		});
+	}
+	return _renderWorker;
+};
+
+/** エンコードWorkerを停止する（全エンコード完了後に呼ぶ） */
+export const terminateEncodeWorker = () => {
+	if (_encodeWorker) {
+		_encodeWorker.terminate();
+		_encodeWorker = null;
 	}
 };
 
-const rebderWorker = new Worker(new URL('./geotiff_render.worker.ts', import.meta.url), {
-	type: 'module'
-});
+/** レンダーWorkerを停止する（全TIFFエントリ解放後に呼ぶ） */
+export const terminateRenderWorker = () => {
+	if (_renderWorker) {
+		_renderWorker.terminate();
+		_renderWorker = null;
+	}
+};
 
 const colorMapManager = new ColorMapManager();
 
-export const loadToGeotiffFile = async (id: string, file: File): Promise<void> => {
-	const arrayBuffer = await file.arrayBuffer();
-	const tiff = await fromArrayBuffer(arrayBuffer);
-	const image = await tiff.getImage();
+// --- Terrarium encoding ---
 
-	const width = image.getWidth();
-	const height = image.getHeight();
-	const rasterData = await image.readRasters({ interleave: false });
-	// const rgb = await image.readRGB();
-	const result = await getRasters(rasterData, width, height);
-	if (!result) {
-		throw new Error('Failed to process raster data');
+/**
+ * 1バンドを Terrarium PNG にエンコードする
+ */
+export const encodeBandToTerrarium = (
+	band: TypedArray,
+	width: number,
+	height: number,
+	nodata: number | null,
+	dataMin: number,
+	dataMax: number
+): Promise<Blob> =>
+	new Promise((resolve, reject) => {
+		getEncodeWorker().postMessage({
+			band,
+			width,
+			height,
+			nodata,
+			dataMin,
+			dataMax
+		});
+
+		getEncodeWorker().onmessage = (e) => {
+			const { blob, error } = e.data;
+			if (error) {
+				reject(new Error(`Encode error: ${error}`));
+				return;
+			}
+			resolve(blob);
+		};
+
+		getEncodeWorker().onerror = (error) => {
+			reject(new Error(`Encode worker error: ${error.message}`));
+		};
+	});
+
+/**
+ * 全バンドを Terrarium PNG にエンコードしてキャッシュする
+ */
+export const encodeAllBandsToTerrarium = async (
+	id: string,
+	bands: RasterBands,
+	width: number,
+	height: number,
+	nodata: number | null,
+	dataRanges: BandDataRange[]
+): Promise<void> => {
+	const urls: string[] = [];
+
+	for (let i = 0; i < bands.length; i++) {
+		const blob = await encodeBandToTerrarium(
+			bands[i],
+			width,
+			height,
+			nodata,
+			dataRanges[i].min,
+			dataRanges[i].max
+		);
+		urls.push(URL.createObjectURL(blob));
 	}
-	const { rastersData, size } = result;
 
-	GeoTiffCache.setRasters(id, rastersData);
+	GeoTiffCache.setTerrarium(id, urls);
+	GeoTiffCache.setDataRanges(id, dataRanges);
 	GeoTiffCache.setSize(id, width, height);
-	GeoTiffCache.setNumBands(id, size);
+	GeoTiffCache.setNumBands(id, bands.length);
+
+	// エンコード完了後にWorkerを停止
+	terminateEncodeWorker();
 };
 
-// ラスターデータの読み込み
+// --- Rendering ---
+
+/**
+ * Terrarium PNG からレンダリングした最終画像を生成する。
+ * 初回はキャッシュの Terrarium PNG を ImageBitmap に変換して Worker に転送。
+ * 以降はユニフォーム値のみ送信。
+ */
 export const loadRasterData = async (
 	id: string,
-	url: string,
 	visualization: RasterTiffStyle['visualization']
 ): Promise<string | undefined> => {
 	try {
-		let width;
-		let height;
-		let rasters: Float32Array[] = [];
-		let bandCount = 1;
-		if (GeoTiffCache.hasRasters(id)) {
-			rasters = GeoTiffCache.getRasters(id) as Float32Array[];
-			width = GeoTiffCache.getSize(id)?.width ?? 0;
-			height = GeoTiffCache.getSize(id)?.height ?? 0;
-			bandCount = GeoTiffCache.getNumBands(id) ?? 1;
-		} else {
-			const response = await fetch(url);
-			const arrayBuffer = await response.arrayBuffer();
-
-			const tiff = await fromArrayBuffer(arrayBuffer);
-			const image = await tiff.getImage();
-			width = image.getWidth();
-			height = image.getHeight();
-			const rasterData = await image.readRasters({ interleave: false });
-			// const rgb = await image.readRGB();
-			const result = await getRasters(rasterData, width, height);
-			if (!result) {
-				throw new Error('Failed to process raster data');
-			}
-			rasters = result.rastersData as Float32Array[];
-			bandCount = result.size;
-			GeoTiffCache.setRasters(id, rasters);
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, bandCount);
+		if (!GeoTiffCache.hasTerrarium(id)) {
+			throw new Error('Terrarium data not found in cache');
 		}
 
-		// nodataの取得
-		// const nodata =
-		// 	image.fileDirectory.GDAL_NODATA !== undefined
-		// 		? parseFloat(image.fileDirectory.GDAL_NODATA)
-		// 		: null;
+		const size = GeoTiffCache.getSize(id);
+		if (!size) throw new Error('Size not found in cache');
 
-		// const min = UniformsData.min ?? getMinMax(rasters[UniformsData.index], nodata).min;
-		// const max = UniformsData.max ?? getMinMax(rasters[UniformsData.index], nodata).max;
+		const dataRanges = GeoTiffCache.getDataRanges(id);
+		if (!dataRanges) throw new Error('Data ranges not found in cache');
 
 		const mode = visualization.mode;
 		const uniformsData = visualization.uniformsData;
 		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
 
-		// rasters をフラット化してワーカーに渡す
-		// texImage3D は連続した Float32Array を要求するため
-		let flatRasters: Float32Array;
-		if (bandCount === 1) {
-			// シングルバンド: rasters は実質 Float32Array（配列ではない）
-			flatRasters = rasters as unknown as Float32Array;
-		} else {
-			flatRasters = new Float32Array(width * height * bandCount);
-			for (let i = 0; i < bandCount; i++) {
-				flatRasters.set(rasters[i], i * width * height);
+		// Worker メッセージ構築
+		const workerMessage: Record<string, unknown> = {
+			entryId: id,
+			type: mode,
+			width: size.width,
+			height: size.height
+		};
+
+		// 4326→メルカトル再投影
+		if (GeoTiffCache.is4326(id)) {
+			const bbox = GeoTiffCache.getBbox(id); // クリップ済み（表示用）
+			const rawBbox = GeoTiffCache.getRawBbox(id); // 元の範囲（テクスチャUV計算用）
+			if (bbox && rawBbox) {
+				workerMessage.reproject4326 = true;
+				workerMessage.bboxDisplay = [bbox[0], bbox[1], bbox[2], bbox[3]];
+				workerMessage.bboxSource = [rawBbox[0], rawBbox[1], rawBbox[2], rawBbox[3]];
+
+				// メルカトルのアスペクト比で出力画像サイズを計算
+				const DEG2RAD = Math.PI / 180;
+				const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
+				const mercYMax = latToMercY(bbox[3]);
+				const mercYMin = latToMercY(bbox[1]);
+				const lngRange = bbox[2] - bbox[0];
+				const mercYRange = mercYMax - mercYMin;
+
+				// 幅は元画像と同じ、高さはメルカトルのアスペクト比に合わせる
+				// WebGLの最大テクスチャサイズを超えないよう制限
+				const MAX_SIZE = 4096;
+				let outputWidth = size.width;
+				let outputHeight = Math.round(outputWidth * (mercYRange / (lngRange * DEG2RAD)));
+
+				if (outputWidth > MAX_SIZE || outputHeight > MAX_SIZE) {
+					const scale = MAX_SIZE / Math.max(outputWidth, outputHeight);
+					outputWidth = Math.round(outputWidth * scale);
+					outputHeight = Math.round(outputHeight * scale);
+				}
+
+				workerMessage.outputWidth = outputWidth;
+				workerMessage.outputHeight = outputHeight;
 			}
 		}
 
-		// モードに応じたワーカーメッセージを構築
-		const workerMessage: Record<string, unknown> = {
-			rasters: flatRasters,
-			size: bandCount,
-			type: mode,
-			width,
-			height,
-			colorArray
-		};
+		// 初回: ImageBitmap を転送
+		if (!GeoTiffCache.isTextureTransferred(id)) {
+			const terrariumUrls = GeoTiffCache.getTerrarium(id)!;
+			const images = await Promise.all(
+				terrariumUrls.map(async (url) => {
+					const response = await fetch(url);
+					const blob = await response.blob();
+					return createImageBitmap(blob);
+				})
+			);
+			workerMessage.images = images;
+			GeoTiffCache.markTextureTransferred(id);
+		}
 
+		// ユニフォーム値（min/max を CPU側で正規化: 0〜1）
 		if (mode === 'single') {
-			workerMessage.min = uniformsData.single.min;
-			workerMessage.max = uniformsData.single.max;
+			const range = dataRanges[uniformsData.single.index];
+			const dMin = range?.min ?? 0;
+			const dMax = range?.max ?? 1;
+			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
+
 			workerMessage.bandIndex = uniformsData.single.index;
+			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
+			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
+			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'multi') {
-			workerMessage.min = 0;
-			workerMessage.max = 255;
+			const normalize = (val: number, dMin: number, dMax: number) =>
+				dMax !== dMin ? (val - dMin) / (dMax - dMin) : 0;
+
+			const rRange = dataRanges[uniformsData.multi.r.index];
+			const gRange = dataRanges[uniformsData.multi.g.index];
+			const bRange = dataRanges[uniformsData.multi.b.index];
+
 			workerMessage.redIndex = uniformsData.multi.r.index;
 			workerMessage.greenIndex = uniformsData.multi.g.index;
 			workerMessage.blueIndex = uniformsData.multi.b.index;
-			workerMessage.redMin = uniformsData.multi.r.min;
-			workerMessage.redMax = uniformsData.multi.r.max;
-			workerMessage.greenMin = uniformsData.multi.g.min;
-			workerMessage.greenMax = uniformsData.multi.g.max;
-			workerMessage.blueMin = uniformsData.multi.b.min;
-			workerMessage.blueMax = uniformsData.multi.b.max;
+
+			workerMessage.redMin = normalize(uniformsData.multi.r.min, rRange.min, rRange.max);
+			workerMessage.redMax = normalize(uniformsData.multi.r.max, rRange.min, rRange.max);
+			workerMessage.greenMin = normalize(uniformsData.multi.g.min, gRange.min, gRange.max);
+			workerMessage.greenMax = normalize(uniformsData.multi.g.max, gRange.min, gRange.max);
+			workerMessage.blueMin = normalize(uniformsData.multi.b.min, bRange.min, bRange.max);
+			workerMessage.blueMax = normalize(uniformsData.multi.b.max, bRange.min, bRange.max);
 		}
 
 		return new Promise((resolve, reject) => {
-			rebderWorker.postMessage(workerMessage);
+			getRenderWorker().postMessage(workerMessage);
 
-			// Define message handler once
-			rebderWorker.onmessage = async (e) => {
+			getRenderWorker().onmessage = async (e) => {
 				const { blob, error } = e.data;
-
 				if (error) {
 					reject(new Error(`Render worker error: ${error}`));
 					return;
 				}
-
 				const url = URL.createObjectURL(blob);
 				GeoTiffCache.setBlob(id, blob, url);
-
 				resolve(url);
 			};
 
-			// Added error handling
-			rebderWorker.onerror = (error) => {
-				console.error('Worker error:', error);
-				reject(new Error(`Worker error: ${error.message}`));
+			getRenderWorker().onerror = (error) => {
+				console.error('Render worker error:', error);
+				reject(new Error(`Render worker error: ${error.message}`));
 			};
 		});
 	} catch (error) {
-		console.error(`Error processing image`, error);
+		console.error('Error rendering raster data', error);
 	}
 };

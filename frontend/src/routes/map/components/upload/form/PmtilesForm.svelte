@@ -48,7 +48,9 @@
 	// PMTiles解析結果
 	let tileTypeLabel = $state<string>('');
 	let isVector = $state<boolean>(false);
-	let vectorLayers = $state<{ id: string; fields: Record<string, string> }[]>([]);
+	let vectorLayers = $state<
+		{ id: string; fields: Record<string, string>; geometryType?: string }[]
+	>([]);
 	let selectedLayerId = $state<string>('');
 	let analyzed = $state<boolean>(false);
 	let pmtilesBbox = $state<[number, number, number, number] | null>(null);
@@ -57,11 +59,22 @@
 
 	// ジオメトリタイプ選択
 	let geometryType = $state<VectorEntryGeometryType>('Point');
-	let geometryTypeOptions = $state([
+
+	const ALL_GEOMETRY_OPTIONS = [
 		{ key: 'Point', name: 'ポイント' },
 		{ key: 'LineString', name: 'ライン' },
 		{ key: 'Polygon', name: 'ポリゴン' }
-	]);
+	];
+
+	// 選択中レイヤーのgeometryTypeに応じて選択肢を絞る
+	const geometryTypeOptions = $derived.by(() => {
+		const layer = vectorLayers.find((l) => l.id === selectedLayerId);
+		if (!layer?.geometryType) return ALL_GEOMETRY_OPTIONS;
+		const gt = layer.geometryType.toLowerCase();
+		if (gt.includes('point')) return ALL_GEOMETRY_OPTIONS.filter((o) => o.key === 'Point');
+		if (gt.includes('line')) return ALL_GEOMETRY_OPTIONS.filter((o) => o.key !== 'Polygon');
+		return ALL_GEOMETRY_OPTIONS; // Polygon → 全部選べる
+	});
 
 	const pmtilesFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -138,24 +151,53 @@
 			if (isVector) {
 				const metadata = (await pm.getMetadata()) as Record<string, unknown>;
 				const vlayers = metadata?.vector_layers as
-					| { id: string; fields: Record<string, string> }[]
+					| {
+							id: string;
+							fields: Record<string, string>;
+							geometry_type?: string;
+							minzoom?: number;
+							maxzoom?: number;
+					  }[]
 					| undefined;
-				const tilestats = metadata?.tilestats as { layers: { layer: string }[] } | undefined;
+				const tilestats = metadata?.tilestats as
+					| { layers: { layer: string; geometry: string }[] }
+					| undefined;
 
 				if (vlayers && Array.isArray(vlayers)) {
 					vectorLayers = vlayers.map((l) => ({
 						id: l.id,
-						fields: l.fields ?? {}
-					}));
-				} else if (tilestats?.layers && Array.isArray(tilestats.layers)) {
-					vectorLayers = tilestats.layers.map((l) => ({
-						id: l.layer,
-						fields: {}
+						fields: l.fields ?? {},
+						geometryType: l.geometry_type ?? undefined
 					}));
 				}
 
+				// tilestatsからジオメトリタイプを補完
+				if (tilestats?.layers && Array.isArray(tilestats.layers)) {
+					for (const stat of tilestats.layers) {
+						const layer = vectorLayers.find((l) => l.id === stat.layer);
+						if (layer && !layer.geometryType && stat.geometry) {
+							layer.geometryType = stat.geometry;
+						}
+						if (!layer) {
+							vectorLayers.push({
+								id: stat.layer,
+								fields: {},
+								geometryType: stat.geometry ?? undefined
+							});
+						}
+					}
+				}
+
 				if (vectorLayers.length === 1) {
-					selectedLayerId = vectorLayers[0].id;
+					const layer = vectorLayers[0];
+					selectedLayerId = layer.id;
+					// ジオメトリタイプを自動設定
+					if (layer.geometryType) {
+						const gt = layer.geometryType.toLowerCase();
+						if (gt.includes('point')) geometryType = 'Point';
+						else if (gt.includes('line')) geometryType = 'LineString';
+						else if (gt.includes('polygon')) geometryType = 'Polygon';
+					}
 				}
 			} else {
 				// ラスターはそのまま登録
@@ -249,12 +291,23 @@
 				<select
 					id="layer-select"
 					bind:value={selectedLayerId}
+					onchange={() => {
+						const layer = vectorLayers.find((l) => l.id === selectedLayerId);
+						if (layer?.geometryType) {
+							const gt = layer.geometryType.toLowerCase();
+							if (gt.includes('point')) geometryType = 'Point';
+							else if (gt.includes('line')) geometryType = 'LineString';
+							else if (gt.includes('polygon')) geometryType = 'Polygon';
+						}
+					}}
 					class="bg-sub rounded border border-gray-600 p-2 text-white"
 				>
 					<option value="" disabled>選択してください</option>
 					{#each vectorLayers as layer}
 						<option value={layer.id}>
 							{layer.id}
+							{#if layer.geometryType}
+								[{layer.geometryType}]{/if}
 							{#if Object.keys(layer.fields).length > 0}
 								({Object.keys(layer.fields).length}フィールド)
 							{/if}

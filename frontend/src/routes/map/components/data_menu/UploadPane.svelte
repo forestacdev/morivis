@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_LABEL, type DialogType } from '$routes/map/types';
+	import {
+		SUPPORTED_FILE_ACCEPT,
+		SUPPORTED_FILE_EXTENSIONS,
+		SUPPORTED_FILE_LABEL,
+		type DialogType
+	} from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -15,9 +20,12 @@
 	}: Props = $props();
 
 	const inputFile = (e: Event) => {
-		const file = (e.target as HTMLInputElement).files?.[0];
-		if (file) {
-			dropFile = file;
+		const files = (e.target as HTMLInputElement).files;
+		if (!files || files.length === 0) return;
+		if (files.length === 1) {
+			dropFile = files[0];
+		} else {
+			dropFile = files;
 		}
 	};
 
@@ -26,12 +34,13 @@
 	};
 
 	const urlDialogs: { type: DialogType; label: string }[] = [
-		{ type: 'raster', label: 'ラスタータイル' },
+		{ type: 'raster', label: 'XYZタイル' },
 		{ type: 'vector', label: 'ベクタータイル' },
-		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: 'wmts', label: 'WMS/WMTS' },
 		{ type: 'arcgis', label: 'ArcGIS' },
-		{ type: '3dtiles', label: '3D Tiles' }
+		{ type: 'pmtiles', label: 'PMTiles' },
+		{ type: '3dtiles', label: '3D Tiles' },
+		{ type: 'demxml', label: '基盤地図DEM' }
 	];
 	let isDragover = $state(false);
 
@@ -65,31 +74,41 @@
 		ondrop={drop}
 		ondragover={dragover}
 		ondragleave={dragleave}
-		class="flex h-full w-full grow flex-col items-center justify-center gap-4 rounded-lg border-2 decoration-amber-200 transition-all {isDragover
+		class="flex h-full w-full grow flex-col items-center justify-center gap-16 rounded-lg border-2 decoration-amber-200 transition-all {isDragover
 			? 'border-white bg-black'
 			: 'border-dashed bg-black/70'}"
 	>
-		<span class="text-3xl">ここにファイルをドロップしてください </span>
-		<span class="">{SUPPORTED_FILE_LABEL}</span>
-		<label class="bg-base grid cursor-pointer place-items-center rounded-full p-4 text-black">
-			<span>またはファイルを選択</span>
-			<input
-				type="file"
-				accept={SUPPORTED_FILE_ACCEPT}
-				class="hidden"
-				onchange={(e) => inputFile(e)}
-			/>
-		</label>
-	</div>
-	<div class="flex grow items-center justify-center gap-4">
-		{#each urlDialogs as dialog}
-			<button
-				onclick={() => showUploadDialog(dialog.type)}
-				class="border-sub grid aspect-video w-full max-w-[300px] cursor-pointer place-items-center rounded-lg border-1 bg-black p-4 transition hover:bg-gray-800"
+		<div class="grid place-items-center gap-6">
+			<span class="text-3xl">ここにファイルをドロップしてください </span>
+			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
+				{#each SUPPORTED_FILE_EXTENSIONS as label}
+					<span class="bg-sub rounded-full p-1 px-3 text-xs">{label}</span>
+				{/each}
+			</div>
+
+			<label
+				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
 			>
-				{dialog.label}
-			</button>
-		{/each}
+				<span>またはファイルを選択</span>
+				<input
+					type="file"
+					multiple
+					accept={SUPPORTED_FILE_ACCEPT}
+					class="hidden"
+					onchange={(e) => inputFile(e)}
+				/>
+			</label>
+		</div>
+		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
+			{#each urlDialogs as dialog}
+				<button
+					onclick={() => showUploadDialog(dialog.type)}
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
+				>
+					{dialog.label}
+				</button>
+			{/each}
+		</div>
 	</div>
 </div>
 

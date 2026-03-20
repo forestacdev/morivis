@@ -4,13 +4,13 @@
 
 	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
 	import { confirmationDialog } from '$routes/stores/confirmation';
-	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		imagePreviewUrl: string | null;
+		imageBounds: [number, number, number, number] | null;
 	}
 
-	let { imagePreviewUrl = $bindable() }: Props = $props();
+	let { imagePreviewUrl = $bindable(), imageBounds = $bindable() }: Props = $props();
 
 	const handleConfirm = async () => {
 		if (imagePreviewUrl) {
@@ -24,29 +24,32 @@
 				String(now.getMinutes()).padStart(2, '0') +
 				String(now.getSeconds()).padStart(2, '0');
 
-			const epsg = 4326;
-			const baseName = formattedDate + '_epsg_' + epsg;
+			if (imageBounds) {
+				// メルカトルキャプチャ: aux.xml付きzipで出力
+				const baseName = formattedDate + '_epsg_3857';
 
-			const zip = new JSZip();
-			zip.file(baseName + '.png', imagePreviewUrl?.split(',')[1] ?? '', {
-				base64: true
-			});
+				const zip = new JSZip();
+				zip.file(baseName + '.png', imagePreviewUrl?.split(',')[1] ?? '', {
+					base64: true
+				});
 
-			const map = mapStore.getMap();
-			if (!map) return;
+				const auxXmlContent = await generateAuxXml(imageBounds, imagePreviewUrl);
+				zip.file(baseName + '.png.aux.xml', auxXmlContent);
 
-			const auxXmlContent = await generateAuxXml(map, imagePreviewUrl);
-
-			zip.file(baseName + '.png.aux.xml', auxXmlContent);
-
-			// ZIPファイルを生成してダウンロード
-			const zipBlob = await zip.generateAsync({ type: 'blob' });
-			const url = URL.createObjectURL(zipBlob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = `${formattedDate}.zip`;
-			a.click();
-			URL.revokeObjectURL(url);
+				const zipBlob = await zip.generateAsync({ type: 'blob' });
+				const url = URL.createObjectURL(zipBlob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `${formattedDate}.zip`;
+				a.click();
+				URL.revokeObjectURL(url);
+			} else {
+				// globeキャプチャ: PNGのみ出力
+				const a = document.createElement('a');
+				a.href = imagePreviewUrl;
+				a.download = `${formattedDate}.png`;
+				a.click();
+			}
 
 			imagePreviewUrl = null;
 		}

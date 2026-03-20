@@ -23,9 +23,10 @@
 	import { isBlocked } from '$routes/stores/ui';
 	interface Props {
 		imagePreviewUrl: string | null;
+		imageBounds: [number, number, number, number] | null;
 	}
 
-	let { imagePreviewUrl = $bindable() }: Props = $props();
+	let { imagePreviewUrl = $bindable(), imageBounds = $bindable() }: Props = $props();
 
 	const toggleDataMenu = () => {
 		showOtherMenu.set(false);
@@ -47,8 +48,9 @@
 
 		const map = mapStore.getMap();
 		if (!map) return;
-		const imageUrl = await getMapCanvasImage(map);
-		imagePreviewUrl = imageUrl;
+		const result = await getMapCanvasImage(map);
+		imagePreviewUrl = result.imageUrl;
+		imageBounds = result.bounds;
 
 		// showNotification('地図をPNG画像でエクスポートしました', 'success');
 	};

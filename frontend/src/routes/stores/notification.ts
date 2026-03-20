@@ -1,4 +1,6 @@
 import { writable } from 'svelte/store';
+import { shake, pulseZoom } from '$routes/map/utils/camera-effects';
+
 /** 通知メッセージ */
 type NotificationMessage = {
 	message: string;
@@ -20,6 +22,7 @@ export const showNotification = (
 	persistent: NotificationMessage['persistent'] = false
 ) => {
 	notificationMessage.set({ message, type, persistent });
+	if (type === 'error') shake();
 };
 
 /**
