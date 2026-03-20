@@ -79,7 +79,6 @@
 	const setFile = async (file: File | FileList) => {
 		if (file instanceof File) {
 			const ext = file.name.split('.').pop()?.toLowerCase();
-			console.log('[FileManager] single file:', file.name, 'ext:', ext);
 
 			switch (ext) {
 				case 'csv':
@@ -177,7 +176,7 @@
 			}
 		} else if (file instanceof FileList) {
 			const files = Array.from(file);
-			console.warn('[FileManager] FileList:', files.map((f) => f.name));
+
 			if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
 			} else if (files.some(isGeoImageRelated)) {

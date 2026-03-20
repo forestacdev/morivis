@@ -96,10 +96,8 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.laz',
 	'.ply',
 	'.pcd',
-
 	'.nc',
 	'.nc4',
-
 	'.zip'
 ] as const;
 

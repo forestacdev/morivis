@@ -250,7 +250,15 @@
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
 
 			// サムネイル画像を生成（メルカトル補正）
-			const mapImage = generateThumbnail(data, width, height, ranges[0].min, ranges[0].max, nodata, rawBbox);
+			const mapImage = generateThumbnail(
+				data,
+				width,
+				height,
+				ranges[0].min,
+				ranges[0].max,
+				nodata,
+				rawBbox
+			);
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 

@@ -130,7 +130,9 @@ class ParallelXmlParser {
 			worker.onerror = null;
 			try {
 				worker.terminate();
-			} catch { /* ignore */ }
+			} catch {
+				/* ignore */
+			}
 		});
 		this.workers = [];
 	}
@@ -177,10 +179,7 @@ const getNpArray = (content: DemContent): NpArrayData => {
 /**
  * 複数メッシュのDEMデータを1枚のFloat32Arrayに結合する
  */
-const mergeDemArrays = (
-	contentList: DemContent[],
-	npArrayList: NpArrayData[]
-): DemXmlResult => {
+const mergeDemArrays = (contentList: DemContent[], npArrayList: NpArrayData[]): DemXmlResult => {
 	const metaDataList = contentList.map((c) => c.meta_data);
 
 	// 全体のbboxを計算
