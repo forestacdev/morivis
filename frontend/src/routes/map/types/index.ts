@@ -82,7 +82,16 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.dm',
 	'.sim',
 	'.pmtiles',
-	'.glb'
+	'.glb',
+	'.tif',
+	'.tiff',
+	'.tfw',
+	'.png',
+	'.jpg',
+	'.jpeg',
+	'.pgw',
+	'.jgw',
+	'.h5'
 ] as const;
 
 /** input[accept] 用のカンマ区切り文字列 */

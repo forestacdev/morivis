@@ -28,7 +28,9 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx)$/i.test(file.name);
-	const isTiffRelated = (file: File): boolean => /\.(tiff?|tfw|tifw|tiffw|wld)$/i.test(file.name);
+	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|tiff?)$/i.test(file.name);
+	const isGeoImageRelated = (file: File): boolean =>
+		/\.(png|jpe?g|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 
 	const setFile = (file: File | FileList) => {
 		if (file instanceof File) {
@@ -74,9 +76,25 @@
 					return;
 				case 'tiff':
 				case 'tif':
+				case 'png':
+				case 'jpg':
+				case 'jpeg':
 					showDialogType = 'geotiff';
 					return;
+				case 'tfw':
+				case 'tifw':
+				case 'tiffw':
+				case 'pgw':
+				case 'jgw':
+				case 'wld':
+					showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
+					return;
 				default:
+					// aux.xmlの判定（拡張子がxmlでもファイル名が.aux.xmlで終わる場合）
+					if (file.name.toLowerCase().endsWith('.aux.xml')) {
+						showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
+						return;
+					}
 					showNotification('対応していないファイル形式です', 'error');
 					return;
 			}
@@ -84,8 +102,12 @@
 			const files = Array.from(file);
 			if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
-			} else if (files.some(isTiffRelated)) {
-				// tiff + tfw等のセット → FileListのまま渡す
+			} else if (files.some(isGeoImageRelated)) {
+				if (!files.some(isGeoImageMain)) {
+					// 補助ファイルのみ → 画像ファイルと一緒にドロップするよう促す
+					showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
+					return;
+				}
 				showDialogType = 'geotiff';
 			} else {
 				setFile(files[0]);

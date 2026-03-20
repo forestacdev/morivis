@@ -27,6 +27,32 @@ export const parseEpsgFromAuxXml = (xmlContent: string): EpsgCode | null => {
 	return null;
 };
 
+/**
+ * aux.xmlからGeoTransformを読み取り、画像サイズからbboxを計算する
+ */
+export const parseBboxFromAuxXml = (
+	xmlContent: string,
+	width: number,
+	height: number
+): [number, number, number, number] | null => {
+	const gtMatch = xmlContent.match(/<GeoTransform>([\s\S]*?)<\/GeoTransform>/);
+	if (!gtMatch) return null;
+
+	const values = gtMatch[1].split(',').map((v) => parseFloat(v.trim()));
+	if (values.length < 6 || values.some((v) => !Number.isFinite(v))) return null;
+
+	// GeoTransform: [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight]
+	const [originX, pixelWidth, , originY, , pixelHeight] = values;
+
+	// ピクセル中心からピクセル端に補正
+	const minX = originX - pixelWidth * 0.5;
+	const maxY = originY - pixelHeight * 0.5;
+	const maxX = minX + pixelWidth * width;
+	const minY = maxY + pixelHeight * height; // pixelHeightは負
+
+	return [minX, minY, maxX, maxY];
+};
+
 // ============================
 // GeoTransform 計算
 // ============================

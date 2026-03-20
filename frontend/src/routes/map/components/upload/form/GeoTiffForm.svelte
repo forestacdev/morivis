@@ -14,7 +14,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import { parseEpsgFromAuxXml } from '$routes/map/utils/file/aux.xml';
+	import { parseEpsgFromAuxXml, parseBboxFromAuxXml } from '$routes/map/utils/file/aux.xml';
 	import {
 		GeoTiffCache,
 		parseRasterBands,
@@ -74,13 +74,19 @@
 	let parsedNodata = $state<number | null>(null);
 	let dataRanges = $state<BandDataRange[]>([]);
 
-	const tiffFile = $derived.by(() => {
+	const imageFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(tiff?|tif)$/i.test(f.name)) ?? null;
+			return (
+				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g)$/i.test(f.name)) ?? null
+			);
 		}
 		return dropFile;
 	});
+
+	const isPlainImage = $derived(
+		imageFile ? /\.(png|jpe?g)$/i.test(imageFile.name) : false
+	);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -120,21 +126,137 @@
 		}
 	};
 
-	const findTfwFile = (files: FileList): File | null => {
-		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|wld)$/i.test(f.name)) ?? null;
+	const findWorldFile = (files: FileList): File | null => {
+		return (
+			Array.from(files).find((f) => /\.(tfw|tifw|tiffw|pgw|jgw|wld)$/i.test(f.name)) ?? null
+		);
 	};
 
 	const findAuxXmlFile = (files: FileList): File | null => {
 		return Array.from(files).find((f) => /\.aux\.xml$/i.test(f.name)) ?? null;
 	};
 
-	// ファイルドロップ時: GeoTIFF解析
+	// ファイルドロップ時: 解析
 	$effect(() => {
-		if (tiffFile) {
-			entryName = tiffFile.name.replace(/\.[^.]+$/, '');
-			analyzeGeoTiff(tiffFile);
+		if (imageFile) {
+			entryName = imageFile.name.replace(/\.[^.]+$/, '');
+			if (isPlainImage) {
+				analyzeImage(imageFile);
+			} else {
+				analyzeGeoTiff(imageFile);
+			}
 		}
 	});
+
+	/**
+	 * PNG/JPG画像からRGB 3バンドデータを抽出
+	 */
+	const analyzeImage = async (file: File) => {
+		isProcessing.set(true);
+		analyzed = false;
+		resolvedBbox = null;
+		hasTfw = false;
+		parsedBands = null;
+
+		try {
+			const bitmap = await createImageBitmap(await file.arrayBuffer().then((b) => new Blob([b])));
+			const width = bitmap.width;
+			const height = bitmap.height;
+			imageWidth = width;
+			imageHeight = height;
+
+			// Canvas経由でRGBAデータを取得
+			const canvas = new OffscreenCanvas(width, height);
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context取得失敗');
+			ctx.drawImage(bitmap, 0, 0);
+			bitmap.close();
+
+			const imgData = ctx.getImageData(0, 0, width, height);
+			const rgba = imgData.data;
+			const pixelCount = width * height;
+
+			// RGBAからR/G/B各バンドのTypedArrayを生成
+			const rBand = new Uint8Array(pixelCount);
+			const gBand = new Uint8Array(pixelCount);
+			const bBand = new Uint8Array(pixelCount);
+			for (let i = 0; i < pixelCount; i++) {
+				rBand[i] = rgba[i * 4];
+				gBand[i] = rgba[i * 4 + 1];
+				bBand[i] = rgba[i * 4 + 2];
+			}
+
+			const bands: RasterBands = [rBand, gBand, bBand];
+			numBands = 3;
+
+			const id = `geotiff_${crypto.randomUUID()}`;
+			entryId = id;
+			parsedNodata = null;
+
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
+			dataRanges = ranges;
+
+			bandMinMax = ranges[0];
+			multiBandMinMax = {
+				r: ranges[0],
+				g: ranges[1],
+				b: ranges[2]
+			};
+
+			parsedBands = bands;
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 3);
+
+			// aux.xmlからGeoTransform/EPSGコードを取得
+			let auxEpsg: EpsgCode | null = null;
+			let auxContent: string | null = null;
+			if (dropFile instanceof FileList) {
+				const auxFile = findAuxXmlFile(dropFile);
+				if (auxFile) {
+					auxContent = await auxFile.text();
+					auxEpsg = parseEpsgFromAuxXml(auxContent);
+				}
+			}
+
+			// ワールドファイルから位置情報を取得
+			if (dropFile instanceof FileList) {
+				const wf = findWorldFile(dropFile);
+				if (wf) {
+					rawBbox = await parseTfw(wf, width, height);
+					hasTfw = true;
+				}
+			}
+
+			// ワールドファイルがなければaux.xmlのGeoTransformからbboxを取得
+			if (!rawBbox && auxContent) {
+				rawBbox = parseBboxFromAuxXml(auxContent, width, height);
+			}
+
+			analyzed = true;
+
+			if (rawBbox && isBboxValid(rawBbox)) {
+				resolvedBbox = rawBbox;
+				GeoTiffCache.setBbox(id, rawBbox);
+			} else if (rawBbox && auxEpsg) {
+				convertBboxWithEpsg(auxEpsg);
+				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
+			} else if (rawBbox) {
+				showZoneForm = true;
+				focusBbox = rawBbox;
+			} else {
+				showNotification(
+					'位置情報がありません。ワールドファイル(.pgw/.jgw/.tfw)またはaux.xmlと一緒にドロップしてください。',
+					'error'
+				);
+			}
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
 
 	const analyzeGeoTiff = async (file: File) => {
 		isProcessing.set(true);
@@ -165,7 +287,7 @@
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
 			if (!rawBbox && dropFile instanceof FileList) {
-				const tfwFile = findTfwFile(dropFile);
+				const tfwFile = findWorldFile(dropFile);
 				if (tfwFile) {
 					rawBbox = await parseTfw(tfwFile, width, height);
 					hasTfw = true;
@@ -208,14 +330,20 @@
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, bands.length);
 
-			// aux.xmlからEPSGコードを取得
+			// aux.xmlからGeoTransform/EPSGコードを取得
 			let auxEpsg: EpsgCode | null = null;
+			let auxContent: string | null = null;
 			if (dropFile instanceof FileList) {
 				const auxFile = findAuxXmlFile(dropFile);
 				if (auxFile) {
-					const auxContent = await auxFile.text();
+					auxContent = await auxFile.text();
 					auxEpsg = parseEpsgFromAuxXml(auxContent);
 				}
+			}
+
+			// ワールドファイル・GeoTIFF内蔵bboxがなければaux.xmlのGeoTransformからbboxを取得
+			if (!rawBbox && auxContent) {
+				rawBbox = parseBboxFromAuxXml(auxContent, width, height);
 			}
 
 			analyzed = true;
@@ -233,7 +361,7 @@
 				focusBbox = rawBbox;
 			} else {
 				showNotification(
-					'位置情報がありません。.tfwファイルと一緒にドロップしてください。',
+					'位置情報がありません。ワールドファイルまたはaux.xmlと一緒にドロップしてください。',
 					'error'
 				);
 			}
@@ -371,7 +499,7 @@
 			showDataEntry = entry;
 			showDialogType = null;
 			dropFile = null;
-			showNotification('GeoTIFFファイルを読み込みました', 'success');
+			showNotification(isPlainImage ? '画像ファイルを読み込みました' : 'GeoTIFFファイルを読み込みました', 'success');
 		} catch (e) {
 			showNotification(
 				e instanceof Error ? e.message : 'エンコードに失敗しました',
@@ -391,7 +519,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">GeoTIFFファイルの登録</span>
+	<span class="text-2xl font-bold">{isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span>
 </div>
 
 <div
@@ -399,9 +527,9 @@
 >
 	<TextForm bind:value={entryName} label="データ名" />
 
-	{#if tiffFile}
+	{#if imageFile}
 		<div class="w-full px-2 text-sm text-gray-300">
-			ファイル: {tiffFile.name}
+			ファイル: {imageFile.name}
 		</div>
 	{/if}
 

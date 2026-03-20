@@ -15,9 +15,12 @@
 	}: Props = $props();
 
 	const inputFile = (e: Event) => {
-		const file = (e.target as HTMLInputElement).files?.[0];
-		if (file) {
-			dropFile = file;
+		const files = (e.target as HTMLInputElement).files;
+		if (!files || files.length === 0) return;
+		if (files.length === 1) {
+			dropFile = files[0];
+		} else {
+			dropFile = files;
 		}
 	};
 
@@ -78,6 +81,7 @@
 				<span>またはファイルを選択</span>
 				<input
 					type="file"
+					multiple
 					accept={SUPPORTED_FILE_ACCEPT}
 					class="hidden"
 					onchange={(e) => inputFile(e)}
