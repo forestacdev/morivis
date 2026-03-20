@@ -53,6 +53,21 @@ export interface ModelTiles3DEntry<T> extends BaseModelEntry {
 	style: T;
 }
 
+export interface ModelPointCloudEntry extends BaseModelEntry {
+	format: {
+		type: 'point-cloud';
+		/** Blob URL of the LAS/LAZ file (未変換時) */
+		url?: string;
+		/** 変換済みの位置データ [x,y,z, x,y,z, ...] */
+		positions?: Float32Array;
+		/** 色データ [r,g,b, r,g,b, ...] (0-255) */
+		colors?: Uint8Array;
+		/** 点数 */
+		pointCount: number;
+	};
+	style: PointCloudStyle;
+}
+
 export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<PointCloudStyle>;
 
 export type AnyModelTiles3DEntry =
@@ -62,6 +77,7 @@ export type AnyModelTiles3DEntry =
 export type MeshStyleEntry = ModelMeshEntry<MeshStyle> | ModelTiles3DEntry<MeshStyle>;
 export type PointCloudStyleEntry =
 	| ModelMeshEntry<PointCloudStyle>
-	| ModelTiles3DEntry<PointCloudStyle>;
+	| ModelTiles3DEntry<PointCloudStyle>
+	| ModelPointCloudEntry;
 
-export type AnyModelEntry = AnyModelMeshEntry | AnyModelTiles3DEntry;
+export type AnyModelEntry = AnyModelMeshEntry | AnyModelTiles3DEntry | ModelPointCloudEntry;

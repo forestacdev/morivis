@@ -81,6 +81,10 @@
 				case 'jpeg':
 					showDialogType = 'geotiff';
 					return;
+				case 'las':
+				case 'laz':
+					showDialogType = 'pointcloud';
+					return;
 				case 'tfw':
 				case 'tifw':
 				case 'tiffw':

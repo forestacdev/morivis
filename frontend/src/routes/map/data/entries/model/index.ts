@@ -4,6 +4,7 @@ import type {
 	ModelMeshEntry,
 	MeshStyle,
 	ModelTiles3DEntry,
+	ModelPointCloudEntry,
 	PointCloudStyle
 } from '$routes/map/data/types/model';
 
@@ -41,6 +42,37 @@ const pointToBbox = (
 	lat: number,
 	offset = 0.001
 ): [number, number, number, number] => [lng - offset, lat - offset, lng + offset, lat + offset];
+
+export const createPointCloudEntry = (
+	name: string,
+	config: {
+		positions: Float32Array;
+		colors?: Uint8Array;
+		pointCount: number;
+	},
+	bounds?: [number, number, number, number]
+): ModelPointCloudEntry => ({
+	id: 'pointcloud_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'point-cloud',
+		positions: config.positions,
+		colors: config.colors,
+		pointCount: config.pointCount
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		name,
+		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+	},
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'point-cloud',
+		opacity: 0.7,
+		pointSize: 1
+	}
+});
 
 export const createGlbEntry = (
 	name: string,

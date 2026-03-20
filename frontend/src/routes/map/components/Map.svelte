@@ -38,7 +38,7 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { AnyModelTiles3DEntry } from '$routes/map/data/types/model';
+	import type { AnyModelTiles3DEntry, ModelPointCloudEntry } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import {
 		type FeatureMenuData,
@@ -545,7 +545,20 @@
 			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
 		}
 
-		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry);
+		// LAS/LAZ点群エントリ
+		const pointCloudEntries = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
+		) as ModelPointCloudEntry[];
+
+		if (
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			(showDataEntry as ModelPointCloudEntry).format.type === 'point-cloud'
+		) {
+			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
+		}
+
+		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry, pointCloudEntries);
 		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(

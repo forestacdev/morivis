@@ -65,6 +65,7 @@ export type DialogType =
 	| 'pmtiles'
 	| 'glb'
 	| 'arcgis'
+	| 'pointcloud'
 	| null;
 
 /** ファイル選択/ラベルに表示する主要ファイル拡張子 */
@@ -85,7 +86,9 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.png',
 	'.jpg',
 	'.jpeg',
-	'.h5'
+	'.h5',
+	'.las',
+	'.laz'
 ] as const;
 
 /** input[accept] 用（主要ファイル + 補助ファイルも受け入れる） */

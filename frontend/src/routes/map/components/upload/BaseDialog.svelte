@@ -12,6 +12,7 @@
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
+	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
@@ -85,6 +86,17 @@
 			{/if}
 			{#if showDialogType === '3dtiles'}
 				<Tiles3DForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'pointcloud'}
+				<PointCloudForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'pmtiles'}
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />

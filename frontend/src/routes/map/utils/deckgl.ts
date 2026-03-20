@@ -1,6 +1,7 @@
 import { Tile3DLayer } from '@deck.gl/geo-layers';
+import { PointCloudLayer } from '@deck.gl/layers';
 
-import type { AnyModelTiles3DEntry } from '../data/types/model';
+import type { AnyModelTiles3DEntry, ModelPointCloudEntry } from '../data/types/model';
 
 interface TileContent {
 	cartographicOrigin?: number[];
@@ -36,8 +37,49 @@ const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	});
 };
 
-export const createDeckOverlay = async (_dataEntries: AnyModelTiles3DEntry[]) => {
-	const layers = _dataEntries.map((entry) => createTiles3DLayer(entry));
+const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+	const { positions, colors, pointCount } = dataEntry.format;
+	if (!positions || pointCount === 0) return null;
 
-	return layers;
+	// colorsのチャンネル数を判定（RGB=3 or RGBA=4）
+	const colorChannels = colors ? Math.round(colors.length / pointCount) : 0;
+
+	// Float32Arrayからオブジェクト配列を生成
+	const data = new Array(pointCount);
+	for (let i = 0; i < pointCount; i++) {
+		const posIdx = i * 3;
+		data[i] = {
+			position: [positions[posIdx], positions[posIdx + 1], positions[posIdx + 2]] as [number, number, number],
+			color: colors
+				? colorChannels === 4
+					? [colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]] as [number, number, number, number]
+					: [colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2], 255] as [number, number, number, number]
+				: [255, 255, 255, 255] as [number, number, number, number]
+		};
+	}
+
+	return new PointCloudLayer({
+		id: `point-cloud-layer-${dataEntry.id}`,
+		data,
+		getPosition: (d: { position: [number, number, number] }) => d.position,
+		getColor: (d: { color: [number, number, number, number] }) => d.color,
+		getNormal: [0, 0, 1],
+		opacity: dataEntry.style.opacity,
+		visible: dataEntry.style.visible ?? true,
+		pointSize: dataEntry.style.pointSize ?? 1,
+		parameters: { depthTest: false },
+		beforeId: 'deck-reference-layer'
+	});
+};
+
+export const createDeckOverlay = async (
+	tiles3dEntries: AnyModelTiles3DEntry[],
+	pointCloudEntries: ModelPointCloudEntry[] = []
+) => {
+	const tiles3dLayers = tiles3dEntries.map((entry) => createTiles3DLayer(entry));
+	const pointCloudLayers = pointCloudEntries
+		.map((entry) => createPointCloudLayer(entry))
+		.filter((layer) => layer !== null);
+
+	return [...tiles3dLayers, ...pointCloudLayers];
 };
