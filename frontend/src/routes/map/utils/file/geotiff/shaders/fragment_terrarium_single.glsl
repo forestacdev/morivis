@@ -10,11 +10,7 @@ uniform sampler2D u_color_map;
 // バンド選択
 uniform int u_bandIndex;
 
-// データ範囲（正規化エンコード時の min/max）
-uniform float u_dataMin;
-uniform float u_dataMax;
-
-// 表示範囲（ユーザー指定の min/max）
+// 表示範囲（CPU側で正規化済み: 0〜1）
 uniform float u_min;
 uniform float u_max;
 
@@ -27,11 +23,6 @@ float decodeTerrariumNormalized(vec4 color) {
     return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) / 65535.0;
 }
 
-// カラーマップから色を取得
-vec4 getColorFromMap(float value) {
-    return vec4(texture(u_color_map, vec2(value, 0.5)).rgb, 1.0);
-}
-
 void main() {
     vec4 encoded = texture(u_terrarium_bands, vec3(v_tex_coord, u_bandIndex));
 
@@ -41,12 +32,11 @@ void main() {
         return;
     }
 
-    // Terrarium デコード → 正規化値 → 実値
-    float normalized = decodeTerrariumNormalized(encoded);
-    float realValue = normalized * (u_dataMax - u_dataMin) + u_dataMin;
+    // Terrarium デコード → 0〜1
+    float decoded = decodeTerrariumNormalized(encoded);
 
-    // 表示範囲で正規化
-    float displayNorm = clamp((realValue - u_min) / (u_max - u_min), 0.0, 1.0);
+    // 表示範囲で正規化（u_min, u_max は既にCPU側で正規化済み）
+    float displayNorm = clamp((decoded - u_min) / (u_max - u_min), 0.0, 1.0);
 
-    fragColor = getColorFromMap(displayNorm);
+    fragColor = vec4(texture(u_color_map, vec2(displayNorm, 0.5)).rgb, 1.0);
 }

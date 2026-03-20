@@ -163,22 +163,14 @@ interface RenderMessage {
 	height: number;
 	// カラーマップ（single モード用）
 	colorArray?: Uint8Array;
-	// single モード
+	// single モード（min/max は CPU側で正規化済み: 0〜1）
 	bandIndex?: number;
-	dataMin?: number;
-	dataMax?: number;
 	min?: number;
 	max?: number;
-	// multi モード
+	// multi モード（各チャンネルの min/max も正規化済み: 0〜1）
 	redIndex?: number;
 	greenIndex?: number;
 	blueIndex?: number;
-	redDataMin?: number;
-	redDataMax?: number;
-	greenDataMin?: number;
-	greenDataMax?: number;
-	blueDataMin?: number;
-	blueDataMax?: number;
 	redMin?: number;
 	redMax?: number;
 	greenMin?: number;
@@ -237,14 +229,11 @@ self.onmessage = async (e) => {
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, cached.texture);
 		gl.uniform1i(gl.getUniformLocation(program, 'u_terrarium_bands'), 0);
 
-		// ユニフォーム設定
+		// ユニフォーム設定（min/max は CPU側で正規化済み: 0〜1）
 		if (msg.type === 'single') {
 			gl.uniform1i(gl.getUniformLocation(program, 'u_bandIndex'), msg.bandIndex ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_dataMin'), msg.dataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_dataMax'), msg.dataMax ?? 1);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_min'), msg.min ?? msg.dataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), msg.max ?? msg.dataMax ?? 1);
-			// カラーマップ
+			gl.uniform1f(gl.getUniformLocation(program, 'u_min'), msg.min ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), msg.max ?? 1);
 			if (msg.colorArray) {
 				bindColorMapTexture(program, msg.colorArray, 1);
 			}
@@ -252,18 +241,12 @@ self.onmessage = async (e) => {
 			gl.uniform1i(gl.getUniformLocation(program, 'u_redIndex'), msg.redIndex ?? 0);
 			gl.uniform1i(gl.getUniformLocation(program, 'u_greenIndex'), msg.greenIndex ?? 1);
 			gl.uniform1i(gl.getUniformLocation(program, 'u_blueIndex'), msg.blueIndex ?? 2);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_redDataMin'), msg.redDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_redDataMax'), msg.redDataMax ?? 255);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_greenDataMin'), msg.greenDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_greenDataMax'), msg.greenDataMax ?? 255);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_blueDataMin'), msg.blueDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_blueDataMax'), msg.blueDataMax ?? 255);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_redMin'), msg.redMin ?? msg.redDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_redMax'), msg.redMax ?? msg.redDataMax ?? 255);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMin'), msg.greenMin ?? msg.greenDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMax'), msg.greenMax ?? msg.greenDataMax ?? 255);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMin'), msg.blueMin ?? msg.blueDataMin ?? 0);
-			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMax'), msg.blueMax ?? msg.blueDataMax ?? 255);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_redMin'), msg.redMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_redMax'), msg.redMax ?? 1);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMin'), msg.greenMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_greenMax'), msg.greenMax ?? 1);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMin'), msg.blueMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_blueMax'), msg.blueMax ?? 1);
 		}
 
 		// 描画

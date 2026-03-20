@@ -349,36 +349,35 @@ export const loadRasterData = async (
 			GeoTiffCache.markTextureTransferred(id);
 		}
 
-		// ユニフォーム値
+		// ユニフォーム値（min/max を CPU側で正規化: 0〜1）
 		if (mode === 'single') {
+			const range = dataRanges[uniformsData.single.index];
+			const dMin = range?.min ?? 0;
+			const dMax = range?.max ?? 1;
+			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
+
 			workerMessage.bandIndex = uniformsData.single.index;
-			workerMessage.dataMin = dataRanges[uniformsData.single.index]?.min ?? 0;
-			workerMessage.dataMax = dataRanges[uniformsData.single.index]?.max ?? 1;
-			workerMessage.min = uniformsData.single.min;
-			workerMessage.max = uniformsData.single.max;
+			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
+			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'multi') {
-			const rIdx = uniformsData.multi.r.index;
-			const gIdx = uniformsData.multi.g.index;
-			const bIdx = uniformsData.multi.b.index;
+			const normalize = (val: number, dMin: number, dMax: number) =>
+				dMax !== dMin ? (val - dMin) / (dMax - dMin) : 0;
 
-			workerMessage.redIndex = rIdx;
-			workerMessage.greenIndex = gIdx;
-			workerMessage.blueIndex = bIdx;
+			const rRange = dataRanges[uniformsData.multi.r.index];
+			const gRange = dataRanges[uniformsData.multi.g.index];
+			const bRange = dataRanges[uniformsData.multi.b.index];
 
-			workerMessage.redDataMin = dataRanges[rIdx]?.min ?? 0;
-			workerMessage.redDataMax = dataRanges[rIdx]?.max ?? 255;
-			workerMessage.greenDataMin = dataRanges[gIdx]?.min ?? 0;
-			workerMessage.greenDataMax = dataRanges[gIdx]?.max ?? 255;
-			workerMessage.blueDataMin = dataRanges[bIdx]?.min ?? 0;
-			workerMessage.blueDataMax = dataRanges[bIdx]?.max ?? 255;
+			workerMessage.redIndex = uniformsData.multi.r.index;
+			workerMessage.greenIndex = uniformsData.multi.g.index;
+			workerMessage.blueIndex = uniformsData.multi.b.index;
 
-			workerMessage.redMin = uniformsData.multi.r.min;
-			workerMessage.redMax = uniformsData.multi.r.max;
-			workerMessage.greenMin = uniformsData.multi.g.min;
-			workerMessage.greenMax = uniformsData.multi.g.max;
-			workerMessage.blueMin = uniformsData.multi.b.min;
-			workerMessage.blueMax = uniformsData.multi.b.max;
+			workerMessage.redMin = normalize(uniformsData.multi.r.min, rRange.min, rRange.max);
+			workerMessage.redMax = normalize(uniformsData.multi.r.max, rRange.min, rRange.max);
+			workerMessage.greenMin = normalize(uniformsData.multi.g.min, gRange.min, gRange.max);
+			workerMessage.greenMax = normalize(uniformsData.multi.g.max, gRange.min, gRange.max);
+			workerMessage.blueMin = normalize(uniformsData.multi.b.min, bRange.min, bRange.max);
+			workerMessage.blueMax = normalize(uniformsData.multi.b.max, bRange.min, bRange.max);
 		}
 
 		return new Promise((resolve, reject) => {
