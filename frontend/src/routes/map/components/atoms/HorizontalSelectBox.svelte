@@ -1,13 +1,17 @@
 <script lang="ts">
 	interface Props {
 		label?: string;
-		group: string;
+		group: string | number;
 		options: {
-			key: string;
+			key: string | number;
 			name: string;
 		}[];
 	}
 	let { label, group = $bindable(), options = $bindable() }: Props = $props();
+
+	const selectOption = (key: string | number) => {
+		group = key;
+	};
 </script>
 
 <div class="flex flex-col gap-2">
@@ -25,15 +29,17 @@
 					: 'translate-x-full'}"
 			></div>
 			{#each options as line (line.key)}
-				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
-					<input type="radio" bind:group value={line.key} class="hidden" />
+				<button
+					class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white"
+					onclick={() => selectOption(line.key)}
+				>
 					<span
 						class="transition-colors duration-200 select-none {line.key === group
 							? 'text-black'
 							: ''}"
 						>{line.name}
 					</span>
-				</label>
+				</button>
 			{/each}
 		</div>
 	{/if}

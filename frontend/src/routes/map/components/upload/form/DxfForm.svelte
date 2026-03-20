@@ -11,7 +11,6 @@
 		filterByProperty,
 		groupPropertyByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
@@ -111,10 +110,13 @@
 						const geomType = feature.geometry?.type;
 						if (!et || !geomType) continue;
 						const key =
-							geomType === 'Point' || geomType === 'MultiPoint' ? 'Point'
-							: geomType === 'LineString' || geomType === 'MultiLineString' ? 'LineString'
-							: geomType === 'Polygon' || geomType === 'MultiPolygon' ? 'Polygon'
-							: geomType;
+							geomType === 'Point' || geomType === 'MultiPoint'
+								? 'Point'
+								: geomType === 'LineString' || geomType === 'MultiLineString'
+									? 'LineString'
+									: geomType === 'Polygon' || geomType === 'MultiPolygon'
+										? 'Polygon'
+										: geomType;
 						if (!etMap[key]) etMap[key] = new Set();
 						etMap[key].add(et);
 					}

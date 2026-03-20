@@ -24,7 +24,6 @@ export interface MeshStyle {
 		lat: number;
 		altitude: number;
 		scale: number;
-
 		rotationY: number;
 	};
 }
