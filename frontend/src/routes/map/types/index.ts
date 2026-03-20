@@ -94,6 +94,8 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.h5',
 	'.las',
 	'.laz',
+	'.ply',
+	'.pcd',
 
 	'.nc',
 	'.nc4',

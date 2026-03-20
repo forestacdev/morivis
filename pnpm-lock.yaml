@@ -106,6 +106,12 @@ importers:
       '@loaders.gl/las':
         specifier: ^4.3.4
         version: 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/pcd':
+        specifier: ^4.3.4
+        version: 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/ply':
+        specifier: ^4.3.4
+        version: 4.3.4(@loaders.gl/core@4.3.4)
       '@mapbox/tilebelt':
         specifier: ^2.0.3
         version: 2.0.3
@@ -1981,6 +1987,16 @@ packages:
 
   '@loaders.gl/mvt@4.3.4':
     resolution: {integrity: sha512-9DrJX8RQf14htNtxsPIYvTso5dUce9WaJCWCIY/79KYE80Be6dhcEYMknxBS4w3+PAuImaAe66S5xo9B7Erm5A==}
+    peerDependencies:
+      '@loaders.gl/core': ^4.3.0
+
+  '@loaders.gl/pcd@4.3.4':
+    resolution: {integrity: sha512-BfT2XYet4GKzexwR+RVMnaS/GkXf7nILRTlPZrr/z2WU2E1s0c/SBrB1FGnJz/1e9GWU+9Qt9JVRyT353cjmuw==}
+    peerDependencies:
+      '@loaders.gl/core': ^4.3.0
+
+  '@loaders.gl/ply@4.3.4':
+    resolution: {integrity: sha512-9/ijcIK2xP0cgSM3BmoS5JXfRXe6PKuIGHNteqJHhrQ5nwx1UrupmsYPXj58FykYVZx6PTBshMs9OmIXvPHduw==}
     peerDependencies:
       '@loaders.gl/core': ^4.3.0
 
@@ -8781,6 +8797,18 @@ snapshots:
       '@math.gl/polygon': 4.1.0
       '@probe.gl/stats': 4.1.0
       pbf: 3.3.0
+
+  '@loaders.gl/pcd@4.3.4(@loaders.gl/core@4.3.4)':
+    dependencies:
+      '@loaders.gl/core': 4.3.4
+      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
+
+  '@loaders.gl/ply@4.3.4(@loaders.gl/core@4.3.4)':
+    dependencies:
+      '@loaders.gl/core': 4.3.4
+      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
 
   '@loaders.gl/schema@4.3.4(@loaders.gl/core@4.3.4)':
     dependencies:

@@ -128,6 +128,8 @@
 					return;
 				case 'las':
 				case 'laz':
+				case 'ply':
+				case 'pcd':
 					showDialogType = 'pointcloud';
 					return;
 				case 'mbtiles':

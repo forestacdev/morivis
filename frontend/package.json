@@ -75,6 +75,8 @@
 		"@devantic/diaper": "^2.2.2",
 		"@loaders.gl/core": "^4.3.4",
 		"@loaders.gl/las": "^4.3.4",
+		"@loaders.gl/pcd": "^4.3.4",
+		"@loaders.gl/ply": "^4.3.4",
 		"@mapbox/tilebelt": "^2.0.3",
 		"@mapbox/vector-tile": "^2.0.3",
 		"@ngageoint/geopackage": "^4.2.6",

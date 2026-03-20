@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { parse } from '@loaders.gl/core';
 	import { LASLoader } from '@loaders.gl/las';
+	import { PCDLoader } from '@loaders.gl/pcd';
+	import { PLYLoader } from '@loaders.gl/ply';
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
@@ -43,22 +45,30 @@
 	let resolvedColors = $state<Uint8Array | undefined>(undefined);
 	let needsTransform = $state(false);
 
-	const lasFile = $derived.by(() => {
+	const pointCloudFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(las|laz)$/i.test(f.name)) ?? null;
+			return Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd)$/i.test(f.name)) ?? null;
 		}
 		return dropFile;
 	});
 
+	/** 拡張子に応じたLoaderを返す */
+	const getLoader = (fileName: string) => {
+		const ext = fileName.split('.').pop()?.toLowerCase();
+		if (ext === 'ply') return PLYLoader;
+		if (ext === 'pcd') return PCDLoader;
+		return LASLoader;
+	};
+
 	$effect(() => {
-		if (lasFile) {
-			entryName = lasFile.name.replace(/\.[^.]+$/, '');
-			analyzeLas(lasFile);
+		if (pointCloudFile) {
+			entryName = pointCloudFile.name.replace(/\.[^.]+$/, '');
+			analyzePointCloud(pointCloudFile);
 		}
 	});
 
-	const analyzeLas = async (file: File) => {
+	const analyzePointCloud = async (file: File) => {
 		isProcessing.set(true);
 		analyzed = false;
 		pointCount = null;
@@ -73,7 +83,8 @@
 			// parseがArrayBufferをdetachするのでコピーを保持
 			parsedArrayBuffer = arrayBuffer.slice(0);
 
-			const data = await parse(arrayBuffer, LASLoader);
+			const loader = getLoader(file.name);
+			const data = await parse(arrayBuffer, loader);
 
 			const positions = data.attributes?.POSITION?.value;
 			if (positions) {
@@ -143,7 +154,8 @@
 			resolvedBbox = transformed;
 
 			// 点群座標をWorkerで変換
-			const data = await parse(parsedArrayBuffer.slice(0), LASLoader);
+			const loader = pointCloudFile ? getLoader(pointCloudFile.name) : LASLoader;
+			const data = await parse(parsedArrayBuffer.slice(0), loader);
 			const positions = data.attributes?.POSITION?.value as Float32Array;
 
 			if (!positions) {
@@ -161,6 +173,9 @@
 				`EPSG:${epsgCode} で座標変換しました（${pointCount?.toLocaleString()}点）`,
 				'success'
 			);
+
+			// 変換完了後に自動登録
+			registration();
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '座標変換に失敗しました', 'error');
 			console.error(e);
@@ -231,9 +246,9 @@
 >
 	<TextForm bind:value={entryName} label="データ名" />
 
-	{#if lasFile}
+	{#if pointCloudFile}
 		<div class="w-full px-2 text-sm text-gray-300">
-			ファイル: {lasFile.name}
+			ファイル: {pointCloudFile.name}
 		</div>
 	{/if}
 
