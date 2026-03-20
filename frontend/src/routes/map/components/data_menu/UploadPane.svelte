@@ -34,11 +34,11 @@
 	};
 
 	const urlDialogs: { type: DialogType; label: string }[] = [
-		{ type: 'raster', label: 'ラスタータイル' },
+		{ type: 'raster', label: 'XYZタイル' },
 		{ type: 'vector', label: 'ベクタータイル' },
-		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: 'wmts', label: 'WMS/WMTS' },
 		{ type: 'arcgis', label: 'ArcGIS' },
+		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: '3dtiles', label: '3D Tiles' }
 	];
 	let isDragover = $state(false);

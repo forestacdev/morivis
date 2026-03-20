@@ -20,7 +20,7 @@
 		tileUrl: yup
 			.string()
 			.required('タイルのURLを入力してください。')
-			.test('半角英数のみ', 'ラスタータイルURLは半角英数です。', (value) => {
+			.test('半角英数のみ', 'タイルURLは半角英数です。', (value) => {
 				return !/[^a-zA-Z0-9!-/:-@¥[-`{-~]+/.test(value);
 			}),
 		source: yup
