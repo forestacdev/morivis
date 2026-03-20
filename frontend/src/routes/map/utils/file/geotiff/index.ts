@@ -216,6 +216,10 @@ export class GeoTiffCache {
 		// Workerが存在する場合のみテクスチャ解放を通知
 		if (_renderWorker) {
 			_renderWorker.postMessage({ action: 'release', entryId: key });
+			// キャッシュが空になったらWorkerを停止
+			if (this.terrariumCache.size === 0) {
+				terminateRenderWorker();
+			}
 		}
 	}
 }
