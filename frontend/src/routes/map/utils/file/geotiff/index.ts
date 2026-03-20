@@ -426,6 +426,30 @@ export const loadRasterData = async (
 				workerMessage.reproject4326 = true;
 				workerMessage.bboxDisplay = [bbox[0], bbox[1], bbox[2], bbox[3]];
 				workerMessage.bboxSource = [rawBbox[0], rawBbox[1], rawBbox[2], rawBbox[3]];
+
+				// メルカトルのアスペクト比で出力画像サイズを計算
+				const DEG2RAD = Math.PI / 180;
+				const latToMercY = (lat: number) =>
+					Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
+				const mercYMax = latToMercY(bbox[3]);
+				const mercYMin = latToMercY(bbox[1]);
+				const lngRange = bbox[2] - bbox[0];
+				const mercYRange = mercYMax - mercYMin;
+
+				// 幅は元画像と同じ、高さはメルカトルのアスペクト比に合わせる
+				// WebGLの最大テクスチャサイズを超えないよう制限
+				const MAX_SIZE = 4096;
+				let outputWidth = size.width;
+				let outputHeight = Math.round(outputWidth * (mercYRange / (lngRange * DEG2RAD)));
+
+				if (outputWidth > MAX_SIZE || outputHeight > MAX_SIZE) {
+					const scale = MAX_SIZE / Math.max(outputWidth, outputHeight);
+					outputWidth = Math.round(outputWidth * scale);
+					outputHeight = Math.round(outputHeight * scale);
+				}
+
+				workerMessage.outputWidth = outputWidth;
+				workerMessage.outputHeight = outputHeight;
 			}
 		}
 

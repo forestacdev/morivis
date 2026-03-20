@@ -181,6 +181,8 @@ interface RenderMessage {
 	reproject4326?: boolean;
 	bboxDisplay?: [number, number, number, number]; // 表示側bbox（クリップ済み）度数
 	bboxSource?: [number, number, number, number];  // ソーステクスチャのbbox（元の範囲）度数
+	outputWidth?: number;   // 再投影時の出力サイズ
+	outputHeight?: number;
 	// エントリ削除
 	action?: 'release';
 }
@@ -212,10 +214,12 @@ self.onmessage = async (e) => {
 			throw new Error(`No texture cached for entry: ${msg.entryId}`);
 		}
 
-		// キャンバスサイズ設定
-		canvas.width = cached.width;
-		canvas.height = cached.height;
-		gl.viewport(0, 0, cached.width, cached.height);
+		// キャンバスサイズ設定（再投影時は出力サイズを使用）
+		const outWidth = msg.outputWidth ?? cached.width;
+		const outHeight = msg.outputHeight ?? cached.height;
+		canvas.width = outWidth;
+		canvas.height = outHeight;
+		gl.viewport(0, 0, outWidth, outHeight);
 
 		const program = programs[msg.type];
 		gl.useProgram(program);
