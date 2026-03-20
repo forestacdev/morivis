@@ -41,6 +41,7 @@ import {
 } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
+import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import {
 	esriFeatureProtocol,
@@ -65,6 +66,9 @@ maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
 const geojsonProt = geojsonProtocol('geojson');
 maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
+
+const mbtilesProt = mbtilesProtocol();
+maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
 
 // esri-featureプロトコルは必要時に動的に登録/解除
 const esriFeatureProt = esriFeatureProtocol('esri-feature');

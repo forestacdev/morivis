@@ -192,6 +192,16 @@ export const createSourcesItems = async (
 								bounds: metaData.bounds
 							} as RasterSourceSpecification;
 						}
+					} else if (format.type === 'mbtiles') {
+						items[sourceId] = {
+							type: 'raster',
+							tiles: [format.url],
+							maxzoom: metaData.maxZoom,
+							minzoom: metaData.minZoom,
+							tileSize: metaData.tileSize,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as RasterSourceSpecification;
 					}
 					break;
 				}
@@ -233,6 +243,16 @@ export const createSourcesItems = async (
 						items[sourceId] = {
 							type: 'vector',
 							url: `pmtiles://${format.url}`,
+							maxzoom: metaData.maxZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as VectorSourceSpecification;
+					} else if (format.type === 'mbtiles') {
+						items[sourceId] = {
+							type: 'vector',
+							tiles: [format.url],
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,

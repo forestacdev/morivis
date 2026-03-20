@@ -85,6 +85,9 @@
 				case 'laz':
 					showDialogType = 'pointcloud';
 					return;
+				case 'mbtiles':
+					showDialogType = 'mbtiles';
+					return;
 				case 'tfw':
 				case 'tifw':
 				case 'tiffw':

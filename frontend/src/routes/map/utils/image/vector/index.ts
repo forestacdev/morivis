@@ -282,8 +282,9 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 	const url = CoverImageManager.get(_layerEntry.id);
 	if (url) return url;
 
-	if (_layerEntry.metaData.xyzImageTile && _layerEntry.format.type === 'mvt') {
-		const checkUrl = _layerEntry.format.url
+	const formatUrl = 'url' in _layerEntry.format ? (_layerEntry.format as { url: string }).url : '';
+	if (_layerEntry.metaData.xyzImageTile && _layerEntry.format.type === 'mvt' && formatUrl.startsWith('http')) {
+		const checkUrl = formatUrl
 			.replace('{z}', _layerEntry.metaData.xyzImageTile.z.toString())
 			.replace('{x}', _layerEntry.metaData.xyzImageTile.x.toString())
 			.replace('{y}', _layerEntry.metaData.xyzImageTile.y.toString());
