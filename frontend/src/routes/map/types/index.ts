@@ -94,6 +94,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'LandXML', extensions: ['.landxml'] },
 	{ label: 'GeoTIFF', extensions: ['.tif', '.tiff'] },
 	{ label: '画像', extensions: ['.png', '.jpg', '.jpeg', '.webp'] },
+	{ label: 'PDF', extensions: ['.pdf'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },
 	{ label: 'GLB', extensions: ['.glb'] },

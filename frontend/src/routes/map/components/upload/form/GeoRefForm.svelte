@@ -19,7 +19,7 @@
 	} from '$routes/map/utils/file/geotiff';
 	import { findCenterTile } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
+	import { isProcessing, showDataMenu } from '$routes/stores/ui';
 
 	export interface GeoRefData {
 		entryId: string;
@@ -94,6 +94,7 @@
 		if (geoRefData && showGeoRefForm && !initialized) {
 			const data = geoRefData;
 			untrack(() => {
+				showDataMenu.set(false);
 				const center = map.getCenter();
 				const bounds = map.getBounds();
 				const viewWidth = bounds.getEast() - bounds.getWest();
