@@ -49,10 +49,12 @@
 		values: Float32Array;
 	}
 
+	const MAX_BANDS = 10;
+
 	let entryName = $state('');
 	let analyzed = $state(false);
 	let messages = $state<GribMessage[]>([]);
-	let selectedIndex = $state(-1);
+	let selectedIndices = $state<number[]>([]);
 
 	const gribFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -73,7 +75,7 @@
 		isProcessing.set(true);
 		analyzed = false;
 		messages = [];
-		selectedIndex = -1;
+		selectedIndices = [];
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
@@ -99,7 +101,7 @@
 			analyzed = true;
 
 			if (messages.length === 1) {
-				selectedIndex = 0;
+				selectedIndices = [0];
 			}
 
 			showNotification(`GRIB2: ${messages.length}メッセージを検出`, 'success');
@@ -183,46 +185,44 @@
 	};
 
 	const registration = async () => {
-		if (!analyzed || selectedIndex < 0 || selectedIndex >= messages.length) return;
+		if (!analyzed || selectedIndices.length === 0) return;
 
 		isProcessing.set(true);
 
 		try {
-			const msg = messages[selectedIndex];
-			const { values, nx, ny, la1, lo1, la2, lo2 } = msg;
+			const selectedMessages = selectedIndices.map((i) => messages[i]);
+			const firstMsg = selectedMessages[0];
+			const { nx, ny, la1, lo1, la2, lo2 } = firstMsg;
+			const numBands = selectedMessages.length;
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 
-			const bands: RasterBands = [values];
-			const ranges: BandDataRange[] = [getMinMax(values, null)];
+			const bands: RasterBands = selectedMessages.map((m) => m.values);
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
 
-			// bbox: GRIB2はla1が北、la2が南の場合がある
+			// bbox
 			const minLat = Math.min(la1, la2);
 			const maxLat = Math.max(la1, la2);
 			const minLon = Math.min(lo1, lo2);
 			const maxLon = Math.max(lo1, lo2);
-			// bboxが無効（全部0等）の場合はデフォルト範囲を使用
 			const rawBbox: [number, number, number, number] =
 				minLat === maxLat && minLon === maxLon
-					? [120, 20, 150, 50] // 日本域のデフォルト
+					? [120, 20, 150, 50]
 					: [minLon, minLat, maxLon, maxLat];
 
-			// サムネイル（bboxが有効な場合のみ）
+			// サムネイル（最初のバンドから）
 			let mapImage: string | undefined;
 			if (rawBbox[0] !== rawBbox[2] && rawBbox[1] !== rawBbox[3]) {
 				try {
-					mapImage = generateThumbnail(values, nx, ny, ranges[0].min, ranges[0].max, rawBbox);
-				} catch {
-					// サムネイル生成失敗は無視
-				}
+					mapImage = generateThumbnail(firstMsg.values, nx, ny, ranges[0].min, ranges[0].max, rawBbox);
+				} catch { /* ignore */ }
 			}
 
 			await encodeAllBandsToTerrarium(id, bands, nx, ny, null, ranges);
 
 			GeoTiffCache.setSize(id, nx, ny);
-			GeoTiffCache.setNumBands(id, 1);
+			GeoTiffCache.setNumBands(id, numBands);
 
-			// WGS84 → WebMercatorクリップ + 4326再投影
 			const resolvedBbox: [number, number, number, number] = [
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[0])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[1])),
@@ -233,6 +233,8 @@
 			GeoTiffCache.setBbox(id, resolvedBbox);
 			GeoTiffCache.markAs4326(id);
 			GeoTiffCache.setRawBbox(id, rawBbox);
+
+			const isSingleBand = numBands === 1;
 
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
@@ -252,8 +254,8 @@
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: 1,
-						mode: 'single',
+						numBands,
+						mode: isSingleBand ? 'single' : 'multi',
 						uniformsData: {
 							single: {
 								index: 0,
@@ -263,20 +265,27 @@
 							},
 							multi: {
 								r: { index: 0, min: ranges[0].min, max: ranges[0].max },
-								g: { index: 0, min: ranges[0].min, max: ranges[0].max },
-								b: { index: 0, min: ranges[0].min, max: ranges[0].max }
+								g: {
+									index: numBands >= 2 ? 1 : 0,
+									min: ranges[numBands >= 2 ? 1 : 0].min,
+									max: ranges[numBands >= 2 ? 1 : 0].max
+								},
+								b: {
+									index: numBands >= 3 ? 2 : 0,
+									min: ranges[numBands >= 3 ? 2 : 0].min,
+									max: ranges[numBands >= 3 ? 2 : 0].max
+								}
 							}
 						}
 					}
 				}
 			};
 
-			console.log('Created RasterImageEntry:', entry);
-
 			showDataEntry = entry;
 			showDialogType = null;
 			dropFile = null;
-			showNotification(`GPV「${msg.label}」を読み込みました`, 'success');
+			const labels = selectedMessages.map((m) => m.label).join(', ');
+			showNotification(`GPV ${numBands}バンドを読み込みました`, 'success');
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'エンコードに失敗しました', 'error');
 			console.error(e);
@@ -309,34 +318,48 @@
 	{#if messages.length > 0}
 		<div transition:slide class="w-full">
 			<div class="flex flex-col gap-1">
-				<label for="grib-msg-select" class="text-sm text-gray-300">
-					メッセージを選択 ({messages.length}件)
-				</label>
-				<select
-					id="grib-msg-select"
-					bind:value={selectedIndex}
-					class="bg-sub rounded border border-gray-600 p-2 text-white"
-				>
-					<option value={-1} disabled>選択してください</option>
+				<span class="text-sm text-gray-300">
+					メッセージを選択 ({selectedIndices.length}/{messages.length}件, 最大{MAX_BANDS}バンド)
+				</span>
+				<div class="bg-sub max-h-48 overflow-y-auto rounded border border-gray-600">
 					{#each messages as msg}
-						<option value={msg.index}>
-							{msg.index + 1}. {msg.label}
-						</option>
+						<label
+							class="flex cursor-pointer items-center gap-2 px-2 py-1 text-sm text-white hover:bg-gray-700
+								{selectedIndices.includes(msg.index) ? 'bg-gray-700' : ''}"
+						>
+							<input
+								type="checkbox"
+								checked={selectedIndices.includes(msg.index)}
+								disabled={!selectedIndices.includes(msg.index) && selectedIndices.length >= MAX_BANDS}
+								onchange={() => {
+									if (selectedIndices.includes(msg.index)) {
+										selectedIndices = selectedIndices.filter((i) => i !== msg.index);
+									} else if (selectedIndices.length < MAX_BANDS) {
+										selectedIndices = [...selectedIndices, msg.index].sort((a, b) => a - b);
+									}
+								}}
+								class="accent-accent"
+							/>
+							<span class="truncate">
+								{msg.index + 1}. {msg.label}
+							</span>
+						</label>
 					{/each}
-				</select>
+				</div>
 			</div>
 		</div>
 
-		{#if selectedIndex >= 0}
-			{@const msg = messages[selectedIndex]}
+		{#if selectedIndices.length > 0}
+			{@const firstMsg = messages[selectedIndices[0]]}
 			<div transition:slide class="flex w-full flex-col gap-1 px-2 text-sm text-gray-300">
-				<div>グリッド: {msg.nx} x {msg.ny}</div>
+				<div>グリッド: {firstMsg.nx} x {firstMsg.ny}</div>
 				<div>
-					緯度: {Math.min(msg.la1, msg.la2).toFixed(2)} 〜 {Math.max(msg.la1, msg.la2).toFixed(2)}
+					緯度: {Math.min(firstMsg.la1, firstMsg.la2).toFixed(2)} 〜 {Math.max(firstMsg.la1, firstMsg.la2).toFixed(2)}
 				</div>
 				<div>
-					経度: {Math.min(msg.lo1, msg.lo2).toFixed(2)} 〜 {Math.max(msg.lo1, msg.lo2).toFixed(2)}
+					経度: {Math.min(firstMsg.lo1, firstMsg.lo2).toFixed(2)} 〜 {Math.max(firstMsg.lo1, firstMsg.lo2).toFixed(2)}
 				</div>
+				<div>選択バンド数: {selectedIndices.length}</div>
 			</div>
 		{/if}
 	{/if}
@@ -346,8 +369,8 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 	<button
 		onclick={registration}
-		disabled={!analyzed || selectedIndex < 0 || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || selectedIndex < 0 || $isProcessing
+		disabled={!analyzed || selectedIndices.length === 0 || $isProcessing}
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || selectedIndices.length === 0 || $isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

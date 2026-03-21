@@ -83,41 +83,19 @@ export class PureGrib2Parser {
 		const records: GribRecord[] = [];
 		let messageCount = 0;
 
-		console.log(`Starting to parse GRIB file, buffer size: ${this.buffer.byteLength} bytes`);
-
-		// ファイル全体の最初の64バイトをダンプ（デバッグ用）
-		const previewLength = Math.min(64, this.buffer.byteLength);
-		const preview = new Uint8Array(this.buffer.slice(0, previewLength));
-		console.log(
-			'File preview (hex):',
-			Array.from(preview)
-				.map((b) => b.toString(16).padStart(2, '0'))
-				.join(' ')
-		);
-		console.log(
-			'File preview (ASCII):',
-			Array.from(preview)
-				.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '.'))
-				.join('')
-		);
-
-		// ファイル内のすべてのGRIBヘッダーを事前に検索
 		const gribPositions = this.findAllGribHeaders();
-		console.log(`Found ${gribPositions.length} GRIB headers at positions:`, gribPositions);
 
 		// 各GRIBヘッダーでメッセージを解析
 		for (let i = 0; i < gribPositions.length && messageCount < this.maxMessages; i++) {
 			this.position = gribPositions[i];
 
 			try {
-				console.log(`Processing message ${messageCount + 1}, position: ${this.position}`);
 
 				const result = this.parseMessage();
 				if (result) {
 					records.push(...result);
 					messageCount += result.length;
 				} else {
-					console.log(`No record found at position ${this.position}`);
 				}
 			} catch (error) {
 				console.error(`Error parsing GRIB message ${messageCount + 1}:`, error);
@@ -126,7 +104,6 @@ export class PureGrib2Parser {
 			}
 		}
 
-		console.log(`Parsed ${records.length} records`);
 		return records;
 	}
 
@@ -134,7 +111,6 @@ export class PureGrib2Parser {
 		const positions: number[] = [];
 		const searchLength = this.buffer.byteLength;
 
-		console.log('Searching for all GRIB headers in file...');
 
 		for (let i = 0; i <= searchLength - 8; i++) {
 			if (this.view.getUint32(i, false) === 0x47524942) {
@@ -144,7 +120,6 @@ export class PureGrib2Parser {
 					const edition = this.view.getUint8(i + 7);
 					if (edition === 2) {
 						positions.push(i);
-						console.log(`Found GRIB2 header at position ${i}`);
 
 						// メッセージ長を取得して次の検索位置をスキップ
 						if (i + 16 < searchLength) {
@@ -153,22 +128,18 @@ export class PureGrib2Parser {
 
 							if (lengthHigh === 0 && lengthLow > 0 && lengthLow < searchLength) {
 								const messageLength = lengthLow;
-								console.log(`Message length: ${messageLength} bytes`);
 
 								// 次のメッセージの開始位置までスキップ
 								i += messageLength - 1; // -1 because loop will increment i
 							}
 						}
 					} else if (edition === 1) {
-						console.log(`Found GRIB1 header at position ${i} (not supported)`);
 					} else {
-						console.log(`Found GRIB header with unknown edition ${edition} at position ${i}`);
 					}
 				}
 			}
 		}
 
-		console.log(`Total GRIB2 headers found: ${positions.length}`);
 		return positions;
 	}
 
@@ -212,7 +183,6 @@ export class PureGrib2Parser {
 
 			const messageLength = lengthLow;
 
-			console.log(`Message length: ${messageLength} bytes`);
 
 			// メッセージ長の妥当性チェック
 			if (messageLength > this.buffer.byteLength - this.position || messageLength < 16) {
@@ -272,41 +242,18 @@ export class PureGrib2Parser {
 	private findGribHeader(): boolean {
 		const maxSearchLength = Math.min(this.buffer.byteLength - this.position, 10000);
 
-		console.log(
-			`Searching for GRIB header from position ${this.position}, search length: ${maxSearchLength}`
-		);
-
-		// 最初の16バイトをダンプ
-		if (this.position === 0) {
-			const firstBytes = new Uint8Array(this.buffer.slice(0, Math.min(16, this.buffer.byteLength)));
-			console.log(
-				'First 16 bytes:',
-				Array.from(firstBytes)
-					.map((b) => b.toString(16).padStart(2, '0'))
-					.join(' ')
-			);
-			console.log(
-				'First 16 bytes as ASCII:',
-				Array.from(firstBytes)
-					.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '.'))
-					.join('')
-			);
-		}
-
 		for (let i = 0; i < maxSearchLength - 4; i++) {
 			const currentPos = this.position + i;
 			if (currentPos + 4 <= this.buffer.byteLength) {
 				const value = this.view.getUint32(currentPos, false);
 				if (value === 0x47524942) {
 					// "GRIB"
-					console.log(`Found GRIB header at position ${currentPos}`);
 					this.position = currentPos;
 					return true;
 				}
 			}
 		}
 
-		console.log('GRIB header not found');
 		// GRIBヘッダーが見つからない場合
 		this.position = this.buffer.byteLength;
 		return false;
@@ -519,8 +466,6 @@ export class PureGrib2Parser {
 		const second = section1View.getUint8(18);
 		const referenceTime = new Date(year, month - 1, day, hour, minute, second);
 
-		console.log(`Reference time: ${referenceTime.toISOString()}`);
-		console.log(`Centre: ${centre}, Discipline: ${discipline}`);
 
 		// Section 3から格子情報 - より柔軟なチェック
 		if (sec3.data.byteLength < 14) {
@@ -528,13 +473,11 @@ export class PureGrib2Parser {
 		}
 
 		const gridTemplate = section3View.getUint16(12, false);
-		console.log(`Grid template: ${gridTemplate}`);
 
 		// 利用可能なデータ数
 		let numberOfDataPoints = 0;
 		if (sec3.data.byteLength >= 10) {
 			numberOfDataPoints = section3View.getUint32(6, false);
-			console.log(`Number of data points: ${numberOfDataPoints}`);
 		}
 
 		// Grid Definition Template に応じた処理
@@ -560,7 +503,6 @@ export class PureGrib2Parser {
 			dy = section3View.getUint32(67, false) / scaleFactor;
 		} else if (gridTemplate === 40 && sec3.data.byteLength >= 34) {
 			// Gaussian lat/lon grid (template 3.40)
-			console.log('Gaussian grid detected (simplified parsing)');
 			nx = sec3.data.byteLength >= 30 ? section3View.getUint32(26, false) : 1;
 			ny = sec3.data.byteLength >= 34 ? section3View.getUint32(30, false) : 1;
 
@@ -588,7 +530,6 @@ export class PureGrib2Parser {
 			la1 = lo1 = la2 = lo2 = dx = dy = 0;
 		}
 
-		console.log(`Grid: ${nx}x${ny}, lat: ${la1} to ${la2}, lon: ${lo1} to ${lo2}`);
 
 		// Section 4からプロダクト情報 - より柔軟なチェック
 		if (sec4.data.byteLength < 10) {
@@ -596,12 +537,10 @@ export class PureGrib2Parser {
 		}
 
 		const productTemplate = sec4.data.byteLength >= 9 ? section4View.getUint16(7, false) : 0;
-		console.log(`Product template: ${productTemplate}`);
 
 		const parameterCategory = sec4.data.byteLength >= 10 ? section4View.getUint8(9) : 0;
 		const parameterNumber = sec4.data.byteLength >= 11 ? section4View.getUint8(10) : 0;
 
-		console.log(`Parameter: category=${parameterCategory}, number=${parameterNumber}`);
 
 		// 予測時間の計算（利用可能な場合）
 		let forecastTime = 0;
@@ -610,7 +549,6 @@ export class PureGrib2Parser {
 			const minutesAfterRT = section4View.getUint8(16);
 			const timeRangeUnit = section4View.getUint8(17);
 			forecastTime = section4View.getUint32(18, false);
-			console.log(`Forecast time: ${forecastTime} (unit: ${timeRangeUnit})`);
 		}
 
 		// レベル情報（利用可能な場合）
@@ -685,7 +623,6 @@ export class PureGrib2Parser {
 				dataTemplate = section5View.getUint16(9, false);
 			}
 
-			console.log(`Data representation template: ${dataTemplate}`);
 
 			if (dataTemplate === 0 && sec5.data.byteLength >= 21) {
 				// 簡単なパッキング (Template 5.0)
@@ -694,21 +631,15 @@ export class PureGrib2Parser {
 				const decimalScaleFactor = PureGrib2Parser.readSignedGrib16(section5View, 17);
 				const bitsPerValue = section5View.getUint8(19);
 
-				console.log(`Reference value: ${referenceValue}`);
-				console.log(`Binary scale factor: ${binaryScaleFactor}`);
-				console.log(`Decimal scale factor: ${decimalScaleFactor}`);
-				console.log(`Bits per value: ${bitsPerValue}`);
 
 				if (bitsPerValue === 0) {
 					// 定数値
-					console.log('Constant value detected');
 					values.fill(referenceValue);
 				} else if (
 					bitsPerValue === 32 &&
 					sec7.data.byteLength >= 5 + numberOfDataPoints * 4
 				) {
 					// 32ビットfloat
-					console.log('32-bit float values detected');
 					for (let i = 0; i < numberOfDataPoints; i++) {
 						if (5 + i * 4 + 4 <= sec7.data.byteLength) {
 							values[i] = section7View.getFloat32(5 + i * 4, false);
@@ -721,7 +652,6 @@ export class PureGrib2Parser {
 					sec7.data.byteLength >= 5 + numberOfDataPoints * 2
 				) {
 					// 16ビット整数（簡略化された実装）
-					console.log('16-bit integer values detected');
 					const E = Math.pow(10, -decimalScaleFactor);
 					const D = Math.pow(2, binaryScaleFactor);
 
@@ -894,10 +824,6 @@ export class PureGrib2Parser {
 			values.fill(0); // エラー時はデフォルト値
 		}
 
-		console.log(
-			`Extracted ${values.length} values, first few:`,
-			Array.from(values.slice(0, Math.min(10, values.length)))
-		);
 		return values;
 	}
 
@@ -918,344 +844,5 @@ export class PureGrib2Parser {
 		}
 
 		return { lats, lons };
-	}
-}
-
-// pygrib風のインターフェース
-export class TypeScriptGrib {
-	static async open(filePath: string | ArrayBuffer): Promise<{
-		messages: GribRecord[];
-		length: number;
-		close(): void;
-		summary(): void;
-	}> {
-		let buffer: ArrayBuffer;
-
-		if (typeof filePath === 'string') {
-			const response = await fetch(filePath);
-			buffer = await response.arrayBuffer();
-		} else {
-			buffer = filePath;
-		}
-
-		console.log(`Opening GRIB file, buffer size: ${buffer.byteLength} bytes`);
-
-		// まず圧縮されているかチェック
-		const decompressedBuffer = await this.tryDecompression(buffer);
-
-		const parser = new PureGrib2Parser(decompressedBuffer);
-		const messages = parser.parse();
-
-		return {
-			messages,
-			length: messages.length,
-			close: () => {
-				console.log('GRIB file closed');
-			},
-			summary: () => {
-				console.log('=== GRIB File Summary ===');
-				console.log(`Total messages: ${messages.length}`);
-				console.log(`File size: ${buffer.byteLength} bytes`);
-
-				if (messages.length > 0) {
-					console.log('\nMessage details:');
-					messages.forEach((msg, index) => {
-						const meta = msg.metadata;
-						console.log(`Message ${index + 1}:`);
-						console.log(`  Reference time: ${meta.referenceTime.toISOString()}`);
-						console.log(`  Parameter: ${meta.parameterNumber} (category ${meta.discipline})`);
-						console.log(`  Level: ${meta.levelType} = ${meta.levelValue}`);
-						console.log(`  Forecast time: ${meta.forecastTime}`);
-						console.log(`  Grid: ${meta.nx}x${meta.ny}`);
-						console.log(`  Lat range: ${meta.la1} to ${meta.la2}`);
-						console.log(`  Lon range: ${meta.lo1} to ${meta.lo2}`);
-						console.log(`  Data points: ${msg.values.length}`);
-
-						if (msg.values.length > 0) {
-							const min = Math.min(...msg.values);
-							const max = Math.max(...msg.values);
-							const avg = msg.values.reduce((sum, val) => sum + val, 0) / msg.values.length;
-							console.log(
-								`  Value range: ${min.toFixed(3)} to ${max.toFixed(3)} (avg: ${avg.toFixed(3)})`
-							);
-						}
-						console.log('');
-					});
-				}
-				console.log('=== End Summary ===');
-			}
-		};
-	}
-
-	// 圧縮解除を試行
-	private static async tryDecompression(buffer: ArrayBuffer): Promise<ArrayBuffer> {
-		const uint8View = new Uint8Array(buffer);
-
-		console.log('=== Checking compression ===');
-
-		// GZIP圧縮をチェック (1F 8B で始まる)
-		if (uint8View.length >= 2 && uint8View[0] === 0x1f && uint8View[1] === 0x8b) {
-			console.log('Detected GZIP compression');
-			try {
-				const decompressedStream = new DecompressionStream('gzip');
-				const writer = decompressedStream.writable.getWriter();
-				const reader = decompressedStream.readable.getReader();
-
-				// データを書き込み
-				await writer.write(uint8View);
-				await writer.close();
-
-				// 結果を読み取り
-				const chunks: Uint8Array[] = [];
-				let done = false;
-
-				while (!done) {
-					const { value, done: streamDone } = await reader.read();
-					done = streamDone;
-					if (value) {
-						chunks.push(value);
-					}
-				}
-
-				// チャンクを結合
-				const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-				const result = new Uint8Array(totalLength);
-				let offset = 0;
-
-				for (const chunk of chunks) {
-					result.set(chunk, offset);
-					offset += chunk.length;
-				}
-
-				console.log(`GZIP decompressed: ${buffer.byteLength} -> ${result.length} bytes`);
-				return result.buffer;
-			} catch (error) {
-				console.error('GZIP decompression failed:', error);
-			}
-		}
-
-		// DEFLATE圧縮をチェック (78 で始まることが多い)
-		if (uint8View.length >= 2 && uint8View[0] === 0x78) {
-			console.log('Possible DEFLATE compression detected');
-			try {
-				const decompressedStream = new DecompressionStream('deflate');
-				const writer = decompressedStream.writable.getWriter();
-				const reader = decompressedStream.readable.getReader();
-
-				await writer.write(uint8View);
-				await writer.close();
-
-				const chunks: Uint8Array[] = [];
-				let done = false;
-
-				while (!done) {
-					const { value, done: streamDone } = await reader.read();
-					done = streamDone;
-					if (value) {
-						chunks.push(value);
-					}
-				}
-
-				const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-				const result = new Uint8Array(totalLength);
-				let offset = 0;
-
-				for (const chunk of chunks) {
-					result.set(chunk, offset);
-					offset += chunk.length;
-				}
-
-				console.log(`DEFLATE decompressed: ${buffer.byteLength} -> ${result.length} bytes`);
-				return result.buffer;
-			} catch (error) {
-				console.error('DEFLATE decompression failed:', error);
-			}
-		}
-
-		// bzip2をチェック (BZ で始まる)
-		if (uint8View.length >= 2 && uint8View[0] === 0x42 && uint8View[1] === 0x5a) {
-			console.log('Detected BZIP2 compression (not supported in browser)');
-		}
-
-		// LZ4をチェック (04 22 4D 18 で始まる)
-		if (
-			uint8View.length >= 4 &&
-			uint8View[0] === 0x04 &&
-			uint8View[1] === 0x22 &&
-			uint8View[2] === 0x4d &&
-			uint8View[3] === 0x18
-		) {
-			console.log('Detected LZ4 compression (not supported in browser)');
-		}
-
-		// 既にGRIBヘッダーがあるかチェック
-		for (let i = 0; i <= uint8View.length - 4; i++) {
-			const view = new DataView(buffer, i, 4);
-			if (view.getUint32(0, false) === 0x47524942) {
-				// "GRIB"
-				console.log(`Found GRIB header at position ${i} - file may not be compressed`);
-				return buffer;
-			}
-		}
-
-		console.log('No known compression format detected, trying raw data');
-		return buffer;
-	}
-
-	// ファイル内容の分析用ユーティリティ
-	static analyzeFile(buffer: ArrayBuffer): void {
-		console.log('=== File Analysis ===');
-		console.log(`File size: ${buffer.byteLength} bytes`);
-
-		const view = new DataView(buffer);
-		const uint8View = new Uint8Array(buffer);
-
-		// ファイルマジックナンバーをチェック
-		console.log('\n=== File Magic Numbers ===');
-		if (buffer.byteLength >= 4) {
-			const first4 = Array.from(uint8View.slice(0, 4))
-				.map((b) => b.toString(16).padStart(2, '0'))
-				.join(' ');
-			console.log(`First 4 bytes: ${first4}`);
-
-			// 圧縮形式のチェック
-			if (uint8View[0] === 0x1f && uint8View[1] === 0x8b) {
-				console.log('→ GZIP compressed file');
-			} else if (uint8View[0] === 0x78) {
-				console.log('→ Possible DEFLATE compressed file');
-			} else if (uint8View[0] === 0x42 && uint8View[1] === 0x5a) {
-				console.log('→ BZIP2 compressed file');
-			} else if (view.getUint32(0, false) === 0x47524942) {
-				console.log('→ GRIB file (uncompressed)');
-			} else if (view.getUint32(0, false) === 0x504b0304) {
-				console.log('→ ZIP file');
-			} else if (
-				uint8View[0] === 0x28 &&
-				uint8View[1] === 0xb5 &&
-				uint8View[2] === 0x2f &&
-				uint8View[3] === 0xfd
-			) {
-				console.log('→ ZSTD compressed file');
-			} else {
-				console.log('→ Unknown format');
-			}
-		}
-
-		// 最初の100バイトを16進ダンプ
-		const dumpLength = Math.min(100, buffer.byteLength);
-		console.log(`\n=== First ${dumpLength} bytes (hex dump) ===`);
-		for (let i = 0; i < dumpLength; i += 16) {
-			const chunk = uint8View.slice(i, Math.min(i + 16, dumpLength));
-			const hex = Array.from(chunk)
-				.map((b) => b.toString(16).padStart(2, '0'))
-				.join(' ');
-			const ascii = Array.from(chunk)
-				.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '.'))
-				.join('');
-			console.log(`${i.toString(16).padStart(4, '0')}: ${hex.padEnd(47, ' ')} |${ascii}|`);
-		}
-
-		// エントロピー分析（圧縮されているかの推定）
-		console.log('\n=== Entropy Analysis ===');
-		const byteFreq = new Array(256).fill(0);
-		for (let i = 0; i < Math.min(1000, uint8View.length); i++) {
-			byteFreq[uint8View[i]]++;
-		}
-
-		let entropy = 0;
-		const sampleSize = Math.min(1000, uint8View.length);
-		for (let i = 0; i < 256; i++) {
-			if (byteFreq[i] > 0) {
-				const p = byteFreq[i] / sampleSize;
-				entropy -= p * Math.log2(p);
-			}
-		}
-
-		console.log(`Entropy: ${entropy.toFixed(2)} bits per byte`);
-		if (entropy > 7.5) {
-			console.log('→ High entropy, likely compressed or encrypted');
-		} else if (entropy < 4) {
-			console.log('→ Low entropy, likely text or simple data');
-		} else {
-			console.log('→ Medium entropy, could be binary data');
-		}
-
-		// 可能なGRIBヘッダーを検索
-		console.log('\n=== Searching for GRIB patterns ===');
-		let gribCount = 0;
-		for (let i = 0; i <= buffer.byteLength - 4; i++) {
-			if (view.getUint32(i, false) === 0x47524942) {
-				// "GRIB"
-				console.log(`Found "GRIB" at position ${i}`);
-				gribCount++;
-
-				// 次の16バイトを表示
-				if (i + 16 <= buffer.byteLength) {
-					const gribHeader = uint8View.slice(i, i + 16);
-					const hex = Array.from(gribHeader)
-						.map((b) => b.toString(16).padStart(2, '0'))
-						.join(' ');
-					console.log(`  Header: ${hex}`);
-
-					// GRIB2の場合、位置7に版数が入る
-					if (i + 8 < buffer.byteLength) {
-						const edition = view.getUint8(i + 7);
-						console.log(`  Edition: ${edition}`);
-					}
-				}
-			}
-		}
-
-		if (gribCount === 0) {
-			console.log('No GRIB headers found - file is likely compressed');
-		}
-
-		console.log('=== End Analysis ===');
-	}
-
-	// 手動で圧縮解除を試行する関数
-	static async tryManualDecompression(
-		buffer: ArrayBuffer,
-		method: 'gzip' | 'deflate'
-	): Promise<ArrayBuffer> {
-		console.log(`Trying ${method} decompression...`);
-
-		try {
-			const uint8View = new Uint8Array(buffer);
-			const decompressedStream = new DecompressionStream(method);
-			const writer = decompressedStream.writable.getWriter();
-			const reader = decompressedStream.readable.getReader();
-
-			await writer.write(uint8View);
-			await writer.close();
-
-			const chunks: Uint8Array[] = [];
-			let done = false;
-
-			while (!done) {
-				const { value, done: streamDone } = await reader.read();
-				done = streamDone;
-				if (value) {
-					chunks.push(value);
-				}
-			}
-
-			const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-			const result = new Uint8Array(totalLength);
-			let offset = 0;
-
-			for (const chunk of chunks) {
-				result.set(chunk, offset);
-				offset += chunk.length;
-			}
-
-			console.log(
-				`${method} decompression successful: ${buffer.byteLength} -> ${result.length} bytes`
-			);
-			return result.buffer;
-		} catch (error) {
-			console.error(`${method} decompression failed:`, error);
-			throw error;
-		}
 	}
 }
