@@ -69,6 +69,7 @@ export type DialogType =
 	| 'mbtiles'
 	| 'netcdf'
 	| 'demxml'
+	| 'grib2'
 	| null;
 
 /** ファイル選択/ラベルに表示する主要ファイル拡張子 */
@@ -98,6 +99,10 @@ export const SUPPORTED_FILE_EXTENSIONS = [
 	'.pcd',
 	'.nc',
 	'.nc4',
+	'.bin',
+	'.grib2',
+	'.grb2',
+	'.grb',
 	'.zip'
 ] as const;
 

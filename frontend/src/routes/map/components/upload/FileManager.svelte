@@ -138,6 +138,12 @@
 				case 'nc4':
 					showDialogType = 'netcdf';
 					return;
+				case 'bin':
+				case 'grib2':
+				case 'grb2':
+				case 'grb':
+					showDialogType = 'grib2';
+					return;
 				case 'zip': {
 					console.warn('[FileManager] entering zip case');
 					const zipType = await detectZipContent(file);
