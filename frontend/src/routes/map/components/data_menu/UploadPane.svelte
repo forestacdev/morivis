@@ -2,8 +2,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
-		SUPPORTED_FILE_EXTENSIONS,
-		SUPPORTED_FILE_LABEL,
+		SUPPORTED_FILE_GROUPS,
 		type DialogType
 	} from '$routes/map/types';
 
@@ -81,8 +80,10 @@
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
 			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
-				{#each SUPPORTED_FILE_EXTENSIONS as label}
-					<span class="bg-sub rounded-full p-1 px-3 text-xs">{label}</span>
+				{#each SUPPORTED_FILE_GROUPS as group}
+					<span class="bg-sub rounded-full p-1 px-3 text-xs">
+						{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+					</span>
 				{/each}
 			</div>
 

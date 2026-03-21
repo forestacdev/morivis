@@ -77,6 +77,16 @@
 		}
 	};
 
+	/** XMLファイルの先頭を読んでGMLかどうかを判定 */
+	const isGmlXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return header.includes('gml:') || header.includes('xmlns:gml') || header.includes('opengis.net/gml');
+		} catch {
+			return false;
+		}
+	};
+
 	const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
 
 	/** ファイルサイズをフォーマット */
@@ -116,6 +126,9 @@
 					return;
 				case 'gpx':
 					showDialogType = 'gpx';
+					return;
+				case 'gml':
+					showDialogType = 'gml';
 					return;
 				case 'dm':
 					showDialogType = 'dm';
@@ -200,6 +213,11 @@
 						showDialogType = 'demxml';
 						return;
 					}
+					// GML判定
+					if (await isGmlXml(file)) {
+						showDialogType = 'gml';
+						return;
+					}
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
@@ -221,9 +239,11 @@
 				}
 				showDialogType = 'geotiff';
 			} else if (files.every((f) => /\.xml$/i.test(f.name))) {
-				// 複数XMLファイル → 先頭ファイルでDEM判定
+				// 複数XMLファイル → 先頭ファイルでDEM/GML判定
 				if (await isDemXml(files[0])) {
 					showDialogType = 'demxml';
+				} else if (await isGmlXml(files[0])) {
+					showDialogType = 'gml';
 				} else {
 					showNotification('対応していないXMLファイルです', 'error');
 				}

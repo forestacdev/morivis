@@ -7,6 +7,7 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
@@ -136,6 +137,17 @@
 			{/if}
 			{#if showDialogType === 'geojson'}
 				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'gml'}
+				<GmlForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
