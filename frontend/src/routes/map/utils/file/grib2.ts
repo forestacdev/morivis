@@ -90,12 +90,14 @@ export class PureGrib2Parser {
 			this.position = gribPositions[i];
 
 			try {
-
 				const result = this.parseMessage();
 				if (result) {
 					records.push(...result);
 					messageCount += result.length;
 				} else {
+					console.warn(
+						`No valid records found in message starting at position ${gribPositions[i]}`
+					);
 				}
 			} catch (error) {
 				console.error(`Error parsing GRIB message ${messageCount + 1}:`, error);
@@ -110,7 +112,6 @@ export class PureGrib2Parser {
 	private findAllGribHeaders(): number[] {
 		const positions: number[] = [];
 		const searchLength = this.buffer.byteLength;
-
 
 		for (let i = 0; i <= searchLength - 8; i++) {
 			if (this.view.getUint32(i, false) === 0x47524942) {
@@ -134,7 +135,9 @@ export class PureGrib2Parser {
 							}
 						}
 					} else if (edition === 1) {
+						console.warn(`Found GRIB header with unsupported edition 1 at position ${i}`);
 					} else {
+						console.warn(`Found GRIB header with unknown edition ${edition} at position ${i}`);
 					}
 				}
 			}
@@ -183,7 +186,6 @@ export class PureGrib2Parser {
 
 			const messageLength = lengthLow;
 
-
 			// メッセージ長の妥当性チェック
 			if (messageLength > this.buffer.byteLength - this.position || messageLength < 16) {
 				console.warn(
@@ -210,7 +212,15 @@ export class PureGrib2Parser {
 				else if (sec.number === 4) currentSec4 = sec;
 				else if (sec.number === 5) currentSec5 = sec;
 				else if (sec.number === 6) currentSec6 = sec;
-				else if (sec.number === 7 && sec0 && sec1 && currentSec3 && currentSec4 && currentSec5 && currentSec6) {
+				else if (
+					sec.number === 7 &&
+					sec0 &&
+					sec1 &&
+					currentSec3 &&
+					currentSec4 &&
+					currentSec5 &&
+					currentSec6
+				) {
 					const sectionSet = [sec0, sec1, currentSec3, currentSec4, currentSec5, currentSec6, sec];
 					try {
 						const metadata = this.extractMetadata(sectionSet);
@@ -271,7 +281,11 @@ export class PureGrib2Parser {
 				// Section 8 ("7777") のチェック
 				const possibleEnd = this.view.getUint32(this.position, false);
 				if (possibleEnd === 0x37373737) {
-					sections.push({ length: 4, number: 8, data: this.buffer.slice(this.position, this.position + 4) });
+					sections.push({
+						length: 4,
+						number: 8,
+						data: this.buffer.slice(this.position, this.position + 4)
+					});
 					this.position += 4;
 					break;
 				}
@@ -466,7 +480,6 @@ export class PureGrib2Parser {
 		const second = section1View.getUint8(18);
 		const referenceTime = new Date(year, month - 1, day, hour, minute, second);
 
-
 		// Section 3から格子情報 - より柔軟なチェック
 		if (sec3.data.byteLength < 14) {
 			throw new Error(`Section 3 too short: ${sec3.data.byteLength} bytes`);
@@ -530,7 +543,6 @@ export class PureGrib2Parser {
 			la1 = lo1 = la2 = lo2 = dx = dy = 0;
 		}
 
-
 		// Section 4からプロダクト情報 - より柔軟なチェック
 		if (sec4.data.byteLength < 10) {
 			throw new Error(`Section 4 too short: ${sec4.data.byteLength} bytes`);
@@ -540,7 +552,6 @@ export class PureGrib2Parser {
 
 		const parameterCategory = sec4.data.byteLength >= 10 ? section4View.getUint8(9) : 0;
 		const parameterNumber = sec4.data.byteLength >= 11 ? section4View.getUint8(10) : 0;
-
 
 		// 予測時間の計算（利用可能な場合）
 		let forecastTime = 0;
@@ -597,9 +608,7 @@ export class PureGrib2Parser {
 		try {
 			// Section 5の最小長チェック
 			if (sec5.data.byteLength < 11) {
-				console.warn(
-					`Section 5 too short (${sec5.data.byteLength} bytes), filling with zeros`
-				);
+				console.warn(`Section 5 too short (${sec5.data.byteLength} bytes), filling with zeros`);
 				values.fill(0);
 				return values;
 			}
@@ -608,9 +617,7 @@ export class PureGrib2Parser {
 
 			// Section 7の最小長チェック
 			if (sec7.data.byteLength < 5) {
-				console.warn(
-					`Section 7 too short (${sec7.data.byteLength} bytes), filling with zeros`
-				);
+				console.warn(`Section 7 too short (${sec7.data.byteLength} bytes), filling with zeros`);
 				values.fill(0);
 				return values;
 			}
@@ -623,7 +630,6 @@ export class PureGrib2Parser {
 				dataTemplate = section5View.getUint16(9, false);
 			}
 
-
 			if (dataTemplate === 0 && sec5.data.byteLength >= 21) {
 				// 簡単なパッキング (Template 5.0)
 				const referenceValue = section5View.getFloat32(11, false);
@@ -631,14 +637,10 @@ export class PureGrib2Parser {
 				const decimalScaleFactor = PureGrib2Parser.readSignedGrib16(section5View, 17);
 				const bitsPerValue = section5View.getUint8(19);
 
-
 				if (bitsPerValue === 0) {
 					// 定数値
 					values.fill(referenceValue);
-				} else if (
-					bitsPerValue === 32 &&
-					sec7.data.byteLength >= 5 + numberOfDataPoints * 4
-				) {
+				} else if (bitsPerValue === 32 && sec7.data.byteLength >= 5 + numberOfDataPoints * 4) {
 					// 32ビットfloat
 					for (let i = 0; i < numberOfDataPoints; i++) {
 						if (5 + i * 4 + 4 <= sec7.data.byteLength) {
@@ -647,10 +649,7 @@ export class PureGrib2Parser {
 							values[i] = 0; // データが不足している場合は0
 						}
 					}
-				} else if (
-					bitsPerValue === 16 &&
-					sec7.data.byteLength >= 5 + numberOfDataPoints * 2
-				) {
+				} else if (bitsPerValue === 16 && sec7.data.byteLength >= 5 + numberOfDataPoints * 2) {
 					// 16ビット整数（簡略化された実装）
 					const E = Math.pow(10, -decimalScaleFactor);
 					const D = Math.pow(2, binaryScaleFactor);

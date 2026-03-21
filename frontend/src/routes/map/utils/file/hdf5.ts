@@ -273,13 +273,17 @@ export const extractHdf5Raster = async (
 				latShape = latDs.shape ?? [];
 				lonShape = lonDs.shape ?? [];
 			}
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 	}
 
 	if (latData && lonData && latData.length > 0 && lonData.length > 0) {
 		// lat/lonの最小最大からbboxを計算（大量データ対応でループ）
-		let minLat = Infinity, maxLat = -Infinity;
-		let minLon = Infinity, maxLon = -Infinity;
+		let minLat = Infinity,
+			maxLat = -Infinity;
+		let minLon = Infinity,
+			maxLon = -Infinity;
 		for (let i = 0; i < latData.length; i++) {
 			const lat = latData[i];
 			const lon = lonData[i];
@@ -309,9 +313,7 @@ export const extractHdf5Raster = async (
 /**
  * HDF5ファイルの2D以上のデータセット一覧を返す（ラスター候補）
  */
-export const getHdf5RasterDatasets = async (
-	file: File
-): Promise<Hdf5DatasetInfo[]> => {
+export const getHdf5RasterDatasets = async (file: File): Promise<Hdf5DatasetInfo[]> => {
 	const info = await getHdf5FileInfo(file);
 	return info.datasets.filter((d) => d.shape.length >= 2);
 };

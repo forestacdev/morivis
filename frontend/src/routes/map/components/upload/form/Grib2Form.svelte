@@ -214,8 +214,17 @@
 			let mapImage: string | undefined;
 			if (rawBbox[0] !== rawBbox[2] && rawBbox[1] !== rawBbox[3]) {
 				try {
-					mapImage = generateThumbnail(firstMsg.values, nx, ny, ranges[0].min, ranges[0].max, rawBbox);
-				} catch { /* ignore */ }
+					mapImage = generateThumbnail(
+						firstMsg.values,
+						nx,
+						ny,
+						ranges[0].min,
+						ranges[0].max,
+						rawBbox
+					);
+				} catch {
+					/* ignore */
+				}
 			}
 
 			await encodeAllBandsToTerrarium(id, bands, nx, ny, null, ranges);
@@ -330,7 +339,8 @@
 							<input
 								type="checkbox"
 								checked={selectedIndices.includes(msg.index)}
-								disabled={!selectedIndices.includes(msg.index) && selectedIndices.length >= MAX_BANDS}
+								disabled={!selectedIndices.includes(msg.index) &&
+									selectedIndices.length >= MAX_BANDS}
 								onchange={() => {
 									if (selectedIndices.includes(msg.index)) {
 										selectedIndices = selectedIndices.filter((i) => i !== msg.index);
@@ -354,10 +364,16 @@
 			<div transition:slide class="flex w-full flex-col gap-1 px-2 text-sm text-gray-300">
 				<div>グリッド: {firstMsg.nx} x {firstMsg.ny}</div>
 				<div>
-					緯度: {Math.min(firstMsg.la1, firstMsg.la2).toFixed(2)} 〜 {Math.max(firstMsg.la1, firstMsg.la2).toFixed(2)}
+					緯度: {Math.min(firstMsg.la1, firstMsg.la2).toFixed(2)} 〜 {Math.max(
+						firstMsg.la1,
+						firstMsg.la2
+					).toFixed(2)}
 				</div>
 				<div>
-					経度: {Math.min(firstMsg.lo1, firstMsg.lo2).toFixed(2)} 〜 {Math.max(firstMsg.lo1, firstMsg.lo2).toFixed(2)}
+					経度: {Math.min(firstMsg.lo1, firstMsg.lo2).toFixed(2)} 〜 {Math.max(
+						firstMsg.lo1,
+						firstMsg.lo2
+					).toFixed(2)}
 				</div>
 				<div>選択バンド数: {selectedIndices.length}</div>
 			</div>
@@ -370,7 +386,9 @@
 	<button
 		onclick={registration}
 		disabled={!analyzed || selectedIndices.length === 0 || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || selectedIndices.length === 0 || $isProcessing
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed ||
+		selectedIndices.length === 0 ||
+		$isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

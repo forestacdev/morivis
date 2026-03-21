@@ -83,7 +83,10 @@
 				showNotification('2D以上のデータセットが見つかりません', 'error');
 			}
 		} catch (e) {
-			showNotification(e instanceof Error ? e.message : 'HDF5ファイルの読み込みに失敗しました', 'error');
+			showNotification(
+				e instanceof Error ? e.message : 'HDF5ファイルの読み込みに失敗しました',
+				'error'
+			);
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -97,7 +100,10 @@
 		isProcessing.set(true);
 
 		try {
-			const { data, width, height, bbox, nodata } = await extractHdf5Raster(hdf5File, selectedDataset);
+			const { data, width, height, bbox, nodata } = await extractHdf5Raster(
+				hdf5File,
+				selectedDataset
+			);
 
 			if (width === 0 || height === 0) {
 				showNotification(`データサイズが不正です (${width}x${height})`, 'error');
@@ -108,7 +114,8 @@
 			const bands: RasterBands = [data];
 			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
-			const rawBbox: [number, number, number, number] = bbox && isBboxValid(bbox) ? bbox : [-180, -90, 180, 90];
+			const rawBbox: [number, number, number, number] =
+				bbox && isBboxValid(bbox) ? bbox : [-180, -90, 180, 90];
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
