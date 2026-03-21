@@ -17,8 +17,11 @@ graph LR
         F8[".pmtiles"]
         F9[".mbtiles"]
         F10[".glb"]
-        F11[".las / .laz"]
+        F11[".las / .laz / .ply / .pcd"]
         F12[".h5"]
+        F13[".nc / .nc4"]
+        F14[".xml (基盤地図DEM)"]
+        F15[".zip"]
         U1["XYZタイルURL"]
         U2["WMTS/WMS URL"]
         U3["ArcGIS URL"]
@@ -27,10 +30,10 @@ graph LR
     end
 
     subgraph Routing["FileManager - 振り分け"]
-        FM["拡張子判定 → DialogType"]
+        FM["拡張子判定 + 内容判定 → DialogType"]
     end
 
-    subgraph Forms["フォーム"]
+    subgraph Forms["フォーム (20種)"]
         GJF["GeoJsonForm"]
         SHF["ShapeFileForm"]
         CSV["CsvForm"]
@@ -48,14 +51,18 @@ graph LR
         ARC["ArcGisForm"]
         VCF["VectorForm"]
         H5F["Hdf5Form"]
+        NCF["NetCDFForm"]
+        DXM["DemXmlForm"]
     end
 
     subgraph Transform["変換処理"]
         PRJ["座標変換 proj4 Worker"]
         TER["Terrarium エンコード Worker"]
-        LAS["LAS パース + 座標変換 Worker"]
+        PCS["点群パース + 座標変換 Worker"]
         SQL["sql.js SQLite読み込み"]
         PBF["PBF デコード arcgis-pbf-parser"]
+        NCP["netcdfjs パース"]
+        DXP["DEM XML パース Worker x4"]
     end
 
     subgraph Entries["エントリ生成"]
@@ -87,19 +94,21 @@ graph LR
 
     CV["Map Canvas"]
 
-    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 & F10 & F11 & F12 --> FM
+    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 & F10 & F11 & F12 & F13 & F14 & F15 --> FM
     U1 & U2 & U3 & U4 & U5 --> FM
 
-    FM --> GJF & SHF & CSV & GPX & DXF & GPK & GTF & RSF & PMF & MBF & GLB & T3D & PCF & WMT & ARC & VCF & H5F
+    FM --> GJF & SHF & CSV & GPX & DXF & GPK & GTF & RSF & PMF & MBF & GLB & T3D & PCF & WMT & ARC & VCF & H5F & NCF & DXM
 
     SHF & GJF & DXF & GPK --> PRJ
-    GTF --> TER
-    PCF --> LAS
+    GTF & NCF & DXM --> TER
+    PCF --> PCS
     MBF --> SQL
     ARC --> PBF
+    NCF --> NCP
+    DXM --> DXP
 
     GJF & SHF & CSV & GPX & DXF & GPK & VCF & H5F --> VE
-    GTF & RSF & PMF & MBF & WMT & ARC --> RE
+    GTF & RSF & PMF & MBF & WMT & ARC & NCF & DXM --> RE
     GLB & T3D & PCF --> ME
 
     VE -->|geojson/fgb| GJS
@@ -154,6 +163,8 @@ graph LR
 | GeoTIFF | .tif/.tiff | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
 | PNG/JPEG + aux.xml | .png/.jpg + .aux.xml | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
 | PNG/JPEG + ワールドファイル | .png/.jpg + .pgw/.jgw | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
+| NetCDF | .nc/.nc4 | NetCDFForm | netcdfjs + Terrarium Worker | tiff | ImageSource | MapLibre |
+| 基盤地図情報 DEM XML | .xml/.zip | DemXmlForm | XML Worker x4 + Terrarium Worker | tiff | ImageSource | MapLibre |
 
 ### ラスター（タイルサービス）
 
@@ -173,6 +184,8 @@ graph LR
 | GLB/glTF | .glb | GlbForm | - | gltf | three.js |
 | 3D Tiles | URL (tileset.json) | Tiles3DForm | - | 3d-tiles | deck.gl (Tile3DLayer) |
 | LAS/LAZ | .las/.laz | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
+| PLY | .ply | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
+| PCD | .pcd | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
 
 ## カスタムプロトコル
 
@@ -208,7 +221,7 @@ GeoDataEntry (Union)
 └── ModelEntry
     ├── ModelMeshEntry<MeshStyle>     → three.js (GLB)
     ├── ModelTiles3DEntry<Style>      → deck.gl (3D Tiles)
-    └── ModelPointCloudEntry          → deck.gl (LAS/LAZ)
+    └── ModelPointCloudEntry          → deck.gl (LAS/LAZ/PLY/PCD)
 ```
 
 ## スタイル更新フロー
@@ -232,10 +245,11 @@ MapLibre GL JS がスタイルを適用・差分更新
 
 | Worker | パス | 用途 | ライフサイクル |
 |---|---|---|---|
-| terrarium_encode | geotiff/terrarium_encode.worker.ts | GeoTIFFバンド→Terrarium PNGエンコード | 遅延初期化、エンコード完了後terminate |
+| terrarium_encode | geotiff/terrarium_encode.worker.ts | バンドデータ→Terrarium PNGエンコード | 遅延初期化、エンコード完了後terminate |
 | terrarium_render | geotiff/terrarium_render.worker.ts | Terrarium PNG→最終画像レンダリング(WebGL) | 遅延初期化、全TIFFエントリ解放後terminate |
 | transformer | proj/transformer.worker.ts | GeoJSON座標変換(並列) | 変換時に起動、完了後terminate |
 | pointcloud_transformer | proj/pointcloud_transformer.worker.ts | 点群座標変換 | 変換時に起動、完了後terminate |
+| xml-parser | file/dem-xml/xml-parser.worker.ts | 基盤地図DEM XMLパース(4並列) | 解析時に起動、完了後terminate |
 | protocol_geojson | protocol/vector/geojson/protocol_geojson.worker.ts | GeoJSON→ベクタータイル化 | 常時起動 |
 | protocol_esri_feature | protocol/vector/esri-feature/protocol_esri_feature.worker.ts | ArcGIS PBF→ベクタータイル化 | 遅延初期化、レイヤー解除後terminate |
 | protocol_dem | protocol/raster/protocol_dem.worker.ts | DEM標高→シェーダー画像 | オンデマンド |
