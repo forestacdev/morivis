@@ -21,7 +21,8 @@ graph LR
         F12[".h5"]
         F13[".nc / .nc4"]
         F14[".xml (基盤地図DEM)"]
-        F15[".zip"]
+        F15[".bin / .grib2 / .grb2"]
+        F16[".zip"]
         U1["XYZタイルURL"]
         U2["WMTS/WMS URL"]
         U3["ArcGIS URL"]
@@ -30,10 +31,11 @@ graph LR
     end
 
     subgraph Routing["FileManager - 振り分け"]
+        FSC["大ファイル警告 100MB+"]
         FM["拡張子判定 + 内容判定 → DialogType"]
     end
 
-    subgraph Forms["フォーム (20種)"]
+    subgraph Forms["フォーム (21種)"]
         GJF["GeoJsonForm"]
         SHF["ShapeFileForm"]
         CSV["CsvForm"]
@@ -53,6 +55,7 @@ graph LR
         H5F["Hdf5Form"]
         NCF["NetCDFForm"]
         DXM["DemXmlForm"]
+        GRB["Grib2Form"]
     end
 
     subgraph Transform["変換処理"]
@@ -63,6 +66,8 @@ graph LR
         PBF["PBF デコード arcgis-pbf-parser"]
         NCP["netcdfjs パース"]
         DXP["DEM XML パース Worker x4"]
+        GRP["GRIB2 パース (Template 5.0/5.3)"]
+        SWR["スワス → グリッド リサンプリング"]
     end
 
     subgraph Entries["エントリ生成"]
@@ -94,21 +99,23 @@ graph LR
 
     CV["Map Canvas"]
 
-    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 & F10 & F11 & F12 & F13 & F14 & F15 --> FM
+    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 & F10 & F11 & F12 & F13 & F14 & F15 & F16 --> FSC --> FM
     U1 & U2 & U3 & U4 & U5 --> FM
 
-    FM --> GJF & SHF & CSV & GPX & DXF & GPK & GTF & RSF & PMF & MBF & GLB & T3D & PCF & WMT & ARC & VCF & H5F & NCF & DXM
+    FM --> GJF & SHF & CSV & GPX & DXF & GPK & GTF & RSF & PMF & MBF & GLB & T3D & PCF & WMT & ARC & VCF & H5F & NCF & DXM & GRB
 
     SHF & GJF & DXF & GPK --> PRJ
-    GTF & NCF & DXM --> TER
+    GTF & NCF & DXM & GRB & H5F --> TER
     PCF --> PCS
     MBF --> SQL
     ARC --> PBF
     NCF --> NCP
     DXM --> DXP
+    GRB --> GRP
+    H5F --> SWR
 
-    GJF & SHF & CSV & GPX & DXF & GPK & VCF & H5F --> VE
-    GTF & RSF & PMF & MBF & WMT & ARC & NCF & DXM --> RE
+    GJF & SHF & CSV & GPX & DXF & GPK & VCF --> VE
+    GTF & RSF & PMF & MBF & WMT & ARC & NCF & DXM & GRB & H5F --> RE
     GLB & T3D & PCF --> ME
 
     VE -->|geojson/fgb| GJS
@@ -144,7 +151,7 @@ graph LR
 | DXF | .dxf | DxfForm | proj4 | geojson | GeoJSONSource | MapLibre |
 | DM | .dm | DmForm | - | geojson | GeoJSONSource | MapLibre |
 | SIMA | .sim | SimaForm | - | geojson | GeoJSONSource | MapLibre |
-| HDF5 | .h5 | Hdf5Form | - | geojson | GeoJSONSource | MapLibre |
+| HDF5 (衛星ベクター) | .h5 | Hdf5Form | - | geojson | GeoJSONSource | MapLibre |
 
 ### ベクター（タイルサービス）
 
@@ -165,6 +172,8 @@ graph LR
 | PNG/JPEG + ワールドファイル | .png/.jpg + .pgw/.jgw | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
 | NetCDF | .nc/.nc4 | NetCDFForm | netcdfjs + Terrarium Worker | tiff | ImageSource | MapLibre |
 | 基盤地図情報 DEM XML | .xml/.zip | DemXmlForm | XML Worker x4 + Terrarium Worker | tiff | ImageSource | MapLibre |
+| GRIB2 (GPV) | .bin/.grib2/.grb2 | Grib2Form | GRIB2パーサー + Terrarium Worker | tiff | ImageSource | MapLibre |
+| HDF5 (ラスター) | .h5 | Hdf5Form | jsfive + スワスリサンプリング + Terrarium Worker | tiff | ImageSource | MapLibre |
 
 ### ラスター（タイルサービス）
 
