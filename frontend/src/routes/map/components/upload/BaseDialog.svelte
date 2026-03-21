@@ -7,6 +7,7 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
@@ -43,6 +44,8 @@
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
+		showGeoRefForm: boolean;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -54,7 +57,9 @@
 		dropFile = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		showGeoRefForm = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
@@ -136,6 +141,8 @@
 					bind:showZoneForm
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:showGeoRefForm
+					bind:geoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}

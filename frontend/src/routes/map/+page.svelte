@@ -46,6 +46,8 @@
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
+	import GeoRefForm from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -162,6 +164,10 @@
 	});
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
+
+	// ジオリファレンスフォーム
+	let showGeoRefForm = $state<boolean>(false);
+	let geoRefData = $state<GeoRefData | null>(null);
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -646,6 +652,8 @@
 	bind:focusBbox
 	bind:isDragover
 	bind:zoneConfirmedEpsg
+	bind:showGeoRefForm
+	bind:geoRefData
 	{selectedEpsgCode}
 />
 
@@ -661,6 +669,17 @@
 		onConfirm={(epsgCode) => {
 			zoneConfirmedEpsg = epsgCode;
 		}}
+	/>
+{/if}
+
+{#if map && showGeoRefForm && geoRefData}
+	<GeoRefForm
+		{map}
+		bind:showGeoRefForm
+		bind:geoRefData
+		bind:showDataEntry
+		bind:showDialogType
+		bind:dropFile
 	/>
 {/if}
 

@@ -26,6 +26,7 @@
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -37,6 +38,8 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		showGeoRefForm: boolean;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -46,7 +49,9 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		showGeoRefForm = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let entryName = $state<string>('');
@@ -239,10 +244,22 @@
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
-				showNotification(
-					'位置情報がありません。ワールドファイル(.pgw/.jgw/.tfw)またはaux.xmlと一緒にドロップしてください。',
-					'error'
-				);
+				// 位置情報なし → ジオリファレンスフォームへ
+				geoRefData = {
+					entryId,
+					entryName,
+					parsedBands: parsedBands!,
+					parsedNodata,
+					dataRanges,
+					numBands,
+					imageWidth,
+					imageHeight,
+					bandMinMax,
+					multiBandMinMax,
+					imageFile: file
+				};
+				showGeoRefForm = true;
+				showDialogType = null;
 			}
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
@@ -354,10 +371,22 @@
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
-				showNotification(
-					'位置情報がありません。ワールドファイルまたはaux.xmlと一緒にドロップしてください。',
-					'error'
-				);
+				// 位置情報なし → ジオリファレンスフォームへ
+				geoRefData = {
+					entryId,
+					entryName,
+					parsedBands: parsedBands!,
+					parsedNodata,
+					dataRanges,
+					numBands,
+					imageWidth,
+					imageHeight,
+					bandMinMax,
+					multiBandMinMax,
+					imageFile: file
+				};
+				showGeoRefForm = true;
+				showDialogType = null;
 			}
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'GeoTIFFの解析に失敗しました', 'error');
