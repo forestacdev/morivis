@@ -111,6 +111,7 @@
 						const type = info.featureTables.length > 0 ? 'feature' : 'tile';
 						selectedTable = table;
 						selectedTableType = type as 'feature' | 'tile';
+						// loadTable/loadTileTableが自前でisProcessingを管理するのでここでは閉じない
 						if (type === 'feature') {
 							loadTable(table);
 						} else {
@@ -118,13 +119,15 @@
 						}
 					} else if (totalTables === 0) {
 						showNotification('テーブルが見つかりませんでした', 'error');
+						isProcessing.set(false);
+					} else {
+						// 複数テーブル: ユーザー選択待ち
+						isProcessing.set(false);
 					}
 				})
 				.catch((e) => {
 					showNotification('GeoPackageファイルの読み込みに失敗しました', 'error');
 					console.error(e);
-				})
-				.finally(() => {
 					isProcessing.set(false);
 				});
 		}
