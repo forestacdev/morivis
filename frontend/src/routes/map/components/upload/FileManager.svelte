@@ -87,6 +87,16 @@
 		}
 	};
 
+	/** XMLファイルの先頭を読んでLandXMLかどうかを判定 */
+	const isLandXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return header.includes('<LandXML') || header.includes('landxml.org');
+		} catch {
+			return false;
+		}
+	};
+
 	const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
 
 	/** ファイルサイズをフォーマット */
@@ -136,6 +146,9 @@
 				case 'kml':
 				case 'kmz':
 					showDialogType = 'kml';
+					return;
+				case 'landxml':
+					showDialogType = 'landxml';
 					return;
 				case 'dm':
 					showDialogType = 'dm';
@@ -225,6 +238,11 @@
 						showDialogType = 'gml';
 						return;
 					}
+					// LandXML判定
+					if (await isLandXml(file)) {
+						showDialogType = 'landxml';
+						return;
+					}
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
@@ -251,6 +269,8 @@
 					showDialogType = 'demxml';
 				} else if (await isGmlXml(files[0])) {
 					showDialogType = 'gml';
+				} else if (await isLandXml(files[0])) {
+					showDialogType = 'landxml';
 				} else {
 					showNotification('対応していないXMLファイルです', 'error');
 				}

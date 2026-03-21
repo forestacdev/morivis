@@ -132,6 +132,7 @@
 		"jsfive": "^0.4.0",
 		"jspdf": "^3.0.1",
 		"jszip": "^3.10.1",
+		"landxml": "^0.8.1",
 		"maplibre-gl": "^5.4.0",
 		"moji": "^0.5.1",
 		"netcdfjs": "^4.0.0",

@@ -73,6 +73,7 @@ export type DialogType =
 	| 'gml'
 	| 'kml'
 	| 'topojson'
+	| 'landxml'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
@@ -89,6 +90,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'DXF', extensions: ['.dxf'] },
 	{ label: 'DM', extensions: ['.dm'] },
 	{ label: 'SIMA', extensions: ['.sim'] },
+	{ label: 'LandXML', extensions: ['.landxml'] },
 	{ label: 'GeoTIFF', extensions: ['.tif', '.tiff'] },
 	{ label: '画像', extensions: ['.png', '.jpg', '.jpeg'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },

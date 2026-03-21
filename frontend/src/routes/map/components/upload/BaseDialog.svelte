@@ -7,14 +7,15 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
-	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
+	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import Grib2Form from '$routes/map/components/upload/form/Grib2Form.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
+	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
@@ -172,6 +173,17 @@
 			{/if}
 			{#if showDialogType === 'kml'}
 				<KmlForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'landxml'}
+				<LandXmlForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
