@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -26,7 +27,6 @@
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

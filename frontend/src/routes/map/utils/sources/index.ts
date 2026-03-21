@@ -94,7 +94,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'image',
 									url: imageData,
-									coordinates: getBoundingBoxCorners(metaData.bounds)
+									coordinates: metaData.imageCorners ?? getBoundingBoxCorners(metaData.bounds)
 								} as ImageSourceSpecification;
 							}
 						} else if (style.type === 'dem') {

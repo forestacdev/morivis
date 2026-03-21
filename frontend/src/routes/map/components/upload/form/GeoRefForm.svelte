@@ -76,11 +76,9 @@
 	];
 
 	const getBbox = (): [number, number, number, number] => {
-		const minLng = Math.min(nw.lng, sw.lng);
-		const maxLng = Math.max(ne.lng, se.lng);
-		const minLat = Math.min(sw.lat, se.lat);
-		const maxLat = Math.max(nw.lat, ne.lat);
-		return [minLng, minLat, maxLng, maxLat];
+		const lngs = [nw.lng, ne.lng, se.lng, sw.lng];
+		const lats = [nw.lat, ne.lat, se.lat, sw.lat];
+		return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)];
 	};
 
 	let initialized = $state(false);
@@ -165,28 +163,8 @@
 		});
 	};
 
-	// コーナードラッグ: 軸整列矩形を維持
-	const onDragNW = (pos: maplibregl.LngLat) => {
-		sw = new maplibregl.LngLat(pos.lng, sw.lat);
-		ne = new maplibregl.LngLat(ne.lng, pos.lat);
-		updatePreview();
-	};
-
-	const onDragNE = (pos: maplibregl.LngLat) => {
-		se = new maplibregl.LngLat(pos.lng, se.lat);
-		nw = new maplibregl.LngLat(nw.lng, pos.lat);
-		updatePreview();
-	};
-
-	const onDragSE = (pos: maplibregl.LngLat) => {
-		ne = new maplibregl.LngLat(pos.lng, ne.lat);
-		sw = new maplibregl.LngLat(sw.lng, pos.lat);
-		updatePreview();
-	};
-
-	const onDragSW = (pos: maplibregl.LngLat) => {
-		nw = new maplibregl.LngLat(pos.lng, nw.lat);
-		se = new maplibregl.LngLat(se.lng, pos.lat);
+	// コーナードラッグ: 各コーナー独立移動（回転・自由変形対応）
+	const onDragCorner = () => {
 		updatePreview();
 	};
 
@@ -244,6 +222,7 @@
 		try {
 			const data = geoRefData;
 			const bbox = getBbox();
+			const corners = getCornerCoordinates();
 
 			GeoTiffCache.setBbox(data.entryId, bbox);
 			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
@@ -274,6 +253,7 @@
 					name: data.entryName || '画像データ',
 					tileSize: 256,
 					bounds: bbox,
+					imageCorners: corners,
 					xyzImageTile: findCenterTile(bbox),
 					mapImage
 				},
@@ -407,8 +387,8 @@
 		</div>
 	</div>
 
-	<GeoRefMarker {map} bind:lngLat={nw} label="NW" onDrag={onDragNW} />
-	<GeoRefMarker {map} bind:lngLat={ne} label="NE" onDrag={onDragNE} />
-	<GeoRefMarker {map} bind:lngLat={se} label="SE" onDrag={onDragSE} />
-	<GeoRefMarker {map} bind:lngLat={sw} label="SW" onDrag={onDragSW} />
+	<GeoRefMarker {map} bind:lngLat={nw} label="NW" onDrag={onDragCorner} />
+	<GeoRefMarker {map} bind:lngLat={ne} label="NE" onDrag={onDragCorner} />
+	<GeoRefMarker {map} bind:lngLat={se} label="SE" onDrag={onDragCorner} />
+	<GeoRefMarker {map} bind:lngLat={sw} label="SW" onDrag={onDragCorner} />
 {/if}

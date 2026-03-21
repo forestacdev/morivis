@@ -240,6 +240,8 @@ export interface RasterTiffStyle extends BaseRasterStyle {
 interface RasterMetaData extends BaseMetaData {
 	minZoom: number;
 	tileSize: TileSize;
+	/** 画像ソースの4コーナー座標 [NW, NE, SE, SW]。回転・変形した画像配置に使用 */
+	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
 export interface RasterInteraction {
