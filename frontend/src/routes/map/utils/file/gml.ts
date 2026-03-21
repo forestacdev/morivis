@@ -224,7 +224,7 @@ const detectGmlVersion = (text: string): GmlVersion => {
 	return '3';
 };
 
-const geometryToGeoJSON = (geometry: import('ol/geom/Geometry').default): AnyGeometry | null => {
+export const geometryToGeoJSON = (geometry: import('ol/geom/Geometry').default): AnyGeometry | null => {
 	if (!geometry) return null;
 
 	const type = geometry.getType();

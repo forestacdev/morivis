@@ -14,6 +14,7 @@
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
 	import Grib2Form from '$routes/map/components/upload/form/Grib2Form.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
+	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
@@ -148,6 +149,17 @@
 			{/if}
 			{#if showDialogType === 'gml'}
 				<GmlForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'kml'}
+				<KmlForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

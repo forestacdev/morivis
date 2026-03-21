@@ -130,6 +130,10 @@
 				case 'gml':
 					showDialogType = 'gml';
 					return;
+				case 'kml':
+				case 'kmz':
+					showDialogType = 'kml';
+					return;
 				case 'dm':
 					showDialogType = 'dm';
 					return;

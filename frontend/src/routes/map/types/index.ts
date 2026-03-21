@@ -71,6 +71,7 @@ export type DialogType =
 	| 'demxml'
 	| 'grib2'
 	| 'gml'
+	| 'kml'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
@@ -81,6 +82,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
+	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },
 	{ label: 'DXF', extensions: ['.dxf'] },
 	{ label: 'DM', extensions: ['.dm'] },
