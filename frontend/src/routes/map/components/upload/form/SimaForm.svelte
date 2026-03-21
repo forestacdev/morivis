@@ -218,6 +218,7 @@
 	};
 
 	const cancel = () => {
+		dropFile = null;
 		showDialogType = null;
 	};
 

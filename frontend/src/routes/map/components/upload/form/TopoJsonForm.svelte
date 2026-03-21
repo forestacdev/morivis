@@ -12,8 +12,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
-	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
+	import { getTopoJsonObjects, topoJsonFileToGeoJson } from '$routes/map/utils/file/topojson';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -51,41 +50,37 @@
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
-	const geojsonFile = $derived.by(() => {
+	// TopoJSONオブジェクト選択
+	let objectOptions = $state<{ key: string; name: string }[]>([]);
+	let selectedObject = $state<string>('');
+
+	const topoFile = $derived.by(() => {
 		if (!dropFile) return null;
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
-	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
-	const isFgb = $derived(fileExt === 'fgb');
-	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
+	const entryName = $derived(topoFile?.name.replace(/\.[^.]+$/, '') ?? 'TopoJSONデータ');
 
-	const readFile = (file: File): Promise<FeatureCollection> =>
-		isFgb ? fgbFileToGeojson(file) : (geoJsonFileToGeoJson(file) as Promise<FeatureCollection>);
-
-	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
+	// ファイルドロップ時: オブジェクト一覧を取得
 	$effect(() => {
-		if (geojsonFile) {
+		if (topoFile) {
 			isProcessing.set(true);
-			readFile(geojsonFile)
-				.then((geojson) => {
-					rawGeojson = geojson as unknown as FeatureCollection;
-					const types = getGeometryTypes(rawGeojson!);
-
-					if (types.length === 1) {
-						selectedGeometryType = types[0];
-						geometryTypeOptions = [];
-						processGeojson();
+			getTopoJsonObjects(topoFile)
+				.then((objects) => {
+					if (objects.length === 1) {
+						// オブジェクトが1つなら即パース
+						selectedObject = objects[0].name;
+						loadObject(objects[0].name);
 					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
+						objectOptions = objects.map((o) => ({
+							key: o.name,
+							name: `${o.name} (${o.count}件)`
 						}));
-						selectedGeometryType = types[0];
+						selectedObject = objects[0].name;
 					}
 				})
 				.catch((e) => {
-					showNotification('GeoJSONファイルの読み込みに失敗しました', 'error');
+					showNotification('TopoJSONファイルの読み込みに失敗しました', 'error');
 					console.error(e);
 				})
 				.finally(() => {
@@ -93,6 +88,34 @@
 				});
 		}
 	});
+
+	/** 選択されたオブジェクトをGeoJSONに変換 */
+	const loadObject = async (objectName: string) => {
+		if (!topoFile) return;
+		isProcessing.set(true);
+		try {
+			const geojson = await topoJsonFileToGeoJson(topoFile, objectName);
+			rawGeojson = geojson as unknown as FeatureCollection;
+			const types = getGeometryTypes(rawGeojson!);
+
+			if (types.length === 1) {
+				selectedGeometryType = types[0];
+				geometryTypeOptions = [];
+				processGeojson();
+			} else {
+				geometryTypeOptions = types.map((t) => ({
+					key: t,
+					name: GEOMETRY_TYPE_LABELS[t] ?? t
+				}));
+				selectedGeometryType = types[0];
+			}
+		} catch (e) {
+			showNotification('TopoJSONの変換に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
 
 	const processGeojson = () => {
 		let filtered = rawGeojson;
@@ -129,9 +152,8 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!geojsonFile || !rawGeojson || !selectedGeometryType) return;
+		if (!topoFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
 
 		try {
@@ -143,14 +165,13 @@
 				prjContent
 			)) as FeatureCollection;
 
-			// ジオメトリタイプとレイヤーでフィルター
 			let geojsonData = filterByGeometryType(
 				transformedGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
 
 			if (!geojsonData || geojsonData.features.length === 0) {
-				showNotification('GeoJSONファイルの変換に失敗しました', 'error');
+				showNotification('TopoJSONファイルの変換に失敗しました', 'error');
 				return;
 			}
 
@@ -174,7 +195,7 @@
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (e) {
-			showNotification('GeoJSONファイルの変換中にエラーが発生しました', 'error');
+			showNotification('TopoJSONファイルの変換中にエラーが発生しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -187,7 +208,7 @@
 	};
 
 	$effect(() => {
-		if (zoneConfirmedEpsg && showDialogType === 'geojson') {
+		if (zoneConfirmedEpsg && showDialogType === 'topojson') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
@@ -198,12 +219,21 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{isFgb ? 'FlatGeobuf' : 'GeoJSON'}ファイルの登録</span>
+	<span class="text-2xl font-bold">TopoJSONファイルの登録</span>
 </div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
+	{#if objectOptions.length > 1}
+		<div class="w-full p-2">
+			<HorizontalSelectBox
+				label="オブジェクトを選択"
+				bind:group={selectedObject}
+				bind:options={objectOptions}
+			/>
+		</div>
+	{/if}
 	{#if geometryTypeOptions.length > 1}
 		<div class="w-full p-2">
 			<HorizontalSelectBox
@@ -218,10 +248,16 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={processGeojson}
-		disabled={$isProcessing || !selectedGeometryType}
+		onclick={() => {
+			if (objectOptions.length > 1 && !rawGeojson) {
+				loadObject(selectedObject);
+			} else {
+				processGeojson();
+			}
+		}}
+		disabled={$isProcessing || (!selectedGeometryType && !selectedObject)}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
+		(!selectedGeometryType && !selectedObject)
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

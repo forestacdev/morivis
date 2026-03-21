@@ -77,6 +77,30 @@
 		}
 	};
 
+	/** XMLファイルの先頭を読んでGMLかどうかを判定 */
+	const isGmlXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return (
+				header.includes('gml:') ||
+				header.includes('xmlns:gml') ||
+				header.includes('opengis.net/gml')
+			);
+		} catch {
+			return false;
+		}
+	};
+
+	/** XMLファイルの先頭を読んでLandXMLかどうかを判定 */
+	const isLandXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return header.includes('<LandXML') || header.includes('landxml.org');
+		} catch {
+			return false;
+		}
+	};
+
 	const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
 
 	/** ファイルサイズをフォーマット */
@@ -114,8 +138,21 @@
 				case 'fgb':
 					showDialogType = 'geojson';
 					return;
+				case 'topojson':
+					showDialogType = 'topojson';
+					return;
 				case 'gpx':
 					showDialogType = 'gpx';
+					return;
+				case 'gml':
+					showDialogType = 'gml';
+					return;
+				case 'kml':
+				case 'kmz':
+					showDialogType = 'kml';
+					return;
+				case 'landxml':
+					showDialogType = 'landxml';
 					return;
 				case 'dm':
 					showDialogType = 'dm';
@@ -200,6 +237,16 @@
 						showDialogType = 'demxml';
 						return;
 					}
+					// GML判定
+					if (await isGmlXml(file)) {
+						showDialogType = 'gml';
+						return;
+					}
+					// LandXML判定
+					if (await isLandXml(file)) {
+						showDialogType = 'landxml';
+						return;
+					}
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
@@ -221,9 +268,13 @@
 				}
 				showDialogType = 'geotiff';
 			} else if (files.every((f) => /\.xml$/i.test(f.name))) {
-				// 複数XMLファイル → 先頭ファイルでDEM判定
+				// 複数XMLファイル → 先頭ファイルでDEM/GML判定
 				if (await isDemXml(files[0])) {
 					showDialogType = 'demxml';
+				} else if (await isGmlXml(files[0])) {
+					showDialogType = 'gml';
+				} else if (await isLandXml(files[0])) {
+					showDialogType = 'landxml';
 				} else {
 					showNotification('対応していないXMLファイルです', 'error');
 				}

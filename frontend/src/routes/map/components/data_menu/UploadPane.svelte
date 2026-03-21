@@ -1,11 +1,6 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import {
-		SUPPORTED_FILE_ACCEPT,
-		SUPPORTED_FILE_EXTENSIONS,
-		SUPPORTED_FILE_LABEL,
-		type DialogType
-	} from '$routes/map/types';
+	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_GROUPS, type DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -40,7 +35,8 @@
 		{ type: 'arcgis', label: 'ArcGIS' },
 		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: '3dtiles', label: '3D Tiles' },
-		{ type: 'demxml', label: '基盤地図DEM' }
+		{ type: 'demxml', label: '基盤地図DEM' },
+		{ type: 'stac', label: 'STAC API' }
 	];
 	let isDragover = $state(false);
 
@@ -81,8 +77,10 @@
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
 			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
-				{#each SUPPORTED_FILE_EXTENSIONS as label}
-					<span class="bg-sub rounded-full p-1 px-3 text-xs">{label}</span>
+				{#each SUPPORTED_FILE_GROUPS as group}
+					<span class="bg-sub rounded-full p-1 px-3 text-xs">
+						{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+					</span>
 				{/each}
 			</div>
 

@@ -194,7 +194,7 @@ const createMapStore = () => {
 
 		map = new maplibregl.Map({
 			...mapPosition,
-			minZoom: checkPc() ? 2 : 1, // 最小ズームレベル
+			minZoom: checkPc() ? 0 : 0, // 最小ズームレベル
 			container: mapContainer,
 			canvasContextAttributes: {
 				// WebGLのコンテキスト属性を設定
@@ -221,7 +221,7 @@ const createMapStore = () => {
 
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
-			// maxZoom: 20
+
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,

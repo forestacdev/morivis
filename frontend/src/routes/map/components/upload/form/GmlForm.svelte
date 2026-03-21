@@ -12,8 +12,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
-	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
+	import { gmlFileToGeoJson } from '$routes/map/utils/file/gml';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -51,23 +50,30 @@
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
-	const geojsonFile = $derived.by(() => {
-		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+	const gmlFiles = $derived.by(() => {
+		if (!dropFile) return [];
+		if (dropFile instanceof FileList) return Array.from(dropFile);
+		return [dropFile];
 	});
 
-	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
-	const isFgb = $derived(fileExt === 'fgb');
-	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
+	const entryName = $derived(
+		gmlFiles.length === 1 ? (gmlFiles[0].name.replace(/\.[^.]+$/, '') ?? 'GMLデータ') : 'GMLデータ'
+	);
 
-	const readFile = (file: File): Promise<FeatureCollection> =>
-		isFgb ? fgbFileToGeojson(file) : (geoJsonFileToGeoJson(file) as Promise<FeatureCollection>);
+	/** 複数ファイルをパースしてマージ */
+	const parseAllFiles = async (files: File[]): Promise<FeatureCollection> => {
+		const results = await Promise.all(files.map((f) => gmlFileToGeoJson(f)));
+		return {
+			type: 'FeatureCollection',
+			features: results.flatMap((r) => r.features)
+		};
+	};
 
-	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
+	// ファイルドロップ時: GML → GeoJSON → ジオメトリタイプ確認
 	$effect(() => {
-		if (geojsonFile) {
+		if (gmlFiles.length > 0) {
 			isProcessing.set(true);
-			readFile(geojsonFile)
+			parseAllFiles(gmlFiles)
 				.then((geojson) => {
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson!);
@@ -85,7 +91,7 @@
 					}
 				})
 				.catch((e) => {
-					showNotification('GeoJSONファイルの読み込みに失敗しました', 'error');
+					showNotification('GMLファイルの読み込みに失敗しました', 'error');
 					console.error(e);
 				})
 				.finally(() => {
@@ -131,7 +137,7 @@
 
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!geojsonFile || !rawGeojson || !selectedGeometryType) return;
+		if (gmlFiles.length === 0 || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
 
 		try {
@@ -143,14 +149,13 @@
 				prjContent
 			)) as FeatureCollection;
 
-			// ジオメトリタイプとレイヤーでフィルター
 			let geojsonData = filterByGeometryType(
 				transformedGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
 
 			if (!geojsonData || geojsonData.features.length === 0) {
-				showNotification('GeoJSONファイルの変換に失敗しました', 'error');
+				showNotification('GMLファイルの変換に失敗しました', 'error');
 				return;
 			}
 
@@ -174,7 +179,7 @@
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (e) {
-			showNotification('GeoJSONファイルの変換中にエラーが発生しました', 'error');
+			showNotification('GMLファイルの変換中にエラーが発生しました', 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -187,7 +192,7 @@
 	};
 
 	$effect(() => {
-		if (zoneConfirmedEpsg && showDialogType === 'geojson') {
+		if (zoneConfirmedEpsg && showDialogType === 'gml') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
@@ -198,7 +203,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{isFgb ? 'FlatGeobuf' : 'GeoJSON'}ファイルの登録</span>
+	<span class="text-2xl font-bold">GMLファイルの登録</span>
 </div>
 
 <div
