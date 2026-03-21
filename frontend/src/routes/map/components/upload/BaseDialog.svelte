@@ -11,6 +11,7 @@
 	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
+	import Grib2Form from '$routes/map/components/upload/form/Grib2Form.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
@@ -106,6 +107,9 @@
 			{/if}
 			{#if showDialogType === 'netcdf'}
 				<NetCDFForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'grib2'}
+				<Grib2Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'demxml'}
 				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />

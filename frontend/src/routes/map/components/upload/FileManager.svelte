@@ -4,6 +4,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
@@ -76,8 +77,33 @@
 		}
 	};
 
+	const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
+
+	/** ファイルサイズをフォーマット */
+	const formatSize = (bytes: number): string => {
+		if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+		if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+		return `${(bytes / 1024).toFixed(0)} KB`;
+	};
+
+	/** 大きなファイルの場合に確認ダイアログを表示。キャンセルならfalseを返す */
+	const checkLargeFile = async (files: File | File[]): Promise<boolean> => {
+		const fileList = Array.isArray(files) ? files : [files];
+		const totalSize = fileList.reduce((sum, f) => sum + f.size, 0);
+		if (totalSize < LARGE_FILE_THRESHOLD) return true;
+
+		return showConfirmDialog({
+			message: `ファイルサイズが大きいです（${formatSize(totalSize)}）。動作が不安定になる可能性があります。続行しますか？`,
+			confirmText: '続行',
+			cancelText: 'キャンセル'
+		});
+	};
+
 	const setFile = async (file: File | FileList) => {
 		if (file instanceof File) {
+			// 大きなファイルの確認
+			if (!(await checkLargeFile(file))) return;
+
 			const ext = file.name.split('.').pop()?.toLowerCase();
 
 			switch (ext) {
@@ -138,6 +164,12 @@
 				case 'nc4':
 					showDialogType = 'netcdf';
 					return;
+				case 'bin':
+				case 'grib2':
+				case 'grb2':
+				case 'grb':
+					showDialogType = 'grib2';
+					return;
 				case 'zip': {
 					console.warn('[FileManager] entering zip case');
 					const zipType = await detectZipContent(file);
@@ -176,6 +208,9 @@
 			}
 		} else if (file instanceof FileList) {
 			const files = Array.from(file);
+
+			// 大きなファイルの確認
+			if (!(await checkLargeFile(files))) return;
 
 			if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';

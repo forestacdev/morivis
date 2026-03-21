@@ -104,6 +104,221 @@ export const getHdf5Dataset = async (
 };
 
 /**
+ * スワスデータ（2D lat/lon）を等緯度経度グリッドにリサンプリングする
+ * 各ソースピクセルの(lat,lon)からターゲットグリッドの最近傍ピクセルに値を配置
+ */
+const resampleSwathToGrid = (
+	srcData: Float32Array,
+	latData: number[],
+	lonData: number[],
+	srcWidth: number,
+	srcHeight: number,
+	bbox: [number, number, number, number],
+	nodata: number | null
+): {
+	data: Float32Array;
+	width: number;
+	height: number;
+	bbox: [number, number, number, number];
+	nodata: number | null;
+} => {
+	const [minLon, minLat, maxLon, maxLat] = bbox;
+	const latRange = maxLat - minLat;
+	const lonRange = maxLon - minLon;
+
+	if (latRange <= 0 || lonRange <= 0) {
+		return { data: srcData, width: srcWidth, height: srcHeight, bbox, nodata };
+	}
+
+	// ターゲットグリッドサイズ: ソースのピクセル密度に合わせる
+	const srcPixels = srcWidth * srcHeight;
+	const aspect = lonRange / latRange;
+	const gridH = Math.min(2048, Math.round(Math.sqrt(srcPixels / aspect)));
+	const gridW = Math.min(2048, Math.round(gridH * aspect));
+
+	const nodataVal = nodata ?? -9999;
+	const grid = new Float32Array(gridW * gridH).fill(nodataVal);
+	// 重み（同じピクセルに複数のソース値が来た場合の平均用）
+	const counts = new Uint16Array(gridW * gridH);
+
+	// 各ソースピクセルをターゲットグリッドに配置
+	for (let i = 0; i < srcPixels; i++) {
+		const lat = latData[i];
+		const lon = lonData[i];
+		const val = srcData[i];
+
+		if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(val)) continue;
+		if (nodata !== null && val === nodata) continue;
+
+		// ターゲットグリッド座標に変換
+		const gx = Math.floor(((lon - minLon) / lonRange) * gridW);
+		const gy = Math.floor(((maxLat - lat) / latRange) * gridH);
+
+		if (gx < 0 || gx >= gridW || gy < 0 || gy >= gridH) continue;
+
+		const idx = gy * gridW + gx;
+		if (counts[idx] === 0) {
+			grid[idx] = val;
+		} else {
+			// 平均
+			grid[idx] = (grid[idx] * counts[idx] + val) / (counts[idx] + 1);
+		}
+		counts[idx]++;
+	}
+
+	return {
+		data: grid,
+		width: gridW,
+		height: gridH,
+		bbox,
+		nodata: nodataVal
+	};
+};
+
+/** 緯度変数の候補名 */
+const LAT_NAMES = ['lat', 'latitude', 'y', 'nav_lat', 'Latitude'];
+/** 経度変数の候補名 */
+const LON_NAMES = ['lon', 'longitude', 'x', 'nav_lon', 'Longitude'];
+
+/**
+ * HDF5ファイルからラスターデータを抽出する
+ * 2D以上のデータセットから指定変数のFloat32Arrayとbboxを返す
+ */
+export const extractHdf5Raster = async (
+	file: File,
+	datasetPath: string,
+	sliceIndices?: Record<string, number>
+): Promise<{
+	data: Float32Array;
+	width: number;
+	height: number;
+	bbox: [number, number, number, number] | null;
+	nodata: number | null;
+}> => {
+	const f = await openHdf5File(file);
+	const dataset = f.get(datasetPath);
+
+	if (!dataset || !(dataset instanceof hdf5.Dataset)) {
+		throw new Error(`Dataset '${datasetPath}' not found`);
+	}
+
+	const shape = dataset.shape ?? [];
+	const rawValue = dataset.value;
+	const attrs = dataset.attrs ?? {};
+
+	// nodata
+	const nodata =
+		attrs['_FillValue'] != null
+			? Number(attrs['_FillValue'])
+			: attrs['missing_value'] != null
+				? Number(attrs['missing_value'])
+				: null;
+
+	// 最後の2次元をY, Xとして扱う
+	const height = shape[shape.length - 2] ?? 0;
+	const width = shape[shape.length - 1] ?? 0;
+
+	let data: Float32Array;
+	const flatArray = rawValue as number[] | Float32Array | Float64Array;
+
+	if (shape.length === 2) {
+		data = new Float32Array(flatArray);
+	} else if (shape.length > 2) {
+		data = new Float32Array(width * height);
+		let offset = 0;
+		for (let i = 0; i < shape.length - 2; i++) {
+			const dimName = `dim_${i}`;
+			const idx = sliceIndices?.[dimName] ?? 0;
+			let stride = 1;
+			for (let j = i + 1; j < shape.length; j++) {
+				stride *= shape[j];
+			}
+			offset += idx * stride;
+		}
+		for (let i = 0; i < width * height; i++) {
+			data[i] = Number(flatArray[offset + i]);
+		}
+	} else {
+		throw new Error('Dataset must have at least 2 dimensions');
+	}
+
+	// 緯度経度変数を探す
+	let bbox: [number, number, number, number] | null = null;
+	const { datasets } = collectItems(f, '');
+
+	const findDatasetPath = (candidates: string[]): string | undefined =>
+		datasets.find((d) =>
+			candidates.some(
+				(c) =>
+					d.path.toLowerCase() === c.toLowerCase() ||
+					d.path.toLowerCase().endsWith('/' + c.toLowerCase())
+			)
+		)?.path;
+
+	const latPath = findDatasetPath(LAT_NAMES);
+	const lonPath = findDatasetPath(LON_NAMES);
+
+	let latData: number[] | null = null;
+	let lonData: number[] | null = null;
+	let latShape: number[] = [];
+	let lonShape: number[] = [];
+
+	if (latPath && lonPath) {
+		try {
+			const latDs = f.get(latPath);
+			const lonDs = f.get(lonPath);
+			if (latDs instanceof hdf5.Dataset && lonDs instanceof hdf5.Dataset) {
+				latData = latDs.value as number[];
+				lonData = lonDs.value as number[];
+				latShape = latDs.shape ?? [];
+				lonShape = lonDs.shape ?? [];
+			}
+		} catch {
+			/* ignore */
+		}
+	}
+
+	if (latData && lonData && latData.length > 0 && lonData.length > 0) {
+		// lat/lonの最小最大からbboxを計算（大量データ対応でループ）
+		let minLat = Infinity,
+			maxLat = -Infinity;
+		let minLon = Infinity,
+			maxLon = -Infinity;
+		for (let i = 0; i < latData.length; i++) {
+			const lat = latData[i];
+			const lon = lonData[i];
+			if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+			if (nodata !== null && (lat === nodata || lon === nodata)) continue;
+			if (lat < minLat) minLat = lat;
+			if (lat > maxLat) maxLat = lat;
+			if (lon < minLon) minLon = lon;
+			if (lon > maxLon) maxLon = lon;
+		}
+		if (Number.isFinite(minLat) && Number.isFinite(minLon)) {
+			bbox = [minLon, minLat, maxLon, maxLat];
+		}
+
+		// lat/lonが2D配列（スワスデータ）の場合 → 等緯度経度グリッドにリサンプリング
+		const is2DCoords = latShape.length >= 2 && latShape[0] === height && latShape[1] === width;
+
+		if (is2DCoords && bbox) {
+			const resampled = resampleSwathToGrid(data, latData, lonData, width, height, bbox, nodata);
+			return resampled;
+		}
+	}
+
+	return { data, width, height, bbox, nodata };
+};
+
+/**
+ * HDF5ファイルの2D以上のデータセット一覧を返す（ラスター候補）
+ */
+export const getHdf5RasterDatasets = async (file: File): Promise<Hdf5DatasetInfo[]> => {
+	const info = await getHdf5FileInfo(file);
+	return info.datasets.filter((d) => d.shape.length >= 2);
+};
+
+/**
  * EarthCARE MSI CLP HDF5ファイルからスワス範囲ポリゴンGeoJSONを生成する
  * latitude/longitude (2D: scanlines x pixels) の左端・右端列で観測範囲ポリゴンを構築
  * @param file - HDF5ファイル (File API)

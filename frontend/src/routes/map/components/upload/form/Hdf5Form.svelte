@@ -1,23 +1,31 @@
 <script lang="ts">
-	import turfBbox from '@turf/bbox';
+	import { slide } from 'svelte/transition';
 
-	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
-		createGeoJsonEntry,
-		getGeometryTypes,
-		filterByGeometryType
-	} from '$routes/map/data/entries/vector';
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT,
+		WEB_MERCATOR_MIN_LNG,
+		WEB_MERCATOR_MAX_LNG
+	} from '$routes/map/data/entries/_meta_data/_bounds';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
-		cprClpToOrbitTrackGeojson,
-		cprFmrToOrbitTrackGeojson,
-		msiClpToOrbitTrackGeojson,
-		getHdf5FileInfo
+		GeoTiffCache,
+		encodeAllBandsToTerrarium,
+		getMinMax,
+		type BandDataRange,
+		type RasterBands
+	} from '$routes/map/utils/file/geotiff';
+	import {
+		getHdf5RasterDatasets,
+		extractHdf5Raster,
+		type Hdf5DatasetInfo
 	} from '$routes/map/utils/file/hdf5';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -33,113 +41,138 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
-	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
-		Point: 'ポイント',
-		LineString: 'ライン',
-		Polygon: 'ポリゴン',
-		Label: 'ラベル'
-	};
+	// === 共通 ===
+	let mode = $state<'raster' | ''>('');
+	let entryName = $state('');
 
-	let rawGeojson = $state<FeatureCollection | null>(null);
-	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
-	let productType = $state<string>('');
+	let rasterDatasets = $state<Hdf5DatasetInfo[]>([]);
+	let selectedDataset = $state('');
+	let rasterAnalyzed = $state(false);
 
 	const hdf5File = $derived.by(() => {
 		if (!dropFile) return null;
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
-	const entryName = $derived(hdf5File?.name.replace(/\.[^.]+$/, '') ?? 'HDF5データ');
-
-	const readHdf5 = async (file: File): Promise<FeatureCollection> => {
-		if (import.meta.env.MODE !== 'production') {
-			const info = await getHdf5FileInfo(file);
-			console.log(info);
-		}
-
-		if (file.name.includes('ECA_J_CPR_CLP')) {
-			productType = 'CPR CLP';
-			return cprClpToOrbitTrackGeojson(file);
-		} else if (file.name.includes('ECA_E_CPR_FMR')) {
-			productType = 'CPR FMR';
-			return cprFmrToOrbitTrackGeojson(file);
-		} else if (file.name.includes('ECA_J_MSI_CLP')) {
-			productType = 'MSI CLP';
-			return msiClpToOrbitTrackGeojson(file);
-		} else {
-			throw new Error('対応していないHDF5プロダクトです');
-		}
-	};
-
-	// ファイルドロップ時: HDF5 → GeoJSON変換 → ジオメトリタイプ確認
 	$effect(() => {
 		if (hdf5File) {
-			isProcessing.set(true);
-			readHdf5(hdf5File)
-				.then((geojson) => {
-					rawGeojson = geojson;
-					const types = getGeometryTypes(rawGeojson);
-
-					if (types.length === 1) {
-						selectedGeometryType = types[0];
-						geometryTypeOptions = [];
-						processGeojson();
-					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
-						}));
-						selectedGeometryType = types[0];
-					}
-				})
-				.catch((e) => {
-					showNotification(
-						e instanceof Error ? e.message : 'HDF5ファイルの読み込みに失敗しました',
-						'error'
-					);
-					console.error(e);
-				})
-				.finally(() => {
-					isProcessing.set(false);
-				});
+			entryName = hdf5File.name.replace(/\.[^.]+$/, '');
+			analyzeFile(hdf5File);
 		}
 	});
 
-	const processGeojson = () => {
-		let filtered = rawGeojson;
-		if (rawGeojson && selectedGeometryType) {
-			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
+	const analyzeFile = async (file: File) => {
+		isProcessing.set(true);
+		rasterDatasets = [];
+		rasterAnalyzed = false;
+		selectedDataset = '';
+		mode = '';
+
+		try {
+			// ラスターデータセットを探す
+			const datasets = await getHdf5RasterDatasets(file);
+			if (datasets.length > 0) {
+				rasterDatasets = datasets;
+				rasterAnalyzed = true;
+				mode = 'raster';
+
+				if (datasets.length === 1) {
+					selectedDataset = datasets[0].path;
+				}
+			} else {
+				showNotification('2D以上のデータセットが見つかりません', 'error');
+			}
+		} catch (e) {
+			showNotification(
+				e instanceof Error ? e.message : 'HDF5ファイルの読み込みに失敗しました',
+				'error'
+			);
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
 		}
+	};
 
-		if (!filtered || filtered.features.length === 0) {
-			showNotification('選択したジオメトリタイプのフィーチャが見つかりませんでした', 'error');
-			return;
-		}
+	// === ラスターモード処理 ===
+	const registrationRaster = async () => {
+		if (!hdf5File || !selectedDataset) return;
 
-		console.log('Filtered GeoJSON:', filtered);
+		isProcessing.set(true);
 
-		const bbox = turfBbox(filtered);
+		try {
+			const { data, width, height, bbox, nodata } = await extractHdf5Raster(
+				hdf5File,
+				selectedDataset
+			);
 
-		if (!bbox || !isBboxValid(bbox)) {
-			showNotification('座標データが不正です', 'error');
-			return;
-		}
+			if (width === 0 || height === 0) {
+				showNotification(`データサイズが不正です (${width}x${height})`, 'error');
+				return;
+			}
 
-		const entry = createGeoJsonEntry(
-			filtered,
-			selectedGeometryType as VectorEntryGeometryType,
-			entryName,
-			bbox as [number, number, number, number],
-			'default'
-		);
+			const id = `geotiff_${crypto.randomUUID()}`;
+			const bands: RasterBands = [data];
+			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
-		if (entry) {
+			const rawBbox: [number, number, number, number] =
+				bbox && isBboxValid(bbox) ? bbox : [-180, -90, 180, 90];
+
+			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 1);
+
+			const resolvedBbox: [number, number, number, number] = [
+				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[0])),
+				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[1])),
+				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[2])),
+				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[3]))
+			];
+
+			GeoTiffCache.setBbox(id, resolvedBbox);
+			GeoTiffCache.markAs4326(id);
+			GeoTiffCache.setRawBbox(id, rawBbox);
+
+			const entry: RasterImageEntry<RasterTiffStyle> = {
+				id,
+				type: 'raster',
+				format: { type: 'image', url: '' },
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					name: entryName || 'HDF5ラスター',
+					tileSize: 256,
+					bounds: resolvedBbox,
+					xyzImageTile: findCenterTile(resolvedBbox)
+				},
+				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+				style: {
+					type: 'tiff',
+					opacity: 1.0,
+					visible: true,
+					visualization: {
+						numBands: 1,
+						mode: 'single',
+						uniformsData: {
+							single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },
+							multi: {
+								r: { index: 0, min: ranges[0].min, max: ranges[0].max },
+								g: { index: 0, min: ranges[0].min, max: ranges[0].max },
+								b: { index: 0, min: ranges[0].min, max: ranges[0].max }
+							}
+						}
+					}
+				}
+			};
+
 			showDataEntry = entry;
 			showDialogType = null;
-			showNotification('ファイルを読み込みました', 'success');
-		} else {
-			showNotification('データが不正です', 'error');
+			dropFile = null;
+			showNotification(`HDF5「${selectedDataset}」を読み込みました`, 'success');
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : 'データの変換に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
 		}
 	};
 
@@ -153,35 +186,54 @@
 </div>
 
 <div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
+	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
-	{#if productType}
+	{#if hdf5File}
 		<div class="w-full px-2 text-sm text-gray-300">
-			プロダクト: {productType}
+			ファイル: {hdf5File.name}
 		</div>
 	{/if}
 
-	{#if geometryTypeOptions.length > 1}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="ジオメトリタイプを選択"
-				bind:group={selectedGeometryType}
-				bind:options={geometryTypeOptions}
-			/>
-		</div>
+	{#if mode === 'raster' && rasterAnalyzed}
+		<!-- ラスターモード -->
+		<TextForm bind:value={entryName} label="データ名" />
+
+		{#if rasterDatasets.length > 0}
+			<div transition:slide class="w-full">
+				<div class="flex flex-col gap-1">
+					<label for="hdf5-dataset-select" class="text-sm text-gray-300">
+						データセットを選択 ({rasterDatasets.length}件)
+					</label>
+					<select
+						id="hdf5-dataset-select"
+						bind:value={selectedDataset}
+						class="bg-sub rounded border border-gray-600 p-2 text-sm text-white"
+					>
+						<option value="" disabled>選択してください</option>
+						{#each rasterDatasets as ds}
+							<option value={ds.path}>
+								{ds.path} [{ds.shape.join('x')}] {ds.dtype}
+							</option>
+						{/each}
+					</select>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-	<button
-		onclick={processGeojson}
-		disabled={$isProcessing || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
-			? 'cursor-not-allowed opacity-50'
-			: ''}"
-	>
-		決定
-	</button>
+
+	{#if mode === 'raster'}
+		<button
+			onclick={registrationRaster}
+			disabled={$isProcessing || !selectedDataset}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {$isProcessing || !selectedDataset
+				? 'cursor-not-allowed opacity-50'
+				: 'cursor-pointer'}"
+		>
+			決定
+		</button>
+	{/if}
 </div>

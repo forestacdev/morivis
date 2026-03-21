@@ -52,6 +52,13 @@
 				<select
 					class="c-select w-20 text-sm"
 					bind:value={style.visualization.uniformsData.single.index}
+					onchange={() => {
+						const newRange = dataRanges?.[style.visualization.uniformsData.single.index];
+						if (newRange) {
+							style.visualization.uniformsData.single.min = newRange.min;
+							style.visualization.uniformsData.single.max = newRange.max;
+						}
+					}}
 				>
 					{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx}
 						<option value={bandIdx}>{bandIdx + 1}</option>
@@ -95,6 +102,14 @@
 						<select
 							class="c-select w-20 text-sm"
 							bind:value={style.visualization.uniformsData.multi[key].index}
+							onchange={() => {
+								const newIdx = style.visualization.uniformsData.multi[key].index;
+								const newRange = dataRanges?.[newIdx];
+								if (newRange) {
+									style.visualization.uniformsData.multi[key].min = newRange.min;
+									style.visualization.uniformsData.multi[key].max = newRange.max;
+								}
+							}}
 						>
 							{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx}
 								<option value={bandIdx}>{bandIdx + 1}</option>
