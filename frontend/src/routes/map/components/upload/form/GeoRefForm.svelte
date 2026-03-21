@@ -3,6 +3,7 @@
 	import type { ImageSource } from 'maplibre-gl';
 	import { onDestroy, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import Icon from '@iconify/svelte';
 
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
@@ -68,7 +69,12 @@
 	let se = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 	let sw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 
-	const getCornerCoordinates = (): [[number, number], [number, number], [number, number], [number, number]] => [
+	const getCornerCoordinates = (): [
+		[number, number],
+		[number, number],
+		[number, number],
+		[number, number]
+	] => [
 		[nw.lng, nw.lat],
 		[ne.lng, ne.lat],
 		[se.lng, se.lat],
@@ -351,7 +357,8 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
-		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+		<div class="flex shrink-0 items-center justify-between gap-2 overflow-auto pb-4">
+			<Icon icon="ph:polygon-fill" class="h-8 w-8" />
 			<span class="text-2xl font-bold">ジオリファレンス</span>
 		</div>
 

@@ -82,12 +82,12 @@
 	const imageFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g)$/i.test(f.name)) ?? null;
+			return Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ?? null;
 		}
 		return dropFile;
 	});
 
-	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g)$/i.test(imageFile.name) : false);
+	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する

@@ -494,9 +494,10 @@
 			showDialogType = null;
 			showNotification('COGを読み込みました', 'success');
 		} catch (e) {
-			const msg = e instanceof TypeError && e.message.includes('Failed to fetch')
-				? 'COGの読み込みに失敗しました（CORSエラー: このサーバーはブラウザからの直接アクセスを許可していません）'
-				: 'COGの読み込みに失敗しました';
+			const msg =
+				e instanceof TypeError && e.message.includes('Failed to fetch')
+					? 'COGの読み込みに失敗しました（CORSエラー: このサーバーはブラウザからの直接アクセスを許可していません）'
+					: 'COGの読み込みに失敗しました';
 			showNotification(msg, 'error');
 			console.error(e);
 		} finally {
