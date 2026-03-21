@@ -74,6 +74,7 @@ export type DialogType =
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
+	| 'stac'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */

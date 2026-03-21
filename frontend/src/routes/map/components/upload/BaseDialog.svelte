@@ -23,6 +23,7 @@
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
+	import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
@@ -74,6 +75,9 @@
 		>
 			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'stac'}
+				<StacForm bind:showDataEntry bind:showDialogType />
 			{/if}
 			{#if showDialogType === 'arcgis'}
 				<ArcGisForm bind:showDataEntry bind:showDialogType />
