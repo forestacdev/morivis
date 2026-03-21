@@ -6,6 +6,7 @@
  * URL形式: mbtiles://{entryId}/{z}/{x}/{y}
  */
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import { base } from '$app/paths';
 
 const PROTOCOL_NAME = 'mbtiles';
 
@@ -16,7 +17,7 @@ let sqlPromise: Promise<SqlJsStatic> | null = null;
 const getSql = (): Promise<SqlJsStatic> => {
 	if (!sqlPromise) {
 		sqlPromise = initSqlJs({
-			locateFile: () => '/sql-wasm.wasm'
+			locateFile: () => `${base}/sql-wasm.wasm`
 		});
 	}
 	return sqlPromise;
