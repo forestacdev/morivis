@@ -23,6 +23,7 @@
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
+	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -138,6 +139,17 @@
 			{/if}
 			{#if showDialogType === 'geojson'}
 				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'topojson'}
+				<TopoJsonForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

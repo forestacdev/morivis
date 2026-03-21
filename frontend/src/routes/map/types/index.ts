@@ -72,11 +72,13 @@ export type DialogType =
 	| 'grib2'
 	| 'gml'
 	| 'kml'
+	| 'topojson'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
 export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = [
 	{ label: 'GeoJSON', extensions: ['.geojson'] },
+	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx'] },

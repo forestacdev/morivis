@@ -124,6 +124,9 @@
 				case 'fgb':
 					showDialogType = 'geojson';
 					return;
+				case 'topojson':
+					showDialogType = 'topojson';
+					return;
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;
