@@ -57,9 +57,7 @@
 	});
 
 	const entryName = $derived(
-		gmlFiles.length === 1
-			? (gmlFiles[0].name.replace(/\.[^.]+$/, '') ?? 'GMLデータ')
-			: 'GMLデータ'
+		gmlFiles.length === 1 ? (gmlFiles[0].name.replace(/\.[^.]+$/, '') ?? 'GMLデータ') : 'GMLデータ'
 	);
 
 	/** 複数ファイルをパースしてマージ */

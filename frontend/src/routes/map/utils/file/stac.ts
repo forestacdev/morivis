@@ -82,7 +82,9 @@ const resolveUrl = (base: string, relative: string): string => {
 // ---- ソースタイプ判定 ----
 
 /** URLからSTACソースタイプを自動判定 */
-export const detectStacSourceType = async (url: string): Promise<{ type: StacSourceType; data: unknown }> => {
+export const detectStacSourceType = async (
+	url: string
+): Promise<{ type: StacSourceType; data: unknown }> => {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
@@ -149,9 +151,7 @@ export const searchItems = async (
 // ---- Static Catalog ----
 
 /** 静的カタログ/コレクションのchildリンクを取得 */
-export const fetchChildLinks = async (
-	url: string
-): Promise<{ title: string; href: string }[]> => {
+export const fetchChildLinks = async (url: string): Promise<{ title: string; href: string }[]> => {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
@@ -164,18 +164,24 @@ export const fetchChildLinks = async (
 		}));
 };
 
+/** アイテム内のアセットhrefを絶対URLに変換 */
+const resolveItemAssets = (item: StacItem, itemUrl: string): StacItem => {
+	const resolved = { ...item, assets: { ...item.assets } };
+	for (const [key, asset] of Object.entries(resolved.assets)) {
+		resolved.assets[key] = { ...asset, href: resolveUrl(itemUrl, asset.href) };
+	}
+	return resolved;
+};
+
 /** 静的カタログからアイテムを再帰的に取得（深さ制限付き） */
-export const fetchStaticItems = async (
-	url: string,
-	limit: number = 20
-): Promise<StacItem[]> => {
+export const fetchStaticItems = async (url: string, limit: number = 20): Promise<StacItem[]> => {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
 
 	// これ自体がItemの場合
 	if (data.type === 'Feature' && data.assets) {
-		return [data as StacItem];
+		return [resolveItemAssets(data as StacItem, url)];
 	}
 
 	const links: StacLink[] = data.links ?? [];
@@ -185,11 +191,12 @@ export const fetchStaticItems = async (
 	if (itemLinks.length > 0) {
 		const items: StacItem[] = [];
 		for (const link of itemLinks.slice(0, limit)) {
+			const itemUrl = resolveUrl(url, link.href);
 			try {
-				const itemRes = await fetch(resolveUrl(url, link.href));
+				const itemRes = await fetch(itemUrl);
 				if (itemRes.ok) {
 					const item = await itemRes.json();
-					if (item.type === 'Feature') items.push(item);
+					if (item.type === 'Feature') items.push(resolveItemAssets(item, itemUrl));
 				}
 			} catch {
 				// skip

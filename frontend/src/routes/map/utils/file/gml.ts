@@ -56,8 +56,7 @@ const parsePosText = (text: string): [number, number] => {
 /** Point ジオメトリを抽出: <pos> → gml:Point → gml:pos */
 const parsePointGeometry = (featureEl: Element): AnyGeometry | null => {
 	const posEl =
-		featureEl.getElementsByTagNameNS(FGD_NS, 'pos')[0] ??
-		featureEl.getElementsByTagName('pos')[0];
+		featureEl.getElementsByTagNameNS(FGD_NS, 'pos')[0] ?? featureEl.getElementsByTagName('pos')[0];
 	if (!posEl) return null;
 
 	const gmlPos = posEl.getElementsByTagNameNS(GML_NS, 'pos')[0];
@@ -69,8 +68,7 @@ const parsePointGeometry = (featureEl: Element): AnyGeometry | null => {
 /** Line ジオメトリを抽出: <loc> → gml:Curve → gml:posList */
 const parseLineGeometry = (featureEl: Element): AnyGeometry | null => {
 	const locEl =
-		featureEl.getElementsByTagNameNS(FGD_NS, 'loc')[0] ??
-		featureEl.getElementsByTagName('loc')[0];
+		featureEl.getElementsByTagNameNS(FGD_NS, 'loc')[0] ?? featureEl.getElementsByTagName('loc')[0];
 	if (!locEl) return null;
 
 	const posLists = locEl.getElementsByTagNameNS(GML_NS, 'posList');
@@ -134,9 +132,7 @@ const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
 
 /** FGDフィーチャー要素からジオメトリを抽出 */
 const parseFgdGeometry = (featureEl: Element): AnyGeometry | null =>
-	parsePointGeometry(featureEl) ??
-	parseLineGeometry(featureEl) ??
-	parsePolygonGeometry(featureEl);
+	parsePointGeometry(featureEl) ?? parseLineGeometry(featureEl) ?? parsePolygonGeometry(featureEl);
 
 /** 既知のジオメトリ/メタ要素（プロパティから除外） */
 const SKIP_PROPERTY_TAGS = new Set([
@@ -224,7 +220,9 @@ const detectGmlVersion = (text: string): GmlVersion => {
 	return '3';
 };
 
-export const geometryToGeoJSON = (geometry: import('ol/geom/Geometry').default): AnyGeometry | null => {
+export const geometryToGeoJSON = (
+	geometry: import('ol/geom/Geometry').default
+): AnyGeometry | null => {
 	if (!geometry) return null;
 
 	const type = geometry.getType();

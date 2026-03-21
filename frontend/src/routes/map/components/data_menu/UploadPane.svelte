@@ -1,10 +1,6 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import {
-		SUPPORTED_FILE_ACCEPT,
-		SUPPORTED_FILE_GROUPS,
-		type DialogType
-	} from '$routes/map/types';
+	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_GROUPS, type DialogType } from '$routes/map/types';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

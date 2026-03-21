@@ -81,7 +81,11 @@
 	const isGmlXml = async (file: File): Promise<boolean> => {
 		try {
 			const header = await file.slice(0, 2000).text();
-			return header.includes('gml:') || header.includes('xmlns:gml') || header.includes('opengis.net/gml');
+			return (
+				header.includes('gml:') ||
+				header.includes('xmlns:gml') ||
+				header.includes('opengis.net/gml')
+			);
 		} catch {
 			return false;
 		}
