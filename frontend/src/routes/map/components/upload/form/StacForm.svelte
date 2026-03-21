@@ -46,7 +46,7 @@
 
 	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
 
-	const DEFAULT_API_URL = 'https://earth-search.aws.element84.com/v1';
+	// CORSを許可しているSTACサーバーのみ利用可能
 
 	const urlValidation = yup.object().shape({
 		url: yup
@@ -61,7 +61,7 @@
 	type Step = 'url' | 'collection' | 'browse' | 'items';
 
 	let step = $state<Step>('url');
-	let apiUrl = $state(DEFAULT_API_URL);
+	let apiUrl = $state('');
 	let urlErrors = $state<Record<string, string>>({});
 	let isUrlValid = $state(false);
 	let sourceType = $state<StacSourceType | null>(null);
@@ -353,26 +353,62 @@
 		isProcessing.set(true);
 		progressText = 'ファイル情報を取得中...';
 		try {
-			// ファイルサイズ取得
-			const proxyUrl = `/api/cog-proxy?url=${encodeURIComponent(asset.href)}`;
+			// 直接アクセスでCORS確認
+			let cogUrl = asset.href;
 			try {
-				const headRes = await fetch(proxyUrl, { method: 'HEAD' });
-				const contentLength = headRes.headers.get('Content-Length');
+				const testRes = await fetch(asset.href, { method: 'HEAD' });
+				const contentLength = testRes.headers.get('Content-Length');
 				if (contentLength) {
 					progressText = `COGヘッダーを取得中... (${formatFileSize(Number(contentLength))})`;
 				} else {
 					progressText = 'COGヘッダーを取得中...';
 				}
 			} catch {
-				progressText = 'COGヘッダーを取得中...';
+				// CORSエラー
+				throw new TypeError('Failed to fetch: CORS');
 			}
 
-			const tiff = await fromUrl(proxyUrl);
-			const image = await tiff.getImage();
-			const width = image.getWidth();
-			const height = image.getHeight();
+			const tiff = await fromUrl(cogUrl);
 
-			progressText = `ラスターデータを読み込み中... (${width}x${height})`;
+			// COGのoverview（低解像度版）を使って効率的に読み込む
+			// フル解像度の画像を取得してサイズを確認
+			const fullImage = await tiff.getImage();
+			const fullWidth = fullImage.getWidth();
+			const fullHeight = fullImage.getHeight();
+
+			// 最大4096pxに収まるoverviewを選択
+			const MAX_SIZE = 4096;
+			const imageCount = await tiff.getImageCount();
+			let image = fullImage;
+			let width = fullWidth;
+			let height = fullHeight;
+
+			if (fullWidth > MAX_SIZE || fullHeight > MAX_SIZE) {
+				// overviewを探す（index 0がフル解像度、1以降がoverview）
+				for (let i = 1; i < imageCount; i++) {
+					try {
+						const ovr = await tiff.getImage(i);
+						const ovrW = ovr.getWidth();
+						const ovrH = ovr.getHeight();
+						if (ovrW <= MAX_SIZE && ovrH <= MAX_SIZE) {
+							image = ovr;
+							width = ovrW;
+							height = ovrH;
+							break;
+						}
+						// まだ大きいが前のoverviewより小さければ候補にする
+						if (ovrW < width) {
+							image = ovr;
+							width = ovrW;
+							height = ovrH;
+						}
+					} catch {
+						break;
+					}
+				}
+			}
+
+			progressText = `ラスターデータを読み込み中... (${width}x${height}${width !== fullWidth ? ` overview, 元${fullWidth}x${fullHeight}` : ''})`;
 			const rasters = await image.readRasters();
 			const numBands = rasters.length;
 			progressText = `${numBands}バンド読み込み完了。エンコード中...`;
@@ -387,7 +423,7 @@
 				ranges.push(getMinMax(band, null));
 			}
 
-			const nodata = image.getGDALNoData();
+			const nodata = image.getGDALNoData() ?? fullImage.getGDALNoData();
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
 			GeoTiffCache.setSize(id, width, height);
@@ -458,7 +494,10 @@
 			showDialogType = null;
 			showNotification('COGを読み込みました', 'success');
 		} catch (e) {
-			showNotification('COGの読み込みに失敗しました', 'error');
+			const msg = e instanceof TypeError && e.message.includes('Failed to fetch')
+				? 'COGの読み込みに失敗しました（CORSエラー: このサーバーはブラウザからの直接アクセスを許可していません）'
+				: 'COGの読み込みに失敗しました';
+			showNotification(msg, 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
