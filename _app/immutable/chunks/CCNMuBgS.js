@@ -1,0 +1,1 @@
+import{W as o}from"./Cy4OZeVD.js";const a={name:"カスタムデータ",description:"ユーザーがアップロードしたデータ",attribution:"カスタムデータ",location:"不明",maxZoom:24,minZoom:0,tags:[],bounds:o,xyzImageTile:{x:0,y:0,z:0}};export{a as D};
