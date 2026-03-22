@@ -76,6 +76,9 @@ export default defineConfig({
 			}
 		})
 	],
+	worker: {
+		format: 'es'
+	},
 	resolve: {
 		alias: {
 			$map: path.resolve('./src/routes/map'),
