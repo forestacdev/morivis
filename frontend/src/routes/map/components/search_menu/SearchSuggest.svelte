@@ -115,13 +115,7 @@
 			const coordinateInfo = detectCoordinateOrder(encodedSearchWord);
 
 			if (coordinateInfo.isCoordinate) {
-				let point: [number, number] = [0, 0];
-
-				if (coordinateInfo.order === 'lng_lat') {
-					point = [coordinateInfo.lng, coordinateInfo.lat] as [number, number];
-				} else if (coordinateInfo.order === 'lat_lng') {
-					point = [coordinateInfo.lat, coordinateInfo.lng] as [number, number];
-				}
+				const point: [number, number] = [coordinateInfo.lng, coordinateInfo.lat];
 
 				searchSuggests = [
 					{

@@ -13,6 +13,7 @@
 	import type { ContextMenuState } from './types/ui';
 	import type {
 		ResultAddressData,
+		ResultCoordinateData,
 		ResultData,
 		ResultPoiData,
 		SearchGeojsonData
@@ -188,7 +189,7 @@
 	let inputSearchWord = $state<string>('');
 	let searchResults = $state<ResultData[] | null>([]);
 	let selectedSearchId = $state<number | null>(null);
-	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | null>(null);
+	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | ResultCoordinateData | null>(null);
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
@@ -463,24 +464,17 @@
 			featureMenuData = data;
 			selectedSearchResultData = result;
 			if (result.id) selectedSearchId = result.id;
-		} else if (result.type === 'address') {
+		} else if (result.type === 'address' || result.type === 'coordinate') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
 			if (result.id) selectedSearchId = result.id;
+			selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
+			showSelectionMarker = true;
 		}
 
 		if (result.type !== 'layer') {
 			mapStore.panToOrJumpTo(new maplibregl.LngLat(result.point[0], result.point[1]));
 		}
-
-		//github.com/maplibre/maplibre-gl-js/issues/4891
-		// mapStore.flyTo(new maplibregl.LngLat(result.point[0], result.point[1]), {
-		// 	zoom: 17,
-		// 	duration: 800
-		// });
-
-		// selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-		// showSelectionMarker = true;
 	};
 
 	onDestroy(() => {
