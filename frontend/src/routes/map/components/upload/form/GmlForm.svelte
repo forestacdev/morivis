@@ -46,7 +46,7 @@
 		Label: 'ラベル'
 	};
 
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson: FeatureCollection | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
@@ -142,10 +142,8 @@
 
 		try {
 			const prjContent = getProjContext(epsgCode);
-			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
-
 			const transformedGeojson = (await transformGeoJSONParallel(
-				plainGeojson,
+				rawGeojson,
 				prjContent
 			)) as FeatureCollection;
 

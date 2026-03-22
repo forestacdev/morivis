@@ -29,10 +29,10 @@
 		focusBbox = $bindable()
 	}: Props = $props();
 
-	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|tiff?)$/i.test(file.name);
+	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
+	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
-		/\.(png|jpe?g|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
+		/\.(png|jpe?g|webp|pdf|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 
 	/** ZIPファイルの中身を判定してDialogTypeを返す */
 	const detectZipContent = async (file: File): Promise<DialogType> => {
@@ -167,6 +167,7 @@
 				case 'dbf':
 				case 'shx':
 				case 'prj':
+				case 'cpg':
 					showDialogType = 'shp';
 					return;
 				case 'gpkg':
@@ -186,6 +187,8 @@
 				case 'png':
 				case 'jpg':
 				case 'jpeg':
+				case 'webp':
+				case 'pdf':
 					showDialogType = 'geotiff';
 					return;
 				case 'las':

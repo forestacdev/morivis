@@ -13,6 +13,10 @@
             "path": "frontend/src/routes/map/components/upload",
         },
         {
+            "name": "ファイル処理",
+            "path": "frontend/src/routes/map/utils/file",
+        },
+        {
             "name": "レイヤースタイルメニュー",
             "path": "frontend/src/routes/map/components/layer_style_menu",
         },

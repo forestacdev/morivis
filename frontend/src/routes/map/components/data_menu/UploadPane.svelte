@@ -78,7 +78,7 @@
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
 			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
 				{#each SUPPORTED_FILE_GROUPS as group}
-					<span class="bg-sub rounded-full p-1 px-3 text-xs">
+					<span class="bg-sub rounded-full p-1 px-3 text-xs text-gray-300">
 						{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
 					</span>
 				{/each}

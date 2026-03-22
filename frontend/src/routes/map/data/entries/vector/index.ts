@@ -23,7 +23,7 @@ import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style'
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
-import type { ColorsStyle } from '../../types/vector/style';
+import type { ColorsStyle, ColorMatchExpression } from '../../types/vector/style';
 import { findCenterTile } from '$routes/map/utils/map';
 
 export type VecterStyleType = 'cad' | 'dm' | 'dxf' | 'default';
@@ -34,7 +34,8 @@ export const createGeoJsonEntry = (
 	name: string,
 	bbox: [number, number, number, number],
 	styleType: VecterStyleType,
-	color: string = getRandomColor()
+	color: string = getRandomColor(),
+	extraColorExpressions?: ColorMatchExpression[]
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const metaData: GeoJsonMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
@@ -139,6 +140,15 @@ export const createGeoJsonEntry = (
 				)
 			});
 		}
+	}
+
+	// 外部から渡されたカラー式を追加（SLDスタイル等）
+	if (extraColorExpressions && extraColorExpressions.length > 0) {
+		for (const expr of extraColorExpressions) {
+			colorsConfig.expressions.push(expr);
+		}
+		// 最初の外部式をアクティブにする
+		colorsConfig.key = extraColorExpressions[0].key;
 	}
 
 	const propKeys = getUniquePropertyKeys(data as any);

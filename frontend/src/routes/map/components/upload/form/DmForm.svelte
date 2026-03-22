@@ -52,7 +52,7 @@
 
 	let zoneInfo = $state<DMInfo | null>(null);
 	// 平面直角座標のままのGeoJSON（座標変換前）
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson: FeatureCollection | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	const extractClassName = (props: Record<string, unknown>) =>
@@ -192,10 +192,8 @@
 				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
 			}
 
-			const plainGeojson = JSON.parse(JSON.stringify(filtered));
-
 			const geojsonData = (await transformGeoJSONParallel(
-				plainGeojson,
+				filtered,
 				prjContent
 			)) as FeatureCollection;
 

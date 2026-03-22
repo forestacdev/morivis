@@ -43,7 +43,7 @@
 	let latColumn = $state<string>('');
 	let lonColumn = $state<string>('');
 	let csvText = $state<string>('');
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson: FeatureCollection | null = null;
 
 	const csvFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -139,10 +139,8 @@
 
 		try {
 			const prjContent = getProjContext(epsgCode);
-			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
-
 			const transformedGeojson = (await transformGeoJSONParallel(
-				plainGeojson,
+				rawGeojson,
 				prjContent
 			)) as FeatureCollection;
 

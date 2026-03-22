@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { fromArrayBuffer } from 'geotiff';
+	import * as pdfjsLib from 'pdfjs-dist';
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -37,6 +39,8 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		showGeoRefForm: boolean;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -46,7 +50,9 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		showGeoRefForm = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let entryName = $state<string>('');
@@ -77,12 +83,15 @@
 	const imageFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g)$/i.test(f.name)) ?? null;
+			return (
+				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp|pdf)$/i.test(f.name)) ?? null
+			);
 		}
 		return dropFile;
 	});
 
-	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g)$/i.test(imageFile.name) : false);
+	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
+	const isPdf = $derived(imageFile ? /\.pdf$/i.test(imageFile.name) : false);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -134,13 +143,124 @@
 	$effect(() => {
 		if (imageFile) {
 			entryName = imageFile.name.replace(/\.[^.]+$/, '');
-			if (isPlainImage) {
+			if (isPdf) {
+				analyzePdf(imageFile);
+			} else if (isPlainImage) {
 				analyzeImage(imageFile);
 			} else {
 				analyzeGeoTiff(imageFile);
 			}
 		}
 	});
+
+	/**
+	 * PDFの1ページ目をCanvasにレンダリングしてRGB 3バンドデータを抽出
+	 */
+	const analyzePdf = async (file: File) => {
+		isProcessing.set(true);
+		analyzed = false;
+		resolvedBbox = null;
+		hasTfw = false;
+		parsedBands = null;
+
+		try {
+			pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+				'pdfjs-dist/build/pdf.worker.min.mjs',
+				import.meta.url
+			).href;
+
+			const arrayBuffer = await file.arrayBuffer();
+			const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+			const page = await pdf.getPage(1);
+
+			// 2倍スケールで高解像度レンダリング
+			const scale = 2;
+			const viewport = page.getViewport({ scale });
+			const width = Math.floor(viewport.width);
+			const height = Math.floor(viewport.height);
+
+			const canvas = document.createElement('canvas');
+			canvas.width = width;
+			canvas.height = height;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context取得失敗');
+
+			await page.render({ canvas, viewport }).promise;
+
+			const imgData = ctx.getImageData(0, 0, width, height);
+			const rgba = imgData.data;
+			const pixelCount = width * height;
+
+			const rBand = new Uint8Array(pixelCount);
+			const gBand = new Uint8Array(pixelCount);
+			const bBand = new Uint8Array(pixelCount);
+			for (let i = 0; i < pixelCount; i++) {
+				rBand[i] = rgba[i * 4];
+				gBand[i] = rgba[i * 4 + 1];
+				bBand[i] = rgba[i * 4 + 2];
+			}
+
+			imageWidth = width;
+			imageHeight = height;
+
+			const bands: RasterBands = [rBand, gBand, bBand];
+			numBands = 3;
+
+			const id = `geotiff_${crypto.randomUUID()}`;
+			entryId = id;
+			parsedNodata = null;
+
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
+			dataRanges = ranges;
+
+			bandMinMax = ranges[0];
+			multiBandMinMax = {
+				r: ranges[0],
+				g: ranges[1],
+				b: ranges[2]
+			};
+
+			parsedBands = bands;
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 3);
+
+			analyzed = true;
+
+			// PDFをPNG Blobに変換（MapLibre imageソースで表示するため）
+			const pngBlob = await new Promise<Blob>((resolve, reject) => {
+				canvas.toBlob(
+					(blob) => (blob ? resolve(blob) : reject(new Error('PNG変換に失敗しました'))),
+					'image/png'
+				);
+			});
+			const pngFile = new File([pngBlob], file.name.replace(/\.pdf$/i, '.png'), {
+				type: 'image/png'
+			});
+
+			// PDFには位置情報がないので常にジオリファレンスフォームへ
+			geoRefData = {
+				entryId,
+				entryName,
+				parsedBands: parsedBands!,
+				parsedNodata,
+				dataRanges,
+				numBands,
+				imageWidth,
+				imageHeight,
+				bandMinMax,
+				multiBandMinMax,
+				imageFile: pngFile
+			};
+			showGeoRefForm = true;
+			showDialogType = null;
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : 'PDFの解析に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
 
 	/**
 	 * PNG/JPG画像からRGB 3バンドデータを抽出
@@ -239,10 +359,22 @@
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
-				showNotification(
-					'位置情報がありません。ワールドファイル(.pgw/.jgw/.tfw)またはaux.xmlと一緒にドロップしてください。',
-					'error'
-				);
+				// 位置情報なし → ジオリファレンスフォームへ
+				geoRefData = {
+					entryId,
+					entryName,
+					parsedBands: parsedBands!,
+					parsedNodata,
+					dataRanges,
+					numBands,
+					imageWidth,
+					imageHeight,
+					bandMinMax,
+					multiBandMinMax,
+					imageFile: file
+				};
+				showGeoRefForm = true;
+				showDialogType = null;
 			}
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
@@ -354,10 +486,22 @@
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
-				showNotification(
-					'位置情報がありません。ワールドファイルまたはaux.xmlと一緒にドロップしてください。',
-					'error'
-				);
+				// 位置情報なし → ジオリファレンスフォームへ
+				geoRefData = {
+					entryId,
+					entryName,
+					parsedBands: parsedBands!,
+					parsedNodata,
+					dataRanges,
+					numBands,
+					imageWidth,
+					imageHeight,
+					bandMinMax,
+					multiBandMinMax,
+					imageFile: file
+				};
+				showGeoRefForm = true;
+				showDialogType = null;
 			}
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'GeoTIFFの解析に失敗しました', 'error');
@@ -562,7 +706,9 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span>
+	<span class="text-2xl font-bold"
+		>{isPdf ? 'PDF' : isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span
+	>
 </div>
 
 <div

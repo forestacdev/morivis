@@ -117,10 +117,26 @@ export class WorkerProtocol {
 	};
 }
 
-const worker = new Worker(new URL('./protocol_geojson.worker.ts', import.meta.url), {
-	type: 'module'
-});
-const workerProtocol = new WorkerProtocol(worker);
+let worker: Worker | null = null;
+let workerProtocol: WorkerProtocol | null = null;
+
+const getWorkerProtocol = (): WorkerProtocol => {
+	if (!worker || !workerProtocol) {
+		worker = new Worker(new URL('./protocol_geojson.worker.ts', import.meta.url), {
+			type: 'module'
+		});
+		workerProtocol = new WorkerProtocol(worker);
+	}
+	return workerProtocol;
+};
+
+export const terminateGeojsonWorker = () => {
+	if (worker) {
+		worker.terminate();
+		worker = null;
+		workerProtocol = null;
+	}
+};
 
 export const geojsonProtocol = (protocolName: 'geojson') => {
 	return {
@@ -128,7 +144,7 @@ export const geojsonProtocol = (protocolName: 'geojson') => {
 		request: (params: { url: string }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
-			return workerProtocol.request(url, abortController);
+			return getWorkerProtocol().request(url, abortController);
 		}
 	};
 };

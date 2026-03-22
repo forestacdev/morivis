@@ -219,11 +219,11 @@ export const csvFileToGeojson = (
 					reject(new Error('No valid latitude and longitude data found'));
 					return;
 				}
-				if (json.length > 100000) {
-					showNotification('10万件以上のデータは表示できません。', 'error');
-					reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
-					return;
-				}
+				// if (json.length > 100000) {
+				// 	showNotification('10万件以上のデータは表示できません。', 'error');
+				// 	reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
+				// 	return;
+				// }
 
 				// 座標値の変換と検証
 				const features: Feature[] = [];
@@ -577,46 +577,3 @@ export const getGeojsonStats = (geojson: FeatureCollection) => {
 
 	return stats;
 };
-
-/**
- * 使用例
- */
-/*
-// 基本的な使用
-const csv = geojsonToCSV(geojsonData);
-
-// オプション付き
-const csv = geojsonToCSV(geojsonData, {
-  latColumn: 'latitude',
-  lonColumn: 'longitude',
-  includeGeometry: true,
-  flattenProperties: true,
-  customColumns: {
-    'full_address': (feature) => `${feature.properties?.city}, ${feature.properties?.country}`,
-    'coordinate_string': (feature) => {
-      if (feature.geometry?.type === 'Point') {
-        const [lon, lat] = feature.geometry.coordinates as [number, number];
-        return `${lat},${lon}`;
-      }
-      return '';
-    }
-  }
-});
-
-// ダウンロード
-downloadGeojsonAsCSV(geojsonData, 'locations.csv', {
-  latColumn: 'latitude',
-  lonColumn: 'longitude'
-});
-
-// 特定のプロパティのみ抽出
-const csvWithSelectedProps = geojsonToCSVWithSelectedProperties(
-  geojsonData,
-  ['name', 'category', 'population'],
-  { latColumn: 'lat', lonColumn: 'lng' }
-);
-
-// 統計情報の取得
-const stats = getGeojsonStats(geojsonData);
-console.log('Statistics:', stats);
-*/
