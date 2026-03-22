@@ -302,16 +302,18 @@ const createMapStore = () => {
 
 			const id = e.id;
 			if (id === 'marker_png') {
+				if (map.hasImage('marker_png')) return;
 				// 検索用のマーカーアイコンを追加
 				fetch(markerPngIcon).then(async (response) => {
 					if (!response.ok) {
 						throw new Error(`Failed to fetch image: ${response.statusText}`);
 					}
 					const image = await createImageBitmap(await response.blob());
-					if (!map) return;
+					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
 			} else if (id === 'poi-icon') {
+				if (map.hasImage('poi-icon')) return;
 				// poi用の透明アイコンを追加
 				const width = 16;
 				const bytesPerPixel = 4;

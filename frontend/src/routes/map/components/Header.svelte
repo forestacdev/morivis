@@ -16,6 +16,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
+	import { mapStore } from '$routes/stores/map';
 	import { mapMode } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
@@ -157,12 +158,29 @@
 					});
 			}
 
-			searchResults = [...resultsData, ...addressSearchData].map((data, i) => {
-				return {
-					id: i,
-					...data
-				};
+			const merged = [...resultsData, ...addressSearchData];
+
+			// 検索ワードが名前の先頭に含まれるものを優先、次に距離順
+			const [cLng, cLat] = mapStore.getState().center;
+			merged.sort((a, b) => {
+				const aPrefix = a.name.startsWith(searchWord) ? 0 : 1;
+				const bPrefix = b.name.startsWith(searchWord) ? 0 : 1;
+				if (aPrefix !== bPrefix) return aPrefix - bPrefix;
+
+				const pa = 'point' in a ? a.point : null;
+				const pb = 'point' in b ? b.point : null;
+				if (!pa && !pb) return 0;
+				if (!pa) return 1;
+				if (!pb) return -1;
+				const da = (pa[0] - cLng) ** 2 + (pa[1] - cLat) ** 2;
+				const db = (pb[0] - cLng) ** 2 + (pb[1] - cLat) ** 2;
+				return da - db;
 			});
+
+			searchResults = merged.map((data, i) => ({
+				id: i,
+				...data
+			}));
 		} catch (error) {
 			console.error('Error searching features:', error);
 		} finally {
