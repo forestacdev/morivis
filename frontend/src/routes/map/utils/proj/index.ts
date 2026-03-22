@@ -103,8 +103,9 @@ export const transformGeoJSONParallel = (
 	const batchSize = Math.ceil(totalFeatures / numWorkers);
 
 	return new Promise((resolve, reject) => {
-		const resultBatches: FeatureCollection<Geometry, GeoJsonProperties>['features'][] =
-			new Array(numWorkers);
+		const resultBatches: FeatureCollection<Geometry, GeoJsonProperties>['features'][] = new Array(
+			numWorkers
+		);
 		const workers: Worker[] = [];
 		let completed = 0;
 		let rejected = false;

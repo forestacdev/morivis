@@ -10,6 +10,10 @@ export interface PostcodeInfo {
 	prefecture: string;
 	city: string;
 	suburb: string;
+	location?: {
+		latitude: string;
+		longitude: string;
+	} | null;
 }
 
 export type AddressPart = 1 | 2 | 3 | 4 | 5;

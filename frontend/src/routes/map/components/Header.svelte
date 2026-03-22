@@ -9,6 +9,7 @@
 
 	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
+	import { getPostcodeInfo } from '$routes/map/api/postcode';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import GlobeControl from '$routes/map/components/map_control/GlobeControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
@@ -16,9 +17,9 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
-	import { mapStore } from '$routes/stores/map';
 	import { mapMode } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
 
@@ -132,8 +133,26 @@
 
 			let addressSearchData: ResultAddressData[] = [];
 
-			// 2文字以上の検索ワードの場合、住所検索を実行
-			if (searchWord.length > 1) {
+			// 郵便番号検索（3〜7桁の数字、ハイフン許可）
+			const postcodeMatch = searchWord.match(/^(\d{3})-?(\d{0,4})$/);
+			if (postcodeMatch) {
+				const code = postcodeMatch[1] + postcodeMatch[2];
+				if (code.length === 7) {
+					const info = await getPostcodeInfo(code);
+					if (info?.location) {
+						const name = `〒${postcodeMatch[1]}-${postcodeMatch[2]} ${info.prefecture}${info.city}${info.suburb}`;
+						addressSearchData.push({
+							type: 'address',
+							point: [parseFloat(info.location.longitude), parseFloat(info.location.latitude)],
+							name,
+							location: `${info.prefecture}${info.city}`
+						});
+					}
+				}
+			}
+
+			// 2文字以上の検索ワードの場合、住所検索を実行（郵便番号マッチ時はスキップ）
+			if (searchWord.length > 1 && !postcodeMatch) {
 				// 住所検索
 
 				const addressSearchResponse = await addressSearch(searchWord);
