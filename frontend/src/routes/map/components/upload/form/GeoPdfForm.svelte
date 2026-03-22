@@ -337,7 +337,13 @@
 				];
 			}
 
-			const entry = createGeoJsonEntry(filtered, geometryType, entryName || 'GeoPDF', bbox, 'default');
+			const entry = createGeoJsonEntry(
+				filtered,
+				geometryType,
+				entryName || 'GeoPDF',
+				bbox,
+				'default'
+			);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;

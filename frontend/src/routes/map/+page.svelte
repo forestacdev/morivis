@@ -189,7 +189,9 @@
 	let inputSearchWord = $state<string>('');
 	let searchResults = $state<ResultData[] | null>([]);
 	let selectedSearchId = $state<number | null>(null);
-	let selectedSearchResultData = $state<ResultPoiData | ResultAddressData | ResultCoordinateData | null>(null);
+	let selectedSearchResultData = $state<
+		ResultPoiData | ResultAddressData | ResultCoordinateData | null
+	>(null);
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
