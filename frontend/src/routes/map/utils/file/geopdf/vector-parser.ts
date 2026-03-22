@@ -696,17 +696,18 @@ function coordsBboxArea(coords: number[]): number {
 }
 
 /**
- * 座標バッファの重心を計算
+ * 座標バッファのバウンディングボックス中心を計算（重心よりも正確）
  */
 function coordsCentroid(coords: number[]): [number, number] {
-  let sumX = 0, sumY = 0, count = 0;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (let i = 0; i < coords.length; i += 2) {
     if (coords[i] === NEW_SUBPATH || coords[i] === CLOSE_SUBPATH || coords[i] === FILL_SUBPATH) continue;
-    sumX += coords[i];
-    sumY += coords[i + 1];
-    count++;
+    if (coords[i] < minX) minX = coords[i];
+    if (coords[i] > maxX) maxX = coords[i];
+    if (coords[i + 1] < minY) minY = coords[i + 1];
+    if (coords[i + 1] > maxY) maxY = coords[i + 1];
   }
-  return count > 0 ? [sumX / count, sumY / count] : [0, 0];
+  return Number.isFinite(minX) ? [(minX + maxX) / 2, (minY + maxY) / 2] : [0, 0];
 }
 
 function buildGeometry(

@@ -118,7 +118,8 @@ const extractUserProperties = (
 	if (!(aObj instanceof PdfLibDict)) return;
 
 	const oVal = aObj.get(PDFName.of('O'));
-	if (!oVal || !(oVal instanceof PDFName) || oVal.decodeText() !== '/UserProperties') return;
+	const oName = oVal instanceof PDFName ? oVal.decodeText() : '';
+	if (oName !== 'UserProperties' && oName !== '/UserProperties') return;
 
 	const p = aObj.get(PDFName.of('P'));
 	if (!p) return;

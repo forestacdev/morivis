@@ -4,9 +4,11 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, getGeometryTypes } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { ColorMatchExpression } from '$routes/map/data/types/vector/style';
+	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import {
 		parseGeoPDFFromBuffer,
@@ -24,9 +26,6 @@
 		type RasterBands,
 		type BandDataRange
 	} from '$routes/map/utils/file/geotiff';
-	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -54,7 +53,9 @@
 	let contentTypes = $state<ContentType[]>([]);
 	let selectedType = $state<ContentType | null>(null);
 	let analyzed = $state(false);
-	let cachedGeojson = $state<Awaited<ReturnType<typeof extractVectorsFromContentStream>> | null>(null);
+	let cachedGeojson = $state<Awaited<ReturnType<typeof extractVectorsFromContentStream>> | null>(
+		null
+	);
 
 	// 解析結果キャッシュ（テンプレート不使用）
 	let cachedGeoPdfInfo: Awaited<ReturnType<typeof parseGeoPDFFromBuffer>> | null = null;
@@ -113,17 +114,15 @@
 					contentStreamData = await extractContentStream(arrayBuffer);
 					cachedAttributes = await extractFeatureAttributes(arrayBuffer);
 				}
-			} catch {
-				// GeoPDFでない → 無視
+			} catch (e) {
+				console.warn('GeoPDF parse:', e);
 			}
 
 			const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 			const page = await pdf.getPage(1);
 
 			const isGeoPdf =
-				geoPdfInfo !== null &&
-				geoPdfInfo.encoding !== 'unknown' &&
-				geoPdfInfo.geoTransform;
+				geoPdfInfo !== null && geoPdfInfo.encoding !== 'unknown' && geoPdfInfo.geoTransform;
 
 			if (!isGeoPdf) {
 				// GeoPDFでない → 画像としてジオリファレンスへ
@@ -330,93 +329,15 @@
 				const gt = geoInfo.geoTransform;
 				const tl = pixelToGeo(gt, 0, 0);
 				const br = pixelToGeo(gt, cachedPageWidth, cachedPageHeight);
-				bbox = [Math.min(tl.x, br.x), Math.min(tl.y, br.y), Math.max(tl.x, br.x), Math.max(tl.y, br.y)];
-			}
-
-			// 属性キーで色分けmatchを構築（属性があればカテゴリ別、なければstroke/fill色で）
-			let extraColorExpressions: ColorMatchExpression[] | undefined;
-			let defaultColor: string | undefined;
-
-			// 属性のカテゴリフィールドを探す（文字列型で2種以上の値があるもの）
-			const attrKeys = cachedAttributes.size > 0
-				? Object.keys([...cachedAttributes.values()][0] ?? {})
-				: [];
-			const categoryKey = attrKeys.find((key) => {
-				const values = new Set<string>();
-				for (const f of filtered.features) {
-					const v = f.properties?.[key];
-					if (typeof v === 'string') values.add(v);
-					if (values.size > 1) return true;
-				}
-				return false;
-			});
-
-			if (categoryKey) {
-				// 属性値で色分け
-				const categories: string[] = [];
-				const seen = new Set<string>();
-				for (const f of filtered.features) {
-					const v = f.properties?.[categoryKey];
-					if (typeof v === 'string' && !seen.has(v)) {
-						seen.add(v);
-						categories.push(v);
-					}
-				}
-				// カテゴリごとに色を自動生成
-				const hueStep = 360 / Math.max(categories.length, 1);
-				const values = categories.map((_, i) => {
-					const h = Math.round(i * hueStep) % 360;
-					return hslToHex(h, 70, 50);
-				});
-				extraColorExpressions = [
-					{
-						type: 'match',
-						key: categoryKey,
-						name: categoryKey,
-						mapping: { categories, values }
-					}
+				bbox = [
+					Math.min(tl.x, br.x),
+					Math.min(tl.y, br.y),
+					Math.max(tl.x, br.x),
+					Math.max(tl.y, br.y)
 				];
-			} else {
-				// 属性なし → stroke/fill色で色分け
-				const colorKey = geometryType === 'LineString' ? 'stroke' : 'fill';
-				const colorMap = new Map<string, string>();
-				for (const f of filtered.features) {
-					const colorVal = f.properties?.[colorKey];
-					if (typeof colorVal === 'string' && !colorMap.has(colorVal)) {
-						const match = colorVal.match(/rgb\((\d+),(\d+),(\d+)\)/);
-						if (match) {
-							const hex = '#' + [match[1], match[2], match[3]]
-								.map((v) => parseInt(v).toString(16).padStart(2, '0'))
-								.join('');
-							colorMap.set(colorVal, hex);
-						}
-					}
-				}
-				if (colorMap.size > 1) {
-					extraColorExpressions = [
-						{
-							type: 'match',
-							key: colorKey,
-							name: colorKey === 'fill' ? '塗りつぶし色' : '線色',
-							mapping: {
-								categories: [...colorMap.keys()],
-								values: [...colorMap.values()]
-							}
-						}
-					];
-				}
-				defaultColor = colorMap.size > 0 ? [...colorMap.values()][0] : undefined;
 			}
 
-			const entry = createGeoJsonEntry(
-				filtered,
-				geometryType,
-				entryName || 'GeoPDF',
-				bbox,
-				'default',
-				defaultColor,
-				extraColorExpressions
-			);
+			const entry = createGeoJsonEntry(filtered, geometryType, entryName || 'GeoPDF', bbox, 'default');
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
@@ -535,23 +456,14 @@
 		dropFile = null;
 	};
 
-	const hslToHex = (h: number, s: number, l: number): string => {
-		const sn = s / 100;
-		const ln = l / 100;
-		const a = sn * Math.min(ln, 1 - ln);
-		const f = (n: number) => {
-			const k = (n + h / 30) % 12;
-			const color = ln - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-			return Math.round(255 * color).toString(16).padStart(2, '0');
-		};
-		return `#${f(0)}${f(8)}${f(4)}`;
-	};
-
 	const geoTypeLabel = (type: GeoType): string => {
 		switch (type) {
-			case 'Point': return 'ポイント';
-			case 'LineString': return 'ライン';
-			case 'Polygon': return 'ポリゴン';
+			case 'Point':
+				return 'ポイント';
+			case 'LineString':
+				return 'ライン';
+			case 'Polygon':
+				return 'ポリゴン';
 		}
 	};
 
@@ -603,9 +515,7 @@
 	{:else if analyzed && contentTypes.length > 1 && selectedType === null}
 		<!-- コンテンツ種別選択（ベクター/ラスター） -->
 		<div class="flex w-full flex-col gap-3 px-2">
-			<div class="text-sm text-gray-300">
-				読み込むデータの種別を選択してください。
-			</div>
+			<div class="text-sm text-gray-300">読み込むデータの種別を選択してください。</div>
 			<div class="flex flex-col gap-2">
 				<button
 					onclick={() => onContentSelect('vector')}
@@ -628,9 +538,7 @@
 			</div>
 		</div>
 	{:else if analyzed && contentTypes.length === 0}
-		<div class="w-full px-2 text-sm text-yellow-400">
-			データが見つかりませんでした。
-		</div>
+		<div class="w-full px-2 text-sm text-yellow-400">データが見つかりませんでした。</div>
 	{/if}
 </div>
 
