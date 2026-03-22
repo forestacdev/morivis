@@ -2,6 +2,8 @@
  * ArcGIS REST API MapServer からレイヤー情報を取得するユーティリティ
  */
 
+import { mercatorToLat, mercatorToLng } from './mercator';
+
 export interface ArcGisMapServerInfo {
 	name: string;
 	tileUrl: string;
@@ -87,11 +89,4 @@ export const fetchArcGisMapServerInfo = async (url: string): Promise<ArcGisMapSe
 		bounds,
 		description: data.description || data.serviceDescription || undefined
 	};
-};
-
-const mercatorToLng = (x: number): number => (x / 20037508.34) * 180;
-
-const mercatorToLat = (y: number): number => {
-	const lat = (y / 20037508.34) * 180;
-	return (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
 };

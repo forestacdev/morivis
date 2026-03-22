@@ -12,6 +12,7 @@
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { transformPointCloudParallel } from '$routes/map/utils/proj/pointcloud_transformer';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -184,29 +185,7 @@
 		}
 	};
 
-	const transformPositions = (positions: Float32Array, prjContent: string): Promise<Float32Array> =>
-		new Promise((resolve, reject) => {
-			const worker = new Worker(
-				new URL('$routes/map/utils/proj/pointcloud_transformer.worker.ts', import.meta.url),
-				{ type: 'module' }
-			);
-
-			worker.onmessage = (e) => {
-				if (e.data.type === 'TRANSFORMED') {
-					resolve(e.data.positions);
-				} else if (e.data.type === 'ERROR') {
-					reject(new Error(e.data.error));
-				}
-				worker.terminate();
-			};
-
-			worker.onerror = (e) => {
-				reject(new Error(e.message));
-				worker.terminate();
-			};
-
-			worker.postMessage({ positions, prjContent }, [positions.buffer]);
-		});
+	const transformPositions = transformPointCloudParallel;
 
 	const registration = () => {
 		if (!analyzed || !resolvedPositions || !resolvedBbox || !pointCount) return;

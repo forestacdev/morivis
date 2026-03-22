@@ -10,7 +10,7 @@ import proj4 from 'proj4';
 import { toGlbAndContours, reprojectGeoJson } from 'landxml';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
-import RasterizeWorker from '$routes/map/utils/file/landxml_rasterize.worker?worker';
+import RasterizeWorker from './rasterize.worker?worker';
 
 export interface LandXmlSurface {
 	name: string;

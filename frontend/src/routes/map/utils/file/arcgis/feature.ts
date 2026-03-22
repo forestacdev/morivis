@@ -3,7 +3,8 @@
  */
 
 import type { FeatureCollection } from 'geojson';
-import type { ArcGisRenderer } from '$routes/map/utils/file/arcgis-webmap';
+import type { ArcGisRenderer } from './webmap';
+import { mercatorToLat, mercatorToLng } from './mercator';
 
 // ============================
 // カタログ関連
@@ -232,13 +233,6 @@ export const fetchArcGisFeatureServerInfo = async (
 		layers,
 		description: data.description || data.serviceDescription || undefined
 	};
-};
-
-const mercatorToLng = (x: number): number => (x / 20037508.34) * 180;
-
-const mercatorToLat = (y: number): number => {
-	const lat = (y / 20037508.34) * 180;
-	return (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
 };
 
 /**
