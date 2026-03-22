@@ -30,8 +30,7 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean =>
-		/\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
+	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
 		/\.(png|jpe?g|webp|pdf|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 

@@ -177,7 +177,10 @@ const filterProperties = (props: Record<string, any>, options: any): Record<stri
 
 // ---- SRS ヘルパー ----
 
-const lookupEpsg = (db: Database, srsId: number): { epsg: number | null; definition: string | null } => {
+const lookupEpsg = (
+	db: Database,
+	srsId: number
+): { epsg: number | null; definition: string | null } => {
 	try {
 		const r = db.exec(
 			`SELECT organization, organization_coordsys_id, definition FROM gpkg_spatial_ref_sys WHERE srs_id = ${srsId}`
@@ -201,7 +204,7 @@ const handleGetInfo = (db: Database) => {
 	const tileTables: string[] = [];
 	const tableInfo: Record<string, any> = {};
 
-	const contents = db.exec("SELECT table_name, data_type FROM gpkg_contents");
+	const contents = db.exec('SELECT table_name, data_type FROM gpkg_contents');
 	if (contents.length > 0) {
 		for (const row of contents[0].values) {
 			const name = row[0] as string;
@@ -216,40 +219,90 @@ const handleGetInfo = (db: Database) => {
 		const count = countR.length > 0 ? (countR[0].values[0][0] as number) : 0;
 		const pragmaR = db.exec(`PRAGMA table_info("${t}")`);
 		const columns = pragmaR.length > 0 ? pragmaR[0].values.map((r) => r[1] as string) : [];
-		const geomR = db.exec(`SELECT geometry_type_name, srs_id FROM gpkg_geometry_columns WHERE table_name = '${t}'`);
+		const geomR = db.exec(
+			`SELECT geometry_type_name, srs_id FROM gpkg_geometry_columns WHERE table_name = '${t}'`
+		);
 		const geometryType = geomR.length > 0 ? (geomR[0].values[0][0] as string) : 'GEOMETRY';
 		const srsId = geomR.length > 0 ? (geomR[0].values[0][1] as number) : null;
-		const srs = srsId !== null ? { srs_id: srsId, ...lookupEpsg(db, srsId) } : { srs_id: null, epsg: null, definition: null };
+		const srs =
+			srsId !== null
+				? { srs_id: srsId, ...lookupEpsg(db, srsId) }
+				: { srs_id: null, epsg: null, definition: null };
 		tableInfo[t] = { type: 'feature', count, columns, geometryType, srs };
 	}
 
 	for (const t of tileTables) {
 		const countR = db.exec(`SELECT COUNT(*) FROM "${t}"`);
 		const count = countR.length > 0 ? (countR[0].values[0][0] as number) : 0;
-		let minZoom = 0, maxZoom = 0, tileWidth = 256, tileHeight = 256, matrixWidth = 1, matrixHeight = 1;
+		let minZoom = 0,
+			maxZoom = 0,
+			tileWidth = 256,
+			tileHeight = 256,
+			matrixWidth = 1,
+			matrixHeight = 1;
 		try {
 			const zr = db.exec(`SELECT MIN(zoom_level), MAX(zoom_level) FROM "${t}"`);
-			if (zr.length > 0) { minZoom = (zr[0].values[0][0] as number) ?? 0; maxZoom = (zr[0].values[0][1] as number) ?? 0; }
-			const mr = db.exec(`SELECT tile_width, tile_height, matrix_width, matrix_height FROM gpkg_tile_matrix WHERE table_name = '${t}' AND zoom_level = ${maxZoom}`);
-			if (mr.length > 0) { tileWidth = mr[0].values[0][0] as number; tileHeight = mr[0].values[0][1] as number; matrixWidth = mr[0].values[0][2] as number; matrixHeight = mr[0].values[0][3] as number; }
-		} catch { /* skip */ }
+			if (zr.length > 0) {
+				minZoom = (zr[0].values[0][0] as number) ?? 0;
+				maxZoom = (zr[0].values[0][1] as number) ?? 0;
+			}
+			const mr = db.exec(
+				`SELECT tile_width, tile_height, matrix_width, matrix_height FROM gpkg_tile_matrix WHERE table_name = '${t}' AND zoom_level = ${maxZoom}`
+			);
+			if (mr.length > 0) {
+				tileWidth = mr[0].values[0][0] as number;
+				tileHeight = mr[0].values[0][1] as number;
+				matrixWidth = mr[0].values[0][2] as number;
+				matrixHeight = mr[0].values[0][3] as number;
+			}
+		} catch {
+			/* skip */
+		}
 
 		let bounds: [number, number, number, number] | null = null;
 		let tileSrsId: number | null = null;
 		try {
-			const sr = db.exec(`SELECT min_x, min_y, max_x, max_y, srs_id FROM gpkg_tile_matrix_set WHERE table_name = '${t}'`);
-			if (sr.length > 0) { bounds = [sr[0].values[0][0] as number, sr[0].values[0][1] as number, sr[0].values[0][2] as number, sr[0].values[0][3] as number]; tileSrsId = sr[0].values[0][4] as number; }
-		} catch { /* skip */ }
+			const sr = db.exec(
+				`SELECT min_x, min_y, max_x, max_y, srs_id FROM gpkg_tile_matrix_set WHERE table_name = '${t}'`
+			);
+			if (sr.length > 0) {
+				bounds = [
+					sr[0].values[0][0] as number,
+					sr[0].values[0][1] as number,
+					sr[0].values[0][2] as number,
+					sr[0].values[0][3] as number
+				];
+				tileSrsId = sr[0].values[0][4] as number;
+			}
+		} catch {
+			/* skip */
+		}
 
 		const tileEpsg = tileSrsId !== null ? lookupEpsg(db, tileSrsId).epsg : null;
 
 		let isGriddedCoverage = false;
 		try {
-			const gc = db.exec(`SELECT COUNT(*) FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '${t}'`);
+			const gc = db.exec(
+				`SELECT COUNT(*) FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '${t}'`
+			);
 			isGriddedCoverage = gc.length > 0 && (gc[0].values[0][0] as number) > 0;
-		} catch { /* skip */ }
+		} catch {
+			/* skip */
+		}
 
-		tableInfo[t] = { type: 'tile', count, minZoom, maxZoom, tileWidth, tileHeight, matrixWidth, matrixHeight, bounds, isGriddedCoverage, srs: { srs_id: tileSrsId, epsg: tileEpsg } };
+		tableInfo[t] = {
+			type: 'tile',
+			count,
+			minZoom,
+			maxZoom,
+			tileWidth,
+			tileHeight,
+			matrixWidth,
+			matrixHeight,
+			bounds,
+			isGriddedCoverage,
+			srs: { srs_id: tileSrsId, epsg: tileEpsg }
+		};
 	}
 
 	return { featureTables, tileTables, tableInfo };
@@ -307,7 +360,10 @@ const handleToGeoJson = (db: Database, options: any) => {
 
 // ---- toRaster ----
 
-const getMinMax = (band: ArrayLike<number>, nodata: number | null): { min: number; max: number } => {
+const getMinMax = (
+	band: ArrayLike<number>,
+	nodata: number | null
+): { min: number; max: number } => {
 	let min = Infinity;
 	let max = -Infinity;
 	for (let i = 0; i < band.length; i++) {
@@ -317,7 +373,10 @@ const getMinMax = (band: ArrayLike<number>, nodata: number | null): { min: numbe
 		if (v < min) min = v;
 		if (v > max) max = v;
 	}
-	if (min === Infinity) { min = 0; max = 1; }
+	if (min === Infinity) {
+		min = 0;
+		max = 1;
+	}
 	return { min, max };
 };
 
@@ -325,37 +384,74 @@ const handleToRaster = async (db: Database, tableName: string) => {
 	const maxZR = db.exec(`SELECT MAX(zoom_level) FROM "${tableName}"`);
 	const maxZoom = maxZR.length > 0 ? (maxZR[0].values[0][0] as number) : 0;
 
-	const matR = db.exec(`SELECT tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = '${tableName}' AND zoom_level = ${maxZoom}`);
+	const matR = db.exec(
+		`SELECT tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = '${tableName}' AND zoom_level = ${maxZoom}`
+	);
 	if (matR.length === 0) throw new Error('タイルマトリクス情報が見つかりません');
 	const tileW = matR[0].values[0][0] as number;
 	const tileH = matR[0].values[0][1] as number;
 
-	const setR = db.exec(`SELECT min_x, min_y, max_x, max_y, srs_id FROM gpkg_tile_matrix_set WHERE table_name = '${tableName}'`);
+	const setR = db.exec(
+		`SELECT min_x, min_y, max_x, max_y, srs_id FROM gpkg_tile_matrix_set WHERE table_name = '${tableName}'`
+	);
 	if (setR.length === 0) throw new Error('タイルマトリクスセット情報が見つかりません');
-	const bounds: [number, number, number, number] = [setR[0].values[0][0] as number, setR[0].values[0][1] as number, setR[0].values[0][2] as number, setR[0].values[0][3] as number];
+	const bounds: [number, number, number, number] = [
+		setR[0].values[0][0] as number,
+		setR[0].values[0][1] as number,
+		setR[0].values[0][2] as number,
+		setR[0].values[0][3] as number
+	];
 	const srsId = setR[0].values[0][4] as number;
 
 	let epsg: number | null = null;
 	try {
-		const sr = db.exec(`SELECT organization, organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ${srsId}`);
-		if (sr.length > 0) { const org = ((sr[0].values[0][0] as string) ?? '').toUpperCase(); if (org === 'EPSG') epsg = sr[0].values[0][1] as number; }
-	} catch { /* skip */ }
+		const sr = db.exec(
+			`SELECT organization, organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ${srsId}`
+		);
+		if (sr.length > 0) {
+			const org = ((sr[0].values[0][0] as string) ?? '').toUpperCase();
+			if (org === 'EPSG') epsg = sr[0].values[0][1] as number;
+		}
+	} catch {
+		/* skip */
+	}
 
-	let isGridded = false, gcScale = 1, gcOffset = 0, gcNodata: number | null = null;
+	let isGridded = false,
+		gcScale = 1,
+		gcOffset = 0,
+		gcNodata: number | null = null;
 	try {
-		const gc = db.exec(`SELECT datatype, scale, "offset", data_null FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '${tableName}'`);
-		if (gc.length > 0 && gc[0].values.length > 0) { isGridded = true; gcScale = (gc[0].values[0][1] as number) ?? 1; gcOffset = (gc[0].values[0][2] as number) ?? 0; gcNodata = gc[0].values[0][3] as number | null; }
-	} catch { /* skip */ }
+		const gc = db.exec(
+			`SELECT datatype, scale, "offset", data_null FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '${tableName}'`
+		);
+		if (gc.length > 0 && gc[0].values.length > 0) {
+			isGridded = true;
+			gcScale = (gc[0].values[0][1] as number) ?? 1;
+			gcOffset = (gc[0].values[0][2] as number) ?? 0;
+			gcNodata = gc[0].values[0][3] as number | null;
+		}
+	} catch {
+		/* skip */
+	}
 
-	const tilesR = db.exec(`SELECT tile_column, tile_row, tile_data FROM "${tableName}" WHERE zoom_level = ${maxZoom}`);
-	if (tilesR.length === 0 || tilesR[0].values.length === 0) throw new Error('タイルデータが見つかりません');
+	const tilesR = db.exec(
+		`SELECT tile_column, tile_row, tile_data FROM "${tableName}" WHERE zoom_level = ${maxZoom}`
+	);
+	if (tilesR.length === 0 || tilesR[0].values.length === 0)
+		throw new Error('タイルデータが見つかりません');
 
 	const tiles = tilesR[0].values;
-	let minCol = Infinity, maxCol = -Infinity, minRow = Infinity, maxRow = -Infinity;
+	let minCol = Infinity,
+		maxCol = -Infinity,
+		minRow = Infinity,
+		maxRow = -Infinity;
 	for (const t of tiles) {
-		const c = t[0] as number, r = t[1] as number;
-		minCol = Math.min(minCol, c); maxCol = Math.max(maxCol, c);
-		minRow = Math.min(minRow, r); maxRow = Math.max(maxRow, r);
+		const c = t[0] as number,
+			r = t[1] as number;
+		minCol = Math.min(minCol, c);
+		maxCol = Math.max(maxCol, c);
+		minRow = Math.min(minRow, r);
+		maxRow = Math.max(maxRow, r);
 	}
 
 	const colCount = maxCol - minCol + 1;
@@ -388,13 +484,24 @@ const handleToRaster = async (db: Database, tableName: string) => {
 						band[di] = px[si] * gcScale + gcOffset;
 					}
 				}
-			} catch { /* skip */ }
+			} catch {
+				/* skip */
+			}
 		}
 
 		const range = getMinMax(band, gcNodata);
 		transferBuffers.push(band.buffer as ArrayBuffer);
 		return {
-			result: { numBands: 1, width: totalW, height: totalH, bounds, epsg, nodata: gcNodata, dataRanges: [range], bandBuffers: [band.buffer] },
+			result: {
+				numBands: 1,
+				width: totalW,
+				height: totalH,
+				bounds,
+				epsg,
+				nodata: gcNodata,
+				dataRanges: [range],
+				bandBuffers: [band.buffer]
+			},
 			transfer: transferBuffers
 		};
 	} else {
@@ -412,7 +519,9 @@ const handleToRaster = async (db: Database, tableName: string) => {
 				const bitmap = await createImageBitmap(new Blob([ab]));
 				ctx.drawImage(bitmap, col * tileW, row * tileH);
 				bitmap.close();
-			} catch { /* skip */ }
+			} catch {
+				/* skip */
+			}
 		}
 
 		const imgData = ctx.getImageData(0, 0, totalW, totalH);
@@ -428,9 +537,22 @@ const handleToRaster = async (db: Database, tableName: string) => {
 		}
 
 		const ranges = [getMinMax(rB, null), getMinMax(gB, null), getMinMax(bB, null)];
-		transferBuffers.push(rB.buffer as ArrayBuffer, gB.buffer as ArrayBuffer, bB.buffer as ArrayBuffer);
+		transferBuffers.push(
+			rB.buffer as ArrayBuffer,
+			gB.buffer as ArrayBuffer,
+			bB.buffer as ArrayBuffer
+		);
 		return {
-			result: { numBands: 3, width: totalW, height: totalH, bounds, epsg, nodata: null, dataRanges: ranges, bandBuffers: [rB.buffer, gB.buffer, bB.buffer] },
+			result: {
+				numBands: 3,
+				width: totalW,
+				height: totalH,
+				bounds,
+				epsg,
+				nodata: null,
+				dataRanges: ranges,
+				bandBuffers: [rB.buffer, gB.buffer, bB.buffer]
+			},
 			transfer: transferBuffers
 		};
 	}
@@ -473,20 +595,26 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 			case 'toRaster': {
 				if (!currentDb) throw new Error('DBが開かれていません');
 				const { result, transfer } = await handleToRaster(currentDb, tableName!);
-				self.postMessage({ id, result } as WorkerResponse, { transfer: transfer as Transferable[] });
+				self.postMessage({ id, result } as WorkerResponse, {
+					transfer: transfer as Transferable[]
+				});
 				break;
 			}
 			case 'query': {
 				if (!currentDb) throw new Error('DBが開かれていません');
 				const queryResult = currentDb.exec(e.data.sql!);
-				const rows = queryResult.length > 0
-					? { columns: queryResult[0].columns, values: queryResult[0].values }
-					: { columns: [], values: [] };
+				const rows =
+					queryResult.length > 0
+						? { columns: queryResult[0].columns, values: queryResult[0].values }
+						: { columns: [], values: [] };
 				self.postMessage({ id, result: rows } as WorkerResponse);
 				break;
 			}
 		}
 	} catch (err) {
-		self.postMessage({ id, error: err instanceof Error ? err.message : String(err) } as WorkerResponse);
+		self.postMessage({
+			id,
+			error: err instanceof Error ? err.message : String(err)
+		} as WorkerResponse);
 	}
 };

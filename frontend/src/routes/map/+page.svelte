@@ -45,10 +45,7 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import UploadDialog from '$routes/map/components/upload/BaseDialog.svelte';
-	import GeoRefForm from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
-	import ZoneForm from '$routes/map/components/upload/form/ZoneForm.svelte';
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
@@ -73,6 +70,24 @@
 	} from '$routes/stores/ui';
 
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
+
+	// アップロード関連コンポーネント（PC時のみ動的ロード）
+	let UploadDialog = $state.raw<any>(null);
+	let ZoneForm = $state.raw<any>(null);
+	let GeoRefForm = $state.raw<any>(null);
+
+	const isPc = typeof window !== 'undefined' && checkPc();
+	if (isPc) {
+		Promise.all([
+			import('$routes/map/components/upload/BaseDialog.svelte'),
+			import('$routes/map/components/upload/form/ZoneForm.svelte'),
+			import('$routes/map/components/upload/form/GeoRefForm.svelte')
+		]).then(([uploadMod, zoneMod, georefMod]) => {
+			UploadDialog = uploadMod.default;
+			ZoneForm = zoneMod.default;
+			GeoRefForm = georefMod.default;
+		});
+	}
 
 	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
 
@@ -643,36 +658,38 @@
 		</div>
 	{/if}
 {/if}
-<UploadDialog
-	bind:showDialogType
-	bind:showDataEntry
-	bind:tempLayerEntries
-	bind:dropFile
-	bind:showZoneForm
-	bind:focusBbox
-	bind:isDragover
-	bind:zoneConfirmedEpsg
-	bind:showGeoRefForm
-	bind:geoRefData
-	{selectedEpsgCode}
-/>
+{#if UploadDialog}
+	<UploadDialog
+		bind:showDialogType
+		bind:showDataEntry
+		bind:tempLayerEntries
+		bind:dropFile
+		bind:showZoneForm
+		bind:focusBbox
+		bind:isDragover
+		bind:zoneConfirmedEpsg
+		bind:showGeoRefForm
+		bind:geoRefData
+		{selectedEpsgCode}
+	/>
+{/if}
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map}
+{#if map && ZoneForm}
 	<ZoneForm
 		{map}
 		bind:showZoneForm
 		bind:selectedEpsgCode
 		bind:focusBbox
 		bind:zoneBboxGeojsonData
-		onConfirm={(epsgCode) => {
+		onConfirm={(epsgCode: EpsgCode) => {
 			zoneConfirmedEpsg = epsgCode;
 		}}
 	/>
 {/if}
 
-{#if map && showGeoRefForm && geoRefData}
+{#if map && showGeoRefForm && geoRefData && GeoRefForm}
 	<GeoRefForm
 		{map}
 		bind:showGeoRefForm

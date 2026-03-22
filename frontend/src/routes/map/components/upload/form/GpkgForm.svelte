@@ -330,7 +330,10 @@
 			closeGpkg();
 			showNotification('タイルデータを読み込みました', 'success');
 		} catch (e) {
-			showNotification(e instanceof Error ? e.message : 'タイルデータの読み込みに失敗しました', 'error');
+			showNotification(
+				e instanceof Error ? e.message : 'タイルデータの読み込みに失敗しました',
+				'error'
+			);
 			console.error(e);
 		} finally {
 			isProcessing.set(false);

@@ -1,9 +1,9 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import maplibregl from 'maplibre-gl';
 	import type { ImageSource } from 'maplibre-gl';
 	import { onDestroy, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import Icon from '@iconify/svelte';
 
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';

@@ -42,10 +42,7 @@ import {
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
-import {
-	geojsonProtocol,
-	terminateGeojsonWorker
-} from '$routes/map/protocol/vector/geojson';
+import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
 import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker

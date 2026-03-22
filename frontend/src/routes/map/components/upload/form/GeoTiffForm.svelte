@@ -706,7 +706,9 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{isPdf ? 'PDF' : isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span>
+	<span class="text-2xl font-bold"
+		>{isPdf ? 'PDF' : isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span
+	>
 </div>
 
 <div

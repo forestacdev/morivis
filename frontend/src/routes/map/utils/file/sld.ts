@@ -45,8 +45,8 @@ export const parseSldCategories = (sldXml: string): SldCategoryStyle | null => {
 			// fill色を取得（PolygonSymbolizer > Fill > SvgParameter[@name="fill"]）
 			const fillParam = rule.querySelector(
 				'PolygonSymbolizer Fill SvgParameter[name="fill"], ' +
-				'LineSymbolizer Stroke SvgParameter[name="stroke"], ' +
-				'PointSymbolizer Graphic Mark Fill SvgParameter[name="fill"]'
+					'LineSymbolizer Stroke SvgParameter[name="stroke"], ' +
+					'PointSymbolizer Graphic Mark Fill SvgParameter[name="fill"]'
 			);
 
 			const color = fillParam?.textContent ?? '#888888';

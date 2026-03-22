@@ -95,10 +95,7 @@ const sendCommand = <T>(msg: Record<string, any>, transfer?: Transferable[]): Pr
 export const openGpkg = async (data: Uint8Array): Promise<void> => {
 	const wasmUrl = `${base}/sql-wasm.wasm`;
 	const copy = new Uint8Array(data);
-	await sendCommand<boolean>(
-		{ type: 'open', data: copy, wasmUrl },
-		[copy.buffer]
-	);
+	await sendCommand<boolean>({ type: 'open', data: copy, wasmUrl }, [copy.buffer]);
 };
 
 /**
@@ -161,9 +158,7 @@ export const gpkgToRaster = async (
 /**
  * 開いているDBに対して任意のSQLクエリを実行
  */
-export const gpkgQuery = async (
-	sql: string
-): Promise<{ columns: string[]; values: any[][] }> =>
+export const gpkgQuery = async (sql: string): Promise<{ columns: string[]; values: any[][] }> =>
 	sendCommand<{ columns: string[]; values: any[][] }>({ type: 'query', sql });
 
 /**
