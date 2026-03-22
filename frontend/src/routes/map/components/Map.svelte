@@ -517,6 +517,19 @@
 		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
 
 		// esri-featureプロトコルの動的管理
+		const isGeojsonTileEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'geojsontile';
+		const hasGeojsonTileLayer =
+			entries.some(isGeojsonTileEntry) || (showDataEntry && isGeojsonTileEntry(showDataEntry));
+
+		if (hasGeojsonTileLayer) {
+			mapStore.ensureGeojsonProtocol();
+		} else {
+			mapStore.releaseGeojsonProtocol();
+		}
+
 		const isEsriEntry = (e: GeoDataEntry) =>
 			e.type === 'vector' &&
 			'format' in e &&

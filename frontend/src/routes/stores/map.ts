@@ -30,7 +30,7 @@ import { debounce } from 'es-toolkit';
 
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
-import { terrainProtocol } from '$routes/map/protocol/terrain';
+// import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 
 import {
@@ -42,7 +42,10 @@ import {
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { checkMobile, checkPc } from '$routes/map/utils/ui';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
-import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import {
+	geojsonProtocol,
+	terminateGeojsonWorker
+} from '$routes/map/protocol/vector/geojson';
 import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
@@ -64,11 +67,27 @@ maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 // const terrainProt = terrainProtocol('terrain');
 // maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
 
-const geojsonProt = geojsonProtocol('geojson');
-maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
-
 const mbtilesProt = mbtilesProtocol();
 maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
+
+// geojsonプロトコルは必要時に動的に登録/解除
+const geojsonProt = geojsonProtocol('geojson');
+let _geojsonProtocolRegistered = false;
+
+const ensureGeojsonProtocol = () => {
+	if (!_geojsonProtocolRegistered) {
+		maplibregl.addProtocol(geojsonProt.protocolName, geojsonProt.request);
+		_geojsonProtocolRegistered = true;
+	}
+};
+
+const releaseGeojsonProtocol = () => {
+	if (_geojsonProtocolRegistered) {
+		maplibregl.removeProtocol(geojsonProt.protocolName);
+		terminateGeojsonWorker();
+		_geojsonProtocolRegistered = false;
+	}
+};
 
 // esri-featureプロトコルは必要時に動的に登録/解除
 const esriFeatureProt = esriFeatureProtocol('esri-feature');
@@ -1207,6 +1226,8 @@ const createMapStore = () => {
 		onTerrain: createEventSubscriber(onTerrainEvent), // 地形イベントの購読用メソッド
 
 		// プロトコル管理
+		ensureGeojsonProtocol,
+		releaseGeojsonProtocol,
 		ensureEsriProtocol,
 		releaseEsriProtocol
 	};
