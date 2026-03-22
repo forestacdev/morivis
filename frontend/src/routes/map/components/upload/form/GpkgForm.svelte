@@ -13,6 +13,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+	import type { ColorMatchExpression } from '$routes/map/data/types/vector/style';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
@@ -25,9 +26,11 @@
 		gpkgToGeoJson,
 		gpkgToRaster,
 		getGpkgInfo,
+		getGpkgStyles,
 		closeGpkg,
 		type GpkgInfo
 	} from '$routes/map/utils/file/gpkg';
+	import { parseSldCategories } from '$routes/map/utils/file/sld';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
@@ -70,6 +73,7 @@
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let rasterReady = $state(false);
+	let sldColorExpressions: ColorMatchExpression[] = [];
 
 	const gpkgFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -104,8 +108,29 @@
 					gpkgBuffer = new Uint8Array(buffer);
 					return getGpkgInfo(gpkgBuffer);
 				})
-				.then((info) => {
+				.then(async (info) => {
 					gpkgInfo = info;
+
+					// SLDスタイルの解析
+					sldColorExpressions = [];
+					const styles = await getGpkgStyles();
+					for (const style of styles) {
+						if (!style.styleSLD) continue;
+						const parsed = parseSldCategories(style.styleSLD);
+						if (parsed) {
+							sldColorExpressions.push({
+								type: 'match',
+								key: parsed.propertyName,
+								name: parsed.name,
+								mapping: {
+									categories: parsed.categories,
+									values: parsed.colors,
+									patterns: parsed.categories.map(() => null)
+								}
+							});
+						}
+					}
+
 					const totalTables = info.featureTables.length + info.tileTables.length;
 					if (totalTables === 1) {
 						const table = info.featureTables[0] ?? info.tileTables[0];
@@ -137,6 +162,7 @@
 	const loadTable = async (tableName: string) => {
 		if (!gpkgBuffer) return;
 		isProcessing.set(true);
+		let keepProcessing = false;
 
 		try {
 			const geojson = await gpkgToGeoJson(gpkgBuffer, { tableName });
@@ -146,7 +172,7 @@
 			if (types.length === 1) {
 				selectedGeometryType = types[0];
 				geometryTypeOptions = [];
-				processGeojson();
+				keepProcessing = processGeojson();
 			} else if (types.length > 1) {
 				geometryTypeOptions = types.map((t) => ({
 					key: t,
@@ -160,7 +186,9 @@
 			showNotification('テーブルの読み込みに失敗しました', 'error');
 			console.error(e);
 		} finally {
-			isProcessing.set(false);
+			if (!keepProcessing) {
+				isProcessing.set(false);
+			}
 		}
 	};
 
@@ -328,7 +356,10 @@
 		}
 	};
 
-	const processGeojson = () => {
+	/**
+	 * @returns true if async processing continues (isProcessing managed by callee)
+	 */
+	const processGeojson = (): boolean => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -336,12 +367,19 @@
 
 		if (!filtered || filtered.features.length === 0) {
 			showNotification('選択したジオメトリタイプのフィーチャが見つかりませんでした', 'error');
-			return;
+			return false;
 		}
 
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
+			// テーブルのEPSGコードが判明していれば自動変換
+			const tableEpsg = gpkgInfo?.tableInfo[selectedTable]?.srs?.epsg;
+			if (tableEpsg && tableEpsg !== 4326) {
+				closeGpkg();
+				convertAndCreateEntry(String(tableEpsg) as EpsgCode);
+				return true; // async processing continues
+			}
 			closeGpkg();
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
@@ -351,7 +389,9 @@
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				'default',
+				undefined,
+				sldColorExpressions.length > 0 ? sldColorExpressions : undefined
 			);
 
 			if (entry) {
@@ -363,6 +403,7 @@
 				showNotification('データが不正です', 'error');
 			}
 		}
+		return false;
 	};
 
 	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
@@ -405,7 +446,9 @@
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				'default',
+				undefined,
+				sldColorExpressions.length > 0 ? sldColorExpressions : undefined
 			);
 
 			if (entry) {

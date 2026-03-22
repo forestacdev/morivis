@@ -5,10 +5,11 @@ import initSqlJs, { type Database } from 'sql.js';
 
 interface WorkerRequest {
 	id: number;
-	type: 'open' | 'close' | 'getInfo' | 'toGeoJson' | 'toRaster';
+	type: 'open' | 'close' | 'getInfo' | 'toGeoJson' | 'toRaster' | 'query';
 	data?: Uint8Array;
 	options?: any;
 	tableName?: string;
+	sql?: string;
 	wasmUrl?: string;
 }
 
@@ -473,6 +474,15 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 				if (!currentDb) throw new Error('DBが開かれていません');
 				const { result, transfer } = await handleToRaster(currentDb, tableName!);
 				self.postMessage({ id, result } as WorkerResponse, { transfer: transfer as Transferable[] });
+				break;
+			}
+			case 'query': {
+				if (!currentDb) throw new Error('DBが開かれていません');
+				const queryResult = currentDb.exec(e.data.sql!);
+				const rows = queryResult.length > 0
+					? { columns: queryResult[0].columns, values: queryResult[0].values }
+					: { columns: [], values: [] };
+				self.postMessage({ id, result: rows } as WorkerResponse);
 				break;
 			}
 		}

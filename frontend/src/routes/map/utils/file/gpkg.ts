@@ -157,3 +157,45 @@ export const gpkgToRaster = async (
 		dataRanges: raw.dataRanges
 	};
 };
+
+/**
+ * 開いているDBに対して任意のSQLクエリを実行
+ */
+export const gpkgQuery = async (
+	sql: string
+): Promise<{ columns: string[]; values: any[][] }> =>
+	sendCommand<{ columns: string[]; values: any[][] }>({ type: 'query', sql });
+
+/**
+ * GPKGからスタイル情報を取得（QGIS layer_styles テーブル）
+ * QGISでGPKGにスタイルを保存するとlayer_stylesテーブルが作られる
+ */
+export interface GpkgStyleInfo {
+	tableName: string;
+	styleName: string;
+	styleQML: string | null;
+	styleSLD: string | null;
+}
+
+export const getGpkgStyles = async (): Promise<GpkgStyleInfo[]> => {
+	try {
+		// layer_stylesテーブルの存在チェック
+		const tableCheck = await gpkgQuery(
+			"SELECT name FROM sqlite_master WHERE type='table' AND name='layer_styles'"
+		);
+		if (tableCheck.values.length === 0) return [];
+
+		const result = await gpkgQuery(
+			'SELECT f_table_name, styleName, styleQML, styleSLD FROM layer_styles'
+		);
+
+		return result.values.map((row) => ({
+			tableName: row[0] as string,
+			styleName: (row[1] as string) ?? '',
+			styleQML: row[2] as string | null,
+			styleSLD: row[3] as string | null
+		}));
+	} catch {
+		return [];
+	}
+};
