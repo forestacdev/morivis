@@ -596,6 +596,7 @@
 						bind:selectedSearchResultData
 						bind:contextMenuState
 						bind:isDragover
+						{showGeoRefForm}
 						{searchResults}
 						{selectedEpsgCode}
 						{zoneBboxGeojsonData}

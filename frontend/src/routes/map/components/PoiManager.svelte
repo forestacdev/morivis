@@ -19,6 +19,7 @@
 		featureMenuData: FeatureMenuData | null;
 		showDataEntry: GeoDataEntry | null;
 		showZoneForm: boolean; // ゾーンフォームを表示するかどうか
+		showGeoRefForm: boolean; // ジオリファレンスフォームを表示するかどうか
 		showSelectionMarker: boolean; // 選択マーカーを表示するかどうか
 	}
 
@@ -27,6 +28,7 @@
 		featureMenuData = $bindable(),
 		showDataEntry,
 		showZoneForm,
+		showGeoRefForm,
 		showSelectionMarker = $bindable()
 	}: Props = $props();
 
@@ -159,6 +161,7 @@
 			$showPoiLayer &&
 			!showDataEntry &&
 			!showZoneForm &&
+			!showGeoRefForm &&
 			!$isStyleEdit &&
 			!$showSearchMenu &&
 			poiDatas.length > 0

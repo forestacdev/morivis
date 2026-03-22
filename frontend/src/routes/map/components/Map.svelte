@@ -727,6 +727,7 @@
 					bind:featureMenuData
 					{showDataEntry}
 					{showZoneForm}
+					{showGeoRefForm}
 					bind:showSelectionMarker
 				/>
 			{/if}
