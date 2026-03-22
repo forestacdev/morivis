@@ -70,6 +70,7 @@
 	let selectedTable = $state<string>('');
 	let selectedTableType = $state<'feature' | 'tile' | ''>('');
 	let rawGeojson: FeatureCollection | null = null;
+	let tableLoaded = $state(false);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let rasterReady = $state(false);
@@ -139,7 +140,7 @@
 						selectedTableType = type as 'feature' | 'tile';
 						// loadTable/loadTileTableが自前でisProcessingを管理するのでここでは閉じない
 						if (type === 'feature') {
-							loadTable(table);
+							loadTable(table, true);
 						} else {
 							loadTileTable(table);
 						}
@@ -159,7 +160,7 @@
 		}
 	});
 
-	const loadTable = async (tableName: string) => {
+	const loadTable = async (tableName: string, autoProcess: boolean = false) => {
 		if (!gpkgBuffer) return;
 		isProcessing.set(true);
 		let keepProcessing = false;
@@ -167,12 +168,15 @@
 		try {
 			const geojson = await gpkgToGeoJson(gpkgBuffer, { tableName });
 			rawGeojson = geojson as unknown as FeatureCollection;
+			tableLoaded = true;
 
 			const types = getGeometryTypes(rawGeojson);
 			if (types.length === 1) {
 				selectedGeometryType = types[0];
 				geometryTypeOptions = [];
-				keepProcessing = processGeojson();
+				if (autoProcess) {
+					keepProcessing = processGeojson();
+				}
 			} else if (types.length > 1) {
 				geometryTypeOptions = types.map((t) => ({
 					key: t,
@@ -345,6 +349,7 @@
 		const name = target.value;
 		selectedTable = name;
 		rawGeojson = null;
+		tableLoaded = false;
 		geometryTypeOptions = [];
 		selectedGeometryType = '';
 		rasterReady = false;
@@ -354,9 +359,12 @@
 		selectedTableType = tableEntry?.type ?? '';
 		if (tableEntry?.type === 'tile') {
 			loadTileTable(name);
-		} else {
-			loadTable(name);
 		}
+	};
+
+	const confirmTable = () => {
+		if (!selectedTable || selectedTableType === 'tile') return;
+		loadTable(selectedTable, true);
 	};
 
 	/**
@@ -527,10 +535,10 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={processGeojson}
-		disabled={$isProcessing || !selectedGeometryType || selectedTableType === 'tile'}
+		onclick={tableLoaded ? processGeojson : confirmTable}
+		disabled={$isProcessing || !selectedTable || selectedTableType === 'tile'}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType ||
+		!selectedTable ||
 		selectedTableType === 'tile'
 			? 'cursor-not-allowed opacity-50'
 			: ''}"

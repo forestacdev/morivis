@@ -13,9 +13,9 @@ interface GeoJSONFeature {
 }
 
 interface WorkerMessageData {
-	feature: GeoJSONFeature;
+	features: GeoJSONFeature[];
 	prjContent: string;
-	featureIndex: number;
+	batchIndex: number;
 }
 
 /**
@@ -77,49 +77,50 @@ const unflattenCoordinates = (
 let cachedConverter: proj4.Converter | null = null;
 let cachedPrj = '';
 
+const transformFeature = (feature: GeoJSONFeature): GeoJSONFeature => {
+	const stride = detectStride(feature.geometry.coordinates);
+	const flattened = flattenCoordinates(feature.geometry.coordinates);
+	const convertedFlattened = new Array<number>(flattened.length);
+
+	for (let i = 0; i < flattened.length; i += stride) {
+		const converted = cachedConverter!.forward([flattened[i], flattened[i + 1]]);
+		convertedFlattened[i] = converted[0];
+		convertedFlattened[i + 1] = converted[1];
+		for (let j = 2; j < stride; j++) {
+			convertedFlattened[i + j] = flattened[i + j];
+		}
+	}
+
+	return {
+		...feature,
+		geometry: {
+			...feature.geometry,
+			coordinates: unflattenCoordinates(convertedFlattened, feature.geometry.coordinates)
+		}
+	};
+};
+
 onmessage = (event: MessageEvent<WorkerMessageData>) => {
-	const { feature, prjContent, featureIndex } = event.data;
+	const { features, prjContent, batchIndex } = event.data;
 
 	try {
-		// コンバーターをキャッシュ（同じprjContentなら再利用）
 		if (prjContent !== cachedPrj) {
 			cachedConverter = proj4(prjContent, 'EPSG:4326');
 			cachedPrj = prjContent;
 		}
 
-		const stride = detectStride(feature.geometry.coordinates);
-		const flattened = flattenCoordinates(feature.geometry.coordinates);
-		const convertedFlattened = new Array<number>(flattened.length);
-
-		for (let i = 0; i < flattened.length; i += stride) {
-			const converted = cachedConverter!.forward([flattened[i], flattened[i + 1]]);
-			convertedFlattened[i] = converted[0];
-			convertedFlattened[i + 1] = converted[1];
-			// Z以降の座標はそのままコピー
-			for (let j = 2; j < stride; j++) {
-				convertedFlattened[i + j] = flattened[i + j];
-			}
-		}
-
-		const transformedFeature = {
-			...feature,
-			geometry: {
-				...feature.geometry,
-				coordinates: unflattenCoordinates(convertedFlattened, feature.geometry.coordinates)
-			}
-		};
+		const transformedFeatures = features.map(transformFeature);
 
 		postMessage({
-			type: 'TRANSFORMED_FEATURE',
-			transformedFeature,
-			featureIndex
+			type: 'TRANSFORMED_BATCH',
+			transformedFeatures,
+			batchIndex
 		});
 	} catch (error) {
-		console.error(`Error in worker processing featureIndex ${featureIndex}:`, error);
 		postMessage({
 			type: 'ERROR',
 			error: error instanceof Error ? error.message : String(error),
-			featureIndex
+			batchIndex
 		});
 	}
 };
