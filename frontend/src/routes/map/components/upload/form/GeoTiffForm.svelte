@@ -290,14 +290,20 @@
 			const rgba = imgData.data;
 			const pixelCount = width * height;
 
-			// RGBAからR/G/B各バンドのTypedArrayを生成
-			const rBand = new Uint8Array(pixelCount);
-			const gBand = new Uint8Array(pixelCount);
-			const bBand = new Uint8Array(pixelCount);
+			// RGBAからR/G/B各バンドのTypedArrayを生成（透明ピクセルはNaN）
+			const rBand = new Float32Array(pixelCount);
+			const gBand = new Float32Array(pixelCount);
+			const bBand = new Float32Array(pixelCount);
 			for (let i = 0; i < pixelCount; i++) {
-				rBand[i] = rgba[i * 4];
-				gBand[i] = rgba[i * 4 + 1];
-				bBand[i] = rgba[i * 4 + 2];
+				if (rgba[i * 4 + 3] === 0) {
+					rBand[i] = NaN;
+					gBand[i] = NaN;
+					bBand[i] = NaN;
+				} else {
+					rBand[i] = rgba[i * 4];
+					gBand[i] = rgba[i * 4 + 1];
+					bBand[i] = rgba[i * 4 + 2];
+				}
 			}
 
 			const bands: RasterBands = [rBand, gBand, bBand];
@@ -305,7 +311,7 @@
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 			entryId = id;
-			parsedNodata = null;
+			parsedNodata = NaN;
 
 			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
 			dataRanges = ranges;
