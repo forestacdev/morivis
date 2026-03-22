@@ -66,7 +66,7 @@
 	let gpkgInfo = $state<GpkgInfo | null>(null);
 	let selectedTable = $state<string>('');
 	let selectedTableType = $state<'feature' | 'tile' | ''>('');
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson: FeatureCollection | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let rasterReady = $state(false);
@@ -372,17 +372,22 @@
 
 		try {
 			const prjContent = getProjContext(epsgCode);
-			const plainGeojson = JSON.parse(JSON.stringify(rawGeojson));
 
-			const transformedGeojson = (await transformGeoJSONParallel(
-				plainGeojson,
-				prjContent
-			)) as FeatureCollection;
-
-			let geojsonData = filterByGeometryType(
-				transformedGeojson,
+			// 変換前にフィルタして転送量を削減
+			const filtered = filterByGeometryType(
+				rawGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
+
+			if (!filtered || filtered.features.length === 0) {
+				showNotification('変換対象のフィーチャーがありません', 'error');
+				return;
+			}
+
+			const geojsonData = (await transformGeoJSONParallel(
+				filtered,
+				prjContent
+			)) as FeatureCollection;
 
 			if (!geojsonData || geojsonData.features.length === 0) {
 				showNotification('変換に失敗しました', 'error');
