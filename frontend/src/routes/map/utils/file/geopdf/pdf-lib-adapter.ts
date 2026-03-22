@@ -31,6 +31,7 @@ import {
   PDFRawStream,
   PDFStream,
   PDFObject,
+  decodePDFRawStream,
 } from "pdf-lib";
 
 import type {
@@ -202,4 +203,54 @@ export async function parseGeoPDFFromBuffer(
   const page = doc.getPage(pageIndex);
   const pageDict = wrapPage(page);
   return parseGeoPDF(pageDict);
+}
+
+/**
+ * PDFページのcontent streamをデコードして文字列として返す。
+ * また、ページサイズ（MediaBox）も返す。
+ */
+export async function extractContentStream(
+  buffer: ArrayBuffer | Uint8Array,
+  pageIndex = 0
+): Promise<{ content: string; pageWidth: number; pageHeight: number }> {
+  const doc = await PDFDocument.load(buffer);
+  const page = doc.getPage(pageIndex);
+  const node = page.node;
+  const context = doc.context;
+
+  // MediaBox からページサイズ取得
+  const mediaBox = node.MediaBox();
+  const pageWidth = mediaBox.lookup(2, PDFNumber).asNumber() - mediaBox.lookup(0, PDFNumber).asNumber();
+  const pageHeight = mediaBox.lookup(3, PDFNumber).asNumber() - mediaBox.lookup(1, PDFNumber).asNumber();
+
+  // Contents 取得（単一ストリームまたは配列）
+  const contentsRef = node.get(PDFName.of("Contents"));
+  if (!contentsRef) return { content: "", pageWidth, pageHeight };
+
+  const decoder = new TextDecoder("utf-8");
+  let content = "";
+
+  const decodeStream = (obj: PDFObject): string => {
+    if (obj instanceof PDFRawStream) {
+      const decoded = decodePDFRawStream(obj);
+      return decoder.decode(decoded.decode());
+    }
+    return "";
+  };
+
+  const resolved = contentsRef instanceof PDFRef ? context.lookup(contentsRef) : contentsRef;
+
+  if (resolved instanceof PDFRawStream || resolved instanceof PDFStream) {
+    content = decodeStream(resolved as PDFRawStream);
+  } else if (resolved instanceof PdfLibArray) {
+    for (let i = 0; i < resolved.size(); i++) {
+      const item = resolved.get(i);
+      const obj = item instanceof PDFRef ? context.lookup(item) : item;
+      if (obj instanceof PDFRawStream) {
+        content += decodeStream(obj);
+      }
+    }
+  }
+
+  return { content, pageWidth, pageHeight };
 }

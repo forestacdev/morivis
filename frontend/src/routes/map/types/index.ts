@@ -75,6 +75,7 @@ export type DialogType =
 	| 'topojson'
 	| 'landxml'
 	| 'stac'
+	| 'geopdf'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */

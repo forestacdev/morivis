@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { fromArrayBuffer } from 'geotiff';
-	import * as pdfjsLib from 'pdfjs-dist';
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
@@ -27,8 +26,7 @@
 	} from '$routes/map/utils/file/geotiff';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
-	import { parseGeoPDFFromBuffer, pixelToGeo } from '$routes/map/utils/file/geopdf';
-	import { getProjContext, isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -85,14 +83,13 @@
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
 			return (
-				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp|pdf)$/i.test(f.name)) ?? null
+				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ?? null
 			);
 		}
 		return dropFile;
 	});
 
 	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
-	const isPdf = $derived(imageFile ? /\.pdf$/i.test(imageFile.name) : false);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -144,218 +141,13 @@
 	$effect(() => {
 		if (imageFile) {
 			entryName = imageFile.name.replace(/\.[^.]+$/, '');
-			if (isPdf) {
-				analyzePdf(imageFile);
-			} else if (isPlainImage) {
+			if (isPlainImage) {
 				analyzeImage(imageFile);
 			} else {
 				analyzeGeoTiff(imageFile);
 			}
 		}
 	});
-
-	/**
-	 * PDFの1ページ目をCanvasにレンダリングしてRGB 3バンドデータを抽出
-	 */
-	const analyzePdf = async (file: File) => {
-		isProcessing.set(true);
-		analyzed = false;
-		resolvedBbox = null;
-		hasTfw = false;
-		parsedBands = null;
-
-		try {
-			pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-				'pdfjs-dist/build/pdf.worker.min.mjs',
-				import.meta.url
-			).href;
-
-			const arrayBuffer = await file.arrayBuffer();
-
-			// GeoPDF位置情報の検出（pdfjsがarrayBufferをdetachする前に実行）
-			let geoPdfInfo: Awaited<ReturnType<typeof parseGeoPDFFromBuffer>> | null = null;
-			try {
-				geoPdfInfo = await parseGeoPDFFromBuffer(arrayBuffer);
-			} catch {
-				// GeoPDFでない通常のPDF → 無視
-			}
-
-			const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-			const page = await pdf.getPage(1);
-
-			// 2倍スケールで高解像度レンダリング
-			const scale = 2;
-			const viewport = page.getViewport({ scale });
-			const width = Math.floor(viewport.width);
-			const height = Math.floor(viewport.height);
-
-			const canvas = document.createElement('canvas');
-			canvas.width = width;
-			canvas.height = height;
-			const ctx = canvas.getContext('2d');
-			if (!ctx) throw new Error('Canvas context取得失敗');
-
-			await page.render({ canvas, viewport }).promise;
-
-			const imgData = ctx.getImageData(0, 0, width, height);
-			const rgba = imgData.data;
-			const pixelCount = width * height;
-
-			const rBand = new Uint8Array(pixelCount);
-			const gBand = new Uint8Array(pixelCount);
-			const bBand = new Uint8Array(pixelCount);
-			for (let i = 0; i < pixelCount; i++) {
-				rBand[i] = rgba[i * 4];
-				gBand[i] = rgba[i * 4 + 1];
-				bBand[i] = rgba[i * 4 + 2];
-			}
-
-			imageWidth = width;
-			imageHeight = height;
-
-			const bands: RasterBands = [rBand, gBand, bBand];
-			numBands = 3;
-
-			const id = `geotiff_${crypto.randomUUID()}`;
-			entryId = id;
-			parsedNodata = null;
-
-			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
-			dataRanges = ranges;
-
-			bandMinMax = ranges[0];
-			multiBandMinMax = {
-				r: ranges[0],
-				g: ranges[1],
-				b: ranges[2]
-			};
-
-			parsedBands = bands;
-
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, 3);
-
-			analyzed = true;
-
-			// GeoPDF位置情報の適用
-			let geoPdfResolved = false;
-			if (geoPdfInfo && geoPdfInfo.encoding !== 'unknown') {
-				if (geoPdfInfo.encoding === 'ISO32000' && geoPdfInfo.neatline && geoPdfInfo.vpBbox) {
-					// ISO 32000: neatline（GPTS由来）は常にWGS84 [lon, lat]
-					const coords = geoPdfInfo.neatline.coordinates;
-					const lons = coords.map((c) => c[0]);
-					const lats = coords.map((c) => c[1]);
-					rawBbox = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
-
-					if (isBboxValid(rawBbox)) {
-						// VP BBoxでCanvasをクロップ（余白を除去）
-						// vpBboxはPDFページ座標（原点=左下）→ Canvas座標（原点=左上）に変換しscale倍
-						const [vx1, vy1, vx2, vy2] = geoPdfInfo.vpBbox;
-						const pdfH = height / scale;
-						const cropX = Math.round(vx1 * scale);
-						const cropY = Math.round((pdfH - vy2) * scale);
-						const cropW = Math.round((vx2 - vx1) * scale);
-						const cropH = Math.round((vy2 - vy1) * scale);
-
-						const cropImgData = ctx.getImageData(cropX, cropY, cropW, cropH);
-						const cropRgba = cropImgData.data;
-						const cropPixelCount = cropW * cropH;
-
-						const cropR = new Uint8Array(cropPixelCount);
-						const cropG = new Uint8Array(cropPixelCount);
-						const cropB = new Uint8Array(cropPixelCount);
-						for (let i = 0; i < cropPixelCount; i++) {
-							cropR[i] = cropRgba[i * 4];
-							cropG[i] = cropRgba[i * 4 + 1];
-							cropB[i] = cropRgba[i * 4 + 2];
-						}
-
-						const cropBands: RasterBands = [cropR, cropG, cropB];
-						const cropRanges: BandDataRange[] = cropBands.map((band) => getMinMax(band, null));
-
-						// バンドデータをクロップ版に差し替え
-						imageWidth = cropW;
-						imageHeight = cropH;
-						parsedBands = cropBands;
-						dataRanges = cropRanges;
-						bandMinMax = cropRanges[0];
-						multiBandMinMax = { r: cropRanges[0], g: cropRanges[1], b: cropRanges[2] };
-
-						GeoTiffCache.setSize(id, cropW, cropH);
-						resolvedBbox = rawBbox;
-						GeoTiffCache.setBbox(id, rawBbox);
-						geoPdfResolved = true;
-					}
-				} else if (geoPdfInfo.geoTransform) {
-					// OGC_BP: geoTransformはProjectionのSRSに依存
-					const gt = geoPdfInfo.geoTransform;
-					const pdfWidth = Math.floor(viewport.width / scale);
-					const pdfHeight = Math.floor(viewport.height / scale);
-
-					const tl = pixelToGeo(gt, 0, 0);
-					const tr = pixelToGeo(gt, pdfWidth, 0);
-					const bl = pixelToGeo(gt, 0, pdfHeight);
-					const br = pixelToGeo(gt, pdfWidth, pdfHeight);
-
-					rawBbox = [
-						Math.min(tl.x, tr.x, bl.x, br.x),
-						Math.min(tl.y, tr.y, bl.y, br.y),
-						Math.max(tl.x, tr.x, bl.x, br.x),
-						Math.max(tl.y, tr.y, bl.y, br.y)
-					];
-
-					const epsg = geoPdfInfo.srs.epsg;
-					if (epsg && isValidEpsg(String(epsg))) {
-						convertBboxWithEpsg(String(epsg) as EpsgCode);
-						geoPdfResolved = !!resolvedBbox;
-					} else if (rawBbox && isBboxValid(rawBbox)) {
-						resolvedBbox = rawBbox;
-						GeoTiffCache.setBbox(id, rawBbox);
-						geoPdfResolved = true;
-					} else {
-						// 座標系不明 → ZoneFormで手動選択
-						showZoneForm = true;
-						showDialogType = null;
-						geoPdfResolved = true;
-					}
-				}
-			}
-
-			// GeoPDF位置情報がなければジオリファレンスフォームへ
-			if (!geoPdfResolved) {
-				const pngBlob = await new Promise<Blob>((resolve, reject) => {
-					canvas.toBlob(
-						(blob) => (blob ? resolve(blob) : reject(new Error('PNG変換に失敗しました'))),
-						'image/png'
-					);
-				});
-				const pngFile = new File([pngBlob], file.name.replace(/\.pdf$/i, '.png'), {
-					type: 'image/png'
-				});
-
-				geoRefData = {
-					entryId,
-					entryName,
-					parsedBands: parsedBands!,
-					parsedNodata,
-					dataRanges,
-					numBands,
-					imageWidth,
-					imageHeight,
-					bandMinMax,
-					multiBandMinMax,
-					imageFile: pngFile
-				};
-				showGeoRefForm = true;
-				showDialogType = null;
-			}
-		} catch (e) {
-			showNotification(e instanceof Error ? e.message : 'PDFの解析に失敗しました', 'error');
-			console.error(e);
-		} finally {
-			isProcessing.set(false);
-		}
-	};
 
 	/**
 	 * PNG/JPG画像からRGB 3バンドデータを抽出
@@ -808,7 +600,7 @@
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 	<span class="text-2xl font-bold"
-		>{isPdf ? 'PDF' : isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span
+		>{isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span
 	>
 </div>
 

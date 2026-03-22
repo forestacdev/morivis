@@ -30,9 +30,9 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
+	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
-		/\.(png|jpe?g|webp|pdf|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
+		/\.(png|jpe?g|webp|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 
 	/** ZIPファイルの中身を判定してDialogTypeを返す */
 	const detectZipContent = async (file: File): Promise<DialogType> => {
@@ -189,7 +189,7 @@
 				case 'jpeg':
 				case 'webp':
 				case 'pdf':
-					showDialogType = 'geotiff';
+					showDialogType = 'geopdf';
 					return;
 				case 'las':
 				case 'laz':

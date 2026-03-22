@@ -17,4 +17,15 @@ export type {
   PDFValueType,
 } from "./geopdf-parser";
 
-export { wrapPage, parseGeoPDFFromBuffer } from "./pdf-lib-adapter";
+export { wrapPage, parseGeoPDFFromBuffer, extractContentStream } from "./pdf-lib-adapter";
+
+export {
+  extractVectorsFromContentStream,
+  hasVectorContent,
+  hasRasterContent,
+} from "./extract-vectors";
+
+export { parseContentStream } from "./vector-parser";
+export type { VectorFeature, VectorStyle, VectorParseOptions } from "./vector-parser";
+
+export { extractFeatureAttributes } from "./struct-tree";
