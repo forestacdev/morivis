@@ -83,7 +83,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
-	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx'] },
+	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },

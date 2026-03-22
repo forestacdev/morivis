@@ -11,7 +11,7 @@
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { shpFileToGeojson } from '$routes/map/utils/file/shp';
+	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/file/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -120,6 +120,9 @@
 		prjName: string;
 	};
 
+	let cpgFile = $state<File | null>(null);
+	let cpgName = $state<string>('');
+
 	let forms = $state<ShpFormSchema>({
 		shpFile: null,
 		dbfFile: null,
@@ -140,6 +143,8 @@
 		forms.dbfName = '';
 		forms.shxName = '';
 		forms.prjName = '';
+		cpgFile = null;
+		cpgName = '';
 	};
 
 	const setFiles = (dropFile: File | FileList | null) => {
@@ -169,6 +174,9 @@
 		} else if (fileName.endsWith('.shx')) {
 			forms.shxFile = file;
 			forms.shxName = fileName;
+		} else if (fileName.endsWith('.cpg')) {
+			cpgFile = file;
+			cpgName = fileName;
 		} else {
 			showNotification('対応していないファイル形式です', 'error');
 		}
@@ -176,7 +184,7 @@
 
 	const isShapeFileRelated = (file: File | FileList): boolean => {
 		const files = file instanceof FileList ? Array.from(file) : [file];
-		return files.some((f) => /\.(shp|dbf|prj|shx)$/i.test(f.name));
+		return files.some((f) => /\.(shp|dbf|prj|shx|cpg)$/i.test(f.name));
 	};
 
 	$effect(() => {
@@ -219,10 +227,12 @@
 
 	const setEntryData = async (_prjContent: string) => {
 		isProcessing.set(true);
+		const encoding = cpgFile ? await readCpgEncoding(cpgFile) : undefined;
 		const geojsonData = await shpFileToGeojson(
 			forms.shpFile as File,
 			forms.dbfFile as File,
-			_prjContent
+			_prjContent,
+			encoding
 		);
 		// フォームのデータをエントリに設定
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
@@ -259,7 +269,13 @@
 
 		if (!forms.prjFile) {
 			// 世界測地系かどうかを確認
-			const geojsonData = await shpFileToGeojson(forms.shpFile as File, forms.dbfFile as File);
+			const enc = cpgFile ? await readCpgEncoding(cpgFile) : undefined;
+			const geojsonData = await shpFileToGeojson(
+				forms.shpFile as File,
+				forms.dbfFile as File,
+				undefined,
+				enc
+			);
 			if (!geojsonData) {
 				showNotification('シェープファイルの読み込みに失敗しました', 'error');
 				return;
@@ -340,11 +356,12 @@
 	<DropContainer bind:isDragover onDropFile={(files) => (dropFile = files)}>
 		<div
 			transition:fade={{ duration: 200 }}
-			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/70
+			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/80
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 		>
-			<div class="flex shrink-0 items-center justify-between overflow-auto pt-8 pb-4">
+			<div class="flex shrink-0 flex-col items-center overflow-auto pt-8 pb-2">
 				<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
+				<p class="mt-1 text-sm text-gray-400">ファイルをまとめてドラッグ＆ドロップできます</p>
 			</div>
 
 			<div class="flex gap-2">
@@ -378,6 +395,13 @@
 					accept=".prj"
 					error={errors.prjFile}
 					bind:name={forms.prjName}
+				/>
+
+				<ShapeFileFormInput
+					label=".cpg(任意)"
+					bind:file={cpgFile}
+					accept=".cpg"
+					bind:name={cpgName}
 				/>
 				{hasFilenameMatchError ? 'ファイル名が一致しません' : ''}
 			</div>

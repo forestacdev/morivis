@@ -29,7 +29,7 @@
 		focusBbox = $bindable()
 	}: Props = $props();
 
-	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx)$/i.test(file.name);
+	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
 	const isGeoImageMain = (file: File): boolean =>
 		/\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
@@ -168,6 +168,7 @@
 				case 'dbf':
 				case 'shx':
 				case 'prj':
+				case 'cpg':
 					showDialogType = 'shp';
 					return;
 				case 'gpkg':

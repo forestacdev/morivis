@@ -17,10 +17,26 @@ const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
 	});
 };
 
+/**
+ * .cpgファイルからエンコーディング名を読み取る
+ */
+export const readCpgEncoding = async (cpgFile: File): Promise<string> => {
+	const text = (await cpgFile.text()).trim();
+	// よくあるエイリアスを正規化
+	const lower = text.toLowerCase();
+	if (lower === 'utf-8' || lower === 'utf8') return 'utf-8';
+	if (lower.startsWith('shift') || lower === 'cp932' || lower === '932') return 'shift-jis';
+	if (lower === 'euc-jp' || lower === 'eucjp') return 'euc-jp';
+	if (lower.startsWith('iso-8859') || lower.startsWith('latin')) return text;
+	// そのまま返す（shapefile.jsが対応するエンコーディング名）
+	return text;
+};
+
 export const shpFileToGeojson = async (
 	shp: File,
 	dbf?: File,
-	prjContent?: string
+	prjContent?: string,
+	encoding?: string
 ): Promise<FeatureCollection> => {
 	const [shpData, dbfData] =
 		shp && dbf
@@ -34,10 +50,12 @@ export const shpFileToGeojson = async (
 		throw new Error('Failed to load .dbf file');
 	}
 
+	const dbfEncoding = encoding ?? 'shift-jis';
+
 	const geojson =
 		prjContent && dbf
 			? await shapefile.read(shpData, dbfData, {
-					encoding: 'shift-jis'
+					encoding: dbfEncoding
 				})
 			: await shapefile.read(shpData);
 	if (!geojson) {
