@@ -9,7 +9,7 @@ import type {
 } from '$routes/map/data/types/vector/style';
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
-import type { ArcGisFeatureTypeInfo } from '$routes/map/utils/file/arcgis-feature';
+import type { ArcGisFeatureTypeInfo } from './feature';
 
 // ============================
 // 型定義

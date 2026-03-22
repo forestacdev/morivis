@@ -9,24 +9,20 @@
 	import type { DialogType } from '$routes/map/types';
 	import {
 		fetchArcGisMapServerInfo,
-		type ArcGisMapServerInfo
-	} from '$routes/map/utils/file/arcgis';
-	import {
+		type ArcGisMapServerInfo,
 		fetchArcGisFeatureServerInfo,
 		fetchArcGisCatalog,
 		isArcGisCatalogUrl,
 		esriGeometryTypeToGeoJSON,
 		type ArcGisFeatureServerInfo,
-		type ArcGisCatalogService
-	} from '$routes/map/utils/file/arcgis-feature';
-	import {
+		type ArcGisCatalogService,
 		extractWebMapItemId,
 		fetchArcGisWebMap,
 		rendererToColorsStyle,
 		typesToColorsStyle,
 		type ArcGisWebMapLayer,
 		type ArcGisRenderer
-	} from '$routes/map/utils/file/arcgis-webmap';
+	} from '$routes/map/utils/file/arcgis';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
