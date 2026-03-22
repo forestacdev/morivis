@@ -330,8 +330,7 @@
 
 			showDataEntry = entry;
 			showDialogType = null;
-			dropFile = null;
-			closeGpkg();
+			cleanup();
 			showNotification('タイルデータを読み込みました', 'success');
 		} catch (e) {
 			showNotification(
@@ -388,10 +387,12 @@
 			const tableEpsg = gpkgInfo?.tableInfo[selectedTable]?.srs?.epsg;
 			if (tableEpsg && tableEpsg !== 4326) {
 				closeGpkg();
+				gpkgBuffer = null;
 				convertAndCreateEntry(String(tableEpsg) as EpsgCode);
 				return true; // async processing continues
 			}
 			closeGpkg();
+			gpkgBuffer = null;
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
@@ -408,7 +409,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
-				closeGpkg();
+				cleanup();
 				showNotification('ファイルを読み込みました', 'success');
 			} else {
 				showNotification('データが不正です', 'error');
@@ -465,7 +466,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
-				closeGpkg();
+				cleanup();
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (e) {
@@ -476,9 +477,16 @@
 		}
 	};
 
-	const cancel = () => {
+	const cleanup = () => {
 		closeGpkg();
+		gpkgBuffer = null;
+		rawGeojson = null;
+		tableLoaded = false;
 		dropFile = null;
+	};
+
+	const cancel = () => {
+		cleanup();
 		showDialogType = null;
 	};
 

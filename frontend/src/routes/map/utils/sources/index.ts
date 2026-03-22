@@ -223,10 +223,9 @@ export const createSourcesItems = async (
 							data: geojson,
 							generateId: true,
 							maxzoom: metaData.maxZoom,
-							attribution: metaData.attribution
-
+							attribution: metaData.attribution,
+							tolerance: 0.5
 							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
-							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
 							// TODO: 線のグラデーションをする場合は以下を追加
 						} as GeoJSONSourceSpecification;
 					} else if (format.type === 'mvt') {

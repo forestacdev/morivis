@@ -434,6 +434,14 @@ const handleToRaster = async (db: Database, tableName: string) => {
 		/* skip */
 	}
 
+	// マトリクスサイズを取得（全体のグリッドサイズ）
+	const matSizeR = db.exec(
+		`SELECT matrix_width, matrix_height FROM gpkg_tile_matrix WHERE table_name = '${tableName}' AND zoom_level = ${maxZoom}`
+	);
+	if (matSizeR.length === 0) throw new Error('タイルマトリクス情報が見つかりません');
+	const matrixWidth = matSizeR[0].values[0][0] as number;
+	const matrixHeight = matSizeR[0].values[0][1] as number;
+
 	const tilesR = db.exec(
 		`SELECT tile_column, tile_row, tile_data FROM "${tableName}" WHERE zoom_level = ${maxZoom}`
 	);
@@ -441,6 +449,8 @@ const handleToRaster = async (db: Database, tableName: string) => {
 		throw new Error('タイルデータが見つかりません');
 
 	const tiles = tilesR[0].values;
+
+	// 実際のタイル範囲を取得
 	let minCol = Infinity,
 		maxCol = -Infinity,
 		minRow = Infinity,
@@ -458,6 +468,17 @@ const handleToRaster = async (db: Database, tableName: string) => {
 	const rowCount = maxRow - minRow + 1;
 	const totalW = colCount * tileW;
 	const totalH = rowCount * tileH;
+
+	// 実データ範囲に合わせてboundsをトリム
+	const [bMinX, bMinY, bMaxX, bMaxY] = bounds;
+	const cellW = (bMaxX - bMinX) / matrixWidth;
+	const cellH = (bMaxY - bMinY) / matrixHeight;
+	const trimmedBounds: [number, number, number, number] = [
+		bMinX + minCol * cellW,
+		bMaxY - (maxRow + 1) * cellH,
+		bMinX + (maxCol + 1) * cellW,
+		bMaxY - minRow * cellH
+	];
 
 	// Transferableなバンドデータを構築
 	const transferBuffers: ArrayBuffer[] = [];
@@ -496,7 +517,7 @@ const handleToRaster = async (db: Database, tableName: string) => {
 				numBands: 1,
 				width: totalW,
 				height: totalH,
-				bounds,
+				bounds: trimmedBounds,
 				epsg,
 				nodata: gcNodata,
 				dataRanges: [range],
@@ -527,16 +548,24 @@ const handleToRaster = async (db: Database, tableName: string) => {
 		const imgData = ctx.getImageData(0, 0, totalW, totalH);
 		const rgba = imgData.data;
 		const px = totalW * totalH;
-		const rB = new Uint8Array(px);
-		const gB = new Uint8Array(px);
-		const bB = new Uint8Array(px);
+		const rB = new Float32Array(px);
+		const gB = new Float32Array(px);
+		const bB = new Float32Array(px);
 		for (let i = 0; i < px; i++) {
-			rB[i] = rgba[i * 4];
-			gB[i] = rgba[i * 4 + 1];
-			bB[i] = rgba[i * 4 + 2];
+			if (rgba[i * 4 + 3] === 0) {
+				// 透明ピクセル（タイルなし）→ NaN nodata
+				rB[i] = NaN;
+				gB[i] = NaN;
+				bB[i] = NaN;
+			} else {
+				rB[i] = rgba[i * 4];
+				gB[i] = rgba[i * 4 + 1];
+				bB[i] = rgba[i * 4 + 2];
+			}
 		}
 
-		const ranges = [getMinMax(rB, null), getMinMax(gB, null), getMinMax(bB, null)];
+		const nanNodata = NaN;
+		const ranges = [getMinMax(rB, nanNodata), getMinMax(gB, nanNodata), getMinMax(bB, nanNodata)];
 		transferBuffers.push(
 			rB.buffer as ArrayBuffer,
 			gB.buffer as ArrayBuffer,
@@ -547,9 +576,9 @@ const handleToRaster = async (db: Database, tableName: string) => {
 				numBands: 3,
 				width: totalW,
 				height: totalH,
-				bounds,
+				bounds: trimmedBounds,
 				epsg,
-				nodata: null,
+				nodata: nanNodata,
 				dataRanges: ranges,
 				bandBuffers: [rB.buffer, gB.buffer, bB.buffer]
 			},

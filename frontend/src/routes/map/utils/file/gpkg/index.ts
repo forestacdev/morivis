@@ -138,10 +138,7 @@ export const gpkgToRaster = async (
 	const raw = await sendCommand<any>({ type: 'toRaster', tableName });
 
 	const bands: RasterBands = raw.bandBuffers.map((buf: ArrayBuffer) => {
-		if (raw.numBands === 1) {
-			return new Float32Array(buf);
-		}
-		return new Uint8Array(buf);
+		return new Float32Array(buf);
 	});
 
 	return {

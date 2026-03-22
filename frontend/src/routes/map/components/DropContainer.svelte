@@ -7,6 +7,7 @@
 		onDragleave?: (e: DragEvent) => void;
 		onDropFile?: (files: FileList) => void;
 		isDragover?: boolean;
+		disabled?: boolean;
 		children?: Snippet;
 	}
 	let {
@@ -15,12 +16,14 @@
 		onDragleave,
 		onDropFile,
 		isDragover = $bindable(),
+		disabled = false,
 		children
 	}: Props = $props();
 
 	// ドラッグ中のイベント
 	const dragover: (e: DragEvent) => void = (e) => {
 		e.preventDefault();
+		if (disabled) return;
 		isDragover = true;
 		if (onDragover) onDragover(e);
 	};
@@ -34,6 +37,7 @@
 	const drop: (e: DragEvent) => void = async (e) => {
 		e.preventDefault();
 		isDragover = false;
+		if (disabled) return;
 
 		const dataTransfer = e.dataTransfer;
 		if (!dataTransfer) return;
@@ -41,7 +45,6 @@
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
 
-		// ファイル処理は親コンポーネントで行うため、ここでは何もしない
 		if (onDropFile) onDropFile(files);
 	};
 </script>

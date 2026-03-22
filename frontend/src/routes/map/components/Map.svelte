@@ -96,6 +96,7 @@
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
+		showGeoRefForm: boolean;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -127,6 +128,7 @@
 		searchResults,
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
+		showGeoRefForm,
 		focusFeature
 	}: Props = $props();
 
@@ -700,6 +702,7 @@
 	onDragover={dragover}
 	onDragleave={dragleave}
 	{onDropFile}
+	disabled={showGeoRefForm}
 	class="h-full w-full"
 >
 	<div
