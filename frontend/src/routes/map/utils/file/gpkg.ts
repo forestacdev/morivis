@@ -62,57 +62,84 @@ const getWorker = (): Worker => {
 			}
 		};
 		_worker.onerror = (e) => {
-			// すべてのpendingリクエストをreject
-			for (const [id, p] of _pending) {
+			for (const [, p] of _pending) {
 				p.reject(new Error(e.message ?? 'Worker error'));
-				_pending.delete(id);
 			}
+			_pending.clear();
 		};
 	}
 	return _worker;
 };
 
-const workerRequest = <T>(
-	type: string,
-	data: Uint8Array,
-	options?: any,
-	tableName?: string
-): Promise<T> => {
+const sendCommand = <T>(msg: Record<string, any>, transfer?: Transferable[]): Promise<T> => {
 	const worker = getWorker();
 	const id = _requestId++;
-	const wasmUrl = `${base}/sql-wasm.wasm`;
+	msg.id = id;
 
 	return new Promise<T>((resolve, reject) => {
 		_pending.set(id, { resolve, reject });
-		// コピーしてtransfer（呼び出し元のバッファを無効化しないため）
-		const copy = new Uint8Array(data);
-		worker.postMessage({ id, type, data: copy, options, tableName, wasmUrl }, [copy.buffer]);
+		if (transfer) {
+			worker.postMessage(msg, transfer);
+		} else {
+			worker.postMessage(msg);
+		}
 	});
 };
 
 // ---- 公開API ----
 
+/**
+ * GPKGファイルをワーカーで開く（DBをワーカー側で保持）
+ * 以降の getGpkgInfoFromOpen / gpkgToGeoJsonFromOpen 等はデータ転送なしで高速
+ */
+export const openGpkg = async (data: Uint8Array): Promise<void> => {
+	const wasmUrl = `${base}/sql-wasm.wasm`;
+	const copy = new Uint8Array(data);
+	await sendCommand<boolean>(
+		{ type: 'open', data: copy, wasmUrl },
+		[copy.buffer]
+	);
+};
+
+/**
+ * ワーカーで開いているDBを閉じ、ワーカーを終了してメモリを解放する
+ */
+export const closeGpkg = (): void => {
+	if (_worker) {
+		_worker.terminate();
+		_worker = null;
+		_pending.clear();
+	}
+};
+
+/**
+ * 開いているDBからGpkgInfoを取得（データ転送なし）
+ */
 export const getGpkgInfo = async (filePath: string | Uint8Array): Promise<GpkgInfo> => {
+	// 後方互換: データを渡された場合はopen→getInfo
 	const data = filePath instanceof Uint8Array ? filePath : new TextEncoder().encode(filePath);
-	return workerRequest<GpkgInfo>('getInfo', data);
+	await openGpkg(data);
+	return sendCommand<GpkgInfo>({ type: 'getInfo' });
 };
 
+/**
+ * 開いているDBからGeoJSONを取得（データ転送なし）
+ */
 export const gpkgToGeoJson = async (
-	filePath: string | Uint8Array,
+	_filePath: string | Uint8Array,
 	options: GpkgReadOptions = {}
-): Promise<GeoJSONFeatureCollection> => {
-	const data = filePath instanceof Uint8Array ? filePath : new TextEncoder().encode(filePath);
-	return workerRequest<GeoJSONFeatureCollection>('toGeoJson', data, options);
-};
+): Promise<GeoJSONFeatureCollection> =>
+	sendCommand<GeoJSONFeatureCollection>({ type: 'toGeoJson', options });
 
+/**
+ * 開いているDBからラスターデータを取得（データ転送なし）
+ */
 export const gpkgToRaster = async (
-	filePath: string | Uint8Array,
+	_filePath: string | Uint8Array,
 	tableName: string
 ): Promise<GpkgRasterResult> => {
-	const data = filePath instanceof Uint8Array ? filePath : new TextEncoder().encode(filePath);
-	const raw = await workerRequest<any>('toRaster', data, undefined, tableName);
+	const raw = await sendCommand<any>({ type: 'toRaster', tableName });
 
-	// ワーカーからTransferableで渡されたArrayBufferをTypedArrayに復元
 	const bands: RasterBands = raw.bandBuffers.map((buf: ArrayBuffer) => {
 		if (raw.numBands === 1) {
 			return new Float32Array(buf);

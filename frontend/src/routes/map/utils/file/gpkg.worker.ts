@@ -5,11 +5,11 @@ import initSqlJs, { type Database } from 'sql.js';
 
 interface WorkerRequest {
 	id: number;
-	type: 'getInfo' | 'toGeoJson' | 'toRaster';
-	data: Uint8Array;
+	type: 'open' | 'close' | 'getInfo' | 'toGeoJson' | 'toRaster';
+	data?: Uint8Array;
 	options?: any;
 	tableName?: string;
-	wasmUrl: string;
+	wasmUrl?: string;
 }
 
 interface WorkerResponse {
@@ -437,33 +437,46 @@ const handleToRaster = async (db: Database, tableName: string) => {
 
 // ---- メッセージハンドラー ----
 
+// DBを保持（openで開き、closeで解放）
+let currentDb: Database | null = null;
+
 self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 	const { id, type, data, options, tableName, wasmUrl } = e.data;
-	let db: Database | null = null;
 
 	try {
-		db = await openDb(data, wasmUrl);
-
 		switch (type) {
+			case 'open': {
+				currentDb?.close();
+				currentDb = await openDb(data!, wasmUrl!);
+				self.postMessage({ id, result: true } as WorkerResponse);
+				break;
+			}
+			case 'close': {
+				currentDb?.close();
+				currentDb = null;
+				self.postMessage({ id, result: true } as WorkerResponse);
+				break;
+			}
 			case 'getInfo': {
-				const result = handleGetInfo(db);
+				if (!currentDb) throw new Error('DBが開かれていません');
+				const result = handleGetInfo(currentDb);
 				self.postMessage({ id, result } as WorkerResponse);
 				break;
 			}
 			case 'toGeoJson': {
-				const result = handleToGeoJson(db, options ?? {});
+				if (!currentDb) throw new Error('DBが開かれていません');
+				const result = handleToGeoJson(currentDb, options ?? {});
 				self.postMessage({ id, result } as WorkerResponse);
 				break;
 			}
 			case 'toRaster': {
-				const { result, transfer } = await handleToRaster(db, tableName!);
+				if (!currentDb) throw new Error('DBが開かれていません');
+				const { result, transfer } = await handleToRaster(currentDb, tableName!);
 				self.postMessage({ id, result } as WorkerResponse, { transfer: transfer as Transferable[] });
 				break;
 			}
 		}
 	} catch (err) {
 		self.postMessage({ id, error: err instanceof Error ? err.message : String(err) } as WorkerResponse);
-	} finally {
-		db?.close();
 	}
 };

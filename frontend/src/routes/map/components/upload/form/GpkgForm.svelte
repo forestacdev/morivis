@@ -25,6 +25,7 @@
 		gpkgToGeoJson,
 		gpkgToRaster,
 		getGpkgInfo,
+		closeGpkg,
 		type GpkgInfo
 	} from '$routes/map/utils/file/gpkg';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
@@ -190,9 +191,9 @@
 			}
 
 			if (!isBboxValid(resolvedBbox)) {
+				closeGpkg();
 				showZoneForm = true;
 				focusBbox = result.bounds;
-				// rasterデータは一時保存して後で使う
 				rasterReady = false;
 				return;
 			}
@@ -298,6 +299,7 @@
 			showDataEntry = entry;
 			showDialogType = null;
 			dropFile = null;
+			closeGpkg();
 			showNotification('タイルデータを読み込みました', 'success');
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'タイルデータの読み込みに失敗しました', 'error');
@@ -340,6 +342,7 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
+			closeGpkg();
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
@@ -354,6 +357,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
+				closeGpkg();
 				showNotification('ファイルを読み込みました', 'success');
 			} else {
 				showNotification('データが不正です', 'error');
@@ -402,6 +406,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
+				closeGpkg();
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (e) {
@@ -413,6 +418,7 @@
 	};
 
 	const cancel = () => {
+		closeGpkg();
 		dropFile = null;
 		showDialogType = null;
 	};
