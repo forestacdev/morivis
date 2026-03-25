@@ -128,9 +128,16 @@ export const createSourcesItems = async (
 								} as RasterSourceSpecification;
 							}
 						} else {
+							let tileUrl = convertTmsToXyz(format.url);
+							if (style.timeDimension) {
+								const timeValue = style.timeDimension.values[style.timeDimension.currentIndex];
+								if (timeValue) {
+									tileUrl = tileUrl.replace('{time}', timeValue);
+								}
+							}
 							items[sourceId] = {
 								type: 'raster',
-								tiles: [convertTmsToXyz(format.url)],
+								tiles: [tileUrl],
 								maxzoom: metaData.maxZoom,
 								minzoom: metaData.minZoom,
 								scheme: detectTileScheme(format.url),

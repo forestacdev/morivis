@@ -1,4 +1,6 @@
 import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
+import type { WmsTimeDimensionInfo } from './wms';
+import { parseTimeValues } from './wms';
 
 export type MapLibreRasterSourceInfo = {
 	id: string; // レイヤーのIdentifierなどを利用
@@ -16,6 +18,7 @@ export type MapLibreRasterSourceInfo = {
 	format?: string;
 	tileMatrixSet?: string;
 	style?: string; // 使用するスタイルのIdentifier
+	timeDimension?: WmsTimeDimensionInfo;
 };
 
 export const parseWmtsCapabilities = async (
@@ -103,12 +106,23 @@ export const parseWmtsCapabilities = async (
 						return;
 					}
 
-					// Dimensionのデフォルト値を取得して置換（例: {Time} → 2025-12-01）
+					// Dimensionの処理: 時間ディメンションは{time}プレースホルダーに統一、それ以外はデフォルト値で置換
+					let timeDimension: WmsTimeDimensionInfo | undefined;
 					if (layer.Dimension) {
 						for (const dim of layer.Dimension) {
 							const dimId = dim.Identifier;
 							const dimDefault = dim.Default;
-							if (dimId && dimDefault) {
+							if (dimId?.toLowerCase() === 'time' && dim.Value) {
+								const rawValues: string[] = Array.isArray(dim.Value) ? dim.Value : [dim.Value];
+								const values = rawValues.flatMap((v: string) => parseTimeValues(v)).reverse();
+								if (values.length > 0) {
+									timeDimension = {
+										values
+									};
+									// {Time} → {time} に統一（ソース生成時にcurrent値で置換）
+									templateUrl = templateUrl.replace(`{${dimId}}`, '{time}');
+								}
+							} else if (dimId && dimDefault) {
 								templateUrl = templateUrl.replace(`{${dimId}}`, dimDefault);
 							}
 						}
@@ -171,7 +185,8 @@ export const parseWmtsCapabilities = async (
 						bounds,
 						format: layer.Format?.[0],
 						tileMatrixSet: selectedTileMatrixSetIdentifier,
-						style: selectedStyleIdentifier
+						style: selectedStyleIdentifier,
+						timeDimension
 					});
 				} else {
 					console.warn(`Layer "${layerTitle}" (${layerId}) does not have a tile ResourceURL.`);

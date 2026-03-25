@@ -68,18 +68,29 @@ export const getRasterImageUrl = async (
 		tile = xyzToWMSXYZ(tile);
 	}
 
+	// {time}プレースホルダーを現在の時間値で置換
+	const resolveTime = (u: string): string => {
+		const td = _layerEntry.style.timeDimension;
+		if (td && u.includes('{time}')) {
+			return u.replace('{time}', td.values[td.currentIndex] ?? '');
+		}
+		return u;
+	};
+
 	// WMS URL（{bbox-epsg-3857}を含む）の場合はbboxを計算して置換
 	if (_layerEntry.format.url.includes('{bbox-epsg-3857}')) {
 		const bbox = tileToBbox3857(tile.x, tile.y, tile.z);
-		const url = _layerEntry.format.url.replace('{bbox-epsg-3857}', bbox);
+		const url = resolveTime(_layerEntry.format.url.replace('{bbox-epsg-3857}', bbox));
 		return url;
 	}
 
 	// URLを生成
-	const url = convertTmsToXyz(_layerEntry.format.url)
-		.replace('{z}', tile.z.toString())
-		.replace('{x}', tile.x.toString())
-		.replace('{y}', tile.y.toString());
+	const url = resolveTime(
+		convertTmsToXyz(_layerEntry.format.url)
+			.replace('{z}', tile.z.toString())
+			.replace('{x}', tile.x.toString())
+			.replace('{y}', tile.y.toString())
+	);
 
 	if (_layerEntry.style.type === 'dem') {
 		const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;

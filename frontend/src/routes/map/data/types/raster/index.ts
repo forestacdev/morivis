@@ -78,6 +78,7 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
+	timeDimension?: WmsTimeDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -242,6 +243,11 @@ interface RasterMetaData extends BaseMetaData {
 	tileSize: TileSize;
 	/** 画像ソースの4コーナー座標 [NW, NE, SE, SW]。回転・変形した画像配置に使用 */
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
+}
+
+export interface WmsTimeDimension {
+	values: string[];
+	currentIndex: number;
 }
 
 export interface RasterInteraction {
