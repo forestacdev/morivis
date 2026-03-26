@@ -42,6 +42,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
+import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
@@ -69,14 +70,20 @@ export const createSourcesItems = async (
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
+							const timeIdx = style.timeDimension?.currentIndex ?? -1;
 
 							let styleID;
 							if (mode === 'single') {
 								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}`;
+								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
 							} else if (mode === 'multi') {
 								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}`;
+								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
+							}
+
+							// NetCDF時間ステップの遅延エンコード
+							if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
+								await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
 							}
 
 							let imageData: string | undefined;

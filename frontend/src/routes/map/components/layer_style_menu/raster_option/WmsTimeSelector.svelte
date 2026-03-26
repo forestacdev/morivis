@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Accordion from '../../atoms/Accordion.svelte';
-	import type { RasterBaseMapStyle } from '$routes/map/data/types/raster';
+	import type { BaseRasterStyle } from '$routes/map/data/types/raster';
 
 	interface Props {
-		style: RasterBaseMapStyle;
+		style: BaseRasterStyle;
 	}
 
 	let { style = $bindable() }: Props = $props();

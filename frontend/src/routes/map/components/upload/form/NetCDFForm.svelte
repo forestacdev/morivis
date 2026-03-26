@@ -28,7 +28,9 @@
 		type NetCDFInfo,
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/file/netcdf';
+	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -281,6 +283,41 @@
 			const unit = variable?.attributes['units'] ?? '';
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
 
+			// 時間次元の検出
+			let timeDimension: WmsTimeDimension | undefined;
+			if (variable && extraDimensions.length > 0) {
+				// time/Time/TIME等の名前を持つ次元を探す
+				const timeDim = extraDimensions.find((d) =>
+					/^(time|t|date|datetime)$/i.test(d.name)
+				);
+				if (timeDim && timeDim.size > 1) {
+					const timeValues = timeDim.values
+						? timeDim.values.map((v) => String(v))
+						: Array.from({ length: timeDim.size }, (_, i) => String(i));
+
+					timeDimension = {
+						values: timeValues,
+						currentIndex: sliceIndices[timeDim.name] ?? 0
+					};
+
+					// 時間以外のスライスインデックスを固定用にコピー
+					const fixedSlices = { ...sliceIndices };
+					delete fixedSlices[timeDim.name];
+
+					NetCDFDataCache.set(id, {
+						reader: ncReader,
+						info: ncInfo,
+						variableName: selectedVariable,
+						sliceIndices: fixedSlices,
+						timeDimName: timeDim.name,
+						width,
+						height,
+						nodata,
+						encodedTimeIndex: sliceIndices[timeDim.name] ?? 0
+					});
+				}
+			}
+
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
 				type: 'raster',
@@ -303,6 +340,7 @@
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
+					timeDimension,
 					visualization: {
 						numBands: 1,
 						mode: 'single',

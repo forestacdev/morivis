@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Accordion from '../../atoms/Accordion.svelte';
+	import WmsTimeSelector from './WmsTimeSelector.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -42,6 +43,10 @@
 		return Math.max(magnitude, 0.001);
 	};
 </script>
+
+{#if style.timeDimension}
+	<WmsTimeSelector bind:style />
+{/if}
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
 	<TiffStyleModePulldownBox bind:isMode={style.visualization.mode} />
