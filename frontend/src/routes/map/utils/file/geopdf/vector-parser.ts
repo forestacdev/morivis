@@ -30,7 +30,11 @@ export type GeometryType =
 
 export interface Geometry {
 	type: GeometryType;
-	coordinates: [number, number] | [number, number][] | [number, number][][] | [number, number][][][];
+	coordinates:
+		| [number, number]
+		| [number, number][]
+		| [number, number][][]
+		| [number, number][][][];
 }
 
 export interface VectorStyle {

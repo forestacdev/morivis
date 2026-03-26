@@ -4,7 +4,7 @@
 	import DemOption from './raster_option/DemOption.svelte';
 	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
-	import WmsTimeSelector from './raster_option/WmsTimeSelector.svelte';
+	import TimeSelector from './raster_option/TimeSelector.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -106,7 +106,7 @@
 		{/await}
 
 		{#if style.timeDimension}
-			<WmsTimeSelector bind:style />
+			<TimeSelector bind:style />
 		{/if}
 
 		<!-- <Accordion label={'詳細設定'} bind:value={showOption}>

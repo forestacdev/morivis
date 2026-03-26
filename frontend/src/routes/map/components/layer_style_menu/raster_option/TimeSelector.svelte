@@ -1,5 +1,8 @@
 <script lang="ts">
+	import emblaCarouselSvelte from 'embla-carousel-svelte';
+
 	import Accordion from '../../atoms/Accordion.svelte';
+
 	import type { BaseRasterStyle } from '$routes/map/data/types/raster';
 
 	interface Props {
@@ -9,8 +12,6 @@
 	let { style = $bindable() }: Props = $props();
 
 	let showTimeOption = $state(false);
-
-
 </script>
 
 {#if style.timeDimension}
@@ -18,7 +19,6 @@
 		<div class="flex flex-col gap-2 p-2">
 			<select
 				bind:value={style.timeDimension.currentIndex}
-			
 				class="bg-sub rounded border border-gray-600 p-2 text-white"
 			>
 				{#each style.timeDimension.values as timeValue, i}

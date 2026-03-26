@@ -13,6 +13,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import {
 		GeoTiffCache,
@@ -30,7 +31,6 @@
 	} from '$routes/map/utils/file/netcdf';
 	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
-	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -287,9 +287,7 @@
 			let timeDimension: WmsTimeDimension | undefined;
 			if (variable && extraDimensions.length > 0) {
 				// time/Time/TIME等の名前を持つ次元を探す
-				const timeDim = extraDimensions.find((d) =>
-					/^(time|t|date|datetime)$/i.test(d.name)
-				);
+				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
 				if (timeDim && timeDim.size > 1) {
 					const timeValues = timeDim.values
 						? timeDim.values.map((v) => String(v))

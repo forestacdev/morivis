@@ -6,7 +6,11 @@
 	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { parseWmsCapabilities, type WmsSourceInfo, type WmsTimeDimensionInfo } from '$routes/map/utils/file/wms';
+	import {
+		parseWmsCapabilities,
+		type WmsSourceInfo,
+		type WmsTimeDimensionInfo
+	} from '$routes/map/utils/file/wms';
 	import {
 		parseWmtsCapabilities,
 		type MapLibreRasterSourceInfo
@@ -65,7 +69,9 @@
 			: layers;
 		if (searchQuery.trim()) {
 			const q = searchQuery.trim().toLowerCase();
-			result = result.filter((l) => l.title.toLowerCase().includes(q) || l.id.toLowerCase().includes(q));
+			result = result.filter(
+				(l) => l.title.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)
+			);
 		}
 		return result;
 	});
@@ -163,7 +169,7 @@
 				}
 			}
 
-            console.log('取得したレイヤー:', layers);
+			console.log('取得したレイヤー:', layers);
 
 			if (layers.length === 1) {
 				selectedLayerId = layers[0].id;
@@ -239,7 +245,10 @@
 			{/if}
 
 			<div class="text-xs text-gray-400">
-				{filteredLayers.length}件中 {currentPage * PAGE_SIZE + 1}-{Math.min((currentPage + 1) * PAGE_SIZE, filteredLayers.length)}件を表示
+				{filteredLayers.length}件中 {currentPage * PAGE_SIZE + 1}-{Math.min(
+					(currentPage + 1) * PAGE_SIZE,
+					filteredLayers.length
+				)}件を表示
 			</div>
 		</div>
 
@@ -247,18 +256,22 @@
 			{#each pagedLayers as layer}
 				<button
 					type="button"
-					onclick={() => { selectedLayerId = layer.id; }}
+					onclick={() => {
+						selectedLayerId = layer.id;
+					}}
 					class="w-full cursor-pointer rounded border p-2 text-left text-sm transition-colors
 						{selectedLayerId === layer.id
-							? 'border-blue-500 bg-blue-500/20 text-white'
-							: 'border-gray-700 bg-transparent text-gray-300 hover:border-gray-500 hover:bg-white/5'}"
+						? 'border-blue-500 bg-blue-500/20 text-white'
+						: 'border-gray-700 bg-transparent text-gray-300 hover:border-gray-500 hover:bg-white/5'}"
 				>
 					<div class="truncate">{layer.title}</div>
 					{#if layer.minZoom != null && layer.maxZoom != null}
 						<span class="text-xs text-gray-500">z{layer.minZoom}-{layer.maxZoom}</span>
 					{/if}
 					{#if layer.timeDimension}
-						<span class="text-xs text-blue-400">&#x1f552; {layer.timeDimension.values.length}ステップ</span>
+						<span class="text-xs text-blue-400"
+							>&#x1f552; {layer.timeDimension.values.length}ステップ</span
+						>
 					{/if}
 				</button>
 			{/each}
@@ -269,7 +282,9 @@
 				<button
 					type="button"
 					disabled={currentPage === 0}
-					onclick={() => { currentPage--; }}
+					onclick={() => {
+						currentPage--;
+					}}
 					class="rounded border border-gray-600 px-3 py-1 text-sm text-gray-300 transition-colors
 						{currentPage === 0 ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'}"
 				>
@@ -279,9 +294,13 @@
 				<button
 					type="button"
 					disabled={currentPage >= totalPages - 1}
-					onclick={() => { currentPage++; }}
+					onclick={() => {
+						currentPage++;
+					}}
 					class="rounded border border-gray-600 px-3 py-1 text-sm text-gray-300 transition-colors
-						{currentPage >= totalPages - 1 ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'}"
+						{currentPage >= totalPages - 1
+						? 'cursor-not-allowed opacity-30'
+						: 'cursor-pointer hover:bg-white/10'}"
 				>
 					&gt;
 				</button>
