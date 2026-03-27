@@ -19,6 +19,7 @@
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
+	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
@@ -253,7 +254,18 @@
 			{#if showDialogType === 'hdf5'}
 				<Hdf5Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
-			{#if showDialogType === 'sima'}
+			{#if showDialogType === 'mojxml'}
+			<MojXmlForm
+				bind:showDataEntry
+				bind:showDialogType
+				bind:dropFile
+				bind:showZoneForm
+				bind:focusBbox
+				bind:zoneConfirmedEpsg
+				{selectedEpsgCode}
+			/>
+		{/if}
+		{#if showDialogType === 'sima'}
 				<SimaForm
 					bind:showDataEntry
 					bind:showDialogType

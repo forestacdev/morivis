@@ -46,7 +46,7 @@
 			// shpファイルがあればシェープファイル
 			if (fileNames.some((f) => f.toLowerCase().endsWith('.shp'))) return 'shp';
 
-			// XMLファイルがあれば中身を確認してDEM判定
+			// XMLファイルがあれば中身を確認して判定
 			const xmlName = fileNames.find((f) => f.toLowerCase().endsWith('.xml'));
 			if (xmlName) {
 				const xmlContent = await zip.file(xmlName)?.async('string');
@@ -55,6 +55,8 @@
 					const hasDem = header.includes('<DEM') || header.includes('dataset:DEM');
 					const hasDataset = header.includes('<Dataset') || header.includes('dataset:Dataset');
 					if (hasDem && hasDataset) return 'demxml';
+					// 法務局地図XML判定
+					if (header.includes('moj.go.jp/MINJI/tizuxml')) return 'mojxml';
 				}
 			}
 
@@ -96,6 +98,16 @@
 		try {
 			const header = await file.slice(0, 2000).text();
 			return header.includes('<LandXML') || header.includes('landxml.org');
+		} catch {
+			return false;
+		}
+	};
+
+	/** XMLファイルの先頭を読んで法務局地図XMLかどうかを判定 */
+	const isMojXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return header.includes('moj.go.jp/MINJI/tizuxml');
 		} catch {
 			return false;
 		}
@@ -250,6 +262,11 @@
 						showDialogType = 'landxml';
 						return;
 					}
+					// 法務局地図XML判定
+					if (await isMojXml(file)) {
+						showDialogType = 'mojxml';
+						return;
+					}
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
@@ -278,6 +295,8 @@
 					showDialogType = 'gml';
 				} else if (await isLandXml(files[0])) {
 					showDialogType = 'landxml';
+				} else if (await isMojXml(files[0])) {
+					showDialogType = 'mojxml';
 				} else {
 					showNotification('対応していないXMLファイルです', 'error');
 				}

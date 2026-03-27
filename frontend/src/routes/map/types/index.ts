@@ -76,6 +76,7 @@ export type DialogType =
 	| 'landxml'
 	| 'stac'
 	| 'geopdf'
+	| 'mojxml'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
@@ -103,6 +104,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'HDF5', extensions: ['.h5'] },
 	{ label: 'NetCDF', extensions: ['.nc', '.nc4'] },
 	{ label: 'GRIB2 (GPV)', extensions: ['.grib2', '.grb2', '.grb', '.bin'] },
+	{ label: '法務局地図XML', extensions: ['.xml'] },
 	{ label: 'ZIP', extensions: ['.zip'] }
 ];
 
