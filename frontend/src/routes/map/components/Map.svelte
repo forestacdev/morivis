@@ -170,6 +170,10 @@
 		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
 
+		if (!import.meta.env.PROD) {
+			console.log('debug:entries', _dataEntries);
+		}
+
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
