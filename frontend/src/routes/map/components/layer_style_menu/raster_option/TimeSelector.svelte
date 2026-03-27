@@ -5,14 +5,28 @@
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '../../atoms/Accordion.svelte';
-
-	import type { BaseRasterStyle } from '$routes/map/data/types/raster';
+	import type {
+		RasterEntry,
+		RasterCategoricalStyle,
+		RasterBaseMapStyle,
+		RasterDemStyle,
+		RasterDemEntry,
+		RasterTiffStyle,
+		RasterCadStyle
+	} from '$routes/map/data/types/raster';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		style: BaseRasterStyle;
+		layerEntry: RasterEntry<
+			| RasterCategoricalStyle
+			| RasterBaseMapStyle
+			| RasterDemStyle
+			| RasterTiffStyle
+			| RasterCadStyle
+		>;
 	}
 
-	let { style = $bindable() }: Props = $props();
+	let { layerEntry = $bindable() }: Props = $props();
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -34,9 +48,21 @@
 	];
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !style.timeDimension) return;
-		style.timeDimension.currentIndex = emblaMainCarousel.selectedScrollSnap();
+		if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+		const currentIndex = emblaMainCarousel.selectedScrollSnap();
+		layerEntry.style.timeDimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
 	};
+
+	// const onSelect = () => {
+	// 	if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
+	// 	const sourceId = `${layerEntry.id}_source`;
+	// 	const timeValue = layerEntry.style.timeDimension.values[currentIndex];
+	// 	if (timeValue) {
+	// 		const tileUrl = layerEntry.format.url.replace('{time}', timeValue);
+	// 		mapStore.setTiles(sourceId, [tileUrl]);
+	// 	}
+	// };
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
@@ -106,7 +132,7 @@
 	let showTimeOption = $state(false);
 </script>
 
-{#if style.timeDimension}
+{#if layerEntry.style.timeDimension}
 	<Accordion label={'時間ステップ'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
 		<div class="flex flex-col gap-2 p-2">
 			<div
@@ -119,7 +145,7 @@
 				onemblaInit={onInitEmblaMainCarousel}
 			>
 				<div class="flex">
-					{#each style.timeDimension.values as timeValue, i}
+					{#each layerEntry.style.timeDimension.values as timeValue, i}
 						<div
 							class="flex h-full flex-[0_0_70%] items-center justify-center rounded bg-gray-700 text-white"
 						>

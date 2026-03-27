@@ -16,7 +16,8 @@ import type {
 	FilterSpecification,
 	StyleSetterOptions,
 	FeatureIdentifier,
-	FlyToOptions
+	FlyToOptions,
+	RasterTileSource
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -1114,6 +1115,16 @@ const createMapStore = () => {
 		}
 	};
 
+	const setTiles = (sourceId: string, tiles: string[]) => {
+		if (!map || !isMapValid(map)) return;
+		const source = map.getSource(sourceId) as RasterTileSource;
+		if (source) {
+			source.setTiles(tiles);
+		} else {
+			console.warn(`Source with ID ${sourceId} does not exist.`);
+		}
+	};
+
 	const getLayer = (layerId: string) => {
 		if (!map || !isMapValid(map)) return undefined;
 		return map.getLayer(layerId);
@@ -1156,6 +1167,7 @@ const createMapStore = () => {
 		queryRenderedFeatures,
 		setCursor,
 		setData,
+		setTiles,
 		setStyle,
 		setDeckOverlay,
 		// Three.js 関連
@@ -1196,6 +1208,7 @@ const createMapStore = () => {
 		getTerrain: () => map?.getTerrain(),
 		getElevation: getElevation,
 		getLayer,
+		getSource: (sourceId: string) => map?.getSource(sourceId),
 		getState: () => get(state),
 		getImage: (id: string) => map?.getImage(id),
 		getMapBounds,

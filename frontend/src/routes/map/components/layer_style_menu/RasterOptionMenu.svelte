@@ -106,7 +106,7 @@
 		{/await}
 
 		{#if style.timeDimension}
-			<TimeSelector bind:style={layerEntry.style} />
+			<TimeSelector bind:layerEntry />
 		{/if}
 
 		<!-- <Accordion label={'詳細設定'} bind:value={showOption}>
