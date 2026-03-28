@@ -79,13 +79,15 @@ export const createGlbEntry = (
 	name: string,
 	url: string,
 	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number },
-	formatType: MeshFormatType = 'gltf'
+	formatType: MeshFormatType = 'gltf',
+	mtlUrl?: string
 ): ModelMeshEntry<MeshStyle> => ({
 	id: 'glb_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
 		type: formatType,
-		url
+		url,
+		...(mtlUrl && { mtlUrl })
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,

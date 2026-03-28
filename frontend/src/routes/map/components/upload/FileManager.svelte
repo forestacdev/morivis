@@ -235,6 +235,9 @@
 					}
 					return;
 				}
+				case 'mtl':
+					showNotification('OBJファイル(.obj)と一緒にドロップしてください', 'error');
+					return;
 				case 'tfw':
 				case 'tifw':
 				case 'tiffw':
@@ -281,7 +284,9 @@
 			// 大きなファイルの確認
 			if (!(await checkLargeFile(files))) return;
 
-			if (files.some(isShapeFileRelated)) {
+			if (files.some((f) => /\.obj$/i.test(f.name))) {
+				showDialogType = 'glb';
+			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
 			} else if (files.some(isGeoImageRelated)) {
 				if (!files.some(isGeoImageMain)) {

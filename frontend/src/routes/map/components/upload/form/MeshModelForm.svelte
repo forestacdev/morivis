@@ -83,8 +83,49 @@
 
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		if (dropFile instanceof FileList) {
+			return Array.from(dropFile).find((f) => /\.(glb|obj)$/i.test(f.name)) ?? null;
+		}
+		return dropFile;
 	});
+
+	const mtlFile = $derived.by(() => {
+		if (!dropFile || !(dropFile instanceof FileList)) return null;
+		return Array.from(dropFile).find((f) => /\.mtl$/i.test(f.name)) ?? null;
+	});
+
+	/** ドロップされた画像・テクスチャファイル群 */
+	const textureFiles = $derived.by(() => {
+		if (!dropFile || !(dropFile instanceof FileList)) return [];
+		return Array.from(dropFile).filter(
+			(f) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name)
+		);
+	});
+
+	let mtlBlobUrl = $state<string | null>(null);
+
+	/** MTL内のテクスチャパスをBlobURLに書き換える */
+	const processMtl = async (mtl: File, textures: File[]): Promise<string> => {
+		let mtlText = await mtl.text();
+
+		// テクスチャファイルのBlobURLマップを作成
+		const texMap = new Map<string, string>();
+		for (const tex of textures) {
+			texMap.set(tex.name.toLowerCase(), URL.createObjectURL(tex));
+		}
+
+		// MTL内のテクスチャ参照行を書き換え（map_Kd, map_Ka, map_Ks, bump 等）
+		mtlText = mtlText.replace(
+			/^(map_Kd|map_Ka|map_Ks|map_Ns|map_d|bump|disp|decal|refl)\s+(.+)$/gim,
+			(_match, key, path) => {
+				const fileName = path.trim().split(/[\\/]/).pop()?.toLowerCase() ?? '';
+				const blobUrl = texMap.get(fileName);
+				return blobUrl ? `${key} ${blobUrl}` : `${key} ${path}`;
+			}
+		);
+
+		return URL.createObjectURL(new Blob([mtlText], { type: 'text/plain' }));
+	};
 
 	// ドロップファイルからBlobURLを生成
 	$effect(() => {
@@ -93,6 +134,13 @@
 			forms.url = blobUrl;
 			forms.name = glbFile.name.replace(/\.[^.]+$/, '');
 			isFromFile = true;
+		}
+		if (mtlFile) {
+			processMtl(mtlFile, textureFiles).then((url) => {
+				mtlBlobUrl = url;
+			});
+		} else {
+			mtlBlobUrl = null;
 		}
 	});
 
@@ -129,7 +177,8 @@
 				scale: Number(forms.scale),
 				rotationY: Number(forms.rotationY)
 			},
-			isObj ? 'obj' : 'gltf'
+			isObj ? 'obj' : 'gltf',
+			mtlBlobUrl ?? undefined
 		);
 		if (entry) {
 			showDataEntry = entry;

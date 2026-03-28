@@ -41,6 +41,7 @@ export interface ModelMeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
+		mtlUrl?: string;
 	};
 	style: T;
 }

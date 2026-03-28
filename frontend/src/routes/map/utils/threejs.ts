@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import maplibregl, { type CustomLayerInterface } from 'maplibre-gl';
 import type { ModelMeshEntry, MeshStyle } from '../data/types/model';
@@ -230,12 +231,33 @@ export class ThreeJsLayerManager {
 
 				if (entry.format.type === 'obj') {
 					const objLoader = new OBJLoader();
-					objLoader.load(
-						entry.format.url,
-						(obj) => onModelLoaded(obj),
-						undefined,
-						(error) => reject(error)
-					);
+					const loadObj = () => {
+						objLoader.load(
+							entry.format.url,
+							(obj) => onModelLoaded(obj),
+							undefined,
+							(error) => reject(error)
+						);
+					};
+
+					if (entry.format.mtlUrl) {
+						const mtlLoader = new MTLLoader();
+						// BlobURL内のテクスチャパスは絶対URL（BlobURL）に書き換え済みなので
+						// リソースパスを空にしてそのまま使う
+						mtlLoader.setResourcePath('');
+						mtlLoader.load(
+							entry.format.mtlUrl,
+							(materials) => {
+								materials.preload();
+								objLoader.setMaterials(materials);
+								loadObj();
+							},
+							undefined,
+							() => loadObj() // MTL読み込み失敗時はマテリアルなしで続行
+						);
+					} else {
+						loadObj();
+					}
 				} else {
 					this.loader.load(
 						entry.format.url,

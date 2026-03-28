@@ -50,12 +50,55 @@
 		isDragover = false;
 	};
 	// ドロップ完了時にファイルを取得
+	/** FileSystemEntryからFileを取得 */
+	const entryToFile = (entry: FileSystemFileEntry): Promise<File> =>
+		new Promise((resolve, reject) => entry.file(resolve, reject));
+
+	/** ディレクトリを再帰的に読み取り全ファイルを収集 */
+	const readDirectoryRecursive = async (dirEntry: FileSystemDirectoryEntry): Promise<File[]> => {
+		const files: File[] = [];
+		const reader = dirEntry.createReader();
+
+		const readEntries = (): Promise<FileSystemEntry[]> =>
+			new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+
+		let entries: FileSystemEntry[];
+		do {
+			entries = await readEntries();
+			for (const entry of entries) {
+				if (entry.isFile) {
+					files.push(await entryToFile(entry as FileSystemFileEntry));
+				} else if (entry.isDirectory) {
+					files.push(...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry)));
+				}
+			}
+		} while (entries.length > 0);
+
+		return files;
+	};
+
 	const drop: (e: DragEvent) => void = async (e) => {
 		e.preventDefault();
 		isDragover = false;
 
 		const dataTransfer = e.dataTransfer;
 		if (!dataTransfer) return;
+
+		// フォルダドロップの判定
+		const items = dataTransfer.items;
+		if (items && items.length > 0) {
+			const firstEntry = items[0].webkitGetAsEntry?.();
+			if (firstEntry?.isDirectory) {
+				// フォルダ → 再帰的にファイル収集
+				const allFiles = await readDirectoryRecursive(firstEntry as FileSystemDirectoryEntry);
+				if (allFiles.length > 0) {
+					const dt = new DataTransfer();
+					allFiles.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			}
+		}
 
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
