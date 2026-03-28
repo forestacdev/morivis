@@ -26,11 +26,14 @@ interface LoadedModel {
  * MeshStyle の transform から MapLibre 用の変換行列パラメータを計算
  */
 const calculateModelTransform = (style: MeshStyle): ModelTransform => {
-	const { lng, lat, altitude, scale, rotationY } = style.transform;
+	const { lng, lat, altitude, heightOffset, scale, rotationY } = style.transform;
+
+	// 地形時: altitude + heightOffset、平面時: heightOffset のみ
+	const effectiveAltitude = (mapStore.getTerrain() ? altitude : 0) + heightOffset;
 
 	const mc = maplibregl.MercatorCoordinate.fromLngLat(
 		[lng, lat],
-		mapStore.getTerrain() ? altitude : 0
+		effectiveAltitude
 	);
 	const baseScale = mc.meterInMercatorCoordinateUnits();
 
@@ -389,6 +392,14 @@ export class ThreeJsLayerManager {
 				});
 			}
 		});
+	}
+
+	setModelTransform(entryId: string, style: MeshStyle): void {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return;
+		const newTransform = calculateModelTransform(style);
+		loaded.transform = newTransform;
+		loaded.entry = { ...loaded.entry, style };
 	}
 
 	setGroupVisibility(visible: boolean): void {

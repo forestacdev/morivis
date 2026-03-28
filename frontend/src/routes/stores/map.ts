@@ -636,12 +636,13 @@ const createMapStore = () => {
 			await threeJsManager.addModel(entry);
 		}
 
-		// 更新: 両方にあるもの（opacity, visible の変更）
+		// 更新: 両方にあるもの（opacity, visible, wireframe, transform の変更）
 		for (const entry of newEntries) {
 			if (currentIds.has(entry.id)) {
 				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
 				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				threeJsManager.setModelTransform(entry.id, entry.style);
 			}
 		}
 
