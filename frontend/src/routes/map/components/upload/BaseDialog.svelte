@@ -10,7 +10,6 @@
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
-	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
@@ -19,6 +18,7 @@
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
+	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
@@ -133,7 +133,7 @@
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'glb'}
-				<GlbForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<MeshModelForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'geopdf'}
 				<GeoPdfForm
