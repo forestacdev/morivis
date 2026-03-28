@@ -27,6 +27,8 @@ export interface CogMetadata {
 	maxZoom: number;
 	/** バンドごとのサンプルmin/max（サムネイル用小サンプルから） */
 	sampleRanges: { min: number; max: number }[];
+	/** COG内部タイルサイズ（256 or 512） */
+	tileSize: 256 | 512;
 }
 
 interface CogConnection {
@@ -250,6 +252,10 @@ export const CogTileManager = {
 			sampleRanges.push(getMinMax(band, nodata));
 		}
 
+		// COG内部タイルサイズ（256 or 512）
+		const cogTileWidth = fullImage.getTileWidth();
+		const tileSize: 256 | 512 = cogTileWidth >= 512 ? 512 : 256;
+
 		const metadata: CogMetadata = {
 			fullWidth,
 			fullHeight,
@@ -259,7 +265,8 @@ export const CogTileManager = {
 			overviews,
 			minZoom,
 			maxZoom,
-			sampleRanges
+			sampleRanges,
+			tileSize
 		};
 
 		connections.set(entryId, { tiff, images, metadata, nativeBbox, projName: resolvedProjName });

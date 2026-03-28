@@ -400,7 +400,7 @@
 					metaData: {
 						...DEFAULT_CUSTOM_META_DATA,
 						name: entryName,
-						tileSize: 256,
+						tileSize: cogMetadata.tileSize,
 						bounds: resolvedBbox,
 						minZoom: cogMetadata.minZoom,
 						maxZoom: cogMetadata.maxZoom,
