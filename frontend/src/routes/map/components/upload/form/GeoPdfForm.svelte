@@ -342,7 +342,8 @@
 				geometryType,
 				entryName || 'GeoPDF',
 				bbox,
-				'default'
+				undefined,
+				{ attribution: 'PDF' }
 			);
 			if (entry) {
 				showDataEntry = entry;

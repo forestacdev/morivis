@@ -9,9 +9,9 @@
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
-		groupPropertyByGeometryType
+		groupPropertyByGeometryType,
+		buildDmStyle
 	} from '$routes/map/data/entries/vector';
-	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
@@ -209,12 +209,15 @@
 			}
 
 			const entryName = zoneInfo?.drawingName || dmFile.name;
+			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
+			const style = buildDmStyle(geojsonData, selectedGeometryType, propKeys);
 			const entry = createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'dm'
+				style,
+				{ attribution: 'DM' }
 			);
 
 			if (entry) {

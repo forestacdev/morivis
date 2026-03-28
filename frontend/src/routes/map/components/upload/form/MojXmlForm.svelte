@@ -139,7 +139,8 @@
 			geometryType,
 			entryName,
 			bbox as [number, number, number, number],
-			'default'
+			undefined,
+			{ attribution: '法務局地図XML' }
 		);
 
 		if (entry) {
@@ -187,7 +188,8 @@
 				geometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: '法務局地図XML' }
 			);
 
 			if (entry) {

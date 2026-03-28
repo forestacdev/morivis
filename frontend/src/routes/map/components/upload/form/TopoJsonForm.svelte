@@ -139,7 +139,8 @@
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: 'TopoJSON' }
 			);
 
 			if (entry) {
@@ -184,7 +185,8 @@
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: 'TopoJSON' }
 			);
 
 			if (entry) {

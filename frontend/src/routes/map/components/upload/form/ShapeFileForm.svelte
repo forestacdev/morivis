@@ -254,7 +254,8 @@
 			entryGeometryType,
 			forms.shpName,
 			bbox,
-			'default'
+			undefined,
+			{ attribution: 'Shapefile' }
 		);
 		if (entry) {
 			showDataEntry = entry;

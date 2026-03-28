@@ -9,7 +9,8 @@
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
-		groupPropertyByGeometryType
+		groupPropertyByGeometryType,
+		buildCadStyle
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -194,12 +195,15 @@
 				return;
 			}
 
+			const propKeys = Object.keys(filtered.features[0]?.properties ?? {});
+			const style = buildCadStyle(filtered, entryGeometryType, propKeys);
 			const entry = createGeoJsonEntry(
 				filtered,
 				entryGeometryType,
 				simaFile.name,
 				bbox as [number, number, number, number],
-				'cad'
+				style,
+				{ attribution: 'SIMA' }
 			);
 
 			if (entry) {

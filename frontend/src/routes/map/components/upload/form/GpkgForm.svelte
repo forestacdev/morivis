@@ -401,9 +401,11 @@
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default',
 				undefined,
-				sldColorExpressions.length > 0 ? sldColorExpressions : undefined
+				{
+					attribution: 'GeoPackage',
+					extraColorExpressions: sldColorExpressions.length > 0 ? sldColorExpressions : undefined
+				}
 			);
 
 			if (entry) {
@@ -458,9 +460,11 @@
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default',
 				undefined,
-				sldColorExpressions.length > 0 ? sldColorExpressions : undefined
+				{
+					attribution: 'GeoPackage',
+					extraColorExpressions: sldColorExpressions.length > 0 ? sldColorExpressions : undefined
+				}
 			);
 
 			if (entry) {
