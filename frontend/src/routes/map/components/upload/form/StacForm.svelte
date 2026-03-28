@@ -18,7 +18,6 @@
 		RasterCogEntry,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import type { DialogType } from '$routes/map/types';
 	import {
 		GeoTiffCache,
@@ -27,6 +26,7 @@
 		type BandDataRange,
 		type RasterBands
 	} from '$routes/map/utils/file/geotiff';
+	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import {
 		detectStacSourceType,
 		fetchCollections,

@@ -87,9 +87,7 @@
 
 		try {
 			const isZip = mojFile.name.toLowerCase().endsWith('.zip');
-			const xmlStrings = isZip
-				? await readXmlFromZip(mojFile)
-				: [await mojFile.text()];
+			const xmlStrings = isZip ? await readXmlFromZip(mojFile) : [await mojFile.text()];
 
 			const geojson = parseXmlStrings(xmlStrings);
 

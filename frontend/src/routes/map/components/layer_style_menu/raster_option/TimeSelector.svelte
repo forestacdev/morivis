@@ -5,6 +5,7 @@
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '../../atoms/Accordion.svelte';
+
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,

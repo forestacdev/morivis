@@ -36,11 +36,7 @@ const loadShader = (
 	return shader;
 };
 
-const createProgram = (
-	gl: WebGL2RenderingContext,
-	vs: string,
-	fs: string
-): WebGLProgram => {
+const createProgram = (gl: WebGL2RenderingContext, vs: string, fs: string): WebGLProgram => {
 	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vs);
 	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fs);
 	if (!vertexShader || !fragmentShader) throw new Error('Failed to compile shaders');
@@ -96,7 +92,17 @@ const bindTexture = (
 	gl.uniform1i(gl.getUniformLocation(program, uniformName), unitIndex);
 
 	if (isColorMap) {
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 256, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, image as Uint8Array);
+		gl.texImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.RGB,
+			256,
+			1,
+			0,
+			gl.RGB,
+			gl.UNSIGNED_BYTE,
+			image as Uint8Array
+		);
 	} else {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image as ImageBitmap);
 	}
@@ -147,10 +153,7 @@ const drawMesh = (
 		// フルスクリーンquad (0,0)-(1,1)
 		const quadData = new Float32Array([
 			// pos(x,y), tex(u,v)
-			0, 0, 0, 0,
-			1, 0, 1, 0,
-			0, 1, 0, 1,
-			1, 1, 1, 1
+			0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1
 		]);
 
 		const buffer = gl.createBuffer()!;

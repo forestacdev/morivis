@@ -255,17 +255,17 @@
 				<Hdf5Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'mojxml'}
-			<MojXmlForm
-				bind:showDataEntry
-				bind:showDialogType
-				bind:dropFile
-				bind:showZoneForm
-				bind:focusBbox
-				bind:zoneConfirmedEpsg
-				{selectedEpsgCode}
-			/>
-		{/if}
-		{#if showDialogType === 'sima'}
+				<MojXmlForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'sima'}
 				<SimaForm
 					bind:showDataEntry
 					bind:showDialogType

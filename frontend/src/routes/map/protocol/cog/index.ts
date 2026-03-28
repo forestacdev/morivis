@@ -70,7 +70,10 @@ class CogWorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array | ImageBitmap }> {
+	async request(
+		url: URL,
+		controller: AbortController
+	): Promise<{ data: Uint8Array | ImageBitmap }> {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -236,7 +239,10 @@ class CogWorkerProtocolPool {
 		return worker;
 	}
 
-	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array | ImageBitmap }> {
+	async request(
+		url: URL,
+		controller: AbortController
+	): Promise<{ data: Uint8Array | ImageBitmap }> {
 		return this.getNextWorker().request(url, controller);
 	}
 

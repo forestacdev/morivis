@@ -281,9 +281,7 @@ export const getDimensionValues = (
  * CF Conventions の時間units文字列をパースする
  * 例: "hours since 1900-01-01 00:00:00", "days since 1970-01-01", "seconds since 2000-1-1 0:0:0"
  */
-const parseTimeUnits = (
-	units: string
-): { stepMs: number; epoch: Date } | null => {
+const parseTimeUnits = (units: string): { stepMs: number; epoch: Date } | null => {
 	const match = units.match(
 		/^(second|minute|hour|day|month|year)s?\s+since\s+(\d{4})-?(\d{1,2})-?(\d{1,2})(?:[T\s]+(\d{1,2}):?(\d{1,2})?:?(\d{1,2})?)?/i
 	);

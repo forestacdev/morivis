@@ -22,15 +22,7 @@ const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math
 const clampLat = (lat: number) => Math.max(-85, Math.min(85, lat));
 
 export const generateThumbnail = (opts: ThumbnailOptions): string => {
-	const {
-		bands,
-		width,
-		height,
-		bbox,
-		nodata = null,
-		ranges,
-		thumbSize = 512
-	} = opts;
+	const { bands, width, height, bbox, nodata = null, ranges, thumbSize = 512 } = opts;
 
 	const numBands = bands.length;
 	const isRgb = numBands >= 3;
@@ -74,18 +66,20 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 	const pixels = imgData.data;
 
 	// デフォルトranges
-	const effectiveRanges = ranges ?? bands.map((band) => {
-		let min = Infinity;
-		let max = -Infinity;
-		for (let i = 0; i < band.length; i++) {
-			const v = band[i];
-			if (nodata !== null && v === nodata) continue;
-			if (!isFinite(v)) continue;
-			if (v < min) min = v;
-			if (v > max) max = v;
-		}
-		return { min: isFinite(min) ? min : 0, max: isFinite(max) ? max : 1 };
-	});
+	const effectiveRanges =
+		ranges ??
+		bands.map((band) => {
+			let min = Infinity;
+			let max = -Infinity;
+			for (let i = 0; i < band.length; i++) {
+				const v = band[i];
+				if (nodata !== null && v === nodata) continue;
+				if (!isFinite(v)) continue;
+				if (v < min) min = v;
+				if (v > max) max = v;
+			}
+			return { min: isFinite(min) ? min : 0, max: isFinite(max) ? max : 1 };
+		});
 
 	// メルカトル変換用
 	const mercYMin = bbox ? latToMercY(clampLat(bbox[1])) : 0;
@@ -115,11 +109,7 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 			const val = bands[0][srcIdx];
 
 			const isNd =
-				nodata !== null
-					? Number.isNaN(nodata)
-						? Number.isNaN(val)
-						: val === nodata
-					: false;
+				nodata !== null ? (Number.isNaN(nodata) ? Number.isNaN(val) : val === nodata) : false;
 
 			if (isNd || !Number.isFinite(val)) {
 				pixels[dstIdx + 3] = 0;

@@ -53,19 +53,14 @@ const tileToLat = (y: number, z: number): number => {
 };
 
 /** ズームレベルでのピクセルあたりの度数（赤道上） */
-const degreesPerPixel = (z: number, tileSize: number): number =>
-	360 / (Math.pow(2, z) * tileSize);
+const degreesPerPixel = (z: number, tileSize: number): number => 360 / (Math.pow(2, z) * tileSize);
 
 /** COGのピクセルあたりの度数 */
 const cogDegreesPerPixel = (bbox: [number, number, number, number], width: number): number =>
 	(bbox[2] - bbox[0]) / width;
 
 /** ズームレベルに最適なオーバービューを選択 */
-const selectOverviewForZoom = (
-	conn: CogConnection,
-	z: number,
-	tileSize: number
-): GeoTIFFImage => {
+const selectOverviewForZoom = (conn: CogConnection, z: number, tileSize: number): GeoTIFFImage => {
 	const targetDpp = degreesPerPixel(z, tileSize);
 	const { overviews, bbox, fullWidth } = conn.metadata;
 
@@ -185,7 +180,8 @@ export const CogTileManager = {
 	}> => {
 		// 既に登録済みならメタデータを返す（サンプルデータは再取得不可）
 		const existing = connections.get(entryId);
-		if (existing) return { metadata: existing.metadata, sampleBands: [], sampleWidth: 0, sampleHeight: 0 };
+		if (existing)
+			return { metadata: existing.metadata, sampleBands: [], sampleWidth: 0, sampleHeight: 0 };
 
 		const tiff = await fromUrl(url);
 		const fullImage = await tiff.getImage();
@@ -199,12 +195,7 @@ export const CogTileManager = {
 
 		// bbox（CRS検出 → WGS84に変換）
 		const rawBbox = fullImage.getBoundingBox();
-		let bbox: [number, number, number, number] = [
-			rawBbox[0],
-			rawBbox[1],
-			rawBbox[2],
-			rawBbox[3]
-		];
+		let bbox: [number, number, number, number] = [rawBbox[0], rawBbox[1], rawBbox[2], rawBbox[3]];
 
 		const nativeBbox: [number, number, number, number] = [...bbox];
 		let resolvedProjName: string | null = null;
@@ -239,18 +230,10 @@ export const CogTileManager = {
 
 		// ズームレベル計算
 		const fullDpp = cogDegreesPerPixel(bbox, fullWidth);
-		const maxZoom = Math.min(
-			22,
-			Math.ceil(Math.log2(360 / (fullDpp * 256)))
-		);
+		const maxZoom = Math.min(22, Math.ceil(Math.log2(360 / (fullDpp * 256))));
 		const lowestOvr = overviews[overviews.length - 1];
-		const lowestDpp = lowestOvr
-			? cogDegreesPerPixel(bbox, lowestOvr.width)
-			: fullDpp;
-		const minZoom = Math.max(
-			0,
-			Math.floor(Math.log2(360 / (lowestDpp * 256)))
-		);
+		const lowestDpp = lowestOvr ? cogDegreesPerPixel(bbox, lowestOvr.width) : fullDpp;
+		const minZoom = Math.max(0, Math.floor(Math.log2(360 / (lowestDpp * 256))));
 
 		// サンプルmin/max（最小オーバービューまたはフル解像度が小さければそれ自体から）
 		const sampleImage = lowestOvr ? images[images.length - 1] : fullImage;
@@ -351,18 +334,10 @@ export const CogTileManager = {
 			const cogXRange = nativeBbox[2] - nativeBbox[0];
 			const cogYRange = nativeBbox[3] - nativeBbox[1];
 
-			const pxLeft = Math.floor(
-				((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth
-			);
-			const pxRight = Math.ceil(
-				((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth
-			);
-			const pxTop = Math.floor(
-				((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight
-			);
-			const pxBottom = Math.ceil(
-				((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight
-			);
+			const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
+			const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
 
 			const winLeft = Math.max(0, pxLeft);
 			const winTop = Math.max(0, pxTop);

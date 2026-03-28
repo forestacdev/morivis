@@ -455,7 +455,6 @@
 		}
 	};
 
-
 	const registration = async () => {
 		if (!analyzed || !entryId || !resolvedBbox || !parsedBands) return;
 
@@ -463,7 +462,11 @@
 
 		try {
 			// サムネイル画像を生成（Terrarium化前にバンドデータから作成）
-			const mapImage = generateThumbnail({ bands: parsedBands, width: imageWidth, height: imageHeight });
+			const mapImage = generateThumbnail({
+				bands: parsedBands,
+				width: imageWidth,
+				height: imageHeight
+			});
 
 			// 全バンドをTerrariumエンコード
 			await encodeAllBandsToTerrarium(

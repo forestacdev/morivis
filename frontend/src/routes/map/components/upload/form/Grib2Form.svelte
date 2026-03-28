@@ -114,7 +114,6 @@
 		}
 	};
 
-
 	const registration = async () => {
 		if (!analyzed || selectedIndices.length === 0) return;
 

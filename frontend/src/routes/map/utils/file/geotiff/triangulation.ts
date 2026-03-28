@@ -68,13 +68,7 @@ export const buildTriangulation = (
 	const triangles: Triangle[] = [];
 
 	// 四角形を適応的に分割
-	const addQuad = (
-		x0: number,
-		y0: number,
-		x1: number,
-		y1: number,
-		depth: number
-	) => {
+	const addQuad = (x0: number, y0: number, x1: number, y1: number, depth: number) => {
 		const cx = (x0 + x1) / 2;
 		const cy = (y0 + y1) / 2;
 
@@ -99,13 +93,13 @@ export const buildTriangulation = (
 			Math.abs(s01[1] - s00[1]),
 			1 // ゼロ除算防止
 		);
-		const errX = Math.abs(sCenter[0] - interpX) / sourceRange * quadSize;
-		const errY = Math.abs(sCenter[1] - interpY) / sourceRange * quadSize;
+		const errX = (Math.abs(sCenter[0] - interpX) / sourceRange) * quadSize;
+		const errY = (Math.abs(sCenter[1] - interpY) / sourceRange) * quadSize;
 		const error = Math.max(errX, errY);
 
 		if (depth < MAX_SUBDIVISION && error > ERROR_THRESHOLD) {
 			// 分割
-			const isWide = (x1 - x0) >= (y1 - y0);
+			const isWide = x1 - x0 >= y1 - y0;
 			if (isWide) {
 				addQuad(x0, y0, cx, y1, depth + 1);
 				addQuad(cx, y0, x1, y1, depth + 1);

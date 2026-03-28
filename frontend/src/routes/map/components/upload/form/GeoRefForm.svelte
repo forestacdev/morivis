@@ -192,7 +192,11 @@
 			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
 			GeoTiffCache.setNumBands(data.entryId, data.numBands);
 
-			const mapImage = generateThumbnail({ bands: data.parsedBands, width: data.imageWidth, height: data.imageHeight });
+			const mapImage = generateThumbnail({
+				bands: data.parsedBands,
+				width: data.imageWidth,
+				height: data.imageHeight
+			});
 
 			await encodeAllBandsToTerrarium(
 				data.entryId,
