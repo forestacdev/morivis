@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
@@ -46,8 +45,8 @@
 </script>
 
 <div
-	transition:fly={{ duration: 200, y: 100, opacity: 0 }}
-	class="items-cente pointer-events-none absolute bottom-12 z-20 flex w-full justify-center"
+	transition:fly={{ duration: 300, y: 100, opacity: 0 }}
+	class="items-cente pointer-events-none absolute bottom-18 z-20 flex w-full justify-center"
 >
 	<div class="relative">
 		<div
