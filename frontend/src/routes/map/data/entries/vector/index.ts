@@ -253,6 +253,66 @@ export const buildCadStyle = (
 	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
 };
 
+// --- 属性から自動match分類を生成 ---
+
+const MAX_UNIQUE_VALUES = 30;
+const MIN_UNIQUE_VALUES = 2;
+
+const isNumericString = (v: string): boolean => {
+	if (v === '') return false;
+	return !isNaN(Number(v)) && isFinite(Number(v));
+};
+
+const buildAutoMatchExpressions = (
+	data: FeatureCollection,
+	entryGeometryType: VectorEntryGeometryType
+): ColorMatchExpression[] => {
+	const expressions: ColorMatchExpression[] = [];
+	if (data.features.length === 0) return expressions;
+
+	// 全フィーチャのプロパティキーを収集
+	const keyCandidates = new Set<string>();
+	for (const f of data.features) {
+		if (!f.properties) continue;
+		for (const k of Object.keys(f.properties)) {
+			keyCandidates.add(k);
+		}
+	}
+
+	for (const key of keyCandidates) {
+		const values = new Set<string>();
+		let allNumeric = true;
+		let hasNonNull = false;
+
+		for (const f of data.features) {
+			const v = (f.properties as Record<string, unknown>)?.[key];
+			if (v == null || v === '') continue;
+			const str = String(v);
+			hasNonNull = true;
+			values.add(str);
+			if (allNumeric && !isNumericString(str)) allNumeric = false;
+			// 早期終了: 上限超え
+			if (values.size > MAX_UNIQUE_VALUES) break;
+		}
+
+		// フィルタリング
+		if (!hasNonNull) continue;
+		if (values.size < MIN_UNIQUE_VALUES) continue;
+		if (values.size > MAX_UNIQUE_VALUES) continue;
+		if (allNumeric) continue;
+
+		const categories = Array.from(values).sort();
+		expressions.push({
+			type: 'match',
+			key,
+			name: `${key}`,
+			mapping: createMatchColorStyleRandomMapping(categories, entryGeometryType === 'Polygon')
+		});
+	}
+
+	return expressions;
+};
+
 // --- メインのエントリ作成関数 ---
 
 export const createGeoJsonEntry = (
@@ -291,6 +351,13 @@ export const createGeoJsonEntry = (
 		}
 	} else {
 		const colorsConfig = createDefaultColorsConfig(entryGeometryType);
+
+		// 属性から自動match分類を生成
+		const autoMatchExpressions = buildAutoMatchExpressions(data, entryGeometryType);
+		for (const expr of autoMatchExpressions) {
+			colorsConfig.expressions.push(expr);
+		}
+
 		if (extraColorExpressions && extraColorExpressions.length > 0) {
 			for (const expr of extraColorExpressions) {
 				colorsConfig.expressions.push(expr);
