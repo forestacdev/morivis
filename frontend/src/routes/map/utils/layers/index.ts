@@ -185,7 +185,7 @@ export const createLayersItems = (
 
 			const attributionItem = getAttribution(metaData.attribution);
 
-			if (attributionItem && metaData.attribution !== 'カスタムデータ') {
+			if (attributionItem && !metaData.isUserUploaded) {
 				attributionMap.set(metaData.attribution, metaData.attribution);
 			}
 
