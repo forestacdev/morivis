@@ -113,18 +113,20 @@
 </script>
 
 {#if show}
-	<div
+	<!-- 縮尺 -->
+	<!-- <div
 		class="pointer-events-none absolute bottom-1 text-xs max-lg:hidden {$showLayerMenu && !$isMobile
 			? 'left-[400px]'
 			: 'left-[15px]'}"
 	>
-		<!-- スケールテキスト -->
 		1/{scaleText}
-	</div>
+	</div> -->
+
+	<!-- スケールバー -->
 	<div
 		class="pointer-events-none absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu &&
 		!$isMobile
-			? 'left-[460px]'
+			? 'left-[410px]'
 			: 'left-[15px]'}"
 		bind:this={controlContainer}
 	>
