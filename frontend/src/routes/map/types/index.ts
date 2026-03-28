@@ -77,7 +77,6 @@ export type DialogType =
 	| 'stac'
 	| 'geopdf'
 	| 'mojxml'
-	| 'cog'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */

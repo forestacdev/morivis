@@ -13,7 +13,11 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { RasterImageEntry, RasterCogEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import type {
+		RasterImageEntry,
+		RasterCogEntry,
+		RasterTiffStyle
+	} from '$routes/map/data/types/raster';
 	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import type { DialogType } from '$routes/map/types';
 	import {
@@ -48,7 +52,9 @@
 
 	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
 
-	// CORSを許可しているSTACサーバーのみ利用可能
+	/** URLがCOG直リンクかどうかを判定 */
+	const isCogUrl = (url: string): boolean =>
+		/\.(tif|tiff|geotiff)(\?.*)?$/i.test(url.split('#')[0]);
 
 	const urlValidation = yup.object().shape({
 		url: yup
@@ -109,11 +115,186 @@
 			});
 	});
 
-	/** Step 1: 接続してソースタイプを自動判定 */
+	/** COG URLを直接読み込む */
+	const loadCogDirect = async (cogUrl: string) => {
+		statusText = 'COGメタデータを読み取り中...';
+		const id = `geotiff_${crypto.randomUUID()}`;
+		const entryName =
+			cogUrl
+				.split('/')
+				.pop()
+				?.replace(/\.(tif|tiff|geotiff)$/i, '') ?? 'COG';
+		const {
+			metadata: cogMetadata,
+			sampleBands,
+			sampleWidth,
+			sampleHeight
+		} = await CogTileManager.register(id, cogUrl);
+		const { fullWidth, fullHeight, numBands, bbox, sampleRanges } = cogMetadata;
+
+		const resolvedBbox: [number, number, number, number] = [
+			Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[0])),
+			Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[1])),
+			Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[2])),
+			Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[3]))
+		];
+
+		const MAX_SIZE = 4096;
+		const useTiledMode = fullWidth > MAX_SIZE || fullHeight > MAX_SIZE;
+
+		if (useTiledMode) {
+			statusText = `タイル方式で読み込み中... (${fullWidth}x${fullHeight})`;
+			GeoTiffCache.setDataRanges(id, sampleRanges);
+
+			const mapImage =
+				sampleBands.length > 0
+					? generateThumbnail({
+							bands: sampleBands,
+							width: sampleWidth,
+							height: sampleHeight,
+							bbox,
+							nodata: cogMetadata.nodata,
+							ranges: sampleRanges
+						})
+					: undefined;
+
+			const entry: RasterCogEntry<RasterTiffStyle> = {
+				id,
+				type: 'raster',
+				format: { type: 'cog', url: cogUrl },
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					name: entryName,
+					tileSize: cogMetadata.tileSize,
+					bounds: resolvedBbox,
+					minZoom: cogMetadata.minZoom,
+					maxZoom: cogMetadata.maxZoom,
+					xyzImageTile: findCenterTile(resolvedBbox),
+					mapImage
+				},
+				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+				style: {
+					type: 'tiff',
+					opacity: 1.0,
+					visible: true,
+					visualization: {
+						numBands,
+						mode: numBands >= 3 ? 'multi' : 'single',
+						uniformsData: {
+							single: {
+								index: 0,
+								min: sampleRanges[0].min,
+								max: sampleRanges[0].max,
+								colorMap: 'jet'
+							},
+							multi: {
+								r: { index: 0, min: sampleRanges[0]?.min ?? 0, max: sampleRanges[0]?.max ?? 255 },
+								g: {
+									index: Math.min(1, numBands - 1),
+									min: sampleRanges[1]?.min ?? 0,
+									max: sampleRanges[1]?.max ?? 255
+								},
+								b: {
+									index: Math.min(2, numBands - 1),
+									min: sampleRanges[2]?.min ?? 0,
+									max: sampleRanges[2]?.max ?? 255
+								}
+							}
+						}
+					}
+				}
+			};
+			showDataEntry = entry;
+			showDialogType = null;
+			showNotification('COGをタイル方式で読み込みました', 'success');
+		} else {
+			statusText = `ラスターデータを読み込み中... (${fullWidth}x${fullHeight})`;
+			const tiff = await fromUrl(cogUrl);
+			const fullImage = await tiff.getImage();
+			const rasters = await fullImage.readRasters();
+
+			const bands: RasterBands = [];
+			const ranges: BandDataRange[] = [];
+			for (let i = 0; i < numBands; i++) {
+				const band = rasters[i] as Float32Array | Uint8Array | Uint16Array;
+				bands.push(band);
+				ranges.push(getMinMax(band, null));
+			}
+
+			const nodata = fullImage.getGDALNoData();
+			await encodeAllBandsToTerrarium(id, bands, fullWidth, fullHeight, nodata, ranges);
+
+			GeoTiffCache.setSize(id, fullWidth, fullHeight);
+			GeoTiffCache.setNumBands(id, numBands);
+			GeoTiffCache.setBbox(id, resolvedBbox);
+			GeoTiffCache.markAs4326(id);
+			GeoTiffCache.setRawBbox(id, bbox);
+			CogTileManager.unregister(id);
+
+			const mapImage = generateThumbnail({
+				bands,
+				width: fullWidth,
+				height: fullHeight,
+				bbox,
+				nodata,
+				ranges
+			});
+			const entry: RasterImageEntry<RasterTiffStyle> = {
+				id,
+				type: 'raster',
+				format: { type: 'image', url: '' },
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					name: entryName,
+					tileSize: 256,
+					bounds: resolvedBbox,
+					xyzImageTile: findCenterTile(resolvedBbox),
+					mapImage
+				},
+				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+				style: {
+					type: 'tiff',
+					opacity: 1.0,
+					visible: true,
+					visualization: {
+						numBands,
+						mode: numBands >= 3 ? 'multi' : 'single',
+						uniformsData: {
+							single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },
+							multi: {
+								r: { index: 0, min: ranges[0]?.min ?? 0, max: ranges[0]?.max ?? 255 },
+								g: {
+									index: Math.min(1, numBands - 1),
+									min: ranges[1]?.min ?? 0,
+									max: ranges[1]?.max ?? 255
+								},
+								b: {
+									index: Math.min(2, numBands - 1),
+									min: ranges[2]?.min ?? 0,
+									max: ranges[2]?.max ?? 255
+								}
+							}
+						}
+					}
+				}
+			};
+			showDataEntry = entry;
+			showDialogType = null;
+			showNotification('COGを読み込みました', 'success');
+		}
+	};
+
+	/** Step 1: 接続してソースタイプを自動判定（COG直URLも対応） */
 	const connect = async () => {
 		isProcessing.set(true);
 		statusText = '接続中...';
 		try {
+			// COG直URLの場合はCOG読み込みフローへ
+			if (isCogUrl(apiUrl)) {
+				await loadCogDirect(apiUrl);
+				return;
+			}
+
 			const result = await detectStacSourceType(apiUrl);
 			sourceType = result.type;
 
@@ -254,7 +435,6 @@
 
 	let progressText = $state('');
 
-
 	const formatFileSize = (bytes: number): string => {
 		if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 		if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -298,8 +478,12 @@
 
 			// COGメタデータを読み取り
 			progressText = 'COGメタデータを読み取り中...';
-			const { metadata: cogMetadata, sampleBands, sampleWidth, sampleHeight } =
-				await CogTileManager.register(id, cogUrl);
+			const {
+				metadata: cogMetadata,
+				sampleBands,
+				sampleWidth,
+				sampleHeight
+			} = await CogTileManager.register(id, cogUrl);
 			const { fullWidth, fullHeight, numBands, sampleRanges } = cogMetadata;
 
 			const MAX_SIZE = 4096;
@@ -315,9 +499,17 @@
 				const ranges = sampleRanges;
 
 				// サムネイル生成
-				const mapImage = sampleBands.length > 0
-					? generateThumbnail({ bands: sampleBands, width: sampleWidth, height: sampleHeight, bbox, nodata: cogMetadata.nodata, ranges })
-					: undefined;
+				const mapImage =
+					sampleBands.length > 0
+						? generateThumbnail({
+								bands: sampleBands,
+								width: sampleWidth,
+								height: sampleHeight,
+								bbox,
+								nodata: cogMetadata.nodata,
+								ranges
+							})
+						: undefined;
 
 				const entry: RasterCogEntry<RasterTiffStyle> = {
 					id,
@@ -492,7 +684,7 @@
 	{#if step === 'url'}
 		<TextForm
 			bind:value={apiUrl}
-			label="STAC URL (API / collection.json / catalog.json)"
+			label="URL (STAC API / catalog.json / COG .tif)"
 			error={urlErrors.url}
 		/>
 	{/if}

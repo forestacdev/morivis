@@ -36,8 +36,7 @@
 		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: '3dtiles', label: '3D Tiles' },
 		{ type: 'demxml', label: '基盤地図DEM' },
-		{ type: 'stac', label: 'STAC API' },
-		{ type: 'cog', label: 'COG' }
+		{ type: 'stac', label: 'STAC / COG' }
 	];
 	let isDragover = $state(false);
 
