@@ -29,6 +29,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
 import { debounce } from 'es-toolkit';
 
+import { cogProtocol } from '$routes/map/protocol/cog';
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
@@ -60,6 +61,9 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
 const webglProt = demProtocol('webgl');
 maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
+
+const cogProt = cogProtocol('cog');
+maplibregl.addProtocol(cogProt.protocolName, cogProt.request);
 
 // NOTE: 停止しているプロトコル
 // const terrainProt = terrainProtocol('terrain');

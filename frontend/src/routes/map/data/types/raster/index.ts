@@ -286,6 +286,14 @@ export interface RasterMBTilesEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterCogEntry<T> extends BaseRasterEntry {
+	format: {
+		type: 'cog';
+		url: string;
+	};
+	style: T;
+}
+
 // TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
@@ -293,6 +301,10 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	};
 	style: T;
 }
-export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T> | RasterMBTilesEntry<T>;
+export type RasterEntry<T> =
+	| RasterImageEntry<T>
+	| RasterPMTilesEntry<T>
+	| RasterMBTilesEntry<T>
+	| RasterCogEntry<T>;
 export type RasterDemEntry = RasterEntry<RasterDemStyle>;
 export type RasterCadEntry = RasterEntry<RasterCadStyle>;

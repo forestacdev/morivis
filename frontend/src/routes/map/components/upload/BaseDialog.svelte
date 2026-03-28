@@ -2,6 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
+	import CogForm from '$routes/map/components/upload/form/CogForm.svelte';
 	import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 	import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
@@ -85,6 +86,9 @@
 			{/if}
 			{#if showDialogType === 'stac'}
 				<StacForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'cog'}
+				<CogForm bind:showDataEntry bind:showDialogType />
 			{/if}
 			{#if showDialogType === 'arcgis'}
 				<ArcGisForm bind:showDataEntry bind:showDialogType />

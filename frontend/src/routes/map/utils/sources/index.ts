@@ -216,6 +216,30 @@ export const createSourcesItems = async (
 							attribution: metaData.attribution,
 							bounds: metaData.bounds
 						} as RasterSourceSpecification;
+					} else if (format.type === 'cog') {
+						if (style.type === 'tiff') {
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							let tileUrl: string;
+
+							if (mode === 'single') {
+								const u = visualization.uniformsData.single;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${u.min}&max=${u.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							} else {
+								const u = visualization.uniformsData.multi;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${u.r.min}&rMax=${u.r.max}&gMin=${u.g.min}&gMax=${u.g.max}&bMin=${u.b.min}&bMax=${u.b.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							}
+
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [tileUrl],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds
+							} as RasterSourceSpecification;
+						}
 					}
 					break;
 				}
