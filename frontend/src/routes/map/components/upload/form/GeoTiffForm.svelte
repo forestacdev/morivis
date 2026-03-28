@@ -24,6 +24,7 @@
 		type RasterBands,
 		type BandDataRange
 	} from '$routes/map/utils/file/geotiff';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -454,53 +455,6 @@
 		}
 	};
 
-	/**
-	 * バンドデータから512x512のサムネイル画像を生成
-	 * 中心から正方形に切り抜く
-	 */
-	const generateThumbnail = (bands: RasterBands, width: number, height: number): string => {
-		const size = Math.min(width, height);
-		const sx = Math.floor((width - size) / 2);
-		const sy = Math.floor((height - size) / 2);
-
-		const thumbSize = 512;
-		const canvas = new OffscreenCanvas(thumbSize, thumbSize);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbSize, thumbSize);
-		const data = imgData.data;
-
-		const hasRgb = bands.length >= 3;
-
-		for (let ty = 0; ty < thumbSize; ty++) {
-			for (let tx = 0; tx < thumbSize; tx++) {
-				const srcX = sx + Math.floor((tx * size) / thumbSize);
-				const srcY = sy + Math.floor((ty * size) / thumbSize);
-				const srcIdx = srcY * width + srcX;
-				const dstIdx = (ty * thumbSize + tx) * 4;
-
-				if (hasRgb) {
-					data[dstIdx] = bands[0][srcIdx];
-					data[dstIdx + 1] = bands[1][srcIdx];
-					data[dstIdx + 2] = bands[2][srcIdx];
-				} else {
-					const v = bands[0][srcIdx];
-					data[dstIdx] = v;
-					data[dstIdx + 1] = v;
-					data[dstIdx + 2] = v;
-				}
-				data[dstIdx + 3] = 255;
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		// OffscreenCanvas → data URL via temporary canvas
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbSize;
-		tempCanvas.height = thumbSize;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
 
 	const registration = async () => {
 		if (!analyzed || !entryId || !resolvedBbox || !parsedBands) return;
@@ -509,7 +463,7 @@
 
 		try {
 			// サムネイル画像を生成（Terrarium化前にバンドデータから作成）
-			const mapImage = generateThumbnail(parsedBands, imageWidth, imageHeight);
+			const mapImage = generateThumbnail({ bands: parsedBands, width: imageWidth, height: imageHeight });
 
 			// 全バンドをTerrariumエンコード
 			await encodeAllBandsToTerrarium(

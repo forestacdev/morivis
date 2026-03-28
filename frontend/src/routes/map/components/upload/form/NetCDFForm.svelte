@@ -31,6 +31,7 @@
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/file/netcdf';
 	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -134,81 +135,6 @@
 		}
 	};
 
-	/**
-	 * 単バンドFloat32Arrayから512x512サムネイルを生成（中心正方形切り抜き）
-	 */
-	const generateThumbnail = (
-		bandData: Float32Array,
-		width: number,
-		height: number,
-		dataMin: number,
-		dataMax: number,
-		nodataVal: number | null,
-		dataBbox: [number, number, number, number]
-	): string => {
-		// メルカトルのアスペクト比を計算
-		const DEG2RAD = Math.PI / 180;
-		const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
-		const mercYMin = latToMercY(dataBbox[1]);
-		const mercYMax = latToMercY(dataBbox[3]);
-		const lngRange = dataBbox[2] - dataBbox[0];
-		const mercYRange = mercYMax - mercYMin;
-		const mercAspect = mercYRange / (lngRange * DEG2RAD);
-
-		const thumbSize = 512;
-		let thumbW: number, thumbH: number;
-		if (mercAspect > 1) {
-			thumbH = thumbSize;
-			thumbW = Math.round(thumbSize / mercAspect);
-		} else {
-			thumbW = thumbSize;
-			thumbH = Math.round(thumbSize * mercAspect);
-		}
-
-		const canvas = new OffscreenCanvas(thumbW, thumbH);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbW, thumbH);
-		const pixels = imgData.data;
-
-		const invRange = dataMax !== dataMin ? 255 / (dataMax - dataMin) : 0;
-
-		for (let ty = 0; ty < thumbH; ty++) {
-			// サムネイルY → メルカトルY → 緯度 → 元データのY
-			const mercY = mercYMax - (ty / thumbH) * mercYRange;
-			const lat = (2 * Math.atan(Math.exp(mercY)) - Math.PI / 2) / DEG2RAD;
-			const srcY = Math.floor(((dataBbox[3] - lat) / (dataBbox[3] - dataBbox[1])) * height);
-
-			for (let tx = 0; tx < thumbW; tx++) {
-				const srcX = Math.floor((tx / thumbW) * width);
-				const dstIdx = (ty * thumbW + tx) * 4;
-
-				if (srcX < 0 || srcX >= width || srcY < 0 || srcY >= height) {
-					pixels[dstIdx + 3] = 0;
-					continue;
-				}
-
-				const val = bandData[srcY * width + srcX];
-				if (nodataVal !== null && val === nodataVal) {
-					pixels[dstIdx + 3] = 0;
-				} else {
-					const normalized = Math.max(0, Math.min(255, (val - dataMin) * invRange));
-					pixels[dstIdx] = normalized;
-					pixels[dstIdx + 1] = normalized;
-					pixels[dstIdx + 2] = normalized;
-					pixels[dstIdx + 3] = 255;
-				}
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbW;
-		tempCanvas.height = thumbH;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
-
 	const registration = async () => {
 		if (!ncReader || !ncInfo || !selectedVariable) return;
 
@@ -253,15 +179,14 @@
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
 
 			// サムネイル画像を生成（メルカトル補正）
-			const mapImage = generateThumbnail(
-				data,
+			const mapImage = generateThumbnail({
+				bands: [data],
 				width,
 				height,
-				ranges[0].min,
-				ranges[0].max,
+				bbox: rawBbox,
 				nodata,
-				rawBbox
-			);
+				ranges
+			});
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 

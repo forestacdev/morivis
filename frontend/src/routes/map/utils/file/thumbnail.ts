@@ -13,7 +13,7 @@ export interface ThumbnailOptions {
 	bbox?: [number, number, number, number];
 	nodata?: number | null;
 	ranges?: { min: number; max: number }[];
-	/** サムネイルの最大辺（デフォルト: 256） */
+	/** サムネイルの最大辺（デフォルト: 512） */
 	thumbSize?: number;
 }
 
@@ -29,7 +29,7 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 		bbox,
 		nodata = null,
 		ranges,
-		thumbSize = 256
+		thumbSize = 512
 	} = opts;
 
 	const numBands = bands.length;
