@@ -342,8 +342,11 @@ export const createGeoJsonEntry = (
 	let resolvedStyle: VectorStyle;
 	if (style) {
 		resolvedStyle = style;
-		// extraColorExpressionsがあれば追加
 		if (extraColorExpressions && extraColorExpressions.length > 0) {
+			const extraKeys = new Set(extraColorExpressions.map((e) => e.key));
+			resolvedStyle.colors.expressions = resolvedStyle.colors.expressions.filter(
+				(e) => e.type !== 'match' || !extraKeys.has(e.key)
+			);
 			for (const expr of extraColorExpressions) {
 				resolvedStyle.colors.expressions.push(expr);
 			}
@@ -359,6 +362,11 @@ export const createGeoJsonEntry = (
 		}
 
 		if (extraColorExpressions && extraColorExpressions.length > 0) {
+			// extraと重複するキーの自動match式を除去（extraを優先）
+			const extraKeys = new Set(extraColorExpressions.map((e) => e.key));
+			colorsConfig.expressions = colorsConfig.expressions.filter(
+				(e) => e.type !== 'match' || !extraKeys.has(e.key)
+			);
 			for (const expr of extraColorExpressions) {
 				colorsConfig.expressions.push(expr);
 			}
