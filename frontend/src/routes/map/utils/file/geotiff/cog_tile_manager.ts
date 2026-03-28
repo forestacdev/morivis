@@ -6,6 +6,7 @@
  */
 import { fromUrl, type GeoTIFF, type GeoTIFFImage } from 'geotiff';
 import proj4 from 'proj4';
+import { buildTriangulation, type Triangle } from './triangulation';
 
 export interface CogMetadata {
 	/** フル解像度の幅 */
@@ -267,7 +268,7 @@ export const CogTileManager = {
 
 	/**
 	 * タイル座標に対応するラスターデータを読み取る
-	 * @returns バンドごとのTypedArray配列、またはタイルがCOG範囲外ならnull
+	 * 投影座標系の場合は三角形メッシュによるリプロジェクション情報も返す
 	 */
 	readTile: async (
 		entryId: string,
@@ -277,8 +278,12 @@ export const CogTileManager = {
 		tileSize = 256
 	): Promise<{
 		bands: (Float32Array | Uint8Array | Uint16Array)[];
-		width: number;
-		height: number;
+		/** ソーステクスチャの幅 */
+		srcWidth: number;
+		/** ソーステクスチャの高さ */
+		srcHeight: number;
+		/** 三角形メッシュ（投影変換が必要な場合）。nullなら単純コピー */
+		triangles: Triangle[] | null;
 	} | null> => {
 		const conn = connections.get(entryId);
 		if (!conn) return null;
@@ -307,59 +312,109 @@ export const CogTileManager = {
 		const imgWidth = image.getWidth();
 		const imgHeight = image.getHeight();
 
-		// ピクセルウィンドウはCOGのネイティブ座標系で計算する
-		let tileXMin: number, tileYMin: number, tileXMax: number, tileYMax: number;
+		const targetExtent: [number, number, number, number] = [
+			tileLonMin,
+			tileLatMin,
+			tileLonMax,
+			tileLatMax
+		];
 
 		if (projName) {
-			// 経緯度 → COGのネイティブ座標系に逆変換
-			const [nMinX, nMinY] = proj4('EPSG:4326', projName, [tileLonMin, tileLatMin]);
-			const [nMaxX, nMaxY] = proj4('EPSG:4326', projName, [tileLonMax, tileLatMax]);
-			tileXMin = nMinX;
-			tileYMin = nMinY;
-			tileXMax = nMaxX;
-			tileYMax = nMaxY;
+			// --- 投影CRS: 三角形メッシュでリプロジェクション ---
+			const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName);
+
+			// ソース範囲をピクセルウィンドウに変換
+			const cogXRange = nativeBbox[2] - nativeBbox[0];
+			const cogYRange = nativeBbox[3] - nativeBbox[1];
+
+			const pxLeft = Math.floor(
+				((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth
+			);
+			const pxRight = Math.ceil(
+				((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth
+			);
+			const pxTop = Math.floor(
+				((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight
+			);
+			const pxBottom = Math.ceil(
+				((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight
+			);
+
+			const winLeft = Math.max(0, pxLeft);
+			const winTop = Math.max(0, pxTop);
+			const winRight = Math.min(imgWidth, pxRight);
+			const winBottom = Math.min(imgHeight, pxBottom);
+
+			const winWidth = winRight - winLeft;
+			const winHeight = winBottom - winTop;
+			if (winWidth <= 0 || winHeight <= 0) return null;
+
+			// ソーステクスチャのサイズ（タイルサイズに近い解像度を確保）
+			const srcSize = Math.min(tileSize * 2, Math.max(winWidth, winHeight));
+			const srcWidth = Math.min(srcSize, winWidth);
+			const srcHeight = Math.min(srcSize, winHeight);
+
+			const rasters = await image.readRasters({
+				window: [winLeft, winTop, winRight, winBottom],
+				width: srcWidth,
+				height: srcHeight
+			});
+
+			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
+			for (let i = 0; i < rasters.length; i++) {
+				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
+			}
+
+			// 三角形のソース座標をテクスチャUV (0-1) に変換
+			// sourceExtent → 実際に読み取ったウィンドウ（クリップ後）のネイティブCRS範囲
+			const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
+			const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
+			const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
+			const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
+			const actXRange = actualRight - actualLeft;
+			const actYRange = actualTop - actualBottom;
+
+			const uvTriangles: Triangle[] = triangles.map((tri) => ({
+				target: tri.target,
+				source: tri.source.map(([sx, sy]) => [
+					(sx - actualLeft) / actXRange,
+					(actualTop - sy) / actYRange // Y反転（テクスチャは上が0）
+				]) as [number, number][]
+			}));
+
+			return { bands, srcWidth, srcHeight, triangles: uvTriangles };
 		} else {
-			// EPSG:4326 — そのまま経緯度
-			tileXMin = tileLonMin;
-			tileYMin = tileLatMin;
-			tileXMax = tileLonMax;
-			tileYMax = tileLatMax;
+			// --- EPSG:4326: 単純な矩形切り出し ---
+			const cogXRange = nativeBbox[2] - nativeBbox[0];
+			const cogYRange = nativeBbox[3] - nativeBbox[1];
+
+			const pxLeft = Math.floor(((tileLonMin - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxRight = Math.ceil(((tileLonMax - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxTop = Math.floor(((nativeBbox[3] - tileLatMax) / cogYRange) * imgHeight);
+			const pxBottom = Math.ceil(((nativeBbox[3] - tileLatMin) / cogYRange) * imgHeight);
+
+			const winLeft = Math.max(0, pxLeft);
+			const winTop = Math.max(0, pxTop);
+			const winRight = Math.min(imgWidth, pxRight);
+			const winBottom = Math.min(imgHeight, pxBottom);
+
+			const winWidth = winRight - winLeft;
+			const winHeight = winBottom - winTop;
+			if (winWidth <= 0 || winHeight <= 0) return null;
+
+			const rasters = await image.readRasters({
+				window: [winLeft, winTop, winRight, winBottom],
+				width: tileSize,
+				height: tileSize
+			});
+
+			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
+			for (let i = 0; i < rasters.length; i++) {
+				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
+			}
+
+			return { bands, srcWidth: tileSize, srcHeight: tileSize, triangles: null };
 		}
-
-		// ネイティブbboxでのピクセル座標に変換
-		const cogXRange = nativeBbox[2] - nativeBbox[0];
-		const cogYRange = nativeBbox[3] - nativeBbox[1];
-
-		// ピクセル座標（COGは左上原点、Y軸下向き）
-		const pxLeft = Math.floor(((tileXMin - nativeBbox[0]) / cogXRange) * imgWidth);
-		const pxRight = Math.ceil(((tileXMax - nativeBbox[0]) / cogXRange) * imgWidth);
-		const pxTop = Math.floor(((nativeBbox[3] - tileYMax) / cogYRange) * imgHeight);
-		const pxBottom = Math.ceil(((nativeBbox[3] - tileYMin) / cogYRange) * imgHeight);
-
-		// COG画像範囲にクリップ
-		const winLeft = Math.max(0, pxLeft);
-		const winTop = Math.max(0, pxTop);
-		const winRight = Math.min(imgWidth, pxRight);
-		const winBottom = Math.min(imgHeight, pxBottom);
-
-		const winWidth = winRight - winLeft;
-		const winHeight = winBottom - winTop;
-
-		if (winWidth <= 0 || winHeight <= 0) return null;
-
-		// readRastersでタイルサイズにリサンプリング
-		const rasters = await image.readRasters({
-			window: [winLeft, winTop, winRight, winBottom],
-			width: tileSize,
-			height: tileSize
-		});
-
-		const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
-		for (let i = 0; i < rasters.length; i++) {
-			bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
-		}
-
-		return { bands, width: tileSize, height: tileSize };
 	},
 
 	/** メタデータを取得 */

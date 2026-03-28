@@ -81,15 +81,15 @@ class CogWorkerProtocol {
 		const cacheKey = `${entryId}_${x}_${y}_${z}`;
 		const requestId = `${cacheKey}_${this.requestCounter++}`;
 
-		// CogTileManagerからバンドデータを読み取る
+		// CogTileManagerからバンドデータ + 三角形メッシュを読み取る
 		const tileData = await CogTileManager.readTile(entryId, z, x, y, tileSize);
 		if (!tileData) {
-			// COG範囲外 → 透明タイル
 			return { data: new Uint8Array(0) };
 		}
 
 		const metadata = CogTileManager.getMetadata(entryId);
 		const nodata = metadata?.nodata ?? null;
+		const { srcWidth, srcHeight, triangles } = tileData;
 
 		if (mode === 'single') {
 			const bandIndex = parseInt(url.searchParams.get('bandIndex') || '0', 10);
@@ -101,11 +101,10 @@ class CogWorkerProtocol {
 			const dataMin = metadata?.sampleRanges[bandIndex]?.min ?? 0;
 			const dataMax = metadata?.sampleRanges[bandIndex]?.max ?? 1;
 
-			const imageData = encodeBandToTerrarium(band, tileSize, tileSize, dataMin, dataMax, nodata);
+			const imageData = encodeBandToTerrarium(band, srcWidth, srcHeight, dataMin, dataMax, nodata);
 			const bandTexture = await imageDataToImageBitmap(imageData);
 			const colorMapArray = this.colorMapCache.createColorArray(colorMap);
 
-			// min/maxは正規化された0-1の範囲に変換
 			const normMin = dataMax !== dataMin ? (min - dataMin) / (dataMax - dataMin) : 0;
 			const normMax = dataMax !== dataMin ? (max - dataMin) / (dataMax - dataMin) : 1;
 
@@ -116,6 +115,7 @@ class CogWorkerProtocol {
 						tileId: requestId,
 						mode: 'single',
 						tileSize,
+						triangles,
 						bandTexture,
 						colorMapArray,
 						min: normMin,
@@ -135,7 +135,7 @@ class CogWorkerProtocol {
 				const band = tileData.bands[bandIdx] ?? tileData.bands[0];
 				const dMin = ranges[bandIdx]?.min ?? 0;
 				const dMax = ranges[bandIdx]?.max ?? 1;
-				const imgData = encodeBandToTerrarium(band, tileSize, tileSize, dMin, dMax, nodata);
+				const imgData = encodeBandToTerrarium(band, srcWidth, srcHeight, dMin, dMax, nodata);
 				return imageDataToImageBitmap(imgData);
 			};
 
@@ -156,7 +156,6 @@ class CogWorkerProtocol {
 			const bMin = parseFloat(url.searchParams.get('bMin') || String(bRange.min));
 			const bMax = parseFloat(url.searchParams.get('bMax') || String(bRange.max));
 
-			// 正規化
 			const norm = (val: number, dMin: number, dMax: number) =>
 				dMax !== dMin ? (val - dMin) / (dMax - dMin) : 0;
 
@@ -167,6 +166,7 @@ class CogWorkerProtocol {
 						tileId: requestId,
 						mode: 'multi',
 						tileSize,
+						triangles,
 						bandR,
 						bandG,
 						bandB,
