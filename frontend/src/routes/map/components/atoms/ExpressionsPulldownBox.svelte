@@ -58,14 +58,13 @@
 	<div bind:this={containerRef} class="relative py-2">
 		<button
 			onclick={() => (showPullDown = !showPullDown)}
-			class="c-select flex w-full justify-between"
+			class="c-select flex w-full items-center justify-between gap-1"
 		>
-			<div class="flex items-center gap-2">
-				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} />
-
-				<span> {expressionsList.find((exp) => exp.key === style.key)?.name}</span>
+			<div class="flex min-w-0 items-center gap-2">
+				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} class="shrink-0" />
+				<span class="truncate">{expressionsList.find((exp) => exp.key === style.key)?.name}</span>
 			</div>
-			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
+			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
 		</button>
 		{#if showPullDown}
 			<div
