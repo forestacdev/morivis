@@ -26,7 +26,7 @@ interface LoadedModel {
  * MeshStyle の transform から MapLibre 用の変換行列パラメータを計算
  */
 const calculateModelTransform = (style: MeshStyle): ModelTransform => {
-	const { lng, lat, altitude, heightOffset, scale, rotationY } = style.transform;
+	const { lng, lat, altitude, heightOffset, scale, rotationX, rotationY, rotationZ } = style.transform;
 
 	// 地形時: altitude + heightOffset、平面時: heightOffset のみ
 	const effectiveAltitude = (mapStore.getTerrain() ? altitude : 0) + heightOffset;
@@ -41,9 +41,9 @@ const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 		translateX: mc.x,
 		translateY: mc.y,
 		translateZ: mc.z,
-		rotateX: Math.PI / 2,
+		rotateX: Math.PI / 2 + (rotationX * Math.PI) / 180,
 		rotateY: (rotationY * Math.PI) / 180,
-		rotateZ: 0,
+		rotateZ: (rotationZ * Math.PI) / 180,
 		scale: baseScale * scale
 	};
 };

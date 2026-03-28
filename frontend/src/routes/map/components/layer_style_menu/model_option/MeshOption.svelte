@@ -31,8 +31,28 @@
 />
 
 <RangeSlider
-	label="回転 (°)"
+	label="X回転 (°)"
+	bind:value={layerEntry.style.transform.rotationX}
+	min={0}
+	max={360}
+	step={1}
+	isInt
+	icon="mdi:rotate-right"
+/>
+
+<RangeSlider
+	label="Y回転 (°)"
 	bind:value={layerEntry.style.transform.rotationY}
+	min={0}
+	max={360}
+	step={1}
+	isInt
+	icon="mdi:rotate-right"
+/>
+
+<RangeSlider
+	label="Z回転 (°)"
+	bind:value={layerEntry.style.transform.rotationZ}
 	min={0}
 	max={360}
 	step={1}

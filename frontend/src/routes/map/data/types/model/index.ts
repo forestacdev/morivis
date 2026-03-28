@@ -26,7 +26,9 @@ export interface MeshStyle {
 		/** 高さオフセット（常に適用、地形時はaltitude+heightOffset） */
 		heightOffset: number;
 		scale: number;
+		rotationX: number;
 		rotationY: number;
+		rotationZ: number;
 	};
 }
 

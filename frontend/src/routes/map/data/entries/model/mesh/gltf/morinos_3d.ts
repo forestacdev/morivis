@@ -36,7 +36,9 @@ const entry: ModelMeshEntry<MeshStyle> = {
 			lat: 35.553991,
 			altitude: 116, // 121
 			heightOffset: 0,
-			rotationY: 2
+			rotationX: 0,
+			rotationY: 2,
+			rotationZ: 0
 		}
 	}
 };
