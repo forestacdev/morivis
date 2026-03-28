@@ -251,6 +251,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'NetCDF',
 					name: entryName || `${longName}`,
 					tileSize: 256,
 					bounds: resolvedBbox,

@@ -22,6 +22,7 @@ export const createTiles3DEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '3D Tiles',
 		name,
 		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 	},
@@ -63,6 +64,7 @@ export const createPointCloudEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '点群',
 		name,
 		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 	},
@@ -91,6 +93,7 @@ export const createGlbEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: formatType === 'obj' ? 'OBJ' : 'GLB',
 		name,
 		altitude: transform.altitude,
 		bounds: pointToBbox(transform.lng, transform.lat)

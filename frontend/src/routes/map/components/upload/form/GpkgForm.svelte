@@ -289,6 +289,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoPackage',
 					name: entryName,
 					tileSize: 256,
 					bounds: resolvedBbox,

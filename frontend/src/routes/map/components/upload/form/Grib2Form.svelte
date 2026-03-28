@@ -180,6 +180,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GRIB2',
 					name: entryName || 'GPVデータ',
 					tileSize: 256,
 					bounds: resolvedBbox,

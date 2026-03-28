@@ -167,6 +167,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: '基盤地図DEM',
 					name: entryName || '基盤地図DEM',
 					tileSize: 256,
 					bounds: resolvedBbox,

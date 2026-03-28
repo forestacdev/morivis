@@ -164,6 +164,7 @@
 				format: { type: 'cog', url: cogUrl },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'STAC/COG',
 					name: entryName,
 					tileSize: cogMetadata.tileSize,
 					bounds: resolvedBbox,
@@ -245,6 +246,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'STAC/COG',
 					name: entryName,
 					tileSize: 256,
 					bounds: resolvedBbox,
@@ -517,6 +519,7 @@
 					format: { type: 'cog', url: cogUrl },
 					metaData: {
 						...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'STAC/COG',
 						name: entryName,
 						tileSize: cogMetadata.tileSize,
 						bounds: resolvedBbox,
@@ -602,6 +605,7 @@
 					format: { type: 'image', url: '' },
 					metaData: {
 						...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'STAC/COG',
 						name: entryName,
 						tileSize: 256,
 						bounds: resolvedBbox,

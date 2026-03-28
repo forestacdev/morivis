@@ -139,6 +139,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'HDF5',
 					name: entryName || 'HDF5ラスター',
 					tileSize: 256,
 					bounds: resolvedBbox,

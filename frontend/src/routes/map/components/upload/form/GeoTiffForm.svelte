@@ -492,6 +492,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoTIFF',
 					name: entryName || 'GeoTIFFデータ',
 					tileSize: 256,
 					bounds: resolvedBbox,
