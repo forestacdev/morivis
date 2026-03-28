@@ -66,7 +66,7 @@
 			layerEntry.type === 'vector' &&
 			layerEntry.format.geometryType &&
 			layerEntry.format.type === 'geojson' &&
-			layerEntry?.metaData.attribution === 'カスタムデータ'
+			layerEntry?.metaData.isUserUploaded
 		);
 	});
 
@@ -76,7 +76,7 @@
 			layerEntry.format.type === 'image' &&
 			'style' in layerEntry &&
 			(layerEntry as { style: { type: string } }).style.type === 'tiff' &&
-			layerEntry?.metaData.attribution === 'カスタムデータ'
+			layerEntry?.metaData.isUserUploaded
 		);
 	});
 

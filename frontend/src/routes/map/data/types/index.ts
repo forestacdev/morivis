@@ -31,6 +31,8 @@ export interface BaseMetaData {
 	mapImage?: string;
 	xyzImageTile: TileXYZ;
 	center?: [number, number];
+	/** ユーザーがアップロードしたデータかどうか */
+	isUserUploaded?: boolean;
 }
 
 export type AnyRasterEntry = RasterEntry<
