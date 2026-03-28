@@ -127,11 +127,11 @@ export const csvTextToGeojson = (
 					reject(new Error('No valid latitude and longitude data found'));
 					return;
 				}
-				if (json.length > 100000) {
-					showNotification('10万件以上のデータは表示できません。', 'error');
-					reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
-					return;
-				}
+				// if (json.length > 100000) {
+				// 	showNotification('10万件以上のデータは表示できません。', 'error');
+				// 	reject(new Error('Data of more than 100,000 entries cannot be displayed.'));
+				// 	return;
+				// }
 
 				const features: Feature[] = [];
 				const invalidRows: number[] = [];
