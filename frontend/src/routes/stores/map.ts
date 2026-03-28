@@ -62,15 +62,46 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 const webglProt = demProtocol('webgl');
 maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
+// cogプロトコルは必要時に動的に登録/解除
 const cogProt = cogProtocol('cog');
-maplibregl.addProtocol(cogProt.protocolName, cogProt.request);
+let _cogProtocolRegistered = false;
+
+const ensureCogProtocol = () => {
+	if (!_cogProtocolRegistered) {
+		maplibregl.addProtocol(cogProt.protocolName, cogProt.request);
+		_cogProtocolRegistered = true;
+	}
+};
+
+const releaseCogProtocol = () => {
+	if (_cogProtocolRegistered) {
+		cogProt.cancelAllRequests();
+		maplibregl.removeProtocol(cogProt.protocolName);
+		_cogProtocolRegistered = false;
+	}
+};
 
 // NOTE: 停止しているプロトコル
 // const terrainProt = terrainProtocol('terrain');
 // maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
 
+// mbtilesプロトコルは必要時に動的に登録/解除
 const mbtilesProt = mbtilesProtocol();
-maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
+let _mbtilesProtocolRegistered = false;
+
+const ensureMbtilesProtocol = () => {
+	if (!_mbtilesProtocolRegistered) {
+		maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
+		_mbtilesProtocolRegistered = true;
+	}
+};
+
+const releaseMbtilesProtocol = () => {
+	if (_mbtilesProtocolRegistered) {
+		maplibregl.removeProtocol(mbtilesProt.protocolName);
+		_mbtilesProtocolRegistered = false;
+	}
+};
 
 // geojsonプロトコルは必要時に動的に登録/解除
 const geojsonProt = geojsonProtocol('geojson');
@@ -1246,7 +1277,11 @@ const createMapStore = () => {
 		ensureGeojsonProtocol,
 		releaseGeojsonProtocol,
 		ensureEsriProtocol,
-		releaseEsriProtocol
+		releaseEsriProtocol,
+		ensureCogProtocol,
+		releaseCogProtocol,
+		ensureMbtilesProtocol,
+		releaseMbtilesProtocol
 	};
 };
 

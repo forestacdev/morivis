@@ -548,6 +548,31 @@
 			mapStore.releaseEsriProtocol();
 		}
 
+		const isCogEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'cog';
+		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
+
+		if (hasCogLayer) {
+			mapStore.ensureCogProtocol();
+		} else {
+			mapStore.releaseCogProtocol();
+		}
+
+		const isMbtilesEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'mbtiles';
+		const hasMbtilesLayer =
+			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
+
+		if (hasMbtilesLayer) {
+			mapStore.ensureMbtilesProtocol();
+		} else {
+			mapStore.releaseMbtilesProtocol();
+		}
+
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
 
 		mapStore.setStyle(mapStyle);
