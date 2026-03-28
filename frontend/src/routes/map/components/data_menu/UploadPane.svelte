@@ -77,6 +77,23 @@
 		return files;
 	};
 
+	/** ZIPファイルを展開してFile配列にする */
+	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
+		const JSZip = (await import('jszip')).default;
+		const zip = await JSZip.loadAsync(zipFile);
+		const files: File[] = [];
+		const entries: [string, import('jszip').JSZipObject][] = [];
+		zip.forEach((path, entry) => {
+			if (!entry.dir) entries.push([path, entry]);
+		});
+		for (const [path, entry] of entries) {
+			const blob = await entry.async('blob');
+			const fileName = path.split('/').pop() ?? path;
+			files.push(new File([blob], fileName, { type: blob.type }));
+		}
+		return files;
+	};
+
 	const drop: (e: DragEvent) => void = async (e) => {
 		e.preventDefault();
 		isDragover = false;
@@ -102,6 +119,21 @@
 
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
+
+		// 単一ZIPファイルの場合、展開してFileListとして渡す
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// ZIP展開失敗時は通常フローへ
+			}
+		}
 
 		dropFile = files;
 	};

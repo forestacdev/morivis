@@ -18,23 +18,25 @@ graph LR
         F_DM[".dm"]
         F_SIMA[".sim"]
         F_GPKG[".gpkg"]
+        F_MOJ[".xml (法務局地図)"]
         F_TIF[".tif / .png / .jpg"]
         F_PMT[".pmtiles"]
         F_MBT[".mbtiles"]
-        F_GLB[".glb"]
-        F_PC[".las / .laz / .ply / .pcd"]
+        F_GLB[".glb / .obj"]
+        F_PC[".las / .laz / .ply / .pcd / .xyz"]
         F_H5[".h5"]
         F_NC[".nc / .nc4"]
         F_DEM[".xml (基盤地図DEM)"]
         F_GRB[".bin / .grib2 / .grb2"]
         F_LX[".xml / .landxml (LandXML)"]
-        F_ZIP[".zip"]
+        F_PHOTO[".jpg (EXIF GPS)"]
+        F_ZIP[".zip / フォルダ"]
         U_XYZ["XYZタイルURL"]
         U_WMS["WMTS/WMS URL"]
         U_ARC["ArcGIS URL"]
         U_3DT["3D Tiles URL"]
         U_VEC["ベクタータイルURL"]
-        U_STAC["STAC API/カタログURL"]
+        U_STAC["STAC/COG URL"]
     end
 
     subgraph Parsers["パーサー"]
@@ -49,6 +51,7 @@ graph LR
         P_DM["dm/"]
         P_SIMA["sima.ts"]
         P_GPKG["gpkg.ts (sql.js)"]
+        P_MOJ["mojxml.ts (proj4内蔵)"]
         P_TIF["geotiff/ (geotiff.js)"]
         P_NC["netcdfjs"]
         P_DEM["dem-xml/ (Worker x4)"]
@@ -56,7 +59,9 @@ graph LR
         P_H5["jsfive + スワスリサンプリング"]
         P_LX["landxml.ts (TIN→Workerラスタライズ)"]
         P_STAC["stac.ts → cog-proxy → geotiff.js"]
-        P_PC["点群パーサー"]
+        P_COG["CogTileManager (Range request)"]
+        P_PC["点群パーサー (loaders.gl / xyz.ts)"]
+        P_EXIF["exif.ts (exifr)"]
         P_PBF["arcgis-pbf-parser"]
     end
 
@@ -68,6 +73,11 @@ graph LR
         TER["Terrarium\nエンコード Worker"]
         CACHE["GeoTiffCache\n(markAs4326)"]
         WEBGL["WebGLシェーダー\n再投影 4326→WebMercator\nカラーマップ適用"]
+    end
+
+    subgraph CogPipeline["COGタイルパイプライン"]
+        COG_TRI["Triangulation\n(適応的三角形分割)"]
+        COG_WGL["WebGL Worker\n(カラーマップ/RGB合成)"]
     end
 
     subgraph PcTransform["点群座標変換"]
@@ -86,6 +96,7 @@ graph LR
         PR3["mbtiles://"]
         PR4["esri-feature://"]
         PR5["webgl://"]
+        PR6["cog://"]
     end
 
     subgraph Sources["MapLibreソース"]
@@ -115,9 +126,11 @@ graph LR
     F_DM --> P_DM
     F_SIMA --> P_SIMA
     F_GPKG --> P_GPKG
+    F_MOJ --> P_MOJ
+    F_PHOTO --> P_EXIF
 
     %% ベクター → 座標変換 → エントリ
-    P_GJ & P_SHP & P_CSV & P_GPX & P_GML & P_KML & P_TOPO & P_DXF & P_DM & P_SIMA & P_GPKG --> PRJ
+    P_GJ & P_SHP & P_CSV & P_GPX & P_GML & P_KML & P_TOPO & P_DXF & P_DM & P_SIMA & P_GPKG & P_MOJ & P_EXIF --> PRJ
     PRJ --> VE
 
     %% ラスターパーサー
@@ -128,10 +141,14 @@ graph LR
     F_H5 --> P_H5
     F_LX --> P_LX
     U_STAC --> P_STAC
+    U_STAC --> P_COG
 
     %% ラスター → Terrarium → エントリ
     P_TIF & P_NC & P_DEM & P_GRB & P_H5 & P_LX & P_STAC --> TER
     TER --> CACHE --> WEBGL --> RE
+
+    %% COGタイル → エントリ
+    P_COG --> COG_TRI --> COG_WGL --> RE
 
     %% タイル系 → エントリ
     F_PMT --> RE
@@ -155,12 +172,13 @@ graph LR
     RE -->|pmtiles| PR2 --> RTS
     RE -->|mbtiles| PR3 --> RTS
     RE -->|dem| PR5 --> RTS
+    RE -->|cog| PR6 --> RTS
 
     %% ソース → レンダラー → キャンバス
     GJS & VTS --> ML
     RTS & IMS --> ML
     ME -->|3d-tiles / point-cloud| DK
-    ME -->|gltf| TH
+    ME -->|gltf / obj| TH
     ML & DK & TH --> CV
 ```
 
@@ -182,7 +200,8 @@ graph LR
 | DXF | .dxf | DxfForm | proj4 | geojson | GeoJSONSource | MapLibre |
 | DM | .dm | DmForm | - | geojson | GeoJSONSource | MapLibre |
 | SIMA | .sim | SimaForm | - | geojson | GeoJSONSource | MapLibre |
-| HDF5 (衛星ベクター) | .h5 | Hdf5Form | - | geojson | GeoJSONSource | MapLibre |
+| 法務局地図XML | .xml | MojXmlForm | proj4 (内蔵) | geojson | GeoJSONSource | MapLibre |
+| 位置情報付き写真 | .jpg/.heic | GeoPhotoForm | EXIF GPS (exifr) | geojson | GeoJSONSource | MapLibre |
 
 ### ベクター（タイルサービス）
 
@@ -204,15 +223,17 @@ graph LR
 | NetCDF | .nc/.nc4 | NetCDFForm | netcdfjs + Terrarium Worker | tiff | ImageSource | MapLibre |
 | 基盤地図情報 DEM XML | .xml/.zip | DemXmlForm | XML Worker x4 + Terrarium Worker | tiff | ImageSource | MapLibre |
 | GRIB2 (GPV) | .bin/.grib2/.grb2 | Grib2Form | GRIB2パーサー + Terrarium Worker | tiff | ImageSource | MapLibre |
-| HDF5 (ラスター) | .h5 | Hdf5Form | jsfive + スワスリサンプリング + Terrarium Worker | tiff | ImageSource | MapLibre |
+| HDF5 | .h5 | Hdf5Form | jsfive + スワスリサンプリング + Terrarium Worker | tiff | ImageSource | MapLibre |
 | LandXML | .xml/.landxml | LandXmlForm | TIN→Workerラスタライズ + Terrarium Worker | tiff | ImageSource | MapLibre |
 
 ### ラスター（リモート）
 
 | 形式 | 入力 | フォーム | 変換 | format type | ソース | レンダラー |
 |---|---|---|---|---|---|---|
-| STAC API | URL | StacForm | cog-proxy + geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
-| STAC Static Catalog | collection.json/catalog.json | StacForm | cog-proxy + geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
+| STAC API / COG (小) | URL | StacForm | geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
+| STAC API / COG (大) | URL | StacForm | CogTileManager + Triangulation + WebGL Worker | cog | RasterSource (cog://) | MapLibre |
+| COG直URL (小) | .tif URL | StacForm | geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
+| COG直URL (大) | .tif URL | StacForm | CogTileManager + Triangulation + WebGL Worker | cog | RasterSource (cog://) | MapLibre |
 
 ### ラスター（タイルサービス）
 
@@ -229,23 +250,26 @@ graph LR
 
 | 形式 | 拡張子/入力 | フォーム | 変換 | format type | レンダラー |
 |---|---|---|---|---|---|
-| GLB/glTF | .glb | GlbForm | - | gltf | three.js |
+| GLB/glTF | .glb | MeshModelForm | - | gltf | three.js |
+| OBJ (+MTL+テクスチャ) | .obj+.mtl+画像 | MeshModelForm | OBJLoader+MTLLoader | obj | three.js |
 | 3D Tiles | URL (tileset.json) | Tiles3DForm | - | 3d-tiles | deck.gl (Tile3DLayer) |
 | LAS/LAZ | .las/.laz | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
 | PLY | .ply | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
 | PCD | .pcd | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
+| XYZ点群 | .xyz | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
 
 ## カスタムプロトコル
 
 MapLibreの`addProtocol`を使って、独自のタイル配信プロトコルを実装している。
 
-| プロトコル | 用途 | Worker | 遅延初期化 |
+| プロトコル | 用途 | Worker | ライフサイクル |
 |---|---|---|---|
-| `geojson://` | GeoJSONタイル化 | protocol_geojson.worker | 常時起動 |
+| `geojson://` | GeoJSONタイル化 | protocol_geojson.worker | 動的登録/解除 |
 | `pmtiles://` | PMTilesアーカイブ読み込み | - (pmtilesライブラリ) | 常時起動 |
-| `mbtiles://` | MBTilesファイル読み込み (sql.js) | - (Wasm) | 常時起動 |
+| `mbtiles://` | MBTilesファイル読み込み (sql.js) | - (Wasm) | 動的登録/解除 |
 | `esri-feature://` | ArcGIS FeatureServer bbox PBFクエリ | protocol_esri_feature.worker | 動的登録/解除 |
 | `webgl://` | DEM標高シェーダー処理 | protocol_dem.worker | 常時起動 |
+| `cog://` | COGタイルレンダリング | protocol_cog.worker (x2) | 動的登録/解除 |
 
 ## エントリ型システム
 
@@ -267,9 +291,10 @@ GeoDataEntry (Union)
 │       └── visualization (DEM: relief/slope/aspect/curvature, Tiff: single/multi band)
 │
 └── ModelEntry
-    ├── ModelMeshEntry<MeshStyle>     → three.js (GLB)
+    ├── ModelMeshEntry<MeshStyle>     → three.js (GLB/OBJ)
+    │   └── transform: { lng, lat, altitude, heightOffset, scale, rotationX/Y/Z }
     ├── ModelTiles3DEntry<Style>      → deck.gl (3D Tiles)
-    └── ModelPointCloudEntry          → deck.gl (LAS/LAZ/PLY/PCD)
+    └── ModelPointCloudEntry          → deck.gl (LAS/LAZ/PLY/PCD/XYZ)
 ```
 
 ## スタイル更新フロー
@@ -298,9 +323,10 @@ MapLibre GL JS がスタイルを適用・差分更新
 | transformer | proj/transformer.worker.ts | GeoJSON座標変換(並列) | 変換時に起動、完了後terminate |
 | pointcloud_transformer | proj/pointcloud_transformer.worker.ts | 点群座標変換 | 変換時に起動、完了後terminate |
 | xml-parser | file/dem-xml/xml-parser.worker.ts | 基盤地図DEM XMLパース(4並列) | 解析時に起動、完了後terminate |
-| protocol_geojson | protocol/vector/geojson/protocol_geojson.worker.ts | GeoJSON→ベクタータイル化 | 常時起動 |
-| protocol_esri_feature | protocol/vector/esri-feature/protocol_esri_feature.worker.ts | ArcGIS PBF→ベクタータイル化 | 遅延初期化、レイヤー解除後terminate |
+| protocol_geojson | protocol/vector/geojson/protocol_geojson.worker.ts | GeoJSON→ベクタータイル化 | 動的登録/解除 |
+| protocol_esri_feature | protocol/vector/esri-feature/protocol_esri_feature.worker.ts | ArcGIS PBF→ベクタータイル化 | 動的登録/解除 |
 | protocol_dem | protocol/raster/protocol_dem.worker.ts | DEM標高→シェーダー画像 | オンデマンド |
+| protocol_cog | protocol/cog/protocol_cog.worker.ts | COGタイル→カラーマップ/RGB合成(WebGL) | 動的登録/解除 (x2 Worker Pool) |
 | generation_icon | utils/icon/generation_icon.worker.ts | アイコン画像生成 | 常時起動 |
 
 ## レンダラー
@@ -309,4 +335,4 @@ MapLibre GL JS がスタイルを適用・差分更新
 |---|---|---|
 | **MapLibre GL JS** | ラスター・ベクター地図の描画 | メインの地図エンジン |
 | **deck.gl** | 3D Tiles・点群の描画 | `MapboxOverlay`としてMapLibreに追加 |
-| **three.js** | GLBメッシュモデルの描画 | カスタムレイヤーとしてMapLibreに追加 |
+| **three.js** | GLB/OBJメッシュモデルの描画 | カスタムレイヤーとしてMapLibreに追加 |
