@@ -415,6 +415,7 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
+	<!-- 縦棒 -->
 	{#if !$isStyleEdit && !$showDataMenu}
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
@@ -427,23 +428,25 @@
 			></div>
 		</div>
 	{/if}
+
+	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex translate-z-0 cursor-move justify-center p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height] border-sub c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
 			: ''} {$showDataMenu || $isStyleEdit
-			? 'w-[66px]'
+			? 'w-[68.48px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
-			: 'border-sub border-1 bg-black'} "
+			: 'bg-black'}"
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
 		tabindex="0"
 	>
-		<!-- エフェクト -->
+		<!-- 選択中リップルエフェクト -->
 		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
 			<div
 				class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
@@ -453,6 +456,7 @@
 			></div>
 		{/if}
 
+		<!-- 背景アイコン -->
 		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
 			<div
 				transition:fade={{ duration: 100 }}
@@ -485,7 +489,7 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
+				class="relative isolate grid h-[50px] w-[50px] shrink-0 -translate-x-[0.5px] cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
 					? ''
 					: ''} {($selectedLayerId === layerEntry.id && $isStyleEdit) || isHovered
 					? 'scale-115'
@@ -627,7 +631,7 @@
 			></div>
 		{/if}
 
-		<!-- レイヤータイプ -->
+		<!-- レイヤータイプ (データカタログ) -->
 		{#if $showDataMenu}
 			<div
 				class="bg-base text-main pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
@@ -635,13 +639,6 @@
 				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
 			</div>
 		{/if}
-
-		<!-- 選択中 -->
-		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
-			<div
-				class="c-ripple-anime absolute top-0 -z-10 aspect-square shrink-0 -translate-y-[3px] rounded-r-full p-9 shadow-md"
-			></div>
-		{/if} -->
 	</div>
 </div>
 
