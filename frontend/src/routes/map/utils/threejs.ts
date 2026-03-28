@@ -345,8 +345,8 @@ export class ThreeJsLayerManager {
 				const mesh = child as THREE.Mesh;
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((material) => {
-					if (material instanceof THREE.MeshStandardMaterial) {
-						material.wireframe = wireframe;
+					if ('wireframe' in material) {
+						(material as THREE.MeshStandardMaterial).wireframe = wireframe;
 					}
 				});
 			}
@@ -361,7 +361,7 @@ export class ThreeJsLayerManager {
 				const mesh = child as THREE.Mesh;
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((material) => {
-					if (material instanceof THREE.MeshStandardMaterial) {
+					if ('color' in material && material.color instanceof THREE.Color) {
 						material.color = new THREE.Color(color);
 					}
 				});
