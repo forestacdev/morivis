@@ -147,7 +147,11 @@
 			</div>
 		</div>
 
-		<div class="relative flex h-full flex-col overflow-x-hidden">
+		<div
+			class="relative flex h-full flex-col overflow-x-hidden {!$showDataMenu && !$isStyleEdit
+				? 'pr-2'
+				: ''}"
+		>
 			<!-- スクロールコンテンツ -->
 			<div
 				class="flex h-full flex-col overflow-x-hidden pl-2 {$showDataMenu || $isStyleEdit
