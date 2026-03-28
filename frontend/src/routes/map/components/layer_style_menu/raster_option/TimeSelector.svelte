@@ -24,9 +24,10 @@
 			| RasterTiffStyle
 			| RasterCadStyle
 		>;
+		showTimeOption: boolean;
 	}
 
-	let { layerEntry = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showTimeOption = $bindable() }: Props = $props();
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -129,7 +130,31 @@
 		}
 	});
 
-	let showTimeOption = $state(false);
+	const formatTimeValue = (value: string): string => {
+		// 年のみ: "2026"
+		if (/^\d{4}$/.test(value)) return `${Number(value)}年`;
+		// 年月のみ: "2026-01"
+		const ym = value.match(/^(\d{4})-(\d{2})$/);
+		if (ym) return `${Number(ym[1])}年${Number(ym[2])}月`;
+		// 日付のみ: "2026-01-15"
+		const ymd = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		if (ymd) return `${Number(ymd[1])}年${Number(ymd[2])}月${Number(ymd[3])}日`;
+
+		// ISO 8601 (T含む): "2026-01-01T00:00:00Z"
+		const date = new Date(value);
+		if (isNaN(date.getTime())) return value;
+
+		const y = date.getUTCFullYear();
+		const m = date.getUTCMonth() + 1;
+		const d = date.getUTCDate();
+		const h = date.getUTCHours();
+		const min = date.getUTCMinutes();
+
+		if (h === 0 && min === 0) {
+			return d === 1 ? `${y}年${m}月` : `${y}年${m}月${d}日`;
+		}
+		return `${y}年${m}月${d}日 ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+	};
 </script>
 
 {#if layerEntry.style.timeDimension}
@@ -144,12 +169,12 @@
 				class="overflow-hidden"
 				onemblaInit={onInitEmblaMainCarousel}
 			>
-				<div class="flex">
+				<div class="flex gap-2 px-2">
 					{#each layerEntry.style.timeDimension.values as timeValue, i}
 						<div
-							class="flex h-full flex-[0_0_70%] items-center justify-center rounded bg-gray-700 text-white"
+							class="border-sub flex h-full flex-[0_0_70%] items-center justify-center rounded border-1 bg-black text-white select-none"
 						>
-							{timeValue}
+							{formatTimeValue(timeValue)}
 						</div>
 					{/each}
 				</div>

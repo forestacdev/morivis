@@ -26,6 +26,7 @@
 		parseNetCDF,
 		extractRasterData,
 		getDimensionValues,
+		resolveTimeValues,
 		type NetCDFInfo,
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/file/netcdf';
@@ -290,7 +291,7 @@
 				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
 				if (timeDim && timeDim.size > 1) {
 					const timeValues = timeDim.values
-						? timeDim.values.map((v) => String(v))
+						? resolveTimeValues(timeDim.values, ncInfo, timeDim.name)
 						: Array.from({ length: timeDim.size }, (_, i) => String(i));
 
 					timeDimension = {
@@ -434,31 +435,26 @@
 			<div class="w-full px-2 text-sm text-red-400">2D以上の変数が見つかりません</div>
 		{/if}
 
-		<!-- 追加次元のスライス選択（time等） -->
-		{#if selectedVariable && extraDimensions.length > 0}
-			{#each extraDimensions as dim}
+		<!-- 追加次元のスライス選択（時間次元は除外） -->
+		{@const nonTimeDims = extraDimensions.filter((d) => !/^(time|t|date|datetime)$/i.test(d.name))}
+		{#if selectedVariable && nonTimeDims.length > 0}
+			{#each nonTimeDims as dim}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
 						<label for="nc-dim-{dim.name}" class="text-sm text-gray-300">
-							{dim.name} (0〜{dim.size - 1})
+							{dim.name}
 						</label>
-						<div class="flex items-center gap-2">
-							<input
-								id="nc-dim-{dim.name}"
-								type="range"
-								min={0}
-								max={dim.size - 1}
-								bind:value={sliceIndices[dim.name]}
-								class="w-full"
-							/>
-							<span class="w-20 text-right text-sm text-white">
-								{#if dim.values}
-									{dim.values[sliceIndices[dim.name] ?? 0]}
-								{:else}
-									{sliceIndices[dim.name] ?? 0}
-								{/if}
-							</span>
-						</div>
+						<select
+							id="nc-dim-{dim.name}"
+							bind:value={sliceIndices[dim.name]}
+							class="bg-sub rounded border border-gray-600 p-2 text-white"
+						>
+							{#each Array.from({ length: dim.size }, (_, i) => i) as idx}
+								<option value={idx}>
+									{dim.values ? dim.values[idx] : idx}
+								</option>
+							{/each}
+						</select>
 					</div>
 				</div>
 			{/each}

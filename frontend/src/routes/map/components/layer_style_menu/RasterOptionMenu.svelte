@@ -37,6 +37,8 @@
 
 	let showOption = $state<boolean>(false);
 
+	let showTimeOption = $state(true);
+
 	let preset = $derived.by(() => {
 		if (style.type === 'basemap') {
 			return style.preset;
@@ -106,7 +108,7 @@
 		{/await}
 
 		{#if style.timeDimension}
-			<TimeSelector bind:layerEntry />
+			<TimeSelector bind:layerEntry bind:showTimeOption />
 		{/if}
 
 		<!-- <Accordion label={'詳細設定'} bind:value={showOption}>
@@ -195,7 +197,11 @@
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
-		<TiffOption bind:style entryId={layerEntry.id} bind:showColorOption />
+		<TiffOption
+			bind:layerEntry={layerEntry as RasterEntry<RasterTiffStyle>}
+			bind:showColorOption
+			bind:showTimeOption
+		/>
 	{:else if style.type === 'cad'}
 		<div class="mt-8">
 			<ColorPicker bind:value={style.color} label={'ラインの色'} />

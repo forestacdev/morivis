@@ -7,21 +7,29 @@
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
 	import TiffStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/TiffStyleModePulldownBox.svelte';
-	import { COLOR_MAP_TYPE, type RasterTiffStyle } from '$routes/map/data/types/raster';
+	import {
+		COLOR_MAP_TYPE,
+		type RasterEntry,
+		type RasterTiffStyle
+	} from '$routes/map/data/types/raster';
 	import { ColorMapManager } from '$routes/map/utils/color_mapping';
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
 	const colorMapManager = new ColorMapManager();
 	interface Props {
-		style: RasterTiffStyle;
-		entryId: string;
+		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
+		showTimeOption: boolean;
 	}
 
-	let { style = $bindable(), entryId, showColorOption = $bindable() }: Props = $props();
+	let {
+		layerEntry = $bindable(),
+		showColorOption = $bindable(),
+		showTimeOption = $bindable()
+	}: Props = $props();
 
-	const dataRanges = $derived(GeoTiffCache.getDataRanges(entryId));
+	const dataRanges = $derived(GeoTiffCache.getDataRanges(layerEntry.id));
 
-	const numBands = $derived(style.visualization.numBands);
+	const numBands = $derived(layerEntry.style.visualization.numBands);
 
 	const BAND_CHANNELS = [
 		{ key: 'r' as const, label: 'R', color: '#ef4444' },
@@ -29,7 +37,9 @@
 		{ key: 'b' as const, label: 'B', color: '#3b82f6' }
 	];
 
-	const singleRange = $derived(dataRanges?.[style.visualization.uniformsData.single.index]);
+	const singleRange = $derived(
+		dataRanges?.[layerEntry.style.visualization.uniformsData.single.index]
+	);
 	const rangeMin = $derived(singleRange?.min ?? 0);
 	const rangeMax = $derived(singleRange?.max ?? 65535);
 
@@ -45,19 +55,19 @@
 </script>
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
-	<TiffStyleModePulldownBox bind:isMode={style.visualization.mode} />
-	{#if style.visualization.mode === 'single'}
+	<TiffStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} />
+	{#if layerEntry.style.visualization.mode === 'single'}
 		{#if numBands > 1}
 			<div class="flex items-center gap-2 py-2">
 				<span class="text-sm">バンド</span>
 				<select
 					class="c-select w-20 text-sm"
-					bind:value={style.visualization.uniformsData.single.index}
+					bind:value={layerEntry.style.visualization.uniformsData.single.index}
 					onchange={() => {
-						const newRange = dataRanges?.[style.visualization.uniformsData.single.index];
+						const newRange = dataRanges?.[layerEntry.style.visualization.uniformsData.single.index];
 						if (newRange) {
-							style.visualization.uniformsData.single.min = newRange.min;
-							style.visualization.uniformsData.single.max = newRange.max;
+							layerEntry.style.visualization.uniformsData.single.min = newRange.min;
+							layerEntry.style.visualization.uniformsData.single.max = newRange.max;
 						}
 					}}
 				>
@@ -68,7 +78,7 @@
 			</div>
 		{/if}
 		<StyleColorMapPulldownBox
-			bind:isColorMap={style.visualization.uniformsData['single'].colorMap}
+			bind:isColorMap={layerEntry.style.visualization.uniformsData['single'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
@@ -77,38 +87,38 @@
 		</StyleColorMapPulldownBox>
 		<RangeSliderDouble
 			label="数値範囲"
-			bind:lowerValue={style.visualization.uniformsData['single'].min}
-			bind:upperValue={style.visualization.uniformsData['single'].max}
+			bind:lowerValue={layerEntry.style.visualization.uniformsData['single'].min}
+			bind:upperValue={layerEntry.style.visualization.uniformsData['single'].max}
 			max={rangeMax}
 			min={rangeMin}
 			step={calcStep(rangeMin, rangeMax)}
 			primaryColor={colorMapManager.createSimpleCSSGradient(
-				style.visualization.uniformsData['single'].colorMap
+				layerEntry.style.visualization.uniformsData['single'].colorMap
 			)}
 			minRangeColor={colorMapManager.getMinColor(
-				style.visualization.uniformsData['single'].colorMap
+				layerEntry.style.visualization.uniformsData['single'].colorMap
 			)}
 			maxRangeColor={colorMapManager.getMaxColor(
-				style.visualization.uniformsData['single'].colorMap
+				layerEntry.style.visualization.uniformsData['single'].colorMap
 			)}
 		/>
-	{:else if style.visualization.mode === 'multi'}
+	{:else if layerEntry.style.visualization.mode === 'multi'}
 		<div class="flex flex-col gap-3 py-2">
 			{#each BAND_CHANNELS as { key, label, color }}
-				{@const bandIdx = style.visualization.uniformsData.multi[key].index}
+				{@const bandIdx = layerEntry.style.visualization.uniformsData.multi[key].index}
 				{@const range = dataRanges?.[bandIdx]}
 				<div class="flex flex-col gap-2">
 					<div class="flex items-center gap-2">
 						<span class="text-sm">{label} バンド</span>
 						<select
 							class="c-select w-20 text-sm"
-							bind:value={style.visualization.uniformsData.multi[key].index}
+							bind:value={layerEntry.style.visualization.uniformsData.multi[key].index}
 							onchange={() => {
-								const newIdx = style.visualization.uniformsData.multi[key].index;
+								const newIdx = layerEntry.style.visualization.uniformsData.multi[key].index;
 								const newRange = dataRanges?.[newIdx];
 								if (newRange) {
-									style.visualization.uniformsData.multi[key].min = newRange.min;
-									style.visualization.uniformsData.multi[key].max = newRange.max;
+									layerEntry.style.visualization.uniformsData.multi[key].min = newRange.min;
+									layerEntry.style.visualization.uniformsData.multi[key].max = newRange.max;
 								}
 							}}
 						>
@@ -121,8 +131,8 @@
 					<div class="">
 						<RangeSliderDouble
 							label="範囲"
-							bind:lowerValue={style.visualization.uniformsData.multi[key].min}
-							bind:upperValue={style.visualization.uniformsData.multi[key].max}
+							bind:lowerValue={layerEntry.style.visualization.uniformsData.multi[key].min}
+							bind:upperValue={layerEntry.style.visualization.uniformsData.multi[key].max}
 							min={range?.min ?? 0}
 							max={range?.max ?? 65535}
 							step={calcStep(range?.min ?? 0, range?.max ?? 65535)}
@@ -135,8 +145,8 @@
 	{/if}
 </Accordion>
 
-{#if style.timeDimension}
-	<TimeSelector bind:style />
+{#if layerEntry.style.timeDimension}
+	<TimeSelector bind:layerEntry bind:showTimeOption />
 {/if}
 
 <style>
