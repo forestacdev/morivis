@@ -100,7 +100,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },
 	{ label: 'GLB', extensions: ['.glb'] },
-	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd'] },
+	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz'] },
 	{ label: 'HDF5', extensions: ['.h5'] },
 	{ label: 'NetCDF', extensions: ['.nc', '.nc4'] },
 	{ label: 'GRIB2 (GPV)', extensions: ['.grib2', '.grb2', '.grb', '.bin'] },
