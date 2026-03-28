@@ -78,7 +78,7 @@
 			transition:scale={{ duration: 300, start: 0.9 }}
 			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
 				? 'h-[600px]'
-				: 'max-h-[600px]'}"
+				: 'max-h-[700px]'}"
 		>
 			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
