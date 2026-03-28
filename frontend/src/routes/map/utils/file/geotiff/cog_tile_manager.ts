@@ -172,11 +172,20 @@ const transformBboxToWgs84 = (
 export const CogTileManager = {
 	/**
 	 * COGを開いてメタデータを読み取り、接続を登録する
+	 * サムネイル生成用のサンプルバンドデータも返す
 	 */
-	register: async (entryId: string, url: string): Promise<CogMetadata> => {
-		// 既に登録済みならメタデータを返す
+	register: async (
+		entryId: string,
+		url: string
+	): Promise<{
+		metadata: CogMetadata;
+		sampleBands: ArrayLike<number>[];
+		sampleWidth: number;
+		sampleHeight: number;
+	}> => {
+		// 既に登録済みならメタデータを返す（サンプルデータは再取得不可）
 		const existing = connections.get(entryId);
-		if (existing) return existing.metadata;
+		if (existing) return { metadata: existing.metadata, sampleBands: [], sampleWidth: 0, sampleHeight: 0 };
 
 		const tiff = await fromUrl(url);
 		const fullImage = await tiff.getImage();
@@ -270,7 +279,15 @@ export const CogTileManager = {
 		};
 
 		connections.set(entryId, { tiff, images, metadata, nativeBbox, projName: resolvedProjName });
-		return metadata;
+
+		const sampleWidth = sampleImage.getWidth();
+		const sampleHeight = sampleImage.getHeight();
+		const sampleBands: ArrayLike<number>[] = [];
+		for (let i = 0; i < numBands; i++) {
+			sampleBands.push(sampleRasters[i] as Float32Array | Uint8Array | Uint16Array);
+		}
+
+		return { metadata, sampleBands, sampleWidth, sampleHeight };
 	},
 
 	/**

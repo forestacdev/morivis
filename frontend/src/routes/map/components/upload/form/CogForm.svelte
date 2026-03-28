@@ -21,6 +21,7 @@
 		type RasterBands
 	} from '$routes/map/utils/file/geotiff';
 	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -75,7 +76,8 @@
 
 		try {
 			const id = `geotiff_${crypto.randomUUID()}`;
-			const cogMetadata = await CogTileManager.register(id, cogUrl);
+			const { metadata: cogMetadata, sampleBands, sampleWidth, sampleHeight } =
+				await CogTileManager.register(id, cogUrl);
 			const { fullWidth, fullHeight, numBands, bbox, sampleRanges } = cogMetadata;
 
 			const resolvedBbox: [number, number, number, number] = [
@@ -91,6 +93,14 @@
 			if (useTiledMode) {
 				progressText = `タイル方式で読み込み中... (${fullWidth}x${fullHeight})`;
 
+				// UIスライダー用にデータ範囲を登録
+				GeoTiffCache.setDataRanges(id, sampleRanges);
+
+				// サムネイル生成
+				const mapImage = sampleBands.length > 0
+					? generateThumbnail({ bands: sampleBands, width: sampleWidth, height: sampleHeight, bbox, nodata: cogMetadata.nodata, ranges: sampleRanges })
+					: undefined;
+
 				const entry: RasterCogEntry<RasterTiffStyle> = {
 					id,
 					type: 'raster',
@@ -102,7 +112,8 @@
 						bounds: resolvedBbox,
 						minZoom: cogMetadata.minZoom,
 						maxZoom: cogMetadata.maxZoom,
-						xyzImageTile: findCenterTile(resolvedBbox)
+						xyzImageTile: findCenterTile(resolvedBbox),
+						mapImage
 					},
 					interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 					style: {
