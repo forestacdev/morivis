@@ -47,6 +47,8 @@
 
 			if (result.features.length === 0) {
 				showNotification('位置情報付きの写真が見つかりませんでした', 'error');
+				dropFile = null;
+				showDialogType = null;
 				return;
 			}
 

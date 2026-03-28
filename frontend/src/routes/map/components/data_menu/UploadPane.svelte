@@ -14,9 +14,25 @@
 		showDialogType = $bindable()
 	}: Props = $props();
 
-	const inputFile = (e: Event) => {
+	const inputFile = async (e: Event) => {
 		const files = (e.target as HTMLInputElement).files;
 		if (!files || files.length === 0) return;
+
+		// 単一ZIPファイルの場合は展開
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// 展開失敗時は通常フローへ
+			}
+		}
+
 		if (files.length === 1) {
 			dropFile = files[0];
 		} else {
