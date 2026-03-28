@@ -3,6 +3,7 @@ import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bo
 import type {
 	ModelMeshEntry,
 	MeshStyle,
+	MeshFormatType,
 	ModelTiles3DEntry,
 	ModelPointCloudEntry,
 	PointCloudStyle
@@ -77,12 +78,13 @@ export const createPointCloudEntry = (
 export const createGlbEntry = (
 	name: string,
 	url: string,
-	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number }
+	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number },
+	formatType: MeshFormatType = 'gltf'
 ): ModelMeshEntry<MeshStyle> => ({
 	id: 'glb_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
-		type: 'gltf',
+		type: formatType,
 		url
 	},
 	metaData: {

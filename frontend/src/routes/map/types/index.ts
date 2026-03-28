@@ -99,7 +99,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'PDF', extensions: ['.pdf'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },
-	{ label: 'GLB', extensions: ['.glb'] },
+	{ label: '3Dモデル', extensions: ['.glb', '.obj'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz'] },
 	{ label: 'HDF5', extensions: ['.h5'] },
 	{ label: 'NetCDF', extensions: ['.nc', '.nc4'] },

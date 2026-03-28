@@ -26,7 +26,7 @@
 		name: yup.string().required('データ名を入力してください。'),
 		url: yup
 			.string()
-			.required('GLB/glTFのURLを入力してください。')
+			.required('3DモデルのURLを入力してください。')
 			.test('url-format', 'URLまたはファイルが必要です', (value) => {
 				if (!value) return false;
 				return (
@@ -118,13 +118,19 @@
 	});
 
 	const registration = () => {
-		const entry = createGlbEntry(forms.name, forms.url.trim(), {
-			lng: Number(forms.lng),
-			lat: Number(forms.lat),
-			altitude: Number(forms.altitude),
-			scale: Number(forms.scale),
-			rotationY: Number(forms.rotationY)
-		});
+		const isObj = glbFile?.name.toLowerCase().endsWith('.obj') ?? false;
+		const entry = createGlbEntry(
+			forms.name,
+			forms.url.trim(),
+			{
+				lng: Number(forms.lng),
+				lat: Number(forms.lat),
+				altitude: Number(forms.altitude),
+				scale: Number(forms.scale),
+				rotationY: Number(forms.rotationY)
+			},
+			isObj ? 'obj' : 'gltf'
+		);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -139,7 +145,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">GLB/glTFの登録</span>
+	<span class="text-2xl font-bold">3Dモデルの登録</span>
 </div>
 
 <div
@@ -152,7 +158,7 @@
 			ファイル: {glbFile?.name}
 		</div>
 	{:else}
-		<TextForm bind:value={forms.url} label="GLB/glTF URL" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL" error={errors.url} />
 	{/if}
 
 	<div class="flex w-full gap-2">

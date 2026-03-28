@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import maplibregl, { type CustomLayerInterface } from 'maplibre-gl';
 import type { ModelMeshEntry, MeshStyle } from '../data/types/model';
 import { mapStore } from '$routes/stores/map';
@@ -195,11 +196,7 @@ export class ThreeJsLayerManager {
 				}
 			}
 
-			this.loader.load(
-				entry.format.url,
-				(gltf) => {
-					const model = gltf.scene;
-
+			const onModelLoaded = (model: THREE.Group | THREE.Object3D) => {
 					// 透過・色設定
 					model.traverse((child) => {
 						if ((child as THREE.Mesh).isMesh) {
@@ -229,12 +226,24 @@ export class ThreeJsLayerManager {
 						this.modelGroup!.add(model);
 					}
 					resolve();
-				},
-				undefined,
-				(error) => {
-					reject(error);
+				};
+
+				if (entry.format.type === 'obj') {
+					const objLoader = new OBJLoader();
+					objLoader.load(
+						entry.format.url,
+						(obj) => onModelLoaded(obj),
+						undefined,
+						(error) => reject(error)
+					);
+				} else {
+					this.loader.load(
+						entry.format.url,
+						(gltf) => onModelLoaded(gltf.scene),
+						undefined,
+						(error) => reject(error)
+					);
 				}
-			);
 		});
 	}
 

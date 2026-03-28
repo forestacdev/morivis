@@ -189,6 +189,7 @@
 					showDialogType = 'pmtiles';
 					return;
 				case 'glb':
+				case 'obj':
 					showDialogType = 'glb';
 					return;
 				case 'h5':
