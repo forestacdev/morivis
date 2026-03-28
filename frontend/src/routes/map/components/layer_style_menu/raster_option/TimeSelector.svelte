@@ -86,6 +86,24 @@
 		emblaMainCarousel.scrollPrev();
 	};
 
+	let isPlaying = $state(false);
+
+	const toggleAutoplay = () => {
+		if (!emblaMainCarousel) return;
+		const autoplay = emblaMainCarousel.plugins()?.autoplay as
+			| { play: () => void; stop: () => void; isPlaying: () => boolean }
+			| undefined;
+		if (!autoplay) return;
+
+		if (autoplay.isPlaying()) {
+			autoplay.stop();
+			isPlaying = false;
+		} else {
+			autoplay.play();
+			isPlaying = true;
+		}
+	};
+
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
 	let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -158,27 +176,64 @@
 </script>
 
 {#if layerEntry.style.timeDimension}
-	<Accordion label={'時間ステップ'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
+	<Accordion label={'日時'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
 		<div class="flex flex-col gap-2 p-2">
-			<div
-				use:emblaCarouselSvelte={{
-					plugins: emblaMainCarouselPlugins,
-					options: emblaMainCarouselOptions
-				}}
-				bind:this={carouselElement}
-				class="overflow-hidden"
-				onemblaInit={onInitEmblaMainCarousel}
-			>
-				<div class="flex gap-2 px-2">
-					{#each layerEntry.style.timeDimension.values as timeValue, i}
-						<div
-							class="border-sub flex h-full flex-[0_0_70%] items-center justify-center rounded border-1 bg-black text-white select-none"
-						>
-							{formatTimeValue(timeValue)}
-						</div>
-					{/each}
+			<div class="flex items-center gap-1">
+				<button
+					onclick={onClickPrev}
+					class="flex shrink-0 cursor-pointer items-center justify-center rounded p-1 text-white hover:bg-white/10"
+					aria-label="前へ"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+					</svg>
+				</button>
+				<div
+					use:emblaCarouselSvelte={{
+						plugins: emblaMainCarouselPlugins,
+						options: emblaMainCarouselOptions
+					}}
+					bind:this={carouselElement}
+					class="min-w-0 flex-1 overflow-hidden"
+					onemblaInit={onInitEmblaMainCarousel}
+				>
+					<div class="flex gap-2 px-2">
+						{#each layerEntry.style.timeDimension.values as timeValue, i}
+							<div
+								class="border-sub flex h-full flex-[0_0_70%] items-center justify-center rounded border-1 bg-black text-white select-none"
+							>
+								{formatTimeValue(timeValue)}
+							</div>
+						{/each}
+					</div>
 				</div>
+				<button
+					onclick={onClickNext}
+					class="flex shrink-0 cursor-pointer items-center justify-center rounded p-1 text-white hover:bg-white/10"
+					aria-label="次へ"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+					</svg>
+				</button>
 			</div>
+			<button
+				onclick={toggleAutoplay}
+				class="flex w-full cursor-pointer items-center justify-center gap-1 rounded p-1 text-sm text-white hover:bg-white/10"
+				aria-label={isPlaying ? '停止' : '再生'}
+			>
+				{#if isPlaying}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+					</svg>
+					停止
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M8 5v14l11-7z" />
+					</svg>
+					再生
+				{/if}
+			</button>
 		</div>
 	</Accordion>
 {/if}
