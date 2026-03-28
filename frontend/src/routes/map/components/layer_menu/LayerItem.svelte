@@ -136,9 +136,39 @@
 	};
 
 	// レイヤーの削除
+	const revokeBlobUrls = () => {
+		if (!layerEntry) return;
+		// GeoJSON内のBlobURL（位置情報付き写真等）を解放
+		if (layerEntry.type === 'vector' && layerEntry.format.type === 'geojson') {
+			const geojson = GeojsonCache.get(layerEntry.id);
+			if (geojson) {
+				for (const f of geojson.features) {
+					const props = f.properties as Record<string, unknown> | null;
+					if (props) {
+						for (const v of Object.values(props)) {
+							if (typeof v === 'string' && v.startsWith('blob:')) {
+								URL.revokeObjectURL(v);
+							}
+						}
+					}
+				}
+			}
+		}
+		// GLB/OBJ/MTLのBlobURL解放
+		if (layerEntry.type === 'model' && 'url' in layerEntry.format) {
+			const url = (layerEntry.format as { url?: string }).url;
+			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+			const mtlUrl = (layerEntry.format as { mtlUrl?: string }).mtlUrl;
+			if (mtlUrl?.startsWith('blob:')) URL.revokeObjectURL(mtlUrl);
+		}
+	};
+
 	const removeLayer = () => {
 		$isStyleEdit = false;
 		if (!layerEntry) return;
+
+		// BlobURLの解放
+		revokeBlobUrls();
 
 		// キャッシュの解放
 		if (isTiffCustomLayer) {

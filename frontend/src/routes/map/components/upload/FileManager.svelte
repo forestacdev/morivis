@@ -4,6 +4,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import { hasExifGps } from '$routes/map/utils/file/exif';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -195,11 +196,20 @@
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;
+				case 'jpg':
+				case 'jpeg':
+				case 'heic':
+				case 'heif':
+					// EXIF GPSがあれば位置情報付き写真として処理
+					if (await hasExifGps(file)) {
+						showDialogType = 'geophoto';
+						return;
+					}
+					showDialogType = 'geopdf';
+					return;
 				case 'tiff':
 				case 'tif':
 				case 'png':
-				case 'jpg':
-				case 'jpeg':
 				case 'webp':
 				case 'pdf':
 					showDialogType = 'geopdf';
@@ -286,6 +296,9 @@
 
 			if (files.some((f) => /\.obj$/i.test(f.name))) {
 				showDialogType = 'glb';
+			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
+				// 全ファイルがJPEG/HEIC → 位置情報付き写真として処理
+				showDialogType = 'geophoto';
 			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
 			} else if (files.some(isGeoImageRelated)) {

@@ -8,6 +8,7 @@
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
+	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
@@ -134,6 +135,9 @@
 			{/if}
 			{#if showDialogType === 'glb'}
 				<MeshModelForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'geophoto'}
+				<GeoPhotoForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'geopdf'}
 				<GeoPdfForm
