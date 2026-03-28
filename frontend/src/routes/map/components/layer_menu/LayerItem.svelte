@@ -512,6 +512,11 @@
 						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
 					</div>
 				{/if}
+				{#if layerEntry.metaData.isUserUploaded}
+					<div class="grid place-items-center">
+						<Icon icon="mdi:file-upload-outline" class="h-18 w-18 rotate-6 text-base" />
+					</div>
+				{/if}
 			</div>
 		{/if}
 
