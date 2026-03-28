@@ -148,12 +148,6 @@
 		</div>
 
 		<div class="relative flex h-full flex-col overflow-x-hidden">
-			<!-- フォグ -->
-			{#if !$isStyleEdit && !$showDataMenu}
-				<div
-					class="c-bg-fog-top pointer-events-none absolute top-0 right-0 z-10 h-[10px] w-[345px]"
-				></div>
-			{/if}
 			<!-- スクロールコンテンツ -->
 			<div
 				class="flex h-full flex-col overflow-x-hidden pl-2 {$showDataMenu || $isStyleEdit
@@ -358,7 +352,10 @@
 				<LayerControl />
 			</div> -->
 			<!-- おすすめデータ -->
-			<div transition:fade={{ duration: 150 }} class="mobile-bottom p-3 max-lg:hidden">
+			<div
+				transition:fade={{ duration: 150 }}
+				class="mobile-bottom relative px-2 py-3 max-lg:hidden"
+			>
 				<RecommendedData bind:showDataEntry />
 			</div>
 		{/if}
