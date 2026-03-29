@@ -2,7 +2,7 @@
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
@@ -187,8 +187,6 @@
 			.slice(0, LIMIT);
 	});
 
-	let isHover = $state(false);
-
 	const addData = (dataEntry: GeoDataEntry) => {
 		if (checkMobileWidth()) {
 			activeLayerIdsStore.add(dataEntry.id);
@@ -206,9 +204,9 @@
 	>
 		<div class="pl-4 text-sm text-gray-400">おすすめデータ</div>
 		<div class="relative">
-			<div
+			<!-- <div
 				class="c-bg-fog-left pointer-events-none absolute bottom-0 left-0 z-10 h-full w-[50px]"
-			></div>
+			></div> -->
 
 			<div
 				use:emblaCarouselSvelte={{
@@ -223,7 +221,7 @@
 					{#each dataEntries as dataEntry (dataEntry.id)}
 						<button
 							onclick={() => addData(dataEntry)}
-							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-2 text-white duration-150"
+							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
 						>
 							<div
 								class="border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black duration-150"
@@ -235,9 +233,9 @@
 				</div>
 			</div>
 
-			<div
+			<!-- <div
 				class="c-bg-fog-right pointer-events-none absolute right-0 bottom-0 z-10 h-full w-[50px]"
-			></div>
+			></div> -->
 		</div>
 	</div>
 {/if}
