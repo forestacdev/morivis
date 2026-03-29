@@ -311,10 +311,7 @@ export const createLayersItems = (
 					}
 
 					// TODO マーカータイプの廃止
-					if (
-						style.labels.show &&
-						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
-					) {
+					if (style.labels.show) {
 						// ラベルを追加
 						const fields = entry.properties.fields;
 						const symbolLayer = createSymbolLayer(layer, style, fields);

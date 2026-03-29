@@ -124,10 +124,16 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					name: '単色',
 					mapping: {
 						value: '#e31a1c'
+						// pattern: 'tmpoint-asterisk-blue'
 					}
 				}
 			]
 		},
+		// icon: {
+		// 	show: true,
+		// 	size: 1.5
+		// },
+
 		radius: {
 			key: '単一',
 			expressions: [

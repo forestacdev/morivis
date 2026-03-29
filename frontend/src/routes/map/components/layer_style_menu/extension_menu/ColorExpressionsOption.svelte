@@ -5,7 +5,7 @@
 
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
-	import type { ColorsExpression } from '$routes/map/data/types/vector/style';
+	import type { ColorsExpression, VectorLayerType } from '$routes/map/data/types/vector/style';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
 		type SequentialScheme
@@ -14,8 +14,9 @@
 
 	interface Props {
 		setExpression: ColorsExpression;
+		layerType?: VectorLayerType;
 	}
-	let { setExpression = $bindable() }: Props = $props();
+	let { setExpression = $bindable(), layerType }: Props = $props();
 	// step用のパレットを生成
 	let stepPallet = $derived.by(() => {
 		if (setExpression && setExpression.type === 'step') {
@@ -28,24 +29,24 @@
 	<!-- NOTE: プロパティが存在するかどうか -->
 	<!-- TODO: patternのポイント、ラインの対応 -->
 	{#if 'pattern' in setExpression.mapping}
-		<ColorPatternPicker
+		<ColorPatternPicker {layerType}
 			label="全体の色"
 			bind:value={setExpression.mapping.value as string}
 			bind:pattern={setExpression.mapping.pattern}
 		/>
 	{:else}
-		<ColorPatternPicker label="全体の色" bind:value={setExpression.mapping.value as string} />
+		<ColorPatternPicker {layerType} label="全体の色" bind:value={setExpression.mapping.value as string} />
 	{/if}
 {:else if setExpression.type === 'match'}
 	{#each setExpression.mapping.categories as _, index}
 		{#if setExpression.mapping.patterns}
-			<ColorPatternPicker
+			<ColorPatternPicker {layerType}
 				label={setExpression.mapping.categories[index] as string}
 				bind:pattern={setExpression.mapping.patterns[index]}
 				bind:value={setExpression.mapping.values[index] as string}
 			/>
 		{:else}
-			<ColorPatternPicker
+			<ColorPatternPicker {layerType}
 				label={setExpression.mapping.categories[index] as string}
 				bind:value={setExpression.mapping.values[index] as string}
 			/>
@@ -54,7 +55,7 @@
 
 	<!-- No Data -->
 	{#if setExpression.noData}
-		<ColorPatternPicker
+		<ColorPatternPicker {layerType}
 			label={setExpression.noData.category ?? ('データなし' as string)}
 			bind:value={setExpression.noData.value as string}
 		/>

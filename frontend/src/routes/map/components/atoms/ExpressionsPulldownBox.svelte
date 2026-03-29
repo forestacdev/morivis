@@ -10,15 +10,17 @@
 		ColorsStyle,
 		NumbersStyle,
 		ExpressionType,
-		RawExpression
+		RawExpression,
+		VectorLayerType
 	} from '$routes/map/data/types/vector/style';
 	import { getIconStyle } from '$routes/map/utils/ui';
 
 	interface Props {
 		style: ColorsStyle | NumbersStyle;
 		expressionType: ExpressionType;
+		layerType?: VectorLayerType;
 	}
-	let { style = $bindable(), expressionType }: Props = $props();
+	let { style = $bindable(), expressionType, layerType }: Props = $props();
 	let showPullDown = $state<boolean>(false);
 
 	// セットされた式の設定
@@ -97,7 +99,7 @@
 	<!-- 色分け選択 -->
 	<div class="flex grow flex-col gap-2 overflow-visible pt-2">
 		{#if expressionType === 'color'}
-			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} />
+			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} {layerType} />
 		{/if}
 		{#if expressionType === 'number'}
 			<NumberExpressionsOption bind:setExpression={setExpression as NumbersExpression} />

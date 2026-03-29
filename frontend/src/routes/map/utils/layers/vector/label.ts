@@ -13,6 +13,9 @@ import type { LayerItem } from '$routes/map/utils/layers/index';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
+import { getPatternExpression } from '$routes/map/utils/layers/vector/expression/color';
+import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
+
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
 /**
@@ -150,11 +153,17 @@ export const compileLabelExpr = (le: LabelsExpressions, fields: FieldDef[]): Exp
 };
 
 // ポイントのicon用レイヤーの作成
-// TODO: 廃止予定
+
 export const createPointIconLayer = (
 	layer: LayerItem,
 	style: PointStyle
-): SymbolLayerSpecification => {
+): SymbolLayerSpecification | undefined => {
+	const patternExpression = getPatternExpression(style.colors);
+	if (!patternExpression) {
+		return undefined;
+	}
+
+	const radius = getNumberExpression(style.radius);
 	const defaultStyle = style.default;
 	const key = style.labels.key as keyof Labels;
 	const showLabel = style.labels.show;
@@ -176,16 +185,16 @@ export const createPointIconLayer = (
 		id: `${layer.id}`,
 		type: 'symbol',
 		paint: {
-			...(showLabel ? labelPaint : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {}),
 			'icon-opacity': style.opacity
 		},
 		layout: {
-			...(showLabel ? labelLayout : {}),
-			...(showLabel && defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {}),
-			'icon-image': ['get', '_prop_id'],
+			'icon-image': patternExpression,
 			'icon-size': style.icon?.size ?? 0.1,
-			'icon-anchor': 'bottom'
+			'icon-anchor': 'center',
+
+			// 間引きをオフに
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true
 
 			// ...(symbolStyle.layout ?? {})
 
