@@ -78,6 +78,7 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
+	timeDimension?: WmsTimeDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -244,6 +245,11 @@ interface RasterMetaData extends BaseMetaData {
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
+export interface WmsTimeDimension {
+	values: string[];
+	currentIndex: number;
+}
+
 export interface RasterInteraction {
 	clickable: boolean;
 	overlay?: boolean;
@@ -280,6 +286,14 @@ export interface RasterMBTilesEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterCogEntry<T> extends BaseRasterEntry {
+	format: {
+		type: 'cog';
+		url: string;
+	};
+	style: T;
+}
+
 // TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
@@ -287,6 +301,10 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	};
 	style: T;
 }
-export type RasterEntry<T> = RasterImageEntry<T> | RasterPMTilesEntry<T> | RasterMBTilesEntry<T>;
+export type RasterEntry<T> =
+	| RasterImageEntry<T>
+	| RasterPMTilesEntry<T>
+	| RasterMBTilesEntry<T>
+	| RasterCogEntry<T>;
 export type RasterDemEntry = RasterEntry<RasterDemStyle>;
 export type RasterCadEntry = RasterEntry<RasterCadStyle>;

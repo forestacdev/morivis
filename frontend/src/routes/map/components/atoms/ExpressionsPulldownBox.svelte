@@ -10,15 +10,17 @@
 		ColorsStyle,
 		NumbersStyle,
 		ExpressionType,
-		RawExpression
+		RawExpression,
+		VectorLayerType
 	} from '$routes/map/data/types/vector/style';
 	import { getIconStyle } from '$routes/map/utils/ui';
 
 	interface Props {
 		style: ColorsStyle | NumbersStyle;
 		expressionType: ExpressionType;
+		layerType?: VectorLayerType;
 	}
-	let { style = $bindable(), expressionType }: Props = $props();
+	let { style = $bindable(), expressionType, layerType }: Props = $props();
 	let showPullDown = $state<boolean>(false);
 
 	// セットされた式の設定
@@ -58,14 +60,13 @@
 	<div bind:this={containerRef} class="relative py-2">
 		<button
 			onclick={() => (showPullDown = !showPullDown)}
-			class="c-select flex w-full justify-between"
+			class="c-select flex w-full items-center justify-between gap-1"
 		>
-			<div class="flex items-center gap-2">
-				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} />
-
-				<span> {expressionsList.find((exp) => exp.key === style.key)?.name}</span>
+			<div class="flex min-w-0 items-center gap-2">
+				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} class="shrink-0" />
+				<span class="truncate">{expressionsList.find((exp) => exp.key === style.key)?.name}</span>
 			</div>
-			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7" />
+			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
 		</button>
 		{#if showPullDown}
 			<div
@@ -98,7 +99,7 @@
 	<!-- 色分け選択 -->
 	<div class="flex grow flex-col gap-2 overflow-visible pt-2">
 		{#if expressionType === 'color'}
-			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} />
+			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} {layerType} />
 		{/if}
 		{#if expressionType === 'number'}
 			<NumberExpressionsOption bind:setExpression={setExpression as NumbersExpression} />

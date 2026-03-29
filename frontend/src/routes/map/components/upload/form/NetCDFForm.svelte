@@ -13,6 +13,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import {
 		GeoTiffCache,
@@ -25,9 +26,12 @@
 		parseNetCDF,
 		extractRasterData,
 		getDimensionValues,
+		resolveTimeValues,
 		type NetCDFInfo,
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/file/netcdf';
+	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -131,81 +135,6 @@
 		}
 	};
 
-	/**
-	 * 単バンドFloat32Arrayから512x512サムネイルを生成（中心正方形切り抜き）
-	 */
-	const generateThumbnail = (
-		bandData: Float32Array,
-		width: number,
-		height: number,
-		dataMin: number,
-		dataMax: number,
-		nodataVal: number | null,
-		dataBbox: [number, number, number, number]
-	): string => {
-		// メルカトルのアスペクト比を計算
-		const DEG2RAD = Math.PI / 180;
-		const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
-		const mercYMin = latToMercY(dataBbox[1]);
-		const mercYMax = latToMercY(dataBbox[3]);
-		const lngRange = dataBbox[2] - dataBbox[0];
-		const mercYRange = mercYMax - mercYMin;
-		const mercAspect = mercYRange / (lngRange * DEG2RAD);
-
-		const thumbSize = 512;
-		let thumbW: number, thumbH: number;
-		if (mercAspect > 1) {
-			thumbH = thumbSize;
-			thumbW = Math.round(thumbSize / mercAspect);
-		} else {
-			thumbW = thumbSize;
-			thumbH = Math.round(thumbSize * mercAspect);
-		}
-
-		const canvas = new OffscreenCanvas(thumbW, thumbH);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbW, thumbH);
-		const pixels = imgData.data;
-
-		const invRange = dataMax !== dataMin ? 255 / (dataMax - dataMin) : 0;
-
-		for (let ty = 0; ty < thumbH; ty++) {
-			// サムネイルY → メルカトルY → 緯度 → 元データのY
-			const mercY = mercYMax - (ty / thumbH) * mercYRange;
-			const lat = (2 * Math.atan(Math.exp(mercY)) - Math.PI / 2) / DEG2RAD;
-			const srcY = Math.floor(((dataBbox[3] - lat) / (dataBbox[3] - dataBbox[1])) * height);
-
-			for (let tx = 0; tx < thumbW; tx++) {
-				const srcX = Math.floor((tx / thumbW) * width);
-				const dstIdx = (ty * thumbW + tx) * 4;
-
-				if (srcX < 0 || srcX >= width || srcY < 0 || srcY >= height) {
-					pixels[dstIdx + 3] = 0;
-					continue;
-				}
-
-				const val = bandData[srcY * width + srcX];
-				if (nodataVal !== null && val === nodataVal) {
-					pixels[dstIdx + 3] = 0;
-				} else {
-					const normalized = Math.max(0, Math.min(255, (val - dataMin) * invRange));
-					pixels[dstIdx] = normalized;
-					pixels[dstIdx + 1] = normalized;
-					pixels[dstIdx + 2] = normalized;
-					pixels[dstIdx + 3] = 255;
-				}
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbW;
-		tempCanvas.height = thumbH;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
-
 	const registration = async () => {
 		if (!ncReader || !ncInfo || !selectedVariable) return;
 
@@ -250,15 +179,14 @@
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
 
 			// サムネイル画像を生成（メルカトル補正）
-			const mapImage = generateThumbnail(
-				data,
+			const mapImage = generateThumbnail({
+				bands: [data],
 				width,
 				height,
-				ranges[0].min,
-				ranges[0].max,
+				bbox: rawBbox,
 				nodata,
-				rawBbox
-			);
+				ranges
+			});
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
@@ -281,6 +209,39 @@
 			const unit = variable?.attributes['units'] ?? '';
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
 
+			// 時間次元の検出
+			let timeDimension: WmsTimeDimension | undefined;
+			if (variable && extraDimensions.length > 0) {
+				// time/Time/TIME等の名前を持つ次元を探す
+				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
+				if (timeDim && timeDim.size > 1) {
+					const timeValues = timeDim.values
+						? resolveTimeValues(timeDim.values, ncInfo, timeDim.name)
+						: Array.from({ length: timeDim.size }, (_, i) => String(i));
+
+					timeDimension = {
+						values: timeValues,
+						currentIndex: sliceIndices[timeDim.name] ?? 0
+					};
+
+					// 時間以外のスライスインデックスを固定用にコピー
+					const fixedSlices = { ...sliceIndices };
+					delete fixedSlices[timeDim.name];
+
+					NetCDFDataCache.set(id, {
+						reader: ncReader,
+						info: ncInfo,
+						variableName: selectedVariable,
+						sliceIndices: fixedSlices,
+						timeDimName: timeDim.name,
+						width,
+						height,
+						nodata,
+						encodedTimeIndex: sliceIndices[timeDim.name] ?? 0
+					});
+				}
+			}
+
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
 				type: 'raster',
@@ -290,6 +251,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'NetCDF',
 					name: entryName || `${longName}`,
 					tileSize: 256,
 					bounds: resolvedBbox,
@@ -303,6 +265,7 @@
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
+					timeDimension,
 					visualization: {
 						numBands: 1,
 						mode: 'single',
@@ -398,31 +361,26 @@
 			<div class="w-full px-2 text-sm text-red-400">2D以上の変数が見つかりません</div>
 		{/if}
 
-		<!-- 追加次元のスライス選択（time等） -->
-		{#if selectedVariable && extraDimensions.length > 0}
-			{#each extraDimensions as dim}
+		<!-- 追加次元のスライス選択（時間次元は除外） -->
+		{@const nonTimeDims = extraDimensions.filter((d) => !/^(time|t|date|datetime)$/i.test(d.name))}
+		{#if selectedVariable && nonTimeDims.length > 0}
+			{#each nonTimeDims as dim}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
 						<label for="nc-dim-{dim.name}" class="text-sm text-gray-300">
-							{dim.name} (0〜{dim.size - 1})
+							{dim.name}
 						</label>
-						<div class="flex items-center gap-2">
-							<input
-								id="nc-dim-{dim.name}"
-								type="range"
-								min={0}
-								max={dim.size - 1}
-								bind:value={sliceIndices[dim.name]}
-								class="w-full"
-							/>
-							<span class="w-20 text-right text-sm text-white">
-								{#if dim.values}
-									{dim.values[sliceIndices[dim.name] ?? 0]}
-								{:else}
-									{sliceIndices[dim.name] ?? 0}
-								{/if}
-							</span>
-						</div>
+						<select
+							id="nc-dim-{dim.name}"
+							bind:value={sliceIndices[dim.name]}
+							class="bg-sub rounded border border-gray-600 p-2 text-white"
+						>
+							{#each Array.from({ length: dim.size }, (_, i) => i) as idx}
+								<option value={idx}>
+									{dim.values ? dim.values[idx] : idx}
+								</option>
+							{/each}
+						</select>
 					</div>
 				</div>
 			{/each}

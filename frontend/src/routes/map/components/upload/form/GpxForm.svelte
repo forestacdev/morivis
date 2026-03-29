@@ -99,7 +99,8 @@
 			entryGeometryType,
 			setFileName,
 			bbox as [number, number, number, number],
-			'default'
+			undefined,
+			{ attribution: 'GPX' }
 		);
 		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
 		if (entry) {

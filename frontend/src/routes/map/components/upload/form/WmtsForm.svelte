@@ -6,7 +6,11 @@
 	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { parseWmsCapabilities, type WmsSourceInfo } from '$routes/map/utils/file/wms';
+	import {
+		parseWmsCapabilities,
+		type WmsSourceInfo,
+		type WmsTimeDimensionInfo
+	} from '$routes/map/utils/file/wms';
 	import {
 		parseWmtsCapabilities,
 		type MapLibreRasterSourceInfo
@@ -44,6 +48,7 @@
 		bounds?: [number, number, number, number];
 		format?: string;
 		detail?: string;
+		timeDimension?: WmsTimeDimensionInfo;
 	}
 
 	let forms = $state<UrlFormSchema>({ url: '' });
@@ -53,8 +58,38 @@
 	let serviceType = $state<'wms' | 'wmts' | ''>('');
 	let layers = $state<LayerItem[]>([]);
 	let selectedLayerId = $state<string>('');
+	let filterTimeOnly = $state(false);
+	let searchQuery = $state('');
+	let currentPage = $state(0);
+	const PAGE_SIZE = 20;
 
-	const selectedLayer = $derived(layers.find((l) => l.id === selectedLayerId));
+	const filteredLayers = $derived.by(() => {
+		let result = filterTimeOnly
+			? layers.filter((l) => l.timeDimension && l.timeDimension.values.length > 0)
+			: layers;
+		if (searchQuery.trim()) {
+			const q = searchQuery.trim().toLowerCase();
+			result = result.filter(
+				(l) => l.title.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)
+			);
+		}
+		return result;
+	});
+	const totalPages = $derived(Math.max(1, Math.ceil(filteredLayers.length / PAGE_SIZE)));
+	const pagedLayers = $derived(
+		filteredLayers.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+	);
+	const selectedLayer = $derived(filteredLayers.find((l) => l.id === selectedLayerId));
+
+	// フィルタ・検索変更時にページをリセット
+	let prevFilterKey = $state('');
+	$effect(() => {
+		const key = `${filterTimeOnly}_${searchQuery}`;
+		if (key !== prevFilterKey) {
+			prevFilterKey = key;
+			currentPage = 0;
+		}
+	});
 
 	$effect(() => {
 		urlValidation
@@ -86,14 +121,16 @@
 		maxZoom: info.source.maxzoom,
 		bounds: info.bounds,
 		format: info.format,
-		detail: info.tileMatrixSet ? `TileMatrixSet: ${info.tileMatrixSet}` : undefined
+		detail: info.tileMatrixSet ? `TileMatrixSet: ${info.tileMatrixSet}` : undefined,
+		timeDimension: info.timeDimension
 	});
 
 	const wmsToLayerItem = (info: WmsSourceInfo): LayerItem => ({
 		id: info.id,
 		title: info.title,
 		tileUrl: info.tileUrl,
-		tileSize: 256
+		tileSize: 256,
+		timeDimension: info.timeDimension
 	});
 
 	const fetchLayers = async () => {
@@ -101,6 +138,9 @@
 		layers = [];
 		selectedLayerId = '';
 		serviceType = '';
+		searchQuery = '';
+		currentPage = 0;
+		filterTimeOnly = false;
 
 		try {
 			const url = forms.url.trim();
@@ -129,6 +169,8 @@
 				}
 			}
 
+			console.log('取得したレイヤー:', layers);
+
 			if (layers.length === 1) {
 				selectedLayerId = layers[0].id;
 			}
@@ -147,7 +189,8 @@
 			tileSize: selectedLayer.tileSize,
 			minZoom: selectedLayer.minZoom,
 			maxZoom: selectedLayer.maxZoom,
-			bounds: selectedLayer.bounds
+			bounds: selectedLayer.bounds,
+			wmsTimeDimension: selectedLayer.timeDimension
 		});
 
 		showDataEntry = entry;
@@ -186,26 +229,83 @@
 	{/if}
 
 	{#if layers.length > 0}
-		<div transition:slide class="w-full p-2">
-			<div class="flex flex-col gap-1">
-				<label for="layer-select" class="text-sm text-gray-300">レイヤーを選択</label>
-				<select
-					id="layer-select"
-					bind:value={selectedLayerId}
-					class="bg-sub rounded border border-gray-600 p-2 text-white"
-				>
-					<option value="" disabled>選択してください</option>
-					{#each layers as layer}
-						<option value={layer.id}>
-							{layer.title}
-							{#if layer.minZoom != null && layer.maxZoom != null}
-								(z{layer.minZoom}-{layer.maxZoom})
-							{/if}
-						</option>
-					{/each}
-				</select>
+		<div transition:slide class="flex w-full flex-col gap-2 px-2">
+			<input
+				type="text"
+				bind:value={searchQuery}
+				placeholder="レイヤーを検索..."
+				class="bg-sub rounded border border-gray-600 p-2 text-sm text-white placeholder-gray-500"
+			/>
+
+			{#if serviceType === 'wms' && layers.some((l) => l.timeDimension)}
+				<label class="flex cursor-pointer items-center gap-2 text-sm text-gray-300">
+					<input type="checkbox" bind:checked={filterTimeOnly} class="accent-blue-500" />
+					時間軸のあるレイヤーのみ表示
+				</label>
+			{/if}
+
+			<div class="text-xs text-gray-400">
+				{filteredLayers.length}件中 {currentPage * PAGE_SIZE + 1}-{Math.min(
+					(currentPage + 1) * PAGE_SIZE,
+					filteredLayers.length
+				)}件を表示
 			</div>
 		</div>
+
+		<div transition:slide class="flex w-full flex-col gap-1 px-2">
+			{#each pagedLayers as layer}
+				<button
+					type="button"
+					onclick={() => {
+						selectedLayerId = layer.id;
+					}}
+					class="w-full cursor-pointer rounded border p-2 text-left text-sm transition-colors
+						{selectedLayerId === layer.id
+						? 'border-blue-500 bg-blue-500/20 text-white'
+						: 'border-gray-700 bg-transparent text-gray-300 hover:border-gray-500 hover:bg-white/5'}"
+				>
+					<div class="truncate">{layer.title}</div>
+					{#if layer.minZoom != null && layer.maxZoom != null}
+						<span class="text-xs text-gray-500">z{layer.minZoom}-{layer.maxZoom}</span>
+					{/if}
+					{#if layer.timeDimension}
+						<span class="text-xs text-blue-400"
+							>&#x1f552; {layer.timeDimension.values.length}ステップ</span
+						>
+					{/if}
+				</button>
+			{/each}
+		</div>
+
+		{#if totalPages > 1}
+			<div class="flex w-full items-center justify-center gap-2 px-2">
+				<button
+					type="button"
+					disabled={currentPage === 0}
+					onclick={() => {
+						currentPage--;
+					}}
+					class="rounded border border-gray-600 px-3 py-1 text-sm text-gray-300 transition-colors
+						{currentPage === 0 ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'}"
+				>
+					&lt;
+				</button>
+				<span class="text-sm text-gray-400">{currentPage + 1} / {totalPages}</span>
+				<button
+					type="button"
+					disabled={currentPage >= totalPages - 1}
+					onclick={() => {
+						currentPage++;
+					}}
+					class="rounded border border-gray-600 px-3 py-1 text-sm text-gray-300 transition-colors
+						{currentPage >= totalPages - 1
+						? 'cursor-not-allowed opacity-30'
+						: 'cursor-pointer hover:bg-white/10'}"
+				>
+					&gt;
+				</button>
+			</div>
+		{/if}
 
 		{#if selectedLayer}
 			<div transition:slide class="w-full px-2 text-xs text-gray-400">

@@ -96,6 +96,7 @@
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
+		showGeoRefForm: boolean;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -127,6 +128,7 @@
 		searchResults,
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
+		showGeoRefForm,
 		focusFeature
 	}: Props = $props();
 
@@ -167,6 +169,10 @@
 		// ソースとレイヤーの作成
 		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
 		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
+
+		if (!import.meta.env.PROD) {
+			console.log('debug:entries', _dataEntries);
+		}
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || showZoneForm) {
@@ -542,6 +548,31 @@
 			mapStore.releaseEsriProtocol();
 		}
 
+		const isCogEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'cog';
+		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
+
+		if (hasCogLayer) {
+			mapStore.ensureCogProtocol();
+		} else {
+			mapStore.releaseCogProtocol();
+		}
+
+		const isMbtilesEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'mbtiles';
+		const hasMbtilesLayer =
+			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
+
+		if (hasMbtilesLayer) {
+			mapStore.ensureMbtilesProtocol();
+		} else {
+			mapStore.releaseMbtilesProtocol();
+		}
+
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
 
 		mapStore.setStyle(mapStyle);
@@ -576,7 +607,8 @@
 		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === 'gltf'
+			(entry) =>
+				entry.type === 'model' && (entry.format.type === 'gltf' || entry.format.type === 'obj')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =
@@ -700,6 +732,7 @@
 	onDragover={dragover}
 	onDragleave={dragleave}
 	{onDropFile}
+	disabled={showGeoRefForm}
 	class="h-full w-full"
 >
 	<div
@@ -724,6 +757,7 @@
 					bind:featureMenuData
 					{showDataEntry}
 					{showZoneForm}
+					{showGeoRefForm}
 					bind:showSelectionMarker
 				/>
 			{/if}

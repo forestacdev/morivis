@@ -122,7 +122,8 @@
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: 'GML' }
 			);
 
 			if (entry) {
@@ -168,7 +169,8 @@
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: 'GML' }
 			);
 
 			if (entry) {

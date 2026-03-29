@@ -6,14 +6,16 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import type { VectorLayerType } from '$routes/map/data/types/vector/style';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		label?: string | null;
 		value: string;
 		pattern?: SpritePatternId | null;
+		layerType?: VectorLayerType;
 	}
-	let { label, value = $bindable(), pattern = $bindable() }: Props = $props();
+	let { label, value = $bindable(), pattern = $bindable(), layerType }: Props = $props();
 
 	const patternBlackList: SpritePatternId[] = [
 		'tmpoly-caret-200-black',
@@ -159,20 +161,13 @@
 
 	let imageSrc = $derived.by(() => {
 		if (!pattern) return null;
-		// パターンIDから画像を取得
-
 		const image = mapStore.getImage(pattern);
-		if (!image) {
-			console.warn('Image not found for pattern');
-			return null;
-		}
-		// 画像データを取得してパターン画像を生成
+		if (!image) return null;
 		return createTiledPatternImage(image);
 	});
 
 	let showColorPallet = $state<boolean>(false);
 	let containerRef = $state<HTMLElement>();
-	// if (label === 'スギ') showColorPallet = true; // デバッグ用
 
 	let selectedColorBrewerScheme = $state<'Paired' | 'Set3'>('Paired');
 	let selectedPpattern = $state<'black' | 'white'>('black');
@@ -266,9 +261,11 @@
 			</div>
 
 			<div class="flex w-full items-center justify-center pb-2"></div>
-			<!-- TODO:ラインやポイントのパターン選択UIを追加 -- >
 			<!-- NOTE:patternが存在するかどうか -->
-			{#if pattern || pattern === null}
+			{#if pattern && layerType === 'fill'}
+				<div class="bg-base mb-4 h-[1px] w-full"></div>
+
+				<!-- ポリゴンパターン選択UI -->
 				{#snippet patternButton(_pattern: SpritePatternId)}
 					<button
 						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
@@ -287,7 +284,6 @@
 						{/if}
 					</button>
 				{/snippet}
-				<div class="bg-base mb-4 h-[1px] w-full"></div>
 				<HorizontalSelectBox
 					bind:group={selectedPpattern}
 					options={[

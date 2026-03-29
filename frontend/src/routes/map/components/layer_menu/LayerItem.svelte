@@ -66,7 +66,7 @@
 			layerEntry.type === 'vector' &&
 			layerEntry.format.geometryType &&
 			layerEntry.format.type === 'geojson' &&
-			layerEntry?.metaData.attribution === 'カスタムデータ'
+			layerEntry?.metaData.isUserUploaded
 		);
 	});
 
@@ -76,7 +76,7 @@
 			layerEntry.format.type === 'image' &&
 			'style' in layerEntry &&
 			(layerEntry as { style: { type: string } }).style.type === 'tiff' &&
-			layerEntry?.metaData.attribution === 'カスタムデータ'
+			layerEntry?.metaData.isUserUploaded
 		);
 	});
 
@@ -136,9 +136,39 @@
 	};
 
 	// レイヤーの削除
+	const revokeBlobUrls = () => {
+		if (!layerEntry) return;
+		// GeoJSON内のBlobURL（位置情報付き写真等）を解放
+		if (layerEntry.type === 'vector' && layerEntry.format.type === 'geojson') {
+			const geojson = GeojsonCache.get(layerEntry.id);
+			if (geojson) {
+				for (const f of geojson.features) {
+					const props = f.properties as Record<string, unknown> | null;
+					if (props) {
+						for (const v of Object.values(props)) {
+							if (typeof v === 'string' && v.startsWith('blob:')) {
+								URL.revokeObjectURL(v);
+							}
+						}
+					}
+				}
+			}
+		}
+		// GLB/OBJ/MTLのBlobURL解放
+		if (layerEntry.type === 'model' && 'url' in layerEntry.format) {
+			const url = (layerEntry.format as { url?: string }).url;
+			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+			const mtlUrl = (layerEntry.format as { mtlUrl?: string }).mtlUrl;
+			if (mtlUrl?.startsWith('blob:')) URL.revokeObjectURL(mtlUrl);
+		}
+	};
+
 	const removeLayer = () => {
 		$isStyleEdit = false;
 		if (!layerEntry) return;
+
+		// BlobURLの解放
+		revokeBlobUrls();
 
 		// キャッシュの解放
 		if (isTiffCustomLayer) {
@@ -415,6 +445,7 @@
 	tabindex="0"
 	aria-label="レイヤー"
 >
+	<!-- 縦棒 -->
 	{#if !$isStyleEdit && !$showDataMenu}
 		<div
 			transition:slide={{ duration: 200, axis: 'x' }}
@@ -427,23 +458,25 @@
 			></div>
 		</div>
 	{/if}
+
+	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height] c-rounded relative flex translate-z-0 cursor-move justify-center p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height] border-sub c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
 			: ''} {$showDataMenu || $isStyleEdit
-			? 'w-[66px]'
+			? 'w-[68.48px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
-			: 'border-sub border-1 bg-black'} "
+			: 'bg-black'}"
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
 		tabindex="0"
 	>
-		<!-- エフェクト -->
+		<!-- 選択中リップルエフェクト -->
 		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
 			<div
 				class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
@@ -453,6 +486,7 @@
 			></div>
 		{/if}
 
+		<!-- 背景アイコン -->
 		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
 			<div
 				transition:fade={{ duration: 100 }}
@@ -476,6 +510,11 @@
 				{#if layerEntry.metaData.location === '世界'}
 					<div class="grid place-items-center">
 						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+					</div>
+				{/if}
+				{#if layerEntry.metaData.isUserUploaded}
+					<div class="grid place-items-center">
+						<Icon icon="mdi:file-upload-outline" class="h-18 w-18 rotate-6 text-base" />
 					</div>
 				{/if}
 			</div>
@@ -627,7 +666,7 @@
 			></div>
 		{/if}
 
-		<!-- レイヤータイプ -->
+		<!-- レイヤータイプ (データカタログ) -->
 		{#if $showDataMenu}
 			<div
 				class="bg-base text-main pointer-events-none absolute bottom-[0px] left-[0px] z-10 grid place-items-center rounded-full border-4 border-black p-1"
@@ -635,13 +674,6 @@
 				<Icon icon={getLayerIcon(layerType)} class="h-4 w-4" />
 			</div>
 		{/if}
-
-		<!-- 選択中 -->
-		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
-			<div
-				class="c-ripple-anime absolute top-0 -z-10 aspect-square shrink-0 -translate-y-[3px] rounded-r-full p-9 shadow-md"
-			></div>
-		{/if} -->
 	</div>
 </div>
 

@@ -17,6 +17,7 @@
 		type RasterBands,
 		type BandDataRange
 	} from '$routes/map/utils/file/geotiff';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';
@@ -100,16 +101,18 @@
 				const viewWidth = bounds.getEast() - bounds.getWest();
 				const viewHeight = bounds.getNorth() - bounds.getSouth();
 
+				// 緯度によるメルカトル歪み補正
+				const cosLat = Math.cos((center.lat * Math.PI) / 180);
 				const aspect = data.imageWidth / data.imageHeight;
 				const size = Math.min(viewWidth, viewHeight) * 0.3;
 
 				let halfW: number;
 				let halfH: number;
 				if (aspect >= 1) {
-					halfW = size / 2;
+					halfW = size / 2 / cosLat;
 					halfH = size / (2 * aspect);
 				} else {
-					halfW = (size * aspect) / 2;
+					halfW = (size * aspect) / 2 / cosLat;
 					halfH = size / 2;
 				}
 
@@ -175,52 +178,6 @@
 		updatePreview();
 	};
 
-	/**
-	 * バンドデータから512x512のサムネイル画像を生成
-	 */
-	const generateThumbnail = (bands: RasterBands, width: number, height: number): string => {
-		const size = Math.min(width, height);
-		const sx = Math.floor((width - size) / 2);
-		const sy = Math.floor((height - size) / 2);
-
-		const thumbSize = 512;
-		const canvas = new OffscreenCanvas(thumbSize, thumbSize);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbSize, thumbSize);
-		const data = imgData.data;
-
-		const hasRgb = bands.length >= 3;
-
-		for (let ty = 0; ty < thumbSize; ty++) {
-			for (let tx = 0; tx < thumbSize; tx++) {
-				const srcX = sx + Math.floor((tx * size) / thumbSize);
-				const srcY = sy + Math.floor((ty * size) / thumbSize);
-				const srcIdx = srcY * width + srcX;
-				const dstIdx = (ty * thumbSize + tx) * 4;
-
-				if (hasRgb) {
-					data[dstIdx] = bands[0][srcIdx];
-					data[dstIdx + 1] = bands[1][srcIdx];
-					data[dstIdx + 2] = bands[2][srcIdx];
-				} else {
-					const v = bands[0][srcIdx];
-					data[dstIdx] = v;
-					data[dstIdx + 1] = v;
-					data[dstIdx + 2] = v;
-				}
-				data[dstIdx + 3] = 255;
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbSize;
-		tempCanvas.height = thumbSize;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
-
 	const registration = async () => {
 		if (!geoRefData) return;
 
@@ -235,7 +192,11 @@
 			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
 			GeoTiffCache.setNumBands(data.entryId, data.numBands);
 
-			const mapImage = generateThumbnail(data.parsedBands, data.imageWidth, data.imageHeight);
+			const mapImage = generateThumbnail({
+				bands: data.parsedBands,
+				width: data.imageWidth,
+				height: data.imageHeight
+			});
 
 			await encodeAllBandsToTerrarium(
 				data.entryId,
@@ -257,6 +218,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoTIFF',
 					name: data.entryName || '画像データ',
 					tileSize: 256,
 					bounds: bbox,

@@ -7,9 +7,10 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
+	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
-	import GlbForm from '$routes/map/components/upload/form/GlbForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
@@ -18,6 +19,8 @@
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
+	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
+	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
@@ -76,7 +79,7 @@
 			transition:scale={{ duration: 300, start: 0.9 }}
 			class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
 				? 'h-[600px]'
-				: 'max-h-[600px]'}"
+				: 'max-h-[700px]'}"
 		>
 			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
@@ -131,7 +134,19 @@
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'glb'}
-				<GlbForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<MeshModelForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'geophoto'}
+				<GeoPhotoForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'geopdf'}
+				<GeoPdfForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showGeoRefForm
+					bind:geoRefData
+				/>
 			{/if}
 			{#if showDialogType === 'geotiff'}
 				<GeoTiffForm
@@ -242,6 +257,17 @@
 			{/if}
 			{#if showDialogType === 'hdf5'}
 				<Hdf5Form bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'mojxml'}
+				<MojXmlForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'sima'}
 				<SimaForm

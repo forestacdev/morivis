@@ -27,7 +27,7 @@
 </script>
 
 <!-- 色 -->
-<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
+<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption layerType="fill" />
 
 {#if layerEntry.style.extrusion}
 	<Accordion label={'3D表現'} icon={'iconoir:3d-select-solid'} bind:value={show3DOption}>

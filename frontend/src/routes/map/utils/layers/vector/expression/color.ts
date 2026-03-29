@@ -155,6 +155,44 @@ export const getPatternExpression = (colors: ColorsStyle) => {
 	}
 };
 
+/**
+ * ポイントアイコン用のicon-image式を返す
+ * single: アイコンID文字列を返す
+ * match: ['match', ['get', key], category, iconId, ...] 式を返す
+ */
+export const getIconExpression = (
+	colors: ColorsStyle
+): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
+	const key = colors.key;
+	const expressionData = colors.expressions.find((expression) => expression.key === key);
+	if (!expressionData) return null;
+
+	switch (expressionData.type) {
+		case 'single': {
+			const pattern = expressionData.mapping.pattern;
+			if (!pattern) return null;
+			return pattern;
+		}
+		case 'match': {
+			const { categories, patterns } = expressionData.mapping;
+			if (!patterns) return null;
+			const hasIcon = patterns.some((p) => p !== null);
+			if (!hasIcon) return null;
+
+			const expression: (string | string[] | null)[] = ['match', ['get', expressionData.key]];
+			for (let i = 0; i < categories.length; i++) {
+				if (patterns[i] !== null) {
+					expression.push(categories[i] as string, patterns[i]);
+				}
+			}
+			expression.push('');
+			return expression as DataDrivenPropertyValueSpecification<ResolvedImageSpecification>;
+		}
+		default:
+			return null;
+	}
+};
+
 export const getSelectedColorExpression = (
 	colorExpression: DataDrivenPropertyValueSpecification<ColorSpecification>
 ): DataDrivenPropertyValueSpecification<ColorSpecification> => {

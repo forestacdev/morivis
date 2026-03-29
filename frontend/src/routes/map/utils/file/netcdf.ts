@@ -276,3 +276,74 @@ export const getDimensionValues = (
 	}
 	return null;
 };
+
+/**
+ * CF Conventions の時間units文字列をパースする
+ * 例: "hours since 1900-01-01 00:00:00", "days since 1970-01-01", "seconds since 2000-1-1 0:0:0"
+ */
+const parseTimeUnits = (units: string): { stepMs: number; epoch: Date } | null => {
+	const match = units.match(
+		/^(second|minute|hour|day|month|year)s?\s+since\s+(\d{4})-?(\d{1,2})-?(\d{1,2})(?:[T\s]+(\d{1,2}):?(\d{1,2})?:?(\d{1,2})?)?/i
+	);
+	if (!match) return null;
+
+	const unit = match[1].toLowerCase();
+	const epoch = new Date(
+		Date.UTC(
+			Number(match[2]),
+			Number(match[3]) - 1,
+			Number(match[4]),
+			Number(match[5] ?? 0),
+			Number(match[6] ?? 0),
+			Number(match[7] ?? 0)
+		)
+	);
+
+	const MS_PER_SECOND = 1000;
+	const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+	const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+	const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+	const stepMs: Record<string, number> = {
+		second: MS_PER_SECOND,
+		minute: MS_PER_MINUTE,
+		hour: MS_PER_HOUR,
+		day: MS_PER_DAY,
+		month: 30 * MS_PER_DAY,
+		year: 365 * MS_PER_DAY
+	};
+
+	return { stepMs: stepMs[unit] ?? MS_PER_HOUR, epoch };
+};
+
+/**
+ * NetCDFの時間次元の値をISO 8601文字列に変換する
+ * CF Conventions の "units since epoch" 形式を解釈する
+ * 変換できない場合は元の値をそのまま文字列化して返す
+ */
+export const resolveTimeValues = (
+	rawValues: number[] | string[],
+	info: NetCDFInfo,
+	dimensionName: string
+): string[] => {
+	// 既に文字列の場合はそのまま返す
+	if (rawValues.length > 0 && typeof rawValues[0] === 'string') {
+		return rawValues as string[];
+	}
+
+	const coordVar = info.variables.find((v) => v.name === dimensionName);
+	const units = coordVar?.attributes['units'];
+	if (!units || typeof units !== 'string') {
+		return rawValues.map((v) => String(v));
+	}
+
+	const parsed = parseTimeUnits(units);
+	if (!parsed) {
+		return rawValues.map((v) => String(v));
+	}
+
+	return (rawValues as number[]).map((v) => {
+		const ms = parsed.epoch.getTime() + v * parsed.stepMs;
+		return new Date(ms).toISOString();
+	});
+};

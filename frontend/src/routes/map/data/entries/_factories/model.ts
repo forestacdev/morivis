@@ -93,8 +93,11 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 				lng: transform.lng,
 				lat: transform.lat,
 				altitude: transform.altitude,
+				heightOffset: 0,
 				scale: transform.scale ?? 1,
-				rotationY: transform.rotationY ?? 0
+				rotationX: 0,
+				rotationY: transform.rotationY ?? 0,
+				rotationZ: 0
 			}
 		}
 	};

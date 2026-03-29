@@ -21,6 +21,7 @@
 		type RasterBands
 	} from '$routes/map/utils/file/geotiff';
 	import { PureGrib2Parser } from '$routes/map/utils/file/grib2';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -113,77 +114,6 @@
 		}
 	};
 
-	/**
-	 * サムネイル生成（メルカトル補正）
-	 */
-	const generateThumbnail = (
-		data: Float32Array,
-		width: number,
-		height: number,
-		dataMin: number,
-		dataMax: number,
-		bbox: [number, number, number, number]
-	): string => {
-		const DEG2RAD = Math.PI / 180;
-		const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
-		const mercYMin = latToMercY(bbox[1]);
-		const mercYMax = latToMercY(bbox[3]);
-		const lngRange = bbox[2] - bbox[0];
-		const mercYRange = mercYMax - mercYMin;
-		const mercAspect = mercYRange / (lngRange * DEG2RAD);
-
-		const thumbSize = 512;
-		let thumbW: number, thumbH: number;
-		if (mercAspect > 1) {
-			thumbH = thumbSize;
-			thumbW = Math.round(thumbSize / mercAspect);
-		} else {
-			thumbW = thumbSize;
-			thumbH = Math.round(thumbSize * mercAspect);
-		}
-
-		const canvas = new OffscreenCanvas(thumbW, thumbH);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbW, thumbH);
-		const pixels = imgData.data;
-		const invRange = dataMax !== dataMin ? 255 / (dataMax - dataMin) : 0;
-
-		for (let ty = 0; ty < thumbH; ty++) {
-			const mercY = mercYMax - (ty / thumbH) * mercYRange;
-			const lat = (2 * Math.atan(Math.exp(mercY)) - Math.PI / 2) / DEG2RAD;
-			const srcY = Math.floor(((bbox[3] - lat) / (bbox[3] - bbox[1])) * height);
-
-			for (let tx = 0; tx < thumbW; tx++) {
-				const srcX = Math.floor((tx / thumbW) * width);
-				const dstIdx = (ty * thumbW + tx) * 4;
-
-				if (srcX < 0 || srcX >= width || srcY < 0 || srcY >= height) {
-					pixels[dstIdx + 3] = 0;
-					continue;
-				}
-
-				const val = data[srcY * width + srcX];
-				if (val === 0 && srcX === 0 && srcY === 0) {
-					pixels[dstIdx + 3] = 0;
-				} else {
-					const normalized = Math.max(0, Math.min(255, (val - dataMin) * invRange));
-					pixels[dstIdx] = normalized;
-					pixels[dstIdx + 1] = normalized;
-					pixels[dstIdx + 2] = normalized;
-					pixels[dstIdx + 3] = 255;
-				}
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbW;
-		tempCanvas.height = thumbH;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
-
 	const registration = async () => {
 		if (!analyzed || selectedIndices.length === 0) return;
 
@@ -214,14 +144,13 @@
 			let mapImage: string | undefined;
 			if (rawBbox[0] !== rawBbox[2] && rawBbox[1] !== rawBbox[3]) {
 				try {
-					mapImage = generateThumbnail(
-						firstMsg.values,
-						nx,
-						ny,
-						ranges[0].min,
-						ranges[0].max,
-						rawBbox
-					);
+					mapImage = generateThumbnail({
+						bands: [firstMsg.values],
+						width: nx,
+						height: ny,
+						bbox: rawBbox,
+						ranges
+					});
 				} catch {
 					/* ignore */
 				}
@@ -251,6 +180,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GRIB2',
 					name: entryName || 'GPVデータ',
 					tileSize: 256,
 					bounds: resolvedBbox,

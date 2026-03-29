@@ -13,24 +13,37 @@ interface GeoJSONFeature {
 }
 
 interface WorkerMessageData {
-	feature: GeoJSONFeature;
+	features: GeoJSONFeature[];
 	prjContent: string;
-	featureIndex: number;
+	batchIndex: number;
 }
 
-const flattenCoordinates = (coordinates: NestedCoordinates, flattened: number[] = []): number[] => {
-	// Point: coordinates = [x, y] (数値の配列)
+/**
+ * 座標の次元数を検出する（2D or 3D）
+ */
+const detectStride = (coordinates: NestedCoordinates): number => {
 	if (typeof coordinates[0] === 'number') {
-		flattened.push(...(coordinates as number[]));
+		return coordinates.length;
+	}
+	return detectStride(coordinates[0] as NestedCoordinates);
+};
+
+const flattenCoordinates = (coordinates: NestedCoordinates, flattened: number[] = []): number[] => {
+	if (typeof coordinates[0] === 'number') {
+		for (let i = 0; i < coordinates.length; i++) {
+			flattened.push(coordinates[i] as number);
+		}
 		return flattened;
 	}
-	(coordinates as NestedCoordinates[]).forEach((coord) => {
+	for (const coord of coordinates as NestedCoordinates[]) {
 		if (Array.isArray(coord[0])) {
 			flattenCoordinates(coord as NestedCoordinates, flattened);
 		} else {
-			flattened.push(...(coord as number[]));
+			for (let i = 0; i < coord.length; i++) {
+				flattened.push(coord[i] as number);
+			}
 		}
-	});
+	}
 	return flattened;
 };
 
@@ -40,7 +53,6 @@ const unflattenCoordinates = (
 ): NestedCoordinates => {
 	let index = 0;
 	const unflattenRecursive = (structure: NestedCoordinates): NestedCoordinates => {
-		// Point: structure = [x, y] (数値の配列)
 		if (typeof structure[0] === 'number') {
 			const coordLength = structure.length;
 			const coord = flattened.slice(index, index + coordLength);
@@ -61,39 +73,54 @@ const unflattenCoordinates = (
 	return unflattenRecursive(originalStructure);
 };
 
+// proj4コンバーターのキャッシュ
+let cachedConverter: proj4.Converter | null = null;
+let cachedPrj = '';
+
+const transformFeature = (feature: GeoJSONFeature): GeoJSONFeature => {
+	const stride = detectStride(feature.geometry.coordinates);
+	const flattened = flattenCoordinates(feature.geometry.coordinates);
+	const convertedFlattened = new Array<number>(flattened.length);
+
+	for (let i = 0; i < flattened.length; i += stride) {
+		const converted = cachedConverter!.forward([flattened[i], flattened[i + 1]]);
+		convertedFlattened[i] = converted[0];
+		convertedFlattened[i + 1] = converted[1];
+		for (let j = 2; j < stride; j++) {
+			convertedFlattened[i + j] = flattened[i + j];
+		}
+	}
+
+	return {
+		...feature,
+		geometry: {
+			...feature.geometry,
+			coordinates: unflattenCoordinates(convertedFlattened, feature.geometry.coordinates)
+		}
+	};
+};
+
 onmessage = (event: MessageEvent<WorkerMessageData>) => {
-	const { feature, prjContent, featureIndex } = event.data;
-	// console.log(`Worker processing featureIndex: ${featureIndex}`);
+	const { features, prjContent, batchIndex } = event.data;
 
 	try {
-		const originalCoordinatesStructure = JSON.parse(JSON.stringify(feature.geometry.coordinates));
-		const flattened = flattenCoordinates(feature.geometry.coordinates); // ここを修正
-		const convertedFlattened = [];
-
-		for (let i = 0; i < flattened.length; i += 2) {
-			const converted = proj4(prjContent, 'EPSG:4326', [flattened[i], flattened[i + 1]]);
-			convertedFlattened.push(...converted);
+		if (prjContent !== cachedPrj) {
+			cachedConverter = proj4(prjContent, 'EPSG:4326');
+			cachedPrj = prjContent;
 		}
 
-		const transformedFeature = {
-			...feature,
-			geometry: {
-				...feature.geometry,
-				coordinates: unflattenCoordinates(convertedFlattened, originalCoordinatesStructure)
-			}
-		};
+		const transformedFeatures = features.map(transformFeature);
 
 		postMessage({
-			type: 'TRANSFORMED_FEATURE',
-			transformedFeature: transformedFeature,
-			featureIndex: featureIndex // 元のインデックスを返す（順序不問なら不要だがデバッグに便利）
+			type: 'TRANSFORMED_BATCH',
+			transformedFeatures,
+			batchIndex
 		});
 	} catch (error) {
-		console.error(`Error in worker processing featureIndex ${featureIndex}:`, error);
 		postMessage({
 			type: 'ERROR',
 			error: error instanceof Error ? error.message : String(error),
-			featureIndex: featureIndex
+			batchIndex
 		});
 	}
 };

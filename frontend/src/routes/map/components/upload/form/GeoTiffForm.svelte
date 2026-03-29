@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { fromArrayBuffer } from 'geotiff';
-	import * as pdfjsLib from 'pdfjs-dist';
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
@@ -25,6 +24,7 @@
 		type RasterBands,
 		type BandDataRange
 	} from '$routes/map/utils/file/geotiff';
+	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -84,14 +84,13 @@
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
 			return (
-				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp|pdf)$/i.test(f.name)) ?? null
+				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ?? null
 			);
 		}
 		return dropFile;
 	});
 
 	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
-	const isPdf = $derived(imageFile ? /\.pdf$/i.test(imageFile.name) : false);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -143,124 +142,13 @@
 	$effect(() => {
 		if (imageFile) {
 			entryName = imageFile.name.replace(/\.[^.]+$/, '');
-			if (isPdf) {
-				analyzePdf(imageFile);
-			} else if (isPlainImage) {
+			if (isPlainImage) {
 				analyzeImage(imageFile);
 			} else {
 				analyzeGeoTiff(imageFile);
 			}
 		}
 	});
-
-	/**
-	 * PDFの1ページ目をCanvasにレンダリングしてRGB 3バンドデータを抽出
-	 */
-	const analyzePdf = async (file: File) => {
-		isProcessing.set(true);
-		analyzed = false;
-		resolvedBbox = null;
-		hasTfw = false;
-		parsedBands = null;
-
-		try {
-			pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-				'pdfjs-dist/build/pdf.worker.min.mjs',
-				import.meta.url
-			).href;
-
-			const arrayBuffer = await file.arrayBuffer();
-			const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-			const page = await pdf.getPage(1);
-
-			// 2倍スケールで高解像度レンダリング
-			const scale = 2;
-			const viewport = page.getViewport({ scale });
-			const width = Math.floor(viewport.width);
-			const height = Math.floor(viewport.height);
-
-			const canvas = document.createElement('canvas');
-			canvas.width = width;
-			canvas.height = height;
-			const ctx = canvas.getContext('2d');
-			if (!ctx) throw new Error('Canvas context取得失敗');
-
-			await page.render({ canvas, viewport }).promise;
-
-			const imgData = ctx.getImageData(0, 0, width, height);
-			const rgba = imgData.data;
-			const pixelCount = width * height;
-
-			const rBand = new Uint8Array(pixelCount);
-			const gBand = new Uint8Array(pixelCount);
-			const bBand = new Uint8Array(pixelCount);
-			for (let i = 0; i < pixelCount; i++) {
-				rBand[i] = rgba[i * 4];
-				gBand[i] = rgba[i * 4 + 1];
-				bBand[i] = rgba[i * 4 + 2];
-			}
-
-			imageWidth = width;
-			imageHeight = height;
-
-			const bands: RasterBands = [rBand, gBand, bBand];
-			numBands = 3;
-
-			const id = `geotiff_${crypto.randomUUID()}`;
-			entryId = id;
-			parsedNodata = null;
-
-			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
-			dataRanges = ranges;
-
-			bandMinMax = ranges[0];
-			multiBandMinMax = {
-				r: ranges[0],
-				g: ranges[1],
-				b: ranges[2]
-			};
-
-			parsedBands = bands;
-
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, 3);
-
-			analyzed = true;
-
-			// PDFをPNG Blobに変換（MapLibre imageソースで表示するため）
-			const pngBlob = await new Promise<Blob>((resolve, reject) => {
-				canvas.toBlob(
-					(blob) => (blob ? resolve(blob) : reject(new Error('PNG変換に失敗しました'))),
-					'image/png'
-				);
-			});
-			const pngFile = new File([pngBlob], file.name.replace(/\.pdf$/i, '.png'), {
-				type: 'image/png'
-			});
-
-			// PDFには位置情報がないので常にジオリファレンスフォームへ
-			geoRefData = {
-				entryId,
-				entryName,
-				parsedBands: parsedBands!,
-				parsedNodata,
-				dataRanges,
-				numBands,
-				imageWidth,
-				imageHeight,
-				bandMinMax,
-				multiBandMinMax,
-				imageFile: pngFile
-			};
-			showGeoRefForm = true;
-			showDialogType = null;
-		} catch (e) {
-			showNotification(e instanceof Error ? e.message : 'PDFの解析に失敗しました', 'error');
-			console.error(e);
-		} finally {
-			isProcessing.set(false);
-		}
-	};
 
 	/**
 	 * PNG/JPG画像からRGB 3バンドデータを抽出
@@ -290,14 +178,20 @@
 			const rgba = imgData.data;
 			const pixelCount = width * height;
 
-			// RGBAからR/G/B各バンドのTypedArrayを生成
-			const rBand = new Uint8Array(pixelCount);
-			const gBand = new Uint8Array(pixelCount);
-			const bBand = new Uint8Array(pixelCount);
+			// RGBAからR/G/B各バンドのTypedArrayを生成（透明ピクセルはNaN）
+			const rBand = new Float32Array(pixelCount);
+			const gBand = new Float32Array(pixelCount);
+			const bBand = new Float32Array(pixelCount);
 			for (let i = 0; i < pixelCount; i++) {
-				rBand[i] = rgba[i * 4];
-				gBand[i] = rgba[i * 4 + 1];
-				bBand[i] = rgba[i * 4 + 2];
+				if (rgba[i * 4 + 3] === 0) {
+					rBand[i] = NaN;
+					gBand[i] = NaN;
+					bBand[i] = NaN;
+				} else {
+					rBand[i] = rgba[i * 4];
+					gBand[i] = rgba[i * 4 + 1];
+					bBand[i] = rgba[i * 4 + 2];
+				}
 			}
 
 			const bands: RasterBands = [rBand, gBand, bBand];
@@ -305,7 +199,7 @@
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 			entryId = id;
-			parsedNodata = null;
+			parsedNodata = NaN;
 
 			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
 			dataRanges = ranges;
@@ -561,54 +455,6 @@
 		}
 	};
 
-	/**
-	 * バンドデータから512x512のサムネイル画像を生成
-	 * 中心から正方形に切り抜く
-	 */
-	const generateThumbnail = (bands: RasterBands, width: number, height: number): string => {
-		const size = Math.min(width, height);
-		const sx = Math.floor((width - size) / 2);
-		const sy = Math.floor((height - size) / 2);
-
-		const thumbSize = 512;
-		const canvas = new OffscreenCanvas(thumbSize, thumbSize);
-		const ctx = canvas.getContext('2d')!;
-		const imgData = ctx.createImageData(thumbSize, thumbSize);
-		const data = imgData.data;
-
-		const hasRgb = bands.length >= 3;
-
-		for (let ty = 0; ty < thumbSize; ty++) {
-			for (let tx = 0; tx < thumbSize; tx++) {
-				const srcX = sx + Math.floor((tx * size) / thumbSize);
-				const srcY = sy + Math.floor((ty * size) / thumbSize);
-				const srcIdx = srcY * width + srcX;
-				const dstIdx = (ty * thumbSize + tx) * 4;
-
-				if (hasRgb) {
-					data[dstIdx] = bands[0][srcIdx];
-					data[dstIdx + 1] = bands[1][srcIdx];
-					data[dstIdx + 2] = bands[2][srcIdx];
-				} else {
-					const v = bands[0][srcIdx];
-					data[dstIdx] = v;
-					data[dstIdx + 1] = v;
-					data[dstIdx + 2] = v;
-				}
-				data[dstIdx + 3] = 255;
-			}
-		}
-
-		ctx.putImageData(imgData, 0, 0);
-		// OffscreenCanvas → data URL via temporary canvas
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = thumbSize;
-		tempCanvas.height = thumbSize;
-		const tempCtx = tempCanvas.getContext('2d')!;
-		tempCtx.putImageData(imgData, 0, 0);
-		return tempCanvas.toDataURL('image/png');
-	};
-
 	const registration = async () => {
 		if (!analyzed || !entryId || !resolvedBbox || !parsedBands) return;
 
@@ -616,7 +462,11 @@
 
 		try {
 			// サムネイル画像を生成（Terrarium化前にバンドデータから作成）
-			const mapImage = generateThumbnail(parsedBands, imageWidth, imageHeight);
+			const mapImage = generateThumbnail({
+				bands: parsedBands,
+				width: imageWidth,
+				height: imageHeight
+			});
 
 			// 全バンドをTerrariumエンコード
 			await encodeAllBandsToTerrarium(
@@ -642,6 +492,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoTIFF',
 					name: entryName || 'GeoTIFFデータ',
 					tileSize: 256,
 					bounds: resolvedBbox,
@@ -706,9 +557,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold"
-		>{isPdf ? 'PDF' : isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span
-	>
+	<span class="text-2xl font-bold">{isPlainImage ? '画像' : 'GeoTIFF'}ファイルの登録</span>
 </div>
 
 <div

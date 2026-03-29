@@ -215,14 +215,6 @@
 		return Promise.resolve(null as ImageData);
 	});
 
-	const edit = () => {
-		if (targetLayer && targetLayer.type === 'vector') {
-			selectedLayerId.set(targetLayer.id);
-			isStyleEdit.set(true);
-			featureMenuData = null; // Close the feature menu after editing
-		}
-	};
-
 	// URLを省略する関数
 	const truncateUrl = (url: string, maxLength = 50) => {
 		if (url.length <= maxLength) return url;
@@ -416,16 +408,6 @@
 						{/each}
 					{/if}
 				</div>
-			{/if}
-
-			{#if featureMenuData.layerId !== 'fac_poi'}
-				<button
-					onclick={edit}
-					class="c-btn-confirm absolute top-3 left-3 z-10 flex items-center justify-center gap-2 px-3 max-lg:hidden"
-				>
-					<Icon icon="streamline:paint-palette-solid" class="h-6 w-6" />
-					<span class="select-none">スタイルの変更</span>
-				</button>
 			{/if}
 		</div>
 	{/await}

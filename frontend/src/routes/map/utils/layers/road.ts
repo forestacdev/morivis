@@ -247,7 +247,7 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 			'icon-size': [
 				'let',
 				'size',
-				['match', ['get', 'vt_code'], 7701, 0.7, 0.5],
+				['match', ['get', 'vt_code'], 7701, 1.4, 1.0],
 				['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, ['var', 'size']]]
 			],
 			'symbol-sort-key': ['match', ['get', 'vt_code'], 2901, 88, 2903, 50, 2904, 49, 7701, 111, 0],

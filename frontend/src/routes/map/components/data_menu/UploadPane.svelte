@@ -14,9 +14,25 @@
 		showDialogType = $bindable()
 	}: Props = $props();
 
-	const inputFile = (e: Event) => {
+	const inputFile = async (e: Event) => {
 		const files = (e.target as HTMLInputElement).files;
 		if (!files || files.length === 0) return;
+
+		// 単一ZIPファイルの場合は展開
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// 展開失敗時は通常フローへ
+			}
+		}
+
 		if (files.length === 1) {
 			dropFile = files[0];
 		} else {
@@ -36,7 +52,7 @@
 		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: '3dtiles', label: '3D Tiles' },
 		{ type: 'demxml', label: '基盤地図DEM' },
-		{ type: 'stac', label: 'STAC API' }
+		{ type: 'stac', label: 'STAC / COG' }
 	];
 	let isDragover = $state(false);
 
@@ -50,6 +66,50 @@
 		isDragover = false;
 	};
 	// ドロップ完了時にファイルを取得
+	/** FileSystemEntryからFileを取得 */
+	const entryToFile = (entry: FileSystemFileEntry): Promise<File> =>
+		new Promise((resolve, reject) => entry.file(resolve, reject));
+
+	/** ディレクトリを再帰的に読み取り全ファイルを収集 */
+	const readDirectoryRecursive = async (dirEntry: FileSystemDirectoryEntry): Promise<File[]> => {
+		const files: File[] = [];
+		const reader = dirEntry.createReader();
+
+		const readEntries = (): Promise<FileSystemEntry[]> =>
+			new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+
+		let entries: FileSystemEntry[];
+		do {
+			entries = await readEntries();
+			for (const entry of entries) {
+				if (entry.isFile) {
+					files.push(await entryToFile(entry as FileSystemFileEntry));
+				} else if (entry.isDirectory) {
+					files.push(...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry)));
+				}
+			}
+		} while (entries.length > 0);
+
+		return files;
+	};
+
+	/** ZIPファイルを展開してFile配列にする */
+	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
+		const JSZip = (await import('jszip')).default;
+		const zip = await JSZip.loadAsync(zipFile);
+		const files: File[] = [];
+		const entries: [string, import('jszip').JSZipObject][] = [];
+		zip.forEach((path, entry) => {
+			if (!entry.dir) entries.push([path, entry]);
+		});
+		for (const [path, entry] of entries) {
+			const blob = await entry.async('blob');
+			const fileName = path.split('/').pop() ?? path;
+			files.push(new File([blob], fileName, { type: blob.type }));
+		}
+		return files;
+	};
+
 	const drop: (e: DragEvent) => void = async (e) => {
 		e.preventDefault();
 		isDragover = false;
@@ -57,8 +117,39 @@
 		const dataTransfer = e.dataTransfer;
 		if (!dataTransfer) return;
 
+		// フォルダドロップの判定
+		const items = dataTransfer.items;
+		if (items && items.length > 0) {
+			const firstEntry = items[0].webkitGetAsEntry?.();
+			if (firstEntry?.isDirectory) {
+				// フォルダ → 再帰的にファイル収集
+				const allFiles = await readDirectoryRecursive(firstEntry as FileSystemDirectoryEntry);
+				if (allFiles.length > 0) {
+					const dt = new DataTransfer();
+					allFiles.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			}
+		}
+
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
+
+		// 単一ZIPファイルの場合、展開してFileListとして渡す
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((f) => dt.items.add(f));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// ZIP展開失敗時は通常フローへ
+			}
+		}
 
 		dropFile = files;
 	};

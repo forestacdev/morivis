@@ -29,6 +29,7 @@
 	});
 
 	let tileType = $state<'raster' | 'dem'>('raster');
+	let tileSize = $state<'256' | '512'>('256');
 	let demType = $state<DemDataTypeKey>('gsi');
 
 	let isDisabled = $state<boolean>(true);
@@ -57,11 +58,12 @@
 
 	const registration = () => {
 		const url = forms.tileUrl.trim();
+		const size = Number(tileSize) as 256 | 512;
 
 		const entry =
 			tileType === 'dem'
-				? createDemRasterEntry(forms.name, url, { demType })
-				: createRasterEntry(forms.name, url);
+				? createDemRasterEntry(forms.name, url, { demType, tileSize: size })
+				: createRasterEntry(forms.name, url, { tileSize: size });
 
 		if (entry) {
 			showDataEntry = entry;
@@ -89,7 +91,16 @@
 >
 	<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 	<TextForm bind:value={forms.tileUrl} label="タイルURL" error={errors.tileUrl} />
-
+	<div class="w-full p-2">
+		<HorizontalSelectBox
+			label="タイルサイズ"
+			bind:group={tileSize}
+			options={[
+				{ key: '256', name: '256px' },
+				{ key: '512', name: '512px' }
+			]}
+		/>
+	</div>
 	<div class="w-full p-2">
 		<HorizontalSelectBox
 			label="タイルタイプ"

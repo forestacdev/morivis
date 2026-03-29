@@ -11,5 +11,6 @@ export const DEFAULT_CUSTOM_META_DATA: BaseMetaData = {
 	minZoom: 0,
 	tags: [],
 	bounds: WEB_MERCATOR_WORLD_BBOX,
-	xyzImageTile: { x: 0, y: 0, z: 0 }
+	xyzImageTile: { x: 0, y: 0, z: 0 },
+	isUserUploaded: true
 };

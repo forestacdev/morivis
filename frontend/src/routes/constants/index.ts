@@ -119,6 +119,7 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 export const INT_ADD_LAYER_IDS = [
 	// 'ensyurin_owl',
 	// 'ensyurin_kikenboku_h25',
+	// 'disaster_lore_all',
 	'ensyurin_road',
 	'ensyurin_syouhan',
 	'national_forest_stand'

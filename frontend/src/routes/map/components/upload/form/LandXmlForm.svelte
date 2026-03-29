@@ -144,6 +144,7 @@
 				format: { type: 'image', url: '' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'LandXML',
 					name: `${entryName}_dem`,
 					tileSize: 256,
 					bounds: resolvedBbox,

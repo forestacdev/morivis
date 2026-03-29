@@ -21,7 +21,7 @@
 </script>
 
 <!-- 色 -->
-<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption />
+<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption layerType="line" />
 <NumberOption
 	label={'ライン幅'}
 	icon={'mingcute:line-fill'}

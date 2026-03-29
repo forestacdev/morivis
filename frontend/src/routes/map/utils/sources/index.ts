@@ -42,6 +42,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
+import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
@@ -69,14 +70,20 @@ export const createSourcesItems = async (
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
+							const timeIdx = style.timeDimension?.currentIndex ?? -1;
 
 							let styleID;
 							if (mode === 'single') {
 								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}`;
+								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
 							} else if (mode === 'multi') {
 								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}`;
+								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
+							}
+
+							// NetCDF時間ステップの遅延エンコード
+							if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
+								await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
 							}
 
 							let imageData: string | undefined;
@@ -128,9 +135,16 @@ export const createSourcesItems = async (
 								} as RasterSourceSpecification;
 							}
 						} else {
+							let tileUrl = convertTmsToXyz(format.url);
+							if (style.timeDimension) {
+								const timeValue = style.timeDimension.values[style.timeDimension.currentIndex];
+								if (timeValue) {
+									tileUrl = tileUrl.replace('{time}', timeValue);
+								}
+							}
 							items[sourceId] = {
 								type: 'raster',
-								tiles: [convertTmsToXyz(format.url)],
+								tiles: [tileUrl],
 								maxzoom: metaData.maxZoom,
 								minzoom: metaData.minZoom,
 								scheme: detectTileScheme(format.url),
@@ -202,6 +216,30 @@ export const createSourcesItems = async (
 							attribution: metaData.attribution,
 							bounds: metaData.bounds
 						} as RasterSourceSpecification;
+					} else if (format.type === 'cog') {
+						if (style.type === 'tiff') {
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							let tileUrl: string;
+
+							if (mode === 'single') {
+								const u = visualization.uniformsData.single;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${u.min}&max=${u.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							} else {
+								const u = visualization.uniformsData.multi;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${u.r.min}&rMax=${u.r.max}&gMin=${u.g.min}&gMax=${u.g.max}&bMin=${u.b.min}&bMax=${u.b.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							}
+
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [tileUrl],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds
+							} as RasterSourceSpecification;
+						}
 					}
 					break;
 				}
@@ -223,10 +261,9 @@ export const createSourcesItems = async (
 							data: geojson,
 							generateId: true,
 							maxzoom: metaData.maxZoom,
-							attribution: metaData.attribution
-
+							attribution: metaData.attribution,
+							tolerance: 0.5
 							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
-							// tolerance: 1.5 // ピクセル単位で許容誤差を増加
 							// TODO: 線のグラデーションをする場合は以下を追加
 						} as GeoJSONSourceSpecification;
 					} else if (format.type === 'mvt') {

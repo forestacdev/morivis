@@ -58,7 +58,7 @@
 			search(inputSearchWord);
 		}
 	}}
-	placeholder={isFocus ? '施設名 / 住所 / 座標 / データ名' : '検索'}
+	placeholder={isFocus ? '施設名 / 住所 / 郵便番号 / 座標 / データ名' : '検索'}
 	onfocus={() => {
 		isFocus = true;
 		showSearchSuggest.set(true);

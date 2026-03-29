@@ -4,20 +4,21 @@
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import type { ColorsStyle } from '$routes/map/data/types/vector/style';
+	import type { ColorsStyle, VectorLayerType } from '$routes/map/data/types/vector/style';
 	interface Props {
 		colorStyle: ColorsStyle;
 		showColorOption: boolean;
+		layerType?: VectorLayerType;
 	}
 
-	let { colorStyle = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let { colorStyle = $bindable(), showColorOption = $bindable(), layerType }: Props = $props();
 </script>
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
 	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
 	{#if colorStyle.show}
 		<div transition:slide={{ duration: 300 }}>
-			<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} />
+			<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} {layerType} />
 		</div>
 	{/if}
 </Accordion>

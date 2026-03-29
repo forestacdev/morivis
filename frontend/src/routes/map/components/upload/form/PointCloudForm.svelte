@@ -9,6 +9,7 @@
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import { parseXyzFile } from '$routes/map/utils/file/xyz';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -49,7 +50,7 @@
 	const pointCloudFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd)$/i.test(f.name)) ?? null;
+			return Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz)$/i.test(f.name)) ?? null;
 		}
 		return dropFile;
 	});
@@ -69,6 +70,8 @@
 		}
 	});
 
+	const isXyzFile = (fileName: string) => /\.xyz$/i.test(fileName);
+
 	const analyzePointCloud = async (file: File) => {
 		isProcessing.set(true);
 		analyzed = false;
@@ -80,36 +83,66 @@
 		needsTransform = false;
 
 		try {
-			const arrayBuffer = await file.arrayBuffer();
-			// parseがArrayBufferをdetachするのでコピーを保持
-			parsedArrayBuffer = arrayBuffer.slice(0);
+			let positions: Float32Array | null = null;
+			let colors: Uint8Array | undefined = undefined;
+			let bbox: [number, number, number, number] | null = null;
 
-			const loader = getLoader(file.name);
-			const data = await parse(arrayBuffer, loader);
+			if (isXyzFile(file.name)) {
+				// XYZ テキスト形式
+				const result = await parseXyzFile(file);
+				positions = result.positions;
+				colors = result.colors ?? undefined;
+				pointCount = result.pointCount;
 
-			const positions = data.attributes?.POSITION?.value;
-			if (positions) {
-				pointCount = positions.length / 3;
+				if (pointCount > 0) {
+					let minX = Infinity,
+						minY = Infinity,
+						maxX = -Infinity,
+						maxY = -Infinity;
+					for (let i = 0; i < positions.length; i += 3) {
+						const x = positions[i],
+							y = positions[i + 1];
+						if (x < minX) minX = x;
+						if (y < minY) minY = y;
+						if (x > maxX) maxX = x;
+						if (y > maxY) maxY = y;
+					}
+					bbox = [minX, minY, maxX, maxY];
+				}
+			} else {
+				// LAS/LAZ/PLY/PCD (loaders.gl)
+				const arrayBuffer = await file.arrayBuffer();
+				parsedArrayBuffer = arrayBuffer.slice(0);
+
+				const loader = getLoader(file.name);
+				const data = await parse(arrayBuffer, loader);
+
+				const pos = data.attributes?.POSITION?.value;
+				if (pos) {
+					positions = pos instanceof Float32Array ? pos : new Float32Array(pos);
+					pointCount = positions.length / 3;
+				}
+
+				const col = data.attributes?.COLOR_0?.value;
+				if (col) colors = col instanceof Uint8Array ? col : new Uint8Array(col);
+
+				if (data.header?.boundingBox) {
+					const [mins, maxs] = data.header.boundingBox;
+					bbox = [mins[0], mins[1], maxs[0], maxs[1]];
+				}
 			}
 
-			if (data.header?.boundingBox) {
-				const [mins, maxs] = data.header.boundingBox;
-				rawBbox = [mins[0], mins[1], maxs[0], maxs[1]];
-			}
-
+			rawBbox = bbox;
 			analyzed = true;
 
-			// bboxの有効性チェック（WGS84かどうか）
 			if (rawBbox && isBboxValid(rawBbox)) {
 				resolvedBbox = rawBbox;
-				// WGS84なのでそのままpositionsを保持
-				const pos = data.attributes?.POSITION?.value;
-				if (pos) resolvedPositions = pos instanceof Float32Array ? pos : new Float32Array(pos);
-				const col = data.attributes?.COLOR_0?.value;
-				if (col) resolvedColors = col instanceof Uint8Array ? col : new Uint8Array(col);
+				if (positions) resolvedPositions = positions;
+				resolvedColors = colors;
 			} else if (rawBbox) {
-				// 座標系が不明 → ZoneFormで選択
 				needsTransform = true;
+				if (positions) resolvedPositions = positions;
+				resolvedColors = colors;
 				showZoneForm = true;
 				focusBbox = rawBbox;
 			} else {
@@ -138,7 +171,7 @@
 	});
 
 	const transformWithEpsg = async (epsgCode: EpsgCode) => {
-		if (!rawBbox || !parsedArrayBuffer) return;
+		if (!rawBbox) return;
 
 		isProcessing.set(true);
 
@@ -154,10 +187,17 @@
 
 			resolvedBbox = transformed;
 
-			// 点群座標をWorkerで変換
-			const loader = pointCloudFile ? getLoader(pointCloudFile.name) : LASLoader;
-			const data = await parse(parsedArrayBuffer.slice(0), loader);
-			const positions = data.attributes?.POSITION?.value as Float32Array;
+			// 点群座標を取得（XYZの場合は既にresolvedPositionsにある）
+			let positions: Float32Array | null = resolvedPositions;
+
+			if (!positions && parsedArrayBuffer) {
+				// loaders.gl形式の場合は再パース
+				const loader = pointCloudFile ? getLoader(pointCloudFile.name) : LASLoader;
+				const data = await parse(parsedArrayBuffer.slice(0), loader);
+				positions = data.attributes?.POSITION?.value as Float32Array;
+				const col = data.attributes?.COLOR_0?.value;
+				if (col) resolvedColors = col instanceof Uint8Array ? col : new Uint8Array(col);
+			}
 
 			if (!positions) {
 				showNotification('点群座標の取得に失敗しました', 'error');
@@ -167,8 +207,6 @@
 			const transformedPositions = await transformPositions(positions, prjContent);
 
 			resolvedPositions = transformedPositions;
-			const col = data.attributes?.COLOR_0?.value;
-			if (col) resolvedColors = col instanceof Uint8Array ? col : new Uint8Array(col);
 
 			showNotification(
 				`EPSG:${epsgCode} で座標変換しました（${pointCount?.toLocaleString()}点）`,

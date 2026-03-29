@@ -16,7 +16,8 @@ import type {
 	FilterSpecification,
 	StyleSetterOptions,
 	FeatureIdentifier,
-	FlyToOptions
+	FlyToOptions,
+	RasterTileSource
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -28,6 +29,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
 import { debounce } from 'es-toolkit';
 
+import { cogProtocol } from '$routes/map/protocol/cog';
 import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
@@ -60,12 +62,46 @@ maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 const webglProt = demProtocol('webgl');
 maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
 
+// cogプロトコルは必要時に動的に登録/解除
+const cogProt = cogProtocol('cog');
+let _cogProtocolRegistered = false;
+
+const ensureCogProtocol = () => {
+	if (!_cogProtocolRegistered) {
+		maplibregl.addProtocol(cogProt.protocolName, cogProt.request);
+		_cogProtocolRegistered = true;
+	}
+};
+
+const releaseCogProtocol = () => {
+	if (_cogProtocolRegistered) {
+		cogProt.cancelAllRequests();
+		maplibregl.removeProtocol(cogProt.protocolName);
+		_cogProtocolRegistered = false;
+	}
+};
+
 // NOTE: 停止しているプロトコル
 // const terrainProt = terrainProtocol('terrain');
 // maplibregl.addProtocol(terrainProt.protocolName, terrainProt.request);
 
+// mbtilesプロトコルは必要時に動的に登録/解除
 const mbtilesProt = mbtilesProtocol();
-maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
+let _mbtilesProtocolRegistered = false;
+
+const ensureMbtilesProtocol = () => {
+	if (!_mbtilesProtocolRegistered) {
+		maplibregl.addProtocol(mbtilesProt.protocolName, mbtilesProt.request);
+		_mbtilesProtocolRegistered = true;
+	}
+};
+
+const releaseMbtilesProtocol = () => {
+	if (_mbtilesProtocolRegistered) {
+		maplibregl.removeProtocol(mbtilesProt.protocolName);
+		_mbtilesProtocolRegistered = false;
+	}
+};
 
 // geojsonプロトコルは必要時に動的に登録/解除
 const geojsonProt = geojsonProtocol('geojson');
@@ -226,7 +262,7 @@ const createMapStore = () => {
 				sources: {},
 				layers: []
 			},
-			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85, // 最大ピッチ角度
@@ -302,16 +338,18 @@ const createMapStore = () => {
 
 			const id = e.id;
 			if (id === 'marker_png') {
+				if (map.hasImage('marker_png')) return;
 				// 検索用のマーカーアイコンを追加
 				fetch(markerPngIcon).then(async (response) => {
 					if (!response.ok) {
 						throw new Error(`Failed to fetch image: ${response.statusText}`);
 					}
 					const image = await createImageBitmap(await response.blob());
-					if (!map) return;
+					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
 			} else if (id === 'poi-icon') {
+				if (map.hasImage('poi-icon')) return;
 				// poi用の透明アイコンを追加
 				const width = 16;
 				const bytesPerPixel = 4;
@@ -629,12 +667,13 @@ const createMapStore = () => {
 			await threeJsManager.addModel(entry);
 		}
 
-		// 更新: 両方にあるもの（opacity, visible の変更）
+		// 更新: 両方にあるもの（opacity, visible, wireframe, transform の変更）
 		for (const entry of newEntries) {
 			if (currentIds.has(entry.id)) {
 				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
 				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				threeJsManager.setModelTransform(entry.id, entry.style);
 			}
 		}
 
@@ -1112,6 +1151,16 @@ const createMapStore = () => {
 		}
 	};
 
+	const setTiles = (sourceId: string, tiles: string[]) => {
+		if (!map || !isMapValid(map)) return;
+		const source = map.getSource(sourceId) as RasterTileSource;
+		if (source) {
+			source.setTiles(tiles);
+		} else {
+			console.warn(`Source with ID ${sourceId} does not exist.`);
+		}
+	};
+
 	const getLayer = (layerId: string) => {
 		if (!map || !isMapValid(map)) return undefined;
 		return map.getLayer(layerId);
@@ -1154,6 +1203,7 @@ const createMapStore = () => {
 		queryRenderedFeatures,
 		setCursor,
 		setData,
+		setTiles,
 		setStyle,
 		setDeckOverlay,
 		// Three.js 関連
@@ -1194,6 +1244,7 @@ const createMapStore = () => {
 		getTerrain: () => map?.getTerrain(),
 		getElevation: getElevation,
 		getLayer,
+		getSource: (sourceId: string) => map?.getSource(sourceId),
 		getState: () => get(state),
 		getImage: (id: string) => map?.getImage(id),
 		getMapBounds,
@@ -1226,7 +1277,11 @@ const createMapStore = () => {
 		ensureGeojsonProtocol,
 		releaseGeojsonProtocol,
 		ensureEsriProtocol,
-		releaseEsriProtocol
+		releaseEsriProtocol,
+		ensureCogProtocol,
+		releaseCogProtocol,
+		ensureMbtilesProtocol,
+		releaseMbtilesProtocol
 	};
 };
 

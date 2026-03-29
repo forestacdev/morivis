@@ -113,7 +113,8 @@
 					'Point',
 					entryName,
 					bbox as [number, number, number, number],
-					'default'
+					undefined,
+					{ attribution: 'CSV' }
 				);
 
 				if (entry) {
@@ -160,7 +161,8 @@
 				'Point',
 				entryName,
 				bbox as [number, number, number, number],
-				'default'
+				undefined,
+				{ attribution: 'CSV' }
 			);
 
 			if (entry) {

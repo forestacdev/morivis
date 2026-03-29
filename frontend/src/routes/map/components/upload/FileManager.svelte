@@ -3,7 +3,8 @@
 	import maplibregl from 'maplibre-gl';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
+	import { hasExifGps } from '$routes/map/utils/file/exif';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -30,39 +31,9 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|pdf|tiff?)$/i.test(file.name);
+	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
-		/\.(png|jpe?g|webp|pdf|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
-
-	/** ZIPファイルの中身を判定してDialogTypeを返す */
-	const detectZipContent = async (file: File): Promise<DialogType> => {
-		try {
-			const zip = await JSZip.loadAsync(file);
-			const fileNames: string[] = [];
-			zip.forEach((path, entry) => {
-				if (!entry.dir) fileNames.push(path); // 元のパスを保持
-			});
-
-			// shpファイルがあればシェープファイル
-			if (fileNames.some((f) => f.toLowerCase().endsWith('.shp'))) return 'shp';
-
-			// XMLファイルがあれば中身を確認してDEM判定
-			const xmlName = fileNames.find((f) => f.toLowerCase().endsWith('.xml'));
-			if (xmlName) {
-				const xmlContent = await zip.file(xmlName)?.async('string');
-				if (xmlContent) {
-					const header = xmlContent.slice(0, 2000);
-					const hasDem = header.includes('<DEM') || header.includes('dataset:DEM');
-					const hasDataset = header.includes('<Dataset') || header.includes('dataset:Dataset');
-					if (hasDem && hasDataset) return 'demxml';
-				}
-			}
-
-			return null;
-		} catch {
-			return null;
-		}
-	};
+		/\.(png|jpe?g|webp|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 
 	/** XMLファイルの先頭を読んで基盤地図情報DEMかどうかを判定 */
 	const isDemXml = async (file: File): Promise<boolean> => {
@@ -101,6 +72,16 @@
 		}
 	};
 
+	/** XMLファイルの先頭を読んで法務局地図XMLかどうかを判定 */
+	const isMojXml = async (file: File): Promise<boolean> => {
+		try {
+			const header = await file.slice(0, 2000).text();
+			return header.includes('moj.go.jp/MINJI/tizuxml');
+		} catch {
+			return false;
+		}
+	};
+
 	const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
 
 	/** ファイルサイズをフォーマット */
@@ -131,6 +112,32 @@
 			const ext = file.name.split('.').pop()?.toLowerCase();
 
 			switch (ext) {
+				case 'zip': {
+					// ZIPを展開してFileListとして再処理
+					try {
+						const zip = await JSZip.loadAsync(file);
+						const extracted: File[] = [];
+						const entries: [string, import('jszip').JSZipObject][] = [];
+						zip.forEach((path, entry) => {
+							if (!entry.dir) entries.push([path, entry]);
+						});
+						for (const [path, entry] of entries) {
+							const blob = await entry.async('blob');
+							const fileName = path.split('/').pop() ?? path;
+							extracted.push(new File([blob], fileName, { type: blob.type }));
+						}
+						if (extracted.length > 0) {
+							const dt = new DataTransfer();
+							extracted.forEach((f) => dt.items.add(f));
+							setFile(dt.files);
+							return;
+						}
+					} catch {
+						// 展開失敗
+					}
+					showNotification('ZIP内に対応するファイルが見つかりません', 'error');
+					return;
+				}
 				case 'csv':
 					showDialogType = 'csv';
 					return;
@@ -177,24 +184,35 @@
 					showDialogType = 'pmtiles';
 					return;
 				case 'glb':
+				case 'obj':
 					showDialogType = 'glb';
 					return;
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;
+				case 'jpg':
+				case 'jpeg':
+				case 'heic':
+				case 'heif':
+					// EXIF GPSがあれば位置情報付き写真として処理
+					if (await hasExifGps(file)) {
+						showDialogType = 'geophoto';
+						return;
+					}
+					showDialogType = 'geopdf';
+					return;
 				case 'tiff':
 				case 'tif':
 				case 'png':
-				case 'jpg':
-				case 'jpeg':
 				case 'webp':
 				case 'pdf':
-					showDialogType = 'geotiff';
+					showDialogType = 'geopdf';
 					return;
 				case 'las':
 				case 'laz':
 				case 'ply':
 				case 'pcd':
+				case 'xyz':
 					showDialogType = 'pointcloud';
 					return;
 				case 'mbtiles':
@@ -210,17 +228,10 @@
 				case 'grb':
 					showDialogType = 'grib2';
 					return;
-				case 'zip': {
-					console.warn('[FileManager] entering zip case');
-					const zipType = await detectZipContent(file);
-					console.warn('[FileManager] zip detected type:', zipType);
-					if (zipType) {
-						showDialogType = zipType;
-					} else {
-						showNotification('ZIP内に対応するファイルが見つかりません', 'error');
-					}
+
+				case 'mtl':
+					showNotification('OBJファイル(.obj)と一緒にドロップしてください', 'error');
 					return;
-				}
 				case 'tfw':
 				case 'tifw':
 				case 'tiffw':
@@ -250,6 +261,11 @@
 						showDialogType = 'landxml';
 						return;
 					}
+					// 法務局地図XML判定
+					if (await isMojXml(file)) {
+						showDialogType = 'mojxml';
+						return;
+					}
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
@@ -262,7 +278,19 @@
 			// 大きなファイルの確認
 			if (!(await checkLargeFile(files))) return;
 
-			if (files.some(isShapeFileRelated)) {
+			if (files.some((f) => /\.obj$/i.test(f.name))) {
+				showDialogType = 'glb';
+			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
+				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
+				const hasGps = await hasExifGps(files[0]);
+				if (hasGps) {
+					showDialogType = 'geophoto';
+				} else {
+					// GPS無し → 通常の画像として最初のファイルを処理
+					setFile(files[0]);
+					return;
+				}
+			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
 			} else if (files.some(isGeoImageRelated)) {
 				if (!files.some(isGeoImageMain)) {
@@ -278,11 +306,22 @@
 					showDialogType = 'gml';
 				} else if (await isLandXml(files[0])) {
 					showDialogType = 'landxml';
+				} else if (await isMojXml(files[0])) {
+					showDialogType = 'mojxml';
 				} else {
 					showNotification('対応していないXMLファイルです', 'error');
 				}
 			} else {
-				setFile(files[0]);
+				// 対応ファイルを探して最初にマッチしたものを処理
+				const supportedFile = files.find((f) => {
+					const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
+					return SUPPORTED_FILE_EXTENSIONS.includes(ext);
+				});
+				if (supportedFile) {
+					setFile(supportedFile);
+				} else {
+					showNotification('対応していないファイル形式です', 'error');
+				}
 			}
 		}
 	};

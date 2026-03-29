@@ -3,6 +3,7 @@ import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bo
 import type {
 	ModelMeshEntry,
 	MeshStyle,
+	MeshFormatType,
 	ModelTiles3DEntry,
 	ModelPointCloudEntry,
 	PointCloudStyle
@@ -21,6 +22,7 @@ export const createTiles3DEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '3D Tiles',
 		name,
 		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 	},
@@ -62,6 +64,7 @@ export const createPointCloudEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '点群',
 		name,
 		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 	},
@@ -77,16 +80,20 @@ export const createPointCloudEntry = (
 export const createGlbEntry = (
 	name: string,
 	url: string,
-	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number }
+	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number },
+	formatType: MeshFormatType = 'gltf',
+	mtlUrl?: string
 ): ModelMeshEntry<MeshStyle> => ({
 	id: 'glb_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
-		type: 'gltf',
-		url
+		type: formatType,
+		url,
+		...(mtlUrl && { mtlUrl })
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
+		attribution: formatType === 'obj' ? 'OBJ' : 'GLB',
 		name,
 		altitude: transform.altitude,
 		bounds: pointToBbox(transform.lng, transform.lat)
@@ -102,8 +109,11 @@ export const createGlbEntry = (
 			lng: transform.lng,
 			lat: transform.lat,
 			altitude: transform.altitude,
+			heightOffset: 0,
 			scale: transform.scale ?? 1,
-			rotationY: transform.rotationY ?? 0
+			rotationX: 0,
+			rotationY: transform.rotationY ?? 0,
+			rotationZ: 0
 		}
 	}
 });

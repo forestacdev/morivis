@@ -23,8 +23,12 @@ export interface MeshStyle {
 		lng: number;
 		lat: number;
 		altitude: number;
+		/** 高さオフセット（常に適用、地形時はaltitude+heightOffset） */
+		heightOffset: number;
 		scale: number;
+		rotationX: number;
 		rotationY: number;
+		rotationZ: number;
 	};
 }
 
@@ -35,12 +39,13 @@ export interface PointCloudStyle {
 	pointSize: number;
 }
 
-export type MeshFormatType = 'gltf';
+export type MeshFormatType = 'gltf' | 'obj';
 
 export interface ModelMeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
+		mtlUrl?: string;
 	};
 	style: T;
 }

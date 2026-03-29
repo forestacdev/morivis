@@ -241,3 +241,37 @@ body {
 @utility cursor-default {
 	cursor: var(--cursor-default);
 }
+
+/* フォグ（端がフェードアウトするオーバーレイ） */
+.c-bg-fog-top,
+.c-bg-fog-bottom,
+.c-bg-fog-left,
+.c-bg-fog-right {
+	--fog-base: var(--color-main);
+	--fog-stops: color-mix(in srgb, var(--fog-base) 90%, transparent) 5%,
+		color-mix(in srgb, var(--fog-base) 86%, transparent) 15%,
+		color-mix(in srgb, var(--fog-base) 74%, transparent) 29%,
+		color-mix(in srgb, var(--fog-base) 59%, transparent) 41%,
+		color-mix(in srgb, var(--fog-base) 41%, transparent) 52%,
+		color-mix(in srgb, var(--fog-base) 24%, transparent) 64%,
+		color-mix(in srgb, var(--fog-base) 10%, transparent) 77%,
+		color-mix(in srgb, var(--fog-base) 2%, transparent) 92%,
+		color-mix(in srgb, var(--fog-base) 0%, transparent) 100%;
+	pointer-events: none;
+}
+
+.c-bg-fog-top {
+	background-image: linear-gradient(to bottom, var(--fog-base), var(--fog-stops));
+}
+
+.c-bg-fog-bottom {
+	background-image: linear-gradient(to top, var(--fog-base), var(--fog-stops));
+}
+
+.c-bg-fog-left {
+	background-image: linear-gradient(to right, var(--fog-base), var(--fog-stops));
+}
+
+.c-bg-fog-right {
+	background-image: linear-gradient(to left, var(--fog-base), var(--fog-stops));
+}

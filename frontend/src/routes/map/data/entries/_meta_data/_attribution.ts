@@ -164,7 +164,7 @@ const attributionData = {
 
 export type AttributionData = typeof attributionData;
 
-export type AttributionKey = keyof typeof attributionData | 'カスタムデータ';
+export type AttributionKey = keyof typeof attributionData | 'カスタムデータ' | (string & {});
 
 // Map を作成
 export const attributionMap: Map<string, Attribution> = new Map(
@@ -172,22 +172,17 @@ export const attributionMap: Map<string, Attribution> = new Map(
 );
 
 export const getAttribution = (key: AttributionKey): Attribution | undefined => {
-	if (key === 'カスタムデータ') {
-		return { name: 'カスタムデータ', url: '' };
-	}
-	return attributionMap.get(key);
+	if (attributionMap.has(key)) return attributionMap.get(key);
+	// カスタムデータ or 任意の文字列
+	return { name: key, url: '' };
 };
 
 export const getAttributionName = (key: AttributionKey): string | undefined => {
-	if (key === 'カスタムデータ') {
-		return 'カスタムデータ';
-	}
-	return attributionMap.get(key)?.name;
+	if (attributionMap.has(key)) return attributionMap.get(key)?.name;
+	return key;
 };
 
 export const getAttributionUrl = (key: AttributionKey): string | undefined => {
-	if (key === 'カスタムデータ') {
-		return '';
-	}
-	return attributionMap.get(key)?.url;
+	if (attributionMap.has(key)) return attributionMap.get(key)?.url;
+	return '';
 };

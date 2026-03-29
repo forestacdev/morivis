@@ -4,6 +4,7 @@
 	import DemOption from './raster_option/DemOption.svelte';
 	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
+	import TimeSelector from './raster_option/TimeSelector.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -35,6 +36,8 @@
 	let style = $derived(layerEntry.style);
 
 	let showOption = $state<boolean>(false);
+
+	let showTimeOption = $state(true);
 
 	let preset = $derived.by(() => {
 		if (style.type === 'basemap') {
@@ -103,6 +106,10 @@
 				</Accordion>
 			{/if}
 		{/await}
+
+		{#if style.timeDimension}
+			<TimeSelector bind:layerEntry bind:showTimeOption />
+		{/if}
 
 		<!-- <Accordion label={'詳細設定'} bind:value={showOption}>
 			<div class="flex w-full flex-col gap-2">
@@ -190,7 +197,11 @@
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
-		<TiffOption bind:style entryId={layerEntry.id} bind:showColorOption />
+		<TiffOption
+			bind:layerEntry={layerEntry as RasterEntry<RasterTiffStyle>}
+			bind:showColorOption
+			bind:showTimeOption
+		/>
 	{:else if style.type === 'cad'}
 		<div class="mt-8">
 			<ColorPicker bind:value={style.color} label={'ラインの色'} />

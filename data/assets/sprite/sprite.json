@@ -1,898 +1,3103 @@
 {
+  "tmpoint-asterisk-blue": {
+    "width": 20,
+    "height": 21,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-brown": {
+    "width": 20,
+    "height": 21,
+    "x": 20,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-green": {
+    "width": 20,
+    "height": 21,
+    "x": 40,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-grey": {
+    "width": 20,
+    "height": 21,
+    "x": 60,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-orange": {
+    "width": 20,
+    "height": 21,
+    "x": 80,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-pink": {
+    "width": 20,
+    "height": 21,
+    "x": 100,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-purple": {
+    "width": 20,
+    "height": 21,
+    "x": 120,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-red": {
+    "width": 20,
+    "height": 21,
+    "x": 140,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-slime": {
+    "width": 20,
+    "height": 21,
+    "x": 160,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-asterisk-teal": {
+    "width": 20,
+    "height": 21,
+    "x": 180,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-blue": {
+    "width": 22,
+    "height": 22,
+    "x": 200,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-brown": {
+    "width": 22,
+    "height": 22,
+    "x": 222,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-green": {
+    "width": 22,
+    "height": 22,
+    "x": 244,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-grey": {
+    "width": 22,
+    "height": 22,
+    "x": 266,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-orange": {
+    "width": 22,
+    "height": 22,
+    "x": 288,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-pink": {
+    "width": 22,
+    "height": 22,
+    "x": 310,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-purple": {
+    "width": 22,
+    "height": 22,
+    "x": 332,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-red": {
+    "width": 22,
+    "height": 22,
+    "x": 354,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-slime": {
+    "width": 22,
+    "height": 22,
+    "x": 376,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-circle-teal": {
+    "width": 22,
+    "height": 22,
+    "x": 398,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-blue": {
+    "width": 22,
+    "height": 21,
+    "x": 420,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-brown": {
+    "width": 22,
+    "height": 21,
+    "x": 442,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-green": {
+    "width": 22,
+    "height": 21,
+    "x": 464,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-grey": {
+    "width": 22,
+    "height": 21,
+    "x": 486,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-orange": {
+    "width": 22,
+    "height": 21,
+    "x": 508,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-pink": {
+    "width": 22,
+    "height": 21,
+    "x": 530,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-purple": {
+    "width": 22,
+    "height": 21,
+    "x": 552,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-red": {
+    "width": 22,
+    "height": 21,
+    "x": 574,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-slime": {
+    "width": 22,
+    "height": 21,
+    "x": 596,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-hexagon-teal": {
+    "width": 22,
+    "height": 21,
+    "x": 618,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-blue": {
+    "width": 20,
+    "height": 20,
+    "x": 640,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-brown": {
+    "width": 20,
+    "height": 20,
+    "x": 660,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-green": {
+    "width": 20,
+    "height": 20,
+    "x": 680,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-grey": {
+    "width": 20,
+    "height": 20,
+    "x": 700,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-orange": {
+    "width": 20,
+    "height": 20,
+    "x": 720,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-pink": {
+    "width": 20,
+    "height": 20,
+    "x": 740,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-purple": {
+    "width": 20,
+    "height": 20,
+    "x": 760,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-red": {
+    "width": 20,
+    "height": 20,
+    "x": 780,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-slime": {
+    "width": 20,
+    "height": 20,
+    "x": 800,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-octagon-teal": {
+    "width": 20,
+    "height": 20,
+    "x": 820,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 840,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 861,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-green": {
+    "width": 21,
+    "height": 21,
+    "x": 882,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 903,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 924,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 945,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 966,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-red": {
+    "width": 21,
+    "height": 21,
+    "x": 987,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1008,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-h-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1029,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1050,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1071,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1092,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1113,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1134,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 1155,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 1176,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-red": {
+    "width": 21,
+    "height": 21,
+    "x": 1197,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1218,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-oval-v-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1239,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1260,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1281,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1302,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1323,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1344,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 1365,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 1386,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-red": {
+    "width": 21,
+    "height": 21,
+    "x": 1407,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1428,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-parallelogram-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1449,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1470,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1491,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1512,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1533,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1554,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 1575,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 1596,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-red": {
+    "width": 21,
+    "height": 21,
+    "x": 1617,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1638,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-pentagon-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1659,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1680,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1701,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1722,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1743,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1764,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 1785,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 1806,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-red": {
+    "width": 21,
+    "height": 21,
+    "x": 1827,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1848,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-h-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1869,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1890,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1911,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1932,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1953,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1974,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 0,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 21,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-red": {
+    "width": 21,
+    "height": 21,
+    "x": 42,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 63,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rectangle-v-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 84,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 105,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 126,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-green": {
+    "width": 21,
+    "height": 21,
+    "x": 147,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 168,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 189,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 210,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 231,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-red": {
+    "width": 21,
+    "height": 21,
+    "x": 252,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 273,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-rhombus-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 294,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-blue": {
+    "width": 23,
+    "height": 21,
+    "x": 315,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-brown": {
+    "width": 23,
+    "height": 21,
+    "x": 338,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-green": {
+    "width": 23,
+    "height": 21,
+    "x": 361,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-grey": {
+    "width": 23,
+    "height": 21,
+    "x": 384,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-orange": {
+    "width": 23,
+    "height": 21,
+    "x": 407,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-pink": {
+    "width": 23,
+    "height": 21,
+    "x": 430,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-purple": {
+    "width": 23,
+    "height": 21,
+    "x": 453,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-red": {
+    "width": 23,
+    "height": 21,
+    "x": 476,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-slime": {
+    "width": 23,
+    "height": 21,
+    "x": 499,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-bottom-teal": {
+    "width": 23,
+    "height": 21,
+    "x": 522,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-blue": {
+    "width": 23,
+    "height": 21,
+    "x": 545,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-brown": {
+    "width": 23,
+    "height": 21,
+    "x": 568,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-green": {
+    "width": 23,
+    "height": 21,
+    "x": 591,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-grey": {
+    "width": 23,
+    "height": 21,
+    "x": 614,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-orange": {
+    "width": 23,
+    "height": 21,
+    "x": 637,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-pink": {
+    "width": 23,
+    "height": 21,
+    "x": 660,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-purple": {
+    "width": 23,
+    "height": 21,
+    "x": 683,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-red": {
+    "width": 23,
+    "height": 21,
+    "x": 706,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-slime": {
+    "width": 23,
+    "height": 21,
+    "x": 729,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-semicircle-top-teal": {
+    "width": 23,
+    "height": 21,
+    "x": 752,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 775,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 796,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-green": {
+    "width": 21,
+    "height": 21,
+    "x": 817,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 838,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 859,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 880,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 901,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-red": {
+    "width": 21,
+    "height": 21,
+    "x": 922,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 943,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-square-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 964,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-blue": {
+    "width": 21,
+    "height": 20,
+    "x": 985,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-brown": {
+    "width": 21,
+    "height": 20,
+    "x": 1006,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-green": {
+    "width": 21,
+    "height": 20,
+    "x": 1027,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-grey": {
+    "width": 21,
+    "height": 20,
+    "x": 1048,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-orange": {
+    "width": 21,
+    "height": 20,
+    "x": 1069,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-pink": {
+    "width": 21,
+    "height": 20,
+    "x": 1090,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-purple": {
+    "width": 21,
+    "height": 20,
+    "x": 1111,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-red": {
+    "width": 21,
+    "height": 20,
+    "x": 1132,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-slime": {
+    "width": 21,
+    "height": 20,
+    "x": 1153,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-squiggle-teal": {
+    "width": 21,
+    "height": 20,
+    "x": 1174,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-blue": {
+    "width": 29,
+    "height": 29,
+    "x": 1195,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-brown": {
+    "width": 29,
+    "height": 29,
+    "x": 1224,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-green": {
+    "width": 29,
+    "height": 29,
+    "x": 1253,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-grey": {
+    "width": 29,
+    "height": 29,
+    "x": 1282,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-orange": {
+    "width": 29,
+    "height": 29,
+    "x": 1311,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-pink": {
+    "width": 29,
+    "height": 29,
+    "x": 1340,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-purple": {
+    "width": 29,
+    "height": 29,
+    "x": 1369,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-red": {
+    "width": 29,
+    "height": 29,
+    "x": 1398,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-slime": {
+    "width": 29,
+    "height": 29,
+    "x": 1427,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-star-teal": {
+    "width": 29,
+    "height": 29,
+    "x": 1456,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-blue": {
+    "width": 28,
+    "height": 28,
+    "x": 1485,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-brown": {
+    "width": 28,
+    "height": 28,
+    "x": 1513,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-green": {
+    "width": 28,
+    "height": 28,
+    "x": 1541,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-grey": {
+    "width": 28,
+    "height": 28,
+    "x": 1569,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-orange": {
+    "width": 28,
+    "height": 28,
+    "x": 1597,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-pink": {
+    "width": 28,
+    "height": 28,
+    "x": 1625,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-purple": {
+    "width": 28,
+    "height": 28,
+    "x": 1653,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-red": {
+    "width": 28,
+    "height": 28,
+    "x": 1681,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-slime": {
+    "width": 28,
+    "height": 28,
+    "x": 1709,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-starburst-teal": {
+    "width": 28,
+    "height": 28,
+    "x": 1737,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1765,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 1786,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-green": {
+    "width": 21,
+    "height": 21,
+    "x": 1807,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 1828,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 1849,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 1870,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 1891,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-red": {
+    "width": 21,
+    "height": 21,
+    "x": 1912,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 1933,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-trapezoid-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 1954,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 1975,
+    "y": 22,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 0,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-green": {
+    "width": 21,
+    "height": 21,
+    "x": 21,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 42,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 63,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 84,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 105,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-red": {
+    "width": 21,
+    "height": 21,
+    "x": 126,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 147,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-down-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 168,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-blue": {
+    "width": 21,
+    "height": 21,
+    "x": 189,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-brown": {
+    "width": 21,
+    "height": 21,
+    "x": 210,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-green": {
+    "width": 21,
+    "height": 21,
+    "x": 231,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-grey": {
+    "width": 21,
+    "height": 21,
+    "x": 252,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-orange": {
+    "width": 21,
+    "height": 21,
+    "x": 273,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-pink": {
+    "width": 21,
+    "height": 21,
+    "x": 294,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-purple": {
+    "width": 21,
+    "height": 21,
+    "x": 315,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-red": {
+    "width": 21,
+    "height": 21,
+    "x": 336,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-slime": {
+    "width": 21,
+    "height": 21,
+    "x": 357,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "tmpoint-triangle-up-teal": {
+    "width": 21,
+    "height": 21,
+    "x": 378,
+    "y": 51,
+    "pixelRatio": 1
+  },
   "tmpoly-caret-100-black": {
     "width": 6,
     "height": 6,
-    "x": 0,
-    "y": 0,
+    "x": 399,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-caret-100-white": {
     "width": 6,
     "height": 6,
-    "x": 6,
-    "y": 0,
+    "x": 405,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-caret-200-black": {
     "width": 5,
     "height": 5,
-    "x": 12,
-    "y": 0,
+    "x": 411,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-caret-200-white": {
     "width": 5,
     "height": 5,
-    "x": 17,
-    "y": 0,
+    "x": 416,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-light-100-black": {
     "width": 10,
     "height": 10,
-    "x": 22,
-    "y": 0,
+    "x": 421,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-light-100-white": {
     "width": 10,
     "height": 10,
-    "x": 32,
-    "y": 0,
+    "x": 431,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-light-200-black": {
     "width": 6,
     "height": 6,
-    "x": 42,
-    "y": 0,
+    "x": 441,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-light-200-white": {
     "width": 6,
     "height": 6,
-    "x": 48,
-    "y": 0,
+    "x": 447,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-medium-100-black": {
     "width": 12,
     "height": 12,
-    "x": 54,
-    "y": 0,
+    "x": 453,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-medium-100-white": {
     "width": 12,
     "height": 12,
-    "x": 66,
-    "y": 0,
+    "x": 465,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-medium-200-black": {
     "width": 8,
     "height": 8,
-    "x": 78,
-    "y": 0,
+    "x": 477,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-alt-medium-200-white": {
     "width": 8,
     "height": 8,
-    "x": 86,
-    "y": 0,
+    "x": 485,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-bold-100-black": {
     "width": 8,
     "height": 8,
-    "x": 94,
-    "y": 0,
+    "x": 493,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-bold-100-white": {
     "width": 8,
     "height": 8,
-    "x": 102,
-    "y": 0,
+    "x": 501,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-bold-200-black": {
     "width": 6,
     "height": 6,
-    "x": 110,
-    "y": 0,
+    "x": 509,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-bold-200-white": {
     "width": 6,
     "height": 6,
-    "x": 116,
-    "y": 0,
+    "x": 515,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-heavy-100-black": {
     "width": 8,
     "height": 8,
-    "x": 122,
-    "y": 0,
+    "x": 521,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-heavy-100-white": {
     "width": 8,
     "height": 8,
-    "x": 130,
-    "y": 0,
+    "x": 529,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-heavy-200-black": {
     "width": 6,
     "height": 6,
-    "x": 138,
-    "y": 0,
+    "x": 537,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-heavy-200-white": {
     "width": 6,
     "height": 6,
-    "x": 144,
-    "y": 0,
+    "x": 543,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-100-black": {
     "width": 7,
     "height": 7,
-    "x": 150,
-    "y": 0,
+    "x": 549,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-100-white": {
     "width": 7,
     "height": 7,
-    "x": 157,
-    "y": 0,
+    "x": 556,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-200-black": {
     "width": 5,
     "height": 5,
-    "x": 164,
-    "y": 0,
+    "x": 563,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-200-white": {
     "width": 5,
     "height": 5,
-    "x": 169,
-    "y": 0,
+    "x": 568,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-300-black": {
     "width": 3,
     "height": 3,
-    "x": 174,
-    "y": 0,
+    "x": 573,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-light-300-white": {
     "width": 3,
     "height": 3,
-    "x": 177,
-    "y": 0,
+    "x": 576,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-100-black": {
     "width": 8,
     "height": 8,
-    "x": 180,
-    "y": 0,
+    "x": 579,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-100-white": {
     "width": 8,
     "height": 8,
-    "x": 188,
-    "y": 0,
+    "x": 587,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-200-black": {
     "width": 6,
     "height": 6,
-    "x": 196,
-    "y": 0,
+    "x": 595,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-200-white": {
     "width": 6,
     "height": 6,
-    "x": 202,
-    "y": 0,
+    "x": 601,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-300-black": {
     "width": 4,
     "height": 4,
-    "x": 208,
-    "y": 0,
+    "x": 607,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-circle-medium-300-white": {
     "width": 4,
     "height": 4,
-    "x": 212,
-    "y": 0,
+    "x": 611,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-100-black": {
     "width": 4,
     "height": 4,
-    "x": 216,
-    "y": 0,
+    "x": 615,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-100-white": {
     "width": 4,
     "height": 4,
-    "x": 220,
-    "y": 0,
+    "x": 619,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-200-black": {
     "width": 6,
     "height": 6,
-    "x": 224,
-    "y": 0,
+    "x": 623,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-200-white": {
     "width": 6,
     "height": 6,
-    "x": 230,
-    "y": 0,
+    "x": 629,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-300-black": {
     "width": 8,
     "height": 8,
-    "x": 236,
-    "y": 0,
+    "x": 635,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-light-300-white": {
     "width": 8,
     "height": 8,
-    "x": 244,
-    "y": 0,
+    "x": 643,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-100-black": {
     "width": 4,
     "height": 4,
-    "x": 252,
-    "y": 0,
+    "x": 651,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-100-white": {
     "width": 4,
     "height": 4,
-    "x": 256,
-    "y": 0,
+    "x": 655,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-200-black": {
     "width": 6,
     "height": 6,
-    "x": 260,
-    "y": 0,
+    "x": 659,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-200-white": {
     "width": 6,
     "height": 6,
-    "x": 266,
-    "y": 0,
+    "x": 665,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-300-black": {
     "width": 8,
     "height": 8,
-    "x": 272,
-    "y": 0,
+    "x": 671,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-crosshatch-medium-300-white": {
     "width": 8,
     "height": 8,
-    "x": 280,
-    "y": 0,
+    "x": 679,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-light-100-black": {
     "width": 3,
     "height": 3,
-    "x": 288,
-    "y": 0,
+    "x": 687,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-light-100-white": {
     "width": 3,
     "height": 3,
-    "x": 291,
-    "y": 0,
+    "x": 690,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-light-200-black": {
     "width": 4,
     "height": 4,
-    "x": 294,
-    "y": 0,
+    "x": 693,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-light-200-white": {
     "width": 4,
     "height": 4,
-    "x": 298,
-    "y": 0,
+    "x": 697,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-medium-100-black": {
     "width": 3,
     "height": 3,
-    "x": 302,
-    "y": 0,
+    "x": 701,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-medium-100-white": {
     "width": 3,
     "height": 3,
-    "x": 305,
-    "y": 0,
+    "x": 704,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-medium-200-black": {
     "width": 4,
     "height": 4,
-    "x": 308,
-    "y": 0,
+    "x": 707,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-grid-medium-200-white": {
     "width": 4,
     "height": 4,
-    "x": 312,
-    "y": 0,
+    "x": 711,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-light-100-black": {
     "width": 5,
     "height": 5,
-    "x": 316,
-    "y": 0,
+    "x": 715,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-light-100-white": {
     "width": 5,
     "height": 5,
-    "x": 321,
-    "y": 0,
+    "x": 720,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-light-200-black": {
     "width": 3,
     "height": 3,
-    "x": 326,
-    "y": 0,
+    "x": 725,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-light-200-white": {
     "width": 3,
     "height": 3,
-    "x": 329,
-    "y": 0,
+    "x": 728,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-medium-100-black": {
     "width": 6,
     "height": 6,
-    "x": 332,
-    "y": 0,
+    "x": 731,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-medium-100-white": {
     "width": 6,
     "height": 6,
-    "x": 338,
-    "y": 0,
+    "x": 737,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-medium-200-black": {
     "width": 4,
     "height": 4,
-    "x": 344,
-    "y": 0,
+    "x": 743,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-horizontal-medium-200-white": {
     "width": 4,
     "height": 4,
-    "x": 348,
-    "y": 0,
+    "x": 747,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-100-black": {
     "width": 8,
     "height": 8,
-    "x": 352,
-    "y": 0,
+    "x": 751,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-100-white": {
     "width": 8,
     "height": 8,
-    "x": 360,
-    "y": 0,
+    "x": 759,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-200-black": {
     "width": 7,
     "height": 7,
-    "x": 368,
-    "y": 0,
+    "x": 767,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-200-white": {
     "width": 7,
     "height": 7,
-    "x": 375,
-    "y": 0,
+    "x": 774,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-300-black": {
     "width": 6,
     "height": 6,
-    "x": 382,
-    "y": 0,
+    "x": 781,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-300-white": {
     "width": 6,
     "height": 6,
-    "x": 388,
-    "y": 0,
+    "x": 787,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-400-black": {
     "width": 5,
     "height": 5,
-    "x": 394,
-    "y": 0,
+    "x": 793,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-400-white": {
     "width": 5,
     "height": 5,
-    "x": 399,
-    "y": 0,
+    "x": 798,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-500-black": {
     "width": 4,
     "height": 4,
-    "x": 404,
-    "y": 0,
+    "x": 803,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-light-500-white": {
     "width": 4,
     "height": 4,
-    "x": 408,
-    "y": 0,
+    "x": 807,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-100-black": {
     "width": 8,
     "height": 8,
-    "x": 412,
-    "y": 0,
+    "x": 811,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-100-white": {
     "width": 8,
     "height": 8,
-    "x": 420,
-    "y": 0,
+    "x": 819,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-200-black": {
     "width": 6,
     "height": 6,
-    "x": 428,
-    "y": 0,
+    "x": 827,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-200-white": {
     "width": 6,
     "height": 6,
-    "x": 434,
-    "y": 0,
+    "x": 833,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-300-black": {
     "width": 5,
     "height": 5,
-    "x": 440,
-    "y": 0,
+    "x": 839,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-300-white": {
     "width": 5,
     "height": 5,
-    "x": 445,
-    "y": 0,
+    "x": 844,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-400-black": {
     "width": 4,
     "height": 4,
-    "x": 450,
-    "y": 0,
+    "x": 849,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-down-medium-400-white": {
     "width": 4,
     "height": 4,
-    "x": 454,
-    "y": 0,
+    "x": 853,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-light-100-black": {
     "width": 5,
     "height": 5,
-    "x": 458,
-    "y": 0,
+    "x": 857,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-light-100-white": {
     "width": 5,
     "height": 5,
-    "x": 463,
-    "y": 0,
+    "x": 862,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-light-200-black": {
     "width": 3,
     "height": 3,
-    "x": 468,
-    "y": 0,
+    "x": 867,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-light-200-white": {
     "width": 3,
     "height": 3,
-    "x": 471,
-    "y": 0,
+    "x": 870,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-medium-100-black": {
     "width": 6,
     "height": 6,
-    "x": 474,
-    "y": 0,
+    "x": 873,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-medium-100-white": {
     "width": 6,
     "height": 6,
-    "x": 480,
-    "y": 0,
+    "x": 879,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-medium-200-black": {
     "width": 4,
     "height": 4,
-    "x": 486,
-    "y": 0,
+    "x": 885,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-medium-200-white": {
     "width": 4,
     "height": 4,
-    "x": 490,
-    "y": 0,
+    "x": 889,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-100-black": {
     "width": 8,
     "height": 8,
-    "x": 494,
-    "y": 0,
+    "x": 893,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-100-white": {
     "width": 8,
     "height": 8,
-    "x": 502,
-    "y": 0,
+    "x": 901,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-200-black": {
     "width": 7,
     "height": 7,
-    "x": 510,
-    "y": 0,
+    "x": 909,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-200-white": {
     "width": 7,
     "height": 7,
-    "x": 517,
-    "y": 0,
+    "x": 916,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-300-black": {
     "width": 6,
     "height": 6,
-    "x": 524,
-    "y": 0,
+    "x": 923,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-300-white": {
     "width": 6,
     "height": 6,
-    "x": 530,
-    "y": 0,
+    "x": 929,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-400-black": {
     "width": 5,
     "height": 5,
-    "x": 536,
-    "y": 0,
+    "x": 935,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-400-white": {
     "width": 5,
     "height": 5,
-    "x": 541,
-    "y": 0,
+    "x": 940,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-500-black": {
     "width": 4,
     "height": 4,
-    "x": 546,
-    "y": 0,
+    "x": 945,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-light-500-white": {
     "width": 4,
     "height": 4,
-    "x": 550,
-    "y": 0,
+    "x": 949,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-100-black": {
     "width": 8,
     "height": 8,
-    "x": 554,
-    "y": 0,
+    "x": 953,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-100-white": {
     "width": 8,
     "height": 8,
-    "x": 562,
-    "y": 0,
+    "x": 961,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-200-black": {
     "width": 6,
     "height": 6,
-    "x": 570,
-    "y": 0,
+    "x": 969,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-200-white": {
     "width": 6,
     "height": 6,
-    "x": 576,
-    "y": 0,
+    "x": 975,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-300-black": {
     "width": 5,
     "height": 5,
-    "x": 582,
-    "y": 0,
+    "x": 981,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-300-white": {
     "width": 5,
     "height": 5,
-    "x": 587,
-    "y": 0,
+    "x": 986,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-400-black": {
     "width": 4,
     "height": 4,
-    "x": 592,
-    "y": 0,
+    "x": 991,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-line-vertical-up-medium-400-white": {
     "width": 4,
     "height": 4,
-    "x": 596,
-    "y": 0,
+    "x": 995,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-minus-100-black": {
     "width": 7,
     "height": 7,
-    "x": 600,
-    "y": 0,
+    "x": 999,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-minus-100-white": {
     "width": 7,
     "height": 7,
-    "x": 607,
-    "y": 0,
+    "x": 1006,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-minus-200-black": {
     "width": 7,
     "height": 7,
-    "x": 614,
-    "y": 0,
+    "x": 1013,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-minus-200-white": {
     "width": 7,
     "height": 7,
-    "x": 621,
-    "y": 0,
+    "x": 1020,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-plus-100-black": {
     "width": 7,
     "height": 7,
-    "x": 628,
-    "y": 0,
+    "x": 1027,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-plus-100-white": {
     "width": 7,
     "height": 7,
-    "x": 635,
-    "y": 0,
+    "x": 1034,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-plus-200-black": {
     "width": 7,
     "height": 7,
-    "x": 642,
-    "y": 0,
+    "x": 1041,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-plus-200-white": {
     "width": 7,
     "height": 7,
-    "x": 649,
-    "y": 0,
+    "x": 1048,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-back-100-black": {
     "width": 8,
     "height": 8,
-    "x": 656,
-    "y": 0,
+    "x": 1055,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-back-100-white": {
     "width": 8,
     "height": 8,
-    "x": 664,
-    "y": 0,
+    "x": 1063,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-back-200-black": {
     "width": 6,
     "height": 6,
-    "x": 672,
-    "y": 0,
+    "x": 1071,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-back-200-white": {
     "width": 6,
     "height": 6,
-    "x": 678,
-    "y": 0,
+    "x": 1077,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-forward-100-black": {
     "width": 8,
     "height": 8,
-    "x": 684,
-    "y": 0,
+    "x": 1083,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-forward-100-white": {
     "width": 8,
     "height": 8,
-    "x": 692,
-    "y": 0,
+    "x": 1091,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-forward-200-black": {
     "width": 6,
     "height": 6,
-    "x": 700,
-    "y": 0,
+    "x": 1099,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-slash-forward-200-white": {
     "width": 6,
     "height": 6,
-    "x": 706,
-    "y": 0,
+    "x": 1105,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-square-100-black": {
     "width": 9,
     "height": 9,
-    "x": 712,
-    "y": 0,
+    "x": 1111,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-square-100-white": {
     "width": 9,
     "height": 9,
-    "x": 721,
-    "y": 0,
+    "x": 1120,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-square-200-black": {
     "width": 9,
     "height": 9,
-    "x": 730,
-    "y": 0,
+    "x": 1129,
+    "y": 51,
     "pixelRatio": 1
   },
   "tmpoly-square-200-white": {
     "width": 9,
     "height": 9,
-    "x": 739,
-    "y": 0,
+    "x": 1138,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "unknown": {
+    "width": 12,
+    "height": 12,
+    "x": 1147,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "インターチェンジ-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1159,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "サービスエリア-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1191,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "ジャンクション-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1223,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "スマートインターチェンジ-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1255,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "ハイマツ地": {
+    "width": 32,
+    "height": 32,
+    "x": 1287,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "ヤシ科樹林-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1319,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "ヤシ科樹林": {
+    "width": 32,
+    "height": 32,
+    "x": 1351,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "三角点-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1383,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "三角点": {
+    "width": 32,
+    "height": 32,
+    "x": 1415,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "中学校-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1447,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "中学校": {
+    "width": 32,
+    "height": 32,
+    "x": 1479,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "主要な港-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1511,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "主要な空港-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1543,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "交番": {
+    "width": 32,
+    "height": 32,
+    "x": 1575,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "人口100万人以上-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1607,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "人口100万人以上2-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1639,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "人口50万-100万人未満-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1671,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "人口50万人未満-500": {
+    "width": 32,
+    "height": 32,
+    "x": 1703,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "保健所": {
+    "width": 32,
+    "height": 32,
+    "x": 1735,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "北海道の総合振興局・振興局-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1767,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "博物館法の登録博物館・博物館相当施設": {
+    "width": 32,
+    "height": 32,
+    "x": 1799,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "史跡・名勝・天然記念物-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1831,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "史跡・名勝・天然記念物": {
+    "width": 32,
+    "height": 32,
+    "x": 1863,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "噴火口・噴気口-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1895,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "噴火口・噴気口": {
+    "width": 32,
+    "height": 32,
+    "x": 1927,
+    "y": 51,
+    "pixelRatio": 1
+  },
+  "図書館": {
+    "width": 32,
+    "height": 32,
+    "x": 1959,
+    "y": 51,
     "pixelRatio": 1
   },
   "国道番号-20": {
-    "width": 64,
-    "height": 64,
-    "x": 748,
-    "y": 0,
+    "width": 32,
+    "height": 32,
+    "x": 0,
+    "y": 83,
     "pixelRatio": 1
   },
   "国道番号": {
-    "width": 64,
-    "height": 64,
-    "x": 812,
-    "y": 0,
+    "width": 32,
+    "height": 32,
+    "x": 32,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "国際空港-20": {
+    "width": 32,
+    "height": 32,
+    "x": 64,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "国際空港以外の拠点空港等-20": {
+    "width": 32,
+    "height": 32,
+    "x": 96,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "城跡-20": {
+    "width": 32,
+    "height": 32,
+    "x": 128,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "城跡": {
+    "width": 32,
+    "height": 32,
+    "x": 160,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "墓地": {
+    "width": 32,
+    "height": 32,
+    "x": 192,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "外国公館": {
+    "width": 32,
+    "height": 32,
+    "x": 224,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "官公署": {
+    "width": 32,
+    "height": 32,
+    "x": 256,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "寺院-20": {
+    "width": 32,
+    "height": 32,
+    "x": 288,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "寺院": {
+    "width": 32,
+    "height": 32,
+    "x": 320,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "小学校-20": {
+    "width": 32,
+    "height": 32,
+    "x": 352,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "小学校": {
+    "width": 32,
+    "height": 32,
+    "x": 384,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "工場-20": {
+    "width": 32,
+    "height": 32,
+    "x": 416,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "市役所・東京都の区役所-20": {
+    "width": 32,
+    "height": 32,
+    "x": 448,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "市役所・東京都の区役所": {
+    "width": 32,
+    "height": 32,
+    "x": 480,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "市役所・東京都の区役所（都道府県所在都市以外）-20": {
+    "width": 32,
+    "height": 32,
+    "x": 512,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "広葉樹林-20": {
+    "width": 32,
+    "height": 32,
+    "x": 544,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "広葉樹林": {
+    "width": 32,
+    "height": 32,
+    "x": 576,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "指示点": {
+    "width": 32,
+    "height": 32,
+    "x": 608,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "採鉱地-20": {
+    "width": 32,
+    "height": 32,
+    "x": 640,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "採鉱地": {
+    "width": 32,
+    "height": 32,
+    "x": 672,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "果樹園-20": {
+    "width": 32,
+    "height": 32,
+    "x": 704,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "果樹園": {
+    "width": 32,
+    "height": 32,
+    "x": 736,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "植生界": {
+    "width": 32,
+    "height": 32,
+    "x": 768,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "標高点-500": {
+    "width": 32,
+    "height": 32,
+    "x": 800,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "標高点（測点）-20": {
+    "width": 32,
+    "height": 32,
+    "x": 832,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "標高点（測点）": {
+    "width": 32,
+    "height": 32,
+    "x": 864,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "水深-20": {
+    "width": 32,
+    "height": 32,
+    "x": 896,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "水準点": {
+    "width": 32,
+    "height": 32,
+    "x": 928,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "水面標高-20": {
+    "width": 48,
+    "height": 12,
+    "x": 960,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "油井・ガス井-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1008,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "油井・ガス井": {
+    "width": 32,
+    "height": 32,
+    "x": 1040,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "流水方向": {
+    "width": 32,
+    "height": 32,
+    "x": 1072,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "消防署": {
+    "width": 32,
+    "height": 32,
+    "x": 1104,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "温泉-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1136,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "温泉": {
+    "width": 32,
+    "height": 32,
+    "x": 1168,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "港湾-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1200,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "港湾": {
+    "width": 32,
+    "height": 32,
+    "x": 1232,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "滝": {
+    "width": 32,
+    "height": 32,
+    "x": 1264,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "漁港-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1296,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "漁港": {
+    "width": 32,
+    "height": 32,
+    "x": 1328,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "火山-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1360,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "灯台-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1392,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "灯台": {
+    "width": 32,
+    "height": 32,
+    "x": 1424,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "煙突": {
+    "width": 32,
+    "height": 32,
+    "x": 1456,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "特別標高点": {
+    "width": 32,
+    "height": 32,
+    "x": 1488,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "特定重要港-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1520,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "田-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1552,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "田": {
+    "width": 32,
+    "height": 32,
+    "x": 1584,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "町・村-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1616,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "町村役場・政令指定都市の区役所-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1648,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "町村役場・政令指定都市の区役所": {
+    "width": 32,
+    "height": 32,
+    "x": 1680,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "畑-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1712,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "畑": {
+    "width": 32,
+    "height": 32,
+    "x": 1744,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "病院-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1776,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "病院": {
+    "width": 32,
+    "height": 32,
+    "x": 1808,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "発電所等-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1840,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "発電所等": {
+    "width": 32,
+    "height": 32,
+    "x": 1872,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "砂礫地（領域が不明瞭な場合）-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1904,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "神社-20": {
+    "width": 32,
+    "height": 32,
+    "x": 1936,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "神社": {
+    "width": 32,
+    "height": 32,
+    "x": 1968,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "税務署": {
+    "width": 32,
+    "height": 32,
+    "x": 0,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "竹林": {
+    "width": 32,
+    "height": 32,
+    "x": 32,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "笹地": {
+    "width": 32,
+    "height": 32,
+    "x": 64,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "老人ホーム": {
+    "width": 32,
+    "height": 32,
+    "x": 96,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "自然災害伝承碑": {
+    "width": 32,
+    "height": 32,
+    "x": 128,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "自衛隊-20": {
+    "width": 32,
+    "height": 32,
+    "x": 160,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "自衛隊等の飛行場-20": {
+    "width": 32,
+    "height": 32,
+    "x": 192,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "茶畑": {
+    "width": 32,
+    "height": 32,
+    "x": 224,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "荒地": {
+    "width": 32,
+    "height": 32,
+    "x": 256,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "裁判所": {
+    "width": 32,
+    "height": 32,
+    "x": 288,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "記念碑": {
+    "width": 32,
+    "height": 32,
+    "x": 320,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "警察署-20": {
+    "width": 32,
+    "height": 32,
+    "x": 352,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "警察署": {
+    "width": 32,
+    "height": 32,
+    "x": 384,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "郵便局-20": {
+    "width": 32,
+    "height": 32,
+    "x": 416,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "郵便局": {
+    "width": 32,
+    "height": 32,
+    "x": 448,
+    "y": 115,
     "pixelRatio": 1
   },
   "都市高速道路番号-20": {
-    "width": 64,
-    "height": 64,
-    "x": 876,
-    "y": 0,
+    "width": 32,
+    "height": 32,
+    "x": 480,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "都道府県所在地-100": {
+    "width": 32,
+    "height": 32,
+    "x": 512,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "都道府県所在地-20": {
+    "width": 32,
+    "height": 32,
+    "x": 544,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "重要港-20": {
+    "width": 32,
+    "height": 32,
+    "x": 576,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "針葉樹林-20": {
+    "width": 32,
+    "height": 32,
+    "x": 608,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "針葉樹林": {
+    "width": 32,
+    "height": 32,
+    "x": 640,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "雨裂（下部）-20": {
+    "width": 32,
+    "height": 32,
+    "x": 672,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "電子基準点-20": {
+    "width": 32,
+    "height": 32,
+    "x": 704,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "電子基準点": {
+    "width": 32,
+    "height": 32,
+    "x": 736,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "電波塔": {
+    "width": 32,
+    "height": 32,
+    "x": 768,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "風車-20": {
+    "width": 32,
+    "height": 32,
+    "x": 800,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "風車": {
+    "width": 32,
+    "height": 32,
+    "x": 832,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "高等学校・中等教育学校-20": {
+    "width": 32,
+    "height": 32,
+    "x": 864,
+    "y": 115,
+    "pixelRatio": 1
+  },
+  "高等学校・中等教育学校": {
+    "width": 32,
+    "height": 32,
+    "x": 896,
+    "y": 115,
     "pixelRatio": 1
   },
   "高速道路番号-20": {
-    "width": 64,
-    "height": 64,
-    "x": 940,
-    "y": 0,
+    "width": 32,
+    "height": 32,
+    "x": 928,
+    "y": 115,
     "pixelRatio": 1
   }
 }

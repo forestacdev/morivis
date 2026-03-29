@@ -9,7 +9,8 @@
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
-		groupPropertyByGeometryType
+		groupPropertyByGeometryType,
+		buildDxfStyle
 	} from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -184,12 +185,15 @@
 			}
 
 			const entryName = dxfFile.name.replace(/\.[^.]+$/, '');
+			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
+			const style = buildDxfStyle(geojsonData, selectedGeometryType, propKeys);
 			const entry = createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
-				'dxf'
+				style,
+				{ attribution: 'DXF' }
 			);
 
 			if (entry) {

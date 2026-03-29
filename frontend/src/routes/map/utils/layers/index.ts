@@ -185,7 +185,7 @@ export const createLayersItems = (
 
 			const attributionItem = getAttribution(metaData.attribution);
 
-			if (attributionItem && metaData.attribution !== 'カスタムデータ') {
+			if (attributionItem && !metaData.isUserUploaded) {
 				attributionMap.set(metaData.attribution, metaData.attribution);
 			}
 
@@ -311,10 +311,7 @@ export const createLayersItems = (
 					}
 
 					// TODO マーカータイプの廃止
-					if (
-						style.labels.show &&
-						!(style.type === 'circle' && style.markerType === 'icon' && style.icon?.show)
-					) {
+					if (style.labels.show) {
 						// ラベルを追加
 						const fields = entry.properties.fields;
 						const symbolLayer = createSymbolLayer(layer, style, fields);

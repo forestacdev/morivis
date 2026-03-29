@@ -3,12 +3,16 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
-	import type { ResultPoiData, ResultAddressData } from '$routes/map/utils/feature';
+	import type {
+		ResultPoiData,
+		ResultAddressData,
+		ResultCoordinateData
+	} from '$routes/map/utils/feature';
 	import { normalizeSchoolName } from '$routes/map/utils/normalized';
 	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {
-		selectedSearchResultData: ResultPoiData | ResultAddressData | null;
+		selectedSearchResultData: ResultPoiData | ResultAddressData | ResultCoordinateData | null;
 		selectedSearchId: number | null;
 	}
 	let { selectedSearchResultData = $bindable(), selectedSearchId = $bindable() }: Props = $props();
