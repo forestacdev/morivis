@@ -86,13 +86,9 @@
 				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
-				<div class="flex h-[80px] items-center gap-2 pr-2">
-					<div class="flex items-center gap-2 max-lg:hidden">
-						<Icon icon="streamline:paint-palette-solid" class="h-7 w-7 text-base" />
-						<span class="text-base text-lg select-none">スタイルの変更</span>
-					</div>
-					<!-- モバイル用タイトル -->
-					<div class="truncate text-2xl text-base lg:hidden">
+				<div class="flex items-center gap-2 pt-4 pr-3 pb-2">
+					<!-- タイトル -->
+					<div class="truncate text-2xl text-base">
 						<span class="select-none">{layerEntry.metaData.name}</span>
 					</div>
 					<button
@@ -106,9 +102,7 @@
 					</button>
 				</div>
 
-				<!-- PC用タイトル -->
-				<div class="text-2xl text-base max-lg:hidden">{layerEntry.metaData.name}</div>
-				<div class="relative flex h-full flex-col overflow-x-hidden">
+				<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 					<!-- スクロールコンテンツ -->
 					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[300px]">
 						<div class="flex w-full justify-between rounded-lg bg-black p-2">
