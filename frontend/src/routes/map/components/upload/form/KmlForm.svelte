@@ -12,7 +12,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { kmlFileToGeoJson } from '$routes/map/utils/file/kml';
+	import { kmlFileToGeoJson, getKmlDefaultColor, type KmlParseResult } from '$routes/map/utils/file/kml';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -47,6 +47,7 @@
 	};
 
 	let rawGeojson: FeatureCollection | null = null;
+	let kmlResult: KmlParseResult | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
@@ -62,8 +63,9 @@
 		if (kmlFile) {
 			isProcessing.set(true);
 			kmlFileToGeoJson(kmlFile)
-				.then((geojson) => {
-					rawGeojson = geojson as unknown as FeatureCollection;
+				.then((result) => {
+					kmlResult = result;
+					rawGeojson = result.geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson!);
 
 					if (types.length === 1) {
@@ -105,13 +107,16 @@
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
+			const defaultColor = kmlResult
+				? getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined
+				: undefined;
 			const entry = createGeoJsonEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
 				undefined,
-				{ attribution: 'KML' }
+				{ attribution: 'KML', defaultColor }
 			);
 
 			if (entry) {
@@ -152,13 +157,16 @@
 				return;
 			}
 
+			const defaultColor = kmlResult
+				? getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined
+				: undefined;
 			const entry = createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
 				undefined,
-				{ attribution: 'KML' }
+				{ attribution: 'KML', defaultColor }
 			);
 
 			if (entry) {

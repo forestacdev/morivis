@@ -324,6 +324,7 @@ export const createGeoJsonEntry = (
 	options?: {
 		attribution?: string;
 		extraColorExpressions?: ColorMatchExpression[];
+		defaultColor?: string;
 	}
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const metaData: GeoJsonMetaData = {
@@ -353,7 +354,10 @@ export const createGeoJsonEntry = (
 			resolvedStyle.colors.key = extraColorExpressions[0].key;
 		}
 	} else {
-		const colorsConfig = createDefaultColorsConfig(entryGeometryType);
+		const colorsConfig = createDefaultColorsConfig(
+			entryGeometryType,
+			options?.defaultColor ?? undefined
+		);
 
 		// 属性から自動match分類を生成
 		const autoMatchExpressions = buildAutoMatchExpressions(data, entryGeometryType);
