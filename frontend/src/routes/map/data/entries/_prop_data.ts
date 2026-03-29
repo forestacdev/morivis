@@ -303,7 +303,12 @@ export const propData: PropData = {
 	ziriki_23: {
 		image: `${FEATURE_IMAGE_BASE_PATH}/ziriki_23.webp`,
 		description: `
-            2023年度自力建設。`,
+            2023年度自力建設。
+            自力建設初となる２層の半屋外階段「ほとりの櫓」
+            ほとりには何かの周辺という意味だけではなく、穏やかな自然の情景が感じられ心が落ち着き安らげる場所という意味があります。
+            川や木立、林業専攻や環境教育専攻のほとりであるこの場所に立ち寄った際にホッとリラックスできる場所にしたい。
+            多くの人にとっての「ほとり」になってほしい。そんな想いでこのような名前となりました。
+            また、ほとりを漢字で書くと「畔」となり、「あぜ」とも読めます。もともと田んぼだったというこの土地への敬意も込めています。`,
 		url: 'https://www.forest.ac.jp/facilities/self/jiriki-hotori/'
 	},
 	ziriki_24: {
@@ -318,7 +323,7 @@ export const propData: PropData = {
 		description: `
             2025年度自力建設。
             チェーンソーの実習場の計画`,
-		url: 'https://www.forest.ac.jp/facilities/self/'
+		url: 'https://www.forest.ac.jp/facilities/self/tsumugito/'
 	},
 	// other_point
 	// sinrinken: {
