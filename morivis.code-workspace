@@ -25,6 +25,10 @@
             "path": "frontend/src/routes/map/components/layer_style_menu",
         },
         {
+            "name": "ユーティリティ",
+            "path": "frontend/src/routes/map/utils",
+        },
+        {
             "path": "frontend",
         },
         {
