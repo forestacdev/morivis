@@ -58,7 +58,7 @@
 	<button
 		{disabled}
 		onclick={() => (showPullDown = !showPullDown)}
-		class="flex w-full items-center justify-between gap-2 rounded-md bg-black p-2 px-4 text-base {disabled
+		class="border-sub flex w-full items-center justify-between gap-2 rounded-md border-1 bg-black p-2 px-4 text-base {disabled
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>
