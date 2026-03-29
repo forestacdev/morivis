@@ -34,9 +34,7 @@
 
 	const textureFiles = $derived.by(() => {
 		if (!dropFile || !(dropFile instanceof FileList)) return [];
-		return Array.from(dropFile).filter((f) =>
-			/\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name)
-		);
+		return Array.from(dropFile).filter((f) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name));
 	});
 
 	/** MTL内のテクスチャパスをBlobURLに書き換える */

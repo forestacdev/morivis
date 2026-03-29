@@ -427,7 +427,7 @@
 			format: { type: 'image', url: '' },
 			metaData: {
 				...DEFAULT_CUSTOM_META_DATA,
-					attribution: 'PDF',
+				attribution: 'PDF',
 				name: entryName || 'GeoPDF',
 				tileSize: 256,
 				bounds: bbox,

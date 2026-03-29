@@ -7,11 +7,11 @@
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
+	import IconPicker from '$routes/map/components/layer_style_menu/extension_menu/IconPicker.svelte';
 	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
 	import NumberOption from '$routes/map/components/layer_style_menu/NumberOption.svelte';
 	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import type { ColorsExpression, VectorLayerType } from '$routes/map/data/types/vector/style';
-	import IconPicker from '$routes/map/components/layer_style_menu/extension_menu/IconPicker.svelte';
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;

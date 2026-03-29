@@ -12,7 +12,11 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { kmlFileToGeoJson, getKmlDefaultColor, type KmlParseResult } from '$routes/map/utils/file/kml';
+	import {
+		kmlFileToGeoJson,
+		getKmlDefaultColor,
+		type KmlParseResult
+	} from '$routes/map/utils/file/kml';
 	import { isBboxValid } from '$routes/map/utils/map';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -108,7 +112,7 @@
 			focusBbox = bbox as [number, number, number, number];
 		} else {
 			const defaultColor = kmlResult
-				? getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined
+				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
 			const entry = createGeoJsonEntry(
 				filtered,
@@ -158,7 +162,7 @@
 			}
 
 			const defaultColor = kmlResult
-				? getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined
+				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
 			const entry = createGeoJsonEntry(
 				geojsonData,

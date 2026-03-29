@@ -607,7 +607,8 @@
 		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(
-			(entry) => entry.type === 'model' && (entry.format.type === 'gltf' || entry.format.type === 'obj')
+			(entry) =>
+				entry.type === 'model' && (entry.format.type === 'gltf' || entry.format.type === 'obj')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =

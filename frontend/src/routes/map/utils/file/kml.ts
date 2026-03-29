@@ -107,7 +107,11 @@ const parseKmlStyles = (
 
 const parseKmlString = (
 	text: string
-): { geojson: FeatureCollection; fillColors: Map<string, string>; lineColors: Map<string, string> } => {
+): {
+	geojson: FeatureCollection;
+	fillColors: Map<string, string>;
+	lineColors: Map<string, string>;
+} => {
 	const format = new KML({ extractStyles: false });
 	const olFeatures = format.readFeatures(text);
 
@@ -196,10 +200,7 @@ export const kmlFileToGeoJson = async (file: File): Promise<KmlParseResult> => {
  * KMLスタイルからデフォルトカラーを返す
  * ジオメトリタイプに応じてfill/lineを優先的に選択
  */
-export const getKmlDefaultColor = (
-	result: KmlParseResult,
-	geometryType: string
-): string | null => {
+export const getKmlDefaultColor = (result: KmlParseResult, geometryType: string): string | null => {
 	const { fillColors, lineColors } = result;
 	const colors = geometryType === 'Polygon' ? fillColors : lineColors;
 	const fallback = geometryType === 'Polygon' ? lineColors : fillColors;

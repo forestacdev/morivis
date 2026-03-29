@@ -26,15 +26,13 @@ interface LoadedModel {
  * MeshStyle の transform から MapLibre 用の変換行列パラメータを計算
  */
 const calculateModelTransform = (style: MeshStyle): ModelTransform => {
-	const { lng, lat, altitude, heightOffset, scale, rotationX, rotationY, rotationZ } = style.transform;
+	const { lng, lat, altitude, heightOffset, scale, rotationX, rotationY, rotationZ } =
+		style.transform;
 
 	// 地形時: altitude + heightOffset、平面時: heightOffset のみ
 	const effectiveAltitude = (mapStore.getTerrain() ? altitude : 0) + heightOffset;
 
-	const mc = maplibregl.MercatorCoordinate.fromLngLat(
-		[lng, lat],
-		effectiveAltitude
-	);
+	const mc = maplibregl.MercatorCoordinate.fromLngLat([lng, lat], effectiveAltitude);
 	const baseScale = mc.meterInMercatorCoordinateUnits();
 
 	return {
@@ -201,74 +199,74 @@ export class ThreeJsLayerManager {
 			}
 
 			const onModelLoaded = (model: THREE.Group | THREE.Object3D) => {
-					// 透過・色設定
-					model.traverse((child) => {
-						if ((child as THREE.Mesh).isMesh) {
-							const mesh = child as THREE.Mesh;
-							const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				// 透過・色設定
+				model.traverse((child) => {
+					if ((child as THREE.Mesh).isMesh) {
+						const mesh = child as THREE.Mesh;
+						const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
-							materials.forEach((material) => {
-								material.transparent = true;
-								material.opacity = entry.style.opacity;
-								if (entry.style.wireframe) {
-									(material as THREE.MeshStandardMaterial).wireframe = true;
-								}
-							});
-						}
-					});
-
-					// 表示/非表示
-					model.visible = entry.style.visible ?? true;
-
-					// ユーザーデータにエントリID を保存
-					model.userData.entryId = entry.id;
-
-					this.loadedModels.set(entry.id, { entry, object: model, transform });
-					if (_type === 'preview') {
-						this.previewModelGroup!.add(model);
-					} else {
-						this.modelGroup!.add(model);
+						materials.forEach((material) => {
+							material.transparent = true;
+							material.opacity = entry.style.opacity;
+							if (entry.style.wireframe) {
+								(material as THREE.MeshStandardMaterial).wireframe = true;
+							}
+						});
 					}
-					resolve();
-				};
+				});
 
-				if (entry.format.type === 'obj') {
-					const objLoader = new OBJLoader();
-					const loadObj = () => {
-						objLoader.load(
-							entry.format.url,
-							(obj) => onModelLoaded(obj),
-							undefined,
-							(error) => reject(error)
-						);
-					};
+				// 表示/非表示
+				model.visible = entry.style.visible ?? true;
 
-					if (entry.format.mtlUrl) {
-						const mtlLoader = new MTLLoader();
-						// BlobURL内のテクスチャパスは絶対URL（BlobURL）に書き換え済みなので
-						// リソースパスを空にしてそのまま使う
-						mtlLoader.setResourcePath('');
-						mtlLoader.load(
-							entry.format.mtlUrl,
-							(materials) => {
-								materials.preload();
-								objLoader.setMaterials(materials);
-								loadObj();
-							},
-							undefined,
-							() => loadObj() // MTL読み込み失敗時はマテリアルなしで続行
-						);
-					} else {
-						loadObj();
-					}
+				// ユーザーデータにエントリID を保存
+				model.userData.entryId = entry.id;
+
+				this.loadedModels.set(entry.id, { entry, object: model, transform });
+				if (_type === 'preview') {
+					this.previewModelGroup!.add(model);
 				} else {
-					this.loader.load(
+					this.modelGroup!.add(model);
+				}
+				resolve();
+			};
+
+			if (entry.format.type === 'obj') {
+				const objLoader = new OBJLoader();
+				const loadObj = () => {
+					objLoader.load(
 						entry.format.url,
-						(gltf) => onModelLoaded(gltf.scene),
+						(obj) => onModelLoaded(obj),
 						undefined,
 						(error) => reject(error)
 					);
+				};
+
+				if (entry.format.mtlUrl) {
+					const mtlLoader = new MTLLoader();
+					// BlobURL内のテクスチャパスは絶対URL（BlobURL）に書き換え済みなので
+					// リソースパスを空にしてそのまま使う
+					mtlLoader.setResourcePath('');
+					mtlLoader.load(
+						entry.format.mtlUrl,
+						(materials) => {
+							materials.preload();
+							objLoader.setMaterials(materials);
+							loadObj();
+						},
+						undefined,
+						() => loadObj() // MTL読み込み失敗時はマテリアルなしで続行
+					);
+				} else {
+					loadObj();
 				}
+			} else {
+				this.loader.load(
+					entry.format.url,
+					(gltf) => onModelLoaded(gltf.scene),
+					undefined,
+					(error) => reject(error)
+				);
+			}
 		});
 	}
 
