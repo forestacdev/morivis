@@ -228,6 +228,7 @@ export interface MultiBandData {
 
 export interface RasterTiffStyle extends BaseRasterStyle {
 	type: 'tiff';
+	resampling?: 'nearest' | 'linear';
 	visualization: {
 		numBands: number;
 		mode: BandTypeKey;

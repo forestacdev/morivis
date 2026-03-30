@@ -26,6 +26,7 @@ const entry: RasterCogEntry<RasterTiffStyle> = {
 	style: {
 		type: 'tiff',
 		opacity: 1.0,
+		resampling: 'nearest',
 		visualization: {
 			numBands: 9,
 			mode: 'single',
