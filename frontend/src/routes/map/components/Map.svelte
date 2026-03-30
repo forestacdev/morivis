@@ -49,6 +49,8 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
+	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
@@ -556,6 +558,23 @@
 
 		if (hasCogLayer) {
 			mapStore.ensureCogProtocol();
+			// 定義済みCOGエントリをCogTileManagerに登録（タイル要求前に完了させる）
+			const cogEntries = [
+				...entries.filter(isCogEntry),
+				...(showDataEntry && isCogEntry(showDataEntry) ? [showDataEntry] : [])
+			];
+			await Promise.all(
+				cogEntries.map(async (e) => {
+					const cogEntry = e as { id: string; format: { url: string } };
+					if (!CogTileManager.has(cogEntry.id)) {
+						const { metadata } = await CogTileManager.register(
+							cogEntry.id,
+							cogEntry.format.url
+						);
+						GeoTiffCache.setDataRanges(cogEntry.id, metadata.sampleRanges);
+					}
+				})
+			);
 		} else {
 			mapStore.releaseCogProtocol();
 		}
