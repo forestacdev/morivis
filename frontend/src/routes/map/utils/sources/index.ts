@@ -42,6 +42,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
+import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
@@ -218,24 +219,26 @@ export const createSourcesItems = async (
 						} as RasterSourceSpecification;
 					} else if (format.type === 'cog') {
 						if (style.type === 'tiff') {
+							const cogMeta = CogTileManager.getMetadata(entry.id);
+							const tileSize = cogMeta?.tileSize ?? metaData.tileSize;
 							const visualization = style.visualization;
 							const mode = visualization.mode;
 							let tileUrl: string;
 
 							if (mode === 'single') {
 								const u = visualization.uniformsData.single;
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${u.min}&max=${u.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${u.min}&max=${u.max}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							} else {
 								const u = visualization.uniformsData.multi;
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${u.r.min}&rMax=${u.r.max}&gMin=${u.g.min}&gMax=${u.g.max}&bMin=${u.b.min}&bMax=${u.b.max}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${u.r.min}&rMax=${u.r.max}&gMin=${u.g.min}&gMax=${u.g.max}&bMin=${u.b.min}&bMax=${u.b.max}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							}
 
 							items[sourceId] = {
 								type: 'raster',
 								tiles: [tileUrl],
-								maxzoom: metaData.maxZoom,
-								minzoom: metaData.minZoom,
-								tileSize: metaData.tileSize,
+								maxzoom: cogMeta?.maxZoom ?? metaData.maxZoom,
+								minzoom: cogMeta?.minZoom ?? metaData.minZoom,
+								tileSize,
 								attribution: metaData.attribution,
 								bounds: metaData.bounds
 							} as RasterSourceSpecification;

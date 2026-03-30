@@ -122,7 +122,8 @@ export const INT_ADD_LAYER_IDS = [
 	// 'disaster_lore_all',
 	'ensyurin_road',
 	'ensyurin_syouhan',
-	'national_forest_stand'
+	'national_forest_stand',
+	'fr_mesh20m_7'
 	// 'tochigi_fr_mesh20m'
 	// 'kanagawa_tree_species'
 ];

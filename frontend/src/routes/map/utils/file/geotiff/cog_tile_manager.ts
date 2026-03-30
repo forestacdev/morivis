@@ -67,25 +67,18 @@ const selectOverviewForZoom = (conn: CogConnection, z: number, tileSize: number)
 	// フル解像度のdpp
 	const fullDpp = cogDegreesPerPixel(bbox, fullWidth);
 
-	// ターゲットdppに最も近い（ターゲット以下の）解像度を選ぶ
-	// 解像度が高すぎるとデータ転送量が無駄に大きくなる
+	// ターゲットdpp以下（＝十分な解像度）のオーバービューの中で、
+	// 最もdppが大きい（＝最も低解像度だが十分な）ものを選ぶ。
+	// どのオーバービューも解像度不足ならフル解像度を使う。
 	let bestIndex = 0; // デフォルトはフル解像度
 	let bestDpp = fullDpp;
 
 	for (const ovr of overviews) {
 		const ovrDpp = cogDegreesPerPixel(bbox, ovr.width);
-		// オーバービューのdppがターゲットより小さい（= より高解像度）場合は候補
-		// ターゲットに最も近い（最も低解像度だが十分な）オーバービューを選ぶ
 		if (ovrDpp <= targetDpp && ovrDpp > bestDpp) {
 			bestIndex = ovr.index;
 			bestDpp = ovrDpp;
 		}
-	}
-
-	// どのオーバービューもターゲットより高解像度すぎる場合は最も低解像度のものを選ぶ
-	if (bestIndex === 0 && fullDpp < targetDpp && overviews.length > 0) {
-		const lowestRes = overviews[overviews.length - 1];
-		bestIndex = lowestRes.index;
 	}
 
 	return conn.images[bestIndex];
