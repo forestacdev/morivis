@@ -567,10 +567,7 @@
 				cogEntries.map(async (e) => {
 					const cogEntry = e as { id: string; format: { url: string } };
 					if (!CogTileManager.has(cogEntry.id)) {
-						const { metadata } = await CogTileManager.register(
-							cogEntry.id,
-							cogEntry.format.url
-						);
+						const { metadata } = await CogTileManager.register(cogEntry.id, cogEntry.format.url);
 						GeoTiffCache.setDataRanges(cogEntry.id, metadata.sampleRanges);
 					}
 				})
@@ -784,7 +781,7 @@
 
 		{#if !$isStreetView && !showDataEntry}
 			<!-- PC用地図コントロール -->
-			<div class="absolute right-5 bottom-[100px] max-lg:hidden">
+			<div class="absolute right-5 bottom-5 max-lg:hidden">
 				<Compass />
 			</div>
 

@@ -62,7 +62,7 @@
 
 <div
 	bind:this={containerRef}
-	class="pointer-events-auto max-lg:w-full lg:absolute lg:right-3 lg:bottom-3 lg:w-[400px]"
+	class="pointer-events-auto max-lg:w-full lg:absolute lg:bottom-3 lg:left-3 lg:w-[400px]"
 >
 	{#if showMenu}
 		<div
@@ -125,7 +125,7 @@
 		onclick={() => {
 			showMenu = !showMenu;
 		}}
-		class="bg-base pointer-events-auto grid shrink-0 place-items-center items-center justify-end rounded-lg p-1 shadow-md max-lg:m-3 lg:absolute lg:right-0 lg:bottom-0 lg:cursor-pointer"
+		class="bg-base pointer-events-auto grid shrink-0 place-items-center items-center justify-end rounded-lg p-1 shadow-md max-lg:m-3 lg:absolute lg:bottom-0 lg:left-0 lg:cursor-pointer"
 		style="margin-top: calc(16px + env(safe-area-inset-top));"
 	>
 		<img
