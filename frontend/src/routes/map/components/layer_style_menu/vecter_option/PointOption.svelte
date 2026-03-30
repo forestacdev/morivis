@@ -11,7 +11,7 @@
 	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
 	import NumberOption from '$routes/map/components/layer_style_menu/NumberOption.svelte';
 	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
-	import type { ColorsExpression, VectorLayerType } from '$routes/map/data/types/vector/style';
+	import type { IconsExpression } from '$routes/map/data/types/vector/style';
 	interface Props {
 		layerEntry: PointEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;
@@ -23,17 +23,17 @@
 	let showOutlineOption = $state<boolean>(false);
 	let showIconOption = $state<boolean>(false);
 
-	// セットされた式の設定
-	let setExpression: ColorsExpression | undefined = $derived.by(() => {
-		const target = layerEntry.style.colors.expressions.find(
-			(color) => color.key === layerEntry.style.colors.key
-		);
+	// セットされたアイコン式の設定
+	let setIconExpression: IconsExpression | undefined = $derived.by(() => {
+		const icons = layerEntry.style.icons;
+		if (!icons) return;
+		const target = icons.expressions.find((expr) => expr.key === icons.key);
 		if (!target) return;
-		return target as ColorsExpression;
+		return target;
 	});
 </script>
 
-{#if layerEntry.style.icon}
+{#if layerEntry.style.icons}
 	<div class="pt-4">
 		<HorizontalSelectBox
 			label={'ポイントのスタイル'}
@@ -71,25 +71,27 @@
 	</Accordion>
 {/if}
 
-{#if layerEntry.style.markerType === 'icon' && layerEntry.style.icon && setExpression}
+{#if layerEntry.style.markerType === 'icon' && layerEntry.style.icons && setIconExpression}
 	<Accordion label={'アイコン'} icon={'gg:pin'} bind:value={showIconOption}>
-		<Switch label={'表示'} bind:value={layerEntry.style.icon.show} />
-		{#if setExpression.type === 'single' && 'pattern' in setExpression.mapping && setExpression.mapping.pattern}
-			<IconPicker label="形状" bind:pattern={setExpression.mapping.pattern} layerType="circle" />
-		{:else if setExpression.type === 'match' && 'pattern' in setExpression.mapping && setExpression.mapping.pattern}
-			{#each setExpression.mapping.categories as _, index}
-				{#if setExpression.mapping.patterns}
-					<IconPicker
-						label={setExpression.mapping.categories[index] as string}
-						bind:pattern={setExpression.mapping.patterns[index]}
-						layerType="circle"
-					/>
-				{/if}
+		<Switch label={'表示'} bind:value={layerEntry.style.icons.show} />
+		{#if setIconExpression.type === 'single' && setIconExpression.mapping.pattern}
+			<IconPicker
+				label="形状"
+				bind:pattern={setIconExpression.mapping.pattern}
+				layerType="circle"
+			/>
+		{:else if setIconExpression.type === 'match'}
+			{#each setIconExpression.mapping.categories as _, index}
+				<IconPicker
+					label={setIconExpression.mapping.categories[index] as string}
+					bind:pattern={setIconExpression.mapping.patterns[index]}
+					layerType="circle"
+				/>
 			{/each}
 		{/if}
 		<RangeSlider
 			label="アイコンサイズ"
-			bind:value={layerEntry.style.icon.size}
+			bind:value={layerEntry.style.icons.size}
 			min={0}
 			max={5}
 			step={0.01}

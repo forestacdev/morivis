@@ -129,7 +129,7 @@ const createVectorLayer = (
 		case 'circle': {
 			switch (style.markerType) {
 				case 'icon':
-					if (style.icon?.show) {
+					if (style.icons?.show) {
 						return createPointIconLayer(layer, style);
 					} else {
 						return undefined;
