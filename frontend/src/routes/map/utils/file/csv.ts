@@ -5,6 +5,21 @@ import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 
 import type { ParseResult } from 'papaparse';
 import { showNotification } from '$routes/stores/notification';
+import { parseDmsString } from '$routes/map/utils/proj/dms';
+
+/**
+ * 座標値をパースする（10進数 or 度分秒文字列）
+ * Number()で変換できない場合、度分秒文字列としてパースを試みる
+ */
+const parseCoordinate = (value: string | number): number => {
+	const num = Number(value);
+	if (!isNaN(num)) return num;
+	if (typeof value === 'string') {
+		const dms = parseDmsString(value);
+		if (dms !== null) return dms;
+	}
+	return NaN;
+};
 
 /**
  * CSVファイルのバイナリからエンコードを検出しUTF-8文字列に変換する
@@ -137,8 +152,8 @@ export const csvTextToGeojson = (
 				const invalidRows: number[] = [];
 
 				json.forEach((item, index) => {
-					const lat = Number(item[latColumn]);
-					const lon = Number(item[lonColumn]);
+					const lat = parseCoordinate(item[latColumn]);
+					const lon = parseCoordinate(item[lonColumn]);
 
 					if (isNaN(lat) || isNaN(lon)) {
 						invalidRows.push(index + 1);
@@ -230,8 +245,8 @@ export const csvFileToGeojson = (
 				const invalidRows: number[] = [];
 
 				json.forEach((item, index) => {
-					const lat = Number(item[latColumn]);
-					const lon = Number(item[lonColumn]);
+					const lat = parseCoordinate(item[latColumn]);
+					const lon = parseCoordinate(item[lonColumn]);
 
 					// 座標値の妥当性チェック
 					if (isNaN(lat) || isNaN(lon)) {
