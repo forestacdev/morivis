@@ -120,10 +120,13 @@
 					<!-- タイトル -->
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
-						class="flex shrink-0 flex-col justify-center text-base select-none max-lg:hidden"
+						class="flex h-full w-full items-start justify-between gap-4 pt-4 pr-4 text-base select-none max-lg:hidden"
 					>
-						<span class="text-[2.7rem]">morivis</span>
-						<div class="pl-1 text-sm text-gray-400">地図上のデータ</div>
+						<div class="bg-base h-10 w-10 rounded-full"></div>
+						<div class="bg-base h-10 w-10 rounded-full"></div>
+						<div class="bg-base h-10 w-10 rounded-full"></div>
+						<div class="bg-base h-10 w-10 rounded-full"></div>
+						<div class="bg-base h-10 w-10 rounded-full"></div>
 					</div>
 				{/if}
 
