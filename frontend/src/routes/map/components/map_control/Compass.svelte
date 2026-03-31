@@ -8,20 +8,29 @@
 	gsap.registerPlugin(Draggable);
 
 	let element = $state<HTMLDivElement | null>(null);
-	// let rotation = $state<number>(0);
+	let needle = $state<SVGSVGElement | null>(null);
 
 	// 回転値を -180° 〜 180° の範囲に正規化する関数
 	const normalizeAngle = (angle: number): number => {
 		return ((angle + 180) % 360) - 180;
 	};
 
+	// 針の傾きを更新
+	// 円枠がbearingで回転するので、針は親の回転を打ち消してからピッチだけかける
+	const updateNeedle = () => {
+		const pitch = mapStore.getPitch() ?? 0;
+		const bearing = mapStore.getBearing() ?? 0;
+		if (needle) {
+			// 親(element)の回転を打ち消し → ピッチで傾け → 元の回転を再適用
+			needle.style.transform =
+				`rotateZ(${bearing}deg) rotateX(${pitch * 0.7}deg) rotateZ(${bearing * -1}deg)`;
+		}
+	};
+
 	mapStore.onRotate((bearing) => {
-		if (!element || bearing == null) return;
-		// rotation = bearing;
-		if (!element) return;
-		gsap.set(element, {
-			rotation: bearing * -1
-		});
+		if (bearing == null) return;
+		if (element) gsap.set(element, { rotation: bearing * -1 });
+		updateNeedle();
 	});
 
 	let orbitA = $state<HTMLDivElement | null>(null);
@@ -63,47 +72,63 @@
 		prevTime = now;
 	});
 
-	// パン（地図移動）速度の検出
-	let panRAF: number | null = null;
-	let prevCenter: { lng: number; lat: number } | null = null;
-	let prevPanTime = 0;
-	let isPanning = false;
+	// パン・ピッチ・回転の速度検出（RAFループで統合）
+	let moveRAF: number | null = null;
+	let isMoving = false;
+	let prevState: { lng: number; lat: number; pitch: number; bearing: number } | null = null;
+	let prevMoveTime = 0;
 
-	const trackPan = () => {
+	const trackMove = () => {
 		const center = mapStore.getCenter();
+		const pitch = mapStore.getPitch() ?? 0;
+		const bearing = mapStore.getBearing() ?? 0;
 		const now = performance.now();
-		if (center && prevCenter && now - prevPanTime > 0) {
-			const dt = (now - prevPanTime) / 1000;
-			// 経緯度の差分からピクセル的な移動速度を概算
-			const dlng = (center.lng - prevCenter.lng) * 1000;
-			const dlat = (center.lat - prevCenter.lat) * 1000;
-			const dist = Math.sqrt(dlng * dlng + dlat * dlat);
-			const panSpeed = dist / dt;
-			const target = Math.min(BASE_SPEED + panSpeed * 0.02, MAX_SPEED);
+
+		if (center && prevState && now - prevMoveTime > 0) {
+			const dt = (now - prevMoveTime) / 1000;
+
+			// パン速度（経緯度差分）
+			const dlng = (center.lng - prevState.lng) * 1000;
+			const dlat = (center.lat - prevState.lat) * 1000;
+			const panSpeed = Math.sqrt(dlng * dlng + dlat * dlat) / dt;
+
+			// ピッチ速度（度/秒）
+			const pitchSpeed = Math.abs(pitch - prevState.pitch) / dt;
+
+			// 回転速度（度/秒）
+			const bearingSpeed = Math.abs(bearing - prevState.bearing) / dt;
+
+			// 各操作の寄与を合算
+			const combined = panSpeed * 0.02 + pitchSpeed * 0.05 + bearingSpeed * 0.03;
+			const target = Math.min(BASE_SPEED + combined, MAX_SPEED);
+
 			if (target > speedProxy.value) {
 				tweenSpeed(target, 0.3, 'power2.out');
 			}
 		}
-		prevCenter = center ? { lng: center.lng, lat: center.lat } : null;
-		prevPanTime = now;
-		if (isPanning) {
-			panRAF = requestAnimationFrame(trackPan);
+
+		prevState = center ? { lng: center.lng, lat: center.lat, pitch, bearing } : null;
+		prevMoveTime = now;
+
+		updateNeedle();
+		if (isMoving) {
+			moveRAF = requestAnimationFrame(trackMove);
 		}
 	};
 
 	mapStore.onMoveStart(() => {
-		isPanning = true;
-		prevCenter = null;
-		prevPanTime = performance.now();
-		panRAF = requestAnimationFrame(trackPan);
+		isMoving = true;
+		prevState = null;
+		prevMoveTime = performance.now();
+		moveRAF = requestAnimationFrame(trackMove);
 	});
 
 	// 移動終了 → ゆっくり元に戻る
 	mapStore.onMoveEnd(() => {
-		isPanning = false;
-		if (panRAF) {
-			cancelAnimationFrame(panRAF);
-			panRAF = null;
+		isMoving = false;
+		if (moveRAF) {
+			cancelAnimationFrame(moveRAF);
+			moveRAF = null;
 		}
 		if (speedProxy.value <= BASE_SPEED) return;
 		tweenSpeed(BASE_SPEED, 1.5, 'power3.out');
@@ -184,14 +209,9 @@
 	<div
 		bind:this={element}
 		class="pointer-events-auto grid h-[70px] w-[70px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black/50"
+		style="perspective: 200px;"
 	>
-		<svg
-			class="h-full w-full scale-60"
-			xmlns="http://www.w3.org/2000/svg"
-			width="132"
-			height="132"
-			viewBox="0 0 132 132"
-		>
+		<svg bind:this={needle} class="h-[42px] w-[42px]" style="transform-style: preserve-3d;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 132">
 			<g transform="translate(47,0)">
 				<path fill="#77D4AC" d="m19 0 16.455 66H2.545L19 0Z" />
 				<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />
