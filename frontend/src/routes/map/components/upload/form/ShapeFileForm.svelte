@@ -479,7 +479,7 @@
 							y1={starPoints[from].y}
 							x2={starPoints[to].x}
 							y2={starPoints[to].y}
-							stroke={bothSet ? '#facc15' : '#ffffff20'}
+							stroke={bothSet ? '#3b82f6' : '#ffffff20'}
 							stroke-width={bothSet ? 1 : 0.5}
 							class="star-line"
 							stroke-dasharray={bothSet ? 'none' : '4 4'}
@@ -493,7 +493,7 @@
 							y1={starPoints[from].y}
 							x2={starPoints[to].x}
 							y2={starPoints[to].y}
-							stroke={bothSet ? '#ef4444' : '#ffffff20'}
+							stroke={bothSet ? '#3b82f6' : '#ffffff20'}
 							stroke-width={bothSet ? 2 : 1}
 							class="star-line"
 							stroke-dasharray={bothSet ? 'none' : '4 4'}

@@ -35,6 +35,8 @@
 			class="ripple-ring ripple-2"
 			style="--ripple-color: {required ? '#ef4444' : '#facc15'}"
 		></div>
+	{:else}
+		<div class="set-ring"></div>
 	{/if}
 	<label
 		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full bg-white"
@@ -63,6 +65,15 @@
 
 	.ripple-2 {
 		animation: ripple 2s 1s linear infinite;
+	}
+
+	.set-ring {
+		position: absolute;
+		inset: -4px;
+		border-radius: 9999px;
+		border: 2px solid #3b82f6;
+		opacity: 0.8;
+		pointer-events: none;
 	}
 
 	@keyframes ripple {
