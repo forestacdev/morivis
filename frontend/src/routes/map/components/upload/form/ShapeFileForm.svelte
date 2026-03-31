@@ -318,12 +318,64 @@
 		}
 	});
 
-	let distance = $state<number>(0); // 円の半径
+	// 時計回り: shp(上) → prj → shx → dbf → cpg
+	const circleItems = [
+		{ label: '.shp', accept: '.shp', key: 'shp' },
+		{ label: '.prj', accept: '.prj', key: 'prj' },
+		{ label: '.shx', accept: '.shx', key: 'shx' },
+		{ label: '.dbf', accept: '.dbf', key: 'dbf' },
+		{ label: '.cpg', accept: '.cpg', key: 'cpg' }
+	];
+
+	// 五角形の外枠（隣接頂点: 0→1→2→3→4→0）
+	const pentagonEdges: [number, number][] = [
+		[0, 1],
+		[1, 2],
+		[2, 3],
+		[3, 4],
+		[4, 0]
+	];
+
+	// 内側の三角形（必須3ファイル: shp=0, shx=2, dbf=3）— 各辺を個別に判定
+	const triangleEdges: [number, number][] = [
+		[0, 2], // shp - shx
+		[2, 3], // shx - dbf
+		[3, 0] // dbf - shp
+	];
+
+	const filesArray = $derived([
+		forms.shpFile,
+		forms.prjFile,
+		forms.shxFile,
+		forms.dbfFile,
+		cpgFile
+	]);
+
+	// セット済みファイルからベース名を取得（拡張子を除去）
+	const baseName = $derived.by(() => {
+		const names = [forms.shpName, forms.dbfName, forms.shxName, forms.prjName, cpgName];
+		const first = names.find((n) => n);
+		if (!first) return '';
+		return first.replace(/\.[^.]+$/, '');
+	});
+
+	// 等間隔で上(-90°)から配置した頂点座標（SVG用、中心200,200）
+	const starPoints = $derived(
+		circleItems.map((_, i) => {
+			const angle = (i * 72 - 90) * (Math.PI / 180);
+			return {
+				x: 200 + Math.cos(angle) * distance,
+				y: 200 + Math.sin(angle) * distance
+			};
+		})
+	);
+
+	let distance = $state<number>(0); // 円の配置距離
 
 	$effect(() => {
 		if (showDialogType === 'shp') {
 			// ダイアログが表示されるときに距離を更新
-			distance = 100; // 必要に応じて調整
+			distance = 200; // 必要に応じて調整
 		} else {
 			distance = 0; // ダイアログが非表示のときは距離をリセット
 		}
@@ -348,7 +400,7 @@
 			forms.prjName
 		) {
 			if (hasFilenameMatchError) return;
-			registration();
+			// registration();
 		}
 	});
 </script>
@@ -357,7 +409,7 @@
 	<DropContainer bind:isDragover onDropFile={(files) => (dropFile = files)}>
 		<div
 			transition:fade={{ duration: 200 }}
-			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/80
+			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/95
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 		>
 			<div class="flex shrink-0 flex-col items-center overflow-auto pt-8 pb-2">
@@ -365,63 +417,139 @@
 				<p class="mt-1 text-sm text-gray-400">ファイルをまとめてドラッグ＆ドロップできます</p>
 			</div>
 
-			<div class="flex gap-2">
-				<ShapeFileFormInput
-					label=".shp"
-					bind:file={forms.shpFile}
-					accept=".shp"
-					error={errors.shpFile}
-					bind:name={forms.shpName}
-				/>
+			<div class="shp-circle-layout relative" style="--distance: {distance}px;">
+				{#each circleItems as item, i}
+					<div
+						class="shp-circle-item absolute"
+						style="left: {starPoints[i].x}px; top: {starPoints[i]
+							.y}px; transform: translate(-50%, -50%);"
+					>
+						{#if item.key === 'shp'}
+							<ShapeFileFormInput
+								label={item.label}
+								bind:file={forms.shpFile}
+								accept={item.accept}
+								error={errors.shpFile}
+								bind:name={forms.shpName}
+								required
+							/>
+						{:else if item.key === 'dbf'}
+							<ShapeFileFormInput
+								label={item.label}
+								bind:file={forms.dbfFile}
+								accept={item.accept}
+								error={errors.dbfFile}
+								bind:name={forms.dbfName}
+								required
+							/>
+						{:else if item.key === 'shx'}
+							<ShapeFileFormInput
+								label={item.label}
+								bind:file={forms.shxFile}
+								accept={item.accept}
+								error={errors.shxFile}
+								bind:name={forms.shxName}
+								required
+							/>
+						{:else if item.key === 'prj'}
+							<ShapeFileFormInput
+								label={item.label}
+								bind:file={forms.prjFile}
+								accept={item.accept}
+								error={errors.prjFile}
+								bind:name={forms.prjName}
+							/>
+						{:else if item.key === 'cpg'}
+							<ShapeFileFormInput
+								label={item.label}
+								bind:file={cpgFile}
+								accept={item.accept}
+								bind:name={cpgName}
+							/>
+						{/if}
+					</div>
+				{/each}
 
-				<ShapeFileFormInput
-					label=".dbf"
-					bind:file={forms.dbfFile}
-					accept=".dbf"
-					error={errors.dbfFile}
-					bind:name={forms.dbfName}
-				/>
+				<svg class="pointer-events-none absolute top-0 left-0 h-full w-full" viewBox="0 0 400 400">
+					<!-- 1. 五角形の外枠（隣接同士がセットされたら実線） -->
+					{#each pentagonEdges as [from, to]}
+						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
+						<line
+							x1={starPoints[from].x}
+							y1={starPoints[from].y}
+							x2={starPoints[to].x}
+							y2={starPoints[to].y}
+							stroke={bothSet ? '#facc15' : '#ffffff20'}
+							stroke-width={bothSet ? 1 : 0.5}
+							class="star-line"
+							stroke-dasharray={bothSet ? 'none' : '4 4'}
+						/>
+					{/each}
+					<!-- 2. 内側の三角形（各辺は両端がセットされたら実線） -->
+					{#each triangleEdges as [from, to]}
+						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
+						<line
+							x1={starPoints[from].x}
+							y1={starPoints[from].y}
+							x2={starPoints[to].x}
+							y2={starPoints[to].y}
+							stroke={bothSet ? '#ef4444' : '#ffffff20'}
+							stroke-width={bothSet ? 2 : 1}
+							class="star-line"
+							stroke-dasharray={bothSet ? 'none' : '4 4'}
+						/>
+					{/each}
+				</svg>
 
-				<ShapeFileFormInput
-					label=".shx"
-					bind:file={forms.shxFile}
-					accept=".shx"
-					error={errors.shxFile}
-					bind:name={forms.shxName}
-				/>
-
-				<ShapeFileFormInput
-					label=".prj(任意)"
-					bind:file={forms.prjFile}
-					accept=".prj"
-					error={errors.prjFile}
-					bind:name={forms.prjName}
-				/>
-
-				<ShapeFileFormInput
-					label=".cpg(任意)"
-					bind:file={cpgFile}
-					accept=".cpg"
-					bind:name={cpgName}
-				/>
-				{hasFilenameMatchError ? 'ファイル名が一致しません' : ''}
+				<!-- 中心: 決定ボタン -->
+				<div class="absolute" style="left: 200px; top: 200px; transform: translate(-50%, -50%);">
+					<button
+						onclick={registration}
+						disabled={isDisabled}
+						class="c-btn-confirm grid aspect-square w-24 cursor-pointer place-items-center rounded-full text-lg {isDisabled
+							? 'cursor-not-allowed opacity-50'
+							: ''}"
+					>
+						決定
+					</button>
+				</div>
 			</div>
 
-			<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+			{#if baseName}
+				<p class="text-center text-lg text-white">{baseName}</p>
+			{/if}
+
+			{#if hasFilenameMatchError}
+				<p class="text-center text-sm text-red-500">{hasFilenameMatchError}</p>
+			{/if}
+
+			<div class="flex shrink-0 justify-center overflow-auto pt-2">
 				<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-				<button
-					onclick={registration}
-					disabled={isDisabled}
-					class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
-						? 'cursor-not-allowed opacity-50'
-						: 'cursor-pointer'}"
-				>
-					決定
-				</button>
 			</div>
 		</div>
 	</DropContainer>
 {/if}
 
 <style>
+	.shp-circle-layout {
+		width: 400px;
+		height: 400px;
+	}
+
+	.shp-circle-item {
+		width: 100px;
+		height: 100px;
+		transition: transform 0.5s ease;
+	}
+
+	.star-line {
+		transition:
+			x1 0.5s ease,
+			y1 0.5s ease,
+			x2 0.5s ease,
+			y2 0.5s ease,
+			stroke 0.3s ease,
+			stroke-width 0.3s ease,
+			stroke-dasharray 0.3s ease;
+	}
 </style>

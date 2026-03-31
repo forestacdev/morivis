@@ -5,13 +5,15 @@
 		accept: string;
 		error?: string;
 		name: string;
+		required?: boolean;
 	}
 	let {
 		label,
 		file = $bindable(),
 		accept = $bindable(),
 		error,
-		name = $bindable()
+		name = $bindable(),
+		required = false
 	}: Props = $props();
 
 	const inputFile = (e: Event) => {
@@ -21,35 +23,56 @@
 			name = fileData.name;
 		}
 	};
-
-	let fileName = $state<string>('');
-	$effect(() => {
-		if (file) {
-			fileName = file.name;
-		} else {
-			fileName = '';
-		}
-	});
 </script>
 
 <div class="relative">
+	{#if !file}
+		<div
+			class="ripple-ring ripple-1"
+			style="--ripple-color: {required ? '#ef4444' : '#facc15'}"
+		></div>
+		<div
+			class="ripple-ring ripple-2"
+			style="--ripple-color: {required ? '#ef4444' : '#facc15'}"
+		></div>
+	{/if}
 	<label
-		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg bg-white p-4"
+		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full bg-white"
 		><span class="absolute">{label}</span>
 
-		<div class="p-12 {file ? '' : ''}"></div>
+		<div class="p-12"></div>
 
-		<span class="absolute bottom-0 text-sm text-red-500">{error ? error : ''}</span>
+		<!-- <span class="absolute bottom-0 text-sm text-red-500">{error ? error : ''}</span> -->
 		<input type="file" {accept} class="hidden" onchange={(e) => inputFile(e)} />
-		{#if name}
-			<div
-				class="pointer-events-none absolute grid place-items-center overflow-clip rounded-lg bg-white p-2 text-sm text-gray-500"
-			>
-				<span class="text-sm">{name}</span>
-			</div>
-		{/if}
 	</label>
 </div>
 
 <style>
+	.ripple-ring {
+		position: absolute;
+		inset: 0;
+		border-radius: 9999px;
+		border: 2px solid var(--ripple-color, #facc15);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.ripple-1 {
+		animation: ripple 2s linear infinite;
+	}
+
+	.ripple-2 {
+		animation: ripple 2s 1s linear infinite;
+	}
+
+	@keyframes ripple {
+		0% {
+			transform: scale(1);
+			opacity: 0.7;
+		}
+		100% {
+			transform: scale(1.8);
+			opacity: 0;
+		}
+	}
 </style>
