@@ -2,11 +2,11 @@ import { ENTRY_COG_DATA_PATH } from '$routes/constants';
 import type { RasterCogEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 const entry: RasterCogEntry<RasterTiffStyle> = {
-	id: 'fr_mesh20m_7',
+	id: 'fr_mesh20m_07',
 	type: 'raster',
 	format: {
 		type: 'cog',
-		url: `${ENTRY_COG_DATA_PATH}/fr_mesh20m_7.tif`
+		url: `${ENTRY_COG_DATA_PATH}/fr_mesh20m_07.tif`
 	},
 	metaData: {
 		name: '森林資源メッシュ20m　7系',
