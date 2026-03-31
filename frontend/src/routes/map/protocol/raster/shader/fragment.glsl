@@ -57,7 +57,8 @@ float convertToHeight(vec4 color) {
         return mix(total, total - 16777216.0, step(8388608.0, total)) * 0.01;
 
     } else if (u_dem_type == 2.0) {  // terrarium (TerrariumRGB)
-
+        // elevation = R*256 + G + B/256 - 32768
+        // https://github.com/tilezen/joerd/blob/master/docs/formats.md
         return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) - 32768.0;
     }
 }

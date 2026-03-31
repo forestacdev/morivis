@@ -3,6 +3,10 @@
  *
  * TypedArray のバンドデータを正規化 Terrarium PNG にエンコードする。
  *
+ * 標準 Terrarium 形式（tilezen/joerd）は固定オフセット -32768 で標高をエンコードするが、
+ * ここでは任意のデータ範囲（dataMin〜dataMax）を 0〜65535 に正規化する独自方式を使用する。
+ * RGB チャンネルへのビット配置は標準 Terrarium と同じ構造。
+ *
  * 正規化エンコード:
  *   normalized = (value - dataMin) / (dataMax - dataMin) * 65535
  *   R = floor(normalized / 256)
@@ -13,6 +17,10 @@
  * デコード（シェーダー側）:
  *   normalized = (R * 256 + G + B / 256) / 65535
  *   value = normalized * (dataMax - dataMin) + dataMin
+ *
+ * @see 標準 Terrarium 仕様: https://github.com/tilezen/joerd/blob/master/docs/formats.md
+ * @see MapLibre Style Spec (raster-dem encoding): https://maplibre.org/maplibre-style-spec/sources/
+ * @see Nimbo Terrarium ドキュメント: https://docs.nimbo.earth/product/terrarium/
  */
 
 const canvas = new OffscreenCanvas(1, 1);
