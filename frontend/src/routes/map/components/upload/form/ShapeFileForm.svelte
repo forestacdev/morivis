@@ -1,7 +1,7 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 	import { untrack } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
@@ -40,75 +40,49 @@
 		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
-	const shpValidation = yup
-		.object()
-		.shape({
-			shpFile: yup
-				.mixed()
-				.required('ファイルを選択してください')
-				.test('fileType', '対応していないファイル形式です (許可: .shp)', (value) => {
-					if (value instanceof File) {
-						return value.name.endsWith('.shp');
-					}
-					return true; // ファイルが選択されていない場合はバリデーションをパス
-				}),
-			dbfFile: yup
-				.mixed()
-				.required('ファイルを選択してください')
-				.test('fileType', '対応していないファイル形式です (許可: .dbf)', (value) => {
-					if (value instanceof File) {
-						return value.name.endsWith('.dbf');
-					}
-					return true; // ファイルが選択されていない場合はバリデーションをパス
-				}),
-			prjFile: yup
-				.mixed()
-				.nullable()
-				.optional()
-				.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
-					if (value instanceof File) {
-						return value.name.endsWith('.prj');
-					}
-					return true; // ファイルが選択されていない場合はバリデーションをパス
-				}),
-			shxFile: yup
-				.mixed()
-				.required('ファイルを選択してください')
-				.test('fileType', '対応していないファイル形式です (許可: .shx)', (value) => {
-					if (value instanceof File) {
-						return value.name.endsWith('.shx');
-					}
-					return true; // ファイルが選択されていない場合はバリデーションをパス
-				}),
-			shpName: yup.string().required('ファイル名が検出できません'),
-			dbfName: yup.string().required('ファイル名が検出できません'),
-			shxName: yup.string().required('ファイル名が検出できません'),
-			prjName: yup.string().optional()
-		})
-		.test(
-			'filenames-match', // テスト名
-			'各ファイル名が一致しません', // エラーメッセージ
-			(values) => {
-				if (!values.shpName || !values.dbfName || !values.shxName) {
-					return true; // いずれかの名前がない場合は、個別のrequiredエラーで処理される
+	const shpValidation = yup.object().shape({
+		shpFile: yup
+			.mixed()
+			.required('ファイルを選択してください')
+			.test('fileType', '対応していないファイル形式です (許可: .shp)', (value) => {
+				if (value instanceof File) {
+					return value.name.endsWith('.shp');
 				}
-
-				const shpBaseName = values.shpName.replace(/\.shp$/i, '');
-				const dbfBaseName = values.dbfName.replace(/\.dbf$/i, '');
-				const shxBaseName = values.shxName.replace(/\.shx$/i, '');
-
-				// prjは任意なので、存在する場合のみチェック
-				if (values.prjName) {
-					const prjBaseName = values.prjName.replace(/\.prj$/i, '');
-					if (shpBaseName !== prjBaseName) {
-						return false;
-					}
+				return true; // ファイルが選択されていない場合はバリデーションをパス
+			}),
+		dbfFile: yup
+			.mixed()
+			.required('ファイルを選択してください')
+			.test('fileType', '対応していないファイル形式です (許可: .dbf)', (value) => {
+				if (value instanceof File) {
+					return value.name.endsWith('.dbf');
 				}
-
-				return shpBaseName === dbfBaseName && shpBaseName === shxBaseName;
-			}
-		);
-
+				return true; // ファイルが選択されていない場合はバリデーションをパス
+			}),
+		prjFile: yup
+			.mixed()
+			.nullable()
+			.optional()
+			.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
+				if (value instanceof File) {
+					return value.name.endsWith('.prj');
+				}
+				return true; // ファイルが選択されていない場合はバリデーションをパス
+			}),
+		shxFile: yup
+			.mixed()
+			.required('ファイルを選択してください')
+			.test('fileType', '対応していないファイル形式です (許可: .shx)', (value) => {
+				if (value instanceof File) {
+					return value.name.endsWith('.shx');
+				}
+				return true; // ファイルが選択されていない場合はバリデーションをパス
+			}),
+		shpName: yup.string().required('ファイル名が検出できません'),
+		dbfName: yup.string().required('ファイル名が検出できません'),
+		shxName: yup.string().required('ファイル名が検出できません'),
+		prjName: yup.string().optional()
+	});
 	type ShpFormSchema = {
 		shpFile: File | null;
 		dbfFile: File | null;
@@ -196,15 +170,22 @@
 
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof ShpFormSchema, string>>>({});
-	let hasFilenameMatchError = $state<string>('');
+
+	// セット済みの全ファイル名（cpg含む）のベース名が一致するかチェック
+	const hasFilenameMatchError = $derived.by(() => {
+		const names = [forms.shpName, forms.dbfName, forms.shxName, forms.prjName, cpgName];
+		const baseNames = names.filter((n) => n).map((n) => n.replace(/\.[^.]+$/, ''));
+		if (baseNames.length < 2) return '';
+		const allMatch = baseNames.every((b) => b === baseNames[0]);
+		return allMatch ? '' : '各ファイル名が一致しません';
+	});
 
 	$effect(() => {
 		shpValidation
 			.validate(forms, { abortEarly: false })
 			.then(() => {
-				isDisabled = false;
-				hasFilenameMatchError = '';
-				errors = {}; // バリデーション成功時はエラーをクリア
+				isDisabled = !!hasFilenameMatchError;
+				errors = {};
 			})
 			.catch((error) => {
 				isDisabled = true;
@@ -214,9 +195,6 @@
 					error.inner.forEach((err: yup.ValidationError) => {
 						if (err.path) {
 							newErrors[err.path] = err.message;
-						}
-						if (err.type === 'filenames-match') {
-							hasFilenameMatchError = err.message;
 						}
 					});
 				}
@@ -371,13 +349,16 @@
 	);
 
 	let distance = $state<number>(0); // 円の配置距離
+	let collapsing = $state(false); // 集結中かどうか
 
 	$effect(() => {
 		if (showDialogType === 'shp') {
-			// ダイアログが表示されるときに距離を更新
-			distance = 200; // 必要に応じて調整
+			// 次フレームで展開（0→200のトランジション発火のため）
+			requestAnimationFrame(() => {
+				distance = 200;
+			});
 		} else {
-			distance = 0; // ダイアログが非表示のときは距離をリセット
+			distance = 0;
 		}
 	});
 
@@ -388,20 +369,26 @@
 		}
 	});
 
+	// 全5ファイルが揃ったら1秒見せてから中心に集結→自動登録
 	$effect(() => {
-		if (
-			forms.shpFile &&
-			forms.dbfFile &&
-			forms.shxFile &&
-			forms.shpName &&
-			forms.dbfName &&
-			forms.shxName &&
-			forms.prjFile &&
-			forms.prjName
-		) {
-			if (hasFilenameMatchError) return;
-			// registration();
-		}
+		if (!filesArray.every(Boolean)) return;
+		if (hasFilenameMatchError) return;
+
+		// 1秒待ってから中心に集結
+		const collapseTimer = setTimeout(() => {
+			collapsing = true;
+			distance = 0;
+		}, 1000);
+
+		// 集結アニメーション(0.6s) + 余韻の後に登録実行
+		const registerTimer = setTimeout(() => {
+			registration();
+		}, 2000);
+
+		return () => {
+			clearTimeout(collapseTimer);
+			clearTimeout(registerTimer);
+		};
 	});
 </script>
 
@@ -409,18 +396,18 @@
 	<DropContainer bind:isDragover onDropFile={(files) => (dropFile = files)}>
 		<div
 			transition:fade={{ duration: 200 }}
-			class="absolute bottom-0 z-30 grid h-full w-full place-items-center bg-black/95
+			class="c-bg absolute bottom-0 z-30 grid h-full w-full place-items-center
          {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
 		>
-			<div class="flex shrink-0 flex-col items-center overflow-auto pt-8 pb-2">
-				<span class="text-2xl font-bold text-white">シェープファイルの登録</span>
-				<p class="mt-1 text-sm text-gray-400">ファイルをまとめてドラッグ＆ドロップできます</p>
+			<div class="flex shrink-0 flex-col items-center gap-3 overflow-auto pt-8 pb-2">
+				<span class="text-3xl font-bold text-white">シェープファイルの登録</span>
+				<p class="mt-1 text-gray-400">ファイルをまとめてドラッグ＆ドロップできます</p>
 			</div>
 
 			<div class="shp-circle-layout relative" style="--distance: {distance}px;">
 				{#each circleItems as item, i}
 					<div
-						class="shp-circle-item absolute"
+						class="shp-circle-item absolute {collapsing ? 'collapsing' : ''}"
 						style="left: {starPoints[i].x}px; top: {starPoints[i]
 							.y}px; transform: translate(-50%, -50%);"
 					>
@@ -470,17 +457,27 @@
 					</div>
 				{/each}
 
-				<svg class="pointer-events-none absolute top-0 left-0 h-full w-full" viewBox="0 0 400 400">
+				<svg
+					class="pointer-events-none absolute top-0 left-0 h-full w-full {collapsing
+						? 'collapsing'
+						: ''} {hasFilenameMatchError ? 'c-set-glow2' : 'c-set-glow'}"
+					viewBox="0 0 400 400"
+				>
 					<!-- 1. 五角形の外枠（隣接同士がセットされたら実線） -->
 					{#each pentagonEdges as [from, to]}
 						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
+						{@const lineColor = bothSet
+							? hasFilenameMatchError
+								? '#ef4444'
+								: '#59b68e'
+							: '#ffffff20'}
 						<line
 							x1={starPoints[from].x}
 							y1={starPoints[from].y}
 							x2={starPoints[to].x}
 							y2={starPoints[to].y}
-							stroke={bothSet ? '#3b82f6' : '#ffffff20'}
-							stroke-width={bothSet ? 1 : 0.5}
+							stroke={lineColor}
+							stroke-width={bothSet ? 2 : 1}
 							class="star-line"
 							stroke-dasharray={bothSet ? 'none' : '4 4'}
 						/>
@@ -488,12 +485,17 @@
 					<!-- 2. 内側の三角形（各辺は両端がセットされたら実線） -->
 					{#each triangleEdges as [from, to]}
 						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
+						{@const lineColor = bothSet
+							? hasFilenameMatchError
+								? '#ef4444'
+								: '#59b68e'
+							: '#ffffff20'}
 						<line
 							x1={starPoints[from].x}
 							y1={starPoints[from].y}
 							x2={starPoints[to].x}
 							y2={starPoints[to].y}
-							stroke={bothSet ? '#3b82f6' : '#ffffff20'}
+							stroke={lineColor}
 							stroke-width={bothSet ? 2 : 1}
 							class="star-line"
 							stroke-dasharray={bothSet ? 'none' : '4 4'}
@@ -501,36 +503,51 @@
 					{/each}
 				</svg>
 
-				<!-- 中心: 決定ボタン -->
-				<div class="absolute" style="left: 200px; top: 200px; transform: translate(-50%, -50%);">
+				<!-- 中心: ファイル名 -->
+				{#if baseName}
+					<div
+						class="absolute grid w-full place-items-center"
+						style="left: 200px; top: 250px; transform: translate(-50%, -50%);"
+					>
+						<p class="text-lg text-white">{baseName}</p>
+					</div>
+				{/if}
+			</div>
+
+			{#if hasFilenameMatchError}
+				<p transition:slide class="text-center text-sm text-red-500">{hasFilenameMatchError}</p>
+			{/if}
+
+			<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+				<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+				{#if !filesArray.every(Boolean)}
 					<button
 						onclick={registration}
 						disabled={isDisabled}
-						class="c-btn-confirm grid aspect-square w-24 cursor-pointer place-items-center rounded-full text-lg {isDisabled
+						class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
 							? 'cursor-not-allowed opacity-50'
-							: ''}"
+							: 'cursor-pointer'}"
 					>
 						決定
 					</button>
-				</div>
-			</div>
-
-			{#if baseName}
-				<p class="text-center text-lg text-white">{baseName}</p>
-			{/if}
-
-			{#if hasFilenameMatchError}
-				<p class="text-center text-sm text-red-500">{hasFilenameMatchError}</p>
-			{/if}
-
-			<div class="flex shrink-0 justify-center overflow-auto pt-2">
-				<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+				{/if}
 			</div>
 		</div>
 	</DropContainer>
 {/if}
 
 <style>
+	.c-bg {
+		background-image: radial-gradient(var(--color-main), #000000);
+	}
+
+	.c-set-glow2 {
+		filter: drop-shadow(0 0 5px red);
+	}
+
+	.c-set-glow {
+		filter: drop-shadow(0 0 5px #24fff4);
+	}
 	.shp-circle-layout {
 		width: 400px;
 		height: 400px;
@@ -539,15 +556,34 @@
 	.shp-circle-item {
 		width: 100px;
 		height: 100px;
-		transition: transform 0.5s ease;
+		transition:
+			left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+			top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.shp-circle-item.collapsing {
+		transition:
+			left 0.6s ease-in,
+			top 0.6s ease-in;
 	}
 
 	.star-line {
 		transition:
-			x1 0.5s ease,
-			y1 0.5s ease,
-			x2 0.5s ease,
-			y2 0.5s ease,
+			x1 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+			y1 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+			x2 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+			y2 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+			stroke 0.3s ease,
+			stroke-width 0.3s ease,
+			stroke-dasharray 0.3s ease;
+	}
+
+	:global(svg.collapsing) .star-line {
+		transition:
+			x1 0.6s ease-in,
+			y1 0.6s ease-in,
+			x2 0.6s ease-in,
+			y2 0.6s ease-in,
 			stroke 0.3s ease,
 			stroke-width 0.3s ease,
 			stroke-dasharray 0.3s ease;

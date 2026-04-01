@@ -39,8 +39,10 @@
 		<div class="set-ring"></div>
 	{/if}
 	<label
-		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full bg-white"
-		><span class="absolute">{label}</span>
+		class="text-main relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-full bg-white {file
+			? 'set-glow'
+			: ''}"
+		><span class="absolute text-xl">{label}</span>
 
 		<div class="p-12"></div>
 
@@ -69,11 +71,16 @@
 
 	.set-ring {
 		position: absolute;
-		inset: -4px;
+		inset: -15px;
 		border-radius: 9999px;
-		border: 2px solid #3b82f6;
+		border: 3px solid var(--color-accent);
 		opacity: 0.8;
 		pointer-events: none;
+		filter: drop-shadow(0 0 5px #24fff4);
+	}
+
+	.set-glow {
+		filter: drop-shadow(0 0 5px #24fff4);
 	}
 
 	@keyframes ripple {
