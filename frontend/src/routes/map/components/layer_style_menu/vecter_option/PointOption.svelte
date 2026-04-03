@@ -71,6 +71,7 @@
 	</Accordion>
 {/if}
 
+<!-- アイコンスタイル -->
 {#if layerEntry.style.markerType === 'icon' && layerEntry.style.icons && setIconExpression}
 	<Accordion label={'アイコン'} icon={'gg:pin'} bind:value={showIconOption}>
 		<Switch label={'表示'} bind:value={layerEntry.style.icons.show} />

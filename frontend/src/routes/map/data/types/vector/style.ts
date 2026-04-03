@@ -261,7 +261,7 @@ export interface IconSingleExpression {
 	key: string;
 	name: string;
 	mapping: {
-		pattern: SpritePatternId | null;
+		pattern: SpritePatternId;
 	};
 }
 
@@ -271,7 +271,7 @@ export interface IconMatchExpression {
 	name: string;
 	mapping: {
 		categories: string[] | number[];
-		patterns: (SpritePatternId | null)[];
+		patterns: SpritePatternId[];
 	};
 }
 
