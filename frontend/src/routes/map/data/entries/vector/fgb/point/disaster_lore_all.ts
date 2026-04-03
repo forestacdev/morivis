@@ -129,7 +129,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 			]
 		},
 		icons: {
-			show: false,
+			show: true,
 			size: 1.5,
 			key: '単色',
 			expressions: [
