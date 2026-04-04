@@ -43,7 +43,7 @@ import { objectToUrlParams } from '$routes/map/utils/params';
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
 import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
-import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
+import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
