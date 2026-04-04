@@ -1,0 +1,5 @@
+{
+  "existing:bucketName": "your-s3-bucket-name",
+  "existing:distributionId": "YOUR_CLOUDFRONT_DISTRIBUTION_ID",
+  "existing:distributionDomainName": "xxxx.cloudfront.net"
+}
