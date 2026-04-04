@@ -34,6 +34,7 @@ import { demProtocol } from '$routes/map/protocol/raster';
 import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
+import { devProxyTransform } from '$routes/map/utils/proxy';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -276,46 +277,9 @@ const createMapStore = () => {
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			transformRequest: (url, resourceType) => {
+			transformRequest: (url) => {
 				if (import.meta.env.PROD) return { url };
-
-				if (url.includes('mapdata.qchizu.xyz')) {
-					const newUrl = url.replace('https://mapdata.qchizu.xyz', 'api/qchizu');
-					return { url: newUrl };
-				}
-
-				if (url.includes('rinya-hyogo.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url }; // または null を返す
-					}
-					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
-					return { url: newUrl };
-				}
-
-				if (url.includes('rinya-kochi.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url };
-					}
-					const newUrl = url.replace('https://rinya-kochi.geospatial.jp', 'api/rinya-kochi');
-					return { url: newUrl };
-				}
-
-				if (url.includes('https://rinya-toyama.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url };
-					}
-					const newUrl = url.replace('https://rinya-toyama.geospatial.jp', 'api/rinya-toyama');
-					return { url: newUrl };
-				}
-
-				// フォントファイルのプロキシ処理を追加
-				if (url.includes('localhost:9000/data/font') || url.includes('/data/font')) {
-					const newUrl = url.replace('http://localhost:9000', '/api/font-server');
-					return { url: newUrl };
-				}
+				return devProxyTransform(url);
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
