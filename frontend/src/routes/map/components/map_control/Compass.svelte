@@ -36,9 +36,9 @@
 	let orbitB = $state<HTMLDivElement | null>(null);
 
 	const orbitTimelines: gsap.core.Timeline[] = [];
-	const BASE_SPEED = 0.5; // 基本速度（ズームしていないときの速度）
-	const MAX_SPEED = 15; // 最大速度（ズーム速度に応じてこれ以上速くならないようにするための上限）
-	const SPEED_MULTIPLIER = 4; // ズーム速度に対する加速の強さ
+	const BASE_SPEED = 0.3; // 基本速度（ズームしていないときの速度）
+	const MAX_SPEED = 10; // 最大速度（ズーム速度に応じてこれ以上速くならないようにするための上限）
+	const SPEED_MULTIPLIER = 3; // ズーム速度に対する加速の強さ
 	let speedTween: gsap.core.Tween | null = null;
 	const speedProxy = { value: BASE_SPEED }; // tweenで補間する現在速度
 	let prevZoom: number | null = null;

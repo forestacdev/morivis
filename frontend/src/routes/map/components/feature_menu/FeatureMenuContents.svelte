@@ -349,17 +349,16 @@
 		<div in:fade={{ duration: 100 }} class="lg:pl-2">
 			<!-- 詳細情報 -->
 			<div class="flex h-full w-full flex-col gap-2 lg:pr-2">
-				<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
-					<!-- 座標 （緯度, 経度） -->
-					<div class="flex w-full justify-start gap-2">
+				<!-- 座標 （緯度, 経度） -->
+				<!-- <div class="flex w-full justify-start gap-2">
 						<Icon icon="mdi:crosshairs-gps" class="h-6 w-6 shrink-0 text-base" />
 						<span class="text-accent"
 							>{featureMenuData.point[1].toFixed(6)}, {featureMenuData.point[0].toFixed(6)}</span
 						>
-					</div>
+					</div> -->
 
-					<!-- 市区町村情報 -->
-					{#if cityCodeKey && featureMenuData && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
+				<!-- 市区町村情報 -->
+				<!-- {#if cityCodeKey && featureMenuData && featureMenuData.properties && featureMenuData.properties[cityCodeKey]}
 						{@const cityCode = featureMenuData.properties[cityCodeKey]}
 						{#if typeof cityCode === 'string' || typeof cityCode === 'number'}
 							<div class="flex w-full justify-start gap-2">
@@ -367,29 +366,28 @@
 								<span class="text-accent">{getFullName(cityCode)}</span>
 							</div>
 						{/if}
-					{/if}
+					{/if} -->
 
-					<!-- url -->
-					{#if data}
-						{#if data.url}
+				<!-- url -->
+				{#if data}
+					{#if data.url}
+						<div class="flex w-full items-center justify-center">
 							<a
-								class="flex w-full items-start justify-start gap-2 break-all"
+								class="c-btn-confirm flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
 								href={data.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								><Icon icon="mdi:web" class="h-6 w-6 shrink-0 text-base" />
-								<span class="text-accent text-ellipsis hover:underline"
-									>{truncateUrl(data.url)}</span
-								></a
+								><Icon icon="majesticons:open" class="h-6 w-6" />
+								<span>外部サイトを開く</span></a
 							>
-						{/if}
+						</div>
 					{/if}
-				</div>
+				{/if}
 
 				<!-- 概要説明 -->
 				{#if data}
 					{#if data.description}
-						<span class="my-2 text-justify text-base">{data.description}</span>
+						<span class="my-2 pb-24 text-justify text-base">{data.description}</span>
 					{/if}
 				{/if}
 			</div>
@@ -400,8 +398,11 @@
 				<div class="mb-56 flex h-full w-full flex-col gap-3">
 					{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
 						{@const popupKeys = targetLayer.properties.attributeView.popupKeys}
-					{@const displayProps = popupKeys.length > 0 ? filterByPopupKeys(featureMenuData.properties, popupKeys) : featureMenuData.properties}
-					{#each Object.entries(displayProps) as [key, value]}
+						{@const displayProps =
+							popupKeys.length > 0
+								? filterByPopupKeys(featureMenuData.properties, popupKeys)
+								: featureMenuData.properties}
+						{#each Object.entries(displayProps) as [key, value]}
 							{#if key !== '_prop_id' && value && imageKey !== key}
 								{@const field = fields.find((f) => f.key === key)}
 								<!-- 辞書による属性名書き換え -->
