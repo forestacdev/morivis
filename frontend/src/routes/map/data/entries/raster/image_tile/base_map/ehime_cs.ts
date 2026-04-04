@@ -4,22 +4,22 @@ import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/ras
 import { EHIME_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: 'ehime_rrimap',
+	id: 'ehime_cs',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://rinya-ehime.geospatial.jp/tile/rinya/2024/rrimap_Ehime/{z}/{x}/{-y}.png'
+		url: 'https://rinya-ehime.geospatial.jp/tile/rinya/2024/csmap_Ehime/{z}/{x}/{-y}.png'
 	},
 	metaData: {
-		name: '愛媛県 赤色立体地図',
+		name: '愛媛県 CS立体図',
 		attribution: '愛媛県林業政策課_林野庁加工',
 		location: '愛媛県',
-		tags: ['地形', '赤色立体地図'],
+		tags: ['地形', '微地形図'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
 		bounds: EHIME_BBOX,
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rrimap_ehime',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/csmap_ehime',
 		xyzImageTile: {
 			x: 227730,
 			y: 105126,
