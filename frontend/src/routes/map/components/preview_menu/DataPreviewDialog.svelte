@@ -6,7 +6,7 @@
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { showNotification } from '$routes/stores/notification';
+	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -30,7 +30,7 @@
 			}
 			activeLayerIdsStore.addType(copy.id, layerType);
 			activeLayerIdsStore.add(copy.id);
-			showNotification(`${copy.metaData.name}を追加しました`, 'success');
+			showLayerAddedNotification(copy);
 			showDataMenu.set(false);
 			if (checkMobile()) {
 				$isActiveMobileMenu = 'map';

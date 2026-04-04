@@ -15,7 +15,7 @@
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { checkPc, checkMobile } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { showNotification } from '$routes/stores/notification';
+	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -93,7 +93,7 @@
 
 	const addData = (id: string) => {
 		activeLayerIdsStore.add(id);
-		showNotification(`${dataEntry.metaData.name}を追加しました`, 'success');
+		showLayerAddedNotification(dataEntry);
 	};
 	const deleteData = (id: string) => {
 		activeLayerIdsStore.remove(id);

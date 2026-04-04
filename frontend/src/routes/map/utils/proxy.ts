@@ -40,12 +40,20 @@ export const PROXY_RULES: ProxyRule[] = [
 	{
 		match: 'rinya-ehime.geospatial.jp',
 		target: 'https://rinya-ehime.geospatial.jp',
-		proxyPath: '/api/rinya-ehime'
+		proxyPath: '/api/rinya-ehime',
+		excludeExt: ['.pbf']
+	},
+	{
+		match: 'rinya-tochigi.geospatial.jp',
+		target: 'https://rinya-tochigi.geospatial.jp',
+		proxyPath: '/api/rinya-tochigi',
+		excludeExt: ['.pbf']
 	},
 	{
 		match: 'tile.geospatial.jp',
 		target: 'https://tile.geospatial.jp',
-		proxyPath: '/api/tile-geospatial'
+		proxyPath: '/api/tile-geospatial',
+		excludeExt: ['.pbf']
 	},
 	{
 		match: 'localhost:9000',
