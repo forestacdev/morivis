@@ -6,6 +6,7 @@ import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { layerAttributions } from './attributions';
 import { type LayerType } from '$routes/map/utils/entries';
 import { JoinDataCache } from '$routes/map/utils/join_data';
+import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/camera-effects';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -48,6 +49,11 @@ const createLayerStore = () => {
 				if (!layers.includes(id)) {
 					layers = [id, ...layers];
 				}
+				rotationalVibration({
+					radius: 15,
+					duration: 100,
+					frequency: 5
+				});
 				return sortLayerIds(layers);
 			}),
 		has: (id: string) => {

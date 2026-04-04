@@ -1,5 +1,4 @@
 import { writable } from 'svelte/store';
-import { shake, pulseZoom } from '$routes/map/utils/camera-effects';
 import type { GeoDataEntry } from '$routes/map/data/types';
 
 /** 通知メッセージ */

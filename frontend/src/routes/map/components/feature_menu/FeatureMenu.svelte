@@ -59,7 +59,7 @@
 					onclick={edit}
 					class="c-btn-confirm flex items-center justify-center gap-2 px-3 max-lg:hidden"
 				>
-					<Icon icon="streamline:paint-palette-solid" class="h-6 w-6" />
+					<Icon icon="uil:setting" class="h-6 w-6" />
 					<span class="select-none">スタイルの変更</span>
 				</button>
 			{/if}
