@@ -211,6 +211,7 @@
 						<button
 							draggable="true"
 							ondragstart={(e) => onDragStart(e, dataEntry)}
+							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
 							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
 						>

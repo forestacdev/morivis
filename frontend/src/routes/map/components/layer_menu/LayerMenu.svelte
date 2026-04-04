@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { tick } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
 	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import RecommendedData from './RecommendedData.svelte';
-
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
@@ -29,18 +29,7 @@
 		featureMenuData = $bindable(),
 		resetlayerEntries
 	}: Props = $props();
-	let layerEntry = $state<GeoDataEntry | undefined>(undefined); // 編集中のレイヤー
 	let enableFlip = $state(true); // アニメーションの状態
-
-	// 編集中のレイヤーの取得
-	selectedLayerId.subscribe((id) => {
-		if (!id) {
-			layerEntry = undefined;
-			return;
-		} else {
-			layerEntry = layerEntries.find((entry) => entry.id === id);
-		}
-	});
 
 	// レイヤーのリセット処理
 	const resetLayers = async () => {
@@ -74,6 +63,17 @@
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
 
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
+	let scrollContainer = $state<HTMLElement | undefined>(undefined);
+
+	let prevLayerIds = $state<string[]>([]);
+	activeLayerIdsStore.subscribe(async (ids) => {
+		const added = ids.find((id) => !prevLayerIds.includes(id));
+		prevLayerIds = [...ids];
+		if (!added || !scrollContainer) return;
+		await tick();
+		const el = scrollContainer.querySelector(`[data-layer-id="${added}"]`);
+		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	});
 
 	// レイヤーメニューの調整
 	isMobile.subscribe((value) => {
@@ -162,6 +162,7 @@
 		>
 			<!-- スクロールコンテンツ -->
 			<div
+				bind:this={scrollContainer}
 				class="flex h-full flex-col overflow-x-hidden pl-2 {$showDataMenu || $isStyleEdit
 					? 'c-scroll-hidden'
 					: 'c-scroll-hidden'} {isTouchDragging

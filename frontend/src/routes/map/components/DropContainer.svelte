@@ -40,13 +40,11 @@
 	const drop: (e: DragEvent) => void = async (e) => {
 		e.preventDefault();
 		isDragover = false;
-		console.log('[DropContainer] drop fired, disabled:', disabled, 'types:', e.dataTransfer?.types);
 
 		const dataTransfer = e.dataTransfer;
 		if (!dataTransfer) return;
 
 		const entryId = dataTransfer.getData('application/x-entry-id');
-		console.log('[DropContainer] entryId:', entryId);
 		if (entryId) {
 			if (onDropEntryId) onDropEntryId(entryId);
 			return;
