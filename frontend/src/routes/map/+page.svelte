@@ -6,6 +6,7 @@
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import { themeMode } from '$routes/stores/theme';
 
 	import { type WikiArticle } from './api/wikipedia';
 	import Processing from './Processing.svelte';
@@ -209,6 +210,14 @@
 		} else {
 			mapStore.setFilter('@search_result', null);
 			mapStore.setFilter('@search_result_label', null);
+		}
+	});
+
+	$effect(() => {
+		if (showDataEntry || showGeoRefForm || showZoneForm) {
+			themeMode.setMode('preview');
+		} else {
+			themeMode.setMode('default');
 		}
 	});
 
