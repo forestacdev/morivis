@@ -67,7 +67,10 @@ export const devProxyTransform = (url: string): { url: string } => {
  * PROXY_RULES から自動生成されるため、手動で vite.config.ts を編集する必要はない。
  */
 export const buildViteProxyConfig = () => {
-	const config: Record<string, { target: string; changeOrigin: boolean; rewrite: (path: string) => string }> = {};
+	const config: Record<
+		string,
+		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string }
+	> = {};
 
 	for (const rule of PROXY_RULES) {
 		const { proxyPath, target } = rule;

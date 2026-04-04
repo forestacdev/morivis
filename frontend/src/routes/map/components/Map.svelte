@@ -49,8 +49,8 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
-	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
+	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
@@ -66,7 +66,8 @@
 		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
-		showPoiLayer
+		showPoiLayer,
+		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 
@@ -741,6 +742,10 @@
 	const onDropFile: (files: FileList) => void = async (files) => {
 		dropFile = files;
 	};
+
+	const onDropEntryId = (entryId: string) => {
+		activeLayerIdsStore.add(entryId);
+	};
 </script>
 
 <DropContainer
@@ -748,6 +753,7 @@
 	onDragover={dragover}
 	onDragleave={dragleave}
 	{onDropFile}
+	{onDropEntryId}
 	disabled={showGeoRefForm}
 	class="h-full w-full"
 >

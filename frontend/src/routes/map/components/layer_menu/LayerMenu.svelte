@@ -11,6 +11,7 @@
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -95,6 +96,13 @@
 			y: !$isMobile ? 100 : 0,
 			opacity: 0,
 			delay: !$isMobile ? 100 : 0
+		}}
+		role="region"
+		ondragover={(e) => e.preventDefault()}
+		ondrop={(e) => {
+			e.preventDefault();
+			const id = e.dataTransfer?.getData('application/x-entry-id');
+			if (id) activeLayerIdsStore.add(id);
 		}}
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'

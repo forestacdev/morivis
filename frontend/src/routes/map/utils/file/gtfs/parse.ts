@@ -80,9 +80,7 @@ export const readRoutes = (
 /**
  * shapes.txtからルート形状を構築
  */
-const readRouteShapes = (
-	gtfs: GTFS
-): FeatureCollection<MultiLineString, RouteProperties> => {
+const readRouteShapes = (gtfs: GTFS): FeatureCollection<MultiLineString, RouteProperties> => {
 	const shapes = gtfs.shapes!;
 
 	// shape_id → coordinates（shape_pt_sequenceでソート済み）

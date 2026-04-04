@@ -29,7 +29,8 @@
 		containScroll: 'trimSnaps', // スナップを調整
 		duration: 25,
 		slidesToScroll: 1, // 1つずつスクロール
-		startIndex: 0
+		startIndex: 0,
+		watchDrag: false
 	};
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [
 		Autoplay({
@@ -86,45 +87,27 @@
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
-	let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
-	let isWheelScrolling = $state(false);
 
 	// マウスホイールイベントハンドラー
 	const handleWheel = (event: WheelEvent) => {
 		if (!emblaMainCarousel) return;
 
-		// 縦スクロールのみ対応（横スクロールも対応したい場合は deltaX も使用）
 		const { deltaY } = event;
-
-		// スクロール感度の調整（数値を大きくすると敏感になる）
 		const threshold = 10;
 
 		if (Math.abs(deltaY) > threshold) {
-			event.preventDefault(); // ページのスクロールを防ぐ
-
+			event.preventDefault();
 			if (deltaY > 0) {
-				// 下方向スクロール = 次へ
 				emblaMainCarousel.scrollNext();
 			} else {
-				// 上方向スクロール = 前へ
 				emblaMainCarousel.scrollPrev();
 			}
-
-			// スクロール状態の管理
-			isWheelScrolling = true;
-			if (wheelTimeout) clearTimeout(wheelTimeout);
-			wheelTimeout = setTimeout(() => {
-				isWheelScrolling = false;
-			}, 150);
 		}
 	};
 
 	onDestroy(() => {
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
-		}
-		if (wheelTimeout) {
-			clearTimeout(wheelTimeout);
 		}
 	});
 
@@ -195,6 +178,12 @@
 			showDataEntry = dataEntry;
 		}
 	};
+
+	const onDragStart = (e: DragEvent, dataEntry: GeoDataEntry) => {
+		if (!e.dataTransfer) return;
+		e.dataTransfer.effectAllowed = 'copy';
+		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);
+	};
 </script>
 
 {#if dataEntries.length > 0}
@@ -220,6 +209,8 @@
 				<div class="flex">
 					{#each dataEntries as dataEntry (dataEntry.id)}
 						<button
+							draggable="true"
+							ondragstart={(e) => onDragStart(e, dataEntry)}
 							onclick={() => addData(dataEntry)}
 							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
 						>

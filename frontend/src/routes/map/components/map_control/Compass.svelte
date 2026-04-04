@@ -22,8 +22,7 @@
 		const bearing = mapStore.getBearing() ?? 0;
 		if (needle) {
 			// 親(element)の回転を打ち消し → ピッチで傾け → 元の回転を再適用
-			needle.style.transform =
-				`rotateZ(${bearing}deg) rotateX(${pitch * 0.7}deg) rotateZ(${bearing * -1}deg)`;
+			needle.style.transform = `rotateZ(${bearing}deg) rotateX(${pitch * 0.7}deg) rotateZ(${bearing * -1}deg)`;
 		}
 	};
 
@@ -211,7 +210,13 @@
 		class="pointer-events-auto grid h-[70px] w-[70px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black/50"
 		style="perspective: 200px;"
 	>
-		<svg bind:this={needle} class="h-[42px] w-[42px]" style="transform-style: preserve-3d;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 132">
+		<svg
+			bind:this={needle}
+			class="h-[42px] w-[42px]"
+			style="transform-style: preserve-3d;"
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 132 132"
+		>
 			<g transform="translate(47,0)">
 				<path fill="#77D4AC" d="m19 0 16.455 66H2.545L19 0Z" />
 				<path fill="#D9D9D9" d="M19 132 2.546 66h32.909L19 132Z" />

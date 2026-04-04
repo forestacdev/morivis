@@ -102,7 +102,9 @@ class CogWorkerProtocol {
 
 			const ranges = metadata?.sampleRanges ?? [];
 
-			const copyBand = (bandIdx: number): { band: Float32Array; dataMin: number; dataMax: number } => {
+			const copyBand = (
+				bandIdx: number
+			): { band: Float32Array; dataMin: number; dataMax: number } => {
 				const src = tileData.bands[bandIdx] ?? tileData.bands[0];
 				const copy = new Float32Array(src.length);
 				for (let i = 0; i < src.length; i++) copy[i] = src[i];
