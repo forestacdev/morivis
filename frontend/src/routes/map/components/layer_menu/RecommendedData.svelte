@@ -213,10 +213,10 @@
 							ondragstart={(e) => onDragStart(e, dataEntry)}
 							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
-							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
+							class="group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
 						>
 							<div
-								class="border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black duration-150"
+								class="border-sub group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black transition-[filter] duration-150"
 							>
 								<RecommendedDataImage {dataEntry} />
 							</div></button

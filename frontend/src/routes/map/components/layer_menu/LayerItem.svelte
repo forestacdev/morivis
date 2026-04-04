@@ -462,7 +462,7 @@
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height] border-sub c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height border-color] c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -470,7 +470,8 @@
 			? 'w-[68.48px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
-			: 'bg-black'}"
+			: 'bg-black'}
+            {isHovered ? 'border-accent set-glow' : 'border-sub'}"
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
@@ -581,7 +582,7 @@
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -619,19 +620,21 @@
 							/>
 						</button>
 
+						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
 							<Icon icon="bx:trash" class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
 							</button>
 						{/if}
 
-						<!-- <button onclick={copyLayer}>
+						<button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
-						</button> -->
+						</button>
+						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
 						</button>
@@ -661,8 +664,8 @@
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
-						? 'bg-accent'
-						: 'bg-red-400'}"
+						? 'bg-[#5afff7]'
+						: 'bg-[#ff4f66]'}"
 			></div>
 		{/if}
 
@@ -678,6 +681,9 @@
 </div>
 
 <style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 	.c-rounded {
 		border-radius: 9999px 9999px 9999px 9999px;
 	}
