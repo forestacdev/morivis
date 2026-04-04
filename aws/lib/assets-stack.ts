@@ -41,7 +41,15 @@ export class AssetsStack extends cdk.Stack {
 				cors: [
 					{
 						allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD],
-						allowedOrigins: ['*'],
+						allowedOrigins: [
+						'http://localhost:5173',
+						'https://localhost:5173',
+						'http://localhost:4173',
+						'https://localhost:4173',
+						'http://localhost:3000',
+						'https://localhost:3000',
+						'https://forestacdev.github.io/morivis'
+					],
 						allowedHeaders: ['*']
 					}
 				]
