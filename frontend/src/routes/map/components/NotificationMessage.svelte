@@ -37,7 +37,7 @@
 {#if $notificationMessage?.type === 'add'}
 	<div
 		transition:fly={{ duration: 300, x: 200 }}
-		class="pointer-events-none absolute top-[100px] right-0 z-30 flex items-center gap-2 overflow-hidden rounded-l-lg bg-black pr-6 shadow-md"
+		class="shine pointer-events-none absolute top-[100px] right-0 z-30 flex items-center gap-2 overflow-hidden rounded-l-lg bg-black pr-6 shadow-md"
 	>
 		{#if $notificationMessage.entry}
 			<div class="relative h-16 w-16 shrink-0 overflow-hidden">
@@ -56,4 +56,29 @@
 {/if}
 
 <style>
+	.shine::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 60%;
+		height: 100%;
+		background: linear-gradient(
+			110deg,
+			transparent 40%,
+			rgba(255, 255, 255, 0.45) 50%,
+			transparent 60%
+		);
+		animation: shine 0.7s ease-out 0.1s forwards;
+		pointer-events: none;
+	}
+
+	@keyframes shine {
+		from {
+			left: -100%;
+		}
+		to {
+			left: 150%;
+		}
+	}
 </style>
