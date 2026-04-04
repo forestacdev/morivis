@@ -21,6 +21,8 @@
 
 	let { showDataEntry = $bindable() }: Props = $props();
 
+	let hoveredIndex = $state<number | null>(null);
+
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
@@ -207,16 +209,20 @@
 				onemblaInit={onInitEmblaMainCarousel}
 			>
 				<div class="flex">
-					{#each dataEntries as dataEntry (dataEntry.id)}
+					{#each dataEntries as dataEntry, i (dataEntry.id)}
 						<button
 							draggable="true"
 							ondragstart={(e) => onDragStart(e, dataEntry)}
 							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
-							class="group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
+							onmouseenter={() => (hoveredIndex = i)}
+							onmouseleave={() => (hoveredIndex = null)}
+							class="transition-[width, transform, translate, scale, rotate, height, border-color] flex flex-[0_0_70%] origin-center translate-z-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150
+                                {hoveredIndex === i ? 'c-set-glow' : ''}"
 						>
 							<div
-								class="border-sub group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black transition-[filter] duration-150"
+								class="relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border bg-black
+                                {hoveredIndex === i ? 'border-accent' : 'border-sub'}"
 							>
 								<RecommendedDataImage {dataEntry} />
 							</div></button
@@ -233,4 +239,7 @@
 {/if}
 
 <style>
+	.c-set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 </style>

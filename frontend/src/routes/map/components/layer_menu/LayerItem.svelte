@@ -595,7 +595,7 @@
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
+							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -636,7 +636,7 @@
 						</button>
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
+							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
