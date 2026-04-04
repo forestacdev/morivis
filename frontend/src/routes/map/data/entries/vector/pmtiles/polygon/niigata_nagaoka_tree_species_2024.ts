@@ -17,16 +17,16 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '長岡市 樹種ポリゴン',
-		attribution: '新潟県長岡市森林資源データ',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_nagaoka',
+		attribution: '林野庁',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-treespeceies-nagaoka2024',
 		location: '新潟県',
 		tags: ['森林', '林相図'],
 		minZoom: 8,
 		maxZoom: 18,
 		sourceLayer: 'tree_species_nagaoka2024',
 		bounds: NIIGATA_NAGAOKA_BBOX,
-		xyzImageTile: { x: 116178, y: 50794, z: 17 }
-		// mapImage: `${MAP_IMAGE_BASE_PATH}/tree_species_nagaoka2024.webp`
+		xyzImageTile: { x: 116178, y: 50794, z: 17 },
+		mapImage: `${MAP_IMAGE_BASE_PATH}/niigata_nagaoka_tree_species_2024.webp`
 	},
 	properties: {
 		attributeView: {
@@ -49,7 +49,7 @@ const entry: VectorEntry<TileMetaData> = {
 				},
 				{
 					conditions: [],
-					template: '高知県の樹種ポリゴン'
+					template: '長岡市の樹種ポリゴン'
 				}
 			]
 		},
