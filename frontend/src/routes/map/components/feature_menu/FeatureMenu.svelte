@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
@@ -50,11 +50,7 @@
 <!-- PC -->
 {#if featureMenuData && checkPc()}
 	<div
-		transition:fly={{
-			duration: 300,
-			x: -100,
-			opacity: 0
-		}}
+		transition:scale={{ duration: 300, start: 0.9, opacity: 0 }}
 		class="bg-main w-side-menu max absolute top-0 left-0 z-20 flex h-full flex-col max-lg:hidden"
 	>
 		<div class="flex items-center gap-2 p-3 px-4 pt-4">
