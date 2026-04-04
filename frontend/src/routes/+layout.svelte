@@ -40,6 +40,15 @@
 		}
 
 		return new Promise((resolve) => {
+			// document.startViewTransition(async () => {
+			// 	resolve();
+			// 	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
+			// 	await navigation.complete;
+			// });
+			// resolve();
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			// navigation.complete;
 			isBlocked.set(true);
 			// ページ遷移のアニメーションを制御
 			transitionPageScreen.set(1);
