@@ -21,9 +21,14 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		// promoteId: 'code',
 		tags: ['自然災害伝承碑'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: { x: 225, y: 100, z: 8 },
+		xyzImageTile: {
+			x: 227,
+			y: 100,
+			z: 8
+		},
 		downloadUrl: 'https://www.gsi.go.jp/bousaichiri/denshouhi.html',
-		mapImage: `${MAP_IMAGE_BASE_PATH}/disaster_lore_all.webp`
+		mapImage: `${MAP_IMAGE_BASE_PATH}/disaster_lore_all.webp`,
+		coverImage: 'https://www.gsi.go.jp/common/000255441.jpg'
 	},
 	properties: {
 		attributeView: {
