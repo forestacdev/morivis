@@ -22,15 +22,20 @@
 		}
 	};
 
-	const promise = (() => {
+	const promise = $derived.by(() => {
 		try {
 			return getLayerImage(layerEntry);
 		} catch (error) {
-			isImageError = true;
 			console.error('Error generating icon image:', error);
 			return Promise.resolve(undefined);
 		}
-	})();
+	});
+
+	$effect(() => {
+		// layerEntryが変わったらエラー状態をリセット
+		void layerEntry.id;
+		isImageError = false;
+	});
 </script>
 
 {#if !isImageError}
