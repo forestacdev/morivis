@@ -43,6 +43,11 @@ export const PROXY_RULES: ProxyRule[] = [
 		proxyPath: '/api/rinya-ehime'
 	},
 	{
+		match: 'tile.geospatial.jp',
+		target: 'https://tile.geospatial.jp',
+		proxyPath: '/api/tile-geospatial'
+	},
+	{
 		match: 'localhost:9000',
 		target: 'http://localhost:9000',
 		proxyPath: '/api/font-server'

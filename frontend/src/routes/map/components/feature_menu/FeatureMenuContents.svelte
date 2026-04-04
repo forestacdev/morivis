@@ -399,7 +399,9 @@
 				<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
 				<div class="mb-56 flex h-full w-full flex-col gap-3">
 					{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
-						{#each Object.entries(filterByPopupKeys(featureMenuData.properties, targetLayer.properties.attributeView.popupKeys)) as [key, value]}
+						{@const popupKeys = targetLayer.properties.attributeView.popupKeys}
+					{@const displayProps = popupKeys.length > 0 ? filterByPopupKeys(featureMenuData.properties, popupKeys) : featureMenuData.properties}
+					{#each Object.entries(displayProps) as [key, value]}
 							{#if key !== '_prop_id' && value && imageKey !== key}
 								{@const field = fields.find((f) => f.key === key)}
 								<!-- 辞書による属性名書き換え -->
