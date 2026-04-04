@@ -86,8 +86,6 @@ typedoc:
 api:
     pnpm run api
 
-
-
 # node_modules含む完全クリア & 再インストール & dev再起動
 clean-all:
     rm -rf frontend/node_modules/.vite
@@ -97,3 +95,6 @@ clean-all:
     pnpm install
     @echo "完全クリア & 再インストール完了"
     just dev
+
+python-lint: ## Pythonコードのlint自動修正・フォーマット
+	cd data/scripts/python && uv run --group dev ruff check --fix . --exclude .venv && uv run --group dev ruff format . --exclude .venv

@@ -129,7 +129,7 @@ def epsg_list_to_detailed_dict(epsg_codes):
             info = {
                 "citation": crs.name,  # 正式名称
                 "proj_context": crs.to_proj4(),  # Proj4文字列
-                "wkt": crs.to_wkt(version="WKT1_GDAL"), # WKT定義を追加
+                "wkt": crs.to_wkt(version="WKT1_GDAL"),  # WKT定義を追加
                 "area_of_use": None,
                 "datum": None,
                 "ellipsoid": None,
@@ -198,8 +198,3 @@ if __name__ == "__main__":
     # JSONファイルに保存
     with open("epsg_definitions.json", "w", encoding="utf-8") as f:
         json.dump(detailed_dict, f, indent=2, ensure_ascii=False)
-
-
-
-
-

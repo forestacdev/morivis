@@ -10,8 +10,9 @@ def load_geojson(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 SCRIPT_DIR = Path(__file__).resolve().parent
-INPUT_DIR = SCRIPT_DIR  / "data"
+INPUT_DIR = SCRIPT_DIR / "data"
 OUTPUT_DIR = SCRIPT_DIR.parents[1] / "assets" / "street_view"
 
 

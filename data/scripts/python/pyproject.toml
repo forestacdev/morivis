@@ -20,5 +20,16 @@ dependencies = [
     "shapely>=2.0.7",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.15.9",
+]
+
 [tool.uv.sources]
 aiopmtiles = { git = "http://github.com/developmentseed/aiopmtiles" }
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+ignore = ["N802", "E501", "RUF001", "F401"]
