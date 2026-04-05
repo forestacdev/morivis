@@ -14,6 +14,7 @@
 	import { checkMobileWidth } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -193,7 +194,12 @@
 		transition:fade={{ duration: 200 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
-		<div class="pl-4 text-sm text-gray-400">おすすめデータ</div>
+		<div class="flex w-full items-center justify-between px-2">
+			<div class="text-sm">周辺データ</div>
+			<button onclick={() => showDataMenu.set(true)} class=" c-btn-confirm px-4 text-sm">
+				一覧を見る
+			</button>
+		</div>
 		<div class="relative">
 			<!-- <div
 				class="c-bg-fog-left pointer-events-none absolute bottom-0 left-0 z-10 h-full w-[50px]"

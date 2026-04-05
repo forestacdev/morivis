@@ -270,6 +270,7 @@ const createMapStore = () => {
 			dragRotate: false, // デフォルトの右ドラッグ回転を無効化
 			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
+			doubleClickZoom: false, // ダブルクリックズームを無効化
 			keyboard: false, // キーボード操作を無効化
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
