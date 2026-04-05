@@ -11,8 +11,8 @@
 	import type { Opacity } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
-	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;

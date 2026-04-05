@@ -6,10 +6,10 @@
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';

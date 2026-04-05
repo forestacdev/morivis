@@ -63,7 +63,7 @@
 			delay(500).then(() => {
 				document.startViewTransition(async () => {
 					resolve();
-					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+					 
 
 					await navigation.complete;
 				});
