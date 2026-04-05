@@ -12,6 +12,7 @@
 
 	interface Props {
 		layerType: LayerType;
+		lastLayerType: LayerType | null;
 		typeEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
@@ -24,6 +25,7 @@
 
 	let {
 		layerType,
+		lastLayerType,
 		typeEntries,
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
@@ -33,13 +35,14 @@
 		featureMenuData = $bindable(),
 		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
 	}: Props = $props();
+	let isLastType = $derived(lastLayerType === layerType);
 </script>
 
 <!-- 左側：レイヤータイプアイコン -->
 {#if !$isStyleEdit && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
-		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[8px] justify-center"
+		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
 	>
 		<div
 			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType === layerType
@@ -55,13 +58,14 @@
 		</div>
 	</div>
 {/if}
-<!-- 右側：レイヤーアイテム -->
 
+<!-- 右側：レイヤーアイテム -->
 {#each typeEntries as layerEntry, i (layerEntry.id)}
 	<div animate:flip={{ duration: enableFlip ? 200 : 0 }}>
 		<LayerItem
 			index={i}
 			length={typeEntries.length}
+			isLast={isLastType && i === typeEntries.length - 1}
 			{layerType}
 			{layerEntry}
 			bind:showDataEntry

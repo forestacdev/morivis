@@ -58,6 +58,10 @@
 	let rasterEntries = $derived.by(() => {
 		return layerEntries.filter((layer) => getLayerType(layer) === 'raster');
 	});
+	let lastLayerType = $derived.by(() => {
+		const lastEntry = layerEntries[layerEntries.length - 1];
+		return lastEntry ? getLayerType(lastEntry) : null;
+	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
@@ -88,7 +92,6 @@
 </script>
 
 <!-- レイヤーメニュー -->
-
 {#if $showLayerMenu}
 	<div
 		transition:fly={{
@@ -131,7 +134,7 @@
 						class="flex shrink-0 flex-col justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
-						<div class="pl-1 text-sm text-gray-400">地図上のデータ</div>
+						<div class="pl-1 text-sm text-gray-400">追加済みのデータ</div>
 					</div>
 				{/if}
 
@@ -178,6 +181,7 @@
 					>
 						<LayerTypeItem
 							layerType={'model'}
+							{lastLayerType}
 							typeEntries={modelEntries}
 							bind:showDataEntry
 							bind:tempLayerEntries
@@ -198,6 +202,7 @@
 					>
 						<LayerTypeItem
 							layerType={'point'}
+							{lastLayerType}
 							typeEntries={pointEntries}
 							bind:showDataEntry
 							bind:tempLayerEntries
@@ -218,6 +223,7 @@
 					>
 						<LayerTypeItem
 							layerType={'line'}
+							{lastLayerType}
 							typeEntries={lineEntries}
 							bind:showDataEntry
 							bind:tempLayerEntries
@@ -238,6 +244,7 @@
 					>
 						<LayerTypeItem
 							layerType={'polygon'}
+							{lastLayerType}
 							typeEntries={polygonEntries}
 							bind:showDataEntry
 							bind:tempLayerEntries
@@ -258,6 +265,7 @@
 					>
 						<LayerTypeItem
 							layerType={'raster'}
+							{lastLayerType}
 							typeEntries={rasterEntries}
 							bind:showDataEntry
 							bind:tempLayerEntries
@@ -270,76 +278,6 @@
 					</div>
 				{/if}
 
-				<div class="relative flex h-[60px] w-full items-center">
-					<!-- アイコン -->
-					{#if !$isStyleEdit && !$showDataMenu}
-						<div
-							transition:slide={{ duration: 200, axis: 'x' }}
-							class="relative grid h-full w-[50px] shrink-0 place-items-center"
-						>
-							<button
-								onclick={resetLayers}
-								class="c-btn-sub bg-sub peer pointer-events-auto absolute aspect-square translate-y-[10px] rounded-full p-1.5"
-							>
-								<Icon icon="carbon:reset" class="h-6 w-6" />
-							</button>
-
-							<div
-								class="bg-base text-main pointer-events-none absolute -bottom-5 z-10 w-[60px] rounded-full px-1 text-center text-xs opacity-0 transition-opacity duration-200 peer-hover:opacity-100"
-							>
-								リセット
-							</div>
-							<div class="bg-base/60 h-full w-[2px]"></div>
-						</div>
-					{/if}
-					<!-- 追加ボタン -->
-					<button
-						onclick={() => {
-							if ($isStyleEdit) {
-								isStyleEdit.set(false);
-								selectedLayerId.set('');
-							} else {
-								showDataMenu.set(!$showDataMenu);
-								if ($isMobile) {
-									// モバイルの場合の処理
-									isActiveMobileMenu.set('data');
-								}
-							}
-						}}
-						class="transform-[width, transform, translate, scale, rotate, height, background] relative flex translate-y-[10px] translate-z-0 cursor-pointer justify-center rounded-full p-2 text-left text-nowrap text-clip duration-200 select-none max-lg:hidden {$showDataMenu
-							? 'w-[66px]'
-							: $isStyleEdit
-								? 'w-[400px]'
-								: 'hover:bg-accent bg-main max-lg:w-full lg:w-[330px]'} {!$isStyleEdit &&
-						!$showDataMenu
-							? 'opacity-100 not-hover:drop-shadow-[0_0_2px_rgba(220,220,220,0.8)]'
-							: 'opacity-0'}"
-					>
-						<div class="flex w-full items-center justify-start gap-2 bg-transparent">
-							<!-- アイコン -->
-							<div
-								class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full transition-transform duration-150 {!$showDataMenu &&
-								!$isStyleEdit
-									? 'bg-accent text-base'
-									: 'bg-base text-main'} {$isStyleEdit ? 'translate-x-[320px]' : ''}"
-							>
-								{#if !$showDataMenu && !$isStyleEdit}
-									<Icon icon="material-symbols:add" width={30} />
-								{:else}
-									<Icon icon="ep:back" class="h-7 w-7" />
-								{/if}
-							</div>
-							<!-- ボタン -->
-							<div
-								class="relative flex w-full grow flex-col items-center justify-center gap-[2px] overflow-hidden pr-6 text-white"
-							>
-								{#if !$showDataMenu}
-									<span class="text-lg">データの追加</span>
-								{/if}
-							</div>
-						</div>
-					</button>
-				</div>
 				<!-- 余白 -->
 				<div class="h-[100px] w-full shrink-0"></div>
 			</div>
