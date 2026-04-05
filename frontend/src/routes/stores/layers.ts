@@ -1,11 +1,13 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { EntryIdToTypeMap } from '$routes/map/data/entries';
+import { EntryIdToTypeMap, unregisterInitialEntryStyle } from '$routes/map/data/entries';
 import { writable, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { layerAttributions } from './attributions';
 import { type LayerType } from '$routes/map/utils/entries';
 import { JoinDataCache } from '$routes/map/utils/join_data';
+import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/camera-effects';
+import { triggerMapPaneScale } from '$routes/stores/effect';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -48,6 +50,12 @@ const createLayerStore = () => {
 				if (!layers.includes(id)) {
 					layers = [id, ...layers];
 				}
+				rotationalVibration({
+					radius: 15,
+					duration: 100,
+					frequency: 5
+				});
+				triggerMapPaneScale();
 				return sortLayerIds(layers);
 			}),
 		has: (id: string) => {
@@ -68,6 +76,7 @@ const createLayerStore = () => {
 
 				// JoinDataCacheからも削除
 				if (JoinDataCache.has(id)) JoinDataCache.remove(id);
+				unregisterInitialEntryStyle(id);
 				layerAttributions.remove(id);
 				return newLayers;
 			}),
@@ -98,6 +107,12 @@ const createLayerStore = () => {
 				GeojsonCache.remove(id);
 			}
 
+			for (const id of get(store)) {
+				if (!INT_ADD_LAYER_IDS.includes(id)) {
+					unregisterInitialEntryStyle(id);
+				}
+			}
+
 			set([...INT_ADD_LAYER_IDS]);
 		}
 	};
@@ -121,7 +136,7 @@ export const showPoiLayer = writable<boolean>(true);
 export const showLabelLayer = writable<boolean>(true);
 
 /** 陰影レイヤー */
-export const showHillshadeLayer = writable<boolean>(true);
+export const showHillshadeLayer = writable<boolean>(false);
 
 /** 境界 */
 export const showBoundaryLayer = writable<boolean>(true);

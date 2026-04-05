@@ -20,11 +20,11 @@
 	<input type="checkbox" class="hidden" bind:checked={value} />
 	<div
 		class="relative flex h-[30px] w-[60px] items-center rounded-full {value
-			? 'bg-main-accent'
+			? 'bg-accent'
 			: 'bg-sub'}"
 	>
 		<div
-			class="ml-[5px] h-[22px] w-[22px] rounded-full bg-white transition-transform duration-200 {value
+			class="bg-base ml-[5px] h-[22px] w-[22px] rounded-full transition-transform duration-200 {value
 				? 'translate-x-[28px]'
 				: ''}"
 		></div>

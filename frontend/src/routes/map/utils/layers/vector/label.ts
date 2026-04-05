@@ -13,8 +13,7 @@ import type { LayerItem } from '$routes/map/utils/layers/index';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
-import { getPatternExpression } from '$routes/map/utils/layers/vector/expression/color';
-import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
+import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
 
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
@@ -158,27 +157,14 @@ export const createPointIconLayer = (
 	layer: LayerItem,
 	style: PointStyle
 ): SymbolLayerSpecification | undefined => {
-	const patternExpression = getPatternExpression(style.colors);
-	if (!patternExpression) {
+	if (!style.icons) return undefined;
+
+	const iconExpression = getIconExpression(style.icons);
+	if (!iconExpression) {
 		return undefined;
 	}
 
-	const radius = getNumberExpression(style.radius);
 	const defaultStyle = style.default;
-	const key = style.labels.key as keyof Labels;
-	const showLabel = style.labels.show;
-	const textField = style.labels.expressions.find((label) => label.key === key)?.expression ?? '';
-	const labelPaint = {
-		'text-opacity': 1,
-		'text-color': '#000000',
-		'text-halo-color': '#FFFFFF',
-		'text-halo-width': 2
-	};
-	const labelLayout = {
-		'text-field': textField,
-		'text-size': 12,
-		'text-max-width': 12
-	};
 
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
@@ -188,19 +174,13 @@ export const createPointIconLayer = (
 			'icon-opacity': style.opacity
 		},
 		layout: {
-			'icon-image': patternExpression,
-			'icon-size': style.icon?.size ?? 0.1,
+			'icon-image': iconExpression,
+			'icon-size': style.icons.size ?? 0.1,
 			'icon-anchor': 'center',
 
 			// 間引きをオフに
 			'icon-allow-overlap': true,
 			'icon-ignore-placement': true
-
-			// ...(symbolStyle.layout ?? {})
-
-			// "text-variable-anchor": ["top", "bottom", "left", "right"],
-			// "text-radial-offset": 0.5,
-			// "text-justify": "auto",
 		},
 		// フィルター設定
 		...(() => {
@@ -211,7 +191,6 @@ export const createPointIconLayer = (
 		})()
 	};
 
-	// TODO: text-halo-color text-halo-width text-size
 	return symbolLayer;
 };
 

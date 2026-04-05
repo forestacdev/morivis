@@ -29,6 +29,10 @@
             "path": "frontend/src/routes/map/utils",
         },
         {
+            "name": "ストア",
+            "path": "frontend/src/routes/stores",
+        },
+        {
             "path": "frontend",
         },
         {
@@ -36,6 +40,9 @@
         },
         {
             "path": "api",
+        },
+        {
+            "path": "aws",
         },
         {
             "path": ".",

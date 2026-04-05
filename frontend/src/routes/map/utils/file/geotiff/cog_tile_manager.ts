@@ -43,6 +43,37 @@ interface CogConnection {
 
 const connections = new Map<string, CogConnection>();
 
+// --- タイルデータ LRU キャッシュ ---
+
+type TileResult = {
+	bands: (Float32Array | Uint8Array | Uint16Array)[];
+	srcWidth: number;
+	srcHeight: number;
+	triangles: Triangle[] | null;
+};
+
+const TILE_CACHE_MAX = 256;
+const tileCache = new Map<string, TileResult>();
+
+const tileCacheGet = (key: string): TileResult | undefined => {
+	const value = tileCache.get(key);
+	if (value !== undefined) {
+		// LRU: 再挿入で最新に
+		tileCache.delete(key);
+		tileCache.set(key, value);
+	}
+	return value;
+};
+
+const tileCacheSet = (key: string, value: TileResult): void => {
+	if (tileCache.size >= TILE_CACHE_MAX) {
+		// 最古のエントリを削除
+		const oldest = tileCache.keys().next().value;
+		if (oldest !== undefined) tileCache.delete(oldest);
+	}
+	tileCache.set(key, value);
+};
+
 // --- タイル座標 ↔ 経緯度変換 ---
 
 const tileToLon = (x: number, z: number): number => (x / Math.pow(2, z)) * 360 - 180;
@@ -67,25 +98,18 @@ const selectOverviewForZoom = (conn: CogConnection, z: number, tileSize: number)
 	// フル解像度のdpp
 	const fullDpp = cogDegreesPerPixel(bbox, fullWidth);
 
-	// ターゲットdppに最も近い（ターゲット以下の）解像度を選ぶ
-	// 解像度が高すぎるとデータ転送量が無駄に大きくなる
+	// ターゲットdpp以下（＝十分な解像度）のオーバービューの中で、
+	// 最もdppが大きい（＝最も低解像度だが十分な）ものを選ぶ。
+	// どのオーバービューも解像度不足ならフル解像度を使う。
 	let bestIndex = 0; // デフォルトはフル解像度
 	let bestDpp = fullDpp;
 
 	for (const ovr of overviews) {
 		const ovrDpp = cogDegreesPerPixel(bbox, ovr.width);
-		// オーバービューのdppがターゲットより小さい（= より高解像度）場合は候補
-		// ターゲットに最も近い（最も低解像度だが十分な）オーバービューを選ぶ
 		if (ovrDpp <= targetDpp && ovrDpp > bestDpp) {
 			bestIndex = ovr.index;
 			bestDpp = ovrDpp;
 		}
-	}
-
-	// どのオーバービューもターゲットより高解像度すぎる場合は最も低解像度のものを選ぶ
-	if (bestIndex === 0 && fullDpp < targetDpp && overviews.length > 0) {
-		const lowestRes = overviews[overviews.length - 1];
-		bestIndex = lowestRes.index;
 	}
 
 	return conn.images[bestIndex];
@@ -283,15 +307,7 @@ export const CogTileManager = {
 		x: number,
 		y: number,
 		tileSize = 256
-	): Promise<{
-		bands: (Float32Array | Uint8Array | Uint16Array)[];
-		/** ソーステクスチャの幅 */
-		srcWidth: number;
-		/** ソーステクスチャの高さ */
-		srcHeight: number;
-		/** 三角形メッシュ（投影変換が必要な場合）。nullなら単純コピー */
-		triangles: Triangle[] | null;
-	} | null> => {
+	): Promise<TileResult | null> => {
 		const conn = connections.get(entryId);
 		if (!conn) return null;
 
@@ -314,6 +330,11 @@ export const CogTileManager = {
 			return null;
 		}
 
+		// LRUキャッシュ確認
+		const cacheKey = `${entryId}_${z}_${x}_${y}_${tileSize}`;
+		const cached = tileCacheGet(cacheKey);
+		if (cached) return cached;
+
 		// ズームレベルに最適なオーバービューを選択
 		const image = selectOverviewForZoom(conn, z, tileSize);
 		const imgWidth = image.getWidth();
@@ -325,6 +346,8 @@ export const CogTileManager = {
 			tileLonMax,
 			tileLatMax
 		];
+
+		let result: TileResult;
 
 		if (projName) {
 			// --- 投影CRS: 三角形メッシュでリプロジェクション ---
@@ -365,7 +388,6 @@ export const CogTileManager = {
 			}
 
 			// 三角形のソース座標をテクスチャUV (0-1) に変換
-			// sourceExtent → 実際に読み取ったウィンドウ（クリップ後）のネイティブCRS範囲
 			const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
 			const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
 			const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
@@ -381,7 +403,7 @@ export const CogTileManager = {
 				]) as [number, number][]
 			}));
 
-			return { bands, srcWidth, srcHeight, triangles: uvTriangles };
+			result = { bands, srcWidth, srcHeight, triangles: uvTriangles };
 		} else {
 			// --- EPSG:4326: 単純な矩形切り出し ---
 			const cogXRange = nativeBbox[2] - nativeBbox[0];
@@ -412,8 +434,11 @@ export const CogTileManager = {
 				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
 			}
 
-			return { bands, srcWidth: tileSize, srcHeight: tileSize, triangles: null };
+			result = { bands, srcWidth: tileSize, srcHeight: tileSize, triangles: null };
 		}
+
+		tileCacheSet(cacheKey, result);
+		return result;
 	},
 
 	/** メタデータを取得 */
@@ -421,9 +446,13 @@ export const CogTileManager = {
 		return connections.get(entryId)?.metadata ?? null;
 	},
 
-	/** 接続を解除 */
+	/** 接続を解除（タイルキャッシュもクリア） */
 	unregister: (entryId: string): void => {
 		connections.delete(entryId);
+		// 該当entryのキャッシュを削除
+		for (const key of tileCache.keys()) {
+			if (key.startsWith(`${entryId}_`)) tileCache.delete(key);
+		}
 	},
 
 	/** 登録済みか確認 */

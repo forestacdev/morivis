@@ -3,49 +3,10 @@
  *
  * MapLibreの addProtocol で登録し、cog:// URLへのタイルリクエストを処理する。
  * メインスレッドで CogTileManager からバンドデータを読み取り、
- * Terrarium形式にエンコードしてWorkerでWebGLレンダリングする。
+ * 生バンドデータをWorkerにtransferしてTerrarium エンコード+WebGLレンダリングする。
  */
 import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 import { ColorMapManager } from '$routes/map/utils/color_mapping';
-
-// --- Terrarium エンコード（メインスレッド、バンド→RGBA PNG用ImageBitmap） ---
-
-const encodeBandToTerrarium = (
-	band: Float32Array | Uint8Array | Uint16Array,
-	width: number,
-	height: number,
-	dataMin: number,
-	dataMax: number,
-	nodata: number | null
-): ImageData => {
-	const rgba = new Uint8ClampedArray(width * height * 4);
-	const range = dataMax - dataMin;
-	const invRange = range !== 0 ? 65535 / range : 0;
-
-	for (let i = 0; i < band.length; i++) {
-		const v = band[i];
-		const idx = i * 4;
-
-		if ((nodata !== null && v === nodata) || !isFinite(v)) {
-			rgba[idx] = 0;
-			rgba[idx + 1] = 0;
-			rgba[idx + 2] = 0;
-			rgba[idx + 3] = 0;
-			continue;
-		}
-
-		const normalized = (v - dataMin) * invRange;
-		rgba[idx] = Math.floor(normalized / 256); // R
-		rgba[idx + 1] = Math.floor(normalized) % 256; // G
-		rgba[idx + 2] = Math.floor((normalized % 1) * 256); // B
-		rgba[idx + 3] = 255; // A
-	}
-
-	return new ImageData(rgba, width, height);
-};
-
-const imageDataToImageBitmap = async (imageData: ImageData): Promise<ImageBitmap> =>
-	createImageBitmap(imageData);
 
 // --- Worker Protocol ---
 
@@ -103,13 +64,14 @@ class CogWorkerProtocol {
 			const band = tileData.bands[bandIndex] ?? tileData.bands[0];
 			const dataMin = metadata?.sampleRanges[bandIndex]?.min ?? 0;
 			const dataMax = metadata?.sampleRanges[bandIndex]?.max ?? 1;
-
-			const imageData = encodeBandToTerrarium(band, srcWidth, srcHeight, dataMin, dataMax, nodata);
-			const bandTexture = await imageDataToImageBitmap(imageData);
 			const colorMapArray = this.colorMapCache.createColorArray(colorMap);
 
 			const normMin = dataMax !== dataMin ? (min - dataMin) / (dataMax - dataMin) : 0;
 			const normMax = dataMax !== dataMin ? (max - dataMin) / (dataMax - dataMin) : 1;
+
+			// バンドデータのコピーを作成してtransfer（元データはキャッシュで保持）
+			const bandCopy = new Float32Array(band.length);
+			for (let i = 0; i < band.length; i++) bandCopy[i] = band[i];
 
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(requestId, { resolve, reject, controller });
@@ -119,12 +81,17 @@ class CogWorkerProtocol {
 						mode: 'single',
 						tileSize,
 						triangles,
-						bandTexture,
+						band: bandCopy,
+						srcWidth,
+						srcHeight,
+						dataMin,
+						dataMax,
+						nodata,
 						colorMapArray,
 						min: normMin,
 						max: normMax
 					},
-					{ transfer: [bandTexture] }
+					{ transfer: [bandCopy.buffer] }
 				);
 			});
 		} else {
@@ -134,19 +101,21 @@ class CogWorkerProtocol {
 			const bIdx = parseInt(url.searchParams.get('bIndex') || '2', 10);
 
 			const ranges = metadata?.sampleRanges ?? [];
-			const encodeAndBitmap = async (bandIdx: number) => {
-				const band = tileData.bands[bandIdx] ?? tileData.bands[0];
+
+			const copyBand = (
+				bandIdx: number
+			): { band: Float32Array; dataMin: number; dataMax: number } => {
+				const src = tileData.bands[bandIdx] ?? tileData.bands[0];
+				const copy = new Float32Array(src.length);
+				for (let i = 0; i < src.length; i++) copy[i] = src[i];
 				const dMin = ranges[bandIdx]?.min ?? 0;
 				const dMax = ranges[bandIdx]?.max ?? 1;
-				const imgData = encodeBandToTerrarium(band, srcWidth, srcHeight, dMin, dMax, nodata);
-				return imageDataToImageBitmap(imgData);
+				return { band: copy, dataMin: dMin, dataMax: dMax };
 			};
 
-			const [bandR, bandG, bandB] = await Promise.all([
-				encodeAndBitmap(rIdx),
-				encodeAndBitmap(gIdx),
-				encodeAndBitmap(bIdx)
-			]);
+			const r = copyBand(rIdx);
+			const g = copyBand(gIdx);
+			const b = copyBand(bIdx);
 
 			const rRange = ranges[rIdx] ?? { min: 0, max: 1 };
 			const gRange = ranges[gIdx] ?? { min: 0, max: 1 };
@@ -170,9 +139,18 @@ class CogWorkerProtocol {
 						mode: 'multi',
 						tileSize,
 						triangles,
-						bandR,
-						bandG,
-						bandB,
+						srcWidth,
+						srcHeight,
+						nodata,
+						bandR: r.band,
+						bandG: g.band,
+						bandB: b.band,
+						dataMinR: r.dataMin,
+						dataMaxR: r.dataMax,
+						dataMinG: g.dataMin,
+						dataMaxG: g.dataMax,
+						dataMinB: b.dataMin,
+						dataMaxB: b.dataMax,
 						rMin: norm(rMin, rRange.min, rRange.max),
 						rMax: norm(rMax, rRange.min, rRange.max),
 						gMin: norm(gMin, gRange.min, gRange.max),
@@ -180,7 +158,7 @@ class CogWorkerProtocol {
 						bMin: norm(bMin, bRange.min, bRange.max),
 						bMax: norm(bMax, bRange.min, bRange.max)
 					},
-					{ transfer: [bandR, bandG, bandB] }
+					{ transfer: [r.band.buffer, g.band.buffer, b.band.buffer] }
 				);
 			});
 		}
@@ -216,6 +194,11 @@ class CogWorkerProtocol {
 		});
 		this.pendingRequests.clear();
 	}
+
+	terminate() {
+		this.cancelAllRequests();
+		this.worker.terminate();
+	}
 }
 
 class CogWorkerProtocolPool {
@@ -249,16 +232,36 @@ class CogWorkerProtocolPool {
 	cancelAllRequests() {
 		this.workers.forEach((w) => w.cancelAllRequests());
 	}
+
+	terminate() {
+		this.workers.forEach((w) => w.terminate());
+		this.workers = [];
+		this.workerIndex = 0;
+	}
 }
 
-const workerPool = new CogWorkerProtocolPool(2);
+let workerPool: CogWorkerProtocolPool | null = null;
+
+const getWorkerPool = () => {
+	if (!workerPool) {
+		workerPool = new CogWorkerProtocolPool(2);
+	}
+	return workerPool;
+};
+
+export const terminateCogWorkerPool = () => {
+	if (workerPool) {
+		workerPool.terminate();
+		workerPool = null;
+	}
+};
 
 export const cogProtocol = (protocolName: string) => ({
 	protocolName,
 	request: (params: { url: string }, abortController: AbortController) => {
 		const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 		const url = new URL(urlWithoutProtocol, window.location.origin);
-		return workerPool.request(url, abortController);
+		return getWorkerPool().request(url, abortController);
 	},
-	cancelAllRequests: () => workerPool.cancelAllRequests()
+	cancelAllRequests: () => workerPool?.cancelAllRequests()
 });

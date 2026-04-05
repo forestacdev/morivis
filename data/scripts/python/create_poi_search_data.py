@@ -84,8 +84,6 @@ def create_search_json(file_paths, output_json=OUTPUT_DIR / "search_data.json"):
                     shapely_geom = shape(geom)
                     rep_point = get_representative_point(shapely_geom)
 
-
-
                     name = convert_nan_to_none(row.get(name_key))
                     search_values = [
                         str(convert_nan_to_none(row.get(k)))
@@ -123,7 +121,6 @@ def create_search_json(file_paths, output_json=OUTPUT_DIR / "search_data.json"):
 INPUT_DIR = SCRIPT_DIR / "data" / "search"
 
 if __name__ == "__main__":
-    
     # `.geojson` ファイルのリストを取得
     all_fgb_files = glob.glob(str(INPUT_DIR / "*.geojson"))
 

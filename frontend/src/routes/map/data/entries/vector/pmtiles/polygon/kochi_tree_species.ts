@@ -5,14 +5,15 @@ import {
 	DEFAULT_POLYGON_STYLE
 } from '$routes/map/data/entries/vector/_style';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'kochi_tree_species',
 	type: 'vector',
 	format: {
-		type: 'mvt',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'https://rinya-kochi.geospatial.jp/2023/rinya/tile/tree_species/{z}/{x}/{y}.pbf'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/tree_species_kochi.pmtiles`
 	},
 	metaData: {
 		name: '高知県 樹種ポリゴン',
@@ -97,7 +98,7 @@ const entry: VectorEntry<TileMetaData> = {
 		labels: {
 			key: '樹種',
 			show: true,
-			minZoom: 10,
+			minZoom: 12,
 			expressions: [
 				{
 					key: '解析樹種ID',

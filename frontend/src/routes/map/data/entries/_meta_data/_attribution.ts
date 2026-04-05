@@ -159,6 +159,11 @@ const attributionData = {
 		name: '神奈川県森林再生課（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya',
 		sources: [baseAttributions.神奈川県森林再生課, baseAttributions.林野庁]
+	},
+	愛媛県林業政策課_林野庁加工: {
+		name: '愛媛県林業政策課（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.愛媛県森林資源データ, baseAttributions.林野庁]
 	}
 } as const;
 

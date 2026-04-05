@@ -9,8 +9,9 @@
 
 	interface Props {
 		layerEntry: GeoDataEntry;
+		rounded?: boolean;
 	}
-	let { layerEntry }: Props = $props();
+	let { layerEntry, rounded = true }: Props = $props();
 
 	let isImageError = $state<boolean>(false);
 
@@ -21,15 +22,20 @@
 		}
 	};
 
-	const promise = (() => {
+	const promise = $derived.by(() => {
 		try {
 			return getLayerImage(layerEntry);
 		} catch (error) {
-			isImageError = true;
 			console.error('Error generating icon image:', error);
 			return Promise.resolve(undefined);
 		}
-	})();
+	});
+
+	$effect(() => {
+		// layerEntryが変わったらエラー状態をリセット
+		void layerEntry.id;
+		isImageError = false;
+	});
 </script>
 
 {#if !isImageError}
@@ -37,7 +43,9 @@
 		{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
 			<img
 				transition:fade
-				class="c-basemap-img pointer-events-none absolute block h-full w-full rounded-full object-cover"
+				class="c-basemap-img pointer-events-none absolute block h-full w-full object-cover {rounded
+					? 'rounded-full'
+					: ''}"
 				alt="背景地図画像"
 				src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
 			/>
@@ -45,7 +53,9 @@
 		{#if imageResult}
 			<img
 				transition:fade
-				class="pointer-events-none absolute block h-full w-full rounded-full object-cover"
+				class="pointer-events-none absolute block h-full w-full object-cover {rounded
+					? 'rounded-full'
+					: ''}"
 				alt={layerEntry.metaData.name}
 				src={imageResult.url}
 				onload={() => handleImageLoad(imageResult)}

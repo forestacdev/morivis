@@ -6,9 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "npx sirv . --port 9000 --cors --single",
-        "predeploy": "cp README.md assets/README.md",
-        "deploy": "gh-pages -d assets -r https://github.com/forestacdev/morivis-data.git -b main -m \"Updates --skip-ci\"",
-        "postdeploy": "rm assets/README.md"
+        "deploy": "source .env && aws s3 sync assets s3://$S3_BUCKET/assets && aws cloudfront create-invalidation --distribution-id $CF_DISTRIBUTION_ID --paths \"/*\""
     },
     "keywords": [],
     "author": "",

@@ -6,6 +6,7 @@
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -23,6 +24,7 @@
 	interface Props {
 		index: number;
 		length: number;
+		isLast: boolean;
 		layerType: LayerType;
 		layerEntry: GeoDataEntry;
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
@@ -37,6 +39,7 @@
 	let {
 		index,
 		length,
+		isLast,
 		layerType,
 		layerEntry = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
@@ -120,6 +123,7 @@
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
+		registerInitialEntryStyle(copy);
 		tempLayerEntries = [...tempLayerEntries, copy];
 
 		activeLayerIdsStore.add(uuid);
@@ -452,17 +456,32 @@
 			class="relative flex h-full w-[50px] shrink-0 items-center justify-center"
 		>
 			<div
-				class="absolute h-full w-[2px] {isHoveredLayerType === layerType
+				class="absolute top-0 w-[2px] {isLast ? 'h-1/2' : 'h-full'} {isHoveredLayerType ===
+				layerType
 					? 'bg-accent '
 					: 'bg-base/60'}"
 			></div>
+			<div
+				class="absolute top-1/2 left-1/2 h-[1px] -translate-y-1/2 transition-[width] duration-150 {isHoveredLayerType ===
+				layerType
+					? 'bg-accent'
+					: 'bg-base/60'} {isHovered && !isDragging ? 'w-[25px]' : 'w-[10px]'}"
+			></div>
+			{#if isLast}
+				<div
+					class="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full {isHoveredLayerType ===
+					layerType
+						? 'bg-accent'
+						: 'bg-base/60'}"
+				></div>
+			{/if}
 		</div>
 	{/if}
 
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height] border-sub c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height border-color] c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -470,7 +489,8 @@
 			? 'w-[68.48px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
-			: 'bg-black'}"
+			: 'bg-black'}
+            {isHovered ? 'border-accent set-glow' : 'border-sub'}"
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
@@ -581,7 +601,7 @@
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -594,7 +614,7 @@
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
+							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -619,21 +639,20 @@
 							/>
 						</button>
 
+						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
 							<Icon icon="bx:trash" class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="hugeicons:target-03" class="h-8 w-8" />
+								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
 							</button>
 						{/if}
 
-						<!-- <button onclick={copyLayer}>
-							<Icon icon="lucide:copy" />
-						</button> -->
+						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="streamline:paint-palette-solid" class="ml-4 h-8 w-8" />
+							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -661,8 +680,8 @@
 					.style.visible
 					? 'bg-gray-500'
 					: isLayerInRange
-						? 'bg-accent'
-						: 'bg-red-400'}"
+						? 'bg-[#5afff7]'
+						: 'bg-[#ff4f66]'}"
 			></div>
 		{/if}
 
@@ -678,6 +697,9 @@
 </div>
 
 <style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 	.c-rounded {
 		border-radius: 9999px 9999px 9999px 9999px;
 	}

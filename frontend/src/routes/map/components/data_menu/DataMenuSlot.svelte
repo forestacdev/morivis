@@ -15,7 +15,7 @@
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { checkPc, checkMobile } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
-	import { showNotification } from '$routes/stores/notification';
+	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -93,7 +93,7 @@
 
 	const addData = (id: string) => {
 		activeLayerIdsStore.add(id);
-		showNotification(`${dataEntry.metaData.name}を追加しました`, 'success');
+		showLayerAddedNotification(dataEntry);
 	};
 	const deleteData = (id: string) => {
 		activeLayerIdsStore.remove(id);
@@ -114,16 +114,25 @@
 
 	const getTransformOrigin = () => {
 		// 角の場合
-		if (isTopEdge && isLeftEdge) return 'top left';
-		if (isTopEdge && isRightEdge) return 'top right';
+		// if (isTopEdge && isLeftEdge) return 'top left';
+		// if (isTopEdge && isRightEdge) return 'top right';
 
-		// 辺の場合
-		if (isTopEdge) return 'top';
-		if (isLeftEdge) return 'left';
-		if (isRightEdge) return 'right';
+		// // 辺の場合
+		// if (isTopEdge) return 'top';
+		// if (isLeftEdge) return 'left';
+		// if (isRightEdge) return 'right';
 
 		// 中央の場合
 		return 'center';
+	};
+
+	const getHoverTransform = () => {
+		if (!isHover) return 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
+
+		const translateX = isLeftEdge ? '20px' : isRightEdge ? '-20px' : '0';
+		const translateY = isTopEdge ? '20px' : '0';
+
+		return `translate3d(${translateX}, ${translateY}, 0) scale(1.05) rotate(3deg)`;
 	};
 
 	// スマホ用タッチ処理
@@ -134,8 +143,10 @@
 </script>
 
 <div
-	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg bg-black transition-all duration-150 lg:hover:z-10 lg:hover:scale-105 lg:hover:shadow-lg"
-	style="transform-origin: {getTransformOrigin()}"
+	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg border bg-black transition-all duration-150 {isHover
+		? 'z-10 shadow-lg'
+		: ''} {isHover ? 'border-accent c-set-glow' : 'border-main'}"
+	style="transform-origin: {getTransformOrigin()}; transform: {getHoverTransform()};"
 	bind:this={container}
 	onmouseover={() => (checkPc() ? (isHover = true) : null)}
 	onmouseleave={() => (checkPc() ? (isHover = false) : null)}
@@ -340,6 +351,9 @@
 </div>
 
 <style>
+	.c-set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 	.c-vignette {
 		box-shadow:
 			inset 0 0 100px rgba(0, 0, 0, 0.4),

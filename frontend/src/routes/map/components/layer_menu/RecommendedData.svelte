@@ -14,12 +14,15 @@
 	import { checkMobileWidth } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 	}
 
 	let { showDataEntry = $bindable() }: Props = $props();
+
+	let hoveredIndex = $state<number | null>(null);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -29,7 +32,8 @@
 		containScroll: 'trimSnaps', // スナップを調整
 		duration: 25,
 		slidesToScroll: 1, // 1つずつスクロール
-		startIndex: 0
+		startIndex: 0,
+		watchDrag: false
 	};
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [
 		Autoplay({
@@ -86,45 +90,27 @@
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
-	let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
-	let isWheelScrolling = $state(false);
 
 	// マウスホイールイベントハンドラー
 	const handleWheel = (event: WheelEvent) => {
 		if (!emblaMainCarousel) return;
 
-		// 縦スクロールのみ対応（横スクロールも対応したい場合は deltaX も使用）
 		const { deltaY } = event;
-
-		// スクロール感度の調整（数値を大きくすると敏感になる）
 		const threshold = 10;
 
 		if (Math.abs(deltaY) > threshold) {
-			event.preventDefault(); // ページのスクロールを防ぐ
-
+			event.preventDefault();
 			if (deltaY > 0) {
-				// 下方向スクロール = 次へ
 				emblaMainCarousel.scrollNext();
 			} else {
-				// 上方向スクロール = 前へ
 				emblaMainCarousel.scrollPrev();
 			}
-
-			// スクロール状態の管理
-			isWheelScrolling = true;
-			if (wheelTimeout) clearTimeout(wheelTimeout);
-			wheelTimeout = setTimeout(() => {
-				isWheelScrolling = false;
-			}, 150);
 		}
 	};
 
 	onDestroy(() => {
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
-		}
-		if (wheelTimeout) {
-			clearTimeout(wheelTimeout);
 		}
 	});
 
@@ -195,14 +181,25 @@
 			showDataEntry = dataEntry;
 		}
 	};
+
+	const onDragStart = (e: DragEvent, dataEntry: GeoDataEntry) => {
+		if (!e.dataTransfer) return;
+		e.dataTransfer.effectAllowed = 'copy';
+		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);
+	};
 </script>
 
 {#if dataEntries.length > 0}
 	<div
-		transition:fade={{ duration: 200 }}
+		transition:fade={{ duration: 150 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
-		<div class="pl-4 text-sm text-gray-400">おすすめデータ</div>
+		<div class="flex w-full items-center justify-between px-2">
+			<div class="">周辺データ</div>
+			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 py-1 text-sm">
+				一覧を見る
+			</button>
+		</div>
 		<div class="relative">
 			<!-- <div
 				class="c-bg-fog-left pointer-events-none absolute bottom-0 left-0 z-10 h-full w-[50px]"
@@ -218,13 +215,20 @@
 				onemblaInit={onInitEmblaMainCarousel}
 			>
 				<div class="flex">
-					{#each dataEntries as dataEntry (dataEntry.id)}
+					{#each dataEntries as dataEntry, i (dataEntry.id)}
 						<button
+							draggable="true"
+							ondragstart={(e) => onDragStart(e, dataEntry)}
+							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
-							class="transition-scale group flex flex-[0_0_70%] origin-center cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150"
+							onmouseenter={() => (hoveredIndex = i)}
+							onmouseleave={() => (hoveredIndex = null)}
+							class="transition-[width, transform, translate, scale, rotate, height, border-color] flex flex-[0_0_70%] origin-center translate-z-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg pt-1 pb-3 text-white duration-150
+                                {hoveredIndex === i ? 'c-set-glow' : ''}"
 						>
 							<div
-								class="border-sub transition-scale group-hover:border-accent relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border-1 bg-black duration-150"
+								class="relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border bg-black
+                                {hoveredIndex === i ? 'border-accent' : 'border-sub'}"
 							>
 								<RecommendedDataImage {dataEntry} />
 							</div></button
@@ -241,4 +245,7 @@
 {/if}
 
 <style>
+	.c-set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 </style>

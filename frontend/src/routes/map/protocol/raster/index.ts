@@ -187,6 +187,11 @@ class WorkerProtocol {
 	clearCache() {
 		this.tileCache.clear();
 	}
+
+	terminate() {
+		this.cancelAllRequests();
+		this.worker.terminate();
+	}
 }
 
 class WorkerProtocolPool {
@@ -228,9 +233,29 @@ class WorkerProtocolPool {
 	clearCache() {
 		this.workers.forEach((worker) => worker.clearCache());
 	}
+
+	terminate() {
+		this.workers.forEach((worker) => worker.terminate());
+		this.workers = [];
+		this.workerIndex = 0;
+	}
 }
 
-const workerProtocolPool = new WorkerProtocolPool(2); // 4つのワーカースレッドを持つプールを作成
+let workerProtocolPool: WorkerProtocolPool | null = null;
+
+const getWorkerProtocolPool = () => {
+	if (!workerProtocolPool) {
+		workerProtocolPool = new WorkerProtocolPool(2);
+	}
+	return workerProtocolPool;
+};
+
+export const terminateDemWorkerPool = () => {
+	if (workerProtocolPool) {
+		workerProtocolPool.terminate();
+		workerProtocolPool = null;
+	}
+};
 
 export const demProtocol = (protocolName: string) => {
 	return {
@@ -240,9 +265,9 @@ export const demProtocol = (protocolName: string) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 
 			const url = new URL(urlWithoutProtocol, window.location.origin);
-			return workerProtocolPool.request(url, abortController);
+			return getWorkerProtocolPool().request(url, abortController);
 		},
-		cancelAllRequests: () => workerProtocolPool.cancelAllRequests(),
-		clearCache: () => workerProtocolPool.clearCache()
+		cancelAllRequests: () => workerProtocolPool?.cancelAllRequests(),
+		clearCache: () => workerProtocolPool?.clearCache()
 	};
 };

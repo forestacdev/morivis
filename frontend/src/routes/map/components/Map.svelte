@@ -49,11 +49,14 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { createDeckOverlay } from '$routes/map/utils/deckgl';
+	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
+	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
+	import { mapPaneScale } from '$routes/stores/effect';
 	import {
 		selectedBaseMap,
 		showLabelLayer,
@@ -64,7 +67,8 @@
 		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
-		showPoiLayer
+		showPoiLayer,
+		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 
@@ -152,6 +156,16 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+	// let mapPaneFilter = $derived(
+	// 	$mapPaneScale < 1
+	// 		? 'invert(1) contrast(1.2) brightness(1.1)'
+	// 		: 'invert(0) contrast(1) brightness(1)'
+	// );
+	let mapPaneScaleTransition = $derived(
+		$mapPaneScale < 1
+			? 'transform 80ms cubic-bezier(0.22, 1, 0.36, 1), filter 50ms linear'
+			: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), filter 160ms ease-out'
+	);
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	// let webGLCanvasSource = $state<CanvasSourceSpecification>({
@@ -288,7 +302,7 @@
 						source: 'tile_index',
 						'source-layer': 'geojsonLayer',
 						paint: {
-							'line-color': '#000000',
+							'line-color': 'red',
 							'line-width': 2
 						}
 					},
@@ -298,10 +312,10 @@
 						source: 'tile_index',
 						'source-layer': 'geojsonLayer',
 						paint: {
-							'text-color': '#000000',
+							'text-color': 'red',
 							'text-halo-color': '#FFFFFF',
 
-							'text-halo-width': 1,
+							'text-halo-width': 3,
 							'text-opacity': 1
 						},
 						layout: {
@@ -556,6 +570,20 @@
 
 		if (hasCogLayer) {
 			mapStore.ensureCogProtocol();
+			// 定義済みCOGエントリをCogTileManagerに登録（タイル要求前に完了させる）
+			const cogEntries = [
+				...entries.filter(isCogEntry),
+				...(showDataEntry && isCogEntry(showDataEntry) ? [showDataEntry] : [])
+			];
+			await Promise.all(
+				cogEntries.map(async (e) => {
+					const cogEntry = e as { id: string; format: { url: string } };
+					if (!CogTileManager.has(cogEntry.id)) {
+						const { metadata } = await CogTileManager.register(cogEntry.id, cogEntry.format.url);
+						GeoTiffCache.setDataRanges(cogEntry.id, metadata.sampleRanges);
+					}
+				})
+			);
 		} else {
 			mapStore.releaseCogProtocol();
 		}
@@ -571,6 +599,25 @@
 			mapStore.ensureMbtilesProtocol();
 		} else {
 			mapStore.releaseMbtilesProtocol();
+		}
+
+		const isDemEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'style' in e &&
+			(e as { style: { type: string } }).style.type === 'dem';
+		const hasDemLayer = entries.some(isDemEntry) || (showDataEntry && isDemEntry(showDataEntry));
+		const hasDemBaseMap = ['relief', 'slope', 'aspect', 'curvature'].includes($selectedBaseMap);
+
+		if (hasDemLayer || hasDemBaseMap) {
+			mapStore.ensureDemProtocol();
+		} else {
+			mapStore.releaseDemProtocol();
+		}
+
+		if ($showXYZTileLayer) {
+			mapStore.ensureTileIndexProtocol();
+		} else {
+			mapStore.releaseTileIndexProtocol();
 		}
 
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
@@ -725,6 +772,10 @@
 	const onDropFile: (files: FileList) => void = async (files) => {
 		dropFile = files;
 	};
+
+	const onDropEntryId = (entryId: string) => {
+		activeLayerIdsStore.add(entryId);
+	};
 </script>
 
 <DropContainer
@@ -732,6 +783,7 @@
 	onDragover={dragover}
 	onDragleave={dragleave}
 	{onDropFile}
+	{onDropEntryId}
 	disabled={showGeoRefForm}
 	class="h-full w-full"
 >
@@ -741,6 +793,9 @@
 		$mapMode === 'small'
 			? 'absolute transform border border-gray-300 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg'
 			: 'relative h-full w-full grow'}"
+		style:transform={`scale(${$mapPaneScale})`}
+		style:transform-origin="center center"
+		style:transition={mapPaneScaleTransition}
 	>
 		<div
 			bind:this={mapContainer}
@@ -762,10 +817,16 @@
 				/>
 			{/if}
 		</div>
+		<!-- 地図コンテナオーバーレイ -->
+		<div
+			class="c-test border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
+				? ' bg-accent opacity-50'
+				: ' opacity-0'}"
+		></div>
 
 		{#if !$isStreetView && !showDataEntry}
 			<!-- PC用地図コントロール -->
-			<div class="absolute right-5 bottom-[100px] max-lg:hidden">
+			<div class="absolute right-5 bottom-5 max-lg:hidden">
 				<Compass />
 			</div>
 

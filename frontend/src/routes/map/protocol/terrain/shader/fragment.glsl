@@ -35,6 +35,8 @@ void main() {
         height = mix(rgb_value, rgb_value - 16777216.0, step(8388608.0, rgb_value)) * 0.01;
         height = (height + 10000.0) * 10.0;
     } else if (u_dem_type == 2.0) {  // Terrarium-RGB
+        // elevation = R*256 + G + B/256 - 32768
+        // https://github.com/tilezen/joerd/blob/master/docs/formats.md
         height = (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) - 32768.0;
         height = (height + 10000.0) * 10.0;  // Mapbox RGB に合わせたスケーリング
     }

@@ -67,3 +67,13 @@ export const resetLayersConfirm = (): Promise<boolean> => {
 		cancelText: 'キャンセル'
 	});
 };
+
+export const resetLayerStyleConfirm = (): Promise<boolean> => {
+	const message = `このレイヤーのスタイルを初期状態にリセットします。よろしいですか？`;
+
+	return showConfirmDialog({
+		message,
+		confirmText: 'スタイルをリセット',
+		cancelText: 'キャンセル'
+	});
+};

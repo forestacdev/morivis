@@ -39,22 +39,38 @@
 			return;
 		}
 
+		// return new Promise((resolve) => {
+
+		// 	isBlocked.set(true);
+		// 	// ページ遷移のアニメーションを制御
+		// 	transitionPageScreen.set(1);
+		// 	delay(1000).then(() => {
+		// 		resolve();
+		// 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		// 		navigation.complete;
+		// 		delay(300).then(() => {
+		// 			transitionPageScreen.set(-1);
+
+		// 			delay(1000).then(() => {
+		// 				isBlocked.set(false);
+		// 			});
+		// 		});
+		// 	});
+		// });
+
 		return new Promise((resolve) => {
 			isBlocked.set(true);
-			// ページ遷移のアニメーションを制御
-			transitionPageScreen.set(1);
-			delay(1000).then(() => {
-				resolve();
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-				navigation.complete;
-				delay(300).then(() => {
-					transitionPageScreen.set(-1);
+			delay(500).then(() => {
+				document.startViewTransition(async () => {
+					resolve();
 
-					delay(1000).then(() => {
-						isBlocked.set(false);
-					});
+					await navigation.complete;
 				});
+				resolve();
+				isBlocked.set(false);
 			});
+
+			// ページ遷移のアニメーションを制御
 		});
 	});
 

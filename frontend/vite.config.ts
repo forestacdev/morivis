@@ -4,6 +4,7 @@ import { enhancedImages } from '@sveltejs/enhanced-img';
 import path from 'path';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { qrcode } from 'vite-plugin-qrcode';
+import { buildViteProxyConfig } from './src/routes/map/utils/proxy';
 
 export default defineConfig({
 	plugins: [
@@ -90,38 +91,7 @@ export default defineConfig({
 	},
 	server: {
 		allowedHosts: true,
-		proxy: {
-			'/api/qchizu': {
-				target: 'https://mapdata.qchizu.xyz',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/qchizu/, '')
-			},
-			'/api/rinya-hyogo': {
-				target: 'https://rinya-hyogo.geospatial.jp',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/rinya-hyogo/, '')
-			},
-			'/api/rinya-kochi': {
-				target: 'https://rinya-kochi.geospatial.jp',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/rinya-kochi/, '')
-			},
-			'/api/rinya-toyama': {
-				target: 'https://rinya-toyama.geospatial.jp',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/rinya-toyama/, '')
-			},
-			'/api/google-suggest': {
-				target: 'https://suggestqueries.google.com',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/google-suggest/, '/complete/search')
-			},
-			'/api/font-server': {
-				target: 'http://localhost:9000',
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/font-server/, '')
-			}
-		}
+		proxy: buildViteProxyConfig()
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']

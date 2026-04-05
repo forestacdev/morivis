@@ -6,11 +6,13 @@
 
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
+	import { getInitialEntryStyle } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Opacity } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 
 	interface Props {
 		layerEntry: GeoDataEntry | null;
@@ -72,6 +74,17 @@
 			getImage(layerEntry);
 		}
 	});
+
+	const resetStyle = async () => {
+		if (!layerEntry) return;
+		const result = await resetLayerStyleConfirm();
+		if (!result) return;
+
+		const initialStyle = getInitialEntryStyle(layerEntry.id);
+		if (!initialStyle) return;
+
+		layerEntry.style = initialStyle;
+	};
 </script>
 
 {#if layerEntry}
@@ -86,19 +99,26 @@
 				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
-				<div class="flex items-center gap-2 pt-4 pr-3 pb-2">
+				<div class="flex items-center gap-2 pt-4 pr-3 pb-3">
 					<!-- タイトル -->
 					<div class="truncate text-2xl text-base">
 						<span class="select-none">{layerEntry.metaData.name}</span>
 					</div>
 					<button
+						onclick={resetStyle}
+						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						title="スタイルをリセット"
+					>
+						<Icon icon="material-symbols:restart-alt-rounded" class="h-5 w-5" />
+					</button>
+					<button
 						onclick={() => {
 							isStyleEdit.set(false);
 							selectedLayerId.set('');
 						}}
-						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						class="bg-base text-main grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
-						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
+						<Icon icon="material-symbols:close-rounded" class="h-5 w-5" />
 					</button>
 				</div>
 
@@ -134,7 +154,7 @@
 							<!-- 不透明度 -->
 							{#each opacityButtons as item (item.label)}
 								<button
-									class="flex aspect-square w-[19%] flex-col items-center gap-1"
+									class="flex aspect-square w-[19%] flex-col items-center gap-1 select-none"
 									onclick={() => {
 										if (layerEntry) {
 											layerEntry.style.visible = true;
@@ -146,7 +166,7 @@
 										<div
 											class=" relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
 												.style.opacity === item.value && layerEntry.style.visible
-												? 'border-accent'
+												? 'border-accent set-glow'
 												: 'border-transparent'}"
 										>
 											<!-- 背景地図画像 -->
@@ -197,4 +217,7 @@
 {/if}
 
 <style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 </style>

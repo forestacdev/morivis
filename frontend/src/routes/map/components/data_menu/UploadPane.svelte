@@ -167,12 +167,16 @@
 	>
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
-			<div class="flex flex-wrap items-center justify-center gap-2 px-12">
-				{#each SUPPORTED_FILE_GROUPS as group}
-					<span class="bg-sub rounded-full p-1 px-3 text-xs text-gray-300">
-						{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
-					</span>
-				{/each}
+			<div class="marquee-container overflow-hidden">
+				<div class="marquee-track flex w-max gap-2">
+					{#each { length: 2 } as _}
+						{#each SUPPORTED_FILE_GROUPS as group}
+							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
+								{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+							</span>
+						{/each}
+					{/each}
+				</div>
 			</div>
 
 			<label
@@ -202,4 +206,25 @@
 </div>
 
 <style>
+	.marquee-container {
+		max-width: 100%;
+		mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+	}
+
+	.marquee-track {
+		animation: marquee 50s linear infinite;
+	}
+
+	.marquee-track:hover {
+		animation-play-state: paused;
+	}
+
+	@keyframes marquee {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-50%);
+		}
+	}
 </style>

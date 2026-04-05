@@ -30,7 +30,7 @@
 		type NetCDFInfo,
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/file/netcdf';
-	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf_cache';
+	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';
 	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
 	import { showNotification } from '$routes/stores/notification';

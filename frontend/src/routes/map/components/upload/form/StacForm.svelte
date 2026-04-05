@@ -41,7 +41,6 @@
 	} from '$routes/map/utils/file/stac';
 	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map';
-	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -393,8 +392,6 @@
 	const searchStacItems = async () => {
 		isProcessing.set(true);
 		try {
-			const bbox = mapStore.getMapBounds() ?? undefined;
-
 			let datetime: string | undefined;
 			if (dateFrom && dateTo) {
 				datetime = `${dateFrom}T00:00:00Z/${dateTo}T23:59:59Z`;
@@ -406,7 +403,6 @@
 
 			const result = await searchItems(apiUrl, {
 				collections: [selectedCollectionId],
-				bbox,
 				datetime,
 				limit: 10
 			});

@@ -29,11 +29,12 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
 import { debounce } from 'es-toolkit';
 
-import { cogProtocol } from '$routes/map/protocol/cog';
-import { demProtocol } from '$routes/map/protocol/raster';
-import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
+import { cogProtocol, terminateCogWorkerPool } from '$routes/map/protocol/cog';
+import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster';
+import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
+import { devProxyTransform } from '$routes/map/utils/proxy';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -59,8 +60,26 @@ import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
+// webgl(dem)プロトコルは必要時に動的に登録/解除
 const webglProt = demProtocol('webgl');
-maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
+let _webglProtocolRegistered = false;
+
+const ensureDemProtocol = () => {
+	if (!_webglProtocolRegistered) {
+		maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
+		_webglProtocolRegistered = true;
+	}
+};
+
+const releaseDemProtocol = () => {
+	if (_webglProtocolRegistered) {
+		webglProt.cancelAllRequests();
+		webglProt.clearCache();
+		terminateDemWorkerPool();
+		maplibregl.removeProtocol(webglProt.protocolName);
+		_webglProtocolRegistered = false;
+	}
+};
 
 // cogプロトコルは必要時に動的に登録/解除
 const cogProt = cogProtocol('cog');
@@ -76,6 +95,7 @@ const ensureCogProtocol = () => {
 const releaseCogProtocol = () => {
 	if (_cogProtocolRegistered) {
 		cogProt.cancelAllRequests();
+		terminateCogWorkerPool();
 		maplibregl.removeProtocol(cogProt.protocolName);
 		_cogProtocolRegistered = false;
 	}
@@ -141,10 +161,24 @@ const releaseEsriProtocol = () => {
 	}
 };
 
-if (import.meta.env.DEV) {
-	const tileIndex = tileIndexProtocol('tile_index');
-	maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
-}
+// tile_indexプロトコルは必要時に動的に登録/解除
+const tileIndexProt = tileIndexProtocol('tile_index');
+let _tileIndexProtocolRegistered = false;
+
+const ensureTileIndexProtocol = () => {
+	if (!_tileIndexProtocolRegistered) {
+		maplibregl.addProtocol(tileIndexProt.protocolName, tileIndexProt.request);
+		_tileIndexProtocolRegistered = true;
+	}
+};
+
+const releaseTileIndexProtocol = () => {
+	if (_tileIndexProtocolRegistered) {
+		maplibregl.removeProtocol(tileIndexProt.protocolName);
+		terminateTileIndexWorker();
+		_tileIndexProtocolRegistered = false;
+	}
+};
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
@@ -262,62 +296,24 @@ const createMapStore = () => {
 				sources: {},
 				layers: []
 			},
-			fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85, // 最大ピッチ角度
 			dragRotate: false, // デフォルトの右ドラッグ回転を無効化
 			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
+			doubleClickZoom: false, // ダブルクリックズームを無効化
 			keyboard: false, // キーボード操作を無効化
-
 			// maplibreLogo: true // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
-
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			transformRequest: (url, resourceType) => {
+			transformRequest: (url) => {
 				if (import.meta.env.PROD) return { url };
-
-				if (url.includes('mapdata.qchizu.xyz')) {
-					const newUrl = url.replace('https://mapdata.qchizu.xyz', 'api/qchizu');
-					return { url: newUrl };
-				}
-
-				if (url.includes('rinya-hyogo.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url }; // または null を返す
-					}
-					const newUrl = url.replace('https://rinya-hyogo.geospatial.jp', 'api/rinya-hyogo');
-					return { url: newUrl };
-				}
-
-				if (url.includes('rinya-kochi.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url };
-					}
-					const newUrl = url.replace('https://rinya-kochi.geospatial.jp', 'api/rinya-kochi');
-					return { url: newUrl };
-				}
-
-				if (url.includes('https://rinya-toyama.geospatial.jp')) {
-					// .pbfファイルは除外
-					if (url.endsWith('.pbf')) {
-						return { url };
-					}
-					const newUrl = url.replace('https://rinya-toyama.geospatial.jp', 'api/rinya-toyama');
-					return { url: newUrl };
-				}
-
-				// フォントファイルのプロキシ処理を追加
-				if (url.includes('localhost:9000/data/font') || url.includes('/data/font')) {
-					const newUrl = url.replace('http://localhost:9000', '/api/font-server');
-					return { url: newUrl };
-				}
+				return devProxyTransform(url);
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
@@ -1280,8 +1276,12 @@ const createMapStore = () => {
 		releaseEsriProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
+		ensureDemProtocol,
+		releaseDemProtocol,
 		ensureMbtilesProtocol,
-		releaseMbtilesProtocol
+		releaseMbtilesProtocol,
+		ensureTileIndexProtocol,
+		releaseTileIndexProtocol
 	};
 };
 

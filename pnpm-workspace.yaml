@@ -2,6 +2,7 @@ packages:
   - frontend
   - data
   - api
+  - aws
   - data/scripts/node
 
 ignoredBuiltDependencies:

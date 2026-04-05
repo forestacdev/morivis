@@ -449,7 +449,10 @@ export const DEFAULT_POLYGON_LABEL_STYLE: PolygonDefaultStyle['symbol'] = {
 		'text-halo-blur': 1,
 		'text-opacity': 0.9
 	},
-	layout: {}
+	layout: {
+		// 'text-padding': 5,
+		'text-justify': 'center'
+	}
 };
 
 export const DEFAULT_POINT_LABEL_STYLE: PointDefaultStyle['symbol'] = {

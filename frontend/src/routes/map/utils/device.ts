@@ -1,5 +1,6 @@
 import { showNotification } from '$routes/stores/notification';
 import { showPwaManuelDialog } from '$routes/stores/ui';
+import { writable } from 'svelte/store';
 
 /**
  * PWAかどうかを判定する
@@ -45,9 +46,11 @@ export interface BeforeInstallPromptEvent extends Event {
 }
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
+export const deferredPromptAvailable = writable(false);
 
 export const setDeferredPrompt = (prompt: BeforeInstallPromptEvent | null) => {
 	deferredPrompt = prompt;
+	deferredPromptAvailable.set(Boolean(prompt));
 };
 
 /**
@@ -99,7 +102,7 @@ export const pwaInstall = () => {
 				// ユーザーがインストールを受け入れた場合
 				showNotification('アプリがホーム画面に追加されました。', 'success');
 			}
-			deferredPrompt = null;
+			setDeferredPrompt(null);
 		});
 		return;
 	}

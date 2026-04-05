@@ -12,7 +12,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '愛媛県 レーザ林相図',
-		attribution: '愛媛県森林資源データ',
+		attribution: '愛媛県林業政策課_林野庁加工',
 		location: '愛媛県',
 		tags: ['森林', '林相図', 'レーザ林相図'],
 		minZoom: 8,

@@ -93,6 +93,7 @@ def process_directory(input_dir, output_dir=None, target_size=60):
     print(f"\n処理完了: {success_count}/{len(webp_files)}個の画像を正常に処理しました")
     print(f"出力ディレクトリ: {output_dir}")
 
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = SCRIPT_DIR.parents[2] / "assets"
 # 使用例

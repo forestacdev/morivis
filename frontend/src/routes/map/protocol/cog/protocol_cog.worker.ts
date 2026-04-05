@@ -1,8 +1,8 @@
 /**
  * COG Tile Protocol Worker
  *
- * メインスレッドからTerrarium形式のバンドテクスチャ（ImageBitmap）と
- * 三角形メッシュデータを受け取り、WebGL2でリプロジェクション+カラーマップ適用して返す。
+ * メインスレッドから生バンドデータ（Float32Array）を受け取り、
+ * Terrariumエンコード + WebGL2でカラーマップ適用/リプロジェクションして返す。
  */
 import { convertCanvasToResult } from '../farbling';
 import fsSingle from './shader/fragment_single.glsl?raw';
@@ -69,13 +69,49 @@ const getOrCreateContext = (tileSize: number): GLContext => {
 	return ctx;
 };
 
-const bindTexture = (
+/** 生バンドデータをTerrariumエンコードしてRGBAピクセルを返す */
+const encodeBandToTerrarium = (
+	band: ArrayLike<number>,
+	width: number,
+	height: number,
+	dataMin: number,
+	dataMax: number,
+	nodata: number | null
+): Uint8ClampedArray => {
+	const rgba = new Uint8ClampedArray(width * height * 4);
+	const range = dataMax - dataMin;
+	const invRange = range !== 0 ? 65535 / range : 0;
+
+	for (let i = 0; i < band.length; i++) {
+		const v = band[i];
+		const idx = i * 4;
+
+		if ((nodata !== null && v === nodata) || !isFinite(v)) {
+			rgba[idx] = 0;
+			rgba[idx + 1] = 0;
+			rgba[idx + 2] = 0;
+			rgba[idx + 3] = 0;
+			continue;
+		}
+
+		const normalized = (v - dataMin) * invRange;
+		rgba[idx] = Math.floor(normalized / 256); // R
+		rgba[idx + 1] = Math.floor(normalized) % 256; // G
+		rgba[idx + 2] = Math.floor((normalized % 1) * 256); // B
+		rgba[idx + 3] = 255; // A
+	}
+
+	return rgba;
+};
+
+const bindTextureFromRGBA = (
 	ctx: GLContext,
 	unitIndex: number,
 	uniformName: string,
 	program: WebGLProgram,
-	image: ImageBitmap | Uint8Array,
-	isColorMap: boolean
+	rgba: Uint8ClampedArray,
+	width: number,
+	height: number
 ) => {
 	const { gl, texturePool } = ctx;
 	const textureUnit = gl.TEXTURE0 + unitIndex;
@@ -91,21 +127,38 @@ const bindTexture = (
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.uniform1i(gl.getUniformLocation(program, uniformName), unitIndex);
 
-	if (isColorMap) {
-		gl.texImage2D(
-			gl.TEXTURE_2D,
-			0,
-			gl.RGB,
-			256,
-			1,
-			0,
-			gl.RGB,
-			gl.UNSIGNED_BYTE,
-			image as Uint8Array
-		);
-	} else {
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image as ImageBitmap);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
+
+	if (isNew) {
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	}
+};
+
+const bindColorMapTexture = (
+	ctx: GLContext,
+	unitIndex: number,
+	uniformName: string,
+	program: WebGLProgram,
+	colorMapArray: Uint8Array
+) => {
+	const { gl, texturePool } = ctx;
+	const textureUnit = gl.TEXTURE0 + unitIndex;
+
+	let texture = texturePool.get(unitIndex) ?? null;
+	const isNew = !texture;
+	if (isNew) {
+		texture = gl.createTexture()!;
+		texturePool.set(unitIndex, texture);
+	}
+
+	gl.activeTexture(textureUnit);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.uniform1i(gl.getUniformLocation(program, uniformName), unitIndex);
+
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 256, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, colorMapArray);
 
 	if (isNew) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -186,8 +239,13 @@ async function processMessage(e: MessageEvent) {
 		mode,
 		tileSize = 256,
 		triangles,
+		srcWidth,
+		srcHeight,
+		nodata,
 		// single mode
-		bandTexture,
+		band,
+		dataMin,
+		dataMax,
 		colorMapArray,
 		min,
 		max,
@@ -195,6 +253,12 @@ async function processMessage(e: MessageEvent) {
 		bandR,
 		bandG,
 		bandB,
+		dataMinR,
+		dataMaxR,
+		dataMinG,
+		dataMaxG,
+		dataMinB,
+		dataMaxB,
 		rMin,
 		rMax,
 		gMin,
@@ -217,9 +281,12 @@ async function processMessage(e: MessageEvent) {
 			gl.uniform1f(gl.getUniformLocation(program, 'u_min'), min);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), max);
 
+			// Worker内でTerrariumエンコード
+			const rgba = encodeBandToTerrarium(band, srcWidth, srcHeight, dataMin, dataMax, nodata);
+
 			let unit = 0;
-			bindTexture(ctx, unit++, 'u_band_texture', program, bandTexture, false);
-			bindTexture(ctx, unit++, 'u_color_map', program, colorMapArray, true);
+			bindTextureFromRGBA(ctx, unit++, 'u_band_texture', program, rgba, srcWidth, srcHeight);
+			bindColorMapTexture(ctx, unit++, 'u_color_map', program, colorMapArray);
 
 			drawMesh(gl, program, triangles);
 		} else {
@@ -233,10 +300,15 @@ async function processMessage(e: MessageEvent) {
 			gl.uniform1f(gl.getUniformLocation(program, 'u_b_min'), bMin);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_b_max'), bMax);
 
+			// Worker内でTerrariumエンコード（3バンド）
+			const rgbaR = encodeBandToTerrarium(bandR, srcWidth, srcHeight, dataMinR, dataMaxR, nodata);
+			const rgbaG = encodeBandToTerrarium(bandG, srcWidth, srcHeight, dataMinG, dataMaxG, nodata);
+			const rgbaB = encodeBandToTerrarium(bandB, srcWidth, srcHeight, dataMinB, dataMaxB, nodata);
+
 			let unit = 0;
-			bindTexture(ctx, unit++, 'u_band_r', program, bandR, false);
-			bindTexture(ctx, unit++, 'u_band_g', program, bandG, false);
-			bindTexture(ctx, unit++, 'u_band_b', program, bandB, false);
+			bindTextureFromRGBA(ctx, unit++, 'u_band_r', program, rgbaR, srcWidth, srcHeight);
+			bindTextureFromRGBA(ctx, unit++, 'u_band_g', program, rgbaG, srcWidth, srcHeight);
+			bindTextureFromRGBA(ctx, unit++, 'u_band_b', program, rgbaB, srcWidth, srcHeight);
 
 			drawMesh(gl, program, triangles);
 		}

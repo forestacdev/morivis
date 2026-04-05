@@ -78,6 +78,7 @@ export type DialogType =
 	| 'geopdf'
 	| 'mojxml'
 	| 'geophoto'
+	| 'gtfs'
 	| null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
@@ -86,27 +87,27 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
-	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.cpg'] },
+	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },
-	{ label: 'DXF', extensions: ['.dxf'] },
-	{ label: 'DM', extensions: ['.dm'] },
-	{ label: 'SIMA', extensions: ['.sim'] },
-	{ label: 'LandXML', extensions: ['.landxml'] },
 	{ label: 'GeoTIFF', extensions: ['.tif', '.tiff'] },
-	{ label: '画像', extensions: ['.png', '.jpg', '.jpeg', '.webp'] },
-	{ label: 'PDF', extensions: ['.pdf'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },
-	{ label: '3Dモデル', extensions: ['.glb', '.obj', '.mtl'] },
-	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz'] },
 	{ label: 'HDF5', extensions: ['.h5'] },
 	{ label: 'NetCDF', extensions: ['.nc', '.nc4'] },
 	{ label: 'GRIB2 (GPV)', extensions: ['.grib2', '.grb2', '.grb', '.bin'] },
+	{ label: 'GTFS', extensions: ['.zip'] },
+	{ label: 'DXF', extensions: ['.dxf'] },
+	{ label: 'SIMA', extensions: ['.sim'] },
+	{ label: 'DM', extensions: ['.dm'] },
+	{ label: 'LandXML', extensions: ['.landxml'] },
 	{ label: '法務局地図XML', extensions: ['.xml'] },
-	{ label: 'ZIP', extensions: ['.zip'] }
+	{ label: '画像 (EXIF GPS)', extensions: ['.png', '.jpg', '.jpeg', '.webp'] },
+	{ label: 'GeoPDF', extensions: ['.pdf'] },
+	{ label: '3Dモデル', extensions: ['.glb', '.obj', '.mtl'] },
+	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz'] }
 ];
 
 /** SUPPORTED_FILE_GROUPS から自動生成 */
@@ -115,7 +116,6 @@ export const SUPPORTED_FILE_EXTENSIONS = SUPPORTED_FILE_GROUPS.flatMap((g) => g.
 /** input[accept] 用（主要ファイル + 補助ファイルも受け入れる） */
 export const SUPPORTED_FILE_ACCEPT = [
 	...SUPPORTED_FILE_EXTENSIONS,
-	'.prj', // Shapefile補助
 	'.tfw',
 	'.pgw',
 	'.jgw',

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
@@ -58,7 +58,7 @@
 
 {#if showDataEntry}
 	<div
-		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
+		transition:scale={{ duration: 300, start: 0.9, opacity: 0 }}
 		class="bg-main lg:w-side-menu absolute top-0 left-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
 	>
 		<div class="flex w-full justify-start gap-2 p-2 py-4">

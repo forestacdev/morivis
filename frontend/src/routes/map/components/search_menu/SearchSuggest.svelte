@@ -197,7 +197,7 @@
 		{#if isLoading}
 			<div class="flex w-full items-center justify-center">
 				<div
-					class="h-16 w-16 animate-spin cursor-pointer rounded-full border-4 border-white border-t-transparent"
+					class="border-sub h-16 w-16 animate-spin cursor-pointer rounded-full border border-t-transparent"
 				></div>
 			</div>
 		{:else if searchSuggests && inputSearchWord.trim() !== ''}

@@ -322,7 +322,7 @@
 	>
 		<div class="flex shrink-0 items-center justify-between gap-2 overflow-auto pb-4">
 			<Icon icon="ph:polygon-fill" class="h-8 w-8" />
-			<span class="text-2xl font-bold">ジオリファレンス</span>
+			<span class="text-2xl font-bold">画像の位置合わせ</span>
 		</div>
 
 		<div

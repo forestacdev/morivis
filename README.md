@@ -20,13 +20,13 @@ APIs, data structures, and features are subject to change without notice.
 
 ![alt text](frontend/static/ogp.jpg)
 
-## Related Repository
+## Asset Delivery
 
-The forest and geographic data used in this project are hosted separately for efficient delivery. The data is managed within this monorepo but deployed to a dedicated GitHub Pages repository:
+Forest and geographic datasets are managed in the `data/` workspace of this monorepo.
 
-- [morivis-data](https://github.com/forestacdev/morivis-data) - Data Hosting Repository
+Processed static assets under `data/assets/` are delivered by the AWS CDK stack in [`aws/`](aws/README.md), which uploads them to S3 and serves them through CloudFront.
 
-Note: Data processing scripts are located in the `data/` directory of this repository. Processed datasets from `data/assets/` are automatically deployed to the morivis-data repository for public access via GitHub Pages.
+Use `data/` for dataset preparation and asset generation, and `aws/` for infrastructure and delivery configuration.
 
 ## License
 

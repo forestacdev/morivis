@@ -19,7 +19,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		xyzImageTile: { x: 116178, y: 50794, z: 17 }, // 画像タイルのXYZ座標
+		xyzImageTile: { x: 116178, y: 50794, z: 17 },
 		bounds: NIIGATA_NAGAOKA_BBOX
 	},
 	interaction: {

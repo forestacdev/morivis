@@ -256,6 +256,34 @@ export interface PointIcon {
 	size: number;
 }
 
+export interface IconSingleExpression {
+	type: 'single';
+	key: string;
+	name: string;
+	mapping: {
+		pattern: SpritePatternId;
+	};
+}
+
+export interface IconMatchExpression {
+	type: 'match';
+	key: string;
+	name: string;
+	mapping: {
+		categories: string[] | number[];
+		patterns: SpritePatternId[];
+	};
+}
+
+export type IconsExpression = IconSingleExpression | IconMatchExpression;
+
+export interface IconsStyle {
+	show: boolean;
+	size: number;
+	key: string;
+	expressions: IconsExpression[];
+}
+
 export interface LabelOutLine {
 	show: boolean;
 	color: string;
@@ -280,7 +308,7 @@ export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
 	radius: NumbersStyle;
 	markerType: 'circle' | 'icon';
-	icon?: PointIcon;
+	icons?: IconsStyle;
 	outline: PointOutLine;
 	default?: PointDefaultStyle;
 }

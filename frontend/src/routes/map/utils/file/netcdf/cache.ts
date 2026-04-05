@@ -4,15 +4,15 @@
  * 時間ステップ切り替え時にデータを再抽出・再エンコードする
  */
 import type { NetCDFReader } from 'netcdfjs';
-import type { NetCDFInfo } from './netcdf';
-import { extractRasterData } from './netcdf';
+import type { NetCDFInfo } from './index';
+import { extractRasterData } from './index';
 import {
 	GeoTiffCache,
 	encodeAllBandsToTerrarium,
 	getMinMax,
 	type BandDataRange,
 	type RasterBands
-} from './geotiff';
+} from '../geotiff';
 
 interface NetCDFCacheEntry {
 	reader: NetCDFReader;
