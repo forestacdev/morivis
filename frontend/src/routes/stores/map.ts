@@ -31,7 +31,7 @@ import { debounce } from 'es-toolkit';
 
 import { cogProtocol } from '$routes/map/protocol/cog';
 import { demProtocol } from '$routes/map/protocol/raster';
-import { tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
+import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import { devProxyTransform } from '$routes/map/utils/proxy';
@@ -142,10 +142,24 @@ const releaseEsriProtocol = () => {
 	}
 };
 
-if (import.meta.env.DEV) {
-	const tileIndex = tileIndexProtocol('tile_index');
-	maplibregl.addProtocol(tileIndex.protocolName, tileIndex.request);
-}
+// tile_indexプロトコルは必要時に動的に登録/解除
+const tileIndexProt = tileIndexProtocol('tile_index');
+let _tileIndexProtocolRegistered = false;
+
+const ensureTileIndexProtocol = () => {
+	if (!_tileIndexProtocolRegistered) {
+		maplibregl.addProtocol(tileIndexProt.protocolName, tileIndexProt.request);
+		_tileIndexProtocolRegistered = true;
+	}
+};
+
+const releaseTileIndexProtocol = () => {
+	if (_tileIndexProtocolRegistered) {
+		maplibregl.removeProtocol(tileIndexProt.protocolName);
+		terminateTileIndexWorker();
+		_tileIndexProtocolRegistered = false;
+	}
+};
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
 
@@ -1244,7 +1258,9 @@ const createMapStore = () => {
 		ensureCogProtocol,
 		releaseCogProtocol,
 		ensureMbtilesProtocol,
-		releaseMbtilesProtocol
+		releaseMbtilesProtocol,
+		ensureTileIndexProtocol,
+		releaseTileIndexProtocol
 	};
 };
 

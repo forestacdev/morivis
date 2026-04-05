@@ -601,6 +601,12 @@
 			mapStore.releaseMbtilesProtocol();
 		}
 
+		if ($showXYZTileLayer) {
+			mapStore.ensureTileIndexProtocol();
+		} else {
+			mapStore.releaseTileIndexProtocol();
+		}
+
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
 
 		mapStore.setStyle(mapStyle);
