@@ -129,10 +129,10 @@
 	const getHoverTransform = () => {
 		if (!isHover) return 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
 
-		const translateX = isLeftEdge ? '8%' : isRightEdge ? '-8%' : '0';
-		const translateY = isTopEdge ? '8%' : '0';
+		const translateX = isLeftEdge ? '20px' : isRightEdge ? '-20px' : '0';
+		const translateY = isTopEdge ? '20px' : '0';
 
-		return `translate3d(${translateX}, ${translateY}, 0) scale(1.08) rotate(3deg)`;
+		return `translate3d(${translateX}, ${translateY}, 0) scale(1.05) rotate(3deg)`;
 	};
 
 	// スマホ用タッチ処理
