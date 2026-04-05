@@ -7,6 +7,8 @@ import * as path from 'path';
 import { Construct } from 'constructs';
 
 export interface AssetsStackProps extends cdk.StackProps {
+	responseHeadersPolicyId?: string;
+
 	// 既存リソースを参照する場合に指定。未指定の場合は新規作成。
 	existing?: {
 		bucketName: string;
@@ -15,9 +17,34 @@ export interface AssetsStackProps extends cdk.StackProps {
 	};
 }
 
+const accessControlAllowOrigins = [
+	'http://localhost:5173',
+	'https://localhost:5173',
+	'https://forestacdev.github.io',
+	'http://localhost:3000',
+	'https://localhost:3000'
+];
+
 export class AssetsStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: AssetsStackProps) {
 		super(scope, id, props);
+
+		const responseHeadersPolicy = props?.responseHeadersPolicyId
+			? cloudfront.ResponseHeadersPolicy.fromResponseHeadersPolicyId(
+					this,
+					'AssetsResponseHeadersPolicy',
+					props.responseHeadersPolicyId
+				)
+			: new cloudfront.ResponseHeadersPolicy(this, 'AssetsResponseHeadersPolicy', {
+					comment: 'morivis assets CORS',
+					corsBehavior: {
+						accessControlAllowCredentials: false,
+						accessControlAllowHeaders: ['*'],
+						accessControlAllowMethods: ['GET', 'HEAD', 'OPTIONS'],
+						accessControlAllowOrigins,
+						originOverride: true
+					}
+				});
 
 		let assetsBucket: s3.IBucket;
 		let distribution: cloudfront.IDistribution;
@@ -41,15 +68,7 @@ export class AssetsStack extends cdk.Stack {
 				cors: [
 					{
 						allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD],
-						allowedOrigins: [
-						'http://localhost:5173',
-						'https://localhost:5173',
-						'http://localhost:4173',
-						'https://localhost:4173',
-						'http://localhost:3000',
-						'https://localhost:3000',
-						'https://forestacdev.github.io/morivis'
-					],
+						allowedOrigins: accessControlAllowOrigins,
 						allowedHeaders: ['*']
 					}
 				]
@@ -58,7 +77,8 @@ export class AssetsStack extends cdk.Stack {
 				defaultBehavior: {
 					origin: origins.S3BucketOrigin.withOriginAccessControl(bucket, { originPath: '/assets' }),
 					viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-					cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED
+					cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+					responseHeadersPolicy
 				},
 				comment: 'morivis assets データ配信'
 			});

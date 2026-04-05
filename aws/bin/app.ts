@@ -9,6 +9,7 @@ const app = new cdk.App();
 const existingBucket = app.node.tryGetContext('existing:bucketName');
 const existingCfId = app.node.tryGetContext('existing:distributionId');
 const existingCfDomain = app.node.tryGetContext('existing:distributionDomainName');
+const responseHeadersPolicyId = app.node.tryGetContext('cloudfront:responseHeadersPolicyId');
 
 const existing =
 	existingBucket && existingCfId && existingCfDomain
@@ -24,5 +25,6 @@ new AssetsStack(app, 'MorivisAssetsStack', {
 		account: process.env.CDK_DEFAULT_ACCOUNT,
 		region: 'ap-northeast-1'
 	},
-	existing
+	existing,
+	responseHeadersPolicyId
 });
