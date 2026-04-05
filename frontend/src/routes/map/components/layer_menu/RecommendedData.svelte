@@ -191,12 +191,12 @@
 
 {#if dataEntries.length > 0}
 	<div
-		transition:fade={{ duration: 200 }}
+		transition:fade={{ duration: 150 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
 		<div class="flex w-full items-center justify-between px-2">
 			<div class="">周辺データ</div>
-			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 text-sm">
+			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 py-1 text-sm">
 				一覧を見る
 			</button>
 		</div>

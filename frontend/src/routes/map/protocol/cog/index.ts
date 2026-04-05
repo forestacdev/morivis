@@ -194,6 +194,11 @@ class CogWorkerProtocol {
 		});
 		this.pendingRequests.clear();
 	}
+
+	terminate() {
+		this.cancelAllRequests();
+		this.worker.terminate();
+	}
 }
 
 class CogWorkerProtocolPool {
@@ -227,16 +232,36 @@ class CogWorkerProtocolPool {
 	cancelAllRequests() {
 		this.workers.forEach((w) => w.cancelAllRequests());
 	}
+
+	terminate() {
+		this.workers.forEach((w) => w.terminate());
+		this.workers = [];
+		this.workerIndex = 0;
+	}
 }
 
-const workerPool = new CogWorkerProtocolPool(2);
+let workerPool: CogWorkerProtocolPool | null = null;
+
+const getWorkerPool = () => {
+	if (!workerPool) {
+		workerPool = new CogWorkerProtocolPool(2);
+	}
+	return workerPool;
+};
+
+export const terminateCogWorkerPool = () => {
+	if (workerPool) {
+		workerPool.terminate();
+		workerPool = null;
+	}
+};
 
 export const cogProtocol = (protocolName: string) => ({
 	protocolName,
 	request: (params: { url: string }, abortController: AbortController) => {
 		const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 		const url = new URL(urlWithoutProtocol, window.location.origin);
-		return workerPool.request(url, abortController);
+		return getWorkerPool().request(url, abortController);
 	},
-	cancelAllRequests: () => workerPool.cancelAllRequests()
+	cancelAllRequests: () => workerPool?.cancelAllRequests()
 });

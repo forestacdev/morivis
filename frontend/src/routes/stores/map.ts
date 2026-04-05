@@ -29,8 +29,8 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
 import { debounce } from 'es-toolkit';
 
-import { cogProtocol } from '$routes/map/protocol/cog';
-import { demProtocol } from '$routes/map/protocol/raster';
+import { cogProtocol, terminateCogWorkerPool } from '$routes/map/protocol/cog';
+import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster';
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
@@ -60,8 +60,26 @@ import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
+// webgl(dem)プロトコルは必要時に動的に登録/解除
 const webglProt = demProtocol('webgl');
-maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
+let _webglProtocolRegistered = false;
+
+const ensureDemProtocol = () => {
+	if (!_webglProtocolRegistered) {
+		maplibregl.addProtocol(webglProt.protocolName, webglProt.request);
+		_webglProtocolRegistered = true;
+	}
+};
+
+const releaseDemProtocol = () => {
+	if (_webglProtocolRegistered) {
+		webglProt.cancelAllRequests();
+		webglProt.clearCache();
+		terminateDemWorkerPool();
+		maplibregl.removeProtocol(webglProt.protocolName);
+		_webglProtocolRegistered = false;
+	}
+};
 
 // cogプロトコルは必要時に動的に登録/解除
 const cogProt = cogProtocol('cog');
@@ -77,6 +95,7 @@ const ensureCogProtocol = () => {
 const releaseCogProtocol = () => {
 	if (_cogProtocolRegistered) {
 		cogProt.cancelAllRequests();
+		terminateCogWorkerPool();
 		maplibregl.removeProtocol(cogProt.protocolName);
 		_cogProtocolRegistered = false;
 	}
@@ -1257,6 +1276,8 @@ const createMapStore = () => {
 		releaseEsriProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
+		ensureDemProtocol,
+		releaseDemProtocol,
 		ensureMbtilesProtocol,
 		releaseMbtilesProtocol,
 		ensureTileIndexProtocol,

@@ -601,6 +601,17 @@
 			mapStore.releaseMbtilesProtocol();
 		}
 
+		const isDemEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' && 'style' in e && (e as { style: { type: string } }).style.type === 'dem';
+		const hasDemLayer = entries.some(isDemEntry) || (showDataEntry && isDemEntry(showDataEntry));
+		const hasDemBaseMap = ['relief', 'slope', 'aspect', 'curvature'].includes($selectedBaseMap);
+
+		if (hasDemLayer || hasDemBaseMap) {
+			mapStore.ensureDemProtocol();
+		} else {
+			mapStore.releaseDemProtocol();
+		}
+
 		if ($showXYZTileLayer) {
 			mapStore.ensureTileIndexProtocol();
 		} else {
