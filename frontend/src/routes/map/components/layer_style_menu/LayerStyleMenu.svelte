@@ -86,7 +86,7 @@
 				out:fly={{ duration: 300, opacity: 0 }}
 				class="absolute flex h-full w-full flex-col gap-2 px-2"
 			>
-				<div class="flex items-center gap-2 pt-4 pr-3 pb-2">
+				<div class="flex items-center gap-2 pt-4 pr-3 pb-3">
 					<!-- タイトル -->
 					<div class="truncate text-2xl text-base">
 						<span class="select-none">{layerEntry.metaData.name}</span>
@@ -98,7 +98,7 @@
 						}}
 						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
-						<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
+						<Icon icon="material-symbols:close-rounded" class="h-5 w-5" />
 					</button>
 				</div>
 

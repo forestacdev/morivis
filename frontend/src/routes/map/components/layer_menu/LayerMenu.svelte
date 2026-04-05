@@ -128,7 +128,7 @@
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
 			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[90px]'
-			: 'bg-main'}
+			: 'bg-transparent'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 		style="padding-top: env(safe-area-inset-top);"
 	>
@@ -148,44 +148,47 @@
 					<!-- タイトル -->
 					<div
 						transition:slide={{ duration: 200, axis: 'x' }}
-						class="flex shrink-0 flex-col justify-center text-base select-none max-lg:hidden"
+						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
-						<div class="flex w-full gap-3 p-2">
-							<label
-								class="cursor-pointer rounded-lg p-1 px-2 text-xs transition-colors {selectedTab ===
-								'added-data'
-									? 'bg-base text-black'
-									: 'bg-base/40 text-gray-300'}"
-							>
-								<input
-									type="radio"
-									name="layer-menu-tab"
-									bind:group={selectedTab}
-									value="added-data"
-									class="hidden"
-								/>
-								追加済みデータ
-							</label>
-							<label
-								class="cursor-pointer rounded-lg p-1 px-2 text-xs transition-colors {selectedTab ===
-								'map-display'
-									? 'bg-base text-black'
-									: 'bg-base/40 text-gray-300'}"
-							>
-								<input
-									type="radio"
-									name="layer-menu-tab"
-									bind:group={selectedTab}
-									value="map-display"
-									class="hidden"
-								/>
-								地図表示
-							</label>
-							<button
-								class="bg-base mr-auto rounded-lg p-1 px-2 text-xs text-black"
-								onclick={resetLayers}>リセット</button
-							>
+						<div class="flex w-full items-center p-2 pr-4">
+							<div class="flex flex-1 gap-3">
+								<label
+									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
+									'added-data'
+										? 'bg-base text-black'
+										: 'bg-base/40 text-gray-300'}"
+								>
+									<input
+										type="radio"
+										name="layer-menu-tab"
+										bind:group={selectedTab}
+										value="added-data"
+										class="hidden"
+									/>
+									追加済みデータ
+								</label>
+								<label
+									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
+									'map-display'
+										? 'bg-base text-black'
+										: 'bg-base/40 text-gray-300'}"
+								>
+									<input
+										type="radio"
+										name="layer-menu-tab"
+										bind:group={selectedTab}
+										value="map-display"
+										class="hidden"
+									/>
+									地図表示
+								</label>
+							</div>
+							<!-- <button
+								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
+								onclick={resetLayers}
+								>リセット
+							</button> -->
 						</div>
 					</div>
 				{/if}
@@ -362,6 +365,7 @@
 			<!-- フォグ -->
 			{#if !$isStyleEdit && !$showDataMenu}
 				<div
+					in:fade={{ delay: 300 }}
 					class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[100px] w-full"
 				></div>
 			{/if}
@@ -382,7 +386,8 @@
 			</div> -->
 			<!-- おすすめデータ -->
 			<div
-				transition:fade={{ duration: 150 }}
+				out:fade={{ duration: 100 }}
+				in:fade={{ delay: 200, duration: 100 }}
 				class="mobile-bottom relative px-2 pb-3 max-lg:hidden"
 			>
 				<RecommendedData bind:showDataEntry />

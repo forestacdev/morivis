@@ -57,23 +57,23 @@
 			{#if featureMenuData.layerId !== 'fac_poi'}
 				<button
 					onclick={edit}
-					class="c-btn-confirm flex items-center justify-center gap-2 px-3 max-lg:hidden"
+					class="c-btn-confirm flex items-center justify-center gap-2 px-3 py-1 pr-4 max-lg:hidden"
 				>
 					<Icon icon="uil:setting" class="h-6 w-6" />
-					<span class="select-none">スタイルの変更</span>
+					<span class="text-sm select-none">スタイルの変更</span>
 				</button>
 			{/if}
 			<button
 				onclick={() => (featureMenuData = null)}
 				class="bg-base ml-auto shrink-0 cursor-pointer rounded-full p-2"
 			>
-				<Icon icon="material-symbols:close-rounded" class="text-main h-6 w-6" />
+				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
 			</button>
 		</div>
 
 		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
-			<div class="c-scroll-hidden h-full overflow-x-hidden overflow-y-auto px-2 pt-1">
+			<div class="c-scroll-hidden h-full overflow-x-hidden overflow-y-auto px-2">
 				{@render children()}
 			</div>
 			<div
