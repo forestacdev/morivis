@@ -51,35 +51,3 @@
 		<!-- レイヤータイプ (データカタログ) -->
 	</div>
 </div>
-
-<style>
-	.set-glow {
-		filter: drop-shadow(0 0 3px var(--color-accent));
-	}
-	.c-rounded {
-		border-radius: 9999px 9999px 9999px 9999px;
-	}
-	/* エフェクト要素 */
-	.c-ripple-effect {
-		opacity: 0;
-		animation: ripple 1.5s linear infinite;
-	}
-
-	.c-ripple-effect2 {
-		opacity: 0;
-		animation: ripple 1.5s 0.75s linear infinite;
-	}
-
-	/* アニメーションの定義 */
-	@keyframes ripple {
-		0% {
-			scale: 1;
-			opacity: 0.8;
-		}
-
-		100% {
-			scale: 1.3;
-			opacity: 0;
-		}
-	}
-</style>

@@ -917,8 +917,4 @@
 			overflow: hidden !important;
 		}
 	}
-
-	.c-test {
-		/* デバッグ用のスタイル。 */
-	}
 </style>

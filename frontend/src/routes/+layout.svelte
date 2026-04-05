@@ -63,7 +63,6 @@
 			delay(500).then(() => {
 				document.startViewTransition(async () => {
 					resolve();
-					 
 
 					await navigation.complete;
 				});
