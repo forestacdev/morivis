@@ -134,7 +134,7 @@
 							<!-- 不透明度 -->
 							{#each opacityButtons as item (item.label)}
 								<button
-									class="flex aspect-square w-[19%] flex-col items-center gap-1"
+									class="flex aspect-square w-[19%] flex-col items-center gap-1 select-none"
 									onclick={() => {
 										if (layerEntry) {
 											layerEntry.style.visible = true;
@@ -146,7 +146,7 @@
 										<div
 											class=" relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
 												.style.opacity === item.value && layerEntry.style.visible
-												? 'border-accent'
+												? 'border-accent set-glow'
 												: 'border-transparent'}"
 										>
 											<!-- 背景地図画像 -->
@@ -197,4 +197,7 @@
 {/if}
 
 <style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
 </style>

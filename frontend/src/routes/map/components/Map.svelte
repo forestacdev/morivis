@@ -302,7 +302,7 @@
 						source: 'tile_index',
 						'source-layer': 'geojsonLayer',
 						paint: {
-							'line-color': '#000000',
+							'line-color': 'red',
 							'line-width': 2
 						}
 					},
@@ -312,10 +312,10 @@
 						source: 'tile_index',
 						'source-layer': 'geojsonLayer',
 						paint: {
-							'text-color': '#000000',
+							'text-color': 'red',
 							'text-halo-color': '#FFFFFF',
 
-							'text-halo-width': 1,
+							'text-halo-width': 3,
 							'text-opacity': 1
 						},
 						layout: {
@@ -602,7 +602,9 @@
 		}
 
 		const isDemEntry = (e: GeoDataEntry) =>
-			e.type === 'raster' && 'style' in e && (e as { style: { type: string } }).style.type === 'dem';
+			e.type === 'raster' &&
+			'style' in e &&
+			(e as { style: { type: string } }).style.type === 'dem';
 		const hasDemLayer = entries.some(isDemEntry) || (showDataEntry && isDemEntry(showDataEntry));
 		const hasDemBaseMap = ['relief', 'slope', 'aspect', 'curvature'].includes($selectedBaseMap);
 

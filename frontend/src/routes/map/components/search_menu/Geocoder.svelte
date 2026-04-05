@@ -10,6 +10,7 @@
 		searchResults: ResultData[] | null;
 		searchSuggests: ResultData[] | null;
 		inputSearchWord: string;
+		isFocus: boolean;
 		searchFeature: (searchWord: string) => Promise<void>;
 	}
 
@@ -18,12 +19,12 @@
 		searchResults = $bindable(),
 		searchSuggests,
 		inputSearchWord = $bindable(),
-		searchFeature
+		searchFeature,
+		isFocus = $bindable()
 	}: Props = $props();
 	let isLoading = $state<boolean>(false);
 	let isComposing = $state<boolean>(false); // 日本語入力中かどうか
 	let inputElement = $state<HTMLInputElement | null>(null); // 入力要素
-	let isFocus = $state<boolean>(false);
 
 	// 検索処理
 	const search = async (_searchWord: string) => {

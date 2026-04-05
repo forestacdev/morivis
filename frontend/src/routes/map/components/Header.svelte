@@ -232,6 +232,8 @@
 	let searchContainerRef = $state<HTMLDivElement | null>(null);
 
 	let showSearchForm = $state<boolean>(true);
+
+	let isFocus = $state<boolean>(false); // 検索フォームがフォーカスされているかどうか
 </script>
 
 <div class="bg-main top-2 right-2 flex w-full items-center justify-between p-2 max-lg:hidden">
@@ -243,9 +245,9 @@
 	{#if !$showDataMenu}
 		<div
 			bind:this={searchContainerRef}
-			class="border-sub relative flex max-w-[400px] flex-1 items-center rounded-full border-1 {showDataEntry
+			class="relative flex max-w-[400px] flex-1 items-center rounded-full border transition-[border-color,filter] duration-150 {showDataEntry
 				? 'pointer-events-none opacity-0'
-				: ''}"
+				: ''} {isFocus ? 'border-accent set-glow' : 'border-sub'}"
 		>
 			<Geocoder
 				{layerEntries}
@@ -253,6 +255,7 @@
 				{searchSuggests}
 				bind:inputSearchWord
 				searchFeature={(v) => searchFeature(v)}
+				bind:isFocus
 			/>
 
 			<button
@@ -308,3 +311,9 @@
 		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>
 	</div>
 </div>
+
+<style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
+</style>

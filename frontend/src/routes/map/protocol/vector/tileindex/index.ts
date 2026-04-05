@@ -27,7 +27,7 @@ export class WorkerProtocol {
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
 			const z = parseInt(url.searchParams.get('z') || '0', 10);
 
-			const tiles = tilebelt.getSiblings([x, y, z]);
+			const tiles = tilebelt.getChildren([x, y, z]);
 
 			const geojson: FeatureCollection = {
 				type: 'FeatureCollection',
@@ -38,9 +38,9 @@ export class WorkerProtocol {
 					return {
 						...polygon,
 						properties: {
-							x,
-							y,
-							z,
+							x: tileX,
+							y: tileY,
+							z: tileZ,
 							index: `${tileZ}/${tileX}/${tileY}`
 						}
 					};

@@ -394,7 +394,7 @@
 
 			<!-- 通常の地物の属性情報 -->
 			{#if !propId}
-				<div class="w-hull bg-base mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
+				<div class="w-hull bg-sub mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
 				<div class="mb-56 flex h-full w-full flex-col gap-3">
 					{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
 						{@const popupKeys = targetLayer.properties.attributeView.popupKeys}
