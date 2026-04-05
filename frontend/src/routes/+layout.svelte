@@ -47,7 +47,7 @@
 			// 	await navigation.complete;
 			// });
 			// resolve();
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
 			// navigation.complete;
 			isBlocked.set(true);
 			// ページ遷移のアニメーションを制御

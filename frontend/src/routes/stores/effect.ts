@@ -11,7 +11,11 @@ let mapPaneScaleAnimationFrame: number | null = null;
 const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
-export const triggerMapPaneScale = (targetScale = 0.98, shrinkDuration = 90, expandDuration = 220) => {
+export const triggerMapPaneScale = (
+	targetScale = 0.98,
+	shrinkDuration = 90,
+	expandDuration = 220
+) => {
 	if (mapPaneScaleAnimationFrame !== null) {
 		cancelAnimationFrame(mapPaneScaleAnimationFrame);
 		mapPaneScaleAnimationFrame = null;

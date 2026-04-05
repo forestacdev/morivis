@@ -55,8 +55,8 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { isStreetView } from '$routes/stores';
-	import { mapPaneScale } from '$routes/stores/effect';
 	import { mapMode } from '$routes/stores';
+	import { mapPaneScale } from '$routes/stores/effect';
 	import {
 		selectedBaseMap,
 		showLabelLayer,

@@ -6,7 +6,6 @@
 	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { themeMode } from '$routes/stores/theme';
 
 	import { type WikiArticle } from './api/wikipedia';
 	import Processing from './Processing.svelte';
@@ -61,6 +60,7 @@
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { themeMode } from '$routes/stores/theme';
 	import {
 		isBlocked,
 		showDataMenu,

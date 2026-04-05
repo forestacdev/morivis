@@ -5,6 +5,7 @@
 
 	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import RecommendedData from './RecommendedData.svelte';
+
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
