@@ -60,11 +60,11 @@
 	});
 </script>
 
-<div bind:this={containerRef} class="pointer-events-auto w-full lg:hidden">
+<div bind:this={containerRef} class="pointer-events-auto w-full">
 	{#if showMenu}
 		<div
 			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
-			class="bg-main absolute bottom-0 flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg"
+			class="bg-main absolute bottom-0 z-30 flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg"
 		>
 			<div class="flex flex-col gap-2">
 				<div class="flex w-full justify-between">
