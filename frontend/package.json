@@ -129,7 +129,7 @@
 		"gsap": "^3.12.5",
 		"html2canvas": "^1.4.1",
 		"jsfive": "^0.4.0",
-		"jspdf": "^3.0.1",
+		"jspdf": "^4.2.1",
 		"jszip": "^3.10.1",
 		"landxml": "^0.8.1",
 		"maplibre-gl": "^5.22.0",
