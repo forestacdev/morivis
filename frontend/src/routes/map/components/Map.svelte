@@ -672,7 +672,7 @@
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
-	}, 50);
+	}, 100);
 
 	// レイヤーの更新を監視
 	$effect(() => {

@@ -6,7 +6,12 @@
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import { checkPWA, pwaInstall } from '$routes/map/utils/device';
+	import {
+		checkPWA,
+		deferredPromptAvailable,
+		pwaInstall,
+		shouldShowInstallButton
+	} from '$routes/map/utils/device';
 	import { imageExport, getMapCanvasImage } from '$routes/map/utils/file/image';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
@@ -67,6 +72,10 @@
 	mapMode.subscribe((mode) => {
 		showOtherMenu.set(false);
 	});
+
+	const canShowInstallButton = $derived(
+		$isMobile && ($deferredPromptAvailable || shouldShowInstallButton())
+	);
 </script>
 
 {#if $showOtherMenu}
@@ -197,7 +206,7 @@
 				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
-			{#if !checkPWA() && $isMobile}
+			{#if canShowInstallButton}
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 					onclick={pwaInstall}
