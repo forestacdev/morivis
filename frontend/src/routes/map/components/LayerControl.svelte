@@ -60,7 +60,7 @@
 	});
 </script>
 
-<div bind:this={containerRef} class="pointer-events-auto w-full">
+<div bind:this={containerRef} class="pointer-events-auto w-full lg:hidden">
 	{#if showMenu}
 		<div
 			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
