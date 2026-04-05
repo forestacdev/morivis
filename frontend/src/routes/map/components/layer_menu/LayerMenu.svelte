@@ -61,7 +61,7 @@
 	});
 	let lastLayerType = $derived.by(() => {
 		const lastEntry = layerEntries[layerEntries.length - 1];
-		return lastEntry ? getLayerType(lastEntry) : null;
+		return lastEntry ? (getLayerType(lastEntry) ?? null) : null;
 	});
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
