@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	import { geoDataEntries } from '$routes/map/data/entries';
+	import { geoDataEntries, registerInitialEntryStyle } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
@@ -21,6 +21,7 @@
 			const copy = { ...showDataEntry };
 			showDataEntry = null;
 			if (!geoDataEntries.some((entry) => entry.id === copy.id)) {
+				registerInitialEntryStyle(copy);
 				tempLayerEntries = [...tempLayerEntries, copy];
 			}
 			const layerType = getLayerType(copy);

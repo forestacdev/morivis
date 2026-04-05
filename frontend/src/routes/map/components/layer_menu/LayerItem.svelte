@@ -9,6 +9,7 @@
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
@@ -122,6 +123,7 @@
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 
+		registerInitialEntryStyle(copy);
 		tempLayerEntries = [...tempLayerEntries, copy];
 
 		activeLayerIdsStore.add(uuid);
@@ -648,9 +650,6 @@
 							</button>
 						{/if}
 
-						<button onclick={copyLayer}>
-							<Icon icon="lucide:copy" />
-						</button>
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
 							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />

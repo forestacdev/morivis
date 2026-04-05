@@ -6,10 +6,12 @@
 
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
+	import { getInitialEntryStyle } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Opacity } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
+	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {
@@ -72,6 +74,17 @@
 			getImage(layerEntry);
 		}
 	});
+
+	const resetStyle = async () => {
+		if (!layerEntry) return;
+		const result = await resetLayerStyleConfirm();
+		if (!result) return;
+
+		const initialStyle = getInitialEntryStyle(layerEntry.id);
+		if (!initialStyle) return;
+
+		layerEntry.style = initialStyle;
+	};
 </script>
 
 {#if layerEntry}
@@ -92,11 +105,18 @@
 						<span class="select-none">{layerEntry.metaData.name}</span>
 					</div>
 					<button
+						onclick={resetStyle}
+						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						title="スタイルをリセット"
+					>
+						<Icon icon="material-symbols:restart-alt-rounded" class="h-5 w-5" />
+					</button>
+					<button
 						onclick={() => {
 							isStyleEdit.set(false);
 							selectedLayerId.set('');
 						}}
-						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
+						class="bg-base text-main grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
 						<Icon icon="material-symbols:close-rounded" class="h-5 w-5" />
 					</button>

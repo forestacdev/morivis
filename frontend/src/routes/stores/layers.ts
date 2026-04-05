@@ -1,5 +1,5 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { EntryIdToTypeMap } from '$routes/map/data/entries';
+import { EntryIdToTypeMap, unregisterInitialEntryStyle } from '$routes/map/data/entries';
 import { writable, get } from 'svelte/store';
 import { GeojsonCache } from '$routes/map/utils/file/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
@@ -76,6 +76,7 @@ const createLayerStore = () => {
 
 				// JoinDataCacheからも削除
 				if (JoinDataCache.has(id)) JoinDataCache.remove(id);
+				unregisterInitialEntryStyle(id);
 				layerAttributions.remove(id);
 				return newLayers;
 			}),
@@ -104,6 +105,12 @@ const createLayerStore = () => {
 		reset: () => {
 			for (const id of GeojsonCache.keys()) {
 				GeojsonCache.remove(id);
+			}
+
+			for (const id of get(store)) {
+				if (!INT_ADD_LAYER_IDS.includes(id)) {
+					unregisterInitialEntryStyle(id);
+				}
 			}
 
 			set([...INT_ADD_LAYER_IDS]);

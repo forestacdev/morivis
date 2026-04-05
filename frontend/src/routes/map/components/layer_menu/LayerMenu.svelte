@@ -127,8 +127,8 @@
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
 			: '-translate-x-[400px]'} {$isStyleEdit
-			? 'bg-transparent delay-150 max-lg:translate-x-full lg:translate-x-[90px]'
-			: 'bg-transparent'}
+			? 'delay-150 max-lg:translate-x-full lg:translate-x-[90px]'
+			: ''} {$isMobile ? 'bg-main' : 'bg-transparent'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 		style="padding-top: env(safe-area-inset-top);"
 	>

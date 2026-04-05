@@ -65,6 +65,28 @@ export const geoDataEntries = (() => {
 	return initData(entries);
 })();
 
+const cloneStyle = (style: GeoDataEntry['style']): GeoDataEntry['style'] =>
+	JSON.parse(JSON.stringify(style)) as GeoDataEntry['style'];
+
+const initialEntryStyleMap = new Map<string, GeoDataEntry['style']>(
+	entries.map((entry) => [entry.id, cloneStyle(entry.style)])
+);
+
+export const registerInitialEntryStyle = (entry: GeoDataEntry) => {
+	if (initialEntryStyleMap.has(entry.id)) return;
+	initialEntryStyleMap.set(entry.id, cloneStyle(entry.style));
+};
+
+export const unregisterInitialEntryStyle = (entryId: string) => {
+	initialEntryStyleMap.delete(entryId);
+};
+
+export const getInitialEntryStyle = (entryId: string): GeoDataEntry['style'] | undefined => {
+	const style = initialEntryStyleMap.get(entryId);
+	if (!style) return undefined;
+	return cloneStyle(style);
+};
+
 export const layerDataFuse = new Fuse(geoDataEntries, {
 	keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
 	threshold: 0.3,
