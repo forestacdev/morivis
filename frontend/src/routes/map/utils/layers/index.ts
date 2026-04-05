@@ -419,22 +419,15 @@ export const createLayersItems = (
 		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
-	const poiLayerItems = get(showPoiLayer) && _type === 'main' && isNotOsm ? poiLayers : [];
-	const labelLayerItems = get(showLabelLayer) && _type === 'main' && isNotOsm ? labelLayers : [];
-	const roadLabelLayerItems =
-		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLabelLayers : [];
-	const roadLineLayerItems =
-		get(showRoadLayer) && _type === 'main' && isNotOsm ? roadLineLayers : [];
-	const railLayerItems = get(showRoadLayer) && _type === 'main' && isNotOsm ? railLineLayers : [];
-	const boundaryLayerItems =
-		get(showBoundaryLayer) && _type === 'main' && isNotOsm ? boundaryLayers : [];
-	const hillshadeLayerItems =
-		get(showHillshadeLayer) && _type === 'main' && isNotHillshade ? hillshadeLayers : [];
+	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
+	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
+	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
+	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
+	const railLayerItems = get(showRoadLayer) && _type === 'main' ? railLineLayers : [];
+	const boundaryLayerItems = get(showBoundaryLayer) && _type === 'main' ? boundaryLayers : [];
+	const hillshadeLayerItems = get(showHillshadeLayer) && _type === 'main' ? hillshadeLayers : [];
 
-	const cloudLayerItems =
-		get(showCloudLayer) && _type === 'main' && get(selectedBaseMap) === 'satellite'
-			? cloudLayers
-			: [];
+	const cloudLayerItems = get(showCloudLayer) && _type === 'main' ? cloudLayers : [];
 
 	return [
 		...baseMapLayerItems,
