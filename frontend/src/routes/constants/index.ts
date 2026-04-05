@@ -5,10 +5,7 @@ import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 import { PUBLIC_BASE_PATH, PUBLIC_ENTRY_PATH, PUBLIC_PANORAMA_PATH } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
-export const DATA_PATH =
-	import.meta.env.MODE === 'production' || import.meta.env.MODE === 'mobile'
-		? BASE_PATH
-		: BASE_PATH + '/assets';
+export const DATA_PATH = BASE_PATH + '/assets';
 export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';
