@@ -6,13 +6,26 @@
 	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import RecommendedData from './RecommendedData.svelte';
 
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
+	import MapSettingItem from '$routes/map/components/layer_menu/MapSettingItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import {
+		selectedBaseMap,
+		showLabelLayer,
+		showHillshadeLayer,
+		showXYZTileLayer,
+		showRoadLayer,
+		showBoundaryLayer,
+		showPoiLayer,
+		showStreetViewLayer,
+		showCloudLayer
+	} from '$routes/stores/layers';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -23,6 +36,8 @@
 		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
+	type LayerMenuTab = 'added-data' | 'map-display';
+
 	let {
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
@@ -31,6 +46,7 @@
 		resetlayerEntries
 	}: Props = $props();
 	let enableFlip = $state(true); // アニメーションの状態
+	let selectedTab = $state<LayerMenuTab>('added-data');
 
 	// レイヤーのリセット処理
 	const resetLayers = async () => {
@@ -117,7 +133,7 @@
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="pl-2">
-			<div class="relative flex h-[90px] w-full items-center max-lg:hidden">
+			<div class="relative flex h-[100px] w-full items-center max-lg:hidden">
 				{#if !$isStyleEdit && !$showDataMenu}
 					<!-- 縦棒 -->
 					<div
@@ -135,7 +151,42 @@
 						class="flex shrink-0 flex-col justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
-						<div class="pl-1 text-sm text-gray-400">追加済みのデータ</div>
+						<div class="flex w-full gap-3 p-2">
+							<label
+								class="cursor-pointer rounded-lg p-1 px-2 text-xs transition-colors {selectedTab ===
+								'added-data'
+									? 'bg-base text-black'
+									: 'bg-base/40 text-gray-300'}"
+							>
+								<input
+									type="radio"
+									name="layer-menu-tab"
+									bind:group={selectedTab}
+									value="added-data"
+									class="hidden"
+								/>
+								追加済みデータ
+							</label>
+							<label
+								class="cursor-pointer rounded-lg p-1 px-2 text-xs transition-colors {selectedTab ===
+								'map-display'
+									? 'bg-base text-black'
+									: 'bg-base/40 text-gray-300'}"
+							>
+								<input
+									type="radio"
+									name="layer-menu-tab"
+									bind:group={selectedTab}
+									value="map-display"
+									class="hidden"
+								/>
+								地図表示
+							</label>
+							<button
+								class="bg-base mr-auto rounded-lg p-1 px-2 text-xs text-black"
+								onclick={resetLayers}>リセット</button
+							>
+						</div>
 					</div>
 				{/if}
 
@@ -174,113 +225,139 @@
 					: 'touch-auto overflow-y-auto'}"
 			>
 				<!-- 3Dモデル -->
-				{#if modelEntries.length > 0}
-					<div
-						class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'model'
-							? 'bg-accent/70'
-							: ''}"
-					>
-						<LayerTypeItem
-							layerType={'model'}
-							{lastLayerType}
-							typeEntries={modelEntries}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-							bind:isHoveredLayerType
-							bind:featureMenuData
-							bind:isTouchDragging
-						/>
-					</div>
-				{/if}
-				<!-- ポイント -->
-				{#if pointEntries.length > 0}
-					<div
-						class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
-							? 'bg-accent/70'
-							: ''}"
-					>
-						<LayerTypeItem
-							layerType={'point'}
-							{lastLayerType}
-							typeEntries={pointEntries}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-							bind:isHoveredLayerType
-							bind:featureMenuData
-							bind:isTouchDragging
-						/>
-					</div>
-				{/if}
-				<!-- ライン -->
-				{#if lineEntries.length > 0}
-					<div
-						class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
-							? 'bg-accent/70'
-							: ''}"
-					>
-						<LayerTypeItem
-							layerType={'line'}
-							{lastLayerType}
-							typeEntries={lineEntries}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-							bind:isHoveredLayerType
-							bind:featureMenuData
-							bind:isTouchDragging
-						/>
-					</div>
-				{/if}
-				<!-- ポリゴン -->
-				{#if polygonEntries.length > 0}
-					<div
-						class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
-							? 'bg-accent/70'
-							: ''}"
-					>
-						<LayerTypeItem
-							layerType={'polygon'}
-							{lastLayerType}
-							typeEntries={polygonEntries}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-							bind:isHoveredLayerType
-							bind:featureMenuData
-							bind:isTouchDragging
-						/>
-					</div>
-				{/if}
-				<!-- ラスター -->
-				{#if rasterEntries.length > 0}
-					<div
-						class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
-							? 'bg-accent/70'
-							: ''}"
-					>
-						<LayerTypeItem
-							layerType={'raster'}
-							{lastLayerType}
-							typeEntries={rasterEntries}
-							bind:showDataEntry
-							bind:tempLayerEntries
-							bind:enableFlip
-							bind:isDraggingLayerType
-							bind:isHoveredLayerType
-							bind:featureMenuData
-							bind:isTouchDragging
-						/>
-					</div>
-				{/if}
+				{#if selectedTab === 'added-data'}
+					{#if modelEntries.length > 0}
+						<div
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'model'
+								? 'bg-accent/70'
+								: ''}"
+						>
+							<LayerTypeItem
+								layerType={'model'}
+								{lastLayerType}
+								typeEntries={modelEntries}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+								bind:isHoveredLayerType
+								bind:featureMenuData
+								bind:isTouchDragging
+							/>
+						</div>
+					{/if}
+					<!-- ポイント -->
+					{#if pointEntries.length > 0}
+						<div
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
+								? 'bg-accent/70'
+								: ''}"
+						>
+							<LayerTypeItem
+								layerType={'point'}
+								{lastLayerType}
+								typeEntries={pointEntries}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+								bind:isHoveredLayerType
+								bind:featureMenuData
+								bind:isTouchDragging
+							/>
+						</div>
+					{/if}
+					<!-- ライン -->
+					{#if lineEntries.length > 0}
+						<div
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
+								? 'bg-accent/70'
+								: ''}"
+						>
+							<LayerTypeItem
+								layerType={'line'}
+								{lastLayerType}
+								typeEntries={lineEntries}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+								bind:isHoveredLayerType
+								bind:featureMenuData
+								bind:isTouchDragging
+							/>
+						</div>
+					{/if}
+					<!-- ポリゴン -->
+					{#if polygonEntries.length > 0}
+						<div
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
+								? 'bg-accent/70'
+								: ''}"
+						>
+							<LayerTypeItem
+								layerType={'polygon'}
+								{lastLayerType}
+								typeEntries={polygonEntries}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+								bind:isHoveredLayerType
+								bind:featureMenuData
+								bind:isTouchDragging
+							/>
+						</div>
+					{/if}
+					<!-- ラスター -->
+					{#if rasterEntries.length > 0}
+						<div
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
+								? 'bg-accent/70'
+								: ''}"
+						>
+							<LayerTypeItem
+								layerType={'raster'}
+								{lastLayerType}
+								typeEntries={rasterEntries}
+								bind:showDataEntry
+								bind:tempLayerEntries
+								bind:enableFlip
+								bind:isDraggingLayerType
+								bind:isHoveredLayerType
+								bind:featureMenuData
+								bind:isTouchDragging
+							/>
+						</div>
+					{/if}
 
-				<!-- 余白 -->
-				<div class="h-[100px] w-full shrink-0"></div>
+					<!-- 余白 -->
+					<div class="h-[100px] w-full shrink-0"></div>
+				{:else if selectedTab === 'map-display'}
+					<MapSettingItem>
+						<Switch label="アカデミー施設等" bind:value={$showPoiLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="境界線" bind:value={$showBoundaryLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="地名等" bind:value={$showLabelLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="道路・線路" bind:value={$showRoadLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="陰影" bind:value={$showHillshadeLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="雲" bind:value={$showCloudLayer} />
+					</MapSettingItem>
+					<MapSettingItem>
+						<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
+					</MapSettingItem>
+					<!-- 余白 -->
+					<div class="h-[100px] w-full shrink-0"></div>
+				{/if}
 			</div>
 			<!-- フォグ -->
 			{#if !$isStyleEdit && !$showDataMenu}
@@ -299,14 +376,14 @@
 				class="absolute bottom-[200px] left-2 -z-10 h-60 w-60 text-gray-700 opacity-50"
 			/> -->
 		{/if}
-		{#if !$isStyleEdit && !$showDataMenu}
+		{#if !$isStyleEdit && !$showDataMenu && selectedTab === 'added-data'}
 			<!-- <div transition:fade={{ duration: 150 }} class="p-3 max-lg:hidden">
 				<LayerControl />
 			</div> -->
 			<!-- おすすめデータ -->
 			<div
 				transition:fade={{ duration: 150 }}
-				class="mobile-bottom relative px-2 py-3 max-lg:hidden"
+				class="mobile-bottom relative px-2 pb-3 max-lg:hidden"
 			>
 				<RecommendedData bind:showDataEntry />
 			</div>

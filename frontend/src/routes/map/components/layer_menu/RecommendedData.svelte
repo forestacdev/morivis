@@ -195,8 +195,8 @@
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
 		<div class="flex w-full items-center justify-between px-2">
-			<div class="text-sm">周辺データ</div>
-			<button onclick={() => showDataMenu.set(true)} class=" c-btn-confirm px-4 text-sm">
+			<div class="">周辺データ</div>
+			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 text-sm">
 				一覧を見る
 			</button>
 		</div>
@@ -223,7 +223,7 @@
 							onclick={() => addData(dataEntry)}
 							onmouseenter={() => (hoveredIndex = i)}
 							onmouseleave={() => (hoveredIndex = null)}
-							class="transition-[width, transform, translate, scale, rotate, height, border-color] flex flex-[0_0_70%] origin-center translate-z-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg py-3 text-white duration-150
+							class="transition-[width, transform, translate, scale, rotate, height, border-color] flex flex-[0_0_70%] origin-center translate-z-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg pt-1 pb-3 text-white duration-150
                                 {hoveredIndex === i ? 'c-set-glow' : ''}"
 						>
 							<div
