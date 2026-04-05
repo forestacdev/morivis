@@ -55,6 +55,7 @@
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { isStreetView } from '$routes/stores';
+	import { mapPaneScale } from '$routes/stores/effect';
 	import { mapMode } from '$routes/stores';
 	import {
 		selectedBaseMap,
@@ -155,6 +156,11 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+	let mapPaneScaleTransition = $derived(
+		$mapPaneScale < 1
+			? 'transform 80ms cubic-bezier(0.22, 1, 0.36, 1)'
+			: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1)'
+	);
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
 	// let webGLCanvasSource = $state<CanvasSourceSpecification>({
@@ -763,6 +769,9 @@
 		$mapMode === 'small'
 			? 'absolute transform border border-gray-300 max-lg:bottom-0 max-lg:h-1/2 max-lg:w-full lg:bottom-2 lg:left-2 lg:z-20 lg:h-[200px] lg:w-[300px] lg:rounded-lg'
 			: 'relative h-full w-full grow'}"
+		style:transform={`scale(${$mapPaneScale})`}
+		style:transform-origin="center center"
+		style:transition={mapPaneScaleTransition}
 	>
 		<div
 			bind:this={mapContainer}
@@ -784,6 +793,12 @@
 				/>
 			{/if}
 		</div>
+		<!-- 地図コンテナオーバーレイ -->
+		<div
+			class="c-test border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
+				? ' bg-accent opacity-50'
+				: ' opacity-0'}"
+		></div>
 
 		{#if !$isStreetView && !showDataEntry}
 			<!-- PC用地図コントロール -->
@@ -877,5 +892,9 @@
 			border-radius: 0.5rem !important;
 			overflow: hidden !important;
 		}
+	}
+
+	.c-test {
+		/* デバッグ用のスタイル。 */
 	}
 </style>

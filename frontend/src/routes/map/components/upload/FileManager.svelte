@@ -339,9 +339,5 @@
 	});
 </script>
 
-{#if isDragover}
-	<div class="pointer-events-none absolute h-full w-full bg-slate-500 opacity-50"></div>
-{/if}
-
 <style>
 </style>

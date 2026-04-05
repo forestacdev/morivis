@@ -7,6 +7,7 @@ import { layerAttributions } from './attributions';
 import { type LayerType } from '$routes/map/utils/entries';
 import { JoinDataCache } from '$routes/map/utils/join_data';
 import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/camera-effects';
+import { triggerMapPaneScale } from '$routes/stores/effect';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';
 
@@ -54,6 +55,7 @@ const createLayerStore = () => {
 					duration: 100,
 					frequency: 5
 				});
+				triggerMapPaneScale();
 				return sortLayerIds(layers);
 			}),
 		has: (id: string) => {
