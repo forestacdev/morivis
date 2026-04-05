@@ -156,10 +156,15 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+	// let mapPaneFilter = $derived(
+	// 	$mapPaneScale < 1
+	// 		? 'invert(1) contrast(1.2) brightness(1.1)'
+	// 		: 'invert(0) contrast(1) brightness(1)'
+	// );
 	let mapPaneScaleTransition = $derived(
 		$mapPaneScale < 1
-			? 'transform 80ms cubic-bezier(0.22, 1, 0.36, 1)'
-			: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1)'
+			? 'transform 80ms cubic-bezier(0.22, 1, 0.36, 1), filter 50ms linear'
+			: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), filter 160ms ease-out'
 	);
 
 	const bbox = [136.91278, 35.543576, 136.92986, 35.556704];
