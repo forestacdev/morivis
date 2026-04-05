@@ -151,8 +151,8 @@
 						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
 						<span class="text-[2.7rem]">morivis</span>
-						<div class="flex w-full items-center p-2 pr-4">
-							<div class="flex flex-1 gap-3">
+						<div class="flex w-full items-center py-2">
+							<div class="flex flex-1 gap-2">
 								<label
 									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
 									'added-data'

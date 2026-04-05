@@ -295,7 +295,8 @@
 <!-- サジェスト -->
 <div class="pointer-events-none relative w-full">
 	<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
-		<div class="flex h-full items-center gap-4 pl-2"></div>
+		<!-- 左スペース -->
+		<div class="flex h-full items-center"></div>
 		<div class="flex max-w-[400px] flex-1 items-center">
 			<SearchSuggest
 				{focusFeature}
@@ -308,7 +309,9 @@
 				bind:showDataEntry
 			/>
 		</div>
-		<div class="flex w-[150px] items-center rounded-lg max-lg:hidden"></div>
+		<!-- 右スペース -->
+
+		<div class="flex w-[240px] items-center rounded-lg max-lg:hidden"></div>
 	</div>
 </div>
 
