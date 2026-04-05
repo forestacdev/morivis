@@ -60,11 +60,11 @@
 	});
 </script>
 
-<div bind:this={containerRef} class="pointer-events-auto max-lg:w-full lg:hidden">
+<div bind:this={containerRef} class="pointer-events-auto w-full lg:hidden">
 	{#if showMenu}
 		<div
 			transition:fly={{ duration: 200, y: 50, opacity: 0 }}
-			class="bg-main absolute flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg max-lg:bottom-0 max-lg:z-30 lg:bottom-[80px] lg:z-10"
+			class="bg-main absolute bottom-0 flex w-full flex-col gap-4 rounded-lg p-2 text-base shadow-lg"
 		>
 			<div class="flex flex-col gap-2">
 				<div class="flex w-full justify-between">
@@ -122,7 +122,7 @@
 		onclick={() => {
 			showMenu = !showMenu;
 		}}
-		class="bg-base pointer-events-auto grid shrink-0 place-items-center items-center justify-end rounded-lg p-1 shadow-md max-lg:m-3 lg:absolute lg:bottom-0 lg:left-0 lg:cursor-pointer"
+		class="bg-base pointer-events-auto m-3 grid shrink-0 place-items-center items-center justify-end rounded-lg p-1 shadow-md"
 		style="margin-top: calc(16px + env(safe-area-inset-top));"
 	>
 		<img
