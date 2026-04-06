@@ -1,6 +1,9 @@
 {
     "folders": [
         {
+            "path": ".",
+        },
+        {
             "name": "設定",
             "path": "frontend/src/routes/constants",
         },
@@ -43,9 +46,6 @@
         },
         {
             "path": "aws",
-        },
-        {
-            "path": ".",
         },
     ],
     "settings": {},
