@@ -23,29 +23,29 @@ export const baseMapList: {
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
 	},
-	{
-		type: 'relief',
-		label: '標高段彩図',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
-			.replace('{x}', String(basemapXYZ.x))
-			.replace('{y}', String(basemapXYZ.y))
-			.replace('{z}', String(basemapXYZ.z))
-	},
-	{
-		type: 'slope',
-		label: '傾斜量図',
-		src: './images/base_map/slope.png'
-	},
-	{
-		type: 'aspect',
-		label: '傾斜方位図',
-		src: './images/base_map/aspect.png'
-	},
-	{
-		type: 'curvature',
-		label: '曲率図',
-		src: './images/base_map/curvature.png'
-	},
+	// {
+	// 	type: 'relief',
+	// 	label: '標高段彩図',
+	// 	src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
+	// 		.replace('{x}', String(basemapXYZ.x))
+	// 		.replace('{y}', String(basemapXYZ.y))
+	// 		.replace('{z}', String(basemapXYZ.z))
+	// },
+	// {
+	// 	type: 'slope',
+	// 	label: '傾斜量図',
+	// 	src: './images/base_map/slope.png'
+	// },
+	// {
+	// 	type: 'aspect',
+	// 	label: '傾斜方位図',
+	// 	src: './images/base_map/aspect.png'
+	// },
+	// {
+	// 	type: 'curvature',
+	// 	label: '曲率図',
+	// 	src: './images/base_map/curvature.png'
+	// },
 	{
 		type: 'osm',
 		label: 'OpenStreetMap',

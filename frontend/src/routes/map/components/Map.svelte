@@ -24,14 +24,13 @@
 
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
-	import LayerControl from '$routes/map/components/LayerControl.svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
-	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
+
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
@@ -829,14 +828,6 @@
 			<div class="absolute right-5 bottom-5 max-lg:hidden">
 				<Compass />
 			</div>
-
-			<!-- PC用ベースマップコントロール -->
-			<div class="max-lg:hidden">
-				<LayerControl />
-			</div>
-
-			<!-- スマホ用地図コントロール -->
-			<MobileMapControl />
 		{/if}
 		<SelectionPopup
 			bind:clickedLayerIds

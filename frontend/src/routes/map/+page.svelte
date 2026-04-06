@@ -70,7 +70,7 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）
@@ -659,6 +659,11 @@
 					bind:showAngleMarker
 					bind:isExternalCameraUpdate
 				/>
+			{/if}
+
+			{#if !$isStreetView && !showDataEntry}
+				<!-- スマホ用地図コントロール -->
+				<MobileMapControl />
 			{/if}
 
 			<MobileFooter {showDataEntry} {featureMenuData} />
