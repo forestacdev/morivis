@@ -7,103 +7,6 @@ import type {
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
-/** 道路中心線 vt_rdctg に基づく line-color の共通式（半透明版） */
-const rdctgColorHalf: ExpressionSpecification = [
-	'match',
-	['get', 'vt_rdctg'],
-	['国道', '主要道路'],
-	'rgba(210,190,139,0.5)',
-	'都道府県道',
-	'rgba(210,190,139,0.5)',
-	'高速自動車国道等',
-	'rgba(210,190,139,0.5)',
-	'rgba(100,100,100,0.5)'
-];
-
-/** 道路中心線 line-color: vt_code 2704/2714 の場合（透明系） */
-const codeTransparentColor: ExpressionSpecification = [
-	'case',
-	['==', ['get', 'vt_motorway'], 1],
-	'rgba(210,190,139,0.5)',
-	rdctgColorHalf
-];
-
-/** 道路中心線 line-color: 通常色（zoom < 14） */
-const roadColorBelow14: ExpressionSpecification = [
-	'case',
-	['in', ['get', 'vt_code'], ['literal', [2704, 2714]]],
-	codeTransparentColor,
-	[
-		'case',
-		['==', ['get', 'vt_motorway'], 1],
-		'rgba(210,190,139,1)',
-		[
-			'match',
-			['get', 'vt_rdctg'],
-			'国道',
-			'rgba(210,190,139,1)',
-			'都道府県道',
-			'rgba(210,190,139,1)',
-			'高速自動車国道等',
-			'rgba(210,190,139,1)',
-			[
-				'case',
-				['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満'],
-				'rgba(173,173,173,1)',
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(200,200,200,1)',
-					'rgba(255,255,255,1)'
-				]
-			]
-		]
-	]
-];
-
-/** 道路中心線 line-color: 通常色（zoom >= 14） */
-const roadColorAbove14: ExpressionSpecification = [
-	'case',
-	['in', ['get', 'vt_code'], ['literal', [2704, 2714]]],
-	codeTransparentColor,
-	[
-		'case',
-		['==', ['get', 'vt_motorway'], 1],
-		'rgba(210,190,139,1)',
-		[
-			'match',
-			['get', 'vt_rdctg'],
-			'国道',
-			'rgba(210,190,139,1)',
-			'都道府県道',
-			'rgba(210,190,139,1)',
-			'高速自動車国道等',
-			'rgba(210,190,139,1)',
-			[
-				'match',
-				['get', 'vt_code'],
-				[2721, 2722, 2723],
-				'rgba(173,173,173,1)',
-				[2731, 2732, 2733],
-				'rgba(200,200,200,1)',
-				'rgba(255,255,255,1)'
-			]
-		]
-	]
-];
-
-/** 道路中心線 line-color（step by zoom） */
-const roadLineColor: ExpressionSpecification = [
-	'step',
-	['zoom'],
-	roadColorBelow14,
-	14,
-	roadColorAbove14
-];
-
 /** 道路中心線 line-opacity */
 const roadLineOpacity: ExpressionSpecification = [
 	'interpolate',
@@ -124,71 +27,6 @@ const roadLineOpacity: ExpressionSpecification = [
 	1,
 	18,
 	0.1
-];
-
-/** 道路中心線 line-width（vt_width / vt_rnkwidth ベース） */
-const roadLineWidth: ExpressionSpecification = [
-	'let',
-	'width',
-	[
-		'case',
-		['has', 'vt_width'],
-		['get', 'vt_width'],
-		[
-			'case',
-			['has', 'vt_rnkwidth'],
-			[
-				'match',
-				['get', 'vt_rnkwidth'],
-				'3m未満',
-				300,
-				'3m-5.5m未満',
-				450,
-				'5.5m-13m未満',
-				900,
-				'13m-19.5m未満',
-				1800,
-				'19.5m以上',
-				2700,
-				0
-			],
-			3000
-		]
-	],
-	'width2',
-	[
-		'case',
-		['has', 'vt_rnkwidth'],
-		[
-			'match',
-			['get', 'vt_rnkwidth'],
-			'3m未満',
-			700,
-			'3m-5.5m未満',
-			1200,
-			'5.5m-13m未満',
-			1700,
-			'13m-19.5m未満',
-			2200,
-			'19.5m以上',
-			2700,
-			0
-		],
-		3000
-	],
-	[
-		'interpolate',
-		['exponential', 2],
-		['zoom'],
-		11,
-		['match', ['get', 'vt_rdctg'], '国道', 2, '都道府県道', 1.5, '高速自動車国道等', 4, 1],
-		12,
-		['*', ['^', 2, -9], ['var', 'width2']],
-		14,
-		['*', ['^', 2, -9], ['var', 'width2']],
-		23,
-		['var', 'width']
-	]
 ];
 
 export const roadSources: Record<string, VectorSourceSpecification> = {
@@ -331,17 +169,16 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'path', 'track']],
 		layout: {
-			'line-cap': 'square',
-			'line-join': 'bevel'
+			'line-join': 'round',
+			'line-cap': 'round'
 		},
 		paint: {
 			'line-color': 'hsl(0, 0%, 97%)',
-			'line-dasharray': [1, 1],
 			'line-width': {
 				base: 1.55,
 				stops: [
 					[4, 0.25],
-					[20, 10]
+					[20, 15]
 				]
 			}
 		}
@@ -475,7 +312,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': 'hsl(0, 0%, 100%)',
+			'line-color': 'rgba(210,190,139,1)',
 			'line-offset': 0,
 			'line-width': {
 				base: 1.4,
