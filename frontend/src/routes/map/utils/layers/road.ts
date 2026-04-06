@@ -120,9 +120,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		minzoom: 0,
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'tunnel'],
-			['==', 'class', 'transit']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['==', ['get', 'class'], 'transit']
 		],
 		layout: {
 			'line-cap': 'butt',
@@ -146,7 +146,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		metadata: {},
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'pier']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['in', ['get', 'class'], ['literal', ['pier']]]],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'
@@ -167,7 +167,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'path', 'track']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['in', ['get', 'class'], ['literal', ['path', 'track']]]],
 		layout: {
 			'line-join': 'round',
 			'line-cap': 'round'
@@ -189,7 +189,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
 		minzoom: 13,
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'minor', 'service']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['in', ['get', 'class'], ['literal', ['minor', 'service']]]],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'
@@ -212,9 +212,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'tunnel'],
-			['==', 'class', 'minor_road']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['==', ['get', 'class'], 'minor_road']
 		],
 		layout: {
 			'line-cap': 'butt',
@@ -239,9 +239,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'tunnel'],
-			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
 		],
 		layout: {
 			'line-cap': 'butt',
@@ -264,7 +264,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'trunk', 'primary']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['in', ['get', 'class'], ['literal', ['trunk', 'primary']]]],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'
@@ -285,7 +285,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'secondary', 'tertiary']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary']]]],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'
@@ -306,7 +306,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'motorway']],
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['==', ['get', 'class'], 'motorway']],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'
@@ -328,7 +328,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['all', ['==', 'class', 'transit'], ['!=', 'brunnel', 'tunnel']],
+		filter: ['all', ['==', ['get', 'class'], 'transit'], ['!=', ['get', 'brunnel'], 'tunnel']],
 		layout: {
 			visibility: 'visible'
 		},
@@ -348,7 +348,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		type: 'line',
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
-		filter: ['==', 'class', 'rail'],
+		filter: ['==', ['get', 'class'], 'rail'],
 		layout: {
 			visibility: 'visible'
 		},
@@ -370,9 +370,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'bridge'],
-			['==', 'class', 'minor_road']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['==', ['get', 'class'], 'minor_road']
 		],
 		layout: {
 			'line-cap': 'butt',
@@ -403,9 +403,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'bridge'],
-			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
 		],
 		layout: {
 			'line-cap': 'butt',
@@ -436,9 +436,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'bridge'],
-			['==', 'class', 'minor_road']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['==', ['get', 'class'], 'minor_road']
 		],
 		layout: {
 			'line-cap': 'round',
@@ -462,9 +462,9 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		'source-layer': 'transportation',
 		filter: [
 			'all',
-			['==', '$type', 'LineString'],
-			['==', 'brunnel', 'bridge'],
-			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
 		],
 		layout: {
 			'line-cap': 'round',
