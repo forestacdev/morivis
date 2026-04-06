@@ -3,7 +3,7 @@ import type { SymbolLayerSpecification, LineLayerSpecification } from 'maplibre-
 export const boundarySources = {
 	openmaptiles: {
 		type: 'vector',
-		url: 'https://tile.openstreetmap.jp/data/planet.json'
+		url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 	}
 };
 

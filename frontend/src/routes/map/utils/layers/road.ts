@@ -199,6 +199,10 @@ export const roadSources: Record<string, VectorSourceSpecification> = {
 		url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
 		// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
 		attribution: '国土地理院最適化ベクトルタイル'
+	},
+	openmaptiles: {
+		type: 'vector',
+		url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 	}
 };
 
@@ -271,471 +275,373 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 
 export const roadLineLayers: LineLayerSpecification[] = [
 	{
-		id: '道路中心線ククリ統合',
+		id: 'tunnel_railway_transit',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		maxzoom: 24,
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		minzoom: 0,
 		filter: [
-			'step',
-			['zoom'],
-			[
-				'all',
-				['<=', ['get', 'vt_lvorder'], 4],
-				[
-					'!',
-					[
-						'in',
-						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
-					]
-				],
-				[
-					'!',
-					[
-						'all',
-						['in', ['get', 'vt_rdctg'], ['literal', ['市区町村道等', 'その他', '不明']]],
-						['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
-					]
-				]
-			],
-			14,
-			[
-				'all',
-				['<=', ['get', 'vt_lvorder'], 4],
-				[
-					'!',
-					[
-						'in',
-						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
-					]
-				]
-			]
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'tunnel'],
+			['==', 'class', 'transit']
 		],
 		layout: {
-			'line-join': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder'],
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': 'hsl(34, 12%, 66%)',
+			'line-dasharray': [3, 3],
+			'line-opacity': {
+				base: 1,
+				stops: [
+					[11, 0],
+					[16, 1]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_pier',
+		type: 'line',
+		metadata: {},
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'pier']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'hsl(47, 26%, 88%)',
+			'line-width': {
+				base: 1.2,
+				stops: [
+					[15, 1],
+					[17, 4]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_path',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'path', 'track']],
+		layout: {
+			'line-cap': 'square',
+			'line-join': 'bevel'
+		},
+		paint: {
+			'line-color': 'hsl(0, 0%, 97%)',
+			'line-dasharray': [1, 1],
+			'line-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 10]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_minor',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		minzoom: 13,
+		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'minor', 'service']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'hsl(0, 0%, 97%)',
+			'line-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 30]
+				]
+			}
+		}
+	},
+	{
+		id: 'tunnel_minor',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'tunnel'],
+			['==', 'class', 'minor_road']
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': '#efefef',
+			'line-dasharray': [0.36, 0.18],
+			'line-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 30]
+				]
+			}
+		}
+	},
+	{
+		id: 'tunnel_major',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'tunnel'],
+			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': '#fff',
+			'line-dasharray': [0.28, 0.14],
+			'line-width': {
+				base: 1.4,
+				stops: [
+					[6, 0.5],
+					[20, 30]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_trunk_primary',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'trunk', 'primary']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': '#fff',
+			'line-width': {
+				base: 1.4,
+				stops: [
+					[6, 0.5],
+					[20, 30]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_secondary_tertiary',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'secondary', 'tertiary']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': '#fff',
+			'line-width': {
+				base: 1.4,
+				stops: [
+					[6, 0.5],
+					[20, 20]
+				]
+			}
+		}
+	},
+	{
+		id: 'road_major_motorway',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'motorway']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'hsl(0, 0%, 100%)',
+			'line-offset': 0,
+			'line-width': {
+				base: 1.4,
+				stops: [
+					[8, 1],
+					[16, 10]
+				]
+			}
+		}
+	},
+	{
+		id: 'railway-transit',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', 'class', 'transit'], ['!=', 'brunnel', 'tunnel']],
+		layout: {
 			visibility: 'visible'
 		},
 		paint: {
-			'line-color': [
-				'match',
-				['get', 'vt_motorway'],
-				1,
-				'rgba(0,0,0,1)',
-				[
-					'case',
-					['in', ['get', 'vt_code'], ['literal', [2711, 2712, 2713]]],
-					'rgba(173,173,173,1)',
-					'rgba(100,100,100,1)'
+			'line-color': 'hsl(34, 12%, 66%)',
+			'line-opacity': {
+				base: 1,
+				stops: [
+					[11, 0],
+					[16, 1]
 				]
-			],
-			'line-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 13, 1, 18, 0],
-			'line-width': [
-				'let',
-				'width',
-				[
-					'+',
-					[
-						'case',
-						[
-							'all',
-							['in', ['get', 'vt_code'], ['literal', [2703, 2713, 2723, 2733]]],
-							['!=', ['get', 'vt_motorway'], 1]
-						],
-						500,
-						300
-					],
-					[
-						'case',
-						['has', 'vt_width'],
-						['get', 'vt_width'],
-						[
-							'case',
-							['has', 'vt_rnkwidth'],
-							[
-								'match',
-								['get', 'vt_rnkwidth'],
-								'3m未満',
-								300,
-								'3m-5.5m未満',
-								450,
-								'5.5m-13m未満',
-								900,
-								'13m-19.5m未満',
-								1800,
-								'19.5m以上',
-								2700,
-								0
-							],
-							3000
-						]
-					]
-				],
-				'width2',
-				[
-					'+',
-					[
-						'case',
-						[
-							'all',
-							['in', ['get', 'vt_code'], ['literal', [2703, 2713, 2723, 2733]]],
-							['!=', ['get', 'vt_motorway'], 1]
-						],
-						500,
-						300
-					],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							700,
-							'3m-5.5m未満',
-							1200,
-							'5.5m-13m未満',
-							1700,
-							'13m-19.5m未満',
-							2200,
-							'19.5m以上',
-							2700,
-							0
-						],
-						3000
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width2']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width2']],
-					23,
-					['var', 'width']
-				]
-			]
+			}
 		}
 	},
 	{
-		id: '道路中心線ZL4-10国道',
+		id: 'railway',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		maxzoom: 11,
-		filter: [
-			'in',
-			['get', 'vt_rdctg'],
-			['literal', ['主要道路', '国道', '都道府県道', '市区町村道等']]
-		],
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['==', 'class', 'rail'],
 		layout: {
-			'line-cap': 'round',
-			'line-join': 'round',
-			'line-sort-key': ['get', 'vt_drworder']
-		},
-		paint: {
-			'line-color': [
-				'case',
-				['in', ['get', 'vt_code'], ['literal', [2704, 2714, 2724, 2734]]],
-				[
-					'case',
-					['==', ['get', 'vt_motorway'], 1],
-					'rgba(210,190,139,0.5)',
-					[
-						'match',
-						['get', 'vt_rdctg'],
-						['国道', '主要道路'],
-						'rgba(210,190,139,0.5)',
-						'都道府県道',
-						'rgba(100,100,100,0.5)',
-						'市区町村道等',
-						'rgba(100,100,100,0.5)',
-						'高速自動車国道等',
-						'rgba(210,190,139,0.5)',
-						'その他',
-						'rgba(100,100,100,0.5)',
-						'不明',
-						'rgba(100,100,100,0.5)',
-						'rgba(100,100,100,0.5)'
-					]
-				],
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(255,255,255,1)',
-					[
-						'case',
-						['==', ['get', 'vt_motorway'], 1],
-						'rgba(210,190,139,1)',
-						[
-							'match',
-							['get', 'vt_rdctg'],
-							['国道', '主要道路'],
-							'rgba(210,190,139,1)',
-							'都道府県道',
-							'rgba(210,190,139,1)',
-							'高速自動車国道等',
-							'rgba(210,190,139,1)',
-							'rgba(255,255,255,1)'
-						]
-					]
-				]
-			],
-			'line-opacity': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				10,
-				[
-					'case',
-					[
-						'all',
-						['!', ['==', ['get', 'vt_motorway'], 1]],
-						['==', ['get', 'vt_rdctg'], '都道府県道']
-					],
-					0,
-					1
-				],
-				11,
-				1
-			],
-			'line-width': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				8,
-				1,
-				9,
-				[
-					'case',
-					[
-						'all',
-						['!', ['==', ['get', 'vt_motorway'], 1]],
-						['==', ['get', 'vt_rdctg'], '都道府県道']
-					],
-					1.5,
-					2
-				]
-			]
-		}
-	},
-	{
-		id: '道路中心線ZL4-10高速',
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 6,
-		maxzoom: 11,
-		filter: ['==', ['get', 'vt_rdctg'], '高速自動車国道等'],
-		layout: {
-			'line-cap': 'round',
-			'line-join': 'round',
-			'line-sort-key': ['get', 'vt_drworder'],
 			visibility: 'visible'
 		},
 		paint: {
-			'line-color': [
-				'case',
-				['in', ['get', 'vt_code'], ['literal', [2704, 2714, 2724, 2734]]],
-				[
-					'match',
-					['get', 'vt_rdctg'],
-					'国道',
-					'rgba(210,190,139,0.5)',
-					'都道府県道',
-					'rgba(210,190,139,0.5)',
-					'市区町村道等',
-					'rgba(100,100,100,0.5)',
-					'高速自動車国道等',
-					'rgba(210,190,139,0.5)',
-					'その他',
-					'rgba(100,100,100,0.5)',
-					'不明',
-					'rgba(100,100,100,0.5)',
-					'rgba(100,100,100,0.5)'
-				],
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(255,255,255,1)',
-					[
-						'match',
-						['get', 'vt_rdctg'],
-						'国道',
-						'rgba(210,190,139,1)',
-						'都道府県道',
-						'rgba(210,190,139,1)',
-						'市区町村道等',
-						'rgba(255,255,255,1)',
-						'高速自動車国道等',
-						'rgba(210,190,139,1)',
-						'その他',
-						'rgba(255,255,255,1)',
-						'不明',
-						'rgba(255,255,255,1)',
-						'rgba(255,255,255,1)'
-					]
+			'line-color': 'hsl(34, 12%, 66%)',
+			'line-opacity': {
+				base: 1,
+				stops: [
+					[11, 0],
+					[16, 1]
 				]
-			],
-			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 2, 9, 4]
+			}
 		}
 	},
 	{
-		id: '道路中心線色',
+		id: 'bridge_minor case',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		filter: ['!', ['in', ['get', 'vt_code'], ['literal', [2724, 2734]]]],
-		layout: {
-			'line-join': 'round',
-			'line-cap': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder']
-		},
-		paint: {
-			'line-color': roadLineColor,
-			'line-opacity': roadLineOpacity,
-			'line-width': roadLineWidth
-		}
-	},
-	{
-		id: '道路中心線破線',
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
 		filter: [
-			'step',
-			['zoom'],
-			['in', ['get', 'vt_code'], ['literal', [2724, 2734]]],
-			17,
-			[
-				'all',
-				['in', ['get', 'vt_flag17'], ['literal', [1, 2]]],
-				['in', ['get', 'vt_code'], ['literal', [2724, 2734]]]
-			]
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'bridge'],
+			['==', 'class', 'minor_road']
 		],
 		layout: {
-			'line-join': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder']
+			'line-cap': 'butt',
+			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': 'rgba(100,100,100,1)',
-			'line-dasharray': [5, 5],
-			'line-gap-width': [
-				'let',
-				'width',
-				[
-					'case',
-					['has', 'vt_width'],
-					['get', 'vt_width'],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							150,
-							'3m-5.5m未満',
-							225,
-							'5.5m-13m未満',
-							450,
-							'13m-19.5m未満',
-							900,
-							'19.5m以上',
-							1350,
-							0
-						],
-						1500
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width']],
-					23,
-					['var', 'width']
+			'line-color': '#dedede',
+			'line-gap-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 30]
 				]
-			],
-			'line-width': 1
+			},
+			'line-width': {
+				base: 1.6,
+				stops: [
+					[12, 0.5],
+					[20, 10]
+				]
+			}
 		}
 	},
 	{
-		id: '道路中心線階段',
+		id: 'bridge_major case',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		maxzoom: 22,
-		filter: ['in', ['get', 'vt_code'], ['literal', [2731, 2732, 2733, 2734]]],
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'bridge'],
+			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
 		paint: {
-			'line-color': 'rgba(100,100,100,1)',
-			'line-dasharray': [0.1, 1],
-			'line-width': [
-				'let',
-				'width',
-				[
-					'case',
-					['has', 'vt_width'],
-					['get', 'vt_width'],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							300,
-							'3m-5.5m未満',
-							450,
-							'5.5m-13m未満',
-							900,
-							'13m-19.5m未満',
-							1800,
-							'19.5m以上',
-							2700,
-							0
-						],
-						3000
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width']],
-					23,
-					['var', 'width']
+			'line-color': '#dedede',
+			'line-gap-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 30]
 				]
-			]
+			},
+			'line-width': {
+				base: 1.6,
+				stops: [
+					[12, 0.5],
+					[20, 10]
+				]
+			}
+		}
+	},
+	{
+		id: 'bridge_minor',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'bridge'],
+			['==', 'class', 'minor_road']
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': '#efefef',
+			'line-width': {
+				base: 1.55,
+				stops: [
+					[4, 0.25],
+					[20, 30]
+				]
+			}
+		}
+	},
+	{
+		id: 'bridge_major',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', '$type', 'LineString'],
+			['==', 'brunnel', 'bridge'],
+			['in', 'class', 'primary', 'secondary', 'tertiary', 'trunk']
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': '#fff',
+			'line-width': {
+				base: 1.4,
+				stops: [
+					[6, 0.5],
+					[20, 30]
+				]
+			}
 		}
 	}
 ];

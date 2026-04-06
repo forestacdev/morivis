@@ -39,6 +39,7 @@
 	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
@@ -70,7 +71,6 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）

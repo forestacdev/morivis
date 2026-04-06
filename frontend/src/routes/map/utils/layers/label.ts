@@ -4,7 +4,7 @@ import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 export const labelSources: Record<string, VectorSourceSpecification> = {
 	openmaptiles: {
 		type: 'vector',
-		url: 'https://tile.openstreetmap.jp/data/planet.json'
+		url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 	},
 	takeshima: {
 		type: 'vector',

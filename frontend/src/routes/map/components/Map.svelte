@@ -30,7 +30,6 @@
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
-
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
@@ -204,7 +203,6 @@
 					minzoom: 4,
 					maxzoom: 16,
 					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
-					// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
 					attribution: '国土地理院最適化ベクトルタイル'
 				},
 				tile_grid: {
@@ -332,6 +330,16 @@
 			source: 'terrain',
 			exaggeration: 1
 		};
+
+		const data = await fetch(
+			'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json'
+		).then((res) => res.json());
+
+		console.log(
+			data.layers.filter(
+				(layer: any) => layer['source-layer'] === 'transportation' && layer.type === 'line'
+			)
+		);
 
 		const mapStyle: StyleSpecification = {
 			version: 8,
