@@ -129,7 +129,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': 'hsl(34, 12%, 66%)',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-dasharray': [3, 3],
 			'line-opacity': {
 				base: 1,
@@ -152,7 +152,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': 'hsl(47, 26%, 88%)',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.2,
 				stops: [
@@ -173,7 +173,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-cap': 'round'
 		},
 		paint: {
-			'line-color': 'hsl(0, 0%, 97%)',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.55,
 				stops: [
@@ -195,7 +195,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': 'hsl(0, 0%, 97%)',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.55,
 				stops: [
@@ -221,7 +221,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': '#efefef',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-dasharray': [0.36, 0.18],
 			'line-width': {
 				base: 1.55,
@@ -248,7 +248,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': '#fff',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-dasharray': [0.28, 0.14],
 			'line-width': {
 				base: 1.4,
@@ -270,7 +270,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': '#fff',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.4,
 				stops: [
@@ -291,7 +291,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': '#fff',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.4,
 				stops: [
@@ -379,7 +379,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': '#dedede',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-gap-width': {
 				base: 1.55,
 				stops: [
@@ -412,7 +412,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': '#dedede',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-gap-width': {
 				base: 1.55,
 				stops: [
@@ -445,7 +445,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': '#efefef',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.55,
 				stops: [
@@ -471,7 +471,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 			'line-join': 'round'
 		},
 		paint: {
-			'line-color': '#fff',
+			'line-color': 'rgba(200,200,200,1)',
 			'line-width': {
 				base: 1.4,
 				stops: [
