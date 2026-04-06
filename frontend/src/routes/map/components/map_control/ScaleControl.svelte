@@ -124,7 +124,7 @@
 
 	<!-- スケールバー -->
 	<div
-		class="pointer-events-none absolute bottom-1 z-10 text-base opacity-90 {$showLayerMenu &&
+		class="pointer-events-none absolute bottom-1 text-base opacity-90 lg:z-10 {$showLayerMenu &&
 		!$isMobile
 			? 'left-[410px]'
 			: 'left-[15px]'}"
