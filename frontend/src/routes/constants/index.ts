@@ -113,14 +113,4 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
 /** 初期表示のレイヤーid */
-export const INT_ADD_LAYER_IDS = [
-	// 'ensyurin_owl',
-	// 'ensyurin_kikenboku_h25',
-	// 'disaster_lore_all',
-	'ensyurin_road',
-	'ensyurin_syouhan',
-	'national_forest_stand'
-	// 'fr_mesh20m_7'
-	// 'tochigi_fr_mesh20m'
-	// 'kanagawa_tree_species'
-];
+export const INT_ADD_LAYER_IDS = ['ensyurin_syouhan', 'national_forest_stand'];
