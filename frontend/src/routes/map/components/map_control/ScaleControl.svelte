@@ -6,12 +6,14 @@
 	import { checkMobileWidth } from '$routes/map/utils/ui';
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
+	import { isStyleEdit } from '$routes/stores';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);
 	let scaleText = $state<string>('');
 	let map: MapLibreMap | null = null;
 	let show = $derived.by(() => {
+		if ($isStyleEdit) return false;
 		if ($showLayerMenu || $showDataMenu || $showOtherMenu) {
 			return !checkMobileWidth();
 		}
