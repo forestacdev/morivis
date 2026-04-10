@@ -4,6 +4,7 @@ import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/
 
 /** 通知メッセージ */
 type NotificationMessage = {
+	id: number;
 	message: string;
 	type: 'success' | 'info' | 'error' | 'warning' | 'add';
 	persistent?: boolean;
@@ -11,6 +12,8 @@ type NotificationMessage = {
 };
 /** 通知メッセージを表示するストア */
 export const notificationMessage = writable<NotificationMessage | null>(null);
+
+let notificationId = 0;
 
 /**
  * 通知メッセージを表示する
@@ -23,7 +26,7 @@ export const showNotification = (
 	type: NotificationMessage['type'],
 	persistent: NotificationMessage['persistent'] = false
 ) => {
-	notificationMessage.set({ message, type, persistent });
+	notificationMessage.set({ id: ++notificationId, message, type, persistent });
 	if (type === 'error') shake();
 };
 
@@ -31,7 +34,7 @@ export const showNotification = (
  * レイヤー追加通知を表示する
  */
 export const showLayerAddedNotification = (entry: GeoDataEntry) => {
-	notificationMessage.set({ message: entry.metaData.name, type: 'add', entry });
+	notificationMessage.set({ id: ++notificationId, message: entry.metaData.name, type: 'add', entry });
 };
 
 /**

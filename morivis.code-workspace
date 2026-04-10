@@ -4,38 +4,6 @@
             "path": ".",
         },
         {
-            "name": "設定",
-            "path": "frontend/src/routes/constants",
-        },
-        {
-            "name": "データ定義",
-            "path": "frontend/src/routes/map/data",
-        },
-        {
-            "name": "アップロードフォーム",
-            "path": "frontend/src/routes/map/components/upload",
-        },
-        {
-            "name": "ファイル処理",
-            "path": "frontend/src/routes/map/utils/file",
-        },
-        {
-            "name": "座標変換",
-            "path": "frontend/src/routes/map/utils/proj",
-        },
-        {
-            "name": "レイヤースタイルメニュー",
-            "path": "frontend/src/routes/map/components/layer_style_menu",
-        },
-        {
-            "name": "ユーティリティ",
-            "path": "frontend/src/routes/map/utils",
-        },
-        {
-            "name": "ストア",
-            "path": "frontend/src/routes/stores",
-        },
-        {
             "path": "frontend",
         },
         {
