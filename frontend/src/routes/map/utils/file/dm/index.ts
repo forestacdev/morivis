@@ -27,6 +27,8 @@
  *     https://takamoto.biz/2020/06/都市計画ｇｉｓの構築２−dmデータの仕様/
  *   - 数値地形図データファイル仕様（林野庁）
  *     https://www.rinya.maff.go.jp/kanto/apply/publicsale/kanri/pdf/furoku8-1.pdf
+ *   - 参考実装: Orbitalnet-incs/dmprovider
+ *     https://github.com/Orbitalnet-incs/dmprovider/tree/main
  */
 
 import { getClassName } from './classCode';
@@ -95,6 +97,92 @@ const substr = (line: string, start: number, length: number): string =>
 const parseIntField = (line: string, start: number, length: number): number =>
 	parseInt(substr(line, start, length), 10) || 0;
 
+const normalizeAngle = (angle: number): number => {
+	let normalized = angle % 360;
+	if (normalized < 0) normalized += 360;
+	return normalized;
+};
+
+const calculateCircleCenterAndRadius = (
+	points: Array<[number, number]>
+): { center: [number, number]; radius: number } | null => {
+	if (points.length < 3) return null;
+
+	const [[x1, y1], [x2, y2], [x3, y3]] = points;
+	const d = 2 * ((y1 - y3) * (x1 - x2) - (y1 - y2) * (x1 - x3));
+	if (Math.abs(d) < 1e-9) return null;
+
+	const x =
+		((y1 - y3) * (y1 ** 2 - y2 ** 2 + x1 ** 2 - x2 ** 2) -
+			(y1 - y2) * (y1 ** 2 - y3 ** 2 + x1 ** 2 - x3 ** 2)) /
+		d;
+	const y =
+		((x1 - x3) * (x1 ** 2 - x2 ** 2 + y1 ** 2 - y2 ** 2) -
+			(x1 - x2) * (x1 ** 2 - x3 ** 2 + y1 ** 2 - y3 ** 2)) /
+		-d;
+
+	return {
+		center: [x, y],
+		radius: Math.hypot(x - x1, y - y1)
+	};
+};
+
+const createCircleRing = (
+	center: [number, number],
+	radius: number,
+	stepDegrees = 10
+): Array<[number, number]> => {
+	const ring: Array<[number, number]> = [];
+
+	for (let degree = 0; degree <= 360; degree += stepDegrees) {
+		const radians = (degree * Math.PI) / 180;
+		ring.push([center[0] + radius * Math.cos(radians), center[1] + radius * Math.sin(radians)]);
+	}
+
+	if (ring.length > 0) {
+		const first = ring[0];
+		const last = ring[ring.length - 1];
+		if (first[0] !== last[0] || first[1] !== last[1]) {
+			ring.push(first);
+		}
+	}
+
+	return ring;
+};
+
+const createArcPoints = (points: Array<[number, number]>): Array<[number, number]> | null => {
+	const circle = calculateCircleCenterAndRadius(points);
+	if (!circle) return null;
+
+	const [start, middle, end] = points;
+	const { center, radius } = circle;
+	const startAngle = normalizeAngle((Math.atan2(start[1] - center[1], start[0] - center[0]) * 180) / Math.PI);
+	const middleAngle = normalizeAngle(
+		(Math.atan2(middle[1] - center[1], middle[0] - center[0]) * 180) / Math.PI
+	);
+	const endAngle = normalizeAngle((Math.atan2(end[1] - center[1], end[0] - center[0]) * 180) / Math.PI);
+
+	const clockwiseDelta = normalizeAngle(endAngle - startAngle);
+	const clockwiseMiddle = normalizeAngle(middleAngle - startAngle);
+	const isClockwise = clockwiseDelta > clockwiseMiddle;
+	const sweep = isClockwise ? clockwiseDelta : 360 - clockwiseDelta;
+	const direction = isClockwise ? 1 : -1;
+	const steps = Math.max(1, Math.ceil(sweep));
+	const arcPoints: Array<[number, number]> = [];
+
+	for (let i = 0; i < steps; i++) {
+		const angle = startAngle + i * direction;
+		const radians = (angle * Math.PI) / 180;
+		arcPoints.push([
+			center[0] + radius * Math.cos(radians),
+			center[1] + radius * Math.sin(radians)
+		]);
+	}
+
+	arcPoints.push(end);
+	return arcPoints;
+};
+
 interface IndexRecord {
 	type: 'INDEX';
 	coordSystem: number;
@@ -140,6 +228,11 @@ interface ElementRecord {
 	dataTypeCode: string; // 元のデータタイプコード (0-9)
 	elementId: number;
 	coordinateCount: number;
+	dataKubun: number;
+	actualDataType: number;
+	precisionType: number;
+	kandan: number;
+	teni: number;
 	is3D?: boolean; // 拡張DM: 座標次元が3Dかどうか
 }
 
@@ -160,6 +253,7 @@ interface AnnotationRecord {
 	y: number;
 	angle: number; // デシ度
 	height: number; // 文字高さ (raw整数)
+	tateyoko?: number;
 }
 
 type ParsedRecord =
@@ -332,7 +426,12 @@ const parseElementRecord = (line: string): ElementRecord => {
 		dataType: DATA_TYPE_MAP[dataTypeCode] ?? '不明',
 		dataTypeCode,
 		elementId: parseIntField(line, 9, 8),
-		coordinateCount: parseIntField(line, 33, 4)
+		coordinateCount: parseIntField(line, 33, 4),
+		dataKubun: parseIntField(line, 32, 1),
+		actualDataType: parseIntField(line, 18, 1),
+		precisionType: parseIntField(line, 19, 1),
+		kandan: parseIntField(line, 20, 4),
+		teni: parseIntField(line, 24, 4)
 	};
 };
 
@@ -386,7 +485,8 @@ const parseAnnotationRecord = (line: string): AnnotationRecord => {
 		y: parseIntField(line, 13, 10),
 		angle: parseIntField(line, 23, 4),
 		height: parseIntField(line, 27, 4),
-		text: substr(line, 31, 54)
+		text: substr(line, 31, 54),
+		tateyoko: 0
 	};
 };
 
@@ -453,6 +553,11 @@ const parseExtElementRecord = (
 		dataTypeCode,
 		elementId,
 		coordinateCount,
+		dataKubun: parseInt(line.substring(7, 8).trim(), 10) || 0,
+		actualDataType: parseInt(line.substring(7, 8).trim(), 10) || 0,
+		precisionType: parseInt(line.substring(16, 17).trim(), 10) || 0,
+		kandan: parseInt(line.substring(8, 12).trim(), 10) || 0,
+		teni: 0,
 		is3D,
 		embeddedX,
 		embeddedY
@@ -521,7 +626,8 @@ const parseExtAnnotationDataRecord = (line: string): AnnotationRecord => {
 		y: 0,
 		angle: parseInt(line.substring(0, 7).trim(), 10) || 0,
 		height: parseInt(line.substring(11, 15).trim(), 10) || 0,
-		text
+		text,
+		tateyoko: parseInt(line.substring(7, 8).trim(), 10) || 0
 	};
 };
 
@@ -788,7 +894,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 		const { classCode, dataType, dataTypeCode, elementId } = currentElementRecord;
 		const className = getClassName(classCode);
-		const baseProps = {
+		const baseProps: DMFeature['properties'] = {
 			classCode,
 			className,
 			dataType,
@@ -796,7 +902,12 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			elementId,
 			layer: currentClassCode,
 			mapLevel,
-			drawingId: currentDrawingId
+			drawingId: currentDrawingId,
+			dataKubun: currentElementRecord.dataKubun,
+			actualDataType: currentElementRecord.actualDataType,
+			precisionType: currentElementRecord.precisionType,
+			kandan: currentElementRecord.kandan,
+			teni: currentElementRecord.teni
 		};
 
 		let geometry: DMFeature['geometry'] | null = null;
@@ -807,14 +918,35 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 		const coords = rawCoords.map(([e, n]) => [roundCoord(e), roundCoord(n)]);
 
-		if (dataType === '点' || dataType === '方向') {
+		if (dataType === '点') {
 			if (coords.length === 1) {
 				geometry = { type: 'Point', coordinates: coords[0] };
 			} else if (coords.length > 1) {
 				geometry = { type: 'MultiPoint', coordinates: coords };
 			}
-		} else if (dataType === '線' || dataType === '円弧') {
+		} else if (dataType === '方向') {
+			if (coords.length >= 1) {
+				geometry = { type: 'Point', coordinates: coords[0] };
+				if (coords.length >= 2) {
+					baseProps.angle =
+						normalizeAngle(
+							(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180) /
+								Math.PI
+						);
+				}
+			}
+		} else if (dataType === '線') {
 			if (coords.length >= 2) {
+				geometry = { type: 'LineString', coordinates: coords };
+			}
+		} else if (dataType === '円弧') {
+			if (coords.length >= 3) {
+				const arcPoints = createArcPoints(coords as Array<[number, number]>);
+				geometry = {
+					type: 'LineString',
+					coordinates: (arcPoints ?? coords).map(([e, n]) => [roundCoord(e), roundCoord(n)])
+				};
+			} else if (coords.length >= 2) {
 				geometry = { type: 'LineString', coordinates: coords };
 			}
 		} else if (dataType === '面') {
@@ -829,8 +961,22 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 				geometry = { type: 'Polygon', coordinates: [ring] };
 			}
 		} else if (dataType === '円') {
-			// 円は中心点として扱う（半径情報は別途 properties に格納）
-			if (coords.length >= 1) {
+			if (coords.length >= 3) {
+				const circle = calculateCircleCenterAndRadius(coords as Array<[number, number]>);
+				if (circle) {
+					baseProps.center = [roundCoord(circle.center[0]), roundCoord(circle.center[1])];
+					baseProps.radius = circle.radius;
+					geometry = {
+						type: 'Polygon',
+						coordinates: [
+							createCircleRing(circle.center, circle.radius).map(([e, n]) => [
+								roundCoord(e),
+								roundCoord(n)
+							])
+						]
+					};
+				}
+			} else if (coords.length >= 1) {
 				geometry = { type: 'Point', coordinates: coords[0] };
 			}
 		}
@@ -948,7 +1094,10 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 						drawingId: currentDrawingId,
 						text: record.text,
 						angle: record.angle / 10, // デシ度 → 度
-						height: record.height
+						height: record.height,
+						tateyoko: record.tateyoko ?? 0,
+						kandan: currentElementRecord?.kandan ?? 0,
+						teni: currentElementRecord?.teni ?? 0
 					}
 				});
 				// 注記後はバッファをリセット
