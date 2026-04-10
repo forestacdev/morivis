@@ -183,6 +183,117 @@ const createArcPoints = (points: Array<[number, number]>): Array<[number, number
 	return arcPoints;
 };
 
+const isContourClassCode = (classCode: string): boolean =>
+	classCode.startsWith('71') && classCode !== '7199';
+
+const coordKey = ([x, y]: [number, number]): string => `${x},${y}`;
+
+const mergeConnectedLineCoordinates = (
+	lineStrings: Array<Array<[number, number]>>
+): Array<{ coordinates: Array<[number, number]>; segmentCount: number }> => {
+	// 同じ標高値・同じ等高線クラスで束ねた折れ線群を、端点一致だけで順次連結する。
+	const remaining = lineStrings
+		.filter((coords) => coords.length >= 2)
+		.map((coords) => [...coords] as Array<[number, number]>);
+	const merged: Array<{ coordinates: Array<[number, number]>; segmentCount: number }> = [];
+
+	while (remaining.length > 0) {
+		let current = remaining.shift()!;
+		let segmentCount = 1;
+		let didMerge = true;
+
+		while (didMerge) {
+			didMerge = false;
+
+			for (let i = 0; i < remaining.length; i++) {
+				const candidate = remaining[i];
+				const currentStart = current[0];
+				const currentEnd = current[current.length - 1];
+				const candidateStart = candidate[0];
+				const candidateEnd = candidate[candidate.length - 1];
+
+				if (coordKey(currentEnd) === coordKey(candidateStart)) {
+					current = [...current, ...candidate.slice(1)];
+				} else if (coordKey(currentEnd) === coordKey(candidateEnd)) {
+					current = [...current, ...[...candidate].reverse().slice(1)];
+				} else if (coordKey(currentStart) === coordKey(candidateEnd)) {
+					current = [...candidate.slice(0, -1), ...current];
+				} else if (coordKey(currentStart) === coordKey(candidateStart)) {
+					current = [...[...candidate].reverse().slice(0, -1), ...current];
+				} else {
+					continue;
+				}
+
+				remaining.splice(i, 1);
+				segmentCount += 1;
+				didMerge = true;
+				break;
+			}
+		}
+
+		merged.push({ coordinates: current, segmentCount });
+	}
+
+	return merged;
+};
+
+const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
+	// 等高線は1地物が複数要素レコードに分かれやすいため、ここで後処理として連結する。
+	// 道路や境界まで誤結合しないように、71xx の線だけを対象にする。
+	// 標高値がある場合は同じ標高値ごとに、無い場合は classCode 単位で端点完全一致マージを行う。
+	const mergedFeatures: DMFeature[] = [];
+	const contourGroups = new Map<string, DMFeature[]>();
+
+	for (const feature of features) {
+		if (
+			feature.geometry.type !== 'LineString' ||
+			feature.properties.dataType !== '線' ||
+			!isContourClassCode(feature.properties.classCode) ||
+			typeof feature.properties.elevation !== 'number'
+		) {
+			mergedFeatures.push(feature);
+			continue;
+		}
+
+		const groupKey = [
+			feature.properties.classCode,
+			feature.properties.drawingId,
+			typeof feature.properties.elevation === 'number'
+				? `elevation:${String(feature.properties.elevation)}`
+				: 'elevation:none'
+		].join(':');
+
+		const bucket = contourGroups.get(groupKey);
+		if (bucket) {
+			bucket.push(feature);
+		} else {
+			contourGroups.set(groupKey, [feature]);
+		}
+	}
+
+	for (const group of contourGroups.values()) {
+		const mergedCoordinates = mergeConnectedLineCoordinates(
+			group.map((feature) => feature.geometry.coordinates as Array<[number, number]>)
+		);
+
+		for (const mergedCoordinate of mergedCoordinates) {
+			mergedFeatures.push({
+				...group[0],
+				geometry: {
+					type: 'LineString',
+					coordinates: mergedCoordinate.coordinates
+				},
+				properties: {
+					...group[0].properties,
+					mergedSegmentCount: mergedCoordinate.segmentCount
+				}
+			});
+		}
+	}
+
+	return mergedFeatures;
+};
+
 interface IndexRecord {
 	type: 'INDEX';
 	coordSystem: number;
@@ -885,6 +996,13 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 		return [toMeters(y, mapLevel), toMeters(x, mapLevel)];
 	};
 
+	const toAbsoluteElevation = (z: number): number => {
+		if (isExtended) {
+			return z / coordUnitDivisor;
+		}
+		return toMeters(z, mapLevel);
+	};
+
 	const roundCoord = (v: number) => Math.round(v * precision) / precision;
 
 	// バッファを GeoJSON フィーチャに変換してフラッシュ
@@ -917,6 +1035,16 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			: coordBuffer.map(([x, y]) => toAbsoluteMeters(x, y));
 
 		const coords = rawCoords.map(([e, n]) => [roundCoord(e), roundCoord(n)]);
+		if (is3D && coord3DBuffer.length > 0) {
+			// 3D座標のZ値は等高線などの標高情報として使う。単一標高なら elevation に正規化する。
+			const elevations = coord3DBuffer.map(([, , z]) => roundCoord(toAbsoluteElevation(z)));
+			const uniqueElevations = [...new Set(elevations)];
+			if (uniqueElevations.length === 1) {
+				baseProps.elevation = uniqueElevations[0];
+			} else {
+				baseProps.elevations = uniqueElevations;
+			}
+		}
 
 		if (dataType === '点') {
 			if (coords.length === 1) {
@@ -1113,6 +1241,8 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 	// 最後の要素をフラッシュ
 	flushFeature();
+	// FeatureCollectionとして返す前に、分割された等高線だけを地物寄りの形へまとめ直す。
+	const normalizedFeatures = mergeContourFeatures(features);
 
 	// 系番号が未確定の場合のフォールバック
 	if (coordSystem === 0) {
@@ -1121,7 +1251,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 	return {
 		type: 'FeatureCollection',
-		features,
+		features: normalizedFeatures,
 		properties: {
 			coordinateSystem: coordSystem,
 			epsgCode: 6668 + coordSystem,
