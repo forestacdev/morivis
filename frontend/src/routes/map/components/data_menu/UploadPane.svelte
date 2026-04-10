@@ -49,6 +49,7 @@
 		{ type: 'vector', label: 'ベクタータイル' },
 		{ type: 'wmts', label: 'WMS/WMTS' },
 		{ type: 'arcgis', label: 'ArcGIS' },
+		// { type: 'wcs', label: 'WCS' },
 		{ type: 'pmtiles', label: 'PMTiles' },
 		{ type: '3dtiles', label: '3D Tiles' },
 		{ type: 'demxml', label: '基盤地図DEM' },
