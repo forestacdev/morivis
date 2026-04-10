@@ -494,6 +494,12 @@
 	});
 </script>
 
+<!-- {#if !isInitialized && !isInitialStreetViewEntry}
+	<div class="bg-main absolute z-100 grid h-full w-full place-items-center">
+		<div class="text-5xl">Loading&hellip;</div>
+	</div>
+{/if} -->
+
 {#if isInitialized && isInitialStreetViewEntry}
 	{#if isScreenshotMode}
 		<!-- スクリーンショットモード: マップのみ表示 -->
