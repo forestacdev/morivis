@@ -33,6 +33,8 @@
 
 import { getClassName } from './classCode';
 
+const DM_DEBUG = false;
+
 // ============================================================
 // 型定義
 // ============================================================
@@ -156,11 +158,15 @@ const createArcPoints = (points: Array<[number, number]>): Array<[number, number
 
 	const [start, middle, end] = points;
 	const { center, radius } = circle;
-	const startAngle = normalizeAngle((Math.atan2(start[1] - center[1], start[0] - center[0]) * 180) / Math.PI);
+	const startAngle = normalizeAngle(
+		(Math.atan2(start[1] - center[1], start[0] - center[0]) * 180) / Math.PI
+	);
 	const middleAngle = normalizeAngle(
 		(Math.atan2(middle[1] - center[1], middle[0] - center[0]) * 180) / Math.PI
 	);
-	const endAngle = normalizeAngle((Math.atan2(end[1] - center[1], end[0] - center[0]) * 180) / Math.PI);
+	const endAngle = normalizeAngle(
+		(Math.atan2(end[1] - center[1], end[0] - center[0]) * 180) / Math.PI
+	);
 
 	const clockwiseDelta = normalizeAngle(endAngle - startAngle);
 	const clockwiseMiddle = normalizeAngle(middleAngle - startAngle);
@@ -192,42 +198,94 @@ const mergeConnectedLineCoordinates = (
 	lineStrings: Array<Array<[number, number]>>
 ): Array<{ coordinates: Array<[number, number]>; segmentCount: number }> => {
 	// 同じ標高値・同じ等高線クラスで束ねた折れ線群を、端点一致だけで順次連結する。
-	const remaining = lineStrings
+	// 総当たりを避けるため、端点 -> セグメント一覧の索引を先に作る。
+	const segments = lineStrings
 		.filter((coords) => coords.length >= 2)
 		.map((coords) => [...coords] as Array<[number, number]>);
+	const endpointMap = new Map<string, number[]>();
+	const used = new Array<boolean>(segments.length).fill(false);
 	const merged: Array<{ coordinates: Array<[number, number]>; segmentCount: number }> = [];
 
-	while (remaining.length > 0) {
-		let current = remaining.shift()!;
+	const addEndpointIndex = (key: string, segmentIndex: number) => {
+		const bucket = endpointMap.get(key);
+		if (bucket) {
+			bucket.push(segmentIndex);
+		} else {
+			endpointMap.set(key, [segmentIndex]);
+		}
+	};
+
+	const getMergedCoordinates = (
+		current: Array<[number, number]>,
+		candidate: Array<[number, number]>,
+		atStart: boolean
+	): Array<[number, number]> | null => {
+		const currentStart = current[0];
+		const currentEnd = current[current.length - 1];
+		const candidateStart = candidate[0];
+		const candidateEnd = candidate[candidate.length - 1];
+
+		if (!atStart) {
+			if (coordKey(currentEnd) === coordKey(candidateStart)) {
+				return [...current, ...candidate.slice(1)];
+			}
+			if (coordKey(currentEnd) === coordKey(candidateEnd)) {
+				return [...current, ...[...candidate].reverse().slice(1)];
+			}
+			return null;
+		}
+
+		if (coordKey(currentStart) === coordKey(candidateEnd)) {
+			return [...candidate.slice(0, -1), ...current];
+		}
+		if (coordKey(currentStart) === coordKey(candidateStart)) {
+			return [...[...candidate].reverse().slice(0, -1), ...current];
+		}
+		return null;
+	};
+
+	const collectUnusedCandidates = (endpointKey: string): number[] =>
+		(endpointMap.get(endpointKey) ?? []).filter((index) => !used[index]);
+
+	for (let i = 0; i < segments.length; i++) {
+		addEndpointIndex(coordKey(segments[i][0]), i);
+		addEndpointIndex(coordKey(segments[i][segments[i].length - 1]), i);
+	}
+
+	for (let i = 0; i < segments.length; i++) {
+		if (used[i]) continue;
+
+		let current = [...segments[i]];
 		let segmentCount = 1;
-		let didMerge = true;
+		used[i] = true;
+		let extended = true;
 
-		while (didMerge) {
-			didMerge = false;
+		while (extended) {
+			extended = false;
 
-			for (let i = 0; i < remaining.length; i++) {
-				const candidate = remaining[i];
-				const currentStart = current[0];
-				const currentEnd = current[current.length - 1];
-				const candidateStart = candidate[0];
-				const candidateEnd = candidate[candidate.length - 1];
-
-				if (coordKey(currentEnd) === coordKey(candidateStart)) {
-					current = [...current, ...candidate.slice(1)];
-				} else if (coordKey(currentEnd) === coordKey(candidateEnd)) {
-					current = [...current, ...[...candidate].reverse().slice(1)];
-				} else if (coordKey(currentStart) === coordKey(candidateEnd)) {
-					current = [...candidate.slice(0, -1), ...current];
-				} else if (coordKey(currentStart) === coordKey(candidateStart)) {
-					current = [...[...candidate].reverse().slice(0, -1), ...current];
-				} else {
+			const endCandidates = collectUnusedCandidates(coordKey(current[current.length - 1]));
+			if (endCandidates.length === 1) {
+				const candidateIndex = endCandidates[0];
+				const mergedCoords = getMergedCoordinates(current, segments[candidateIndex], false);
+				if (mergedCoords) {
+					current = mergedCoords;
+					used[candidateIndex] = true;
+					segmentCount += 1;
+					extended = true;
 					continue;
 				}
+			}
 
-				remaining.splice(i, 1);
-				segmentCount += 1;
-				didMerge = true;
-				break;
+			const startCandidates = collectUnusedCandidates(coordKey(current[0]));
+			if (startCandidates.length === 1) {
+				const candidateIndex = startCandidates[0];
+				const mergedCoords = getMergedCoordinates(current, segments[candidateIndex], true);
+				if (mergedCoords) {
+					current = mergedCoords;
+					used[candidateIndex] = true;
+					segmentCount += 1;
+					extended = true;
+				}
 			}
 		}
 
@@ -243,16 +301,21 @@ const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
 	// 標高値がある場合は同じ標高値ごとに、無い場合は classCode 単位で端点完全一致マージを行う。
 	const mergedFeatures: DMFeature[] = [];
 	const contourGroups = new Map<string, DMFeature[]>();
+	let contourFeatureCount = 0;
+	let contourWithElevationCount = 0;
 
 	for (const feature of features) {
 		if (
 			feature.geometry.type !== 'LineString' ||
 			feature.properties.dataType !== '線' ||
-			!isContourClassCode(feature.properties.classCode) ||
-			typeof feature.properties.elevation !== 'number'
+			!isContourClassCode(feature.properties.classCode)
 		) {
 			mergedFeatures.push(feature);
 			continue;
+		}
+		contourFeatureCount += 1;
+		if (typeof feature.properties.elevation === 'number') {
+			contourWithElevationCount += 1;
 		}
 
 		const groupKey = [
@@ -271,10 +334,32 @@ const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
 		}
 	}
 
+	if (DM_DEBUG) {
+		console.debug('[DM] contour merge input', {
+			contourFeatureCount,
+			contourWithElevationCount,
+			contourWithoutElevationCount: contourFeatureCount - contourWithElevationCount,
+			contourGroupCount: contourGroups.size
+		});
+	}
+
 	for (const group of contourGroups.values()) {
 		const mergedCoordinates = mergeConnectedLineCoordinates(
 			group.map((feature) => feature.geometry.coordinates as Array<[number, number]>)
 		);
+
+		if (DM_DEBUG) {
+			const sample = group[0];
+			console.debug('[DM] contour merge group', {
+				classCode: sample.properties.classCode,
+				drawingId: sample.properties.drawingId,
+				elevation:
+					typeof sample.properties.elevation === 'number' ? sample.properties.elevation : null,
+				sourceSegmentCount: group.length,
+				mergedFeatureCount: mergedCoordinates.length,
+				mergedSegmentCounts: mergedCoordinates.map((item) => item.segmentCount)
+			});
+		}
 
 		for (const mergedCoordinate of mergedCoordinates) {
 			mergedFeatures.push({
@@ -1056,11 +1141,9 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			if (coords.length >= 1) {
 				geometry = { type: 'Point', coordinates: coords[0] };
 				if (coords.length >= 2) {
-					baseProps.angle =
-						normalizeAngle(
-							(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180) /
-								Math.PI
-						);
+					baseProps.angle = normalizeAngle(
+						(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180) / Math.PI
+					);
 				}
 			}
 		} else if (dataType === '線') {
@@ -1243,6 +1326,13 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 	flushFeature();
 	// FeatureCollectionとして返す前に、分割された等高線だけを地物寄りの形へまとめ直す。
 	const normalizedFeatures = mergeContourFeatures(features);
+
+	if (DM_DEBUG) {
+		console.debug('[DM] convertDMtoGeoJSON result', {
+			featureCountBeforeContourMerge: features.length,
+			featureCountAfterContourMerge: normalizedFeatures.length
+		});
+	}
 
 	// 系番号が未確定の場合のフォールバック
 	if (coordSystem === 0) {
