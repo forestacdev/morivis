@@ -1,4 +1,4 @@
-import { base } from '$app/paths';
+import { asset } from '$app/paths';
 
 import type { RasterBands, BandDataRange } from '$routes/map/utils/file/geotiff';
 
@@ -93,7 +93,7 @@ const sendCommand = <T>(msg: Record<string, any>, transfer?: Transferable[]): Pr
  * 以降の getGpkgInfoFromOpen / gpkgToGeoJsonFromOpen 等はデータ転送なしで高速
  */
 export const openGpkg = async (data: Uint8Array): Promise<void> => {
-	const wasmUrl = `${base}/sql-wasm.wasm`;
+	const wasmUrl = asset('/sql-wasm.wasm');
 	const copy = new Uint8Array(data);
 	await sendCommand<boolean>({ type: 'open', data: copy, wasmUrl }, [copy.buffer]);
 };
