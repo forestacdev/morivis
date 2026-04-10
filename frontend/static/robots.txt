@@ -1,3 +1,4 @@
+User-agent: *
 Disallow: /_*
 
 Sitemap: https://forestacdev.github.io/morivis/sitemap.xml

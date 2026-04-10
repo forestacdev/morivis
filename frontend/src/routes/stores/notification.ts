@@ -34,7 +34,12 @@ export const showNotification = (
  * レイヤー追加通知を表示する
  */
 export const showLayerAddedNotification = (entry: GeoDataEntry) => {
-	notificationMessage.set({ id: ++notificationId, message: entry.metaData.name, type: 'add', entry });
+	notificationMessage.set({
+		id: ++notificationId,
+		message: entry.metaData.name,
+		type: 'add',
+		entry
+	});
 };
 
 /**
