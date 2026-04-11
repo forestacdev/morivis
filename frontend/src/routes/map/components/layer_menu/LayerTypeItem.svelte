@@ -14,6 +14,7 @@
 		layerType: LayerType;
 		lastLayerType: LayerType | null;
 		typeEntries: GeoDataEntry[];
+		layerInRangeMap: Record<string, boolean>;
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -27,6 +28,7 @@
 		layerType,
 		lastLayerType,
 		typeEntries,
+		layerInRangeMap,
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
@@ -68,6 +70,7 @@
 			isLast={isLastType && i === typeEntries.length - 1}
 			{layerType}
 			{layerEntry}
+			isLayerInRange={layerInRangeMap[layerEntry.id] ?? false}
 			bind:showDataEntry
 			bind:tempLayerEntries
 			bind:enableFlip

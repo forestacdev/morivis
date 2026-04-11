@@ -15,11 +15,10 @@
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
-	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
-	import { mapStore, type MapState } from '$routes/stores/map';
+	import { mapStore } from '$routes/stores/map';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -33,6 +32,7 @@
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
+		isLayerInRange: boolean;
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
 	}
@@ -48,6 +48,7 @@
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
+		isLayerInRange,
 		featureMenuData = $bindable(),
 		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
 	}: Props = $props();
@@ -59,11 +60,6 @@
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
-	let isLayerInRange = $state(false);
-
-	let LayerBbox = $derived.by(() => {
-		return layerEntry?.metaData.bounds;
-	});
 
 	let isGeojsonCustomLayer = $derived.by(() => {
 		return (
@@ -369,35 +365,6 @@
 		isHoveredLayerType = bool ? layerType : null;
 	};
 
-	// レイヤー表示範囲をチェック
-	const checkRange = (_state: MapState) => {
-		if (!layerEntry) return;
-		let z = _state.zoom;
-
-		if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
-			z = z + 1.5;
-		}
-
-		// ズームレベル範囲内かのチェック
-		if (layerEntry.metaData.minZoom && z < layerEntry.metaData.minZoom) {
-			isLayerInRange = false;
-			return;
-		}
-
-		if (!LayerBbox) {
-			isLayerInRange = false;
-			return;
-		}
-
-		const mapBbox = _state.bbox;
-
-		if (isBBoxOverlapping(LayerBbox, mapBbox)) {
-			isLayerInRange = true;
-		} else {
-			isLayerInRange = false;
-		}
-	};
-
 	// TODO: 使用してない
 	// $effect(() => {
 	// 	if (isLayerInRange) {
@@ -412,20 +379,12 @@
 	// });
 
 	onMount(() => {
-		const state = mapStore.getState();
-
-		checkRange(state);
-
 		// passive: false を指定してtouchmoveでpreventDefault()を使えるようにする
 		layerItemElement?.addEventListener('touchmove', handleTouchMove, { passive: false });
 
 		return () => {
 			layerItemElement?.removeEventListener('touchmove', handleTouchMove);
 		};
-	});
-
-	mapStore.onStateChange((state) => {
-		checkRange(state);
 	});
 
 	let prefCode = $derived.by(() => {

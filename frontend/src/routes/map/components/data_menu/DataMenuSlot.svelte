@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import DOMPurify from 'dompurify';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import DOMPurify from 'dompurify';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';

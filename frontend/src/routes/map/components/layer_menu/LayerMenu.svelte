@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onDestroy } from 'svelte';
 	import { tick } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
@@ -11,6 +12,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
+	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
@@ -25,6 +27,7 @@
 		showStreetViewLayer,
 		showCloudLayer
 	} from '$routes/stores/layers';
+	import { mapStore, type MapState } from '$routes/stores/map';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -84,6 +87,33 @@
 
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
 	let scrollContainer = $state<HTMLElement | undefined>(undefined);
+	let mapState = $state<MapState>(mapStore.getState());
+	let layerInRangeMap = $derived.by(() => {
+		const next: Record<string, boolean> = {};
+
+		for (const layerEntry of layerEntries) {
+			let zoom = mapState.zoom;
+
+			if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
+				zoom += 1.5;
+			}
+
+			if (layerEntry.metaData.minZoom && zoom < layerEntry.metaData.minZoom) {
+				next[layerEntry.id] = false;
+				continue;
+			}
+
+			const layerBbox = layerEntry.metaData.bounds;
+			if (!layerBbox) {
+				next[layerEntry.id] = false;
+				continue;
+			}
+
+			next[layerEntry.id] = isBBoxOverlapping(layerBbox, mapState.bbox);
+		}
+
+		return next;
+	});
 
 	let prevLayerIds = $state<string[]>([]);
 	activeLayerIdsStore.subscribe(async (ids) => {
@@ -104,6 +134,14 @@
 		if (value && $showLayerMenu && $isActiveMobileMenu !== 'layer') {
 			$showLayerMenu = false;
 		}
+	});
+
+	const unsubscribeMapState = mapStore.onStateChange((state) => {
+		mapState = state;
+	});
+
+	onDestroy(() => {
+		unsubscribeMapState();
 	});
 </script>
 
@@ -238,6 +276,7 @@
 								layerType={'model'}
 								{lastLayerType}
 								typeEntries={modelEntries}
+								{layerInRangeMap}
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -259,6 +298,7 @@
 								layerType={'point'}
 								{lastLayerType}
 								typeEntries={pointEntries}
+								{layerInRangeMap}
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -280,6 +320,7 @@
 								layerType={'line'}
 								{lastLayerType}
 								typeEntries={lineEntries}
+								{layerInRangeMap}
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -301,6 +342,7 @@
 								layerType={'polygon'}
 								{lastLayerType}
 								typeEntries={polygonEntries}
+								{layerInRangeMap}
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
@@ -322,6 +364,7 @@
 								layerType={'raster'}
 								{lastLayerType}
 								typeEntries={rasterEntries}
+								{layerInRangeMap}
 								bind:showDataEntry
 								bind:tempLayerEntries
 								bind:enableFlip
