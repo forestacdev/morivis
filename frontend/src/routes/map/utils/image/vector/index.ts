@@ -3,9 +3,11 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import * as tilebelt from '@mapbox/tilebelt';
 import maplibregl from 'maplibre-gl';
+import { Protocol } from 'pmtiles';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
+import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 
 export interface MapImageOptions {
 	name: string;
@@ -26,6 +28,17 @@ export interface MapImageResult {
 	revokeBlobUrl: () => void;
 }
 
+const previewPmtilesProtocol = new Protocol();
+const previewMbtilesProtocol = mbtilesProtocol();
+let previewProtocolsRegistered = false;
+
+const ensurePreviewProtocols = () => {
+	if (previewProtocolsRegistered) return;
+	maplibregl.addProtocol('pmtiles', previewPmtilesProtocol.tile);
+	maplibregl.addProtocol(previewMbtilesProtocol.protocolName, previewMbtilesProtocol.request);
+	previewProtocolsRegistered = true;
+};
+
 // 複数のMapインスタンスを管理するクラス
 class MapInstancePool {
 	private instances: maplibregl.Map[] = [];
@@ -38,6 +51,8 @@ class MapInstancePool {
 	}
 
 	private initializeInstances() {
+		ensurePreviewProtocols();
+
 		for (let i = 0; i < this.maxInstances; i++) {
 			const container = document.createElement('div');
 			container.style.width = '512px';

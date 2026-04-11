@@ -14,6 +14,20 @@ const PROTOCOL_NAME = 'mbtiles';
 const dbCache = new Map<string, Database>();
 let sqlPromise: Promise<SqlJsStatic> | null = null;
 
+const setCachedDb = (entryId: string, db: Database) => {
+	const currentDb = dbCache.get(entryId);
+	if (currentDb && currentDb !== db) currentDb.close();
+	dbCache.set(entryId, db);
+};
+
+const getCachedDb = (entryId: string): Database | undefined => {
+	const db = dbCache.get(entryId);
+	if (!db) return undefined;
+	dbCache.delete(entryId);
+	dbCache.set(entryId, db);
+	return db;
+};
+
 const getSql = (): Promise<SqlJsStatic> => {
 	if (!sqlPromise) {
 		sqlPromise = initSqlJs({
@@ -30,7 +44,7 @@ const getSql = (): Promise<SqlJsStatic> => {
 export interface MBTilesVectorLayer {
 	id: string;
 	fields: Record<string, string>;
-	geometryType?: string; // Point, LineString, Polygon, Unknown
+	geometryType?: string;
 	minZoom?: number;
 	maxZoom?: number;
 }
@@ -52,19 +66,23 @@ export const registerMBTiles = async (entryId: string, file: File): Promise<MBTi
 	const arrayBuffer = await file.arrayBuffer();
 	const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
-	dbCache.set(entryId, db);
+	setCachedDb(entryId, db);
 
 	// メタデータを取得
 	const meta: Record<string, string> = {};
+	let metadataStmt: ReturnType<Database['prepare']> | null = null;
 	try {
-		const rows = db.exec('SELECT name, value FROM metadata');
-		if (rows.length > 0) {
-			for (const row of rows[0].values) {
-				meta[row[0] as string] = row[1] as string;
+		metadataStmt = db.prepare('SELECT name, value FROM metadata');
+		while (metadataStmt.step()) {
+			const [name, value] = metadataStmt.get() as [string, string];
+			if (typeof name === 'string' && typeof value === 'string') {
+				meta[name] = value;
 			}
 		}
 	} catch {
 		// メタデータテーブルがない場合
+	} finally {
+		metadataStmt?.free();
 	}
 
 	// boundsをパース
@@ -111,7 +129,6 @@ export const registerMBTiles = async (entryId: string, file: File): Promise<MBTi
 					if (layer && !layer.geometryType && stat.geometry) {
 						layer.geometryType = stat.geometry;
 					}
-					// vectorLayersにないレイヤーを追加
 					if (!layer) {
 						vectorLayers.push({
 							id: stat.layer,
@@ -130,8 +147,8 @@ export const registerMBTiles = async (entryId: string, file: File): Promise<MBTi
 		name: meta.name || file.name.replace(/\.[^.]+$/, ''),
 		format: meta.format || 'png',
 		bounds,
-		minZoom: meta.minzoom ? parseInt(meta.minzoom) : undefined,
-		maxZoom: meta.maxzoom ? parseInt(meta.maxzoom) : undefined,
+		minZoom: meta.minzoom ? parseInt(meta.minzoom, 10) : undefined,
+		maxZoom: meta.maxzoom ? parseInt(meta.maxzoom, 10) : undefined,
 		center,
 		isVector,
 		vectorLayers,
@@ -200,40 +217,37 @@ const request = async (
 	_abortController: AbortController
 ): Promise<{ data: Uint8Array }> => {
 	const url = params.url.replace(`${PROTOCOL_NAME}://`, '');
-	// URL形式: {entryId}/{z}/{x}/{y}
 	const parts = url.split('/');
 	if (parts.length < 4) {
 		return { data: new Uint8Array() };
 	}
 
 	const entryId = parts.slice(0, -3).join('/');
-	const z = parseInt(parts[parts.length - 3]);
-	const x = parseInt(parts[parts.length - 2]);
-	const y = parseInt(parts[parts.length - 1]);
+	const z = parseInt(parts[parts.length - 3], 10);
+	const x = parseInt(parts[parts.length - 2], 10);
+	const y = parseInt(parts[parts.length - 1], 10);
 
-	const db = dbCache.get(entryId);
+	const db = getCachedDb(entryId);
 	if (!db) {
 		return { data: new Uint8Array() };
 	}
 
 	try {
-		// MBTilesのY座標はTMS方式（上下反転）
 		const tmsY = (1 << z) - 1 - y;
-
-		const result = db.exec(
-			'SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?',
-			[z, x, tmsY]
+		const stmt = db.prepare(
+			'SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?'
 		);
-
-		if (result.length > 0 && result[0].values.length > 0) {
-			let tileData = result[0].values[0][0] as Uint8Array;
-
-			// gzip圧縮されている場合は解凍
-			if (isGzipped(tileData)) {
-				tileData = await decompressGzip(tileData);
+		try {
+			stmt.bind([z, x, tmsY]);
+			if (stmt.step()) {
+				let tileData = stmt.get()[0] as Uint8Array;
+				if (isGzipped(tileData)) {
+					tileData = await decompressGzip(tileData);
+				}
+				return { data: tileData };
 			}
-
-			return { data: tileData };
+		} finally {
+			stmt.free();
 		}
 	} catch (e) {
 		console.error('[MBTiles] Tile query error:', e);
@@ -242,9 +256,6 @@ const request = async (
 	return { data: new Uint8Array() };
 };
 
-/**
- * mapStoreから呼ぶ用のプロトコル定義
- */
 export const mbtilesProtocol = () => ({
 	protocolName: PROTOCOL_NAME,
 	request

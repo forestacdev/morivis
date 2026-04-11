@@ -596,9 +596,7 @@
 		}
 
 		const isMbtilesEntry = (e: GeoDataEntry) =>
-			e.type === 'raster' &&
-			'format' in e &&
-			(e as { format: { type: string } }).format.type === 'mbtiles';
+			'format' in e && (e as { format: { type: string } }).format.type === 'mbtiles';
 		const hasMbtilesLayer =
 			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
 
