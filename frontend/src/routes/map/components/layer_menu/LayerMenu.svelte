@@ -5,15 +5,19 @@
 	import { slide, fly, fade } from 'svelte/transition';
 
 	import RecommendedData from './RecommendedData.svelte';
-	import { lonLatToPrefectureCode } from '$routes/map/api/address';
-	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
+	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { lonLatToPrefectureCode } from '$routes/map/api/address';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import MapSettingItem from '$routes/map/components/layer_menu/MapSettingItem.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import {
+		WEB_MERCATOR_JAPAN_BOUNDS,
+		FAC_BOUNDS
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { PrefectureCode } from '$routes/map/data/pref';
+	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
@@ -131,6 +135,14 @@
 			mapState.center[1] >= WEB_MERCATOR_JAPAN_BOUNDS[1] &&
 			mapState.center[1] <= WEB_MERCATOR_JAPAN_BOUNDS[3]
 	);
+	let isCenterInFacBounds = $derived(
+		mapState.center[0] >= FAC_BOUNDS[0] &&
+			mapState.center[0] <= FAC_BOUNDS[2] &&
+			mapState.center[1] >= FAC_BOUNDS[1] &&
+			mapState.center[1] <= FAC_BOUNDS[3]
+	);
+	let isInFacView = $derived(isCenterInFacBounds && mapState.zoom >= 12);
+
 	let isInJapanBounds = $derived(
 		isInitialBbox
 			? isCenterInJapanBounds
@@ -138,11 +150,13 @@
 	);
 	let isInJapanView = $derived(isInJapanBounds && mapState.zoom <= 5);
 	let backgroundKey = $derived(
-		prefectureCode
-			? `pref-${prefectureCode}`
-			: isInJapanView || prefectureCodeError
-				? 'japan'
-				: 'world'
+		isInFacView
+			? 'fac'
+			: prefectureCode
+				? `pref-${prefectureCode}`
+				: isInJapanView || prefectureCodeError
+					? 'japan'
+					: 'world'
 	);
 
 	$effect(() => {
@@ -309,7 +323,7 @@
 		</div>
 
 		<div
-			class="relative flex h-full flex-col overflow-x-hidden {!$showDataMenu && !$isStyleEdit
+			class="relative flex h-full flex-col overflow-hidden {!$showDataMenu && !$isStyleEdit
 				? 'pr-2'
 				: ''}"
 		>
@@ -473,11 +487,15 @@
 					<div class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[4%]">
 						{#key backgroundKey}
 							<div
-								in:fade={{ duration: 300 }}
-								out:fade={{ duration: 300 }}
-								class="absolute grid aspect-square w-full -translate-x-[20px] place-items-center p-4"
+								in:fly={{ duration: 500, y: 20 }}
+								out:fly={{ duration: 500 }}
+								class="absolute grid aspect-square w-full translate-y-[20px] place-items-center px-6"
 							>
-								{#if prefectureCode}
+								{#if isInFacView}
+									<div class="grid aspect-square place-items-center [&_path]:fill-white">
+										<FacIcon width={'100%'} />
+									</div>
+								{:else if prefectureCode}
 									<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
 										<PrefectureIcon width={'100%'} code={prefectureCode} />
 									</div>
@@ -488,9 +506,6 @@
 								{/if}
 							</div>
 						{/key}
-						<div
-							class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[300px] w-full"
-						></div>
 					</div>
 				{/if}
 			{/if}

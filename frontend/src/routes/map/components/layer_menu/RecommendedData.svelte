@@ -173,6 +173,13 @@
 			.slice(0, LIMIT);
 	});
 
+	$effect(() => {
+		// データエントリーが更新されたときに、選択されたインデックスが範囲内か確認
+		if (dataEntries.length) {
+			selectedIndex = 0; // 範囲外の場合は最初のアイテムにリセット
+		}
+	});
+
 	const addData = (dataEntry: GeoDataEntry) => {
 		if (checkMobileWidth()) {
 			activeLayerIdsStore.add(dataEntry.id);

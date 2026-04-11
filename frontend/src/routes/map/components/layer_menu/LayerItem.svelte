@@ -419,22 +419,14 @@
 				class="absolute top-0 w-[2px] {isLast ? 'h-1/2' : 'h-full'} {isHoveredLayerType ===
 				layerType
 					? 'bg-accent '
-					: 'bg-base/60'}"
+					: 'bg-gray-400'}"
 			></div>
 			<div
 				class="absolute top-1/2 left-1/2 h-[1px] -translate-y-1/2 transition-[width] duration-150 {isHoveredLayerType ===
 				layerType
 					? 'bg-accent'
-					: 'bg-base/60'} {isHovered && !isDragging ? 'w-[25px]' : 'w-[10px]'}"
+					: 'bg-gray-400'} {isHovered && !isDragging ? 'w-[25px]' : 'w-[10px]'}"
 			></div>
-			{#if isLast}
-				<div
-					class="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full {isHoveredLayerType ===
-					layerType
-						? 'bg-accent'
-						: 'bg-base/60'}"
-				></div>
-			{/if}
 		</div>
 	{/if}
 
