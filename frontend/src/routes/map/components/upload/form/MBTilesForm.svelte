@@ -126,7 +126,11 @@
 				selectedLayerId,
 				geometryType,
 				undefined,
-				{ bounds: opts.bounds }
+				{
+					bounds: opts.bounds,
+					minZoom: opts.minZoom,
+					maxZoom: opts.maxZoom
+				}
 			);
 			if (entry) {
 				entry.format.type = 'mbtiles';

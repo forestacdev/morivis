@@ -436,7 +436,11 @@ export const createVectorTileEntry = (
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
-	options?: { bounds?: [number, number, number, number] }
+	options?: {
+		bounds?: [number, number, number, number];
+		minZoom?: number;
+		maxZoom?: number;
+	}
 ): VectorEntry<TileMetaData> | undefined => {
 	const bounds = options?.bounds ?? DEFAULT_CUSTOM_META_DATA.bounds;
 	const metaData: TileMetaData = {
@@ -444,6 +448,8 @@ export const createVectorTileEntry = (
 		name,
 		sourceLayer,
 		bounds,
+		minZoom: options?.minZoom ?? DEFAULT_CUSTOM_META_DATA.minZoom,
+		maxZoom: options?.maxZoom ?? DEFAULT_CUSTOM_META_DATA.maxZoom,
 		xyzImageTile: findCenterTile(bounds)
 	};
 
