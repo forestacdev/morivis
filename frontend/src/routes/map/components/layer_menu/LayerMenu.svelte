@@ -5,11 +5,15 @@
 	import { slide, fly, fade } from 'svelte/transition';
 
 	import RecommendedData from './RecommendedData.svelte';
+	import { lonLatToPrefectureCode } from '$routes/map/api/address';
+	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import LayerTypeItem from '$routes/map/components/layer_menu/LayerTypeItem.svelte';
 	import MapSettingItem from '$routes/map/components/layer_menu/MapSettingItem.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { PrefectureCode } from '$routes/map/data/pref';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
@@ -88,6 +92,7 @@
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
 	let scrollContainer = $state<HTMLElement | undefined>(undefined);
 	let mapState = $state<MapState>(mapStore.getState());
+	let hasInitializedMapVisual = $state(false);
 	let layerInRangeMap = $derived.by(() => {
 		const next: Record<string, boolean> = {};
 
@@ -114,6 +119,58 @@
 
 		return next;
 	});
+	let prefectureCode = $state<PrefectureCode | ''>('');
+	let prefectureCodeError = $state(false);
+	let prefectureRequestId = 0;
+	let isInitialBbox = $derived(
+		mapState.bbox[0] === mapState.bbox[2] && mapState.bbox[1] === mapState.bbox[3]
+	);
+	let isCenterInJapanBounds = $derived(
+		mapState.center[0] >= WEB_MERCATOR_JAPAN_BOUNDS[0] &&
+			mapState.center[0] <= WEB_MERCATOR_JAPAN_BOUNDS[2] &&
+			mapState.center[1] >= WEB_MERCATOR_JAPAN_BOUNDS[1] &&
+			mapState.center[1] <= WEB_MERCATOR_JAPAN_BOUNDS[3]
+	);
+	let isInJapanBounds = $derived(
+		isInitialBbox
+			? isCenterInJapanBounds
+			: isBBoxOverlapping(mapState.bbox, WEB_MERCATOR_JAPAN_BOUNDS)
+	);
+	let isInJapanView = $derived(isInJapanBounds && mapState.zoom <= 5);
+	let backgroundKey = $derived(
+		prefectureCode
+			? `pref-${prefectureCode}`
+			: isInJapanView || prefectureCodeError
+				? 'japan'
+				: 'world'
+	);
+
+	$effect(() => {
+		const [lng, lat] = mapState.center;
+
+		if (!isInJapanBounds || mapState.zoom <= 5) {
+			prefectureCode = '';
+			prefectureCodeError = false;
+			return;
+		}
+
+		const requestId = ++prefectureRequestId;
+		prefectureCodeError = false;
+
+		lonLatToPrefectureCode(lng, lat)
+			.then((code) => {
+				if (requestId !== prefectureRequestId) return;
+				prefectureCode = code as PrefectureCode;
+			})
+			.catch(() => {
+				if (requestId !== prefectureRequestId) return;
+				prefectureCodeError = true;
+			});
+	});
+
+	// let isPrefCode = $derived.by(() => {
+	// 	return getPrefectureCode(isLocation);
+	// });
 
 	let prevLayerIds = $state<string[]>([]);
 	activeLayerIdsStore.subscribe(async (ids) => {
@@ -138,6 +195,7 @@
 
 	const unsubscribeMapState = mapStore.onStateChange((state) => {
 		mapState = state;
+		hasInitializedMapVisual = true;
 	});
 
 	onDestroy(() => {
@@ -410,6 +468,30 @@
 					in:fade={{ delay: 300 }}
 					class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[100px] w-full"
 				></div>
+				{#if hasInitializedMapVisual}
+					<div class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[4%]">
+						{#key backgroundKey}
+							<div
+								in:fade={{ duration: 300 }}
+								out:fade={{ duration: 300 }}
+								class="absolute grid aspect-square w-full -translate-x-[20px] place-items-center p-4"
+							>
+								{#if prefectureCode}
+									<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
+										<PrefectureIcon width={'100%'} code={prefectureCode} />
+									</div>
+								{:else if isInJapanView || prefectureCodeError}
+									<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+								{:else}
+									<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+								{/if}
+							</div>
+						{/key}
+						<div
+							class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[300px] w-full"
+						></div>
+					</div>
+				{/if}
 			{/if}
 		</div>
 

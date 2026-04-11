@@ -9,12 +9,9 @@ export const addressCodeToAddress = (addressCode: string) => {
 	return `${parts[1]}${parts[3]}`;
 };
 
-// 国土地理院APIの変換表を使って住所コードを都道府県名に変換
-export const addressCodeToPrefecture = (addressCode: string) => {
-	const csvString = GSI.MUNI_ARRAY[addressCode as keyof typeof GSI.MUNI_ARRAY];
-	if (!csvString) return '';
-	const parts = csvString.split(',');
-	return parts[1] ?? '';
+// 国土地理院APIの住所コードから都道府県コードを取得
+export const addressCodeToPrefectureCode = (addressCode: string) => {
+	return addressCode.slice(0, 2);
 };
 
 /**
@@ -38,15 +35,15 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 };
 
 /**
- * 指定した緯度経度から都道府県名のみを取得する関数
+ * 指定した緯度経度から都道府県コードのみを取得する関数
  * @param lng 経度
  * @param lat 緯度
- * @returns 都道府県名
+ * @returns 都道府県コード
  */
-export const lonLatToPrefecture = async (lng: number, lat: number): Promise<string> => {
+export const lonLatToPrefectureCode = async (lng: number, lat: number): Promise<string> => {
 	try {
 		const data = await gsiLonLatToAddress(lng, lat);
-		return addressCodeToPrefecture(data.results.muniCd);
+		return addressCodeToPrefectureCode(data.results.muniCd);
 	} catch (error) {
 		if (error instanceof Error) {
 			throw new Error(error.message);
