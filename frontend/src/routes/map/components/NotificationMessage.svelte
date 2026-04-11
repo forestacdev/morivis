@@ -38,8 +38,8 @@
 	{#key $notificationMessage.id}
 		{#if $notificationMessage.type === 'add'}
 			<div
-				transition:fly={{ duration: 300, x: 200 }}
-				class="shine pointer-events-none absolute right-0 z-30 flex items-center gap-2 overflow-hidden rounded-l-lg bg-black pr-6 shadow-md max-lg:top-[calc(16px+env(safe-area-inset-top))] lg:top-[100px]"
+				transition:fly|global={{ duration: 300, x: 200 }}
+				class="shine pointer-events-none absolute right-0 z-30 flex items-center gap-2 overflow-hidden rounded-l-lg border-2 border-r-0 border-gray-200 bg-black pr-6 shadow-md max-lg:top-[calc(16px+env(safe-area-inset-top))] lg:top-[100px]"
 			>
 				{#if $notificationMessage.entry}
 					<div class="relative h-16 w-16 shrink-0 overflow-hidden">
@@ -50,7 +50,7 @@
 			</div>
 		{:else}
 			<div
-				transition:fly={{ duration: 300, x: 200 }}
+				transition:fly|global={{ duration: 300, x: 200 }}
 				class="pointer-events-none absolute top-[100px] right-0 z-30 grid place-items-center rounded-l-lg px-6 py-2 shadow-md {bgcolor}"
 			>
 				{$notificationMessage.message}
