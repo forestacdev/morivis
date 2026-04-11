@@ -181,7 +181,9 @@
 	const extractServiceException = (text: string): string | null => {
 		const xml = new DOMParser().parseFromString(text, 'text/xml');
 		const message =
-			xml.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')?.textContent?.trim() ??
+			xml
+				.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')
+				?.textContent?.trim() ??
 			xml.documentElement.textContent?.trim() ??
 			null;
 		return message;
@@ -407,7 +409,9 @@
 	<button
 		onclick={registration}
 		disabled={!capabilities || !selectedCoverage || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!capabilities || !selectedCoverage || $isProcessing
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!capabilities ||
+		!selectedCoverage ||
+		$isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

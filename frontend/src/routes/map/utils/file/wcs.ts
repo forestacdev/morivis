@@ -19,7 +19,8 @@ export interface WcsCapabilitiesInfo {
 	coverages: WcsCoverageSummary[];
 }
 
-const parseXml = (xmlString: string): XMLDocument => new DOMParser().parseFromString(xmlString, 'text/xml');
+const parseXml = (xmlString: string): XMLDocument =>
+	new DOMParser().parseFromString(xmlString, 'text/xml');
 
 const getElementText = (parent: ParentNode, selectors: string[]): string | null => {
 	for (const selector of selectors) {
@@ -62,7 +63,9 @@ const parseBoundingBox = (parent: ParentNode): [number, number, number, number] 
 };
 
 const parseLonLatEnvelope = (parent: ParentNode): [number, number, number, number] | null => {
-	const positions = Array.from(parent.querySelectorAll('lonLatEnvelope > gml\\:pos, lonLatEnvelope > pos'))
+	const positions = Array.from(
+		parent.querySelectorAll('lonLatEnvelope > gml\\:pos, lonLatEnvelope > pos')
+	)
 		.map((element) => parseCorner(element.textContent))
 		.filter((values) => values.length >= 2);
 
@@ -210,18 +213,20 @@ export const describeWcsCoverage = async (
 		);
 
 		const axisLabels =
-			envelope
-				?.getAttribute('axisLabels')
-				?.trim()
-				.split(/\s+/)
-				.filter(Boolean) ?? [];
-		const lower = parseCorner(getElementText(envelope ?? coverage, ['LowerCorner', 'gml\\:LowerCorner']));
-		const upper = parseCorner(getElementText(envelope ?? coverage, ['UpperCorner', 'gml\\:UpperCorner']));
+			envelope?.getAttribute('axisLabels')?.trim().split(/\s+/).filter(Boolean) ?? [];
+		const lower = parseCorner(
+			getElementText(envelope ?? coverage, ['LowerCorner', 'gml\\:LowerCorner'])
+		);
+		const upper = parseCorner(
+			getElementText(envelope ?? coverage, ['UpperCorner', 'gml\\:UpperCorner'])
+		);
 		const bbox = toBbox(lower, upper) ?? parseLonLatEnvelope(coverage);
 		const srsName = envelope?.getAttribute('srsName') ?? null;
 		const supportedFormats = version.startsWith('2.')
 			? Array.from(
-					coverage.querySelectorAll('ServiceParameters > nativeFormat, ServiceParameters > formatSupported')
+					coverage.querySelectorAll(
+						'ServiceParameters > nativeFormat, ServiceParameters > formatSupported'
+					)
 				)
 					.map((element) => element.textContent?.trim() ?? '')
 					.filter(Boolean)
@@ -229,7 +234,9 @@ export const describeWcsCoverage = async (
 					.map((element) => element.textContent?.trim() ?? '')
 					.filter(Boolean);
 		const supportedCrs = version.startsWith('2.')
-			? (srsName ? [srsName] : [])
+			? srsName
+				? [srsName]
+				: []
 			: Array.from(coverage.querySelectorAll('supportedCRSs > requestResponseCRSs'))
 					.map((element) => element.textContent?.trim() ?? '')
 					.filter(Boolean);
