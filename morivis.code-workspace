@@ -6,15 +6,6 @@
         {
             "path": "frontend",
         },
-        {
-            "path": "data",
-        },
-        {
-            "path": "api",
-        },
-        {
-            "path": "aws",
-        },
     ],
     "settings": {},
 }
