@@ -49,6 +49,7 @@
 			}
 		})
 	);
+	let hasMultipleModes = $derived(availableDemStyleModes.length > 1);
 
 	let showPullDown = $state<boolean>(false);
 
@@ -84,45 +85,49 @@
 	});
 </script>
 
-<h2 class="text-base">描画モード</h2>
-<div class="relative py-2" bind:this={containerRef}>
-	<button
-		onclick={() => (showPullDown = !showPullDown)}
-		class="c-select flex h-28 w-full justify-between"
-	>
-		<div class="flex items-center gap-2">
-			<span>{availableDemStyleModes.find((mode) => mode.key === isMode)?.name}</span>
-		</div>
-		{#await promise then imageResult}
-			{#if imageResult}
-				<img
-					src={imageResult.url}
-					alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
-					class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
-				/>
-			{/if}
-		{:catch}
-			<div>画像の取得に失敗</div>
-		{/await}
-	</button>
-
-	{#if showPullDown}
-		<div
-			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+{#if hasMultipleModes}
+	<h2 class="text-base">描画モード</h2>
+	<div class="relative py-2" bind:this={containerRef}>
+		<button
+			onclick={() => {
+				showPullDown = !showPullDown;
+			}}
+			class="c-select flex h-28 w-full cursor-pointer justify-between"
 		>
-			{#each availableDemStyleModes as { key, name } (key)}
-				<DemStyleModePulldownBoxImage
-					bind:isMode
-					mode={key}
-					{name}
-					bind:showPullDown
-					{layerEntry}
-				/>
-			{/each}
-		</div>
-	{/if}
-</div>
+			<div class="flex items-center gap-2">
+				<span>{availableDemStyleModes.find((mode) => mode.key === isMode)?.name}</span>
+			</div>
+			{#await promise then imageResult}
+				{#if imageResult}
+					<img
+						src={imageResult.url}
+						alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
+						class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
+					/>
+				{/if}
+			{:catch}
+				<div>画像の取得に失敗</div>
+			{/await}
+		</button>
+
+		{#if showPullDown}
+			<div
+				transition:fly={{ duration: 200, y: -20 }}
+				class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+			>
+				{#each availableDemStyleModes as { key, name } (key)}
+					<DemStyleModePulldownBoxImage
+						bind:isMode
+						mode={key}
+						{name}
+						bind:showPullDown
+						{layerEntry}
+					/>
+				{/each}
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <style>
 </style>

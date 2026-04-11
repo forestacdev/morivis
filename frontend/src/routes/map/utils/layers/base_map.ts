@@ -97,7 +97,8 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		paint: {
 			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 9, 0],
 			'raster-brightness-min': 0,
-			'raster-brightness-max': 0.8
+			'raster-brightness-max': 0.8,
+			'raster-saturation': -0.1
 		}
 	},
 	{
@@ -109,7 +110,8 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		paint: {
 			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 0.9],
 			'raster-brightness-min': 0,
-			'raster-brightness-max': 0.8
+			'raster-brightness-max': 0.8,
+			'raster-saturation': -0.1
 		}
 	}
 	// {
