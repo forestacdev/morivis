@@ -47,6 +47,8 @@
 		return getLayerType(dataEntry);
 	});
 
+	let isFlip = $state(false);
+
 	// 画像読み込み完了後のクリーンアップ
 	const handleImageLoad = (_imageResult: ImageResult) => {
 		if (_imageResult.cleanup) {
@@ -92,8 +94,9 @@
 	});
 
 	const addData = (id: string) => {
-		activeLayerIdsStore.add(id);
-		showLayerAddedNotification(dataEntry);
+		isFlip = !isFlip;
+		// activeLayerIdsStore.add(id);
+		// showLayerAddedNotification(dataEntry);
 	};
 	const deleteData = (id: string) => {
 		activeLayerIdsStore.remove(id);
@@ -140,12 +143,22 @@
 		if (!checkMobile()) return;
 		if (!isAdded) showDataEntry = dataEntry;
 	};
+
+	$effect(() => {
+		if (!isHover && isFlip) {
+			const timeout = setTimeout(() => {
+				isFlip = false;
+			}, 200); // アニメーションのdurationと同じ値
+
+			return () => clearTimeout(timeout);
+		}
+	});
 </script>
 
 <div
-	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg border bg-black transition-all duration-200 {isHover
-		? 'z-10 shadow-lg'
-		: ''} {isHover ? 'border-accent c-set-glow' : 'border-main'}"
+	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-visible rounded-lg transition-all duration-220 perspective-distant {isHover
+		? 'z-10'
+		: ''}"
 	style="transform-origin: {getTransformOrigin()}; transform: {getHoverTransform()};"
 	bind:this={container}
 	onmouseover={() => (checkPc() ? (isHover = true) : null)}
@@ -162,7 +175,7 @@
 	}}
 >
 	<!-- 追加ボタン -->
-	{#if isHover}
+	{#if isHover && !isFlip}
 		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
@@ -205,9 +218,11 @@
 		onclick={() => {
 			if (!isAdded) showDataEntry = dataEntry;
 		}}
-		class="flex h-full w-full cursor-pointer flex-col"
+		class="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg bg-black transition-transform duration-300 backface-hidden {isHover
+			? 'border-accent c-set-glow shadow-lg'
+			: 'border-main'}  {isFlip ? 'rotate-y-180' : ''}"
 	>
-		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden">
+		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden bg-black">
 			{#await promise then imageResult}
 				{#if imageResult}
 					{#if dataEntry.metaData.coverImage && !isImageError}
@@ -307,7 +322,7 @@
 
 		<!-- 詳細情報 -->
 		<div
-			class="relative flex h-full w-full flex-col items-end justify-end gap-1 pb-4 max-lg:p-1 lg:p-2"
+			class="relative flex h-full w-full flex-col items-end justify-end gap-1 bg-black pb-4 max-lg:p-1 lg:p-2"
 		>
 			<!-- タイトル -->
 			<div class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2">
@@ -348,9 +363,20 @@
 			</div>
 		</div>
 	</button>
+	<div
+		class="absolute h-full w-full overflow-hidden rounded-lg bg-black transition-transform duration-300 backface-hidden {isFlip
+			? 'z-10'
+			: 'z-0 -rotate-y-180'}"
+	>
+		カード裏面
+	</div>
 </div>
 
 <style>
+	/* カード裏面・表面の共通スタイル */
+
+	/* カード表面のスタイル */
+
 	.c-set-glow {
 		filter: drop-shadow(0 0 3px var(--color-accent));
 	}
