@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import DOMPurify from 'dompurify';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
@@ -153,6 +154,21 @@
 			return () => clearTimeout(timeout);
 		}
 	});
+
+	const formatDescription = (text: string): string => {
+		// 先頭の改行を除去
+		const trimmedText = text.replace(/^\n+/, '');
+
+		const urlRegex = /(https?:\/\/[^\s））\]」」＞>、。,]+)/g;
+		const linked = trimmedText.replace(urlRegex, (url) => {
+			return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+		});
+		const withBreaks = linked.replace(/\n/g, '<br>');
+		return DOMPurify.sanitize(withBreaks, {
+			ALLOWED_TAGS: ['a', 'br'],
+			ALLOWED_ATTR: ['href', 'target', 'rel']
+		});
+	};
 </script>
 
 <div
@@ -287,17 +303,7 @@
 					</div>
 				</div>
 			{/if}
-			{#if isHover}
-				<!-- タグ -->
-				<div
-					transition:fade={{ duration: 150 }}
-					class="absolute bottom-2 flex items-center gap-1 pl-2 text-gray-300"
-				>
-					{#each dataEntry.metaData.tags as tag}
-						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-					{/each}
-				</div>
-			{/if}
+
 			{#if isAdded}
 				<div
 					transition:fade={{ duration: 150 }}
@@ -363,12 +369,84 @@
 			</div>
 		</div>
 	</button>
+
+	<!-- カード裏面 -->
 	<div
 		class="absolute h-full w-full overflow-hidden rounded-lg bg-black transition-transform duration-300 backface-hidden {isFlip
 			? 'z-10'
 			: 'z-0 -rotate-y-180'}"
 	>
-		カード裏面
+		<!-- 背景 -->
+		<div class="absolute -z-10 grid h-full w-full place-items-center p-6 opacity-5">
+			{#if dataEntry.metaData.location === '森林文化アカデミー'}
+				<div class="grid aspect-square place-items-center [&_path]:fill-white">
+					<FacIcon width={'100%'} />
+				</div>
+			{/if}
+			{#if prefCode}
+				<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
+					<PrefectureIcon width={'100%'} code={prefCode} />
+				</div>
+				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+			{/if}
+			{#if dataEntry.metaData.location === '全国'}
+				<div class="grid aspect-square w-full place-items-center">
+					<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+				</div>
+			{/if}
+			{#if dataEntry.metaData.location === '世界'}
+				<div class="grid aspect-square w-full place-items-center">
+					<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+				</div>
+			{/if}
+		</div>
+
+		<div class="flex h-full flex-col justify-between">
+			<div class="flex flex-col items-center gap-2 pt-8">
+				<div class="flex gap-2">
+					<Icon icon="tabler:map-pin" class="h-6 w-6" />
+					<span class="">{dataEntry?.metaData.location}</span>
+				</div>
+
+				<div>
+					{#if dataEntry?.metaData.downloadUrl}
+						<a
+							class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
+							href={dataEntry?.metaData.downloadUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							><Icon icon="majesticons:open" class="h-6 w-6" />
+							<span>データ提供元サイト</span></a
+						>
+					{/if}
+				</div>
+			</div>
+
+			{#if dataEntry.metaData.description || dataEntry.metaData.sourceDataName}
+				{#if dataEntry}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<div class="rounded-lg p-4 text-justify text-sm">
+						{#if dataEntry?.metaData.sourceDataName}
+							元データ名:「{dataEntry?.metaData.sourceDataName}」<br />
+						{/if}
+
+						{#if dataEntry?.metaData.description}
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html formatDescription(dataEntry?.metaData.description)}
+						{/if}
+					</div>
+				{/if}
+			{/if}
+
+			<!-- タグ -->
+			<div class="flex items-center gap-1 p-4 text-gray-300">
+				{#each dataEntry.metaData.tags as tag}
+					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+				{/each}
+			</div>
+		</div>
 	</div>
 </div>
 
