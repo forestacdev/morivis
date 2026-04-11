@@ -1,6 +1,12 @@
 import { GSI } from './muni';
 import { gsiLonLatToAddress } from './gsi';
 
+const hasReverseGeocoderResult = (
+	data: Awaited<ReturnType<typeof gsiLonLatToAddress>>
+): boolean => {
+	return Boolean(data.results.muniCd);
+};
+
 // 国土地理院APIの変換表を使って住所コードを住所に変換
 export const addressCodeToAddress = (addressCode: string) => {
 	const csvString = GSI.MUNI_ARRAY[addressCode as keyof typeof GSI.MUNI_ARRAY];
@@ -23,6 +29,7 @@ export const addressCodeToPrefectureCode = (addressCode: string) => {
 export const lonLatToAddress = async (lng: number, lat: number): Promise<string> => {
 	try {
 		const data = await gsiLonLatToAddress(lng, lat);
+		if (!hasReverseGeocoderResult(data)) return '';
 		const address = addressCodeToAddress(data.results.muniCd);
 		return `${address}${data.results.lv01Nm === '−' ? '' : data.results.lv01Nm}`;
 	} catch (error) {
@@ -43,6 +50,7 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
 export const lonLatToPrefectureCode = async (lng: number, lat: number): Promise<string> => {
 	try {
 		const data = await gsiLonLatToAddress(lng, lat);
+		if (!hasReverseGeocoderResult(data)) return '';
 		return addressCodeToPrefectureCode(data.results.muniCd);
 	} catch (error) {
 		if (error instanceof Error) {

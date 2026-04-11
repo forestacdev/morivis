@@ -126,9 +126,6 @@
 	let prefectureCode = $state<PrefectureCode | ''>('');
 	let prefectureCodeError = $state(false);
 	let prefectureRequestId = 0;
-	let isInitialBbox = $derived(
-		mapState.bbox[0] === mapState.bbox[2] && mapState.bbox[1] === mapState.bbox[3]
-	);
 	let isCenterInJapanBounds = $derived(
 		mapState.center[0] >= WEB_MERCATOR_JAPAN_BOUNDS[0] &&
 			mapState.center[0] <= WEB_MERCATOR_JAPAN_BOUNDS[2] &&
@@ -142,12 +139,7 @@
 			mapState.center[1] <= FAC_BOUNDS[3]
 	);
 	let isInFacView = $derived(isCenterInFacBounds && mapState.zoom >= 12);
-
-	let isInJapanBounds = $derived(
-		isInitialBbox
-			? isCenterInJapanBounds
-			: isBBoxOverlapping(mapState.bbox, WEB_MERCATOR_JAPAN_BOUNDS)
-	);
+	let isInJapanBounds = $derived(isCenterInJapanBounds);
 	let isInJapanView = $derived(isInJapanBounds && mapState.zoom <= 5);
 	let backgroundKey = $derived(
 		isInFacView
