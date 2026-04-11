@@ -216,10 +216,6 @@
 		animation: marquee 50s linear infinite;
 	}
 
-	.marquee-track:hover {
-		animation-play-state: paused;
-	}
-
 	@keyframes marquee {
 		0% {
 			transform: translateX(0);
