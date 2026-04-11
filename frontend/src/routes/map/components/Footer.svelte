@@ -7,8 +7,9 @@
 </script>
 
 <!-- フッター余白 出典表示 -->
+
 <div
-	class="bg-main relative w-full shrink-0 p-1 pr-4 text-end text-xs font-light text-white/80 max-lg:hidden"
+	class="bg-main relative w-full shrink-0 p-1 pr-4 text-end text-xs font-light text-white/80 max-lg:hidden lg:z-10"
 >
 	<Attribution />
 	<ScaleControl />

@@ -139,7 +139,7 @@ export const showLabelLayer = writable<boolean>(true);
 export const showHillshadeLayer = writable<boolean>(false);
 
 /** 境界 */
-export const showBoundaryLayer = writable<boolean>(true);
+export const showBoundaryLayer = writable<boolean>(false);
 
 /** 道路レイヤー */
 export const showRoadLayer = writable<boolean>(true);

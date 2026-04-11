@@ -7,188 +7,27 @@ import type {
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 
-/** 道路中心線 vt_rdctg に基づく line-color の共通式（半透明版） */
-const rdctgColorHalf: ExpressionSpecification = [
-	'match',
-	['get', 'vt_rdctg'],
-	['国道', '主要道路'],
-	'rgba(210,190,139,0.5)',
-	'都道府県道',
-	'rgba(210,190,139,0.5)',
-	'高速自動車国道等',
-	'rgba(210,190,139,0.5)',
-	'rgba(100,100,100,0.5)'
-];
-
-/** 道路中心線 line-color: vt_code 2704/2714 の場合（透明系） */
-const codeTransparentColor: ExpressionSpecification = [
-	'case',
-	['==', ['get', 'vt_motorway'], 1],
-	'rgba(210,190,139,0.5)',
-	rdctgColorHalf
-];
-
-/** 道路中心線 line-color: 通常色（zoom < 14） */
-const roadColorBelow14: ExpressionSpecification = [
-	'case',
-	['in', ['get', 'vt_code'], ['literal', [2704, 2714]]],
-	codeTransparentColor,
-	[
-		'case',
-		['==', ['get', 'vt_motorway'], 1],
-		'rgba(210,190,139,1)',
-		[
-			'match',
-			['get', 'vt_rdctg'],
-			'国道',
-			'rgba(210,190,139,1)',
-			'都道府県道',
-			'rgba(210,190,139,1)',
-			'高速自動車国道等',
-			'rgba(210,190,139,1)',
-			[
-				'case',
-				['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満'],
-				'rgba(173,173,173,1)',
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(200,200,200,1)',
-					'rgba(255,255,255,1)'
-				]
-			]
-		]
-	]
-];
-
-/** 道路中心線 line-color: 通常色（zoom >= 14） */
-const roadColorAbove14: ExpressionSpecification = [
-	'case',
-	['in', ['get', 'vt_code'], ['literal', [2704, 2714]]],
-	codeTransparentColor,
-	[
-		'case',
-		['==', ['get', 'vt_motorway'], 1],
-		'rgba(210,190,139,1)',
-		[
-			'match',
-			['get', 'vt_rdctg'],
-			'国道',
-			'rgba(210,190,139,1)',
-			'都道府県道',
-			'rgba(210,190,139,1)',
-			'高速自動車国道等',
-			'rgba(210,190,139,1)',
-			[
-				'match',
-				['get', 'vt_code'],
-				[2721, 2722, 2723],
-				'rgba(173,173,173,1)',
-				[2731, 2732, 2733],
-				'rgba(200,200,200,1)',
-				'rgba(255,255,255,1)'
-			]
-		]
-	]
-];
-
-/** 道路中心線 line-color（step by zoom） */
-const roadLineColor: ExpressionSpecification = [
-	'step',
+const createZoomInterpolation = (
+	base: number,
+	stops: Array<[number, number]>
+): ExpressionSpecification => [
+	'interpolate',
+	['exponential', base],
 	['zoom'],
-	roadColorBelow14,
-	14,
-	roadColorAbove14
+	...stops.flatMap(([zoom, value]) => [zoom, value])
 ];
 
-/** 道路中心線 line-opacity */
+/** OpenMapTiles の道路系レイヤー line-opacity */
 const roadLineOpacity: ExpressionSpecification = [
 	'interpolate',
 	['linear'],
 	['zoom'],
-	12,
-	[
-		'case',
-		[
-			'all',
-			['!', ['in', ['get', 'vt_rdctg'], ['literal', ['国道', '都道府県道', '高速自動車国道等']]]],
-			['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
-		],
-		0,
-		1
-	],
 	13,
 	1,
+	14,
+	1,
 	18,
-	0.1
-];
-
-/** 道路中心線 line-width（vt_width / vt_rnkwidth ベース） */
-const roadLineWidth: ExpressionSpecification = [
-	'let',
-	'width',
-	[
-		'case',
-		['has', 'vt_width'],
-		['get', 'vt_width'],
-		[
-			'case',
-			['has', 'vt_rnkwidth'],
-			[
-				'match',
-				['get', 'vt_rnkwidth'],
-				'3m未満',
-				300,
-				'3m-5.5m未満',
-				450,
-				'5.5m-13m未満',
-				900,
-				'13m-19.5m未満',
-				1800,
-				'19.5m以上',
-				2700,
-				0
-			],
-			3000
-		]
-	],
-	'width2',
-	[
-		'case',
-		['has', 'vt_rnkwidth'],
-		[
-			'match',
-			['get', 'vt_rnkwidth'],
-			'3m未満',
-			700,
-			'3m-5.5m未満',
-			1200,
-			'5.5m-13m未満',
-			1700,
-			'13m-19.5m未満',
-			2200,
-			'19.5m以上',
-			2700,
-			0
-		],
-		3000
-	],
-	[
-		'interpolate',
-		['exponential', 2],
-		['zoom'],
-		11,
-		['match', ['get', 'vt_rdctg'], '国道', 2, '都道府県道', 1.5, '高速自動車国道等', 4, 1],
-		12,
-		['*', ['^', 2, -9], ['var', 'width2']],
-		14,
-		['*', ['^', 2, -9], ['var', 'width2']],
-		23,
-		['var', 'width']
-	]
+	0.3
 ];
 
 export const roadSources: Record<string, VectorSourceSpecification> = {
@@ -199,6 +38,10 @@ export const roadSources: Record<string, VectorSourceSpecification> = {
 		url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
 		// tiles: ['https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/{z}/{x}/{y}.pbf'],
 		attribution: '国土地理院最適化ベクトルタイル'
+	},
+	openmaptiles: {
+		type: 'vector',
+		url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 	}
 };
 
@@ -271,471 +114,352 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 
 export const roadLineLayers: LineLayerSpecification[] = [
 	{
-		id: '道路中心線ククリ統合',
+		id: 'tunnel_railway_transit',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		maxzoom: 24,
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		minzoom: 0,
 		filter: [
-			'step',
-			['zoom'],
-			[
-				'all',
-				['<=', ['get', 'vt_lvorder'], 4],
-				[
-					'!',
-					[
-						'in',
-						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
-					]
-				],
-				[
-					'!',
-					[
-						'all',
-						['in', ['get', 'vt_rdctg'], ['literal', ['市区町村道等', 'その他', '不明']]],
-						['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
-					]
-				]
-			],
-			14,
-			[
-				'all',
-				['<=', ['get', 'vt_lvorder'], 4],
-				[
-					'!',
-					[
-						'in',
-						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
-					]
-				]
-			]
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['==', ['get', 'class'], 'transit']
 		],
 		layout: {
-			'line-join': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder'],
-			visibility: 'visible'
+			'line-cap': 'butt',
+			'line-join': 'miter'
 		},
 		paint: {
-			'line-color': [
-				'match',
-				['get', 'vt_motorway'],
-				1,
-				'rgba(0,0,0,1)',
-				[
-					'case',
-					['in', ['get', 'vt_code'], ['literal', [2711, 2712, 2713]]],
-					'rgba(173,173,173,1)',
-					'rgba(100,100,100,1)'
-				]
-			],
-			'line-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 13, 1, 18, 0],
-			'line-width': [
-				'let',
-				'width',
-				[
-					'+',
-					[
-						'case',
-						[
-							'all',
-							['in', ['get', 'vt_code'], ['literal', [2703, 2713, 2723, 2733]]],
-							['!=', ['get', 'vt_motorway'], 1]
-						],
-						500,
-						300
-					],
-					[
-						'case',
-						['has', 'vt_width'],
-						['get', 'vt_width'],
-						[
-							'case',
-							['has', 'vt_rnkwidth'],
-							[
-								'match',
-								['get', 'vt_rnkwidth'],
-								'3m未満',
-								300,
-								'3m-5.5m未満',
-								450,
-								'5.5m-13m未満',
-								900,
-								'13m-19.5m未満',
-								1800,
-								'19.5m以上',
-								2700,
-								0
-							],
-							3000
-						]
-					]
-				],
-				'width2',
-				[
-					'+',
-					[
-						'case',
-						[
-							'all',
-							['in', ['get', 'vt_code'], ['literal', [2703, 2713, 2723, 2733]]],
-							['!=', ['get', 'vt_motorway'], 1]
-						],
-						500,
-						300
-					],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							700,
-							'3m-5.5m未満',
-							1200,
-							'5.5m-13m未満',
-							1700,
-							'13m-19.5m未満',
-							2200,
-							'19.5m以上',
-							2700,
-							0
-						],
-						3000
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width2']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width2']],
-					23,
-					['var', 'width']
-				]
-			]
+			'line-color': 'rgba(200,200,200,1)',
+			'line-dasharray': [3, 3],
+			'line-opacity': createZoomInterpolation(1, [
+				[11, 0],
+				[16, 1]
+			])
 		}
 	},
 	{
-		id: '道路中心線ZL4-10国道',
+		id: 'road_pier',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		maxzoom: 11,
+		metadata: {},
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
 		filter: [
-			'in',
-			['get', 'vt_rdctg'],
-			['literal', ['主要道路', '国道', '都道府県道', '市区町村道等']]
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['in', ['get', 'class'], ['literal', ['pier']]]
 		],
 		layout: {
 			'line-cap': 'round',
-			'line-join': 'round',
-			'line-sort-key': ['get', 'vt_drworder']
+			'line-join': 'round'
 		},
 		paint: {
-			'line-color': [
-				'case',
-				['in', ['get', 'vt_code'], ['literal', [2704, 2714, 2724, 2734]]],
-				[
-					'case',
-					['==', ['get', 'vt_motorway'], 1],
-					'rgba(210,190,139,0.5)',
-					[
-						'match',
-						['get', 'vt_rdctg'],
-						['国道', '主要道路'],
-						'rgba(210,190,139,0.5)',
-						'都道府県道',
-						'rgba(100,100,100,0.5)',
-						'市区町村道等',
-						'rgba(100,100,100,0.5)',
-						'高速自動車国道等',
-						'rgba(210,190,139,0.5)',
-						'その他',
-						'rgba(100,100,100,0.5)',
-						'不明',
-						'rgba(100,100,100,0.5)',
-						'rgba(100,100,100,0.5)'
-					]
-				],
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(255,255,255,1)',
-					[
-						'case',
-						['==', ['get', 'vt_motorway'], 1],
-						'rgba(210,190,139,1)',
-						[
-							'match',
-							['get', 'vt_rdctg'],
-							['国道', '主要道路'],
-							'rgba(210,190,139,1)',
-							'都道府県道',
-							'rgba(210,190,139,1)',
-							'高速自動車国道等',
-							'rgba(210,190,139,1)',
-							'rgba(255,255,255,1)'
-						]
-					]
-				]
-			],
-			'line-opacity': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				10,
-				[
-					'case',
-					[
-						'all',
-						['!', ['==', ['get', 'vt_motorway'], 1]],
-						['==', ['get', 'vt_rdctg'], '都道府県道']
-					],
-					0,
-					1
-				],
-				11,
-				1
-			],
-			'line-width': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				8,
-				1,
-				9,
-				[
-					'case',
-					[
-						'all',
-						['!', ['==', ['get', 'vt_motorway'], 1]],
-						['==', ['get', 'vt_rdctg'], '都道府県道']
-					],
-					1.5,
-					2
-				]
-			]
+			'line-color': 'rgba(200,200,200,1)',
+			'line-width': createZoomInterpolation(1.2, [
+				[15, 1],
+				[17, 4]
+			])
 		}
 	},
 	{
-		id: '道路中心線ZL4-10高速',
+		id: 'road_path',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 6,
-		maxzoom: 11,
-		filter: ['==', ['get', 'vt_rdctg'], '高速自動車国道等'],
-		layout: {
-			'line-cap': 'round',
-			'line-join': 'round',
-			'line-sort-key': ['get', 'vt_drworder'],
-			visibility: 'visible'
-		},
-		paint: {
-			'line-color': [
-				'case',
-				['in', ['get', 'vt_code'], ['literal', [2704, 2714, 2724, 2734]]],
-				[
-					'match',
-					['get', 'vt_rdctg'],
-					'国道',
-					'rgba(210,190,139,0.5)',
-					'都道府県道',
-					'rgba(210,190,139,0.5)',
-					'市区町村道等',
-					'rgba(100,100,100,0.5)',
-					'高速自動車国道等',
-					'rgba(210,190,139,0.5)',
-					'その他',
-					'rgba(100,100,100,0.5)',
-					'不明',
-					'rgba(100,100,100,0.5)',
-					'rgba(100,100,100,0.5)'
-				],
-				[
-					'match',
-					['get', 'vt_code'],
-					[2721, 2722, 2723],
-					'rgba(173,173,173,1)',
-					[2731, 2732, 2733],
-					'rgba(255,255,255,1)',
-					[
-						'match',
-						['get', 'vt_rdctg'],
-						'国道',
-						'rgba(210,190,139,1)',
-						'都道府県道',
-						'rgba(210,190,139,1)',
-						'市区町村道等',
-						'rgba(255,255,255,1)',
-						'高速自動車国道等',
-						'rgba(210,190,139,1)',
-						'その他',
-						'rgba(255,255,255,1)',
-						'不明',
-						'rgba(255,255,255,1)',
-						'rgba(255,255,255,1)'
-					]
-				]
-			],
-			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 2, 9, 4]
-		}
-	},
-	{
-		id: '道路中心線色',
-		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		filter: ['!', ['in', ['get', 'vt_code'], ['literal', [2724, 2734]]]],
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['in', ['get', 'class'], ['literal', ['path', 'track']]]
+		],
 		layout: {
 			'line-join': 'round',
-			'line-cap': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder']
+			'line-cap': 'round'
 		},
 		paint: {
-			'line-color': roadLineColor,
+			'line-color': 'rgba(200,200,200,1)',
 			'line-opacity': roadLineOpacity,
-			'line-width': roadLineWidth
+			'line-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 15]
+			])
 		}
 	},
 	{
-		id: '道路中心線破線',
+		id: 'road_minor',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		minzoom: 13,
 		filter: [
-			'step',
-			['zoom'],
-			['in', ['get', 'vt_code'], ['literal', [2724, 2734]]],
-			17,
-			[
-				'all',
-				['in', ['get', 'vt_flag17'], ['literal', [1, 2]]],
-				['in', ['get', 'vt_code'], ['literal', [2724, 2734]]]
-			]
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['in', ['get', 'class'], ['literal', ['minor', 'service']]]
 		],
 		layout: {
-			'line-join': 'round',
-			'line-round-limit': 1.57,
-			'line-sort-key': ['get', 'vt_drworder']
+			'line-cap': 'round',
+			'line-join': 'round'
 		},
 		paint: {
-			'line-color': 'rgba(100,100,100,1)',
-			'line-dasharray': [5, 5],
-			'line-gap-width': [
-				'let',
-				'width',
-				[
-					'case',
-					['has', 'vt_width'],
-					['get', 'vt_width'],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							150,
-							'3m-5.5m未満',
-							225,
-							'5.5m-13m未満',
-							450,
-							'13m-19.5m未満',
-							900,
-							'19.5m以上',
-							1350,
-							0
-						],
-						1500
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width']],
-					23,
-					['var', 'width']
-				]
-			],
-			'line-width': 1
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 30]
+			])
 		}
 	},
 	{
-		id: '道路中心線階段',
+		id: 'tunnel_minor',
 		type: 'line',
-		source: 'v',
-		'source-layer': 'RdCL',
-		minzoom: 11,
-		maxzoom: 22,
-		filter: ['in', ['get', 'vt_code'], ['literal', [2731, 2732, 2733, 2734]]],
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['==', ['get', 'class'], 'minor_road']
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
 		paint: {
-			'line-color': 'rgba(100,100,100,1)',
-			'line-dasharray': [0.1, 1],
-			'line-width': [
-				'let',
-				'width',
-				[
-					'case',
-					['has', 'vt_width'],
-					['get', 'vt_width'],
-					[
-						'case',
-						['has', 'vt_rnkwidth'],
-						[
-							'match',
-							['get', 'vt_rnkwidth'],
-							'3m未満',
-							300,
-							'3m-5.5m未満',
-							450,
-							'5.5m-13m未満',
-							900,
-							'13m-19.5m未満',
-							1800,
-							'19.5m以上',
-							2700,
-							0
-						],
-						3000
-					]
-				],
-				[
-					'interpolate',
-					['exponential', 2],
-					['zoom'],
-					11,
-					2,
-					12,
-					['*', ['^', 2, -9], ['var', 'width']],
-					14,
-					['*', ['^', 2, -9], ['var', 'width']],
-					23,
-					['var', 'width']
-				]
-			]
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-dasharray': [0.36, 0.18],
+			'line-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 30]
+			])
+		}
+	},
+	{
+		id: 'tunnel_major',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'tunnel'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-dasharray': [0.28, 0.14],
+			'line-width': createZoomInterpolation(1.4, [
+				[6, 0.5],
+				[20, 30]
+			])
+		}
+	},
+	{
+		id: 'road_trunk_primary',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['in', ['get', 'class'], ['literal', ['trunk', 'primary']]]
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-width': createZoomInterpolation(1.4, [
+				[6, 0.5],
+				[20, 30]
+			])
+		}
+	},
+	{
+		id: 'road_secondary_tertiary',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['in', ['get', 'class'], ['literal', ['secondary', 'tertiary']]]
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-width': createZoomInterpolation(1.4, [
+				[6, 0.5],
+				[20, 20]
+			])
+		}
+	},
+	{
+		id: 'road_major_motorway',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', ['geometry-type'], 'LineString'], ['==', ['get', 'class'], 'motorway']],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'rgba(210,190,139,1)',
+			'line-opacity': roadLineOpacity,
+			'line-offset': 0,
+			'line-width': createZoomInterpolation(1.4, [
+				[8, 1],
+				[16, 10]
+			])
+		}
+	},
+	{
+		id: 'railway-transit',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['all', ['==', ['get', 'class'], 'transit'], ['!=', ['get', 'brunnel'], 'tunnel']],
+		layout: {
+			visibility: 'visible'
+		},
+		paint: {
+			'line-color': 'hsl(34, 12%, 66%)',
+			'line-opacity': createZoomInterpolation(1, [
+				[11, 0],
+				[16, 1]
+			])
+		}
+	},
+	{
+		id: 'railway',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: ['==', ['get', 'class'], 'rail'],
+		layout: {
+			visibility: 'visible'
+		},
+		paint: {
+			'line-color': 'hsl(34, 12%, 66%)',
+			'line-opacity': createZoomInterpolation(1, [
+				[11, 0],
+				[16, 1]
+			])
+		}
+	},
+	{
+		id: 'bridge_minor case',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['==', ['get', 'class'], 'minor_road']
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-gap-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 30]
+			]),
+			'line-width': createZoomInterpolation(1.6, [
+				[12, 0.5],
+				[20, 10]
+			])
+		}
+	},
+	{
+		id: 'bridge_major case',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
+		],
+		layout: {
+			'line-cap': 'butt',
+			'line-join': 'miter'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-gap-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 30]
+			]),
+			'line-width': createZoomInterpolation(1.6, [
+				[12, 0.5],
+				[20, 10]
+			])
+		}
+	},
+	{
+		id: 'bridge_minor',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['==', ['get', 'class'], 'minor_road']
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-width': createZoomInterpolation(1.55, [
+				[4, 0.25],
+				[20, 30]
+			])
+		}
+	},
+	{
+		id: 'bridge_major',
+		type: 'line',
+		source: 'openmaptiles',
+		'source-layer': 'transportation',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'LineString'],
+			['==', ['get', 'brunnel'], 'bridge'],
+			['in', ['get', 'class'], ['literal', ['primary', 'secondary', 'tertiary', 'trunk']]]
+		],
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
+			'line-width': createZoomInterpolation(1.4, [
+				[6, 0.5],
+				[20, 30]
+			])
 		}
 	}
 ];

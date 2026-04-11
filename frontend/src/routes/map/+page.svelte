@@ -39,6 +39,7 @@
 	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
+	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
@@ -70,7 +71,6 @@
 		showSearchMenu,
 		showTermsDialog
 	} from '$routes/stores/ui';
-
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）
@@ -494,6 +494,12 @@
 	});
 </script>
 
+<!-- {#if !isInitialized && !isInitialStreetViewEntry}
+	<div class="bg-main absolute z-100 grid h-full w-full place-items-center">
+		<div class="text-5xl">Loading&hellip;</div>
+	</div>
+{/if} -->
+
 {#if isInitialized && isInitialStreetViewEntry}
 	{#if isScreenshotMode}
 		<!-- スクリーンショットモード: マップのみ表示 -->
@@ -659,6 +665,11 @@
 					bind:showAngleMarker
 					bind:isExternalCameraUpdate
 				/>
+			{/if}
+
+			{#if !$isStreetView && !showDataEntry}
+				<!-- スマホ用地図コントロール -->
+				<MobileMapControl />
 			{/if}
 
 			<MobileFooter {showDataEntry} {featureMenuData} />

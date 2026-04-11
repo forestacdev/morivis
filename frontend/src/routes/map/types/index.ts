@@ -55,6 +55,7 @@ export type DialogType =
 	| 'geojson'
 	| 'geotiff'
 	| 'wmts'
+	| 'wcs'
 	| 'dm'
 	| 'dxf'
 	| 'sima'

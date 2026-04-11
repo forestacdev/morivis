@@ -143,7 +143,7 @@
 </script>
 
 <div
-	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg border bg-black transition-all duration-150 {isHover
+	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-hidden rounded-lg border bg-black transition-all duration-200 {isHover
 		? 'z-10 shadow-lg'
 		: ''} {isHover ? 'border-accent c-set-glow' : 'border-main'}"
 	style="transform-origin: {getTransformOrigin()}; transform: {getHoverTransform()};"

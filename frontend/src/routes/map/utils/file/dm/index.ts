@@ -27,9 +27,13 @@
  *     https://takamoto.biz/2020/06/都市計画ｇｉｓの構築２−dmデータの仕様/
  *   - 数値地形図データファイル仕様（林野庁）
  *     https://www.rinya.maff.go.jp/kanto/apply/publicsale/kanri/pdf/furoku8-1.pdf
+ *   - 参考実装: Orbitalnet-incs/dmprovider
+ *     https://github.com/Orbitalnet-incs/dmprovider/tree/main
  */
 
 import { getClassName } from './classCode';
+
+const DM_DEBUG = false;
 
 // ============================================================
 // 型定義
@@ -95,6 +99,286 @@ const substr = (line: string, start: number, length: number): string =>
 const parseIntField = (line: string, start: number, length: number): number =>
 	parseInt(substr(line, start, length), 10) || 0;
 
+const normalizeAngle = (angle: number): number => {
+	let normalized = angle % 360;
+	if (normalized < 0) normalized += 360;
+	return normalized;
+};
+
+const calculateCircleCenterAndRadius = (
+	points: Array<[number, number]>
+): { center: [number, number]; radius: number } | null => {
+	if (points.length < 3) return null;
+
+	const [[x1, y1], [x2, y2], [x3, y3]] = points;
+	const d = 2 * ((y1 - y3) * (x1 - x2) - (y1 - y2) * (x1 - x3));
+	if (Math.abs(d) < 1e-9) return null;
+
+	const x =
+		((y1 - y3) * (y1 ** 2 - y2 ** 2 + x1 ** 2 - x2 ** 2) -
+			(y1 - y2) * (y1 ** 2 - y3 ** 2 + x1 ** 2 - x3 ** 2)) /
+		d;
+	const y =
+		((x1 - x3) * (x1 ** 2 - x2 ** 2 + y1 ** 2 - y2 ** 2) -
+			(x1 - x2) * (x1 ** 2 - x3 ** 2 + y1 ** 2 - y3 ** 2)) /
+		-d;
+
+	return {
+		center: [x, y],
+		radius: Math.hypot(x - x1, y - y1)
+	};
+};
+
+const createCircleRing = (
+	center: [number, number],
+	radius: number,
+	stepDegrees = 10
+): Array<[number, number]> => {
+	const ring: Array<[number, number]> = [];
+
+	for (let degree = 0; degree <= 360; degree += stepDegrees) {
+		const radians = (degree * Math.PI) / 180;
+		ring.push([center[0] + radius * Math.cos(radians), center[1] + radius * Math.sin(radians)]);
+	}
+
+	if (ring.length > 0) {
+		const first = ring[0];
+		const last = ring[ring.length - 1];
+		if (first[0] !== last[0] || first[1] !== last[1]) {
+			ring.push(first);
+		}
+	}
+
+	return ring;
+};
+
+const createArcPoints = (points: Array<[number, number]>): Array<[number, number]> | null => {
+	const circle = calculateCircleCenterAndRadius(points);
+	if (!circle) return null;
+
+	const [start, middle, end] = points;
+	const { center, radius } = circle;
+	const startAngle = normalizeAngle(
+		(Math.atan2(start[1] - center[1], start[0] - center[0]) * 180) / Math.PI
+	);
+	const middleAngle = normalizeAngle(
+		(Math.atan2(middle[1] - center[1], middle[0] - center[0]) * 180) / Math.PI
+	);
+	const endAngle = normalizeAngle(
+		(Math.atan2(end[1] - center[1], end[0] - center[0]) * 180) / Math.PI
+	);
+
+	const clockwiseDelta = normalizeAngle(endAngle - startAngle);
+	const clockwiseMiddle = normalizeAngle(middleAngle - startAngle);
+	const isClockwise = clockwiseDelta > clockwiseMiddle;
+	const sweep = isClockwise ? clockwiseDelta : 360 - clockwiseDelta;
+	const direction = isClockwise ? 1 : -1;
+	const steps = Math.max(1, Math.ceil(sweep));
+	const arcPoints: Array<[number, number]> = [];
+
+	for (let i = 0; i < steps; i++) {
+		const angle = startAngle + i * direction;
+		const radians = (angle * Math.PI) / 180;
+		arcPoints.push([
+			center[0] + radius * Math.cos(radians),
+			center[1] + radius * Math.sin(radians)
+		]);
+	}
+
+	arcPoints.push(end);
+	return arcPoints;
+};
+
+const isContourClassCode = (classCode: string): boolean =>
+	classCode.startsWith('71') && classCode !== '7199';
+
+const coordKey = ([x, y]: [number, number]): string => `${x},${y}`;
+
+const mergeConnectedLineCoordinates = (
+	lineStrings: Array<Array<[number, number]>>
+): Array<{ coordinates: Array<[number, number]>; segmentCount: number }> => {
+	// 同じ標高値・同じ等高線クラスで束ねた折れ線群を、端点一致だけで順次連結する。
+	// 総当たりを避けるため、端点 -> セグメント一覧の索引を先に作る。
+	const segments = lineStrings
+		.filter((coords) => coords.length >= 2)
+		.map((coords) => [...coords] as Array<[number, number]>);
+	const endpointMap = new Map<string, number[]>();
+	const used = new Array<boolean>(segments.length).fill(false);
+	const merged: Array<{ coordinates: Array<[number, number]>; segmentCount: number }> = [];
+
+	const addEndpointIndex = (key: string, segmentIndex: number) => {
+		const bucket = endpointMap.get(key);
+		if (bucket) {
+			bucket.push(segmentIndex);
+		} else {
+			endpointMap.set(key, [segmentIndex]);
+		}
+	};
+
+	const getMergedCoordinates = (
+		current: Array<[number, number]>,
+		candidate: Array<[number, number]>,
+		atStart: boolean
+	): Array<[number, number]> | null => {
+		const currentStart = current[0];
+		const currentEnd = current[current.length - 1];
+		const candidateStart = candidate[0];
+		const candidateEnd = candidate[candidate.length - 1];
+
+		if (!atStart) {
+			if (coordKey(currentEnd) === coordKey(candidateStart)) {
+				return [...current, ...candidate.slice(1)];
+			}
+			if (coordKey(currentEnd) === coordKey(candidateEnd)) {
+				return [...current, ...[...candidate].reverse().slice(1)];
+			}
+			return null;
+		}
+
+		if (coordKey(currentStart) === coordKey(candidateEnd)) {
+			return [...candidate.slice(0, -1), ...current];
+		}
+		if (coordKey(currentStart) === coordKey(candidateStart)) {
+			return [...[...candidate].reverse().slice(0, -1), ...current];
+		}
+		return null;
+	};
+
+	const collectUnusedCandidates = (endpointKey: string): number[] =>
+		(endpointMap.get(endpointKey) ?? []).filter((index) => !used[index]);
+
+	for (let i = 0; i < segments.length; i++) {
+		addEndpointIndex(coordKey(segments[i][0]), i);
+		addEndpointIndex(coordKey(segments[i][segments[i].length - 1]), i);
+	}
+
+	for (let i = 0; i < segments.length; i++) {
+		if (used[i]) continue;
+
+		let current = [...segments[i]];
+		let segmentCount = 1;
+		used[i] = true;
+		let extended = true;
+
+		while (extended) {
+			extended = false;
+
+			const endCandidates = collectUnusedCandidates(coordKey(current[current.length - 1]));
+			if (endCandidates.length === 1) {
+				const candidateIndex = endCandidates[0];
+				const mergedCoords = getMergedCoordinates(current, segments[candidateIndex], false);
+				if (mergedCoords) {
+					current = mergedCoords;
+					used[candidateIndex] = true;
+					segmentCount += 1;
+					extended = true;
+					continue;
+				}
+			}
+
+			const startCandidates = collectUnusedCandidates(coordKey(current[0]));
+			if (startCandidates.length === 1) {
+				const candidateIndex = startCandidates[0];
+				const mergedCoords = getMergedCoordinates(current, segments[candidateIndex], true);
+				if (mergedCoords) {
+					current = mergedCoords;
+					used[candidateIndex] = true;
+					segmentCount += 1;
+					extended = true;
+				}
+			}
+		}
+
+		merged.push({ coordinates: current, segmentCount });
+	}
+
+	return merged;
+};
+
+const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
+	// 等高線は1地物が複数要素レコードに分かれやすいため、ここで後処理として連結する。
+	// 道路や境界まで誤結合しないように、71xx の線だけを対象にする。
+	// 標高値がある場合は同じ標高値ごとに、無い場合は classCode 単位で端点完全一致マージを行う。
+	const mergedFeatures: DMFeature[] = [];
+	const contourGroups = new Map<string, DMFeature[]>();
+	let contourFeatureCount = 0;
+	let contourWithElevationCount = 0;
+
+	for (const feature of features) {
+		if (
+			feature.geometry.type !== 'LineString' ||
+			feature.properties.dataType !== '線' ||
+			!isContourClassCode(feature.properties.classCode)
+		) {
+			mergedFeatures.push(feature);
+			continue;
+		}
+		contourFeatureCount += 1;
+		if (typeof feature.properties.elevation === 'number') {
+			contourWithElevationCount += 1;
+		}
+
+		const groupKey = [
+			feature.properties.classCode,
+			feature.properties.drawingId,
+			typeof feature.properties.elevation === 'number'
+				? `elevation:${String(feature.properties.elevation)}`
+				: 'elevation:none'
+		].join(':');
+
+		const bucket = contourGroups.get(groupKey);
+		if (bucket) {
+			bucket.push(feature);
+		} else {
+			contourGroups.set(groupKey, [feature]);
+		}
+	}
+
+	if (DM_DEBUG) {
+		console.debug('[DM] contour merge input', {
+			contourFeatureCount,
+			contourWithElevationCount,
+			contourWithoutElevationCount: contourFeatureCount - contourWithElevationCount,
+			contourGroupCount: contourGroups.size
+		});
+	}
+
+	for (const group of contourGroups.values()) {
+		const mergedCoordinates = mergeConnectedLineCoordinates(
+			group.map((feature) => feature.geometry.coordinates as Array<[number, number]>)
+		);
+
+		if (DM_DEBUG) {
+			const sample = group[0];
+			console.debug('[DM] contour merge group', {
+				classCode: sample.properties.classCode,
+				drawingId: sample.properties.drawingId,
+				elevation:
+					typeof sample.properties.elevation === 'number' ? sample.properties.elevation : null,
+				sourceSegmentCount: group.length,
+				mergedFeatureCount: mergedCoordinates.length,
+				mergedSegmentCounts: mergedCoordinates.map((item) => item.segmentCount)
+			});
+		}
+
+		for (const mergedCoordinate of mergedCoordinates) {
+			mergedFeatures.push({
+				...group[0],
+				geometry: {
+					type: 'LineString',
+					coordinates: mergedCoordinate.coordinates
+				},
+				properties: {
+					...group[0].properties,
+					mergedSegmentCount: mergedCoordinate.segmentCount
+				}
+			});
+		}
+	}
+
+	return mergedFeatures;
+};
+
 interface IndexRecord {
 	type: 'INDEX';
 	coordSystem: number;
@@ -140,6 +424,11 @@ interface ElementRecord {
 	dataTypeCode: string; // 元のデータタイプコード (0-9)
 	elementId: number;
 	coordinateCount: number;
+	dataKubun: number;
+	actualDataType: number;
+	precisionType: number;
+	kandan: number;
+	teni: number;
 	is3D?: boolean; // 拡張DM: 座標次元が3Dかどうか
 }
 
@@ -160,6 +449,7 @@ interface AnnotationRecord {
 	y: number;
 	angle: number; // デシ度
 	height: number; // 文字高さ (raw整数)
+	tateyoko?: number;
 }
 
 type ParsedRecord =
@@ -332,7 +622,12 @@ const parseElementRecord = (line: string): ElementRecord => {
 		dataType: DATA_TYPE_MAP[dataTypeCode] ?? '不明',
 		dataTypeCode,
 		elementId: parseIntField(line, 9, 8),
-		coordinateCount: parseIntField(line, 33, 4)
+		coordinateCount: parseIntField(line, 33, 4),
+		dataKubun: parseIntField(line, 32, 1),
+		actualDataType: parseIntField(line, 18, 1),
+		precisionType: parseIntField(line, 19, 1),
+		kandan: parseIntField(line, 20, 4),
+		teni: parseIntField(line, 24, 4)
 	};
 };
 
@@ -386,7 +681,8 @@ const parseAnnotationRecord = (line: string): AnnotationRecord => {
 		y: parseIntField(line, 13, 10),
 		angle: parseIntField(line, 23, 4),
 		height: parseIntField(line, 27, 4),
-		text: substr(line, 31, 54)
+		text: substr(line, 31, 54),
+		tateyoko: 0
 	};
 };
 
@@ -453,6 +749,11 @@ const parseExtElementRecord = (
 		dataTypeCode,
 		elementId,
 		coordinateCount,
+		dataKubun: parseInt(line.substring(7, 8).trim(), 10) || 0,
+		actualDataType: parseInt(line.substring(7, 8).trim(), 10) || 0,
+		precisionType: parseInt(line.substring(16, 17).trim(), 10) || 0,
+		kandan: parseInt(line.substring(8, 12).trim(), 10) || 0,
+		teni: 0,
 		is3D,
 		embeddedX,
 		embeddedY
@@ -521,7 +822,8 @@ const parseExtAnnotationDataRecord = (line: string): AnnotationRecord => {
 		y: 0,
 		angle: parseInt(line.substring(0, 7).trim(), 10) || 0,
 		height: parseInt(line.substring(11, 15).trim(), 10) || 0,
-		text
+		text,
+		tateyoko: parseInt(line.substring(7, 8).trim(), 10) || 0
 	};
 };
 
@@ -779,6 +1081,13 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 		return [toMeters(y, mapLevel), toMeters(x, mapLevel)];
 	};
 
+	const toAbsoluteElevation = (z: number): number => {
+		if (isExtended) {
+			return z / coordUnitDivisor;
+		}
+		return toMeters(z, mapLevel);
+	};
+
 	const roundCoord = (v: number) => Math.round(v * precision) / precision;
 
 	// バッファを GeoJSON フィーチャに変換してフラッシュ
@@ -788,7 +1097,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 		const { classCode, dataType, dataTypeCode, elementId } = currentElementRecord;
 		const className = getClassName(classCode);
-		const baseProps = {
+		const baseProps: DMFeature['properties'] = {
 			classCode,
 			className,
 			dataType,
@@ -796,7 +1105,12 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			elementId,
 			layer: currentClassCode,
 			mapLevel,
-			drawingId: currentDrawingId
+			drawingId: currentDrawingId,
+			dataKubun: currentElementRecord.dataKubun,
+			actualDataType: currentElementRecord.actualDataType,
+			precisionType: currentElementRecord.precisionType,
+			kandan: currentElementRecord.kandan,
+			teni: currentElementRecord.teni
 		};
 
 		let geometry: DMFeature['geometry'] | null = null;
@@ -806,15 +1120,44 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			: coordBuffer.map(([x, y]) => toAbsoluteMeters(x, y));
 
 		const coords = rawCoords.map(([e, n]) => [roundCoord(e), roundCoord(n)]);
+		if (is3D && coord3DBuffer.length > 0) {
+			// 3D座標のZ値は等高線などの標高情報として使う。単一標高なら elevation に正規化する。
+			const elevations = coord3DBuffer.map(([, , z]) => roundCoord(toAbsoluteElevation(z)));
+			const uniqueElevations = [...new Set(elevations)];
+			if (uniqueElevations.length === 1) {
+				baseProps.elevation = uniqueElevations[0];
+			} else {
+				baseProps.elevations = uniqueElevations;
+			}
+		}
 
-		if (dataType === '点' || dataType === '方向') {
+		if (dataType === '点') {
 			if (coords.length === 1) {
 				geometry = { type: 'Point', coordinates: coords[0] };
 			} else if (coords.length > 1) {
 				geometry = { type: 'MultiPoint', coordinates: coords };
 			}
-		} else if (dataType === '線' || dataType === '円弧') {
+		} else if (dataType === '方向') {
+			if (coords.length >= 1) {
+				geometry = { type: 'Point', coordinates: coords[0] };
+				if (coords.length >= 2) {
+					baseProps.angle = normalizeAngle(
+						(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180) / Math.PI
+					);
+				}
+			}
+		} else if (dataType === '線') {
 			if (coords.length >= 2) {
+				geometry = { type: 'LineString', coordinates: coords };
+			}
+		} else if (dataType === '円弧') {
+			if (coords.length >= 3) {
+				const arcPoints = createArcPoints(coords as Array<[number, number]>);
+				geometry = {
+					type: 'LineString',
+					coordinates: (arcPoints ?? coords).map(([e, n]) => [roundCoord(e), roundCoord(n)])
+				};
+			} else if (coords.length >= 2) {
 				geometry = { type: 'LineString', coordinates: coords };
 			}
 		} else if (dataType === '面') {
@@ -829,8 +1172,22 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 				geometry = { type: 'Polygon', coordinates: [ring] };
 			}
 		} else if (dataType === '円') {
-			// 円は中心点として扱う（半径情報は別途 properties に格納）
-			if (coords.length >= 1) {
+			if (coords.length >= 3) {
+				const circle = calculateCircleCenterAndRadius(coords as Array<[number, number]>);
+				if (circle) {
+					baseProps.center = [roundCoord(circle.center[0]), roundCoord(circle.center[1])];
+					baseProps.radius = circle.radius;
+					geometry = {
+						type: 'Polygon',
+						coordinates: [
+							createCircleRing(circle.center, circle.radius).map(([e, n]) => [
+								roundCoord(e),
+								roundCoord(n)
+							])
+						]
+					};
+				}
+			} else if (coords.length >= 1) {
 				geometry = { type: 'Point', coordinates: coords[0] };
 			}
 		}
@@ -948,7 +1305,10 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 						drawingId: currentDrawingId,
 						text: record.text,
 						angle: record.angle / 10, // デシ度 → 度
-						height: record.height
+						height: record.height,
+						tateyoko: record.tateyoko ?? 0,
+						kandan: currentElementRecord?.kandan ?? 0,
+						teni: currentElementRecord?.teni ?? 0
 					}
 				});
 				// 注記後はバッファをリセット
@@ -964,6 +1324,15 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 	// 最後の要素をフラッシュ
 	flushFeature();
+	// FeatureCollectionとして返す前に、分割された等高線だけを地物寄りの形へまとめ直す。
+	const normalizedFeatures = mergeContourFeatures(features);
+
+	if (DM_DEBUG) {
+		console.debug('[DM] convertDMtoGeoJSON result', {
+			featureCountBeforeContourMerge: features.length,
+			featureCountAfterContourMerge: normalizedFeatures.length
+		});
+	}
 
 	// 系番号が未確定の場合のフォールバック
 	if (coordSystem === 0) {
@@ -972,7 +1341,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 	return {
 		type: 'FeatureCollection',
-		features,
+		features: normalizedFeatures,
 		properties: {
 			coordinateSystem: coordSystem,
 			epsgCode: 6668 + coordSystem,

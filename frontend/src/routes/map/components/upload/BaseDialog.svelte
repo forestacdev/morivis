@@ -32,6 +32,7 @@
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
+	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
@@ -84,6 +85,9 @@
 		>
 			{#if showDialogType === 'wmts'}
 				<WmtsForm bind:showDataEntry bind:showDialogType />
+			{/if}
+			{#if showDialogType === 'wcs'}
+				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'stac'}
 				<StacForm bind:showDataEntry bind:showDialogType />

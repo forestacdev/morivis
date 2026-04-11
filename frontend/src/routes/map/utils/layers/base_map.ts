@@ -41,11 +41,11 @@ export const baseMapList: {
 		label: '傾斜方位図',
 		src: './images/base_map/aspect.png'
 	},
-	{
-		type: 'curvature',
-		label: '曲率図',
-		src: './images/base_map/curvature.png'
-	},
+	// {
+	// 	type: 'curvature',
+	// 	label: '曲率図',
+	// 	src: './images/base_map/curvature.png'
+	// },
 	{
 		type: 'osm',
 		label: 'OpenStreetMap',

@@ -214,35 +214,41 @@
 		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 			<span class="text-2xl font-bold">投影法の選択</span>
 		</div>
-
-		<div
-			class="c-scroll flex h-full w-full grow flex-col items-center overflow-x-hidden overflow-y-auto"
-		>
-			{#each poiData as info}
-				<label
-					class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info
-						.properties.code === selectedEpsgCode
-						? 'bg-accent '
-						: 'text-white'}"
-				>
-					<input
-						type="radio"
-						bind:group={selectedEpsgCode}
-						value={info.properties.code}
-						class="hidden"
-					/>
-					<div class="flex flex-col">
-						<span class="transition-colors duration-200 select-none"
-							>{info.properties.name_ja}
-						</span>
-						<span class="text text-xs text-gray-300 transition-colors duration-200 select-none"
-							>{info.properties.prefecture ?? ''}
-						</span>
-					</div>
-				</label>
-			{/each}
+		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
+			<!-- スクロールコンテンツ -->
+			<div
+				class="c-scroll-hidden flex h-full w-full grow flex-col items-center overflow-x-hidden overflow-y-auto"
+			>
+				{#each poiData as info}
+					<label
+						class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info
+							.properties.code === selectedEpsgCode
+							? 'bg-accent '
+							: 'text-white'}"
+					>
+						<input
+							type="radio"
+							bind:group={selectedEpsgCode}
+							value={info.properties.code}
+							class="hidden"
+						/>
+						<div class="flex flex-col">
+							<span class="transition-colors duration-200 select-none"
+								>{info.properties.name_ja}
+							</span>
+							<span class="text text-xs text-gray-300 transition-colors duration-200 select-none"
+								>{info.properties.prefecture ?? ''}
+							</span>
+						</div>
+					</label>
+				{/each}
+			</div>
+			<!-- フォグ効果の背景 -->
+			<div
+				class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[150px] w-full"
+			></div>
 		</div>
-		<div class="flex shrink-0 flex-col justify-center gap-4 overflow-auto pt-2">
+		<div class="flex shrink-0 flex-col justify-center gap-4 overflow-auto pt-2 pb-2">
 			<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>

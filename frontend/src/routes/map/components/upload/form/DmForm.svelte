@@ -6,10 +6,7 @@
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import {
 		createGeoJsonEntry,
-		getGeometryTypes,
-		filterByGeometryType,
 		filterByProperty,
-		groupPropertyByGeometryType,
 		buildDmStyle
 	} from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -43,11 +40,10 @@
 		zoneConfirmedEpsg = $bindable()
 	}: Props = $props();
 
-	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
+	const GEOMETRY_TYPE_LABELS: Partial<Record<VectorEntryGeometryType, string>> = {
 		Point: 'ポイント',
 		LineString: 'ライン',
-		Polygon: 'ポリゴン',
-		Label: 'ラベル'
+		Polygon: 'ポリゴン'
 	};
 
 	let zoneInfo = $state<DMInfo | null>(null);
@@ -64,6 +60,70 @@
 	let classCodeMap = $state<Record<string, string>>({});
 	// ジオメトリタイプ → DMデータタイプ（面/線/点/注記等）のマッピング
 	let dataTypesByGeometryType = $state<Record<string, string[]>>({});
+
+	const getFallbackGeometryType = (
+		geometryType: string | undefined
+	): VectorEntryGeometryType | null => {
+		if (geometryType === 'Point' || geometryType === 'MultiPoint') return 'Point';
+		if (geometryType === 'LineString' || geometryType === 'MultiLineString') return 'LineString';
+		if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') return 'Polygon';
+		return null;
+	};
+
+	const getDmGeometryType = (
+		feature: FeatureCollection['features'][number]
+	): VectorEntryGeometryType | null => {
+		const props = feature.properties as Record<string, unknown> | null;
+		const dataType = props?.dataType != null ? String(props.dataType) : undefined;
+		if (dataType === '点' || dataType === '方向' || dataType === '注記') return 'Point';
+		if (dataType === '線' || dataType === '円弧') return 'LineString';
+		if (dataType === '面' || dataType === '円') return 'Polygon';
+		return getFallbackGeometryType(feature.geometry?.type);
+	};
+
+	const getDmGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
+		const geometryTypes = new Set<VectorEntryGeometryType>();
+		for (const feature of geojson.features) {
+			const geometryType = getDmGeometryType(feature);
+			if (geometryType) geometryTypes.add(geometryType);
+		}
+		return Array.from(geometryTypes);
+	};
+
+	const filterDmByGeometryType = (
+		geojson: FeatureCollection,
+		geometryType: VectorEntryGeometryType
+	): FeatureCollection => ({
+		type: 'FeatureCollection',
+		features: geojson.features.filter((feature) => getDmGeometryType(feature) === geometryType)
+	});
+
+	const groupDmPropertyByGeometryType = (
+		geojson: FeatureCollection,
+		getKey: (props: Record<string, unknown>) => string | undefined
+	): Partial<Record<VectorEntryGeometryType, string[]>> => {
+		const grouped: Partial<Record<VectorEntryGeometryType, Set<string>>> = {
+			Point: new Set(),
+			LineString: new Set(),
+			Polygon: new Set()
+		};
+
+		for (const feature of geojson.features) {
+			const geometryType = getDmGeometryType(feature);
+			const props = feature.properties as Record<string, unknown> | null;
+			const key = props ? getKey(props) : undefined;
+			if (!geometryType || key == null) continue;
+			const bucket = grouped[geometryType];
+			if (!bucket) continue;
+			bucket.add(key);
+		}
+
+		return {
+			Point: Array.from(grouped.Point ?? []),
+			LineString: Array.from(grouped.LineString ?? []),
+			Polygon: Array.from(grouped.Polygon ?? [])
+		};
+	};
 
 	// 選択されたclassName一覧（チェック済みのもの）
 	const selectedClassNames = $derived(
@@ -97,7 +157,7 @@
 			convertDMFileToGeoJSON(dmFile, {})
 				.then((dmResult) => {
 					rawGeojson = dmResult as unknown as FeatureCollection;
-					const types = getGeometryTypes(rawGeojson);
+					const types = getDmGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
@@ -110,7 +170,7 @@
 						selectedGeometryType = types[0];
 					}
 
-					classNamesByGeometryType = groupPropertyByGeometryType(rawGeojson, extractClassName);
+					classNamesByGeometryType = groupDmPropertyByGeometryType(rawGeojson, extractClassName);
 
 					// className → classCode のマッピングを構築
 					const codeMap: Record<string, string> = {};
@@ -129,16 +189,8 @@
 					for (const feature of rawGeojson.features) {
 						const props = feature.properties as Record<string, unknown>;
 						const dt = props?.dataType != null ? String(props.dataType) : undefined;
-						const geomType = feature.geometry?.type;
-						if (!dt || !geomType) continue;
-						const key =
-							geomType === 'Point' || geomType === 'MultiPoint'
-								? 'Point'
-								: geomType === 'LineString' || geomType === 'MultiLineString'
-									? 'LineString'
-									: geomType === 'Polygon' || geomType === 'MultiPolygon'
-										? 'Polygon'
-										: geomType;
+						const key = getDmGeometryType(feature);
+						if (!dt || !key) continue;
 						if (!dtMap[key]) dtMap[key] = new Set();
 						dtMap[key].add(dt);
 					}
@@ -162,7 +214,7 @@
 
 		// フィルタ結果でbboxを計算（rawGeojsonは上書きしない）
 		if (rawGeojson && selectedGeometryType) {
-			let filtered = filterByGeometryType(
+			let filtered = filterDmByGeometryType(
 				rawGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
@@ -184,7 +236,7 @@
 			const prjContent = getProjContext(epsgCode as EpsgCode);
 
 			// ジオメトリタイプ + className でフィルタリングしてから座標変換
-			let filtered = filterByGeometryType(
+			let filtered = filterDmByGeometryType(
 				rawGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
