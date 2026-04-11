@@ -3,7 +3,6 @@
 	import { tick } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
-	// import LayerSlot from '$routes/map/components/layer_menu/LayerSlot.svelte';
 	import RecommendedData from './RecommendedData.svelte';
 
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
