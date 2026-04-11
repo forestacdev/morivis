@@ -441,7 +441,7 @@
 					{/if}
 
 					<!-- 余白 -->
-					<div class="h-[100px] w-full shrink-0"></div>
+					<div class="h-[300px] w-full shrink-0"></div>
 				{:else if selectedTab === 'map-display'}
 					<MapSettingItem>
 						<Switch label="アカデミー施設等" bind:value={$showPoiLayer} />
@@ -481,7 +481,7 @@
 							<div
 								in:fly={{ duration: 500, y: 20 }}
 								out:fly={{ duration: 500 }}
-								class="absolute grid aspect-square w-full translate-y-[20px] place-items-center px-6"
+								class="absolute grid aspect-square w-full translate-y-[50px] place-items-center px-6"
 							>
 								{#if isInFacView}
 									<div class="grid aspect-square place-items-center [&_path]:fill-white">
