@@ -12,12 +12,14 @@
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import { mapStore } from '$routes/stores/map';
+	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 	}
 
 	let { showDataEntry = $bindable() }: Props = $props();
+	let previewSpinToken = $state(0);
 
 	const formatDescription = (text: string): string => {
 		// 先頭の改行を除去
@@ -54,6 +56,18 @@
 			}
 		}
 	});
+
+	const spinPreviewCard = () => {
+		previewSpinToken += 1;
+	};
+
+	let lastPreviewId = $state<string | null>(null);
+	$effect(() => {
+		const nextId = showDataEntry?.id ?? null;
+		if (!nextId || nextId === lastPreviewId) return;
+		lastPreviewId = nextId;
+		spinPreviewCard();
+	});
 </script>
 
 {#if showDataEntry}
@@ -65,104 +79,19 @@
 			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
-		<div class="flex h-full flex-col text-base">
+		<div class="flex h-full flex-col items-center justify-center text-base">
 			<!-- ヘッダー -->
-			<div class="relative flex flex-col items-center gap-2 pb-8">
-				<!-- アイコン -->
-				<div
-					class="relative isolate grid h-[180px] w-[180px] shrink-0 place-items-center rounded-full bg-black drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]"
-				>
-					<LayerIcon layerEntry={showDataEntry} />
-					<!-- タイプアイコン -->
-					{#if layertype}
-						<div
-							class="bounded-full bg-base absolute right-1 bottom-1 aspect-square rounded-full border-2 border-gray-900 p-2 text-black"
-						>
-							<Icon icon={getLayerIcon(layertype)} class="h-7 w-7" />
-						</div>
-					{/if}
-				</div>
-
-				<!-- タイトル -->
-				<div class="flex flex-col items-center gap-2">
-					<div class="text-2xl">{showDataEntry?.metaData.name}</div>
-					<span class="text-gray-300"
-						>{getAttributionName(showDataEntry?.metaData.attribution)}</span
-					>
-
-					{#if showDataEntry?.metaData.downloadUrl}
-						<a
-							class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
-							href={showDataEntry?.metaData.downloadUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							><Icon icon="majesticons:open" class="h-6 w-6" />
-							<span>データ提供元サイト</span></a
-						>
-					{/if}
-				</div>
-
-				<!-- 背景 -->
-				<div class="absolute -z-10 grid w-full place-items-center opacity-15">
-					{#if showDataEntry.metaData.location === '森林文化アカデミー'}
-						<div class="grid aspect-square place-items-center [&_path]:fill-white">
-							<FacIcon width={'100%'} />
-						</div>
-					{/if}
-					{#if prefCode}
-						<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
-							<PrefectureIcon width={'100%'} code={prefCode} />
-						</div>
-						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-					{/if}
-					{#if showDataEntry.metaData.location === '全国'}
-						<div class="grid aspect-square w-full place-items-center">
-							<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
-							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-						</div>
-					{/if}
-					{#if showDataEntry.metaData.location === '世界'}
-						<div class="grid aspect-square w-full place-items-center">
-							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
-							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<div class="c-scroll gap-2 overflow-x-hidden overflow-y-auto">
-				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
-					{#if showDataEntry}
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="rounded-lg p-2 text-justify text-sm">
-							{#if showDataEntry?.metaData.sourceDataName}
-								元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
-							{/if}
-
-							{#if showDataEntry?.metaData.description}
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html formatDescription(showDataEntry?.metaData.description)}
-							{/if}
-						</div>
-					{/if}
-				{/if}
-
-				<div class="mb-2 flex gap-2">
-					<Icon icon="tabler:map-pin" class="h-6 w-6" />
-					<span class="">{showDataEntry?.metaData.location}</span>
-				</div>
-
-				<!-- タグ -->
-				<div class="flex gap-2 py-2">
-					<div class="flex gap-1">
-						<Icon icon="tabler:tag-filled" class="h-6 w-6" />
-					</div>
-					<div class="flex items-center gap-1 text-gray-300">
-						{#each showDataEntry?.metaData.tags as tag}
-							<span class="rounded-lg bg-black p-1 px-2 text-sm">{tag}</span>
-						{/each}
-					</div>
-				</div>
+			<div class="w-[300px]">
+				<DataSlot
+					dataEntry={showDataEntry}
+					bind:showDataEntry
+					itemHeight={180}
+					index={0}
+					isLeftEdge={false}
+					isRightEdge={false}
+					isTopEdge={false}
+					spinToken={previewSpinToken}
+				/>
 			</div>
 		</div>
 	</div>

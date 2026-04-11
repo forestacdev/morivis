@@ -542,6 +542,7 @@ export const NAME_ALIAS_MAP: Record<string, string> = {
 	カシ: 'アラカシ',
 	イタヤ: 'イタヤカエデ',
 	カンバ: 'シラカンバ',
+	サクラ: 'ソメイヨシノ',
 
 	// 竹・笹
 	ササ: 'ササ',

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
+	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
@@ -27,6 +28,7 @@
 		isLeftEdge: boolean;
 		isRightEdge: boolean;
 		isTopEdge: boolean;
+		spinToken?: number;
 	}
 
 	let {
@@ -36,7 +38,8 @@
 		index,
 		isLeftEdge,
 		isRightEdge,
-		isTopEdge
+		isTopEdge,
+		spinToken = 0
 	}: Props = $props();
 
 	let isHover = $state(false);
@@ -48,7 +51,9 @@
 		return getLayerType(dataEntry);
 	});
 
-	let isFlip = $state(false);
+	let lastSpinToken = $state(0);
+	let card3d = $state<HTMLDivElement | null>(null);
+	let isAnimating = $state(false);
 
 	// 画像読み込み完了後のクリーンアップ
 	const handleImageLoad = (_imageResult: ImageResult) => {
@@ -67,6 +72,13 @@
 	};
 
 	onMount(() => {
+		if (card3d) {
+			gsap.set(card3d, {
+				rotationY: 0,
+				transformStyle: 'preserve-3d'
+			});
+		}
+
 		window?.addEventListener('resize', () => {
 			if (container) {
 				const h = container.clientHeight;
@@ -94,10 +106,24 @@
 		}
 	});
 
+	const animateCardSpin = () => {
+		if (!card3d || isAnimating) return;
+
+		isAnimating = true;
+		gsap.to(card3d, {
+			rotationY: '+=360',
+			duration: 0.95,
+			ease: 'power3.inOut',
+			onComplete: () => {
+				isAnimating = false;
+			}
+		});
+	};
+
 	const addData = (id: string) => {
-		isFlip = !isFlip;
-		// activeLayerIdsStore.add(id);
-		// showLayerAddedNotification(dataEntry);
+		// animateCardSpin();
+		activeLayerIdsStore.add(id);
+		showLayerAddedNotification(dataEntry);
 	};
 	const deleteData = (id: string) => {
 		activeLayerIdsStore.remove(id);
@@ -146,13 +172,10 @@
 	};
 
 	$effect(() => {
-		if (!isHover && isFlip) {
-			const timeout = setTimeout(() => {
-				isFlip = false;
-			}, 200); // アニメーションのdurationと同じ値
+		if (!spinToken || spinToken === lastSpinToken) return;
 
-			return () => clearTimeout(timeout);
-		}
+		lastSpinToken = spinToken;
+		animateCardSpin();
 	});
 
 	const formatDescription = (text: string): string => {
@@ -191,7 +214,7 @@
 	}}
 >
 	<!-- 追加ボタン -->
-	{#if isHover && !isFlip}
+	{#if isHover && !isAnimating}
 		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
@@ -230,221 +253,226 @@
 			</button>
 		{/if}
 	{/if}
-	<button
-		onclick={() => {
-			if (!isAdded) showDataEntry = dataEntry;
-		}}
-		class="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg bg-black transition-transform duration-300 backface-hidden {isHover
-			? 'border-accent c-set-glow shadow-lg'
-			: 'border-main'}  {isFlip ? 'rotate-y-180' : ''}"
-	>
-		<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden bg-black">
-			{#await promise then imageResult}
-				{#if imageResult}
-					{#if dataEntry.metaData.coverImage && !isImageError}
-						<img
-							src={dataEntry.metaData.coverImage}
-							class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
-							alt={dataEntry.metaData.name}
-							loading="lazy"
-							onerror={() => {
-								console.error('Image loading failed:', dataEntry.metaData.name);
-								isImageError = true;
-							}}
-						/>
-					{:else}
-						{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
-							<!-- 背景地図画像 -->
+	<div bind:this={card3d} class="card-3d relative h-full w-full">
+		<button
+			onclick={() => {
+				if (!isAdded) showDataEntry = dataEntry;
+			}}
+			class="flip-face card-front absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg bg-black {isHover
+				? 'border-accent c-set-glow shadow-lg'
+				: 'border-main'}"
+		>
+			<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden bg-black">
+				{#await promise then imageResult}
+					{#if imageResult}
+						{#if dataEntry.metaData.coverImage && !isImageError}
 							<img
-								src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
-								class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
-								alt="背景地図画像"
+								src={dataEntry.metaData.coverImage}
+								class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+								alt={dataEntry.metaData.name}
 								loading="lazy"
 								onerror={() => {
-									console.error('Image loading failed: BaseMap Image');
+									console.error('Image loading failed:', dataEntry.metaData.name);
+									isImageError = true;
+								}}
+							/>
+						{:else}
+							{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
+								<!-- 背景地図画像 -->
+								<img
+									src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
+									class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
+									alt="背景地図画像"
+									loading="lazy"
+									onerror={() => {
+										console.error('Image loading failed: BaseMap Image');
+										isImageError = true;
+									}}
+								/>
+							{/if}
+							<img
+								src={imageResult.url}
+								class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
+								alt={dataEntry.metaData.name}
+								onload={() => handleImageLoad(imageResult)}
+								loading="lazy"
+								onerror={() => {
+									console.error('Image loading failed:', dataEntry.metaData.name);
 									isImageError = true;
 								}}
 							/>
 						{/if}
-						<img
-							src={imageResult.url}
-							class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"
-							alt={dataEntry.metaData.name}
-							onload={() => handleImageLoad(imageResult)}
-							loading="lazy"
-							onerror={() => {
-								console.error('Image loading failed:', dataEntry.metaData.name);
-								isImageError = true;
-							}}
-						/>
 					{/if}
+				{:catch}
+					<div class="text-accent">データが取得できませんでした</div>
+				{/await}
+				<div class="pointer-events-none absolute h-full w-full">
+					<div class="c-vignette absolute h-full w-full"></div>
+				</div>
+				<!-- オーバーレイ -->
+				{#if !isHover}
+					<div
+						transition:fade={{ duration: 150 }}
+						class="pointer-events-none absolute h-full w-full"
+					>
+						<div class="c-gradient absolute h-full w-full"></div>
+					</div>
 				{/if}
-			{:catch}
-				<div class="text-accent">データが取得できませんでした</div>
-			{/await}
-			<div class="pointer-events-none absolute h-full w-full">
-				<div class="c-vignette absolute h-full w-full"></div>
-			</div>
-			<!-- オーバーレイ -->
-			{#if !isHover}
-				<div transition:fade={{ duration: 150 }} class="pointer-events-none absolute h-full w-full">
-					<div class="c-gradient absolute h-full w-full"></div>
-				</div>
-			{/if}
-			{#if isHover && !isAdded}
-				<div
-					transition:fade={{ duration: 150 }}
-					class="pointer-events-none absolute grid h-full w-full place-items-center"
-				>
+				{#if isHover && !isAdded}
 					<div
-						class="flex items-center justify-center gap-1 rounded-full bg-black/80 p-2 px-4 text-lg text-white"
+						transition:fade={{ duration: 150 }}
+						class="pointer-events-none absolute grid h-full w-full place-items-center"
 					>
-						<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
-					</div>
-				</div>
-			{/if}
-
-			{#if isAdded}
-				<div
-					transition:fade={{ duration: 150 }}
-					class="pointer-events-none absolute grid h-full w-full place-items-center"
-				>
-					<div
-						class=" flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
-					>
-						<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
-					</div>
-				</div>
-			{/if}
-
-			{#if layerType}
-				<div
-					class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
-				>
-					<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
-				</div>
-			{/if}
-		</div>
-
-		<!-- 詳細情報 -->
-		<div
-			class="relative flex h-full w-full flex-col items-end justify-end gap-1 bg-black pb-4 max-lg:p-1 lg:p-2"
-		>
-			<!-- タイトル -->
-			<div class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2">
-				<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"
-					>{dataEntry.metaData.name}</span
-				>
-				<!-- 出典 -->
-				<span class="text-left text-xs text-gray-400">
-					{getAttributionName(dataEntry.metaData.attribution)}</span
-				>
-				<div
-					class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
-				>
-					{#if dataEntry.metaData.location === '森林文化アカデミー'}
-						<div class="grid place-items-center [&_path]:fill-white">
-							<FacIcon width={'60px'} />
-						</div>
-					{/if}
-					{#if prefCode}
-						<div class="[&_path]:fill-base grid aspect-square place-items-center">
-							<PrefectureIcon width={'80px'} code={prefCode} />
-						</div>
-						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-					{/if}
-					{#if dataEntry.metaData.location === '全国'}
-						<div class="grid place-items-center">
-							<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
-							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-						</div>
-					{/if}
-					{#if dataEntry.metaData.location === '世界'}
-						<div class="grid place-items-center">
-							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
-							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</button>
-
-	<!-- カード裏面 -->
-	<div
-		class="absolute h-full w-full overflow-hidden rounded-lg bg-black transition-transform duration-300 backface-hidden {isFlip
-			? 'z-10'
-			: 'z-0 -rotate-y-180'}"
-	>
-		<!-- 背景 -->
-		<div class="absolute -z-10 grid h-full w-full place-items-center p-6 opacity-5">
-			{#if dataEntry.metaData.location === '森林文化アカデミー'}
-				<div class="grid aspect-square place-items-center [&_path]:fill-white">
-					<FacIcon width={'100%'} />
-				</div>
-			{/if}
-			{#if prefCode}
-				<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
-					<PrefectureIcon width={'100%'} code={prefCode} />
-				</div>
-				<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-			{/if}
-			{#if dataEntry.metaData.location === '全国'}
-				<div class="grid aspect-square w-full place-items-center">
-					<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
-					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-				</div>
-			{/if}
-			{#if dataEntry.metaData.location === '世界'}
-				<div class="grid aspect-square w-full place-items-center">
-					<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
-					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
-				</div>
-			{/if}
-		</div>
-
-		<div class="flex h-full flex-col justify-between">
-			<div class="flex flex-col items-center gap-2 pt-8">
-				<div class="flex gap-2">
-					<Icon icon="tabler:map-pin" class="h-6 w-6" />
-					<span class="">{dataEntry?.metaData.location}</span>
-				</div>
-
-				<div>
-					{#if dataEntry?.metaData.downloadUrl}
-						<a
-							class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
-							href={dataEntry?.metaData.downloadUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							><Icon icon="majesticons:open" class="h-6 w-6" />
-							<span>データ提供元サイト</span></a
+						<div
+							class="flex items-center justify-center gap-1 rounded-full bg-black/80 p-2 px-4 text-lg text-white"
 						>
-					{/if}
-				</div>
-			</div>
-
-			{#if dataEntry.metaData.description || dataEntry.metaData.sourceDataName}
-				{#if dataEntry}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<div class="rounded-lg p-4 text-justify text-sm">
-						{#if dataEntry?.metaData.sourceDataName}
-							元データ名:「{dataEntry?.metaData.sourceDataName}」<br />
-						{/if}
-
-						{#if dataEntry?.metaData.description}
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html formatDescription(dataEntry?.metaData.description)}
-						{/if}
+							<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
+						</div>
 					</div>
 				{/if}
-			{/if}
 
-			<!-- タグ -->
-			<div class="flex items-center gap-1 p-4 text-gray-300">
-				{#each dataEntry.metaData.tags as tag}
-					<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-				{/each}
+				{#if isAdded}
+					<div
+						transition:fade={{ duration: 150 }}
+						class="pointer-events-none absolute grid h-full w-full place-items-center"
+					>
+						<div
+							class=" flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
+						>
+							<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
+						</div>
+					</div>
+				{/if}
+
+				{#if layerType}
+					<div
+						class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+					>
+						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
+					</div>
+				{/if}
+			</div>
+
+			<!-- 詳細情報 -->
+			<div
+				class="relative flex h-full w-full flex-col items-end justify-end gap-1 bg-black pb-4 max-lg:p-1 lg:p-2"
+			>
+				<!-- タイトル -->
+				<div
+					class="flex h-full w-full flex-col justify-center text-left text-white lg:gap-1 lg:pl-2"
+				>
+					<span class="max-lg:text-md max-lg:leading-5 lg:text-lg lg:leading-6"
+						>{dataEntry.metaData.name}</span
+					>
+					<!-- 出典 -->
+					<span class="text-left text-xs text-gray-400">
+						{getAttributionName(dataEntry.metaData.attribution)}</span
+					>
+					<div
+						class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
+					>
+						{#if dataEntry.metaData.location === '森林文化アカデミー'}
+							<div class="grid place-items-center [&_path]:fill-white">
+								<FacIcon width={'60px'} />
+							</div>
+						{/if}
+						{#if prefCode}
+							<div class="[&_path]:fill-base grid aspect-square place-items-center">
+								<PrefectureIcon width={'80px'} code={prefCode} />
+							</div>
+							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+						{/if}
+						{#if dataEntry.metaData.location === '全国'}
+							<div class="grid place-items-center">
+								<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+							</div>
+						{/if}
+						{#if dataEntry.metaData.location === '世界'}
+							<div class="grid place-items-center">
+								<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</button>
+
+		<!-- カード裏面 -->
+		<div
+			class="flip-face card-back absolute inset-0 h-full w-full overflow-hidden rounded-lg bg-black"
+		>
+			<!-- 背景 -->
+			<div class="absolute -z-10 grid h-full w-full place-items-center p-6 opacity-5">
+				{#if dataEntry.metaData.location === '森林文化アカデミー'}
+					<div class="grid aspect-square place-items-center [&_path]:fill-white">
+						<FacIcon width={'100%'} />
+					</div>
+				{/if}
+				{#if prefCode}
+					<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
+						<PrefectureIcon width={'100%'} code={prefCode} />
+					</div>
+					<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+				{/if}
+				{#if dataEntry.metaData.location === '全国'}
+					<div class="grid aspect-square w-full place-items-center">
+						<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+					</div>
+				{/if}
+				{#if dataEntry.metaData.location === '世界'}
+					<div class="grid aspect-square w-full place-items-center">
+						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
+					</div>
+				{/if}
+			</div>
+
+			<div class="flex h-full flex-col justify-between">
+				<div class="flex flex-col items-center gap-2 pt-8">
+					<div class="flex gap-2">
+						<Icon icon="tabler:map-pin" class="h-6 w-6" />
+						<span class="">{dataEntry?.metaData.location}</span>
+					</div>
+
+					<div>
+						{#if dataEntry?.metaData.downloadUrl}
+							<a
+								class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
+								href={dataEntry?.metaData.downloadUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								><Icon icon="majesticons:open" class="h-6 w-6" />
+								<span>データ提供元サイト</span></a
+							>
+						{/if}
+					</div>
+				</div>
+
+				{#if dataEntry.metaData.description || dataEntry.metaData.sourceDataName}
+					{#if dataEntry}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<div class="rounded-lg p-4 text-justify text-sm">
+							{#if dataEntry?.metaData.sourceDataName}
+								元データ名:「{dataEntry?.metaData.sourceDataName}」<br />
+							{/if}
+
+							{#if dataEntry?.metaData.description}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								{@html formatDescription(dataEntry?.metaData.description)}
+							{/if}
+						</div>
+					{/if}
+				{/if}
+
+				<!-- タグ -->
+				<div class="flex items-center gap-1 p-4 text-gray-300">
+					{#each dataEntry.metaData.tags as tag}
+						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -452,6 +480,24 @@
 
 <style>
 	/* カード裏面・表面の共通スタイル */
+	.card-3d {
+		height: 100%;
+		transform-style: preserve-3d;
+	}
+
+	.flip-face {
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		will-change: transform;
+	}
+
+	.card-front {
+		transform: rotateY(0deg);
+	}
+
+	.card-back {
+		transform: rotateY(180deg);
+	}
 
 	/* カード表面のスタイル */
 

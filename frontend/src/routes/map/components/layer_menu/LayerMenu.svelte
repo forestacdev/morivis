@@ -251,7 +251,7 @@
 						transition:slide={{ duration: 200, axis: 'x' }}
 						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
-						<span class="text-[2.7rem]">morivis</span>
+						<span class="text-[2.7rem]"> morivis </span>
 						<div class="flex w-full items-center py-2">
 							<div class="flex flex-1 gap-2">
 								<label
@@ -476,7 +476,10 @@
 				></div>
 				<!-- 背景 -->
 				{#if hasInitializedMapVisual && selectedTab === 'added-data'}
-					<div class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[4%]">
+					<div
+						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[4%]"
+						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
+					>
 						{#key backgroundKey}
 							<div
 								in:fly={{ duration: 500, y: 20 }}
@@ -491,6 +494,11 @@
 									<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
 										<PrefectureIcon width={'100%'} code={prefectureCode} />
 									</div>
+									<!-- <div
+										class="[&_path]:fill-base absolute grid aspect-square w-full place-items-center"
+									>
+										<span class="text-4xl text-red-500"> {prefectureCode} </span>
+									</div> -->
 								{:else if isInJapanView || prefectureCodeError}
 									<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
 								{:else}
