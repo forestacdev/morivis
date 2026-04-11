@@ -175,6 +175,16 @@ const filterProperties = (props: Record<string, any>, options: any): Record<stri
 	return f;
 };
 
+const quoteIdentifier = (value: string): string => `"${value.replaceAll('"', '""')}"`;
+
+const escapeSqlString = (value: string): string => value.replaceAll("'", "''");
+
+const shouldSelectPropertyColumn = (column: string, options: any): boolean => {
+	if (options.includeColumns?.length > 0) return options.includeColumns.includes(column);
+	if (options.excludeColumns?.length > 0) return !options.excludeColumns.includes(column);
+	return true;
+};
+
 // ---- SRS ヘルパー ----
 
 const lookupEpsg = (
@@ -322,35 +332,56 @@ const handleToGeoJson = (db: Database, options: any) => {
 	const features: any[] = [];
 
 	for (const t of tables) {
-		const gcr = db.exec(`SELECT column_name FROM gpkg_geometry_columns WHERE table_name = '${t}'`);
+		const escapedTableName = escapeSqlString(t);
+		const gcr = db.exec(
+			`SELECT column_name FROM gpkg_geometry_columns WHERE table_name = '${escapedTableName}'`
+		);
 		const geomCol = gcr.length > 0 ? (gcr[0].values[0][0] as string) : 'geom';
-		let sql = `SELECT * FROM "${t}"`;
+		const pragmaR = db.exec(`PRAGMA table_info(${quoteIdentifier(t)})`);
+		const tableColumns = pragmaR.length > 0 ? pragmaR[0].values.map((r) => r[1] as string) : [];
+		const selectedColumns = tableColumns.filter(
+			(column) => column === geomCol || shouldSelectPropertyColumn(column, options)
+		);
+		const columns =
+			selectedColumns.length > 0
+				? selectedColumns
+				: tableColumns.length > 0
+					? tableColumns
+					: [geomCol];
+		const geomIndex = columns.indexOf(geomCol);
+		let sql = `SELECT ${columns.map(quoteIdentifier).join(', ')} FROM ${quoteIdentifier(t)}`;
 		if (options.maxFeatures) sql += ` LIMIT ${options.maxFeatures}`;
+		if (geomIndex === -1) continue;
 
-		const result = db.exec(sql);
-		if (result.length === 0) continue;
+		const stmt = db.prepare(sql);
+		try {
+			while (stmt.step()) {
+				const row = stmt.get() as any[];
+				try {
+					const gv = row[geomIndex];
+					if (!gv) continue;
+					const gb =
+						gv instanceof Uint8Array ? gv : new Uint8Array(gv as unknown as ArrayBuffer);
+					const geometry = parseGpkgBinary(gb);
+					if (!geometry) continue;
 
-		const cols = result[0].columns;
-		const gi = cols.indexOf(geomCol);
+					const props: Record<string, any> = {};
+					for (let i = 0; i < columns.length; i++) {
+						if (i !== geomIndex) props[columns[i]] = row[i];
+					}
 
-		for (const row of result[0].values) {
-			try {
-				const gv = row[gi];
-				if (!gv) continue;
-				const gb = gv instanceof Uint8Array ? gv : new Uint8Array(gv as unknown as ArrayBuffer);
-				const geometry = parseGpkgBinary(gb);
-				if (!geometry) continue;
-
-				const props: Record<string, any> = {};
-				for (let i = 0; i < cols.length; i++) {
-					if (i !== gi) props[cols[i]] = row[i];
+					features.push({
+						type: 'Feature',
+						geometry,
+						properties: filterProperties(props, options)
+					});
+					if (options.maxFeatures && features.length >= options.maxFeatures) break;
+				} catch {
+					// skip
 				}
-
-				features.push({ type: 'Feature', geometry, properties: filterProperties(props, options) });
-				if (options.maxFeatures && features.length >= options.maxFeatures) break;
-			} catch {
-				// skip
 			}
+		} finally {
+			stmt.free();
 		}
 		if (options.maxFeatures && features.length >= options.maxFeatures) break;
 	}
@@ -442,27 +473,21 @@ const handleToRaster = async (db: Database, tableName: string) => {
 	const matrixWidth = matSizeR[0].values[0][0] as number;
 	const matrixHeight = matSizeR[0].values[0][1] as number;
 
-	const tilesR = db.exec(
-		`SELECT tile_column, tile_row, tile_data FROM "${tableName}" WHERE zoom_level = ${maxZoom}`
+	const tileRangeR = db.exec(
+		`SELECT MIN(tile_column), MAX(tile_column), MIN(tile_row), MAX(tile_row) FROM "${tableName}" WHERE zoom_level = ${maxZoom}`
 	);
-	if (tilesR.length === 0 || tilesR[0].values.length === 0)
+	if (
+		tileRangeR.length === 0 ||
+		tileRangeR[0].values.length === 0 ||
+		tileRangeR[0].values[0][0] === null
+	)
 		throw new Error('タイルデータが見つかりません');
 
-	const tiles = tilesR[0].values;
-
 	// 実際のタイル範囲を取得
-	let minCol = Infinity,
-		maxCol = -Infinity,
-		minRow = Infinity,
-		maxRow = -Infinity;
-	for (const t of tiles) {
-		const c = t[0] as number,
-			r = t[1] as number;
-		minCol = Math.min(minCol, c);
-		maxCol = Math.max(maxCol, c);
-		minRow = Math.min(minRow, r);
-		maxRow = Math.max(maxRow, r);
-	}
+	const minCol = tileRangeR[0].values[0][0] as number;
+	const maxCol = tileRangeR[0].values[0][1] as number;
+	const minRow = tileRangeR[0].values[0][2] as number;
+	const maxRow = tileRangeR[0].values[0][3] as number;
 
 	const colCount = maxCol - minCol + 1;
 	const rowCount = maxRow - minRow + 1;
@@ -482,108 +507,123 @@ const handleToRaster = async (db: Database, tableName: string) => {
 
 	// Transferableなバンドデータを構築
 	const transferBuffers: ArrayBuffer[] = [];
+	const tileStmt = db.prepare(
+		`SELECT tile_column, tile_row, tile_data FROM "${tableName}" WHERE zoom_level = ?`
+	);
 
-	if (isGridded) {
-		const band = new Float32Array(totalW * totalH);
-		band.fill(gcNodata ?? NaN);
+	try {
+		tileStmt.bind([maxZoom]);
 
-		for (const tile of tiles) {
-			const col = (tile[0] as number) - minCol;
-			const row = (tile[1] as number) - minRow;
-			const td = tile[2] as Uint8Array;
-			try {
-				const ab = new ArrayBuffer(td.byteLength);
-				new Uint8Array(ab).set(td);
-				const tiff = await fromArrayBuffer(ab);
-				const img = await tiff.getImage();
-				const rasters = await img.readRasters({ interleave: true });
-				const px = rasters as unknown as Float32Array | Uint16Array;
-				for (let y = 0; y < tileH; y++) {
-					for (let x = 0; x < tileW; x++) {
-						const si = y * tileW + x;
-						const di = (row * tileH + y) * totalW + (col * tileW + x);
-						band[di] = px[si] * gcScale + gcOffset;
+		if (isGridded) {
+			const band = new Float32Array(totalW * totalH);
+			band.fill(gcNodata ?? NaN);
+
+			while (tileStmt.step()) {
+				const tile = tileStmt.get() as [number, number, Uint8Array];
+				const col = tile[0] - minCol;
+				const row = tile[1] - minRow;
+				const td = tile[2];
+				try {
+					const ab = new ArrayBuffer(td.byteLength);
+					new Uint8Array(ab).set(td);
+					const tiff = await fromArrayBuffer(ab);
+					const img = await tiff.getImage();
+					const rasters = await img.readRasters({ interleave: true });
+					const px = rasters as unknown as Float32Array | Uint16Array;
+					for (let y = 0; y < tileH; y++) {
+						for (let x = 0; x < tileW; x++) {
+							const si = y * tileW + x;
+							const di = (row * tileH + y) * totalW + (col * tileW + x);
+							band[di] = px[si] * gcScale + gcOffset;
+						}
 					}
+				} catch {
+					/* skip */
 				}
-			} catch {
-				/* skip */
 			}
-		}
 
-		const range = getMinMax(band, gcNodata);
-		transferBuffers.push(band.buffer as ArrayBuffer);
-		return {
-			result: {
-				numBands: 1,
-				width: totalW,
-				height: totalH,
-				bounds: trimmedBounds,
-				epsg,
-				nodata: gcNodata,
-				dataRanges: [range],
-				bandBuffers: [band.buffer]
-			},
-			transfer: transferBuffers
-		};
-	} else {
-		const canvas = new OffscreenCanvas(totalW, totalH);
-		const ctx = canvas.getContext('2d');
-		if (!ctx) throw new Error('Canvas context取得失敗');
+			const range = getMinMax(band, gcNodata);
+			transferBuffers.push(band.buffer as ArrayBuffer);
+			return {
+				result: {
+					numBands: 1,
+					width: totalW,
+					height: totalH,
+					bounds: trimmedBounds,
+					epsg,
+					nodata: gcNodata,
+					dataRanges: [range],
+					bandBuffers: [band.buffer]
+				},
+				transfer: transferBuffers
+			};
+		} else {
+			const canvas = new OffscreenCanvas(totalW, totalH);
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context取得失敗');
 
-		for (const tile of tiles) {
-			const col = (tile[0] as number) - minCol;
-			const row = (tile[1] as number) - minRow;
-			const td = tile[2] as Uint8Array;
-			try {
-				const ab = new ArrayBuffer(td.byteLength);
-				new Uint8Array(ab).set(td);
-				const bitmap = await createImageBitmap(new Blob([ab]));
-				ctx.drawImage(bitmap, col * tileW, row * tileH);
-				bitmap.close();
-			} catch {
-				/* skip */
+			while (tileStmt.step()) {
+				const tile = tileStmt.get() as [number, number, Uint8Array];
+				const col = tile[0] - minCol;
+				const row = tile[1] - minRow;
+				const td = tile[2];
+				try {
+					const ab = new ArrayBuffer(td.byteLength);
+					new Uint8Array(ab).set(td);
+					const bitmap = await createImageBitmap(new Blob([ab]));
+					ctx.drawImage(bitmap, col * tileW, row * tileH);
+					bitmap.close();
+				} catch {
+					/* skip */
+				}
 			}
-		}
 
-		const imgData = ctx.getImageData(0, 0, totalW, totalH);
-		const rgba = imgData.data;
-		const px = totalW * totalH;
-		const rB = new Float32Array(px);
-		const gB = new Float32Array(px);
-		const bB = new Float32Array(px);
-		for (let i = 0; i < px; i++) {
-			if (rgba[i * 4 + 3] === 0) {
-				// 透明ピクセル（タイルなし）→ NaN nodata
-				rB[i] = NaN;
-				gB[i] = NaN;
-				bB[i] = NaN;
-			} else {
-				rB[i] = rgba[i * 4];
-				gB[i] = rgba[i * 4 + 1];
-				bB[i] = rgba[i * 4 + 2];
+			const imgData = ctx.getImageData(0, 0, totalW, totalH);
+			const rgba = imgData.data;
+			const px = totalW * totalH;
+			const rB = new Float32Array(px);
+			const gB = new Float32Array(px);
+			const bB = new Float32Array(px);
+			for (let i = 0; i < px; i++) {
+				if (rgba[i * 4 + 3] === 0) {
+					// 透明ピクセル（タイルなし）→ NaN nodata
+					rB[i] = NaN;
+					gB[i] = NaN;
+					bB[i] = NaN;
+				} else {
+					rB[i] = rgba[i * 4];
+					gB[i] = rgba[i * 4 + 1];
+					bB[i] = rgba[i * 4 + 2];
+				}
 			}
-		}
 
-		const nanNodata = NaN;
-		const ranges = [getMinMax(rB, nanNodata), getMinMax(gB, nanNodata), getMinMax(bB, nanNodata)];
-		transferBuffers.push(
-			rB.buffer as ArrayBuffer,
-			gB.buffer as ArrayBuffer,
-			bB.buffer as ArrayBuffer
-		);
-		return {
-			result: {
-				numBands: 3,
-				width: totalW,
-				height: totalH,
-				bounds: trimmedBounds,
-				epsg,
-				nodata: nanNodata,
-				dataRanges: ranges,
-				bandBuffers: [rB.buffer, gB.buffer, bB.buffer]
-			},
-			transfer: transferBuffers
-		};
+			const nanNodata = NaN;
+			const ranges = [
+				getMinMax(rB, nanNodata),
+				getMinMax(gB, nanNodata),
+				getMinMax(bB, nanNodata)
+			];
+			transferBuffers.push(
+				rB.buffer as ArrayBuffer,
+				gB.buffer as ArrayBuffer,
+				bB.buffer as ArrayBuffer
+			);
+			return {
+				result: {
+					numBands: 3,
+					width: totalW,
+					height: totalH,
+					bounds: trimmedBounds,
+					epsg,
+					nodata: nanNodata,
+					dataRanges: ranges,
+					bandBuffers: [rB.buffer, gB.buffer, bB.buffer]
+				},
+				transfer: transferBuffers
+			};
+		}
+	} finally {
+		tileStmt.free();
 	}
 };
 
