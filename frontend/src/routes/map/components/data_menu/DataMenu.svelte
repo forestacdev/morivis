@@ -3,6 +3,7 @@
 	import { scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
+	import { ICONS } from '$lib/icons';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
@@ -162,7 +163,7 @@
 			showDataMenu.set(false);
 		}}
 	>
-		<Icon icon="ep:back" class="h-7 w-7" />
+		<Icon icon={ICONS.back} class="h-7 w-7" />
 	</button> -->
 		<div
 			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
@@ -189,7 +190,7 @@
 							disabled={!searchWord}
 							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
 						>
-							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
+							<Icon icon={ICONS.close} class="h-8 w-8 text-gray-400" />
 						</button>
 					{/if}
 				</div>

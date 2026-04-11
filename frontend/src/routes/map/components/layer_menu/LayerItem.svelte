@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
@@ -589,19 +590,16 @@
 							}}
 							class="cursor-pointer"
 						>
-							<Icon
-								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-								class="h-8 w-8"
-							/>
+							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon="bx:trash" class="h-8 w-8" />
+							<Icon icon={ICONS.trash} class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
+								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -610,7 +608,7 @@
 						</button> -->
 						{#if isGeojsonCustomLayer || isTiffCustomLayer}
 							<button onclick={downloadLayer} class="cursor-pointer">
-								<Icon icon="material-symbols:download-rounded" class="h-8 w-8" />
+								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
@@ -633,20 +631,17 @@
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
 							class="cursor-pointer"
 						>
-							<Icon
-								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-								class="h-8 w-8"
-							/>
+							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 
 						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon="bx:trash" class="h-8 w-8" />
+							<Icon icon={ICONS.trash} class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
+								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
 							</button>
 						{/if}
 

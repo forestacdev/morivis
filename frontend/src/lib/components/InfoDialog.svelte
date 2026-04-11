@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade, scale } from 'svelte/transition';
 
+	import { ICONS } from '$lib/icons';
 	import { showInfoDialog } from '$routes/stores/ui';
 </script>
 
@@ -21,7 +22,7 @@
 					onclick={() => showInfoDialog.set(false)}
 					class="bg-base cursor-pointer rounded-full p-2"
 				>
-					<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
+					<Icon icon={ICONS.close} class="text-main h-4 w-4" />
 				</button>
 			</div>
 			<div class="flex-flex-col c-scroll overflow-x-hidden overflow-y-auto">

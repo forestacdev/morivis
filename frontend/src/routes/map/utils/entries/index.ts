@@ -1,4 +1,5 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
+import { getLayerIconName } from '$lib/icons';
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'model' | 'point' | 'line' | 'polygon' | 'raster';
 
@@ -27,20 +28,7 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 };
 
 export const getLayerIcon = (layerType: LayerType): string => {
-	switch (layerType) {
-		case 'point':
-			return 'ic:baseline-mode-standby';
-		case 'line':
-			return 'ic:baseline-polymer';
-		case 'polygon':
-			return 'ic:baseline-pentagon';
-		case 'raster':
-			return 'mdi:raster';
-		case 'model':
-			return 'iconoir:3d-select-solid';
-		default:
-			throw new Error(`Unknown layer type: ${layerType}`);
-	}
+	return getLayerIconName(layerType);
 };
 
 export const TYPE_LABELS = {

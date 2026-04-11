@@ -13,6 +13,7 @@
 	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { PUBLIC_GA_UA } from '$env/static/public';
+	import { ICONS } from '$lib/icons';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
@@ -127,7 +128,7 @@
 {#if deviceType === 'mobile' && !$isMobile}
 	<div class="bg-main absolute z-100 flex h-full w-full items-center justify-center text-base">
 		<p class="text-2xl">端末を縦向きにしてください。</p>
-		<Icon icon="circum:mobile-3" class="h-16 w-16" />
+		<Icon icon={ICONS.mobile} class="h-16 w-16" />
 	</div>
 {/if}
 {#if isInitialized}

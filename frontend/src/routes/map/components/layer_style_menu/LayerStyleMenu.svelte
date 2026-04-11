@@ -3,6 +3,7 @@
 	import { fly } from 'svelte/transition';
 
 	import ModelOptionMenu from './ModelOptionMenu.svelte';
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
@@ -109,7 +110,7 @@
 						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 						title="スタイルをリセット"
 					>
-						<Icon icon="material-symbols:restart-alt-rounded" class="h-5 w-5" />
+						<Icon icon={ICONS.reset} class="h-5 w-5" />
 					</button>
 					<button
 						onclick={() => {
@@ -118,7 +119,7 @@
 						}}
 						class="bg-base text-main grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
-						<Icon icon="material-symbols:close-rounded" class="h-5 w-5" />
+						<Icon icon={ICONS.close} class="h-5 w-5" />
 					</button>
 				</div>
 
@@ -141,7 +142,7 @@
 										? 'bg-accent'
 										: ''}"
 								>
-									<Icon icon={'akar-icons:eye-slashed'} class="h-8 w-8 text-base/90" />
+									<Icon icon={getVisibilityIconName(false)} class="h-8 w-8 text-base/90" />
 								</div>
 
 								<span
