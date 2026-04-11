@@ -17,26 +17,17 @@ const createZoomInterpolation = (
 	...stops.flatMap(([zoom, value]) => [zoom, value])
 ];
 
-/** 道路中心線 line-opacity */
+/** OpenMapTiles の道路系レイヤー line-opacity */
 const roadLineOpacity: ExpressionSpecification = [
 	'interpolate',
 	['linear'],
 	['zoom'],
-	12,
-	[
-		'case',
-		[
-			'all',
-			['!', ['in', ['get', 'vt_rdctg'], ['literal', ['国道', '都道府県道', '高速自動車国道等']]]],
-			['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
-		],
-		0,
-		1
-	],
 	13,
 	1,
+	14,
+	1,
 	18,
-	0.1
+	0.3
 ];
 
 export const roadSources: Record<string, VectorSourceSpecification> = {
@@ -186,6 +177,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
 				[20, 15]
@@ -209,6 +201,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
 				[20, 30]
@@ -232,6 +225,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-dasharray': [0.36, 0.18],
 			'line-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
@@ -256,6 +250,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-dasharray': [0.28, 0.14],
 			'line-width': createZoomInterpolation(1.4, [
 				[6, 0.5],
@@ -279,6 +274,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.4, [
 				[6, 0.5],
 				[20, 30]
@@ -301,6 +297,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.4, [
 				[6, 0.5],
 				[20, 20]
@@ -319,6 +316,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(210,190,139,1)',
+			'line-opacity': roadLineOpacity,
 			'line-offset': 0,
 			'line-width': createZoomInterpolation(1.4, [
 				[8, 1],
@@ -377,6 +375,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-gap-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
 				[20, 30]
@@ -404,6 +403,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-gap-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
 				[20, 30]
@@ -431,6 +431,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.55, [
 				[4, 0.25],
 				[20, 30]
@@ -454,6 +455,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'rgba(200,200,200,1)',
+			'line-opacity': roadLineOpacity,
 			'line-width': createZoomInterpolation(1.4, [
 				[6, 0.5],
 				[20, 30]
