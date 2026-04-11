@@ -97,7 +97,7 @@
 		if (markerContainer && lngLat) {
 			marker = new maplibregl.Marker({
 				element: markerContainer,
-				anchor: 'center',
+				anchor: properties._prop_id === 'fac_top' ? 'center' : 'bottom',
 				offset: [0, 0]
 			})
 				.setLngLat(lngLat)
@@ -167,60 +167,72 @@
 {:else}
 	<div
 		bind:this={markerContainer}
-		class="pointer-events-none relative grid w-[150px] place-items-center"
+		class="pointer-events-none relative grid w-[150px] place-items-center drop-shadow-md"
 	>
 		{#if isReady}
+			<svg
+				viewBox="0 0 24 18"
+				aria-hidden="true"
+				class="absolute -bottom-[10px] left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-opacity duration-200"
+			>
+				<path
+					d="M0.2 2C0.2 2 5.4 8.2 8.9 12.2C10.3 14 10.8 14.7 12 14.7C13.2 14.7 13.7 14 15.1 12.2C18.6 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
+					fill="white"
+				/>
+			</svg>
+
 			<button
-				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center drop-shadow-md transition-opacity duration-200"
+				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center transition-opacity duration-200"
 				onclick={click}
 				onfocus={() => onHover(true)}
 				onblur={() => onHover(false)}
 				onmouseover={() => onHover(true)}
 				onmouseleave={() => onHover(false)}
 			>
-				{#if showImage}
-					<img
-						transition:fade={{ duration: 100 }}
-						class="border-base bg-main absolute h-full w-full rounded-full border-3 object-cover transition-all duration-150 {isHover ||
-						clickId === featureId
-							? 'scale-120'
-							: ''}"
-						src={imageUrl}
-						alt={properties.name || 'Marker Image'}
-					/>
-				{:else if imageError}
-					<!-- エラー時のフォールバック -->
-					<div
-						transition:fade={{ duration: 100 }}
-						class="border-base absolute flex h-full w-full items-center justify-center rounded-full border-3 bg-gray-400 transition-all duration-150 {isHover ||
-						clickId === featureId
-							? 'scale-120'
-							: ''}"
-					>
-						<span class="text-sm text-white">?</span>
-					</div>
-				{/if}
-				<!-- エフェクト -->
-				{#if clickId === featureId}
-					<div
-						class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
-					></div>
-					<div
-						class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
-					></div>
-				{/if}
+				<div
+					class="absolute inset-0 transition-transform duration-150 {isHover ||
+					clickId === featureId
+						? '-translate-y-1 scale-120'
+						: ''}"
+				>
+					{#if showImage}
+						<img
+							transition:fade={{ duration: 100 }}
+							class="border-base bg-main absolute inset-0 h-full w-full rounded-full border-3 object-cover"
+							src={imageUrl}
+							alt={properties.name || 'Marker Image'}
+						/>
+					{:else if imageError}
+						<!-- エラー時のフォールバック -->
+						<div
+							transition:fade={{ duration: 100 }}
+							class="border-base absolute inset-0 flex h-full w-full items-center justify-center rounded-full border-3 bg-gray-400"
+						>
+							<span class="text-sm text-white">?</span>
+						</div>
+					{/if}
+
+					{#if clickId === featureId}
+						<div
+							class="c-ripple-effect absolute inset-0 rounded-full border-2 border-amber-50"
+						></div>
+						<div
+							class="c-ripple-effect2 absolute inset-0 rounded-full border-2 border-amber-50"
+						></div>
+					{/if}
+				</div>
 			</button>
 		{/if}
 	</div>
 
 	<div
 		bind:this={nameContainer}
-		class="items-top pointer-events-none relative z-10 flex w-[170px] justify-center"
+		class="items-top pointer-events-none relative z-10 flex w-[200px] -translate-y-5.5 justify-center"
 	>
 		{#if (isHover || clickId === featureId) && isReady}
 			<div
 				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
-				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-2 text-center text-sm text-gray-800"
+				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-3 text-center text-sm text-gray-800"
 			>
 				{properties.name}
 			</div>
