@@ -3,8 +3,8 @@
 	import { fly } from 'svelte/transition';
 
 	import ModelOptionMenu from './ModelOptionMenu.svelte';
-	import { ICONS, getVisibilityIconName } from '$lib/icons';
 
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import { getInitialEntryStyle } from '$routes/map/data/entries';

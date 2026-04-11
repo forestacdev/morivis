@@ -13,11 +13,11 @@
 	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { PUBLIC_GA_UA } from '$env/static/public';
-	import { ICONS } from '$lib/icons';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import { ICONS } from '$lib/icons';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { transitionPageScreen } from '$routes/stores/effect';

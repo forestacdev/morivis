@@ -27,9 +27,7 @@ export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined =>
 	}
 };
 
-export const getLayerIcon = (layerType: LayerType): string => {
-	return getLayerIconName(layerType);
-};
+export const getLayerIcon = (layerType: LayerType) => getLayerIconName(layerType);
 
 export const TYPE_LABELS = {
 	model: '3Dモデル',

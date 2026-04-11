@@ -7,8 +7,8 @@
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
 
-	import { DATA_PATH } from '$routes/constants';
 	import { ICONS } from '$lib/icons';
+	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { getPostcodeInfo } from '$routes/map/api/postcode';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';

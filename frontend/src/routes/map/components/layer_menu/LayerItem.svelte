@@ -3,9 +3,9 @@
 	import { onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -612,7 +612,7 @@
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
+							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -647,7 +647,7 @@
 
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
+							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />

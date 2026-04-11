@@ -152,9 +152,7 @@ const extractMetadata = (db: Database, fileName: string): MBTilesMetadata => {
 	const bounds = parseBounds(meta.bounds) ?? calculateBoundsFromTiles(db);
 	const center =
 		parseCenter(meta.center) ??
-		(bounds
-			? [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2]
-			: undefined);
+		(bounds ? [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2] : undefined);
 
 	return {
 		name: meta.name || fileName.replace(/\.[^.]+$/, ''),
