@@ -95,7 +95,7 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		source: 'base_usgs_imagery_only',
 		maxzoom: 9,
 		paint: {
-			'raster-opacity': 0.9,
+			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 9, 0],
 			'raster-brightness-min': 0,
 			'raster-brightness-max': 0.8
 		}
@@ -107,7 +107,7 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		minzoom: 8,
 		maxzoom: 24,
 		paint: {
-			'raster-opacity': 0.9,
+			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 0.9],
 			'raster-brightness-min': 0,
 			'raster-brightness-max': 0.8
 		}
