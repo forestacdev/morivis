@@ -81,16 +81,26 @@
 					isImageError = true;
 				}}
 			/>
+			<div class="pointer-events-none absolute h-full w-full">
+				<div class="c-vignette c-gradient absolute h-full w-full"></div>
+			</div>
 		{/if}
 	{:catch}
 		<div class="text-accent">データが取得できませんでした</div>
 	{/await}
-	<div
-		class="bg-opacity-50 absolute bottom-0 left-0 w-full bg-black p-1 text-center text-xs text-white"
-	>
+	<div class="bg-opacity-50 absolute bottom-0 left-0 w-full pb-2 text-center text-base text-xs">
 		{dataEntry.metaData.name}
 	</div>
 </div>
 
 <style>
+	.c-vignette {
+		box-shadow:
+			inset 0 0 100px rgba(0, 0, 0, 0.3),
+			inset 0 0 100px rgba(0, 0, 0, 0.3);
+	}
+
+	.c-gradient {
+		background: linear-gradient(0deg, rgb(0, 0, 0) 0%, rgba(233, 233, 233, 0) 100%);
+	}
 </style>
