@@ -148,6 +148,17 @@ const generatePlaceholderImage = (label: string, color = '#495a54'): string => {
 	return canvas.toDataURL('image/png');
 };
 
+const getMbtilesPreviewLabel = (_layerEntry: GeoDataEntry): string => {
+	if (_layerEntry.type === 'vector') {
+		const geometryType = _layerEntry.format.geometryType;
+		if (geometryType === 'Point') return 'MBT Pt';
+		if (geometryType === 'LineString') return 'MBT Ln';
+		if (geometryType === 'Polygon') return 'MBT Pg';
+		return 'MBTiles';
+	}
+	return 'MBTiles';
+};
+
 /**
  * レイヤーの画像URLを取得する関数
  * @param _layerEntry - レイヤーエントリ
@@ -160,6 +171,8 @@ export const getLayerImage = async (
 		if (_layerEntry.metaData.mapImage) {
 			const url = getMapImageUrl(_layerEntry);
 			return url ? { url } : undefined;
+		} else if ('format' in _layerEntry && _layerEntry.format.type === 'mbtiles') {
+			return { url: generatePlaceholderImage(getMbtilesPreviewLabel(_layerEntry), '#3d5a4f') };
 		} else if (_layerEntry.type === 'raster') {
 			if (_layerEntry.format.type === 'image') {
 				const url = await getRasterImageUrl(_layerEntry);
