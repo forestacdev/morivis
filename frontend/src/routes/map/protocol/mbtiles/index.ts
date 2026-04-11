@@ -61,99 +61,97 @@ export interface MBTilesMetadata {
 	description?: string;
 }
 
+type MetadataWorkerRequest = {
+	id: string;
+	type: 'extractMetadata';
+	fileName: string;
+	buffer: ArrayBuffer;
+};
+
+type MetadataWorkerResponse = {
+	id: string;
+	metadata?: MBTilesMetadata;
+	error?: string;
+};
+
+class MBTilesMetadataWorkerClient {
+	private worker: Worker;
+	private pendingRequests = new Map<
+		string,
+		{
+			resolve: (value: MBTilesMetadata) => void;
+			reject: (reason?: Error) => void;
+		}
+	>();
+	private requestCounter = 0;
+
+	constructor(worker: Worker) {
+		this.worker = worker;
+		this.worker.addEventListener('message', this.handleMessage);
+		this.worker.addEventListener('error', this.handleError);
+	}
+
+	extractMetadata = async (fileName: string, buffer: ArrayBuffer): Promise<MBTilesMetadata> => {
+		const id = `metadata_${this.requestCounter++}`;
+
+		return new Promise((resolve, reject) => {
+			this.pendingRequests.set(id, { resolve, reject });
+			const message: MetadataWorkerRequest = {
+				id,
+				type: 'extractMetadata',
+				fileName,
+				buffer
+			};
+			this.worker.postMessage(message, { transfer: [buffer] });
+		});
+	};
+
+	private handleMessage = (event: MessageEvent<MetadataWorkerResponse>) => {
+		const { id, metadata, error } = event.data;
+		const request = this.pendingRequests.get(id);
+		if (!request) return;
+
+		this.pendingRequests.delete(id);
+		if (error) {
+			request.reject(new Error(error));
+			return;
+		}
+		if (!metadata) {
+			request.reject(new Error('MBTiles metadata missing'));
+			return;
+		}
+		request.resolve(metadata);
+	};
+
+	private handleError = (event: ErrorEvent) => {
+		console.error('[MBTiles] Metadata worker error:', event);
+		for (const request of this.pendingRequests.values()) {
+			request.reject(new Error('Metadata worker error occurred'));
+		}
+		this.pendingRequests.clear();
+	};
+}
+
+let metadataWorkerClient: MBTilesMetadataWorkerClient | null = null;
+
+const getMetadataWorkerClient = (): MBTilesMetadataWorkerClient => {
+	if (!metadataWorkerClient) {
+		const worker = new Worker(new URL('./protocol_mbtiles_meta.worker.ts', import.meta.url), {
+			type: 'module'
+		});
+		metadataWorkerClient = new MBTilesMetadataWorkerClient(worker);
+	}
+	return metadataWorkerClient;
+};
+
 export const registerMBTiles = async (entryId: string, file: File): Promise<MBTilesMetadata> => {
 	const SQL = await getSql();
 	const arrayBuffer = await file.arrayBuffer();
 	const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
 	setCachedDb(entryId, db);
-
-	// メタデータを取得
-	const meta: Record<string, string> = {};
-	let metadataStmt: ReturnType<Database['prepare']> | null = null;
-	try {
-		metadataStmt = db.prepare('SELECT name, value FROM metadata');
-		while (metadataStmt.step()) {
-			const [name, value] = metadataStmt.get() as [string, string];
-			if (typeof name === 'string' && typeof value === 'string') {
-				meta[name] = value;
-			}
-		}
-	} catch {
-		// メタデータテーブルがない場合
-	} finally {
-		metadataStmt?.free();
-	}
-
-	// boundsをパース
-	let bounds: [number, number, number, number] | undefined;
-	if (meta.bounds) {
-		const parts = meta.bounds.split(',').map((s) => parseFloat(s.trim()));
-		if (parts.length === 4 && parts.every((v) => Number.isFinite(v))) {
-			bounds = parts as [number, number, number, number];
-		}
-	}
-
-	// centerをパース
-	let center: [number, number] | undefined;
-	if (meta.center) {
-		const parts = meta.center.split(',').map((s) => parseFloat(s.trim()));
-		if (parts.length >= 2 && parts.every((v) => Number.isFinite(v))) {
-			center = [parts[0], parts[1]];
-		}
-	}
-
-	// ベクターレイヤー情報をjsonメタデータから取得
-	const isVector = meta.format === 'pbf';
-	let vectorLayers: MBTilesVectorLayer[] = [];
-
-	if (isVector && meta.json) {
-		try {
-			const jsonMeta = JSON.parse(meta.json);
-
-			// vector_layers からレイヤー情報を取得
-			if (jsonMeta.vector_layers && Array.isArray(jsonMeta.vector_layers)) {
-				vectorLayers = jsonMeta.vector_layers.map((l: any) => ({
-					id: l.id,
-					fields: l.fields ?? {},
-					geometryType: l.geometry_type ?? undefined,
-					minZoom: l.minzoom ?? undefined,
-					maxZoom: l.maxzoom ?? undefined
-				}));
-			}
-
-			// tilestats からジオメトリタイプを補完
-			if (jsonMeta.tilestats?.layers && Array.isArray(jsonMeta.tilestats.layers)) {
-				for (const stat of jsonMeta.tilestats.layers) {
-					const layer = vectorLayers.find((l) => l.id === stat.layer);
-					if (layer && !layer.geometryType && stat.geometry) {
-						layer.geometryType = stat.geometry;
-					}
-					if (!layer) {
-						vectorLayers.push({
-							id: stat.layer,
-							fields: {},
-							geometryType: stat.geometry ?? undefined
-						});
-					}
-				}
-			}
-		} catch {
-			// JSONパース失敗
-		}
-	}
-
-	return {
-		name: meta.name || file.name.replace(/\.[^.]+$/, ''),
-		format: meta.format || 'png',
-		bounds,
-		minZoom: meta.minzoom ? parseInt(meta.minzoom, 10) : undefined,
-		maxZoom: meta.maxzoom ? parseInt(meta.maxzoom, 10) : undefined,
-		center,
-		isVector,
-		vectorLayers,
-		description: meta.description ?? undefined
-	};
+	const metadataBuffer = arrayBuffer.slice(0);
+	return getMetadataWorkerClient().extractMetadata(file.name, metadataBuffer);
 };
 
 /**
