@@ -127,39 +127,44 @@
 				/>
 			</div>
 		</div>
-
-		<div class="c-scroll h-full gap-2 overflow-x-hidden overflow-y-auto">
-			{#if showDataEntry?.metaData.downloadUrl}
-				<div class="flex flex-col items-center justify-center gap-2 pt-6">
-					<a
-						class="c-btn-confirm flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
-						href={showDataEntry?.metaData.downloadUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						><Icon icon={ICONS.open} class="h-6 w-6" />
-						<span>データ提供元サイト</span></a
-					>
-				</div>
-			{/if}
-			<div class="mb-2 flex gap-2 pt-6 pl-2">
-				<Icon icon="tabler:map-pin" class="h-6 w-6" />
-				<span class="">{showDataEntry?.metaData.location}</span>
-			</div>
-			{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
-				{#if showDataEntry}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<div class="rounded-lg p-2 text-justify text-sm">
-						{#if showDataEntry?.metaData.sourceDataName}
-							元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
-						{/if}
-
-						{#if showDataEntry?.metaData.description}
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html formatDescription(showDataEntry?.metaData.description)}
-						{/if}
+		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
+			<!-- スクロールコンテンツ -->
+			<div class="c-scroll h-full gap-2 overflow-x-hidden overflow-y-auto">
+				{#if showDataEntry?.metaData.downloadUrl}
+					<div class="flex flex-col items-center justify-center gap-2 pt-6">
+						<a
+							class="c-btn-confirm flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
+							href={showDataEntry?.metaData.downloadUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							><Icon icon={ICONS.open} class="h-6 w-6" />
+							<span>データ提供元サイト</span></a
+						>
 					</div>
 				{/if}
-			{/if}
+				<div class="mb-2 flex gap-2 pt-6 pl-2">
+					<Icon icon="tabler:map-pin" class="h-6 w-6" />
+					<span class="">{showDataEntry?.metaData.location}</span>
+				</div>
+				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
+					{#if showDataEntry}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<div class="rounded-lg p-2 text-justify text-sm">
+							{#if showDataEntry?.metaData.sourceDataName}
+								元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
+							{/if}
+
+							{#if showDataEntry?.metaData.description}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								{@html formatDescription(showDataEntry?.metaData.description)}
+							{/if}
+						</div>
+					{/if}
+				{/if}
+			</div>
+			<div
+				class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[150px] w-full"
+			></div>
 		</div>
 	</div>
 {/if}

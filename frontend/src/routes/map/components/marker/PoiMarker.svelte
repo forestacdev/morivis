@@ -170,16 +170,19 @@
 		class="pointer-events-none relative grid w-[150px] place-items-center drop-shadow-md"
 	>
 		{#if isReady}
-			<svg
-				viewBox="0 0 24 18"
-				aria-hidden="true"
-				class="absolute -bottom-[10px] left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-opacity duration-200"
-			>
-				<path
-					d="M0.2 2C0.2 2 5.4 8.2 8.9 12.2C10.3 14 10.8 14.7 12 14.7C13.2 14.7 13.7 14 15.1 12.2C18.6 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
-					fill="white"
-				/>
-			</svg>
+			{#if showImage}
+				<svg
+					transition:fade={{ duration: 100 }}
+					viewBox="0 0 24 18"
+					aria-hidden="true"
+					class="absolute -bottom-[10px] left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-transform duration-150"
+				>
+					<path
+						d="M0.2 2C0.2 2 5.4 8.2 8.9 12.2C10.3 14 10.8 14.7 12 14.7C13.2 14.7 13.7 14 15.1 12.2C18.6 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
+						fill="white"
+					/>
+				</svg>
+			{/if}
 
 			<button
 				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center transition-opacity duration-200"
