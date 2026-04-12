@@ -22,7 +22,7 @@
 
 	let { showDataEntry = $bindable() }: Props = $props();
 	let previewSpinToken = $state(0);
-	let previewCardWrapper: HTMLDivElement | null = null;
+	let previewCardWrapper: HTMLDivElement | null = $state(null);
 
 	const formatDescription = (text: string): string => {
 		// 先頭の改行を除去
@@ -180,8 +180,4 @@
 {/if}
 
 <style>
-	.c-bg {
-		/* background-image: radial-gradient(var(--color-sub) 0%, var(--color-main) 50%); */
-		/* background-image: linear-gradient(90deg, var(--color-sub) 0%, var(--color-main) 90%);*/
-	}
 </style>

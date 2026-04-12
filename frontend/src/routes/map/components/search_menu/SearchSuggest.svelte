@@ -192,7 +192,7 @@
 {#if $showSearchSuggest && searchSuggests && searchSuggests.length > 0 && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, y: -10, opacity: 0, delay: 100 }}
-		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80"
+		class="pointer-events-auto flex max-h-[calc(100dvh-300px)] w-full flex-col gap-2 rounded-lg bg-black/80 backdrop-blur-[1px]"
 	>
 		{#if isLoading}
 			<div class="flex w-full items-center justify-center">

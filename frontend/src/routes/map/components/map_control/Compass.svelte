@@ -323,7 +323,7 @@
 		bind:this={element}
 		class="pointer-events-auto grid h-[65px] w-[65px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 transition-colors duration-150 {isHover
 			? 'bg-black'
-			: 'bg-black/60'}"
+			: 'bg-black/60 backdrop-blur-[1px]'}"
 		style="perspective: 200px;"
 	>
 		<svg
