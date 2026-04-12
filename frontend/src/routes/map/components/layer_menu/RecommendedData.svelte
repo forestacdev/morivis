@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
@@ -7,6 +8,7 @@
 
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
+	import { ICONS } from '$lib/icons';
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
@@ -295,13 +297,16 @@
 				role="button"
 				tabindex="-1"
 				aria-label="レイヤー削除エリア"
-				class="absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 text-sm font-semibold backdrop-blur-[1px] transition-colors duration-150
+				class="absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 text-sm backdrop-blur-[1px] transition-colors duration-150
 						{isDeleteOverlayActive ? 'border-red-500 bg-red-500/18 text-red-100' : ' bg-black/45 text-red-50'}"
 				ondragover={handleDeleteDragOver}
 				ondragleave={handleDeleteDragLeave}
 				ondrop={handleDeleteDrop}
 			>
-				<div class="">ここにドロップで削除</div>
+				<div class="flex items-center justify-center gap-2 p-2">
+					<Icon icon={ICONS.trash} class="h-8 w-8" />
+					<div class="">ここにドロップで削除</div>
+				</div>
 			</div>
 		{/if}
 	</div>

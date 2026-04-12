@@ -1,11 +1,11 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
-	import { mapStore } from '$routes/stores/map';
-	import Icon from '@iconify/svelte';
 	import { ICONS, getVisibilityIconName } from '$lib/icons';
+	import { mapStore } from '$routes/stores/map';
 
 	gsap.registerPlugin(Draggable);
 
