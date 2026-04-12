@@ -201,10 +201,18 @@
 		transition:fade={{ duration: 150 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
-		<div class="flex w-full items-center justify-between px-2">
+		<div class="flex w-full items-center justify-between pl-2">
 			<div class="text-gray-200">周辺データ</div>
-			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 py-1 text-sm">
-				一覧を見る
+			<button
+				onclick={() => showDataMenu.set(true)}
+				class="group relative grid cursor-pointer place-items-center px-4 py-1 text-sm"
+			>
+				<div
+					class="c-poyopoyo bg-accent group-hover:bg-base rounded-full p-4 px-16 text-transparent transition-colors duration-150"
+				></div>
+				<span class="absolute block text-base transition-colors duration-150 group-hover:text-black"
+					>一覧を見る</span
+				>
 			</button>
 		</div>
 		<div class="relative">
@@ -254,5 +262,21 @@
 <style>
 	.c-set-glow {
 		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
+
+	.c-poyopoyo {
+		animation: poyopoyo 2s ease-out infinite;
+	}
+	@keyframes poyopoyo {
+		0%,
+		40%,
+		60%,
+		80% {
+			transform: scale(1);
+		}
+		50%,
+		70% {
+			transform: scale(0.95);
+		}
 	}
 </style>
