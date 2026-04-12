@@ -112,7 +112,7 @@
 			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
-		<div class="flex h-full flex-col items-center justify-start pt-2 text-base">
+		<div class="flex flex-col items-center justify-start pt-2 text-base">
 			<!-- カード -->
 			<div bind:this={previewCardWrapper} class="w-[300px]" style="perspective: 1200px;">
 				<DataSlot
@@ -127,9 +127,9 @@
 				/>
 			</div>
 		</div>
-		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
+		<div class="relative flex h-full flex-col overflow-hidden overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
-			<div class="c-scroll h-full gap-2 overflow-x-hidden overflow-y-auto">
+			<div class="c-scroll-hidden h-full gap-2 overflow-x-hidden overflow-y-auto pb-[100px]">
 				{#if showDataEntry?.metaData.downloadUrl}
 					<div class="flex flex-col items-center justify-center gap-2 pt-6">
 						<a

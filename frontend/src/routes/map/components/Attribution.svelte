@@ -48,13 +48,13 @@
 	const open = () => {};
 </script>
 
-<div class="flex items-center justify-end gap-2">
+<div class="flex items-center justify-end gap-2 pr-2 select-none">
 	{#key currentIndex}
 		<div class="fade-in">{newAttributions[currentIndex]}</div>
 	{/key}
-	<button class="p-0.1 cursor-pointer rounded-full bg-gray-300" onclick={open}>
+	<!-- <button class="p-0.1 cursor-pointer rounded-full bg-gray-300" onclick={open}>
 		<Icon icon="humbleicons:info" class="text-main h-4 w-4" />
-	</button>
+	</button> -->
 </div>
 
 <style>
