@@ -93,6 +93,9 @@
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
 	let isRecommendedDataDragging = $state(false);
+	const setRecommendedDataDragging = (value: boolean) => {
+		isRecommendedDataDragging = value;
+	};
 
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
 	let scrollContainer = $state<HTMLElement | undefined>(undefined);
@@ -223,6 +226,7 @@
 		ondragover={(e) => e.preventDefault()}
 		ondrop={(e) => {
 			e.preventDefault();
+			if (isDraggingLayerType !== null) return;
 			const id = e.dataTransfer?.getData('application/x-entry-id');
 			if (id) activeLayerIdsStore.add(id);
 		}}
@@ -539,7 +543,7 @@
 								<RecommendedData
 									bind:showDataEntry
 									isLayerDragging={isDraggingLayerType !== null}
-									bind:isRecommendedDataDragging
+									{setRecommendedDataDragging}
 								/>
 			</div>
 		{/if}

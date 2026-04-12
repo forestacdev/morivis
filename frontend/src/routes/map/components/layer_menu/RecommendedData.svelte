@@ -19,13 +19,13 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		isLayerDragging: boolean;
-		isRecommendedDataDragging: boolean;
+		setRecommendedDataDragging: (value: boolean) => void;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		isLayerDragging,
-		isRecommendedDataDragging = $bindable()
+		setRecommendedDataDragging
 	}: Props = $props();
 
 	let hoveredIndex = $state<number | null>(null);
@@ -189,11 +189,11 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'copy';
 		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);
-		isRecommendedDataDragging = true;
+		setRecommendedDataDragging(true);
 	};
 
 	const onDragEnd = () => {
-		isRecommendedDataDragging = false;
+		setRecommendedDataDragging(false);
 	};
 
 	const handleDeleteDragOver = (e: DragEvent) => {
