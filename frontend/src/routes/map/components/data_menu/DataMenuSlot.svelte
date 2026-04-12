@@ -354,7 +354,7 @@
 				<!-- レイヤータイプアイコン -->
 				{#if layerType}
 					<div
-						class="bounded-full border-base absolute aspect-square rounded-full border-2 bg-black/80 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+						class="bounded-full bg-base absolute aspect-square rounded-full border-4 border-black p-2 text-black opacity-70 max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
 					>
 						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 					</div>
