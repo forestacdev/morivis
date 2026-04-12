@@ -40,7 +40,7 @@ export const ICONS = {
 	arrowDown: getRequiredIcon(iconamoonIcons, 'arrow-down-2-duotone'),
 	arrowLeft: getRequiredIcon(iconamoonIcons, 'arrow-left-2-duotone'),
 	arrowRight: getRequiredIcon(iconamoonIcons, 'arrow-right-2-duotone'),
-	setting: getRequiredIcon(uilIcons, 'setting')
+	setting: getRequiredIcon(materialSymbolsIcons, 'settings-rounded')
 } as const;
 
 export const LAYER_ICONS = {

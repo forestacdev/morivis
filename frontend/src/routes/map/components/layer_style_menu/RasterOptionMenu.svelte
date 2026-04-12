@@ -142,13 +142,14 @@
 		<div class="mt-8 flex items-center gap-1 text-base text-lg">
 			<Icon icon="lsicon:data-filled" class="h-6 w-6" /><span>凡例</span>
 		</div>
-		<div class="mt-2 flex-1 shrink-0 rounded-lg bg-black p-2">
+		<div class="mt-2 flex-1 shrink-0 rounded-lg p-2 mix-blend-normal">
 			{#if style.legend.type === 'category'}
 				<h2 class="mb-2 text-base">{style.legend.name}</h2>
 				<ul class="text-base">
 					{#each style.legend.colors as color, i}
 						<li style="display: flex; align-items: center; margin-bottom: 5px;">
 							<span
+								class="rounded-md border border-black"
 								style="width: 20px; height: 20px; background-color: {color}; margin-right: 10px; display: inline-block;"
 							>
 							</span>
@@ -184,7 +185,9 @@
 						<div class="flex flex-col gap-2">
 							{#each category.urls as url, j}
 								<li class="flex items-center gap-2">
-									<div class="grid h-20 w-20 shrink-0 place-items-center rounded-lg bg-white p-2">
+									<div
+										class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
+									>
 										<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
 									</div>
 									<span class="text-sm">{category.labels[j]} </span>
