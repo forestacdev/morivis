@@ -92,6 +92,7 @@
 
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
+	let isRecommendedDataDragging = $state(false);
 
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
 	let scrollContainer = $state<HTMLElement | undefined>(undefined);
@@ -348,6 +349,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isRecommendedDataDragging}
 							/>
 						</div>
 					{/if}
@@ -370,6 +372,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isRecommendedDataDragging}
 							/>
 						</div>
 					{/if}
@@ -392,6 +395,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isRecommendedDataDragging}
 							/>
 						</div>
 					{/if}
@@ -414,6 +418,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isRecommendedDataDragging}
 							/>
 						</div>
 					{/if}
@@ -436,6 +441,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isRecommendedDataDragging}
 							/>
 						</div>
 					{/if}
@@ -530,7 +536,11 @@
 				in:fade={{ delay: 200, duration: 100 }}
 				class="mobile-bottom relative px-2 pb-3 max-lg:hidden"
 			>
-				<RecommendedData bind:showDataEntry />
+								<RecommendedData
+									bind:showDataEntry
+									isLayerDragging={isDraggingLayerType !== null}
+									bind:isRecommendedDataDragging
+								/>
 			</div>
 		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->

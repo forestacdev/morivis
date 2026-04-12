@@ -22,6 +22,7 @@
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging: boolean;
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		featureMenuData = $bindable(),
-		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
+		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging
 	}: Props = $props();
 	let isLastType = $derived(lastLayerType === layerType);
 </script>
@@ -78,6 +80,7 @@
 			bind:isHoveredLayerType
 			bind:featureMenuData
 			bind:isTouchDragging
+			{isRecommendedDataDragging}
 		/>
 	</div>
 {/each}

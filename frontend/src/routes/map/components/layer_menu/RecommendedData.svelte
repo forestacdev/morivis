@@ -3,7 +3,7 @@
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
@@ -18,11 +18,18 @@
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+		isLayerDragging: boolean;
+		isRecommendedDataDragging: boolean;
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		isLayerDragging,
+		isRecommendedDataDragging = $bindable()
+	}: Props = $props();
 
 	let hoveredIndex = $state<number | null>(null);
+	let isDeleteOverlayActive = $state(false);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -182,7 +189,43 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'copy';
 		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);
+		isRecommendedDataDragging = true;
 	};
+
+	const onDragEnd = () => {
+		isRecommendedDataDragging = false;
+	};
+
+	const handleDeleteDragOver = (e: DragEvent) => {
+		if (!e.dataTransfer?.types.includes('application/x-entry-id')) return;
+		e.preventDefault();
+		e.stopPropagation();
+		isDeleteOverlayActive = true;
+		e.dataTransfer.dropEffect = 'move';
+	};
+
+	const handleDeleteDragLeave = (e: DragEvent) => {
+		if (!(e.currentTarget instanceof HTMLElement)) return;
+		const relatedTarget = e.relatedTarget;
+		if (relatedTarget instanceof Node && e.currentTarget.contains(relatedTarget)) return;
+		isDeleteOverlayActive = false;
+	};
+
+	const handleDeleteDrop = (e: DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		isDeleteOverlayActive = false;
+
+		const entryId = e.dataTransfer?.getData('application/x-entry-id');
+		if (!entryId || !activeLayerIdsStore.has(entryId)) return;
+
+		activeLayerIdsStore.remove(entryId);
+	};
+
+	$effect(() => {
+		if (isLayerDragging) return;
+		isDeleteOverlayActive = false;
+	});
 </script>
 
 {#if dataEntries.length > 0}
@@ -223,6 +266,7 @@
 						<button
 							draggable="true"
 							ondragstart={(e) => onDragStart(e, dataEntry)}
+							ondragend={onDragEnd}
 							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
 							onmouseenter={() => (hoveredIndex = i)}
@@ -245,6 +289,23 @@
 				class="c-bg-fog-right pointer-events-none absolute right-0 bottom-0 z-10 h-full w-[50px]"
 			></div> -->
 		</div>
+		{#if isLayerDragging}
+			<div
+				transition:fly={{ duration: 300, y: 50, delay: 100 }}
+				role="button"
+				tabindex="-1"
+				aria-label="レイヤー削除エリア"
+				class="absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 text-sm font-semibold backdrop-blur-[1px] transition-colors duration-150
+						{isDeleteOverlayActive
+					? 'border-red-500 bg-red-500/18 text-red-100'
+					: 'border-red-300/70 bg-black/45 text-red-50'}"
+				ondragover={handleDeleteDragOver}
+				ondragleave={handleDeleteDragLeave}
+				ondrop={handleDeleteDrop}
+			>
+				<div class="rounded-full border border-current px-4 py-2">ここにドロップで削除</div>
+			</div>
+		{/if}
 	</div>
 {/if}
 

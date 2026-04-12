@@ -35,6 +35,7 @@
 		isLayerInRange: boolean;
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging: boolean;
 	}
 
 	let {
@@ -50,7 +51,8 @@
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		isLayerInRange,
 		featureMenuData = $bindable(),
-		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
+		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
@@ -228,6 +230,7 @@
 	const dragStart = (e: DragEvent, layerId: string) => {
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('application/x-entry-id', layerId);
 		const dragElement = document.getElementById(layerId) as HTMLElement;
 		e.dataTransfer.setDragImage(dragElement, dragOffsetX, dragOffsetY);
 
@@ -241,6 +244,7 @@
 
 	// ドラッグ中のレイヤーを取得
 	const dragEnter = (layerId: string) => {
+		if (isRecommendedDataDragging) return;
 		if (layerId && $selectedLayerId !== layerId) {
 			activeLayerIdsStore.reorder($selectedLayerId, layerId);
 		}
@@ -318,6 +322,7 @@
 	// スマホ用のドラッグ処理
 	const handleTouchMove = (e: TouchEvent) => {
 		if (!isTouchDragging || !checkMobile()) return;
+		if (isRecommendedDataDragging) return;
 
 		e.preventDefault();
 		const touch = e.touches[0];
