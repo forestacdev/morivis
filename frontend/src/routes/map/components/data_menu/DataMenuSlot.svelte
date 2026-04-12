@@ -195,7 +195,7 @@
 </script>
 
 <div
-	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-visible rounded-lg transition-all duration-220 perspective-distant {isHover
+	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-visible rounded-lg transition-all duration-220 select-none perspective-distant {isHover
 		? 'z-10'
 		: ''}"
 	style="transform-origin: {getTransformOrigin()}; transform: {getHoverTransform()};"

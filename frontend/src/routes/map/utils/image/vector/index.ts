@@ -396,7 +396,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 		bearing: 0,
 		pitch: 0,
 		bounds: _layerEntry.metaData.bounds,
-		timeout: 5000
+		timeout: 10000
 	};
 
 	if (_layerEntry.metaData.xyzImageTile) {
