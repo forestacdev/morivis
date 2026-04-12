@@ -4,10 +4,10 @@
 	import gsap from 'gsap';
 	import { tick } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
-	import { ICONS } from '$lib/icons';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { ICONS } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';

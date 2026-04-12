@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import { ICONS } from '$lib/icons';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type {
 		ResultPoiData,
@@ -10,7 +11,6 @@
 	} from '$routes/map/utils/feature';
 	import { normalizeSchoolName } from '$routes/map/utils/normalized';
 	import { checkPc } from '$routes/map/utils/ui';
-	import { ICONS } from '$lib/icons';
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | ResultCoordinateData | null;

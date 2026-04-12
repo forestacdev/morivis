@@ -5,9 +5,9 @@
 	import { delay } from 'es-toolkit';
 	import { fade, fly } from 'svelte/transition';
 	import Viewer from 'viewerjs';
+
 	import 'viewerjs/dist/viewer.css';
 	import { ICONS } from '$lib/icons';
-
 	import {
 		getImageByName,
 		getSummaryByJapaneseName,
