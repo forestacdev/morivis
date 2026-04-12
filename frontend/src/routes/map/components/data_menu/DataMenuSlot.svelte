@@ -192,13 +192,19 @@
 			ALLOWED_ATTR: ['href', 'target', 'rel']
 		});
 	};
+
+	let isSelected = $derived.by(() => {
+		return showDataEntry?.id === dataEntry.id;
+	});
 </script>
 
 <div
 	class="relative flex aspect-3/4 shrink-0 grow flex-col items-center overflow-visible rounded-lg transition-all duration-220 select-none perspective-distant {isHover
 		? 'z-10'
 		: ''}"
-	style="transform-origin: {getTransformOrigin()}; transform: {getHoverTransform()};"
+	style="transform-origin: {getTransformOrigin()}; transform: {!isSelected
+		? getHoverTransform()
+		: 'translate3d(0, 0, 0) scale(1) rotate(0deg)'};"
 	bind:this={container}
 	onmouseover={() => (checkPc() ? (isHover = true) : null)}
 	onmouseleave={() => (checkPc() ? (isHover = false) : null)}
@@ -214,7 +220,7 @@
 	}}
 >
 	<!-- 追加ボタン -->
-	{#if isHover && !isAnimating}
+	{#if isHover && !isAnimating && !isSelected}
 		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
@@ -258,7 +264,8 @@
 			onclick={() => {
 				if (!isAdded) showDataEntry = dataEntry;
 			}}
-			class="flip-face card-front absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg bg-black {isHover
+			class="flip-face card-front absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg bg-black {isHover ||
+			isSelected
 				? 'border-accent c-set-glow shadow-lg'
 				: 'border-main'}"
 		>
@@ -318,7 +325,7 @@
 						<div class="c-gradient absolute h-full w-full"></div>
 					</div>
 				{/if}
-				{#if isHover && !isAdded}
+				{#if isHover && !isAdded && !isSelected}
 					<div
 						transition:fade={{ duration: 150 }}
 						class="pointer-events-none absolute grid h-full w-full place-items-center"
@@ -331,7 +338,7 @@
 					</div>
 				{/if}
 
-				{#if isAdded}
+				{#if isAdded && !isSelected}
 					<div
 						transition:fade={{ duration: 150 }}
 						class="pointer-events-none absolute grid h-full w-full place-items-center"
@@ -344,9 +351,10 @@
 					</div>
 				{/if}
 
+				<!-- レイヤータイプアイコン -->
 				{#if layerType}
 					<div
-						class="bounded-full absolute aspect-square rounded-full bg-black/50 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+						class="bounded-full border-base absolute aspect-square rounded-full border-2 bg-black/80 p-2 text-base max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
 					>
 						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 					</div>
@@ -368,6 +376,7 @@
 					<span class="text-left text-xs text-gray-400">
 						{getAttributionName(dataEntry.metaData.attribution)}</span
 					>
+					<!-- 場所アイコン -->
 					<div
 						class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
 					>
@@ -401,7 +410,10 @@
 
 		<!-- カード裏面 -->
 		<div
-			class="flip-face card-back absolute inset-0 h-full w-full overflow-hidden rounded-lg bg-black"
+			class="flip-face card-back absolute inset-0 h-full w-full overflow-hidden rounded-lg bg-black {isHover ||
+			isSelected
+				? 'border-accent c-set-glow shadow-lg'
+				: 'border-main'}"
 		>
 			<!-- 背景 -->
 			<div class="absolute -z-10 grid h-full w-full place-items-center p-6 opacity-5">
@@ -428,51 +440,6 @@
 						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 					</div>
 				{/if}
-			</div>
-
-			<div class="flex h-full flex-col justify-between">
-				<div class="flex flex-col items-center gap-2 pt-8">
-					<div class="flex gap-2">
-						<Icon icon="tabler:map-pin" class="h-6 w-6" />
-						<span class="">{dataEntry?.metaData.location}</span>
-					</div>
-
-					<div>
-						{#if dataEntry?.metaData.downloadUrl}
-							<a
-								class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
-								href={dataEntry?.metaData.downloadUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								><Icon icon="majesticons:open" class="h-6 w-6" />
-								<span>データ提供元サイト</span></a
-							>
-						{/if}
-					</div>
-				</div>
-
-				{#if dataEntry.metaData.description || dataEntry.metaData.sourceDataName}
-					{#if dataEntry}
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="rounded-lg p-4 text-justify text-sm">
-							{#if dataEntry?.metaData.sourceDataName}
-								元データ名:「{dataEntry?.metaData.sourceDataName}」<br />
-							{/if}
-
-							{#if dataEntry?.metaData.description}
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html formatDescription(dataEntry?.metaData.description)}
-							{/if}
-						</div>
-					{/if}
-				{/if}
-
-				<!-- タグ -->
-				<div class="flex items-center gap-1 p-4 text-gray-300">
-					{#each dataEntry.metaData.tags as tag}
-						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-					{/each}
-				</div>
 			</div>
 		</div>
 	</div>
