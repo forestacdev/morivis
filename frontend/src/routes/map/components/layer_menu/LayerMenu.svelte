@@ -251,7 +251,7 @@
 						transition:slide={{ duration: 200, axis: 'x' }}
 						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
-						<span class="text-[2.7rem]"> morivis </span>
+						<span class="text-[2.7rem] font-bold"> morivis </span>
 						<div class="flex w-full items-center py-2">
 							<div class="flex flex-1 gap-2">
 								<label

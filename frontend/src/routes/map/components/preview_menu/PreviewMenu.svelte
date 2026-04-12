@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
+	import gsap from 'gsap';
+	import { tick } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
@@ -20,6 +22,7 @@
 
 	let { showDataEntry = $bindable() }: Props = $props();
 	let previewSpinToken = $state(0);
+	let previewCardWrapper = $state<HTMLDivElement | null>(null);
 
 	const formatDescription = (text: string): string => {
 		// 先頭の改行を除去
@@ -61,12 +64,40 @@
 		previewSpinToken += 1;
 	};
 
+	const animatePreviewCardEntrance = async () => {
+		await tick();
+		if (!previewCardWrapper) return;
+
+		gsap.killTweensOf(previewCardWrapper);
+		gsap.fromTo(
+			previewCardWrapper,
+			{
+				y: -72,
+				rotationX: 24,
+				rotationZ: -10,
+				scale: 0.92,
+				opacity: 0
+			},
+			{
+				y: 0,
+				rotationX: 0,
+				rotationZ: 0,
+				scale: 1,
+				opacity: 1,
+				duration: 0.8,
+				ease: 'power3.out',
+				clearProps: 'transform,opacity'
+			}
+		);
+	};
+
 	let lastPreviewId = $state<string | null>(null);
 	$effect(() => {
 		const nextId = showDataEntry?.id ?? null;
 		if (!nextId || nextId === lastPreviewId) return;
 		lastPreviewId = nextId;
 		spinPreviewCard();
+		animatePreviewCardEntrance();
 	});
 </script>
 
@@ -81,7 +112,7 @@
 		</div>
 		<div class="flex h-full flex-col items-center justify-center text-base">
 			<!-- ヘッダー -->
-			<div class="w-[300px]">
+			<div bind:this={previewCardWrapper} class="w-[300px]" style="perspective: 1200px;">
 				<DataSlot
 					dataEntry={showDataEntry}
 					bind:showDataEntry
