@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
@@ -9,12 +9,12 @@
 
 	interface Props {
 		dataEntry: GeoDataEntry;
+		isSelected: boolean;
 	}
 
-	let { dataEntry }: Props = $props();
+	let { dataEntry, isSelected }: Props = $props();
 
 	let isHover = $state(false);
-	// Blob URLとクリーンアップ関数を管理するための状態
 
 	let isImageError = $state<boolean>(false);
 
@@ -88,7 +88,8 @@
 	{:catch}
 		<div class="text-accent">データが取得できませんでした</div>
 	{/await}
-	<div class="bg-opacity-50 absolute bottom-0 left-0 w-full pb-2 text-center text-base text-xs">
+
+	<div class="bg-opacity-50 absolute bottom-0 left-0 w-full pb-2 text-center text-xs text-gray-300">
 		{dataEntry.metaData.name}
 	</div>
 </div>

@@ -43,13 +43,6 @@
 		})
 	];
 
-	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-	// 	loop: true,
-	// 	containScroll: 'keepSnaps',
-	// 	dragFree: true
-	// };
-	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 	let selectedIndex = $state(0);
 
 	// const onThumbnailClick = (index: number) => {
@@ -58,25 +51,21 @@
 	// };
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+		if (!emblaMainCarousel) return;
 		selectedIndex = emblaMainCarousel.selectedScrollSnap();
-		emblaThumbnailCarousel.scrollTo(selectedIndex);
 	};
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
-		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
+		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect).on('autoplay:select', onSelect);
 
 		emblaMainCarousel = event.detail;
+		onSelect();
 
 		// ホイールイベントリスナーを追加
 		if (carouselElement) {
 			carouselElement.addEventListener('wheel', handleWheel, { passive: false });
 		}
-	};
-
-	const onInitEmblaThumbnailCarousel = (event: CustomEvent<EmblaCarouselType>) => {
-		emblaThumbnailCarousel = event.detail;
 	};
 
 	const onClickNext = () => {
@@ -245,7 +234,7 @@
 								class="relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border bg-black
                                 {hoveredIndex === i ? 'border-accent' : 'border-sub'}"
 							>
-								<RecommendedDataImage {dataEntry} />
+								<RecommendedDataImage {dataEntry} isSelected={selectedIndex === i} />
 							</div></button
 						>
 					{/each}
