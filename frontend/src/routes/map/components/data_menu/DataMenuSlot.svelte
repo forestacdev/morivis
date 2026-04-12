@@ -18,7 +18,7 @@
 	import { checkPc, checkMobile } from '$routes/map/utils/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		dataEntry: GeoDataEntry;
@@ -354,18 +354,20 @@
 				<!-- レイヤータイプアイコン -->
 				{#if layerType}
 					<div
-						class="bounded-full bg-base absolute aspect-square rounded-full border-4 border-black p-2 text-black opacity-70 max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+						class="bounded-full bg-base absolute aspect-square rounded-full border-4 border-black p-1.5 text-black opacity-70 max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
 					>
-						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
+						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-5 lg:w-5" />
 					</div>
 				{/if}
 
 				<!-- タグ -->
-				<div class="absolute bottom-[0px] flex items-center gap-1 p-4 text-gray-300">
-					{#each dataEntry.metaData.tags as tag}
-						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
-					{/each}
-				</div>
+				{#if !$isMobile}
+					<div class="absolute bottom-[0px] flex items-center gap-1 p-4 text-gray-300">
+						{#each dataEntry.metaData.tags as tag}
+							<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
 			<!-- 詳細情報 -->
