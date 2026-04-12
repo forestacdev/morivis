@@ -296,14 +296,12 @@
 				tabindex="-1"
 				aria-label="レイヤー削除エリア"
 				class="absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 text-sm font-semibold backdrop-blur-[1px] transition-colors duration-150
-						{isDeleteOverlayActive
-					? 'border-red-500 bg-red-500/18 text-red-100'
-					: 'border-red-300/70 bg-black/45 text-red-50'}"
+						{isDeleteOverlayActive ? 'border-red-500 bg-red-500/18 text-red-100' : ' bg-black/45 text-red-50'}"
 				ondragover={handleDeleteDragOver}
 				ondragleave={handleDeleteDragLeave}
 				ondrop={handleDeleteDrop}
 			>
-				<div class="rounded-full border border-current px-4 py-2">ここにドロップで削除</div>
+				<div class="">ここにドロップで削除</div>
 			</div>
 		{/if}
 	</div>

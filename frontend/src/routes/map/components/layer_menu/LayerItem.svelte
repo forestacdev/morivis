@@ -245,6 +245,7 @@
 	// ドラッグ中のレイヤーを取得
 	const dragEnter = (layerId: string) => {
 		if (isRecommendedDataDragging) return;
+		if (isDraggingLayerType !== layerType) return;
 		if (layerId && $selectedLayerId !== layerId) {
 			activeLayerIdsStore.reorder($selectedLayerId, layerId);
 		}
@@ -339,6 +340,7 @@
 			const layerItem = elem.closest('[data-layer-id]') as HTMLElement;
 			if (layerItem && layerItem.dataset.layerId !== layerEntry.id) {
 				const targetLayerId = layerItem.dataset.layerId;
+				if (isDraggingLayerType !== layerType) break;
 				if (targetLayerId && $selectedLayerId !== targetLayerId) {
 					activeLayerIdsStore.reorder($selectedLayerId, targetLayerId);
 				}
