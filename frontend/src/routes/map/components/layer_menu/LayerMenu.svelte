@@ -482,7 +482,7 @@
 					>
 						{#key backgroundKey}
 							<div
-								in:fly={{ duration: 500, y: 20 }}
+								in:fly={{ duration: 500 }}
 								out:fly={{ duration: 500 }}
 								class="absolute grid aspect-square w-full translate-y-[50px] place-items-center px-6"
 							>

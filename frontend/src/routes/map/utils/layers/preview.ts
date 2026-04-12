@@ -654,9 +654,9 @@ export const previewBaseLayers: LayerSpecification[] = [
 		paint: { 'text-color': 'hsl(0, 0%, 37%)', 'text-translate': [0, 2] }
 	},
 	{
-		id: 'preview_base_layer_2',
+		id: 'v_Cntr',
 		type: 'line',
-		source: 'preview_base_2',
+		source: 'v',
 		'source-layer': 'Cntr',
 		minzoom: 7,
 		maxzoom: 24,

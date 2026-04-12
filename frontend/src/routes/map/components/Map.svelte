@@ -191,26 +191,30 @@
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
 				...previewSources,
-				preview_base_1: {
-					type: 'raster',
-					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-					tileSize: 256,
-					minzoom: 0,
-					maxzoom: 18,
-					attribution: '地理院タイル'
+				// preview_base_1: {
+				// 	type: 'raster',
+				// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+				// 	tileSize: 256,
+				// 	minzoom: 0,
+				// 	maxzoom: 18,
+				// 	attribution: '地理院タイル'
+				// },
+				openmaptiles: {
+					type: 'vector',
+					url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 				},
-				preview_base_2: {
+				v: {
 					type: 'vector',
 					minzoom: 4,
 					maxzoom: 16,
 					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
 					attribution: '国土地理院最適化ベクトルタイル'
-				},
-				tile_grid: {
-					type: 'raster',
-					tiles: ['./tile_grid.png'],
-					tileSize: 256
 				}
+				// tile_grid: {
+				// 	type: 'raster',
+				// 	tiles: ['./tile_grid.png'],
+				// 	tileSize: 256
+				// }
 			};
 		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
