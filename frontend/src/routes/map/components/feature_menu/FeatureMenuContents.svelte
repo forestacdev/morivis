@@ -288,7 +288,7 @@
 								}) then}
 									<img
 										in:fade
-										class="absolute inset-0 h-full w-full object-contain"
+										class="c-no-drag-icon absolute inset-0 h-full w-full object-contain"
 										alt="画像"
 										src={imageUrl}
 									/>

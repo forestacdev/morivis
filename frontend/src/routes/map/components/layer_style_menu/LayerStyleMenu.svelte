@@ -215,7 +215,7 @@
 			</div>
 		{/key}
 		<div
-			class="absolute bottom-0 -z-10 grid -translate-x-[200px] translate-y-[200px] animate-[spin_25s_linear_infinite] place-items-center opacity-15"
+			class="absolute bottom-0 -z-10 grid -translate-x-[200px] translate-y-[200px] animate-[spin_25s_linear_infinite] place-items-center opacity-[3%]"
 		>
 			<svg
 				version="1.1"
@@ -225,7 +225,7 @@
 				x="0px"
 				y="0px"
 				viewBox="0 0 512 512"
-				style="width: 500px; height: 500px; fill: black;"
+				style="width: 500px; height: 500px; fill: white;"
 				xml:space="preserve"
 			>
 				<g>

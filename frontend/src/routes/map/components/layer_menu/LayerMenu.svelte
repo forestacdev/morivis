@@ -518,14 +518,14 @@
 				<!-- 背景 -->
 				{#if hasInitializedMapVisual && selectedTab === 'added-data'}
 					<div
-						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[4%]"
+						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[3%]"
 						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
 					>
 						{#key backgroundKey}
 							<div
 								in:fly={{ duration: 500 }}
 								out:fly={{ duration: 500 }}
-								class="absolute grid aspect-square w-full translate-y-[50px] place-items-center px-6"
+								class="absolute grid aspect-square w-full translate-y-[70px] place-items-center px-6"
 							>
 								{#if isInFacView}
 									<div class="grid aspect-square place-items-center [&_path]:fill-white">

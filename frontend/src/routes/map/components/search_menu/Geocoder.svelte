@@ -51,7 +51,7 @@
 	in:fade={{ duration: 100, delay: 100 }}
 	out:fade={{ duration: 100 }}
 	type="text"
-	class="placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0 focus:outline-hidden"
+	class="placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0 select-none focus:outline-hidden"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}
