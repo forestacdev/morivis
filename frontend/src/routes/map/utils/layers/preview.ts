@@ -1,6 +1,39 @@
-import type { LayerSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, LayerSpecification } from 'maplibre-gl';
 
-export const previewLayers: LayerSpecification[] = [
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+
+// https://github.com/openmaptiles/dark-matter-gl-style
+
+const zoomInterpolate = (
+	base: number,
+	stops: Array<[number, number | string]>
+): ExpressionSpecification => [
+	'interpolate',
+	['exponential', base],
+	['zoom'],
+	...stops.flatMap(([zoom, value]) => [zoom, value])
+];
+
+const zoomInterpolateLinear = (
+	stops: Array<[number, number | string]>
+): ExpressionSpecification => [
+	'interpolate',
+	['linear'],
+	['zoom'],
+	...stops.flatMap(([zoom, value]) => [zoom, value])
+];
+
+const zoomStep = (
+	defaultValue: number | string,
+	stops: Array<[number, number | string]>
+): ExpressionSpecification => [
+	'step',
+	['zoom'],
+	defaultValue,
+	...stops.flatMap(([zoom, value]) => [zoom, value])
+];
+
+export const previewBaseLayers: LayerSpecification[] = [
 	// {
 	// 	id: 'preview_base_layer_1',
 	// 	source: 'preview_base_1',
@@ -12,23 +45,7 @@ export const previewLayers: LayerSpecification[] = [
 	// 		'raster-brightness-min': 1.0
 	// 	}
 	// },
-	// {
-	// 	id: 'preview_base_layer_2',
-	// 	type: 'line',
-	// 	source: 'preview_base_2',
-	// 	'source-layer': 'Cntr',
-	// 	minzoom: 7,
-	// 	maxzoom: 24,
-	// 	layout: {
-	// 		'line-cap': 'round',
-	// 		'line-join': 'round'
-	// 	},
-	// 	paint: {
-	// 		'line-color': '#FFFFFF',
-	// 		'line-width': 1,
-	// 		'line-opacity': 0.6
-	// 	}
-	// },
+
 	{
 		id: 'background',
 		type: 'background',
@@ -63,13 +80,10 @@ export const previewLayers: LayerSpecification[] = [
 		layout: { visibility: 'visible' },
 		paint: {
 			'fill-color': 'hsl(0, 1%, 2%)',
-			'fill-opacity': {
-				base: 1,
-				stops: [
-					[0, 1],
-					[8, 0.5]
-				]
-			}
+			'fill-opacity': zoomInterpolate(1, [
+				[0, 1],
+				[8, 0.5]
+			])
 		}
 	},
 	{
@@ -92,15 +106,11 @@ export const previewLayers: LayerSpecification[] = [
 		layout: { visibility: 'visible' },
 		paint: {
 			'fill-color': 'rgb(32,32,32)',
-			'fill-opacity': {
-				base: 0.3,
-				stops: [
-					[8, 0],
-					[10, 0.8],
-					[13, 0.4]
-				]
-			},
-			'fill-pattern': 'wood-pattern',
+			'fill-opacity': zoomInterpolate(0.3, [
+				[8, 0],
+				[10, 0.8],
+				[13, 0.4]
+			]),
 			'fill-translate': [0, 0]
 		}
 	},
@@ -132,7 +142,7 @@ export const previewLayers: LayerSpecification[] = [
 			'symbol-placement': 'line',
 			'symbol-spacing': 500,
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Medium Italic', 'Noto Sans Italic'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-rotation-alignment': 'map',
 			'text-size': 12
 		},
@@ -170,13 +180,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': '#181818',
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.55,
-				stops: [
-					[13, 1.8],
-					[20, 20]
-				]
-			}
+			'line-width': zoomInterpolate(1.55, [
+				[13, 1.8],
+				[20, 20]
+			])
 		}
 	},
 	{
@@ -195,13 +202,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': 'rgba(60,60,60,0.8)',
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.5,
-				stops: [
-					[11, 5],
-					[17, 55]
-				]
-			}
+			'line-width': zoomInterpolate(1.5, [
+				[11, 5],
+				[17, 55]
+			])
 		}
 	},
 	{
@@ -231,13 +235,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': '#000',
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.5,
-				stops: [
-					[11, 4],
-					[17, 50]
-				]
-			}
+			'line-width': zoomInterpolate(1.5, [
+				[11, 4],
+				[17, 50]
+			])
 		}
 	},
 	{
@@ -260,13 +261,10 @@ export const previewLayers: LayerSpecification[] = [
 		layout: { 'line-cap': 'round', 'line-join': 'round' },
 		paint: {
 			'line-color': 'rgb(12,12,12)',
-			'line-width': {
-				base: 1.2,
-				stops: [
-					[15, 1],
-					[17, 4]
-				]
-			}
+			'line-width': zoomInterpolate(1.2, [
+				[15, 1],
+				[17, 4]
+			])
 		}
 	},
 	{
@@ -285,13 +283,10 @@ export const previewLayers: LayerSpecification[] = [
 			'line-color': 'rgb(27 ,27 ,29)',
 			'line-dasharray': [1.5, 1.5],
 			'line-opacity': 0.9,
-			'line-width': {
-				base: 1.2,
-				stops: [
-					[13, 1],
-					[20, 10]
-				]
-			}
+			'line-width': zoomInterpolate(1.2, [
+				[13, 1],
+				[20, 10]
+			])
 		}
 	},
 	{
@@ -310,13 +305,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': '#181818',
 			'line-opacity': 0.9,
-			'line-width': {
-				base: 1.55,
-				stops: [
-					[13, 1.8],
-					[20, 20]
-				]
-			}
+			'line-width': zoomInterpolate(1.55, [
+				[13, 1.8],
+				[20, 20]
+			])
 		}
 	},
 	{
@@ -339,13 +331,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': 'rgba(60,60,60,0.8)',
 			'line-dasharray': [12, 0],
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[10, 3],
-					[20, 23]
-				]
-			}
+			'line-width': zoomInterpolate(1.3, [
+				[10, 3],
+				[20, 23]
+			])
 		}
 	},
 	{
@@ -367,13 +356,10 @@ export const previewLayers: LayerSpecification[] = [
 		},
 		paint: {
 			'line-color': 'hsl(0, 0%, 7%)',
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[10, 2],
-					[20, 20]
-				]
-			}
+			'line-width': zoomInterpolate(1.3, [
+				[10, 2],
+				[20, 20]
+			])
 		}
 	},
 	{
@@ -396,12 +382,10 @@ export const previewLayers: LayerSpecification[] = [
 		},
 		paint: {
 			'line-color': '#2a2a2a',
-			'line-width': {
-				stops: [
-					[6, 0],
-					[8, 2]
-				]
-			}
+			'line-width': zoomInterpolateLinear([
+				[6, 0],
+				[8, 2]
+			])
 		}
 	},
 	{
@@ -421,14 +405,11 @@ export const previewLayers: LayerSpecification[] = [
 			'line-color': 'rgba(60,60,60,0.8)',
 			'line-dasharray': [2, 0],
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.4,
-				stops: [
-					[5.8, 0],
-					[6, 3],
-					[20, 40]
-				]
-			}
+			'line-width': zoomInterpolate(1.4, [
+				[5.8, 0],
+				[6, 3],
+				[20, 40]
+			])
 		}
 	},
 	{
@@ -445,21 +426,15 @@ export const previewLayers: LayerSpecification[] = [
 			visibility: 'visible'
 		},
 		paint: {
-			'line-color': {
-				base: 1,
-				stops: [
-					[5.8, 'hsla(0, 0%, 85%, 0.53)'],
-					[6, '#000']
-				]
-			},
-			'line-width': {
-				base: 1.4,
-				stops: [
-					[4, 2],
-					[6, 1.3],
-					[20, 30]
-				]
-			}
+			'line-color': zoomInterpolate(1, [
+				[5.8, 'hsla(0, 0%, 85%, 0.53)'],
+				[6, '#000']
+			]),
+			'line-width': zoomInterpolate(1.4, [
+				[4, 2],
+				[6, 1.3],
+				[20, 30]
+			])
 		}
 	},
 	{
@@ -476,12 +451,10 @@ export const previewLayers: LayerSpecification[] = [
 			'icon-padding': 2,
 			'icon-rotation-alignment': 'map',
 			'icon-rotate': 0,
-			'icon-size': {
-				stops: [
-					[15, 0.5],
-					[19, 1]
-				]
-			}
+			'icon-size': zoomInterpolateLinear([
+				[15, 0.5],
+				[19, 1]
+			])
 		},
 		paint: {
 			'icon-opacity': 0.5
@@ -501,12 +474,10 @@ export const previewLayers: LayerSpecification[] = [
 			'icon-padding': 2,
 			'icon-rotation-alignment': 'map',
 			'icon-rotate': 180,
-			'icon-size': {
-				stops: [
-					[15, 0.5],
-					[19, 1]
-				]
-			}
+			'icon-size': zoomInterpolateLinear([
+				[15, 0.5],
+				[19, 1]
+			])
 		},
 		paint: {
 			'icon-opacity': 0.5
@@ -527,13 +498,10 @@ export const previewLayers: LayerSpecification[] = [
 		},
 		paint: {
 			'line-color': '#181818',
-			'line-width': {
-				base: 1.4,
-				stops: [
-					[4, 2],
-					[6, 1.3]
-				]
-			}
+			'line-width': zoomInterpolate(1.4, [
+				[4, 2],
+				[6, 1.3]
+			])
 		}
 	},
 	{
@@ -597,7 +565,7 @@ export const previewLayers: LayerSpecification[] = [
 			['==', '$type', 'LineString'],
 			['all', ['==', 'class', 'rail'], ['has', 'service']]
 		],
-		layout: { 'line-join': 'round', visibility: 'visible' },
+		layout: { 'line-join': 'round' },
 		paint: {
 			'line-color': 'rgb(12,12,12)',
 			'line-dasharray': [3, 3],
@@ -615,13 +583,10 @@ export const previewLayers: LayerSpecification[] = [
 		layout: { 'line-join': 'round', visibility: 'visible' },
 		paint: {
 			'line-color': 'rgb(35,35,35)',
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[16, 3],
-					[20, 7]
-				]
-			}
+			'line-width': zoomInterpolate(1.3, [
+				[16, 3],
+				[20, 7]
+			])
 		}
 	},
 	{
@@ -636,13 +601,10 @@ export const previewLayers: LayerSpecification[] = [
 		paint: {
 			'line-color': 'rgb(12,12,12)',
 			'line-dasharray': [3, 3],
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[16, 2],
-					[20, 6]
-				]
-			}
+			'line-width': zoomInterpolate(1.3, [
+				[16, 2],
+				[20, 6]
+			])
 		}
 	},
 	{
@@ -656,7 +618,7 @@ export const previewLayers: LayerSpecification[] = [
 			'symbol-placement': 'line',
 			'symbol-spacing': 350,
 			'text-field': '{name:latin} {name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-max-angle': 30,
 			'text-pitch-alignment': 'viewport',
 			'text-rotation-alignment': 'map',
@@ -683,13 +645,29 @@ export const previewLayers: LayerSpecification[] = [
 			'symbol-placement': 'line',
 			'symbol-spacing': 350,
 			'text-field': '{ref}',
-			'text-font': ['Metropolis Light', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-pitch-alignment': 'viewport',
 			'text-rotation-alignment': 'viewport',
 			'text-size': 10,
 			visibility: 'visible'
 		},
 		paint: { 'text-color': 'hsl(0, 0%, 37%)', 'text-translate': [0, 2] }
+	},
+	{
+		id: 'preview_base_layer_2',
+		type: 'line',
+		source: 'preview_base_2',
+		'source-layer': 'Cntr',
+		minzoom: 7,
+		maxzoom: 24,
+		layout: {
+			'line-cap': 'round',
+			'line-join': 'round'
+		},
+		paint: {
+			'line-color': 'hsl(0, 0%, 15%)',
+			'line-width': 1
+		}
 	},
 	{
 		id: 'boundary_state',
@@ -708,13 +686,10 @@ export const previewLayers: LayerSpecification[] = [
 			'line-color': 'hsl(0, 0%, 21%)',
 			'line-dasharray': [2, 2],
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.3,
-				stops: [
-					[3, 1],
-					[22, 15]
-				]
-			}
+			'line-width': zoomInterpolate(1.3, [
+				[3, 1],
+				[22, 15]
+			])
 		}
 	},
 	{
@@ -727,22 +702,16 @@ export const previewLayers: LayerSpecification[] = [
 		filter: ['all', ['==', 'admin_level', 2], ['!has', 'claimed_by']],
 		layout: { 'line-cap': 'round', 'line-join': 'round' },
 		paint: {
-			'line-blur': {
-				base: 1,
-				stops: [
-					[0, 0.4],
-					[22, 4]
-				]
-			},
+			'line-blur': zoomInterpolate(1, [
+				[0, 0.4],
+				[22, 4]
+			]),
 			'line-color': 'hsl(0, 0%, 23%)',
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.1,
-				stops: [
-					[3, 1],
-					[22, 20]
-				]
-			}
+			'line-width': zoomInterpolate(1.1, [
+				[3, 1],
+				[22, 20]
+			])
 		}
 	},
 	{
@@ -755,22 +724,16 @@ export const previewLayers: LayerSpecification[] = [
 		filter: ['==', 'admin_level', 2],
 		layout: { 'line-cap': 'round', 'line-join': 'round' },
 		paint: {
-			'line-blur': {
-				base: 1,
-				stops: [
-					[0, 0.4],
-					[22, 4]
-				]
-			},
+			'line-blur': zoomInterpolate(1, [
+				[0, 0.4],
+				[22, 4]
+			]),
 			'line-color': 'hsl(0, 0%, 23%)',
 			'line-opacity': 1,
-			'line-width': {
-				base: 1.1,
-				stops: [
-					[3, 1],
-					[22, 20]
-				]
-			}
+			'line-width': zoomInterpolate(1.1, [
+				[3, 1],
+				[22, 20]
+			])
 		}
 	},
 	{
@@ -788,7 +751,7 @@ export const previewLayers: LayerSpecification[] = [
 		layout: {
 			'text-anchor': 'center',
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'center',
 			'text-offset': [0.5, 0],
 			'text-size': 10,
@@ -813,7 +776,7 @@ export const previewLayers: LayerSpecification[] = [
 		layout: {
 			'text-anchor': 'center',
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'center',
 			'text-offset': [0.5, 0],
 			'text-size': 10,
@@ -839,7 +802,7 @@ export const previewLayers: LayerSpecification[] = [
 			'icon-size': 0.4,
 			'text-anchor': 'left',
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'left',
 			'text-offset': [0.5, 0.2],
 			'text-size': 10,
@@ -863,23 +826,11 @@ export const previewLayers: LayerSpecification[] = [
 		maxzoom: 15,
 		filter: ['all', ['==', '$type', 'Point'], ['==', 'class', 'town']],
 		layout: {
-			'icon-image': {
-				base: 1,
-				stops: [
-					[0, 'circle-11'],
-					[9, '']
-				]
-			},
+			'icon-image': zoomStep('circle-11', [[9, '']]),
 			'icon-size': 0.4,
-			'text-anchor': {
-				base: 1,
-				stops: [
-					[0, 'left'],
-					[8, 'center']
-				]
-			},
+			'text-anchor': zoomStep('left', [[8, 'center']]),
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'left',
 			'text-offset': [0.5, 0.2],
 			'text-size': 10,
@@ -903,23 +854,11 @@ export const previewLayers: LayerSpecification[] = [
 		maxzoom: 14,
 		filter: ['all', ['==', '$type', 'Point'], ['==', 'class', 'city'], ['>', 'rank', 3]],
 		layout: {
-			'icon-image': {
-				base: 1,
-				stops: [
-					[0, 'circle-11'],
-					[9, '']
-				]
-			},
+			'icon-image': zoomStep('circle-11', [[9, '']]),
 			'icon-size': 0.4,
-			'text-anchor': {
-				base: 1,
-				stops: [
-					[0, 'left'],
-					[8, 'center']
-				]
-			},
+			'text-anchor': zoomStep('left', [[8, 'center']]),
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'left',
 			'text-offset': [0.5, 0.2],
 			'text-size': 10,
@@ -943,23 +882,11 @@ export const previewLayers: LayerSpecification[] = [
 		maxzoom: 12,
 		filter: ['all', ['==', '$type', 'Point'], ['<=', 'rank', 3], ['==', 'class', 'city']],
 		layout: {
-			'icon-image': {
-				base: 1,
-				stops: [
-					[0, 'circle-11'],
-					[9, '']
-				]
-			},
+			'icon-image': zoomStep('circle-11', [[9, '']]),
 			'icon-size': 0.4,
-			'text-anchor': {
-				base: 1,
-				stops: [
-					[0, 'left'],
-					[8, 'center']
-				]
-			},
+			'text-anchor': zoomStep('left', [[8, 'center']]),
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'left',
 			'text-offset': [0.5, 0.2],
 			'text-size': 14,
@@ -984,7 +911,7 @@ export const previewLayers: LayerSpecification[] = [
 		filter: ['all', ['==', '$type', 'Point'], ['==', 'class', 'state']],
 		layout: {
 			'text-field': '{name:latin}\n{name:nonlatin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-size': 10,
 			'text-transform': 'uppercase',
 			visibility: 'visible'
@@ -1006,14 +933,11 @@ export const previewLayers: LayerSpecification[] = [
 		filter: ['all', ['==', '$type', 'Point'], ['==', 'class', 'country'], ['!has', 'iso_a2']],
 		layout: {
 			'text-field': '{name:latin}',
-			'text-font': ['Metropolis Light Italic', 'Noto Sans Italic'],
-			'text-size': {
-				base: 1,
-				stops: [
-					[0, 9],
-					[1, 11]
-				]
-			},
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+			'text-size': zoomInterpolate(1, [
+				[0, 9],
+				[1, 11]
+			]),
 			'text-transform': 'uppercase',
 			visibility: 'visible'
 		},
@@ -1039,14 +963,11 @@ export const previewLayers: LayerSpecification[] = [
 		],
 		layout: {
 			'text-field': '{name:latin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
-			'text-size': {
-				base: 1,
-				stops: [
-					[0, 10],
-					[6, 12]
-				]
-			},
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+			'text-size': zoomInterpolate(1, [
+				[0, 10],
+				[6, 12]
+			]),
 			'text-transform': 'uppercase',
 			visibility: 'visible'
 		},
@@ -1073,15 +994,12 @@ export const previewLayers: LayerSpecification[] = [
 		layout: {
 			'text-anchor': 'center',
 			'text-field': '{name:latin}',
-			'text-font': ['Metropolis Regular', 'Noto Sans Regular'],
-			'text-size': {
-				base: 1.4,
-				stops: [
-					[0, 10],
-					[3, 12],
-					[4, 14]
-				]
-			},
+			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+			'text-size': zoomInterpolate(1.4, [
+				[0, 10],
+				[3, 12],
+				[4, 14]
+			]),
 			'text-transform': 'uppercase',
 			visibility: 'visible'
 		},

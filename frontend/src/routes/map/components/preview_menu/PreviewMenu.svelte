@@ -8,13 +8,13 @@
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
+	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map';
 	import { mapStore } from '$routes/stores/map';
-	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
