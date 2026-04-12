@@ -93,6 +93,7 @@
 	let isDraggingLayerType = $state<LayerType | null>(null); // ドラッグ中かどうか
 	let isHoveredLayerType = $state<LayerType | null>(null); // ホバー中かどうか
 	let isRecommendedDataDragging = $state(false);
+	let isRecommendedDataDropActive = $state(false);
 	const setRecommendedDataDragging = (value: boolean) => {
 		isRecommendedDataDragging = value;
 	};
@@ -211,6 +212,11 @@
 	onDestroy(() => {
 		unsubscribeMapState();
 	});
+
+	$effect(() => {
+		if (isRecommendedDataDragging) return;
+		isRecommendedDataDropActive = false;
+	});
 </script>
 
 <!-- レイヤーメニュー -->
@@ -223,9 +229,23 @@
 			delay: !$isMobile ? 100 : 0
 		}}
 		role="region"
-		ondragover={(e) => e.preventDefault()}
+		ondragover={(e) => {
+			e.preventDefault();
+			if (!isRecommendedDataDragging) return;
+			isRecommendedDataDropActive = true;
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = 'copy';
+			}
+		}}
+		ondragleave={(e) => {
+			if (!(e.currentTarget instanceof HTMLElement)) return;
+			const relatedTarget = e.relatedTarget;
+			if (relatedTarget instanceof Node && e.currentTarget.contains(relatedTarget)) return;
+			isRecommendedDataDropActive = false;
+		}}
 		ondrop={(e) => {
 			e.preventDefault();
+			isRecommendedDataDropActive = false;
 			if (isDraggingLayerType !== null) return;
 			const id = e.dataTransfer?.getData('application/x-entry-id');
 			if (id) activeLayerIdsStore.add(id);
@@ -540,11 +560,11 @@
 				in:fade={{ delay: 200, duration: 100 }}
 				class="mobile-bottom relative px-2 pb-3 max-lg:hidden"
 			>
-								<RecommendedData
-									bind:showDataEntry
-									isLayerDragging={isDraggingLayerType !== null}
-									{setRecommendedDataDragging}
-								/>
+				<RecommendedData
+					bind:showDataEntry
+					isLayerDragging={isDraggingLayerType !== null}
+					{setRecommendedDataDragging}
+				/>
 			</div>
 		{/if}
 		<!-- <div class="h-[98px] w-full shrink-0"></div> -->
