@@ -359,6 +359,13 @@
 						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6" />
 					</div>
 				{/if}
+
+				<!-- タグ -->
+				<div class="absolute bottom-[0px] flex items-center gap-1 p-4 text-gray-300">
+					{#each dataEntry.metaData.tags as tag}
+						<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
+					{/each}
+				</div>
 			</div>
 
 			<!-- 詳細情報 -->
