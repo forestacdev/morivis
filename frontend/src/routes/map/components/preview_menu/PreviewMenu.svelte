@@ -4,6 +4,7 @@
 	import gsap from 'gsap';
 	import { tick } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
+	import { ICONS } from '$lib/icons';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
@@ -137,7 +138,7 @@
 					href={showDataEntry?.metaData.downloadUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					><Icon icon="majesticons:open" class="h-6 w-6" />
+					><Icon icon={ICONS.open} class="h-6 w-6" />
 					<span>データ提供元サイト</span></a
 				>
 			{/if}

@@ -10,6 +10,7 @@
 	} from '$routes/map/utils/feature';
 	import { normalizeSchoolName } from '$routes/map/utils/normalized';
 	import { checkPc } from '$routes/map/utils/ui';
+	import { ICONS } from '$lib/icons';
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | ResultCoordinateData | null;
@@ -164,7 +165,7 @@
 										href={wikiMenuData.url}
 										target="_blank"
 										rel="noopener noreferrer"
-										><Icon icon="majesticons:open" class="h-6 w-6" />
+										><Icon icon={ICONS.open} class="h-6 w-6" />
 										<span>Wikipediaを見る</span></a
 									>
 								</div>

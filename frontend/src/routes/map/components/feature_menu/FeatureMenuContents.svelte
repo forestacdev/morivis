@@ -6,6 +6,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import Viewer from 'viewerjs';
 	import 'viewerjs/dist/viewer.css';
+	import { ICONS } from '$lib/icons';
 
 	import {
 		getImageByName,
@@ -443,7 +444,7 @@
 								href={data.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								><Icon icon="majesticons:open" class="h-6 w-6" />
+								><Icon icon={ICONS.open} class="h-6 w-6" />
 								<span>外部サイトを開く</span></a
 							>
 						</div>

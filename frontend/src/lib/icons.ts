@@ -10,6 +10,7 @@ import { icons as mdiIcons } from '@iconify-json/mdi';
 import { icons as stashIcons } from '@iconify-json/stash';
 import { icons as streamlineUltimateIcons } from '@iconify-json/streamline-ultimate';
 import { icons as uilIcons } from '@iconify-json/uil';
+import { icons as majesticonsIcons } from '@iconify-json/majesticons';
 import { getIconData } from '@iconify/utils';
 
 type IconSet = Parameters<typeof getIconData>[0];
@@ -40,7 +41,8 @@ export const ICONS = {
 	arrowDown: getRequiredIcon(iconamoonIcons, 'arrow-down-2-duotone'),
 	arrowLeft: getRequiredIcon(iconamoonIcons, 'arrow-left-2-duotone'),
 	arrowRight: getRequiredIcon(iconamoonIcons, 'arrow-right-2-duotone'),
-	setting: getRequiredIcon(materialSymbolsIcons, 'settings-rounded')
+	setting: getRequiredIcon(materialSymbolsIcons, 'settings-rounded'),
+	open: getRequiredIcon(majesticonsIcons, 'open')
 } as const;
 
 export const LAYER_ICONS = {
