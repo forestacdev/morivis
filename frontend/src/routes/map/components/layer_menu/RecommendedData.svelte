@@ -21,17 +21,18 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		isLayerDragging: boolean;
+		isDeleteOverlayActive: boolean;
 		setRecommendedDataDragging: (value: boolean) => void;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		isLayerDragging,
+		isDeleteOverlayActive = $bindable(),
 		setRecommendedDataDragging
 	}: Props = $props();
 
 	let hoveredIndex = $state<number | null>(null);
-	let isDeleteOverlayActive = $state(false);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {

@@ -97,6 +97,7 @@
 	const setRecommendedDataDragging = (value: boolean) => {
 		isRecommendedDataDragging = value;
 	};
+	let isDeleteOverlayActive = $state(false);
 
 	let isTouchDragging = $state(false); // タッチデバイスでのドラッグ中かどうか
 	let scrollContainer = $state<HTMLElement | undefined>(undefined);
@@ -357,7 +358,8 @@
 				{#if selectedTab === 'added-data'}
 					{#if modelEntries.length > 0}
 						<div
-							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'model'
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'model' &&
+							!isDeleteOverlayActive
 								? 'bg-accent/70'
 								: ''}"
 						>
@@ -374,13 +376,15 @@
 								bind:featureMenuData
 								bind:isTouchDragging
 								{isRecommendedDataDragging}
+								{isDeleteOverlayActive}
 							/>
 						</div>
 					{/if}
 					<!-- ポイント -->
 					{#if pointEntries.length > 0}
 						<div
-							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point'
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'point' &&
+							!isDeleteOverlayActive
 								? 'bg-accent/70'
 								: ''}"
 						>
@@ -397,13 +401,15 @@
 								bind:featureMenuData
 								bind:isTouchDragging
 								{isRecommendedDataDragging}
+								{isDeleteOverlayActive}
 							/>
 						</div>
 					{/if}
 					<!-- ライン -->
 					{#if lineEntries.length > 0}
 						<div
-							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line'
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'line' &&
+							!isDeleteOverlayActive
 								? 'bg-accent/70'
 								: ''}"
 						>
@@ -420,13 +426,15 @@
 								bind:featureMenuData
 								bind:isTouchDragging
 								{isRecommendedDataDragging}
+								{isDeleteOverlayActive}
 							/>
 						</div>
 					{/if}
 					<!-- ポリゴン -->
 					{#if polygonEntries.length > 0}
 						<div
-							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon'
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'polygon' &&
+							!isDeleteOverlayActive
 								? 'bg-accent/70'
 								: ''}"
 						>
@@ -443,13 +451,15 @@
 								bind:featureMenuData
 								bind:isTouchDragging
 								{isRecommendedDataDragging}
+								{isDeleteOverlayActive}
 							/>
 						</div>
 					{/if}
 					<!-- ラスター -->
 					{#if rasterEntries.length > 0}
 						<div
-							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster'
+							class="rounded-lg transition-colors duration-150 {isDraggingLayerType === 'raster' &&
+							!isDeleteOverlayActive
 								? 'bg-accent/70'
 								: ''}"
 						>
@@ -465,6 +475,7 @@
 								bind:isHoveredLayerType
 								bind:featureMenuData
 								bind:isTouchDragging
+								{isDeleteOverlayActive}
 								{isRecommendedDataDragging}
 							/>
 						</div>
@@ -563,6 +574,7 @@
 				<RecommendedData
 					bind:showDataEntry
 					isLayerDragging={isDraggingLayerType !== null}
+					bind:isDeleteOverlayActive
 					{setRecommendedDataDragging}
 				/>
 			</div>

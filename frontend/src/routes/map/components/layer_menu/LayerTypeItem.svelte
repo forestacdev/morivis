@@ -23,6 +23,7 @@
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
 		isRecommendedDataDragging: boolean;
+		isDeleteOverlayActive: boolean;
 	}
 
 	let {
@@ -37,7 +38,8 @@
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		featureMenuData = $bindable(),
 		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
-		isRecommendedDataDragging
+		isRecommendedDataDragging,
+		isDeleteOverlayActive
 	}: Props = $props();
 	let isLastType = $derived(lastLayerType === layerType);
 </script>
@@ -49,7 +51,8 @@
 		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
 	>
 		<div
-			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType === layerType
+			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType ===
+				layerType && !isDeleteOverlayActive
 				? 'bg-accent text-base'
 				: 'bg-base text-main'} duration-200"
 		>
