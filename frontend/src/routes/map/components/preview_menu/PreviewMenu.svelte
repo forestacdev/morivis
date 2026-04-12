@@ -112,8 +112,8 @@
 			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
-		<div class="flex h-full flex-col items-center justify-start pt-14 text-base">
-			<!-- ヘッダー -->
+		<div class="flex h-full flex-col items-center justify-start pt-2 text-base">
+			<!-- カード -->
 			<div bind:this={previewCardWrapper} class="w-[300px]" style="perspective: 1200px;">
 				<DataSlot
 					dataEntry={showDataEntry}
@@ -128,22 +128,23 @@
 			</div>
 		</div>
 
-		<div class="flex h-full flex-col items-center gap-2 pb-8">
-			<!-- <div class="text-2xl">{showDataEntry?.metaData.name}</div>
-			<span class="text-gray-300">{getAttributionName(showDataEntry?.metaData.attribution)}</span> -->
-
+		<div class="c-scroll h-full gap-2 overflow-x-hidden overflow-y-auto">
 			{#if showDataEntry?.metaData.downloadUrl}
-				<a
-					class="c-btn-confirm mt-4 flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
-					href={showDataEntry?.metaData.downloadUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					><Icon icon={ICONS.open} class="h-6 w-6" />
-					<span>データ提供元サイト</span></a
-				>
+				<div class="flex flex-col items-center justify-center gap-2 pt-6">
+					<a
+						class="c-btn-confirm flex items-center justify-start gap-2 rounded-full p-2 px-4 select-none"
+						href={showDataEntry?.metaData.downloadUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						><Icon icon={ICONS.open} class="h-6 w-6" />
+						<span>データ提供元サイト</span></a
+					>
+				</div>
 			{/if}
-		</div>
-		<div class="c-scroll gap-2 overflow-x-hidden overflow-y-auto">
+			<div class="mb-2 flex gap-2 pt-6 pl-2">
+				<Icon icon="tabler:map-pin" class="h-6 w-6" />
+				<span class="">{showDataEntry?.metaData.location}</span>
+			</div>
 			{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}
 				{#if showDataEntry}
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -159,23 +160,6 @@
 					</div>
 				{/if}
 			{/if}
-
-			<div class="mb-2 flex gap-2">
-				<Icon icon="tabler:map-pin" class="h-6 w-6" />
-				<span class="">{showDataEntry?.metaData.location}</span>
-			</div>
-
-			<!-- タグ -->
-			<div class="flex gap-2 py-2">
-				<div class="flex gap-1">
-					<Icon icon="tabler:tag-filled" class="h-6 w-6" />
-				</div>
-				<div class="flex items-center gap-1 text-gray-300">
-					{#each showDataEntry?.metaData.tags as tag}
-						<span class="rounded-lg bg-black p-1 px-2 text-sm">{tag}</span>
-					{/each}
-				</div>
-			</div>
 		</div>
 	</div>
 {/if}
