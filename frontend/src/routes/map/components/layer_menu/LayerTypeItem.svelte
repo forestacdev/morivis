@@ -14,6 +14,7 @@
 		layerType: LayerType;
 		lastLayerType: LayerType | null;
 		typeEntries: GeoDataEntry[];
+		layerInRangeMap: Record<string, boolean>;
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		enableFlip: boolean;
@@ -21,19 +22,24 @@
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging: boolean;
+		isDeleteOverlayActive: boolean;
 	}
 
 	let {
 		layerType,
 		lastLayerType,
 		typeEntries,
+		layerInRangeMap,
 		showDataEntry = $bindable(), // データメニューの表示状態
 		tempLayerEntries = $bindable(),
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
 		featureMenuData = $bindable(),
-		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
+		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging,
+		isDeleteOverlayActive
 	}: Props = $props();
 	let isLastType = $derived(lastLayerType === layerType);
 </script>
@@ -45,7 +51,8 @@
 		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
 	>
 		<div
-			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType === layerType
+			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType ===
+				layerType && !isDeleteOverlayActive
 				? 'bg-accent text-base'
 				: 'bg-base text-main'} duration-200"
 		>
@@ -68,6 +75,7 @@
 			isLast={isLastType && i === typeEntries.length - 1}
 			{layerType}
 			{layerEntry}
+			isLayerInRange={layerInRangeMap[layerEntry.id] ?? false}
 			bind:showDataEntry
 			bind:tempLayerEntries
 			bind:enableFlip
@@ -75,6 +83,7 @@
 			bind:isHoveredLayerType
 			bind:featureMenuData
 			bind:isTouchDragging
+			{isRecommendedDataDragging}
 		/>
 	</div>
 {/each}

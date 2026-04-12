@@ -14,6 +14,7 @@ export default defineConfig({
 		SvelteKitPWA({
 			// PWA用の設定
 			includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
+			showMaximumFileSizeToCacheInBytesWarning: true,
 			manifest: {
 				name: 'morivis',
 				display: 'fullscreen',

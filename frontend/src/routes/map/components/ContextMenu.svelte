@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
 	import type { ContextMenuState } from '../types/ui';
@@ -14,6 +15,13 @@
 	let { contextMenuState = $bindable() }: { contextMenuState: ContextMenuState | null } = $props();
 
 	let containerRef = $state<HTMLElement>();
+	let menuPosition = $state({
+		left: 0,
+		top: 0,
+		ready: false
+	});
+	const MENU_OFFSET = 10;
+	const MENU_MARGIN = 12;
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -66,6 +74,40 @@
 		}
 		return null;
 	});
+
+	const updateMenuPosition = async () => {
+		if (!contextMenuState || !contextMenuState.show || !containerRef) return;
+
+		await tick();
+
+		const rect = containerRef.getBoundingClientRect();
+		const preferredLeft = contextMenuState.x + MENU_OFFSET;
+		const preferredTop = contextMenuState.y + MENU_OFFSET;
+		const maxLeft = window.innerWidth - rect.width - MENU_MARGIN;
+		const maxTop = window.innerHeight - rect.height - MENU_MARGIN;
+
+		menuPosition = {
+			left: Math.max(MENU_MARGIN, Math.min(preferredLeft, maxLeft)),
+			top: Math.max(MENU_MARGIN, Math.min(preferredTop, maxTop)),
+			ready: true
+		};
+	};
+
+	$effect(() => {
+		if (!contextMenuState || !contextMenuState.show || !containerRef) return;
+
+		void updateMenuPosition();
+
+		const handleResize = () => {
+			void updateMenuPosition();
+		};
+
+		window.addEventListener('resize', handleResize);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	});
 </script>
 
 {#if contextMenuState && contextMenuState.show}
@@ -73,9 +115,12 @@
 		{#await contextDataPromise}
 			<!-- ローディング中 -->
 			<div
+				bind:this={containerRef}
 				transition:fade={{ duration: 150 }}
-				class="bg-main absolute z-50 flex items-center gap-2 overflow-hidden rounded-lg p-3 text-base shadow-md"
-				style="top: {contextMenuState.y + 10}px;left: {contextMenuState.x + 10}px;"
+				class="bg-main fixed z-50 flex w-max max-w-[calc(100vw-24px)] items-center gap-2 overflow-hidden rounded-lg p-3 text-base shadow-md"
+				style="top: {menuPosition.top}px; left: {menuPosition.left}px; visibility: {menuPosition.ready
+					? 'visible'
+					: 'hidden'};"
 			>
 				<div
 					class="border-t-accent h-5 w-5 animate-spin rounded-full border-2 border-gray-300"
@@ -86,8 +131,10 @@
 			<div
 				transition:slide={{ duration: 250 }}
 				bind:this={containerRef}
-				class="bg-main absolute z-50 flex flex-col overflow-hidden rounded-lg text-base shadow-md"
-				style="top: {contextMenuState.y + 10}px;left: {contextMenuState.x + 10}px;"
+				class="bg-main fixed z-50 flex w-max max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-lg text-base shadow-md"
+				style="top: {menuPosition.top}px; left: {menuPosition.left}px; visibility: {menuPosition.ready
+					? 'visible'
+					: 'hidden'};"
 			>
 				<button
 					onclick={() => {

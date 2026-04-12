@@ -880,21 +880,30 @@ const createMapStore = () => {
 		);
 
 		if (_entry.metaData.center) {
-			map.easeTo({
+			map.flyTo({
 				center: _entry.metaData.center,
 				zoom:
 					('minZoom' in _entry.style ? _entry.style.minZoom : null) ??
 					_entry.metaData.minZoom + 1.5,
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
-				duration,
+				duration: 1000,
 				easing: MAP_EASING
 			});
 		} else {
-			map.fitBounds(bounds, {
+			const camera = map.cameraForBounds(bounds, {
 				bearing: map.getBearing(),
-				padding: -100,
-				duration,
+				padding: -100
+			});
+
+			if (!camera) return;
+
+			map.flyTo({
+				center: camera.center,
+				zoom: camera.zoom,
+				bearing: map.getBearing(),
+				pitch: map.getPitch(),
+				duration: 1000,
 				easing: MAP_EASING
 			});
 		}

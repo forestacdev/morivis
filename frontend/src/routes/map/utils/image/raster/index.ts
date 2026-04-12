@@ -104,11 +104,22 @@ export const getRasterImageUrl = async (
 	}
 };
 
+const getPmtilesCoverCacheKey = (_layerEntry: AnyRasterEntry): string => {
+	return JSON.stringify({
+		id: _layerEntry.id,
+		url: _layerEntry.format.url,
+		xyz: _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ,
+		tileSize: _layerEntry.metaData.tileSize,
+		style: _layerEntry.style
+	});
+};
+
 // TODO 条件分岐効率化
 export const generatePmtilesImageUrl = async (
 	_layerEntry: AnyRasterEntry
 ): Promise<string | undefined> => {
-	const url = CoverImageManager.get(_layerEntry.id);
+	const cacheKey = getPmtilesCoverCacheKey(_layerEntry);
+	const url = CoverImageManager.get(cacheKey);
 	if (url) return url;
 
 	let convertUrl;
@@ -128,7 +139,7 @@ export const generatePmtilesImageUrl = async (
 	}
 
 	if (convertUrl) {
-		CoverImageManager.add(_layerEntry.id, convertUrl);
+		CoverImageManager.add(cacheKey, convertUrl);
 	}
 
 	return convertUrl;

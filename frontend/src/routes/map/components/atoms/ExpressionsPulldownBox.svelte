@@ -57,7 +57,7 @@
 </script>
 
 {#if setExpression}
-	<div bind:this={containerRef} class="relative py-2">
+	<div bind:this={containerRef} class="relative py-2 select-none">
 		<button
 			onclick={() => (showPullDown = !showPullDown)}
 			class="c-select flex w-full items-center justify-between gap-1"

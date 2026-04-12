@@ -5,6 +5,7 @@
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -14,11 +15,10 @@
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
-	import { isBBoxOverlapping } from '$routes/map/utils/map';
 	import { checkMobile, checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
-	import { mapStore, type MapState } from '$routes/stores/map';
+	import { mapStore } from '$routes/stores/map';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -32,8 +32,10 @@
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
+		isLayerInRange: boolean;
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging: boolean;
 	}
 
 	let {
@@ -47,8 +49,10 @@
 		enableFlip = $bindable(),
 		isDraggingLayerType = $bindable(), // ドラッグ中のレイヤータイプ
 		isHoveredLayerType = $bindable(), // ホバー中のレイヤータイプ
+		isLayerInRange,
 		featureMenuData = $bindable(),
-		isTouchDragging = $bindable() // タッチデバイスでのドラッグ中かどうか
+		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
+		isRecommendedDataDragging
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
@@ -58,11 +62,6 @@
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
-	let isLayerInRange = $state(false);
-
-	let LayerBbox = $derived.by(() => {
-		return layerEntry?.metaData.bounds;
-	});
 
 	let isGeojsonCustomLayer = $derived.by(() => {
 		return (
@@ -231,6 +230,7 @@
 	const dragStart = (e: DragEvent, layerId: string) => {
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('application/x-entry-id', layerId);
 		const dragElement = document.getElementById(layerId) as HTMLElement;
 		e.dataTransfer.setDragImage(dragElement, dragOffsetX, dragOffsetY);
 
@@ -244,6 +244,8 @@
 
 	// ドラッグ中のレイヤーを取得
 	const dragEnter = (layerId: string) => {
+		if (isRecommendedDataDragging) return;
+		if (isDraggingLayerType !== layerType) return;
 		if (layerId && $selectedLayerId !== layerId) {
 			activeLayerIdsStore.reorder($selectedLayerId, layerId);
 		}
@@ -321,6 +323,7 @@
 	// スマホ用のドラッグ処理
 	const handleTouchMove = (e: TouchEvent) => {
 		if (!isTouchDragging || !checkMobile()) return;
+		if (isRecommendedDataDragging) return;
 
 		e.preventDefault();
 		const touch = e.touches[0];
@@ -337,6 +340,7 @@
 			const layerItem = elem.closest('[data-layer-id]') as HTMLElement;
 			if (layerItem && layerItem.dataset.layerId !== layerEntry.id) {
 				const targetLayerId = layerItem.dataset.layerId;
+				if (isDraggingLayerType !== layerType) break;
 				if (targetLayerId && $selectedLayerId !== targetLayerId) {
 					activeLayerIdsStore.reorder($selectedLayerId, targetLayerId);
 				}
@@ -368,35 +372,6 @@
 		isHoveredLayerType = bool ? layerType : null;
 	};
 
-	// レイヤー表示範囲をチェック
-	const checkRange = (_state: MapState) => {
-		if (!layerEntry) return;
-		let z = _state.zoom;
-
-		if ('tileSize' in layerEntry.metaData && layerEntry.metaData.tileSize === 256) {
-			z = z + 1.5;
-		}
-
-		// ズームレベル範囲内かのチェック
-		if (layerEntry.metaData.minZoom && z < layerEntry.metaData.minZoom) {
-			isLayerInRange = false;
-			return;
-		}
-
-		if (!LayerBbox) {
-			isLayerInRange = false;
-			return;
-		}
-
-		const mapBbox = _state.bbox;
-
-		if (isBBoxOverlapping(LayerBbox, mapBbox)) {
-			isLayerInRange = true;
-		} else {
-			isLayerInRange = false;
-		}
-	};
-
 	// TODO: 使用してない
 	// $effect(() => {
 	// 	if (isLayerInRange) {
@@ -411,20 +386,12 @@
 	// });
 
 	onMount(() => {
-		const state = mapStore.getState();
-
-		checkRange(state);
-
 		// passive: false を指定してtouchmoveでpreventDefault()を使えるようにする
 		layerItemElement?.addEventListener('touchmove', handleTouchMove, { passive: false });
 
 		return () => {
 			layerItemElement?.removeEventListener('touchmove', handleTouchMove);
 		};
-	});
-
-	mapStore.onStateChange((state) => {
-		checkRange(state);
 	});
 
 	let prefCode = $derived.by(() => {
@@ -459,22 +426,14 @@
 				class="absolute top-0 w-[2px] {isLast ? 'h-1/2' : 'h-full'} {isHoveredLayerType ===
 				layerType
 					? 'bg-accent '
-					: 'bg-base/60'}"
+					: 'bg-gray-400'}"
 			></div>
 			<div
 				class="absolute top-1/2 left-1/2 h-[1px] -translate-y-1/2 transition-[width] duration-150 {isHoveredLayerType ===
 				layerType
 					? 'bg-accent'
-					: 'bg-base/60'} {isHovered && !isDragging ? 'w-[25px]' : 'w-[10px]'}"
+					: 'bg-gray-400'} {isHovered && !isDragging ? 'w-[25px]' : 'w-[10px]'}"
 			></div>
-			{#if isLast}
-				<div
-					class="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full {isHoveredLayerType ===
-					layerType
-						? 'bg-accent'
-						: 'bg-base/60'}"
-				></div>
-			{/if}
 		</div>
 	{/if}
 
@@ -589,19 +548,16 @@
 							}}
 							class="cursor-pointer"
 						>
-							<Icon
-								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-								class="h-8 w-8"
-							/>
+							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon="bx:trash" class="h-8 w-8" />
+							<Icon icon={ICONS.trash} class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
+								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -610,11 +566,11 @@
 						</button> -->
 						{#if isGeojsonCustomLayer || isTiffCustomLayer}
 							<button onclick={downloadLayer} class="cursor-pointer">
-								<Icon icon="material-symbols:download-rounded" class="h-8 w-8" />
+								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
+							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -633,26 +589,23 @@
 							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
 							class="cursor-pointer"
 						>
-							<Icon
-								icon={layerEntry.style.visible ? 'akar-icons:eye' : 'akar-icons:eye-slashed'}
-								class="h-8 w-8"
-							/>
+							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 
 						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon="bx:trash" class="h-8 w-8" />
+							<Icon icon={ICONS.trash} class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon="streamline-ultimate:cursor-target-1" class="h-8 w-8" />
+								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
 							</button>
 						{/if}
 
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon="uil:setting" class="ml-4 h-8 w-8" />
+							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />

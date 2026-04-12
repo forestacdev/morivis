@@ -17,6 +17,7 @@
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
+	import { ICONS } from '$lib/icons';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
 	import { transitionPageScreen } from '$routes/stores/effect';
@@ -127,7 +128,7 @@
 {#if deviceType === 'mobile' && !$isMobile}
 	<div class="bg-main absolute z-100 flex h-full w-full items-center justify-center text-base">
 		<p class="text-2xl">端末を縦向きにしてください。</p>
-		<Icon icon="circum:mobile-3" class="h-16 w-16" />
+		<Icon icon={ICONS.mobile} class="h-16 w-16" />
 	</div>
 {/if}
 {#if isInitialized}

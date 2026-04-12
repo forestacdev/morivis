@@ -3,6 +3,7 @@
 	import { scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
+	import { ICONS } from '$lib/icons';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
@@ -31,7 +32,7 @@
 	let filterDataEntries = $state<GeoDataEntry[]>([]);
 
 	let searchWord = $state<string>(''); // 検索ワード
-	let showAddedData = $state<boolean>(true); // データ追加の状態
+	let showAddedData = $state<boolean>(false); // 追加済みデータの表示切替
 	let tagList = $derived.by(() => {
 		const tags = new Set<string>();
 		geoDataEntries.forEach((entry) => {
@@ -115,6 +116,8 @@
 	let rowColumns = $state<number>(2); // グリッドの列数
 	let itemHeight = $state<number>(450); // item Height + grid margin & padding
 	let itemWidth = $state<number>(300); // item Height + grid margin & padding
+	let listContainer = $state<HTMLDivElement | null>(null);
+	let hasScrolledCatalog = $state(false);
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -146,14 +149,39 @@
 			selected = 'system';
 			showDataEntry = null;
 			searchWord = '';
+			hasScrolledCatalog = false;
 		}
+	});
+
+	$effect(() => {
+		if (!listContainer || selected !== 'system' || filterDataEntries.length === 0) {
+			hasScrolledCatalog = false;
+			return;
+		}
+
+		const scrollElement = listContainer.querySelector('.virtual-list-wrapper');
+		if (!(scrollElement instanceof HTMLElement)) {
+			hasScrolledCatalog = false;
+			return;
+		}
+
+		const handleScroll = () => {
+			hasScrolledCatalog = scrollElement.scrollTop > 46;
+		};
+
+		handleScroll();
+		scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+
+		return () => {
+			scrollElement.removeEventListener('scroll', handleScroll);
+		};
 	});
 </script>
 
 {#if $showDataMenu}
 	<div
 		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
-		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px] lg:transition-all lg:duration-30"
+		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px]"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<!-- <button
@@ -162,7 +190,7 @@
 			showDataMenu.set(false);
 		}}
 	>
-		<Icon icon="ep:back" class="h-7 w-7" />
+		<Icon icon={ICONS.back} class="h-7 w-7" />
 	</button> -->
 		<div
 			class="flex grow items-center justify-between gap-4 p-2 max-lg:absolute max-lg:top-2 max-lg:left-0 max-lg:z-10 max-lg:w-full max-lg:px-2 lg:mt-3"
@@ -189,7 +217,7 @@
 							disabled={!searchWord}
 							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
 						>
-							<Icon icon="material-symbols:close-rounded" class="h-8 w-8 text-gray-400" />
+							<Icon icon={ICONS.close} class="h-8 w-8 text-gray-400" />
 						</button>
 					{/if}
 				</div>
@@ -218,7 +246,11 @@
 					>
 				{/each}
 			</div> -->
-			<div class="flex w-full grow items-start justify-between gap-4 p-2 max-lg:hidden">
+			<div
+				class="absolute top-14 z-20 flex w-full grow items-start justify-between gap-4 p-2 transition-colors duration-200 max-lg:hidden {hasScrolledCatalog
+					? 'bg-main'
+					: 'bg-transparent'}"
+			>
 				<div>
 					<Switch label="追加済みデータの表示" bind:value={showAddedData} />
 				</div>
@@ -227,7 +259,12 @@
 
 		{#if selected === 'system'}
 			{#if filterDataEntries.length}
-				<div class="c-list h-full" bind:clientHeight={gridHeight} bind:clientWidth={gridWidth}>
+				<div
+					class="c-list h-full"
+					bind:this={listContainer}
+					bind:clientHeight={gridHeight}
+					bind:clientWidth={gridWidth}
+				>
 					<VirtualList
 						width="100%"
 						height="100%"
@@ -236,6 +273,8 @@
 					>
 						<div slot="item" let:index let:style {style}>
 							<div class="h-16 w-full lg:hidden"><!-- スマホ表示スペース --></div>
+							<div class="h-16 w-full max-lg:hidden"></div>
+							<!-- PC表示スペース -->
 							<div
 								class="grid max-lg:gap-[5px] lg:gap-3"
 								style="--grid-columns: {rowColumns}; grid-template-columns: repeat(var(--grid-columns), minmax({!$isMobile
@@ -262,6 +301,9 @@
 							</div>
 						</div>
 					</VirtualList>
+					<div
+						class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[200px] w-full"
+					></div>
 				</div>
 			{/if}
 			{#if filterDataEntries.length === 0}
@@ -288,8 +330,15 @@
 
 	:global(.virtual-list-wrapper) {
 		/* スクロールバー */
-		-webkit-overflow-scrolling: touch;
-		scrollbar-gutter: stable;
+		/* -webkit-overflow-scrolling: touch;
+		scrollbar-gutter: stable; */
+
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
 	:global(.virtual-list-wrapper::-webkit-scrollbar) {

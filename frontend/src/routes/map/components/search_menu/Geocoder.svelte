@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
+	import { ICONS } from '$lib/icons';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ResultData } from '$routes/map/utils/feature';
 	import { showSearchSuggest } from '$routes/stores/ui';
@@ -50,7 +51,7 @@
 	in:fade={{ duration: 100, delay: 100 }}
 	out:fade={{ duration: 100 }}
 	type="text"
-	class="placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0 focus:outline-hidden"
+	class="placeholder:gray-400 w-full rounded-l-full bg-black px-5 py-2 text-base outline-0 select-none focus:outline-hidden"
 	bind:value={inputSearchWord}
 	oncompositionstart={() => (isComposing = true)}
 	oncompositionend={() => (isComposing = false)}
@@ -75,7 +76,7 @@
 		disabled={!inputSearchWord}
 		class="absolute top-0 right-14 grid h-full cursor-pointer place-items-center"
 	>
-		<Icon icon="material-symbols:close-rounded" class="h-7 w-7 text-gray-400" />
+		<Icon icon={ICONS.close} class="h-7 w-7 text-gray-400" />
 	</button>
 {/if}
 

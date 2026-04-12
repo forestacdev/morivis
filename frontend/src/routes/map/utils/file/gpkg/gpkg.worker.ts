@@ -360,8 +360,7 @@ const handleToGeoJson = (db: Database, options: any) => {
 				try {
 					const gv = row[geomIndex];
 					if (!gv) continue;
-					const gb =
-						gv instanceof Uint8Array ? gv : new Uint8Array(gv as unknown as ArrayBuffer);
+					const gb = gv instanceof Uint8Array ? gv : new Uint8Array(gv as unknown as ArrayBuffer);
 					const geometry = parseGpkgBinary(gb);
 					if (!geometry) continue;
 
@@ -598,11 +597,7 @@ const handleToRaster = async (db: Database, tableName: string) => {
 			}
 
 			const nanNodata = NaN;
-			const ranges = [
-				getMinMax(rB, nanNodata),
-				getMinMax(gB, nanNodata),
-				getMinMax(bB, nanNodata)
-			];
+			const ranges = [getMinMax(rB, nanNodata), getMinMax(gB, nanNodata), getMinMax(bB, nanNodata)];
 			transferBuffers.push(
 				rB.buffer as ArrayBuffer,
 				gB.buffer as ArrayBuffer,

@@ -4,7 +4,10 @@
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { delay } from 'es-toolkit';
 	import { fade, fly } from 'svelte/transition';
+	import Viewer from 'viewerjs';
 
+	import 'viewerjs/dist/viewer.css';
+	import { ICONS } from '$lib/icons';
 	import {
 		getImageByName,
 		getSummaryByJapaneseName,
@@ -48,6 +51,10 @@
 	// };
 	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 	let selectedIndex = $state(0);
+	let imageViewerRoot: HTMLDivElement | null = $state(null);
+	let imageViewerImage: HTMLImageElement | null = $state(null);
+	let isImageViewerOpen = $state(false);
+	let imageViewer: Viewer | null = null;
 
 	const onThumbnailClick = (index: number) => {
 		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
@@ -76,6 +83,44 @@
 	const onClickPrev = () => {
 		if (!emblaMainCarousel) return;
 		emblaMainCarousel.scrollPrev();
+	};
+
+	const closeImageViewer = () => {
+		imageViewer?.hide();
+	};
+
+	const openImageViewer = () => {
+		if (!imageViewerRoot) return;
+
+		if (!imageViewer) {
+			imageViewer = new Viewer(imageViewerRoot, {
+				backdrop: true,
+				button: true,
+				navbar: false,
+				title: false,
+				shown: () => {
+					isImageViewerOpen = true;
+				},
+				hidden: () => {
+					isImageViewerOpen = false;
+				},
+				toolbar: {
+					zoomIn: true,
+					zoomOut: true,
+					oneToOne: true,
+					reset: true,
+					prev: false,
+					play: false,
+					next: false,
+					rotateLeft: true,
+					rotateRight: true,
+					flipHorizontal: false,
+					flipVertical: false
+				}
+			});
+		}
+
+		imageViewer.show();
 	};
 
 	let targetLayer = $derived.by(() => {
@@ -226,6 +271,17 @@
 			showSelectionMarker = false;
 		}
 	});
+
+	$effect(() => {
+		void imageViewerRoot;
+		void imageViewerImage;
+
+		return () => {
+			isImageViewerOpen = false;
+			imageViewer?.destroy();
+			imageViewer = null;
+		};
+	});
 </script>
 
 {#if featureMenuData}
@@ -279,19 +335,30 @@
 				{#if imageData}
 					{@const imageUrl = imageData.type === 'static' ? imageData.url : imageData.data.url}
 					<div class="w-full">
-						<div class="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
+						<div
+							bind:this={imageViewerRoot}
+							class="relative aspect-video w-full overflow-hidden rounded-lg bg-black"
+						>
 							{#key imageUrl}
 								{#await new Promise((resolve) => {
 									const img = new Image();
 									img.onload = () => resolve(img);
 									img.src = imageUrl;
 								}) then}
-									<img
-										in:fade
-										class="absolute inset-0 h-full w-full object-contain"
-										alt="画像"
-										src={imageUrl}
-									/>
+									<button
+										type="button"
+										class="absolute inset-0 h-full w-full cursor-zoom-in"
+										aria-label="画像を拡大表示"
+										onclick={openImageViewer}
+									>
+										<img
+											bind:this={imageViewerImage}
+											in:fade
+											class="c-no-drag-icon absolute inset-0 h-full w-full object-contain"
+											alt="画像"
+											src={imageUrl}
+										/>
+									</button>
 								{/await}
 							{/key}
 						</div>
@@ -377,7 +444,7 @@
 								href={data.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								><Icon icon="majesticons:open" class="h-6 w-6" />
+								><Icon icon={ICONS.open} class="h-6 w-6" />
 								<span>外部サイトを開く</span></a
 							>
 						</div>
@@ -415,3 +482,21 @@
 		</div>
 	{/await}
 {/if}
+
+<style>
+	:global(.viewer-button) {
+		top: 24px;
+		right: 24px;
+		width: 64px;
+		height: 64px;
+	}
+
+	:global(.viewer-canvas) {
+		background-color: rgba(0, 0, 0, 0.5);
+	}
+
+	:global(.viewer-button.viewer-close) {
+		width: 48px;
+		height: 48px;
+	}
+</style>

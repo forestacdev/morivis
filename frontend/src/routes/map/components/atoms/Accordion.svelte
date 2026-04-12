@@ -2,10 +2,13 @@
 	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
+
+	import { ICONS } from '$lib/icons';
+
 	interface Props {
 		label: string;
 		value?: boolean;
-		icon?: string;
+		icon?: string | (typeof ICONS)[keyof typeof ICONS];
 		children: Snippet;
 	}
 	let { label, value = $bindable(), icon, children }: Props = $props();
@@ -22,7 +25,7 @@
 		>
 	</div>
 	<Icon
-		icon="iconamoon:arrow-up-2-duotone"
+		icon={ICONS.arrowUp}
 		class="h-8 w-8 text-base transition-transform duration-150 {value ? 'rotate-0' : 'rotate-180'}"
 	/>
 

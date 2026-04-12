@@ -50,6 +50,7 @@
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
 	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { isStreetView } from '$routes/stores';
@@ -190,85 +191,35 @@
 		if (showDataEntry || showZoneForm) {
 			previewSources = {
 				...previewSources,
-				preview_base_1: {
-					type: 'raster',
-					tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-					tileSize: 256,
-					minzoom: 0,
-					maxzoom: 18,
-					attribution: '地理院タイル'
+				// preview_base_1: {
+				// 	type: 'raster',
+				// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
+				// 	tileSize: 256,
+				// 	minzoom: 0,
+				// 	maxzoom: 18,
+				// 	attribution: '地理院タイル'
+				// },
+				openmaptiles: {
+					type: 'vector',
+					url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
 				},
-				preview_base_2: {
+				v: {
 					type: 'vector',
 					minzoom: 4,
 					maxzoom: 16,
 					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
 					attribution: '国土地理院最適化ベクトルタイル'
-				},
-				tile_grid: {
-					type: 'raster',
-					tiles: ['./tile_grid.png'],
-					tileSize: 256
 				}
+				// tile_grid: {
+				// 	type: 'raster',
+				// 	tiles: ['./tile_grid.png'],
+				// 	tileSize: 256
+				// }
 			};
 		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry || showZoneForm) {
-			previewLayers = [
-				// {
-				// 	id: 'background_layer',
-				// 	type: 'background',
-				// 	paint: {
-				// 		'background-color': '#FFFFEE'
-				// 	}
-				// },
-				{
-					id: 'preview_base_layer_1',
-					source: 'preview_base_1',
-					type: 'raster',
-					maxzoom: 24,
-					paint: {
-						'raster-opacity': 1.0,
-						'raster-brightness-max': 0,
-						'raster-brightness-min': 1.0
-					}
-				},
-				{
-					id: 'preview_base_layer_2',
-					type: 'line',
-					source: 'preview_base_2',
-					'source-layer': 'Cntr',
-					minzoom: 7,
-					maxzoom: 24,
-					layout: {
-						'line-cap': 'round',
-						'line-join': 'round'
-					},
-					paint: {
-						'line-color': '#FFFFFF',
-						'line-width': 1,
-						'line-opacity': 0.6
-					}
-				},
-
-				{
-					id: '@overlay_layer',
-					type: 'background',
-					paint: {
-						'background-color': '#000000',
-						'background-opacity': showDataEntry || showZoneForm ? 0.6 : 0
-					}
-				} as BackgroundLayerSpecification,
-				// {
-				// 	id: 'tile_grid',
-				// 	type: 'raster',
-				// 	source: 'tile_grid',
-				// 	paint: {
-				// 		'raster-opacity': 0.3
-				// 	}
-				// },
-				...previewLayers
-			];
+			previewLayers = [...previewBaseLayers, ...previewLayers];
 		}
 
 		const xyzTileSources: Record<string, SourceSpecification> = $showXYZTileLayer
@@ -596,9 +547,7 @@
 		}
 
 		const isMbtilesEntry = (e: GeoDataEntry) =>
-			e.type === 'raster' &&
-			'format' in e &&
-			(e as { format: { type: string } }).format.type === 'mbtiles';
+			'format' in e && (e as { format: { type: string } }).format.type === 'mbtiles';
 		const hasMbtilesLayer =
 			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
 

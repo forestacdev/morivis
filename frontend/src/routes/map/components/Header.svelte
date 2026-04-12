@@ -7,6 +7,7 @@
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
 
+	import { ICONS } from '$lib/icons';
 	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { getPostcodeInfo } from '$routes/map/api/postcode';
@@ -267,7 +268,7 @@
 				disabled={$isProcessing}
 				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
 			>
-				<Icon icon="stash:search-solid" class="transition-[width, height] h-6 w-6 duration-100" />
+				<Icon icon={ICONS.search} class="transition-[width, height] h-6 w-6 duration-100" />
 			</button>
 		</div>
 	{/if}
@@ -287,7 +288,7 @@
 			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
 			onclick={() => showOtherMenu.set(true)}
 		>
-			<Icon icon="ic:round-menu" class="h-8 w-8" />
+			<Icon icon={ICONS.menu} class="h-8 w-8" />
 		</button>
 	</div>
 </div>

@@ -1,12 +1,14 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
+	import { ICONS } from '$lib/icons';
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
@@ -18,9 +20,17 @@
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
+		isLayerDragging: boolean;
+		isDeleteOverlayActive: boolean;
+		setRecommendedDataDragging: (value: boolean) => void;
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		isLayerDragging,
+		isDeleteOverlayActive = $bindable(),
+		setRecommendedDataDragging
+	}: Props = $props();
 
 	let hoveredIndex = $state<number | null>(null);
 
@@ -43,13 +53,6 @@
 		})
 	];
 
-	let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	// let emblaThumbnailCarouselOptions: EmblaOptionsType = {
-	// 	loop: true,
-	// 	containScroll: 'keepSnaps',
-	// 	dragFree: true
-	// };
-	// let emblaThumbnailCarouselPlugins: EmblaPluginType[] = [];
 	let selectedIndex = $state(0);
 
 	// const onThumbnailClick = (index: number) => {
@@ -58,25 +61,21 @@
 	// };
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !emblaThumbnailCarousel) return;
+		if (!emblaMainCarousel) return;
 		selectedIndex = emblaMainCarousel.selectedScrollSnap();
-		emblaThumbnailCarousel.scrollTo(selectedIndex);
 	};
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
-		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
+		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect).on('autoplay:select', onSelect);
 
 		emblaMainCarousel = event.detail;
+		onSelect();
 
 		// ホイールイベントリスナーを追加
 		if (carouselElement) {
 			carouselElement.addEventListener('wheel', handleWheel, { passive: false });
 		}
-	};
-
-	const onInitEmblaThumbnailCarousel = (event: CustomEvent<EmblaCarouselType>) => {
-		emblaThumbnailCarousel = event.detail;
 	};
 
 	const onClickNext = () => {
@@ -173,6 +172,13 @@
 			.slice(0, LIMIT);
 	});
 
+	$effect(() => {
+		// データエントリーが更新されたときに、選択されたインデックスが範囲内か確認
+		if (dataEntries.length) {
+			selectedIndex = 0; // 範囲外の場合は最初のアイテムにリセット
+		}
+	});
+
 	const addData = (dataEntry: GeoDataEntry) => {
 		if (checkMobileWidth()) {
 			activeLayerIdsStore.add(dataEntry.id);
@@ -186,7 +192,43 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'copy';
 		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);
+		setRecommendedDataDragging(true);
 	};
+
+	const onDragEnd = () => {
+		setRecommendedDataDragging(false);
+	};
+
+	const handleDeleteDragOver = (e: DragEvent) => {
+		if (!e.dataTransfer?.types.includes('application/x-entry-id')) return;
+		e.preventDefault();
+		e.stopPropagation();
+		isDeleteOverlayActive = true;
+		e.dataTransfer.dropEffect = 'move';
+	};
+
+	const handleDeleteDragLeave = (e: DragEvent) => {
+		if (!(e.currentTarget instanceof HTMLElement)) return;
+		const relatedTarget = e.relatedTarget;
+		if (relatedTarget instanceof Node && e.currentTarget.contains(relatedTarget)) return;
+		isDeleteOverlayActive = false;
+	};
+
+	const handleDeleteDrop = (e: DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		isDeleteOverlayActive = false;
+
+		const entryId = e.dataTransfer?.getData('application/x-entry-id');
+		if (!entryId || !activeLayerIdsStore.has(entryId)) return;
+
+		activeLayerIdsStore.remove(entryId);
+	};
+
+	$effect(() => {
+		if (isLayerDragging) return;
+		isDeleteOverlayActive = false;
+	});
 </script>
 
 {#if dataEntries.length > 0}
@@ -194,10 +236,17 @@
 		transition:fade={{ duration: 150 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
-		<div class="flex w-full items-center justify-between px-2">
-			<div class="">周辺データ</div>
-			<button onclick={() => showDataMenu.set(true)} class="c-btn-confirm px-4 py-1 text-sm">
-				一覧を見る
+		<div class="flex w-full items-center justify-end pl-2">
+			<button
+				onclick={() => showDataMenu.set(true)}
+				class="group relative grid cursor-pointer place-items-center px-4 py-1 text-sm"
+			>
+				<div
+					class="c-poyopoyo bg-accent group-hover:bg-base rounded-full p-4 px-20 text-transparent transition-colors duration-150"
+				></div>
+				<span class="absolute block text-base transition-colors duration-150 group-hover:text-black"
+					>データ一覧を見る</span
+				>
 			</button>
 		</div>
 		<div class="relative">
@@ -219,6 +268,7 @@
 						<button
 							draggable="true"
 							ondragstart={(e) => onDragStart(e, dataEntry)}
+							ondragend={onDragEnd}
 							ondrop={(e) => e.stopPropagation()}
 							onclick={() => addData(dataEntry)}
 							onmouseenter={() => (hoveredIndex = i)}
@@ -230,7 +280,7 @@
 								class="relative flex aspect-video w-[95%] shrink-0 overflow-hidden rounded-lg border bg-black
                                 {hoveredIndex === i ? 'border-accent' : 'border-sub'}"
 							>
-								<RecommendedDataImage {dataEntry} />
+								<RecommendedDataImage {dataEntry} isSelected={selectedIndex === i} />
 							</div></button
 						>
 					{/each}
@@ -241,11 +291,45 @@
 				class="c-bg-fog-right pointer-events-none absolute right-0 bottom-0 z-10 h-full w-[50px]"
 			></div> -->
 		</div>
+		{#if isLayerDragging}
+			<div
+				transition:fly={{ duration: 300, y: 50, delay: 100 }}
+				role="button"
+				tabindex="-1"
+				aria-label="レイヤー削除エリア"
+				class="absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 text-sm backdrop-blur-[1px] transition-colors duration-150
+						{isDeleteOverlayActive ? 'border-red-500 bg-red-500/18 text-red-100' : ' bg-black/45 text-red-50'}"
+				ondragover={handleDeleteDragOver}
+				ondragleave={handleDeleteDragLeave}
+				ondrop={handleDeleteDrop}
+			>
+				<div class="flex items-center justify-center gap-2 p-2">
+					<Icon icon={ICONS.trash} class="h-8 w-8" />
+					<div class="">ここにドロップで削除</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 {/if}
 
 <style>
 	.c-set-glow {
 		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
+
+	.c-poyopoyo {
+		animation: poyopoyo 2s ease-out infinite;
+	}
+	@keyframes poyopoyo {
+		0%,
+		40%,
+		60%,
+		80% {
+			transform: scale(1);
+		}
+		50%,
+		70% {
+			transform: scale(0.95);
+		}
 	}
 </style>

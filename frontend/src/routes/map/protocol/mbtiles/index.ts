@@ -14,6 +14,20 @@ const PROTOCOL_NAME = 'mbtiles';
 const dbCache = new Map<string, Database>();
 let sqlPromise: Promise<SqlJsStatic> | null = null;
 
+const setCachedDb = (entryId: string, db: Database) => {
+	const currentDb = dbCache.get(entryId);
+	if (currentDb && currentDb !== db) currentDb.close();
+	dbCache.set(entryId, db);
+};
+
+const getCachedDb = (entryId: string): Database | undefined => {
+	const db = dbCache.get(entryId);
+	if (!db) return undefined;
+	dbCache.delete(entryId);
+	dbCache.set(entryId, db);
+	return db;
+};
+
 const getSql = (): Promise<SqlJsStatic> => {
 	if (!sqlPromise) {
 		sqlPromise = initSqlJs({
@@ -30,7 +44,7 @@ const getSql = (): Promise<SqlJsStatic> => {
 export interface MBTilesVectorLayer {
 	id: string;
 	fields: Record<string, string>;
-	geometryType?: string; // Point, LineString, Polygon, Unknown
+	geometryType?: string;
 	minZoom?: number;
 	maxZoom?: number;
 }
@@ -47,96 +61,97 @@ export interface MBTilesMetadata {
 	description?: string;
 }
 
+type MetadataWorkerRequest = {
+	id: string;
+	type: 'extractMetadata';
+	fileName: string;
+	buffer: ArrayBuffer;
+};
+
+type MetadataWorkerResponse = {
+	id: string;
+	metadata?: MBTilesMetadata;
+	error?: string;
+};
+
+class MBTilesMetadataWorkerClient {
+	private worker: Worker;
+	private pendingRequests = new Map<
+		string,
+		{
+			resolve: (value: MBTilesMetadata) => void;
+			reject: (reason?: Error) => void;
+		}
+	>();
+	private requestCounter = 0;
+
+	constructor(worker: Worker) {
+		this.worker = worker;
+		this.worker.addEventListener('message', this.handleMessage);
+		this.worker.addEventListener('error', this.handleError);
+	}
+
+	extractMetadata = async (fileName: string, buffer: ArrayBuffer): Promise<MBTilesMetadata> => {
+		const id = `metadata_${this.requestCounter++}`;
+
+		return new Promise((resolve, reject) => {
+			this.pendingRequests.set(id, { resolve, reject });
+			const message: MetadataWorkerRequest = {
+				id,
+				type: 'extractMetadata',
+				fileName,
+				buffer
+			};
+			this.worker.postMessage(message, { transfer: [buffer] });
+		});
+	};
+
+	private handleMessage = (event: MessageEvent<MetadataWorkerResponse>) => {
+		const { id, metadata, error } = event.data;
+		const request = this.pendingRequests.get(id);
+		if (!request) return;
+
+		this.pendingRequests.delete(id);
+		if (error) {
+			request.reject(new Error(error));
+			return;
+		}
+		if (!metadata) {
+			request.reject(new Error('MBTiles metadata missing'));
+			return;
+		}
+		request.resolve(metadata);
+	};
+
+	private handleError = (event: ErrorEvent) => {
+		console.error('[MBTiles] Metadata worker error:', event);
+		for (const request of this.pendingRequests.values()) {
+			request.reject(new Error('Metadata worker error occurred'));
+		}
+		this.pendingRequests.clear();
+	};
+}
+
+let metadataWorkerClient: MBTilesMetadataWorkerClient | null = null;
+
+const getMetadataWorkerClient = (): MBTilesMetadataWorkerClient => {
+	if (!metadataWorkerClient) {
+		const worker = new Worker(new URL('./protocol_mbtiles_meta.worker.ts', import.meta.url), {
+			type: 'module'
+		});
+		metadataWorkerClient = new MBTilesMetadataWorkerClient(worker);
+	}
+	return metadataWorkerClient;
+};
+
 export const registerMBTiles = async (entryId: string, file: File): Promise<MBTilesMetadata> => {
 	const SQL = await getSql();
 	const arrayBuffer = await file.arrayBuffer();
 	const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
-	dbCache.set(entryId, db);
-
-	// メタデータを取得
-	const meta: Record<string, string> = {};
-	try {
-		const rows = db.exec('SELECT name, value FROM metadata');
-		if (rows.length > 0) {
-			for (const row of rows[0].values) {
-				meta[row[0] as string] = row[1] as string;
-			}
-		}
-	} catch {
-		// メタデータテーブルがない場合
-	}
-
-	// boundsをパース
-	let bounds: [number, number, number, number] | undefined;
-	if (meta.bounds) {
-		const parts = meta.bounds.split(',').map((s) => parseFloat(s.trim()));
-		if (parts.length === 4 && parts.every((v) => Number.isFinite(v))) {
-			bounds = parts as [number, number, number, number];
-		}
-	}
-
-	// centerをパース
-	let center: [number, number] | undefined;
-	if (meta.center) {
-		const parts = meta.center.split(',').map((s) => parseFloat(s.trim()));
-		if (parts.length >= 2 && parts.every((v) => Number.isFinite(v))) {
-			center = [parts[0], parts[1]];
-		}
-	}
-
-	// ベクターレイヤー情報をjsonメタデータから取得
-	const isVector = meta.format === 'pbf';
-	let vectorLayers: MBTilesVectorLayer[] = [];
-
-	if (isVector && meta.json) {
-		try {
-			const jsonMeta = JSON.parse(meta.json);
-
-			// vector_layers からレイヤー情報を取得
-			if (jsonMeta.vector_layers && Array.isArray(jsonMeta.vector_layers)) {
-				vectorLayers = jsonMeta.vector_layers.map((l: any) => ({
-					id: l.id,
-					fields: l.fields ?? {},
-					geometryType: l.geometry_type ?? undefined,
-					minZoom: l.minzoom ?? undefined,
-					maxZoom: l.maxzoom ?? undefined
-				}));
-			}
-
-			// tilestats からジオメトリタイプを補完
-			if (jsonMeta.tilestats?.layers && Array.isArray(jsonMeta.tilestats.layers)) {
-				for (const stat of jsonMeta.tilestats.layers) {
-					const layer = vectorLayers.find((l) => l.id === stat.layer);
-					if (layer && !layer.geometryType && stat.geometry) {
-						layer.geometryType = stat.geometry;
-					}
-					// vectorLayersにないレイヤーを追加
-					if (!layer) {
-						vectorLayers.push({
-							id: stat.layer,
-							fields: {},
-							geometryType: stat.geometry ?? undefined
-						});
-					}
-				}
-			}
-		} catch {
-			// JSONパース失敗
-		}
-	}
-
-	return {
-		name: meta.name || file.name.replace(/\.[^.]+$/, ''),
-		format: meta.format || 'png',
-		bounds,
-		minZoom: meta.minzoom ? parseInt(meta.minzoom) : undefined,
-		maxZoom: meta.maxzoom ? parseInt(meta.maxzoom) : undefined,
-		center,
-		isVector,
-		vectorLayers,
-		description: meta.description ?? undefined
-	};
+	setCachedDb(entryId, db);
+	const metadataBuffer = arrayBuffer.slice(0);
+	return getMetadataWorkerClient().extractMetadata(file.name, metadataBuffer);
 };
 
 /**
@@ -200,40 +215,37 @@ const request = async (
 	_abortController: AbortController
 ): Promise<{ data: Uint8Array }> => {
 	const url = params.url.replace(`${PROTOCOL_NAME}://`, '');
-	// URL形式: {entryId}/{z}/{x}/{y}
 	const parts = url.split('/');
 	if (parts.length < 4) {
 		return { data: new Uint8Array() };
 	}
 
 	const entryId = parts.slice(0, -3).join('/');
-	const z = parseInt(parts[parts.length - 3]);
-	const x = parseInt(parts[parts.length - 2]);
-	const y = parseInt(parts[parts.length - 1]);
+	const z = parseInt(parts[parts.length - 3], 10);
+	const x = parseInt(parts[parts.length - 2], 10);
+	const y = parseInt(parts[parts.length - 1], 10);
 
-	const db = dbCache.get(entryId);
+	const db = getCachedDb(entryId);
 	if (!db) {
 		return { data: new Uint8Array() };
 	}
 
 	try {
-		// MBTilesのY座標はTMS方式（上下反転）
 		const tmsY = (1 << z) - 1 - y;
-
-		const result = db.exec(
-			'SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?',
-			[z, x, tmsY]
+		const stmt = db.prepare(
+			'SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?'
 		);
-
-		if (result.length > 0 && result[0].values.length > 0) {
-			let tileData = result[0].values[0][0] as Uint8Array;
-
-			// gzip圧縮されている場合は解凍
-			if (isGzipped(tileData)) {
-				tileData = await decompressGzip(tileData);
+		try {
+			stmt.bind([z, x, tmsY]);
+			if (stmt.step()) {
+				let tileData = stmt.get()[0] as Uint8Array;
+				if (isGzipped(tileData)) {
+					tileData = await decompressGzip(tileData);
+				}
+				return { data: tileData };
 			}
-
-			return { data: tileData };
+		} finally {
+			stmt.free();
 		}
 	} catch (e) {
 		console.error('[MBTiles] Tile query error:', e);
@@ -242,9 +254,6 @@ const request = async (
 	return { data: new Uint8Array() };
 };
 
-/**
- * mapStoreから呼ぶ用のプロトコル定義
- */
 export const mbtilesProtocol = () => ({
 	protocolName: PROTOCOL_NAME,
 	request

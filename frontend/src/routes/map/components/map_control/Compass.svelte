@@ -1,8 +1,10 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
+	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import { mapStore } from '$routes/stores/map';
 
 	gsap.registerPlugin(Draggable);
@@ -32,10 +34,16 @@
 		updateNeedle();
 	});
 
-	let orbitA = $state<HTMLDivElement | null>(null);
-	let orbitB = $state<HTMLDivElement | null>(null);
+	let orbitA = $state<HTMLButtonElement | null>(null);
+	let orbitB = $state<HTMLButtonElement | null>(null);
+	let isHover = $state(false);
+	let showOrbitButtons = $state(false);
 
 	const orbitTimelines: gsap.core.Timeline[] = [];
+	let orbitTweenA: gsap.core.Tween | null = null;
+	let orbitTweenB: gsap.core.Tween | null = null;
+	const ORBIT_RADIUS = 40;
+	const ORBIT_REST_PROGRESS = 0.75;
 	const BASE_SPEED = 0.3; // 基本速度（ズームしていないときの速度）
 	const MAX_SPEED = 10; // 最大速度（ズーム速度に応じてこれ以上速くならないようにするための上限）
 	const SPEED_MULTIPLIER = 3; // ズーム速度に対する加速の強さ
@@ -133,27 +141,107 @@
 		tweenSpeed(BASE_SPEED, 1.5, 'power3.out');
 	});
 
+	const expandOrbitButtons = () => {
+		showOrbitButtons = true;
+		orbitTimelines.forEach((tl) => tl.pause());
+		if (orbitA) {
+			orbitTweenA?.kill();
+			orbitTweenA = gsap.to(orbitA, {
+				x: 0,
+				y: -ORBIT_RADIUS,
+				width: 34,
+				height: 34,
+				opacity: 1,
+				duration: 0.35,
+				ease: 'power2.out'
+			});
+		}
+		if (orbitB) {
+			orbitTweenB?.kill();
+			orbitTweenB = gsap.to(orbitB, {
+				x: 0,
+				y: ORBIT_RADIUS,
+				width: 34,
+				height: 34,
+				opacity: 1,
+				duration: 0.35,
+				ease: 'power2.out'
+			});
+		}
+	};
+
+	const collapseOrbitButtons = () => {
+		showOrbitButtons = false;
+		orbitTweenA?.kill();
+		orbitTweenB?.kill();
+		orbitTimelines.forEach((tl) => tl.progress(ORBIT_REST_PROGRESS).play());
+		if (orbitA) {
+			orbitTweenA = gsap.to(orbitA, {
+				width: 8,
+				height: 8,
+				opacity: 0.7,
+				duration: 0.35,
+				ease: 'power2.out'
+			});
+		}
+		if (orbitB) {
+			orbitTweenB = gsap.to(orbitB, {
+				width: 8,
+				height: 8,
+				opacity: 0.4,
+				duration: 0.35,
+				ease: 'power2.out'
+			});
+		}
+	};
+
+	const resetBearing = () => {
+		mapStore.easeTo({ bearing: 0 });
+	};
+
+	const resetPitch = () => {
+		mapStore.easeTo({ pitch: 0 });
+	};
+
+	const downPitch = () => {
+		const current = mapStore.getPitch() ?? 0;
+		mapStore.easeTo({ pitch: Math.min(current + 15, 85) });
+	};
+
+	const upPitch = () => {
+		const current = mapStore.getPitch() ?? 0;
+		mapStore.easeTo({ pitch: Math.max(current - 15, 0) });
+	};
+
+	$effect(() => {
+		if (isHover) {
+			expandOrbitButtons();
+			return;
+		}
+		collapseOrbitButtons();
+	});
+
 	onMount(() => {
 		if (!element) return;
 
 		// 2つの小さい円の周回アニメーション
 		if (orbitA && orbitB) {
-			const radius = 43;
 			const duration = 6;
 
-			const animate = (el: HTMLDivElement, startAngle: number) => {
+			const animate = (el: HTMLButtonElement, startAngle: number) => {
+				const orbitState = { angle: startAngle };
 				const tl = gsap.timeline({ repeat: -1 });
 				tl.fromTo(
-					el,
-					{ rotation: startAngle },
+					orbitState,
+					{ angle: startAngle },
 					{
-						rotation: startAngle + 360,
+						angle: startAngle + 360,
 						duration,
 						ease: 'none',
-						onUpdate: function () {
-							const angle = (this.progress() * 360 + startAngle) * (Math.PI / 180);
-							const x = Math.cos(angle) * radius;
-							const y = Math.sin(angle) * radius;
+						onUpdate: () => {
+							const angle = orbitState.angle * (Math.PI / 180);
+							const x = Math.cos(angle) * ORBIT_RADIUS;
+							const y = Math.sin(angle) * ORBIT_RADIUS;
 							gsap.set(el, { x, y });
 						}
 					}
@@ -194,20 +282,48 @@
 
 <!-- PC -->
 
-<div class="relative grid h-[70px] w-[70px] place-items-center">
+<div
+	class="relative grid h-[90px] w-[90px] place-items-center"
+	role="group"
+	aria-label="コンパスコントロール"
+	onmouseenter={() => (isHover = true)}
+	onmouseleave={() => (isHover = false)}
+>
 	<!-- 周回する小さい円 -->
-	<div
+	<button
+		type="button"
 		bind:this={orbitA}
-		class="pointer-events-none absolute h-2 w-2 rounded-full bg-white/70"
-	></div>
-	<div
+		class="absolute grid cursor-pointer rounded-full border border-white/30 text-[10px] font-semibold text-black shadow-[0_0_18px_rgba(0,0,0,0.28)] transition-[box-shadow,border-color,background-color,color] duration-200
+			{showOrbitButtons
+			? 'bg-base pointer-events-auto place-items-center border-white/50'
+			: 'bg-base/70 pointer-events-none'}"
+		style="width: 8px; height: 8px;"
+		aria-label="傾ける"
+		disabled={!showOrbitButtons}
+		onclick={downPitch}
+	>
+		{#if showOrbitButtons}<Icon icon={ICONS.arrowUp} class="h-6 w-6 -translate-y-0.5" />{/if}
+	</button>
+	<button
+		type="button"
 		bind:this={orbitB}
-		class="pointer-events-none absolute h-2 w-2 rounded-full bg-white/40"
-	></div>
+		class="absolute grid cursor-pointer rounded-full border border-white/20 text-[9px] font-semibold text-black shadow-[0_0_18px_rgba(0,0,0,0.24)] transition-[box-shadow,border-color,background-color,color] duration-200
+			{showOrbitButtons
+			? 'bg-base pointer-events-auto place-items-center border-white/40'
+			: 'bg-base/70 pointer-events-none'}"
+		style="width: 8px; height: 8px;"
+		aria-label="傾きを戻す"
+		disabled={!showOrbitButtons}
+		onclick={upPitch}
+	>
+		{#if showOrbitButtons}<Icon icon={ICONS.arrowDown} class="h-6 w-6 translate-y-0.5" />{/if}
+	</button>
 	<!-- コンパス本体 -->
 	<div
 		bind:this={element}
-		class="pointer-events-auto grid h-[70px] w-[70px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 bg-black/50"
+		class="pointer-events-auto grid h-[65px] w-[65px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 transition-colors duration-150 {isHover
+			? 'bg-black'
+			: 'bg-black/60 backdrop-blur-[1px]'}"
 		style="perspective: 200px;"
 	>
 		<svg

@@ -12,6 +12,11 @@ export const WEB_MERCATOR_JAPAN_BOUNDS: [number, number, number, number] = [
 	122.933755, 24.045713, 153.986895, 45.556277
 ];
 
+/* 森林文化 */
+export const FAC_BOUNDS: [number, number, number, number] = [
+	136.912447, 35.545295, 136.9301, 35.559383
+];
+
 // 都道府県のBBOX定数 [west, south, east, north]
 
 /* 北海道 */
