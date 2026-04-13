@@ -70,6 +70,7 @@
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
+	import { showLayerAddedNotification } from '$routes/stores/notification';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -729,8 +730,16 @@
 		dropFile = files;
 	};
 
+	// エントリーIDのドロップ完了時にレイヤーを追加
 	const onDropEntryId = (entryId: string) => {
+		if (activeLayerIdsStore.has(entryId)) {
+			return; // すでにアクティブなレイヤーに含まれている場合は何もしない
+		}
 		activeLayerIdsStore.add(entryId);
+		const entry = layerEntries.find((entry) => entry.id === entryId);
+		if (entry) {
+			showLayerAddedNotification(entry);
+		}
 	};
 </script>
 

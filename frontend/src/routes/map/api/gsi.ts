@@ -48,11 +48,12 @@ export const gsiGetElevation = async (lng: number, lat: number): Promise<number>
  */
 export const gsiLonLatToAddress = async (
 	lng: number,
-	lat: number
+	lat: number,
+	signal?: AbortSignal
 ): Promise<GsiReverseGeocoderResponse> => {
 	const url = `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`;
 	try {
-		const response = await fetch(url);
+		const response = await fetch(url, { signal });
 		if (response.ok) {
 			const data: GsiReverseGeocoderResponse = await response.json();
 			return data;
@@ -60,6 +61,9 @@ export const gsiLonLatToAddress = async (
 			throw new Error('Failed to fetch');
 		}
 	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
+			throw error;
+		}
 		if (error instanceof Error) {
 			throw new Error(error.message);
 		} else {

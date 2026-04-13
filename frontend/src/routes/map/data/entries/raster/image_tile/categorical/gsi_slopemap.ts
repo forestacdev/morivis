@@ -20,7 +20,8 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		maxZoom: 15,
 		tileSize: 256,
 		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9,
-		bounds: WEB_MERCATOR_JAPAN_BOUNDS
+		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		description: '地表面の傾きの量を白黒の濃淡で表現した地図。地形の急緩や地形判読に利用できる。'
 	},
 	interaction: {
 		clickable: true
