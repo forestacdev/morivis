@@ -134,11 +134,16 @@
 	let prefectureCodeError = $state(false);
 	let prefectureRequestId = 0;
 	let prefectureRequestController: AbortController | null = null;
+	let lastRequestedPrefecturePoint: [number, number] | null = null;
+	const normalizePrefecturePoint = (lng: number, lat: number): [number, number] => {
+		return [Number(lng.toFixed(6)), Number(lat.toFixed(6))];
+	};
 	const abortPrefectureRequest = () => {
 		prefectureRequestController?.abort();
 		prefectureRequestController = null;
 	};
 	const fetchPrefectureCode = throttle((lng: number, lat: number, requestId: number) => {
+		lastRequestedPrefecturePoint = normalizePrefecturePoint(lng, lat);
 		prefectureRequestController = new AbortController();
 
 		lonLatToPrefectureCode(lng, lat, prefectureRequestController.signal)
@@ -154,7 +159,7 @@
 	}, 500);
 	const requestPrefectureCode = debounce((lng: number, lat: number, requestId: number) => {
 		fetchPrefectureCode(lng, lat, requestId);
-	}, 300);
+	}, 100);
 	let isCenterInJapanBounds = $derived(
 		mapState.center[0] >= WEB_MERCATOR_JAPAN_BOUNDS[0] &&
 			mapState.center[0] <= WEB_MERCATOR_JAPAN_BOUNDS[2] &&
@@ -182,16 +187,23 @@
 
 	$effect(() => {
 		const [lng, lat] = mapState.center;
+		const [normalizedLng, normalizedLat] = normalizePrefecturePoint(lng, lat);
 		const requestId = ++prefectureRequestId;
+		const isSameAsLastRequested =
+			lastRequestedPrefecturePoint?.[0] === normalizedLng &&
+			lastRequestedPrefecturePoint?.[1] === normalizedLat;
 
 		if (!isInJapanBounds || mapState.zoom <= 5) {
 			fetchPrefectureCode.cancel();
 			requestPrefectureCode.cancel();
 			abortPrefectureRequest();
+			lastRequestedPrefecturePoint = null;
 			prefectureCode = '';
 			prefectureCodeError = false;
 			return;
 		}
+
+		if (isSameAsLastRequested) return;
 
 		abortPrefectureRequest();
 		prefectureCodeError = false;
