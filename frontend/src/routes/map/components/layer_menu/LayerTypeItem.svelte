@@ -42,13 +42,41 @@
 		isDeleteOverlayActive
 	}: Props = $props();
 	let isLastType = $derived(lastLayerType === layerType);
+
+	let iconEl = $state<HTMLElement | undefined>(undefined);
+	let iconScale = $state(1);
+	let iconOpacity = $state(1);
+	const STICKY_TOP = 50; // top-[50px] と合わせる
+	const SQUEEZE_RANGE = 20; // この px 分押し上げられると完全に消える
+
+	$effect(() => {
+		if (!iconEl) return;
+		const scrollParent = iconEl.closest('.overflow-y-auto');
+		if (!scrollParent) return;
+
+		const update = () => {
+			const rect = iconEl!.getBoundingClientRect();
+			const parentRect = scrollParent.getBoundingClientRect();
+			const relTop = rect.top - parentRect.top;
+			const pushed = STICKY_TOP - relTop; // 押し上げられた量（px）
+			const t = Math.min(Math.max(pushed / SQUEEZE_RANGE, 0), 1);
+			iconScale = 1 - t * 0.6;
+			iconOpacity = 1 - t;
+		};
+
+		scrollParent.addEventListener('scroll', update, { passive: true });
+		update();
+		return () => scrollParent.removeEventListener('scroll', update);
+	});
 </script>
 
 <!-- 左側：レイヤータイプアイコン -->
 {#if !$isStyleEdit && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
+		bind:this={iconEl}
 		class="h- sticky top-[50px] z-10 flex w-[50px] shrink-0 justify-center"
+		style="transform: scale({iconScale}); opacity: {iconOpacity};"
 	>
 		<div
 			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType ===
