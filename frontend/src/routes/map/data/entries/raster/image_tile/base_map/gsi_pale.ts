@@ -21,7 +21,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15'],
+		description: '淡い配色で表現した地図。主題図や各種データを重ねて表示する際の背景地図として利用できる。'
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

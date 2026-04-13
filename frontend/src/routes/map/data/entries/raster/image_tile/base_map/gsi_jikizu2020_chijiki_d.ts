@@ -21,7 +21,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 13,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7
+		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_7,
+		description: '2020年1月1日0時の値に基づく磁気図。全国の磁場の分布を確認する際に利用できる。'
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION,
