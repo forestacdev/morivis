@@ -129,7 +129,9 @@
 		</div>
 		<div class="relative flex h-full flex-col overflow-hidden overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
-			<div class="c-scroll-hidden h-full gap-2 overflow-x-hidden overflow-y-auto pb-[100px]">
+			<div
+				class="c-scroll-hidden pb-[100px h-full gap-2 overflow-x-hidden overflow-y-auto text-base"
+			>
 				{#if showDataEntry?.metaData.downloadUrl}
 					<div class="flex flex-col items-center justify-center gap-2 pt-6">
 						<a
