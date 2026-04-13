@@ -48,7 +48,7 @@
 {#if !$isStyleEdit && !$showDataMenu}
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
-		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
+		class="h- sticky top-[50px] z-10 flex w-[50px] shrink-0 justify-center"
 	>
 		<div
 			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType ===
