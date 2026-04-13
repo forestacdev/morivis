@@ -349,7 +349,7 @@
 				<div
 					in:fly={{ delay: 300, duration: 300, y: -20, opacity: 0 }}
 					out:fade={{ delay: 0, duration: 1 }}
-					class="bg-main absolute top-0 left-[50px] z-10 flex w-full items-center pb-2"
+					class="bg-main absolute top-0 left-[50px] z-10 flex w-full items-center pb-2 max-lg:hidden"
 				>
 					<div class="flex flex-1 gap-2 pl-4 text-nowrap">
 						<label
