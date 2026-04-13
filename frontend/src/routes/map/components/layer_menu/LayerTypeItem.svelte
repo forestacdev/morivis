@@ -75,7 +75,7 @@
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
 		bind:this={iconEl}
-		class="h- sticky top-[50px] z-10 flex w-[50px] shrink-0 justify-center"
+		class="sticky top-[25px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
 		style="transform: scale({iconScale}); opacity: {iconOpacity};"
 	>
 		<div
