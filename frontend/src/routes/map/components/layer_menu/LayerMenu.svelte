@@ -3,6 +3,7 @@
 	import { onDestroy } from 'svelte';
 	import { tick } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
+	import { debounce, throttle } from 'es-toolkit';
 
 	import RecommendedData from './RecommendedData.svelte';
 
@@ -132,6 +133,28 @@
 	let prefectureCode = $state<PrefectureCode | ''>('');
 	let prefectureCodeError = $state(false);
 	let prefectureRequestId = 0;
+	let prefectureRequestController: AbortController | null = null;
+	const abortPrefectureRequest = () => {
+		prefectureRequestController?.abort();
+		prefectureRequestController = null;
+	};
+	const fetchPrefectureCode = throttle((lng: number, lat: number, requestId: number) => {
+		prefectureRequestController = new AbortController();
+
+		lonLatToPrefectureCode(lng, lat, prefectureRequestController.signal)
+			.then((code) => {
+				if (requestId !== prefectureRequestId) return;
+				prefectureCode = code as PrefectureCode;
+			})
+			.catch((error) => {
+				if (error instanceof DOMException && error.name === 'AbortError') return;
+				if (requestId !== prefectureRequestId) return;
+				prefectureCodeError = true;
+			});
+	}, 500);
+	const requestPrefectureCode = debounce((lng: number, lat: number, requestId: number) => {
+		fetchPrefectureCode(lng, lat, requestId);
+	}, 300);
 	let isCenterInJapanBounds = $derived(
 		mapState.center[0] >= WEB_MERCATOR_JAPAN_BOUNDS[0] &&
 			mapState.center[0] <= WEB_MERCATOR_JAPAN_BOUNDS[2] &&
@@ -159,25 +182,20 @@
 
 	$effect(() => {
 		const [lng, lat] = mapState.center;
+		const requestId = ++prefectureRequestId;
 
 		if (!isInJapanBounds || mapState.zoom <= 5) {
+			fetchPrefectureCode.cancel();
+			requestPrefectureCode.cancel();
+			abortPrefectureRequest();
 			prefectureCode = '';
 			prefectureCodeError = false;
 			return;
 		}
 
-		const requestId = ++prefectureRequestId;
+		abortPrefectureRequest();
 		prefectureCodeError = false;
-
-		lonLatToPrefectureCode(lng, lat)
-			.then((code) => {
-				if (requestId !== prefectureRequestId) return;
-				prefectureCode = code as PrefectureCode;
-			})
-			.catch(() => {
-				if (requestId !== prefectureRequestId) return;
-				prefectureCodeError = true;
-			});
+		requestPrefectureCode(lng, lat, requestId);
 	});
 
 	// let isPrefCode = $derived.by(() => {
@@ -211,6 +229,9 @@
 	});
 
 	onDestroy(() => {
+		fetchPrefectureCode.cancel();
+		requestPrefectureCode.cancel();
+		abortPrefectureRequest();
 		unsubscribeMapState();
 	});
 

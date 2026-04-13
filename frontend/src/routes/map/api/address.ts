@@ -26,13 +26,20 @@ export const addressCodeToPrefectureCode = (addressCode: string) => {
  * @param lat 緯度
  * @returns 住所情報
  */
-export const lonLatToAddress = async (lng: number, lat: number): Promise<string> => {
+export const lonLatToAddress = async (
+	lng: number,
+	lat: number,
+	signal?: AbortSignal
+): Promise<string> => {
 	try {
-		const data = await gsiLonLatToAddress(lng, lat);
+		const data = await gsiLonLatToAddress(lng, lat, signal);
 		if (!hasReverseGeocoderResult(data)) return '';
 		const address = addressCodeToAddress(data.results.muniCd);
 		return `${address}${data.results.lv01Nm === '−' ? '' : data.results.lv01Nm}`;
 	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
+			throw error;
+		}
 		if (error instanceof Error) {
 			throw new Error(error.message);
 		} else {
@@ -47,12 +54,19 @@ export const lonLatToAddress = async (lng: number, lat: number): Promise<string>
  * @param lat 緯度
  * @returns 都道府県コード
  */
-export const lonLatToPrefectureCode = async (lng: number, lat: number): Promise<string> => {
+export const lonLatToPrefectureCode = async (
+	lng: number,
+	lat: number,
+	signal?: AbortSignal
+): Promise<string> => {
 	try {
-		const data = await gsiLonLatToAddress(lng, lat);
+		const data = await gsiLonLatToAddress(lng, lat, signal);
 		if (!hasReverseGeocoderResult(data)) return '';
 		return addressCodeToPrefectureCode(data.results.muniCd);
 	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
+			throw error;
+		}
 		if (error instanceof Error) {
 			throw new Error(error.message);
 		} else {
