@@ -84,6 +84,7 @@
 			bind:featureMenuData
 			bind:isTouchDragging
 			{isRecommendedDataDragging}
+			{isDeleteOverlayActive}
 		/>
 	</div>
 {/each}
