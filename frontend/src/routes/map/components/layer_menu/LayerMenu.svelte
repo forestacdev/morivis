@@ -583,7 +583,7 @@
 						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
 					>
 						<div
-							class="[&_path]:fill-base rota absolute grid aspect-square w-full -translate-x-[90px] translate-y-[70px] scale-[2] -rotate-12 place-items-center px-6"
+							class="[&_path]:fill-base rota absolute grid aspect-square w-full -translate-x-[90px] translate-y-[0px] scale-[2] -rotate-23 place-items-center px-6"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 408 347.9"
 								><path
