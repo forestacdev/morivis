@@ -293,7 +293,7 @@
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="pl-2">
-			<div class="relative flex h-[100px] w-full items-center max-lg:hidden">
+			<div class="relative flex h-[72px] w-full items-center max-lg:hidden">
 				{#if !$isStyleEdit && !$showDataMenu}
 					<!-- 縦棒 -->
 					<div
@@ -310,46 +310,7 @@
 						transition:slide={{ duration: 200, axis: 'x' }}
 						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
-						<span class="text-[2.7rem] font-bold"> morivis </span>
-						<div class="flex w-full items-center py-2">
-							<div class="flex flex-1 gap-2">
-								<label
-									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
-									'added-data'
-										? 'bg-base text-black'
-										: 'bg-base/40 text-gray-300'}"
-								>
-									<input
-										type="radio"
-										name="layer-menu-tab"
-										bind:group={selectedTab}
-										value="added-data"
-										class="hidden"
-									/>
-									追加済みデータ
-								</label>
-								<label
-									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
-									'map-display'
-										? 'bg-base text-black'
-										: 'bg-base/40 text-gray-300'}"
-								>
-									<input
-										type="radio"
-										name="layer-menu-tab"
-										bind:group={selectedTab}
-										value="map-display"
-										class="hidden"
-									/>
-									地図表示
-								</label>
-							</div>
-							<!-- <button
-								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
-								onclick={resetLayers}
-								>リセット
-							</button> -->
-						</div>
+						<span class="text-[2.9rem] font-bold"> morivis </span>
 					</div>
 				{/if}
 
@@ -378,6 +339,52 @@
 				? 'pr-2'
 				: ''}"
 		>
+			{#if !$isStyleEdit && !$showDataMenu}
+				<div
+					in:fly={{ delay: 300, duration: 300, y: -20, opacity: 0 }}
+					out:fade={{ delay: 0, duration: 1 }}
+					class="bg-main absolute top-0 left-[50px] z-10 flex w-full items-center pb-2"
+				>
+					<div class="flex flex-1 gap-2 pl-4 text-nowrap">
+						<label
+							class="flex w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-1 text-xs transition-colors {selectedTab ===
+							'added-data'
+								? 'bg-base text-black'
+								: 'bg-base/40 text-gray-300'}"
+						>
+							<input
+								type="radio"
+								name="layer-menu-tab"
+								bind:group={selectedTab}
+								value="added-data"
+								class="hidden"
+							/>
+							<span>追加済みデータ</span>
+						</label>
+						<label
+							class="flex w-[80px] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-1 text-xs transition-colors {selectedTab ===
+							'map-display'
+								? 'bg-base text-black'
+								: 'bg-base/40 text-gray-300'}"
+						>
+							<input
+								type="radio"
+								name="layer-menu-tab"
+								bind:group={selectedTab}
+								value="map-display"
+								class="hidden"
+							/>
+							<span>地図表示</span>
+						</label>
+					</div>
+
+					<!-- <button
+								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
+								onclick={resetLayers}
+								>リセット
+							</button> -->
+				</div>
+			{/if}
 			<!-- スクロールコンテンツ -->
 			<div
 				bind:this={scrollContainer}
@@ -387,6 +394,27 @@
 					? 'touch-none overflow-hidden'
 					: 'touch-auto overflow-y-auto'}"
 			>
+				<!-- PC表示スペース -->
+				<div class="relative flex h-[30px] w-full shrink-0 items-center max-lg:hidden">
+					{#if !$isStyleEdit && !$showDataMenu}
+						<!-- 縦棒 -->
+						<div
+							transition:slide={{ duration: 200, axis: 'x' }}
+							class="relative grid h-full w-[50px] shrink-0 place-items-center"
+						>
+							<div class="bg-base/60 h-full w-[2px]"></div>
+						</div>
+					{/if}
+
+					{#if !$isStyleEdit && !$showDataMenu}
+						<!-- 右側 -->
+						<div
+							transition:slide={{ duration: 200, axis: 'x' }}
+							class="flex w-full flex-1 flex-col justify-center py-0 text-base select-none max-lg:hidden"
+						></div>
+					{/if}
+				</div>
+
 				<!-- 3Dモデル -->
 				{#if selectedTab === 'added-data'}
 					{#if modelEntries.length > 0}
