@@ -42,7 +42,7 @@
 				class="shine pointer-events-none absolute right-0 z-30 flex items-center gap-2 overflow-hidden rounded-l-lg border-2 border-r-0 border-gray-200 bg-black pr-6 shadow-md max-lg:top-[calc(16px+env(safe-area-inset-top))] lg:top-[100px]"
 			>
 				{#if $notificationMessage.entry}
-					<div class="relative h-16 w-16 shrink-0 overflow-hidden">
+					<div class="relative shrink-0 overflow-hidden max-lg:h-16 max-lg:w-16 lg:h-20 lg:w-20">
 						<LayerIcon layerEntry={$notificationMessage.entry} rounded={false} />
 					</div>
 				{/if}

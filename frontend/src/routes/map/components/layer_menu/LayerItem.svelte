@@ -452,7 +452,7 @@
 			? 'translate-x-[310px]'
 			: 'bg-black'}
             {isDeleteOverlayActive && isHovered && isDragging
-			? 'border-red-500 drop-shadow-[0_0_3px_rgba(255,0,0,0.7)]'
+			? 'border-[#ff4f66] drop-shadow-[0_0_3px_#ff4f66]'
 			: isHovered
 				? 'border-accent drop-shadow-[0_0_3px_color-accent]'
 				: 'border-sub'}"

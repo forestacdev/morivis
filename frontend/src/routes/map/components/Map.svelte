@@ -732,6 +732,9 @@
 
 	// エントリーIDのドロップ完了時にレイヤーを追加
 	const onDropEntryId = (entryId: string) => {
+		if (activeLayerIdsStore.has(entryId)) {
+			return; // すでにアクティブなレイヤーに含まれている場合は何もしない
+		}
 		activeLayerIdsStore.add(entryId);
 		const entry = layerEntries.find((entry) => entry.id === entryId);
 		if (entry) {
