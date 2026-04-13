@@ -185,30 +185,30 @@
 					: 'world'
 	);
 
-	$effect(() => {
-		const [lng, lat] = mapState.center;
-		const [normalizedLng, normalizedLat] = normalizePrefecturePoint(lng, lat);
-		const requestId = ++prefectureRequestId;
-		const isSameAsLastRequested =
-			lastRequestedPrefecturePoint?.[0] === normalizedLng &&
-			lastRequestedPrefecturePoint?.[1] === normalizedLat;
+	// $effect(() => {
+	// 	const [lng, lat] = mapState.center;
+	// 	const [normalizedLng, normalizedLat] = normalizePrefecturePoint(lng, lat);
+	// 	const requestId = ++prefectureRequestId;
+	// 	const isSameAsLastRequested =
+	// 		lastRequestedPrefecturePoint?.[0] === normalizedLng &&
+	// 		lastRequestedPrefecturePoint?.[1] === normalizedLat;
 
-		if (!isInJapanBounds || mapState.zoom <= 5) {
-			fetchPrefectureCode.cancel();
-			requestPrefectureCode.cancel();
-			abortPrefectureRequest();
-			lastRequestedPrefecturePoint = null;
-			prefectureCode = '';
-			prefectureCodeError = false;
-			return;
-		}
+	// 	if (!isInJapanBounds || mapState.zoom <= 5) {
+	// 		fetchPrefectureCode.cancel();
+	// 		requestPrefectureCode.cancel();
+	// 		abortPrefectureRequest();
+	// 		lastRequestedPrefecturePoint = null;
+	// 		prefectureCode = '';
+	// 		prefectureCodeError = false;
+	// 		return;
+	// 	}
 
-		if (isSameAsLastRequested) return;
+	// 	if (isSameAsLastRequested) return;
 
-		abortPrefectureRequest();
-		prefectureCodeError = false;
-		requestPrefectureCode(lng, lat, requestId);
-	});
+	// 	abortPrefectureRequest();
+	// 	prefectureCodeError = false;
+	// 	requestPrefectureCode(lng, lat, requestId);
+	// });
 
 	// let isPrefCode = $derived.by(() => {
 	// 	return getPrefectureCode(isLocation);
@@ -554,32 +554,16 @@
 						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[3%]"
 						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
 					>
-						{#key backgroundKey}
-							<div
-								in:fly={{ duration: 500 }}
-								out:fly={{ duration: 500 }}
-								class="absolute grid aspect-square w-full translate-y-[70px] place-items-center px-6"
+						<div
+							class="absolute grid aspect-square w-full -translate-x-[90px] translate-y-[70px] scale-[7] place-items-center px-6"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 512 512"
+								><path
+									fill="#f4f7f9"
+									d="m12.41 148.02l232.94 105.67c6.8 3.09 14.49 3.09 21.29 0l232.94-105.67c16.55-7.51 16.55-32.52 0-40.03L266.65 2.31a25.6 25.6 0 0 0-21.29 0L12.41 107.98c-16.55 7.51-16.55 32.53 0 40.04m487.18 88.28l-58.09-26.33l-161.64 73.27c-7.56 3.43-15.59 5.17-23.86 5.17s-16.29-1.74-23.86-5.17L70.51 209.97l-58.1 26.33c-16.55 7.5-16.55 32.5 0 40l232.94 105.59c6.8 3.08 14.49 3.08 21.29 0L499.59 276.3c16.55-7.5 16.55-32.5 0-40m0 127.8l-57.87-26.23l-161.86 73.37c-7.56 3.43-15.59 5.17-23.86 5.17s-16.29-1.74-23.86-5.17L70.29 337.87L12.41 364.1c-16.55 7.5-16.55 32.5 0 40l232.94 105.59c6.8 3.08 14.49 3.08 21.29 0L499.59 404.1c16.55-7.5 16.55-32.5 0-40"
+								/></svg
 							>
-								{#if isInFacView}
-									<div class="grid aspect-square place-items-center [&_path]:fill-white">
-										<FacIcon width={'100%'} />
-									</div>
-								{:else if prefectureCode}
-									<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
-										<PrefectureIcon width={'100%'} code={prefectureCode} />
-									</div>
-									<!-- <div
-										class="[&_path]:fill-base absolute grid aspect-square w-full place-items-center"
-									>
-										<span class="text-4xl text-red-500"> {prefectureCode} </span>
-									</div> -->
-								{:else if isInJapanView || prefectureCodeError}
-									<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
-								{:else}
-									<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
-								{/if}
-							</div>
-						{/key}
+						</div>
 					</div>
 				{/if}
 			{/if}
