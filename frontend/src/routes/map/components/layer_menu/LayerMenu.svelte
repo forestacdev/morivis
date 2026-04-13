@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { onDestroy } from 'svelte';
-	import { tick } from 'svelte';
-	import { slide, fly, fade } from 'svelte/transition';
 	import { debounce, throttle } from 'es-toolkit';
+	import { tick } from 'svelte';
+	import { onDestroy } from 'svelte';
+	import { slide, fly, fade } from 'svelte/transition';
 
 	import RecommendedData from './RecommendedData.svelte';
 
@@ -37,6 +37,7 @@
 		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
+	import { showLayerAddedNotification } from '$routes/stores/notification';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -215,6 +216,7 @@
 	// });
 
 	let prevLayerIds = $state<string[]>([]);
+	// 追加された時に自動スクロールするための処理
 	activeLayerIdsStore.subscribe(async (ids) => {
 		const added = ids.find((id) => !prevLayerIds.includes(id));
 		prevLayerIds = [...ids];
@@ -283,6 +285,10 @@
 			if (isDraggingLayerType !== null) return;
 			const id = e.dataTransfer?.getData('application/x-entry-id');
 			if (id) activeLayerIdsStore.add(id);
+			const entry = layerEntries.find((entry) => entry.id === id);
+			if (entry) {
+				showLayerAddedNotification(entry);
+			}
 		}}
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
