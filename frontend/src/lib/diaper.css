@@ -1,0 +1,115 @@
+/*
+ * カスタマイズ済み diaper.css
+ *
+ * @devantic/diaper は Bottomsheet コンポーネントの import 時に diaper.css と bottomsheet.css を
+ * 自動インジェクトする。元の diaper.css には以下の問題がある：
+ *
+ *   1. `:root { color-scheme: light dark }` によりOSがダークモードの場合に
+ *      light-dark() 関数がダーク側の値を返し、ページ全体のテキストが白くなる
+ *   2. `html { background-color: black }` によりページ背景が黒くなる
+ *
+ * vite.config.ts の diaperCssOverridePlugin で元CSSを空にし、
+ * 代わりにこのファイルを AttributionPanel.svelte からインポートすることで問題を回避している。
+ */
+
+:root {
+	color-scheme: light; /* ダークモード無効化 */
+	--diaper-sait: env(safe-area-inset-top);
+	--diaper-sair: env(safe-area-inset-right);
+	--diaper-saib: env(safe-area-inset-bottom);
+	--diaper-sail: env(safe-area-inset-left);
+	--diaper-default-duration: 0.4s;
+	--diaper-duration: var(--diaper-default-duration);
+	--diaper-backdrop-color: black;
+	--diaper-backdrop-opacity: 0.25;
+	--diaper-light: #fcfcfc;
+	--diaper-dark: #222222;
+	--diaper-lighter: hsl(from var(--diaper-light) h s 90%);
+	--diaper-darker: hsl(from var(--diaper-dark) h s 11%);
+	--diaper-fg: var(--diaper-dark);
+	--diaper-bg: var(--diaper-light);
+	--diaper-fg-tinted: var(--diaper-darker);
+	--diaper-bg-tinted: var(--diaper-lighter);
+	--diaper-radius: 1rem;
+	--diaper-easing: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+	/* background-color: black; を削除 */
+	min-height: calc(100% + var(--diaper-sait));
+	padding-bottom: env(var(--diaper-saib));
+	overscroll-behavior-y: none;
+}
+
+body {
+	--diaper-progress: 1;
+	--diaper-roundness: calc((1 - var(--diaper-progress)) * var(--diaper-radius));
+	transition: scale, clip-path;
+	transition-duration: var(--diaper-duration);
+	transform-origin: bottom;
+	transition-timing-function: var(--diaper-easing);
+	scale: calc(0.94 + var(--diaper-progress) * 0.06);
+	clip-path: inset(0 round var(--diaper-roundness) var(--diaper-roundness) 0 0);
+	margin: 0;
+	position: fixed;
+	inset: 0;
+	overscroll-behavior-y: none;
+}
+
+dialog[data-diaper] {
+	--diaper-progress: 1;
+	--diaper-backdrop-progress: 1;
+	--diaper-shadow-color: rgba(0 0 0 / 0.1);
+	--diaper-overdrag-fill-color: var(--diaper-bg);
+	width: 100%;
+	margin-bottom: 0;
+	margin-top: auto;
+	margin-inline: auto;
+	padding: 0;
+	max-width: 100%;
+	max-height: 100%;
+	box-sizing: border-box;
+	border: none;
+	outline: none;
+	border-radius: var(--diaper-radius) var(--diaper-radius) 0 0;
+	background-color: var(--diaper-bg);
+	color: var(--diaper-fg);
+	box-shadow:
+		0 -4px 6px -1px var(--diaper-shadow-color),
+		0 50px 0 var(--diaper-overdrag-fill-color);
+	transition-property: transform, translate, scale;
+	transition-duration: var(--diaper-duration);
+	transition-timing-function: var(--diaper-easing);
+	transform-origin: top;
+	overflow: clip;
+	overscroll-behavior-y: none;
+	display: flex;
+	flex-direction: column;
+	will-change: transform, translate, scale;
+	backface-visibility: hidden;
+	contain: strict;
+	position: fixed;
+	inset: 0;
+	@starting-style {
+		translate: 0 100%;
+	}
+	&[open] {
+		max-width: 48rem;
+		&:not(:nth-last-of-type(-n + 2)) {
+			--diaper-backdrop-opacity: 0;
+			--diaper-shadow-color: #0000;
+		}
+		&:not(:last-of-type) {
+			scale: calc(0.94 + var(--diaper-progress) * 0.06);
+			transform: translateY(calc(var(--diaper-progress) * 8px - 8px));
+		}
+		&::backdrop {
+			background-color: var(--diaper-backdrop-color);
+			opacity: calc((1 - var(--diaper-backdrop-progress)) * var(--diaper-backdrop-opacity));
+			transition: opacity;
+			transition-duration: var(--diaper-duration);
+			transition-timing-function: var(--diaper-easing);
+			will-change: opacity;
+		}
+	}
+}

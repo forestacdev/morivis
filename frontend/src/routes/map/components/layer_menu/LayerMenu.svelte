@@ -579,17 +579,18 @@
 			<!-- フォグ -->
 			{#if !$isStyleEdit && !$showDataMenu}
 				<div
-					in:fade={{ delay: 300 }}
+					in:fade={{ delay: 500, duration: 500 }}
 					class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[100px] w-full"
 				></div>
 				<!-- 背景 -->
 				{#if hasInitializedMapVisual && selectedTab === 'added-data'}
 					<div
-						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[3%]"
+						in:fade={{ delay: 200 }}
+						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[3%] max-lg:lg:hidden"
 						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
 					>
 						<div
-							class="[&_path]:fill-base rota absolute grid aspect-square w-full -translate-x-[90px] translate-y-[0px] scale-[2] -rotate-23 place-items-center px-6"
+							class="[&_path]:fill-base rota absolute grid aspect-square w-full -translate-x-[90px] -translate-y-[40px] scale-[1.7] -rotate-38 place-items-center px-6"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 408 347.9"
 								><path
