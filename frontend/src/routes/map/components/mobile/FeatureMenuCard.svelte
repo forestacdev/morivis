@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Bottomsheet } from '@devantic/diaper';
+	// import '$lib/diaper.css';
 	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 
