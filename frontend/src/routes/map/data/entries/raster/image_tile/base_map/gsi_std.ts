@@ -21,9 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15'],
-		description:
-			'地理院地図の基本となる地図。河川や海岸線、鉄道、道路、地名などを確認する背景地図として利用できる。'
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION

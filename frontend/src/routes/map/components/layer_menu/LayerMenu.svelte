@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { debounce, throttle } from 'es-toolkit';
-	import { tick } from 'svelte';
 	import { onDestroy } from 'svelte';
+	import { tick } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
 	import RecommendedData from './RecommendedData.svelte';
@@ -37,7 +36,6 @@
 		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
-	import { showLayerAddedNotification } from '$routes/stores/notification';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -134,33 +132,6 @@
 	let prefectureCode = $state<PrefectureCode | ''>('');
 	let prefectureCodeError = $state(false);
 	let prefectureRequestId = 0;
-	let prefectureRequestController: AbortController | null = null;
-	let lastRequestedPrefecturePoint: [number, number] | null = null;
-	const normalizePrefecturePoint = (lng: number, lat: number): [number, number] => {
-		return [Number(lng.toFixed(6)), Number(lat.toFixed(6))];
-	};
-	const abortPrefectureRequest = () => {
-		prefectureRequestController?.abort();
-		prefectureRequestController = null;
-	};
-	const fetchPrefectureCode = throttle((lng: number, lat: number, requestId: number) => {
-		lastRequestedPrefecturePoint = normalizePrefecturePoint(lng, lat);
-		prefectureRequestController = new AbortController();
-
-		lonLatToPrefectureCode(lng, lat, prefectureRequestController.signal)
-			.then((code) => {
-				if (requestId !== prefectureRequestId) return;
-				prefectureCode = code as PrefectureCode;
-			})
-			.catch((error) => {
-				if (error instanceof DOMException && error.name === 'AbortError') return;
-				if (requestId !== prefectureRequestId) return;
-				prefectureCodeError = true;
-			});
-	}, 500);
-	const requestPrefectureCode = debounce((lng: number, lat: number, requestId: number) => {
-		fetchPrefectureCode(lng, lat, requestId);
-	}, 100);
 	let isCenterInJapanBounds = $derived(
 		mapState.center[0] >= WEB_MERCATOR_JAPAN_BOUNDS[0] &&
 			mapState.center[0] <= WEB_MERCATOR_JAPAN_BOUNDS[2] &&
@@ -186,37 +157,34 @@
 					: 'world'
 	);
 
-	// $effect(() => {
-	// 	const [lng, lat] = mapState.center;
-	// 	const [normalizedLng, normalizedLat] = normalizePrefecturePoint(lng, lat);
-	// 	const requestId = ++prefectureRequestId;
-	// 	const isSameAsLastRequested =
-	// 		lastRequestedPrefecturePoint?.[0] === normalizedLng &&
-	// 		lastRequestedPrefecturePoint?.[1] === normalizedLat;
+	$effect(() => {
+		const [lng, lat] = mapState.center;
 
-	// 	if (!isInJapanBounds || mapState.zoom <= 5) {
-	// 		fetchPrefectureCode.cancel();
-	// 		requestPrefectureCode.cancel();
-	// 		abortPrefectureRequest();
-	// 		lastRequestedPrefecturePoint = null;
-	// 		prefectureCode = '';
-	// 		prefectureCodeError = false;
-	// 		return;
-	// 	}
+		if (!isInJapanBounds || mapState.zoom <= 5) {
+			prefectureCode = '';
+			prefectureCodeError = false;
+			return;
+		}
 
-	// 	if (isSameAsLastRequested) return;
+		const requestId = ++prefectureRequestId;
+		prefectureCodeError = false;
 
-	// 	abortPrefectureRequest();
-	// 	prefectureCodeError = false;
-	// 	requestPrefectureCode(lng, lat, requestId);
-	// });
+		lonLatToPrefectureCode(lng, lat)
+			.then((code) => {
+				if (requestId !== prefectureRequestId) return;
+				prefectureCode = code as PrefectureCode;
+			})
+			.catch(() => {
+				if (requestId !== prefectureRequestId) return;
+				prefectureCodeError = true;
+			});
+	});
 
 	// let isPrefCode = $derived.by(() => {
 	// 	return getPrefectureCode(isLocation);
 	// });
 
 	let prevLayerIds = $state<string[]>([]);
-	// 追加された時に自動スクロールするための処理
 	activeLayerIdsStore.subscribe(async (ids) => {
 		const added = ids.find((id) => !prevLayerIds.includes(id));
 		prevLayerIds = [...ids];
@@ -243,9 +211,6 @@
 	});
 
 	onDestroy(() => {
-		fetchPrefectureCode.cancel();
-		requestPrefectureCode.cancel();
-		abortPrefectureRequest();
 		unsubscribeMapState();
 	});
 
@@ -285,10 +250,6 @@
 			if (isDraggingLayerType !== null) return;
 			const id = e.dataTransfer?.getData('application/x-entry-id');
 			if (id) activeLayerIdsStore.add(id);
-			const entry = layerEntries.find((entry) => entry.id === id);
-			if (entry) {
-				showLayerAddedNotification(entry);
-			}
 		}}
 		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
 			? 'translate-x-0'
@@ -299,7 +260,7 @@
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<div class="pl-2">
-			<div class="relative flex h-[72px] w-full items-center max-lg:hidden">
+			<div class="relative flex h-[100px] w-full items-center max-lg:hidden">
 				{#if !$isStyleEdit && !$showDataMenu}
 					<!-- 縦棒 -->
 					<div
@@ -316,7 +277,46 @@
 						transition:slide={{ duration: 200, axis: 'x' }}
 						class="flex w-full flex-1 flex-col justify-center text-base select-none max-lg:hidden"
 					>
-						<span class="text-[2.9rem] font-bold"> morivis </span>
+						<span class="text-[2.7rem] font-bold"> morivis </span>
+						<div class="flex w-full items-center py-2">
+							<div class="flex flex-1 gap-2">
+								<label
+									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
+									'added-data'
+										? 'bg-base text-black'
+										: 'bg-base/40 text-gray-300'}"
+								>
+									<input
+										type="radio"
+										name="layer-menu-tab"
+										bind:group={selectedTab}
+										value="added-data"
+										class="hidden"
+									/>
+									追加済みデータ
+								</label>
+								<label
+									class="cursor-pointer rounded-lg p-1 px-4 text-xs transition-colors {selectedTab ===
+									'map-display'
+										? 'bg-base text-black'
+										: 'bg-base/40 text-gray-300'}"
+								>
+									<input
+										type="radio"
+										name="layer-menu-tab"
+										bind:group={selectedTab}
+										value="map-display"
+										class="hidden"
+									/>
+									地図表示
+								</label>
+							</div>
+							<!-- <button
+								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
+								onclick={resetLayers}
+								>リセット
+							</button> -->
+						</div>
 					</div>
 				{/if}
 
@@ -345,52 +345,6 @@
 				? 'pr-2'
 				: ''}"
 		>
-			{#if !$isStyleEdit && !$showDataMenu}
-				<div
-					in:fly={{ delay: 300, duration: 300, y: -20, opacity: 0 }}
-					out:fade={{ delay: 0, duration: 1 }}
-					class="bg-main absolute top-0 left-[50px] z-10 flex w-full items-center pb-2"
-				>
-					<div class="flex flex-1 gap-2 pl-4 text-nowrap">
-						<label
-							class="flex w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-1 text-xs transition-colors {selectedTab ===
-							'added-data'
-								? 'bg-base text-black'
-								: 'bg-base/40 text-gray-300'}"
-						>
-							<input
-								type="radio"
-								name="layer-menu-tab"
-								bind:group={selectedTab}
-								value="added-data"
-								class="hidden"
-							/>
-							<span>追加済みデータ</span>
-						</label>
-						<label
-							class="flex w-[80px] cursor-pointer items-center justify-center overflow-hidden rounded-lg py-1 text-xs transition-colors {selectedTab ===
-							'map-display'
-								? 'bg-base text-black'
-								: 'bg-base/40 text-gray-300'}"
-						>
-							<input
-								type="radio"
-								name="layer-menu-tab"
-								bind:group={selectedTab}
-								value="map-display"
-								class="hidden"
-							/>
-							<span>地図表示</span>
-						</label>
-					</div>
-
-					<!-- <button
-								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
-								onclick={resetLayers}
-								>リセット
-							</button> -->
-				</div>
-			{/if}
 			<!-- スクロールコンテンツ -->
 			<div
 				bind:this={scrollContainer}
@@ -400,27 +354,6 @@
 					? 'touch-none overflow-hidden'
 					: 'touch-auto overflow-y-auto'}"
 			>
-				<!-- PC表示スペース -->
-				<div class="relative flex h-[30px] w-full shrink-0 items-center max-lg:hidden">
-					{#if !$isStyleEdit && !$showDataMenu}
-						<!-- 縦棒 -->
-						<div
-							transition:slide={{ duration: 200, axis: 'x' }}
-							class="relative grid h-full w-[50px] shrink-0 place-items-center"
-						>
-							<div class="bg-base/60 h-full w-[2px]"></div>
-						</div>
-					{/if}
-
-					{#if !$isStyleEdit && !$showDataMenu}
-						<!-- 右側 -->
-						<div
-							transition:slide={{ duration: 200, axis: 'x' }}
-							class="flex w-full flex-1 flex-col justify-center py-0 text-base select-none max-lg:hidden"
-						></div>
-					{/if}
-				</div>
-
 				<!-- 3Dモデル -->
 				{#if selectedTab === 'added-data'}
 					{#if modelEntries.length > 0}
@@ -588,17 +521,32 @@
 						class="absolute -z-10 grid h-full w-full items-end justify-center opacity-[3%]"
 						style="font-family: 'Orbitron', 'Noto Sans JP', sans-serif;"
 					>
-						<div
-							class="[&_path]:fill-base rota absolute grid aspect-square w-full -translate-x-[90px] translate-y-[0px] scale-[2] -rotate-23 place-items-center px-6"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 408 347.9"
-								><path
-									d="M199.4 160.4c.4-.4.6-1 .9-1.4-1-.5-2.7-.6-3.5-1.3-.4-.3-.1-1.7-.6-2s-1.4 0-2.1-.3c-1.8-.8-5.5-.8-5.7-2.8-1.2.5-2.2 1-3.3.9-.6 0-1.2-1.4-1.9-1.5-.5 0-1.3 1-1.7 1.1-1 .1-2.4-.2-3.3 0-1.3.2-2.4 1.6-3.9 1.8-6.3 1.2-6.9-7.3-13.6-6.5 1.4-1.6 3.2-3.1 4.4-4.8 1.3-1.8 1.7-4.1 3.3-5.8 1.9-2 2.5-1.4 5.2-.6 2.2.7 3.6 1.4 5.6 2.2 3.9 1.5 6.4 3.6 11.1 3.3 2.4-.2 4.1-1 5.3-2.5.2-.3-.5-1.3-.2-1.7s1.5-.3 1.6-.8c.5-1.1 1.9-1.3.3-2.4 1.9-.3 3.4-1.1 5.1-1.9-.1 0-1.6-1-1.3-1.1.9-.2 1.7-.5 2.6-.7-1-1.6 1.2-3.1 1.6-4.8.1-.4.8-1 .8-1.4 0-.3-.7-.9-.6-1.2.1-1-1.3-1.4.7-2.3-.7-.2-1.3-.9-2-1.1.6-.6.9-1.5 1.5-2-2.2-.6.1-1.4-.5-2.4-.8-1.1-1.4-.9-3.2-.9.3-.6.1-1.5.4-2.1-1.3 0-4.3.5-5.4 0-.7-.3-1.4-1.3-1.5-1.8.4 1.2 1.2-3.1.6-2.1.3-.5 1.4-1.1 1.8-1.8s.2-1.7.5-2.4c.9-1.8 3.3-3.2 1.5-5 .7-.1 1.3-.8 1.9-.9-1.1-1.8-2.9-2.7-4.7-3.6 1.4-1.9 2.3-3.8 3.5-5.8 1.8-3 2.6-2.3 0-5 1.6-1.6 4.2-3.6 4.1-5.4-.1-2.3-1.6-1-.9-3.3.4-1.3 1.7-2.3 2.6-3.3.5-.5 1.5-1.2 1.8-1.8.2-.5-.5-.7-.4-1.1s-.5-.7-.3-1.2c.3-.7 1.2-1.4 1.7-2 2-2.6 2.9-3.7 2.1-6.9-2.2 1.3-4.8 1.9-6.8 3.2-.9.6-1.8 1.3-2.4 1.5-.3.1-.6-.8-1.1-.7-.7.2-1.2 1.1-1.8 1.3-1.1.4-2.3.6-3.5.7-.5.1-1.6.5-2.1.4-.6-.2-.7-.9-1.3-1.1-.5-.2-.6-.9-1.1-1s-1.1.8-1.6.9c-1.2.3-2.2 1-3.4 1.4-.7.2-3.4 1.2-4 .9-.8-.4-.5-2.1-1.5-2.4-1.2-.4-2.2 1.4-2.9 1.4-.8 0-1.7-1.5-2.6-1.5-1-.1-1.8 1.4-2.9 1.2-1.4-.2-1.7-1.2-2.2-2.2-.3-.6-.1-2.4-.8-2.6-.8-.3-2.9 3.1-3.4 3.7-.1-.8-.7-1.5-.8-2.3-1.1 1.3-2.2 2.5-3.4 3.8-.9-2.2-1.2-.7-2.5-.5-1 .2-2.2.8-3.4 1-.9.2-2.5.9-3.3.7-.5-.1-2.6-.7-1.9-2-.4.8-1.3 2.6-2 3-.7.3-1.9-.5-2.5-.1-.7.4-.8 1.7-1.5 2.1-1.6.9-.8 0-2.5.3-2 .5-.3-.8-1.9.7-.9.8-.7 1.9-1.8 2.7-1.8 1.3-4.6.4-5.1 3.1-3.5-2.7-3-.8-6.2 1.2-.5.4-.9 1-1.5 1.3-.4.2-1.5-.7-1.9-.4-.7.5-1.3 2.8-1.6 3.6-.3-.6-1-1-1.3-1.6-.5 1.5-.7 4.4-2.5 4 .5 1.3 1.1 2.6 1.6 3.9-.5 0-1 .4-1.5.4 2.1 3.3.3 1.3-.2 3.9-.2 1.2.9 2 1 3.6 0 .2-1.3.8-1.3 1.5s.9 2.7 1.3 3.2c1 1.2 2.7 1.9 3.8 3.1 1.8 2 3.8 4.6 5.3 6.6.7 1 .9 3.4 1.8 4.2.8.7 3.4 1.3 4.5 1.7-4.8 4.6-9.6 9.6-14.8 13.8-2.1 1.7-5.4 4.6-8 5.4-3.3 1-7.5-.5-10.8-1.1-6.4-1.3-12.5-2.9-18.4-5.5-6-2.6-12.2-6.3-18.5-7.7-3.7-.8-7.4-1.5-11.1-2.6-1.7-.5-3.5-1.2-5.2-1.6-3-.8-2.9-.8-3.9 2.2 9.4 2.7 19.3 4.4 28.3 8.2 5.2 2.2 10.2 4.7 15.5 6.7 5 1.8 11 2.6 14.8 6.3 4.9 4.7 1.7 8.2 1.7 14 0 4.7.9 10.2 2.6 14.5.7 1.7 2.1 3.7 1.4 4.9-1.1 1.8-6.6 1.7-8.5 3-1.7 1.1-2.9 3.3-4.4 4.7-1.9 1.7-4.1 3.2-6.2 4.7-2.5 1.8-5.1 3.5-7.4 5.6-.9.8-2.6 2.1-3 3.3-.4 1.3.3 2.2.1 3.1-.6 3-3.6 5.4-2.5 8.8.1.4-.2 1 0 1.5.1.4 1.8 0 1.9.7.3 1.2-.8 3.5-1 4.7 3.2-1.5 1.6 1 2.9 2.3 1 .9 1.3.8 3.2.2 0 1.1-.1 2.1-.1 3.2.9-.1 1.9-.3 2.8-.4 0 2.1-.6 6.3.4 7.7.3.4 1.7.2 2 .5.5.4.5 1.4 1 1.8 1.3 1 .7 3 3.1 1-1.3 2.6 2.3 3.2 4 4.3 1.9 1.2 3.4 4.3 5.6 1.8.4 1.3.7 2.6 1.1 4 .4-.5 1.2-.8 1.6-1.3.8 2 1.4 3.8 3.1 5.2 2.2 1.7 1.8 1 4.2-1 .6 1.3 1 1.9 1.8 2.3 0 0 1.5-.4 1.8-.4.7.1 1.4.6 2 .9 2.6 1.1 3.5 2.6 5.2 4.8 1.3-1.2 2-2.3 3.4-2.2 2.3.1 1.6 2.7 4.2.3.4 1.2.7 3.6 1.6 3.9s2.3-1 3.2-.8c.4.1 1 1.3 1.5 1.5.6.3 1.2-.2 1.7.2.8.6 1.1 2 2 2.5 1.8 1.1 1.4.8 3.7-.7.4.8 1 2.9 1.7 3.4.8.5 1.8-.2 2.8-.1 2.2.2 4.8 2 6.9 2.8-.3-1-1.5-3.1-1.3-4.1.2-.9 1.6-1.5 1.6-2.4.4-4.2-3.9-3.3.9-6.1-1.3-1.7-2.3-2.4-1.8-4.1.5-1.5 3.1-2.4 3.3-3.4.3-1.5-2.5-3.4-2.2-5.1.4-2.4 2.6-2.3 4.5-2.6-.4-1.2-1.8-3.9-1.5-5.1.3-1.1 2.3-1.9 2.3-3 0-.7-1.2-1.5-1.3-2.2-.3-1.7 0-.2.3-2 .2-1.4 1.1-2.5 1.4-3.8.2-.8.9-1 .7-1.7s-1.7-1.2-1.8-1.9c-.1-1 1.9-1.9 1.8-3-.1-.8-1.5-1.3-1.8-2-.2-.8.2-1.2.3-2.1.1-.6.4-2 .7-2.6s1.8 0 2.1-.7-3-3-3.4-3.7c-.8-1.3-.7-2-1-3.7-.6-3.1-2.8-4.5-3.1-7.7-.3-2.7 1.1-5.7 0-8-1.1-2.4-5.3-2.7-5-5.5-2.8 1.8-1.6-.3-3.3-1.2-.9-.5-3.1-.4-4-1.1-2.2-1.6-.1-1.9-3-2.2-1.4-.1-3.2.4-4.5.9-6 2.1-12.5 2.6-19 2.3-3.8-.1-6 .1-7.7-3.4-1.5-3-2.3-5.9-2.9-9.2-.3-1.7-.7-3.4-.8-5.1-.2-2.5.7-3.4 1.2-5.9.7-3.4.1-6.9-.9-10.1 5.6-.6 11.2 1.4 16.7 2.6 6.6 1.5 13.5 2.6 20 4.5s13 4 19.5 5.9c2.8.8 7.1 1.6 4 4.9-2.2 2.3-5.1 3.7-7.2 6.3-2.5 3.2-3 5.5-2.6 9.5.4 3.7 1.7 5.8 2.4 9.4.1-.3.3-.6.5-.8-.4.3 3.2 4.5 3.4 4.7-.1-.2 1.6 2.3 1.2 2 .8.5 1 .8 2.5.1-.1 2.7 2.4 2.2 1.7 4.6.6-.2 1.3 0 1.8-.2-.3 1.8 1.2 1.1 2.2 1.6 1.3.7.1 2.5 2.7 1.4.1.5 6.6 6.5 6.2 7 .1-.3.2-.6.2-1-.2.4 1.7 3.7 2 4.2.4.4 1.2-.1 1.5.3.2.2.9 1.3 1.1 1.5 1.7 1.6 2.7 4 4.9 5.1 0-4.1 1.2-6.3.9-10.1 3.3.6 1-2.5 1.2-4.3.2-1.9 1.5-3.8 3.5-3.6-.8-3.4.3-6.4 2-9.1.8-1.2 1.2-.5 1.8-2.1.3-.8-.2-1.3-.1-2.1.1-.9 0-3.3.3-4.1.7-1.5 2-1.5 2.1-3.3.1-1.4-.7-3.6-.7-5.1.4-4.1-.5-7.4-2.7-11m-44.7-13c-8.9-.9-17.2-3.4-26-5.1-3.9-.8-7.9-1.3-11.6-2.4-2.5-.7-3-.7-1.4-2.8 1.2-1.6 3.6-2.7 5.2-4 3.4-2.6 6.3-5.5 9.4-8.4 3.4-3.2 6.1-6.3 10.1-2.4 5.4 5.3 11.5 10.8 19.6 10.9 2.1 0 4.6-.7 6.4.9 2.4 2.1.3 3.3-1.1 5.6-1.1 1.9-2.2 3.9-3.6 5.6-2.3 2.4-3.9 2.2-7 2.1m8.4 4.8c-1.4-.1-2.7-1-3.7-2 2.7-.6 5.2-.3 6.1 2.6-.7-.2-1.6-.3-2.4-.6"
-								/><path
-									d="M366.2 105.1c-.9 0-2.3.3-3.2 0-.5-.1-1 .1-1.5 0-.1 0-.2-1.4-.4-1.4-2.1-.1-3.1 3.1-5.7 2.8-1.3-.1-.7-1.2-2.2-1 .1 0-2.3 1.6-2.6 1.7-2.5.9-3.5 1-4.2-1.7-2 1.4-3.3 2.1-5.8 2.1-3.3-.1-2.9-.8-4-4.2-1 .4-2.2 1.1-3.2 1.2-2 .2-.7 0-2.6-.3-1-.2-1.1-.6-2.1-.6-1.1 0-2.5.6-3.5.9.1-1.6.1-3.2.2-4.7-1.1 0-2.9.4-4 0-.8-.3-1.4-1.6-1.9-1.7-1.2-.3-2.9.9-4.1.5-1.1-.3-1.1-1.5-2.1-2-.8-.4-2 .3-2.9-.3-2.1-1.3 0-1.2-.9-2.8-1.6-2.7-3-.9-5.7.4.3-.7.2-1.5.5-2.2-1.1.2-2.3.4-3.4.6 0-.5-.1-.9-.1-1.4-2 1.6-1.7 1.5-3.4 1.3-.6-.1-1.2-1.2-1.8-1.3-.7-.1-1.9.6-2.6.8-4.1.8-4.9-2-4.5-5.7-1.3.7-2.6 1.5-3.9 1.5-.6 0-1.2-1.5-1.9-1.5-.6 0-1.9 1.3-2.4 1.5s-1 .8-1.6 1c-.5.1-1.4-1-1.9-.9-1.7.4-2.7 1.6-4.2 1.9-.6.1-1.4-1-1.9-.9-.7.1-1.1 1.6-1.7 1.9-1.3.6-2.2.9-3.3 0-1.2-1-1.2-3.6-3.2-3.9-1.5-.2-3 2.2-4.5 2.3-2.4.2-1.5-1-3.2.3-1.1.9-1.2 3.3-2.4 4.2-.5.3-1.7-.5-2.3 0s-.4 1.9-.9 2.4c-.2.4-.3.8-.5 1.2-.4 0-.8 0-1.2-.1-.3.3-.9-.2-1.2.2-.5.6-.1 2-.5 2.7s-1 .9-1.3 1.4c-.7 1.4-1.1 2.2-1 4.3 0 1.3.5 2.9.3 4.2 0 .4-1.5.6-1.5 1 0 .7 1 1.9 1.3 2.5-3.2-.7-2.6-1.1-3.8 1.2-.7 1.3-.8 3.2-1.1 4.6-.9 3.6-1.2 6.8-1.1 10.5.1 3.6 1.1 6.3 2.5 9.6 1.4 3.4 2.3 5.5-.2 7.8-5.5 5.1-13.5 6.4-20.1 9.5-4.6 2.1-13.1 8.3-18.2 7.4 1.3 2.6.8 5.4 2.4 8 1.6 2.5 4.1 4.1 6 6.3 4.2 4.6 7.5 10 11.6 14.8 1.4 1.7 5.4 4.2 2.9 5.8-1 .6-3.1-.3-4.3.3-1.1.6-2.2 2.3-3 3.2-2.4 2.5-4.3 5.2-7.4 6.7-2.9 1.4-5.6 3.1-8.5 4.4-3.6 1.7-7 2.3-9.5 5.8-1.6 2.2-4.7 8.1 0 7.5-1.4 1.5-7.4 12.3-2.1 10.7-.2 1.9-.4 3.9-.6 5.8-.2 3 .3 1.8 1.5 3.6.4.6 1.2.6 1.5 1.1 0 .1-.5 1.9-.5 2.2 0 .6 1 1.3 1.1 2 .1.8-.7 2.3-1 3.1 2.2-.5 4.4-.8 6.6-1.1 0 1.3-.6 3.6-.2 4.8.6 1.5 1.2.6 2.5 1.8 1.4 1.3 1.7 5.3 2.6 7.1 2.1-2.3 2.2 2.2 2.3 3.4 5.5-1.6 1.9 2.5 4.4 4.5 2 1.6 3.5-1 5-2.4.1 2.3-.2 2.7 1.4 4 2.1 1.8 2.4 1 4.2-.7.3 1.7.4 4.6 1.3 5.6.2.2 1.9.5 2.4 1 .9.8 1.3 2.4 2.1 3.3 2.5 2.6 6.4 2.6 9.2.1.2 1.1.7 1.9 1.5 2.6 1.4 1.3 2.1.4 3.2 1.1 1.3.9 2.1 2.7 3.8 4 .1-.7.8-1.2.9-1.9 1.8 1.6 3 4.2 5.2 3.4 1.6-.6 2.4-5 3.9-1.5.2-.5 1.2-2.5 1.9-2.5 1 0 .3 3.8.6 4.2.5.6 3.4.9 4.2 1.1.3.1.6-.6.9-.5.9.3 1 1.6 1.9 1.8 1 .2 3.1-.6 4.2-.8-.7 3.1 1.2 1.1 1.8 2.2.4.7.3 2.5.3 3.6 1.4-.3 3.3-1.2 4.6-1.1.1 0 4.9 1.1 4.8 1.1 1.9 1.8-.3 2.8 2.5 3.5.8.2 1.8-.2 2.6 0 .7.2 1 1.1 1.6 1.2.8.2 2.1-.1 2.9.1 1.1.4 1.2 1 2.2 1.6 1.3.8 2.7 1 4.1 1.5 1.1.4.5.2 1.9 1.1.8.5 1.4 1 2.3 1.5 1.5.8 2.9 1.3 4.6 1-2-2.9-3.5-5-6.3-7 3.3-3.3-1-2.1-1-5.1 0-.8 1.3-2 1.4-3 .1-1.1-.3-2.4-.5-3.4-.1-.4-1.2-1.4-1.1-1.9 0-.3.9-.4 1-.7.3-1 1.5-1.3 1.3-3-.2-2.1-2.5-3.9-.9-6.4.5-.8 2.6-.9 3.1-1.6.4-.7-.9-2.2-.9-3.2 0-.9.9-1.6.9-2.4 0-.5-.8-2.9-1-3.6-.7-3.2-.1-2.6 2.1-4.8 2.8-2.7 1.4-3.9-.3-6.7 3.8-1.6.4-4.4.3-8-.1-2.6 1.4-6.2 4.7-5.7-1.6-1.4-3.2-2.8-4.8-4.1l2.1-2.1c-1.4-1.2-2.8-2.3-3.8-3.9.3 0 2.8-.3 2.7-.6-.4-1.1-2.1-1.7-2.5-2.8-.5-1.6.2-1.2.4-2.8.3-2.6-1.3-1.3.7-3.6.4-.5 2.8-1.7 2.9-2.3.3-1.2-2.9-4.7-3.3-5.8 0 0-3.3-8.2-3.9-6.2.2-.5 1.9-.7 1.9-1.3 0-1.6-3.4-2.5-3.3-4 .3-2.6 3.4-2 1.5-5.7-.4-.8-1.4-1.2-1.9-2-.3-.6-.2-2.3-.6-2.6-.9-.9-3.1 0-4.5-1.2.1-.1 1.4-1.4 1-1.5-1.5-.2-3.5 0-4.8-.9-1.6-1.1-.8-3-1.8-3.8-1.9-1.4-7.2 1.5-5.5-3.6-1.1.3-3.3 1.4-4.4 1.2-1.4-.3-1.6-1.8-2.4-1.9-1.3-.2-3.1 1.5-4.4 1.8-1.9.4-2.7-.1-4.5-.5-.7-.1-1.7.3-2.3 0-.5-.3-.5-1.7-1.1-2-1.5-.7-3.8.2-5.3.5-2.9.5-5.5 1.5-8.3 2.6-3 1.2-6 1.6-9.1 2.6-2.7.9-4.1 3-6.5 4.2-1.9.9-1.6 1-3.5-.7-.9-.8-1.5-1.4-2.3-2.3-2.6-2.9-5-6.2-7.4-9.3-3.6-4.5-7.8-8.9-11.2-13.6-2.9-4-.5-3.6 2.9-5.4 2-1.1 3.6-2.7 5.6-3.7 5.9-3 12.6-4.7 18.5-7.7 2.4-1.2 4.4-2.8 6.7-4.2 4.4-2.7 3.4.4 7 2.7 1.7 1.1 4.1.5 5.7 1.4 1.4.8 2.6 3.1 3.3 4.5 1.8 3.8 2.7 8.3 5.7 11.2 1.4 1.4 2.6 2.4 4.2 2.9 1.8.5 3.1.1 5.1 1.3 3.3 1.9 5.1 4.1 8.8 5.3 0-.5.5-1.1.5-1.6.9.4 1.8.7 2.7 1.1.5-3.2 10.2 6.6 8.1-1 1 .4 3.7 2 4.7 1.8 2.4-.4.3-1.6 1.8-2.8 1.3-1 7.3.9 8.8-.5.7-.6-.5-3.1 0-3.9.1-.2 2.6-1.1 3-1.5 1.1-1 1.3-1.9 2.5-2.4 1.4-.6 3.9-.4 5.5-.6-.6-.3-3.3-2.1-3.7-2 1.4-.5 3.3.2 4.6-.5.8-.4 1-1.6 1.9-2 2-1 2 .7 2.7-1.1.9-2.3-2.1-2.4 1.1-4.3 2.7-1.7 4.6-1.8 6.5-4.6.8-1.1 2-2.4 2.5-3.6 1.1-2.4-.2-2-.6-4-.3-1.8-.3-1.7 1.5-3.3.9-.8 1.8-1.6 2.8-2.3 1.3-1 3.1-2 3.9-3.5.4-.7-.4-1.6 0-2.3s1.5-1.2 1.8-1.8c.5-1 .6-2.4 1.4-3.5.4-.6 1.6-.7 2.1-1.4s.5-1.8 1-2.4c1-1.3 5.2-2.6 3.4-5 .8-.2 2.9-.4 3.5-.9.7-.6.5-2.1 1.1-2.9.8-.8 3.2-.9 3.7-1.6.3-.5-.8-1.8-.3-2.2.8-.7 2 .1 3.3-.5.9-.4 1.6-2 2.4-2.6.3-.5 5.9-4 2-3.7"
-								/></svg
+						{#key backgroundKey}
+							<div
+								in:fly={{ duration: 500 }}
+								out:fly={{ duration: 500 }}
+								class="absolute grid aspect-square w-full translate-y-[70px] place-items-center px-6"
 							>
-						</div>
+								{#if isInFacView}
+									<div class="grid aspect-square place-items-center [&_path]:fill-white">
+										<FacIcon width={'100%'} />
+									</div>
+								{:else if prefectureCode}
+									<div class="[&_path]:fill-base grid aspect-square w-full place-items-center">
+										<PrefectureIcon width={'100%'} code={prefectureCode} />
+									</div>
+									<!-- <div
+										class="[&_path]:fill-base absolute grid aspect-square w-full place-items-center"
+									>
+										<span class="text-4xl text-red-500"> {prefectureCode} </span>
+									</div> -->
+								{:else if isInJapanView || prefectureCodeError}
+									<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+								{:else}
+									<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+								{/if}
+							</div>
+						{/key}
 					</div>
 				{/if}
 			{/if}

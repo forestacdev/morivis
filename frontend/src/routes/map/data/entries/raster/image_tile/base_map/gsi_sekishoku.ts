@@ -13,8 +13,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '全国赤色立体地図',
-		description:
-			'地形の起伏を立体的に表現した赤色立体地図。山地や火山地形などの凹凸を把握する際に利用できる。',
+		description: '',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#sekishoku',
 		location: '全国',

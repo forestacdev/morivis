@@ -354,7 +354,7 @@
 				<!-- レイヤータイプアイコン -->
 				{#if layerType}
 					<div
-						class="bounded-full bg-base absolute aspect-square rounded-full border-3 border-gray-900 p-1.5 text-gray-900 max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
+						class="bounded-full bg-base absolute aspect-square rounded-full border-4 border-black p-1.5 text-black opacity-70 max-lg:top-1 max-lg:left-1 lg:top-2 lg:left-2"
 					>
 						<Icon icon={getLayerIcon(layerType)} class="max-lg:h-5 max-lg:w-5 lg:h-5 lg:w-5" />
 					</div>
@@ -364,7 +364,7 @@
 				{#if !$isMobile}
 					<div class="absolute bottom-[0px] flex items-center gap-1 p-4 text-gray-300">
 						{#each dataEntry.metaData.tags as tag}
-							<span class="bg-sub rounded-lg p-1 px-2 text-xs">{tag}</span>
+							<span class="bg-sub rounded-full p-1 px-2 text-xs">{tag}</span>
 						{/each}
 					</div>
 				{/if}
@@ -390,25 +390,25 @@
 						class="absolute right-0 bottom-0 grid h-full place-items-center opacity-20 max-lg:pr-1 lg:pr-2"
 					>
 						{#if dataEntry.metaData.location === '森林文化アカデミー'}
-							<div class="grid place-items-center [&_path]:fill-gray-500">
+							<div class="grid place-items-center [&_path]:fill-white">
 								<FacIcon width={'60px'} />
 							</div>
 						{/if}
 						{#if prefCode}
-							<div class="grid aspect-square place-items-center [&_path]:fill-gray-500">
+							<div class="[&_path]:fill-base grid aspect-square place-items-center">
 								<PrefectureIcon width={'80px'} code={prefCode} />
 							</div>
 							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 						{/if}
 						{#if dataEntry.metaData.location === '全国'}
 							<div class="grid place-items-center">
-								<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-gray-500" />
+								<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
 								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 							</div>
 						{/if}
 						{#if dataEntry.metaData.location === '世界'}
 							<div class="grid place-items-center">
-								<Icon icon="fxemoji:worldmap" class="h-20 w-20 [&_path]:fill-gray-500" />
+								<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
 								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 							</div>
 						{/if}
@@ -427,7 +427,7 @@
 			<!-- 背景 -->
 			<div class="absolute -z-10 grid h-full w-full place-items-center p-6 opacity-5">
 				{#if dataEntry.metaData.location === '森林文化アカデミー'}
-					<div class="[&_path]:fill-base grid aspect-square place-items-center">
+					<div class="grid aspect-square place-items-center [&_path]:fill-white">
 						<FacIcon width={'100%'} />
 					</div>
 				{/if}

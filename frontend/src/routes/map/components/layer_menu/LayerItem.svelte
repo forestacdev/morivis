@@ -36,7 +36,6 @@
 		featureMenuData: FeatureMenuData | null;
 		isTouchDragging: boolean; // タッチデバイスでのドラッグ中かどうか
 		isRecommendedDataDragging: boolean;
-		isDeleteOverlayActive: boolean;
 	}
 
 	let {
@@ -53,8 +52,7 @@
 		isLayerInRange,
 		featureMenuData = $bindable(),
 		isTouchDragging = $bindable(), // タッチデバイスでのドラッグ中かどうか
-		isRecommendedDataDragging,
-		isDeleteOverlayActive
+		isRecommendedDataDragging
 	}: Props = $props();
 	let showLegend = $state(false);
 	let showMobileLegend = $state(false);
@@ -442,7 +440,7 @@
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height border-color] c-rounded relative flex translate-z-0 cursor-move justify-center border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
@@ -451,11 +449,7 @@
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
 			? 'translate-x-[310px]'
 			: 'bg-black'}
-            {isDeleteOverlayActive && isHovered && isDragging
-			? 'border-[#ff4f66] drop-shadow-[0_0_3px_#ff4f66]'
-			: isHovered
-				? 'border-accent drop-shadow-[0_0_3px_color-accent]'
-				: 'border-sub'}"
+            {isHovered ? 'border-accent set-glow' : 'border-sub'}"
 		onmouseenter={() => (checkPc() ? hoverLayerItem(true) : null)}
 		onmouseleave={() => (checkPc() ? hoverLayerItem(false) : null)}
 		role="button"
@@ -656,6 +650,12 @@
 </div>
 
 <style>
+	.set-glow {
+		filter: drop-shadow(0 0 3px var(--color-accent));
+	}
+	.c-rounded {
+		border-radius: 9999px 9999px 9999px 9999px;
+	}
 	/* エフェクト要素 */
 	.c-ripple-effect {
 		opacity: 0;

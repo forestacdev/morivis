@@ -19,7 +19,6 @@ export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 export interface BaseMetaData {
 	name: string;
 	sourceDataName?: string;
-	/** 「何のデータか」→「どう使うものか」の順で事実ベースで書く。主観的評価や他データとの比較は書かない */
 	description?: string;
 	downloadUrl?: string;
 	attribution: AttributionKey;
