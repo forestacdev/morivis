@@ -21,7 +21,7 @@ const diaperCssOverridePlugin: Plugin = {
 
 export default defineConfig({
 	plugins: [
-		diaperCssOverridePlugin,
+		// diaperCssOverridePlugin,
 		sveltekit(),
 		qrcode(),
 		enhancedImages(),

@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+/* @import './lib/diaper.css'; */
 
 @plugin '@tailwindcss/typography';
 
