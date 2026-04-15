@@ -161,7 +161,7 @@
 				{#each searchResults as result (result)}
 					<button
 						onclick={() => focusFeature(result)}
-						class="border-sub flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base {result.id &&
+						class="border-sub lg:hover:border-accent flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base transition-colors duration-150 {result.id &&
 						selectedSearchId === result.id
 							? 'bg-accent'
 							: ''}"
