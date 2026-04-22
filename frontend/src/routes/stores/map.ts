@@ -71,6 +71,7 @@ const ensureDemProtocol = () => {
 	}
 };
 
+// 地図の移動中に特定のクラスをHTML要素に追加して、アニメーションを一時停止するための関数
 const setMapMovingClass = (isMoving: boolean) => {
 	if (typeof document === 'undefined') return;
 	document.documentElement.classList.toggle('is-map-moving', isMoving);
