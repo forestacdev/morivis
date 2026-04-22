@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type Plugin } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import path from 'path';
@@ -6,8 +6,22 @@ import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { qrcode } from 'vite-plugin-qrcode';
 import { buildViteProxyConfig } from './src/routes/map/utils/proxy';
 
+// @devantic/diaper の自動CSSインジェクトを無効化するプラグイン
+const diaperCssOverridePlugin: Plugin = {
+	name: 'diaper-css-override',
+	transform(code, id) {
+		if (
+			id.includes('@devantic/diaper') &&
+			(id.endsWith('diaper.css') || id.endsWith('bottomsheet.css'))
+		) {
+			return { code: '', map: null };
+		}
+	}
+};
+
 export default defineConfig({
 	plugins: [
+		// diaperCssOverridePlugin,
 		sveltekit(),
 		qrcode(),
 		enhancedImages(),

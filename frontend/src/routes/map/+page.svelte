@@ -625,6 +625,8 @@
 			<!-- フッター -->
 			<Footer />
 
+			<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
+
 			<SearchMenu
 				bind:featureMenuData
 				bind:inputSearchWord
@@ -635,8 +637,6 @@
 				{selectedSearchId}
 				{focusFeature}
 			/>
-
-			<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 			<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
 				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 			</FeatureMenu>

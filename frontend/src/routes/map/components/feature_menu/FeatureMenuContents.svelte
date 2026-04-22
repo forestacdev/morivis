@@ -445,7 +445,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								><Icon icon={ICONS.open} class="h-6 w-6" />
-								<span>外部サイトを開く</span></a
+								<span>詳細を見る</span></a
 							>
 						</div>
 					{/if}

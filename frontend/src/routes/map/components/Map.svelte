@@ -12,6 +12,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import type { Unsubscriber } from 'svelte/store';
 
 	import DropContainer from './DropContainer.svelte';
 	import type {
@@ -71,6 +72,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -283,16 +285,6 @@
 			exaggeration: 1
 		};
 
-		const data = await fetch(
-			'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json'
-		).then((res) => res.json());
-
-		console.log(
-			data.layers.filter(
-				(layer: any) => layer['source-layer'] === 'transportation' && layer.type === 'line'
-			)
-		);
-
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -485,6 +477,8 @@
 	});
 
 	onDestroy(() => {
+		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
+		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
 		if (maplibreMap) {
 			maplibreMap.remove();
 			maplibreMap = null;
@@ -492,7 +486,12 @@
 	});
 
 	// マップのスタイルの更新
+	// async処理が前後しても、最後に開始したスタイル更新だけを反映する。
+	let styleUpdateId = 0;
+	const styleUpdateUnsubscribers: Unsubscriber[] = [];
+
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
+		const updateId = ++styleUpdateId;
 		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
 
 		// esri-featureプロトコルの動的管理
@@ -578,6 +577,8 @@
 		}
 
 		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
+		// 後から開始した更新がある場合、この結果は古いので破棄する。
+		if (updateId !== styleUpdateId) return;
 
 		mapStore.setStyle(mapStyle);
 
@@ -608,6 +609,8 @@
 		}
 
 		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry, pointCloudEntries);
+		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
+		if (updateId !== styleUpdateId) return;
 		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(
@@ -620,16 +623,20 @@
 				? (showDataEntry as ModelMeshEntry<MeshStyle>)
 				: null;
 
-		if (previewMeshEntry) {
-			mapStore.setThreeLayer([previewMeshEntry], 'preview');
-		} else {
-			mapStore.setThreeLayer(meshEntries, 'main');
-		}
+		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
+		if (updateId !== styleUpdateId) return;
+		await (previewMeshEntry
+			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
+			: mapStore.setThreeLayer(meshEntries, 'main'));
 
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
 	}, 100);
+
+	const requestStyleUpdateByDependency = (_dependency: unknown) => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	};
 
 	// レイヤーの更新を監視
 	$effect(() => {
@@ -637,59 +644,61 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	});
 
-	selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showPoiLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showBoundaryLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showHillshadeLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showLabelLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showRoadLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showXYZTileLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
-	showCloudLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
+	styleUpdateUnsubscribers.push(
+		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showPoiLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showBoundaryLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showHillshadeLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showLabelLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showRoadLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showXYZTileLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		}),
+		showCloudLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		})
+	);
 	// ストリートビューの表示
-	showStreetViewLayer.subscribe(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
+	styleUpdateUnsubscribers.push(
+		showStreetViewLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		})
+	);
 
-	mapStore.onTerrain(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
-	});
+	styleUpdateUnsubscribers.push(
+		mapStore.onTerrain(() => {
+			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		})
+	);
 
 	// 検索結果の更新
 	$effect(() => {
-		if (searchGeojsonData || !searchGeojsonData) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}
+		// 引数として渡すことで、このeffectを検索結果GeoJSONの変更に反応させる。
+		requestStyleUpdateByDependency(searchGeojsonData);
 	});
 
 	// データプレビュー
 	$effect(() => {
-		if (showDataEntry || !showDataEntry) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-			threeJsManager.setGroupVisibility(!showDataEntry);
-		}
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		threeJsManager.setGroupVisibility(!showDataEntry);
 	});
 
 	// 座標系選択
 	$effect(() => {
-		if (zoneBboxGeojsonData.features.length || !zoneBboxGeojsonData.features.length) {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}
+		// bbox候補の増減をスタイル更新の依存にする。
+		requestStyleUpdateByDependency(zoneBboxGeojsonData.features.length);
 	});
 
 	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {
@@ -789,7 +798,7 @@
 				: ' opacity-0'}"
 		></div>
 
-		{#if !$isStreetView && !showDataEntry}
+		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
 			<!-- PC用地図コントロール -->
 			<div class="absolute right-5 bottom-5 max-lg:hidden">
 				<Compass />

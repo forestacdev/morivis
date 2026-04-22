@@ -217,13 +217,13 @@
 		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
 			<div
-				class="c-scroll-hidden flex h-full w-full grow flex-col items-center overflow-x-hidden overflow-y-auto"
+				class="c-scroll-hidden flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 			>
 				{#each poiData as info}
 					<label
-						class="z-10 flex w-full cursor-pointer items-center justify-start rounded-md px-2 py-4 {info
+						class="border-sub lg:hover:border-accent z-10 flex w-full cursor-pointer items-center justify-start rounded-md border p-3 transition-colors duration-200 {info
 							.properties.code === selectedEpsgCode
-							? 'bg-accent '
+							? 'bg-accent'
 							: 'text-white'}"
 					>
 						<input
@@ -236,7 +236,7 @@
 							<span class="transition-colors duration-200 select-none"
 								>{info.properties.name_ja}
 							</span>
-							<span class="text text-xs text-gray-300 transition-colors duration-200 select-none"
+							<span class="text text-sm text-gray-300 transition-colors duration-200 select-none"
 								>{info.properties.prefecture ?? ''}
 							</span>
 						</div>

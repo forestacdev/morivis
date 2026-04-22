@@ -11,7 +11,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/lakedepth_standard/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '基準水面標データ',
+		name: '基準水面標高データ',
 		description: '',
 		sourceDataName: '基準水面標高タイル',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#lakedepth_standard',

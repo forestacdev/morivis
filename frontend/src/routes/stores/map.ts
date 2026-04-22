@@ -71,6 +71,12 @@ const ensureDemProtocol = () => {
 	}
 };
 
+// 地図の移動中に特定のクラスをHTML要素に追加して、アニメーションを一時停止するための関数
+const setMapMovingClass = (isMoving: boolean) => {
+	if (typeof document === 'undefined') return;
+	document.documentElement.classList.toggle('is-map-moving', isMoving);
+};
+
 const releaseDemProtocol = () => {
 	if (_webglProtocolRegistered) {
 		webglProt.cancelAllRequests();
@@ -521,6 +527,7 @@ const createMapStore = () => {
 		});
 
 		const debounceMapMoveEnd = debounce((e: MapLibreEvent) => {
+			setMapMovingClass(false);
 			if (!map) return;
 			const url = window.location.href;
 			let origin = window.location.origin;
@@ -573,6 +580,7 @@ const createMapStore = () => {
 		}, 100);
 
 		map.on('movestart', (e) => {
+			setMapMovingClass(true);
 			moveStartEvent.set(e);
 		});
 		map.on('moveend', debounceMapMoveEnd);
@@ -1112,6 +1120,7 @@ const createMapStore = () => {
 	// インスタンス削除
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
+		setMapMovingClass(false);
 		if (deckOverlay) {
 			deckOverlay.finalize();
 			deckOverlay = null;
