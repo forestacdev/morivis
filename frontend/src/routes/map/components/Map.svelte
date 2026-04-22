@@ -71,6 +71,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -789,7 +790,7 @@
 				: ' opacity-0'}"
 		></div>
 
-		{#if !$isStreetView && !showDataEntry}
+		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
 			<!-- PC用地図コントロール -->
 			<div class="absolute right-5 bottom-5 max-lg:hidden">
 				<Compass />

@@ -28,12 +28,6 @@
 		}
 	};
 
-	mapStore.onRotate((bearing) => {
-		if (bearing == null) return;
-		if (element) gsap.set(element, { rotation: bearing * -1 });
-		updateNeedle();
-	});
-
 	let orbitA = $state<HTMLButtonElement | null>(null);
 	let orbitB = $state<HTMLButtonElement | null>(null);
 	let isHover = $state(false);
@@ -64,20 +58,6 @@
 			}
 		});
 	};
-
-	// ズーム速度に応じて加速
-	mapStore.onZoom((zoom) => {
-		if (zoom == null) return;
-		const now = performance.now();
-		if (prevZoom !== null && now - prevTime > 0) {
-			const dt = (now - prevTime) / 1000;
-			const zoomSpeed = Math.abs(zoom - prevZoom) / dt;
-			const target = Math.min(BASE_SPEED + zoomSpeed * SPEED_MULTIPLIER, MAX_SPEED);
-			tweenSpeed(target, 0.3, 'power2.out'); // 加速: 0.3秒でなめらかに
-		}
-		prevZoom = zoom;
-		prevTime = now;
-	});
 
 	// パン・ピッチ・回転の速度検出（RAFループで統合）
 	let moveRAF: number | null = null;
@@ -122,24 +102,6 @@
 			moveRAF = requestAnimationFrame(trackMove);
 		}
 	};
-
-	mapStore.onMoveStart(() => {
-		isMoving = true;
-		prevState = null;
-		prevMoveTime = performance.now();
-		moveRAF = requestAnimationFrame(trackMove);
-	});
-
-	// 移動終了 → ゆっくり元に戻る
-	mapStore.onMoveEnd(() => {
-		isMoving = false;
-		if (moveRAF) {
-			cancelAnimationFrame(moveRAF);
-			moveRAF = null;
-		}
-		if (speedProxy.value <= BASE_SPEED) return;
-		tweenSpeed(BASE_SPEED, 1.5, 'power3.out');
-	});
 
 	const expandOrbitButtons = () => {
 		showOrbitButtons = true;
@@ -223,6 +185,46 @@
 
 	onMount(() => {
 		if (!element) return;
+		const bearing = mapStore.getBearing() ?? 0;
+		gsap.set(element, { rotation: bearing * -1 });
+		updateNeedle();
+
+		const unsubscribeRotate = mapStore.onRotate((bearing) => {
+			if (bearing == null) return;
+			if (element) gsap.set(element, { rotation: bearing * -1 });
+			updateNeedle();
+		});
+
+		const unsubscribeZoom = mapStore.onZoom((zoom) => {
+			if (zoom == null) return;
+			const now = performance.now();
+			if (prevZoom !== null && now - prevTime > 0) {
+				const dt = (now - prevTime) / 1000;
+				const zoomSpeed = Math.abs(zoom - prevZoom) / dt;
+				const target = Math.min(BASE_SPEED + zoomSpeed * SPEED_MULTIPLIER, MAX_SPEED);
+				tweenSpeed(target, 0.3, 'power2.out'); // 加速: 0.3秒でなめらかに
+			}
+			prevZoom = zoom;
+			prevTime = now;
+		});
+
+		const unsubscribeMoveStart = mapStore.onMoveStart(() => {
+			isMoving = true;
+			prevState = null;
+			prevMoveTime = performance.now();
+			if (moveRAF) cancelAnimationFrame(moveRAF);
+			moveRAF = requestAnimationFrame(trackMove);
+		});
+
+		const unsubscribeMoveEnd = mapStore.onMoveEnd(() => {
+			isMoving = false;
+			if (moveRAF) {
+				cancelAnimationFrame(moveRAF);
+				moveRAF = null;
+			}
+			if (speedProxy.value <= BASE_SPEED) return;
+			tweenSpeed(BASE_SPEED, 1.5, 'power3.out');
+		});
 
 		// 2つの小さい円の周回アニメーション
 		if (orbitA && orbitB) {
@@ -253,7 +255,7 @@
 			animate(orbitB, 180);
 		}
 
-		Draggable.create(element, {
+		const draggable = Draggable.create(element, {
 			type: 'rotation', // 回転モード
 			inertia: true, // 慣性を有効化
 			dragResistance: 0.5, // ドラッグ抵抗
@@ -277,6 +279,31 @@
 				}
 			}
 		});
+
+		return () => {
+			unsubscribeRotate();
+			unsubscribeZoom();
+			unsubscribeMoveStart();
+			unsubscribeMoveEnd();
+			isMoving = false;
+			if (moveRAF) cancelAnimationFrame(moveRAF);
+			moveRAF = null;
+			prevState = null;
+			prevZoom = null;
+			prevTime = 0;
+			prevMoveTime = 0;
+			speedProxy.value = BASE_SPEED;
+			speedTween?.kill();
+			speedTween = null;
+			orbitTweenA?.kill();
+			orbitTweenA = null;
+			orbitTweenB?.kill();
+			orbitTweenB = null;
+			orbitTimelines.forEach((tl) => tl.kill());
+			orbitTimelines.length = 0;
+			draggable[0]?.kill();
+			gsap.killTweensOf([element, needle, orbitA, orbitB].filter(Boolean));
+		};
 	});
 </script>
 
