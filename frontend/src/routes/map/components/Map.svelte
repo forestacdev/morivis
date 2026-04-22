@@ -634,6 +634,10 @@
 		if (!maplibreMap) return;
 	}, 100);
 
+	const requestStyleUpdateByDependency = (_dependency: unknown) => {
+		setStyleDebounce(layerEntries as GeoDataEntry[]);
+	};
+
 	// レイヤーの更新を監視
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
@@ -681,9 +685,8 @@
 
 	// 検索結果の更新
 	$effect(() => {
-		// 値を読むことで、このeffectを検索結果GeoJSONの変更にだけ反応させる。
-		searchGeojsonData;
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		// 引数として渡すことで、このeffectを検索結果GeoJSONの変更に反応させる。
+		requestStyleUpdateByDependency(searchGeojsonData);
 	});
 
 	// データプレビュー
@@ -695,8 +698,7 @@
 	// 座標系選択
 	$effect(() => {
 		// bbox候補の増減をスタイル更新の依存にする。
-		zoneBboxGeojsonData.features.length;
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		requestStyleUpdateByDependency(zoneBboxGeojsonData.features.length);
 	});
 
 	const toggleTooltip = (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => {
