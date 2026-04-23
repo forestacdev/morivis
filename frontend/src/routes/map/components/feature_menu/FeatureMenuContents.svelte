@@ -1,18 +1,16 @@
 <script lang="ts">
-	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { delay } from 'es-toolkit';
 	import { fade } from 'svelte/transition';
 
 	import { getImageByName } from '$routes/map/api/inaturalist';
 	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
 	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
-	import { propData } from '$routes/map/data/entries/_prop_data';
+	import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
 		FeatureMenuData,
-		FeaturePanelImage as FeaturePanelImageData,
+		FeaturePanelMedia,
 		FeaturePanelSummary as FeaturePanelSummaryData
 	} from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/data/properties';
@@ -28,17 +26,6 @@
 		layerEntries,
 		showSelectionMarker = $bindable()
 	}: Props = $props();
-
-	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
-	let emblaMainCarouselOptions: EmblaOptionsType = {
-		loop: true,
-		dragFree: false
-	};
-	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
-
-	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
-		emblaMainCarousel = event.detail;
-	};
 
 	let targetLayer = $derived.by(() => {
 		if (featureMenuData) {
@@ -102,35 +89,46 @@
 	});
 
 	/**
-	 * 画像データを取得する共通Promise
+	 * メディアデータを取得する共通Promise
+	 * - data.medias: propDataからの複数メディア
 	 * - data.image: propDataからの画像
 	 * - imageKey: featureMenuDataのプロパティからの画像
 	 * - iNaturalistNameKey: iNaturalist APIからの画像
 	 */
-	const getImageData = async (): Promise<FeaturePanelImageData | null> => {
+	const getMediaData = async (): Promise<FeaturePanelMedia[]> => {
 		const delay = new Promise((resolve) => setTimeout(resolve, 300));
 
-		const fetchImage = async (): Promise<FeaturePanelImageData | null> => {
+		const fetchMedia = async (): Promise<FeaturePanelMedia[]> => {
+			if (data?.medias && data.medias.length > 0) {
+				return data.medias.map((media) => convertMediaData(media));
+			}
+
 			// 1. propDataからの画像
 			if (data?.image) {
-				return {
-					url: data.image,
-					alt: targetLayer?.metaData.name ?? '画像',
-					source: 'static',
-					fit: 'contain'
-				};
+				return [
+					{
+						type: 'image',
+						url: data.image,
+						alt: targetLayer?.metaData.name ?? '画像',
+						source: 'static',
+						fit: 'contain'
+					}
+				];
 			}
 
 			// 2. featureMenuDataのプロパティからの画像
 			if (featureMenuData?.properties && imageKey) {
 				const url = featureMenuData.properties[imageKey] as string;
 				if (url) {
-					return {
-						url,
-						alt: '画像',
-						source: 'static',
-						fit: 'contain'
-					};
+					return [
+						{
+							type: 'image',
+							url,
+							alt: '画像',
+							source: 'static',
+							fit: 'contain'
+						}
+					];
 				}
 			}
 
@@ -141,39 +139,73 @@
 					const res = await getImageByName(name);
 
 					if (res) {
-						return {
-							url: res.url,
-							alt: name,
-							source: 'inaturalist',
-							credit: res.attribution,
-							licenseName: res.licenseCode,
-							linkUrl: `https://www.inaturalist.org/taxa/${res.taxonId}`,
-							fit: 'contain'
-						};
+						return [
+							{
+								type: 'image',
+								url: res.url,
+								alt: name,
+								source: 'inaturalist',
+								credit: res.attribution,
+								licenseName: res.licenseCode,
+								linkUrl: `https://www.inaturalist.org/taxa/${res.taxonId}`,
+								fit: 'contain'
+							}
+						];
 					}
 				}
 			}
 
-			return null;
+			return [];
 		};
 
-		// 画像取得とdelayを並列実行し、両方が完了するまで待つ（最低0.2秒かかる）
-		const [result] = await Promise.all([fetchImage(), delay]);
+		const [result] = await Promise.all([fetchMedia(), delay]);
 		return result;
 	};
 
-	// 画像データのPromise（featureMenuDataが変わったら再取得）
-	let imagePromise = $derived.by(() => {
-		if (featureMenuData) {
-			return getImageData();
+	const convertMediaData = (media: MediaData): FeaturePanelMedia => {
+		if (media.type === 'image') {
+			return {
+				type: 'image',
+				url: media.url,
+				alt: targetLayer?.metaData.name ?? '画像',
+				source: 'static',
+				fit: 'cover'
+			};
 		}
-		return Promise.resolve(null as FeaturePanelImageData | null);
+
+		if (media.type === 'youtube') {
+			return {
+				type: 'youtube',
+				url: media.url,
+				title: targetLayer?.metaData.name ?? 'YouTube video'
+			};
+		}
+
+		if (media.type === 'video') {
+			return {
+				type: 'video',
+				url: media.url,
+				title: targetLayer?.metaData.name ?? '動画'
+			};
+		}
+
+		return {
+			type: 'audio',
+			url: media.url,
+			title: targetLayer?.metaData.name ?? '音声',
+			source: 'static'
+		};
+	};
+
+	// メディアデータのPromise（featureMenuDataが変わったら再取得）
+	let mediaPromise = $derived.by(() => {
+		if (featureMenuData) {
+			return getMediaData();
+		}
+		return Promise.resolve([] as FeaturePanelMedia[]);
 	});
 
-	const getSummaryData = (
-		image: FeaturePanelImageData | null,
-		hasMediaCarousel: boolean
-	): FeaturePanelSummaryData | null => {
+	const getSummaryData = (media: FeaturePanelMedia[]): FeaturePanelSummaryData | null => {
 		if (!featureMenuData) return null;
 
 		if (propId && featureMenuData.properties && featureMenuData.properties._prop_id) {
@@ -183,7 +215,7 @@
 					typeof featureMenuData.properties.category === 'string'
 						? featureMenuData.properties.category
 						: undefined,
-				image: hasMediaCarousel ? undefined : (image ?? undefined),
+				media,
 				description: data?.description ?? undefined,
 				sourceUrl: data?.url ?? undefined,
 				sourceLabel: '詳細を見る'
@@ -204,7 +236,7 @@
 		return {
 			title: title ?? '',
 			subtitle: targetLayer?.metaData.name,
-			image: hasMediaCarousel ? undefined : (image ?? undefined),
+			media,
 			description: data?.description ?? undefined,
 			sourceUrl: data?.url ?? undefined,
 			sourceLabel: '詳細を見る'
@@ -219,7 +251,7 @@
 </script>
 
 {#if featureMenuData}
-	{#await imagePromise}
+	{#await mediaPromise}
 		<!-- ローディング中 -->
 		<div class="absolute inset-0 flex flex-col items-center gap-4 max-lg:pt-32 lg:justify-center">
 			<div
@@ -227,48 +259,8 @@
 			></div>
 			<p class="text-gray-400">読み込み中...</p>
 		</div>
-	{:then imageData}
-		{@const hasMediaCarousel = Boolean(data?.medias && data.medias.length > 0)}
-		<!-- 画像 -->
-		{#if hasMediaCarousel && data?.medias}
-			<div in:fade={{ duration: 100 }} class="relative w-full max-lg:py-2 lg:p-2">
-				<!-- メディアカルーセル -->
-				<div
-					use:emblaCarouselSvelte={{
-						plugins: emblaMainCarouselPlugins,
-						options: emblaMainCarouselOptions
-					}}
-					class="overflow-hidden"
-					onemblaInit={onInitEmblaMainCarousel}
-				>
-					<div class="flex">
-						{#each data.medias as media (media.url)}
-							{#if media.type === 'image'}
-								<img
-									src={media.url}
-									width={1920}
-									height={1080}
-									alt="画像"
-									class="aspect-video min-w-0 flex-[0_0_100%] object-cover"
-								/>
-							{:else if media.type === 'youtube'}
-								<iframe
-									class="aspect-video min-w-0 flex-[0_0_100%]"
-									src={`${media.url}?mute=0&controls=1`}
-									title="YouTube video player"
-									frameborder="0"
-									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-									referrerpolicy="strict-origin-when-cross-origin"
-									allowfullscreen
-								></iframe>
-							{/if}
-						{/each}
-					</div>
-				</div>
-			</div>
-		{/if}
-
-		{@const summaryData = getSummaryData(imageData, hasMediaCarousel)}
+	{:then mediaData}
+		{@const summaryData = getSummaryData(mediaData)}
 		{#if summaryData}
 			<FeaturePanelSummary summary={summaryData} />
 		{/if}

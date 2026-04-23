@@ -43,7 +43,13 @@ export interface SearchPoiPanelData {
 
 export type FeaturePanelImageSource = 'static' | 'inaturalist' | 'wikipedia';
 
-export interface FeaturePanelImage {
+export type FeaturePanelMedia =
+	| FeaturePanelImageMedia
+	| FeaturePanelVideoMedia
+	| FeaturePanelAudioMedia;
+
+export interface FeaturePanelImageMedia {
+	type: 'image';
 	url: string;
 	alt: string;
 	source?: FeaturePanelImageSource;
@@ -54,11 +60,28 @@ export interface FeaturePanelImage {
 	fit?: 'cover' | 'contain';
 }
 
+export interface FeaturePanelVideoMedia {
+	type: 'video' | 'youtube';
+	url: string;
+	title: string;
+	thumbnailUrl?: string;
+}
+
+export interface FeaturePanelAudioMedia {
+	type: 'audio';
+	url: string;
+	title: string;
+	source?: 'static' | 'external';
+	credit?: string;
+	licenseName?: string;
+	licenseUrl?: string;
+}
+
 export interface FeaturePanelSummary {
 	title: string;
 	subtitle?: string;
 	point?: [number, number];
-	image?: FeaturePanelImage;
+	media?: FeaturePanelMedia[];
 	description?: string;
 	sourceUrl?: string;
 	sourceLabel?: string;

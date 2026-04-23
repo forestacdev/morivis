@@ -53,17 +53,20 @@
 			title: wiki?.title ?? result.name,
 			subtitle: wiki?.prefecture ?? result.location,
 			point: wiki?.coordinates ? [wiki.coordinates.lon, wiki.coordinates.lat] : result.point,
-			image: wiki?.thumbnail?.source
-				? {
-						url: wiki.thumbnail.source,
-						alt: wiki.title,
-						source: 'wikipedia',
-						credit: wiki.imageLicense?.artist,
-						licenseName: wiki.imageLicense?.licenseShortName,
-						licenseUrl: wiki.imageLicense?.licenseUrl,
-						linkUrl: wiki.url,
-						fit: 'cover'
-					}
+			media: wiki?.thumbnail?.source
+				? [
+						{
+							type: 'image',
+							url: wiki.thumbnail.source,
+							alt: wiki.title,
+							source: 'wikipedia',
+							credit: wiki.imageLicense?.artist,
+							licenseName: wiki.imageLicense?.licenseShortName,
+							licenseUrl: wiki.imageLicense?.licenseUrl,
+							linkUrl: wiki.url,
+							fit: 'cover'
+						}
+					]
 				: undefined,
 			description: wiki?.extract,
 			sourceUrl: wiki?.url,

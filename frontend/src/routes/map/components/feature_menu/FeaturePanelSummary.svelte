@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import FeaturePanelImage from './FeaturePanelImage.svelte';
+	import FeaturePanelMediaGallery from './FeaturePanelMediaGallery.svelte';
 	import { ICONS } from '$lib/icons';
 	import type { FeaturePanelSummary } from '$routes/map/types';
 
@@ -15,8 +15,8 @@
 
 <div in:fade={{ duration: 100 }}>
 	<div class="relative w-full max-lg:py-2 lg:p-2">
-		{#if summary.image}
-			<FeaturePanelImage image={summary.image} />
+		{#if summary.media && summary.media.length > 0}
+			<FeaturePanelMediaGallery media={summary.media} />
 		{/if}
 
 		<div
