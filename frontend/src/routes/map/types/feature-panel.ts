@@ -41,6 +41,29 @@ export interface SearchPoiPanelData {
 	result: ResultPoiData;
 }
 
+export type FeaturePanelImageSource = 'static' | 'inaturalist' | 'wikipedia';
+
+export interface FeaturePanelImage {
+	url: string;
+	alt: string;
+	source?: FeaturePanelImageSource;
+	credit?: string;
+	licenseName?: string;
+	licenseUrl?: string;
+	linkUrl?: string;
+	fit?: 'cover' | 'contain';
+}
+
+export interface FeaturePanelSummary {
+	title: string;
+	subtitle?: string;
+	point?: [number, number];
+	image?: FeaturePanelImage;
+	description?: string;
+	sourceUrl?: string;
+	sourceLabel?: string;
+}
+
 export const createLayerFeaturePanelData = (data: FeatureMenuData): LayerFeaturePanelData => ({
 	kind: 'layer-feature',
 	...data

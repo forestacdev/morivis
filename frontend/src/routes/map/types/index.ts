@@ -4,6 +4,9 @@ import type { MapGeoJSONFeature } from 'maplibre-gl';
 export type {
 	FeatureMenuData,
 	FeaturePanelData,
+	FeaturePanelImage,
+	FeaturePanelImageSource,
+	FeaturePanelSummary,
 	LayerFeaturePanelData,
 	SearchAddressPanelData,
 	SearchCoordinatePanelData,
