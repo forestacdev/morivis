@@ -21,7 +21,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { PureGrib2Parser } from '$routes/map/utils/formats/grib2';
-	import { generateThumbnail } from '$routes/map/utils/formats/thumbnail';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';

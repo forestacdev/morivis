@@ -9,16 +9,16 @@ import {
 	calculateBandStatsFromBlob,
 	lngToMercX,
 	latToMercY
-} from '$routes/map/utils/formats/aux.xml';
+} from '$routes/map/utils/formats/raster/aux-xml';
 import {
 	encodeBandsToTerrariumUrls,
 	terminateEncodeWorker
-} from '$routes/map/utils/formats/transformers/terrarium';
+} from '$routes/map/utils/formats/raster/terrarium';
 import {
 	releaseRenderTexture,
 	renderTerrarium,
 	terminateRenderWorker
-} from '$routes/map/utils/formats/transformers/terrarium-render';
+} from '$routes/map/utils/formats/raster/terrarium-render';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {

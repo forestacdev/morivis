@@ -27,6 +27,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import {
 		detectStacSourceType,
 		fetchCollections,
@@ -39,7 +40,6 @@
 		type StacItem,
 		type StacAsset
 	} from '$routes/map/utils/formats/stac';
-	import { generateThumbnail } from '$routes/map/utils/formats/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';

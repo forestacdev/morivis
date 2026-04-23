@@ -34,6 +34,6 @@ export const getPropertiesFromPMTiles = async (
 		}
 	}
 
-	console.warn('⚠️ 該当 feature_id が見つかりません');
+	console.warn('該当 feature_id が見つかりません');
 	return null;
 };

@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import { imageExport, getMapCanvasImage } from '$routes/map/utils/formats/image';
+	import { imageExport, getMapCanvasImage } from '$routes/map/utils/formats/export/image';
 	import {
 		checkPWA,
 		deferredPromptAvailable,
