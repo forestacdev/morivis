@@ -1,8 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
+	import { getLayerFeaturePanelSummary } from './feature-panel-summary';
 	import FeaturePanelFrame from './FeaturePanelFrame.svelte';
+	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
 	import FeaturePanelLoading from './FeaturePanelLoading.svelte';
 	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
 
@@ -12,6 +13,7 @@
 	import type {
 		FeaturePanelData,
 		FeaturePanelSummary as FeaturePanelSummaryData,
+		LayerFeaturePanelData,
 		SearchAddressPanelData
 	} from '$routes/map/types';
 	import { normalizeSchoolName } from '$routes/map/utils/data/normalize';
@@ -25,6 +27,17 @@
 	}
 
 	let { panelData, layerEntries, showSelectionMarker = $bindable(), onClose }: Props = $props();
+
+	type PanelContentData =
+		| {
+				kind: 'layer-feature';
+				panelData: LayerFeaturePanelData;
+				summary: FeaturePanelSummaryData;
+		  }
+		| {
+				kind: 'search-address';
+				summary: FeaturePanelSummaryData;
+		  };
 
 	let targetLayer = $derived.by(() => {
 		if (panelData?.kind !== 'layer-feature') return null;
@@ -75,6 +88,37 @@
 			sourceLabel: 'Wikipediaを見る'
 		};
 	};
+
+	const getPanelContentData = async (
+		data: FeaturePanelData | null,
+		entries: GeoDataEntry[]
+	): Promise<PanelContentData | null> => {
+		if (!data) return null;
+
+		if (data.kind === 'layer-feature') {
+			const summary = await getLayerFeaturePanelSummary(data, entries);
+			if (!summary) return null;
+
+			return {
+				kind: 'layer-feature',
+				panelData: data,
+				summary
+			};
+		}
+
+		if (data.kind === 'search-address') {
+			const wiki = await getWikipedia(data);
+
+			return {
+				kind: 'search-address',
+				summary: getSearchAddressSummary(data, wiki)
+			};
+		}
+
+		return null;
+	};
+
+	let panelContentPromise = $derived(getPanelContentData(panelData, layerEntries));
 </script>
 
 <!-- PC -->
@@ -95,13 +139,18 @@
 		{/if}
 	{/snippet}
 
-	{#if panelData?.kind === 'layer-feature'}
-		<FeaturePanelLayerContent featureMenuData={panelData} {layerEntries} bind:showSelectionMarker />
-	{:else if panelData?.kind === 'search-address'}
-		{#await getWikipedia(panelData)}
-			<FeaturePanelLoading />
-		{:then wikiMenuData}
-			<FeaturePanelSummary summary={getSearchAddressSummary(panelData, wikiMenuData)} />
-		{/await}
-	{/if}
+	{#await panelContentPromise}
+		<FeaturePanelLoading />
+	{:then contentData}
+		{#if contentData?.kind === 'layer-feature'}
+			<FeaturePanelLayerContent
+				featureMenuData={contentData.panelData}
+				{layerEntries}
+				bind:showSelectionMarker
+				summary={contentData.summary}
+			/>
+		{:else if contentData?.kind === 'search-address'}
+			<FeaturePanelSummary summary={contentData.summary} />
+		{/if}
+	{/await}
 </FeaturePanelFrame>

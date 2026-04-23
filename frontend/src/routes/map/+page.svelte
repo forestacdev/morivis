@@ -27,6 +27,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
+	import { getLayerFeaturePanelSummary } from '$routes/map/components/feature_menu/feature-panel-summary';
 	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
@@ -211,6 +212,11 @@
 		}
 
 		return null;
+	});
+
+	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
+		if (!featureMenuData) return Promise.resolve(null);
+		return getLayerFeaturePanelSummary(featureMenuData, layerEntries);
 	});
 
 	// 画像プレビュー
@@ -681,7 +687,14 @@
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				<FeaturePanelLayerContent bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+				{#await mobileLayerFeatureSummaryPromise then summary}
+					<FeaturePanelLayerContent
+						bind:featureMenuData
+						{layerEntries}
+						bind:showSelectionMarker
+						{summary}
+					/>
+				{/await}
 			</MobileFeatureMenuCard>
 
 			<PreviewMenu bind:showDataEntry />
