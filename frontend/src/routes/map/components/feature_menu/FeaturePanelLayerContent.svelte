@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 
 	import { getImageByName } from '$routes/map/api/inaturalist';
-	import AttributeItem from '$routes/map/components/feature_menu/AttributeItem.svelte';
+	import FeaturePanelAttributeItem from '$routes/map/components/feature_menu/FeaturePanelAttributeItem.svelte';
 	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
 	import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -280,7 +280,7 @@
 							{#if key !== '_prop_id' && value && imageKey !== key}
 								{@const field = fields.find((f) => f.key === key)}
 								<!-- 辞書による属性名書き換え -->
-								<AttributeItem {key} {value} {field} />
+								<FeaturePanelAttributeItem {key} {value} {field} />
 							{/if}
 						{/each}
 					{/if}

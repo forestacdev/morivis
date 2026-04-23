@@ -114,7 +114,7 @@
 									>
 										<img
 											bind:this={imageViewerImage}
-											in:fade
+											in:fade={{ duration: 500 }}
 											class="c-no-drag-icon absolute inset-0 h-full w-full {objectFitClass(item)}"
 											alt={item.alt}
 											src={item.url}

@@ -27,7 +27,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import FeatureMenuContents from '$routes/map/components/feature_menu/FeatureMenuContents.svelte';
+	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
 	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
@@ -672,13 +672,13 @@
 			/>
 			{#if featurePanelData}
 				<FeaturePanel panelData={featurePanelData} {layerEntries} onClose={closeFeaturePanel}>
-					<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+					<FeaturePanelLayerContent bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 				</FeaturePanel>
 			{/if}
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+				<FeaturePanelLayerContent bind:featureMenuData {layerEntries} bind:showSelectionMarker />
 			</MobileFeatureMenuCard>
 
 			<PreviewMenu bind:showDataEntry />

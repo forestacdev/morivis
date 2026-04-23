@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 
 	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
-	import FeatureSidePanel from './FeatureSidePanel.svelte';
+	import FeaturePanelShell from './FeaturePanelShell.svelte';
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -76,7 +76,7 @@
 </script>
 
 <!-- PC -->
-<FeatureSidePanel
+<FeaturePanelShell
 	open={panelData !== null}
 	transition={panelData?.kind === 'search-address' ? 'fly' : 'scale'}
 	{onClose}
@@ -110,4 +110,4 @@
 			<div class="h-[200px] w-full shrink-0"></div>
 		{/await}
 	{/if}
-</FeatureSidePanel>
+</FeaturePanelShell>
