@@ -27,7 +27,7 @@
 	</div>
 
 	<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
-		<div class="c-scroll-hidden h-full overflow-x-hidden overflow-y-auto px-2">
+		<div class="c-scroll-hidden h-full overflow-x-hidden overflow-y-auto px-2 pb-48">
 			{@render children()}
 		</div>
 		<div class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[150px] w-full"></div>
