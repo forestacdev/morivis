@@ -16,7 +16,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { dxfFileToGeoJsonBrowser } from '$routes/map/utils/file/dxf';
+	import { dxfFileToGeoJsonBrowser } from '$routes/map/utils/formats/dxf';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

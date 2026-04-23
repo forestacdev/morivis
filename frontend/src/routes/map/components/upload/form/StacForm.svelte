@@ -25,8 +25,8 @@
 		getMinMax,
 		type BandDataRange,
 		type RasterBands
-	} from '$routes/map/utils/file/geotiff';
-	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+	} from '$routes/map/utils/formats/geotiff';
+	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import {
 		detectStacSourceType,
 		fetchCollections,
@@ -38,8 +38,8 @@
 		type StacCollection,
 		type StacItem,
 		type StacAsset
-	} from '$routes/map/utils/file/stac';
-	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
+	} from '$routes/map/utils/formats/stac';
+	import { generateThumbnail } from '$routes/map/utils/formats/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';

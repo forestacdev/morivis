@@ -19,13 +19,13 @@
 		getMinMax,
 		type BandDataRange,
 		type RasterBands
-	} from '$routes/map/utils/file/geotiff';
+	} from '$routes/map/utils/formats/geotiff';
 	import {
 		parseLandXml,
 		landXmlFileToDem,
 		type LandXmlSurface,
 		type LandXmlParseResult
-	} from '$routes/map/utils/file/landxml';
+	} from '$routes/map/utils/formats/landxml';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

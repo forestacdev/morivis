@@ -4,8 +4,8 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
-	import { hasExifGps } from '$routes/map/utils/file/exif';
-	import { isGtfsZip } from '$routes/map/utils/file/gtfs';
+	import { hasExifGps } from '$routes/map/utils/formats/exif';
+	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 

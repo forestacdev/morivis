@@ -2,7 +2,7 @@
 	import JSZip from 'jszip';
 	import { fade, scale } from 'svelte/transition';
 
-	import { generateAuxXml } from '$routes/map/utils/file/aux.xml';
+	import { generateAuxXml } from '$routes/map/utils/formats/aux.xml';
 	import { confirmationDialog } from '$routes/stores/confirmation';
 
 	interface Props {

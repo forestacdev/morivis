@@ -16,7 +16,7 @@
 		kmlFileToGeoJson,
 		getKmlDefaultColor,
 		type KmlParseResult
-	} from '$routes/map/utils/file/kml';
+	} from '$routes/map/utils/formats/kml';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

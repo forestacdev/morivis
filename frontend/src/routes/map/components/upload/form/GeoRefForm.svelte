@@ -16,8 +16,8 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands,
 		type BandDataRange
-	} from '$routes/map/utils/file/geotiff';
-	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
+	} from '$routes/map/utils/formats/geotiff';
+	import { generateThumbnail } from '$routes/map/utils/formats/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';

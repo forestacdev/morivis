@@ -5,7 +5,7 @@
  * メインスレッドで CogTileManager からバンドデータを読み取り、
  * 生バンドデータをWorkerにtransferしてTerrarium エンコード+WebGLレンダリングする。
  */
-import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 // --- Worker Protocol ---

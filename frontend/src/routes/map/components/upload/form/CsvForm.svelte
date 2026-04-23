@@ -11,7 +11,7 @@
 		getCSVPreview,
 		csvTextToGeojson,
 		type CSVPreview
-	} from '$routes/map/utils/file/csv';
+	} from '$routes/map/utils/formats/csv';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

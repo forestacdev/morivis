@@ -55,7 +55,7 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
-	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
+	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 	import {
 		get3dParams,
 		getParams,

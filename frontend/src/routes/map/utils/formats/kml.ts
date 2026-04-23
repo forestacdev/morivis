@@ -9,7 +9,7 @@ import JSZip from 'jszip';
 import KML from 'ol/format/KML.js';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { FeatureProp } from '$routes/map/types/properties';
-import { geometryToGeoJSON } from '$routes/map/utils/file/gml';
+import { geometryToGeoJSON } from '$routes/map/utils/formats/gml';
 
 /**
  * descriptionに埋め込まれたHTMLテーブルからkey-valueペアを抽出する

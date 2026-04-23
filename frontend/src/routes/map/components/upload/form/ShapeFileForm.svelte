@@ -11,7 +11,7 @@
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/file/shp';
+	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/formats/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

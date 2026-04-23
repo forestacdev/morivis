@@ -22,7 +22,7 @@
 		typesToColorsStyle,
 		type ArcGisWebMapLayer,
 		type ArcGisRenderer
-	} from '$routes/map/utils/file/arcgis';
+	} from '$routes/map/utils/formats/arcgis';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

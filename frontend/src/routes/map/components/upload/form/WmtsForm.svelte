@@ -10,11 +10,11 @@
 		parseWmsCapabilities,
 		type WmsSourceInfo,
 		type WmsTimeDimensionInfo
-	} from '$routes/map/utils/file/wms';
+	} from '$routes/map/utils/formats/wms';
 	import {
 		parseWmtsCapabilities,
 		type MapLibreRasterSourceInfo
-	} from '$routes/map/utils/file/wmts';
+	} from '$routes/map/utils/formats/wmts';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

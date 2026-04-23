@@ -9,7 +9,7 @@
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { parseXyzFile } from '$routes/map/utils/file/xyz';
+	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

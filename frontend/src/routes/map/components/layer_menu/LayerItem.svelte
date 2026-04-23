@@ -13,8 +13,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
-	import { GeojsonCache } from '$routes/map/utils/file/geojson';
-	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
+	import { GeojsonCache } from '$routes/map/utils/formats/geojson';
+	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';

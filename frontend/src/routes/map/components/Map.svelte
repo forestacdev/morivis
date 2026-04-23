@@ -47,8 +47,8 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
-	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
-	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
+	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';

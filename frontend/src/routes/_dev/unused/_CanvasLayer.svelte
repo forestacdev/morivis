@@ -9,7 +9,7 @@
 	import vertexShaderSource from '$routes/CanvasLayer/shader/vertex.glsl?raw';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry } from '$routes/map/types/geometry';
-	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/file/geojson';
+	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/formats/geojson';
 	import { selectedHighlightData, type SelectedHighlightData } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 

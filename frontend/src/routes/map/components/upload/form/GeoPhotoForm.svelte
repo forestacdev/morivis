@@ -5,7 +5,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { parseGeoPhotos } from '$routes/map/utils/file/exif';
+	import { parseGeoPhotos } from '$routes/map/utils/formats/exif';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

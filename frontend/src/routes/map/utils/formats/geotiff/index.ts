@@ -9,7 +9,7 @@ import {
 	calculateBandStatsFromBlob,
 	lngToMercX,
 	latToMercY
-} from '$routes/map/utils/file/aux.xml';
+} from '$routes/map/utils/formats/aux.xml';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {

@@ -1,6 +1,6 @@
 import { asset } from '$app/paths';
 
-import type { RasterBands, BandDataRange } from '$routes/map/utils/file/geotiff';
+import type { RasterBands, BandDataRange } from '$routes/map/utils/formats/geotiff';
 
 export interface GeoJSONFeature {
 	type: 'Feature';
