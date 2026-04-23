@@ -34,14 +34,16 @@ import {
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
-import { GeojsonCache, getGeojson } from '$routes/map/utils/formats/geojson';
-import { JoinDataCache } from '$routes/map/utils/data/join-data';
+import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
+import { GeoTiffImageCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+import { getGeojson } from '$routes/map/utils/formats/geojson';
 import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 
 import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
-import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/formats/geotiff';
+import { loadRasterData } from '$routes/map/utils/formats/geotiff';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';

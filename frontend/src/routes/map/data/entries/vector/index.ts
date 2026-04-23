@@ -7,7 +7,7 @@ import type {
 } from '$routes/map/data/types/vector';
 
 import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
-import { GeojsonCache } from '$routes/map/utils/formats/geojson';
+import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 
 import {
 	DEFAULT_VECTOR_POINT_STYLE,

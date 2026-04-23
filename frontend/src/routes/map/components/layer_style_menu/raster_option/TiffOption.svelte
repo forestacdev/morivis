@@ -12,7 +12,7 @@
 		type RasterEntry,
 		type RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
 	interface Props {

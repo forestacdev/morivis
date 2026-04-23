@@ -15,11 +15,10 @@
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
-		GeoTiffCache,
 		encodeAllBandsToTerrarium,
 		getMinMax,
-		type BandDataRange,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import {

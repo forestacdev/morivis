@@ -11,12 +11,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import {
-		GeoTiffCache,
-		encodeAllBandsToTerrarium,
-		type RasterBands,
-		type BandDataRange
-	} from '$routes/map/utils/formats/geotiff';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { encodeAllBandsToTerrarium, type RasterBands } from '$routes/map/utils/formats/geotiff';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';

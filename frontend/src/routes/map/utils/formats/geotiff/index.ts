@@ -6,9 +6,6 @@ import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { encodeBandsToTerrariumUrls } from '$routes/map/utils/formats/raster/terrarium';
 import { renderTerrarium } from '$routes/map/utils/formats/raster/terrarium-render';
 
-export { GeoTiffCache, GeoTiffImageCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-export type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
-
 /** バンドごとのTypedArray配列 */
 export type RasterBands = TypedArray[];
 

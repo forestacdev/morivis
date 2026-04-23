@@ -16,12 +16,8 @@
 	import type { ColorMatchExpression } from '$routes/map/data/types/vector/style';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import {
-		GeoTiffCache,
-		encodeAllBandsToTerrarium,
-		type RasterBands,
-		type BandDataRange
-	} from '$routes/map/utils/formats/geotiff';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { encodeAllBandsToTerrarium, type RasterBands } from '$routes/map/utils/formats/geotiff';
 	import {
 		gpkgToGeoJson,
 		gpkgToRaster,

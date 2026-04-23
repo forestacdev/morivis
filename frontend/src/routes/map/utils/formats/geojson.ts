@@ -6,8 +6,6 @@ import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
 
-export { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
-
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {

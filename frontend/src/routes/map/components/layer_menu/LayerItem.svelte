@@ -12,9 +12,9 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
-	import { GeojsonCache } from '$routes/map/utils/formats/geojson';
-	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';

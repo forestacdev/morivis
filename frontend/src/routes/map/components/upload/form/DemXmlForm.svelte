@@ -14,12 +14,11 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { parseDemXml, type DemXmlResult } from '$routes/map/utils/formats/dem-xml';
 	import {
-		GeoTiffCache,
 		encodeAllBandsToTerrarium,
 		getMinMax,
-		type BandDataRange,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
