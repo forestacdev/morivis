@@ -1,8 +1,1 @@
-// localストレージにデータを保存する関数
-export const saveToTermsAccepted = () => {
-	localStorage.setItem('isTermsAccepted', 'true');
-};
-
-export const checkToTermsAccepted = () => {
-	return localStorage.getItem('isTermsAccepted') === 'true';
-};
+export * from '$routes/map/utils/platform/terms-storage';
