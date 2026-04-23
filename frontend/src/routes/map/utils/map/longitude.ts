@@ -1,7 +1,7 @@
 /**
  * Detect the longitude domain based on the first and last longitude values.
  *
- * https://github.com/cf-convention/cf-conventions/issues/435?utm_source=chatgpt.com
+ * https://github.com/cf-convention/cf-conventions/issues/435
  *
  * @param first - The first longitude value.
  * @param last - The last longitude value.
