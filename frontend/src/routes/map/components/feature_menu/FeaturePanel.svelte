@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { Snippet } from 'svelte';
 
-	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
+	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
 	import FeaturePanelShell from './FeaturePanelShell.svelte';
+	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
+
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -18,11 +19,11 @@
 	interface Props {
 		panelData: FeaturePanelData | null;
 		layerEntries: GeoDataEntry[];
+		showSelectionMarker: boolean;
 		onClose: () => void;
-		children: Snippet;
 	}
 
-	let { panelData, layerEntries, onClose, children }: Props = $props();
+	let { panelData, layerEntries, showSelectionMarker = $bindable(), onClose }: Props = $props();
 
 	let targetLayer = $derived.by(() => {
 		if (panelData?.kind !== 'layer-feature') return null;
@@ -94,7 +95,7 @@
 	{/snippet}
 
 	{#if panelData?.kind === 'layer-feature'}
-		{@render children()}
+		<FeaturePanelLayerContent featureMenuData={panelData} {layerEntries} bind:showSelectionMarker />
 	{:else if panelData?.kind === 'search-address'}
 		{#await getWikipedia(panelData)}
 			<!-- ローディング中 -->

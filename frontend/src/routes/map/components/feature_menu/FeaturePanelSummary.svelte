@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 
 	import FeaturePanelMediaGallery from './FeaturePanelMediaGallery.svelte';
+
 	import { ICONS } from '$lib/icons';
 	import type { FeaturePanelSummary } from '$routes/map/types';
 
