@@ -56,7 +56,7 @@
 			{/if}
 
 			{#if summary.description}
-				<span class="my-2 text-justify text-base">{summary.description}</span>
+				<span class="my-2 text-justify text-base whitespace-pre-line">{summary.description}</span>
 			{/if}
 		</div>
 	</div>
