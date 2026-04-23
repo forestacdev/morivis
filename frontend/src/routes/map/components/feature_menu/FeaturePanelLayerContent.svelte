@@ -4,6 +4,7 @@
 
 	import { getImageByName } from '$routes/map/api/inaturalist';
 	import FeaturePanelAttributeItem from '$routes/map/components/feature_menu/FeaturePanelAttributeItem.svelte';
+	import FeaturePanelLoading from '$routes/map/components/feature_menu/FeaturePanelLoading.svelte';
 	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
 	import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -238,13 +239,9 @@
 
 {#if featureMenuData}
 	{#await mediaPromise}
-		<!-- ローディング中 -->
-		<div class="absolute inset-0 flex flex-col items-center gap-4 max-lg:pt-32 lg:justify-center">
-			<div
-				class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
-			></div>
-			<p class="text-gray-400">読み込み中...</p>
-		</div>
+		<FeaturePanelLoading
+			containerClass="absolute inset-0 flex flex-col items-center gap-4 max-lg:pt-32 lg:justify-center"
+		/>
 	{:then mediaData}
 		{@const summaryData = getSummaryData(mediaData)}
 		{#if summaryData}

@@ -2,7 +2,8 @@
 	import Icon from '@iconify/svelte';
 
 	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
-	import FeaturePanelShell from './FeaturePanelShell.svelte';
+	import FeaturePanelFrame from './FeaturePanelFrame.svelte';
+	import FeaturePanelLoading from './FeaturePanelLoading.svelte';
 	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
 
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
@@ -77,7 +78,7 @@
 </script>
 
 <!-- PC -->
-<FeaturePanelShell
+<FeaturePanelFrame
 	open={panelData !== null}
 	transition={panelData?.kind === 'search-address' ? 'fly' : 'scale'}
 	{onClose}
@@ -98,15 +99,9 @@
 		<FeaturePanelLayerContent featureMenuData={panelData} {layerEntries} bind:showSelectionMarker />
 	{:else if panelData?.kind === 'search-address'}
 		{#await getWikipedia(panelData)}
-			<!-- ローディング中 -->
-			<div class="flex h-full w-full flex-col items-center justify-center gap-4">
-				<div
-					class="border-t-accent h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
-				></div>
-				<p class="text-gray-400">読み込み中...</p>
-			</div>
+			<FeaturePanelLoading />
 		{:then wikiMenuData}
 			<FeaturePanelSummary summary={getSearchAddressSummary(panelData, wikiMenuData)} />
 		{/await}
 	{/if}
-</FeaturePanelShell>
+</FeaturePanelFrame>
