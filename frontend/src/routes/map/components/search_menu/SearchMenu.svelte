@@ -14,7 +14,7 @@
 		ResultPoiData,
 		ResultAddressData,
 		SearchGeojsonData
-	} from '$routes/map/utils/feature';
+	} from '$routes/map/utils/data/search-result';
 	import { isStyleEdit } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';

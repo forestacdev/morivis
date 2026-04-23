@@ -38,7 +38,7 @@ import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
 import { JoinDataCache } from '$routes/map/utils/data/join-data';
 import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
-import { objectToUrlParams } from '$routes/map/utils/params';
+import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';

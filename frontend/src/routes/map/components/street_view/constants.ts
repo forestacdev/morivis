@@ -1,4 +1,4 @@
-import { checkPc } from '$routes/map/utils/ui';
+import { checkPc } from '$routes/map/utils/platform/viewport';
 import { PUBLIC_PANORAMA_PATH } from '$env/static/public';
 import * as THREE from 'three';
 

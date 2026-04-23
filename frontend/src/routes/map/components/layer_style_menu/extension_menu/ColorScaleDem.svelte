@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ColorMapManager } from '$routes/map/utils/color_mapping';
+	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 	const colorMapManager = new ColorMapManager();
 

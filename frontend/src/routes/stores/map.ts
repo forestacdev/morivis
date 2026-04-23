@@ -23,7 +23,7 @@ import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
 import turfBbox from '@turf/bbox';
-import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/params';
+import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/platform/url-params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
@@ -43,7 +43,7 @@ import {
 	WEB_MERCATOR_MAX_LNG
 } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
-import { checkMobile, checkPc } from '$routes/map/utils/ui';
+import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
 import {

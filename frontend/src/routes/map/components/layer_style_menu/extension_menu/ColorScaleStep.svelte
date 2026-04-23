@@ -3,7 +3,7 @@
 		getSequentSchemeColors,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
-	import { generateStepGradient } from '$routes/map/utils/color_mapping';
+	import { generateStepGradient } from '$routes/map/utils/style/color-mapping';
 	interface Props {
 		isColorMap: SequentialScheme;
 	}

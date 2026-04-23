@@ -9,8 +9,8 @@
 		ResultPoiData,
 		ResultAddressData,
 		ResultCoordinateData
-	} from '$routes/map/utils/feature';
-	import { checkPc } from '$routes/map/utils/ui';
+	} from '$routes/map/utils/data/search-result';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 
 	interface Props {
 		selectedSearchResultData: ResultPoiData | ResultAddressData | ResultCoordinateData | null;

@@ -13,7 +13,7 @@
 		pwaInstall,
 		shouldShowInstallButton
 	} from '$routes/map/utils/platform/pwa';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';

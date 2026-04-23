@@ -15,7 +15,7 @@
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { GeojsonCache } from '$routes/map/utils/file/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
-	import { checkMobile, checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';

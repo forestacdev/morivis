@@ -7,7 +7,7 @@
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import type { ColorMapType, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
-	import { ColorMapManager } from '$routes/map/utils/color_mapping';
+	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 	const colorMapManager = new ColorMapManager();
 

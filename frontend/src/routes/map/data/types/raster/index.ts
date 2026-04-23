@@ -1,5 +1,5 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
-import type { RasterStylePreset } from '$routes/map/utils/raster';
+import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 
 export const DEM_DATA_TYPE = {
 	mapbox: 0.0,

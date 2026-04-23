@@ -1,5 +1,5 @@
 import { get, writable, readable } from 'svelte/store';
-import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/ui';
+import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/platform/viewport';
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
 import { isStreetView, isStyleEdit } from '$routes/stores';

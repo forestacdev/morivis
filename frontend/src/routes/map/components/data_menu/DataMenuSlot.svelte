@@ -15,7 +15,7 @@
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { CoverImageManager } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
-	import { checkPc, checkMobile } from '$routes/map/utils/ui';
+	import { checkPc, checkMobile } from '$routes/map/utils/platform/viewport';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';

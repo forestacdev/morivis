@@ -4,7 +4,7 @@
 
 	import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 	import type { FieldDef } from '$routes/map/data/types/vector/properties';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {

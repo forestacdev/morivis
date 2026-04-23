@@ -4,8 +4,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { checkMobile } from '$routes/map/utils/ui';
 
 	interface Props {
 		map: maplibregl.Map;

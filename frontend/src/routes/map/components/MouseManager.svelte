@@ -3,19 +3,19 @@
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
 	import { clickDebug } from './map-debug';
-	import type { ResultData } from '../utils/feature';
-	import { setStreetViewParams } from '../utils/params';
-	import { checkMobile } from '../utils/ui';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
+	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
 	import { isPointInBbox } from '$routes/map/utils/map';
-	import { getPixelColor, getGuide } from '$routes/map/utils/raster';
+	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
+	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
 	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 

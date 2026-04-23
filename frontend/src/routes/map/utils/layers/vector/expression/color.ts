@@ -13,7 +13,7 @@ import type {
 	IconsStyle
 } from '$routes/map/data/types/vector/style';
 
-import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
+import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 
 export const generateMatchExpression = (
 	expressionData: ColorMatchExpression

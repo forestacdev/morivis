@@ -20,7 +20,7 @@
 		SearchGeojsonData,
 		ResultPoiData,
 		ResultAddressData
-	} from '../utils/feature';
+	} from '../utils/data/search-result';
 
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';

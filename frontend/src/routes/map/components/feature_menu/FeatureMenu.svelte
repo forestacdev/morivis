@@ -5,7 +5,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {

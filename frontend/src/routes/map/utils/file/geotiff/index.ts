@@ -2,7 +2,7 @@ import type { TypedArray, ReadRasterResult } from 'geotiff';
 import JSZip from 'jszip';
 
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
-import { ColorMapManager } from '$routes/map/utils/color_mapping';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
 	calculateGeoTransformFromBbox,
 	buildAuxXml,

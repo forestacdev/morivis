@@ -14,8 +14,8 @@
 
 	import type { CurrentPointData } from '$routes/map/types/street-view';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
-	import { setStreetViewParams } from '$routes/map/utils/params';
-	import { getStreetViewCameraParams } from '$routes/map/utils/params';
+	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
+	import { getStreetViewCameraParams } from '$routes/map/utils/platform/url-params';
 	import { isStreetView, isDebugMode } from '$routes/stores';
 	import { isMobile, showOtherMenu } from '$routes/stores/ui';
 

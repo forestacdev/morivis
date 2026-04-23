@@ -13,7 +13,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
 	import { isBBoxOverlapping } from '$routes/map/utils/map';
-	import { checkMobileWidth } from '$routes/map/utils/ui';
+	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu } from '$routes/stores/ui';
