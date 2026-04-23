@@ -1,6 +1,6 @@
 import { getImagePmtiles } from '$routes/map/utils/raster';
 import { convertTmsToXyz } from '$routes/map/utils/sources';
-import { xyzToWMSXYZ } from '$routes/map/utils/tile';
+import { xyzToWMSXYZ } from '$routes/map/utils/map/tile-coordinate';
 
 import { CoverImageManager } from '../index';
 import { IMAGE_TILE_XYZ } from '$routes/constants';

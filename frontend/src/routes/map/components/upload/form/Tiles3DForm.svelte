@@ -5,7 +5,7 @@
 	import { createTiles3DEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { fetchTileset3DBbox } from '$routes/map/utils/3dtiles';
+	import { fetchTileset3DBbox } from '$routes/map/utils/tiles3d/bounds';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {

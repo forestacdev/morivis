@@ -11,6 +11,7 @@
 	import Processing from './Processing.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 	import type { ContextMenuState } from './types/ui';
+	import { getPropertiesFromPMTiles } from './utils/data/pmtiles-properties';
 	import type {
 		ResultAddressData,
 		ResultCoordinateData,
@@ -18,8 +19,7 @@
 		ResultPoiData,
 		SearchGeojsonData
 	} from './utils/feature';
-	import { getPropertiesFromPMTiles } from './utils/pmtiles';
-	import { lonLatToTileCoords } from './utils/tile';
+	import { lonLatToTileCoords } from './utils/map/tile-coordinate';
 	import { checkPc } from './utils/ui';
 
 	import { page } from '$app/state';

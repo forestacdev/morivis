@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { NumbersExpression } from '$routes/map/data/types/vector/style';
-	import { generateNumberToNumberMap } from '$routes/map/utils/number_mapping';
+	import { generateNumberToNumberMap } from '$routes/map/utils/style/number-mapping';
 
 	interface Props {
 		setExpression: NumbersExpression;

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/camera-effects';
+import { shake } from '$routes/map/utils/camera/effects/shake';
 
 /** 通知メッセージ */
 type NotificationMessage = {

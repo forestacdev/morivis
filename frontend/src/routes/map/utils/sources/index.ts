@@ -35,7 +35,7 @@ import {
 import { get } from 'svelte/store';
 
 import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
-import { JoinDataCache } from '$routes/map/utils/join_data';
+import { JoinDataCache } from '$routes/map/utils/data/join-data';
 import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
 import { objectToUrlParams } from '$routes/map/utils/params';
