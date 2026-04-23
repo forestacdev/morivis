@@ -4,7 +4,7 @@ import { enhancedImages } from '@sveltejs/enhanced-img';
 import path from 'path';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { qrcode } from 'vite-plugin-qrcode';
-import { buildViteProxyConfig } from './src/routes/map/utils/proxy';
+import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
 
 // @devantic/diaper の自動CSSインジェクトを無効化するプラグイン
 const diaperCssOverridePlugin: Plugin = {

@@ -34,7 +34,7 @@ import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
-import { devProxyTransform } from '$routes/map/utils/proxy';
+import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
