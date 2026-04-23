@@ -53,7 +53,7 @@ import {
 import { isPointInBbox } from '$routes/map/utils/map';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
-import { threeJsManager } from '$routes/map/utils/threejs';
+import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 
