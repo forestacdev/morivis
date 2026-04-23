@@ -14,6 +14,11 @@ import {
 	encodeBandsToTerrariumUrls,
 	terminateEncodeWorker
 } from '$routes/map/utils/formats/transformers/terrarium';
+import {
+	releaseRenderTexture,
+	renderTerrarium,
+	terminateRenderWorker
+} from '$routes/map/utils/formats/transformers/terrarium-render';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {
@@ -223,9 +228,7 @@ export class GeoTiffCache {
 		this.textureTransferredSet.delete(key);
 		this.is4326Set.delete(key);
 		this.rawBboxCache.delete(key);
-		// Workerが存在する場合のみテクスチャ解放を通知
-		if (_renderWorker) {
-			_renderWorker.postMessage({ action: 'release', entryId: key });
+		if (releaseRenderTexture(key)) {
 			// キャッシュが空になったらWorkerを停止
 			if (this.terrariumCache.size === 0) {
 				terminateRenderWorker();
@@ -298,27 +301,6 @@ export const parseRasterBands = (rasterData: ReadRasterResult): RasterBands => {
 		return rasterData as RasterBands;
 	}
 	return [rasterData as TypedArray];
-};
-
-// --- Workers (遅延初期化) ---
-
-let _renderWorker: Worker | null = null;
-
-const getRenderWorker = (): Worker => {
-	if (!_renderWorker) {
-		_renderWorker = new Worker(new URL('./terrarium_render.worker.ts', import.meta.url), {
-			type: 'module'
-		});
-	}
-	return _renderWorker;
-};
-
-/** レンダーWorkerを停止する（全TIFFエントリ解放後に呼ぶ） */
-export const terminateRenderWorker = () => {
-	if (_renderWorker) {
-		_renderWorker.terminate();
-		_renderWorker = null;
-	}
 };
 
 const colorMapManager = new ColorMapManager();
@@ -455,25 +437,10 @@ export const loadRasterData = async (
 			workerMessage.blueMax = normalize(uniformsData.multi.b.max, bRange.min, bRange.max);
 		}
 
-		return new Promise((resolve, reject) => {
-			getRenderWorker().postMessage(workerMessage);
-
-			getRenderWorker().onmessage = async (e) => {
-				const { blob, error } = e.data;
-				if (error) {
-					reject(new Error(`Render worker error: ${error}`));
-					return;
-				}
-				const url = URL.createObjectURL(blob);
-				GeoTiffCache.setBlob(id, blob, url);
-				resolve(url);
-			};
-
-			getRenderWorker().onerror = (error) => {
-				console.error('Render worker error:', error);
-				reject(new Error(`Render worker error: ${error.message}`));
-			};
-		});
+		const blob = await renderTerrarium(workerMessage);
+		const url = URL.createObjectURL(blob);
+		GeoTiffCache.setBlob(id, blob, url);
+		return url;
 	} catch (error) {
 		console.error('Error rendering raster data', error);
 	}
