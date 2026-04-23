@@ -1,4 +1,4 @@
-import { propData } from '$routes/map/data/entries/_prop_data';
+import { getPrimaryImageMedia, propData } from '$routes/map/data/entries/_prop_data';
 import type { Map, MapStyleImageMissingEvent } from 'maplibre-gl';
 
 let mapLibreMap: Map | null = null;
@@ -42,7 +42,7 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 	if (mapLibreMap.hasImage(id)) return;
 
 	try {
-		const imageUrl = propData[id].image;
+		const imageUrl = getPrimaryImageMedia(propData[id]?.medias)?.url;
 
 		if (!imageUrl) return;
 		const image = await loadImage(imageUrl);

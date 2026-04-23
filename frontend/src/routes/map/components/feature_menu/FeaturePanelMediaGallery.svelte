@@ -15,8 +15,10 @@
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = $derived({
+		active: media.length > 1,
 		loop: media.length > 1,
-		dragFree: false
+		dragFree: false,
+		watchDrag: media.length > 1
 	});
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
 

@@ -106,8 +106,6 @@
 			</div>
 		{:then wikiMenuData}
 			<FeaturePanelSummary summary={getSearchAddressSummary(panelData, wikiMenuData)} />
-			<!-- 余白 -->
-			<div class="h-[200px] w-full shrink-0"></div>
 		{/await}
 	{/if}
 </FeaturePanelShell>

@@ -11,6 +11,7 @@
 	}
 
 	let { summary }: Props = $props();
+	let description = $derived(summary.description?.trim() ?? '');
 </script>
 
 <div in:fade={{ duration: 100 }}>
@@ -55,8 +56,8 @@
 				</div>
 			{/if}
 
-			{#if summary.description}
-				<span class="my-2 text-justify text-base whitespace-pre-line">{summary.description}</span>
+			{#if description}
+				<span class="my-2 text-justify text-base whitespace-pre-line">{description}</span>
 			{/if}
 		</div>
 	</div>

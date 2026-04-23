@@ -91,7 +91,6 @@
 	/**
 	 * メディアデータを取得する共通Promise
 	 * - data.medias: propDataからの複数メディア
-	 * - data.image: propDataからの画像
 	 * - imageKey: featureMenuDataのプロパティからの画像
 	 * - iNaturalistNameKey: iNaturalist APIからの画像
 	 */
@@ -103,20 +102,7 @@
 				return data.medias.map((media) => convertMediaData(media));
 			}
 
-			// 1. propDataからの画像
-			if (data?.image) {
-				return [
-					{
-						type: 'image',
-						url: data.image,
-						alt: targetLayer?.metaData.name ?? '画像',
-						source: 'static',
-						fit: 'contain'
-					}
-				];
-			}
-
-			// 2. featureMenuDataのプロパティからの画像
+			// 1. featureMenuDataのプロパティからの画像
 			if (featureMenuData?.properties && imageKey) {
 				const url = featureMenuData.properties[imageKey] as string;
 				if (url) {
@@ -132,7 +118,7 @@
 				}
 			}
 
-			// 3. iNaturalist APIからの画像
+			// 2. iNaturalist APIからの画像
 			if (iNaturalistNameKey && featureMenuData?.properties) {
 				const name = featureMenuData.properties[iNaturalistNameKey] as string;
 				if (name) {

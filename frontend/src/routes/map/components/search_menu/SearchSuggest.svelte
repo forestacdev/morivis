@@ -11,7 +11,7 @@
 	import { DATA_PATH } from '$routes/constants';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { layerDataFuse } from '$routes/map/data/entries';
-	import { propData } from '$routes/map/data/entries/_prop_data';
+	import { getPrimaryImageMedia, propData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
@@ -216,7 +216,7 @@
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
 							>
 								<div class="grid shrink-0 place-items-center">
-									{#if result.propId && propData[result.propId] && propData[result.propId].image}
+									{#if result.propId && getPrimaryImageMedia(propData[result.propId]?.medias)}
 										<img
 											src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
 											alt="Icon"

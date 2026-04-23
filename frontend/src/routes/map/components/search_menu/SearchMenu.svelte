@@ -7,7 +7,7 @@
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
-	import { propData } from '$routes/map/data/entries/_prop_data';
+	import { getPrimaryImageMedia, propData } from '$routes/map/data/entries/_prop_data';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import type {
 		ResultData,
@@ -168,7 +168,7 @@
 					>
 						{#if result.type === 'poi'}
 							<div class="grid shrink-0 place-items-center overflow-hidden">
-								{#if result.propId && propData[result.propId] && propData[result.propId].image}
+								{#if result.propId && getPrimaryImageMedia(propData[result.propId]?.medias)}
 									<img
 										src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
 										alt="Icon"
