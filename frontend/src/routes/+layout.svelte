@@ -8,7 +8,7 @@
 
 	import { MOBILE_WIDTH } from './constants';
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/platform/pwa';
 
 	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';

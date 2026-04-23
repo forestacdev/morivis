@@ -12,7 +12,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type Tag } from '$routes/map/data/types/tags';
 	import type { DialogType } from '$routes/map/types';
-	import { encode } from '$routes/map/utils/normalized';
+	import { encode } from '$routes/map/utils/data/normalize';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 

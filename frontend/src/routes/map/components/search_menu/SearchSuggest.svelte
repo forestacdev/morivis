@@ -14,8 +14,8 @@
 	import { propData } from '$routes/map/data/entries/_prop_data';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData } from '$routes/map/types';
+	import { encode } from '$routes/map/utils/data/normalize';
 	import type { ResultData } from '$routes/map/utils/feature';
-	import { encode } from '$routes/map/utils/normalized';
 	import { isStyleEdit, selectedLayerId } from '$routes/stores';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';

@@ -4,12 +4,12 @@
 
 	import { ICONS } from '$lib/icons';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
+	import { normalizeSchoolName } from '$routes/map/utils/data/normalize';
 	import type {
 		ResultPoiData,
 		ResultAddressData,
 		ResultCoordinateData
 	} from '$routes/map/utils/feature';
-	import { normalizeSchoolName } from '$routes/map/utils/normalized';
 	import { checkPc } from '$routes/map/utils/ui';
 
 	interface Props {

@@ -20,7 +20,7 @@
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getFullName } from '$routes/map/utils/city_code';
-	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { generatePopupTitle } from '$routes/map/utils/data/properties';
 	import { checkPc } from '$routes/map/utils/ui';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 

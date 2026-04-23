@@ -4,7 +4,7 @@ import { activeLayerIdsStore } from '$routes/stores/layers';
 import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
 import Fuse from 'fuse.js';
-import { encode } from '$routes/map/utils/normalized';
+import { encode } from '$routes/map/utils/data/normalize';
 
 // 共通の初期化処理
 // visible を true にする
