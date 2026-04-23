@@ -217,7 +217,7 @@
 		<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
 			<div
-				class="c-scroll-hidden flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
+				class="c-scroll-hidden flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto pb-[250px]"
 			>
 				{#each poiData as info}
 					<label

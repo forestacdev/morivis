@@ -157,47 +157,55 @@
 			</button>
 		</div>
 		{#if searchResults}
-			<div class="c-scroll flex grow flex-col gap-3 overflow-x-hidden overflow-y-auto px-2 pb-4">
-				{#each searchResults as result (result)}
-					<button
-						onclick={() => focusFeature(result)}
-						class="border-sub lg:hover:border-accent flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base transition-colors duration-150 {result.id &&
-						selectedSearchId === result.id
-							? 'bg-accent'
-							: ''}"
-					>
-						{#if result.type === 'poi'}
-							<div class="grid shrink-0 place-items-center overflow-hidden">
-								{#if result.propId && getPrimaryImageMedia(propData[result.propId]?.medias)}
-									<img
-										src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
-										alt="Icon"
-										class="h-12 w-12 rounded-full object-cover"
-									/>
-								{:else}
+			<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
+				<!-- スクロールコンテンツ -->
+				<div
+					class="c-scroll-hidden flex grow flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 pb-[250px]"
+				>
+					{#each searchResults as result (result)}
+						<button
+							onclick={() => focusFeature(result)}
+							class="border-sub lg:hover:border-accent flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border-1 bg-black p-2 text-left text-base transition-colors duration-150 {result.id &&
+							selectedSearchId === result.id
+								? 'bg-accent'
+								: ''}"
+						>
+							{#if result.type === 'poi'}
+								<div class="grid shrink-0 place-items-center overflow-hidden">
+									{#if result.propId && getPrimaryImageMedia(propData[result.propId]?.medias)}
+										<img
+											src={`${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`}
+											alt="Icon"
+											class="h-12 w-12 rounded-full object-cover"
+										/>
+									{:else}
+										<div class="grid h-12 w-12 place-items-center">
+											<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+										</div>
+									{/if}
+								</div>
+								<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+									<span class="truncate">{result.name}</span>
+									<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+								</div>
+							{:else if result.type === 'address'}
+								<div class="grid shrink-0 place-items-center overflow-hidden">
 									<div class="grid h-12 w-12 place-items-center">
 										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
 									</div>
-								{/if}
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
-								<span class="truncate">{result.name}</span>
-								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
-							</div>
-						{:else if result.type === 'address'}
-							<div class="grid shrink-0 place-items-center overflow-hidden">
-								<div class="grid h-12 w-12 place-items-center">
-									<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
 								</div>
-							</div>
-							<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
-								<span class="truncate">{result.name}</span>
-								<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
-							</div>
-						{/if}
-					</button>
-				{/each}
-				<div class="h-[200px] w-full shrink-0"></div>
+								<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">
+									<span class="truncate">{result.name}</span>
+									<span class="text-xs text-gray-400">{result.location ?? '---'}</span>
+								</div>
+							{/if}
+						</button>
+					{/each}
+				</div>
+				<!-- フォグ効果の背景 -->
+				<div
+					class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[200px] w-full"
+				></div>
 			</div>
 		{/if}
 		<!-- <div
