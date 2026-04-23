@@ -10,6 +10,10 @@ import {
 	lngToMercX,
 	latToMercY
 } from '$routes/map/utils/formats/aux.xml';
+import {
+	encodeBandsToTerrariumUrls,
+	terminateEncodeWorker
+} from '$routes/map/utils/formats/transformers/terrarium';
 
 /** バンドごとの min/max データ範囲 */
 export interface BandDataRange {
@@ -298,17 +302,7 @@ export const parseRasterBands = (rasterData: ReadRasterResult): RasterBands => {
 
 // --- Workers (遅延初期化) ---
 
-let _encodeWorker: Worker | null = null;
 let _renderWorker: Worker | null = null;
-
-const getEncodeWorker = (): Worker => {
-	if (!_encodeWorker) {
-		_encodeWorker = new Worker(new URL('./terrarium_encode.worker.ts', import.meta.url), {
-			type: 'module'
-		});
-	}
-	return _encodeWorker;
-};
 
 const getRenderWorker = (): Worker => {
 	if (!_renderWorker) {
@@ -317,14 +311,6 @@ const getRenderWorker = (): Worker => {
 		});
 	}
 	return _renderWorker;
-};
-
-/** エンコードWorkerを停止する（全エンコード完了後に呼ぶ） */
-export const terminateEncodeWorker = () => {
-	if (_encodeWorker) {
-		_encodeWorker.terminate();
-		_encodeWorker = null;
-	}
 };
 
 /** レンダーWorkerを停止する（全TIFFエントリ解放後に呼ぶ） */
@@ -337,43 +323,6 @@ export const terminateRenderWorker = () => {
 
 const colorMapManager = new ColorMapManager();
 
-// --- Terrarium encoding ---
-
-/**
- * 1バンドを Terrarium PNG にエンコードする
- */
-export const encodeBandToTerrarium = (
-	band: TypedArray,
-	width: number,
-	height: number,
-	nodata: number | null,
-	dataMin: number,
-	dataMax: number
-): Promise<Blob> =>
-	new Promise((resolve, reject) => {
-		getEncodeWorker().postMessage({
-			band,
-			width,
-			height,
-			nodata,
-			dataMin,
-			dataMax
-		});
-
-		getEncodeWorker().onmessage = (e) => {
-			const { blob, error } = e.data;
-			if (error) {
-				reject(new Error(`Encode error: ${error}`));
-				return;
-			}
-			resolve(blob);
-		};
-
-		getEncodeWorker().onerror = (error) => {
-			reject(new Error(`Encode worker error: ${error.message}`));
-		};
-	});
-
 /**
  * 全バンドを Terrarium PNG にエンコードしてキャッシュする
  */
@@ -385,27 +334,12 @@ export const encodeAllBandsToTerrarium = async (
 	nodata: number | null,
 	dataRanges: BandDataRange[]
 ): Promise<void> => {
-	const urls: string[] = [];
-
-	for (let i = 0; i < bands.length; i++) {
-		const blob = await encodeBandToTerrarium(
-			bands[i],
-			width,
-			height,
-			nodata,
-			dataRanges[i].min,
-			dataRanges[i].max
-		);
-		urls.push(URL.createObjectURL(blob));
-	}
+	const urls = await encodeBandsToTerrariumUrls(bands, width, height, nodata, dataRanges);
 
 	GeoTiffCache.setTerrarium(id, urls);
 	GeoTiffCache.setDataRanges(id, dataRanges);
 	GeoTiffCache.setSize(id, width, height);
 	GeoTiffCache.setNumBands(id, bands.length);
-
-	// エンコード完了後にWorkerを停止
-	terminateEncodeWorker();
 };
 
 // --- Rendering ---

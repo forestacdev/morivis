@@ -3,6 +3,7 @@ import GML2 from 'ol/format/GML2.js';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
+import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
 
 /**
  * 基盤地図情報（FGD）GML パーサー
@@ -218,61 +219,6 @@ const detectGmlVersion = (text: string): GmlVersion => {
 	if (text.includes('gml/3') || text.includes('GML/3')) return '3';
 	if (text.includes('gml/2') || text.includes('GML/2')) return '2';
 	return '3';
-};
-
-export const geometryToGeoJSON = (
-	geometry: import('ol/geom/Geometry').default
-): AnyGeometry | null => {
-	if (!geometry) return null;
-
-	const type = geometry.getType();
-
-	switch (type) {
-		case 'Point': {
-			const coords = (geometry as import('ol/geom/Point').default).getCoordinates();
-			return { type: 'Point', coordinates: [coords[0], coords[1]] as [number, number] };
-		}
-		case 'MultiPoint': {
-			const coords = (geometry as import('ol/geom/MultiPoint').default).getCoordinates();
-			return {
-				type: 'MultiPoint',
-				coordinates: coords.map((c) => [c[0], c[1]] as [number, number])
-			};
-		}
-		case 'LineString': {
-			const coords = (geometry as import('ol/geom/LineString').default).getCoordinates();
-			return {
-				type: 'LineString',
-				coordinates: coords.map((c) => [c[0], c[1]] as [number, number])
-			};
-		}
-		case 'MultiLineString': {
-			const coords = (geometry as import('ol/geom/MultiLineString').default).getCoordinates();
-			return {
-				type: 'MultiLineString',
-				coordinates: coords.map((line) => line.map((c) => [c[0], c[1]] as [number, number]))
-			};
-		}
-		case 'Polygon': {
-			const coords = (geometry as import('ol/geom/Polygon').default).getCoordinates();
-			return {
-				type: 'Polygon',
-				coordinates: coords.map((ring) => ring.map((c) => [c[0], c[1]] as [number, number]))
-			};
-		}
-		case 'MultiPolygon': {
-			const coords = (geometry as import('ol/geom/MultiPolygon').default).getCoordinates();
-			return {
-				type: 'MultiPolygon',
-				coordinates: coords.map((poly) =>
-					poly.map((ring) => ring.map((c) => [c[0], c[1]] as [number, number]))
-				)
-			};
-		}
-		default:
-			console.warn(`Unsupported geometry type: ${type}`);
-			return null;
-	}
 };
 
 const parseGenericGml = (text: string): FeatureCollection => {
