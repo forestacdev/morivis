@@ -7,7 +7,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	import { type WikiArticle } from './api/wikipedia';
 	import Processing from './Processing.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 	import type { ContextMenuState } from './types/ui';
@@ -28,9 +27,8 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
 	import FeatureMenuContents from '$routes/map/components/feature_menu/FeatureMenuContents.svelte';
-	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
+	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
@@ -51,7 +49,13 @@
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
+	import {
+		createLayerFeaturePanelData,
+		createSearchFeaturePanelData,
+		type DialogType,
+		type FeatureMenuData,
+		type FeaturePanelData
+	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
@@ -162,7 +166,6 @@
 
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
-	let wikiMenuData = $state<WikiArticle | null>(null);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -197,6 +200,18 @@
 	let selectedSearchResultData = $state<
 		ResultPoiData | ResultAddressData | ResultCoordinateData | null
 	>(null);
+
+	let featurePanelData = $derived.by<FeaturePanelData | null>(() => {
+		if (featureMenuData) {
+			return createLayerFeaturePanelData(featureMenuData);
+		}
+
+		if (selectedSearchResultData) {
+			return createSearchFeaturePanelData(selectedSearchResultData, selectedSearchId);
+		}
+
+		return null;
+	});
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
@@ -341,6 +356,20 @@
 		activeLayerIdsStore.reset();
 		selectedLayerId.set('');
 		mapStore.jumpToFac();
+	};
+
+	const closeFeaturePanel = () => {
+		if (!featurePanelData) return;
+
+		if (featurePanelData.kind === 'layer-feature') {
+			featureMenuData = null;
+			showSelectionMarker = false;
+			return;
+		}
+
+		selectedSearchResultData = null;
+		selectedSearchId = null;
+		showSelectionMarker = false;
 	};
 
 	// streetビューの表示切り替え時
@@ -641,10 +670,11 @@
 				{selectedSearchId}
 				{focusFeature}
 			/>
-			<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-			</FeatureMenu>
-			<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
+			{#if featurePanelData}
+				<FeaturePanel panelData={featurePanelData} {layerEntries} onClose={closeFeaturePanel}>
+					<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+				</FeaturePanel>
+			{/if}
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
@@ -750,8 +780,8 @@
 				document.activeElement.blur();
 			}
 
-			if (featureMenuData) {
-				featureMenuData = null;
+			if (featurePanelData) {
+				closeFeaturePanel();
 				return;
 			}
 

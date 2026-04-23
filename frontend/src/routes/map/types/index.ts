@@ -1,7 +1,18 @@
 import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
-import type { FeatureProp } from '$routes/map/types/properties';
+export type {
+	FeatureMenuData,
+	FeaturePanelData,
+	LayerFeaturePanelData,
+	SearchAddressPanelData,
+	SearchCoordinatePanelData,
+	SearchPoiPanelData
+} from '$routes/map/types/feature-panel';
+export {
+	createLayerFeaturePanelData,
+	createSearchFeaturePanelData
+} from '$routes/map/types/feature-panel';
 
 export type CSSCursor =
 	// 基本カーソル
@@ -127,12 +138,4 @@ export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;
 	feature: MapGeoJSONFeature;
 	featureId: number;
-}
-
-// サイドメニューのポップアップデータ
-export interface FeatureMenuData {
-	point: [number, number];
-	properties: FeatureProp | null;
-	featureId: number;
-	layerId: string;
 }
