@@ -26,7 +26,8 @@
 		type LandXmlSurface,
 		type LandXmlParseResult
 	} from '$routes/map/utils/file/landxml';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';

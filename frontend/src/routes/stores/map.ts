@@ -50,7 +50,7 @@ import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
-import { isPointInBbox } from '$routes/map/utils/map';
+import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';

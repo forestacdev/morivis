@@ -15,7 +15,7 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import {
 		getEpsgInfoArray,

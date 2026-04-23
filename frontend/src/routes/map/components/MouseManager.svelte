@@ -12,7 +12,7 @@
 	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/file/geojson';
-	import { isPointInBbox } from '$routes/map/utils/map';
+	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';

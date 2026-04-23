@@ -14,7 +14,7 @@
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { convertDMFileToGeoJSON, getDMInfo, type DMInfo } from '$routes/map/utils/file/dm';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';

@@ -31,7 +31,8 @@
 		type GpkgInfo
 	} from '$routes/map/utils/file/gpkg';
 	import { parseSldCategories } from '$routes/map/utils/file/sld';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

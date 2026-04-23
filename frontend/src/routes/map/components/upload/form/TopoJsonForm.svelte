@@ -13,7 +13,7 @@
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { getTopoJsonObjects, topoJsonFileToGeoJson } from '$routes/map/utils/file/topojson';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';

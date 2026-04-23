@@ -40,7 +40,7 @@ import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
 
 import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
-import { getBoundingBoxCorners } from '$routes/map/utils/map';
+import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
 import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
 import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';

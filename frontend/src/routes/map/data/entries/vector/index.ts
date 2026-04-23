@@ -31,7 +31,7 @@ import type {
 	LineStringStyle,
 	PointStyle
 } from '../../types/vector/style';
-import { findCenterTile } from '$routes/map/utils/map';
+import { findCenterTile } from '$routes/map/utils/map/tile';
 
 // --- ジオメトリタイプ判定 ---
 

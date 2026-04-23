@@ -32,7 +32,8 @@
 	} from '$routes/map/utils/file/netcdf';
 	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';
 	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

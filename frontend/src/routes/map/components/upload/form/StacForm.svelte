@@ -40,7 +40,7 @@
 		type StacAsset
 	} from '$routes/map/utils/file/stac';
 	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
-	import { findCenterTile } from '$routes/map/utils/map';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

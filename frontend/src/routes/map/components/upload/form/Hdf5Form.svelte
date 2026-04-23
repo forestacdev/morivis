@@ -25,7 +25,8 @@
 		extractHdf5Raster,
 		type Hdf5DatasetInfo
 	} from '$routes/map/utils/file/hdf5';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

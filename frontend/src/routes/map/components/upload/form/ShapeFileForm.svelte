@@ -12,7 +12,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/file/shp';
-	import { isBboxValid, isBbox2D } from '$routes/map/utils/map';
+	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';

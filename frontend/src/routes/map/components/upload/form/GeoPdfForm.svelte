@@ -26,7 +26,8 @@
 		type RasterBands,
 		type BandDataRange
 	} from '$routes/map/utils/file/geotiff';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

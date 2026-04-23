@@ -11,7 +11,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
-	import { isBBoxInside } from '$routes/map/utils/map';
+	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

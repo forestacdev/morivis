@@ -17,7 +17,7 @@
 		getKmlDefaultColor,
 		type KmlParseResult
 	} from '$routes/map/utils/file/kml';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';

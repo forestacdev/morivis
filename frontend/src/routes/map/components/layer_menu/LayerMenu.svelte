@@ -21,7 +21,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
-	import { isBBoxOverlapping } from '$routes/map/utils/map';
+	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';

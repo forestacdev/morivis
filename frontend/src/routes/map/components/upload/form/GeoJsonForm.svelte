@@ -14,7 +14,7 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/file/fgb';
 	import { geoJsonFileToGeoJson } from '$routes/map/utils/file/geojson';
-	import { isBboxValid } from '$routes/map/utils/map';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
