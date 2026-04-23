@@ -13,7 +13,7 @@
 		type WcsCapabilitiesInfo,
 		type WcsCoverageDescription,
 		type WcsCoverageSummary
-	} from '$routes/map/utils/file/wcs';
+	} from '$routes/map/utils/formats/wcs';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

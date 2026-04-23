@@ -34,16 +34,16 @@ import {
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
-import { GeojsonCache, getGeojson } from '$routes/map/utils/file/geojson';
-import { JoinDataCache } from '$routes/map/utils/join_data';
-import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
+import { GeojsonCache, getGeojson } from '$routes/map/utils/formats/geojson';
+import { JoinDataCache } from '$routes/map/utils/data/join-data';
+import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 
-import { objectToUrlParams } from '$routes/map/utils/params';
+import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
-import { getBoundingBoxCorners } from '$routes/map/utils/map';
-import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/file/geotiff';
-import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
-import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';
+import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
+import { loadRasterData, GeoTiffImageCache } from '$routes/map/utils/formats/geotiff';
+import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {

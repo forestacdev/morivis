@@ -11,16 +11,16 @@
 	import Processing from './Processing.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 	import type { ContextMenuState } from './types/ui';
+	import { getPropertiesFromPMTiles } from './utils/data/pmtiles-properties';
 	import type {
 		ResultAddressData,
 		ResultCoordinateData,
 		ResultData,
 		ResultPoiData,
 		SearchGeojsonData
-	} from './utils/feature';
-	import { getPropertiesFromPMTiles } from './utils/pmtiles';
-	import { lonLatToTileCoords } from './utils/tile';
-	import { checkPc } from './utils/ui';
+	} from './utils/data/search-result';
+	import { lonLatToTileCoords } from './utils/map/tile-coordinate';
+	import { checkPc } from './utils/platform/viewport';
 
 	import { page } from '$app/state';
 	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
@@ -55,8 +55,12 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
-	import { getFgbToGeojson } from '$routes/map/utils/file/geojson';
-	import { get3dParams, getParams, getStreetViewParams } from '$routes/map/utils/params';
+	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import {
+		get3dParams,
+		getParams,
+		getStreetViewParams
+	} from '$routes/map/utils/platform/url-params';
 	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';

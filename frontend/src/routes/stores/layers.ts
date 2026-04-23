@@ -1,12 +1,12 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { EntryIdToTypeMap, unregisterInitialEntryStyle } from '$routes/map/data/entries';
 import { writable, get } from 'svelte/store';
-import { GeojsonCache } from '$routes/map/utils/file/geojson';
+import { GeojsonCache } from '$routes/map/utils/formats/geojson';
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { layerAttributions } from './attributions';
 import { type LayerType } from '$routes/map/utils/entries';
-import { JoinDataCache } from '$routes/map/utils/join_data';
-import { shake, pulseZoom, whirl, rotationalVibration } from '$routes/map/utils/camera-effects';
+import { rotationalVibration } from '$routes/map/utils/camera/effects/shake';
+import { JoinDataCache } from '$routes/map/utils/data/join-data';
 import { triggerMapPaneScale } from '$routes/stores/effect';
 
 export type ReorderStatus = 'idle' | 'success' | 'invalid';

@@ -23,7 +23,7 @@ import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
 
 import turfBbox from '@turf/bbox';
-import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/params';
+import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/platform/url-params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { get } from 'svelte/store';
@@ -34,7 +34,7 @@ import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
-import { devProxyTransform } from '$routes/map/utils/proxy';
+import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -43,17 +43,17 @@ import {
 	WEB_MERCATOR_MAX_LNG
 } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
-import { checkMobile, checkPc } from '$routes/map/utils/ui';
+import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
 import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
-import { isPointInBbox } from '$routes/map/utils/map';
+import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
-import { threeJsManager } from '$routes/map/utils/threejs';
+import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 

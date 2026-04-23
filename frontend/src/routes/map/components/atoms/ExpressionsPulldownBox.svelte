@@ -13,7 +13,7 @@
 		RawExpression,
 		VectorLayerType
 	} from '$routes/map/data/types/vector/style';
-	import { getIconStyle } from '$routes/map/utils/ui';
+	import { getIconStyle } from '$routes/map/utils/style/mapping-icon';
 
 	interface Props {
 		style: ColorsStyle | NumbersStyle;

@@ -15,7 +15,6 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import { parseEpsgFromAuxXml, parseBboxFromAuxXml } from '$routes/map/utils/file/aux.xml';
 	import {
 		GeoTiffCache,
 		parseRasterBands,
@@ -23,9 +22,14 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands,
 		type BandDataRange
-	} from '$routes/map/utils/file/geotiff';
-	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/geotiff';
+	import {
+		parseEpsgFromAuxXml,
+		parseBboxFromAuxXml
+	} from '$routes/map/utils/formats/raster/aux-xml';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';

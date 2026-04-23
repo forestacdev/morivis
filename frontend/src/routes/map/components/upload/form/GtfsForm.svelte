@@ -6,8 +6,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { loadGTFSFromZip } from '$routes/map/utils/file/gtfs';
-	import { readStops, readRoutes } from '$routes/map/utils/file/gtfs/parse';
+	import { loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
+	import { readStops, readRoutes } from '$routes/map/utils/formats/gtfs/parse';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

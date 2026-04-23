@@ -4,7 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import { checkMobile } from '$routes/map/utils/ui';
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

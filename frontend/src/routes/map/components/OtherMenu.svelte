@@ -6,14 +6,14 @@
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import { imageExport, getMapCanvasImage } from '$routes/map/utils/formats/export/image';
 	import {
 		checkPWA,
 		deferredPromptAvailable,
 		pwaInstall,
 		shouldShowInstallButton
-	} from '$routes/map/utils/device';
-	import { imageExport, getMapCanvasImage } from '$routes/map/utils/file/image';
-	import { checkPc } from '$routes/map/utils/ui';
+	} from '$routes/map/utils/platform/pwa';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';

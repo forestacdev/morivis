@@ -6,8 +6,8 @@ import type {
 	TileMetaData
 } from '$routes/map/data/types/vector';
 
-import { getUniquePropertyKeys } from '$routes/map/utils/properties';
-import { GeojsonCache } from '$routes/map/utils/file/geojson';
+import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
+import { GeojsonCache } from '$routes/map/utils/formats/geojson';
 
 import {
 	DEFAULT_VECTOR_POINT_STYLE,
@@ -31,7 +31,7 @@ import type {
 	LineStringStyle,
 	PointStyle
 } from '../../types/vector/style';
-import { findCenterTile } from '$routes/map/utils/map';
+import { findCenterTile } from '$routes/map/utils/map/tile';
 
 // --- ジオメトリタイプ判定 ---
 

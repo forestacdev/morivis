@@ -17,7 +17,7 @@
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import type { ResultData, ResultAddressData } from '$routes/map/utils/feature';
+	import type { ResultData, ResultAddressData } from '$routes/map/utils/data/search-result';
 	import { mapMode } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';

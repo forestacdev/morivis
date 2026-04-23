@@ -21,7 +21,7 @@
 		getMinMax,
 		type BandDataRange,
 		type RasterBands
-	} from '$routes/map/utils/file/geotiff';
+	} from '$routes/map/utils/formats/geotiff';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -29,10 +29,11 @@
 		resolveTimeValues,
 		type NetCDFInfo,
 		type NetCDFVariableInfo
-	} from '$routes/map/utils/file/netcdf';
-	import { NetCDFDataCache } from '$routes/map/utils/file/netcdf/cache';
-	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/netcdf';
+	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

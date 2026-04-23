@@ -10,7 +10,7 @@
 		COLOR_BREWER_SCHEME_COUNT,
 		type SequentialScheme
 	} from '$routes/map/utils/color/color-brewer';
-	import { generateNumberAndColorMap } from '$routes/map/utils/color_mapping';
+	import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		setExpression: ColorsExpression;

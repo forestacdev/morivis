@@ -3,7 +3,7 @@
 	import type { LngLatBoundsLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
-	import { isBBoxInside } from '$routes/map/utils/map';
+	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 

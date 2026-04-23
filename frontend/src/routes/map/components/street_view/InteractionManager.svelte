@@ -7,8 +7,8 @@
 	import { IN_CAMERA_FOV, MIN_CAMERA_FOV, MAX_CAMERA_FOV } from './constants';
 	import { getCameraXYRotation } from './utils';
 
-	import { setStreetViewCameraParams } from '$routes/map/utils/params';
-	import { checkPc } from '$routes/map/utils/ui';
+	import { setStreetViewCameraParams } from '$routes/map/utils/platform/url-params';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { isStreetView } from '$routes/stores';
 
 	interface Props {

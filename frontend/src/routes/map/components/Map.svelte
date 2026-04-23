@@ -20,8 +20,7 @@
 		SearchGeojsonData,
 		ResultPoiData,
 		ResultAddressData
-	} from '../utils/feature';
-	import { threeJsManager } from '../utils/threejs';
+	} from '../utils/data/search-result';
 
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
@@ -47,13 +46,14 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
-	import { createDeckOverlay } from '$routes/map/utils/deckgl';
-	import { GeoTiffCache } from '$routes/map/utils/file/geotiff';
-	import { CogTileManager } from '$routes/map/utils/file/geotiff/cog_tile_manager';
+	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
+	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
+	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import { mapPaneScale } from '$routes/stores/effect';

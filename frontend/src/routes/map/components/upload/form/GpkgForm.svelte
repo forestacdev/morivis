@@ -21,7 +21,7 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands,
 		type BandDataRange
-	} from '$routes/map/utils/file/geotiff';
+	} from '$routes/map/utils/formats/geotiff';
 	import {
 		gpkgToGeoJson,
 		gpkgToRaster,
@@ -29,9 +29,10 @@
 		getGpkgStyles,
 		closeGpkg,
 		type GpkgInfo
-	} from '$routes/map/utils/file/gpkg';
-	import { parseSldCategories } from '$routes/map/utils/file/sld';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/gpkg';
+	import { parseSldCategories } from '$routes/map/utils/formats/sld';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';

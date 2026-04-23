@@ -2,7 +2,7 @@
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
 	import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
-	import { generateStepGradient } from '$routes/map/utils/color_mapping';
+	import { generateStepGradient } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		setStepExpression: ColorStepExpression;

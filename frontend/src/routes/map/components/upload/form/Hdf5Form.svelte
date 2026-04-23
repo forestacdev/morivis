@@ -19,13 +19,14 @@
 		getMinMax,
 		type BandDataRange,
 		type RasterBands
-	} from '$routes/map/utils/file/geotiff';
+	} from '$routes/map/utils/formats/geotiff';
 	import {
 		getHdf5RasterDatasets,
 		extractHdf5Raster,
 		type Hdf5DatasetInfo
-	} from '$routes/map/utils/file/hdf5';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/hdf5';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

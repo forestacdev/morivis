@@ -9,7 +9,7 @@
 		ResultCoordinateData,
 		ResultData,
 		ResultPoiData
-	} from '$routes/map/utils/feature';
+	} from '$routes/map/utils/data/search-result';
 
 	interface Props {
 		map: maplibregl.Map;

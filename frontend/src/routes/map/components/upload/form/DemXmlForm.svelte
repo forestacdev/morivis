@@ -14,16 +14,17 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
-	import { parseDemXml, type DemXmlResult } from '$routes/map/utils/file/dem-xml';
+	import { parseDemXml, type DemXmlResult } from '$routes/map/utils/formats/dem-xml';
 	import {
 		GeoTiffCache,
 		encodeAllBandsToTerrarium,
 		getMinMax,
 		type BandDataRange,
 		type RasterBands
-	} from '$routes/map/utils/file/geotiff';
-	import { generateThumbnail } from '$routes/map/utils/file/thumbnail';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/geotiff';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

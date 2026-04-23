@@ -5,7 +5,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import type { Title } from '$routes/map/data/types/vector/properties';
-	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { generatePopupTitle } from '$routes/map/utils/data/properties';
 
 	interface Props {
 		map: maplibregl.Map;

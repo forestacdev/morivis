@@ -15,7 +15,7 @@ import type {
 
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-import { findCenterTile } from '$routes/map/utils/map';
+import { findCenterTile } from '$routes/map/utils/map/tile';
 
 export const createRasterEntry = (
 	name: string,

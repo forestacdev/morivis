@@ -1,6 +1,6 @@
-import { getImagePmtiles } from '$routes/map/utils/raster';
+import { getImagePmtiles } from '$routes/map/utils/raster/tile-query';
 import { convertTmsToXyz } from '$routes/map/utils/sources';
-import { xyzToWMSXYZ } from '$routes/map/utils/tile';
+import { xyzToWMSXYZ } from '$routes/map/utils/map/tile-coordinate';
 
 import { CoverImageManager } from '../index';
 import { IMAGE_TILE_XYZ } from '$routes/constants';
@@ -16,7 +16,7 @@ import {
 	DEM_STYLE_TYPE,
 	type DemStyleMode
 } from '$routes/map/data/types/raster';
-import { ColorMapManager } from '$routes/map/utils/color_mapping';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import type { TileImageManager } from '$routes/map/protocol/image';
 import { PMTiles } from 'pmtiles';
 

@@ -13,7 +13,7 @@
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
-	import { checkToTermsAccepted } from '$routes/map/utils/local_storage';
+	import { checkToTermsAccepted } from '$routes/map/utils/platform/terms-storage';
 	import { isBlocked } from '$routes/stores/ui';
 
 	let canvas = $state<HTMLCanvasElement | null>(null);

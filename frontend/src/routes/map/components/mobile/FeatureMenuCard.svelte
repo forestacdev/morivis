@@ -6,7 +6,7 @@
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
-	import { generatePopupTitle } from '$routes/map/utils/properties';
+	import { generatePopupTitle } from '$routes/map/utils/data/properties';
 	import { debugLog } from '$routes/stores/debug';
 	import { isMobile } from '$routes/stores/ui';
 

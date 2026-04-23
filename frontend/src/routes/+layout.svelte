@@ -8,7 +8,7 @@
 
 	import { MOBILE_WIDTH } from './constants';
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
-	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/device';
+	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/platform/pwa';
 
 	import { beforeNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
@@ -19,7 +19,7 @@
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 	import { ICONS } from '$lib/icons';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/ui';
+	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/platform/viewport';
 	import { transitionPageScreen } from '$routes/stores/effect';
 	import {
 		isBlocked,

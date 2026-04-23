@@ -18,15 +18,16 @@
 		extractVectorsFromContentStream,
 		hasVectorContent,
 		hasRasterContent
-	} from '$routes/map/utils/file/geopdf';
+	} from '$routes/map/utils/formats/geopdf';
 	import {
 		GeoTiffCache,
 		getMinMax,
 		encodeAllBandsToTerrarium,
 		type RasterBands,
 		type BandDataRange
-	} from '$routes/map/utils/file/geotiff';
-	import { findCenterTile, isBboxValid } from '$routes/map/utils/map';
+	} from '$routes/map/utils/formats/geotiff';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 

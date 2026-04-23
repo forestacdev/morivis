@@ -1,4 +1,4 @@
-import { JoinDataCache } from '$routes/map/utils/join_data';
+import { JoinDataCache } from '$routes/map/utils/data/join-data';
 
 const loadGeoJSON = async (src: string, signal: AbortSignal): Promise<any> => {
 	try {

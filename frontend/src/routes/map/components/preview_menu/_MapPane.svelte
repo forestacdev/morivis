@@ -6,7 +6,7 @@
 
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { isBBoxInside } from '$routes/map/utils/map';
+	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
