@@ -1,10 +1,12 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { fade } from 'svelte/transition';
 	import Viewer from 'viewerjs';
 
 	import 'viewerjs/dist/viewer.css';
+	import { ICONS } from '$lib/icons';
 	import type { FeaturePanelImageMedia, FeaturePanelMedia } from '$routes/map/types';
 
 	interface Props {
@@ -21,6 +23,7 @@
 		watchDrag: media.length > 1
 	});
 	let emblaMainCarouselPlugins: EmblaPluginType[] = [];
+	let selectedIndex = $state(0);
 
 	let imageViewerRoot: HTMLDivElement | null = $state(null);
 	let imageViewerImage: HTMLImageElement | null = $state(null);
@@ -29,6 +32,18 @@
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
+	};
+
+	const scrollTo = (index: number) => {
+		emblaMainCarousel?.scrollTo(index);
+	};
+
+	const scrollPrev = () => {
+		emblaMainCarousel?.scrollPrev();
+	};
+
+	const scrollNext = () => {
+		emblaMainCarousel?.scrollNext();
 	};
 
 	const objectFitClass = (item: FeaturePanelImageMedia) => {
@@ -76,6 +91,24 @@
 	};
 
 	$effect(() => {
+		if (!emblaMainCarousel) return;
+		const embla = emblaMainCarousel;
+
+		const updateSelectedIndex = () => {
+			selectedIndex = embla.selectedScrollSnap();
+		};
+
+		updateSelectedIndex();
+		embla.on('select', updateSelectedIndex);
+		embla.on('reInit', updateSelectedIndex);
+
+		return () => {
+			embla.off('select', updateSelectedIndex);
+			embla.off('reInit', updateSelectedIndex);
+		};
+	});
+
+	$effect(() => {
 		void imageViewerRoot;
 		void imageViewerImage;
 		void media;
@@ -95,7 +128,7 @@
 				plugins: emblaMainCarouselPlugins,
 				options: emblaMainCarouselOptions
 			}}
-			class="overflow-hidden rounded-lg bg-black"
+			class="group relative overflow-hidden rounded-lg bg-black"
 			onemblaInit={onInitEmblaMainCarousel}
 		>
 			<div class="flex" bind:this={imageViewerRoot}>
@@ -127,7 +160,7 @@
 						{:else if item.type === 'youtube'}
 							<iframe
 								class="absolute inset-0 h-full w-full"
-								src={`${item.url}?mute=0&controls=1`}
+								src={`${item.url}?mute=0&controls=1&rel=0&autoplay=0`}
 								title={item.title}
 								frameborder="0"
 								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -148,7 +181,43 @@
 					</div>
 				{/each}
 			</div>
+
+			{#if media.length > 1}
+				<button
+					type="button"
+					class="bg-main/70 absolute top-1/2 left-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 lg:flex"
+					aria-label="前のメディアを表示"
+					onclick={scrollPrev}
+				>
+					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
+				</button>
+				<button
+					type="button"
+					class="bg-main/70 absolute top-1/2 right-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 lg:flex"
+					aria-label="次のメディアを表示"
+					onclick={scrollNext}
+				>
+					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+				</button>
+			{/if}
 		</div>
+
+		{#if media.length > 1}
+			<div class="mt-3 flex items-center justify-center gap-2">
+				{#each media as item, index (item.url)}
+					<button
+						type="button"
+						class={[
+							'h-2.5 w-2.5 shrink-0 rounded-full transition-colors',
+							index === selectedIndex ? 'bg-accent' : 'bg-gray-500/60 hover:bg-gray-400'
+						]}
+						aria-label={`${index + 1}枚目を表示`}
+						aria-pressed={index === selectedIndex}
+						onclick={() => scrollTo(index)}
+					></button>
+				{/each}
+			</div>
+		{/if}
 
 		{#each media as item (item.url)}
 			{#if item.type === 'image' && (item.credit || item.licenseName || item.linkUrl)}

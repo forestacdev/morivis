@@ -27,7 +27,7 @@ const convertMediaData = (
 	if (media.type === 'youtube') {
 		return {
 			type: 'youtube',
-			url: media.url,
+			url: `https://www.youtube.com/embed/${media.id}`,
 			title: targetLayer?.metaData.name ?? 'YouTube video'
 		};
 	}

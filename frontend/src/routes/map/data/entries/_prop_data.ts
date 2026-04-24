@@ -1,9 +1,26 @@
 import { FEATURE_IMAGE_BASE_PATH } from '$routes/constants';
 
-export interface MediaData {
-	type: 'image' | 'video' | 'audio' | 'youtube';
+export interface ImageMediaData {
+	type: 'image';
 	url: string;
 }
+
+export interface VideoMediaData {
+	type: 'video';
+	url: string;
+}
+
+export interface AudioMediaData {
+	type: 'audio';
+	url: string;
+}
+
+export interface YoutubeMediaData {
+	type: 'youtube';
+	id: string;
+}
+
+export type MediaData = ImageMediaData | VideoMediaData | AudioMediaData | YoutubeMediaData;
 
 export interface PropData {
 	[id: string]: {
@@ -13,7 +30,7 @@ export interface PropData {
 	};
 }
 
-export const getPrimaryImageMedia = (medias?: MediaData[]): MediaData | null => {
+export const getPrimaryImageMedia = (medias?: MediaData[]): ImageMediaData | null => {
 	return medias?.find((media) => media.type === 'image') ?? null;
 };
 
@@ -498,7 +515,7 @@ export const propData: PropData = {
 			},
 			{
 				type: 'youtube',
-				url: `https://www.youtube.com/embed/u0nOKq0QdSY`
+				id: 'u0nOKq0QdSY'
 			}
 		]
 	},
@@ -538,6 +555,10 @@ export const propData: PropData = {
 			{
 				type: 'image',
 				url: `${FEATURE_IMAGE_BASE_PATH}/ziriki_24/01.webp`
+			},
+			{
+				type: 'youtube',
+				id: '46wCdtIS_-Q'
 			}
 		],
 		description: `
