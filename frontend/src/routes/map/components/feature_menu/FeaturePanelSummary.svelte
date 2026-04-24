@@ -13,6 +13,8 @@
 
 	let { summary }: Props = $props();
 	let description = $derived(summary.description?.trim() ?? '');
+
+	$inspect(description);
 </script>
 
 <div in:fade={{ duration: 100 }}>

@@ -84,6 +84,24 @@ export interface WikiArticle {
 	imageLicense?: ImageLicenseInfo;
 }
 
+const WIKIPEDIA_CACHE_LIMIT = 50;
+const wikipediaArticleCache = new Map<string, WikiArticle | null>();
+
+const setWikipediaCache = (key: string, value: WikiArticle | null) => {
+	if (wikipediaArticleCache.has(key)) {
+		wikipediaArticleCache.delete(key);
+	}
+
+	if (wikipediaArticleCache.size >= WIKIPEDIA_CACHE_LIMIT) {
+		const oldestKey = wikipediaArticleCache.keys().next().value;
+		if (oldestKey) {
+			wikipediaArticleCache.delete(oldestKey);
+		}
+	}
+
+	wikipediaArticleCache.set(key, value);
+};
+
 // 教育目的で二次利用可能なライセンス
 const ALLOWED_LICENSES = [
 	'pd', // パブリックドメイン
@@ -155,11 +173,21 @@ const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo 
 
 // Wikipedia APIで記事情報を取得
 export const getWikipediaArticle = async (title: string): Promise<WikiArticle | null> => {
+	const normalizedTitle = title.trim();
+	if (!normalizedTitle) return null;
+
+	if (wikipediaArticleCache.has(normalizedTitle)) {
+		const cached = wikipediaArticleCache.get(normalizedTitle)!;
+		wikipediaArticleCache.delete(normalizedTitle);
+		wikipediaArticleCache.set(normalizedTitle, cached);
+		return cached;
+	}
+
 	const endpoint = 'https://ja.wikipedia.org/w/api.php';
 	const params = new URLSearchParams({
 		action: 'query',
 		format: 'json',
-		titles: title,
+		titles: normalizedTitle,
 		prop: 'extracts|info|pageimages|coordinates|categories|revisions',
 		exintro: 'true',
 		explaintext: 'true',
@@ -185,13 +213,15 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 
 		// ページが存在しない場合
 		if (page.missing || pageId === '-1') {
-			console.warn('ページが見つかりません:', title);
+			console.warn('ページが見つかりません:', normalizedTitle);
+			setWikipediaCache(normalizedTitle, null);
 			return null;
 		}
 
 		// extractが空の場合（リダイレクトのみで実体がない）
 		if (!page.extract) {
-			console.warn('記事の内容が空です:', title);
+			console.warn('記事の内容が空です:', normalizedTitle);
+			setWikipediaCache(normalizedTitle, null);
 			return null;
 		}
 
@@ -232,7 +262,7 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 			}
 		}
 
-		return {
+		const result = {
 			pageId: page.pageid,
 			title: page.title,
 			extract: page.extract,
@@ -243,11 +273,14 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 			prefecture: prefecture || undefined,
 			lastModified: page.revisions?.[0]?.timestamp,
 			wasRedirected: !!redirectInfo,
-			originalTitle: redirectInfo ? redirectInfo.from : title,
+			originalTitle: redirectInfo ? redirectInfo.from : normalizedTitle,
 			imageLicense
 		};
+		setWikipediaCache(normalizedTitle, result);
+		return result;
 	} catch (error) {
 		console.error('Wikipedia API Error:', error);
+		setWikipediaCache(normalizedTitle, null);
 		return null;
 	}
 };

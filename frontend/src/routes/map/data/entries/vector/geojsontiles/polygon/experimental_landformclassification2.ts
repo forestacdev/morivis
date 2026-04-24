@@ -44,7 +44,8 @@ const entry: PolygonEntry<TileMetaData> = {
 					conditions: [],
 					template: '地形分類（人工地形）'
 				}
-			]
+			],
+			descriptionKey: 'description'
 		},
 		fields: [
 			{ key: 'code', type: 'string', label: '図式コード' },

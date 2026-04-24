@@ -54,7 +54,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					template: '自然災害伝承碑'
 				}
 			],
-			imageKey: 'Image'
+			imageKey: 'Image',
+			descriptionKey: 'DisasterInfo'
 		},
 		fields: [
 			{ key: 'ID', type: 'string', label: 'ID' },
@@ -77,7 +78,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 				key: 'DisasterInfo',
 				type: 'string',
 				label: '伝承内容',
-				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
+				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '\n' }]
 			},
 			{ key: 'ReleaseDate', type: 'string', label: '公開日' },
 			{

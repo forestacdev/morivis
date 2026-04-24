@@ -1121,7 +1121,6 @@ export const getImageByName = async (
 		}
 
 		const taxon = taxa[0];
-
 		// 2. 分類群にデフォルト写真があればそれを使用
 		if (taxon.default_photo?.medium_url) {
 			const urls = createImageUrls(taxon.default_photo.medium_url, size);

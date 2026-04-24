@@ -47,6 +47,9 @@ export interface AttributeView {
 	 */
 	imageKey?: string;
 
+	/** 詳細表示用の属性キー */
+	descriptionKey?: string;
+
 	relations?: Relations;
 }
 

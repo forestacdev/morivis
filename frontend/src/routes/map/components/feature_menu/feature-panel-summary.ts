@@ -1,8 +1,10 @@
 import { delay } from 'es-toolkit';
 
 import { getImageByName } from '$routes/map/api/inaturalist';
+import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
 import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
 import type { GeoDataEntry } from '$routes/map/data/types';
+import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
 	FeatureMenuData,
 	FeaturePanelMedia,
@@ -50,7 +52,8 @@ const convertMediaData = (
 
 const getLayerFeatureMedia = async (
 	featureMenuData: FeatureMenuData,
-	targetLayer: GeoDataEntry | null
+	targetLayer: GeoDataEntry | null,
+	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null
 ): Promise<FeaturePanelMedia[]> => {
 	const data = featureMenuData.properties
 		? propData[featureMenuData.properties._prop_id as string]
@@ -88,23 +91,19 @@ const getLayerFeatureMedia = async (
 
 		if (iNaturalistNameKey && featureMenuData.properties) {
 			const name = featureMenuData.properties[iNaturalistNameKey] as string;
-			if (name) {
-				const res = await getImageByName(name);
-
-				if (res) {
-					return [
-						{
-							type: 'image',
-							url: res.url,
-							alt: name,
-							source: 'inaturalist',
-							credit: res.attribution,
-							licenseName: res.licenseCode,
-							linkUrl: `https://www.inaturalist.org/taxa/${res.taxonId}`,
-							fit: 'contain'
-						}
-					];
-				}
+			if (name && iNaturalistData) {
+				return [
+					{
+						type: 'image',
+						url: iNaturalistData.url,
+						alt: name,
+						source: 'inaturalist',
+						credit: iNaturalistData.attribution,
+						licenseName: iNaturalistData.licenseCode,
+						linkUrl: `https://www.inaturalist.org/taxa/${iNaturalistData.taxonId}`,
+						fit: 'contain'
+					}
+				];
 			}
 		}
 
@@ -115,6 +114,14 @@ const getLayerFeatureMedia = async (
 	return media;
 };
 
+const getWikipediaArticleForINaturalist = async (
+	commonName?: string
+): Promise<WikiArticle | null> => {
+	if (!commonName?.trim()) return null;
+
+	return getWikipediaArticle(commonName);
+};
+
 export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: GeoDataEntry[]
@@ -123,8 +130,44 @@ export const getLayerFeaturePanelSummary = async (
 	const data = featureMenuData.properties
 		? propData[featureMenuData.properties._prop_id as string]
 		: null;
-	const media = await getLayerFeatureMedia(featureMenuData, targetLayer);
 	const propId = featureMenuData.properties?._prop_id;
+	const descriptionKey =
+		targetLayer && targetLayer.type === 'vector'
+			? targetLayer.properties.attributeView.descriptionKey
+			: null;
+	const descriptionField =
+		descriptionKey && targetLayer && targetLayer.type === 'vector'
+			? targetLayer.properties.fields.find((field) => field.key === descriptionKey)
+			: undefined;
+	const attributeDescription =
+		descriptionKey && featureMenuData.properties
+			? formatFieldValue(featureMenuData.properties[descriptionKey], descriptionField)
+			: null;
+	const iNaturalistNameKey =
+		targetLayer && targetLayer.type === 'vector'
+			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
+			: null;
+	const iNaturalistName =
+		iNaturalistNameKey && featureMenuData.properties
+			? (featureMenuData.properties[iNaturalistNameKey] as string)
+			: null;
+	const [iNaturalistData, wikipediaArticle] = await Promise.all([
+		iNaturalistName ? getImageByName(iNaturalistName) : Promise.resolve(null),
+		!data?.description && iNaturalistName
+			? getWikipediaArticleForINaturalist(iNaturalistName)
+			: Promise.resolve(null)
+	]);
+	const media = await getLayerFeatureMedia(featureMenuData, targetLayer, iNaturalistData);
+	const description =
+		typeof attributeDescription === 'string' && attributeDescription !== ''
+			? attributeDescription
+			: (data?.description ?? wikipediaArticle?.extract);
+	const sourceUrl = data?.url ?? wikipediaArticle?.url ?? undefined;
+	const sourceLabel = data?.url
+		? '詳細を見る'
+		: wikipediaArticle?.url
+			? 'Wikipediaを見る'
+			: undefined;
 
 	if (propId && featureMenuData.properties) {
 		return {
@@ -134,9 +177,9 @@ export const getLayerFeaturePanelSummary = async (
 					? featureMenuData.properties.category
 					: undefined,
 			media,
-			description: data?.description ?? undefined,
-			sourceUrl: data?.url ?? undefined,
-			sourceLabel: '詳細を見る'
+			description,
+			sourceUrl,
+			sourceLabel
 		};
 	}
 
@@ -152,8 +195,8 @@ export const getLayerFeaturePanelSummary = async (
 		title: title ?? '',
 		subtitle: targetLayer?.metaData.name,
 		media,
-		description: data?.description ?? undefined,
-		sourceUrl: data?.url ?? undefined,
-		sourceLabel: '詳細を見る'
+		description,
+		sourceUrl,
+		sourceLabel
 	};
 };
