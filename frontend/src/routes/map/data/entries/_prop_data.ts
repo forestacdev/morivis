@@ -175,6 +175,10 @@ export const propData: PropData = {
 			{
 				type: 'image',
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_morinos/01.webp`
+			},
+			{
+				type: 'youtube',
+				id: 'FkFaESLWENI'
 			}
 		],
 		description: `すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。`,
@@ -496,6 +500,10 @@ export const propData: PropData = {
 			{
 				type: 'image',
 				url: `${FEATURE_IMAGE_BASE_PATH}/ziriki_20/01.webp`
+			},
+			{
+				type: 'youtube',
+				id: 'HX_GcMQfCnE'
 			}
 		],
 		description: `
@@ -539,6 +547,10 @@ export const propData: PropData = {
 			{
 				type: 'image',
 				url: `${FEATURE_IMAGE_BASE_PATH}/ziriki_23/01.webp`
+			},
+			{
+				type: 'youtube',
+				id: 'R0EinbFkyQo'
 			}
 		],
 		description: `
@@ -577,6 +589,10 @@ export const propData: PropData = {
 			{
 				type: 'image',
 				url: `${FEATURE_IMAGE_BASE_PATH}/ziriki_25/01.webp`
+			},
+			{
+				type: 'youtube',
+				id: 'qbgWemegCQY'
 			}
 		],
 		description: `
