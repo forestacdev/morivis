@@ -51,7 +51,11 @@ const entry: VectorEntry<TileMetaData> = {
 					conditions: [],
 					template: '高知県の樹種ポリゴン'
 				}
-			]
+			],
+			relations: {
+				cityCodeKey: '市町村code',
+				iNaturalistNameKey: '樹種'
+			}
 		},
 		fields: []
 	},

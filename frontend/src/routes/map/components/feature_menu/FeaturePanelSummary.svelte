@@ -13,6 +13,8 @@
 
 	let { summary }: Props = $props();
 	let description = $derived(summary.description?.trim() ?? '');
+	let protectionForestName = $derived(summary.protectionForestName?.trim() ?? '');
+	let protectionForestDescription = $derived(summary.protectionForestDescription?.trim() ?? '');
 </script>
 
 <div in:fade={{ duration: 100 }}>
@@ -44,6 +46,7 @@
 				</div>
 			{/if}
 
+			<!-- 外部リンク先ボタン -->
 			{#if summary.sourceUrl}
 				<div class="flex w-full items-center justify-center">
 					<a
@@ -57,10 +60,12 @@
 				</div>
 			{/if}
 
+			<!-- 概要 -->
 			{#if description}
 				<span class="my-2 text-justify text-base whitespace-pre-line">{description}</span>
 			{/if}
 
+			<!-- 分類 -->
 			{#if summary.taxonomy && summary.taxonomy.length > 0}
 				<div class="bg-sub flex flex-col gap-2 rounded-lg p-3">
 					<span class="text-sm text-gray-300">分類 </span>
@@ -70,6 +75,18 @@
 							<span class="break-all">{item.value}</span>
 						{/each}
 					</div>
+				</div>
+			{/if}
+
+			<!-- 保安林の説明 -->
+			{#if protectionForestDescription}
+				<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3">
+					<span class="text-sm text-gray-300">
+						{protectionForestName || '保安林の説明'}
+					</span>
+					<span class="text-justify text-base whitespace-pre-line">
+						{protectionForestDescription}
+					</span>
 				</div>
 			{/if}
 		</div>

@@ -82,6 +82,8 @@ export interface FeaturePanelSummary {
 	subtitle?: string;
 	point?: [number, number];
 	media?: FeaturePanelMedia[];
+	protectionForestName?: string;
+	protectionForestDescription?: string;
 	taxonomy?: Array<{
 		label: string;
 		value: string;

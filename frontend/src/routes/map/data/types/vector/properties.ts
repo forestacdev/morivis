@@ -16,11 +16,26 @@ export interface Title {
 	template: string;
 }
 
+export interface NationalForestRelations {
+	/** 保安林種別名連携用の属性キー */
+	protectionForestNameKey?: string;
+	/** 森林管理局名連携用の属性キー */
+	regionalForestOfficeKey?: string;
+	/** 森林管理局名連携用の属性キー */
+	managementBureauKey?: string;
+	/** 森林管理署名連携用の属性キー */
+	forestOfficeKey?: string;
+	/** 森林管理署名連携用の属性キー */
+	managementOfficeKey?: string;
+}
+
 export interface Relations {
 	/** 市町村コード連携用の属性キー */
 	cityCodeKey?: string;
 	/** iNaturalist 連携用の和名の属性キー。 */
 	iNaturalistNameKey?: string;
+	/** 国有林データ連携用の属性キー群 */
+	nationalForest?: NationalForestRelations;
 }
 
 /**

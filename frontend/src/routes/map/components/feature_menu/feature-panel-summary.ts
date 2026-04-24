@@ -8,6 +8,10 @@ import {
 } from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
 import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
+import {
+	ProtectionForestNameToCodeDict,
+	ProtectionForestTypes
+} from '$routes/map/data/forest/protection_forest';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
@@ -159,6 +163,34 @@ const getTaxonomyItemsForINaturalist = async (
 	return items.length > 0 ? items : undefined;
 };
 
+const getProtectionForestDescription = (
+	targetLayer: GeoDataEntry | null,
+	featureMenuData: FeatureMenuData
+): { name?: string; description?: string } | null => {
+	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
+		return null;
+	}
+
+	const protectionForestNameKey =
+		targetLayer.properties.attributeView.relations?.nationalForest?.protectionForestNameKey;
+	if (!protectionForestNameKey) return null;
+
+	const protectionForestName = featureMenuData.properties[protectionForestNameKey];
+	if (typeof protectionForestName !== 'string' || protectionForestName === '') {
+		return null;
+	}
+
+	const protectionForestCode = ProtectionForestNameToCodeDict[protectionForestName];
+	if (!protectionForestCode) {
+		return null;
+	}
+
+	return {
+		name: protectionForestName,
+		description: ProtectionForestTypes[protectionForestCode]?.description
+	};
+};
+
 export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: GeoDataEntry[]
@@ -180,6 +212,7 @@ export const getLayerFeaturePanelSummary = async (
 		descriptionKey && featureMenuData.properties
 			? formatFieldValue(featureMenuData.properties[descriptionKey], descriptionField)
 			: null;
+	const protectionForestSummary = getProtectionForestDescription(targetLayer, featureMenuData);
 	const iNaturalistNameKey =
 		targetLayer && targetLayer.type === 'vector'
 			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
@@ -215,6 +248,8 @@ export const getLayerFeaturePanelSummary = async (
 					? featureMenuData.properties.category
 					: undefined,
 			media,
+			protectionForestName: protectionForestSummary?.name,
+			protectionForestDescription: protectionForestSummary?.description,
 			taxonomy,
 			description,
 			sourceUrl,
@@ -234,6 +269,8 @@ export const getLayerFeaturePanelSummary = async (
 		title: title ?? '',
 		subtitle: targetLayer?.metaData.name,
 		media,
+		protectionForestName: protectionForestSummary?.name,
+		protectionForestDescription: protectionForestSummary?.description,
 		taxonomy,
 		description,
 		sourceUrl,

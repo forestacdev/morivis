@@ -84,6 +84,60 @@ export interface WikiArticle {
 	imageLicense?: ImageLicenseInfo;
 }
 
+const WIKIPEDIA_TITLE_NORMALIZE_CONFIG = {
+	excludeIfContains: [],
+	excludeIfEndsWith: [],
+	remove: ['？', '?', '天然', 'その他']
+} as const;
+
+const WIKIPEDIA_TITLE_ALIAS_MAP: Record<string, string> = {
+	// 針葉樹
+	シラベ: 'シラビソ',
+	カンバ: 'シラカンバ',
+	クルメツツジ: 'キリシマツツジ'
+};
+
+const normalizeWikipediaTitle = (title: string): string | null => {
+	if (!title || title.trim() === '') {
+		return null;
+	}
+
+	for (const word of WIKIPEDIA_TITLE_NORMALIZE_CONFIG.excludeIfContains) {
+		if (title.includes(word)) {
+			return null;
+		}
+	}
+
+	for (const suffix of WIKIPEDIA_TITLE_NORMALIZE_CONFIG.excludeIfEndsWith) {
+		if (title.endsWith(suffix)) {
+			return null;
+		}
+	}
+
+	let normalized = title;
+
+	for (const word of WIKIPEDIA_TITLE_NORMALIZE_CONFIG.remove) {
+		normalized = normalized.replaceAll(word, '');
+	}
+
+	normalized = normalized.replace(/[（(][^）)]*[）)]/g, '');
+	normalized = normalized.replace(/[\s\u3000]+/g, '');
+	normalized = normalized.replace(
+		/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}a-zA-Z]/gu,
+		''
+	);
+
+	if (normalized === '') {
+		return null;
+	}
+
+	if (normalized in WIKIPEDIA_TITLE_ALIAS_MAP) {
+		normalized = WIKIPEDIA_TITLE_ALIAS_MAP[normalized];
+	}
+
+	return normalized;
+};
+
 const WIKIPEDIA_CACHE_LIMIT = 50;
 const wikipediaArticleCache = new Map<string, WikiArticle | null>();
 
@@ -173,7 +227,7 @@ const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo 
 
 // Wikipedia APIで記事情報を取得
 export const getWikipediaArticle = async (title: string): Promise<WikiArticle | null> => {
-	const normalizedTitle = title.trim();
+	const normalizedTitle = normalizeWikipediaTitle(title);
 	if (!normalizedTitle) return null;
 
 	if (wikipediaArticleCache.has(normalizedTitle)) {

@@ -101,7 +101,12 @@ const entry: VectorEntry<TileMetaData> = {
 				}
 			],
 			relations: {
-				iNaturalistNameKey: '樹種１'
+				iNaturalistNameKey: '樹種１',
+				nationalForest: {
+					managementBureauKey: '森林管理局',
+					managementOfficeKey: '森林管理署',
+					protectionForestNameKey: '保安林１'
+				}
 			}
 		}
 	},
