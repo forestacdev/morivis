@@ -15,13 +15,15 @@
 		layerEntries: GeoDataEntry[];
 		showSelectionMarker: boolean;
 		summary: FeaturePanelSummaryData | null;
+		selectedTab: 'summary' | 'attributes';
 	}
 
 	let {
 		featureMenuData = $bindable(),
 		layerEntries,
 		showSelectionMarker = $bindable(),
-		summary
+		summary,
+		selectedTab
 	}: Props = $props();
 
 	let targetLayer = $derived.by(() => {
@@ -66,6 +68,32 @@
 		return null;
 	});
 
+	let attributeItems = $derived.by(() => {
+		if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData?.properties) {
+			return [];
+		}
+
+		const popupKeys = targetLayer.properties.attributeView.popupKeys;
+		const displayProps =
+			popupKeys.length > 0
+				? filterByPopupKeys(featureMenuData.properties, popupKeys)
+				: featureMenuData.properties;
+
+		return Object.entries(displayProps).filter(
+			(entry): entry is [string, string | number | true] => {
+				const [key, value] = entry;
+				return (
+					key !== '_prop_id' &&
+					value !== '' &&
+					value !== null &&
+					value !== undefined &&
+					value !== false &&
+					imageKey !== key
+				);
+			}
+		);
+	});
+
 	$effect(() => {
 		if (!featureMenuData) {
 			showSelectionMarker = false;
@@ -74,28 +102,26 @@
 </script>
 
 {#if featureMenuData && summary}
-	<FeaturePanelSummary {summary} />
+	{#if selectedTab === 'summary'}
+		<FeaturePanelSummary {summary} />
+	{/if}
 
-	<div in:fade={{ duration: 100 }} class="lg:pl-2">
-		<!-- 通常の地物の属性情報 -->
-		{#if !propId}
-			<div class="w-hull bg-sub mt-4 mb-8 h-[1px] rounded-full opacity-60"></div>
-			<div class="mb-56 flex h-full w-full flex-col gap-3">
-				{#if targetLayer && targetLayer.type === 'vector' && featureMenuData.properties}
-					{@const popupKeys = targetLayer.properties.attributeView.popupKeys}
-					{@const displayProps =
-						popupKeys.length > 0
-							? filterByPopupKeys(featureMenuData.properties, popupKeys)
-							: featureMenuData.properties}
-					{#each Object.entries(displayProps) as [key, value]}
-						{#if key !== '_prop_id' && value && imageKey !== key}
-							{@const field = fields.find((f) => f.key === key)}
-							<!-- 辞書による属性名書き換え -->
-							<FeaturePanelAttributeItem {key} {value} {field} />
-						{/if}
-					{/each}
-				{/if}
+	{#if !propId && selectedTab === 'attributes'}
+		<div in:fade={{ duration: 100 }} class="lg:pl-2">
+			<div class="pb-6">
+				<div class="flex w-full flex-col gap-1 text-base max-lg:hidden">
+					<span class="text-[22px] font-bold break-all">{summary.title}</span>
+					{#if summary.subtitle}
+						<span class="text-[14px] break-all text-gray-300">{summary.subtitle}</span>
+					{/if}
+				</div>
 			</div>
-		{/if}
-	</div>
+			<div class="mb-56 flex h-full w-full flex-col gap-3">
+				{#each attributeItems as [key, value] (key)}
+					{@const field = fields.find((f) => f.key === key)}
+					<FeaturePanelAttributeItem {key} {value} {field} />
+				{/each}
+			</div>
+		</div>
+	{/if}
 {/if}

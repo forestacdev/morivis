@@ -692,6 +692,7 @@
 						bind:featureMenuData
 						{layerEntries}
 						bind:showSelectionMarker
+						selectedTab="summary"
 						{summary}
 					/>
 				{/await}

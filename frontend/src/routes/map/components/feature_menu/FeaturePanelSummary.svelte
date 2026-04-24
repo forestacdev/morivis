@@ -13,8 +13,6 @@
 
 	let { summary }: Props = $props();
 	let description = $derived(summary.description?.trim() ?? '');
-
-	$inspect(description);
 </script>
 
 <div in:fade={{ duration: 100 }}>
@@ -61,6 +59,18 @@
 
 			{#if description}
 				<span class="my-2 text-justify text-base whitespace-pre-line">{description}</span>
+			{/if}
+
+			{#if summary.taxonomy && summary.taxonomy.length > 0}
+				<div class="bg-sub flex flex-col gap-2 rounded-lg p-3">
+					<span class="text-sm text-gray-300">分類 </span>
+					<div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+						{#each summary.taxonomy as item (item.label)}
+							<span class="text-gray-300">{item.label}</span>
+							<span class="break-all">{item.value}</span>
+						{/each}
+					</div>
+				</div>
 			{/if}
 		</div>
 	</div>

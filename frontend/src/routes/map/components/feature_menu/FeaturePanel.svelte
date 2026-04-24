@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
 	import { getLayerFeaturePanelSummary } from './feature-panel-summary';
 	import FeaturePanelFrame from './FeaturePanelFrame.svelte';
 	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
@@ -10,6 +8,7 @@
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
 		FeaturePanelData,
 		FeaturePanelSummary as FeaturePanelSummaryData,
@@ -17,7 +16,6 @@
 		SearchAddressPanelData
 	} from '$routes/map/types';
 	import { normalizeSchoolName } from '$routes/map/utils/data/normalize';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 
 	interface Props {
 		panelData: FeaturePanelData | null;
@@ -27,6 +25,7 @@
 	}
 
 	let { panelData, layerEntries, showSelectionMarker = $bindable(), onClose }: Props = $props();
+	let selectedTab = $state<'summary' | 'attributes'>('summary');
 
 	type PanelContentData =
 		| {
@@ -44,13 +43,41 @@
 		return layerEntries.find((entry) => entry.id === panelData.layerId) ?? null;
 	});
 
-	const edit = () => {
-		if (targetLayer && targetLayer.type === 'vector') {
-			selectedLayerId.set(targetLayer.id);
-			isStyleEdit.set(true);
-			onClose(); // Close the feature menu after editing
+	let hasAttributeTab = $derived.by(() => {
+		if (panelData?.kind !== 'layer-feature' || !targetLayer || targetLayer.type !== 'vector') {
+			return false;
 		}
-	};
+
+		if (!panelData.properties) return false;
+
+		const propId = panelData.properties?._prop_id;
+		if (propId) return false;
+
+		const popupKeys = targetLayer.properties.attributeView.popupKeys;
+		const imageKey = targetLayer.properties.attributeView.imageKey;
+		const displayProps =
+			popupKeys.length > 0
+				? filterByPopupKeys(panelData.properties, popupKeys)
+				: panelData.properties;
+
+		return Object.entries(displayProps).some(
+			([key, value]) =>
+				key !== '_prop_id' &&
+				value !== '' &&
+				value !== null &&
+				value !== undefined &&
+				value !== false &&
+				imageKey !== key
+		);
+	});
+
+	let selectedTabResetKey = $derived.by(() => {
+		if (!panelData) return null;
+		if (panelData.kind === 'layer-feature') {
+			return `${panelData.layerId}:${panelData.featureId}`;
+		}
+		return panelData.kind;
+	});
 
 	const getWikipedia = async (data: SearchAddressPanelData) => {
 		const name = normalizeSchoolName(data.result.name);
@@ -119,6 +146,11 @@
 	};
 
 	let panelContentPromise = $derived(getPanelContentData(panelData, layerEntries));
+
+	$effect(() => {
+		void selectedTabResetKey;
+		selectedTab = 'summary';
+	});
 </script>
 
 <!-- PC -->
@@ -128,14 +160,35 @@
 	{onClose}
 >
 	{#snippet headerActions()}
-		{#if panelData?.kind === 'layer-feature' && panelData.layerId !== 'fac_poi'}
-			<button
-				onclick={edit}
-				class="c-btn-confirm flex items-center justify-center gap-2 px-3 py-1 pr-4 max-lg:hidden"
-			>
-				<Icon icon="uil:setting" class="h-6 w-6" />
-				<span class="text-sm select-none">スタイルの変更</span>
-			</button>
+		{#if panelData?.kind === 'layer-feature' && hasAttributeTab}
+			<div class="bg-sub inline-flex rounded-full">
+				<button
+					type="button"
+					class={[
+						'min-w-20 rounded-full px-4 py-2 text-sm transition-colors',
+						selectedTab === 'summary' ? 'bg-accent text-black' : 'text-gray-300'
+					]}
+					aria-pressed={selectedTab === 'summary'}
+					onclick={() => {
+						selectedTab = 'summary';
+					}}
+				>
+					概要
+				</button>
+				<button
+					type="button"
+					class={[
+						'min-w-20 rounded-full px-4 py-2 text-sm transition-colors',
+						selectedTab === 'attributes' ? 'bg-accent text-black' : 'text-gray-300'
+					]}
+					aria-pressed={selectedTab === 'attributes'}
+					onclick={() => {
+						selectedTab = 'attributes';
+					}}
+				>
+					情報
+				</button>
+			</div>
 		{/if}
 	{/snippet}
 
@@ -147,6 +200,7 @@
 				featureMenuData={contentData.panelData}
 				{layerEntries}
 				bind:showSelectionMarker
+				{selectedTab}
 				summary={contentData.summary}
 			/>
 		{:else if contentData?.kind === 'search-address'}

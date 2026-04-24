@@ -1,6 +1,11 @@
 import { delay } from 'es-toolkit';
 
-import { getImageByName } from '$routes/map/api/inaturalist';
+import {
+	getImageByName,
+	getTaxonomyByJapaneseName,
+	RANK_NAMES_JA,
+	type TaxonomicRank
+} from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
 import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -122,6 +127,38 @@ const getWikipediaArticleForINaturalist = async (
 	return getWikipediaArticle(commonName);
 };
 
+const getTaxonomyItemsForINaturalist = async (
+	commonName?: string
+): Promise<Array<{ label: string; value: string }> | undefined> => {
+	if (!commonName?.trim()) return undefined;
+
+	const taxonomy = await getTaxonomyByJapaneseName(commonName);
+	if (!taxonomy) return undefined;
+
+	const ranks: TaxonomicRank[] = [
+		'kingdom',
+		'phylum',
+		'class',
+		'order',
+		'family',
+		'genus',
+		'species'
+	];
+	const items = ranks
+		.map((rank) => {
+			const info = taxonomy[rank];
+			if (!info) return null;
+
+			return {
+				label: RANK_NAMES_JA[rank],
+				value: info.commonName || info.name
+			};
+		})
+		.filter((item): item is { label: string; value: string } => item !== null);
+
+	return items.length > 0 ? items : undefined;
+};
+
 export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: GeoDataEntry[]
@@ -151,11 +188,12 @@ export const getLayerFeaturePanelSummary = async (
 		iNaturalistNameKey && featureMenuData.properties
 			? (featureMenuData.properties[iNaturalistNameKey] as string)
 			: null;
-	const [iNaturalistData, wikipediaArticle] = await Promise.all([
+	const [iNaturalistData, wikipediaArticle, taxonomy] = await Promise.all([
 		iNaturalistName ? getImageByName(iNaturalistName) : Promise.resolve(null),
 		!data?.description && iNaturalistName
 			? getWikipediaArticleForINaturalist(iNaturalistName)
-			: Promise.resolve(null)
+			: Promise.resolve(null),
+		iNaturalistName ? getTaxonomyItemsForINaturalist(iNaturalistName) : Promise.resolve(undefined)
 	]);
 	const media = await getLayerFeatureMedia(featureMenuData, targetLayer, iNaturalistData);
 	const description =
@@ -177,6 +215,7 @@ export const getLayerFeaturePanelSummary = async (
 					? featureMenuData.properties.category
 					: undefined,
 			media,
+			taxonomy,
 			description,
 			sourceUrl,
 			sourceLabel
@@ -195,6 +234,7 @@ export const getLayerFeaturePanelSummary = async (
 		title: title ?? '',
 		subtitle: targetLayer?.metaData.name,
 		media,
+		taxonomy,
 		description,
 		sourceUrl,
 		sourceLabel

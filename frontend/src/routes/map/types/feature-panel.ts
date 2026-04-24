@@ -82,6 +82,10 @@ export interface FeaturePanelSummary {
 	subtitle?: string;
 	point?: [number, number];
 	media?: FeaturePanelMedia[];
+	taxonomy?: Array<{
+		label: string;
+		value: string;
+	}>;
 	description?: string;
 	sourceUrl?: string;
 	sourceLabel?: string;
