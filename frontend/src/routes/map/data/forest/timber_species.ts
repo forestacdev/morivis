@@ -1,65 +1,4 @@
 /**
- * 木材の適材適所リストで使う樹種名辞書。
- *
- * CSV 上の表記揺れや注記付き名称を、
- * 連携や検索で使いやすい和名へ寄せている。
- */
-export const WOOD_COMMON_NAME_DICT = {
-	ブナ: 'ブナ',
-	トネリコ: 'トネリコ',
-	ウリハダカエデ: 'ウリハダカエデ',
-	ケヤキ: 'ケヤキ',
-	イタヤカエデ: 'イタヤカエデ',
-	ケンポナシ: 'ケンポナシ',
-	ソメイヨシノ: 'ソメイヨシノ',
-	'シラカシ（柾目）': 'シラカシ',
-	ミズメ: 'ミズメ',
-	カラマツ: 'カラマツ',
-	イチイ: 'イチイ',
-	ヤマハンノキ: 'ヤマハンノキ',
-	カツラ: 'カツラ',
-	トチノキ: 'トチノキ',
-	クワ: 'クワ',
-	クリ: 'クリ',
-	イヌエンジュ: 'イヌエンジュ',
-	シイ: 'シイ',
-	シウリザクラ: 'シウリザクラ',
-	'ハリエンジュ（ニセアカシア）': 'ハリエンジュ',
-	ミズナラ: 'ミズナラ',
-	'シラカシ（板目）': 'シラカシ',
-	セン: 'セン',
-	ヤマナシ: 'ヤマナシ',
-	ニレ: 'ニレ',
-	ヤマザクラ: 'ヤマザクラ',
-	ウダイカンバ: 'ウダイカンバ',
-	センダン: 'センダン',
-	キハダ: 'キハダ',
-	オニグルミ: 'オニグルミ',
-	スギ: 'スギ',
-	シナノキ: 'シナノキ',
-	ヒノキ: 'ヒノキ',
-	アカマツ: 'アカマツ',
-	ホオノキ: 'ホオノキ',
-	イチョウ: 'イチョウ',
-	キリ: 'キリ',
-	オオウラジロノキ: 'オオウラジロノキ',
-	ヤナギ: 'ヤナギ',
-	イヌマキ: 'イヌマキ',
-	エノキ: 'エノキ',
-	ツガ: 'ツガ',
-	'（コウヤマキ）': 'コウヤマキ',
-	クスノキ: 'クスノキ',
-	ミズキ: 'ミズキ',
-	コウヨウザン: 'コウヨウザン',
-	ヤマグルマ: 'ヤマグルマ'
-} as const;
-
-export type WoodCommonNameKey = keyof typeof WOOD_COMMON_NAME_DICT;
-export type WoodCommonName = (typeof WOOD_COMMON_NAME_DICT)[WoodCommonNameKey];
-
-export const WOOD_COMMON_NAMES = [...new Set(Object.values(WOOD_COMMON_NAME_DICT))];
-
-/**
  * CSV の行番号。
  *
  * 画像ファイル名のベース番号として使う。
@@ -73,7 +12,7 @@ export const WOOD_IMAGE_ID_DICT = {
 	イタヤカエデ: '5',
 	ケンポナシ: '6',
 	ソメイヨシノ: '7',
-	'シラカシ（柾目）': '8',
+	シラカシ: '8', // 柾目
 	ミズメ: '9',
 	カラマツ: '10',
 	イチイ: '11',
@@ -85,9 +24,9 @@ export const WOOD_IMAGE_ID_DICT = {
 	イヌエンジュ: '17',
 	シイ: '18',
 	シウリザクラ: '19',
-	'ハリエンジュ（ニセアカシア）': '20',
+	ニセアカシア: '20',
 	ミズナラ: '21',
-	'シラカシ（板目）': '22',
+	シラカシ2: '22', // 板目
 	セン: '23',
 	ヤマナシ: '24',
 	ニレ: '25',
@@ -116,7 +55,3 @@ export const WOOD_IMAGE_ID_DICT = {
 
 export type WoodImageIdKey = keyof typeof WOOD_IMAGE_ID_DICT;
 export type WoodImageId = (typeof WOOD_IMAGE_ID_DICT)[WoodImageIdKey];
-
-export const WOOD_IMAGE_FILE_NAME_DICT = Object.fromEntries(
-	Object.entries(WOOD_IMAGE_ID_DICT).map(([name, id]) => [name, `${id}.webp`])
-) as Record<WoodImageIdKey, `${WoodImageId}.webp`>;
