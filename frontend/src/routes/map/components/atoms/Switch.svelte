@@ -20,7 +20,7 @@
 	<input type="checkbox" class="hidden" bind:checked={value} />
 	<div
 		class="relative flex h-[30px] w-[60px] items-center rounded-full {value
-			? 'bg-accent'
+			? 'bg-main-accent'
 			: 'bg-sub'}"
 	>
 		<div

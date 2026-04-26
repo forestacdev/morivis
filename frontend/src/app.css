@@ -76,7 +76,7 @@ body {
 
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
-	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-[#348163] bg-[#348163] p-2 text-base transition-colors duration-150 hover:text-black;
+	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-main-accent bg-main-accent p-2 text-base transition-colors duration-150 hover:text-black;
 }
 
 @utility c-btn-sub {
