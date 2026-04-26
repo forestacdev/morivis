@@ -17,7 +17,7 @@ const THEMES: Record<ThemeMode, ThemeColors> = {
 		sub: '#495a54',
 		subDark: '#1e2124',
 		accent: '#59b68e',
-		mainAccent: '#166345',
+		mainAccent: '#348163',
 		base: '#f1f1f1'
 	},
 	preview: {
@@ -25,7 +25,7 @@ const THEMES: Record<ThemeMode, ThemeColors> = {
 		sub: '#495a54',
 		subDark: '#1e2124',
 		accent: '#59b68e',
-		mainAccent: '#166345',
+		mainAccent: '#348163',
 		base: '#f1f1f1'
 	}
 };

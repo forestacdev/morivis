@@ -38,6 +38,15 @@ export interface Relations {
 	nationalForest?: NationalForestRelations;
 }
 
+export interface HighlightValue {
+	/** 強調対象の属性キー */
+	key: string;
+	/** 強調表示用のラベル */
+	label: string;
+	/** 強調表示用の単位（例: '人'） */
+	unit: string;
+}
+
 /**
  * UI表示用の属性設定
  */
@@ -64,6 +73,9 @@ export interface AttributeView {
 
 	/** 詳細表示用の属性キー */
 	descriptionKey?: string;
+
+	/** 強調表示用の属性キー */
+	highlightValue?: HighlightValue;
 
 	relations?: Relations;
 }

@@ -113,7 +113,7 @@ const getLayerFeatureMedia = async (
 						credit: iNaturalistData.attribution,
 						licenseName: iNaturalistData.licenseCode,
 						linkUrl: `https://www.inaturalist.org/taxa/${iNaturalistData.taxonId}`,
-						fit: 'contain'
+						fit: 'cover'
 					}
 				];
 			}

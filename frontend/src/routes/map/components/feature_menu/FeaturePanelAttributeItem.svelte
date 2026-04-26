@@ -25,11 +25,13 @@
 	};
 </script>
 
-<div class="flex flex-col items-start justify-center">
-	<div class="flex items-center justify-center gap-1">
+<div class="bg-sub flex flex-col items-start justify-center overflow-hidden rounded">
+	<div
+		class="flex w-full items-center justify-start gap-1 bg-linear-[to_right,var(--color-main-accent),var(--color-main)] px-2 py-1"
+	>
 		<span class="text-base text-sm">{field && field.label ? field.label : key}</span>
 	</div>
-	<div class="w-full pt-2 lg:pr-2">
+	<div class="w-full lg:pr-2">
 		<button
 			onclick={() => {
 				if (checkPc()) copyToClipboard(formattedValue);
@@ -46,7 +48,7 @@
 			onblur={() => {
 				if (checkPc()) isHover = false;
 			}}
-			class="text-accent relative flex w-full cursor-pointer items-center justify-between rounded-md bg-black p-2 pl-4 text-left transition-colors duration-150"
+			class="relative flex w-full cursor-pointer items-center justify-between rounded-md p-2 pl-3 text-left text-base transition-colors duration-150"
 		>
 			<span class="min-w-0 break-all">{formattedValue}</span>
 			{#if isHover}
