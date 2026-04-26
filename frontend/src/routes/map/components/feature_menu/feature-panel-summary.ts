@@ -12,6 +12,7 @@ import {
 	ProtectionForestNameToCodeDict,
 	ProtectionForestTypes
 } from '$routes/map/data/forest/protection_forest';
+import { getTimberSpeciesData } from '$routes/map/data/forest/timber_species';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
@@ -21,6 +22,7 @@ import type {
 } from '$routes/map/types';
 import { generatePopupTitle } from '$routes/map/utils/data/properties';
 
+// _prop_data.ts の静的メディア定義を FeaturePanel 用メディア形式に変換する。
 const convertMediaData = (
 	media: MediaData,
 	targetLayer: GeoDataEntry | null
@@ -59,6 +61,7 @@ const convertMediaData = (
 	};
 };
 
+// メディア表示は 静的定義 -> 属性画像 -> iNaturalist 画像 の順で解決する。
 const getLayerFeatureMedia = async (
 	featureMenuData: FeatureMenuData,
 	targetLayer: GeoDataEntry | null,
@@ -123,6 +126,7 @@ const getLayerFeatureMedia = async (
 	return media;
 };
 
+// iNaturalist で使った和名から Wikipedia の概要ページを引く。
 const getWikipediaArticleForINaturalist = async (
 	commonName?: string
 ): Promise<WikiArticle | null> => {
@@ -131,6 +135,7 @@ const getWikipediaArticleForINaturalist = async (
 	return getWikipediaArticle(commonName);
 };
 
+// iNaturalist の和名から、概要欄に出すリンネ分類を整形する。
 const getTaxonomyItemsForINaturalist = async (
 	commonName?: string
 ): Promise<Array<{ label: string; value: string }> | undefined> => {
@@ -163,6 +168,7 @@ const getTaxonomyItemsForINaturalist = async (
 	return items.length > 0 ? items : undefined;
 };
 
+// 国有林レイヤーでは、保安林種別名から保安林説明辞書を引けるようにする。
 const getProtectionForestDescription = (
 	targetLayer: GeoDataEntry | null,
 	featureMenuData: FeatureMenuData
@@ -191,6 +197,29 @@ const getProtectionForestDescription = (
 	};
 };
 
+// 樹種名が木材辞書にあれば、木材画像と分布説明を概要欄に追加する。
+const getTimberSpeciesSummary = (
+	targetLayer: GeoDataEntry | null,
+	featureMenuData: FeatureMenuData
+): { url: string; distribution?: string } | undefined => {
+	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
+		return undefined;
+	}
+
+	const timberSpeciesNameKey = targetLayer.properties.attributeView.relations?.iNaturalistNameKey;
+	if (!timberSpeciesNameKey) {
+		return undefined;
+	}
+
+	const timberSpeciesName = featureMenuData.properties[timberSpeciesNameKey];
+	if (typeof timberSpeciesName !== 'string' || timberSpeciesName === '') {
+		return undefined;
+	}
+
+	return getTimberSpeciesData(timberSpeciesName) ?? undefined;
+};
+
+// 通常の地物クリック時に表示する概要情報をここで集約して組み立てる。
 export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: GeoDataEntry[]
@@ -213,6 +242,7 @@ export const getLayerFeaturePanelSummary = async (
 			? formatFieldValue(featureMenuData.properties[descriptionKey], descriptionField)
 			: null;
 	const protectionForestSummary = getProtectionForestDescription(targetLayer, featureMenuData);
+	const timberSpecies = getTimberSpeciesSummary(targetLayer, featureMenuData);
 	const iNaturalistNameKey =
 		targetLayer && targetLayer.type === 'vector'
 			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
@@ -221,6 +251,8 @@ export const getLayerFeaturePanelSummary = async (
 		iNaturalistNameKey && featureMenuData.properties
 			? (featureMenuData.properties[iNaturalistNameKey] as string)
 			: null;
+
+	// 外部連携で取るものは並列で取得する。
 	const [iNaturalistData, wikipediaArticle, taxonomy] = await Promise.all([
 		iNaturalistName ? getImageByName(iNaturalistName) : Promise.resolve(null),
 		!data?.description && iNaturalistName
@@ -228,7 +260,10 @@ export const getLayerFeaturePanelSummary = async (
 			: Promise.resolve(null),
 		iNaturalistName ? getTaxonomyItemsForINaturalist(iNaturalistName) : Promise.resolve(undefined)
 	]);
+
 	const media = await getLayerFeatureMedia(featureMenuData, targetLayer, iNaturalistData);
+
+	// 説明文は 属性 descriptionKey -> _prop_data.ts -> Wikipedia の順で補完する。
 	const description =
 		typeof attributeDescription === 'string' && attributeDescription !== ''
 			? attributeDescription
@@ -251,6 +286,7 @@ export const getLayerFeaturePanelSummary = async (
 			protectionForestName: protectionForestSummary?.name,
 			protectionForestDescription: protectionForestSummary?.description,
 			taxonomy,
+			timberSpecies,
 			description,
 			sourceUrl,
 			sourceLabel
@@ -272,6 +308,7 @@ export const getLayerFeaturePanelSummary = async (
 		protectionForestName: protectionForestSummary?.name,
 		protectionForestDescription: protectionForestSummary?.description,
 		taxonomy,
+		timberSpecies,
 		description,
 		sourceUrl,
 		sourceLabel

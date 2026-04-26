@@ -89,6 +89,23 @@
 					</span>
 				</div>
 			{/if}
+
+			<!-- 木材画像 -->
+			{#if summary.timberSpecies}
+				<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3">
+					<span class="text-sm text-gray-300">木材の種類</span>
+					<div class="flex items-center gap-4">
+						<img
+							src={summary.timberSpecies.url}
+							alt="木材の画像"
+							class="h-16 w-16 rounded object-cover"
+						/>
+						{#if summary.timberSpecies.distribution}
+							<span class="text-base">{summary.timberSpecies.distribution}</span>
+						{/if}
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

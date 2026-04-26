@@ -77,6 +77,11 @@ export interface FeaturePanelAudioMedia {
 	licenseUrl?: string;
 }
 
+export interface TimberSpecies {
+	url: string;
+	distribution?: string;
+}
+
 export interface FeaturePanelSummary {
 	title: string;
 	subtitle?: string;
@@ -88,6 +93,7 @@ export interface FeaturePanelSummary {
 		label: string;
 		value: string;
 	}>;
+	timberSpecies?: TimberSpecies;
 	description?: string;
 	sourceUrl?: string;
 	sourceLabel?: string;
