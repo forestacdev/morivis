@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	// @ts-expect-error - virtual module provided by @vite-pwa/sveltekit
 	import { pwaInfo } from 'virtual:pwa-info';
+	import { tuple } from 'yup';
 
 	import { MOBILE_WIDTH } from './constants';
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
@@ -20,7 +21,7 @@
 	import { ICONS } from '$lib/icons';
 	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
 	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/platform/viewport';
-	import { transitionPageScreen } from '$routes/stores/effect';
+	import { transitionPageScreenWebgl } from '$routes/stores/effect';
 	import {
 		isBlocked,
 		isMobile,
@@ -44,13 +45,13 @@
 
 		// 	isBlocked.set(true);
 		// 	// ページ遷移のアニメーションを制御
-		// 	transitionPageScreen.set(1);
+		// 	transitionPageScreenWebgl.set(1);
 		// 	delay(1000).then(() => {
 		// 		resolve();
 		// 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		// 		navigation.complete;
 		// 		delay(300).then(() => {
-		// 			transitionPageScreen.set(-1);
+		// 			transitionPageScreenWebgl.set(-1);
 
 		// 			delay(1000).then(() => {
 		// 				isBlocked.set(false);
@@ -75,7 +76,7 @@
 		});
 	});
 
-	let isInitialized = $state<boolean>(false);
+	let isInitialized = $state<boolean>(true);
 
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
@@ -137,6 +138,6 @@
 
 <TermsOfServiceDialog />
 <InfoDialog />
-<WebGLScreen {initialized} />
+<!-- <WebGLScreen {initialized} /> -->
 <ScreenGuard />
 <PwaManualDialog />

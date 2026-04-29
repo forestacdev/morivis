@@ -2,7 +2,10 @@ import { writable } from 'svelte/store';
 
 export const showLockOnScreen = writable<boolean>(false);
 
-export const transitionPageScreen = writable<1 | 0 | -1>(-1);
+export type ScreenTransitionState = 1 | 0 | -1;
+
+export const transitionPageScreenWebgl = writable<ScreenTransitionState>(-1);
+export const transitionPageScreenCss = writable<ScreenTransitionState>(-1);
 
 export const mapPaneScale = writable<number>(1);
 

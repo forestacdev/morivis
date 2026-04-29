@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { transitionPageScreen } from '$routes/stores/effect';
+	import { transitionPageScreenWebgl } from '$routes/stores/effect';
 
 	interface props {
 		initialized(): void;
@@ -120,7 +120,7 @@
 		// 初回起動時はWorkerを作成しない（initialized callbackは即座に呼ぶ）
 		initialized();
 
-		const unsubscribe = transitionPageScreen.subscribe((transition) => {
+		const unsubscribe = transitionPageScreenWebgl.subscribe((transition) => {
 			// 初回のsubscribe発火はスキップ
 			if (!isWorkerInitialized) {
 				isWorkerInitialized = true;
