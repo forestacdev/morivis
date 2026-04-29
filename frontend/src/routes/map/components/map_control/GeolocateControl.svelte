@@ -50,7 +50,7 @@
 					positionOptions: {
 						enableHighAccuracy: true
 					},
-					fitBoundsOptions: { maxZoom: 12 },
+					fitBoundsOptions: { maxZoom: 18 },
 					trackUserLocation: true,
 					showUserLocation: true
 				});
