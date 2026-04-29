@@ -23,13 +23,13 @@
 			<FeaturePanelMediaGallery media={summary.media} />
 		{/if}
 
-		<div
-			class="bottom-0 left-0 flex h-full w-full shrink-0 grow flex-col justify-end gap-1 pt-4 text-base max-lg:hidden"
-		>
-			<span class="text-[22px] font-bold break-all">{summary.title}</span>
-			{#if summary.subtitle}
-				<span class="text-[14px] break-all text-gray-300">{summary.subtitle}</span>
-			{/if}
+		<div class="flex w-full shrink-0 grow justify-between gap-1 pt-4 text-base max-lg:hidden">
+			<div class="flex flex-col">
+				<span class="text-[22px] font-bold break-all">{summary.title}</span>
+				{#if summary.subtitle}
+					<span class="text-[14px] break-all text-gray-300">{summary.subtitle}</span>
+				{/if}
+			</div>
 		</div>
 	</div>
 

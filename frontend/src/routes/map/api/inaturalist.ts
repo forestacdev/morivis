@@ -148,6 +148,41 @@ interface INatSearchResponse<T> {
 	results: T[];
 }
 
+const CACHE_LIMIT = 50;
+
+const touchCacheEntry = <T>(cache: Map<string, T>, key: string): T | undefined => {
+	if (!cache.has(key)) {
+		return undefined;
+	}
+
+	const value = cache.get(key) as T;
+	cache.delete(key);
+	cache.set(key, value);
+	return value;
+};
+
+const setLruCache = <T>(cache: Map<string, T>, key: string, value: T, limit = CACHE_LIMIT) => {
+	if (cache.has(key)) {
+		cache.delete(key);
+	}
+
+	if (cache.size >= limit) {
+		const oldestKey = cache.keys().next().value;
+		if (oldestKey) {
+			cache.delete(oldestKey);
+		}
+	}
+
+	cache.set(key, value);
+};
+
+const primaryTaxonByNameCache = new Map<string, INatTaxon | null>();
+const primaryTaxonByNamePromiseCache = new Map<string, Promise<INatTaxon | null>>();
+const taxonByIdCache = new Map<string, INatTaxon | null>();
+const taxonByIdPromiseCache = new Map<string, Promise<INatTaxon | null>>();
+const taxonomyByNameCache = new Map<string, LinnaeanTaxonomy | null>();
+const taxonomyByNamePromiseCache = new Map<string, Promise<LinnaeanTaxonomy | null>>();
+
 // ============================================================
 // 分類群（Taxa）関連の関数
 // ============================================================
@@ -216,13 +251,36 @@ export const searchTaxa = async (
  * console.log(taxon?.wikipedia_summary);
  */
 export const getTaxonById = async (id: number): Promise<INatTaxon | null> => {
+	const cacheKey = id.toString();
+	const cachedTaxon = touchCacheEntry(taxonByIdCache, cacheKey);
+	if (cachedTaxon !== undefined) {
+		return cachedTaxon;
+	}
+
+	const pending = taxonByIdPromiseCache.get(cacheKey);
+	if (pending) {
+		return pending;
+	}
+
+	const request = (async () => {
+		try {
+			const response = await fetch(`https://api.inaturalist.org/v1/taxa/${id}?locale=ja`);
+			const data: INatSearchResponse<INatTaxon> = await response.json();
+			const taxon = data.results?.[0] || null;
+			setLruCache(taxonByIdCache, cacheKey, taxon);
+			return taxon;
+		} catch (error) {
+			console.error('iNaturalist Taxa Get Error:', error);
+			return null;
+		}
+	})();
+
+	taxonByIdPromiseCache.set(cacheKey, request);
+
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/taxa/${id}?locale=ja`);
-		const data: INatSearchResponse<INatTaxon> = await response.json();
-		return data.results?.[0] || null;
-	} catch (error) {
-		console.error('iNaturalist Taxa Get Error:', error);
-		return null;
+		return await request;
+	} finally {
+		taxonByIdPromiseCache.delete(cacheKey);
 	}
 };
 
@@ -637,6 +695,49 @@ export const normalizeJapaneseName = (name: string): string | null => {
 	return normalized;
 };
 
+const getPrimaryTaxonByNormalizedName = async (normalizedName: string): Promise<INatTaxon | null> => {
+	const cachedTaxon = touchCacheEntry(primaryTaxonByNameCache, normalizedName);
+	if (cachedTaxon !== undefined) {
+		return cachedTaxon;
+	}
+
+	const pending = primaryTaxonByNamePromiseCache.get(normalizedName);
+	if (pending) {
+		return pending;
+	}
+
+	const request = (async () => {
+		const taxa = await searchTaxa(normalizedName, { limit: 1 });
+		const taxon = taxa[0] ?? null;
+		setLruCache(primaryTaxonByNameCache, normalizedName, taxon);
+		return taxon;
+	})();
+
+	primaryTaxonByNamePromiseCache.set(normalizedName, request);
+
+	try {
+		return await request;
+	} finally {
+		primaryTaxonByNamePromiseCache.delete(normalizedName);
+	}
+};
+
+const getNormalizedPrimaryTaxonByName = async (name: string): Promise<{
+	normalizedName: string;
+	taxon: INatTaxon | null;
+} | null> => {
+	const normalizedName = normalizeJapaneseName(name);
+	if (!normalizedName) {
+		return null;
+	}
+
+	const taxon = await getPrimaryTaxonByNormalizedName(normalizedName);
+	return {
+		normalizedName,
+		taxon
+	};
+};
+
 // ============================================================
 // 分類体系（Taxonomy）関連の関数
 // ============================================================
@@ -725,66 +826,74 @@ export const RANK_NAMES_JA: Record<TaxonomicRank, string> = {
 export const getTaxonomyByJapaneseName = async (
 	japaneseName: string
 ): Promise<LinnaeanTaxonomy | null> => {
-	try {
-		// 0. 和名を正規化
-		const normalizedName = normalizeJapaneseName(japaneseName);
-		if (!normalizedName) {
-			return null;
-		}
+	const normalized = await getNormalizedPrimaryTaxonByName(japaneseName);
+	const taxon = normalized?.taxon;
+	if (!normalized || !taxon) {
+		return null;
+	}
 
-		// 1. 和名で分類群を検索
-		const taxa = await searchTaxa(normalizedName, { limit: 1 });
+	const cachedTaxonomy = touchCacheEntry(taxonomyByNameCache, normalized.normalizedName);
+	if (cachedTaxonomy !== undefined) {
+		return cachedTaxonomy;
+	}
 
-		if (taxa.length === 0) {
-			return null;
-		}
+	const pending = taxonomyByNamePromiseCache.get(normalized.normalizedName);
+	if (pending) {
+		return pending;
+	}
 
-		const taxon = taxa[0];
+	const request = (async () => {
+		try {
+			const detailedTaxon = await getTaxonById(taxon.id);
+			if (!detailedTaxon) {
+				setLruCache(taxonomyByNameCache, normalized.normalizedName, null);
+				return null;
+			}
 
-		// 2. 詳細情報（祖先の分類を含む）を取得
-		const detailedTaxon = await getTaxonById(taxon.id);
+			const linnaeanRanks: TaxonomicRank[] = [
+				'kingdom',
+				'phylum',
+				'class',
+				'order',
+				'family',
+				'genus',
+				'species'
+			];
 
-		if (!detailedTaxon) {
-			return null;
-		}
+			const taxonomy: LinnaeanTaxonomy = {};
 
-		// 3. リンネ式分類体系の階級のみ抽出
-		const linnaeanRanks: TaxonomicRank[] = [
-			'kingdom',
-			'phylum',
-			'class',
-			'order',
-			'family',
-			'genus',
-			'species'
-		];
-
-		const taxonomy: LinnaeanTaxonomy = {};
-
-		// 祖先から分類情報を抽出
-		if (detailedTaxon.ancestors) {
-			for (const ancestor of detailedTaxon.ancestors) {
-				if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
-					taxonomy[ancestor.rank as TaxonomicRank] = {
-						name: ancestor.name,
-						commonName: ancestor.preferred_common_name
-					};
+			if (detailedTaxon.ancestors) {
+				for (const ancestor of detailedTaxon.ancestors) {
+					if (linnaeanRanks.includes(ancestor.rank as TaxonomicRank)) {
+						taxonomy[ancestor.rank as TaxonomicRank] = {
+							name: ancestor.name,
+							commonName: ancestor.preferred_common_name
+						};
+					}
 				}
 			}
-		}
 
-		// 検索した分類群自体も追加（種の場合など）
-		if (linnaeanRanks.includes(detailedTaxon.rank as TaxonomicRank)) {
-			taxonomy[detailedTaxon.rank as TaxonomicRank] = {
-				name: detailedTaxon.name,
-				commonName: detailedTaxon.preferred_common_name
-			};
-		}
+			if (linnaeanRanks.includes(detailedTaxon.rank as TaxonomicRank)) {
+				taxonomy[detailedTaxon.rank as TaxonomicRank] = {
+					name: detailedTaxon.name,
+					commonName: detailedTaxon.preferred_common_name
+				};
+			}
 
-		return taxonomy;
-	} catch (error) {
-		console.error('iNaturalist getTaxonomyByJapaneseName Error:', error);
-		return null;
+			setLruCache(taxonomyByNameCache, normalized.normalizedName, taxonomy);
+			return taxonomy;
+		} catch (error) {
+			console.error('iNaturalist getTaxonomyByJapaneseName Error:', error);
+			return null;
+		}
+	})();
+
+	taxonomyByNamePromiseCache.set(normalized.normalizedName, request);
+
+	try {
+		return await request;
+	} finally {
+		taxonomyByNamePromiseCache.delete(normalized.normalizedName);
 	}
 };
 
@@ -892,23 +1001,12 @@ export const getSummaryByJapaneseName = async (
 	japaneseName: string
 ): Promise<TaxonSummary | null> => {
 	try {
-		// 0. 和名を正規化
-		const normalizedName = normalizeJapaneseName(japaneseName);
-		if (!normalizedName) {
+		const normalized = await getNormalizedPrimaryTaxonByName(japaneseName);
+		if (!normalized?.taxon) {
 			return null;
 		}
 
-		// 1. 和名で分類群を検索
-		const taxa = await searchTaxa(normalizedName, { limit: 1 });
-
-		if (taxa.length === 0) {
-			return null;
-		}
-
-		const taxon = taxa[0];
-
-		// 2. 詳細情報（Wikipedia概要を含む）を取得
-		const detailedTaxon = await getTaxonById(taxon.id);
+		const detailedTaxon = await getTaxonById(normalized.taxon.id);
 
 		if (!detailedTaxon) {
 			return null;
@@ -1036,25 +1134,8 @@ const createImageUrls = (
 	};
 };
 
-/** getImageByName のキャッシュ（LRU方式、最大50件） */
-const IMAGE_CACHE_LIMIT = 50;
 const imageByNameCache = new Map<string, INatImage | null>();
-
-/** キャッシュに追加（制限を超えたら古いものから削除） */
-const setImageCache = (key: string, value: INatImage | null) => {
-	// 既存のキーを削除して末尾に再追加（アクセス順を更新）
-	if (imageByNameCache.has(key)) {
-		imageByNameCache.delete(key);
-	}
-	// 制限を超えていたら最も古いエントリを削除
-	if (imageByNameCache.size >= IMAGE_CACHE_LIMIT) {
-		const oldestKey = imageByNameCache.keys().next().value;
-		if (oldestKey) {
-			imageByNameCache.delete(oldestKey);
-		}
-	}
-	imageByNameCache.set(key, value);
-};
+const imageByNamePromiseCache = new Map<string, Promise<INatImage | null>>();
 
 /**
  * 生物名から画像を取得（日本での観察優先）
@@ -1100,75 +1181,75 @@ export const getImageByName = async (
 	const japanOnly = options?.japanOnly !== false;
 	const researchGradeOnly = options?.researchGradeOnly ?? false;
 
-	// キャッシュキーを生成
-	const cacheKey = `${name}:${size}:${japanOnly}:${researchGradeOnly}`;
-
-	// キャッシュに存在すればそれを返す（LRU順序を更新）
-	if (imageByNameCache.has(cacheKey)) {
-		const cached = imageByNameCache.get(cacheKey)!;
-		imageByNameCache.delete(cacheKey);
-		imageByNameCache.set(cacheKey, cached);
-		return cached;
-	}
-
 	try {
-		// 0. 和名を正規化
-		const normalizedName = normalizeJapaneseName(name);
-		if (!normalizedName) {
+		const normalized = await getNormalizedPrimaryTaxonByName(name);
+		const taxon = normalized?.taxon;
+		if (!normalized || !taxon) {
 			return null;
 		}
 
-		// 1. まず分類群を検索
-		const taxa = await searchTaxa(normalizedName, { limit: 1 });
+		const cacheKey = `${normalized.normalizedName}:${size}:${japanOnly}:${researchGradeOnly}`;
+		const cachedImage = touchCacheEntry(imageByNameCache, cacheKey);
+		if (cachedImage !== undefined) {
+			return cachedImage;
+		}
 
-		if (taxa.length === 0) {
+		const pending = imageByNamePromiseCache.get(cacheKey);
+		if (pending) {
+			return pending;
+		}
+
+		const request = (async () => {
+			if (taxon.default_photo?.medium_url) {
+				const urls = createImageUrls(taxon.default_photo.medium_url, size);
+				const result: INatImage = {
+					...urls,
+					attribution: taxon.default_photo.attribution,
+					licenseCode: taxon.default_photo.license_code,
+					taxonId: taxon.id,
+					scientificName: taxon.name,
+					commonName: taxon.preferred_common_name,
+					observationsCount: taxon.observations_count
+				};
+				setLruCache(imageByNameCache, cacheKey, result);
+				return result;
+			}
+
+			const observations = await searchObservations({
+				taxonId: taxon.id,
+				placeId: japanOnly ? PLACE_IDS.JAPAN : undefined,
+				qualityGrade: researchGradeOnly ? 'research' : undefined,
+				hasPhotos: true,
+				limit: 1
+			});
+
+			if (observations.length > 0 && observations[0].photos?.[0]) {
+				const photo = observations[0].photos[0];
+				const urls = createImageUrls(photo.url, size);
+				const result: INatImage = {
+					...urls,
+					attribution: photo.attribution,
+					licenseCode: photo.license_code,
+					taxonId: taxon.id,
+					scientificName: taxon.name,
+					commonName: taxon.preferred_common_name,
+					observationsCount: taxon.observations_count
+				};
+				setLruCache(imageByNameCache, cacheKey, result);
+				return result;
+			}
+
+			setLruCache(imageByNameCache, cacheKey, null);
 			return null;
+		})();
+
+		imageByNamePromiseCache.set(cacheKey, request);
+
+		try {
+			return await request;
+		} finally {
+			imageByNamePromiseCache.delete(cacheKey);
 		}
-
-		const taxon = taxa[0];
-		// 2. 分類群にデフォルト写真があればそれを使用
-		if (taxon.default_photo?.medium_url) {
-			const urls = createImageUrls(taxon.default_photo.medium_url, size);
-			const result: INatImage = {
-				...urls,
-				attribution: taxon.default_photo.attribution,
-				licenseCode: taxon.default_photo.license_code,
-				taxonId: taxon.id,
-				scientificName: taxon.name,
-				commonName: taxon.preferred_common_name,
-				observationsCount: taxon.observations_count
-			};
-			setImageCache(cacheKey, result);
-			return result;
-		}
-
-		// 3. デフォルト写真がなければ、観察記録から取得
-		const observations = await searchObservations({
-			taxonId: taxon.id,
-			placeId: japanOnly ? PLACE_IDS.JAPAN : undefined,
-			qualityGrade: researchGradeOnly ? 'research' : undefined,
-			hasPhotos: true,
-			limit: 1
-		});
-
-		if (observations.length > 0 && observations[0].photos?.[0]) {
-			const photo = observations[0].photos[0];
-			const urls = createImageUrls(photo.url, size);
-			const result: INatImage = {
-				...urls,
-				attribution: photo.attribution,
-				licenseCode: photo.license_code,
-				taxonId: taxon.id,
-				scientificName: taxon.name,
-				commonName: taxon.preferred_common_name,
-				observationsCount: taxon.observations_count
-			};
-			setImageCache(cacheKey, result);
-			return result;
-		}
-
-		setImageCache(cacheKey, null);
-		return null;
 	} catch (error) {
 		console.error('iNaturalist getImageByName Error:', error);
 		return null;
@@ -1212,14 +1293,12 @@ export const getImagesByName = async (
 	const size = options?.size || 'medium';
 
 	try {
-		// 1. まず分類群を検索
-		const taxa = await searchTaxa(name, { limit: 1 });
-
-		if (taxa.length === 0) {
+		const normalized = await getNormalizedPrimaryTaxonByName(name);
+		if (!normalized?.taxon) {
 			return [];
 		}
 
-		const taxon = taxa[0];
+		const taxon = normalized.taxon;
 		const limit = Math.min(options?.limit || 5, 20);
 		const japanOnly = options?.japanOnly !== false;
 

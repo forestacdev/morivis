@@ -427,7 +427,7 @@
 			<div
 				class="absolute top-0 w-[2px] {isLast ? 'h-1/2' : 'h-full'} {isHoveredLayerType ===
 				layerType
-					? 'bg-accent '
+					? 'bg-accent'
 					: 'bg-gray-400'}"
 			></div>
 			<div
