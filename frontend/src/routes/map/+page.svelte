@@ -27,7 +27,10 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import { getLayerFeaturePanelSummary } from '$routes/map/components/feature_menu/feature-panel-summary';
+	import {
+		getLayerFeaturePanelSummary,
+		hasFeaturePanelSummaryContent
+	} from '$routes/map/components/feature_menu/feature-panel-summary';
 	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
@@ -692,6 +695,7 @@
 						bind:featureMenuData
 						{layerEntries}
 						bind:showSelectionMarker
+						showSummaryTab={summary ? hasFeaturePanelSummaryContent(summary) : false}
 						selectedTab="summary"
 						{summary}
 					/>

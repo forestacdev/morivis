@@ -15,6 +15,7 @@
 		layerEntries: GeoDataEntry[];
 		showSelectionMarker: boolean;
 		summary: FeaturePanelSummaryData | null;
+		showSummaryTab: boolean;
 		selectedTab: 'summary' | 'attributes';
 	}
 
@@ -23,6 +24,7 @@
 		layerEntries,
 		showSelectionMarker = $bindable(),
 		summary,
+		showSummaryTab,
 		selectedTab
 	}: Props = $props();
 
@@ -102,11 +104,11 @@
 </script>
 
 {#if featureMenuData && summary}
-	{#if selectedTab === 'summary'}
+	{#if showSummaryTab && selectedTab === 'summary'}
 		<FeaturePanelSummary {summary} />
 	{/if}
 
-	{#if !propId && selectedTab === 'attributes'}
+	{#if !propId && (selectedTab === 'attributes' || !showSummaryTab)}
 		<div in:fade={{ duration: 100 }} class="lg:pl-2">
 			<div class="pb-6">
 				<div class="flex w-full flex-col gap-1 text-base max-lg:hidden">

@@ -22,6 +22,18 @@ import type {
 } from '$routes/map/types';
 import { generatePopupTitle } from '$routes/map/utils/data/properties';
 
+export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData): boolean => {
+	return Boolean(
+		summary.media?.length ||
+			summary.point ||
+			summary.sourceUrl ||
+			summary.description?.trim() ||
+			summary.timberSpecies ||
+			summary.taxonomy?.length ||
+			summary.protectionForestDescription?.trim()
+	);
+};
+
 // _prop_data.ts の静的メディア定義を FeaturePanel 用メディア形式に変換する。
 const convertMediaData = (
 	media: MediaData,

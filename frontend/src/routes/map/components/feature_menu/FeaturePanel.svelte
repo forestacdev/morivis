@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { getLayerFeaturePanelSummary } from './feature-panel-summary';
+	import {
+		getLayerFeaturePanelSummary,
+		hasFeaturePanelSummaryContent
+	} from './feature-panel-summary';
 	import FeaturePanelFrame from './FeaturePanelFrame.svelte';
 	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
 	import FeaturePanelLoading from './FeaturePanelLoading.svelte';
@@ -32,10 +35,12 @@
 				kind: 'layer-feature';
 				panelData: LayerFeaturePanelData;
 				summary: FeaturePanelSummaryData;
+				hasSummaryTab: boolean;
 		  }
 		| {
 				kind: 'search-address';
 				summary: FeaturePanelSummaryData;
+				hasSummaryTab: boolean;
 		  };
 
 	let targetLayer = $derived.by(() => {
@@ -129,16 +134,19 @@
 			return {
 				kind: 'layer-feature',
 				panelData: data,
-				summary
+				summary,
+				hasSummaryTab: hasFeaturePanelSummaryContent(summary)
 			};
 		}
 
 		if (data.kind === 'search-address') {
 			const wiki = await getWikipedia(data);
+			const summary = getSearchAddressSummary(data, wiki);
 
 			return {
 				kind: 'search-address',
-				summary: getSearchAddressSummary(data, wiki)
+				summary,
+				hasSummaryTab: hasFeaturePanelSummaryContent(summary)
 			};
 		}
 
@@ -146,6 +154,24 @@
 	};
 
 	let panelContentPromise = $derived(getPanelContentData(panelData, layerEntries));
+	let resolvedContentData = $state<PanelContentData | null>(null);
+
+	$effect(() => {
+		const currentPromise = panelContentPromise;
+		resolvedContentData = null;
+
+		let cancelled = false;
+
+		void currentPromise.then((contentData) => {
+			if (!cancelled) {
+				resolvedContentData = contentData;
+			}
+		});
+
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	$effect(() => {
 		void selectedTabResetKey;
@@ -160,7 +186,7 @@
 	{onClose}
 >
 	{#snippet headerActions()}
-		{#if panelData?.kind === 'layer-feature' && hasAttributeTab}
+		{#if panelData?.kind === 'layer-feature' && hasAttributeTab && resolvedContentData?.hasSummaryTab}
 			<div class="bg-sub inline-flex rounded-full">
 				<button
 					type="button"
@@ -200,6 +226,7 @@
 				featureMenuData={contentData.panelData}
 				{layerEntries}
 				bind:showSelectionMarker
+				showSummaryTab={contentData.hasSummaryTab}
 				{selectedTab}
 				summary={contentData.summary}
 			/>
