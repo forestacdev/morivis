@@ -13,8 +13,6 @@ const HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH = 2;
 const HIGHLIGHT_LINE_PATTERN_WIDTH = 32;
 const HIGHLIGHT_LINE_PATTERN_HEIGHT = 32;
 const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 12;
-const HIGHLIGHT_FILL_PATTERN_FRAME_DURATION = 20; // ms
-const HIGHLIGHT_FILL_ANIMATION_MIN_ZOOM = 14;
 const highlightFillPatternImageCache = new Map<
 	string,
 	{ width: number; height: number; data: Uint8Array }
@@ -190,68 +188,8 @@ const createSelectedExcludeFilter = (featureId: string | number): FilterSpecific
 
 class HighlightLayerRegistry {
 	private static items: HighlightLayerRegistryItem[] = [];
-	private static animationFrameId: number | null = null;
-	private static animationMap: MapLibreMap | null = null;
-
-	private static setPatternFrame = (
-		map: MapLibreMap,
-		frame: number,
-		pointFrame: number = frame
-	) => {
-		const frameIndex =
-			((frame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
-			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-		const pointFrameIndex =
-			((pointFrame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
-			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-		const fillPatternId =
-			map.getZoom() < HIGHLIGHT_FILL_ANIMATION_MIN_ZOOM
-				? HIGHLIGHT_FILL_PATTERN_IDS[0]
-				: HIGHLIGHT_FILL_PATTERN_IDS[frameIndex];
-		const linePatternId = HIGHLIGHT_LINE_PATTERN_IDS[frameIndex];
-		const pulse =
-			0.5 - 0.5 * Math.cos((2 * Math.PI * pointFrameIndex) / HIGHLIGHT_FILL_PATTERN_FRAME_COUNT);
-
-		this.items
-			.filter(
-				(item) => item.role === 'highlight' && item.patternKind && map.getLayer(item.actualLayerId)
-			)
-			.forEach((item) => {
-				if (item.patternKind === 'point') {
-					const baseRadius = item.baseCircleRadius ?? 8;
-					const baseStrokeWidth = item.baseCircleStrokeWidth ?? 2;
-					map.setPaintProperty(item.actualLayerId, 'circle-radius', baseRadius + pulse * 4);
-					map.setPaintProperty(
-						item.actualLayerId,
-						'circle-stroke-width',
-						baseStrokeWidth + pulse * 2
-					);
-					map.setPaintProperty(item.actualLayerId, 'circle-opacity', 0.55 + pulse * 0.45);
-					map.setPaintProperty(item.actualLayerId, 'circle-stroke-opacity', 0.7 + pulse * 0.3);
-					return;
-				}
-
-				const paintProperty = item.patternKind === 'line' ? 'line-pattern' : 'fill-pattern';
-				const patternId = item.patternKind === 'line' ? linePatternId : fillPatternId;
-				map.setPaintProperty(item.actualLayerId, paintProperty, patternId);
-			});
-	};
-
-	private static stopPatternAnimation = () => {
-		if (this.animationFrameId !== null) {
-			cancelAnimationFrame(this.animationFrameId);
-			this.animationFrameId = null;
-		}
-
-		if (this.animationMap) {
-			this.setPatternFrame(this.animationMap, 0);
-		}
-
-		this.animationMap = null;
-	};
 
 	static clear = () => {
-		this.stopPatternAnimation();
 		this.items = [];
 	};
 
@@ -263,41 +201,8 @@ class HighlightLayerRegistry {
 		map: MapLibreMap | null,
 		selected: SelectedHighlightData | null
 	) => {
-		const hasAnimatedTarget = this.items.some((item) => {
-			return (
-				item.logicalLayerId === selected?.layerId && item.role === 'highlight' && item.patternKind
-			);
-		});
-
-		if (!map || !selected || !hasAnimatedTarget) {
-			this.stopPatternAnimation();
-			return;
-		}
-
-		if (this.animationMap === map && this.animationFrameId !== null) return;
-
-		this.stopPatternAnimation();
-		this.animationMap = map;
-		const startedAt = performance.now();
-
-		const tick = (timestamp: number) => {
-			if (!this.animationMap) return;
-			const elapsedFrame =
-				Math.floor((timestamp - startedAt) / HIGHLIGHT_FILL_PATTERN_FRAME_DURATION) %
-				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-			const elapsedPointFrame =
-				Math.floor((timestamp - startedAt) / (HIGHLIGHT_FILL_PATTERN_FRAME_DURATION * 2)) %
-				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-			const frame =
-				(HIGHLIGHT_FILL_PATTERN_FRAME_COUNT - elapsedFrame) % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-			const pointFrame =
-				(HIGHLIGHT_FILL_PATTERN_FRAME_COUNT - elapsedPointFrame) %
-				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-			this.setPatternFrame(this.animationMap, frame, pointFrame);
-			this.animationFrameId = requestAnimationFrame(tick);
-		};
-
-		this.animationFrameId = requestAnimationFrame(tick);
+		void map;
+		void selected;
 	};
 
 	static getFilterUpdates = (selected: SelectedHighlightData | null) => {
