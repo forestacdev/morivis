@@ -11,6 +11,7 @@ type ThemeColors = {
 
 type ThemeMode = 'default' | 'preview';
 
+// TODO: .cssと統一化する
 const THEMES: Record<ThemeMode, ThemeColors> = {
 	default: {
 		main: '#0c221d',

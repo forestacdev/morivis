@@ -31,4 +31,6 @@ export interface SelectedHighlightData {
 	layerId: GeoDataEntry['id'];
 	featureId: string | number;
 }
+
+/** ハイライトの選択状態 */
 export const selectedHighlightData = writable<SelectedHighlightData | null>(null);

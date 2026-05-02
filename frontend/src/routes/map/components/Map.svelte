@@ -649,7 +649,9 @@
 			return;
 		}
 
-		const highlightLayers = createHighlightLayerItems(getMapStyleEntries(layerEntries as GeoDataEntry[]));
+		const highlightLayers = createHighlightLayerItems(
+			getMapStyleEntries(layerEntries as GeoDataEntry[])
+		);
 		mapStore.setHighlightLayers(highlightLayers);
 	};
 
@@ -801,7 +803,7 @@
 					? ''
 					: 'opacity-100'}"
 		>
-			{#if maplibreMap}
+			<!-- {#if maplibreMap}
 				<PoiManager
 					map={maplibreMap}
 					bind:featureMenuData
@@ -810,7 +812,7 @@
 					{showGeoRefForm}
 					bind:showSelectionMarker
 				/>
-			{/if}
+			{/if} -->
 		</div>
 		<!-- 地図コンテナオーバーレイ -->
 		<div
