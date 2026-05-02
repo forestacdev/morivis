@@ -45,18 +45,24 @@ export const registerLayerFilterState = ({
 	logicalLayerId,
 	layer,
 	role,
-	patternKind
+	patternKind,
+	baseCircleRadius,
+	baseCircleStrokeWidth
 }: {
 	logicalLayerId: string;
 	layer: LayerSpecification;
 	role: 'base' | 'highlight';
-	patternKind?: 'fill' | 'line';
+	patternKind?: 'fill' | 'line' | 'point';
+	baseCircleRadius?: number;
+	baseCircleStrokeWidth?: number;
 }) => {
 	HighlightLayerRegistry.add({
 		logicalLayerId,
 		actualLayerId: layer.id,
 		role,
 		patternKind,
+		baseCircleRadius,
+		baseCircleStrokeWidth,
 		defaultFilter: (
 			layer as LayerSpecification & {
 				filter?: FilterSpecification;
@@ -210,7 +216,24 @@ export const registerHighlightLayers = ({
 		logicalLayerId,
 		layer: baseHighlightLayer,
 		role: 'highlight',
-		patternKind: baseLayer.type === 'fill' ? 'fill' : baseLayer.type === 'line' ? 'line' : undefined
+		patternKind:
+			baseLayer.type === 'fill'
+				? 'fill'
+				: baseLayer.type === 'line'
+					? 'line'
+					: baseHighlightLayer.type === 'circle'
+						? 'point'
+						: undefined,
+		baseCircleRadius:
+			baseHighlightLayer.type === 'circle' &&
+			typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
+				? baseHighlightLayer.paint['circle-radius']
+				: undefined,
+		baseCircleStrokeWidth:
+			baseHighlightLayer.type === 'circle' &&
+			typeof baseHighlightLayer.paint?.['circle-stroke-width'] === 'number'
+				? baseHighlightLayer.paint['circle-stroke-width']
+				: undefined
 	});
 
 	return highlightLayer;

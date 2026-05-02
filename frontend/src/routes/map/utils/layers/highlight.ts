@@ -155,7 +155,7 @@ export const registerHighlightFillPatternImages = (map: MapLibreMap) => {
 };
 
 export type HighlightLayerRole = 'base' | 'highlight';
-export type HighlightPatternKind = 'fill' | 'line';
+export type HighlightPatternKind = 'fill' | 'line' | 'point';
 
 interface HighlightLayerRegistryItem {
 	logicalLayerId: string;
@@ -163,6 +163,8 @@ interface HighlightLayerRegistryItem {
 	role: HighlightLayerRole;
 	defaultFilter?: FilterSpecification;
 	patternKind?: HighlightPatternKind;
+	baseCircleRadius?: number;
+	baseCircleStrokeWidth?: number;
 }
 
 const HIDDEN_FILTER: FilterSpecification = ['==', ['literal', 1], 0];
@@ -190,18 +192,41 @@ class HighlightLayerRegistry {
 	private static animationFrameId: number | null = null;
 	private static animationMap: MapLibreMap | null = null;
 
-	private static setPatternFrame = (map: MapLibreMap, frame: number) => {
+	private static setPatternFrame = (
+		map: MapLibreMap,
+		frame: number,
+		pointFrame: number = frame
+	) => {
 		const frameIndex =
 			((frame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
 			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
+		const pointFrameIndex =
+			((pointFrame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
+			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
 		const fillPatternId = HIGHLIGHT_FILL_PATTERN_IDS[frameIndex];
 		const linePatternId = HIGHLIGHT_LINE_PATTERN_IDS[frameIndex];
+		const pulse =
+			0.5 - 0.5 * Math.cos((2 * Math.PI * pointFrameIndex) / HIGHLIGHT_FILL_PATTERN_FRAME_COUNT);
 
 		this.items
 			.filter(
 				(item) => item.role === 'highlight' && item.patternKind && map.getLayer(item.actualLayerId)
 			)
 			.forEach((item) => {
+				if (item.patternKind === 'point') {
+					const baseRadius = item.baseCircleRadius ?? 8;
+					const baseStrokeWidth = item.baseCircleStrokeWidth ?? 2;
+					map.setPaintProperty(item.actualLayerId, 'circle-radius', baseRadius + pulse * 4);
+					map.setPaintProperty(
+						item.actualLayerId,
+						'circle-stroke-width',
+						baseStrokeWidth + pulse * 2
+					);
+					map.setPaintProperty(item.actualLayerId, 'circle-opacity', 0.55 + pulse * 0.45);
+					map.setPaintProperty(item.actualLayerId, 'circle-stroke-opacity', 0.7 + pulse * 0.3);
+					return;
+				}
+
 				const paintProperty = item.patternKind === 'line' ? 'line-pattern' : 'fill-pattern';
 				const patternId = item.patternKind === 'line' ? linePatternId : fillPatternId;
 				map.setPaintProperty(item.actualLayerId, paintProperty, patternId);
@@ -256,9 +281,15 @@ class HighlightLayerRegistry {
 			const elapsedFrame =
 				Math.floor((timestamp - startedAt) / HIGHLIGHT_FILL_PATTERN_FRAME_DURATION) %
 				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
+			const elapsedPointFrame =
+				Math.floor((timestamp - startedAt) / (HIGHLIGHT_FILL_PATTERN_FRAME_DURATION * 2)) %
+				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
 			const frame =
 				(HIGHLIGHT_FILL_PATTERN_FRAME_COUNT - elapsedFrame) % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-			this.setPatternFrame(this.animationMap, frame);
+			const pointFrame =
+				(HIGHLIGHT_FILL_PATTERN_FRAME_COUNT - elapsedPointFrame) %
+				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
+			this.setPatternFrame(this.animationMap, frame, pointFrame);
 			this.animationFrameId = requestAnimationFrame(tick);
 		};
 
