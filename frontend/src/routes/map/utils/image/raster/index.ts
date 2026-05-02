@@ -18,7 +18,6 @@ import {
 	type DemStyleMode
 } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-import type { TileImageManager } from '$routes/map/protocol/image';
 import { PMTiles } from 'pmtiles';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
