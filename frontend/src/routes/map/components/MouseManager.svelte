@@ -104,13 +104,16 @@
 	};
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
+		showMarker = false;
 		// プレブュー中はクリック処理を行わない
 		if (showDataEntry) return;
 		try {
 			// デバッグ用コード
 			clickDebug(e);
 
-			const clickLayerIds = [...$clickableVectorIds, '@search_result'];
+			const clickLayerIds = [...$clickableVectorIds, '@search_result'].filter((layerId) => {
+				return !layerId.startsWith('@highlight_');
+			});
 			// 存在するレイヤーIDのみをフィルタリング
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
 				return mapStore.getLayer(layerId) !== undefined;
@@ -126,6 +129,13 @@
 				setSelectedHighlight(null);
 				featureMenuData = null;
 				clickedLayerIds = [];
+				contextMenuState = null;
+
+				if ($selectedHighlightData) {
+					markerLngLat = null;
+					showMarker = false;
+					return;
+				}
 
 				if (markerLngLat) {
 					markerLngLat = null;
