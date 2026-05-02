@@ -8,7 +8,8 @@ import type { AnyRasterEntry } from '$routes/map/data/types';
 import {
 	DEM_DATA_TYPE,
 	type DemDataTypeKey,
-	type RasterDemEntry
+	type RasterDemEntry,
+	type RasterDemStyle
 } from '$routes/map/data/types/raster';
 import { TileProxy } from '$routes/map/utils/image';
 import {
@@ -96,7 +97,10 @@ export const getRasterImageUrl = async (
 		const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
 
 		if (demType) {
-			const convertUrl = await generateDemCoverImage(url, _layerEntry as RasterDemEntry);
+			const cacheKey = getRasterCoverCacheKey(_layerEntry, url);
+			const convertUrl = await getOrCreateRasterCoverImage(cacheKey, async () => {
+				return await generateDemCoverImage(url, _layerEntry as RasterDemEntry);
+			});
 			return convertUrl;
 		}
 	} else {
@@ -105,31 +109,98 @@ export const getRasterImageUrl = async (
 };
 
 const getPmtilesCoverCacheKey = (_layerEntry: AnyRasterEntry): string => {
+	const normalizedStyle =
+		_layerEntry.style.type === 'dem'
+			? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
+			: _layerEntry.style;
+
 	return JSON.stringify({
 		id: _layerEntry.id,
 		url: _layerEntry.format.url,
 		xyz: _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ,
 		tileSize: _layerEntry.metaData.tileSize,
-		style: _layerEntry.style
+		style: normalizedStyle
 	});
 };
 
-const pendingPmtilesCoverImages = new Map<string, Promise<string | undefined>>();
+const normalizeDemStyleForCoverCache = (style: RasterDemStyle): RasterDemStyle => {
+	return {
+		...style,
+		visualization: {
+			...style.visualization,
+			uniformsData: {
+				...style.visualization.uniformsData,
+				relief: {
+					...style.visualization.uniformsData.relief,
+					min: 0,
+					max: 0
+				},
+				slope: style.visualization.uniformsData.slope
+					? {
+							...style.visualization.uniformsData.slope,
+							min: 0,
+							max: 0
+						}
+					: undefined
+			}
+		}
+	};
+};
+
+const getRasterCoverCacheKey = (_layerEntry: AnyRasterEntry, imageUrl?: string): string => {
+	const normalizedStyle =
+		_layerEntry.style.type === 'dem'
+			? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
+			: _layerEntry.style;
+
+	return JSON.stringify({
+		id: _layerEntry.id,
+		url: imageUrl ?? _layerEntry.format.url,
+		xyz: _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ,
+		tileSize: _layerEntry.metaData.tileSize,
+		style: normalizedStyle
+	});
+};
+
+const pendingRasterCoverImages = new Map<string, Promise<string | undefined>>();
+
+const getOrCreateRasterCoverImage = async (
+	cacheKey: string,
+	generator: () => Promise<string | undefined>
+): Promise<string | undefined> => {
+	const cachedUrl = CoverImageManager.get(cacheKey);
+	if (cachedUrl) return cachedUrl;
+
+	const pendingUrl = pendingRasterCoverImages.get(cacheKey);
+	if (pendingUrl) {
+		return await pendingUrl;
+	}
+
+	const generationPromise = (async () => {
+		const generatedUrl = await generator();
+
+		if (generatedUrl && !CoverImageManager.has(cacheKey)) {
+			CoverImageManager.add(cacheKey, generatedUrl);
+		}
+
+		return generatedUrl;
+	})();
+
+	pendingRasterCoverImages.set(cacheKey, generationPromise);
+
+	try {
+		return await generationPromise;
+	} finally {
+		pendingRasterCoverImages.delete(cacheKey);
+	}
+};
 
 // TODO 条件分岐効率化
 export const generatePmtilesImageUrl = async (
 	_layerEntry: AnyRasterEntry
 ): Promise<string | undefined> => {
 	const cacheKey = getPmtilesCoverCacheKey(_layerEntry);
-	const url = CoverImageManager.get(cacheKey);
-	if (url) return url;
-
-	const pendingUrl = pendingPmtilesCoverImages.get(cacheKey);
-	if (pendingUrl) {
-		return await pendingUrl;
-	}
-
-	const generationPromise = (async () => {
+	return await getOrCreateRasterCoverImage(cacheKey, async () => {
 		let convertUrl;
 
 		// URLを生成して返す
@@ -146,20 +217,8 @@ export const generatePmtilesImageUrl = async (
 			convertUrl = await getImagePmtiles(_layerEntry.format.url, tile);
 		}
 
-		if (convertUrl && !CoverImageManager.has(cacheKey)) {
-			CoverImageManager.add(cacheKey, convertUrl);
-		}
-
 		return convertUrl;
-	})();
-
-	pendingPmtilesCoverImages.set(cacheKey, generationPromise);
-
-	try {
-		return await generationPromise;
-	} finally {
-		pendingPmtilesCoverImages.delete(cacheKey);
-	}
+	});
 };
 
 const loadImageToBitmap = async (imageUrl: string): Promise<ImageBitmap> => {
