@@ -4,7 +4,7 @@ import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import type { SelectedHighlightData } from '$routes/stores';
 
 export const HIGHLIGHT_LAYER_PREFIX = '@highlight_';
-export const HIGHLIGHT_FILL_PATTERN_ID = 'highlight-fill-pattern';
+const HIGHLIGHT_FILL_PATTERN_PREFIX = 'highlight-fill-pattern-';
 const HIGHLIGHT_FILL_PATTERN_FRAME_COUNT = 16;
 const HIGHLIGHT_FILL_PATTERN_SIZE = 32;
 const HIGHLIGHT_FILL_PATTERN_SPACING = 8;
@@ -14,6 +14,12 @@ const highlightFillPatternImageCache = new Map<
 	string,
 	{ width: number; height: number; data: Uint8Array }
 >();
+
+export const HIGHLIGHT_FILL_PATTERN_IDS = Array.from(
+	{ length: HIGHLIGHT_FILL_PATTERN_FRAME_COUNT },
+	(_, index) => `${HIGHLIGHT_FILL_PATTERN_PREFIX}${index}`
+);
+export const HIGHLIGHT_FILL_PATTERN_ID = HIGHLIGHT_FILL_PATTERN_IDS[0];
 
 const hexToRgb = (hex: string) => {
 	const normalized = hex.replace('#', '');
@@ -39,11 +45,18 @@ export const getBaseLayerId = (layerId: string) => {
 };
 
 export const isHighlightFillPatternId = (id: string) => {
-	return id === HIGHLIGHT_FILL_PATTERN_ID;
+	return id.startsWith(HIGHLIGHT_FILL_PATTERN_PREFIX);
+};
+
+const getHighlightFillPatternFrame = (id: string) => {
+	if (!isHighlightFillPatternId(id)) return 0;
+	const frame = Number.parseInt(id.slice(HIGHLIGHT_FILL_PATTERN_PREFIX.length), 10);
+	return Number.isNaN(frame) ? 0 : frame;
 };
 
 export const createHighlightFillPatternImage = (id: string, frame = 0) => {
-	const cacheKey = `${id}:${frame}`;
+	const resolvedFrame = isHighlightFillPatternId(id) ? getHighlightFillPatternFrame(id) : frame;
+	const cacheKey = `${HIGHLIGHT_FILL_PATTERN_PREFIX}${resolvedFrame}`;
 	const cachedImage = highlightFillPatternImageCache.get(cacheKey);
 	if (cachedImage) return cachedImage;
 
@@ -55,7 +68,7 @@ export const createHighlightFillPatternImage = (id: string, frame = 0) => {
 	const data = new Uint8Array(size * size * bytesPerPixel);
 	const { r, g, b } = hexToRgb(HIGHLIGHT_LAYER_COLOR);
 	const frameOffset =
-		((frame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
+		((resolvedFrame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
 		HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
 	const phaseOffset = Math.floor(frameOffset / 2);
 
@@ -80,11 +93,12 @@ export const createHighlightFillPatternImage = (id: string, frame = 0) => {
 };
 
 export const registerHighlightFillPatternImages = (map: MapLibreMap) => {
-	if (map.hasImage(HIGHLIGHT_FILL_PATTERN_ID)) return;
-	const image = createHighlightFillPatternImage(HIGHLIGHT_FILL_PATTERN_ID);
-	if (!image) return;
-
-	map.addImage(HIGHLIGHT_FILL_PATTERN_ID, image);
+	HIGHLIGHT_FILL_PATTERN_IDS.forEach((patternId) => {
+		if (map.hasImage(patternId)) return;
+		const image = createHighlightFillPatternImage(patternId);
+		if (!image) return;
+		map.addImage(patternId, image);
+	});
 };
 
 export type HighlightLayerRole = 'base' | 'highlight';
@@ -123,11 +137,17 @@ class HighlightLayerRegistry {
 	private static animationMap: MapLibreMap | null = null;
 
 	private static setPatternFrame = (map: MapLibreMap, frame: number) => {
-		if (!map.hasImage(HIGHLIGHT_FILL_PATTERN_ID)) return;
-		const image = createHighlightFillPatternImage(HIGHLIGHT_FILL_PATTERN_ID, frame);
-		if (!image) return;
-		map.updateImage(HIGHLIGHT_FILL_PATTERN_ID, image);
-		map.triggerRepaint();
+		const patternId =
+			HIGHLIGHT_FILL_PATTERN_IDS[
+				((frame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
+					HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
+			];
+
+		this.items
+			.filter((item) => item.role === 'highlight' && item.usesFillPattern && map.getLayer(item.actualLayerId))
+			.forEach((item) => {
+				map.setPaintProperty(item.actualLayerId, 'fill-pattern', patternId);
+			});
 	};
 
 	private static stopPatternAnimation = () => {
@@ -177,8 +197,11 @@ class HighlightLayerRegistry {
 
 		const tick = (timestamp: number) => {
 			if (!this.animationMap) return;
-			const frame =
+			const elapsedFrame =
 				Math.floor((timestamp - startedAt) / HIGHLIGHT_FILL_PATTERN_FRAME_DURATION) %
+				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
+			const frame =
+				(HIGHLIGHT_FILL_PATTERN_FRAME_COUNT - elapsedFrame) %
 				HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
 			this.setPatternFrame(this.animationMap, frame);
 			this.animationFrameId = requestAnimationFrame(tick);
