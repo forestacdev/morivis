@@ -8,7 +8,10 @@ import {
 	HighlightLayerRegistry,
 	getHighlightLayerId
 } from '$routes/map/utils/layers/highlight';
-import { createFillExtrusionPatternLayer, createOutLineLayer } from '$routes/map/utils/layers/vector/polygon';
+import {
+	createFillExtrusionPatternLayer,
+	createOutLineLayer
+} from '$routes/map/utils/layers/vector/polygon';
 import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
 import { clickableVectorIds } from '$routes/stores';
 import type {
@@ -78,8 +81,7 @@ export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
 		id: `${entry.id}`,
 		source: `${entry.id}_source`,
 		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom:
-			'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
+		minzoom: 'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
 	};
 };
 
@@ -178,7 +180,7 @@ const createHighlightLayer = (
 				id: getHighlightLayerId(layer.id),
 				paint: {
 					...layer.paint,
-					'text-color': HIGHLIGHT_LAYER_COLOR,
+					'text-color': '#006688',
 					'text-halo-color': '#ffffff',
 					'icon-opacity': 1,
 					'text-opacity': 1
@@ -324,7 +326,6 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 					highlightLayerItems.push(highlightLabelLayer);
 				}
 			}
-
 		});
 
 	clickableVectorIds.update((currentLayerIds) => {

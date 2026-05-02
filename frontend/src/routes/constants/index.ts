@@ -40,7 +40,7 @@ export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
 
 /** ハイライトさせるレイヤーの色 */
-export const HIGHLIGHT_LAYER_COLOR = '#00d4fe';
+export const HIGHLIGHT_LAYER_COLOR = '#00fff7';
 
 /** マップアニメーションのデフォルト設定 */
 export const MAP_ANIMATION_DURATION = 1250;
