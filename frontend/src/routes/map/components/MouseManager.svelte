@@ -62,6 +62,7 @@
 			if (!mapStore.getLayer(layerId)) return;
 			mapStore.setFilter(layerId, filter);
 		});
+		HighlightLayerRegistry.syncPatternAnimation(mapStore.getMap(), selected);
 	};
 
 	// ラスターのクリックイベント

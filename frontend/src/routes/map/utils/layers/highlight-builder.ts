@@ -43,16 +43,19 @@ const applySelectionFilter = <T extends LayerSpecification>(
 export const registerLayerFilterState = ({
 	logicalLayerId,
 	layer,
-	role
+	role,
+	usesFillPattern = false
 }: {
 	logicalLayerId: string;
 	layer: LayerSpecification;
 	role: 'base' | 'highlight';
+	usesFillPattern?: boolean;
 }) => {
 	HighlightLayerRegistry.add({
 		logicalLayerId,
 		actualLayerId: layer.id,
 		role,
+		usesFillPattern,
 		defaultFilter: (
 			layer as LayerSpecification & {
 				filter?: FilterSpecification;
@@ -204,7 +207,8 @@ export const registerHighlightLayers = ({
 	registerLayerFilterState({
 		logicalLayerId,
 		layer: baseHighlightLayer,
-		role: 'highlight'
+		role: 'highlight',
+		usesFillPattern: baseLayer.type === 'fill'
 	});
 
 	return highlightLayer;
