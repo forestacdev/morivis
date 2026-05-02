@@ -14,6 +14,7 @@ const HIGHLIGHT_LINE_PATTERN_WIDTH = 32;
 const HIGHLIGHT_LINE_PATTERN_HEIGHT = 32;
 const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 12;
 const HIGHLIGHT_FILL_PATTERN_FRAME_DURATION = 20; // ms
+const HIGHLIGHT_FILL_ANIMATION_MIN_ZOOM = 14;
 const highlightFillPatternImageCache = new Map<
 	string,
 	{ width: number; height: number; data: Uint8Array }
@@ -203,7 +204,10 @@ class HighlightLayerRegistry {
 		const pointFrameIndex =
 			((pointFrame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) + HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
 			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-		const fillPatternId = HIGHLIGHT_FILL_PATTERN_IDS[frameIndex];
+		const fillPatternId =
+			map.getZoom() < HIGHLIGHT_FILL_ANIMATION_MIN_ZOOM
+				? HIGHLIGHT_FILL_PATTERN_IDS[0]
+				: HIGHLIGHT_FILL_PATTERN_IDS[frameIndex];
 		const linePatternId = HIGHLIGHT_LINE_PATTERN_IDS[frameIndex];
 		const pulse =
 			0.5 - 0.5 * Math.cos((2 * Math.PI * pointFrameIndex) / HIGHLIGHT_FILL_PATTERN_FRAME_COUNT);
