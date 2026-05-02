@@ -50,6 +50,20 @@
 		return item.fit === 'cover' ? 'object-cover' : 'object-contain';
 	};
 
+	const preloadImage = (url: string) => {
+		return new Promise<void>((resolve, reject) => {
+			if (!url) {
+				reject(new Error('Image URL is empty'));
+				return;
+			}
+
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+			img.src = url;
+		});
+	};
+
 	const openImageViewer = () => {
 		if (!imageViewerRoot) return;
 
@@ -121,8 +135,16 @@
 	});
 </script>
 
-{#if media.length > 0}
-	<div class="w-full">
+<div class="w-full">
+	{#snippet mediaPlaceholder()}
+		<div
+			class="bg-sub-dark absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300"
+		>
+			<Icon icon="lucide:map-pin" class="h-64 w-64 text-white/10" />
+		</div>
+	{/snippet}
+
+	{#if media.length > 0}
 		<div
 			use:emblaCarouselSvelte={{
 				plugins: emblaMainCarouselPlugins,
@@ -136,11 +158,9 @@
 					<div class="relative aspect-video min-w-0 flex-[0_0_100%]">
 						{#if item.type === 'image'}
 							{#key item.url}
-								{#await new Promise((resolve) => {
-									const img = new Image();
-									img.onload = () => resolve(img);
-									img.src = item.url;
-								}) then}
+								{#await preloadImage(item.url)}
+									<div class="absolute inset-0 h-full w-full bg-black"></div>
+								{:then}
 									<button
 										type="button"
 										class="absolute inset-0 h-full w-full cursor-zoom-in"
@@ -155,6 +175,8 @@
 											src={item.url}
 										/>
 									</button>
+								{:catch}
+									{@render mediaPlaceholder()}
 								{/await}
 							{/key}
 						{:else if item.type === 'youtube'}
@@ -256,8 +278,12 @@
 				</div>
 			{/if}
 		{/each}
-	</div>
-{/if}
+	{:else}
+		<div class="bg-sub relative aspect-video overflow-hidden rounded-lg">
+			{@render mediaPlaceholder()}
+		</div>
+	{/if}
+</div>
 
 <style>
 	:global(.viewer-button) {

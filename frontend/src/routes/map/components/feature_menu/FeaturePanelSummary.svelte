@@ -19,9 +19,7 @@
 
 <div in:fade={{ duration: 100 }}>
 	<div class="relative w-full max-lg:py-2 lg:p-2">
-		{#if summary.media && summary.media.length > 0}
-			<FeaturePanelMediaGallery media={summary.media} />
-		{/if}
+		<FeaturePanelMediaGallery media={summary.media ?? []} />
 
 		<div class="flex w-full shrink-0 grow justify-between gap-1 pt-4 text-base max-lg:hidden">
 			<div class="flex flex-col">
