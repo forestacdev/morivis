@@ -105,8 +105,13 @@ export const applyVectorSourceLayer = (layer: LayerItem, entry: GeoDataEntry) =>
 
 const createHighlightLayer = (
 	layer: LayerSpecification,
-	style: VectorStyle
+	style: VectorStyle,
+	options: {
+		useLinePattern?: boolean;
+	} = {}
 ): LayerSpecification | undefined => {
+	const { useLinePattern = true } = options;
+
 	if (style.type === 'circle' && style.markerType === 'icon' && layer.type === 'symbol') {
 		return {
 			id: getHighlightLayerId(layer.id),
@@ -147,7 +152,7 @@ const createHighlightLayer = (
 				id: getHighlightLayerId(layer.id),
 				paint: {
 					...layer.paint,
-					'line-pattern': HIGHLIGHT_LINE_PATTERN_ID,
+					...(useLinePattern ? { 'line-pattern': HIGHLIGHT_LINE_PATTERN_ID } : {}),
 					'line-color': HIGHLIGHT_LAYER_COLOR,
 					'line-opacity': 1
 				}
@@ -195,12 +200,14 @@ export const registerHighlightLayers = ({
 	logicalLayerId,
 	baseLayer,
 	style,
-	registerBase = true
+	registerBase = true,
+	useLinePattern = true
 }: {
 	logicalLayerId: string;
 	baseLayer: LayerSpecification;
 	style: VectorStyle;
 	registerBase?: boolean;
+	useLinePattern?: boolean;
 }) => {
 	if (registerBase) {
 		registerLayerFilterState({
@@ -210,7 +217,9 @@ export const registerHighlightLayers = ({
 		});
 	}
 
-	const baseHighlightLayer = createHighlightLayer(baseLayer, style);
+	const baseHighlightLayer = createHighlightLayer(baseLayer, style, {
+		useLinePattern
+	});
 	if (!baseHighlightLayer) return undefined;
 
 	const highlightLayer = applySelectionFilter(baseHighlightLayer, createHiddenFilter());
@@ -221,7 +230,7 @@ export const registerHighlightLayers = ({
 		patternKind:
 			baseLayer.type === 'fill'
 				? 'fill'
-				: baseLayer.type === 'line'
+				: baseLayer.type === 'line' && useLinePattern
 					? 'line'
 					: baseHighlightLayer.type === 'circle'
 						? 'point'
@@ -300,7 +309,8 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 					logicalLayerId: layerId,
 					baseLayer: lineLayer,
 					style,
-					registerBase: false
+					registerBase: false,
+					useLinePattern: false
 				});
 
 				if (highlightOutlineLayer) {

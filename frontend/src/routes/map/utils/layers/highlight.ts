@@ -13,7 +13,7 @@ const HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH = 2;
 const HIGHLIGHT_LINE_PATTERN_WIDTH = 32;
 const HIGHLIGHT_LINE_PATTERN_HEIGHT = 32;
 const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 12;
-const HIGHLIGHT_FILL_PATTERN_FRAME_DURATION = 30;
+const HIGHLIGHT_FILL_PATTERN_FRAME_DURATION = 20; // ms
 const highlightFillPatternImageCache = new Map<
 	string,
 	{ width: number; height: number; data: Uint8Array }
