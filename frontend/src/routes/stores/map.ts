@@ -15,7 +15,6 @@ import type {
 	GeoJSONSource,
 	FilterSpecification,
 	StyleSetterOptions,
-	FeatureIdentifier,
 	FlyToOptions,
 	RasterTileSource
 } from 'maplibre-gl';
@@ -35,6 +34,12 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
+import {
+	createHighlightFillPatternImage,
+	isHighlightLayerId,
+	isHighlightFillPatternId,
+	registerHighlightFillPatternImages
+} from '$routes/map/utils/layers/highlight';
 
 import {
 	WEB_MERCATOR_MIN_LAT,
@@ -335,6 +340,8 @@ const createMapStore = () => {
 
 		if (!map) return;
 
+		registerHighlightFillPatternImages(map);
+
 		map.on('styleimagemissing', (e) => {
 			if (!map) return;
 
@@ -357,14 +364,24 @@ const createMapStore = () => {
 				const bytesPerPixel = 4;
 				const data = new Uint8Array(width * width * bytesPerPixel);
 				map.addImage('poi-icon', { width, height: width, data });
+			} else if (isHighlightFillPatternId(id)) {
+				if (map.hasImage(id)) return;
+				const image = createHighlightFillPatternImage(id);
+				if (!image || !map || map.hasImage(id)) return;
+				map.addImage(id, image);
 			}
 		});
 
 		// マップに追加
 
-		map.once('style.load', () => {
+		let isDeckOverlayAdded = false;
+		map.on('style.load', () => {
 			if (!map) return;
-			map.addControl(deckOverlay as maplibregl.IControl);
+			registerHighlightFillPatternImages(map);
+			if (!isDeckOverlayAdded) {
+				map.addControl(deckOverlay as maplibregl.IControl);
+				isDeckOverlayAdded = true;
+			}
 
 			isStyleLoadEvent.set(map);
 		});
@@ -698,6 +715,34 @@ const createMapStore = () => {
 		} else {
 			console.warn(`Layer with ID ${layerId} does not exist.`);
 		}
+	};
+
+	const clearHighlightLayers = () => {
+		if (!map || !isMapValid(map)) return;
+		const currentMap = map;
+
+		const style = currentMap.getStyle();
+		const highlightLayerIds = style.layers.filter((layer) => isHighlightLayerId(layer.id)).map((layer) => layer.id);
+
+		highlightLayerIds.forEach((layerId) => {
+			if (!currentMap.getLayer(layerId)) return;
+			currentMap.removeLayer(layerId);
+		});
+	};
+
+	const setHighlightLayers = (layers: StyleSpecification['layers']) => {
+		if (!map || !isMapValid(map)) return;
+		const currentMap = map;
+
+		clearHighlightLayers();
+		layers.forEach((layer) => {
+			if (currentMap.getLayer(layer.id)) return;
+			if ('source' in layer && typeof layer.source === 'string' && !currentMap.getSource(layer.source)) {
+				console.warn(`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`);
+				return;
+			}
+			currentMap.addLayer(layer);
+		});
 	};
 
 	// クリックマーカーを追加するメソッド
@@ -1200,12 +1245,6 @@ const createMapStore = () => {
 		map._elevationStart = map._elevationTarget;
 	};
 
-	const setFeatureState = (feature: FeatureIdentifier, state: any) => {
-		if (!map) return;
-		if (!import.meta.env.PROD) console.log('debug:setFeatureState', feature, state);
-		map.setFeatureState(feature, state);
-	};
-
 	return {
 		subscribe,
 		// 処理
@@ -1223,8 +1262,9 @@ const createMapStore = () => {
 		// Three.js 関連
 		initThreeLayer,
 		setThreeLayer,
+		setHighlightLayers,
+		clearHighlightLayers,
 		setFilter,
-		setFeatureState,
 		setLayoutProperty,
 		setBearing: (bearing: number) => map?.setBearing(bearing),
 		setPitch: (pitch: number) => map?.setPitch(pitch),

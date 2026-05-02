@@ -50,6 +50,7 @@
 	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
@@ -490,9 +491,13 @@
 	let styleUpdateId = 0;
 	const styleUpdateUnsubscribers: Unsubscriber[] = [];
 
+	const getMapStyleEntries = (entries: GeoDataEntry[]) => {
+		return entries.filter((entry) => entry.type !== 'model');
+	};
+
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const updateId = ++styleUpdateId;
-		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
+		const mapLibreEntry = getMapStyleEntries(entries);
 
 		// esri-featureプロトコルの動的管理
 		const isGeojsonTileEntry = (e: GeoDataEntry) =>
@@ -638,6 +643,16 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	};
 
+	const syncHighlightLayers = () => {
+		if (showDataEntry || showZoneForm) {
+			mapStore.clearHighlightLayers();
+			return;
+		}
+
+		const highlightLayers = createHighlightLayerItems(getMapStyleEntries(layerEntries as GeoDataEntry[]));
+		mapStore.setHighlightLayers(highlightLayers);
+	};
+
 	// レイヤーの更新を監視
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
@@ -680,6 +695,12 @@
 	styleUpdateUnsubscribers.push(
 		mapStore.onTerrain(() => {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		})
+	);
+
+	styleUpdateUnsubscribers.push(
+		mapStore.onStyleLoad(() => {
+			syncHighlightLayers();
 		})
 	);
 

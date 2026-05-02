@@ -55,7 +55,8 @@ export const getFgbToGeojson = async (url: string, index?: number): Promise<Feat
 
 export const mapGeoJSONFeatureToSidePopupData = (
 	feature: MapGeoJSONFeature,
-	point: [number, number]
+	point: [number, number],
+	layerIdOverride?: string
 ): FeatureMenuData => {
 	const { properties, id, layer } = feature;
 
@@ -65,7 +66,7 @@ export const mapGeoJSONFeatureToSidePopupData = (
 		point,
 		properties: properties,
 		featureId: id as number,
-		layerId: layer.id as string
+		layerId: layerIdOverride ?? (layer.id as string)
 	};
 };
 

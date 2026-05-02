@@ -28,7 +28,7 @@ export const isStreetView = writable<boolean>(false);
 export const selectedLayerId = writable<string>('');
 
 export interface SelectedHighlightData {
-	layerEntry: GeoDataEntry;
-	featureId: number;
+	layerId: GeoDataEntry['id'];
+	featureId: string | number;
 }
 export const selectedHighlightData = writable<SelectedHighlightData | null>(null);

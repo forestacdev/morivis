@@ -10,13 +10,18 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
-	import { FeatureStateManager, type FeatureStateData } from '$routes/map/utils/feature_state';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
+	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
-	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
+	import {
+		clickableVectorIds,
+		clickableRasterIds,
+		selectedHighlightData,
+		type SelectedHighlightData
+	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -50,8 +55,14 @@
 		toggleTooltip,
 		contextMenuState = $bindable()
 	}: Props = $props();
-	let hoveredId: number | null = null;
-	let hoveredFeatureState: FeatureStateData | null = null;
+
+	const setSelectedHighlight = (selected: SelectedHighlightData | null) => {
+		selectedHighlightData.set(selected);
+		HighlightLayerRegistry.getFilterUpdates(selected).forEach(({ layerId, filter }) => {
+			if (!mapStore.getLayer(layerId)) return;
+			mapStore.setFilter(layerId, filter);
+		});
+	};
 
 	// ラスターのクリックイベント
 	const onRasterClick = async (lngLat: LngLat) => {
@@ -111,17 +122,7 @@
 			});
 
 			if (!features.length) {
-				if (hoveredId !== null && hoveredFeatureState !== null) {
-					mapStore.setFeatureState(
-						{
-							...hoveredFeatureState,
-							id: hoveredId
-						},
-						{ selected: false }
-					);
-					hoveredId = null;
-				}
-
+				setSelectedHighlight(null);
 				featureMenuData = null;
 				clickedLayerIds = [];
 
@@ -147,7 +148,7 @@
 				return;
 			}
 
-			const selectedVecterLayersId = features.map((feature) => feature.layer.id);
+			const selectedVecterLayersId = features.map((feature) => getBaseLayerId(feature.layer.id));
 			const selectedRasterLayersId = layerEntries
 				.filter((entry) => {
 					if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
@@ -162,6 +163,7 @@
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
+				setSelectedHighlight(null);
 				const features = mapStore.queryRenderedFeatures(e.point, {
 					layers: ['@street_view_circle_layer']
 				});
@@ -178,6 +180,7 @@
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_line_layer')) {
+				setSelectedHighlight(null);
 				const features = mapStore.queryRenderedFeatures(e.point, {
 					layers: ['@street_view_line_layer']
 				});
@@ -242,6 +245,7 @@
 			});
 
 			if (searchFeatures.length > 0) {
+				setSelectedHighlight(null);
 				const { properties } = searchFeatures[0];
 
 				const result = searchResults?.find((result) => result.id === properties.id);
@@ -263,6 +267,7 @@
 
 			if (features.length > 0) {
 				const feature = features[0];
+				const normalizedLayerId = getBaseLayerId(feature.layer.id);
 				clickLngLat =
 					feature.geometry.type === 'Point'
 						? (feature.geometry.coordinates as [number, number])
@@ -270,7 +275,8 @@
 
 				const geojsonFeature = mapGeoJSONFeatureToSidePopupData(
 					feature,
-					clickLngLat as [number, number]
+					clickLngLat as [number, number],
+					normalizedLayerId
 				);
 
 				featureMenuData = geojsonFeature;
@@ -283,34 +289,19 @@
 
 			const feature = features[0]; // 一番上のfeature
 			const id = feature.id;
-			const featureStateData = FeatureStateManager.get(feature.layer.id);
+			const normalizedLayerId = getBaseLayerId(feature.layer.id);
 
-			markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
-			showMarker = true;
+			// markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
+			// showMarker = true;
 
-			if (hoveredFeatureState) {
-				if (hoveredId !== null) {
-					mapStore.setFeatureState(
-						{
-							...hoveredFeatureState,
-							id: hoveredId
-						},
-						{ selected: false }
-					);
-				}
-			}
-
-			if (featureStateData) {
-				hoveredId = id as number;
-				hoveredFeatureState = featureStateData;
-				mapStore.setFeatureState(
-					{
-						...hoveredFeatureState,
-						id: id as number
-					},
-					{ selected: true }
-				);
-			}
+			setSelectedHighlight(
+				id !== undefined && id !== null
+					? {
+							layerId: normalizedLayerId,
+							featureId: id
+						}
+					: null
+			);
 		} catch (error) {
 			console.error('Error occurred while processing mouse events:', error);
 		}
@@ -393,16 +384,7 @@
 
 	$effect(() => {
 		if (!featureMenuData || featureMenuData.layerId === 'fac_poi') {
-			if (hoveredId !== null && hoveredFeatureState !== null) {
-				mapStore.setFeatureState(
-					{
-						...hoveredFeatureState,
-						id: hoveredId
-					},
-					{ selected: false }
-				);
-				hoveredId = null;
-			}
+			setSelectedHighlight(null);
 		}
 	});
 </script>

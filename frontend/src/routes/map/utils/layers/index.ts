@@ -4,10 +4,10 @@ import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layer
 import type {
 	LayerSpecification,
 	FillLayerSpecification,
+	FillExtrusionLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
-	FillExtrusionLayerSpecification,
 	FilterSpecification
 } from 'maplibre-gl';
 
@@ -18,8 +18,11 @@ import { geoDataEntries } from '$routes/map/data/entries';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 
-import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { labelLayers } from '$routes/map/utils/layers/label';
+import {
+	applyVectorSourceLayer,
+	createBaseLayerItem
+} from '$routes/map/utils/layers/highlight-builder';
 import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
@@ -47,9 +50,9 @@ import {
 
 import {
 	createFillExtrusionPatternLayer,
-	createFillPatternLayer,
-	createFillLayer,
 	createFillExtrusionLayer,
+	createFillLayer,
+	createFillPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
 import { createLineLayer } from '$routes/map/utils/layers/vector/line_string';
@@ -104,8 +107,7 @@ export interface LayerItem {
 	filter?: FilterSpecification;
 }
 
-// ベクターレイヤーの作成
-const createVectorLayer = (
+export const createVectorLayer = (
 	layer: LayerItem,
 	style: VectorStyle
 ):
@@ -119,21 +121,15 @@ const createVectorLayer = (
 		case 'fill': {
 			if (style.extrusion && style.extrusion.show) {
 				return createFillExtrusionLayer(layer, style);
-			} else {
-				return createFillLayer(layer, style);
 			}
+			return createFillLayer(layer, style);
 		}
-		case 'line': {
+		case 'line':
 			return createLineLayer(layer, style);
-		}
 		case 'circle': {
 			switch (style.markerType) {
 				case 'icon':
-					if (style.icons?.show) {
-						return createPointIconLayer(layer, style);
-					} else {
-						return undefined;
-					}
+					return style.icons?.show ? createPointIconLayer(layer, style) : undefined;
 				case 'circle':
 					return createCircleLayer(layer, style);
 				default:
@@ -165,23 +161,14 @@ export const createLayersItems = (
 
 	const attributionMap = new Map<string, AttributionKey>();
 
-	FeatureStateManager.clear();
-
 	_dataEntries
 		.filter((entry) => entry.style.visible)
 		.reverse()
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
-			const sourceId = `${entry.id}_source`;
 			const { format, style, metaData, interaction, type } = entry;
 
-			const layer: LayerItem = {
-				id: layerId,
-				source: sourceId,
-				maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-				minzoom:
-					'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
-			};
+			const layer = createBaseLayerItem(entry);
 
 			const attributionItem = getAttribution(metaData.attribution);
 
@@ -251,28 +238,8 @@ export const createLayersItems = (
 				case 'vector': {
 					if (interaction.clickable) {
 						clickableVecter.push(layerId);
-						if ('sourceLayer' in metaData) {
-							FeatureStateManager.set(layerId, {
-								source: sourceId,
-								sourceLayer: metaData.sourceLayer
-							});
-						} else {
-							FeatureStateManager.set(layerId, {
-								source: sourceId
-							});
-						}
 					}
-					if (
-						format.type === 'mvt' ||
-						format.type === 'pmtiles' ||
-						format.type === 'mbtiles' ||
-						format.type === 'geojsontile' ||
-						format.type === 'esri-feature'
-					) {
-						if ('sourceLayer' in metaData) {
-							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
-						}
-					}
+					applyVectorSourceLayer(layer, entry);
 
 					const vectorLayer = createVectorLayer(layer, style);
 					if (!vectorLayer) return;
@@ -439,7 +406,6 @@ export const createLayersItems = (
 		...roadLineLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
-
 		...hillshadeLayerItems,
 		...circleLayerItems,
 		...streetViewLayers,
