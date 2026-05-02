@@ -114,6 +114,8 @@ const getPmtilesCoverCacheKey = (_layerEntry: AnyRasterEntry): string => {
 	});
 };
 
+const pendingPmtilesCoverImages = new Map<string, Promise<string | undefined>>();
+
 // TODO 条件分岐効率化
 export const generatePmtilesImageUrl = async (
 	_layerEntry: AnyRasterEntry
@@ -122,27 +124,42 @@ export const generatePmtilesImageUrl = async (
 	const url = CoverImageManager.get(cacheKey);
 	if (url) return url;
 
-	let convertUrl;
+	const pendingUrl = pendingPmtilesCoverImages.get(cacheKey);
+	if (pendingUrl) {
+		return await pendingUrl;
+	}
 
-	// URLを生成して返す
-	if (_layerEntry.style.type === 'dem') {
-		const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
+	const generationPromise = (async () => {
+		let convertUrl;
 
-		if (demType) {
-			convertUrl = await generateDemCoverImage('none', _layerEntry as RasterDemEntry);
+		// URLを生成して返す
+		if (_layerEntry.style.type === 'dem') {
+			const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
+
+			if (demType) {
+				convertUrl = await generateDemCoverImage('none', _layerEntry as RasterDemEntry);
+			}
+		} else if (_layerEntry.style.type === 'cad') {
+			convertUrl = await replaceColorInImage(_layerEntry.format.url, _layerEntry as RasterCadEntry);
+		} else {
+			const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
+			convertUrl = await getImagePmtiles(_layerEntry.format.url, tile);
 		}
-	} else if (_layerEntry.style.type === 'cad') {
-		convertUrl = await replaceColorInImage(_layerEntry.format.url, _layerEntry as RasterCadEntry);
-	} else {
-		const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
-		convertUrl = await getImagePmtiles(_layerEntry.format.url, tile);
-	}
 
-	if (convertUrl) {
-		CoverImageManager.add(cacheKey, convertUrl);
-	}
+		if (convertUrl && !CoverImageManager.has(cacheKey)) {
+			CoverImageManager.add(cacheKey, convertUrl);
+		}
 
-	return convertUrl;
+		return convertUrl;
+	})();
+
+	pendingPmtilesCoverImages.set(cacheKey, generationPromise);
+
+	try {
+		return await generationPromise;
+	} finally {
+		pendingPmtilesCoverImages.delete(cacheKey);
+	}
 };
 
 const loadImageToBitmap = async (imageUrl: string): Promise<ImageBitmap> => {
