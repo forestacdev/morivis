@@ -82,161 +82,156 @@ export const TIMBER_SPECIES_JAWIC_REFERENCE_DICT: Partial<
 		id: '1',
 		name: 'ブナ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=buna',
-		distribution: '北海道南部から本州、四国、九州に分布する。'
+		distribution: ``
 	},
 	トネリコ: {
 		id: '2',
-		name: 'ヤチダモ、タモ',
-		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=yachidamo',
-		distribution: '北海道と本州北・中部を中心に、朝鮮、中国、樺太、シベリアにも分布する。'
+		name: 'トネリコ',
+		distribution: ``
 	},
 	ウリハダカエデ: {
 		id: '3',
-		name: 'ウリハダカエデ'
+		name: 'ウリハダカエデ',
+		distribution: ``
 	},
 	ケヤキ: {
 		id: '4',
-		name: 'ケヤキ、欅',
+		name: 'ケヤキ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=keyaki',
-		distribution: '本州、四国、九州に分布し、朝鮮や中国にもみられる。'
+		distribution: ``
 	},
 	イタヤカエデ: {
 		id: '5',
-		name: 'イタヤカエデ、イタヤ',
+		name: 'イタヤカエデ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=itayakaede',
-		distribution:
-			'北海道、本州、四国、九州に加え、サハリン、千島、朝鮮、中国東北部から北部にも分布する。'
+		distribution: ``
 	},
 	ケンポナシ: {
 		id: '6',
-		name: 'ケンポナシ'
+		name: 'ケンポナシ',
+		distribution: ``
 	},
 	ソメイヨシノ: {
 		id: '7',
-		name: 'ソメイヨシノ'
+		name: 'ソメイヨシノ',
+		distribution: ``
 	},
 	シラカシ: {
 		id: '8',
 		name: 'シラカシ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sirakasi',
-		distribution:
-			'福島県・新潟県以南の本州、四国、九州に分布し、済州島や中国大陸中南部にもみられる。'
+		distribution: ``
 	},
 	ミズメ: {
 		id: '9',
-		name: 'ミズメ、ヨグソミネバリ',
+		name: 'ミズメ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=mizume',
-		distribution: '岩手県以南の本州、四国、九州に分布する。'
+		distribution: ``
 	},
 	カラマツ: {
 		id: '10',
-		name: 'カラマツ、落葉松',
+		name: 'カラマツ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=karamatsu',
-		distribution:
-			'本州中部の標高1000〜2000m帯に分布し、近年は北海道や東北の寒冷地にも広く造林されている。'
+		distribution: ``
 	},
 	イチイ: {
 		id: '11',
 		name: 'イチイ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=ichii',
-		distribution:
-			'サハリン、千島、北海道、本州、四国、九州のほか、朝鮮、中国東北部、シベリア東部にも分布する。'
+		distribution: ``
 	},
 	ヤマハンノキ: {
 		id: '12',
-		name: 'ハンノキ、赤楊',
+		name: 'ヤマハンノキ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=hannoki',
-		distribution:
-			'北海道、本州、四国、九州に分布し、朝鮮や中国東北部にもみられる。JAWIC本文ではヤマハンノキ類も含めて扱っている。'
+		distribution: ``
 	},
 	カツラ: {
 		id: '13',
-		name: 'カツラ、桂',
+		name: 'カツラ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=katsura',
-		distribution: '北海道、本州、四国、九州に分布し、蓄積は北海道に多い。'
+		distribution: ``
 	},
 	クワ: {
 		id: '15',
-		name: 'ヤマグワ',
+		name: 'クワ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=yamaguwa',
-		distribution: '北海道から本州、四国、九州、沖縄にかけて分布し、伊豆諸島にもみられる。'
+		distribution: ``
 	},
 	トチノキ: {
 		id: '14',
-		name: 'トチノキ、栃'
-        },
+		name: 'トチノキ',
+		distribution: ``
+	},
 	クリ: {
 		id: '16',
-		name: 'クリ、栗',
+		name: 'クリ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=kuri',
-		distribution: '北海道南部から本州、四国、九州に分布する。'
+		distribution: ``
 	},
 	イヌエンジュ: {
 		id: '17',
 		name: 'イヌエンジュ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=inuenju',
-		distribution:
-			'北海道、本州、四国に生育し、九州では少なく、千島、朝鮮半島、台湾、中国にも分布する。'
+		distribution: ``
 	},
 	シイ: {
 		id: '18',
 		name: 'シイノキとコジイ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=kojii',
-		distribution:
-			'JAWICではシイノキとコジイを併せて扱う。本州西部、四国、九州、沖縄を中心に分布する。'
+		distribution: ``
 	},
 	シウリザクラ: {
 		id: '19',
-		name: 'ヤマザクラを含むサクラ類',
+		name: 'シウリザクラ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sakura',
-		distribution:
-			'JAWICではサクラ類として扱う。シウリザクラは本州中部以北、北海道、南千島、サハリン、中国東北部、シベリアに分布する。'
+		distribution: ``
 	},
 	ニセアカシア: {
 		id: '20',
-		name: 'ニセアカシア、ブラックローカスト',
+		name: 'ニセアカシア',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=niseakasia',
-		distribution: '北米原産で、日本には明治期に導入され、その後は各地で植栽・野生化している。'
+		distribution: ``
 	},
 	ミズナラ: {
 		id: '21',
 		name: 'ミズナラ、楢',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=mizunara',
-		distribution:
-			'北海道、本州、四国、九州に分布し、サハリン、南千島、朝鮮にもみられる。代表的な産地は北海道。'
+		distribution: ``
 	},
 	シラカシ2: {
 		id: '22',
 		name: 'シラカシ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sirakasi',
-		distribution:
-			'福島県・新潟県以南の本州、四国、九州に分布し、済州島や中国大陸中南部にもみられる。'
+		distribution: ``
 	},
 	セン: {
 		id: '23',
 		name: 'セン、ハリギリ、栓',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=harihagi',
-		distribution: '北海道、本州、四国、九州、沖縄のほか、朝鮮、中国、ロシアにも分布する。'
+		distribution: ``
 	},
 	ヤマナシ: {
 		id: '24',
-		name: 'ヤマナシ'
+		name: 'ヤマナシ',
+		distribution: ``
 	},
 	ニレ: {
 		id: '25',
-		name: 'ハルニレ、アカダモ、楡',
+		name: 'ニレ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=harunire',
-		distribution: '北海道、本州、四国、九州に加え、サハリン、朝鮮、中国にも分布する。'
+		distribution: ``
 	},
 	ヤマザクラ: {
 		id: '26',
-		name: 'ヤマザクラを含むサクラ類',
+		name: 'ヤマザクラ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sakura',
-		distribution: 'JAWICではサクラ類として扱う。ヤマザクラは本州、四国、九州、朝鮮に分布する。'
+		distribution: ``
 	},
 	ウダイカンバ: {
 		id: '27',
-		name: 'ウダイカンバ'
+		name: 'ウダイカンバ',
+		distribution: ``
 	},
 	センダン: {
 		id: '28',
@@ -246,31 +241,31 @@ export const TIMBER_SPECIES_JAWIC_REFERENCE_DICT: Partial<
 		id: '29',
 		name: 'キハダ、ヒロハノキハダ、シコロ 黄蘖',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=kihada',
-		distribution: '北海道、本州、四国、九州に分布し、サハリン、朝鮮、中国にもみられる。'
+		distribution: ''
 	},
 	オニグルミ: {
 		id: '30',
 		name: 'オニグルミ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=onigurumi',
-		distribution: '北海道、本州、四国、九州に分布し、東北地方や北海道が産地としてよく知られる。'
+		distribution: ''
 	},
 	スギ: {
 		id: '31',
 		name: 'スギ 杉、椙',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sugi',
-		distribution: '本州、四国、九州に分布し、造林により北海道南部以南の各地でも広くみられる。'
+		distribution: ''
 	},
 	シナノキ: {
 		id: '32',
 		name: 'シナノキ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=sinanoki',
-		distribution: '北海道、本州、四国、九州に分布し、中国大陸にもみられる。北海道が主要産地。'
+		distribution: ''
 	},
 	ヒノキ: {
 		id: '33',
 		name: 'ヒノキ、桧、扁柏',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=hinoki',
-		distribution: '福島県東南部以南の本州、四国、九州に分布する。'
+		distribution: ''
 	},
 	アカマツ: {
 		id: '34',
@@ -280,20 +275,19 @@ export const TIMBER_SPECIES_JAWIC_REFERENCE_DICT: Partial<
 		id: '35',
 		name: 'ホオノキ、朴',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=hoonoki',
-		distribution: '北海道、本州、四国、九州、沖縄に分布し、朝鮮や中国中部にもみられる。'
+		distribution: ''
 	},
 	イチョウ: {
 		id: '36',
 		name: 'イチョウ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=icyou',
-		distribution: '中国原産で、日本では古くから街路樹や庭園樹として広く植栽されている。'
+		distribution: ''
 	},
 	キリ: {
 		id: '37',
 		name: 'キリ 桐',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=kiri',
-		distribution:
-			'日本では野生ではなく、北海道南部以南で植栽される。近年は中国、台湾、米国、ブラジルなどの植栽材も多い。'
+		distribution: ''
 	},
 	オオウラジロノキ: {
 		id: '38',
@@ -303,13 +297,13 @@ export const TIMBER_SPECIES_JAWIC_REFERENCE_DICT: Partial<
 		id: '39',
 		name: 'ヤナギ類',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=yanagi',
-		distribution: '日本各地の河川流域や低湿地にみられるヤナギ類をまとめて扱っている。'
+		distribution: ''
 	},
 	イヌマキ: {
 		id: '40',
 		name: 'イヌマキ、クサマキ、槙',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=inumaki',
-		distribution: '本州、四国、九州、沖縄に分布し、台湾や中国南部にもみられる。'
+		distribution: ''
 	},
 	エノキ: {
 		id: '41',
@@ -319,19 +313,19 @@ export const TIMBER_SPECIES_JAWIC_REFERENCE_DICT: Partial<
 		id: '42',
 		name: 'ツガ、トガ、栂',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=tsuga',
-		distribution: '関東以南の本州、四国、九州、屋久島に分布する。'
+		distribution: ''
 	},
 	クスノキ: {
 		id: '44',
 		name: 'クスノキ、樟',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=kusunoki',
-		distribution: '本州中南部、四国、九州に分布し、台湾や中国にもみられる。'
+		distribution: ''
 	},
 	ミズキ: {
 		id: '45',
 		name: 'ミズキ',
 		url: 'https://www.jawic.or.jp/woods/sch.php?nam0=mizuki',
-		distribution: '北海道、本州、四国、九州に分布し、低い山地では比較的普通に見られる。'
+		distribution: ''
 	},
 	コウヨウザン: {
 		id: '46',
