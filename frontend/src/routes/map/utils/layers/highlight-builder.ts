@@ -4,6 +4,7 @@ import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import {
 	HIGHLIGHT_FILL_PATTERN_ID,
+	HIGHLIGHT_LINE_PATTERN_ID,
 	HighlightLayerRegistry,
 	getHighlightLayerId
 } from '$routes/map/utils/layers/highlight';
@@ -44,18 +45,18 @@ export const registerLayerFilterState = ({
 	logicalLayerId,
 	layer,
 	role,
-	usesFillPattern = false
+	patternKind
 }: {
 	logicalLayerId: string;
 	layer: LayerSpecification;
 	role: 'base' | 'highlight';
-	usesFillPattern?: boolean;
+	patternKind?: 'fill' | 'line';
 }) => {
 	HighlightLayerRegistry.add({
 		logicalLayerId,
 		actualLayerId: layer.id,
 		role,
-		usesFillPattern,
+		patternKind,
 		defaultFilter: (
 			layer as LayerSpecification & {
 				filter?: FilterSpecification;
@@ -138,6 +139,7 @@ const createHighlightLayer = (
 				id: getHighlightLayerId(layer.id),
 				paint: {
 					...layer.paint,
+					'line-pattern': HIGHLIGHT_LINE_PATTERN_ID,
 					'line-color': HIGHLIGHT_LAYER_COLOR,
 					'line-opacity': 1
 				}
@@ -208,7 +210,7 @@ export const registerHighlightLayers = ({
 		logicalLayerId,
 		layer: baseHighlightLayer,
 		role: 'highlight',
-		usesFillPattern: baseLayer.type === 'fill'
+		patternKind: baseLayer.type === 'fill' ? 'fill' : baseLayer.type === 'line' ? 'line' : undefined
 	});
 
 	return highlightLayer;

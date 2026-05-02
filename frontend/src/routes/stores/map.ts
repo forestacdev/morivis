@@ -38,6 +38,7 @@ import {
 	createHighlightFillPatternImage,
 	isHighlightLayerId,
 	isHighlightFillPatternId,
+	isHighlightLinePatternId,
 	registerHighlightFillPatternImages
 } from '$routes/map/utils/layers/highlight';
 
@@ -364,7 +365,7 @@ const createMapStore = () => {
 				const bytesPerPixel = 4;
 				const data = new Uint8Array(width * width * bytesPerPixel);
 				map.addImage('poi-icon', { width, height: width, data });
-			} else if (isHighlightFillPatternId(id)) {
+			} else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {
 				if (map.hasImage(id)) return;
 				const image = createHighlightFillPatternImage(id);
 				if (!image || !map || map.hasImage(id)) return;
