@@ -38,8 +38,9 @@ export const poiLayers = [
 		type: 'symbol',
 		minzoom: 11,
 		layout: {
-			'icon-image': 'poi-icon', // アイコンの画像名
-			'icon-size': 3, // アイコンのサイズ
+			'icon-image': ['get', '_prop_id'],
+			'icon-size': 0.36,
+			'icon-anchor': 'bottom', // アイコンのアンカー位置
 			// 'symbol-sort-key': [
 			// 	'case',
 			// 	// 特定の1つのfeature_idを最優先

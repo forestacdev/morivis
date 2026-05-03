@@ -31,7 +31,7 @@
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
-	import PoiManager from '$routes/map/components/PoiManager.svelte';
+	import PoiManager from '$routes/map/components/_PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';

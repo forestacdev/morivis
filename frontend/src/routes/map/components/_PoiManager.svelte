@@ -5,7 +5,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
-	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
+	import PoiMarker from '$routes/map/components/marker/_PoiMarker.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { poiLayersIds } from '$routes/map/utils/layers/poi';

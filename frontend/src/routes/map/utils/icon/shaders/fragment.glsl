@@ -99,7 +99,7 @@ void main(void) {
     float mask = circleMask(stForShape, center, radius);
 
     // 白い縁の設定
-    float borderThickness = 0.02; // 縁の太さを指定
+    float borderThickness = 0.034; // 縁の太さを指定
     float outerMask = circleMask(stForShape, center, radius - borderThickness);
 
     // テクスチャから色をサンプリング
@@ -110,9 +110,10 @@ void main(void) {
     float alpha = mask * textureColor.a;
 
     // 円の縁を白くする
-    if (mask > 0.0 && outerMask < 1.0) {
-        color = vec3(1.0);
-        alpha = 1.0; // 円の縁は完全不透明
+    float borderMask = clamp(mask - outerMask, 0.0, 1.0);
+    if (borderMask > 0.0) {
+        color = mix(color, vec3(1.0), borderMask * 0.9);
+        alpha = max(alpha, borderMask);
     }
 
     // 三角形の頂点を設定（下向き三角形）
@@ -132,10 +133,15 @@ void main(void) {
     float triangleEdgeFade = smoothstep(edgeWidth, 0.0, triangleDist);
     float triangleAlpha = mix(triangleEdgeFade, 1.0, triangleBase);
 
-    // 三角形部分を背景色として描画（画像より後ろにする）
-    if (triangleAlpha > 0.0 && alpha == 0.0) {
-        color = vec3(1.0);     // 三角形を白色で描画
-        alpha = triangleAlpha; // フェード付きで不透明度調整
+    // 三角形を円の背面に合成して、接合部の隙間を出さない
+    if (triangleAlpha > 0.0) {
+        float triangleUnderAlpha = triangleAlpha * (1.0 - alpha);
+        float combinedAlpha = alpha + triangleUnderAlpha;
+
+        if (combinedAlpha > 0.0) {
+            color = (color * alpha + vec3(0.9) * triangleUnderAlpha) / combinedAlpha;
+            alpha = combinedAlpha;
+        }
     }
 
     float shadowBlur = 0.04; // 影の広がり（大きいほど広くぼかす）

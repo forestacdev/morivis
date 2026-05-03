@@ -39,7 +39,10 @@ const createProgram = (
 	return program;
 };
 
-const canvas = new OffscreenCanvas(440, 512);
+const ICON_CANVAS_WIDTH = 160;
+const ICON_CANVAS_HEIGHT = 186;
+
+const canvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
 const gl = canvas.getContext('webgl2');
 
 self.onmessage = async (e) => {

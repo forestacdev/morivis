@@ -62,6 +62,7 @@ import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
+import { handleStyleImageMissing } from '$routes/map/utils/icon';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -347,6 +348,7 @@ const createMapStore = () => {
 			if (!map) return;
 
 			const id = e.id;
+
 			if (id === 'marker_png') {
 				if (map.hasImage('marker_png')) return;
 				// 検索用のマーカーアイコンを追加
@@ -358,18 +360,13 @@ const createMapStore = () => {
 					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
-			} else if (id === 'poi-icon') {
-				if (map.hasImage('poi-icon')) return;
-				// poi用の透明アイコンを追加
-				const width = 16;
-				const bytesPerPixel = 4;
-				const data = new Uint8Array(width * width * bytesPerPixel);
-				map.addImage('poi-icon', { width, height: width, data });
 			} else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {
 				if (map.hasImage(id)) return;
 				const image = createHighlightFillPatternImage(id);
 				if (!image || !map || map.hasImage(id)) return;
 				map.addImage(id, image);
+			} else {
+				handleStyleImageMissing(e, map);
 			}
 		});
 
@@ -723,7 +720,9 @@ const createMapStore = () => {
 		const currentMap = map;
 
 		const style = currentMap.getStyle();
-		const highlightLayerIds = style.layers.filter((layer) => isHighlightLayerId(layer.id)).map((layer) => layer.id);
+		const highlightLayerIds = style.layers
+			.filter((layer) => isHighlightLayerId(layer.id))
+			.map((layer) => layer.id);
 
 		highlightLayerIds.forEach((layerId) => {
 			if (!currentMap.getLayer(layerId)) return;
@@ -738,7 +737,11 @@ const createMapStore = () => {
 		clearHighlightLayers();
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
-			if ('source' in layer && typeof layer.source === 'string' && !currentMap.getSource(layer.source)) {
+			if (
+				'source' in layer &&
+				typeof layer.source === 'string' &&
+				!currentMap.getSource(layer.source)
+			) {
 				console.warn(`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`);
 				return;
 			}
