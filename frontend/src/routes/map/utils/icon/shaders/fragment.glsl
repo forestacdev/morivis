@@ -16,7 +16,7 @@ out vec4 outColor; // 出力する色
 // 円形マスク関数
 float circleMask(vec2 _st, vec2 center, float radius) {
     float dist = length(_st - center);
-    float edgeWidth = fwidth(dist) * 2.5;
+    float edgeWidth = fwidth(dist) * 0.5;
     return 1.0 - smoothstep(radius - edgeWidth, radius + edgeWidth, dist);
 }
 
