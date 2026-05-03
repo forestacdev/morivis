@@ -156,6 +156,7 @@ export interface PoiHighlightMarkerState {
 	featureId: number;
 	point: [number, number];
 	properties: { [key: string]: any };
+	iconImage?: string | null;
 }
 
 export interface SearchHighlightMarkerState {

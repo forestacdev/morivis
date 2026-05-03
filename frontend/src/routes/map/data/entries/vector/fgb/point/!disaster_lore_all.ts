@@ -134,21 +134,16 @@ const entry: PointEntry<GeoJsonMetaData> = {
 				}
 			]
 		},
-		// icons: {
-		// 	show: true,
-		// 	size: 1.5,
-		// 	key: '単色',
-		// 	expressions: [
-		// 		{
-		// 			type: 'single',
-		// 			key: '単色',
-		// 			name: '単色',
-		// 			mapping: {
-		// 				pattern: 'tmpoint-asterisk-blue'
-		// 			}
-		// 		}
-		// 	]
-		// },
+		icons: {
+			kind: 'image',
+			show: true,
+			size: 0.5,
+			imageIdKey: 'id',
+			imageOption: {
+				type: 'absolute',
+				urlKey: 'Image'
+			}
+		},
 
 		radius: {
 			key: '単一',

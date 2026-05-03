@@ -24,7 +24,6 @@
 	import { page } from '$app/state';
 	import {
 		ENTRY_PMTILES_VECTOR_PATH,
-		ICON_IMAGE_BASE_PATH,
 		STREET_VIEW_DATA_PATH
 	} from '$routes/constants';
 	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
@@ -57,6 +56,7 @@
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
 	import {
 		createLayerFeaturePanelData,
 		createSearchFeaturePanelData,
@@ -74,6 +74,7 @@
 		getParams,
 		getStreetViewParams
 	} from '$routes/map/utils/platform/url-params';
+	import { resolveGeneratedPoiIconUrl } from '$routes/map/utils/icon';
 	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
@@ -521,28 +522,37 @@
 
 			const data: FeatureMenuData = {
 				layerId: result.layerId,
-				properties:
-					prop && typeof result.propId === 'string' && result.propId !== ''
-						? {
-								...prop,
-								iconImage: `${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`
-							}
-						: prop,
+				properties: (() => {
+					const layerEntry = layerEntries.find((entry) => entry.id === sourceLayerId);
+					const pointLayerEntry =
+						layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+							? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+							: null;
+					const iconImage =
+						pointLayerEntry
+							? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+							: null;
+					return prop && iconImage ? { ...prop, iconImage } : prop;
+				})(),
 				point: result.point,
 				featureId: result.featureId
 			};
+			const layerEntry = layerEntries.find((entry) => entry.id === sourceLayerId);
+			const pointLayerEntry =
+				layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+					? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+					: null;
+			const iconImage =
+				pointLayerEntry
+					? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+					: null;
 			featureMenuData = data;
 			highlightMarkerState = {
 				type: 'poi',
 				featureId: result.featureId,
 				point: result.point,
-				properties:
-					prop && typeof result.propId === 'string' && result.propId !== ''
-						? {
-								...prop,
-								iconImage: `${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`
-							}
-						: (prop ?? {})
+				properties: prop && iconImage ? { ...prop, iconImage } : (prop ?? {}),
+				iconImage
 			};
 			showSelectionMarker = false;
 			selectedSearchResultData = result;

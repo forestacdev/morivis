@@ -6,11 +6,12 @@
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
 	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
-	import { isGeneratedPoiIconLayout } from '$routes/map/utils/icon';
+	import { isGeneratedPoiIconLayout, resolveGeneratedPoiIconUrl } from '$routes/map/utils/icon';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
@@ -146,7 +147,8 @@
 
 	const isGeneratedPoiIconFeature = (layerId: string) => {
 		const map = mapStore.getMap();
-		if (!map || !mapStore.getLayer(layerId)) return false;
+		const layer = mapStore.getLayer(layerId);
+		if (!map || !layer || layer.type !== 'symbol') return false;
 
 		const iconImage = map.getLayoutProperty(layerId, 'icon-image');
 		return isGeneratedPoiIconLayout(iconImage);
@@ -168,15 +170,24 @@
 		selectedHighlightData.set(selected);
 		resetDefaultHighlight();
 		highlightedGeneratedPoiLayerId = selected.layerId;
+		const layerEntry = layerEntries.find((entry) => entry.id === selected.layerId);
+		const pointLayerEntry =
+			layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+				? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+				: null;
+		const iconImage =
+			pointLayerEntry
+				? resolveGeneratedPoiIconUrl(feature.properties, pointLayerEntry.style.icons)
+				: null;
 
 		featureMenuData = {
 			layerId: selected.layerId,
 			featureId: Number(selected.featureId),
 			properties:
-				feature.properties && typeof feature.properties._prop_id === 'string'
+				feature.properties && iconImage
 					? {
 							...feature.properties,
-							iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
+							iconImage
 						}
 					: (feature.properties ?? null),
 			point
@@ -185,13 +196,14 @@
 			type: 'poi',
 			featureId: Number(selected.featureId),
 			properties:
-				feature.properties && typeof feature.properties._prop_id === 'string'
+				feature.properties && iconImage
 					? {
 							...feature.properties,
-							iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
+							iconImage
 						}
 					: (feature.properties ?? {}),
-			point
+			point,
+			iconImage
 		};
 
 		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));

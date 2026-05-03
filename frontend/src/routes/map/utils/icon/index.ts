@@ -1,5 +1,13 @@
-import type { Map, MapStyleImageMissingEvent } from 'maplibre-gl';
+import type {
+	DataDrivenPropertyValueSpecification,
+	Map,
+	MapStyleImageMissingEvent,
+	ResolvedImageSpecification,
+	MapGeoJSONFeature,
+	ExpressionSpecification
+} from 'maplibre-gl';
 import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
+import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
 let mapLibreMap: Map | null = null;
@@ -10,6 +18,44 @@ export const GENERATED_POI_ICON_SEPARATOR = ':::';
 export const buildGeneratedPoiIconId = (propId: string, iconUrl?: string | null) => {
 	const resolvedIconUrl = iconUrl || `${ICON_IMAGE_BASE_PATH}/${propId}.webp`;
 	return [GENERATED_POI_ICON_PREFIX, propId, resolvedIconUrl].join(GENERATED_POI_ICON_SEPARATOR);
+};
+
+export const buildGeneratedPoiIconExpression = (
+	icons: ImageIconsStyle
+): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
+	const { imageIdKey, imageOption, fallbackUrlExpression } = icons;
+	const fallbackUrl =
+		fallbackUrlExpression ?? ['concat', ICON_IMAGE_BASE_PATH, '/', ['get', imageIdKey], '.webp'];
+	const imageUrlExpression = (() => {
+		if (!imageOption) return fallbackUrl;
+		if (imageOption.type === 'relative') {
+			return [
+				'coalesce',
+				[
+					'concat',
+					imageOption.baseUrl,
+					['to-string', ['get', imageOption.urlKey]],
+					imageOption.suffix ?? ''
+				],
+				fallbackUrl
+			] as ExpressionSpecification;
+		}
+		return ['coalesce', ['get', imageOption.urlKey], fallbackUrl] as ExpressionSpecification;
+	})();
+
+	return [
+		'case',
+		['all', ['has', imageIdKey], ['!=', ['to-string', ['get', imageIdKey]], '']],
+		[
+			'concat',
+			GENERATED_POI_ICON_PREFIX,
+			GENERATED_POI_ICON_SEPARATOR,
+			['to-string', ['get', imageIdKey]],
+			GENERATED_POI_ICON_SEPARATOR,
+			imageUrlExpression
+		],
+		''
+	] as DataDrivenPropertyValueSpecification<ResolvedImageSpecification>;
 };
 
 export const isGeneratedPoiIconId = (id: string) => {
@@ -47,6 +93,29 @@ export const parseGeneratedPoiIconId = (id: string) => {
 		propId,
 		iconUrl
 	};
+};
+
+export const resolveGeneratedPoiIconUrl = (
+	properties: MapGeoJSONFeature['properties'] | Record<string, unknown> | null | undefined,
+	icons: IconsStyle | undefined
+) => {
+	if (!properties || !icons || icons.kind !== 'image') return null;
+
+	const rawImageId = properties[icons.imageIdKey];
+	const imageId = rawImageId != null ? String(rawImageId) : '';
+	if (!imageId) return null;
+
+	const rawImageUrl = icons.imageOption ? properties[icons.imageOption.urlKey] : null;
+	const resolvedImageUrl =
+		rawImageUrl != null && String(rawImageUrl) !== ''
+			? icons.imageOption?.type === 'relative'
+				? `${icons.imageOption.baseUrl}${String(rawImageUrl)}${icons.imageOption.suffix ?? ''}`
+				: String(rawImageUrl)
+			: null;
+	const imageUrl =
+		resolvedImageUrl ?? `${ICON_IMAGE_BASE_PATH}/${imageId}.webp`;
+
+	return imageUrl;
 };
 
 const iconWorker = new Worker(new URL('./generation_icon.worker.ts', import.meta.url), {

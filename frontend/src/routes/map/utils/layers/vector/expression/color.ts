@@ -12,6 +12,7 @@ import type {
 } from '$routes/map/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
+import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
 
 export const generateMatchExpression = (
 	expressionData: ColorMatchExpression
@@ -162,6 +163,10 @@ export const getPatternExpression = (colors: ColorsStyle) => {
 export const getIconExpression = (
 	icons: IconsStyle
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
+	if (icons.kind === 'image') {
+		return buildGeneratedPoiIconExpression(icons);
+	}
+
 	const key = icons.key;
 	const expressionData = icons.expressions.find((expression) => expression.key === key);
 	if (!expressionData) return null;

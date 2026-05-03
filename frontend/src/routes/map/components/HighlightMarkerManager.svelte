@@ -3,7 +3,6 @@
 
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
-	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import type { HighlightMarkerState } from '$routes/map/types';
 
 	interface Props {
@@ -18,15 +17,15 @@
 			return null;
 		}
 
-		const propId = highlightMarkerState.properties?._prop_id;
-		if (typeof propId !== 'string') return null;
+		const iconImage = highlightMarkerState.iconImage ?? highlightMarkerState.properties?.iconImage;
+		if (typeof iconImage !== 'string' || iconImage === '') return null;
 
 		return {
 			featureId: highlightMarkerState.featureId,
 			lngLat: new maplibregl.LngLat(highlightMarkerState.point[0], highlightMarkerState.point[1]),
 			properties: {
 				...highlightMarkerState.properties,
-				iconImage: `${ICON_IMAGE_BASE_PATH}/${propId}.webp`
+				iconImage
 			}
 		};
 	});

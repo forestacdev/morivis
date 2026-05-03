@@ -7,7 +7,8 @@ import type {
 	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification,
-	ExpressionSpecification
+	ExpressionSpecification,
+	ResolvedImageSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
 import type { Opacity } from '$routes/map/data/types';
@@ -277,12 +278,33 @@ export interface IconMatchExpression {
 
 export type IconsExpression = IconSingleExpression | IconMatchExpression;
 
-export interface IconsStyle {
+export interface SpriteIconsStyle {
+	kind: 'sprite';
 	show: boolean;
 	size: number;
 	key: string;
 	expressions: IconsExpression[];
 }
+
+export interface ImageIconsStyle {
+	kind: 'image';
+	show: boolean;
+	imageIdKey: string;
+	imageOption?:
+		| {
+				type: 'absolute';
+				urlKey: string;
+		  }
+		| {
+				type: 'relative';
+				urlKey: string;
+				baseUrl: string;
+				suffix?: string;
+		  };
+	fallbackUrlExpression?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | string;
+}
+
+export type IconsStyle = SpriteIconsStyle | ImageIconsStyle;
 
 export interface LabelOutLine {
 	show: boolean;

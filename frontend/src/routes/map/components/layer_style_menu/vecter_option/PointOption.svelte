@@ -26,7 +26,7 @@
 	// セットされたアイコン式の設定
 	let setIconExpression: IconsExpression | undefined = $derived.by(() => {
 		const icons = layerEntry.style.icons;
-		if (!icons) return;
+		if (!icons || icons.kind === 'image') return;
 		const target = icons.expressions.find((expr) => expr.key === icons.key);
 		if (!target) return;
 		return target;
@@ -72,23 +72,25 @@
 {/if}
 
 <!-- アイコンスタイル -->
-{#if layerEntry.style.markerType === 'icon' && layerEntry.style.icons && setIconExpression}
+{#if layerEntry.style.markerType === 'icon' && layerEntry.style.icons}
 	<Accordion label={'アイコン'} icon={'gg:pin'} bind:value={showIconOption}>
 		<Switch label={'表示'} bind:value={layerEntry.style.icons.show} />
-		{#if setIconExpression.type === 'single' && setIconExpression.mapping.pattern}
-			<IconPicker
-				label="形状"
-				bind:pattern={setIconExpression.mapping.pattern}
-				layerType="circle"
-			/>
-		{:else if setIconExpression.type === 'match'}
-			{#each setIconExpression.mapping.categories as _, index}
+		{#if setIconExpression}
+			{#if setIconExpression.type === 'single' && setIconExpression.mapping.pattern}
 				<IconPicker
-					label={setIconExpression.mapping.categories[index] as string}
-					bind:pattern={setIconExpression.mapping.patterns[index]}
+					label="形状"
+					bind:pattern={setIconExpression.mapping.pattern}
 					layerType="circle"
 				/>
-			{/each}
+			{:else if setIconExpression.type === 'match'}
+				{#each setIconExpression.mapping.categories as _, index}
+					<IconPicker
+						label={setIconExpression.mapping.categories[index] as string}
+						bind:pattern={setIconExpression.mapping.patterns[index]}
+						layerType="circle"
+					/>
+				{/each}
+			{/if}
 		{/if}
 		<RangeSlider
 			label="アイコンサイズ"

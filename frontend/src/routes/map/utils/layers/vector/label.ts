@@ -164,6 +164,8 @@ export const createPointIconLayer = (
 		return undefined;
 	}
 
+	const isImage = style.icons.kind === 'image';
+
 	const defaultStyle = style.default;
 
 	const symbolLayer: SymbolLayerSpecification = {
@@ -175,12 +177,12 @@ export const createPointIconLayer = (
 		},
 		layout: {
 			'icon-image': iconExpression,
-			'icon-size': style.icons.size ?? 0.1,
-			'icon-anchor': 'center',
+			'icon-size': isImage ? 0.5 : style.icons.size || 1,
+			'icon-anchor': isImage ? 'bottom' : 'center',
 
 			// 間引きをオフに
-			'icon-allow-overlap': true,
-			'icon-ignore-placement': true
+			'icon-allow-overlap': isImage ? false : true,
+			'icon-ignore-placement': isImage ? false : true
 		},
 		// フィルター設定
 		...(() => {
