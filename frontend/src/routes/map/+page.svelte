@@ -22,7 +22,11 @@
 	import { checkPc } from './utils/platform/viewport';
 
 	import { page } from '$app/state';
-	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
+	import {
+		ENTRY_PMTILES_VECTOR_PATH,
+		ICON_IMAGE_BASE_PATH,
+		STREET_VIEW_DATA_PATH
+	} from '$routes/constants';
 	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
@@ -58,7 +62,8 @@
 		createSearchFeaturePanelData,
 		type DialogType,
 		type FeatureMenuData,
-		type FeaturePanelData
+		type FeaturePanelData,
+		type HighlightMarkerState
 	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
@@ -170,6 +175,7 @@
 
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
+	let highlightMarkerState = $state<HighlightMarkerState | null>(null);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -372,12 +378,14 @@
 
 		if (featurePanelData.kind === 'layer-feature') {
 			featureMenuData = null;
+			highlightMarkerState = null;
 			showSelectionMarker = false;
 			return;
 		}
 
 		selectedSearchResultData = null;
 		selectedSearchId = null;
+		highlightMarkerState = null;
 		showSelectionMarker = false;
 	};
 
@@ -496,6 +504,9 @@
 
 	const focusFeature = async (result: ResultData) => {
 		if (result.type === 'poi') {
+			const sourceLayerId = result.layerId.startsWith('@')
+				? result.layerId.slice(1)
+				: result.layerId;
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
 				result.point[1],
@@ -504,25 +515,47 @@
 			const prop = await getPropertiesFromPMTiles(
 				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
 				tileCoords,
-				result.layerId,
+				sourceLayerId,
 				result.featureId
 			);
 
 			const data: FeatureMenuData = {
 				layerId: result.layerId,
-				properties: prop,
+				properties:
+					prop && typeof result.propId === 'string' && result.propId !== ''
+						? {
+								...prop,
+								iconImage: `${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`
+							}
+						: prop,
 				point: result.point,
 				featureId: result.featureId
 			};
 			featureMenuData = data;
+			highlightMarkerState = {
+				type: 'poi',
+				featureId: result.featureId,
+				point: result.point,
+				properties:
+					prop && typeof result.propId === 'string' && result.propId !== ''
+						? {
+								...prop,
+								iconImage: `${ICON_IMAGE_BASE_PATH}/${result.propId}.webp`
+							}
+						: (prop ?? {})
+			};
+			showSelectionMarker = false;
 			selectedSearchResultData = result;
 			if (result.id) selectedSearchId = result.id;
 		} else if (result.type === 'address' || result.type === 'coordinate') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
+			highlightMarkerState = {
+				type: 'search',
+				result
+			};
 			if (result.id) selectedSearchId = result.id;
-			selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-			showSelectionMarker = true;
+			showSelectionMarker = false;
 		}
 
 		if (result.type !== 'layer') {
@@ -552,6 +585,7 @@
 				bind:tempLayerEntries
 				bind:showDataEntry
 				bind:featureMenuData
+				bind:highlightMarkerState
 				bind:showSelectionMarker
 				bind:selectionMarkerLngLat
 				bind:showAngleMarker
@@ -634,6 +668,7 @@
 						bind:tempLayerEntries
 						bind:showDataEntry
 						bind:featureMenuData
+						bind:highlightMarkerState
 						bind:showSelectionMarker
 						bind:selectionMarkerLngLat
 						bind:showAngleMarker

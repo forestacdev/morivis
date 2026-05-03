@@ -1,6 +1,11 @@
 import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type {
+	ResultAddressData,
+	ResultCoordinateData,
+	ResultPoiData
+} from '$routes/map/utils/data/search-result';
 export type {
 	FeatureMenuData,
 	FeaturePanelData,
@@ -145,3 +150,17 @@ export interface ClickedLayerFeaturesData {
 	feature: MapGeoJSONFeature;
 	featureId: number;
 }
+
+export interface PoiHighlightMarkerState {
+	type: 'poi';
+	featureId: number;
+	point: [number, number];
+	properties: { [key: string]: any };
+}
+
+export interface SearchHighlightMarkerState {
+	type: 'search';
+	result: ResultPoiData | ResultAddressData | ResultCoordinateData;
+}
+
+export type HighlightMarkerState = PoiHighlightMarkerState | SearchHighlightMarkerState;

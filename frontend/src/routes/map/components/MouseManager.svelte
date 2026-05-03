@@ -7,7 +7,7 @@
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
-	import type { FeatureMenuData } from '$routes/map/types';
+	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
@@ -31,10 +31,13 @@
 		showMarker: boolean;
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
+		highlightMarkerState: HighlightMarkerState | null;
 		layerEntries: GeoDataEntry[];
 		showDataEntry: GeoDataEntry | null;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
+		selectedSearchId: number | null;
+		selectedSearchResultData: ResultData | null;
 		searchResults: ResultData[] | null;
 		focusFeature: (result: ResultData) => void;
 		toggleTooltip: (e?: MapMouseEvent, feature?: MapGeoJSONFeature) => void;
@@ -44,6 +47,7 @@
 	let {
 		markerLngLat = $bindable(),
 		featureMenuData = $bindable(),
+		highlightMarkerState = $bindable(),
 		showMarker = $bindable(),
 		clickedLayerIds = $bindable(),
 		streetViewPointData,
@@ -51,6 +55,8 @@
 		showDataEntry,
 		cameraBearing = $bindable(),
 		isExternalCameraUpdate = $bindable(),
+		selectedSearchId = $bindable(),
+		selectedSearchResultData = $bindable(),
 		searchResults,
 		focusFeature,
 		toggleTooltip,
@@ -58,6 +64,14 @@
 	}: Props = $props();
 
 	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@fac_poi', '@poi_top', '@search_result'] as const;
+
+	const clearSearchHighlight = () => {
+		selectedSearchId = null;
+		selectedSearchResultData = null;
+		if (highlightMarkerState?.type === 'search') {
+			highlightMarkerState = null;
+		}
+	};
 
 	const getClickableTargetLayerIds = () => {
 		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS].filter((layerId) => {
@@ -113,6 +127,18 @@
 					: (feature.properties ?? null),
 			point
 		};
+		highlightMarkerState = {
+			type: 'poi',
+			featureId: Number(selected.featureId),
+			properties:
+				feature.properties && typeof feature.properties._prop_id === 'string'
+					? {
+							...feature.properties,
+							iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
+						}
+					: (feature.properties ?? {}),
+			point
+		};
 
 		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));
 	};
@@ -127,6 +153,9 @@
 		selectedHighlightData.set(selected);
 
 		if (!selected) {
+			if (highlightMarkerState?.type === 'poi') {
+				highlightMarkerState = null;
+			}
 			resetFacPoiHighlight();
 			markerLngLat = null;
 			showMarker = false;
@@ -140,6 +169,9 @@
 		}
 
 		resetFacPoiHighlight();
+		if (highlightMarkerState?.type === 'poi') {
+			highlightMarkerState = null;
+		}
 		applyDefaultHighlight(selected);
 	};
 
@@ -205,7 +237,16 @@
 			if (!features.length) {
 				setSelectedHighlight(null);
 				featureMenuData = null;
+				clearSearchHighlight();
 				clickedLayerIds = [];
+
+				if (contextMenuState?.show) {
+					contextMenuState = null;
+					markerLngLat = null;
+					showMarker = false;
+					return;
+				}
+
 				contextMenuState = null;
 
 				if ($selectedHighlightData) {
@@ -358,6 +399,7 @@
 
 			// 通常の地物クリック処理
 			const selectedLayerIds = [...selectedVecterLayersId, ...selectedRasterLayersId];
+			clearSearchHighlight();
 			clickedLayerIds = selectedLayerIds.length > 0 ? selectedLayerIds : [];
 
 			let clickLngLat: [number, number] | null = null;
@@ -486,8 +528,8 @@
 	// });
 
 	$effect(() => {
-		if (featureMenuData?.layerId === '@fac_poi') {
-			hideSelectedPoiSymbol(featureMenuData.featureId);
+		if (highlightMarkerState?.type === 'poi') {
+			hideSelectedPoiSymbol(highlightMarkerState.featureId);
 			return;
 		}
 
