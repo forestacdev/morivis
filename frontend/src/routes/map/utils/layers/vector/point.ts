@@ -3,10 +3,7 @@ import type { CircleLayerSpecification } from 'maplibre-gl';
 import type { PointStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 
-import {
-	getColorExpression,
-	getSelectedColorExpression
-} from '$routes/map/utils/layers/vector/expression/color';
+import { getColorExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 
 // pointレイヤーの作成
@@ -16,8 +13,7 @@ export const createCircleLayer = (
 ): CircleLayerSpecification => {
 	const outline = style.outline;
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
+	const colorExpression = getColorExpression(style.colors);
 	const radius = getNumberExpression(style.radius);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,

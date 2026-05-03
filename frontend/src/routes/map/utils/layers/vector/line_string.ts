@@ -2,10 +2,7 @@ import type { LineLayerSpecification } from 'maplibre-gl';
 
 import type { LineStringStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
-import {
-	getColorExpression,
-	getSelectedColorExpression
-} from '$routes/map/utils/layers/vector/expression/color';
+import { getColorExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 
 // ラインレイヤーの作成
@@ -14,8 +11,7 @@ export const createLineLayer = (
 	style: LineStringStyle
 ): LineLayerSpecification => {
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
+	const colorExpression = getColorExpression(style.colors);
 	const width = getNumberExpression(style.width);
 	const lineLayer: LineLayerSpecification = {
 		...layer,

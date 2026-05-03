@@ -8,13 +8,9 @@ import type { PolygonStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 import {
 	getPatternExpression,
-	getColorExpression,
-	getSelectedColorExpression
+	getColorExpression
 } from '$routes/map/utils/layers/vector/expression/color';
-import {
-	getSelectedOpacityExpression,
-	getNumberExpression
-} from '$routes/map/utils/layers/vector/expression/number';
+import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 
 // ポリゴンのパターンレイヤーの作成
 export const createFillPatternLayer = (
@@ -25,7 +21,6 @@ export const createFillPatternLayer = (
 	if (!patternExpression) {
 		return undefined;
 	}
-	const opacity = getSelectedOpacityExpression(style.opacity);
 	const defaultStyle = style.default;
 
 	const fillPatternLayer: FillLayerSpecification = {
@@ -34,7 +29,7 @@ export const createFillPatternLayer = (
 		type: 'fill',
 		paint: {
 			'fill-pattern': patternExpression,
-			'fill-opacity': opacity
+			'fill-opacity': style.opacity
 		},
 		layout: {},
 		// フィルター設定
@@ -93,8 +88,7 @@ export const createFillExtrusionLayer = (
 	style: PolygonStyle
 ): FillExtrusionLayerSpecification => {
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
+	const colorExpression = getColorExpression(style.colors);
 	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
@@ -162,14 +156,12 @@ export const createFillExtrusionPatternLayer = (
 // fillレイヤーの作成
 export const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const opacity = getSelectedOpacityExpression(style.opacity);
+	const colorExpression = getColorExpression(style.colors);
 	const fillLayer: FillLayerSpecification = {
 		...layer,
 		type: 'fill',
 		paint: {
-			'fill-opacity': opacity,
+			'fill-opacity': style.opacity,
 			'fill-outline-color': '#00000000',
 			'fill-color': style.colors.show ? colorExpression : '#00000000',
 			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})
@@ -181,7 +173,7 @@ export const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLaye
 		...(() => {
 			if (defaultStyle?.fill?.filter) {
 				return { filter: defaultStyle.fill.filter };
-			}
+}
 			return {};
 		})()
 	};

@@ -141,7 +141,9 @@ const createHighlightLayer = (
 				id: getHighlightLayerId(layer.id),
 				paint: {
 					...layer.paint,
-					'fill-pattern': HIGHLIGHT_FILL_PATTERN_ID,
+					'fill-color': HIGHLIGHT_LAYER_COLOR,
+					// 'fill-pattern': HIGHLIGHT_FILL_PATTERN_ID,
+
 					'fill-opacity': 1,
 					'fill-outline-color': HIGHLIGHT_LAYER_COLOR
 				}
@@ -152,7 +154,7 @@ const createHighlightLayer = (
 				id: getHighlightLayerId(layer.id),
 				paint: {
 					...layer.paint,
-					...(useLinePattern ? { 'line-pattern': HIGHLIGHT_LINE_PATTERN_ID } : {}),
+					// ...(useLinePattern ? { 'line-pattern': HIGHLIGHT_LINE_PATTERN_ID } : {}),
 					'line-color': HIGHLIGHT_LAYER_COLOR,
 					'line-opacity': 1
 				}

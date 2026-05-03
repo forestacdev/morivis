@@ -1,5 +1,3 @@
-import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-
 import type {
 	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
@@ -191,15 +189,4 @@ export const getIconExpression = (
 		default:
 			return null;
 	}
-};
-
-export const getSelectedColorExpression = (
-	colorExpression: DataDrivenPropertyValueSpecification<ColorSpecification>
-): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		HIGHLIGHT_LAYER_COLOR,
-		colorExpression
-	] as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };
