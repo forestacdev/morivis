@@ -173,11 +173,11 @@ export const createPointIconLayer = (
 		id: `${layer.id}`,
 		type: 'symbol',
 		paint: {
-			'icon-opacity': style.opacity
+			'icon-opacity': isImage ? 1 : style.opacity
 		},
 		layout: {
 			'icon-image': iconExpression,
-			'icon-size': isImage ? 0.5 : style.icons.size || 1,
+			'icon-size': isImage ? 0.5 : style.icons.size ? style.icons.size : 1,
 			'icon-anchor': isImage ? 'bottom' : 'center',
 
 			// 間引きをオフに

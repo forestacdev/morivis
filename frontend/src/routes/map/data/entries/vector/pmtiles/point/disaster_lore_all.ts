@@ -1,24 +1,24 @@
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import { ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH, DISASTER_LORE_ALL_PATH } from '$routes/constants';
 
-import type { PointEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
+import type { PointEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: PointEntry<GeoJsonMetaData> = {
+const entry: PointEntry<TileMetaData> = {
 	id: 'disaster_lore_all',
 	type: 'vector',
 	format: {
-		type: 'fgb',
+		type: 'pmtiles',
 		geometryType: 'Point',
-		url: `${ENTRY_FGB_PATH}/disaster_lore_all.fgb`
+		url: `${DISASTER_LORE_ALL_PATH}/tiles/disaster_lore_all.pmtiles`
 	},
 	metaData: {
 		name: '自然災害伝承碑',
 		description: '',
 		attribution: '国土地理院',
 		location: '全国',
-		maxZoom: 22,
-		minZoom: 1,
-		// promoteId: 'code',
+		maxZoom: 14,
+		minZoom: 6,
+		sourceLayer: 'disaster_lore_all',
 		tags: ['自然災害伝承碑'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		xyzImageTile: {
@@ -33,84 +33,60 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	properties: {
 		attributeView: {
 			popupKeys: [
-				'LoreName',
-				'LoreYear',
-				'Address',
-				'DisasterName',
-				'DisasterKind',
-				'DisasterInfo',
-				'ReleaseDate',
-				'ModifyReleaseDate',
-				'Limitations',
-				'Image'
+				'ID',
+				'碑名',
+				'建立年',
+				'所在地',
+				'災害名',
+				'災害種別',
+				'伝承内容',
+				'公開日',
+				'修正等公開日',
+				'制限事項'
 			],
 			titles: [
 				{
-					conditions: ['LoreName'],
-					template: '{LoreName}'
+					conditions: ['碑名'],
+					template: '{碑名}'
 				},
 				{
 					conditions: [],
 					template: '自然災害伝承碑'
 				}
 			],
-			imageKey: 'Image',
-			descriptionKey: 'DisasterInfo'
+			imageKey: 'image',
+			descriptionKey: '伝承内容'
 		},
 		fields: [
-			{ key: 'ID', type: 'string', label: 'ID' },
-			{ key: 'LoreName', type: 'string', label: '碑名' },
+			{ key: 'ID', type: 'string' },
+			{ key: '碑名', type: 'string' },
 			{
-				key: 'LoreYear',
+				key: '建立年',
 				type: 'string',
-				label: '建立年',
 				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
 			},
-			{ key: 'Address', type: 'string', label: '所在地' },
+			{ key: '所在地', type: 'string' },
 			{
-				key: 'DisasterName',
+				key: '災害名',
 				type: 'string',
-				label: '災害名',
 				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '' }]
 			},
-			{ key: 'DisasterKind', type: 'string', label: '災害種別' },
+			{ key: '災害種別', type: 'string' },
 			{
-				key: 'DisasterInfo',
+				key: '伝承内容',
 				type: 'string',
-				label: '伝承内容',
 				normalize: [{ type: 'replace', pattern: /<br\s*\/?>/gi, replaceWith: '\n' }]
 			},
-			{ key: 'ReleaseDate', type: 'string', label: '公開日' },
+			{ key: '公開日', type: 'string' },
 			{
-				key: 'ModifyReleaseDate',
-				type: 'string',
-				label: '更新日',
-				format: {
-					empty: [
-						{
-							values: [' '],
-							text: 'なし'
-						}
-					]
-				}
+				key: '修正等公開日',
+				type: 'string'
 			},
 			{
-				key: 'Limitations',
-				type: 'string',
-				label: '制約事項',
-				format: {
-					empty: [
-						{
-							values: [' '],
-							text: 'なし'
-						}
-					]
-				}
+				key: '制約事項',
+				type: 'string'
 			},
-			{ key: 'Image', type: 'string', label: '画像URL' },
-			{ key: 'ImageWidth', type: 'number', label: '画像幅' },
-			{ key: 'ImageHeight', type: 'number', label: '画像高さ' },
-			{ key: 'id', type: 'string', label: 'id' }
+			{ key: 'image', type: 'string', label: '画像URL' }
 		]
 	},
 	interaction: {
@@ -137,11 +113,12 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		icons: {
 			kind: 'image',
 			show: true,
-			size: 0.5,
-			imageIdKey: 'id',
+			imageIdKey: 'ID',
 			imageOption: {
-				type: 'absolute',
-				urlKey: 'Image'
+				type: 'relative',
+				urlKey: 'ID',
+				baseUrl: `${DISASTER_LORE_ALL_PATH}/icons/`,
+				suffix: '.webp'
 			}
 		},
 
@@ -172,39 +149,39 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					name: 'ID'
 				},
 				{
-					key: 'LoreName',
+					key: '碑名',
 					name: '碑名'
 				},
 				{
-					key: 'LoreYear',
+					key: '建立年',
 					name: '建立年'
 				},
 				{
-					key: 'Address',
+					key: '所在地',
 					name: '所在地'
 				},
 				{
-					key: 'DisasterName',
+					key: '災害名',
 					name: '災害名'
 				},
 				{
-					key: 'DisasterKind',
+					key: '災害種別',
 					name: '災害種別'
 				},
 				{
-					key: 'DisasterInfo',
+					key: '伝承内容',
 					name: '伝承内容'
 				},
 				{
-					key: 'ReleaseDate',
+					key: '公開日',
 					name: '公開日'
 				},
 				{
-					key: 'ModifyReleaseDate',
-					name: '更新日'
+					key: '修正等公開日',
+					name: '修正等公開日'
 				},
 				{
-					key: 'Limitations',
+					key: '制約事項',
 					name: '制約事項'
 				}
 			]

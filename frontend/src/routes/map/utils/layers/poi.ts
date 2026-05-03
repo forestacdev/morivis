@@ -1,5 +1,5 @@
 import type { SymbolLayerSpecification, SourceSpecification } from 'maplibre-gl';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
 import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
 
 export const poiSources: Record<string, SourceSpecification> = {
@@ -47,7 +47,7 @@ export const poiLayers = [
 				imageOption: {
 					type: 'relative',
 					urlKey: '_prop_id',
-					baseUrl: 'https://example.com/assets/icons/',
+					baseUrl: ICON_IMAGE_BASE_PATH + '/',
 					suffix: '.webp'
 				}
 			}),

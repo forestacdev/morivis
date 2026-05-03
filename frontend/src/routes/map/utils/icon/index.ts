@@ -6,7 +6,7 @@ import type {
 	MapGeoJSONFeature,
 	ExpressionSpecification
 } from 'maplibre-gl';
-import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
+import { ICON_IMAGE_BASE_PATH, ICON_NO_IMAGE_PATH } from '$routes/constants';
 import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
@@ -148,11 +148,11 @@ const loadImage = async (src: string): Promise<ImageBitmap> => {
 	return await createImageBitmap(blob);
 };
 
-const addTransparentPlaceholder = (id: string) => {
+const addDummyPhotoIcon = async (id: string) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
-	const image = new ImageData(new Uint8ClampedArray([0, 0, 0, 0]), 1, 1);
-	mapLibreMap.addImage(id, image);
+	const image = await loadImage(ICON_NO_IMAGE_PATH);
+	iconWorker.postMessage({ id, image });
 };
 
 export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
@@ -169,7 +169,7 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 	try {
 		if (!parsed.propId) {
 			console.warn(`Skip generated poi icon without propId: ${id}`);
-			addTransparentPlaceholder(id);
+			await addDummyPhotoIcon(id);
 			return;
 		}
 
@@ -177,14 +177,14 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 
 		if (!imageUrl) {
 			console.error(`No image URL found for id ${id}`);
-			addTransparentPlaceholder(id);
+			await addDummyPhotoIcon(id);
 			return;
 		}
 		const image = await loadImage(imageUrl);
 
 		iconWorker.postMessage({ id, image });
 	} catch (error) {
-		addTransparentPlaceholder(id);
+		await addDummyPhotoIcon(id);
 		console.error(`Error processing image for id ${id}:`, error);
 	}
 };
