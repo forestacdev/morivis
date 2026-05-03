@@ -162,7 +162,41 @@
 		HighlightLayerRegistry.syncPatternAnimation(mapStore.getMap(), selected);
 	};
 
-	const applyFacPoiHighlight = (
+	const getPointLayerEntry = (layerId: string) => {
+		const layerEntry = layerEntries.find((entry) => entry.id === layerId);
+		return layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+			? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+			: null;
+	};
+
+	const resolvePoiHighlightProperties = (
+		layerId: string,
+		feature: MapGeoJSONFeature
+	): { [key: string]: any } => {
+		const pointLayerEntry = getPointLayerEntry(layerId);
+		const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
+		const propertyImage =
+			imageKey &&
+			feature.properties &&
+			typeof feature.properties[imageKey] === 'string' &&
+			feature.properties[imageKey] !== ''
+				? String(feature.properties[imageKey])
+				: null;
+		const iconImage =
+			propertyImage ??
+			(pointLayerEntry
+				? resolveGeneratedPoiIconUrl(feature.properties, pointLayerEntry.style.icons)
+				: null);
+
+		return feature.properties && iconImage
+			? {
+					...feature.properties,
+					iconImage
+				}
+			: (feature.properties ?? {});
+	};
+
+	const applyGeneratedPoiHighlight = (
 		selected: SelectedHighlightData,
 		feature: MapGeoJSONFeature,
 		point: [number, number]
@@ -170,38 +204,20 @@
 		selectedHighlightData.set(selected);
 		resetDefaultHighlight();
 		highlightedGeneratedPoiLayerId = selected.layerId;
-		const layerEntry = layerEntries.find((entry) => entry.id === selected.layerId);
-		const pointLayerEntry =
-			layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
-				? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
-				: null;
+		const resolvedProperties = resolvePoiHighlightProperties(selected.layerId, feature);
 		const iconImage =
-			pointLayerEntry
-				? resolveGeneratedPoiIconUrl(feature.properties, pointLayerEntry.style.icons)
-				: null;
+			typeof resolvedProperties.iconImage === 'string' ? resolvedProperties.iconImage : null;
 
 		featureMenuData = {
 			layerId: selected.layerId,
 			featureId: Number(selected.featureId),
-			properties:
-				feature.properties && iconImage
-					? {
-							...feature.properties,
-							iconImage
-						}
-					: (feature.properties ?? null),
+			properties: resolvedProperties,
 			point
 		};
 		highlightMarkerState = {
 			type: 'poi',
 			featureId: Number(selected.featureId),
-			properties:
-				feature.properties && iconImage
-					? {
-							...feature.properties,
-							iconImage
-						}
-					: (feature.properties ?? {}),
+			properties: resolvedProperties,
 			point,
 			iconImage
 		};
@@ -230,7 +246,7 @@
 		}
 
 		if (options?.feature && options.point && isGeneratedPoiIconFeature(selected.layerId)) {
-			applyFacPoiHighlight(selected, options.feature, options.point);
+			applyGeneratedPoiHighlight(selected, options.feature, options.point);
 			return;
 		}
 

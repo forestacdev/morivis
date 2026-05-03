@@ -6,7 +6,11 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 
-import type { Labels, VectorStyle, PointStyle } from '$routes/map/data/types/vector/style';
+import type {
+	Labels,
+	PointStyle,
+	VectorStyle
+} from '$routes/map/data/types/vector/style';
 
 import type { LayerItem } from '$routes/map/utils/layers/index';
 
@@ -157,14 +161,15 @@ export const createPointIconLayer = (
 	layer: LayerItem,
 	style: PointStyle
 ): SymbolLayerSpecification | undefined => {
-	if (!style.icons) return undefined;
+	const icons = style.icons;
+	if (!icons?.show) return undefined;
 
-	const iconExpression = getIconExpression(style.icons);
+	const iconExpression = getIconExpression(icons);
 	if (!iconExpression) {
 		return undefined;
 	}
 
-	const isImage = style.icons.kind === 'image';
+	const isImage = icons.kind === 'image';
 
 	const defaultStyle = style.default;
 
@@ -177,7 +182,7 @@ export const createPointIconLayer = (
 		},
 		layout: {
 			'icon-image': iconExpression,
-			'icon-size': isImage ? 0.5 : style.icons.size ? style.icons.size : 1,
+			'icon-size': isImage ? 0.5 : icons.size || 1,
 			'icon-anchor': isImage ? 'bottom' : 'center',
 
 			// 間引きをオフに

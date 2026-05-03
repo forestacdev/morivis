@@ -18,7 +18,6 @@
 		}
 
 		const iconImage = highlightMarkerState.iconImage ?? highlightMarkerState.properties?.iconImage;
-		if (typeof iconImage !== 'string' || iconImage === '') return null;
 
 		return {
 			featureId: highlightMarkerState.featureId,

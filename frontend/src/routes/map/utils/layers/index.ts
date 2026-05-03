@@ -150,6 +150,7 @@ export const createLayersItems = (
 ): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
+	const circleIconLayerItems: LayerSpecification[] = [];
 	const lineLayerItems: LayerSpecification[] = [];
 	const fillLayerItems: LayerSpecification[] = [];
 	const fillExtrusionLayerItems: LayerSpecification[] = [];
@@ -277,10 +278,14 @@ export const createLayersItems = (
 
 					// ポイント
 					if (style.type === 'circle') {
-						circleLayerItems.push(vectorLayer);
+						if (style.markerType === 'circle') {
+							circleLayerItems.push(vectorLayer);
+						} else if (style.markerType === 'icon') {
+							circleIconLayerItems.push(vectorLayer);
+						}
 					}
 
-					// TODO マーカータイプの廃止
+					// ラベル
 					if (style.labels.show) {
 						// ラベルを追加
 						const fields = entry.properties.fields;
@@ -414,6 +419,7 @@ export const createLayersItems = (
 		...labelLayerItems,
 		...roadLabelLayerItems,
 		...symbolLayerItems,
-		...poiLayerItems
+		...poiLayerItems,
+		...circleIconLayerItems
 	];
 };

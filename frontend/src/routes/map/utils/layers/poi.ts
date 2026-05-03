@@ -42,7 +42,6 @@ export const poiLayers = [
 			'icon-image': buildGeneratedPoiIconExpression({
 				kind: 'image',
 				show: true,
-				size: 0.5,
 				imageIdKey: '_prop_id',
 				imageOption: {
 					type: 'relative',

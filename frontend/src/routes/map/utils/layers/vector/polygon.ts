@@ -4,7 +4,9 @@ import type {
 	LineLayerSpecification
 } from 'maplibre-gl';
 
-import type { PolygonStyle } from '$routes/map/data/types/vector/style';
+import type {
+	PolygonStyle
+} from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 import {
 	getPatternExpression,
@@ -86,10 +88,11 @@ export const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 export const createFillExtrusionLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
+): FillExtrusionLayerSpecification | undefined => {
+	if (!style.extrusion?.show) return undefined;
 	const defaultStyle = style.default;
 	const colorExpression = getColorExpression(style.colors);
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const height = getNumberExpression(style.extrusion.height);
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
 		type: 'fill-extrusion',
@@ -122,12 +125,13 @@ export const createFillExtrusionPatternLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
 ): FillExtrusionLayerSpecification | undefined => {
+	if (!style.extrusion?.show) return undefined;
 	const defaultStyle = style.default;
 	const patternExpression = getPatternExpression(style.colors);
 	if (!patternExpression) {
 		return undefined;
 	}
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const height = getNumberExpression(style.extrusion.height);
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
 		id: `${layer.id}_fill_extrusion_pattern`,

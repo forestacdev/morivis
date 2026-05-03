@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import { ICON_NO_IMAGE_PATH } from '$routes/constants';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -34,6 +35,19 @@
 
 	let imageLoaded = $state(false);
 	let imageError = $state(false);
+	let latestImageRequestId = 0;
+
+	const preferredImageUrl = $derived.by(() => {
+		if (typeof properties.iconImage === 'string' && properties.iconImage !== '') {
+			return properties.iconImage;
+		}
+
+		if (typeof properties.image === 'string' && properties.image !== '') {
+			return properties.image;
+		}
+
+		return ICON_NO_IMAGE_PATH;
+	});
 
 	// 画像を事前読み込みする関数（キャッシュ付き）
 	const preloadImage = (url: string): Promise<void> => {
@@ -53,31 +67,31 @@
 	};
 
 	// 画像URLを設定し、読み込み完了を待つ
-	const loadImage = async () => {
-		const id = properties._prop_id;
+	const loadImage = async (sourceUrl: string) => {
+		const fallbackUrl = ICON_NO_IMAGE_PATH;
+		const requestId = ++latestImageRequestId;
 
 		try {
-			// 画像URLを決定
-			if (id === '@fac_top') {
-				imageUrl = properties.image;
-			} else {
-				imageUrl = properties.iconImage;
-			}
-
-			// 画像URLが存在しない場合
-			if (!imageUrl) {
-				imageError = true;
-				return;
-			}
-
 			// 画像の読み込み完了を待つ
-			await preloadImage(imageUrl);
+			await preloadImage(sourceUrl);
+			if (requestId !== latestImageRequestId) return;
+			imageUrl = sourceUrl;
 			imageLoaded = true;
 			imageError = false;
 		} catch (error) {
 			console.warn('Failed to load image:', error);
-			imageError = true;
-			imageLoaded = false;
+			try {
+				await preloadImage(fallbackUrl);
+				if (requestId !== latestImageRequestId) return;
+				imageUrl = fallbackUrl;
+				imageLoaded = true;
+				imageError = false;
+			} catch (fallbackError) {
+				console.warn('Failed to load fallback image:', fallbackError);
+				if (requestId !== latestImageRequestId) return;
+				imageError = true;
+				imageLoaded = false;
+			}
 		}
 	};
 
@@ -107,7 +121,7 @@
 		isReady = true;
 
 		// 画像読み込みは非同期で実行
-		await loadImage();
+		await loadImage(preferredImageUrl);
 	});
 	onDestroy(() => {
 		marker?.remove();
@@ -127,13 +141,10 @@
 	});
 
 	$effect(() => {
-		void properties._prop_id;
-		void properties.iconImage;
-		void properties.image;
-
+		const nextImageUrl = preferredImageUrl;
 		imageLoaded = false;
 		imageError = false;
-		void loadImage();
+		void loadImage(nextImageUrl);
 	});
 
 	// フォールバック画像またはプレースホルダーを表示するかどうか

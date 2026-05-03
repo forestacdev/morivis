@@ -12,7 +12,7 @@ import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/label';
 import { clickableVectorIds } from '$routes/stores';
 import type {
 	LayerSpecification,
@@ -291,7 +291,29 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				highlightClickableIds.push(highlightVectorLayer.id);
 			}
 
-			if (style.type === 'fill' && style.extrusion && style.extrusion.show) {
+			if (style.type === 'circle' && style.markerType === 'icon') {
+				const pointIconLayer = createPointIconLayer(layer, style);
+				if (pointIconLayer) {
+					registerLayerFilterState({
+						logicalLayerId: layerId,
+						layer: pointIconLayer,
+						role: 'base'
+					});
+					const highlightPointIconLayer = registerHighlightLayers({
+						logicalLayerId: layerId,
+						baseLayer: pointIconLayer,
+						style,
+						registerBase: false
+					});
+
+					if (highlightPointIconLayer) {
+						highlightLayerItems.push(highlightPointIconLayer);
+						highlightClickableIds.push(highlightPointIconLayer.id);
+					}
+				}
+			}
+
+			if (style.type === 'fill' && style.extrusion?.show) {
 				const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
 				if (fillExtrusionPatternLayer) {
 					registerLayerFilterState({

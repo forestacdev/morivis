@@ -528,10 +528,19 @@
 						layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
 							? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
 							: null;
-					const iconImage =
-						pointLayerEntry
-							? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+					const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
+					const propertyImage =
+						imageKey &&
+						prop &&
+						typeof prop[imageKey] === 'string' &&
+						prop[imageKey] !== ''
+							? String(prop[imageKey])
 							: null;
+					const iconImage =
+						propertyImage ??
+						(pointLayerEntry
+							? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+							: null);
 					return prop && iconImage ? { ...prop, iconImage } : prop;
 				})(),
 				point: result.point,
@@ -542,10 +551,19 @@
 				layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
 					? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
 					: null;
-			const iconImage =
-				pointLayerEntry
-					? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+			const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
+			const propertyImage =
+				imageKey &&
+				prop &&
+				typeof prop[imageKey] === 'string' &&
+				prop[imageKey] !== ''
+					? String(prop[imageKey])
 					: null;
+			const iconImage =
+				propertyImage ??
+				(pointLayerEntry
+					? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+					: null);
 			featureMenuData = data;
 			highlightMarkerState = {
 				type: 'poi',
