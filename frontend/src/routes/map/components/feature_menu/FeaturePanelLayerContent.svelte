@@ -5,6 +5,7 @@
 	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
+	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 	import type {
 		FeatureMenuData,
 		FeaturePanelSummary as FeaturePanelSummaryData
@@ -65,7 +66,7 @@
 
 	let imageKey = $derived.by(() => {
 		if (targetLayer && targetLayer.type === 'vector') {
-			return targetLayer.properties.attributeView.imageKey;
+			return getPopupImageFieldKey(targetLayer.properties);
 		}
 		return null;
 	});

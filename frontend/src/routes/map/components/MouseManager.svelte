@@ -11,7 +11,11 @@
 	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
-	import { isGeneratedPoiIconLayout, resolveGeneratedPoiIconUrl } from '$routes/map/utils/icon';
+	import {
+		isGeneratedPoiIconLayout,
+		resolveGeneratedPoiIconUrl,
+		resolvePopupImageUrl
+	} from '$routes/map/utils/icon';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
@@ -174,18 +178,17 @@
 		feature: MapGeoJSONFeature
 	): { [key: string]: any } => {
 		const pointLayerEntry = getPointLayerEntry(layerId);
-		const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
-		const propertyImage =
-			imageKey &&
-			feature.properties &&
-			typeof feature.properties[imageKey] === 'string' &&
-			feature.properties[imageKey] !== ''
-				? String(feature.properties[imageKey])
-				: null;
+		const propertyImage = pointLayerEntry
+			? resolvePopupImageUrl(feature.properties, pointLayerEntry.properties)
+			: null;
 		const iconImage =
 			propertyImage ??
 			(pointLayerEntry
-				? resolveGeneratedPoiIconUrl(feature.properties, pointLayerEntry.style.icons)
+				? resolveGeneratedPoiIconUrl(
+						feature.properties,
+						pointLayerEntry.style.icons,
+						pointLayerEntry.properties.images?.icon
+					)
 				: null);
 
 		return feature.properties && iconImage

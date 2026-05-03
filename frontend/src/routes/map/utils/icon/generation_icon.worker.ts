@@ -1,12 +1,20 @@
 const ICON_BASE_WIDTH = 60;
 const ICON_ASPECT_RATIO = 70 / 60;
 const ICON_SCALE = 1.7;
+const TAIL_TOP_WIDTH = 30;
+const TAIL_HEIGHT = 23;
+const TAIL_TIP_RADIUS = 3;
+const TOP_TRIM = 8;
 
 const ICON_CANVAS_WIDTH = Math.round(ICON_BASE_WIDTH * ICON_SCALE);
-const ICON_CANVAS_HEIGHT = Math.round(ICON_CANVAS_WIDTH * ICON_ASPECT_RATIO);
+const ICON_CANVAS_HEIGHT = Math.round(ICON_CANVAS_WIDTH * ICON_ASPECT_RATIO) - TOP_TRIM;
 const PHOTO_RADIUS = 40;
 const PHOTO_CENTER_X = ICON_CANVAS_WIDTH / 2;
-const PHOTO_CENTER_Y = 44;
+const TAIL_TIP_Y = ICON_CANVAS_HEIGHT;
+const PHOTO_CENTER_Y = 60 - TOP_TRIM;
+const TAIL_OVERLAP = 10;
+const TAIL_TOP_Y = PHOTO_CENTER_Y + PHOTO_RADIUS - TAIL_OVERLAP;
+const DEBUG_RED_BACKGROUND = false;
 
 const iconCanvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
 const context = iconCanvas.getContext('2d');
@@ -23,6 +31,11 @@ const createFrameImage = async () => {
 
 	frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
 
+	if (DEBUG_RED_BACKGROUND) {
+		frameContext.fillStyle = '#ff0000';
+		frameContext.fillRect(0, 0, frameCanvas.width, frameCanvas.height);
+	}
+
 	// drop shadow
 	frameContext.save();
 	frameContext.fillStyle = '#ffffff';
@@ -33,20 +46,26 @@ const createFrameImage = async () => {
 	frameContext.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS + 2, 0, Math.PI * 2);
 	frameContext.fill();
 	frameContext.beginPath();
-	frameContext.moveTo(PHOTO_CENTER_X, 95);
-	frameContext.lineTo(PHOTO_CENTER_X - 24, 72);
-	frameContext.lineTo(PHOTO_CENTER_X + 24, 72);
+	frameContext.moveTo(PHOTO_CENTER_X, TAIL_TIP_Y);
+	frameContext.lineTo(PHOTO_CENTER_X - TAIL_TOP_WIDTH, TAIL_TOP_Y);
+	frameContext.lineTo(PHOTO_CENTER_X + TAIL_TOP_WIDTH, TAIL_TOP_Y);
 	frameContext.closePath();
+	frameContext.fill();
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, TAIL_TIP_Y - TAIL_TIP_RADIUS, TAIL_TIP_RADIUS, 0, Math.PI * 2);
 	frameContext.fill();
 	frameContext.restore();
 
 	// white pin frame
 	frameContext.fillStyle = '#ffffff';
 	frameContext.beginPath();
-	frameContext.moveTo(PHOTO_CENTER_X, 95);
-	frameContext.lineTo(PHOTO_CENTER_X - 24, 72);
-	frameContext.lineTo(PHOTO_CENTER_X + 24, 72);
+	frameContext.moveTo(PHOTO_CENTER_X, TAIL_TIP_Y);
+	frameContext.lineTo(PHOTO_CENTER_X - TAIL_TOP_WIDTH, TAIL_TOP_Y);
+	frameContext.lineTo(PHOTO_CENTER_X + TAIL_TOP_WIDTH, TAIL_TOP_Y);
 	frameContext.closePath();
+	frameContext.fill();
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, TAIL_TIP_Y - TAIL_TIP_RADIUS, TAIL_TIP_RADIUS, 0, Math.PI * 2);
 	frameContext.fill();
 
 	frameContext.beginPath();
@@ -119,7 +138,7 @@ self.onmessage = async (e) => {
 
 		const frameImage = await loadFrameImage();
 
-			context.clearRect(0, 0, iconCanvas.width, iconCanvas.height);
+		context.clearRect(0, 0, iconCanvas.width, iconCanvas.height);
 		context.save();
 		context.beginPath();
 		context.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS, 0, Math.PI * 2);
@@ -127,9 +146,9 @@ self.onmessage = async (e) => {
 		context.clip();
 		drawCoverImage(image);
 		context.restore();
-			context.drawImage(frameImage, 0, 0, iconCanvas.width, iconCanvas.height);
+		context.drawImage(frameImage, 0, 0, iconCanvas.width, iconCanvas.height);
 
-			self.postMessage({ id, imageBitmap: iconCanvas.transferToImageBitmap() });
+		self.postMessage({ id, imageBitmap: iconCanvas.transferToImageBitmap() });
 	} catch (e) {
 		console.error(e);
 	}

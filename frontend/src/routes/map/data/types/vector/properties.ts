@@ -68,6 +68,31 @@ export interface AttributeView {
 	relations?: Relations;
 }
 
+export interface AbsoluteImageSource {
+	type: 'absolute';
+	urlKey: string;
+}
+
+export interface RelativeImageSource {
+	type: 'relative';
+	urlKey: string;
+	baseUrl: string;
+	suffix?: string;
+}
+
+export type ImageSource = AbsoluteImageSource | RelativeImageSource;
+
+export type PopupImageSource = ImageSource;
+
+export type IconImageSource = ImageSource & {
+	imageIdKey: string;
+};
+
+export interface VectorImages {
+	popup?: PopupImageSource;
+	icon?: IconImageSource;
+}
+
 /**
  * 無効値（欠損値・非有効値）として扱う条件と表示文字列
  */
@@ -436,6 +461,7 @@ export interface FieldDef {
 export interface VectorProperties {
 	fields: FieldDef[];
 	attributeView: AttributeView;
+	images?: VectorImages;
 	/**
 	 * 属性を結合するための外部データのURL(JSON)。 TODO: 将来的に汎用化
 	 */

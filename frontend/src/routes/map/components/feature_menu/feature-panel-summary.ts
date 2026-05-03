@@ -21,6 +21,7 @@ import type {
 	FeaturePanelSummary as FeaturePanelSummaryData
 } from '$routes/map/types';
 import { generatePopupTitle } from '$routes/map/utils/data/properties';
+import { resolvePopupImageUrl } from '$routes/map/utils/icon';
 
 export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData): boolean => {
 	return Boolean(
@@ -88,24 +89,21 @@ const getLayerFeatureMedia = async (
 			return data.medias.map((media) => convertMediaData(media, targetLayer));
 		}
 
-		const imageKey =
+		const url =
 			targetLayer && targetLayer.type === 'vector'
-				? targetLayer.properties.attributeView.imageKey
+				? resolvePopupImageUrl(featureMenuData.properties, targetLayer.properties)
 				: null;
 
-		if (featureMenuData.properties && imageKey) {
-			const url = featureMenuData.properties[imageKey] as string;
-			if (url) {
-				return [
-					{
-						type: 'image',
-						url,
-						alt: '画像',
-						source: 'static',
-						fit: 'contain'
-					}
-				];
-			}
+		if (url) {
+			return [
+				{
+					type: 'image',
+					url,
+					alt: '画像',
+					source: 'static',
+					fit: 'contain'
+				}
+			];
 		}
 
 		const iNaturalistNameKey =

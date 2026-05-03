@@ -12,6 +12,11 @@ import {
 	USE_WEBGL_GENERATED_POI_ICONS
 } from '$routes/constants';
 import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
+import type {
+	IconImageSource,
+	ImageSource,
+	VectorProperties
+} from '$routes/map/data/types/vector/properties';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
 let mapLibreMap: Map | null = null;
@@ -25,9 +30,10 @@ export const buildGeneratedPoiIconId = (propId: string, iconUrl?: string | null)
 };
 
 export const buildGeneratedPoiIconExpression = (
-	icons: ImageIconsStyle
+	image: IconImageSource,
+	fallbackUrlExpression?: ImageIconsStyle['fallbackUrlExpression']
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
-	const { imageIdKey, imageOption, fallbackUrlExpression } = icons;
+	const { imageIdKey } = image;
 	const fallbackUrl = fallbackUrlExpression ?? [
 		'concat',
 		ICON_IMAGE_BASE_PATH,
@@ -36,20 +42,19 @@ export const buildGeneratedPoiIconExpression = (
 		'.webp'
 	];
 	const imageUrlExpression = (() => {
-		if (!imageOption) return fallbackUrl;
-		if (imageOption.type === 'relative') {
+		if (image.type === 'relative') {
 			return [
 				'coalesce',
 				[
 					'concat',
-					imageOption.baseUrl,
-					['to-string', ['get', imageOption.urlKey]],
-					imageOption.suffix ?? ''
+					image.baseUrl,
+					['to-string', ['get', image.urlKey]],
+					image.suffix ?? ''
 				],
 				fallbackUrl
 			] as ExpressionSpecification;
 		}
-		return ['coalesce', ['get', imageOption.urlKey], fallbackUrl] as ExpressionSpecification;
+		return ['coalesce', ['get', image.urlKey], fallbackUrl] as ExpressionSpecification;
 	})();
 
 	return [
@@ -104,23 +109,53 @@ export const parseGeneratedPoiIconId = (id: string) => {
 	};
 };
 
+export const resolveImageUrl = (
+	properties: MapGeoJSONFeature['properties'] | Record<string, unknown> | null | undefined,
+	image: ImageSource | undefined
+) => {
+	if (!properties || !image) return null;
+
+	const rawImageUrl = properties[image.urlKey];
+	if (rawImageUrl == null || String(rawImageUrl) === '') return null;
+
+	if (image.type === 'relative') {
+		return `${image.baseUrl}${String(rawImageUrl)}${image.suffix ?? ''}`;
+	}
+
+	return String(rawImageUrl);
+};
+
+export const getPopupImageFieldKey = (vectorProperties: VectorProperties | undefined) => {
+	return vectorProperties?.images?.popup?.urlKey ?? vectorProperties?.attributeView.imageKey ?? null;
+};
+
+export const resolvePopupImageUrl = (
+	properties: MapGeoJSONFeature['properties'] | Record<string, unknown> | null | undefined,
+	vectorProperties: VectorProperties | undefined
+) => {
+	const popupImage = vectorProperties?.images?.popup;
+	if (popupImage) {
+		return resolveImageUrl(properties, popupImage);
+	}
+
+	const legacyImageKey = vectorProperties?.attributeView.imageKey;
+	if (!properties || !legacyImageKey) return null;
+	const rawImageUrl = properties[legacyImageKey];
+	return rawImageUrl != null && String(rawImageUrl) !== '' ? String(rawImageUrl) : null;
+};
+
 export const resolveGeneratedPoiIconUrl = (
 	properties: MapGeoJSONFeature['properties'] | Record<string, unknown> | null | undefined,
-	icons: IconsStyle | undefined
+	icons: IconsStyle | undefined,
+	image: IconImageSource | undefined
 ) => {
-	if (!properties || !icons || icons.kind !== 'image') return null;
+	if (!properties || !icons || icons.kind !== 'image' || !image) return null;
 
-	const rawImageId = properties[icons.imageIdKey];
+	const rawImageId = properties[image.imageIdKey];
 	const imageId = rawImageId != null ? String(rawImageId) : '';
 	if (!imageId) return null;
 
-	const rawImageUrl = icons.imageOption ? properties[icons.imageOption.urlKey] : null;
-	const resolvedImageUrl =
-		rawImageUrl != null && String(rawImageUrl) !== ''
-			? icons.imageOption?.type === 'relative'
-				? `${icons.imageOption.baseUrl}${String(rawImageUrl)}${icons.imageOption.suffix ?? ''}`
-				: String(rawImageUrl)
-			: null;
+	const resolvedImageUrl = resolveImageUrl(properties, image);
 	const imageUrl = resolvedImageUrl ?? `${ICON_IMAGE_BASE_PATH}/${imageId}.webp`;
 
 	return imageUrl;

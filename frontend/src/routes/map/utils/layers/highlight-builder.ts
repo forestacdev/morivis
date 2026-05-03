@@ -1,6 +1,7 @@
 import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
+import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import {
 	HIGHLIGHT_FILL_PATTERN_ID,
@@ -265,12 +266,12 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 
 			const vectorEntry = entry as GeoDataEntry & {
 				style: VectorStyle;
-				properties: { fields: FieldDef[] };
+				properties: VectorProperties & { fields: FieldDef[] };
 			};
 			const layer = applyVectorSourceLayer(createBaseLayerItem(vectorEntry), vectorEntry);
 			const { style } = vectorEntry;
 			const layerId = `${vectorEntry.id}`;
-			const vectorLayer = createVectorLayer(layer, style);
+			const vectorLayer = createVectorLayer(layer, style, vectorEntry.properties.images?.icon);
 
 			if (!vectorLayer) return;
 			registerLayerFilterState({
@@ -292,7 +293,11 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 			}
 
 			if (style.type === 'circle' && style.markerType === 'icon') {
-				const pointIconLayer = createPointIconLayer(layer, style);
+				const pointIconLayer = createPointIconLayer(
+					layer,
+					style,
+					vectorEntry.properties.images?.icon
+				);
 				if (pointIconLayer) {
 					registerLayerFilterState({
 						logicalLayerId: layerId,

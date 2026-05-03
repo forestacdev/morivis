@@ -289,18 +289,6 @@ export interface SpriteIconsStyle {
 export interface ImageIconsStyle {
 	kind: 'image';
 	show: boolean;
-	imageIdKey: string;
-	imageOption?:
-		| {
-				type: 'absolute';
-				urlKey: string;
-		  }
-		| {
-				type: 'relative';
-				urlKey: string;
-				baseUrl: string;
-				suffix?: string;
-		  };
 	fallbackUrlExpression?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | string;
 }
 

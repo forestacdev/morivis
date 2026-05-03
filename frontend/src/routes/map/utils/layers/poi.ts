@@ -40,15 +40,11 @@ export const poiLayers = [
 		minzoom: 11,
 		layout: {
 			'icon-image': buildGeneratedPoiIconExpression({
-				kind: 'image',
-				show: true,
 				imageIdKey: '_prop_id',
-				imageOption: {
-					type: 'relative',
-					urlKey: '_prop_id',
-					baseUrl: ICON_IMAGE_BASE_PATH + '/',
-					suffix: '.webp'
-				}
+				type: 'relative',
+				urlKey: '_prop_id',
+				baseUrl: ICON_IMAGE_BASE_PATH + '/',
+				suffix: '.webp'
 			}),
 			'icon-size': 0.5,
 			'icon-anchor': 'bottom', // アイコンのアンカー位置

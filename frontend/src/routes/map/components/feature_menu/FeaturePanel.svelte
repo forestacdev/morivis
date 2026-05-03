@@ -12,6 +12,7 @@
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
+	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 	import type {
 		FeaturePanelData,
 		FeaturePanelSummary as FeaturePanelSummaryData,
@@ -59,7 +60,7 @@
 		if (propId) return false;
 
 		const popupKeys = targetLayer.properties.attributeView.popupKeys;
-		const imageKey = targetLayer.properties.attributeView.imageKey;
+		const imageKey = getPopupImageFieldKey(targetLayer.properties);
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(panelData.properties, popupKeys)

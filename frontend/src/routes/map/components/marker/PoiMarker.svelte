@@ -101,7 +101,7 @@
 			marker = new maplibregl.Marker({
 				element: markerContainer,
 				anchor: 'bottom',
-				offset: [0, -8]
+				offset: [0, 0]
 			})
 				.setLngLat(lngLat)
 				.addTo(map);

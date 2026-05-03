@@ -17,6 +17,7 @@ import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 import { geoDataEntries } from '$routes/map/data/entries';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
+import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 
 import { labelLayers } from '$routes/map/utils/layers/label';
 import {
@@ -109,7 +110,8 @@ export interface LayerItem {
 
 export const createVectorLayer = (
 	layer: LayerItem,
-	style: VectorStyle
+	style: VectorStyle,
+	pointImageIcon?: IconImageSource
 ):
 	| FillLayerSpecification
 	| LineLayerSpecification
@@ -129,7 +131,7 @@ export const createVectorLayer = (
 		case 'circle': {
 			switch (style.markerType) {
 				case 'icon':
-					return style.icons?.show ? createPointIconLayer(layer, style) : undefined;
+					return style.icons?.show ? createPointIconLayer(layer, style, pointImageIcon) : undefined;
 				case 'circle':
 					return createCircleLayer(layer, style);
 				default:
@@ -242,7 +244,7 @@ export const createLayersItems = (
 					}
 					applyVectorSourceLayer(layer, entry);
 
-					const vectorLayer = createVectorLayer(layer, style);
+					const vectorLayer = createVectorLayer(layer, style, entry.properties.images?.icon);
 					if (!vectorLayer) return;
 
 					// ポリゴン

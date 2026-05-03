@@ -11,6 +11,7 @@ import type {
 	PointStyle,
 	VectorStyle
 } from '$routes/map/data/types/vector/style';
+import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 
 import type { LayerItem } from '$routes/map/utils/layers/index';
 
@@ -18,6 +19,7 @@ import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
 import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
+import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
 
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
@@ -159,12 +161,18 @@ export const compileLabelExpr = (le: LabelsExpressions, fields: FieldDef[]): Exp
 
 export const createPointIconLayer = (
 	layer: LayerItem,
-	style: PointStyle
+	style: PointStyle,
+	imageIcon?: IconImageSource
 ): SymbolLayerSpecification | undefined => {
 	const icons = style.icons;
 	if (!icons?.show) return undefined;
 
-	const iconExpression = getIconExpression(icons);
+	const iconExpression =
+		icons.kind === 'image'
+			? imageIcon
+				? buildGeneratedPoiIconExpression(imageIcon, icons.fallbackUrlExpression)
+				: null
+			: getIconExpression(icons);
 	if (!iconExpression) {
 		return undefined;
 	}

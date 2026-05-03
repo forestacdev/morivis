@@ -54,8 +54,20 @@ const entry: PointEntry<TileMetaData> = {
 					template: '自然災害伝承碑'
 				}
 			],
-			imageKey: 'image',
 			descriptionKey: '伝承内容'
+		},
+		images: {
+			popup: {
+				type: 'absolute',
+				urlKey: 'image'
+			},
+			icon: {
+				type: 'relative',
+				imageIdKey: 'ID',
+				urlKey: 'ID',
+				baseUrl: `${DISASTER_LORE_ALL_PATH}/icons/`,
+				suffix: '.webp'
+			}
 		},
 		fields: [
 			{ key: 'ID', type: 'string' },
@@ -95,7 +107,7 @@ const entry: PointEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7, // 透過率
-		markerType: 'circle',
+		markerType: 'icon',
 		colors: {
 			show: true,
 			key: '単色',
@@ -112,14 +124,7 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		icons: {
 			kind: 'image',
-			show: true,
-			imageIdKey: 'ID',
-			imageOption: {
-				type: 'relative',
-				urlKey: 'ID',
-				baseUrl: `${DISASTER_LORE_ALL_PATH}/icons/`,
-				suffix: '.webp'
-			}
+			show: true
 		},
 
 		radius: {

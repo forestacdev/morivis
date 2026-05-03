@@ -74,7 +74,7 @@
 		getParams,
 		getStreetViewParams
 	} from '$routes/map/utils/platform/url-params';
-	import { resolveGeneratedPoiIconUrl } from '$routes/map/utils/icon';
+	import { resolveGeneratedPoiIconUrl, resolvePopupImageUrl } from '$routes/map/utils/icon';
 	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
@@ -528,18 +528,17 @@
 						layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
 							? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
 							: null;
-					const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
-					const propertyImage =
-						imageKey &&
-						prop &&
-						typeof prop[imageKey] === 'string' &&
-						prop[imageKey] !== ''
-							? String(prop[imageKey])
-							: null;
+					const propertyImage = pointLayerEntry
+						? resolvePopupImageUrl(prop, pointLayerEntry.properties)
+						: null;
 					const iconImage =
 						propertyImage ??
 						(pointLayerEntry
-							? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+							? resolveGeneratedPoiIconUrl(
+									prop,
+									pointLayerEntry.style.icons,
+									pointLayerEntry.properties.images?.icon
+								)
 							: null);
 					return prop && iconImage ? { ...prop, iconImage } : prop;
 				})(),
@@ -551,18 +550,17 @@
 				layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
 					? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
 					: null;
-			const imageKey = pointLayerEntry?.properties.attributeView.imageKey;
-			const propertyImage =
-				imageKey &&
-				prop &&
-				typeof prop[imageKey] === 'string' &&
-				prop[imageKey] !== ''
-					? String(prop[imageKey])
-					: null;
+			const propertyImage = pointLayerEntry
+				? resolvePopupImageUrl(prop, pointLayerEntry.properties)
+				: null;
 			const iconImage =
 				propertyImage ??
 				(pointLayerEntry
-					? resolveGeneratedPoiIconUrl(prop, pointLayerEntry.style.icons)
+					? resolveGeneratedPoiIconUrl(
+							prop,
+							pointLayerEntry.style.icons,
+							pointLayerEntry.properties.images?.icon
+						)
 					: null);
 			featureMenuData = data;
 			highlightMarkerState = {

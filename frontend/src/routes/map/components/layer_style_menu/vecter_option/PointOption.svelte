@@ -22,11 +22,15 @@
 	let showTypeOption = $state<boolean>(false);
 	let showOutlineOption = $state<boolean>(false);
 	let showIconOption = $state<boolean>(false);
+	let spriteIcons = $derived.by(() => {
+		const icons = layerEntry.style.icons;
+		return icons && icons.kind === 'sprite' ? icons : null;
+	});
 
 	// セットされたアイコン式の設定
 	let setIconExpression: IconsExpression | undefined = $derived.by(() => {
-		const icons = layerEntry.style.icons;
-		if (!icons || icons.kind === 'image') return;
+		const icons = spriteIcons;
+		if (!icons) return;
 		const target = icons.expressions.find((expr) => expr.key === icons.key);
 		if (!target) return;
 		return target;
@@ -75,7 +79,7 @@
 {#if layerEntry.style.markerType === 'icon' && layerEntry.style.icons}
 	<Accordion label={'アイコン'} icon={'gg:pin'} bind:value={showIconOption}>
 		<Switch label={'表示'} bind:value={layerEntry.style.icons.show} />
-		{#if setIconExpression}
+		{#if spriteIcons && setIconExpression}
 			{#if setIconExpression.type === 'single' && setIconExpression.mapping.pattern}
 				<IconPicker
 					label="形状"
@@ -92,13 +96,15 @@
 				{/each}
 			{/if}
 		{/if}
-		<RangeSlider
-			label="アイコンサイズ"
-			bind:value={layerEntry.style.icons.size}
-			min={0}
-			max={5}
-			step={0.01}
-		/>
+		{#if spriteIcons}
+			<RangeSlider
+				label="アイコンサイズ"
+				bind:value={spriteIcons.size}
+				min={0}
+				max={5}
+				step={0.01}
+			/>
+		{/if}
 	</Accordion>
 {/if}
 
