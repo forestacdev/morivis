@@ -73,10 +73,50 @@
 		}
 	};
 
+	const clearContextMenuMarker = () => {
+		contextMenuState = null;
+		markerLngLat = null;
+		showMarker = false;
+	};
+
+	const openContextMenuMarker = (e: MapMouseEvent) => {
+		showMarker = true;
+		markerLngLat = e.lngLat;
+
+		if (checkMobile()) return;
+
+		contextMenuState = {
+			show: true,
+			x: e.originalEvent.clientX,
+			y: e.originalEvent.clientY,
+			lngLat: e.lngLat
+		};
+	};
+
 	const getClickableTargetLayerIds = () => {
 		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS].filter((layerId) => {
 			return !layerId.startsWith('@highlight_');
 		});
+	};
+
+	const getExistingClickableLayerIds = () => {
+		return getClickableTargetLayerIds().filter((layerId) => {
+			return mapStore.getLayer(layerId) !== undefined;
+		});
+	};
+
+	const getSelectedRasterLayerIds = (lngLat: LngLat) => {
+		return layerEntries
+			.filter((entry) => {
+				if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
+					if (entry.metaData.location === '全国') {
+						return true;
+					} else if (isPointInBbox(lngLat, entry.metaData.bounds)) {
+						return true;
+					}
+				}
+			})
+			.map((entry) => entry.id);
 	};
 
 	const resetDefaultHighlight = () => {
@@ -213,6 +253,97 @@
 		}
 	};
 
+	const handleBlankMapClick = (e: MapMouseEvent) => {
+		const hadHighlight =
+			$selectedHighlightData !== null ||
+			featureMenuData !== null ||
+			highlightMarkerState !== null ||
+			selectedSearchResultData !== null;
+		const hadMarker = markerLngLat !== null;
+		const hadContextMenu = contextMenuState?.show === true;
+
+		setSelectedHighlight(null);
+		featureMenuData = null;
+		clearSearchHighlight();
+		clickedLayerIds = [];
+
+		if (hadContextMenu || hadHighlight || hadMarker) {
+			clearContextMenuMarker();
+			return;
+		}
+
+		openContextMenuMarker(e);
+	};
+
+	const handleStreetViewCircleClick = (e: MapMouseEvent) => {
+		setSelectedHighlight(null);
+		const features = mapStore.queryRenderedFeatures(e.point, {
+			layers: ['@street_view_circle_layer']
+		});
+
+		if (features.length > 0 && streetViewPointData.features.length > 0) {
+			const feature = features[0];
+			const nodeId = feature.properties.node_id;
+
+			setStreetViewParams(nodeId);
+		}
+	};
+
+	const handleStreetViewLineClick = (e: MapMouseEvent) => {
+		setSelectedHighlight(null);
+		const features = mapStore.queryRenderedFeatures(e.point, {
+			layers: ['@street_view_line_layer']
+		});
+
+		if (!features.length) return;
+
+		const feature = features[0];
+		const lineCoordinates =
+			feature.geometry.type === 'LineString' ? feature.geometry.coordinates : [];
+
+		let closestPoint: [number, number] | null = null;
+		let minDistance = Infinity;
+
+		for (const coord of lineCoordinates) {
+			const distance = Math.sqrt(
+				Math.pow(coord[0] - e.lngLat.lng, 2) + Math.pow(coord[1] - e.lngLat.lat, 2)
+			);
+			if (distance < minDistance) {
+				minDistance = distance;
+				closestPoint = coord as [number, number];
+			}
+		}
+
+		if (!closestPoint) return;
+
+		const first = lineCoordinates[0];
+		const last = lineCoordinates[lineCoordinates.length - 1];
+		const isFirst = closestPoint[0] === first[0] && closestPoint[1] === first[1];
+		const isLast = closestPoint[0] === last[0] && closestPoint[1] === last[1];
+
+		const nodeId = isFirst
+			? feature.properties.source
+			: isLast
+				? feature.properties.target
+				: feature.properties.source;
+
+		setStreetViewParams(nodeId);
+	};
+
+	const handleSearchResultClick = (e: MapMouseEvent) => {
+		const searchFeatures = mapStore.queryRenderedFeatures(e.point, {
+			layers: ['@search_result']
+		});
+
+		if (!searchFeatures.length) return false;
+
+		setSelectedHighlight(null);
+		const { properties } = searchFeatures[0];
+		const result = searchResults?.find((result) => result.id === properties.id);
+		if (result) focusFeature(result);
+		return true;
+	};
+
 	mapStore.onClick(async (e: MapMouseEvent) => {
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
@@ -221,13 +352,7 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const clickLayerIds = getClickableTargetLayerIds();
-
-			// 存在するレイヤーIDのみをフィルタリング
-			const existingLayerIds = clickLayerIds.filter((layerId) => {
-				return mapStore.getLayer(layerId) !== undefined;
-			});
-
+			const existingLayerIds = getExistingClickableLayerIds();
 			if (!existingLayerIds.length) return;
 
 			const features = mapStore.queryRenderedFeatures(e.point, {
@@ -235,60 +360,12 @@
 			});
 
 			if (!features.length) {
-				setSelectedHighlight(null);
-				featureMenuData = null;
-				clearSearchHighlight();
-				clickedLayerIds = [];
-
-				if (contextMenuState?.show) {
-					contextMenuState = null;
-					markerLngLat = null;
-					showMarker = false;
-					return;
-				}
-
-				contextMenuState = null;
-
-				if ($selectedHighlightData) {
-					markerLngLat = null;
-					showMarker = false;
-					return;
-				}
-
-				if (markerLngLat) {
-					markerLngLat = null;
-					showMarker = false;
-				} else {
-					showMarker = true;
-					markerLngLat = e.lngLat;
-
-					if (!checkMobile()) {
-						const windowX = e.originalEvent.clientX;
-						const windowY = e.originalEvent.clientY;
-
-						contextMenuState = {
-							show: true,
-							x: windowX,
-							y: windowY,
-							lngLat: e.lngLat
-						};
-					}
-				}
+				handleBlankMapClick(e);
 				return;
 			}
 
 			const selectedVecterLayersId = features.map((feature) => getBaseLayerId(feature.layer.id));
-			const selectedRasterLayersId = layerEntries
-				.filter((entry) => {
-					if (entry.type === 'raster' && entry.interaction.clickable && entry.style.visible) {
-						if (entry.metaData.location === '全国') {
-							return true;
-						} else if (isPointInBbox(e.lngLat, entry.metaData.bounds)) {
-							return true;
-						}
-					}
-				})
-				.map((entry) => entry.id);
+			const selectedRasterLayersId = getSelectedRasterLayerIds(e.lngLat);
 
 			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ
 			if (selectedVecterLayersId.includes('@poi_top')) {
@@ -301,99 +378,18 @@
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
-				setSelectedHighlight(null);
-				const features = mapStore.queryRenderedFeatures(e.point, {
-					layers: ['@street_view_circle_layer']
-				});
-
-				if (features.length > 0 && streetViewPointData.features.length > 0) {
-					const feature = features[0];
-					const nodeId = feature.properties.node_id;
-
-					setStreetViewParams(nodeId);
-				}
-
+				handleStreetViewCircleClick(e);
 				return;
 			}
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_line_layer')) {
-				setSelectedHighlight(null);
-				const features = mapStore.queryRenderedFeatures(e.point, {
-					layers: ['@street_view_line_layer']
-				});
-
-				if (features.length) {
-					const feature = features[0];
-
-					// LineString の座標一覧
-					const lineCoordinates =
-						feature.geometry.type === 'LineString' ? feature.geometry.coordinates : [];
-
-					let closestPoint: [number, number] | null = null;
-					let minDistance = Infinity;
-
-					for (const coord of lineCoordinates) {
-						const distance = Math.sqrt(
-							Math.pow(coord[0] - e.lngLat.lng, 2) + Math.pow(coord[1] - e.lngLat.lat, 2)
-						);
-						if (distance < minDistance) {
-							minDistance = distance;
-							closestPoint = coord as [number, number];
-						}
-					}
-
-					// 始点/終点の判定
-					if (closestPoint) {
-						const first = lineCoordinates[0];
-						const last = lineCoordinates[lineCoordinates.length - 1];
-
-						const isFirst = closestPoint[0] === first[0] && closestPoint[1] === first[1];
-						const isLast = closestPoint[0] === last[0] && closestPoint[1] === last[1];
-
-						let nodeId;
-
-						if (isFirst) {
-							// 始点
-							nodeId = feature.properties.source;
-						} else if (isLast) {
-							// 終点
-							nodeId = feature.properties.target;
-						} else {
-							// 中間点の場合は始点
-							nodeId = feature.properties.source;
-						}
-
-						// const bearing = turfBearing(turfPoint(first), turfPoint(last), { final: true });
-
-						// isExternalCameraUpdate = true;
-
-						// cameraBearing = bearing;
-
-						setStreetViewParams(nodeId);
-					}
-
-					return;
-				}
+				handleStreetViewLineClick(e);
+				return;
 			}
 
 			// 検索結果の地物クリック処理
-			const searchFeatures = mapStore.queryRenderedFeatures(e.point, {
-				layers: ['@search_result']
-			});
-
-			if (searchFeatures.length > 0) {
-				setSelectedHighlight(null);
-				const { properties } = searchFeatures[0];
-
-				const result = searchResults?.find((result) => result.id === properties.id);
-				if (result) focusFeature(result);
-
-				// mapStore.panTo(feature.geometry.coordinates as [number, number], {
-				// 	duration: 500
-				// });
-				// markerLngLat = new maplibregl.LngLat(...feature.geometry.coordinates);
-				// showMarker = true;
+			if (handleSearchResultClick(e)) {
 				return;
 			}
 
