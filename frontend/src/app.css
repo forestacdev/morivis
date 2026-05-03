@@ -152,8 +152,7 @@ body {
 }
 
 /* アニメーションを一時停止するクラス */
-html.is-map-moving .c-ripple-effect,
-html.is-map-moving .c-ripple-effect2,
+
 html.is-map-moving .c-poyopoyo,
 html.is-map-moving .marquee-track,
 html.is-map-moving .css-rotate {

@@ -361,11 +361,13 @@ const createMapStore = () => {
 					map.addImage('marker_png', image);
 				});
 			} else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {
+				// ハイライトパターンの画像を動的に生成して追加
 				if (map.hasImage(id)) return;
 				const image = createHighlightFillPatternImage(id);
 				if (!image || !map || map.hasImage(id)) return;
 				map.addImage(id, image);
 			} else {
+				// poiアイコンなどのその他の画像はhandleStyleImageMissingで処理
 				handleStyleImageMissing(e, map);
 			}
 		});

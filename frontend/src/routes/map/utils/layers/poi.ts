@@ -32,7 +32,7 @@ export const poiSources: Record<string, SourceSpecification> = {
 };
 export const poiLayers = [
 	{
-		id: 'fac_poi',
+		id: '@fac_poi',
 		'source-layer': 'fac_poi',
 		source: 'fac_poi',
 		type: 'symbol',
@@ -69,7 +69,7 @@ export const poiLayers = [
 		paint: {}
 	} as SymbolLayerSpecification,
 	{
-		id: 'poi_top',
+		id: '@poi_top',
 		type: 'symbol',
 		source: 'fac_top',
 		maxzoom: 12,

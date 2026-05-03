@@ -22,7 +22,7 @@
 		ResultAddressData
 	} from '../utils/data/search-result';
 
-	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
+	import { ICON_IMAGE_BASE_PATH, MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
@@ -30,8 +30,8 @@
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
+	import PoiMarker from '$routes/map/components/marker/_PoiMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
-	import PoiManager from '$routes/map/components/_PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
@@ -159,6 +159,24 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+
+	let selectedPoiMarkerData = $derived.by(() => {
+		if (!maplibreMap || !featureMenuData || featureMenuData.layerId !== '@fac_poi') {
+			return null;
+		}
+
+		const propId = featureMenuData.properties?._prop_id;
+		if (typeof propId !== 'string') return null;
+
+		return {
+			featureId: featureMenuData.featureId,
+			lngLat: new maplibregl.LngLat(featureMenuData.point[0], featureMenuData.point[1]),
+			properties: {
+				...featureMenuData.properties,
+				iconImage: `${ICON_IMAGE_BASE_PATH}/${propId}.webp`
+			}
+		};
+	});
 	// let mapPaneFilter = $derived(
 	// 	$mapPaneScale < 1
 	// 		? 'invert(1) contrast(1.2) brightness(1.1)'
@@ -803,16 +821,18 @@
 					? ''
 					: 'opacity-100'}"
 		>
-			<!-- {#if maplibreMap}
-				<PoiManager
-					map={maplibreMap}
-					bind:featureMenuData
-					{showDataEntry}
-					{showZoneForm}
-					{showGeoRefForm}
-					bind:showSelectionMarker
-				/>
-			{/if} -->
+			{#if maplibreMap && selectedPoiMarkerData}
+				{#key selectedPoiMarkerData.featureId}
+					<PoiMarker
+						map={maplibreMap}
+						lngLat={selectedPoiMarkerData.lngLat}
+						properties={selectedPoiMarkerData.properties}
+						featureId={selectedPoiMarkerData.featureId}
+						onClick={() => {}}
+						clickId={selectedPoiMarkerData.featureId}
+					/>
+				{/key}
+			{/if}
 		</div>
 		<!-- 地図コンテナオーバーレイ -->
 		<div

@@ -4,6 +4,7 @@
 
 	import { clickDebug } from './map-debug';
 
+	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
 	import type { FeatureMenuData } from '$routes/map/types';
@@ -56,13 +57,84 @@
 		contextMenuState = $bindable()
 	}: Props = $props();
 
-	const setSelectedHighlight = (selected: SelectedHighlightData | null) => {
-		selectedHighlightData.set(selected);
+	const resetDefaultHighlight = () => {
+		HighlightLayerRegistry.getFilterUpdates(null).forEach(({ layerId, filter }) => {
+			if (!mapStore.getLayer(layerId)) return;
+			mapStore.setFilter(layerId, filter);
+		});
+		HighlightLayerRegistry.syncPatternAnimation(mapStore.getMap(), null);
+	};
+
+	const resetFacPoiHighlight = () => {
+		const map = mapStore.getMap();
+		if (!map || !mapStore.getLayer('@fac_poi')) return;
+		map.setPaintProperty('@fac_poi', 'icon-opacity', 1);
+	};
+
+	const hideSelectedPoiSymbol = (featureId: string | number) => {
+		const map = mapStore.getMap();
+		if (!map || !mapStore.getLayer('@fac_poi')) return;
+		map.setPaintProperty('@fac_poi', 'icon-opacity', ['case', ['==', ['id'], featureId], 0, 1]);
+	};
+
+	const applyDefaultHighlight = (selected: SelectedHighlightData | null) => {
 		HighlightLayerRegistry.getFilterUpdates(selected).forEach(({ layerId, filter }) => {
 			if (!mapStore.getLayer(layerId)) return;
 			mapStore.setFilter(layerId, filter);
 		});
 		HighlightLayerRegistry.syncPatternAnimation(mapStore.getMap(), selected);
+	};
+
+	const applyFacPoiHighlight = (
+		selected: SelectedHighlightData,
+		feature: MapGeoJSONFeature,
+		point: [number, number]
+	) => {
+		selectedHighlightData.set(selected);
+		resetDefaultHighlight();
+
+		featureMenuData = {
+			layerId: '@fac_poi',
+			featureId: Number(selected.featureId),
+			properties:
+				feature.properties && typeof feature.properties._prop_id === 'string'
+					? {
+							...feature.properties,
+							iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
+						}
+					: (feature.properties ?? null),
+			point
+		};
+
+		hideSelectedPoiSymbol(selected.featureId);
+
+		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));
+	};
+
+	const setSelectedHighlight = (
+		selected: SelectedHighlightData | null,
+		options?: {
+			feature?: MapGeoJSONFeature;
+			point?: [number, number];
+		}
+	) => {
+		selectedHighlightData.set(selected);
+
+		if (!selected) {
+			resetFacPoiHighlight();
+			markerLngLat = null;
+			showMarker = false;
+			applyDefaultHighlight(null);
+			return;
+		}
+
+		if (selected.layerId === '@fac_poi' && options?.feature && options.point) {
+			applyFacPoiHighlight(selected, options.feature, options.point);
+			return;
+		}
+
+		resetFacPoiHighlight();
+		applyDefaultHighlight(selected);
 	};
 
 	// ラスターのクリックイベント
@@ -111,9 +183,12 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const clickLayerIds = [...$clickableVectorIds, '@search_result'].filter((layerId) => {
-				return !layerId.startsWith('@highlight_');
-			});
+			const clickLayerIds = [...$clickableVectorIds, '@fac_poi', '@search_result'].filter(
+				(layerId) => {
+					return !layerId.startsWith('@highlight_');
+				}
+			);
+
 			// 存在するレイヤーIDのみをフィルタリング
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
 				return mapStore.getLayer(layerId) !== undefined;
@@ -311,7 +386,13 @@
 							layerId: normalizedLayerId,
 							featureId: id
 						}
-					: null
+					: null,
+				feature && clickLngLat
+					? {
+							feature,
+							point: clickLngLat
+						}
+					: undefined
 			);
 		} catch (error) {
 			console.error('Error occurred while processing mouse events:', error);
@@ -394,7 +475,7 @@
 	// });
 
 	$effect(() => {
-		if (!featureMenuData || featureMenuData.layerId === 'fac_poi') {
+		if (!featureMenuData) {
 			setSelectedHighlight(null);
 		}
 	});
