@@ -77,42 +77,4 @@
 </div>
 
 <style>
-	.c-ripple-effect {
-		opacity: 0;
-		animation: ripple 1.5s linear infinite;
-	}
-
-	.c-scale-effect {
-		opacity: 0.9;
-		animation: scale-pulse 1.5s linear infinite;
-	}
-
-	@keyframes ripple {
-		0% {
-			scale: 1;
-			opacity: 0.8;
-		}
-
-		100% {
-			scale: 2;
-			opacity: 0;
-		}
-	}
-
-	@keyframes scale-pulse {
-		0% {
-			scale: 0.9;
-			opacity: 0.9;
-		}
-
-		50% {
-			scale: 1.05;
-			opacity: 1;
-		}
-
-		100% {
-			scale: 0.9;
-			opacity: 0.9;
-		}
-	}
 </style>
