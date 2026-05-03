@@ -63,7 +63,7 @@ import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
-import { handleStyleImageMissing } from '$routes/map/utils/icon';
+import { handleStyleImageMissing, isGeneratedPoiIconId } from '$routes/map/utils/icon';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -349,7 +349,6 @@ const createMapStore = () => {
 			if (!map) return;
 
 			const id = e.id;
-			console.log(`Style image missing: ${id}`);
 			if (id === 'poi_top') {
 				if (map.hasImage('poi_top')) return;
 				// 検索用のマーカーアイコンを追加
@@ -378,8 +377,8 @@ const createMapStore = () => {
 				const image = createHighlightFillPatternImage(id);
 				if (!image || !map || map.hasImage(id)) return;
 				map.addImage(id, image);
-			} else {
-				// poiアイコンなどのその他の画像はhandleStyleImageMissingで処理
+			} else if (isGeneratedPoiIconId(id)) {
+				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
 				handleStyleImageMissing(e, map);
 			}
 		});

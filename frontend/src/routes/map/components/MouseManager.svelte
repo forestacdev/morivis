@@ -10,6 +10,7 @@
 	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
+	import { isGeneratedPoiIconLayout } from '$routes/map/utils/icon';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
@@ -64,6 +65,7 @@
 	}: Props = $props();
 
 	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@fac_poi', '@poi_top', '@search_result'] as const;
+	let highlightedGeneratedPoiLayerId: string | null = $state(null);
 
 	const clearSearchHighlight = () => {
 		selectedSearchId = null;
@@ -127,16 +129,27 @@
 		HighlightLayerRegistry.syncPatternAnimation(mapStore.getMap(), null);
 	};
 
-	const resetFacPoiHighlight = () => {
+	const resetGeneratedPoiHighlight = () => {
 		const map = mapStore.getMap();
-		if (!map || !mapStore.getLayer('@fac_poi')) return;
-		map.setPaintProperty('@fac_poi', 'icon-opacity', 1);
+		if (!map || !highlightedGeneratedPoiLayerId) return;
+		if (!mapStore.getLayer(highlightedGeneratedPoiLayerId)) return;
+		map.setPaintProperty(highlightedGeneratedPoiLayerId, 'icon-opacity', 1);
+		highlightedGeneratedPoiLayerId = null;
 	};
 
-	const hideSelectedPoiSymbol = (featureId: string | number) => {
+	const hideSelectedGeneratedPoiSymbol = (layerId: string, featureId: string | number) => {
 		const map = mapStore.getMap();
-		if (!map || !mapStore.getLayer('@fac_poi')) return;
-		map.setPaintProperty('@fac_poi', 'icon-opacity', ['case', ['==', ['id'], featureId], 0, 1]);
+		if (!map || !mapStore.getLayer(layerId)) return;
+		highlightedGeneratedPoiLayerId = layerId;
+		map.setPaintProperty(layerId, 'icon-opacity', ['case', ['==', ['id'], featureId], 0, 1]);
+	};
+
+	const isGeneratedPoiIconFeature = (layerId: string) => {
+		const map = mapStore.getMap();
+		if (!map || !mapStore.getLayer(layerId)) return false;
+
+		const iconImage = map.getLayoutProperty(layerId, 'icon-image');
+		return isGeneratedPoiIconLayout(iconImage);
 	};
 
 	const applyDefaultHighlight = (selected: SelectedHighlightData | null) => {
@@ -154,9 +167,10 @@
 	) => {
 		selectedHighlightData.set(selected);
 		resetDefaultHighlight();
+		highlightedGeneratedPoiLayerId = selected.layerId;
 
 		featureMenuData = {
-			layerId: '@fac_poi',
+			layerId: selected.layerId,
 			featureId: Number(selected.featureId),
 			properties:
 				feature.properties && typeof feature.properties._prop_id === 'string'
@@ -196,19 +210,19 @@
 			if (highlightMarkerState?.type === 'poi') {
 				highlightMarkerState = null;
 			}
-			resetFacPoiHighlight();
+			resetGeneratedPoiHighlight();
 			markerLngLat = null;
 			showMarker = false;
 			applyDefaultHighlight(null);
 			return;
 		}
 
-		if (selected.layerId === '@fac_poi' && options?.feature && options.point) {
+		if (options?.feature && options.point && isGeneratedPoiIconFeature(selected.layerId)) {
 			applyFacPoiHighlight(selected, options.feature, options.point);
 			return;
 		}
 
-		resetFacPoiHighlight();
+		resetGeneratedPoiHighlight();
 		if (highlightMarkerState?.type === 'poi') {
 			highlightMarkerState = null;
 		}
@@ -524,12 +538,15 @@
 	// });
 
 	$effect(() => {
-		if (highlightMarkerState?.type === 'poi') {
-			hideSelectedPoiSymbol(highlightMarkerState.featureId);
+		if (highlightMarkerState?.type === 'poi' && highlightedGeneratedPoiLayerId) {
+			hideSelectedGeneratedPoiSymbol(
+				highlightedGeneratedPoiLayerId,
+				highlightMarkerState.featureId
+			);
 			return;
 		}
 
-		resetFacPoiHighlight();
+		resetGeneratedPoiHighlight();
 	});
 
 	$effect(() => {

@@ -1,5 +1,9 @@
 import type { SymbolLayerSpecification, SourceSpecification } from 'maplibre-gl';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+import {
+	GENERATED_POI_ICON_PREFIX,
+	GENERATED_POI_ICON_SEPARATOR
+} from '$routes/map/utils/icon';
 
 export const poiSources: Record<string, SourceSpecification> = {
 	fac_poi: {
@@ -38,7 +42,18 @@ export const poiLayers = [
 		type: 'symbol',
 		minzoom: 11,
 		layout: {
-			'icon-image': ['get', '_prop_id'],
+			'icon-image': [
+				'concat',
+				GENERATED_POI_ICON_PREFIX,
+				GENERATED_POI_ICON_SEPARATOR,
+				['get', '_prop_id'],
+				GENERATED_POI_ICON_SEPARATOR,
+				[
+					'coalesce',
+					['get', 'iconurl'],
+					['concat', ICON_IMAGE_BASE_PATH, '/', ['get', '_prop_id'], '.webp']
+				]
+			],
 			'icon-size': 0.5,
 			'icon-anchor': 'bottom', // アイコンのアンカー位置
 			// 'symbol-sort-key': [
