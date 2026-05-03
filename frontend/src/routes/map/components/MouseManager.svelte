@@ -181,11 +181,14 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const clickLayerIds = [...$clickableVectorIds, '@fac_poi', '@search_result'].filter(
-				(layerId) => {
-					return !layerId.startsWith('@highlight_');
-				}
-			);
+			const clickLayerIds = [
+				...$clickableVectorIds,
+				'@fac_poi',
+				'@poi_top',
+				'@search_result'
+			].filter((layerId) => {
+				return !layerId.startsWith('@highlight_');
+			});
 
 			// 存在するレイヤーIDのみをフィルタリング
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
@@ -244,6 +247,15 @@
 					}
 				})
 				.map((entry) => entry.id);
+
+			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ
+			if (selectedVecterLayersId.includes('@poi_top')) {
+				setSelectedHighlight(null);
+
+				mapStore.jumpToFac();
+				contextMenuState = null;
+				return;
+			}
 
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {

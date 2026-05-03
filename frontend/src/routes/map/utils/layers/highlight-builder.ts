@@ -291,11 +291,13 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 
 			if (style.type === 'fill' && style.extrusion && style.extrusion.show) {
 				const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
-				registerLayerFilterState({
-					logicalLayerId: layerId,
-					layer: fillExtrusionPatternLayer,
-					role: 'base'
-				});
+				if (fillExtrusionPatternLayer) {
+					registerLayerFilterState({
+						logicalLayerId: layerId,
+						layer: fillExtrusionPatternLayer,
+						role: 'base'
+					});
+				}
 			}
 
 			if (style.type === 'fill' && style.outline.show) {

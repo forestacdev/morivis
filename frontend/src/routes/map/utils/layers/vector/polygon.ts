@@ -127,9 +127,12 @@ export const createFillExtrusionLayer = (
 export const createFillExtrusionPatternLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
+): FillExtrusionLayerSpecification | undefined => {
 	const defaultStyle = style.default;
 	const patternExpression = getPatternExpression(style.colors);
+	if (!patternExpression) {
+		return undefined;
+	}
 	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
@@ -138,7 +141,7 @@ export const createFillExtrusionPatternLayer = (
 		paint: {
 			'fill-extrusion-height': height,
 			'fill-extrusion-opacity': style.opacity,
-			'fill-extrusion-pattern': patternExpression ? patternExpression : '#00000000',
+			'fill-extrusion-pattern': patternExpression,
 			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
 		},
 		layout: {

@@ -22,7 +22,11 @@
 		ResultAddressData
 	} from '../utils/data/search-result';
 
-	import { ICON_IMAGE_BASE_PATH, MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
+	import {
+		ICON_IMAGE_BASE_PATH,
+		MAP_FONT_DATA_PATH,
+		MAP_SPRITE_DATA_PATH
+	} from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
@@ -30,7 +34,7 @@
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
-	import PoiMarker from '$routes/map/components/marker/_PoiMarker.svelte';
+	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';

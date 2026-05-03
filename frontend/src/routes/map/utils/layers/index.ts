@@ -258,7 +258,9 @@ export const createLayersItems = (
 							fillExtrusionLayerItems.push(vectorLayer);
 							// ポリゴンの塗りつぶしパターン
 							const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
-							fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+							if (fillExtrusionPatternLayer) {
+								fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+							}
 						}
 
 						// ポリゴンのアウトライン
