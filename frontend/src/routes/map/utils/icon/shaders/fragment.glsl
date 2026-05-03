@@ -147,9 +147,9 @@ void main(void) {
     float shadowBlur = 0.04; // 影の広がり（大きいほど広くぼかす）
     float shadow = circleShadowMask(stForShape, center, radius, shadowBlur);
 
-    // 影色（少し暗いグレー）をアルファ付きでブレンド
+    // 影領域では元の色を混ぜず、影色を直接置く
     if (alpha == 0.0 && shadow > 0.0) {
-        color = mix(color, vec3(0.0), shadow * 9.9); // 影の濃さ：0.2
+        color = vec3(0.0);
         alpha = shadow * 0.2;
     }
 
