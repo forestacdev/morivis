@@ -39,8 +39,12 @@ const createProgram = (
 	return program;
 };
 
-const ICON_CANVAS_WIDTH = 60;
-const ICON_CANVAS_HEIGHT = 70;
+const ICON_BASE_WIDTH = 60;
+const ICON_ASPECT_RATIO = 70 / 60;
+const ICON_SCALE = 1.7;
+
+const ICON_CANVAS_WIDTH = Math.round(ICON_BASE_WIDTH * ICON_SCALE);
+const ICON_CANVAS_HEIGHT = Math.round(ICON_CANVAS_WIDTH * ICON_ASPECT_RATIO);
 
 const canvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
 const gl = canvas.getContext('webgl2');

@@ -39,7 +39,7 @@ export const poiLayers = [
 		minzoom: 11,
 		layout: {
 			'icon-image': ['get', '_prop_id'],
-			'icon-size': 1,
+			'icon-size': 0.5,
 			'icon-anchor': 'bottom', // アイコンのアンカー位置
 			// 'symbol-sort-key': [
 			// 	'case',
