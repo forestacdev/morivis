@@ -40,7 +40,8 @@ export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 export const MAP_SPRITE_DATA_PATH = DATA_PATH + '/sprite/sprite';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
-export const ICON_NO_IMAGE_PATH = DATA_PATH + '/images/icons/no_photo.webp';
+export const ICON_NO_IMAGE_PATH = '/assets/images/icons/no_photo.webp';
+export const USE_WEBGL_GENERATED_POI_ICONS = true;
 
 /** ハイライトさせるレイヤーの色 */
 export const HIGHLIGHT_LAYER_COLOR = '#00fff7';
@@ -122,4 +123,9 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
 /** 初期表示のレイヤーid */
-export const INT_ADD_LAYER_IDS = ['ensyurin_syouhan', 'national_forest_stand'];
+export const INT_ADD_LAYER_IDS = [
+	'ensyurin_syouhan',
+	'national_forest_stand',
+	'national_forest_road',
+	'disaster_lore_all'
+];

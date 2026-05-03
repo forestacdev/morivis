@@ -1,107 +1,135 @@
-import vertexShaderSource from './shaders/vertex.glsl?raw';
-import fragmentShaderSource from './shaders/fragment.glsl?raw';
-
-// シェーダーをコンパイルしてプログラムをリンク
-const createShader = (
-	gl: WebGLRenderingContext,
-	type: number,
-	source: string
-): WebGLShader | null => {
-	const shader = gl.createShader(type);
-	if (!shader) return null;
-
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error('Shader compilation failed:', gl.getShaderInfoLog(shader));
-		gl.deleteShader(shader);
-		return null;
-	}
-	return shader;
-};
-
-const createProgram = (
-	gl: WebGLRenderingContext,
-	vertexShader: WebGLShader,
-	fragmentShader: WebGLShader
-): WebGLProgram | null => {
-	const program = gl.createProgram();
-	if (!program) return null;
-
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		console.error('Program linking failed:', gl.getProgramInfoLog(program));
-		gl.deleteProgram(program);
-		return null;
-	}
-	return program;
-};
-
 const ICON_BASE_WIDTH = 60;
 const ICON_ASPECT_RATIO = 70 / 60;
 const ICON_SCALE = 1.7;
 
 const ICON_CANVAS_WIDTH = Math.round(ICON_BASE_WIDTH * ICON_SCALE);
 const ICON_CANVAS_HEIGHT = Math.round(ICON_CANVAS_WIDTH * ICON_ASPECT_RATIO);
+const PHOTO_RADIUS = 40;
+const PHOTO_CENTER_X = ICON_CANVAS_WIDTH / 2;
+const PHOTO_CENTER_Y = 44;
 
-const canvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
-const gl = canvas.getContext('webgl2');
+const iconCanvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
+const context = iconCanvas.getContext('2d');
+
+let frameImagePromise: Promise<ImageBitmap> | null = null;
+
+const createFrameImage = async () => {
+	const frameCanvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
+	const frameContext = frameCanvas.getContext('2d');
+
+	if (!frameContext) {
+		throw new Error('Failed to create frame canvas context');
+	}
+
+	frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
+
+	// drop shadow
+	frameContext.save();
+	frameContext.fillStyle = '#ffffff';
+	frameContext.shadowColor = 'rgba(0, 0, 0, 0.18)';
+	frameContext.shadowBlur = 8;
+	frameContext.shadowOffsetY = 4;
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS + 2, 0, Math.PI * 2);
+	frameContext.fill();
+	frameContext.beginPath();
+	frameContext.moveTo(PHOTO_CENTER_X, 95);
+	frameContext.lineTo(PHOTO_CENTER_X - 24, 72);
+	frameContext.lineTo(PHOTO_CENTER_X + 24, 72);
+	frameContext.closePath();
+	frameContext.fill();
+	frameContext.restore();
+
+	// white pin frame
+	frameContext.fillStyle = '#ffffff';
+	frameContext.beginPath();
+	frameContext.moveTo(PHOTO_CENTER_X, 95);
+	frameContext.lineTo(PHOTO_CENTER_X - 24, 72);
+	frameContext.lineTo(PHOTO_CENTER_X + 24, 72);
+	frameContext.closePath();
+	frameContext.fill();
+
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS + 2, 0, Math.PI * 2);
+	frameContext.fill();
+
+	frameContext.save();
+	frameContext.globalCompositeOperation = 'destination-out';
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS - 1, 0, Math.PI * 2);
+	frameContext.fill();
+	frameContext.restore();
+
+	// circle border
+	frameContext.strokeStyle = '#ffffff';
+	frameContext.lineWidth = 4;
+	frameContext.beginPath();
+	frameContext.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS + 1, 0, Math.PI * 2);
+	frameContext.stroke();
+
+	return await createImageBitmap(frameCanvas);
+};
+
+const loadFrameImage = async () => {
+	if (!frameImagePromise) {
+		frameImagePromise = createFrameImage();
+	}
+
+	return frameImagePromise;
+};
+
+const drawCoverImage = (image: ImageBitmap) => {
+	const sourceAspect = image.width / image.height;
+	const targetDiameter = PHOTO_RADIUS * 2;
+	const targetAspect = 1;
+
+	let sourceWidth = image.width;
+	let sourceHeight = image.height;
+	let sourceX = 0;
+	let sourceY = 0;
+
+	if (sourceAspect > targetAspect) {
+		sourceWidth = image.height * targetAspect;
+		sourceX = (image.width - sourceWidth) / 2;
+	} else {
+		sourceHeight = image.width / targetAspect;
+		sourceY = (image.height - sourceHeight) / 2;
+	}
+
+	context?.drawImage(
+		image,
+		sourceX,
+		sourceY,
+		sourceWidth,
+		sourceHeight,
+		PHOTO_CENTER_X - PHOTO_RADIUS,
+		PHOTO_CENTER_Y - PHOTO_RADIUS,
+		targetDiameter,
+		targetDiameter
+	);
+};
 
 self.onmessage = async (e) => {
 	const { id, image } = e.data;
 	try {
-		if (!gl) {
-			console.error('WebGL not supported');
-			return new ImageBitmap();
+		if (!context) {
+			console.error('Canvas 2D not supported');
+			return;
 		}
 
-		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-		const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-		if (!vertexShader || !fragmentShader) return new ImageBitmap();
+		const frameImage = await loadFrameImage();
 
-		const program = createProgram(gl, vertexShader, fragmentShader);
-		if (!program) return new ImageBitmap();
+			context.clearRect(0, 0, iconCanvas.width, iconCanvas.height);
+		context.save();
+		context.beginPath();
+		context.arc(PHOTO_CENTER_X, PHOTO_CENTER_Y, PHOTO_RADIUS, 0, Math.PI * 2);
+		context.closePath();
+		context.clip();
+		drawCoverImage(image);
+		context.restore();
+			context.drawImage(frameImage, 0, 0, iconCanvas.width, iconCanvas.height);
 
-		gl.useProgram(program);
-
-		const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-		const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-
-		const imageResolutionUniformLocation = gl.getUniformLocation(program, 'u_imageResolution');
-		gl.uniform2f(imageResolutionUniformLocation, image.width, image.height);
-
-		const positionBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]),
-			gl.STATIC_DRAW
-		);
-
-		gl.enableVertexAttribArray(positionAttributeLocation);
-		gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-		gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
-
-		// テクスチャの作成と読み込み
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-
-		// テクスチャのパラメータ設定
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		// gl.generateMipmap(gl.TEXTURE_2D);
-
-		gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-		self.postMessage({ id, imageBitmap: canvas.transferToImageBitmap() });
+			self.postMessage({ id, imageBitmap: iconCanvas.transferToImageBitmap() });
 	} catch (e) {
 		console.error(e);
 	}

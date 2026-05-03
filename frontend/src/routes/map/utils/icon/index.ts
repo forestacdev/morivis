@@ -6,7 +6,11 @@ import type {
 	MapGeoJSONFeature,
 	ExpressionSpecification
 } from 'maplibre-gl';
-import { ICON_IMAGE_BASE_PATH, ICON_NO_IMAGE_PATH } from '$routes/constants';
+import {
+	ICON_IMAGE_BASE_PATH,
+	ICON_NO_IMAGE_PATH,
+	USE_WEBGL_GENERATED_POI_ICONS
+} from '$routes/constants';
 import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
@@ -24,8 +28,13 @@ export const buildGeneratedPoiIconExpression = (
 	icons: ImageIconsStyle
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
 	const { imageIdKey, imageOption, fallbackUrlExpression } = icons;
-	const fallbackUrl =
-		fallbackUrlExpression ?? ['concat', ICON_IMAGE_BASE_PATH, '/', ['get', imageIdKey], '.webp'];
+	const fallbackUrl = fallbackUrlExpression ?? [
+		'concat',
+		ICON_IMAGE_BASE_PATH,
+		'/',
+		['get', imageIdKey],
+		'.webp'
+	];
 	const imageUrlExpression = (() => {
 		if (!imageOption) return fallbackUrl;
 		if (imageOption.type === 'relative') {
@@ -112,8 +121,7 @@ export const resolveGeneratedPoiIconUrl = (
 				? `${icons.imageOption.baseUrl}${String(rawImageUrl)}${icons.imageOption.suffix ?? ''}`
 				: String(rawImageUrl)
 			: null;
-	const imageUrl =
-		resolvedImageUrl ?? `${ICON_IMAGE_BASE_PATH}/${imageId}.webp`;
+	const imageUrl = resolvedImageUrl ?? `${ICON_IMAGE_BASE_PATH}/${imageId}.webp`;
 
 	return imageUrl;
 };
@@ -138,6 +146,14 @@ iconWorker.onerror = (error) => {
 	console.error('Worker error:', error);
 };
 
+const addImageToMap = (id: string, imageBitmap: ImageBitmap) => {
+	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
+
+	mapLibreMap.addImage(id, imageBitmap, {
+		pixelRatio: 1
+	});
+};
+
 const loadImage = async (src: string): Promise<ImageBitmap> => {
 	const requestUrl = import.meta.env.PROD ? src : devProxyTransform(src).url;
 	const response = await fetch(requestUrl);
@@ -152,7 +168,12 @@ const addDummyPhotoIcon = async (id: string) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
 	const image = await loadImage(ICON_NO_IMAGE_PATH);
-	iconWorker.postMessage({ id, image });
+	if (USE_WEBGL_GENERATED_POI_ICONS) {
+		iconWorker.postMessage({ id, image });
+		return;
+	}
+
+	addImageToMap(id, image);
 };
 
 export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
@@ -182,7 +203,12 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 		}
 		const image = await loadImage(imageUrl);
 
-		iconWorker.postMessage({ id, image });
+		if (USE_WEBGL_GENERATED_POI_ICONS) {
+			iconWorker.postMessage({ id, image });
+			return;
+		}
+
+		addImageToMap(id, image);
 	} catch (error) {
 		await addDummyPhotoIcon(id);
 		console.error(`Error processing image for id ${id}:`, error);
