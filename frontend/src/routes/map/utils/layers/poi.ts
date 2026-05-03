@@ -75,8 +75,8 @@ export const poiLayers = [
 		maxzoom: 12,
 		minzoom: 4,
 		layout: {
-			'icon-image': 'poi-icon',
-			'icon-size': 3
+			'icon-image': 'poi_top',
+			'icon-size': 0.8
 		}
 	} as SymbolLayerSpecification
 ];

@@ -12,12 +12,12 @@ const iconWorker = new Worker(new URL('./generation_icon.worker.ts', import.meta
 iconWorker.onmessage = async (e) => {
 	const { imageBitmap, id } = e.data;
 
-		if (mapLibreMap && !mapLibreMap.hasImage(id)) {
-			mapLibreMap.addImage(id, imageBitmap, {
-				pixelRatio: 1
-			});
-		}
-	};
+	if (mapLibreMap && !mapLibreMap.hasImage(id)) {
+		mapLibreMap.addImage(id, imageBitmap, {
+			pixelRatio: 1
+		});
+	}
+};
 
 // Added error handling
 iconWorker.onerror = (error) => {
@@ -33,10 +33,7 @@ const loadImage = async (src: string): Promise<ImageBitmap> => {
 	return await createImageBitmap(blob);
 };
 
-// TODO: 使用していない
 export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
-	console.log('Handling style image missing for id:', e.id);
-
 	if (!map) return;
 	mapLibreMap = map;
 	const id = e.id;

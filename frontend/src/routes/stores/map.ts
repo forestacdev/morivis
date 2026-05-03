@@ -33,6 +33,7 @@ import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
+import poiTopIcon from '$lib/icons/poi_top.png';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 import {
 	createHighlightFillPatternImage,
@@ -348,8 +349,19 @@ const createMapStore = () => {
 			if (!map) return;
 
 			const id = e.id;
-
-			if (id === 'marker_png') {
+			console.log(`Style image missing: ${id}`);
+			if (id === 'poi_top') {
+				if (map.hasImage('poi_top')) return;
+				// 検索用のマーカーアイコンを追加
+				fetch(poiTopIcon).then(async (response) => {
+					if (!response.ok) {
+						throw new Error(`Failed to fetch image: ${response.statusText}`);
+					}
+					const image = await createImageBitmap(await response.blob());
+					if (!map || map.hasImage('poi_top')) return;
+					map.addImage('poi_top', image);
+				});
+			} else if (id === 'marker_png') {
 				if (map.hasImage('marker_png')) return;
 				// 検索用のマーカーアイコンを追加
 				fetch(markerPngIcon).then(async (response) => {

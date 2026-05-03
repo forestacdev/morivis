@@ -106,8 +106,6 @@
 			point
 		};
 
-		hideSelectedPoiSymbol(selected.featureId);
-
 		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));
 	};
 
@@ -473,6 +471,15 @@
 	// 		map.on('mouseleave', layerId, mouseLeaveListener);
 	// 	});
 	// });
+
+	$effect(() => {
+		if (featureMenuData?.layerId === '@fac_poi') {
+			hideSelectedPoiSymbol(featureMenuData.featureId);
+			return;
+		}
+
+		resetFacPoiHighlight();
+	});
 
 	$effect(() => {
 		if (!featureMenuData) {
