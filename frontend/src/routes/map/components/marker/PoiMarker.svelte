@@ -197,7 +197,7 @@
 
 <div
 	bind:this={nameContainer}
-	class="items-top pointer-events-none relative z-10 flex w-[200px] -translate-y-5.5 justify-center"
+	class="items-top pointer-events-none absolute relative z-10 flex w-[200px] -translate-y-7.5 justify-center"
 >
 	{#if isReady}
 		<div

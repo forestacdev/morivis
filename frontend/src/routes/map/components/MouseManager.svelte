@@ -57,6 +57,14 @@
 		contextMenuState = $bindable()
 	}: Props = $props();
 
+	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@fac_poi', '@poi_top', '@search_result'] as const;
+
+	const getClickableTargetLayerIds = () => {
+		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS].filter((layerId) => {
+			return !layerId.startsWith('@highlight_');
+		});
+	};
+
 	const resetDefaultHighlight = () => {
 		HighlightLayerRegistry.getFilterUpdates(null).forEach(({ layerId, filter }) => {
 			if (!mapStore.getLayer(layerId)) return;
@@ -181,14 +189,7 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const clickLayerIds = [
-				...$clickableVectorIds,
-				'@fac_poi',
-				'@poi_top',
-				'@search_result'
-			].filter((layerId) => {
-				return !layerId.startsWith('@highlight_');
-			});
+			const clickLayerIds = getClickableTargetLayerIds();
 
 			// 存在するレイヤーIDのみをフィルタリング
 			const existingLayerIds = clickLayerIds.filter((layerId) => {
@@ -441,7 +442,7 @@
 	mapStore.onMousemove((e) => {
 		if (isDragging) return;
 
-		const clickLayerIds = [...$clickableVectorIds];
+		const clickLayerIds = getClickableTargetLayerIds();
 		const existingLayerIds = clickLayerIds.filter((layerId) => {
 			return mapStore.getLayer(layerId) !== undefined;
 		});
