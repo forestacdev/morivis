@@ -41,7 +41,7 @@ export const MAP_SPRITE_DATA_PATH = DATA_PATH + '/sprite/sprite';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
 export const ICON_NO_IMAGE_PATH = '/assets/images/icons/no_photo.webp';
-export const USE_WEBGL_GENERATED_POI_ICONS = true;
+export const USE_WORKER_GENERATED_POI_ICONS = true;
 
 /** ハイライトさせるレイヤーの色 */
 export const HIGHLIGHT_LAYER_COLOR = '#00fff7';

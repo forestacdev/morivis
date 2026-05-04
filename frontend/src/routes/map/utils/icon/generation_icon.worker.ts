@@ -21,6 +21,16 @@ const context = iconCanvas.getContext('2d');
 
 let frameImagePromise: Promise<ImageBitmap> | null = null;
 
+type WarmupWorkerMessage = {
+	type: 'warmup';
+};
+
+type RenderWorkerMessage = {
+	type: 'render';
+	id: string;
+	image: ImageBitmap;
+};
+
 const createFrameImage = async () => {
 	const frameCanvas = new OffscreenCanvas(ICON_CANVAS_WIDTH, ICON_CANVAS_HEIGHT);
 	const frameContext = frameCanvas.getContext('2d');
@@ -91,7 +101,10 @@ const createFrameImage = async () => {
 
 const loadFrameImage = async () => {
 	if (!frameImagePromise) {
-		frameImagePromise = createFrameImage();
+		frameImagePromise = createFrameImage().catch((error) => {
+			frameImagePromise = null;
+			throw error;
+		});
 	}
 
 	return frameImagePromise;
@@ -128,14 +141,20 @@ const drawCoverImage = (image: ImageBitmap) => {
 	);
 };
 
-self.onmessage = async (e) => {
-	const { id, image } = e.data;
+self.onmessage = async (e: MessageEvent<WarmupWorkerMessage | RenderWorkerMessage>) => {
 	try {
 		if (!context) {
 			console.error('Canvas 2D not supported');
 			return;
 		}
 
+		if (e.data.type === 'warmup') {
+			await loadFrameImage();
+			self.postMessage({ type: 'warmup-complete' });
+			return;
+		}
+
+		const { id, image } = e.data;
 		const frameImage = await loadFrameImage();
 
 		context.clearRect(0, 0, iconCanvas.width, iconCanvas.height);
@@ -148,8 +167,16 @@ self.onmessage = async (e) => {
 		context.restore();
 		context.drawImage(frameImage, 0, 0, iconCanvas.width, iconCanvas.height);
 
-		self.postMessage({ id, imageBitmap: iconCanvas.transferToImageBitmap() });
-	} catch (e) {
-		console.error(e);
+		const imageBitmap = iconCanvas.transferToImageBitmap();
+		self.postMessage({ type: 'render-complete', id, imageBitmap }, { transfer: [imageBitmap] });
+	} catch (error) {
+		console.error(error);
+		if (e.data.type === 'warmup') {
+			self.postMessage({
+				type: 'warmup-error',
+				error: error instanceof Error ? error.message : String(error)
+			});
+			return;
+		}
 	}
 };

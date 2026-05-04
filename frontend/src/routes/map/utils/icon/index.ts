@@ -9,7 +9,7 @@ import type {
 import {
 	ICON_IMAGE_BASE_PATH,
 	ICON_NO_IMAGE_PATH,
-	USE_WEBGL_GENERATED_POI_ICONS
+	USE_WORKER_GENERATED_POI_ICONS
 } from '$routes/constants';
 import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
 import type {
@@ -162,8 +162,32 @@ const iconWorker = new Worker(new URL('./generation_icon.worker.ts', import.meta
 	type: 'module'
 });
 
-// Define message handler once
+let iconWorkerWarmupPromise: Promise<void> | null = null;
+let resolveIconWorkerWarmup: (() => void) | null = null;
+let rejectIconWorkerWarmup: ((error: Error) => void) | null = null;
+
 iconWorker.onmessage = async (e) => {
+	const { type } = e.data;
+
+	if (type === 'warmup-complete') {
+		resolveIconWorkerWarmup?.();
+		resolveIconWorkerWarmup = null;
+		rejectIconWorkerWarmup = null;
+		return;
+	}
+
+	if (type === 'warmup-error') {
+		rejectIconWorkerWarmup?.(new Error(e.data.error));
+		iconWorkerWarmupPromise = null;
+		resolveIconWorkerWarmup = null;
+		rejectIconWorkerWarmup = null;
+		return;
+	}
+
+	if (type !== 'render-complete') {
+		return;
+	}
+
 	const { imageBitmap, id } = e.data;
 
 	if (mapLibreMap && !mapLibreMap.hasImage(id)) {
@@ -176,6 +200,26 @@ iconWorker.onmessage = async (e) => {
 // Added error handling
 iconWorker.onerror = (error) => {
 	console.error('Worker error:', error);
+	if (rejectIconWorkerWarmup) {
+		rejectIconWorkerWarmup(new Error('Generated POI icon worker warmup failed'));
+		iconWorkerWarmupPromise = null;
+		resolveIconWorkerWarmup = null;
+		rejectIconWorkerWarmup = null;
+	}
+};
+
+export const warmupGeneratedPoiIconWorker = async () => {
+	if (!USE_WORKER_GENERATED_POI_ICONS) return;
+
+	if (!iconWorkerWarmupPromise) {
+		iconWorkerWarmupPromise = new Promise<void>((resolve, reject) => {
+			resolveIconWorkerWarmup = resolve;
+			rejectIconWorkerWarmup = reject;
+			iconWorker.postMessage({ type: 'warmup' });
+		});
+	}
+
+	await iconWorkerWarmupPromise;
 };
 
 const addImageToMap = (id: string, imageBitmap: ImageBitmap) => {
@@ -200,8 +244,8 @@ const addDummyPhotoIcon = async (id: string) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
 	const image = await loadImage(ICON_NO_IMAGE_PATH);
-	if (USE_WEBGL_GENERATED_POI_ICONS) {
-		iconWorker.postMessage({ id, image });
+	if (USE_WORKER_GENERATED_POI_ICONS) {
+		iconWorker.postMessage({ type: 'render', id, image }, { transfer: [image] });
 		return;
 	}
 
@@ -235,8 +279,8 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 		}
 		const image = await loadImage(imageUrl);
 
-		if (USE_WEBGL_GENERATED_POI_ICONS) {
-			iconWorker.postMessage({ id, image });
+		if (USE_WORKER_GENERATED_POI_ICONS) {
+			iconWorker.postMessage({ type: 'render', id, image }, { transfer: [image] });
 			return;
 		}
 

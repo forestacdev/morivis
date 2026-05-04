@@ -59,7 +59,11 @@ import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
-import { handleStyleImageMissing, isGeneratedPoiIconId } from '$routes/map/utils/icon';
+import {
+	handleStyleImageMissing,
+	isGeneratedPoiIconId,
+	warmupGeneratedPoiIconWorker
+} from '$routes/map/utils/icon';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -278,8 +282,10 @@ const createMapStore = () => {
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
 	const onTerrainEvent = writable<MapLibreEvent | null>(null);
 
-	const init = (mapContainer: HTMLElement) => {
+	const init = async (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
+
+		await warmupGeneratedPoiIconWorker();
 
 		// deckOverlay を再作成（ページ遷移後に再初期化するため）
 		deckOverlay = new MapboxOverlay({
