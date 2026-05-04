@@ -159,19 +159,188 @@
 		}
 	};
 
+	const POINT_SHAPES = [
+		'asterisk',
+		'circle',
+		'hexagon',
+		'octagon',
+		'oval-h',
+		'oval-v',
+		'parallelogram',
+		'pentagon',
+		'rectangle-h',
+		'rectangle-v',
+		'rhombus',
+		'semicircle-bottom',
+		'semicircle-top',
+		'square',
+		'squiggle',
+		'star',
+		'starburst',
+		'trapezoid',
+		'triangle-down',
+		'triangle-up'
+	] as const;
+
+	const POINT_COLORS = [
+		'blue',
+		'brown',
+		'green',
+		'grey',
+		'orange',
+		'pink',
+		'purple',
+		'red',
+		'slime',
+		'teal'
+	] as const;
+
+	type PointColor = (typeof POINT_COLORS)[number];
+
+	const POINT_COLOR_HEX_MAP: Record<PointColor, string> = {
+		blue: '#3b82f6',
+		brown: '#8b5e3c',
+		green: '#22c55e',
+		grey: '#6b7280',
+		orange: '#f97316',
+		pink: '#ec4899',
+		purple: '#a855f7',
+		red: '#ef4444',
+		slime: '#84cc16',
+		teal: '#14b8a6'
+	};
+
+	/** 国土地理院 地図記号アイコン */
+	const GSI_ICONS = [
+		'交番',
+		'保健所',
+		'博物館法の登録博物館・博物館相当施設',
+		'図書館',
+		'外国公館',
+		'官公署',
+		'寺院',
+		'小学校',
+		'中学校',
+		'高等学校・中等教育学校',
+		'市役所・東京都の区役所',
+		'町村役場・政令指定都市の区役所',
+		'消防署',
+		'警察署',
+		'郵便局',
+		'病院',
+		'老人ホーム',
+		'裁判所',
+		'税務署',
+		'神社',
+		'城跡',
+		'史跡・名勝・天然記念物',
+		'自然災害伝承碑',
+		'記念碑',
+		'温泉',
+		'噴火口・噴気口',
+		'灯台',
+		'墓地',
+		'煙突',
+		'電波塔',
+		'風車',
+		'油井・ガス井',
+		'工場',
+		'発電所等',
+		'採鉱地',
+		'港湾',
+		'漁港',
+		'滝',
+		'三角点',
+		'水準点',
+		'電子基準点',
+		'標高点（測点）',
+		'特別標高点',
+		'指示点',
+		'田',
+		'畑',
+		'果樹園',
+		'茶畑',
+		'広葉樹林',
+		'針葉樹林',
+		'竹林',
+		'ヤシ科樹林',
+		'ハイマツ地',
+		'笹地',
+		'荒地',
+		'砂礫地（領域が不明瞭な場合）',
+		'植生界',
+		'流水方向'
+	] as const;
+
+	/**
+	 * スプライト画像データからdata URL PNGを生成する（単体アイコン用）
+	 */
+	const createIconImage = (imageData: StyleImage): string | null => {
+		try {
+			const { width, height, data } = imageData.data;
+
+			if (!width || !height || !data) return null;
+			const canvas = document.createElement('canvas');
+			canvas.width = width;
+			canvas.height = height;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) return null;
+			const arr = new Uint8ClampedArray(width * height * 4);
+			for (let i = 0; i < arr.length; i++) arr[i] = data[i] || 0;
+			ctx.putImageData(new ImageData(arr, width, height), 0, 0);
+			return canvas.toDataURL('image/png');
+		} catch {
+			return null;
+		}
+	};
+
 	let imageSrc = $derived.by(() => {
 		if (!pattern) return null;
 		const image = mapStore.getImage(pattern);
 		if (!image) return null;
-		return createTiledPatternImage(image);
+		if (layerType === 'fill') {
+			// 塗りつぶしパターンはタイル状に配置して表示
+			return createTiledPatternImage(image);
+		} else {
+			// ラインやポイントのパターンは単体で表示
+			return createIconImage(image);
+		}
 	});
 
-	// let showColorPallet = $state<boolean>(false);
-	let showColorPallet = $state<boolean>(label === 'スギ');
+	let showColorPallet = $state<boolean>(false);
 
 	let containerRef = $state<HTMLElement>();
 
 	let selectedType = $state<'color' | 'pattern'>('color');
+	let selectedPointColor = $state<PointColor>('blue');
+
+	const resolveClosestPointColor = (color: string): PointColor => {
+		try {
+			if (!color || color === 'transparent') return 'blue';
+
+			const targetColor = chroma(color);
+			let closestColor: PointColor = 'blue';
+			let closestDistance = Number.POSITIVE_INFINITY;
+
+			for (const pointColor of POINT_COLORS) {
+				const candidateColor = chroma(POINT_COLOR_HEX_MAP[pointColor]);
+				const distance = chroma.distance(targetColor, candidateColor, 'lab');
+
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					closestColor = pointColor;
+				}
+			}
+
+			return closestColor;
+		} catch {
+			return 'blue';
+		}
+	};
+
+	let filteredPointPatterns = $derived.by(() => {
+		return POINT_SHAPES.map((shape) => `tmpoint-${shape}-${selectedPointColor}` as SpritePatternId);
+	});
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -187,6 +356,10 @@
 		return () => {
 			document.removeEventListener('click', handleClickOutside);
 		};
+	});
+
+	$effect(() => {
+		selectedPointColor = resolveClosestPointColor(value);
 	});
 </script>
 
@@ -283,14 +456,51 @@
 					</div>
 				{:else if selectedType === 'pattern'}
 					<div class="relative flex flex-col gap-3">
-						<div class="grid grid-cols-8 gap-2">
-							{#each patternBlackList as _pattern}
-								{@render patternButton(_pattern)}
-							{/each}
-							{#each patternWhiteList as _pattern}
-								{@render patternButton(_pattern)}
-							{/each}
-						</div>
+						{#if layerType === 'fill'}
+							<div class="grid grid-cols-8 gap-2">
+								{#each patternBlackList as _pattern}
+									{@render patternButton(_pattern)}
+								{/each}
+								{#each patternWhiteList as _pattern}
+									{@render patternButton(_pattern)}
+								{/each}
+							</div>
+						{:else if layerType === 'line' || layerType === 'circle'}
+							<div class="flex flex-wrap gap-2">
+								{#each POINT_COLORS as color}
+									<button
+										class="h-7 w-7 cursor-pointer rounded-full border-2 transition {selectedPointColor ===
+										color
+											? 'border-accent scale-110'
+											: 'border-transparent'}"
+										style="background-color: {POINT_COLOR_HEX_MAP[color]}"
+										onclick={() => {
+											selectedPointColor = color;
+										}}
+										aria-label={`${color} のアイコンを表示`}
+									></button>
+								{/each}
+							</div>
+							<div class="grid grid-cols-10 gap-1">
+								{#each filteredPointPatterns as _pattern}
+									{@const img = mapStore.getImage(_pattern)}
+									<button
+										class="grid h-7 w-7 cursor-pointer place-items-center rounded-full {pattern ===
+										_pattern
+											? 'ring-accent ring-2'
+											: ''}"
+										onclick={() => {
+											pattern = _pattern;
+											showColorPallet = false;
+										}}
+									>
+										{#if img}
+											<img src={createIconImage(img)} alt={_pattern} class="h-5 w-5" />
+										{/if}
+									</button>
+								{/each}
+							</div>
+						{/if}
 						<div class="flex w-full items-center justify-center">
 							<button
 								class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
