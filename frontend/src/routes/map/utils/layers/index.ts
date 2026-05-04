@@ -300,6 +300,7 @@ export const createLayersItems = (
 							const pointIconLayer = createPointIconLayer(layer, style);
 							if (pointIconLayer) {
 								circleLayerItems.push(pointIconLayer);
+								clickableVecter.push(pointIconLayer.id); // アイコンレイヤーもクリック可能にする
 							}
 						}
 					}

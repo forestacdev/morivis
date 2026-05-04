@@ -54,7 +54,6 @@ export const createCircleLayer = (
 };
 
 // ポイントのicon用レイヤーの作成
-
 export const createPointIconLayer = (
 	layer: LayerItem,
 	style: PointStyle
@@ -111,10 +110,10 @@ export const createPointImageIconLayer = (
 
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-		id: createSublayerId(layer.id, 'point_image'),
+		id: layer.id, // NOTE: ハイライト表示のため、元のレイヤーIDを使用
 		metadata: createMorivisLayerMetadata(
 			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
-			'point_image',
+			'base',
 			layer.metadata
 		),
 		type: 'symbol',
