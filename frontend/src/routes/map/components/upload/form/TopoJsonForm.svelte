@@ -42,8 +42,7 @@
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
 		Point: 'ポイント',
 		LineString: 'ライン',
-		Polygon: 'ポリゴン',
-		Label: 'ラベル'
+		Polygon: 'ポリゴン'
 	};
 
 	let rawGeojson: FeatureCollection | null = null;

@@ -81,8 +81,7 @@ export const groupPropertyByGeometryType = (
 	const result: Record<VectorEntryGeometryType, Set<string>> = {
 		Point: new Set(),
 		LineString: new Set(),
-		Polygon: new Set(),
-		Label: new Set()
+		Polygon: new Set()
 	};
 	for (const feature of data.features) {
 		if (!feature.geometry) continue;
@@ -96,8 +95,7 @@ export const groupPropertyByGeometryType = (
 	return {
 		Point: Array.from(result.Point),
 		LineString: Array.from(result.LineString),
-		Polygon: Array.from(result.Polygon),
-		Label: Array.from(result.Label)
+		Polygon: Array.from(result.Polygon)
 	};
 };
 
