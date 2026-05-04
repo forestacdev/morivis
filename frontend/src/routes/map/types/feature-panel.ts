@@ -15,7 +15,7 @@ export type FeaturePanelData =
 export interface FeatureMenuData {
 	point: [number, number];
 	properties: FeatureProp | null;
-	featureId: number;
+	featureId: string | number;
 	layerId: string;
 }
 

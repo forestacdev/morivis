@@ -9,11 +9,11 @@
 
 	interface Props {
 		map: maplibregl.Map;
-		featureId: number;
+		featureId: string | number;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
-		clickId: number | null; // クリックされたPOIのID
-		onClick: (featureId: number) => void;
+		clickId: string | number | null; // クリックされたPOIのID
+		onClick: (featureId: string | number) => void;
 	}
 
 	let { lngLat = $bindable(), map, properties, featureId, onClick, clickId }: Props = $props();

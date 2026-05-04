@@ -148,12 +148,12 @@ export const SUPPORTED_FILE_ACCEPT = [
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;
 	feature: MapGeoJSONFeature;
-	featureId: number;
+	featureId: string | number;
 }
 
 export interface PoiHighlightMarkerState {
 	type: 'poi';
-	featureId: number;
+	featureId: string | number;
 	point: [number, number];
 	properties: { [key: string]: any };
 	iconImage?: string | null;

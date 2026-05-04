@@ -177,19 +177,27 @@
 		layerId: string,
 		feature: MapGeoJSONFeature
 	): { [key: string]: any } => {
+		// POIトップアイコンは、プロパティに_fac_idがあればそれをもとにアイコンURLを解決する
+		if (layerId === '@fac_poi') {
+			return {
+				...feature.properties,
+				iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
+			};
+		}
+
+		// カスタムレイヤーのポイントアイコンは、レイヤー定義からアイコンURLを解決する
 		const pointLayerEntry = getPointLayerEntry(layerId);
-		const propertyImage = pointLayerEntry
+		const generatedIconImage = pointLayerEntry
+			? resolveGeneratedPoiIconUrl(
+					feature.properties,
+					pointLayerEntry.style.icons,
+					pointLayerEntry.properties.images?.icon
+				)
+			: null;
+		const popupImage = pointLayerEntry
 			? resolvePopupImageUrl(feature.properties, pointLayerEntry.properties)
 			: null;
-		const iconImage =
-			propertyImage ??
-			(pointLayerEntry
-				? resolveGeneratedPoiIconUrl(
-						feature.properties,
-						pointLayerEntry.style.icons,
-						pointLayerEntry.properties.images?.icon
-					)
-				: null);
+		const iconImage = generatedIconImage ?? popupImage;
 
 		return feature.properties && iconImage
 			? {
@@ -213,13 +221,13 @@
 
 		featureMenuData = {
 			layerId: selected.layerId,
-			featureId: Number(selected.featureId),
+			featureId: selected.featureId,
 			properties: resolvedProperties,
 			point
 		};
 		highlightMarkerState = {
 			type: 'poi',
-			featureId: Number(selected.featureId),
+			featureId: selected.featureId,
 			properties: resolvedProperties,
 			point,
 			iconImage
@@ -235,9 +243,11 @@
 			point?: [number, number];
 		}
 	) => {
+		// 選択中の地物IDを共通ストアへ反映し、各ハイライト表示の起点にする。
 		selectedHighlightData.set(selected);
 
 		if (!selected) {
+			// 選択解除時は、POI用の見た目と補助UIをまとめて初期化する。
 			if (highlightMarkerState?.type === 'poi') {
 				highlightMarkerState = null;
 			}
@@ -249,10 +259,12 @@
 		}
 
 		if (options?.feature && options.point && isGeneratedPoiIconFeature(selected.layerId)) {
+			// 生成アイコンPOIは通常ハイライトではなく、アイコン差し替えと専用マーカーで強調する。
 			applyGeneratedPoiHighlight(selected, options.feature, options.point);
 			return;
 		}
 
+		// それ以外の地物は、生成アイコン用の状態を片付けて通常ハイライトへ戻す。
 		resetGeneratedPoiHighlight();
 		if (highlightMarkerState?.type === 'poi') {
 			highlightMarkerState = null;
