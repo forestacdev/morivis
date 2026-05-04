@@ -73,6 +73,7 @@
 	let highlightedGeneratedPoiLayerId: string | null = $state(null);
 
 	const clearSearchHighlight = () => {
+		// 検索起点の選択状態だけを解除し、POI選択のハイライトは残す。
 		selectedSearchId = null;
 		selectedSearchResultData = null;
 		if (highlightMarkerState?.type === 'search') {
@@ -81,12 +82,14 @@
 	};
 
 	const clearContextMenuMarker = () => {
+		// 空白クリックで出したマーカーとコンテキストメニューをまとめて閉じる。
 		contextMenuState = null;
 		markerLngLat = null;
 		showMarker = false;
 	};
 
 	const openContextMenuMarker = (e: MapMouseEvent) => {
+		// 空白地点を操作対象として記録し、PCではその場にコンテキストメニューを開く。
 		showMarker = true;
 		markerLngLat = e.lngLat;
 
@@ -101,12 +104,14 @@
 	};
 
 	const getClickableTargetLayerIds = () => {
+		// クリック対象になりうるレイヤーIDを集め、ハイライト表示専用レイヤーは除外する。
 		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS].filter((layerId) => {
 			return !layerId.startsWith('@highlight_');
 		});
 	};
 
 	const getExistingClickableLayerIds = () => {
+		// 現在のスタイルに存在するレイヤーだけに絞り、queryRenderedFeatures の対象を安定させる。
 		return getClickableTargetLayerIds().filter((layerId) => {
 			return mapStore.getLayer(layerId) !== undefined;
 		});
@@ -207,6 +212,7 @@
 			: (feature.properties ?? {});
 	};
 
+	// アイコン差し替えと専用マーカーでPOIを強調表示する。通常のハイライトは使わない。
 	const applyGeneratedPoiHighlight = (
 		selected: SelectedHighlightData,
 		feature: MapGeoJSONFeature,
@@ -269,6 +275,7 @@
 		if (highlightMarkerState?.type === 'poi') {
 			highlightMarkerState = null;
 		}
+
 		applyDefaultHighlight(selected);
 	};
 
@@ -310,7 +317,9 @@
 		}
 	};
 
+	// 地物がない場所をクリックしたときの処理。ハイライトやコンテキストメニューをクリアし、条件によっては新たにコンテキストメニューを開く。
 	const handleBlankMapClick = (e: MapMouseEvent) => {
+		// まず既存の選択状態を片付け、何も選択されていないときだけ空白地点の操作を開く。
 		const hadHighlight =
 			$selectedHighlightData !== null ||
 			featureMenuData !== null ||
@@ -332,6 +341,7 @@
 		openContextMenuMarker(e);
 	};
 
+	// ストリートビューポイントのクリックイベント
 	const handleStreetViewCircleClick = (e: MapMouseEvent) => {
 		setSelectedHighlight(null);
 		const features = mapStore.queryRenderedFeatures(e.point, {
@@ -346,6 +356,7 @@
 		}
 	};
 
+	// ストリートビューのラインをクリックしたとき、クリック位置に最も近いライン上の点を特定し、その点に対応するノードIDをもとにストリートビューへ遷移する
 	const handleStreetViewLineClick = (e: MapMouseEvent) => {
 		setSelectedHighlight(null);
 		const features = mapStore.queryRenderedFeatures(e.point, {
@@ -387,6 +398,7 @@
 		setStreetViewParams(nodeId);
 	};
 
+	// 検索結果の地物をクリックしたときの処理
 	const handleSearchResultClick = (e: MapMouseEvent) => {
 		const searchFeatures = mapStore.queryRenderedFeatures(e.point, {
 			layers: ['@search_result']

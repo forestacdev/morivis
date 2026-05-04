@@ -44,6 +44,7 @@ export const registerLayerFilterState = ({
 	logicalLayerId,
 	layer,
 	role,
+	selectionKey,
 	patternKind,
 	baseCircleRadius,
 	baseCircleStrokeWidth
@@ -51,6 +52,7 @@ export const registerLayerFilterState = ({
 	logicalLayerId: string;
 	layer: LayerSpecification;
 	role: 'base' | 'highlight';
+	selectionKey?: string;
 	patternKind?: 'fill' | 'line' | 'point';
 	baseCircleRadius?: number;
 	baseCircleStrokeWidth?: number;
@@ -59,6 +61,7 @@ export const registerLayerFilterState = ({
 		logicalLayerId,
 		actualLayerId: layer.id,
 		role,
+		selectionKey,
 		patternKind,
 		baseCircleRadius,
 		baseCircleStrokeWidth,
@@ -198,12 +201,14 @@ export const registerHighlightLayers = ({
 	logicalLayerId,
 	baseLayer,
 	style,
+	selectionKey,
 	registerBase = true,
 	useLinePattern = true
 }: {
 	logicalLayerId: string;
 	baseLayer: LayerSpecification;
 	style: VectorStyle;
+	selectionKey?: string;
 	registerBase?: boolean;
 	useLinePattern?: boolean;
 }) => {
@@ -211,7 +216,8 @@ export const registerHighlightLayers = ({
 		registerLayerFilterState({
 			logicalLayerId,
 			layer: baseLayer,
-			role: 'base'
+			role: 'base',
+			selectionKey
 		});
 	}
 
@@ -225,6 +231,7 @@ export const registerHighlightLayers = ({
 		logicalLayerId,
 		layer: baseHighlightLayer,
 		role: 'highlight',
+		selectionKey,
 		patternKind:
 			baseLayer.type === 'fill'
 				? 'fill'
@@ -266,19 +273,23 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 			const layer = applyVectorSourceLayer(createBaseLayerItem(vectorEntry), vectorEntry);
 			const { style } = vectorEntry;
 			const layerId = `${vectorEntry.id}`;
+			const selectionKey =
+				'sourceLayer' in vectorEntry.metaData ? vectorEntry.metaData.promoteId : undefined;
 			const vectorLayer = createVectorLayer(layer, style, vectorEntry.properties.images?.icon);
 
 			if (!vectorLayer) return;
 			registerLayerFilterState({
 				logicalLayerId: layerId,
 				layer: vectorLayer,
-				role: 'base'
+				role: 'base',
+				selectionKey
 			});
 
 			const highlightVectorLayer = registerHighlightLayers({
 				logicalLayerId: layerId,
 				baseLayer: vectorLayer,
 				style,
+				selectionKey,
 				registerBase: false
 			});
 
@@ -297,12 +308,14 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 					registerLayerFilterState({
 						logicalLayerId: layerId,
 						layer: pointIconLayer,
-						role: 'base'
+						role: 'base',
+						selectionKey
 					});
 					const highlightPointIconLayer = registerHighlightLayers({
 						logicalLayerId: layerId,
 						baseLayer: pointIconLayer,
 						style,
+						selectionKey,
 						registerBase: false
 					});
 
@@ -319,7 +332,8 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 					registerLayerFilterState({
 						logicalLayerId: layerId,
 						layer: fillExtrusionPatternLayer,
-						role: 'base'
+						role: 'base',
+						selectionKey
 					});
 				}
 			}
@@ -329,12 +343,14 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				registerLayerFilterState({
 					logicalLayerId: layerId,
 					layer: lineLayer,
-					role: 'base'
+					role: 'base',
+					selectionKey
 				});
 				const highlightOutlineLayer = registerHighlightLayers({
 					logicalLayerId: layerId,
 					baseLayer: lineLayer,
 					style,
+					selectionKey,
 					registerBase: false,
 					useLinePattern: false
 				});
@@ -349,12 +365,14 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				registerLayerFilterState({
 					logicalLayerId: layerId,
 					layer: symbolLayer,
-					role: 'base'
+					role: 'base',
+					selectionKey
 				});
 				const highlightLabelLayer = registerHighlightLayers({
 					logicalLayerId: layerId,
 					baseLayer: symbolLayer,
 					style,
+					selectionKey,
 					registerBase: false
 				});
 

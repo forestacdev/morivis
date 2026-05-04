@@ -163,6 +163,7 @@ interface HighlightLayerRegistryItem {
 	actualLayerId: string;
 	role: HighlightLayerRole;
 	defaultFilter?: FilterSpecification;
+	selectionKey?: string;
 	patternKind?: HighlightPatternKind;
 	baseCircleRadius?: number;
 	baseCircleStrokeWidth?: number;
@@ -180,12 +181,26 @@ const mergeFilter = (
 	return ['all', baseFilter as ExpressionSpecification, extraFilter as ExpressionSpecification];
 };
 
-const createSelectedOnlyFilter = (featureId: string | number): FilterSpecification => {
-	return ['==', ['id'], featureId];
+const createSelectedOnlyFilter = (
+	featureId: string | number,
+	selectionKey?: string
+): FilterSpecification => {
+	if (!selectionKey) {
+		return ['==', ['id'], featureId];
+	}
+
+	return ['any', ['==', ['id'], featureId], ['==', ['get', selectionKey], featureId]];
 };
 
-const createSelectedExcludeFilter = (featureId: string | number): FilterSpecification => {
-	return ['!=', ['id'], featureId];
+const createSelectedExcludeFilter = (
+	featureId: string | number,
+	selectionKey?: string
+): FilterSpecification => {
+	if (!selectionKey) {
+		return ['!=', ['id'], featureId];
+	}
+
+	return ['all', ['!=', ['id'], featureId], ['!=', ['get', selectionKey], featureId]];
 };
 
 class HighlightLayerRegistry {
@@ -214,11 +229,15 @@ class HighlightLayerRegistry {
 				item.role === 'highlight'
 					? mergeFilter(
 							item.defaultFilter,
-							isSelectedLayer ? createSelectedOnlyFilter(selected.featureId) : HIDDEN_FILTER
+							isSelectedLayer
+								? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
+								: HIDDEN_FILTER
 						)
 					: mergeFilter(
 							item.defaultFilter,
-							isSelectedLayer ? createSelectedExcludeFilter(selected.featureId) : undefined
+							isSelectedLayer
+								? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
+								: undefined
 						);
 
 			return {
