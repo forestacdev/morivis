@@ -6,14 +6,15 @@ import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: 'osm',
+	id: 'osm_maptiler_toner',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://tile.openstreetmap.jp/styles/openmaptiles/512/{z}/{x}/{y}.png'
+		url: 'https://tile.openstreetmap.jp/styles/maptiler-toner-ja/512/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'OSM OpenMapTiles',
+		name: 'Maptiler Toner',
+		sourceDataName: 'Maptiler-Toner-JA',
 		attribution: 'OSM',
 		downloadUrl: 'https://wiki.openstreetmap.org/wiki/Japan/OSMFJ_Tileserver',
 		location: '世界',
