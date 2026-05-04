@@ -1045,3 +1045,17 @@ export const getRandomColor = (scheme: ColorBrewerScheme = 'Set1'): string => {
 
 	return color;
 };
+
+/**
+ * 指定した数のランダムな色配列を取得する関数
+ * @param count 取得する色数
+ * @returns ランダムな色の16進数配列
+ */
+export const getRandomColors = (count: number, scheme: ColorBrewerScheme = 'Set1'): string[] => {
+	const colors = COLOR_BREWER[scheme][8];
+
+	return Array.from({ length: count }, () => {
+		const randomIndex = Math.floor(Math.random() * colors.length);
+		return colors[randomIndex];
+	});
+};

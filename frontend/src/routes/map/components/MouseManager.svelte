@@ -436,7 +436,9 @@
 				return;
 			}
 
-			const selectedVecterLayersId = features.map((feature) => getLogicalLayerIdFromLayer(feature.layer));
+			const selectedVecterLayersId = features.map((feature) =>
+				getLogicalLayerIdFromLayer(feature.layer)
+			);
 			const selectedRasterLayersId = getSelectedRasterLayerIds(e.lngLat);
 
 			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ

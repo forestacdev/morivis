@@ -14,7 +14,7 @@ import type {
 	PolygonOutLine,
 	ColorsStyle
 } from '$routes/map/data/types/vector/style';
-import { getRandomColor } from '$routes/map/utils/color/color-brewer';
+import { getRandomColors } from '$routes/map/utils/color/color-brewer';
 import { color } from 'd3-color';
 
 import type {
@@ -31,12 +31,10 @@ import type {
 
 /** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
 export const createMatchColorStyleRandomMapping = (
-	categories: string[],
+	categories: string[] | number[],
 	isPattern: boolean = false // パターンを使用するかどうかのフラグ
 ): ColorMatchExpression['mapping'] => {
-	const values = categories.map((category) => {
-		return getRandomColor();
-	});
+	const values = getRandomColors(categories.length);
 	if (isPattern) {
 		return {
 			categories,
@@ -49,6 +47,17 @@ export const createMatchColorStyleRandomMapping = (
 			values
 		};
 	}
+};
+
+/** カテゴリ配列からランダム色とnullパターンのマッピングを作成する */
+export const createMatchColorStyleRandomPatternMapping = (
+	categories: string[] | number[]
+): ColorMatchExpression['mapping'] => {
+	return {
+		categories,
+		values: getRandomColors(categories.length),
+		patterns: categories.map(() => null)
+	};
 };
 
 /** カラーコード配列に基づいてランダム色スタイルのマッピングを作成する */

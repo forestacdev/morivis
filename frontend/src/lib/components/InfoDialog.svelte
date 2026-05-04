@@ -3,10 +3,10 @@
 	import { fade, scale } from 'svelte/transition';
 
 	import { ICONS } from '$lib/icons';
-	import { getAttribution } from '$routes/map/data/entries/_meta_data/_attribution';
-	import { entries } from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getMorivisContributors, type GitHubContributor } from '$routes/map/api/github';
+	import { entries } from '$routes/map/data/entries';
+	import { getAttribution } from '$routes/map/data/entries/_meta_data/_attribution';
+	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { showInfoDialog } from '$routes/stores/ui';
 
 	interface DataProviderItem {

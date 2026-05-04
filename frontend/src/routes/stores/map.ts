@@ -35,9 +35,7 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
-import {
-	isHighlightLayerId
-} from '$routes/map/utils/layers/highlight';
+import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
 
 import {
 	WEB_MERCATOR_MIN_LAT,

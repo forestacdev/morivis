@@ -537,21 +537,23 @@ export const handleStyleImageMissing = async (
 			await addDummyPhotoIcon(id);
 			return;
 		}
-			const image = await loadImage(imageUrl);
+		const image = await loadImage(imageUrl);
 
-			if (USE_WORKER_GENERATED_POI_ICONS) {
-				const renderedImage = await renderImageWithWorker(id, image);
-				addImageToMap(id, renderedImage);
-				return;
-			}
+		if (USE_WORKER_GENERATED_POI_ICONS) {
+			const renderedImage = await renderImageWithWorker(id, image);
+			addImageToMap(id, renderedImage);
+			return;
+		}
 
 		addImageToMap(id, image);
-	})().catch(async (error) => {
-		await addDummyPhotoIcon(id);
-		console.error(`Error processing image for id ${id}:`, error);
-	}).finally(() => {
-		inflightGeneratedPoiIcons.delete(id);
-	});
+	})()
+		.catch(async (error) => {
+			await addDummyPhotoIcon(id);
+			console.error(`Error processing image for id ${id}:`, error);
+		})
+		.finally(() => {
+			inflightGeneratedPoiIcons.delete(id);
+		});
 
 	inflightGeneratedPoiIcons.set(id, task);
 	await task;

@@ -97,10 +97,7 @@ export const getGitHubContributors = async (
 	}
 
 	const query = params.toString();
-	const url = buildRepositoryPath(
-		{ owner, repo },
-		`/contributors${query ? `?${query}` : ''}`
-	);
+	const url = buildRepositoryPath({ owner, repo }, `/contributors${query ? `?${query}` : ''}`);
 
 	return await fetchGitHubApi<GitHubContributor[]>(url);
 };
@@ -109,7 +106,9 @@ export const getGitHubLatestRelease = async ({
 	owner,
 	repo
 }: GitHubRepositoryRef): Promise<GitHubRelease> => {
-	return await fetchGitHubApi<GitHubRelease>(buildRepositoryPath({ owner, repo }, '/releases/latest'));
+	return await fetchGitHubApi<GitHubRelease>(
+		buildRepositoryPath({ owner, repo }, '/releases/latest')
+	);
 };
 
 export const getMorivisRepository = async () => {

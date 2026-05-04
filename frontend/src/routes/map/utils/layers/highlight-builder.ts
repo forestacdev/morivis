@@ -81,7 +81,8 @@ export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
 		id: `${entry.id}`,
 		source: `${entry.id}_source`,
 		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom: 'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1),
+		minzoom:
+			'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1),
 		metadata: createMorivisLayerMetadata(entry.id, 'base')
 	};
 };
