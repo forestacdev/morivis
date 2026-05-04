@@ -98,7 +98,7 @@ function createSingleColorStyle(color: string = '#ff7f00'): ColorsStyle {
 				type: 'single',
 				key: '単色',
 				name: '単色',
-				mapping: { value: color as BaseSingleColor }
+				mapping: { value: color as BaseSingleColor, pattern: null }
 			}
 		]
 	};

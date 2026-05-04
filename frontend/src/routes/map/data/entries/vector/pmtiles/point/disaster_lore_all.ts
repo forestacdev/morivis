@@ -107,8 +107,7 @@ const entry: PointEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.7, // 透過率
-		markerType: 'icon',
+		opacity: 0.7,
 		colors: {
 			show: true,
 			key: '単色',
@@ -118,16 +117,15 @@ const entry: PointEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#e31a1c'
+						value: '#e31a1c',
+						pattern: null
 					}
 				}
 			]
 		},
-		icons: {
-			kind: 'image',
+		imageIcon: {
 			show: true
 		},
-
 		radius: {
 			key: '単一',
 			expressions: [

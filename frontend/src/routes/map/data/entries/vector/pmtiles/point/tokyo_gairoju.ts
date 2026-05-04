@@ -127,7 +127,6 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
-		markerType: 'circle',
 		colors: {
 			key: '樹高(m)',
 			show: true,
@@ -139,16 +138,6 @@ const entry: VectorEntry<TileMetaData> = {
 					mapping: {
 						value: '#33a02c',
 						pattern: null
-					}
-				},
-				{
-					type: 'step',
-					key: '樹高(m)',
-					name: '樹高ごとの色分け',
-					mapping: {
-						scheme: 'YlGn',
-						range: [0, 10],
-						divisions: 5
 					}
 				},
 				{
@@ -568,6 +557,16 @@ const entry: VectorEntry<TileMetaData> = {
 						label: '未分類',
 						value: '#F7F7F7',
 						pattern: null
+					}
+				},
+				{
+					type: 'step',
+					key: '樹高(m)',
+					name: '樹高ごとの色分け',
+					mapping: {
+						scheme: 'YlGn',
+						range: [0, 10],
+						divisions: 5
 					}
 				}
 			]

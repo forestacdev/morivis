@@ -252,47 +252,9 @@ export interface PointOutLine {
 	minzoom?: number;
 }
 
-export interface PointIcon {
+export interface PointImageIcon {
 	show: boolean;
-	size: number;
 }
-
-export interface IconSingleExpression {
-	type: 'single';
-	key: string;
-	name: string;
-	mapping: {
-		pattern: SpritePatternId;
-	};
-}
-
-export interface IconMatchExpression {
-	type: 'match';
-	key: string;
-	name: string;
-	mapping: {
-		categories: string[] | number[];
-		patterns: SpritePatternId[];
-	};
-}
-
-export type IconsExpression = IconSingleExpression | IconMatchExpression;
-
-export interface SpriteIconsStyle {
-	kind: 'sprite';
-	show: boolean;
-	size: number;
-	key: string;
-	expressions: IconsExpression[];
-}
-
-export interface ImageIconsStyle {
-	kind: 'image';
-	show: boolean;
-	fallbackUrlExpression?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | string;
-}
-
-export type IconsStyle = SpriteIconsStyle | ImageIconsStyle;
 
 export interface LabelOutLine {
 	show: boolean;
@@ -317,9 +279,8 @@ export interface LineStringStyle extends BaseVectorStyle {
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
 	radius: NumbersStyle;
-	markerType: 'circle' | 'icon';
-	icons?: IconsStyle;
 	outline: PointOutLine;
+	imageIcon?: PointImageIcon;
 	default?: PointDefaultStyle;
 }
 

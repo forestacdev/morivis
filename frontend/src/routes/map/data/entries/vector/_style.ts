@@ -64,7 +64,6 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 	type: 'circle',
 	opacity: 0.7,
 	visible: true,
-	markerType: 'circle',
 	colors: {
 		show: true,
 		key: '単色',

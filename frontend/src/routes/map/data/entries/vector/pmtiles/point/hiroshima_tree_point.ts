@@ -142,7 +142,6 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'circle',
 		opacity: 0.7,
 		minZoom: 13,
-		markerType: 'circle',
 		colors: {
 			key: '樹種',
 			show: true,

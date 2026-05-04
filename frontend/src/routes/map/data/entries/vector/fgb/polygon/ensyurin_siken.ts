@@ -62,7 +62,8 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#1f78b4'
+						value: '#1f78b4',
+						pattern: null
 					}
 				}
 			]

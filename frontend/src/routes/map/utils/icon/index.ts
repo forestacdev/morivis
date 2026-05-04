@@ -11,13 +11,14 @@ import {
 	ICON_NO_IMAGE_PATH,
 	USE_WORKER_GENERATED_POI_ICONS
 } from '$routes/constants';
-import type { IconsStyle, ImageIconsStyle } from '$routes/map/data/types/vector/style';
 import type {
 	IconImageSource,
 	ImageSource,
 	VectorProperties
 } from '$routes/map/data/types/vector/properties';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
+
+import type { PointImageIcon } from '$routes/map/data/types/vector/style';
 
 let mapLibreMap: MapLibreMapType | null = null;
 const imageBitmapCache = new Map<string, Promise<ImageBitmap>>();
@@ -37,17 +38,10 @@ export const buildGeneratedPoiIconId = (propId: string, iconUrl?: string | null)
 };
 
 export const buildGeneratedPoiIconExpression = (
-	image: IconImageSource,
-	fallbackUrlExpression?: ImageIconsStyle['fallbackUrlExpression']
+	image: IconImageSource
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
 	const { imageIdKey } = image;
-	const fallbackUrl = fallbackUrlExpression ?? [
-		'concat',
-		ICON_IMAGE_BASE_PATH,
-		'/',
-		['get', imageIdKey],
-		'.webp'
-	];
+	const fallbackUrl = ['concat', ICON_IMAGE_BASE_PATH, '/', ['get', imageIdKey], '.webp'];
 	const imageUrlExpression = (() => {
 		if (image.type === 'relative') {
 			return [
@@ -150,10 +144,10 @@ export const resolvePopupImageUrl = (
 
 export const resolveGeneratedPoiIconUrl = (
 	properties: MapGeoJSONFeature['properties'] | Record<string, unknown> | null | undefined,
-	icons: IconsStyle | undefined,
+	icons: PointImageIcon | undefined,
 	image: IconImageSource | undefined
 ) => {
-	if (!properties || !icons || icons.kind !== 'image' || !image) return null;
+	if (!properties || !icons || !icons.show || !image) return null;
 
 	const rawImageId = properties[image.imageIdKey];
 	const imageId = rawImageId != null ? String(rawImageId) : '';

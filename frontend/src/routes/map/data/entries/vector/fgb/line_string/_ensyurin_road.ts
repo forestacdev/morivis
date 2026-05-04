@@ -47,7 +47,8 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#d9d9d9'
+						value: '#d9d9d9',
+						pattern: null
 					}
 				},
 				{
@@ -56,7 +57,8 @@ const entry: LineStringEntry<GeoJsonMetaData> = {
 					name: '歩道と林道',
 					mapping: {
 						categories: ['林道', '歩道'],
-						values: ['#ffec42', '#e0e0e0']
+						values: ['#ffec42', '#e0e0e0'],
+						patterns: [null, null]
 					}
 				}
 			]

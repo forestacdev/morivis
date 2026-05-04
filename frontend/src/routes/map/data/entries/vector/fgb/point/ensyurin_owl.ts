@@ -143,8 +143,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.7, // 透過率
-		markerType: 'circle',
+		opacity: 0.7,
 		colors: {
 			show: true,
 			key: '樹高m',
@@ -154,7 +153,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#e31a1c'
+						value: '#e31a1c',
+						pattern: null
 					}
 				},
 				{
