@@ -12,8 +12,8 @@
 	interface Props {
 		label?: string | null;
 		value: string;
-		pattern?: SpritePatternId | null;
-		layerType?: VectorLayerType;
+		pattern: SpritePatternId | null;
+		layerType: VectorLayerType;
 	}
 	let { label, value = $bindable(), pattern = $bindable(), layerType }: Props = $props();
 
@@ -196,6 +196,7 @@
 	] as const;
 
 	type PointColor = (typeof POINT_COLORS)[number];
+	type PointColorFilter = PointColor | 'other';
 
 	const POINT_COLOR_HEX_MAP: Record<PointColor, string> = {
 		blue: '#3b82f6',
@@ -312,7 +313,7 @@
 	let containerRef = $state<HTMLElement>();
 
 	let selectedType = $state<'color' | 'pattern'>('color');
-	let selectedPointColor = $state<PointColor>('blue');
+	let selectedPointColor = $state<PointColorFilter>('blue');
 
 	const resolveClosestPointColor = (color: string): PointColor => {
 		try {
@@ -339,6 +340,8 @@
 	};
 
 	let filteredPointPatterns = $derived.by(() => {
+		if (selectedPointColor === 'other') return [];
+
 		return POINT_SHAPES.map((shape) => `tmpoint-${shape}-${selectedPointColor}` as SpritePatternId);
 	});
 
@@ -359,6 +362,7 @@
 	});
 
 	$effect(() => {
+		if (selectedPointColor === 'other') return;
 		selectedPointColor = resolveClosestPointColor(value);
 	});
 </script>
@@ -426,7 +430,7 @@
 				bind:group={selectedType}
 				options={[
 					{ key: 'color', name: 'カラー' },
-					{ key: 'pattern', name: 'パターン' }
+					{ key: 'pattern', name: layerType === 'circle' ? 'アイコン' : 'パターン' }
 				]}
 			/>
 			<div class="mt-3">
@@ -466,10 +470,10 @@
 								{/each}
 							</div>
 						{:else if layerType === 'line' || layerType === 'circle'}
-							<div class="flex flex-wrap gap-2">
+							<div class="flex flex-wrap gap-1.5">
 								{#each POINT_COLORS as color}
 									<button
-										class="h-7 w-7 cursor-pointer rounded-full border-2 transition {selectedPointColor ===
+										class="h-7 w-7 cursor-pointer rounded-lg border-2 transition {selectedPointColor ===
 										color
 											? 'border-accent scale-110'
 											: 'border-transparent'}"
@@ -480,26 +484,64 @@
 										aria-label={`${color} のアイコンを表示`}
 									></button>
 								{/each}
-							</div>
-							<div class="grid grid-cols-10 gap-1">
-								{#each filteredPointPatterns as _pattern}
-									{@const img = mapStore.getImage(_pattern)}
+								{#if layerType === 'circle'}
 									<button
-										class="grid h-7 w-7 cursor-pointer place-items-center rounded-full {pattern ===
-										_pattern
-											? 'ring-accent ring-2'
-											: ''}"
+										class="flex h-7 cursor-pointer items-center rounded-lg border px-2 text-xs transition {selectedPointColor ===
+										'other'
+											? 'border-accent text-accent'
+											: 'border-gray-500 text-white'}"
 										onclick={() => {
-											pattern = _pattern;
-											showColorPallet = false;
+											selectedPointColor = 'other';
 										}}
+										aria-label="その他のアイコンを表示"
 									>
-										{#if img}
-											<img src={createIconImage(img)} alt={_pattern} class="h-5 w-5" />
-										{/if}
+										その他
 									</button>
-								{/each}
+								{/if}
 							</div>
+							{#if selectedPointColor !== 'other'}
+								<div class="grid grid-cols-10 gap-1">
+									{#each filteredPointPatterns as _pattern}
+										{@const img = mapStore.getImage(_pattern)}
+										<button
+											class="grid h-7 w-7 cursor-pointer place-items-center rounded-full {pattern ===
+											_pattern
+												? 'ring-accent ring-2'
+												: ''}"
+											onclick={() => {
+												pattern = _pattern;
+												showColorPallet = false;
+											}}
+										>
+											{#if img}
+												<img src={createIconImage(img)} alt={_pattern} class="h-5 w-5" />
+											{/if}
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="grid grid-cols-6 gap-1">
+									{#each GSI_ICONS as name}
+										{@const _pattern = name as unknown as SpritePatternId}
+										{@const img = mapStore.getImage(_pattern)}
+										<button
+											class="grid h-9 w-9 cursor-pointer place-items-center rounded {pattern ===
+											_pattern
+												? 'ring-accent ring-2'
+												: ''}"
+											onclick={() => {
+												pattern = _pattern;
+												showColorPallet = false;
+											}}
+											title={name}
+										>
+											{#if img}
+												<img src={createIconImage(img)} alt={name} class="h-7 w-7" />
+											{/if}
+										</button>
+									{/each}
+								</div>
+							{/if}
 						{/if}
 						<div class="flex w-full items-center justify-center">
 							<button
@@ -509,7 +551,9 @@
 									showColorPallet = false;
 								}}
 								aria-label="Remove pattern"
-								><span class="text-sm text-black">パターンなし</span></button
+								><span class="text-sm text-black"
+									>{layerType === 'circle' ? 'アイコンなし' : 'パターンなし'}</span
+								></button
 							>
 						</div>
 					</div>

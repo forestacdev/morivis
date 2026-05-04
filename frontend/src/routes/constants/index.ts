@@ -124,8 +124,8 @@ export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureI
 
 /** 初期表示のレイヤーid */
 export const INT_ADD_LAYER_IDS = [
-	'ensyurin_syouhan',
-	'national_forest_stand',
+	'disaster_lore_all',
 	'national_forest_road',
-	'disaster_lore_all'
+	'ensyurin_syouhan',
+	'national_forest_stand'
 ];

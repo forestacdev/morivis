@@ -27,7 +27,7 @@
 	</Accordion>
 {/if}
 <!-- 色 -->
-{#if layerEntry.style.imageIcon && !layerEntry.style.imageIcon.show}
+{#if !layerEntry.style.imageIcon || (layerEntry.style.imageIcon && !layerEntry.style.imageIcon.show)}
 	<ColorOption bind:colorStyle={layerEntry.style.colors} bind:showColorOption layerType="circle" />
 
 	<NumberOption label={'円の半径'} icon={'mdi:radius'} bind:numberStyle={layerEntry.style.radius} />
