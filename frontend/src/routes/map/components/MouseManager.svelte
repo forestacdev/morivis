@@ -471,23 +471,33 @@
 			const id = feature.id;
 			const normalizedLayerId = getBaseLayerId(feature.layer.id);
 
+			if (import.meta.env.DEV) {
+				console.warn('debug:Clicked feature:', {
+					id,
+					layerId: normalizedLayerId,
+					properties: feature.properties
+				});
+			}
+
 			// markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
 			// showMarker = true;
 
-			setSelectedHighlight(
+			const selectedHighlight =
 				id !== undefined && id !== null
 					? {
 							layerId: normalizedLayerId,
 							featureId: id
 						}
-					: null,
-				feature && clickLngLat
+					: null;
+			const highlightOptions =
+				clickLngLat !== null
 					? {
 							feature,
 							point: clickLngLat
 						}
-					: undefined
-			);
+					: undefined;
+
+			setSelectedHighlight(selectedHighlight, highlightOptions);
 		} catch (error) {
 			console.error('Error occurred while processing mouse events:', error);
 		}

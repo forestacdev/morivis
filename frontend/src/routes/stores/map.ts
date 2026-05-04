@@ -36,11 +36,7 @@ import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 import {
-	createHighlightFillPatternImage,
-	isHighlightLayerId,
-	isHighlightFillPatternId,
-	isHighlightLinePatternId,
-	registerHighlightFillPatternImages
+	isHighlightLayerId
 } from '$routes/map/utils/layers/highlight';
 
 import {
@@ -343,8 +339,6 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-		registerHighlightFillPatternImages(map);
-
 		map.on('styleimagemissing', (e) => {
 			if (!map) return;
 
@@ -371,16 +365,19 @@ const createMapStore = () => {
 					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
-			} else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {
-				// ハイライトパターンの画像を動的に生成して追加
-				if (map.hasImage(id)) return;
-				const image = createHighlightFillPatternImage(id);
-				if (!image || !map || map.hasImage(id)) return;
-				map.addImage(id, image);
 			} else if (isGeneratedPoiIconId(id)) {
 				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
 				handleStyleImageMissing(e, map);
 			}
+
+			// NOTE: ハイライトパターン作成は停止
+			// else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {
+			// 	// ハイライトパターンの画像を動的に生成して追加
+			// 	if (map.hasImage(id)) return;
+			// 	const image = createHighlightFillPatternImage(id);
+			// 	if (!image || !map || map.hasImage(id)) return;
+			// 	map.addImage(id, image);
+			// }
 		});
 
 		// マップに追加
@@ -388,7 +385,6 @@ const createMapStore = () => {
 		let isDeckOverlayAdded = false;
 		map.on('style.load', () => {
 			if (!map) return;
-			registerHighlightFillPatternImages(map);
 			if (!isDeckOverlayAdded) {
 				map.addControl(deckOverlay as maplibregl.IControl);
 				isDeckOverlayAdded = true;
