@@ -168,7 +168,8 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
