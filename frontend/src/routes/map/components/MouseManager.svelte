@@ -6,18 +6,18 @@
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
+	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
+	import type { ResultData } from '$routes/map/utils/data/search-result';
+	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import {
 		isGeneratedPoiIconLayout,
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
-	import type { ResultData } from '$routes/map/utils/data/search-result';
-	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';

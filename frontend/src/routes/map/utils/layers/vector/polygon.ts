@@ -4,9 +4,7 @@ import type {
 	LineLayerSpecification
 } from 'maplibre-gl';
 
-import type {
-	PolygonStyle
-} from '$routes/map/data/types/vector/style';
+import type { PolygonStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 import {
 	getPatternExpression,
@@ -177,7 +175,7 @@ export const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLaye
 		...(() => {
 			if (defaultStyle?.fill?.filter) {
 				return { filter: defaultStyle.fill.filter };
-}
+			}
 			return {};
 		})()
 	};

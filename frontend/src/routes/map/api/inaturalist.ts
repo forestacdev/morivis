@@ -695,7 +695,9 @@ export const normalizeJapaneseName = (name: string): string | null => {
 	return normalized;
 };
 
-const getPrimaryTaxonByNormalizedName = async (normalizedName: string): Promise<INatTaxon | null> => {
+const getPrimaryTaxonByNormalizedName = async (
+	normalizedName: string
+): Promise<INatTaxon | null> => {
 	const cachedTaxon = touchCacheEntry(primaryTaxonByNameCache, normalizedName);
 	if (cachedTaxon !== undefined) {
 		return cachedTaxon;
@@ -722,7 +724,9 @@ const getPrimaryTaxonByNormalizedName = async (normalizedName: string): Promise<
 	}
 };
 
-const getNormalizedPrimaryTaxonByName = async (name: string): Promise<{
+const getNormalizedPrimaryTaxonByName = async (
+	name: string
+): Promise<{
 	normalizedName: string;
 	taxon: INatTaxon | null;
 } | null> => {

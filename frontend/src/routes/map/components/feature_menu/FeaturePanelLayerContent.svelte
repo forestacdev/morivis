@@ -5,11 +5,11 @@
 	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
-	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 	import type {
 		FeatureMenuData,
 		FeaturePanelSummary as FeaturePanelSummaryData
 	} from '$routes/map/types';
+	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;

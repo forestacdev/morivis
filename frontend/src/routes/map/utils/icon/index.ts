@@ -45,12 +45,7 @@ export const buildGeneratedPoiIconExpression = (
 		if (image.type === 'relative') {
 			return [
 				'coalesce',
-				[
-					'concat',
-					image.baseUrl,
-					['to-string', ['get', image.urlKey]],
-					image.suffix ?? ''
-				],
+				['concat', image.baseUrl, ['to-string', ['get', image.urlKey]], image.suffix ?? ''],
 				fallbackUrl
 			] as ExpressionSpecification;
 		}
@@ -126,7 +121,9 @@ export const resolveImageUrl = (
 };
 
 export const getPopupImageFieldKey = (vectorProperties: VectorProperties | undefined) => {
-	return vectorProperties?.images?.popup?.urlKey ?? vectorProperties?.attributeView.imageKey ?? null;
+	return (
+		vectorProperties?.images?.popup?.urlKey ?? vectorProperties?.attributeView.imageKey ?? null
+	);
 };
 
 export const resolvePopupImageUrl = (

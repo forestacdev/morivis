@@ -12,7 +12,6 @@
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
-	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 	import type {
 		FeaturePanelData,
 		FeaturePanelSummary as FeaturePanelSummaryData,
@@ -20,6 +19,7 @@
 		SearchAddressPanelData
 	} from '$routes/map/types';
 	import { normalizeSchoolName } from '$routes/map/utils/data/normalize';
+	import { getPopupImageFieldKey } from '$routes/map/utils/icon';
 
 	interface Props {
 		panelData: FeaturePanelData | null;

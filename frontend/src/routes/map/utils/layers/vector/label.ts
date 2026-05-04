@@ -6,11 +6,7 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 
-import type {
-	Labels,
-	PointStyle,
-	VectorStyle
-} from '$routes/map/data/types/vector/style';
+import type { Labels, PointStyle, VectorStyle } from '$routes/map/data/types/vector/style';
 import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 
 import type { LayerItem } from '$routes/map/utils/layers/index';

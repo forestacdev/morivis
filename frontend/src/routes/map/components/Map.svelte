@@ -20,11 +20,11 @@
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import 'maplibre-gl/dist/maplibre-gl.css';
+	import HighlightMarkerManager from '$routes/map/components/HighlightMarkerManager.svelte';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
-	import HighlightMarkerManager from '$routes/map/components/HighlightMarkerManager.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
@@ -802,10 +802,7 @@
 					: 'opacity-100'}"
 		>
 			{#if maplibreMap}
-				<HighlightMarkerManager
-					map={maplibreMap}
-					{highlightMarkerState}
-				/>
+				<HighlightMarkerManager map={maplibreMap} {highlightMarkerState} />
 			{/if}
 		</div>
 		<!-- 地図コンテナオーバーレイ -->

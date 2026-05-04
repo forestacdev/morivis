@@ -22,10 +22,7 @@
 	import { checkPc } from './utils/platform/viewport';
 
 	import { page } from '$app/state';
-	import {
-		ENTRY_PMTILES_VECTOR_PATH,
-		STREET_VIEW_DATA_PATH
-	} from '$routes/constants';
+	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
@@ -69,12 +66,12 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import { resolveGeneratedPoiIconUrl, resolvePopupImageUrl } from '$routes/map/utils/icon';
 	import {
 		get3dParams,
 		getParams,
 		getStreetViewParams
 	} from '$routes/map/utils/platform/url-params';
-	import { resolveGeneratedPoiIconUrl, resolvePopupImageUrl } from '$routes/map/utils/icon';
 	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';

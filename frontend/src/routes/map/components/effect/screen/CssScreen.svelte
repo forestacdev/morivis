@@ -84,9 +84,17 @@
 	.screen-veil {
 		position: absolute;
 		inset: 0;
-		background:
-			radial-gradient(circle at 50% 50%, rgba(255, 244, 214, 0.14) 0 12%, transparent 42%),
-			linear-gradient(135deg, rgba(11, 15, 25, 0.98), rgba(24, 36, 45, 0.94) 40%, rgba(65, 33, 17, 0.9));
+		background: radial-gradient(
+				circle at 50% 50%,
+				rgba(255, 244, 214, 0.14) 0 12%,
+				transparent 42%
+			),
+			linear-gradient(
+				135deg,
+				rgba(11, 15, 25, 0.98),
+				rgba(24, 36, 45, 0.94) 40%,
+				rgba(65, 33, 17, 0.9)
+			);
 		opacity: 0;
 	}
 
@@ -98,15 +106,13 @@
 	}
 
 	.screen-core {
-		background:
-			radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.26), transparent 26%),
+		background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.26), transparent 26%),
 			radial-gradient(circle at 50% 50%, rgba(245, 159, 11, 0.2), transparent 54%);
 		mix-blend-mode: screen;
 	}
 
 	.screen-grid {
-		background-image:
-			linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+		background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
 			linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
 		background-size: 24px 24px;
 		mask-image: radial-gradient(circle at center, black 28%, transparent 82%);
@@ -114,15 +120,14 @@
 	}
 
 	.screen-glow {
-		background:
-			linear-gradient(
-				90deg,
-				transparent 0%,
-				rgba(255, 255, 255, 0.16) 45%,
-				rgba(255, 255, 255, 0.28) 50%,
-				rgba(255, 255, 255, 0.16) 55%,
-				transparent 100%
-			);
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.16) 45%,
+			rgba(255, 255, 255, 0.28) 50%,
+			rgba(255, 255, 255, 0.16) 55%,
+			transparent 100%
+		);
 		mix-blend-mode: screen;
 		transform: translateX(-100%);
 	}
