@@ -3,12 +3,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
-import {
-	HIGHLIGHT_FILL_PATTERN_ID,
-	HIGHLIGHT_LINE_PATTERN_ID,
-	HighlightLayerRegistry,
-	getHighlightLayerId
-} from '$routes/map/utils/layers/highlight';
+import { HighlightLayerRegistry, getHighlightLayerId } from '$routes/map/utils/layers/highlight';
 import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
