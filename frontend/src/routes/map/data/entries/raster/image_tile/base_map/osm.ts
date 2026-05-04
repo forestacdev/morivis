@@ -15,6 +15,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	metaData: {
 		name: 'OpenStreetMap',
 		attribution: 'OSM',
+		downloadUrl: 'https://operations.osmfoundation.org/policies/tiles/',
 		location: '世界',
 		minZoom: 0,
 		maxZoom: 24,

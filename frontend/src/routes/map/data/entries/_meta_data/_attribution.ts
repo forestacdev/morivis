@@ -54,7 +54,7 @@ const baseAttributions = {
 		name: '© OpenStreetMap contributors',
 		url: 'https://www.openstreetmap.org/copyright'
 	},
-	OpenMapTiles: {
+	OMT: {
 		name: '© OpenMapTiles',
 		url: 'https://openmaptiles.org/'
 	},
