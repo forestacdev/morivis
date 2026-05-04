@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import fragmentShader from './shaders/fragment.glsl?raw';
+import terrainRgbUrl from '$lib/terrainrgb.webp';
 import vertexShader from './shaders/vertex.glsl?raw';
 
 const nextPowerOfTwo = (value: number) => {
@@ -121,10 +122,8 @@ const imageToElevationArray = async (
 	height: number;
 	data: Float32Array; // ← 高さ(m)配列として返す
 }> => {
-	const response = await fetch(url);
-	const blob = await response.blob();
 	const img = new Image();
-	img.src = URL.createObjectURL(blob);
+	img.src = url;
 	await new Promise((resolve, reject) => {
 		img.onload = resolve;
 		img.onerror = reject;
@@ -160,7 +159,7 @@ const imageToElevationArray = async (
 };
 
 export const createdDemMesh = async (): Promise<THREE.Mesh> => {
-	const { data, width, height } = await imageToElevationArray('./terrainrgb.png', 0.15);
+	const { data, width, height } = await imageToElevationArray(terrainRgbUrl, 0.15);
 
 	// ピクセル解像度
 	const dx = 1;
