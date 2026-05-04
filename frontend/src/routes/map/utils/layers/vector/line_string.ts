@@ -2,8 +2,17 @@ import type { LineLayerSpecification } from 'maplibre-gl';
 
 import type { LineStringStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
-import { getColorExpression } from '$routes/map/utils/layers/vector/expression/color';
+import {
+	getColorExpression,
+	getPatternExpression
+} from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
+
+import {
+	createMorivisLayerMetadata,
+	createSublayerId,
+	getMorivisLogicalLayerId
+} from '$routes/map/utils/layers/id';
 
 // ラインレイヤーの作成
 export const createLineLayer = (
@@ -37,4 +46,41 @@ export const createLineLayer = (
 
 	// TODO width line-gradient
 	return lineLayer;
+};
+
+// ラインのパターンレイヤーの作成
+export const createLinePatternLayer = (
+	layer: LayerItem,
+	style: LineStringStyle
+): LineLayerSpecification | undefined => {
+	const patternExpression = getPatternExpression(style.colors);
+	if (!patternExpression) {
+		return undefined;
+	}
+	const defaultStyle = style.default;
+
+	const linePatternLayer: LineLayerSpecification = {
+		...layer,
+		id: createSublayerId(layer.id, 'line_pattern'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'line_pattern',
+			layer.metadata
+		),
+		type: 'line',
+		paint: {
+			'line-pattern': patternExpression,
+			'line-opacity': style.opacity
+		},
+		layout: {},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.line?.filter) {
+				return { filter: defaultStyle.line.filter };
+			}
+			return {};
+		})()
+	};
+
+	return linePatternLayer;
 };

@@ -9,7 +9,8 @@ import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createPointIconLayer } from '$routes/map/utils/layers/vector/point';
 import { clickableVectorIds } from '$routes/stores';
 import type {
 	LayerSpecification,

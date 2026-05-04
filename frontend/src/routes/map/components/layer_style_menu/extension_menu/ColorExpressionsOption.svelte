@@ -27,37 +27,21 @@
 
 {#if setExpression.type === 'single'}
 	<!-- NOTE: プロパティが存在するかどうか -->
-	<!-- TODO: patternのポイント、ラインの対応 -->
-	{#if 'pattern' in setExpression.mapping}
-		<ColorPatternPicker
-			{layerType}
-			label="全体の色"
-			bind:value={setExpression.mapping.value as string}
-			bind:pattern={setExpression.mapping.pattern}
-		/>
-	{:else}
-		<ColorPatternPicker
-			{layerType}
-			label="全体の色"
-			bind:value={setExpression.mapping.value as string}
-		/>
-	{/if}
+
+	<ColorPatternPicker
+		{layerType}
+		label="全体の色"
+		bind:value={setExpression.mapping.value as string}
+		bind:pattern={setExpression.mapping.pattern}
+	/>
 {:else if setExpression.type === 'match'}
 	{#each setExpression.mapping.categories as _, index}
-		{#if setExpression.mapping.patterns}
-			<ColorPatternPicker
-				{layerType}
-				label={setExpression.mapping.categories[index] as string}
-				bind:pattern={setExpression.mapping.patterns[index]}
-				bind:value={setExpression.mapping.values[index] as string}
-			/>
-		{:else}
-			<ColorPatternPicker
-				{layerType}
-				label={setExpression.mapping.categories[index] as string}
-				bind:value={setExpression.mapping.values[index] as string}
-			/>
-		{/if}
+		<ColorPatternPicker
+			{layerType}
+			label={setExpression.mapping.categories[index] as string}
+			bind:pattern={setExpression.mapping.patterns[index]}
+			bind:value={setExpression.mapping.values[index] as string}
+		/>
 	{/each}
 
 	<!-- No Data -->

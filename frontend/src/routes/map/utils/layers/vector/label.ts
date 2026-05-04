@@ -6,16 +6,13 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 
-import type { Labels, PointStyle, VectorStyle } from '$routes/map/data/types/vector/style';
-import type { IconImageSource } from '$routes/map/data/types/vector/properties';
+import type { Labels, VectorStyle } from '$routes/map/data/types/vector/style';
 
 import type { LayerItem } from '$routes/map/utils/layers/index';
 
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
-import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
-import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
 import {
 	createMorivisLayerMetadata,
 	createSublayerId,
@@ -158,60 +155,7 @@ export const compileLabelExpr = (le: LabelsExpressions, fields: FieldDef[]): Exp
 	return buildFieldExpression(field);
 };
 
-// ポイントのicon用レイヤーの作成
-
-export const createPointIconLayer = (
-	layer: LayerItem,
-	style: PointStyle,
-	imageIcon?: IconImageSource
-): SymbolLayerSpecification | undefined => {
-	const icons = style.icons;
-	if (!icons?.show) return undefined;
-
-	const iconExpression =
-		icons.kind === 'image'
-			? imageIcon
-				? buildGeneratedPoiIconExpression(imageIcon, icons.fallbackUrlExpression)
-				: null
-			: getIconExpression(icons);
-	if (!iconExpression) {
-		return undefined;
-	}
-
-	const isImage = icons.kind === 'image';
-
-	const defaultStyle = style.default;
-
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}`,
-		type: 'symbol',
-		paint: {
-			'icon-opacity': isImage ? 1 : style.opacity
-		},
-		layout: {
-			'icon-image': iconExpression,
-			'icon-size': isImage ? 0.5 : icons.size || 1,
-			'icon-anchor': isImage ? 'bottom' : 'center',
-
-			// 間引きをオフに
-			'icon-allow-overlap': isImage ? false : true,
-			'icon-ignore-placement': isImage ? false : true
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	return symbolLayer;
-};
-
 // symbolレイヤーの作成
-
 export const createSymbolLayer = (
 	layer: LayerItem,
 	style: VectorStyle,

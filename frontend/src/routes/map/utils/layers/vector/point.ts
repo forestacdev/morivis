@@ -1,10 +1,20 @@
-import type { CircleLayerSpecification } from 'maplibre-gl';
+import type { CircleLayerSpecification, SymbolLayerSpecification } from 'maplibre-gl';
 
 import type { PointStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 
 import { getColorExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
+
+import type { IconImageSource } from '$routes/map/data/types/vector/properties';
+import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
+import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
+
+import {
+	createMorivisLayerMetadata,
+	createSublayerId,
+	getMorivisLogicalLayerId
+} from '$routes/map/utils/layers/id';
 
 // pointレイヤーの作成
 export const createCircleLayer = (
@@ -41,4 +51,93 @@ export const createCircleLayer = (
 		})()
 	};
 	return circleLayer;
+};
+
+// ポイントのicon用レイヤーの作成
+
+export const createPointIconLayer = (
+	layer: LayerItem,
+	style: PointStyle
+): SymbolLayerSpecification | undefined => {
+	const iconExpression = getIconExpression(style.colors);
+	if (!iconExpression) {
+		return undefined;
+	}
+
+	const defaultStyle = style.default;
+
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+	
+		id: createSublayerId(layer.id, 'point_icon'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'point_icon',
+			layer.metadata
+		),
+		type: 'symbol',
+		paint: {
+			'icon-opacity': style.opacity
+		},
+		layout: {
+			'icon-image': iconExpression,
+			'icon-size': 1,
+			'icon-anchor': 'center',
+
+			// 間引きをオフに
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
+	};
+
+	return symbolLayer;
+};
+
+export const createPointImageIconLayer = (
+	layer: LayerItem,
+	style: PointStyle,
+	imageIcon: IconImageSource
+): SymbolLayerSpecification | undefined => {
+	const iconExpression = buildGeneratedPoiIconExpression(imageIcon);
+
+	const defaultStyle = style.default;
+
+	const symbolLayer: SymbolLayerSpecification = {
+		...layer,
+		id: createSublayerId(layer.id, 'point_image'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'point_image',
+			layer.metadata
+		),
+		type: 'symbol',
+		paint: {
+			'icon-opacity': style.opacity
+		},
+		layout: {
+			'icon-image': iconExpression,
+			'icon-size': 0.5,
+			'icon-anchor': 'bottom',
+
+			// 間引きをする
+			'icon-allow-overlap': false,
+			'icon-ignore-placement': false
+		},
+		// フィルター設定
+		...(() => {
+			if (defaultStyle?.symbol?.filter) {
+				return { filter: defaultStyle.symbol.filter };
+			}
+			return {};
+		})()
+	};
+
+	return symbolLayer;
 };

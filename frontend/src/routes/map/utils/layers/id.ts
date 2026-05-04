@@ -9,6 +9,13 @@ export const SUBLAYER_TYPES = [
 	'fill_pattern',
 	// ポリゴン外周線
 	'fill_outline',
+	// ラインのパターン表示
+	'line_pattern',
+	// ポイントのアイコン
+	'point_icon',
+	// ポイントのアイコン（画像）表示
+	'point_image',
+	// ラベル
 	// ベクターラベル表示
 	'label'
 ] as const;

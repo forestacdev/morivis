@@ -1,5 +1,10 @@
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
-import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+
+import {
+	createPointIconLayer,
+	createPointImageIconLayer
+} from '$routes/map/utils/layers/vector/point';
 
 import type {
 	LayerSpecification,
@@ -56,7 +61,10 @@ import {
 	createFillPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { createLineLayer } from '$routes/map/utils/layers/vector/line_string';
+import {
+	createLineLayer,
+	createLinePatternLayer
+} from '$routes/map/utils/layers/vector/line_string';
 import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
 
 import { get } from 'svelte/store';
@@ -129,14 +137,10 @@ export const createVectorLayer = (
 		case 'line':
 			return createLineLayer(layer, style);
 		case 'circle': {
-			switch (style.markerType) {
-				case 'icon':
-					return style.icons?.show ? createPointIconLayer(layer, style, pointImageIcon) : undefined;
-				case 'circle':
-					return createCircleLayer(layer, style);
-				default:
-					console.warn(`未対応の style.markerType: ${style.markerType} （layer.id: ${layer.id}）`);
-					return undefined;
+			if (style.imageIcon?.show && pointImageIcon) {
+				return createPointImageIconLayer(layer, style, pointImageIcon);
+			} else {
+				return createCircleLayer(layer, style);
 			}
 		}
 		default:
@@ -276,14 +280,27 @@ export const createLayersItems = (
 					// ライン
 					if (style.type === 'line') {
 						lineLayerItems.push(vectorLayer);
+
+						// ポリゴンの塗りつぶしパターン
+						const fillPatternLayer = createLinePatternLayer(layer, style);
+						if (fillPatternLayer) {
+							fillLayerItems.push(fillPatternLayer);
+						}
 					}
 
 					// ポイント
 					if (style.type === 'circle') {
-						if (style.markerType === 'circle') {
-							circleLayerItems.push(vectorLayer);
-						} else if (style.markerType === 'icon') {
+						if (style.imageIcon && style.imageIcon.show) {
+							// 画像アイコンの場合は、circleLayerではなくsymbolLayerに追加
 							circleIconLayerItems.push(vectorLayer);
+						} else {
+							circleLayerItems.push(vectorLayer);
+
+							// アイコンレイヤー
+							const pointIconLayer = createPointIconLayer(layer, style);
+							if (pointIconLayer) {
+								circleLayerItems.push(pointIconLayer);
+							}
 						}
 					}
 
