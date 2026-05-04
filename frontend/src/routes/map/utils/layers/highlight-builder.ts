@@ -121,10 +121,10 @@ const createHighlightLayer = (
 				: {}),
 			paint: {
 				'circle-color': HIGHLIGHT_LAYER_COLOR,
-				'circle-opacity': 0.22,
+				'circle-opacity': 0.8,
 				'circle-radius': 10,
 				'circle-stroke-color': HIGHLIGHT_LAYER_COLOR,
-				'circle-stroke-opacity': 0.95,
+				'circle-stroke-opacity': 1,
 				'circle-stroke-width': 3
 			}
 		} as CircleLayerSpecification;
@@ -140,7 +140,7 @@ const createHighlightLayer = (
 					'fill-color': HIGHLIGHT_LAYER_COLOR,
 					// 'fill-pattern': HIGHLIGHT_FILL_PATTERN_ID,
 
-					'fill-opacity': 1,
+					'fill-opacity': 0.8,
 					'fill-outline-color': HIGHLIGHT_LAYER_COLOR
 				}
 			} as FillLayerSpecification;
@@ -162,7 +162,7 @@ const createHighlightLayer = (
 				paint: {
 					...layer.paint,
 					'circle-color': HIGHLIGHT_LAYER_COLOR,
-					'circle-opacity': 1,
+					'circle-opacity': 0.8,
 					'circle-stroke-color': HIGHLIGHT_LAYER_COLOR,
 					'circle-stroke-opacity': 1
 				}
@@ -174,7 +174,7 @@ const createHighlightLayer = (
 				paint: {
 					...layer.paint,
 					'fill-extrusion-color': HIGHLIGHT_LAYER_COLOR,
-					'fill-extrusion-opacity': 0.85
+					'fill-extrusion-opacity': 0.8
 				}
 			} as FillExtrusionLayerSpecification;
 		case 'symbol':
