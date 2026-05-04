@@ -161,7 +161,7 @@
 				transition:fade={{ duration: 100 }}
 				viewBox="0 0 24 18"
 				aria-hidden="true"
-				class="absolute -bottom-[10px] left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-transform duration-150"
+				class="absolute bottom-0 left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-transform duration-150"
 			>
 				<path
 					d="M0.2 2C0.2 2 4.2 8.2 8.4 12.2C10.1 14 10.7 14.9 12 14.9C13.3 14.9 13.9 14 15.6 12.2C19.8 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
@@ -175,13 +175,13 @@
 		>
 			<div
 				class="absolute inset-0 transition-transform duration-150 {isHover || clickId === featureId
-					? '-translate-y-1 scale-120'
+					? '-translate-y-[15px] scale-120'
 					: ''}"
 			>
 				{#if showImage}
 					<img
 						transition:fade={{ duration: 100 }}
-						class="border-base bg-main absolute inset-0 h-full w-full rounded-full border-3 object-cover"
+						class="bg-main absolute inset-0 h-full w-full rounded-full border-3 border-white object-cover"
 						src={imageUrl}
 						alt={properties.name || 'Marker Image'}
 					/>
@@ -189,7 +189,7 @@
 					<!-- エラー時のフォールバック -->
 					<div
 						transition:fade={{ duration: 100 }}
-						class="border-base absolute inset-0 flex h-full w-full items-center justify-center rounded-full border-3 bg-gray-400"
+						class="absolute inset-0 flex h-full w-full items-center justify-center rounded-full border-3 border-white bg-gray-400"
 					>
 						<span class="text-sm text-white">?</span>
 					</div>
@@ -206,19 +206,21 @@
 	{/if}
 </div>
 
-<div
-	bind:this={nameContainer}
-	class="items-top pointer-events-none absolute relative z-10 flex w-[200px] -translate-y-7.5 justify-center"
->
-	{#if isReady}
-		<div
-			transition:fly={{ duration: 200, y: -10, opacity: 0 }}
-			class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-3 text-center text-sm text-gray-800"
-		>
-			{properties.name}
-		</div>
-	{/if}
-</div>
+{#if properties.name}
+	<div
+		bind:this={nameContainer}
+		class="items-top pointer-events-none absolute relative z-10 flex w-[200px] -translate-y-7.5 justify-center"
+	>
+		{#if isReady}
+			<div
+				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
+				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-3 text-center text-sm text-gray-800"
+			>
+				{properties.name}
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.c-ripple-effect {
