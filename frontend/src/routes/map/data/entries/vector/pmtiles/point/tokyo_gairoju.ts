@@ -15,7 +15,7 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceDataName: '都道の街路樹',
 		description: `
             「東京都オープンデータカタログサイト」において公開されている「都道の街路樹」データをもとに加工`,
-		attribution: '東京都オープンデータカタログサイト',
+		attribution: '東京都',
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',

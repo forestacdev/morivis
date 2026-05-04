@@ -27,7 +27,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '兵庫県 樹種ポリゴン',
-		attribution: '兵庫県森林資源データ',
+		attribution: '兵庫県',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tree_species_hyogo',
 		location: '兵庫県',
 		tags: ['森林', '林相図'],

@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '広島県 単木データ',
-		sourceDataName: '広島県の単木データ',
+		sourceDataName: '航空レーザ計測に基づく森林資源データ（単木ポイントデータ）',
 		description: '',
 		attribution: 'DoboX',
 		tags: ['街路樹', '単木'],
