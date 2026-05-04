@@ -178,5 +178,11 @@ self.onmessage = async (e: MessageEvent<WarmupWorkerMessage | RenderWorkerMessag
 			});
 			return;
 		}
+
+		self.postMessage({
+			type: 'render-error',
+			id: e.data.id,
+			error: error instanceof Error ? error.message : String(error)
+		});
 	}
 };
