@@ -261,59 +261,57 @@
 			</div>
 
 			<div class="flex w-full items-center justify-center pb-2"></div>
-			<!-- NOTE:patternが存在するかどうか -->
-			{#if pattern && layerType === 'fill'}
-				<div class="bg-base mb-4 h-[1px] w-full"></div>
 
-				<!-- ポリゴンパターン選択UI -->
-				{#snippet patternButton(_pattern: SpritePatternId)}
-					<button
-						class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
-						style="background-color: {value};"
-						onclick={() => {
-							pattern = _pattern;
-							showColorPallet = false;
-						}}
-					>
-						{#if _pattern}
-							<img
-								src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
-								alt="pattern"
-								class="absolute h-full"
-							/>
-						{/if}
-					</button>
-				{/snippet}
-				<HorizontalSelectBox
-					bind:group={selectedPpattern}
-					options={[
-						{ key: 'black', name: 'パターン:黒' },
-						{ key: 'white', name: 'パターン:白' }
-					]}
-				/>
-				<div class="flex w-full items-center pb-2 text-base"></div>
-				<div class="grid grid-cols-8 gap-2 pb-2">
-					{#if selectedPpattern === 'black'}
-						{#each patternBlackList as _pattern}
-							{@render patternButton(_pattern)}
-						{/each}
-					{:else if selectedPpattern === 'white'}
-						{#each patternWhiteList as _pattern}
-							{@render patternButton(_pattern)}
-						{/each}
+			<div class="bg-base mb-4 h-[1px] w-full"></div>
+
+			<!-- ポリゴンパターン選択UI -->
+			{#snippet patternButton(_pattern: SpritePatternId)}
+				<button
+					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
+					style="background-color: {value};"
+					onclick={() => {
+						pattern = _pattern;
+						showColorPallet = false;
+					}}
+				>
+					{#if _pattern}
+						<img
+							src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
+							alt="pattern"
+							class="absolute h-full"
+						/>
 					{/if}
-				</div>
-				<div class="flex w-full items-center justify-end pb-2">
-					<button
-						class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
-						onclick={() => {
-							pattern = null;
-							showColorPallet = false;
-						}}
-						aria-label="Remove pattern"><span class="text-sm text-black">パターンなし</span></button
-					>
-				</div>
-			{/if}
+				</button>
+			{/snippet}
+			<HorizontalSelectBox
+				bind:group={selectedPpattern}
+				options={[
+					{ key: 'black', name: 'パターン:黒' },
+					{ key: 'white', name: 'パターン:白' }
+				]}
+			/>
+			<div class="flex w-full items-center pb-2 text-base"></div>
+			<div class="grid grid-cols-8 gap-2 pb-2">
+				{#if selectedPpattern === 'black'}
+					{#each patternBlackList as _pattern}
+						{@render patternButton(_pattern)}
+					{/each}
+				{:else if selectedPpattern === 'white'}
+					{#each patternWhiteList as _pattern}
+						{@render patternButton(_pattern)}
+					{/each}
+				{/if}
+			</div>
+			<div class="flex w-full items-center justify-end pb-2">
+				<button
+					class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
+					onclick={() => {
+						pattern = null;
+						showColorPallet = false;
+					}}
+					aria-label="Remove pattern"><span class="text-sm text-black">パターンなし</span></button
+				>
+			</div>
 		</div>
 	{/if}
 </div>

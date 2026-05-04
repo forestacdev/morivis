@@ -27,7 +27,7 @@ const roadLineOpacity: ExpressionSpecification = [
 	14,
 	1,
 	18,
-	0.3
+	0.5
 ];
 
 export const roadSources: Record<string, VectorSourceSpecification> = {

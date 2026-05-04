@@ -426,11 +426,11 @@ export const createLayersItems = (
 	return [
 		...baseMapLayerItems,
 		...cloudLayerItems,
-		...rasterLayerItems,
-		...fillLayerItems,
 		...boundaryLayerItems,
 		...railLayerItems,
 		...roadLineLayerItems,
+		...rasterLayerItems,
+		...fillLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
 		...hillshadeLayerItems,
