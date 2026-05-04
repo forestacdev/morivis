@@ -19,23 +19,35 @@
 				<span class="text-2xl font-bold">アプリのインストール手順</span>
 			</div>
 			<div
-				class="c-scroll flex h-full grow flex-col overflow-x-hidden overflow-y-auto pb-4 text-justify"
+				class="c-scroll flex h-full grow flex-col overflow-x-hidden overflow-y-auto pr-2 pb-4 text-justify"
 			>
-				<div class="pb-4">画面下部のアドレスバーから共有アイコンをタップします。</div>
+				<div class="pb-4">1. 画面下部のアドレスバーから三点リーダーボタンをタップします。</div>
 				<img
-					src="./images/pwa/ios_Install_1.webp"
+					src="./images/pwa/ios/ios_Install_1.webp"
 					alt="共有アイコン"
 					class="bg-base mx-auto mb-6 rounded-lg"
 				/>
-				<div class="pb-4">「ホーム画面に追加」をタップします。</div>
+				<div class="pb-4">2.「共有」をタップします。</div>
 				<img
-					src="./images/pwa/ios_Install_2.webp"
+					src="./images/pwa/ios/ios_Install_2.webp"
 					alt="ホーム画面に追加"
 					class="bg-base mx-auto mb-6 rounded-lg"
 				/>
-				<div class="pb-4">「追加」をタップしてアプリをインストールします。</div>
+				<div class="pb-4">3.「その他」をタップします。</div>
 				<img
-					src="./images/pwa/ios_Install_3.webp"
+					src="./images/pwa/ios/ios_Install_3.webp"
+					alt="追加"
+					class="bg-base mx-auto mb-6 rounded-lg"
+				/>
+				<div class="pb-4">4.「ホーム画面に追加」をタップします。</div>
+				<img
+					src="./images/pwa/ios/ios_Install_4.webp"
+					alt="追加"
+					class="bg-base mx-auto mb-6 rounded-lg"
+				/>
+				<div class="pb-4">5.「追加」をタップしてアプリをインストールします。</div>
+				<img
+					src="./images/pwa/ios/ios_Install_5.webp"
 					alt="追加"
 					class="bg-base mx-auto mb-6 rounded-lg"
 				/>
@@ -45,7 +57,7 @@
 					onclick={() => {
 						showPwaManuelDialog.set(false);
 					}}
-					class="c-btn-confirm px-12 py-6 text-lg"
+					class="c-btn-confirm px-12 py-3 text-lg"
 				>
 					OK
 				</button>
