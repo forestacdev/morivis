@@ -32,26 +32,6 @@ import type {
 	ExpressionSpecification
 } from 'maplibre-gl';
 
-/** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
-export const createMatchColorStyleRandomMapping = (
-	categories: string[] | number[],
-	isPattern: boolean = false // パターンを使用するかどうかのフラグ
-): ColorMatchExpression['mapping'] => {
-	const values = getRandomColors(categories.length);
-	if (isPattern) {
-		return {
-			categories,
-			values,
-			patterns: categories.map(() => null) // パターンは使用しない場合はnull
-		};
-	} else {
-		return {
-			categories,
-			values
-		};
-	}
-};
-
 /** カテゴリ配列から辞書優先、未定義はランダム色のマッピングを作成する */
 export const createMatchColorMapping = (
 	categories: string[] | number[],
@@ -94,7 +74,8 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -142,7 +123,8 @@ export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -223,7 +205,8 @@ export const DEFAULT_CAD_STYLE: LineStringStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]

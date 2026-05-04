@@ -14,7 +14,7 @@ import {
 	DEFAULT_VECTOR_LINE_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE,
 	DEFAULT_CAD_STYLE,
-	createMatchColorStyleRandomMapping,
+	createMatchColorMapping,
 	createColorStyleDXFMapping
 } from '$routes/map/data/entries/vector/_style';
 
@@ -112,10 +112,7 @@ const createDefaultColorsConfig = (
 			type: 'single' as const,
 			key: '単色',
 			name: '単色',
-			mapping:
-				entryGeometryType === 'Polygon'
-					? { value: color as BaseSingleColor, pattern: null }
-					: { value: color as BaseSingleColor }
+			mapping: { value: color as BaseSingleColor, pattern: null }
 		}
 	]
 });
@@ -138,7 +135,7 @@ const getDefaultStyle = (
 
 // --- DM/DXF/CAD スタイル構築ヘルパー（export） ---
 
-export { createMatchColorStyleRandomMapping, createColorStyleDXFMapping, DEFAULT_CAD_STYLE };
+export { createMatchColorMapping, createColorStyleDXFMapping, DEFAULT_CAD_STYLE };
 
 export const buildDmStyle = (
 	data: FeatureCollection,
@@ -161,29 +158,20 @@ export const buildDmStyle = (
 		type: 'match',
 		key: 'className',
 		name: '分類ごとの色分け',
-		mapping: createMatchColorStyleRandomMapping(
-			classNames[entryGeometryType],
-			entryGeometryType === 'Polygon'
-		)
+		mapping: createMatchColorMapping(classNames[entryGeometryType])
 	});
 	colorsConfig.expressions.push({
 		type: 'match',
 		key: 'layer',
 		name: 'レイヤごとの色分け',
-		mapping: createMatchColorStyleRandomMapping(
-			layers[entryGeometryType],
-			entryGeometryType === 'Polygon'
-		)
+		mapping: createMatchColorMapping(layers[entryGeometryType])
 	});
 	if (dataTypes[entryGeometryType]?.length > 0) {
 		colorsConfig.expressions.push({
 			type: 'match',
 			key: 'dataType',
 			name: 'データタイプごとの色分け',
-			mapping: createMatchColorStyleRandomMapping(
-				dataTypes[entryGeometryType],
-				entryGeometryType === 'Polygon'
-			)
+			mapping: createMatchColorMapping(dataTypes[entryGeometryType])
 		});
 	}
 	colorsConfig.key = 'layer';
@@ -224,10 +212,7 @@ export const buildDxfStyle = (
 			type: 'match',
 			key: 'type',
 			name: 'エンティティごとの色分け',
-			mapping: createMatchColorStyleRandomMapping(
-				entityTypes[entryGeometryType],
-				entryGeometryType === 'Polygon'
-			)
+			mapping: createMatchColorMapping(entityTypes[entryGeometryType])
 		});
 	}
 
@@ -304,7 +289,7 @@ const buildAutoMatchExpressions = (
 			type: 'match',
 			key,
 			name: `${key}`,
-			mapping: createMatchColorStyleRandomMapping(categories, entryGeometryType === 'Polygon')
+			mapping: createMatchColorMapping(categories)
 		});
 	}
 

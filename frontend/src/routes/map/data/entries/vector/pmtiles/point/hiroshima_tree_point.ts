@@ -152,7 +152,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#33a02c'
+						value: '#33a02c',
+						pattern: null
 					}
 				},
 				{
@@ -161,7 +162,8 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '樹種ごとの色分け',
 					mapping: {
 						categories: ['スギ', 'ヒノキ'],
-						values: ['#33a02c', '#b2df8a']
+						values: ['#33a02c', '#b2df8a'],
+						patterns: [null, null]
 					}
 				},
 				{
