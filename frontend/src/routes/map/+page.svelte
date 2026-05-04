@@ -533,7 +533,7 @@
 						(pointLayerEntry
 							? resolveGeneratedPoiIconUrl(
 									prop,
-									pointLayerEntry.style.icons,
+									pointLayerEntry.style.imageIcon,
 									pointLayerEntry.properties.images?.icon
 								)
 							: null);
@@ -555,7 +555,7 @@
 				(pointLayerEntry
 					? resolveGeneratedPoiIconUrl(
 							prop,
-							pointLayerEntry.style.icons,
+							pointLayerEntry.style.imageIcon,
 							pointLayerEntry.properties.images?.icon
 						)
 					: null);

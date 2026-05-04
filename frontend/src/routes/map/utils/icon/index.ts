@@ -41,8 +41,14 @@ export const buildGeneratedPoiIconExpression = (
 	image: IconImageSource
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
 	const { imageIdKey } = image;
-	const fallbackUrl = ['concat', ICON_IMAGE_BASE_PATH, '/', ['get', imageIdKey], '.webp'];
-	const imageUrlExpression = (() => {
+	const fallbackUrl: ExpressionSpecification = [
+		'concat',
+		ICON_IMAGE_BASE_PATH,
+		'/',
+		['to-string', ['get', imageIdKey]],
+		'.webp'
+	];
+	const imageUrlExpression: ExpressionSpecification = (() => {
 		if (image.type === 'relative') {
 			return [
 				'coalesce',
@@ -50,7 +56,11 @@ export const buildGeneratedPoiIconExpression = (
 				fallbackUrl
 			] as ExpressionSpecification;
 		}
-		return ['coalesce', ['get', image.urlKey], fallbackUrl] as ExpressionSpecification;
+		return [
+			'coalesce',
+			['to-string', ['get', image.urlKey]],
+			fallbackUrl
+		] as ExpressionSpecification;
 	})();
 
 	return [

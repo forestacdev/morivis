@@ -94,9 +94,7 @@
 						urlKey: 'imageUrl'
 					}
 				};
-				pointEntry.style.markerType = 'icon';
-				pointEntry.style.icons = {
-					kind: 'image',
+				pointEntry.style.imageIcon = {
 					show: true
 				};
 

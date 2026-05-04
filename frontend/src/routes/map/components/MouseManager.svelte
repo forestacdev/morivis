@@ -198,7 +198,7 @@
 		const generatedIconImage = pointLayerEntry
 			? resolveGeneratedPoiIconUrl(
 					feature.properties,
-					pointLayerEntry.style.icons,
+					pointLayerEntry.style.imageIcon,
 					pointLayerEntry.properties.images?.icon
 				)
 			: null;

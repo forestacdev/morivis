@@ -117,27 +117,27 @@ const createHighlightLayer = (
 	const logicalLayerId = getMorivisLogicalLayerId(layer.metadata) ?? layer.id;
 	const metadata = createMorivisLayerMetadata(logicalLayerId, 'highlight', layer.metadata);
 
-	if (style.type === 'circle' && style.markerType === 'icon' && layer.type === 'symbol') {
-		return {
-			id: getHighlightLayerId(layer.id),
-			type: 'circle',
-			source: layer.source,
-			minzoom: layer.minzoom,
-			maxzoom: layer.maxzoom,
-			metadata,
-			...('source-layer' in layer && layer['source-layer']
-				? { 'source-layer': layer['source-layer'] }
-				: {}),
-			paint: {
-				'circle-color': HIGHLIGHT_LAYER_COLOR,
-				'circle-opacity': 0.8,
-				'circle-radius': 10,
-				'circle-stroke-color': HIGHLIGHT_LAYER_COLOR,
-				'circle-stroke-opacity': 1,
-				'circle-stroke-width': 3
-			}
-		} as CircleLayerSpecification;
-	}
+	// if (style.type === 'circle' && style.markerType === 'icon' && layer.type === 'symbol') {
+	// 	return {
+	// 		id: getHighlightLayerId(layer.id),
+	// 		type: 'circle',
+	// 		source: layer.source,
+	// 		minzoom: layer.minzoom,
+	// 		maxzoom: layer.maxzoom,
+	// 		metadata,
+	// 		...('source-layer' in layer && layer['source-layer']
+	// 			? { 'source-layer': layer['source-layer'] }
+	// 			: {}),
+	// 		paint: {
+	// 			'circle-color': HIGHLIGHT_LAYER_COLOR,
+	// 			'circle-opacity': 0.8,
+	// 			'circle-radius': 10,
+	// 			'circle-stroke-color': HIGHLIGHT_LAYER_COLOR,
+	// 			'circle-stroke-opacity': 1,
+	// 			'circle-stroke-width': 3
+	// 		}
+	// 	} as CircleLayerSpecification;
+	// }
 
 	switch (layer.type) {
 		case 'fill':
@@ -309,12 +309,8 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				highlightClickableIds.push(highlightVectorLayer.id);
 			}
 
-			if (style.type === 'circle' && style.markerType === 'icon') {
-				const pointIconLayer = createPointIconLayer(
-					layer,
-					style,
-					vectorEntry.properties.images?.icon
-				);
+			if (style.type === 'circle') {
+				const pointIconLayer = createPointIconLayer(layer, style);
 				if (pointIconLayer) {
 					registerLayerFilterState({
 						logicalLayerId: layerId,

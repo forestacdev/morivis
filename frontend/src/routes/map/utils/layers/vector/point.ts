@@ -68,7 +68,7 @@ export const createPointIconLayer = (
 
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-	
+
 		id: createSublayerId(layer.id, 'point_icon'),
 		metadata: createMorivisLayerMetadata(
 			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
