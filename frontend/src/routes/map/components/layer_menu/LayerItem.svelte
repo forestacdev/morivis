@@ -442,7 +442,7 @@
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
+		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border p-2 text-left text-nowrap text-clip duration-300 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
