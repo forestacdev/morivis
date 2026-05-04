@@ -1,6 +1,6 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { createMatchColorStyleRandomPatternMapping } from '$routes/map/data/entries/vector/_style';
+import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'tokyo_gairoju',
@@ -155,7 +155,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹種',
 					name: '樹種ごとの色分け',
 					mapping: {
-						...createMatchColorStyleRandomPatternMapping([
+						...createMatchColorMapping([
 							'アオギリ',
 							'トキワマンサク',
 							'マサキ',

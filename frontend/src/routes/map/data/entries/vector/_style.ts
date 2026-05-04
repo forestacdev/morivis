@@ -14,8 +14,11 @@ import type {
 	PolygonOutLine,
 	ColorsStyle
 } from '$routes/map/data/types/vector/style';
-import { getRandomColors } from '$routes/map/utils/color/color-brewer';
-import { color } from 'd3-color';
+import { getRandomColors, type BaseSingleColor } from '$routes/map/utils/color/color-brewer';
+import {
+	matchStyleDicts,
+	type MatchStyleDictName
+} from '$routes/map/data/entries/vector/_match-style-dicts';
 
 import type {
 	FillLayerSpecification,
@@ -49,14 +52,20 @@ export const createMatchColorStyleRandomMapping = (
 	}
 };
 
-/** カテゴリ配列からランダム色とnullパターンのマッピングを作成する */
-export const createMatchColorStyleRandomPatternMapping = (
-	categories: string[] | number[]
+/** カテゴリ配列から辞書優先、未定義はランダム色のマッピングを作成する */
+export const createMatchColorMapping = (
+	categories: string[] | number[],
+	styleDictName?: MatchStyleDictName
 ): ColorMatchExpression['mapping'] => {
+	const randomColors = getRandomColors(categories.length);
+	const styleDict = styleDictName ? matchStyleDicts[styleDictName] : undefined;
+
 	return {
 		categories,
-		values: getRandomColors(categories.length),
-		patterns: categories.map(() => null)
+		values: categories.map(
+			(category, index) => styleDict?.colors[String(category)] ?? randomColors[index]
+		),
+		patterns: categories.map((category) => styleDict?.patterns?.[String(category)] ?? null)
 	};
 };
 
