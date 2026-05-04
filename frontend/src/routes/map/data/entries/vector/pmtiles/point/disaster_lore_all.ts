@@ -21,6 +21,7 @@ const entry: PointEntry<TileMetaData> = {
 		sourceLayer: 'disaster_lore_all',
 		tags: ['自然災害伝承碑'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
+		promoteId: 'ID',
 		xyzImageTile: {
 			x: 227,
 			y: 100,
