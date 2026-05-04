@@ -4,6 +4,7 @@ import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import { HighlightLayerRegistry, getHighlightLayerId } from '$routes/map/utils/layers/highlight';
+import { createMorivisLayerMetadata, getMorivisLogicalLayerId } from '$routes/map/utils/layers/id';
 import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
@@ -80,7 +81,8 @@ export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
 		id: `${entry.id}`,
 		source: `${entry.id}_source`,
 		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom: 'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
+		minzoom: 'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1),
+		metadata: createMorivisLayerMetadata(entry.id, 'base')
 	};
 };
 
@@ -110,6 +112,8 @@ const createHighlightLayer = (
 	} = {}
 ): LayerSpecification | undefined => {
 	const { useLinePattern = true } = options;
+	const logicalLayerId = getMorivisLogicalLayerId(layer.metadata) ?? layer.id;
+	const metadata = createMorivisLayerMetadata(logicalLayerId, 'highlight', layer.metadata);
 
 	if (style.type === 'circle' && style.markerType === 'icon' && layer.type === 'symbol') {
 		return {
@@ -118,7 +122,7 @@ const createHighlightLayer = (
 			source: layer.source,
 			minzoom: layer.minzoom,
 			maxzoom: layer.maxzoom,
-			...(layer.metadata ? { metadata: layer.metadata } : {}),
+			metadata,
 			...('source-layer' in layer && layer['source-layer']
 				? { 'source-layer': layer['source-layer'] }
 				: {}),
@@ -138,6 +142,7 @@ const createHighlightLayer = (
 			return {
 				...layer,
 				id: getHighlightLayerId(layer.id),
+				metadata,
 				paint: {
 					...layer.paint,
 					'fill-color': HIGHLIGHT_LAYER_COLOR,
@@ -151,6 +156,7 @@ const createHighlightLayer = (
 			return {
 				...layer,
 				id: getHighlightLayerId(layer.id),
+				metadata,
 				paint: {
 					...layer.paint,
 					// ...(useLinePattern ? { 'line-pattern': HIGHLIGHT_LINE_PATTERN_ID } : {}),
@@ -162,6 +168,7 @@ const createHighlightLayer = (
 			return {
 				...layer,
 				id: getHighlightLayerId(layer.id),
+				metadata,
 				paint: {
 					...layer.paint,
 					'circle-color': HIGHLIGHT_LAYER_COLOR,
@@ -174,6 +181,7 @@ const createHighlightLayer = (
 			return {
 				...layer,
 				id: getHighlightLayerId(layer.id),
+				metadata,
 				paint: {
 					...layer.paint,
 					'fill-extrusion-color': HIGHLIGHT_LAYER_COLOR,
@@ -184,6 +192,7 @@ const createHighlightLayer = (
 			return {
 				...layer,
 				id: getHighlightLayerId(layer.id),
+				metadata,
 				paint: {
 					...layer.paint,
 					'text-color': '#006688',

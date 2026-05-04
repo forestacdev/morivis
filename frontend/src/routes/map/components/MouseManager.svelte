@@ -18,7 +18,10 @@
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
-	import { getBaseLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
+	import {
+		getLogicalLayerIdFromLayer,
+		HighlightLayerRegistry
+	} from '$routes/map/utils/layers/highlight';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
@@ -433,7 +436,7 @@
 				return;
 			}
 
-			const selectedVecterLayersId = features.map((feature) => getBaseLayerId(feature.layer.id));
+			const selectedVecterLayersId = features.map((feature) => getLogicalLayerIdFromLayer(feature.layer));
 			const selectedRasterLayersId = getSelectedRasterLayerIds(e.lngLat);
 
 			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ
@@ -471,7 +474,7 @@
 
 			if (features.length > 0) {
 				const feature = features[0];
-				const normalizedLayerId = getBaseLayerId(feature.layer.id);
+				const normalizedLayerId = getLogicalLayerIdFromLayer(feature.layer);
 				clickLngLat =
 					feature.geometry.type === 'Point'
 						? (feature.geometry.coordinates as [number, number])
@@ -493,7 +496,7 @@
 
 			const feature = features[0]; // 一番上のfeature
 			const id = feature.id;
-			const normalizedLayerId = getBaseLayerId(feature.layer.id);
+			const normalizedLayerId = getLogicalLayerIdFromLayer(feature.layer);
 
 			if (import.meta.env.DEV) {
 				console.warn('debug:Clicked feature:', {

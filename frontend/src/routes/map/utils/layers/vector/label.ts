@@ -16,6 +16,11 @@ import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
 import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
+import {
+	createMorivisLayerMetadata,
+	createSublayerId,
+	getMorivisLogicalLayerId
+} from '$routes/map/utils/layers/id';
 
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
@@ -218,7 +223,12 @@ export const createSymbolLayer = (
 	const LabelsExpression = style.labels.expressions.find((label) => label.key === key);
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-		id: `${layer.id}_label`,
+		id: createSublayerId(layer.id, 'label'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'label',
+			layer.metadata
+		),
 		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
 		type: 'symbol',
 		paint: {

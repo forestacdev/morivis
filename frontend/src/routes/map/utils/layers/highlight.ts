@@ -1,6 +1,7 @@
 import type { FilterSpecification, ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
 
 import type { SelectedHighlightData } from '$routes/stores';
+import { getMorivisLogicalLayerId, getSublayerBaseId } from '$routes/map/utils/layers/id';
 // import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 
 export const HIGHLIGHT_LAYER_PREFIX = '@highlight_';
@@ -50,7 +51,14 @@ export const isHighlightLayerId = (layerId: string) => {
 };
 
 export const getBaseLayerId = (layerId: string) => {
-	return isHighlightLayerId(layerId) ? layerId.slice(HIGHLIGHT_LAYER_PREFIX.length) : layerId;
+	const resolvedLayerId = isHighlightLayerId(layerId)
+		? layerId.slice(HIGHLIGHT_LAYER_PREFIX.length)
+		: layerId;
+	return getSublayerBaseId(resolvedLayerId);
+};
+
+export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown }) => {
+	return getMorivisLogicalLayerId(layer.metadata) ?? getBaseLayerId(layer.id);
 };
 
 // export const isHighlightFillPatternId = (id: string) => {
