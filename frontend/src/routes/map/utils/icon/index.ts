@@ -1,6 +1,6 @@
 import type {
 	DataDrivenPropertyValueSpecification,
-	Map,
+	Map as MapLibreMapType,
 	MapStyleImageMissingEvent,
 	ResolvedImageSpecification,
 	MapGeoJSONFeature,
@@ -19,7 +19,10 @@ import type {
 } from '$routes/map/data/types/vector/properties';
 import { devProxyTransform } from '$routes/map/utils/platform/proxy';
 
-let mapLibreMap: Map | null = null;
+let mapLibreMap: MapLibreMapType | null = null;
+const imageBitmapCache = new Map<string, Promise<ImageBitmap>>();
+const inflightGeneratedPoiIcons = new Map<string, Promise<void>>();
+let renderedDummyIconPromise: Promise<ImageBitmap> | null = null;
 
 const ICON_WORKER_POOL_MIN_SIZE = 1;
 const ICON_WORKER_POOL_MAX_SIZE = 4;
@@ -165,7 +168,7 @@ export const resolveGeneratedPoiIconUrl = (
 type RenderTask = {
 	id: string;
 	image: ImageBitmap;
-	resolve: () => void;
+	resolve: (imageBitmap: ImageBitmap) => void;
 	reject: (error: Error) => void;
 };
 
@@ -210,15 +213,9 @@ class IconWorkerSlot {
 				const task = this.currentTask;
 				if (!task) return;
 
-				if (mapLibreMap && !mapLibreMap.hasImage(e.data.id)) {
-					mapLibreMap.addImage(e.data.id, e.data.imageBitmap, {
-						pixelRatio: 1
-					});
-				}
-
 				this.currentTask = null;
 				this.isBusy = false;
-				task.resolve();
+				task.resolve(e.data.imageBitmap);
 				this.onAvailable();
 				return;
 			}
@@ -341,7 +338,7 @@ class GeneratedPoiIconWorkerPool {
 	};
 
 	render = async (id: string, image: ImageBitmap) => {
-		await new Promise<void>((resolve, reject) => {
+		return await new Promise<ImageBitmap>((resolve, reject) => {
 			this.queue.push({ id, image, resolve, reject });
 			this.dispatch();
 		});
@@ -448,32 +445,68 @@ const addImageToMap = (id: string, imageBitmap: ImageBitmap) => {
 };
 
 const renderImageWithWorker = async (id: string, image: ImageBitmap) => {
-	await iconWorkerPool.render(id, image);
+	return await iconWorkerPool.render(id, image);
 };
 
 const loadImage = async (src: string): Promise<ImageBitmap> => {
-	const requestUrl = import.meta.env.PROD ? src : devProxyTransform(src).url;
-	const response = await fetch(requestUrl);
-	if (!response.ok) {
-		throw new Error('Failed to fetch image');
+	const cachedImage = imageBitmapCache.get(src);
+	if (cachedImage) {
+		return await cachedImage;
 	}
-	const blob = await response.blob();
-	return await createImageBitmap(blob);
+
+	const imagePromise = (async () => {
+		const requestUrl = import.meta.env.PROD ? src : devProxyTransform(src).url;
+		const response = await fetch(requestUrl);
+		if (!response.ok) {
+			throw new Error('Failed to fetch image');
+		}
+		const blob = await response.blob();
+		return await createImageBitmap(blob);
+	})().catch((error) => {
+		imageBitmapCache.delete(src);
+		throw error;
+	});
+
+	imageBitmapCache.set(src, imagePromise);
+	return await imagePromise;
+};
+
+const getRenderedDummyIcon = async () => {
+	if (!renderedDummyIconPromise) {
+		renderedDummyIconPromise = (async () => {
+			const image = await loadImage(ICON_NO_IMAGE_PATH);
+			if (!USE_WORKER_GENERATED_POI_ICONS) {
+				return image;
+			}
+
+			return await renderImageWithWorker('__dummy__', image);
+		})().catch((error) => {
+			renderedDummyIconPromise = null;
+			throw error;
+		});
+	}
+
+	return await renderedDummyIconPromise;
 };
 
 const addDummyPhotoIcon = async (id: string) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
-	const image = await loadImage(ICON_NO_IMAGE_PATH);
 	if (USE_WORKER_GENERATED_POI_ICONS) {
-		await renderImageWithWorker(id, image);
+		const renderedDummyIcon = await getRenderedDummyIcon();
+		const clonedDummyIcon = await createImageBitmap(renderedDummyIcon);
+		addImageToMap(id, clonedDummyIcon);
 		return;
 	}
 
+	const image = await loadImage(ICON_NO_IMAGE_PATH);
 	addImageToMap(id, image);
 };
 
-export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map: Map | null) => {
+export const handleStyleImageMissing = async (
+	e: MapStyleImageMissingEvent,
+	map: MapLibreMapType | null
+) => {
 	if (!map) return;
 	mapLibreMap = map;
 	const id = e.id;
@@ -484,7 +517,13 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 	// Skip images that have already been added
 	if (mapLibreMap.hasImage(id)) return;
 
-	try {
+	const inflightTask = inflightGeneratedPoiIcons.get(id);
+	if (inflightTask) {
+		await inflightTask;
+		return;
+	}
+
+	const task = (async () => {
 		if (!parsed.propId) {
 			console.warn(`Skip generated poi icon without propId: ${id}`);
 			await addDummyPhotoIcon(id);
@@ -498,16 +537,22 @@ export const handleStyleImageMissing = async (e: MapStyleImageMissingEvent, map:
 			await addDummyPhotoIcon(id);
 			return;
 		}
-		const image = await loadImage(imageUrl);
+			const image = await loadImage(imageUrl);
 
-		if (USE_WORKER_GENERATED_POI_ICONS) {
-			await renderImageWithWorker(id, image);
-			return;
-		}
+			if (USE_WORKER_GENERATED_POI_ICONS) {
+				const renderedImage = await renderImageWithWorker(id, image);
+				addImageToMap(id, renderedImage);
+				return;
+			}
 
 		addImageToMap(id, image);
-	} catch (error) {
+	})().catch(async (error) => {
 		await addDummyPhotoIcon(id);
 		console.error(`Error processing image for id ${id}:`, error);
-	}
+	}).finally(() => {
+		inflightGeneratedPoiIcons.delete(id);
+	});
+
+	inflightGeneratedPoiIcons.set(id, task);
+	await task;
 };
