@@ -575,7 +575,7 @@ const entry: VectorEntry<TileMetaData> = {
 						]
 					},
 					noData: {
-						category: '未分類',
+						label: '未分類',
 						value: '#F7F7F7',
 						pattern: null
 					}

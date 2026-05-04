@@ -102,7 +102,7 @@ export interface ColorMatchExpression {
 		patterns?: (SpritePatternId | null)[];
 	};
 	noData?: {
-		category?: string;
+		label?: string;
 		value: string;
 		pattern: SpritePatternId | null;
 	};

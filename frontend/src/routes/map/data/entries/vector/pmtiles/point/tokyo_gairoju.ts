@@ -565,7 +565,7 @@ const entry: VectorEntry<TileMetaData> = {
 						values: generateHueBasedHexColors(405)
 					},
 					noData: {
-						category: '未分類',
+						label: '未分類',
 						value: '#F7F7F7',
 						pattern: null
 					}

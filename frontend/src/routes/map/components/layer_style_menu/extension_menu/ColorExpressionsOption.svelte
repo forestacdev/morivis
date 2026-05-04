@@ -64,7 +64,7 @@
 	{#if setExpression.noData}
 		<ColorPatternPicker
 			{layerType}
-			label={setExpression.noData.category ?? ('データなし' as string)}
+			label={setExpression.noData.label ?? ('データなし' as string)}
 			bind:value={setExpression.noData.value as string}
 		/>
 	{/if}
