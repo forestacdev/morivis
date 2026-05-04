@@ -70,7 +70,8 @@ export const createLinePatternLayer = (
 		type: 'line',
 		paint: {
 			'line-pattern': patternExpression,
-			'line-opacity': style.opacity
+			'line-opacity': style.opacity,
+			'line-width': getNumberExpression(style.width)
 		},
 		layout: {},
 		// フィルター設定

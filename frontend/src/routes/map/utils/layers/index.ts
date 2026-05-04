@@ -281,10 +281,10 @@ export const createLayersItems = (
 					if (style.type === 'line') {
 						lineLayerItems.push(vectorLayer);
 
-						// ポリゴンの塗りつぶしパターン
-						const fillPatternLayer = createLinePatternLayer(layer, style);
-						if (fillPatternLayer) {
-							fillLayerItems.push(fillPatternLayer);
+						// ラインパターン
+						const linePatternLayer = createLinePatternLayer(layer, style);
+						if (linePatternLayer) {
+							lineLayerItems.push(linePatternLayer);
 						}
 					}
 

@@ -166,11 +166,12 @@
 		return createTiledPatternImage(image);
 	});
 
-	let showColorPallet = $state<boolean>(false);
+	// let showColorPallet = $state<boolean>(false);
+	let showColorPallet = $state<boolean>(label === 'スギ');
+
 	let containerRef = $state<HTMLElement>();
 
-	let selectedColorBrewerScheme = $state<'Paired' | 'Set3'>('Paired');
-	let selectedPpattern = $state<'black' | 'white'>('black');
+	let selectedType = $state<'color' | 'pattern'>('color');
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -222,6 +223,26 @@
 		></button>
 	{/snippet}
 
+	<!-- ポリゴンパターン選択UI -->
+	{#snippet patternButton(_pattern: SpritePatternId)}
+		<button
+			class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
+			style="background-color: {value};"
+			onclick={() => {
+				pattern = _pattern;
+				showColorPallet = false;
+			}}
+		>
+			{#if _pattern}
+				<img
+					src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
+					alt="pattern"
+					class="absolute h-full"
+				/>
+			{/if}
+		</button>
+	{/snippet}
+
 	{#if showColorPallet}
 		<!-- カラー選択UI -->
 		<div
@@ -229,88 +250,60 @@
 			class="bg-sub absolute z-20 mt-2 w-full rounded-lg p-3 shadow-lg"
 		>
 			<HorizontalSelectBox
-				bind:group={selectedColorBrewerScheme}
+				bind:group={selectedType}
 				options={[
-					{ key: 'Paired', name: '色:Paired' },
-					{ key: 'Set3', name: '色:Set3' }
+					{ key: 'color', name: 'カラー' },
+					{ key: 'pattern', name: 'パターン' }
 				]}
 			/>
-			<div class="flex w-full items-center pb-2 text-base"></div>
-			<div class="relative">
-				<div class="grid grid-cols-8 gap-2">
-					{#if selectedColorBrewerScheme === 'Paired'}
-						{#each [...chroma.brewer.Paired] as color}
-							{@render colorButton(color)}
-						{/each}
-					{:else if selectedColorBrewerScheme === 'Set3'}
-						{#each [...chroma.brewer.Set3] as color}
-							{@render colorButton(color)}
-						{/each}
-					{/if}
-				</div>
-				<button
-					class="absolute right-[5px] bottom-0 flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pr-3 pl-2 text-black"
-					onclick={() => {
-						value = 'transparent';
-						showColorPallet = false;
-					}}
-					aria-label="透明"
-					><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm">透明色</span
-					></button
-				>
-			</div>
-
-			<div class="flex w-full items-center justify-center pb-2"></div>
-
-			<div class="bg-base mb-4 h-[1px] w-full"></div>
-
-			<!-- ポリゴンパターン選択UI -->
-			{#snippet patternButton(_pattern: SpritePatternId)}
-				<button
-					class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
-					style="background-color: {value};"
-					onclick={() => {
-						pattern = _pattern;
-						showColorPallet = false;
-					}}
-				>
-					{#if _pattern}
-						<img
-							src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
-							alt="pattern"
-							class="absolute h-full"
-						/>
-					{/if}
-				</button>
-			{/snippet}
-			<HorizontalSelectBox
-				bind:group={selectedPpattern}
-				options={[
-					{ key: 'black', name: 'パターン:黒' },
-					{ key: 'white', name: 'パターン:白' }
-				]}
-			/>
-			<div class="flex w-full items-center pb-2 text-base"></div>
-			<div class="grid grid-cols-8 gap-2 pb-2">
-				{#if selectedPpattern === 'black'}
-					{#each patternBlackList as _pattern}
-						{@render patternButton(_pattern)}
-					{/each}
-				{:else if selectedPpattern === 'white'}
-					{#each patternWhiteList as _pattern}
-						{@render patternButton(_pattern)}
-					{/each}
+			<div class="mt-3">
+				{#if selectedType === 'color'}
+					<div class="relative flex flex-col gap-3">
+						<div class="grid grid-cols-8 gap-2">
+							{#each [...chroma.brewer.Paired] as color}
+								{@render colorButton(color)}
+							{/each}
+							{#each [...chroma.brewer.Set3] as color}
+								{@render colorButton(color)}
+							{/each}
+						</div>
+						<div class="flex w-full items-center justify-center">
+							<button
+								class="flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white py-1 pr-3 pl-2 text-black"
+								onclick={() => {
+									value = 'transparent';
+									showColorPallet = false;
+								}}
+								aria-label="透明"
+								><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm"
+									>透明色</span
+								></button
+							>
+						</div>
+					</div>
+				{:else if selectedType === 'pattern'}
+					<div class="relative flex flex-col gap-3">
+						<div class="grid grid-cols-8 gap-2">
+							{#each patternBlackList as _pattern}
+								{@render patternButton(_pattern)}
+							{/each}
+							{#each patternWhiteList as _pattern}
+								{@render patternButton(_pattern)}
+							{/each}
+						</div>
+						<div class="flex w-full items-center justify-center">
+							<button
+								class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
+								onclick={() => {
+									pattern = null;
+									showColorPallet = false;
+								}}
+								aria-label="Remove pattern"
+								><span class="text-sm text-black">パターンなし</span></button
+							>
+						</div>
+					</div>
 				{/if}
-			</div>
-			<div class="flex w-full items-center justify-end pb-2">
-				<button
-					class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
-					onclick={() => {
-						pattern = null;
-						showColorPallet = false;
-					}}
-					aria-label="Remove pattern"><span class="text-sm text-black">パターンなし</span></button
-				>
 			</div>
 		</div>
 	{/if}
