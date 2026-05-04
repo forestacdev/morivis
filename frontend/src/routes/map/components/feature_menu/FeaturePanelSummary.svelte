@@ -87,7 +87,7 @@
 					<div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
 						{#each summary.taxonomy as item (item.label)}
 							<span class="text-gray-300">{item.label}</span>
-							<span class="break-all">{item.value}</span>
+							<span class="text-base break-all">{item.value}</span>
 						{/each}
 					</div>
 				</div>
