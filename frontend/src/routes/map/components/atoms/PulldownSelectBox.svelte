@@ -13,9 +13,11 @@
 		items: PulldownSelectItem[];
 		selectedKey: string;
 		children?: Snippet;
+		triggerContent?: Snippet<[PulldownSelectItem]>;
+		itemContent?: Snippet<[PulldownSelectItem]>;
 	}
 
-	let { items, selectedKey = $bindable(), children }: Props = $props();
+	let { items, selectedKey = $bindable(), children, triggerContent, itemContent }: Props = $props();
 	let showPullDown = $state<boolean>(false);
 	let containerRef = $state<HTMLElement>();
 	let scrollContainerRef = $state<HTMLDivElement>();
@@ -81,12 +83,18 @@
 			onclick={() => (showPullDown = !showPullDown)}
 			class="border-sub flex w-full cursor-pointer items-center justify-between rounded-full border bg-black p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 		>
-			<div class="flex min-w-0 items-center gap-2 pl-1">
-				{#if selectedItem.icon}
-					<Icon icon={selectedItem.icon} width={20} class="shrink-0" />
-				{/if}
-				<span class="truncate">{selectedItem.name}</span>
-			</div>
+			{#if triggerContent}
+				<div class="min-w-0 grow">
+					{@render triggerContent(selectedItem)}
+				</div>
+			{:else}
+				<div class="flex min-w-0 items-center gap-2 pl-1">
+					{#if selectedItem.icon}
+						<Icon icon={selectedItem.icon} width={20} class="shrink-0" />
+					{/if}
+					<span class="truncate">{selectedItem.name}</span>
+				</div>
+			{/if}
 			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
 		</button>
 		{#if showPullDown}
@@ -114,12 +122,18 @@
 								onclick={() => (showPullDown = false)}
 								onchange={() => (showPullDown = false)}
 							/>
-							<div class="flex min-w-0 items-center gap-2 pl-1">
-								{#if item.icon}
-									<Icon icon={item.icon} width={20} class="shrink-0" />
-								{/if}
-								<span class="truncate select-none">{item.name}</span>
-							</div>
+							{#if itemContent}
+								<div class="min-w-0 grow">
+									{@render itemContent(item)}
+								</div>
+							{:else}
+								<div class="flex min-w-0 items-center gap-2 pl-1">
+									{#if item.icon}
+										<Icon icon={item.icon} width={20} class="shrink-0" />
+									{/if}
+									<span class="truncate select-none">{item.name}</span>
+								</div>
+							{/if}
 						</label>
 					{/each}
 				</div>
@@ -143,4 +157,3 @@
 		</div>
 	{/if}
 {/if}
-

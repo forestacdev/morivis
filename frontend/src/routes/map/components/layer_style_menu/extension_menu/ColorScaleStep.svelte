@@ -12,6 +12,6 @@
 </script>
 
 <div
-	class="w-full rounded-full border-1 border-black p-3"
+	class="w-full rounded-full border border-black p-2"
 	style="background: {generateStepGradient(getSequentSchemeColors(isColorMap, 5) as string[])}"
 ></div>
