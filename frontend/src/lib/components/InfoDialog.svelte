@@ -107,16 +107,16 @@
 				<div class="pb-6">
 					<div class="flex flex-col gap-1 text-justify">
 						<span>
-							morivis（モリビス）は、岐阜県立森林文化アカデミー演習林の森林地理情報をWebGIS上で表示するシステムです。演習林の地形、植生、林道などの基本情報を地図上で確認できるほか、全国の森林オープンデータも閲覧可能です。
+							morivis（モリビス）は、岐阜県立森林文化アカデミー演習林の地理情報をWebGIS上で表示・共有するシステムです。地形や植生をはじめとする森林情報を地図上で確認できるほか、全国の森林オープンデータや各種地図データを重ねて閲覧できます。
 						</span>
-						<span
-							>森林情報の可視化と共有を目的とした研究開発の一環として作成しており、現在も機能の追加や改善を継続しています。バグなどを見つけた場合は、お手数ですが<a
-								class="text-accent"
+						<span>
+							森林管理や現地確認、資料作成の際に、森林情報をブラウザ上で扱うための基盤として運用しています。研究開発の一環として継続的に機能追加と改善を進めており、表示内容や対応データ形式は今後も更新されます。バグや不具合を見つけた場合は、お手数ですが<a
+								class="underline underline-offset-2"
 								href="https://github.com/forestacdev/morivis/issues"
 								target="_blank"
 								rel="noopener noreferrer">GitHubのイシュー</a
-							>にてご報告ください。</span
-						>
+							>にてご報告ください。
+						</span>
 					</div>
 				</div>
 				<div class="pb-6">
@@ -124,9 +124,7 @@
 					<div class="flex w-full justify-center">
 						<div class="grid max-w-[600px] gap-4 max-lg:grid-cols-1 lg:grid-cols-2">
 							{#if isLoadingContributors}
-								<div
-									class="rounded-full border-1 border-gray-500 bg-black p-3 text-sm text-gray-200"
-								>
+								<div class="rounded-full border border-gray-500 bg-black p-3 text-sm text-gray-200">
 									コントリビューター情報を読み込み中です。
 								</div>
 							{:else if contributorsError}
