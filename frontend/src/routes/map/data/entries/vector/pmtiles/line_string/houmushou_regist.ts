@@ -11,9 +11,8 @@ const entry: PolygonEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '法務省登記所備付地図データ',
-		attribution: '登記所備付地図データ',
-		description:
-			'法務省の登記所備付地図データをベクトルタイルに加工した地番ポリゴンのデータ。登記所備付地図の区画や地番を地図上で確認する際に利用できる。',
+		attribution: '登記所備付地図データ（法務省）',
+		description: '法務省の登記所備付地図データをベクトルタイルに加工した地番ポリゴンのデータ。',
 		location: '全国',
 		tags: ['登記所備付地図'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,

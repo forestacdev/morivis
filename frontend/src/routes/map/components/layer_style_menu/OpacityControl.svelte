@@ -47,23 +47,16 @@
 	};
 </script>
 
-<div class="flex w-full justify-between rounded-lg bg-black p-2">
+<div class="bg-sub flex w-full justify-between rounded-full p-1">
 	<button class="flex aspect-square w-[19%] flex-col items-center gap-1" onclick={hideLayer}>
 		<div
-			class="hover:bg-accent grid aspect-square w-full cursor-pointer place-items-center rounded-lg object-cover text-left {!layerEntry
+			class="hover:bg-accent grid aspect-square w-full cursor-pointer place-items-center rounded-full object-cover text-left {!layerEntry
 				.style.visible
 				? 'bg-accent'
 				: ''}"
 		>
 			<Icon icon={getVisibilityIconName(false)} class="h-8 w-8 text-base/90" />
 		</div>
-
-		<span
-			class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {!layerEntry
-				.style.visible
-				? 'bg-accent text-black'
-				: 'border-base'}">隠す</span
-		>
 	</button>
 
 	{#each opacityButtons as item (item.label)}
@@ -73,10 +66,10 @@
 		>
 			{#if previewSrc}
 				<div
-					class="relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry.style
-						.opacity === item.value && layerEntry.style.visible
+					class="relative h-full w-full overflow-hidden rounded-full border-2 bg-black {layerEntry
+						.style.opacity === item.value && layerEntry.style.visible
 						? 'border-accent'
-						: 'border-transparent'}"
+						: 'border-sub'}"
 				>
 					<!-- {#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
 						<img
@@ -93,12 +86,6 @@
 					/>
 				</div>
 			{/if}
-			<span
-				class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {layerEntry
-					.style.opacity === item.value && layerEntry.style.visible
-					? 'bg-accent text-black'
-					: 'border-base'}">{item.label}</span
-			>
 		</button>
 	{/each}
 </div>

@@ -1,14 +1,14 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'geological_survey',
 	type: 'vector',
 	format: {
-		type: 'mvt',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'https://forestacdev.github.io/tiles-geological-survey/tiles/{z}/{x}/{y}.pbf'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/geological_survey.pmtiles`
 	},
 	metaData: {
 		name: '全国地質図',
@@ -103,7 +103,6 @@ const entry: VectorEntry<TileMetaData> = {
 					type: 'match',
 					key: 'symbol',
 					name: 'symbol',
-
 					mapping: {
 						// symbol（地物分類記号）のリスト
 						categories: [

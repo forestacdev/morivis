@@ -132,7 +132,7 @@ const baseAttributions = {
 	},
 	登記所備付地図データ: {
 		name: '登記所備付地図データ（法務省）',
-		url: 'https://front.geospatial.jp/houmu-chiseki/'
+		url: 'https://front.geospatial.jp/moj-chizu-xml-readme/'
 	}
 } as const;
 
