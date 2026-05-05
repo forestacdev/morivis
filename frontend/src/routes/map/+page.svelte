@@ -33,6 +33,7 @@
 	} from '$routes/map/components/feature_menu/feature-panel-summary';
 	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
+	import FeaturePanelLoading from '$routes/map/components/feature_menu/FeaturePanelLoading.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
@@ -54,6 +55,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
+	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import {
 		createLayerFeaturePanelData,
 		createSearchFeaturePanelData,
@@ -66,7 +68,11 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
-	import { resolveGeneratedPoiIconUrl, resolvePopupImageUrl } from '$routes/map/utils/icon';
+	import {
+		getPopupImageFieldKey,
+		resolveGeneratedPoiIconUrl,
+		resolvePopupImageUrl
+	} from '$routes/map/utils/icon';
 	import {
 		get3dParams,
 		getParams,
@@ -224,6 +230,44 @@
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
 		if (!featureMenuData) return Promise.resolve(null);
 		return getLayerFeaturePanelSummary(featureMenuData, layerEntries);
+	});
+
+	let mobileTargetLayer = $derived.by(() => {
+		if (!featureMenuData) return null;
+		return layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
+	});
+
+	let mobileHasAttributeTab = $derived.by(() => {
+		if (!featureMenuData || !mobileTargetLayer || mobileTargetLayer.type !== 'vector') {
+			return false;
+		}
+
+		if (!featureMenuData.properties) return false;
+
+		const propId = featureMenuData.properties._prop_id;
+		if (propId) return false;
+
+		const popupKeys = mobileTargetLayer.properties.attributeView.popupKeys;
+		const imageKey = getPopupImageFieldKey(mobileTargetLayer.properties);
+		const displayProps =
+			popupKeys.length > 0
+				? filterByPopupKeys(featureMenuData.properties, popupKeys)
+				: featureMenuData.properties;
+
+		return Object.entries(displayProps).some(
+			([key, value]) =>
+				key !== '_prop_id' &&
+				value !== '' &&
+				value !== null &&
+				value !== undefined &&
+				value !== false &&
+				imageKey !== key
+		);
+	});
+
+	let mobileFeaturePanelResetKey = $derived.by(() => {
+		if (!featureMenuData) return 'empty';
+		return `${featureMenuData.layerId}:${featureMenuData.featureId}`;
 	});
 
 	// 画像プレビュー
@@ -748,13 +792,18 @@
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				{#await mobileLayerFeatureSummaryPromise then summary}
+				{#await mobileLayerFeatureSummaryPromise}
+					<FeaturePanelLoading
+						containerClass="flex w-full flex-col items-center justify-center gap-4 px-4 py-8"
+					/>
+				{:then summary}
 					<FeaturePanelLayerContent
 						bind:featureMenuData
 						{layerEntries}
 						bind:showSelectionMarker
 						showSummaryTab={summary ? hasFeaturePanelSummaryContent(summary) : false}
-						selectedTab="summary"
+						hasAttributeTab={mobileHasAttributeTab}
+						resetKey={mobileFeaturePanelResetKey}
 						{summary}
 					/>
 				{/await}

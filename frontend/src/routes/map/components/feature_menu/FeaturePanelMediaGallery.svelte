@@ -8,6 +8,7 @@
 	import 'viewerjs/dist/viewer.css';
 	import { ICONS } from '$lib/icons';
 	import type { FeaturePanelImageMedia, FeaturePanelMedia } from '$routes/map/types';
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
 
 	interface Props {
 		media: FeaturePanelMedia[];
@@ -66,6 +67,10 @@
 
 	const openImageViewer = () => {
 		if (!imageViewerRoot) return;
+		if (checkMobile()) {
+			// モバイルの場合はViewerを使用しない
+			return;
+		}
 
 		if (!imageViewer) {
 			imageViewer = new Viewer(imageViewerRoot, {
