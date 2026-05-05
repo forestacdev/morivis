@@ -4,7 +4,7 @@
 	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
 
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import type { ColorsExpression, VectorLayerType } from '$routes/map/data/types/vector/style';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
@@ -53,14 +53,14 @@
 		/>
 	{/if}
 {:else if setExpression.type === 'step'}
-	<StyleColorMapPulldownBox
+	<ColorMapSelect
 		bind:isColorMap={setExpression.mapping.scheme}
 		mutableColorMapType={[...COLOR_BREWER_SCHEME_COUNT.sequential['9']]}
 	>
 		{#snippet children(_isColorMap)}
 			<ColorScaleStep isColorMap={_isColorMap as SequentialScheme} />
 		{/snippet}
-	</StyleColorMapPulldownBox>
+	</ColorMapSelect>
 	{#key setExpression}
 		<RangeSliderDoubleWrapper bind:setStepExpression={setExpression} />
 	{/key}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
+	import ExpressionSelect from '$routes/map/components/atoms/select/ExpressionSelect.svelte';
 	import type { NumbersStyle } from '$routes/map/data/types/vector/style';
 
 	interface Props {
@@ -15,5 +15,5 @@
 </script>
 
 <Accordion {label} {icon} bind:value={showNumberOption}>
-	<ExpressionsPulldownBox bind:style={numberStyle} expressionType={'number'} />
+	<ExpressionSelect bind:style={numberStyle} expressionType={'number'} />
 </Accordion>

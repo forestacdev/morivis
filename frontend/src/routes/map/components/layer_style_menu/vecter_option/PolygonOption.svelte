@@ -3,7 +3,7 @@
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
+	import ExpressionSelect from '$routes/map/components/atoms/select/ExpressionSelect.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
@@ -34,7 +34,7 @@
 		<Switch label={'押し出し'} bind:value={layerEntry.style.extrusion.show} />
 
 		{#if layerEntry.style.extrusion.show}
-			<ExpressionsPulldownBox
+			<ExpressionSelect
 				bind:style={layerEntry.style.extrusion.height}
 				expressionType={'number'}
 			/>

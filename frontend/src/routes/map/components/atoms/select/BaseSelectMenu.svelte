@@ -3,19 +3,19 @@
 	import type { Snippet } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	export interface PulldownSelectItem {
-		key: string;
-		name: string;
-		icon?: string;
-	}
+export interface SelectMenuItem {
+	key: string;
+	name: string;
+	icon?: string;
+}
 
-	interface Props {
-		items: PulldownSelectItem[];
-		selectedKey: string;
-		children?: Snippet;
-		triggerContent?: Snippet<[PulldownSelectItem]>;
-		itemContent?: Snippet<[PulldownSelectItem]>;
-	}
+interface Props {
+	items: SelectMenuItem[];
+	selectedKey: string;
+	children?: Snippet;
+	triggerContent?: Snippet<[SelectMenuItem]>;
+	itemContent?: Snippet<[SelectMenuItem]>;
+}
 
 	let { items, selectedKey = $bindable(), children, triggerContent, itemContent }: Props = $props();
 	let showPullDown = $state<boolean>(false);

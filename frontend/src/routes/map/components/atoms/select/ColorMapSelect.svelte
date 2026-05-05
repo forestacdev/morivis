@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
+	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import { type ColorMapType } from '$routes/map/data/types/raster';
 	import { type SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
@@ -20,7 +20,7 @@
 </script>
 
 <h2 class="text-base">カラーランプ</h2>
-<PulldownSelectBox items={colorMapItems} bind:selectedKey={isColorMap}>
+<BaseSelectMenu items={colorMapItems} bind:selectedKey={isColorMap}>
 	{#snippet triggerContent(item)}
 		<div class="flex w-full items-center justify-center gap-2">
 			<span class="w-[270px] pl-1 text-start select-none">{item.name}</span>
@@ -35,7 +35,7 @@
 			<div class="px-[10px]"></div>
 		</div>
 	{/snippet}
-</PulldownSelectBox>
+</BaseSelectMenu>
 
 <style>
 </style>

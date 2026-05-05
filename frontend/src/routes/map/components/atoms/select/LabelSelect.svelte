@@ -1,6 +1,6 @@
 <script lang="ts">
-	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
-	import type { LabelsExpressions, Labels } from '$routes/map/data/types/vector/style';
+	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
+	import type { Labels } from '$routes/map/data/types/vector/style';
 
 	interface Props {
 		labels: Labels;
@@ -29,7 +29,7 @@
 </script>
 
 {#if setLabel}
-	<PulldownSelectBox items={labelItems} bind:selectedKey={labels.key} />
+	<BaseSelectMenu items={labelItems} bind:selectedKey={labels.key} />
 {/if}
 
 <style>
