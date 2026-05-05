@@ -40,7 +40,7 @@
 
 {#if !isImageError}
 	{#await promise then imageResult}
-		{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
+		<!-- {#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
 			<img
 				transition:fade
 				class="c-basemap-img pointer-events-none absolute block h-full w-full object-cover {rounded
@@ -49,7 +49,7 @@
 				alt="背景地図画像"
 				src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
 			/>
-		{/if}
+		{/if} -->
 		{#if imageResult}
 			<img
 				transition:fade

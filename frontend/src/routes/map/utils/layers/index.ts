@@ -255,18 +255,22 @@ export const createLayersItems = (
 					if (style.type === 'fill') {
 						if (!style.extrusion || (style.extrusion && !style.extrusion.show)) {
 							fillLayerItems.push(vectorLayer);
-							// ポリゴンの塗りつぶしパターン
-							const fillPatternLayer = createFillPatternLayer(layer, style);
-							if (fillPatternLayer) {
-								fillLayerItems.push(fillPatternLayer);
+							// ポリゴンのパターン
+							if (style.colors.show) {
+								const fillPatternLayer = createFillPatternLayer(layer, style);
+								if (fillPatternLayer) {
+									fillLayerItems.push(fillPatternLayer);
+								}
 							}
 						} else if (style.extrusion && style.extrusion.show) {
 							// 押し出し
 							fillExtrusionLayerItems.push(vectorLayer);
-							// ポリゴンの塗りつぶしパターン
-							const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
-							if (fillExtrusionPatternLayer) {
-								fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+							// ポリゴンのパターン
+							if (style.colors.show) {
+								const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
+								if (fillExtrusionPatternLayer) {
+									fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+								}
 							}
 						}
 
@@ -281,10 +285,12 @@ export const createLayersItems = (
 					if (style.type === 'line') {
 						lineLayerItems.push(vectorLayer);
 
-						// ラインパターン
-						const linePatternLayer = createLinePatternLayer(layer, style);
-						if (linePatternLayer) {
-							lineLayerItems.push(linePatternLayer);
+						// ラインのパターン
+						if (style.colors.show) {
+							const linePatternLayer = createLinePatternLayer(layer, style);
+							if (linePatternLayer) {
+								lineLayerItems.push(linePatternLayer);
+							}
 						}
 					}
 
@@ -296,11 +302,13 @@ export const createLayersItems = (
 						} else {
 							circleLayerItems.push(vectorLayer);
 
-							// アイコンレイヤー
-							const pointIconLayer = createPointIconLayer(layer, style);
-							if (pointIconLayer) {
-								circleLayerItems.push(pointIconLayer);
-								clickableVecter.push(pointIconLayer.id); // アイコンレイヤーもクリック可能にする
+							// ポイントもパターン（アイコンレイヤー）
+							if (style.colors.show) {
+								const pointIconLayer = createPointIconLayer(layer, style);
+								if (pointIconLayer) {
+									circleLayerItems.push(pointIconLayer);
+									clickableVecter.push(pointIconLayer.id); // アイコンレイヤーもクリック可能にする
+								}
 							}
 						}
 					}

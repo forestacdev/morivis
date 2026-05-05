@@ -417,7 +417,7 @@ export const destroyMapPool = () => {
 
 /** 背景用画像のURLを取得 */
 export const getBaseMapImageUrl = (_xyzImageTile: { x: number; y: number; z: number }) => {
-	return 'https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'
+	return 'https://tile.openstreetmap.jp/styles/maptiler-toner-ja/512/{z}/{x}/{y}.png'
 		.replace('{z}', _xyzImageTile.z.toString())
 		.replace('{x}', _xyzImageTile.x.toString())
 		.replace('{y}', _xyzImageTile.y.toString());
