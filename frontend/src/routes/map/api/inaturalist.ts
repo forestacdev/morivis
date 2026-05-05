@@ -26,7 +26,7 @@ export interface INatTaxon {
 	name: string;
 	/** 一般名/和名（例: "メジロ"） */
 	preferred_common_name?: string;
-	/** 分類階級（species=種, genus=属, family=科, order=目, class=綱, phylum=門, kingdom=界） */
+	/** 分類階級（species=種, genus=属, family=科, order=目, class=綱, subphylum=亜門, phylum=門, kingdom=界） */
 	rank: string;
 	/**
 	 * 代表的な分類群名（アイコン用）
@@ -752,6 +752,7 @@ const getNormalizedPrimaryTaxonByName = async (
 export type TaxonomicRank =
 	| 'kingdom'
 	| 'phylum'
+	| 'subphylum'
 	| 'class'
 	| 'order'
 	| 'family'
@@ -766,6 +767,8 @@ export interface LinnaeanTaxonomy {
 	kingdom?: { name: string; commonName?: string };
 	/** 門（例: 被子植物門） */
 	phylum?: { name: string; commonName?: string };
+	/** 亜門（例: 脊椎動物亜門） */
+	subphylum?: { name: string; commonName?: string };
 	/** 綱（例: 双子葉植物綱） */
 	class?: { name: string; commonName?: string };
 	/** 目（例: マツ目） */
@@ -784,6 +787,7 @@ export interface LinnaeanTaxonomy {
 export const RANK_NAMES_JA: Record<TaxonomicRank, string> = {
 	kingdom: '界',
 	phylum: '門',
+	subphylum: '亜門',
 	class: '綱',
 	order: '目',
 	family: '科',
@@ -857,6 +861,7 @@ export const getTaxonomyByJapaneseName = async (
 			const linnaeanRanks: TaxonomicRank[] = [
 				'kingdom',
 				'phylum',
+				'subphylum',
 				'class',
 				'order',
 				'family',
@@ -922,6 +927,7 @@ export const getTaxonomyByTaxonId = async (taxonId: number): Promise<LinnaeanTax
 		const linnaeanRanks: TaxonomicRank[] = [
 			'kingdom',
 			'phylum',
+			'subphylum',
 			'class',
 			'order',
 			'family',

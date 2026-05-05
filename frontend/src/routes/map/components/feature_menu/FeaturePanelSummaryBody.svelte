@@ -81,40 +81,53 @@
 			</div>
 		{/if}
 
-		{#if summary.timberSpecies}
-			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3">
-				<span class="text-sm text-gray-300">木材</span>
-				<div class="flex items-center gap-4">
-					<img
-						src={summary.timberSpecies.url}
-						alt="木材の画像"
-						class="h-16 w-16 rounded object-cover"
-					/>
-					{#if summary.timberSpecies.distribution}
-						<span class="text-base">{summary.timberSpecies.distribution}</span>
-					{/if}
-				</div>
-			</div>
-		{/if}
-
+		<!-- リンネ式階層分類体系 -->
 		{#if summary.taxonomy && summary.taxonomy.length > 0}
-			<div class="bg-sub flex flex-col gap-2 rounded-lg p-3">
-				<span class="text-sm text-gray-300">分類 </span>
-				<div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+			<div class="bg-sub flex flex-col gap-2 rounded-lg p-3 py-2">
+				<span class="text-base">分類</span>
+				<div class="flex flex-col gap-1 text-sm">
 					{#each summary.taxonomy as item (item.label)}
-						<span class="text-gray-300">{item.label}</span>
-						<span class="text-base break-all">{item.value}</span>
+						<div class="flex items-center gap-2">
+							<div
+								class="bg-base grid aspect-square w-[22px] place-items-center rounded-full text-black"
+							>
+								<span>{item.label}</span>
+							</div>
+							<div class="text-base break-all">{item.value}</div>
+						</div>
 					{/each}
 				</div>
 			</div>
 		{/if}
 
-		{#if protectionForestDescription}
+		<!-- TODO 保安林の説明があってるか確認 -->
+		<!-- {#if protectionForestDescription}
 			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3">
 				<span class="text-sm text-gray-300">{protectionForestName || '保安林の説明'}</span>
 				<span class="text-justify text-base whitespace-pre-line">
 					{protectionForestDescription}
 				</span>
+			</div>
+		{/if} -->
+
+		{#if summary.timberSpecies}
+			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3 py-2">
+				<span class="text-base">木材</span>
+				<div class="flex items-center justify-center gap-4">
+					<div
+						class="flex h-[250px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-black"
+					>
+						<img
+							in:fade={{ duration: 200 }}
+							src={summary.timberSpecies.url}
+							alt="木材の画像"
+							class="object-cover"
+						/>
+					</div>
+					<!-- {#if summary.timberSpecies.distribution}
+						<span class="text-base">{summary.timberSpecies.distribution}</span>
+					{/if} -->
+				</div>
 			</div>
 		{/if}
 	</div>

@@ -25,13 +25,12 @@ import { resolvePopupImageUrl } from '$routes/map/utils/icon';
 
 export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData): boolean => {
 	return Boolean(
-		summary.media?.length ||
-			summary.point ||
-			summary.description?.linkUrl ||
+		summary.description?.linkUrl ||
 			summary.description?.text.trim() ||
 			summary.timberSpecies ||
-			summary.taxonomy?.length ||
-			summary.protectionForestDescription?.trim()
+			summary.taxonomy?.length
+		// summary.protectionForestDescription?.trim()
+		// summary.point ||
 	);
 };
 

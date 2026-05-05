@@ -279,9 +279,10 @@
 			{/if}
 		{/each}
 	{:else}
-		<div class="bg-sub relative aspect-video overflow-hidden rounded-lg">
+		<!-- メディアがない場合のプレースホルダー -->
+		<!-- <div class="bg-sub relative aspect-video overflow-hidden rounded-lg">
 			{@render mediaPlaceholder()}
-		</div>
+		</div> -->
 	{/if}
 </div>
 
