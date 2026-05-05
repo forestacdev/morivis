@@ -145,7 +145,7 @@ const entry: PointEntry<TileMetaData> = {
 			width: 2
 		},
 		labels: {
-			key: 'LoreName',
+			key: '碑名',
 			show: false,
 			expressions: [
 				{

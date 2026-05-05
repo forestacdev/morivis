@@ -12,6 +12,11 @@
 	const selectOption = (key: string | number) => {
 		group = key;
 	};
+
+	let selectedIndex = $derived.by(() => {
+		const index = options.findIndex((option) => option.key === group);
+		return index >= 0 ? index : 0;
+	});
 </script>
 
 <div class="flex flex-col gap-2">
@@ -20,52 +25,27 @@
 			<span>{label}</span>
 		</div>
 	{/if}
-	{#if options.length === 2}
-		<div class="border-sub relative flex w-full overflow-hidden rounded-full border bg-black">
+	<div class="border-sub bg-sub relative flex w-full overflow-hidden rounded-full border-2">
+		{#if options.length > 0}
 			<div
-				class="bg-base absolute h-full w-1/2 rounded-full transition-transform duration-200 {options[0]
-					.key === group
-					? ''
-					: 'translate-x-full'}"
+				class="bg-main-accent absolute top-0 left-0 h-full rounded-full transition-transform duration-200"
+				style="width: calc(100% / {options.length}); transform: translateX({selectedIndex * 100}%);"
 			></div>
 			{#each options as line (line.key)}
 				<button
-					class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white"
+					class="z-10 flex w-full cursor-pointer items-center justify-center rounded-full p-2 text-white transition-colors duration-50 {line.key ===
+					group
+						? ''
+						: 'hover:bg-base hover:text-black'}"
 					onclick={() => selectOption(line.key)}
 				>
-					<span
-						class="transition-colors duration-200 select-none {line.key === group
-							? 'text-black'
-							: ''}"
+					<span class="transition-colors duration-50 select-none {line.key === group ? '' : ''}"
 						>{line.name}
 					</span>
 				</button>
 			{/each}
-		</div>
-	{/if}
-	{#if options.length === 3}
-		<div class="border-sub relative flex w-full overflow-hidden rounded-full border bg-black">
-			<div
-				class="bg-base absolute h-full w-1/3 rounded-full transition-transform duration-200 {options[0]
-					.key === group
-					? ''
-					: options[1].key === group
-						? 'translate-x-full'
-						: 'translate-x-[200%]'}"
-			></div>
-			{#each options as line (line.key)}
-				<label class="z-10 flex w-full cursor-pointer items-center justify-center p-2 text-white">
-					<input type="radio" bind:group value={line.key} class="hidden" />
-					<span
-						class="transition-colors duration-200 select-none {line.key === group
-							? ' text-black'
-							: ''}"
-						>{line.name}
-					</span>
-				</label>
-			{/each}
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 <style>

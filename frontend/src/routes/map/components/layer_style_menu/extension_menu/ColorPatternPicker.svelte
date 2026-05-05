@@ -315,30 +315,6 @@
 	let selectedType = $state<'color' | 'pattern'>('color');
 	let selectedPointColor = $state<PointColorFilter>('blue');
 
-	const resolveClosestPointColor = (color: string): PointColor => {
-		try {
-			if (!color || color === 'transparent') return 'blue';
-
-			const targetColor = chroma(color);
-			let closestColor: PointColor = 'blue';
-			let closestDistance = Number.POSITIVE_INFINITY;
-
-			for (const pointColor of POINT_COLORS) {
-				const candidateColor = chroma(POINT_COLOR_HEX_MAP[pointColor]);
-				const distance = chroma.distance(targetColor, candidateColor, 'lab');
-
-				if (distance < closestDistance) {
-					closestDistance = distance;
-					closestColor = pointColor;
-				}
-			}
-
-			return closestColor;
-		} catch {
-			return 'blue';
-		}
-	};
-
 	let filteredPointPatterns = $derived.by(() => {
 		if (selectedPointColor === 'other') return [];
 
@@ -359,11 +335,6 @@
 		return () => {
 			document.removeEventListener('click', handleClickOutside);
 		};
-	});
-
-	$effect(() => {
-		if (selectedPointColor === 'other') return;
-		selectedPointColor = resolveClosestPointColor(value);
 	});
 </script>
 
@@ -545,7 +516,7 @@
 						{/if}
 						<div class="flex w-full items-center justify-center">
 							<button
-								class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-2"
+								class="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white px-3 py-1"
 								onclick={() => {
 									pattern = null;
 									showColorPallet = false;

@@ -3,19 +3,19 @@
 	import type { Snippet } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-export interface SelectMenuItem {
-	key: string;
-	name: string;
-	icon?: string;
-}
+	export interface SelectMenuItem {
+		key: string;
+		name: string;
+		icon?: string;
+	}
 
-interface Props {
-	items: SelectMenuItem[];
-	selectedKey: string;
-	children?: Snippet;
-	triggerContent?: Snippet<[SelectMenuItem]>;
-	itemContent?: Snippet<[SelectMenuItem]>;
-}
+	interface Props {
+		items: SelectMenuItem[];
+		selectedKey: string;
+		children?: Snippet;
+		triggerContent?: Snippet<[SelectMenuItem]>;
+		itemContent?: Snippet<[SelectMenuItem]>;
+	}
 
 	let { items, selectedKey = $bindable(), children, triggerContent, itemContent }: Props = $props();
 	let showPullDown = $state<boolean>(false);
@@ -81,7 +81,7 @@ interface Props {
 	<div bind:this={containerRef} class="relative py-2 select-none">
 		<button
 			onclick={() => (showPullDown = !showPullDown)}
-			class="border-sub flex w-full cursor-pointer items-center justify-between rounded-full border bg-black p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
+			class="bg-main-accent flex w-full cursor-pointer items-center justify-between rounded-full p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 		>
 			{#if triggerContent}
 				<div class="min-w-0 grow">
