@@ -1,7 +1,7 @@
 <script lang="ts">
+	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
 	import ColorExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/ColorExpressionsOption.svelte';
 	import NumberExpressionsOption from '$routes/map/components/layer_style_menu/extension_menu/NumberExpressionsOption.svelte';
-	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
 	import type {
 		ColorsExpression,
 		NumbersExpression,
@@ -45,12 +45,15 @@
 {#if setExpression}
 	<PulldownSelectBox items={expressionItems} bind:selectedKey={style.key}>
 		{#snippet children()}
-		{#if expressionType === 'color'}
-			<ColorExpressionsOption bind:setExpression={setExpression as ColorsExpression} {layerType} />
-		{/if}
-		{#if expressionType === 'number'}
-			<NumberExpressionsOption bind:setExpression={setExpression as NumbersExpression} />
-		{/if}
+			{#if expressionType === 'color'}
+				<ColorExpressionsOption
+					bind:setExpression={setExpression as ColorsExpression}
+					{layerType}
+				/>
+			{/if}
+			{#if expressionType === 'number'}
+				<NumberExpressionsOption bind:setExpression={setExpression as NumbersExpression} />
+			{/if}
 		{/snippet}
 	</PulldownSelectBox>
 {/if}

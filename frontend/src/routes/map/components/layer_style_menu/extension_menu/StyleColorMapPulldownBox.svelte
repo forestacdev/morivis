@@ -1,7 +1,7 @@
 <script lang="ts">
-	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
 	import type { Snippet } from 'svelte';
 
+	import PulldownSelectBox from '$routes/map/components/atoms/PulldownSelectBox.svelte';
 	import { type ColorMapType } from '$routes/map/data/types/raster';
 	import { type SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
