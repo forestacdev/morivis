@@ -125,7 +125,7 @@
 
 				<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 					<!-- スクロールコンテンツ -->
-					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[300px]">
+					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[400px]">
 						<div class="flex w-full justify-between rounded-lg bg-black p-2">
 							<!-- 表示 -->
 							<button
@@ -208,6 +208,7 @@
 							<ModelOptionMenu bind:layerEntry bind:showColorOption />
 						{/if}
 					</div>
+					<!-- フォグ -->
 					<div
 						class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[150px] w-full"
 					></div>
