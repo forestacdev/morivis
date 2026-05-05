@@ -38,6 +38,34 @@
 	});
 
 	let containerRef = $state<HTMLElement>();
+	let scrollContainerRef = $state<HTMLDivElement>();
+	let showScrollContinueButton = $state<boolean>(false);
+
+	const updateScrollContinueButton = () => {
+		if (!scrollContainerRef || expressionsList.length <= 7) {
+			showScrollContinueButton = false;
+			return;
+		}
+
+		const remainingScroll =
+			scrollContainerRef.scrollHeight -
+			scrollContainerRef.scrollTop -
+			scrollContainerRef.clientHeight;
+
+		showScrollContinueButton = remainingScroll > 4;
+	};
+
+	const scrollToNextBlock = () => {
+		if (!scrollContainerRef) return;
+
+		const firstItem = scrollContainerRef.querySelector('label');
+		const itemHeight = firstItem instanceof HTMLElement ? firstItem.offsetHeight + 4 : 44;
+
+		scrollContainerRef.scrollBy({
+			top: itemHeight,
+			behavior: 'smooth'
+		});
+	};
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -54,15 +82,24 @@
 			document.removeEventListener('click', handleClickOutside);
 		};
 	});
+
+	$effect(() => {
+		if (!showPullDown) {
+			showScrollContinueButton = false;
+			return;
+		}
+
+		updateScrollContinueButton();
+	});
 </script>
 
 {#if setExpression}
 	<div bind:this={containerRef} class="relative py-2 select-none">
 		<button
 			onclick={() => (showPullDown = !showPullDown)}
-			class="c-select flex w-full items-center justify-between gap-1"
+			class="border-sub flex w-full cursor-pointer items-center justify-between rounded-full border bg-black p-2 text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 		>
-			<div class="flex min-w-0 items-center gap-2">
+			<div class="flex min-w-0 items-center gap-2 pl-1">
 				<Icon icon={getIconStyle(setExpression.type, expressionType)} width={20} class="shrink-0" />
 				<span class="truncate">{expressionsList.find((exp) => exp.key === style.key)?.name}</span>
 			</div>
@@ -71,28 +108,45 @@
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="bg-sub c-scroll-sub absolute top-[60px] left-0 z-10 max-h-60 w-full divide-y divide-gray-400 overflow-hidden overflow-y-auto rounded-lg shadow-md"
+				class="pointer-events-none absolute top-[60px] z-10 flex w-full flex-col gap-2"
 			>
-				{#each expressionsList as expressionItem (expressionItem.key)}
-					<label
-						class="flex w-full cursor-pointer items-center justify-between gap-2 p-2 transition-colors duration-100 {expressionItem.key ===
-						style.key
-							? 'bg-base text-main'
-							: 'hover:text-accent text-white'}"
-					>
-						<input
-							type="radio"
-							bind:group={style.key}
-							value={expressionItem.key}
-							class="hidden"
-							onchange={() => (showPullDown = false)}
-						/>
-						<div class="flex items-center gap-2">
-							<Icon icon={getIconStyle(expressionItem.type, expressionType)} width={20} />
-							<span class="select-none">{expressionItem.name}</span>
-						</div>
-					</label>
-				{/each}
+				<div
+					bind:this={scrollContainerRef}
+					onscroll={updateScrollContinueButton}
+					class="c-scroll-hidden bg-sub pointer-events-auto z-10 flex max-h-[265px] w-full flex-col gap-1 overflow-hidden overflow-y-auto rounded-[21.5px] px-0.5 py-0.5 shadow-md"
+				>
+					{#each expressionsList as expressionItem (expressionItem.key)}
+						<label
+							class="flex w-full cursor-pointer items-center justify-between gap-2 rounded-full p-2 transition-colors duration-50 {expressionItem.key ===
+							style.key
+								? 'bg-base text-main'
+								: ' hover:bg-base hover:text-main text-white'}"
+						>
+							<input
+								type="radio"
+								bind:group={style.key}
+								value={expressionItem.key}
+								class="hidden"
+								onclick={() => (showPullDown = false)}
+								onchange={() => (showPullDown = false)}
+							/>
+							<div class="flex items-center gap-2 pl-1">
+								<Icon icon={getIconStyle(expressionItem.type, expressionType)} width={20} />
+								<span class="select-none">{expressionItem.name}</span>
+							</div>
+						</label>
+					{/each}
+				</div>
+				{#if showScrollContinueButton}
+					<div class="flex w-full items-center justify-center">
+						<button
+							class="border-sub bg-sub pointer-events-auto cursor-pointer rounded-full border px-3 text-sm text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
+							onclick={scrollToNextBlock}
+						>
+							<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
+						</button>
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>

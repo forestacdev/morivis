@@ -12,8 +12,8 @@
 	interface Props {
 		label?: string | null;
 		value: string;
-		pattern: SpritePatternId | null;
-		layerType: VectorLayerType;
+		pattern?: SpritePatternId | null;
+		layerType?: VectorLayerType;
 	}
 	let { label, value = $bindable(), pattern = $bindable(), layerType }: Props = $props();
 
