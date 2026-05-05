@@ -8,7 +8,7 @@ import {
 	FOREST_MESH_STYLE,
 	TREE_SINGLE_COLOR_STYLE,
 	FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS,
-	createFilteredTreeMatchColorStyleMapping
+	createMatchColorMapping
 } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
@@ -62,15 +62,10 @@ const entry: VectorEntry<TileMetaData> = {
 					type: 'match',
 					key: '解析樹種',
 					name: '樹種ごとの色分け',
-					mapping: createFilteredTreeMatchColorStyleMapping([
-						'スギ',
-						'ヒノキ類',
-						'マツ類',
-						'その他N',
-						'その他L',
-						'タケ',
-						'その他'
-					]), // 'その他' を含む
+					mapping: createMatchColorMapping(
+						['スギ', 'ヒノキ類', 'マツ類', 'タケ', 'その他N', 'その他L', 'その他'],
+						'treeSpecies'
+					), // 'その他' を含む
 					noData: {
 						value: 'transparent',
 						pattern: null

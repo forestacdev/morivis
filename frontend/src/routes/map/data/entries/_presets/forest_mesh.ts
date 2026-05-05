@@ -31,7 +31,7 @@ import {
 	FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS,
 	TREE_SINGLE_COLOR_STYLE,
 	TREE_MATCH_COLOR_STYLE,
-	createFilteredTreeMatchColorStyleMapping
+	createMatchColorMapping
 } from '$routes/map/data/entries/vector/_style';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
@@ -136,7 +136,7 @@ export function createForestMeshEntry(config: ForestMeshEntryConfig): PolygonEnt
 				type: 'match',
 				key: '解析樹種',
 				name: '樹種ごとの色分け',
-				mapping: createFilteredTreeMatchColorStyleMapping(treeCategories)
+				mapping: createMatchColorMapping(treeCategories, 'treeSpecies')
 			},
 			...FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS
 		];
