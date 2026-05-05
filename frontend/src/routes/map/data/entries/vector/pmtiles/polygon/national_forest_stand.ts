@@ -1,4 +1,4 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { DEFAULT_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
@@ -8,9 +8,9 @@ const entry: VectorEntry<TileMetaData> = {
 	id: 'national_forest_stand',
 	type: 'vector',
 	format: {
-		type: 'mvt',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'https://forestacdev.github.io/tiles-national-forest-stand/tiles/{z}/{x}/{y}.pbf'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/national_forest_stand.pmtiles`
 	},
 	metaData: {
 		name: '国有林 小班区画',
@@ -641,9 +641,7 @@ const entry: VectorEntry<TileMetaData> = {
 		sources: {
 			national_forest_compartment: {
 				type: 'vector',
-				tiles: [
-					'https://forestacdev.github.io/tiles-national-forest-compartment/tiles/{z}/{x}/{y}.pbf'
-				],
+				url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/national_forest_compartment.pmtiles`,
 				maxzoom: 10
 			}
 		},
