@@ -15,23 +15,17 @@
 	import type { Unsubscriber } from 'svelte/store';
 
 	import DropContainer from './DropContainer.svelte';
-	import type {
-		ResultData,
-		SearchGeojsonData,
-		ResultPoiData,
-		ResultAddressData
-	} from '../utils/data/search-result';
+	import type { ResultData, SearchGeojsonData } from '../utils/data/search-result';
 
 	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import 'maplibre-gl/dist/maplibre-gl.css';
+	import HighlightMarkerManager from '$routes/map/components/HighlightMarkerManager.svelte';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	// import WebGLCanvasLayer from '$routes/map/components/map-layer/WebGLCanvasLayer.svelte';
 	import AngleMarker from '$routes/map/components/marker/AngleMarker.svelte';
-	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import SelectionMarker from '$routes/map/components/marker/SelectionMarker.svelte';
 	import MouseManager from '$routes/map/components/MouseManager.svelte';
-	import PoiManager from '$routes/map/components/PoiManager.svelte';
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
@@ -41,15 +35,17 @@
 	import {
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,
-		type DialogType
+		type DialogType,
+		type HighlightMarkerState
 	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
-	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { createSourcesItems } from '$routes/map/utils/sources';
@@ -83,6 +79,7 @@
 		drawGeojsonData: DrawGeojsonData;
 		showMapCanvas: boolean;
 		featureMenuData: FeatureMenuData | null;
+		highlightMarkerState: HighlightMarkerState | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		showAngleMarker: boolean;
@@ -112,6 +109,7 @@
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
 		featureMenuData = $bindable(),
+		highlightMarkerState = $bindable(),
 		streetViewLineData,
 		streetViewPointData,
 		showMapCanvas,
@@ -158,6 +156,7 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+
 	// let mapPaneFilter = $derived(
 	// 	$mapPaneScale < 1
 	// 		? 'invert(1) contrast(1.2) brightness(1.1)'
@@ -490,9 +489,13 @@
 	let styleUpdateId = 0;
 	const styleUpdateUnsubscribers: Unsubscriber[] = [];
 
+	const getMapStyleEntries = (entries: GeoDataEntry[]) => {
+		return entries.filter((entry) => entry.type !== 'model');
+	};
+
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
 		const updateId = ++styleUpdateId;
-		const mapLibreEntry = entries.filter((entry) => entry.type !== 'model');
+		const mapLibreEntry = getMapStyleEntries(entries);
 
 		// esri-featureプロトコルの動的管理
 		const isGeojsonTileEntry = (e: GeoDataEntry) =>
@@ -638,6 +641,18 @@
 		setStyleDebounce(layerEntries as GeoDataEntry[]);
 	};
 
+	const syncHighlightLayers = () => {
+		if (showDataEntry || showZoneForm) {
+			mapStore.clearHighlightLayers();
+			return;
+		}
+
+		const highlightLayers = createHighlightLayerItems(
+			getMapStyleEntries(layerEntries as GeoDataEntry[])
+		);
+		mapStore.setHighlightLayers(highlightLayers);
+	};
+
 	// レイヤーの更新を監視
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
@@ -680,6 +695,12 @@
 	styleUpdateUnsubscribers.push(
 		mapStore.onTerrain(() => {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
+		})
+	);
+
+	styleUpdateUnsubscribers.push(
+		mapStore.onStyleLoad(() => {
+			syncHighlightLayers();
 		})
 	);
 
@@ -773,7 +794,7 @@
 	>
 		<div
 			bind:this={mapContainer}
-			class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
+			class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg lg:rounded-br-[35px] {!showMapCanvas &&
 			$mapMode === 'view'
 				? 'opacity-0'
 				: $isStreetView && $mapMode === 'small'
@@ -781,26 +802,19 @@
 					: 'opacity-100'}"
 		>
 			{#if maplibreMap}
-				<PoiManager
-					map={maplibreMap}
-					bind:featureMenuData
-					{showDataEntry}
-					{showZoneForm}
-					{showGeoRefForm}
-					bind:showSelectionMarker
-				/>
+				<HighlightMarkerManager map={maplibreMap} {highlightMarkerState} />
 			{/if}
 		</div>
 		<!-- 地図コンテナオーバーレイ -->
 		<div
-			class="c-test border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
+			class="border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
 				? ' bg-accent opacity-50'
 				: ' opacity-0'}"
 		></div>
 
 		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
 			<!-- PC用地図コントロール -->
-			<div class="absolute right-5 bottom-5 max-lg:hidden">
+			<div class="absolute right-0 bottom-0 max-lg:hidden">
 				<Compass />
 			</div>
 		{/if}
@@ -832,10 +846,13 @@
 		{showDataEntry}
 		bind:markerLngLat={selectionMarkerLngLat}
 		bind:featureMenuData
+		bind:highlightMarkerState
 		bind:showMarker={showSelectionMarker}
 		bind:clickedLayerIds
 		bind:cameraBearing
 		bind:isExternalCameraUpdate
+		bind:selectedSearchId
+		bind:selectedSearchResultData
 		bind:contextMenuState
 		{searchResults}
 		{streetViewPointData}
@@ -850,15 +867,6 @@
 			bind:lngLat={selectionMarkerLngLat}
 		/>
 	{/key}
-
-	{#if selectedSearchResultData && selectedSearchId}
-		<SearchMarker
-			map={maplibreMap}
-			bind:selectedSearchId
-			prop={selectedSearchResultData as ResultPoiData | ResultAddressData}
-		/>
-	{/if}
-
 	<AngleMarker
 		map={maplibreMap}
 		bind:show={showAngleMarker}

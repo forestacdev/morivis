@@ -7,7 +7,8 @@ import type {
 	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification,
-	ExpressionSpecification
+	ExpressionSpecification,
+	ResolvedImageSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
 import type { Opacity } from '$routes/map/data/types';
@@ -84,7 +85,7 @@ export interface ColorSingleExpression {
 	name: string;
 	mapping: {
 		value: BaseSingleColor;
-		pattern?: SpritePatternId | null;
+		pattern: SpritePatternId | null;
 	};
 }
 
@@ -98,10 +99,10 @@ export interface ColorMatchExpression {
 	mapping: {
 		categories: string[] | number[];
 		values: string[];
-		patterns?: (SpritePatternId | null)[];
+		patterns: (SpritePatternId | null)[];
 	};
 	noData?: {
-		category?: string;
+		label?: string;
 		value: string;
 		pattern: SpritePatternId | null;
 	};
@@ -251,37 +252,8 @@ export interface PointOutLine {
 	minzoom?: number;
 }
 
-export interface PointIcon {
+export interface PointImageIcon {
 	show: boolean;
-	size: number;
-}
-
-export interface IconSingleExpression {
-	type: 'single';
-	key: string;
-	name: string;
-	mapping: {
-		pattern: SpritePatternId;
-	};
-}
-
-export interface IconMatchExpression {
-	type: 'match';
-	key: string;
-	name: string;
-	mapping: {
-		categories: string[] | number[];
-		patterns: SpritePatternId[];
-	};
-}
-
-export type IconsExpression = IconSingleExpression | IconMatchExpression;
-
-export interface IconsStyle {
-	show: boolean;
-	size: number;
-	key: string;
-	expressions: IconsExpression[];
 }
 
 export interface LabelOutLine {
@@ -307,9 +279,8 @@ export interface LineStringStyle extends BaseVectorStyle {
 export interface PointStyle extends BaseVectorStyle {
 	type: 'circle';
 	radius: NumbersStyle;
-	markerType: 'circle' | 'icon';
-	icons?: IconsStyle;
 	outline: PointOutLine;
+	imageIcon?: PointImageIcon;
 	default?: PointDefaultStyle;
 }
 

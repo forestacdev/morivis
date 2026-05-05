@@ -54,7 +54,7 @@ const baseAttributions = {
 		name: '© OpenStreetMap contributors',
 		url: 'https://www.openstreetmap.org/copyright'
 	},
-	OpenMapTiles: {
+	OMT: {
 		name: '© OpenMapTiles',
 		url: 'https://openmaptiles.org/'
 	},
@@ -74,8 +74,8 @@ const baseAttributions = {
 		name: '林野庁',
 		url: 'https://www.rinya.maff.go.jp/index.html'
 	},
-	東京都オープンデータカタログサイト: {
-		name: '東京都オープンデータカタログサイト',
+	東京都: {
+		name: '東京都',
 		url: 'https://portal.data.metro.tokyo.lg.jp/'
 	},
 	環境省生物多様性センター: {
@@ -94,9 +94,9 @@ const baseAttributions = {
 		name: '高知県森林資源データ',
 		url: 'https://www.geospatial.jp/ckan/organization/kochipref-mori'
 	},
-	兵庫県森林資源データ: {
-		name: '兵庫県森林資源データ',
-		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
+	兵庫県: {
+		name: '兵庫県',
+		url: 'https://www.geospatial.jp/ckan/organization/hyogopref-rinmu-chisan'
 	},
 	大阪府: {
 		name: '大阪府',
@@ -122,10 +122,6 @@ const baseAttributions = {
 		name: '神奈川県森林再生課',
 		url: 'https://www.pref.kanagawa.jp/'
 	},
-	兵庫県: {
-		name: '兵庫県',
-		url: 'https://www.geospatial.jp/ckan/organization/hyogopref'
-	},
 	PLATEAU: {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
@@ -136,7 +132,7 @@ const baseAttributions = {
 	},
 	登記所備付地図データ: {
 		name: '登記所備付地図データ（法務省）',
-		url: 'https://front.geospatial.jp/houmu-chiseki/'
+		url: 'https://front.geospatial.jp/moj-chizu-xml-readme/'
 	}
 } as const;
 

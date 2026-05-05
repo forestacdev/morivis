@@ -13,6 +13,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '地理院淡色地図',
+		sourceDataName: '淡色地図',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#pale',
 		location: '全国',

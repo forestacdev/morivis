@@ -4,7 +4,7 @@
 	import RangeSliderDoubleWrapper from './RangeSliderDoubleWrapper.svelte';
 
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import type { ColorsExpression, VectorLayerType } from '$routes/map/data/types/vector/style';
 	import {
 		COLOR_BREWER_SCHEME_COUNT,
@@ -27,56 +27,40 @@
 
 {#if setExpression.type === 'single'}
 	<!-- NOTE: プロパティが存在するかどうか -->
-	<!-- TODO: patternのポイント、ラインの対応 -->
-	{#if 'pattern' in setExpression.mapping}
-		<ColorPatternPicker
-			{layerType}
-			label="全体の色"
-			bind:value={setExpression.mapping.value as string}
-			bind:pattern={setExpression.mapping.pattern}
-		/>
-	{:else}
-		<ColorPatternPicker
-			{layerType}
-			label="全体の色"
-			bind:value={setExpression.mapping.value as string}
-		/>
-	{/if}
+
+	<ColorPatternPicker
+		{layerType}
+		label="全体の色"
+		bind:value={setExpression.mapping.value as string}
+		bind:pattern={setExpression.mapping.pattern}
+	/>
 {:else if setExpression.type === 'match'}
 	{#each setExpression.mapping.categories as _, index}
-		{#if setExpression.mapping.patterns}
-			<ColorPatternPicker
-				{layerType}
-				label={setExpression.mapping.categories[index] as string}
-				bind:pattern={setExpression.mapping.patterns[index]}
-				bind:value={setExpression.mapping.values[index] as string}
-			/>
-		{:else}
-			<ColorPatternPicker
-				{layerType}
-				label={setExpression.mapping.categories[index] as string}
-				bind:value={setExpression.mapping.values[index] as string}
-			/>
-		{/if}
+		<ColorPatternPicker
+			{layerType}
+			label={setExpression.mapping.categories[index] as string}
+			bind:pattern={setExpression.mapping.patterns[index]}
+			bind:value={setExpression.mapping.values[index] as string}
+		/>
 	{/each}
 
 	<!-- No Data -->
 	{#if setExpression.noData}
 		<ColorPatternPicker
 			{layerType}
-			label={setExpression.noData.category ?? ('データなし' as string)}
+			label={setExpression.noData.label ?? ('データなし' as string)}
 			bind:value={setExpression.noData.value as string}
 		/>
 	{/if}
 {:else if setExpression.type === 'step'}
-	<StyleColorMapPulldownBox
+	<ColorMapSelect
 		bind:isColorMap={setExpression.mapping.scheme}
 		mutableColorMapType={[...COLOR_BREWER_SCHEME_COUNT.sequential['9']]}
 	>
 		{#snippet children(_isColorMap)}
 			<ColorScaleStep isColorMap={_isColorMap as SequentialScheme} />
 		{/snippet}
-	</StyleColorMapPulldownBox>
+	</ColorMapSelect>
 	{#key setExpression}
 		<RangeSliderDoubleWrapper bind:setStepExpression={setExpression} />
 	{/key}

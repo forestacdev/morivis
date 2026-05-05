@@ -3,15 +3,14 @@
 	import { fly } from 'svelte/transition';
 
 	import ModelOptionMenu from './ModelOptionMenu.svelte';
+	import OpacityControl from './OpacityControl.svelte';
 
-	import { ICONS, getVisibilityIconName } from '$lib/icons';
+	import { ICONS } from '$lib/icons';
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import { getInitialEntryStyle } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { Opacity } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
-	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 
@@ -23,30 +22,6 @@
 	let { layerEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 	let showVisibleOption = $state<boolean>(false);
 	let showColorOption = $state<boolean>(false);
-
-	interface OpacityButton {
-		label: string;
-		value: Opacity;
-	}
-
-	const opacityButtons: OpacityButton[] = [
-		{
-			label: '30％',
-			value: 0.3
-		},
-		{
-			label: '50％',
-			value: 0.5
-		},
-		{
-			label: '70％',
-			value: 0.7
-		},
-		{
-			label: '100％',
-			value: 1
-		}
-	];
 
 	// const promise = (() => {
 	// 	try {
@@ -91,7 +66,7 @@
 {#if layerEntry}
 	<div
 		in:fly={{ duration: 300, opacity: 0, x: -100 }}
-		out:fly={{ duration: 300, opacity: 0, x: -100, delay: 150 }}
+		out:fly={{ duration: 300, opacity: 0, x: -100 }}
 		class="bg-main lg:w-side-menu absolute z-10 flex flex-col gap-2 overflow-hidden pl-2 max-lg:bottom-0 max-lg:h-2/3 max-lg:w-full max-lg:pt-2 lg:top-0 lg:h-full"
 	>
 		{#key layerEntry.id}
@@ -125,76 +100,8 @@
 
 				<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 					<!-- スクロールコンテンツ -->
-					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[300px]">
-						<div class="flex w-full justify-between rounded-lg bg-black p-2">
-							<!-- 表示 -->
-							<button
-								class="flex aspect-square w-[19%] flex-col items-center gap-1"
-								onclick={() => {
-									if (layerEntry) {
-										layerEntry.style.visible = false;
-									}
-								}}
-							>
-								<div
-									class="hover:bg-accent grid aspect-square w-full cursor-pointer place-items-center rounded-lg object-cover text-left {!layerEntry
-										.style.visible
-										? 'bg-accent'
-										: ''}"
-								>
-									<Icon icon={getVisibilityIconName(false)} class="h-8 w-8 text-base/90" />
-								</div>
-
-								<span
-									class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {!layerEntry
-										.style.visible
-										? 'bg-accent text-black'
-										: 'border-base'}">隠す</span
-								>
-							</button>
-							<!-- 不透明度 -->
-							{#each opacityButtons as item (item.label)}
-								<button
-									class="flex aspect-square w-[19%] flex-col items-center gap-1 select-none"
-									onclick={() => {
-										if (layerEntry) {
-											layerEntry.style.visible = true;
-											layerEntry.style.opacity = item.value;
-										}
-									}}
-								>
-									{#if src}
-										<div
-											class=" relative h-full w-full overflow-hidden rounded-lg border-2 {layerEntry
-												.style.opacity === item.value && layerEntry.style.visible
-												? 'border-accent set-glow'
-												: 'border-transparent'}"
-										>
-											<!-- 背景地図画像 -->
-											{#if layerEntry.metaData.xyzImageTile && layerEntry.type === 'vector'}
-												<img
-													src={getBaseMapImageUrl(layerEntry.metaData.xyzImageTile)}
-													class="c-basemap-img absolute top-0 left-0 h-full w-full scale-200 cursor-pointer object-cover text-left text-sm"
-													alt="背景地図画像"
-												/>
-											{/if}
-											<img
-												{src}
-												alt={layerEntry.metaData.name}
-												class="c-no-drag-icon absolute top-0 left-0 h-full w-full scale-200 cursor-pointer text-left text-sm"
-												style="opacity: {item.value};"
-											/>
-										</div>
-									{/if}
-									<span
-										class="rounded-lg p-1 px-2 text-base text-sm transition-colors duration-150 select-none {layerEntry
-											.style.opacity === item.value && layerEntry.style.visible
-											? 'bg-accent text-black'
-											: 'border-base'}">{item.label}</span
-									>
-								</button>
-							{/each}
-						</div>
+					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[400px]">
+						<OpacityControl {layerEntry} previewSrc={src} />
 
 						{#if layerEntry.type === 'vector'}
 							<VectorOptionMenu bind:layerEntry bind:showColorOption />
@@ -208,6 +115,7 @@
 							<ModelOptionMenu bind:layerEntry bind:showColorOption />
 						{/if}
 					</div>
+					<!-- フォグ -->
 					<div
 						class="c-bg-fog-bottom pointer-events-none absolute bottom-0 z-10 h-[150px] w-full"
 					></div>
@@ -255,9 +163,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.set-glow {
-		filter: drop-shadow(0 0 3px var(--color-accent));
-	}
-</style>

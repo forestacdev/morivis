@@ -1,8 +1,5 @@
 import type { LngLat } from 'maplibre-gl';
 
-/** サイドメニューの種類 */
-export type Side = 'search' | 'layer' | 'data' | 'info' | 'settings' | null;
-
 export type BasemapImageTile = {
 	Z: number;
 	X: number;

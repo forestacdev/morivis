@@ -4,12 +4,10 @@
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
-	import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 	import { lonLatToAddress } from '$routes/map/api/address';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
-	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		clickedLayerIds: string[];
@@ -45,11 +43,6 @@
 		})();
 	});
 
-	let selectedLayer = $state<{
-		layerId: string;
-		bool: boolean;
-	}>({ layerId: '', bool: false });
-
 	const showPopup = (layerId: string) => {
 		if (!clickedLayerFeaturesData) return;
 		const feature = clickedLayerFeaturesData.find(
@@ -60,25 +53,6 @@
 		clickedLayerFeaturesData = null;
 		clickedLayerIds = [];
 	};
-
-	$effect(() => {
-		if (selectedLayer.layerId && clickedLayerIds.length > 0) {
-			const map = mapStore.getMap();
-			if (!map) return;
-			const layer = map.getLayer(selectedLayer.layerId);
-			if (!layer) return;
-
-			let type: string = layer.type;
-			if (type === 'symbol') type = 'text';
-			map.setPaintProperty(
-				`@highlight_${selectedLayer.layerId}`,
-				`${type}-color`,
-				selectedLayer.bool ? '#00d5ff' : HIGHLIGHT_LAYER_COLOR
-			);
-
-			map.moveLayer(`@highlight_${selectedLayer.layerId}`);
-		}
-	});
 </script>
 
 {#if clickedLayerIds.length > 1 && clickedLngLat}
@@ -105,8 +79,6 @@
 							animate:flip={{ duration: 200 }}
 							class="duration-scale-100 relative grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gray-500 transition-all hover:scale-110"
 							onclick={() => showPopup(layerEntry.id)}
-							onmousemove={() => (selectedLayer = { layerId: layerEntry.id, bool: true })}
-							onmouseleave={() => (selectedLayer = { layerId: layerEntry.id, bool: false })}
 							><LayerIcon {layerEntry} />
 						</button>
 					{/each}

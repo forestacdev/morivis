@@ -1,6 +1,6 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { generateHueBasedHexColors } from '$routes/map/utils/style/color-mapping';
+import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'tokyo_gairoju',
@@ -15,7 +15,7 @@ const entry: VectorEntry<TileMetaData> = {
 		sourceDataName: '都道の街路樹',
 		description: `
             「東京都オープンデータカタログサイト」において公開されている「都道の街路樹」データをもとに加工`,
-		attribution: '東京都オープンデータカタログサイト',
+		attribution: '東京都',
 		tags: ['街路樹', '単木'],
 		downloadUrl: 'https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000029',
 		location: '東京都',
@@ -127,7 +127,6 @@ const entry: VectorEntry<TileMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
-		markerType: 'circle',
 		colors: {
 			key: '樹高(m)',
 			show: true,
@@ -137,17 +136,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#33a02c'
-					}
-				},
-				{
-					type: 'step',
-					key: '樹高(m)',
-					name: '樹高ごとの色分け',
-					mapping: {
-						scheme: 'YlGn',
-						range: [0, 10],
-						divisions: 5
+						value: '#33a02c',
+						pattern: null
 					}
 				},
 				{
@@ -155,7 +145,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹種',
 					name: '樹種ごとの色分け',
 					mapping: {
-						categories: [
+						...createMatchColorMapping([
 							'アオギリ',
 							'トキワマンサク',
 							'マサキ',
@@ -561,13 +551,22 @@ const entry: VectorEntry<TileMetaData> = {
 							'ハクサンシャクナゲ',
 							'ハイノキ',
 							'マグワ'
-						],
-						values: generateHueBasedHexColors(405)
+						])
 					},
 					noData: {
-						category: '未分類',
+						label: '未分類',
 						value: '#F7F7F7',
 						pattern: null
+					}
+				},
+				{
+					type: 'step',
+					key: '樹高(m)',
+					name: '樹高ごとの色分け',
+					mapping: {
+						scheme: 'YlGn',
+						range: [0, 10],
+						divisions: 5
 					}
 				}
 			]

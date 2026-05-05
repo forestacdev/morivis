@@ -2,7 +2,13 @@ import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
-import { PUBLIC_BASE_PATH, PUBLIC_ENTRY_PATH, PUBLIC_PANORAMA_PATH } from '$env/static/public';
+import {
+	PUBLIC_BASE_PATH,
+	PUBLIC_ENTRY_PATH,
+	PUBLIC_PANORAMA_PATH,
+	PUBLIC_TIMBER_SPECIES_PATH,
+	PUBLIC_DISASTER_LORE_ALL_PATH
+} from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
 export const DATA_PATH = BASE_PATH + '/assets';
@@ -26,15 +32,19 @@ export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
 export const STREET_VIEW_PANORAMA_PATH = PUBLIC_PANORAMA_PATH;
+export const TIMBER_SPECIES_DATA_PATH = PUBLIC_TIMBER_SPECIES_PATH;
+export const DISASTER_LORE_ALL_PATH = PUBLIC_DISASTER_LORE_ALL_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
 export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
 // export const MAP_FONT_DATA_PATH = 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf';
 export const MAP_SPRITE_DATA_PATH = DATA_PATH + '/sprite/sprite';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
+export const ICON_NO_IMAGE_PATH = '/assets/images/icons/no_photo.webp';
+export const USE_WORKER_GENERATED_POI_ICONS = true;
 
 /** ハイライトさせるレイヤーの色 */
-export const HIGHLIGHT_LAYER_COLOR = '#00d4fe';
+export const HIGHLIGHT_LAYER_COLOR = '#00fff7';
 
 /** マップアニメーションのデフォルト設定 */
 export const MAP_ANIMATION_DURATION = 1250;

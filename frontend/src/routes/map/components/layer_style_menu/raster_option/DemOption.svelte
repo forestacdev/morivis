@@ -3,7 +3,7 @@
 	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import type { ColorMapType, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
@@ -22,17 +22,17 @@
 	const rangeMin = $state.raw(layerEntry.style.visualization.uniformsData['relief'].min);
 </script>
 
-<Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
+<Accordion label={'描画の調整'} icon={'material-symbols:image'} bind:value={showColorOption}>
 	<DemStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} {layerEntry} />
 	{#if layerEntry.style.visualization.mode === 'relief'}
-		<StyleColorMapPulldownBox
+		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['relief'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap as ColorMapType} />
 			{/snippet}
-		</StyleColorMapPulldownBox>
+		</ColorMapSelect>
 		<RangeSliderDouble
 			label="標高数値範囲"
 			bind:lowerValue={layerEntry.style.visualization.uniformsData['relief'].min}
@@ -53,14 +53,14 @@
 	{/if}
 
 	{#if layerEntry.style?.visualization.uniformsData['slope'] && layerEntry.style.visualization.mode === 'slope'}
-		<StyleColorMapPulldownBox
+		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['slope'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap as ColorMapType} />
 			{/snippet}
-		</StyleColorMapPulldownBox>
+		</ColorMapSelect>
 
 		<RangeSliderDouble
 			label="傾斜量数値範囲"
@@ -82,25 +82,25 @@
 	{/if}
 
 	{#if layerEntry.style?.visualization.uniformsData['aspect'] && layerEntry.style.visualization.mode === 'aspect'}
-		<StyleColorMapPulldownBox
+		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['aspect'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap as ColorMapType} />
 			{/snippet}
-		</StyleColorMapPulldownBox>
+		</ColorMapSelect>
 	{/if}
 
 	{#if layerEntry.style?.visualization.uniformsData['curvature'] && layerEntry.style.visualization.mode === 'curvature'}
-		<StyleColorMapPulldownBox
+		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['curvature'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap as ColorMapType} />
 			{/snippet}
-		</StyleColorMapPulldownBox>
+		</ColorMapSelect>
 	{/if}
 </Accordion>
 

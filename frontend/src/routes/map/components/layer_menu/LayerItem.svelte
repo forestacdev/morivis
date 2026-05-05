@@ -12,9 +12,9 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
-	import { GeojsonCache } from '$routes/map/utils/formats/geojson';
-	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
@@ -427,7 +427,7 @@
 			<div
 				class="absolute top-0 w-[2px] {isLast ? 'h-1/2' : 'h-full'} {isHoveredLayerType ===
 				layerType
-					? 'bg-accent '
+					? 'bg-accent'
 					: 'bg-gray-400'}"
 			></div>
 			<div
@@ -442,8 +442,8 @@
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border-1 p-2 text-left text-nowrap text-clip duration-200 select-none
-			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black ' : ''} {$selectedLayerId ===
+		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border p-2 text-left text-nowrap text-clip duration-300 select-none
+			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
 			: ''} {$showDataMenu || $isStyleEdit
@@ -462,14 +462,14 @@
 		tabindex="0"
 	>
 		<!-- 選択中リップルエフェクト -->
-		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
 			<div
 				class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
 			></div>
 			<div
 				class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
 			></div>
-		{/if}
+		{/if} -->
 
 		<!-- 背景アイコン -->
 		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
@@ -656,17 +656,6 @@
 </div>
 
 <style>
-	/* エフェクト要素 */
-	.c-ripple-effect {
-		opacity: 0;
-		animation: ripple 1.5s linear infinite;
-	}
-
-	.c-ripple-effect2 {
-		opacity: 0;
-		animation: ripple 1.5s 0.75s linear infinite;
-	}
-
 	/* アニメーションの定義 */
 	@keyframes ripple {
 		0% {

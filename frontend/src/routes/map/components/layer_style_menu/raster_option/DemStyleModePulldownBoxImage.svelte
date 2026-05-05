@@ -6,6 +6,7 @@
 		isMode: string;
 		mode: string;
 		name: string;
+		hoveredName: string;
 		showPullDown: boolean;
 		layerEntry: RasterDemEntry;
 	}
@@ -14,6 +15,7 @@
 		isMode = $bindable(),
 		mode,
 		name,
+		hoveredName = $bindable(),
 		showPullDown = $bindable(),
 		layerEntry
 	}: Props = $props();
@@ -40,10 +42,11 @@
 </script>
 
 <label
-	class="group flex w-full cursor-pointer flex-col items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {isMode ===
+	class="group flex w-full cursor-pointer flex-col items-center justify-between text-white transition-colors duration-100 {isMode ===
 	mode
 		? ''
 		: ''}"
+	onmouseenter={() => (hoveredName = name)}
 >
 	<input
 		type="radio"
@@ -51,9 +54,10 @@
 		value={mode}
 		class="hidden"
 		onchange={() => (showPullDown = false)}
+		onclick={() => (showPullDown = false)}
 	/>
 	<div
-		class="overflow-hidden rounded-md border-3 {isMode === mode
+		class="lg:hover:border-base overflow-hidden rounded-full border-3 {isMode === mode
 			? 'border-accent'
 			: 'border-transparent'}"
 	>
@@ -69,5 +73,4 @@
 			<div>画像の取得に失敗</div>
 		{/await}
 	</div>
-	<span class="text-sm select-none">{name}</span>
 </label>

@@ -1,19 +1,25 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount, onDestroy } from 'svelte';
 
+	import {
+		getAttribution,
+		getAttributionName,
+		type AttributionKey
+	} from '$routes/map/data/entries/_meta_data/_attribution';
 	import { mapAttributions } from '$routes/stores/attributions';
 
-	const systemAttributionss = [
-		'国土地理院',
-		'© OpenMapTiles',
-		'© OpenStreetMap contributors',
-		'© U.S. Geological Survey'
-	];
+	const systemAttributionss: AttributionKey[] = ['国土地理院', 'OMT', 'OSM', 'USGS'];
 
 	let newAttributions = $derived.by(() => {
 		const attributions = $mapAttributions;
-		return [...attributions, ...systemAttributionss];
+		return [...attributions, ...systemAttributionss].map((attribution) => {
+			const resolvedAttribution = getAttribution(attribution);
+
+			return {
+				name: getAttributionName(attribution) ?? attribution,
+				url: resolvedAttribution?.url ?? ''
+			};
+		});
 	});
 
 	let currentIndex = $state<number>(0);
@@ -50,11 +56,19 @@
 
 <div class="flex items-center justify-end gap-2 pr-2 select-none">
 	{#key currentIndex}
-		<div class="fade-in">{newAttributions[currentIndex]}</div>
+		{#if newAttributions[currentIndex]?.url}
+			<a
+				href={newAttributions[currentIndex].url}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="fade-in underline-offset-2 hover:underline"
+			>
+				{newAttributions[currentIndex].name}
+			</a>
+		{:else}
+			<div class="fade-in">{newAttributions[currentIndex]?.name}</div>
+		{/if}
 	{/key}
-	<!-- <button class="p-0.1 cursor-pointer rounded-full bg-gray-300" onclick={open}>
-		<Icon icon="humbleicons:info" class="text-main h-4 w-4" />
-	</button> -->
 </div>
 
 <style>

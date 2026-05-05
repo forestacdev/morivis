@@ -3,6 +3,7 @@
 
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { parseGeoPhotos } from '$routes/map/utils/formats/exif';
@@ -75,14 +76,27 @@
 			);
 
 			if (entry) {
-				// 画像表示用キーを設定
-				entry.properties.attributeView.imageKey = 'imageUrl';
+				const pointEntry = entry as PointEntry<GeoJsonMetaData>;
 				entry.properties.attributeView.titles = [
 					{
 						conditions: ['fileName'],
 						template: '{fileName}'
 					}
 				];
+				pointEntry.properties.images = {
+					popup: {
+						type: 'absolute',
+						urlKey: 'imageUrl'
+					},
+					icon: {
+						type: 'absolute',
+						imageIdKey: 'imageUrl',
+						urlKey: 'imageUrl'
+					}
+				};
+				pointEntry.style.imageIcon = {
+					show: true
+				};
 
 				showDataEntry = entry;
 				showDialogType = null;

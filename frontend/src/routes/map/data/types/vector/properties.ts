@@ -16,11 +16,26 @@ export interface Title {
 	template: string;
 }
 
+export interface NationalForestRelations {
+	/** 保安林種別名連携用の属性キー */
+	protectionForestNameKey?: string;
+	/** 森林管理局名連携用の属性キー */
+	regionalForestOfficeKey?: string;
+	/** 森林管理局名連携用の属性キー */
+	managementBureauKey?: string;
+	/** 森林管理署名連携用の属性キー */
+	forestOfficeKey?: string;
+	/** 森林管理署名連携用の属性キー */
+	managementOfficeKey?: string;
+}
+
 export interface Relations {
 	/** 市町村コード連携用の属性キー */
 	cityCodeKey?: string;
 	/** iNaturalist 連携用の和名の属性キー。 */
 	iNaturalistNameKey?: string;
+	/** 国有林データ連携用の属性キー群 */
+	nationalForest?: NationalForestRelations;
 }
 
 /**
@@ -47,7 +62,35 @@ export interface AttributeView {
 	 */
 	imageKey?: string;
 
+	/** 詳細表示用の属性キー */
+	descriptionKey?: string;
+
 	relations?: Relations;
+}
+
+export interface AbsoluteImageSource {
+	type: 'absolute';
+	urlKey: string;
+}
+
+export interface RelativeImageSource {
+	type: 'relative';
+	urlKey: string;
+	baseUrl: string;
+	suffix?: string;
+}
+
+export type ImageSource = AbsoluteImageSource | RelativeImageSource;
+
+export type PopupImageSource = ImageSource;
+
+export type IconImageSource = ImageSource & {
+	imageIdKey: string;
+};
+
+export interface VectorImages {
+	popup?: PopupImageSource;
+	icon?: IconImageSource;
 }
 
 /**
@@ -418,6 +461,7 @@ export interface FieldDef {
 export interface VectorProperties {
 	fields: FieldDef[];
 	attributeView: AttributeView;
+	images?: VectorImages;
 	/**
 	 * 属性を結合するための外部データのURL(JSON)。 TODO: 将来的に汎用化
 	 */

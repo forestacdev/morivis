@@ -4,6 +4,60 @@ import { queryParameters, ssp } from 'sveltekit-search-params';
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
 import { isStreetView } from '$routes/stores';
 import { isTerrain3d } from '$routes/stores/map';
+import { browser } from '$app/environment';
+import { debounce } from 'es-toolkit';
+
+// URLパラメータの保留中の更新を管理（競合を防ぐためのdebounce機構）
+let pendingParams: Record<string, string | undefined> = {};
+
+/**
+ * 保留中のパラメータをURLに反映する
+ */
+const flushUrlParams = () => {
+	if (!browser) return;
+	const store = queryParameters({}, { pushHistory: false });
+	const params = get(store);
+
+	for (const [key, value] of Object.entries(pendingParams)) {
+		if (value === undefined) {
+			delete params[key];
+			continue;
+		}
+
+		params[key] = value;
+	}
+
+	store.set(params);
+	pendingParams = {};
+};
+
+// es-toolkitのdebounceを使用して10ms後にまとめて更新
+const debouncedFlush = debounce(flushUrlParams, 10);
+
+/**
+ * URLパラメータの更新をスケジュールする（debounce処理）
+ * @param {string} key - パラメータキー
+ * @param {string | undefined} value - パラメータ値
+ */
+const scheduleUrlUpdate = (key: string, value: string | undefined) => {
+	pendingParams[key] = value;
+	debouncedFlush();
+};
+
+/**
+ * 複数のURLパラメータ更新をまとめてスケジュールする
+ */
+const scheduleUrlUpdates = (params: Record<string, string | undefined>) => {
+	Object.assign(pendingParams, params);
+	debouncedFlush();
+};
+
+/**
+ * 特定のURLパラメータ削除をスケジュールする
+ */
+export const scheduleUrlParamRemoval = (key: string) => {
+	scheduleUrlUpdate(key, undefined);
+};
 
 /** 座標の検証 */
 const isValidCoordinate = (lng: number, lat: number): boolean => {
@@ -109,31 +163,21 @@ export const getMapParams = (): MapPosition => {
 
 /** 地図表示のURLパラメータのセット */
 export const setMapParams = (option: MapPosition) => {
-	const params = get(queryParameters({}, { pushHistory: false }));
-
 	// アンダースコア区切りで結合
 	const center = option.center.map((value) => value.toFixed(6)).join('_');
-	params.c = center;
-	params.z = option.zoom.toFixed(1);
-	params.p = option.pitch.toFixed(0);
-	params.b = option.bearing.toFixed(0);
-
-	if (!get(isStreetView)) {
-		params.sv = '-1';
-	}
-
-	if (!get(isTerrain3d)) {
-		params['3d'] = '0';
-	}
-
-	queryParameters({}, { pushHistory: false }).set(params);
+	scheduleUrlUpdates({
+		c: center,
+		z: option.zoom.toFixed(1),
+		p: option.pitch.toFixed(0),
+		b: option.bearing.toFixed(0),
+		sv: !get(isStreetView) ? '-1' : undefined,
+		'3d': !get(isTerrain3d) ? '0' : undefined
+	});
 };
 
 /** street view用のURLパラメータのセット */
 export const setStreetViewParams = (nodeId: number) => {
-	const params = get(queryParameters({}));
-	params.sv = nodeId.toString();
-	queryParameters({}, { pushHistory: false }).set(params);
+	scheduleUrlUpdate('sv', nodeId.toString());
 };
 
 /** streetview用のURLパラメータの取得 */
@@ -144,9 +188,7 @@ export const getStreetViewParams = (): string | null => {
 
 /** streetviewカメラパラメータのセット */
 export const setStreetViewCameraParams = ({ x, y }: { x: number; y: number }) => {
-	const params = get(queryParameters({}));
-	params.cr = `${x.toFixed(2)}_${y.toFixed(2)}`;
-	queryParameters({}, { pushHistory: false }).set(params);
+	scheduleUrlUpdate('cr', `${x.toFixed(2)}_${y.toFixed(2)}`);
 };
 
 /** streetviewカメラパラメータの取得 */
@@ -171,9 +213,7 @@ export const getStreetViewCameraParams = (): { x: number; y: number } | null => 
 
 /** 3d用のURLパラメータのセット */
 export const set3dParams = (numString: '0' | '1') => {
-	const params = get(queryParameters({}));
-	params['3d'] = numString;
-	queryParameters({}, { pushHistory: false }).set(params);
+	scheduleUrlUpdate('3d', numString);
 };
 
 /** 3d用のURLパラメータの取得 */
@@ -183,10 +223,7 @@ export const get3dParams = (): string | null => {
 };
 
 export const removeUrlParams = (paramName: string) => {
-	const url = window.location.href;
-	const urlObj = new URL(url);
-	urlObj.searchParams.delete(paramName);
-	window.history.replaceState({}, '', urlObj.toString());
+	scheduleUrlParamRemoval(paramName);
 };
 
 /** オブジェクトをURLパラメータに変換 */

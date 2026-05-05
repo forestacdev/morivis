@@ -6,13 +6,8 @@
 import type { NetCDFReader } from 'netcdfjs';
 import type { NetCDFInfo } from './index';
 import { extractRasterData } from './index';
-import {
-	GeoTiffCache,
-	encodeAllBandsToTerrarium,
-	getMinMax,
-	type BandDataRange,
-	type RasterBands
-} from '../geotiff';
+import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+import { encodeAllBandsToTerrarium, getMinMax, type RasterBands } from '../geotiff';
 
 interface NetCDFCacheEntry {
 	reader: NetCDFReader;

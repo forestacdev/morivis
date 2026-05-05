@@ -7,17 +7,6 @@ import type {
 	NumberStepExpression
 } from '$routes/map/data/types/vector/style';
 
-export const getSelectedIconSizeExpression = (
-	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
-): DataDrivenPropertyValueSpecification<number> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		0.12,
-		numbercolorExpression
-	] as DataDrivenPropertyValueSpecification<number>;
-};
-
 export const generateNumberMatchExpression = (
 	expressionData: NumberMatchExpression
 ): DataDrivenPropertyValueSpecification<number> => {
@@ -129,15 +118,4 @@ export const getNumberExpression = (numbers: NumbersStyle) => {
 			console.warn(`数値設定が見つかりません: ${key}`);
 			return 0;
 	}
-};
-
-export const getSelectedOpacityExpression = (
-	numbercolorExpression: DataDrivenPropertyValueSpecification<number>
-): DataDrivenPropertyValueSpecification<number> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		0.8,
-		numbercolorExpression
-	] as DataDrivenPropertyValueSpecification<number>;
 };

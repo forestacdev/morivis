@@ -19,8 +19,11 @@
 		isInt = false
 	}: Props = $props();
 
-	// TODO: animation
-	let rangeElement = $state<HTMLDivElement | null>(null);
+	let progressPercent = $derived.by(() => {
+		if (max <= min) return 0;
+		const clampedValue = Math.min(Math.max(value, min), max);
+		return ((clampedValue - min) / (max - min)) * 100;
+	});
 </script>
 
 <div class="flex flex-col gap-4 pb-4 text-base">
@@ -35,7 +38,15 @@
 		</div>
 	</div>
 
-	<input class="css-range" type="range" bind:value {min} {max} {step} />
+	<input
+		class="css-range"
+		type="range"
+		bind:value
+		{min}
+		{max}
+		{step}
+		style="background: linear-gradient(to right, var(--color-main-accent) 0%, var(--color-accent) {progressPercent}%, var(--color-sub) {progressPercent}%, var(--color-sub) 100%);"
+	/>
 </div>
 
 <style>
@@ -45,13 +56,14 @@
 		appearance: none;
 		outline: none;
 		cursor: pointer;
-		width: 95%;
-		height: 3px;
+		width: 100%;
+		height: 12px;
+		border-radius: 8px;
 	}
 
 	/* スライダー バー */
 	.css-range::-webkit-slider-runnable-track {
-		background: rgb(201, 201, 201);
+		background: transparent;
 		height: 8px;
 		border-radius: 8px;
 	}
@@ -63,13 +75,12 @@
 		height: 25px;
 		width: 25px;
 		margin-top: -9px; /* 位置の調整が必要 */
-		background-color: #ffffff;
+		background-color: var(--color-base);
 		border-radius: 50%;
-		border: 3px solid rgb(0, 0, 0);
+		border: 3px solid var(--color-accent);
 		transition: all 0.15s;
 	}
 	.css-range::-webkit-slider-thumb:hover {
-		background-color: #ffffff;
 		border: 3px solid var(--color-accent);
 	}
 </style>

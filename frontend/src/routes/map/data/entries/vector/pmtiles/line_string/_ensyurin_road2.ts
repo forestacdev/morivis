@@ -44,7 +44,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#ff7f00'
+						value: '#ff7f00',
+						pattern: null
 					}
 				},
 				{
@@ -53,7 +54,8 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '歩道と林道の色分け',
 					mapping: {
 						categories: ['林道', '歩道'],
-						values: ['#ffec42', '#e0e0e0']
+						values: ['#ffec42', '#e0e0e0'],
+						patterns: [null, null]
 					}
 				}
 			]

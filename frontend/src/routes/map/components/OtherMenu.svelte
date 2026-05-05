@@ -160,18 +160,19 @@
 		<ui>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={toggleInfoDialog}
+			>
+				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
+				<span class="select-none">このアプリについて</span>
+			</button>
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleTermsDialog}
 			>
 				<Icon icon="majesticons:note-text" class="h-8 w-8" />
 				<span class="select-none">利用規約</span>
 			</button>
-			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				onclick={toggleInfoDialog}
-			>
-				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
-				<span class="select-none">{$isMobile ? 'このアプリについて' : 'このサイトについて'}</span>
-			</button>
+
 			<a
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				href="https://github.com/forestacdev/morivis"
@@ -187,7 +188,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 				><Icon icon="mdi:web" class="h-8 w-8" />
-				<span>森林文化アカデミーWebサイト</span></a
+				<span>森林文化アカデミー Webサイト</span></a
 			>
 
 			<a
@@ -199,13 +200,6 @@
 				<span>morinos Webサイト</span></a
 			>
 
-			<button
-				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
-				onclick={goHome}
-				disabled={$isBlocked}
-				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
-				<span>トップページへ</span></button
-			>
 			{#if canShowInstallButton}
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
@@ -214,6 +208,13 @@
 					<span>アプリをインストール</span>
 				</button>
 			{/if}
+			<button
+				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
+				onclick={goHome}
+				disabled={$isBlocked}
+				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
+				<span>トップページへ</span></button
+			>
 
 			{#if import.meta.env.MODE === 'development' || import.meta.env.MODE === 'mobile'}
 				<button

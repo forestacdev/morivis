@@ -83,7 +83,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
-		markerType: 'circle',
 		colors: {
 			show: true,
 			key: '単色',
@@ -93,7 +92,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#fdb462'
+						value: '#fdb462',
+						pattern: null
 					}
 				}
 			]

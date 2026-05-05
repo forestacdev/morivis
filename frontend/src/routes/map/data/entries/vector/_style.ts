@@ -14,8 +14,11 @@ import type {
 	PolygonOutLine,
 	ColorsStyle
 } from '$routes/map/data/types/vector/style';
-import { getRandomColor } from '$routes/map/utils/color/color-brewer';
-import { color } from 'd3-color';
+import { getRandomColors, type BaseSingleColor } from '$routes/map/utils/color/color-brewer';
+import {
+	matchStyleDicts,
+	type MatchStyleDictName
+} from '$routes/map/data/entries/vector/_match-style-dicts';
 
 import type {
 	FillLayerSpecification,
@@ -29,26 +32,21 @@ import type {
 	ExpressionSpecification
 } from 'maplibre-gl';
 
-/** カテゴリに基づいてランダム色スタイルのマッピングを作成する */
-export const createMatchColorStyleRandomMapping = (
-	categories: string[],
-	isPattern: boolean = false // パターンを使用するかどうかのフラグ
+/** カテゴリ配列から辞書優先、未定義はランダム色のマッピングを作成する */
+export const createMatchColorMapping = (
+	categories: string[] | number[],
+	styleDictName?: MatchStyleDictName
 ): ColorMatchExpression['mapping'] => {
-	const values = categories.map((category) => {
-		return getRandomColor();
-	});
-	if (isPattern) {
-		return {
-			categories,
-			values,
-			patterns: categories.map(() => null) // パターンは使用しない場合はnull
-		};
-	} else {
-		return {
-			categories,
-			values
-		};
-	}
+	const randomColors = getRandomColors(categories.length);
+	const styleDict = styleDictName ? matchStyleDicts[styleDictName] : undefined;
+
+	return {
+		categories,
+		values: categories.map(
+			(category, index) => styleDict?.colors[String(category)] ?? randomColors[index]
+		),
+		patterns: categories.map((category) => styleDict?.patterns?.[String(category)] ?? null)
+	};
 };
 
 /** カラーコード配列に基づいてランダム色スタイルのマッピングを作成する */
@@ -66,7 +64,6 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 	type: 'circle',
 	opacity: 0.7,
 	visible: true,
-	markerType: 'circle',
 	colors: {
 		show: true,
 		key: '単色',
@@ -76,7 +73,8 @@ export const DEFAULT_VECTOR_POINT_STYLE: PointStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -124,7 +122,8 @@ export const DEFAULT_VECTOR_LINE_STYLE: LineStringStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -168,7 +167,8 @@ export const DEFAULT_VECTOR_POLYGON_STYLE: PolygonStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -204,7 +204,8 @@ export const DEFAULT_CAD_STYLE: LineStringStyle = {
 				key: '単色',
 				name: '単色',
 				mapping: {
-					value: '#ff7f00'
+					value: '#ff7f00',
+					pattern: null
 				}
 			}
 		]
@@ -329,38 +330,6 @@ export const TREE_MATCH_COLOR_STYLE: ColorMatchExpression = {
 		value: 'transparent',
 		pattern: null
 	}
-};
-
-/**
- * TREE_MATCH_COLOR_STYLEから指定したcategoriesのみのmappingを作成する
- * @param categories - 抽出したいcategoryの配列
- * @returns 抽出後のColorMatchExpression['mapping']
- */
-export const createFilteredTreeMatchColorStyleMapping = (
-	categories: string[]
-): ColorMatchExpression['mapping'] => {
-	const sourceCategories = TREE_MATCH_COLOR_STYLE.mapping.categories as string[];
-	const sourceValues = TREE_MATCH_COLOR_STYLE.mapping.values;
-	const sourcePatterns = TREE_MATCH_COLOR_STYLE.mapping.patterns;
-
-	const filteredCategories: string[] = [];
-	const filteredValues: string[] = [];
-	const filteredPatterns: NonNullable<typeof sourcePatterns> = [];
-
-	for (const category of categories) {
-		const index = sourceCategories.indexOf(category);
-		if (index !== -1) {
-			filteredCategories.push(sourceCategories[index]);
-			filteredValues.push(sourceValues[index]);
-			filteredPatterns.push(sourcePatterns?.[index] ?? null);
-		}
-	}
-
-	return {
-		categories: filteredCategories,
-		values: filteredValues,
-		patterns: filteredPatterns
-	};
 };
 
 export const TREE_STEP_COLOR_STYLE: ColorStepExpression = {

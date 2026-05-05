@@ -120,13 +120,14 @@
 
 			const resultsData = result.map((item) => {
 				const data = item.item;
+				const layerId = data.layer_id.startsWith('@') ? data.layer_id : `@${data.layer_id}`;
 
 				return {
 					type: 'poi' as const,
 					name: data.name,
 					location: dict[data.layer_id] || '---',
 					point: data.point,
-					layerId: data.layer_id,
+					layerId,
 					featureId: data.feature_id,
 					propId: data.prop_id ?? ''
 				};

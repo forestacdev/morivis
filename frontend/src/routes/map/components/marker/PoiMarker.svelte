@@ -4,16 +4,16 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
-	import { checkMobile } from '$routes/map/utils/platform/viewport';
+	import { ICON_NO_IMAGE_PATH } from '$routes/constants';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		map: maplibregl.Map;
-		featureId: number;
+		featureId: string | number;
 		lngLat: LngLat | null;
 		properties: { [key: string]: any };
-		clickId: number | null; // クリックされたPOIのID
-		onClick: (featureId: number) => void;
+		clickId: string | number | null; // クリックされたPOIのID
+		onClick: (featureId: string | number) => void;
 	}
 
 	let { lngLat = $bindable(), map, properties, featureId, onClick, clickId }: Props = $props();
@@ -30,21 +30,24 @@
 		mapStore.jumpToFac();
 	};
 
-	const onHover = (val: boolean) => {
-		if (checkMobile()) return;
-
-		isHover = val;
-	};
-
-	const click = () => {
-		onClick(featureId);
-	};
-
 	// 画像キャッシュ（同じ画像の重複読み込みを防ぐ）
 	const imageCache = new Map<string, Promise<void>>();
 
 	let imageLoaded = $state(false);
 	let imageError = $state(false);
+	let latestImageRequestId = 0;
+
+	const preferredImageUrl = $derived.by(() => {
+		if (typeof properties.iconImage === 'string' && properties.iconImage !== '') {
+			return properties.iconImage;
+		}
+
+		if (typeof properties.image === 'string' && properties.image !== '') {
+			return properties.image;
+		}
+
+		return ICON_NO_IMAGE_PATH;
+	});
 
 	// 画像を事前読み込みする関数（キャッシュ付き）
 	const preloadImage = (url: string): Promise<void> => {
@@ -64,31 +67,31 @@
 	};
 
 	// 画像URLを設定し、読み込み完了を待つ
-	const loadImage = async () => {
-		const id = properties._prop_id;
+	const loadImage = async (sourceUrl: string) => {
+		const fallbackUrl = ICON_NO_IMAGE_PATH;
+		const requestId = ++latestImageRequestId;
 
 		try {
-			// 画像URLを決定
-			if (id === 'fac_top') {
-				imageUrl = properties.image;
-			} else {
-				imageUrl = properties.iconImage;
-			}
-
-			// 画像URLが存在しない場合
-			if (!imageUrl) {
-				imageError = true;
-				return;
-			}
-
 			// 画像の読み込み完了を待つ
-			await preloadImage(imageUrl);
+			await preloadImage(sourceUrl);
+			if (requestId !== latestImageRequestId) return;
+			imageUrl = sourceUrl;
 			imageLoaded = true;
 			imageError = false;
 		} catch (error) {
 			console.warn('Failed to load image:', error);
-			imageError = true;
-			imageLoaded = false;
+			try {
+				await preloadImage(fallbackUrl);
+				if (requestId !== latestImageRequestId) return;
+				imageUrl = fallbackUrl;
+				imageLoaded = true;
+				imageError = false;
+			} catch (fallbackError) {
+				console.warn('Failed to load fallback image:', fallbackError);
+				if (requestId !== latestImageRequestId) return;
+				imageError = true;
+				imageLoaded = false;
+			}
 		}
 	};
 
@@ -97,7 +100,7 @@
 		if (markerContainer && lngLat) {
 			marker = new maplibregl.Marker({
 				element: markerContainer,
-				anchor: properties._prop_id === 'fac_top' ? 'center' : 'bottom',
+				anchor: 'bottom',
 				offset: [0, 0]
 			})
 				.setLngLat(lngLat)
@@ -118,7 +121,7 @@
 		isReady = true;
 
 		// 画像読み込みは非同期で実行
-		await loadImage();
+		await loadImage(preferredImageUrl);
 	});
 	onDestroy(() => {
 		marker?.remove();
@@ -127,112 +130,88 @@
 		name = null;
 	});
 
+	$effect(() => {
+		if (marker && lngLat) {
+			marker.setLngLat(lngLat);
+		}
+
+		if (name && lngLat) {
+			name.setLngLat(lngLat);
+		}
+	});
+
+	$effect(() => {
+		const nextImageUrl = preferredImageUrl;
+		imageLoaded = false;
+		imageError = false;
+		void loadImage(nextImageUrl);
+	});
+
 	// フォールバック画像またはプレースホルダーを表示するかどうか
 	const showImage = $derived(imageLoaded && !imageError);
 </script>
 
-{#if properties._prop_id === 'fac_top'}
-	<div
-		bind:this={markerContainer}
-		class="pointer-events-none relative grid w-[150px] place-items-center"
-	>
-		{#if isReady}
-			<button
-				class="pointer-events-auto relative grid h-[100px] w-[100px] cursor-pointer place-items-center drop-shadow-md"
-				onclick={jumpToFac}
-				onfocus={() => onHover(true)}
-				onblur={() => onHover(false)}
-				onmouseover={() => onHover(true)}
-				onmouseleave={() => onHover(false)}
+<div
+	bind:this={markerContainer}
+	class="pointer-events-none relative grid w-[150px] place-items-center drop-shadow-md"
+>
+	{#if isReady}
+		{#if showImage}
+			<svg
+				transition:fade={{ duration: 100 }}
+				viewBox="0 0 24 18"
+				aria-hidden="true"
+				class="absolute bottom-0 left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-transform duration-150"
+			>
+				<path
+					d="M0.2 2C0.2 2 4.2 8.2 8.4 12.2C10.1 14 10.7 14.9 12 14.9C13.3 14.9 13.9 14 15.6 12.2C19.8 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
+					fill="white"
+				/>
+			</svg>
+		{/if}
+
+		<button
+			class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center transition-opacity duration-200"
+		>
+			<div
+				class="absolute inset-0 transition-transform duration-150 {isHover || clickId === featureId
+					? '-translate-y-[15px] scale-120'
+					: ''}"
 			>
 				{#if showImage}
 					<img
 						transition:fade={{ duration: 100 }}
-						class="absolute h-[50px] w-[50px] rounded-full object-cover transition-all duration-150 hover:scale-120"
+						class="bg-main absolute inset-0 h-full w-full rounded-full border-3 border-white object-cover"
 						src={imageUrl}
-						alt={properties.name}
+						alt={properties.name || 'Marker Image'}
 					/>
 				{:else if imageError}
 					<!-- エラー時のフォールバック -->
 					<div
 						transition:fade={{ duration: 100 }}
-						class="absolute flex h-[50px] w-[50px] items-center justify-center rounded-full bg-gray-400"
+						class="absolute inset-0 flex h-full w-full items-center justify-center rounded-full border-3 border-white bg-gray-400"
 					>
-						<span class="text-xs text-white">?</span>
+						<span class="text-sm text-white">?</span>
 					</div>
 				{/if}
-			</button>
-		{/if}
-	</div>
-{:else}
-	<div
-		bind:this={markerContainer}
-		class="pointer-events-none relative grid w-[150px] place-items-center drop-shadow-md"
-	>
-		{#if isReady}
-			{#if showImage}
-				<svg
-					transition:fade={{ duration: 100 }}
-					viewBox="0 0 24 18"
-					aria-hidden="true"
-					class="absolute -bottom-[10px] left-1/2 h-[18px] w-[24px] -translate-x-1/2 overflow-visible transition-transform duration-150"
-				>
-					<path
-						d="M0.2 2C0.2 2 5.4 8.2 8.9 12.2C10.3 14 10.8 14.7 12 14.7C13.2 14.7 13.7 14 15.1 12.2C18.6 8.2 23.8 2 23.8 2L23.8 0.9C20 0.9 16.3 1.15 12 1.15C7.7 1.15 4 0.9 0.2 0.9Z"
-						fill="white"
-					/>
-				</svg>
-			{/if}
 
-			<button
-				class="peer pointer-events-auto relative grid h-[50px] w-[50px] cursor-pointer place-items-center transition-opacity duration-200"
-				onclick={click}
-				onfocus={() => onHover(true)}
-				onblur={() => onHover(false)}
-				onmouseover={() => onHover(true)}
-				onmouseleave={() => onHover(false)}
-			>
-				<div
-					class="absolute inset-0 transition-transform duration-150 {isHover ||
-					clickId === featureId
-						? '-translate-y-1 scale-120'
-						: ''}"
-				>
-					{#if showImage}
-						<img
-							transition:fade={{ duration: 100 }}
-							class="border-base bg-main absolute inset-0 h-full w-full rounded-full border-3 object-cover"
-							src={imageUrl}
-							alt={properties.name || 'Marker Image'}
-						/>
-					{:else if imageError}
-						<!-- エラー時のフォールバック -->
-						<div
-							transition:fade={{ duration: 100 }}
-							class="border-base absolute inset-0 flex h-full w-full items-center justify-center rounded-full border-3 bg-gray-400"
-						>
-							<span class="text-sm text-white">?</span>
-						</div>
-					{/if}
+				{#if clickId === featureId}
+					<div class="c-ripple-effect absolute inset-0 rounded-full border-2 border-amber-50"></div>
+					<div
+						class="c-ripple-effect2 absolute inset-0 rounded-full border-2 border-amber-50"
+					></div>
+				{/if}
+			</div>
+		</button>
+	{/if}
+</div>
 
-					{#if clickId === featureId}
-						<div
-							class="c-ripple-effect absolute inset-0 rounded-full border-2 border-amber-50"
-						></div>
-						<div
-							class="c-ripple-effect2 absolute inset-0 rounded-full border-2 border-amber-50"
-						></div>
-					{/if}
-				</div>
-			</button>
-		{/if}
-	</div>
-
+{#if properties.name}
 	<div
 		bind:this={nameContainer}
-		class="items-top pointer-events-none relative z-10 flex w-[200px] -translate-y-5.5 justify-center"
+		class="items-top pointer-events-none absolute relative z-10 flex w-[200px] -translate-y-7.5 justify-center"
 	>
-		{#if (isHover || clickId === featureId) && isReady}
+		{#if isReady}
 			<div
 				transition:fly={{ duration: 200, y: -10, opacity: 0 }}
 				class="pointer-none wrap-nowrap bg-base absolute rounded-full p-1 px-3 text-center text-sm text-gray-800"

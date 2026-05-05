@@ -22,5 +22,10 @@
         "prettier": "3.4.2",
         "prettier-plugin-svelte": "3.3.2",
         "prettier-plugin-tailwindcss": "0.6.14"
+    },
+    "pnpm": {
+        "overrides": {
+            "@sveltejs/enhanced-img>sharp": "0.34.5"
+        }
     }
 }

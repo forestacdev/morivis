@@ -3,9 +3,9 @@
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import ExpressionSelect from '$routes/map/components/atoms/select/ExpressionSelect.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import LabelOption from '$routes/map/components/layer_style_menu/LabelOption.svelte';
@@ -34,10 +34,7 @@
 		<Switch label={'押し出し'} bind:value={layerEntry.style.extrusion.show} />
 
 		{#if layerEntry.style.extrusion.show}
-			<ExpressionsPulldownBox
-				bind:style={layerEntry.style.extrusion.height}
-				expressionType={'number'}
-			/>
+			<ExpressionSelect bind:style={layerEntry.style.extrusion.height} expressionType={'number'} />
 		{/if}
 	</Accordion>
 {/if}

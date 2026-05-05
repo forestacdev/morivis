@@ -1,13 +1,19 @@
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
-import { createPointIconLayer, createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
+
+import {
+	createPointIconLayer,
+	createPointImageIconLayer
+} from '$routes/map/utils/layers/vector/point';
 
 import type {
 	LayerSpecification,
 	FillLayerSpecification,
+	FillExtrusionLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	CircleLayerSpecification,
-	FillExtrusionLayerSpecification,
 	FilterSpecification
 } from 'maplibre-gl';
 
@@ -17,9 +23,13 @@ import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 import { geoDataEntries } from '$routes/map/data/entries';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
+import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 
-import { FeatureStateManager } from '$routes/map/utils/feature_state';
 import { labelLayers } from '$routes/map/utils/layers/label';
+import {
+	applyVectorSourceLayer,
+	createBaseLayerItem
+} from '$routes/map/utils/layers/highlight-builder';
 import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
@@ -47,12 +57,15 @@ import {
 
 import {
 	createFillExtrusionPatternLayer,
-	createFillPatternLayer,
-	createFillLayer,
 	createFillExtrusionLayer,
+	createFillLayer,
+	createFillPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { createLineLayer } from '$routes/map/utils/layers/vector/line_string';
+import {
+	createLineLayer,
+	createLinePatternLayer
+} from '$routes/map/utils/layers/vector/line_string';
 import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
 
 import { get } from 'svelte/store';
@@ -104,10 +117,11 @@ export interface LayerItem {
 	filter?: FilterSpecification;
 }
 
-// ベクターレイヤーの作成
-const createVectorLayer = (
+export const createVectorLayer = (
 	layer: LayerItem,
-	style: VectorStyle
+	style: VectorStyle,
+	fields: FieldDef[],
+	pointImageIcon?: IconImageSource
 ):
 	| FillLayerSpecification
 	| LineLayerSpecification
@@ -119,26 +133,16 @@ const createVectorLayer = (
 		case 'fill': {
 			if (style.extrusion && style.extrusion.show) {
 				return createFillExtrusionLayer(layer, style);
-			} else {
-				return createFillLayer(layer, style);
 			}
+			return createFillLayer(layer, style);
 		}
-		case 'line': {
+		case 'line':
 			return createLineLayer(layer, style);
-		}
 		case 'circle': {
-			switch (style.markerType) {
-				case 'icon':
-					if (style.icons?.show) {
-						return createPointIconLayer(layer, style);
-					} else {
-						return undefined;
-					}
-				case 'circle':
-					return createCircleLayer(layer, style);
-				default:
-					console.warn(`未対応の style.markerType: ${style.markerType} （layer.id: ${layer.id}）`);
-					return undefined;
+			if (style.imageIcon?.show && pointImageIcon) {
+				return createPointImageIconLayer(layer, style, pointImageIcon, fields);
+			} else {
+				return createCircleLayer(layer, style);
 			}
 		}
 		default:
@@ -154,6 +158,7 @@ export const createLayersItems = (
 ): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
+	const circleIconLayerItems: LayerSpecification[] = [];
 	const lineLayerItems: LayerSpecification[] = [];
 	const fillLayerItems: LayerSpecification[] = [];
 	const fillExtrusionLayerItems: LayerSpecification[] = [];
@@ -165,23 +170,14 @@ export const createLayersItems = (
 
 	const attributionMap = new Map<string, AttributionKey>();
 
-	FeatureStateManager.clear();
-
 	_dataEntries
 		.filter((entry) => entry.style.visible)
 		.reverse()
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
-			const sourceId = `${entry.id}_source`;
 			const { format, style, metaData, interaction, type } = entry;
 
-			const layer: LayerItem = {
-				id: layerId,
-				source: sourceId,
-				maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-				minzoom:
-					'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1)
-			};
+			const layer = createBaseLayerItem(entry);
 
 			const attributionItem = getAttribution(metaData.attribution);
 
@@ -251,47 +247,41 @@ export const createLayersItems = (
 				case 'vector': {
 					if (interaction.clickable) {
 						clickableVecter.push(layerId);
-						if ('sourceLayer' in metaData) {
-							FeatureStateManager.set(layerId, {
-								source: sourceId,
-								sourceLayer: metaData.sourceLayer
-							});
-						} else {
-							FeatureStateManager.set(layerId, {
-								source: sourceId
-							});
-						}
 					}
-					if (
-						format.type === 'mvt' ||
-						format.type === 'pmtiles' ||
-						format.type === 'mbtiles' ||
-						format.type === 'geojsontile' ||
-						format.type === 'esri-feature'
-					) {
-						if ('sourceLayer' in metaData) {
-							layer['source-layer'] = metaData.sourceLayer as string; // 型を保証
-						}
-					}
+					applyVectorSourceLayer(layer, entry);
 
-					const vectorLayer = createVectorLayer(layer, style);
+					// TODO: fieldsを渡す必要があるレイヤーとそうでないレイヤーがある。
+					const fields = entry.properties.fields;
+
+					const vectorLayer = createVectorLayer(
+						layer,
+						style,
+						fields,
+						entry.properties.images?.icon
+					);
 					if (!vectorLayer) return;
 
 					// ポリゴン
 					if (style.type === 'fill') {
 						if (!style.extrusion || (style.extrusion && !style.extrusion.show)) {
 							fillLayerItems.push(vectorLayer);
-							// ポリゴンの塗りつぶしパターン
-							const fillPatternLayer = createFillPatternLayer(layer, style);
-							if (fillPatternLayer) {
-								fillLayerItems.push(fillPatternLayer);
+							// ポリゴンのパターン
+							if (style.colors.show) {
+								const fillPatternLayer = createFillPatternLayer(layer, style);
+								if (fillPatternLayer) {
+									fillLayerItems.push(fillPatternLayer);
+								}
 							}
 						} else if (style.extrusion && style.extrusion.show) {
 							// 押し出し
 							fillExtrusionLayerItems.push(vectorLayer);
-							// ポリゴンの塗りつぶしパターン
-							const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
-							fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+							// ポリゴンのパターン
+							if (style.colors.show) {
+								const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
+								if (fillExtrusionPatternLayer) {
+									fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
+								}
+							}
 						}
 
 						// ポリゴンのアウトライン
@@ -304,19 +294,51 @@ export const createLayersItems = (
 					// ライン
 					if (style.type === 'line') {
 						lineLayerItems.push(vectorLayer);
+
+						// ラインのパターン
+						if (style.colors.show) {
+							const linePatternLayer = createLinePatternLayer(layer, style);
+							if (linePatternLayer) {
+								lineLayerItems.push(linePatternLayer);
+							}
+						}
 					}
 
 					// ポイント
 					if (style.type === 'circle') {
-						circleLayerItems.push(vectorLayer);
+						if (style.imageIcon && style.imageIcon.show) {
+							// 画像アイコンの場合は、circleLayerではなくsymbolLayerに追加
+							circleIconLayerItems.push(vectorLayer);
+						} else {
+							circleLayerItems.push(vectorLayer);
+
+							// ポイントもパターン（アイコンレイヤー）
+							if (style.colors.show) {
+								const pointIconLayer = createPointIconLayer(layer, style);
+								if (pointIconLayer) {
+									circleLayerItems.push(pointIconLayer);
+									clickableVecter.push(pointIconLayer.id); // アイコンレイヤーもクリック可能にする
+								}
+							}
+						}
 					}
 
-					// TODO マーカータイプの廃止
-					if (style.labels.show) {
-						// ラベルを追加
-						const fields = entry.properties.fields;
-						const symbolLayer = createSymbolLayer(layer, style, fields);
-						symbolLayerItems.push(symbolLayer);
+					// ラベル
+					if (style.type === 'circle') {
+						// ポイントの時は写真アイコンがない場合のみラベルレイヤーを表示。写真アイコンがある時は写真アイコンレイヤーにラベルのスタイルを組み込む。
+						if (style.labels.show && !style.imageIcon?.show) {
+							// ラベルを追加
+							const fields = entry.properties.fields;
+							const symbolLayer = createSymbolLayer(layer, style, fields);
+							symbolLayerItems.push(symbolLayer);
+						}
+					} else {
+						if (style.labels.show) {
+							// ラベルを追加
+							const fields = entry.properties.fields;
+							const symbolLayer = createSymbolLayer(layer, style, fields);
+							symbolLayerItems.push(symbolLayer);
+						}
 					}
 
 					// 補助レイヤーの追加
@@ -432,20 +454,20 @@ export const createLayersItems = (
 	return [
 		...baseMapLayerItems,
 		...cloudLayerItems,
-		...rasterLayerItems,
-		...fillLayerItems,
 		...boundaryLayerItems,
 		...railLayerItems,
 		...roadLineLayerItems,
+		...rasterLayerItems,
+		...fillLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
-
 		...hillshadeLayerItems,
 		...circleLayerItems,
 		...streetViewLayers,
 		...labelLayerItems,
 		...roadLabelLayerItems,
 		...symbolLayerItems,
-		...poiLayerItems
+		...poiLayerItems,
+		...circleIconLayerItems
 	];
 };

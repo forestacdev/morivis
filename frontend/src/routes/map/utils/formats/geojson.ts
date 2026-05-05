@@ -55,7 +55,8 @@ export const getFgbToGeojson = async (url: string, index?: number): Promise<Feat
 
 export const mapGeoJSONFeatureToSidePopupData = (
 	feature: MapGeoJSONFeature,
-	point: [number, number]
+	point: [number, number],
+	layerIdOverride?: string
 ): FeatureMenuData => {
 	const { properties, id, layer } = feature;
 
@@ -65,7 +66,7 @@ export const mapGeoJSONFeatureToSidePopupData = (
 		point,
 		properties: properties,
 		featureId: id as number,
-		layerId: layer.id as string
+		layerId: layerIdOverride ?? (layer.id as string)
 	};
 };
 
@@ -123,49 +124,6 @@ export const downloadGeojson = (
 	a.click();
 	setTimeout(() => {}, 0);
 };
-
-/** GeoJSONのキャッシュを管理するクラス */
-export class GeojsonCache {
-	private static cache: Map<string, FeatureCollection> = new Map();
-
-	// GeoJSONをキャッシュに保存する
-	static set(key: string, data: FeatureCollection) {
-		this.cache.set(key, data);
-	}
-
-	// キャッシュからGeoJSONを取得する
-	static get(key: string): FeatureCollection | undefined {
-		return this.cache.get(key);
-	}
-
-	// キャッシュから特定のキーを削除する
-	static remove(key: string): void {
-		this.cache.delete(key);
-	}
-
-	// キャッシュをすべてクリアする
-	static clear(): void {
-		this.cache.clear();
-	}
-
-	// キャッシュに存在するか確認する
-	static has(key: string): boolean {
-		return this.cache.has(key);
-	}
-
-	// キャッシュのキーを取得する
-	static keys(): IterableIterator<string> {
-		return this.cache.keys();
-	}
-
-	static export(key: string, filename: string): void {
-		if (!this.cache.has(key)) {
-			throw new Error(`Key "${key}" not found in GeojsonCache.`);
-		}
-		const data = this.cache.get(key);
-		downloadGeojson(data!, `${filename}.geojson`);
-	}
-}
 
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-/* @import './lib/diaper.css'; */
+@import './diaper.css';
 
 @plugin '@tailwindcss/typography';
 
@@ -16,26 +16,14 @@ body {
 	cursor: var(--cursor-default);
 }
 
-/* diaperのグローバルCSS（diaper.css/bottomsheet.css）による副作用を打ち消す */
-/* html {
-	background-color: var(--color-main) !important;
-}
-
-body {
-	scale: none !important;
-	clip-path: none !important;
-	transition: none !important;
-	transform-origin: unset !important;
-	position: static !important;
-} */
-
 @theme {
 	--color-base: #f1f1f1;
 	--color-main: #0c221d;
 	--color-sub: #495a54;
 	--color-sub-dark: #1e2124;
 	--color-accent: #59b68e;
-	--color-main-accent: #166345;
+	--color-main-accent: #348163;
+	--color-main-accent: #3e9473;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
 	/* --breakpoint-lg: 1024px; */
@@ -76,7 +64,7 @@ body {
 
 @utility c-btn-confirm {
 	/* 決定ボタンスタイル */
-	@apply hover:border-base hover:bg-base cursor-pointer rounded-full border-2 border-[#348163] bg-[#348163] p-2 text-base transition-colors duration-150 hover:text-black;
+	@apply hover:border-base hover:bg-base border-main-accent bg-main-accent cursor-pointer rounded-full border-2 p-2 text-base transition-colors duration-150 hover:text-black;
 }
 
 @utility c-btn-sub {
@@ -152,8 +140,7 @@ body {
 }
 
 /* アニメーションを一時停止するクラス */
-html.is-map-moving .c-ripple-effect,
-html.is-map-moving .c-ripple-effect2,
+
 html.is-map-moving .c-poyopoyo,
 html.is-map-moving .marquee-track,
 html.is-map-moving .css-rotate {
@@ -243,6 +230,8 @@ html.is-map-moving .bg-side-menu {
 	user-drag: none;
 	-webkit-user-drag: none;
 	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 /* 背景地図画像用のスタイル */

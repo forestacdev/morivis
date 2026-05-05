@@ -23,7 +23,7 @@ export type VectorFormatType =
 	| 'geojsontile'
 	| 'esri-feature';
 
-export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon' | 'Label';
+export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon';
 
 export interface VectorInteraction {
 	clickable: boolean;

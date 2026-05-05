@@ -47,5 +47,6 @@ export const clickDebug = (e: MapMouseEvent) => {
 				//クリップボードにコピー
 			}
 		}
+		console.log('================================');
 	}
 };

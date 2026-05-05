@@ -217,7 +217,7 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		category: 'disaster_prevention',
 		purpose: '水害の防備',
 		description:
-			'洪水時に氾濫する水流の勢いを弱め、漂流物による被害を防ぐ。また、樹木の根の働きにより河岸の浸食を防止する。',
+			'河川の洪水時における氾濫に当たって、主として樹幹による水制作用及びろ過作用並びに樹根による侵食防止作用によって水害の防止・軽減をはかる。',
 		protectionTargets: ['河川沿い集落', '農地', '堤防'],
 		eligibleForErosionControl: true,
 		ministerDesignation: false
@@ -269,9 +269,9 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		shortName: '防雪',
 		nameEn: 'Snow Drift Prevention Forest',
 		category: 'disaster_prevention',
-		purpose: '雪害の防備',
+		purpose: '吹雪害の防備',
 		description:
-			'飛砂防備保安林や防風保安林と同様の機能によって吹雪（気象用語では「飛雪」）を防止する。森林が壁の役割を果たし、吹雪から道路や鉄道を守る。',
+			'飛砂防備保安林や防風保安林と同様の機能によって吹雪（気象用語では「飛雪」という。）を防止する。',
 		protectionTargets: ['道路', '鉄道', '集落'],
 		eligibleForErosionControl: true,
 		ministerDesignation: false
@@ -359,9 +359,9 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		shortName: '魚つき',
 		nameEn: 'Fish Breeding Forest',
 		category: 'living_environment',
-		purpose: '魚類の繁殖保護',
+		purpose: '魚類の生息・繁殖の助長',
 		description:
-			'水面に対する森林の陰影の投影、魚類等に対する養分の供給、水質汚濁の防止等の作用により魚類の生息と繁殖を助ける。海や湖などに流れ込む水の汚濁を防ぎ、養分の豊かな水を供給する。',
+			'水面に対する森林の陰影の投影、魚類等に対する養分の供給、水質汚濁の防止等の作用により魚類の生息と繁殖を助ける。',
 		protectionTargets: ['漁場', '河川', '湖沼', '沿岸海域'],
 		eligibleForErosionControl: true,
 		ministerDesignation: false
@@ -495,6 +495,50 @@ export const ProtectionForestCategoryNames: Record<ProtectionForestCategoryType,
 	disaster_prevention: '災害防備',
 	living_environment: '生活環境保全',
 	health_scenic: '保健・風致'
+};
+
+// =============================================================================
+// 名称辞書
+// =============================================================================
+
+/**
+ * 正式名称・見込み地名称から保安林コードへの辞書 (国土数値情報の国有林データの属性値に対応)
+ */
+export const ProtectionForestNameToCodeDict: Record<string, ProtectionForestCodeType> = {
+	水源かん養保安林: '01',
+	土砂流出防備保安林: '02',
+	土砂崩壊防備保安林: '03',
+	飛砂防備保安林: '04-1',
+	防風保安林: '04-2',
+	水害防備保安林: '04-3',
+	潮害防備保安林: '04-4',
+	干害防備保安林: '05-1',
+	防雪保安林: '05-2',
+	防霧保安林: '05-3',
+	なだれ防止保安林: '06-1',
+	落石防止保安林: '06-2',
+	防火保安林: '06-3',
+	魚つき保安林: '07',
+	航行目標保安林: '08',
+	保健保安林: '09',
+	風致保安林: '10',
+	水源かん養保安林見込み地: '01',
+	土砂流出防備保安林見込み地: '02',
+	土砂崩壊防備保安林見込み地: '03',
+	飛砂防備保安林見込み地: '04-1',
+	防風保安林見込み地: '04-2',
+	水害防備保安林見込み地: '04-3',
+	潮害防備保安林見込み地: '04-4',
+	干害防備保安林見込み地: '05-1',
+	防雪保安林見込み地: '05-2',
+	防霧保安林見込み地: '05-3',
+	なだれ防止保安林見込み地: '06-1',
+	落石防止保安林見込み地: '06-2',
+	防火保安林見込み地: '06-3',
+	魚つき保安林見込み地: '07',
+	航行目標保安林見込み地: '08',
+	保健保安林見込み地: '09',
+	風致保安林見込み地: '10'
 };
 
 // =============================================================================

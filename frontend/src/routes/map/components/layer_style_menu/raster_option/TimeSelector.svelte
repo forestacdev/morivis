@@ -178,7 +178,7 @@
 
 {#if layerEntry.style.timeDimension}
 	<Accordion label={'日時'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
-		<div class="flex flex-col gap-2 p-2">
+		<div class="flex flex-col gap-4 p-2">
 			<div class="flex items-center gap-1">
 				<button
 					onclick={onClickPrev}
@@ -201,7 +201,7 @@
 					<div class="flex gap-2 px-2">
 						{#each layerEntry.style.timeDimension.values as timeValue, i}
 							<div
-								class="border-sub flex h-full flex-[0_0_70%] items-center justify-center rounded border-1 bg-black text-white select-none"
+								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>
 								{formatTimeValue(timeValue)}
 							</div>
@@ -218,23 +218,25 @@
 					</svg>
 				</button>
 			</div>
-			<button
-				onclick={toggleAutoplay}
-				class="flex w-full cursor-pointer items-center justify-center gap-1 rounded p-1 text-sm text-white hover:bg-white/10"
-				aria-label={isPlaying ? '停止' : '再生'}
-			>
-				{#if isPlaying}
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-					</svg>
-					停止
-				{:else}
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M8 5v14l11-7z" />
-					</svg>
-					再生
-				{/if}
-			</button>
+			<div class="flex justify-center">
+				<button
+					onclick={toggleAutoplay}
+					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
+					aria-label={isPlaying ? '停止' : '再生'}
+				>
+					{#if isPlaying}
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+						</svg>
+						停止
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M8 5v14l11-7z" />
+						</svg>
+						再生
+					{/if}
+				</button>
+			</div>
 		</div>
 	</Accordion>
 {/if}

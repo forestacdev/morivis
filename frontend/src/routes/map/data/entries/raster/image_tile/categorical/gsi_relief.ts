@@ -11,6 +11,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	metaData: {
 		name: '全国色別標高図',
+		sourceDataName: '色別標高図',
 		description: '色別標高図は、標高の変化を陰影と段彩の効果を用いて視覚的に表現したものです。',
 		attribution: '国土地理院',
 		location: '全国',

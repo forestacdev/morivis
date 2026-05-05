@@ -103,7 +103,7 @@
 				<div class="h-1.5 w-13 rounded-full bg-gray-400/50"></div>
 			</button>
 			<div class="flex w-full items-center justify-between px-4 pb-2">
-				<div class="min-w-0 flex-1">
+				<div class="min-w-0 flex-1 text-base">
 					{#if featureMenuData}
 						{#if propId && featureMenuData.properties && featureMenuData.properties._prop_id}
 							<span class="text-[22px] font-bold">{featureMenuData.properties.name}</span>

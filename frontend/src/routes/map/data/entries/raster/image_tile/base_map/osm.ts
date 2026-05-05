@@ -10,15 +10,16 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+		url: 'https://tile.openstreetmap.jp/styles/openmaptiles/512/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'OpenStreetMap',
+		name: 'OSM OpenMapTiles',
 		attribution: 'OSM',
+		downloadUrl: 'https://wiki.openstreetmap.org/wiki/Japan/OSMFJ_Tileserver',
 		location: '世界',
 		minZoom: 0,
 		maxZoom: 24,
-		tileSize: 256,
+		tileSize: 512,
 		tags: ['背景地図'],
 		bounds: WEB_MERCATOR_WORLD_BBOX,
 		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']

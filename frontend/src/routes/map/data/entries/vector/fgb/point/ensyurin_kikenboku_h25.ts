@@ -54,7 +54,6 @@ const entry: PointEntry<GeoJsonMetaData> = {
 	style: {
 		type: 'circle',
 		opacity: 0.7,
-		markerType: 'circle',
 		colors: {
 			show: true,
 			key: '胸高直径（ｃｍ）',
@@ -64,7 +63,8 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#e31a1c'
+						value: '#e31a1c',
+						pattern: null
 					}
 				},
 				{

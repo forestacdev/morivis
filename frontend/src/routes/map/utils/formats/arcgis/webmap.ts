@@ -9,6 +9,7 @@ import type {
 } from '$routes/map/data/types/vector/style';
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
+import { values } from 'pdf-lib';
 import type { ArcGisFeatureTypeInfo } from './feature';
 
 // ============================
@@ -180,9 +181,7 @@ export const rendererToColorsStyle = (
 			type: 'single',
 			key: '単色',
 			name: '単色',
-			mapping: isPolygon
-				? { value: hex as BaseSingleColor, pattern: null }
-				: { value: hex as BaseSingleColor }
+			mapping: { value: hex as BaseSingleColor, pattern: null }
 		};
 		return {
 			key: '単色',
@@ -206,15 +205,13 @@ export const rendererToColorsStyle = (
 			type: 'match',
 			key: renderer.field1,
 			name: `${renderer.field1}による色分け`,
-			mapping: isPolygon
-				? { categories, values, patterns: categories.map(() => null) }
-				: { categories, values }
+			mapping: { categories, values, patterns: categories.map(() => null) }
 		};
 
 		if (renderer.defaultSymbol?.color) {
 			matchExpr.noData = {
 				value: rgbaToHex(renderer.defaultSymbol.color),
-				pattern: isPolygon ? null : (undefined as any)
+				pattern: null
 			};
 		}
 
@@ -222,9 +219,7 @@ export const rendererToColorsStyle = (
 			type: 'single',
 			key: '単色',
 			name: '単色',
-			mapping: isPolygon
-				? { value: (values[0] ?? '#ff7f00') as BaseSingleColor, pattern: null }
-				: { value: (values[0] ?? '#ff7f00') as BaseSingleColor }
+			mapping: { value: (values[0] ?? '#ff7f00') as BaseSingleColor, pattern: null }
 		};
 
 		return {
@@ -262,18 +257,14 @@ export const typesToColorsStyle = (
 		type: 'match',
 		key: typeIdField,
 		name: `${typeIdField}による色分け`,
-		mapping: isPolygon
-			? { categories, values, patterns: categories.map(() => null) }
-			: { categories, values }
+		mapping: { categories, values, patterns: categories.map(() => null) }
 	};
 
 	const singleExpr: ColorSingleExpression = {
 		type: 'single',
 		key: '単色',
 		name: '単色',
-		mapping: isPolygon
-			? { value: (values[0] ?? '#ff7f00') as BaseSingleColor, pattern: null }
-			: { value: (values[0] ?? '#ff7f00') as BaseSingleColor }
+		mapping: { value: (values[0] ?? '#ff7f00') as BaseSingleColor, pattern: null }
 	};
 
 	return {

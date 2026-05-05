@@ -7,14 +7,15 @@ import type {
 import type { PolygonStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
 import {
-	getPatternExpression,
-	getColorExpression,
-	getSelectedColorExpression
-} from '$routes/map/utils/layers/vector/expression/color';
+	createMorivisLayerMetadata,
+	createSublayerId,
+	getMorivisLogicalLayerId
+} from '$routes/map/utils/layers/id';
 import {
-	getSelectedOpacityExpression,
-	getNumberExpression
-} from '$routes/map/utils/layers/vector/expression/number';
+	getPatternExpression,
+	getColorExpression
+} from '$routes/map/utils/layers/vector/expression/color';
+import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 
 // ポリゴンのパターンレイヤーの作成
 export const createFillPatternLayer = (
@@ -25,16 +26,20 @@ export const createFillPatternLayer = (
 	if (!patternExpression) {
 		return undefined;
 	}
-	const opacity = getSelectedOpacityExpression(style.opacity);
 	const defaultStyle = style.default;
 
 	const fillPatternLayer: FillLayerSpecification = {
 		...layer,
-		id: `${layer.id}_fill_pattern`,
+		id: createSublayerId(layer.id, 'fill_pattern'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'fill_pattern',
+			layer.metadata
+		),
 		type: 'fill',
 		paint: {
 			'fill-pattern': patternExpression,
-			'fill-opacity': opacity
+			'fill-opacity': style.opacity
 		},
 		layout: {},
 		// フィルター設定
@@ -67,7 +72,12 @@ export const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 
 	const outlineLayer: LineLayerSpecification = {
 		...layer,
-		id: `${layer.id}_outline`,
+		id: createSublayerId(layer.id, 'fill_outline'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'fill_outline',
+			layer.metadata
+		),
 		minzoom: style.outline.minZoom ? style.outline.minZoom : layer.minzoom,
 		type: 'line',
 		paint: {
@@ -91,15 +101,20 @@ export const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 export const createFillExtrusionLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
+): FillExtrusionLayerSpecification | undefined => {
+	if (!style.extrusion?.show) return undefined;
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	const colorExpression = getColorExpression(style.colors);
+	const height = getNumberExpression(style.extrusion.height);
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
 		type: 'fill-extrusion',
-		id: `${layer.id}_fill_extrusion`,
+		id: createSublayerId(layer.id, 'fill_extrusion'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'fill_extrusion',
+			layer.metadata
+		),
 		paint: {
 			'fill-extrusion-height': height,
 			'fill-extrusion-opacity': style.opacity,
@@ -127,18 +142,27 @@ export const createFillExtrusionLayer = (
 export const createFillExtrusionPatternLayer = (
 	layer: LayerItem,
 	style: PolygonStyle
-): FillExtrusionLayerSpecification => {
+): FillExtrusionLayerSpecification | undefined => {
+	if (!style.extrusion?.show) return undefined;
 	const defaultStyle = style.default;
 	const patternExpression = getPatternExpression(style.colors);
-	const height = style.extrusion ? getNumberExpression(style.extrusion.height) : 0;
+	if (!patternExpression) {
+		return undefined;
+	}
+	const height = getNumberExpression(style.extrusion.height);
 	const fillExtrusionLayer: FillExtrusionLayerSpecification = {
 		...layer,
-		id: `${layer.id}_fill_extrusion_pattern`,
+		id: createSublayerId(layer.id, 'fill_extrusion_pattern'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'fill_extrusion_pattern',
+			layer.metadata
+		),
 		type: 'fill-extrusion',
 		paint: {
 			'fill-extrusion-height': height,
 			'fill-extrusion-opacity': style.opacity,
-			'fill-extrusion-pattern': patternExpression ? patternExpression : '#00000000',
+			'fill-extrusion-pattern': patternExpression,
 			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.paint : {})
 		},
 		layout: {
@@ -159,14 +183,12 @@ export const createFillExtrusionPatternLayer = (
 // fillレイヤーの作成
 export const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLayerSpecification => {
 	const defaultStyle = style.default;
-	const color = getColorExpression(style.colors);
-	const colorExpression = getSelectedColorExpression(color);
-	const opacity = getSelectedOpacityExpression(style.opacity);
+	const colorExpression = getColorExpression(style.colors);
 	const fillLayer: FillLayerSpecification = {
 		...layer,
 		type: 'fill',
 		paint: {
-			'fill-opacity': opacity,
+			'fill-opacity': style.opacity,
 			'fill-outline-color': '#00000000',
 			'fill-color': style.colors.show ? colorExpression : '#00000000',
 			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.paint : {})

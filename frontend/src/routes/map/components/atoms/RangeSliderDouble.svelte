@@ -136,19 +136,19 @@
 	<div class="pointer-events-none absolute grid w-[90%] place-items-center">
 		<!-- 最小範囲の色付きバー（左側） -->
 		<div
-			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			class="pointer-events-none absolute -z-10 h-3 rounded-full"
 			style="background: {minRangeColor}; left: 0; width: calc({rangeBarStyle.left});"
 		></div>
 
 		<!-- 選択範囲の色付きバー（中間） -->
 		<div
-			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			class="pointer-events-none absolute -z-10 h-3 rounded-full"
 			style="background: {primaryColor}; left: calc({rangeBarStyle.left}); width: calc({rangeBarStyle.width});"
 		></div>
 
 		<!-- 最大範囲の色付きバー（右側） -->
 		<div
-			class="pointer-events-none absolute -z-10 h-2 rounded-full"
+			class="pointer-events-none absolute -z-10 h-3 rounded-full"
 			style="background: {maxRangeColor}; left: calc({rangeBarStyle.left} + {rangeBarStyle.width}); width: calc(100% - {rangeBarStyle.left} - {rangeBarStyle.width});"
 		></div>
 	</div>
@@ -164,6 +164,7 @@
 			{max}
 			{step}
 			{disabled}
+			style="--slider-thumb-border-color: {minRangeColor};"
 			oninput={handleLowerChange}
 			aria-label="下限値"
 		/>
@@ -178,6 +179,7 @@
 			{max}
 			{step}
 			{disabled}
+			style="--slider-thumb-border-color: {maxRangeColor};"
 			oninput={handleUpperChange}
 			aria-label="上限値"
 		/>
@@ -234,7 +236,7 @@
 		background-color: var(--color-base);
 		border-radius: 50%;
 		cursor: pointer;
-		border: 2px solid black;
+		border: 3px solid var(--slider-thumb-border-color, var(--color-accent));
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 		transition: all 0.2s ease;
 		pointer-events: auto;

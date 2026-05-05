@@ -6,14 +6,18 @@ import type {
 	SymbolLayerSpecification
 } from 'maplibre-gl';
 
-import type { Labels, VectorStyle, PointStyle } from '$routes/map/data/types/vector/style';
+import type { Labels, VectorStyle } from '$routes/map/data/types/vector/style';
 
 import type { LayerItem } from '$routes/map/utils/layers/index';
 
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { LabelsExpressions } from '$routes/map/data/types/vector/style';
 
-import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
+import {
+	createMorivisLayerMetadata,
+	createSublayerId,
+	getMorivisLogicalLayerId
+} from '$routes/map/utils/layers/id';
 
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
@@ -151,51 +155,7 @@ export const compileLabelExpr = (le: LabelsExpressions, fields: FieldDef[]): Exp
 	return buildFieldExpression(field);
 };
 
-// ポイントのicon用レイヤーの作成
-
-export const createPointIconLayer = (
-	layer: LayerItem,
-	style: PointStyle
-): SymbolLayerSpecification | undefined => {
-	if (!style.icons) return undefined;
-
-	const iconExpression = getIconExpression(style.icons);
-	if (!iconExpression) {
-		return undefined;
-	}
-
-	const defaultStyle = style.default;
-
-	const symbolLayer: SymbolLayerSpecification = {
-		...layer,
-		id: `${layer.id}`,
-		type: 'symbol',
-		paint: {
-			'icon-opacity': style.opacity
-		},
-		layout: {
-			'icon-image': iconExpression,
-			'icon-size': style.icons.size ?? 0.1,
-			'icon-anchor': 'center',
-
-			// 間引きをオフに
-			'icon-allow-overlap': true,
-			'icon-ignore-placement': true
-		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
-	};
-
-	return symbolLayer;
-};
-
 // symbolレイヤーの作成
-
 export const createSymbolLayer = (
 	layer: LayerItem,
 	style: VectorStyle,
@@ -207,7 +167,12 @@ export const createSymbolLayer = (
 	const LabelsExpression = style.labels.expressions.find((label) => label.key === key);
 	const symbolLayer: SymbolLayerSpecification = {
 		...layer,
-		id: `${layer.id}_label`,
+		id: createSublayerId(layer.id, 'label'),
+		metadata: createMorivisLayerMetadata(
+			getMorivisLogicalLayerId(layer.metadata) ?? layer.id,
+			'label',
+			layer.metadata
+		),
 		minzoom: style.labels.minZoom ? style.labels.minZoom : layer.minzoom,
 		type: 'symbol',
 		paint: {

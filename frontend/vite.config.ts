@@ -21,7 +21,7 @@ const diaperCssOverridePlugin: Plugin = {
 
 export default defineConfig({
 	plugins: [
-		// diaperCssOverridePlugin,
+		diaperCssOverridePlugin,
 		sveltekit(),
 		qrcode(),
 		enhancedImages(),
@@ -38,17 +38,17 @@ export default defineConfig({
 				description: '森林文化アカデミー演習林Webマップ',
 				screenshots: [
 					{
-						src: 'screen_1.webp',
+						src: './static/images/pwa/android/screen_1.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					},
 					{
-						src: 'screen_2.webp',
+						src: './static/images/pwa/android/screen_2.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					},
 					{
-						src: 'screen_3.webp',
+						src: './static/images/pwa/android/screen_3.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					}

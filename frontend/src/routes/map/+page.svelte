@@ -7,7 +7,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	import { type WikiArticle } from './api/wikipedia';
 	import Processing from './Processing.svelte';
 	import type { NextPointData, StreetViewPoint, StreetViewPointGeoJson } from './types/street-view';
 	import type { ContextMenuState } from './types/ui';
@@ -28,9 +27,13 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
-	import FeatureMenu from '$routes/map/components/feature_menu/FeatureMenu.svelte';
-	import FeatureMenuContents from '$routes/map/components/feature_menu/FeatureMenuContents.svelte';
-	import SearchFeatureMenu from '$routes/map/components/feature_menu/SearchFeatureMenu.svelte';
+	import {
+		getLayerFeaturePanelSummary,
+		hasFeaturePanelSummaryContent
+	} from '$routes/map/components/feature_menu/feature-panel-summary';
+	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
+	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
+	import FeaturePanelLoading from '$routes/map/components/feature_menu/FeaturePanelLoading.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
@@ -51,11 +54,25 @@
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-	import { type FeatureMenuData, type DialogType } from '$routes/map/types';
+	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
+	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
+	import {
+		createLayerFeaturePanelData,
+		createSearchFeaturePanelData,
+		type DialogType,
+		type FeatureMenuData,
+		type FeaturePanelData,
+		type HighlightMarkerState
+	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import {
+		getPopupImageFieldKey,
+		resolveGeneratedPoiIconUrl,
+		resolvePopupImageUrl
+	} from '$routes/map/utils/icon';
 	import {
 		get3dParams,
 		getParams,
@@ -162,7 +179,7 @@
 
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
-	let wikiMenuData = $state<WikiArticle | null>(null);
+	let highlightMarkerState = $state<HighlightMarkerState | null>(null);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -197,6 +214,61 @@
 	let selectedSearchResultData = $state<
 		ResultPoiData | ResultAddressData | ResultCoordinateData | null
 	>(null);
+
+	let featurePanelData = $derived.by<FeaturePanelData | null>(() => {
+		if (featureMenuData) {
+			return createLayerFeaturePanelData(featureMenuData);
+		}
+
+		if (selectedSearchResultData) {
+			return createSearchFeaturePanelData(selectedSearchResultData, selectedSearchId);
+		}
+
+		return null;
+	});
+
+	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
+		if (!featureMenuData) return Promise.resolve(null);
+		return getLayerFeaturePanelSummary(featureMenuData, layerEntries);
+	});
+
+	let mobileTargetLayer = $derived.by(() => {
+		if (!featureMenuData) return null;
+		return layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
+	});
+
+	let mobileHasAttributeTab = $derived.by(() => {
+		if (!featureMenuData || !mobileTargetLayer || mobileTargetLayer.type !== 'vector') {
+			return false;
+		}
+
+		if (!featureMenuData.properties) return false;
+
+		const propId = featureMenuData.properties._prop_id;
+		if (propId) return false;
+
+		const popupKeys = mobileTargetLayer.properties.attributeView.popupKeys;
+		const imageKey = getPopupImageFieldKey(mobileTargetLayer.properties);
+		const displayProps =
+			popupKeys.length > 0
+				? filterByPopupKeys(featureMenuData.properties, popupKeys)
+				: featureMenuData.properties;
+
+		return Object.entries(displayProps).some(
+			([key, value]) =>
+				key !== '_prop_id' &&
+				value !== '' &&
+				value !== null &&
+				value !== undefined &&
+				value !== false &&
+				imageKey !== key
+		);
+	});
+
+	let mobileFeaturePanelResetKey = $derived.by(() => {
+		if (!featureMenuData) return 'empty';
+		return `${featureMenuData.layerId}:${featureMenuData.featureId}`;
+	});
 
 	// 画像プレビュー
 	let imagePreviewUrl = $state<string | null>(null);
@@ -343,6 +415,22 @@
 		mapStore.jumpToFac();
 	};
 
+	const closeFeaturePanel = () => {
+		if (!featurePanelData) return;
+
+		if (featurePanelData.kind === 'layer-feature') {
+			featureMenuData = null;
+			highlightMarkerState = null;
+			showSelectionMarker = false;
+			return;
+		}
+
+		selectedSearchResultData = null;
+		selectedSearchId = null;
+		highlightMarkerState = null;
+		showSelectionMarker = false;
+	};
+
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		if (!streetViewPoint) return;
@@ -458,6 +546,9 @@
 
 	const focusFeature = async (result: ResultData) => {
 		if (result.type === 'poi') {
+			const sourceLayerId = result.layerId.startsWith('@')
+				? result.layerId.slice(1)
+				: result.layerId;
 			const tileCoords = lonLatToTileCoords(
 				result.point[0],
 				result.point[1],
@@ -466,25 +557,72 @@
 			const prop = await getPropertiesFromPMTiles(
 				`${ENTRY_PMTILES_VECTOR_PATH}/fac_search.pmtiles`,
 				tileCoords,
-				result.layerId,
+				sourceLayerId,
 				result.featureId
 			);
 
 			const data: FeatureMenuData = {
 				layerId: result.layerId,
-				properties: prop,
+				properties: (() => {
+					const layerEntry = layerEntries.find((entry) => entry.id === sourceLayerId);
+					const pointLayerEntry =
+						layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+							? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+							: null;
+					const propertyImage = pointLayerEntry
+						? resolvePopupImageUrl(prop, pointLayerEntry.properties)
+						: null;
+					const iconImage =
+						propertyImage ??
+						(pointLayerEntry
+							? resolveGeneratedPoiIconUrl(
+									prop,
+									pointLayerEntry.style.imageIcon,
+									pointLayerEntry.properties.images?.icon
+								)
+							: null);
+					return prop && iconImage ? { ...prop, iconImage } : prop;
+				})(),
 				point: result.point,
 				featureId: result.featureId
 			};
+			const layerEntry = layerEntries.find((entry) => entry.id === sourceLayerId);
+			const pointLayerEntry =
+				layerEntry?.type === 'vector' && layerEntry.format.geometryType === 'Point'
+					? (layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>)
+					: null;
+			const propertyImage = pointLayerEntry
+				? resolvePopupImageUrl(prop, pointLayerEntry.properties)
+				: null;
+			const iconImage =
+				propertyImage ??
+				(pointLayerEntry
+					? resolveGeneratedPoiIconUrl(
+							prop,
+							pointLayerEntry.style.imageIcon,
+							pointLayerEntry.properties.images?.icon
+						)
+					: null);
 			featureMenuData = data;
+			highlightMarkerState = {
+				type: 'poi',
+				featureId: result.featureId,
+				point: result.point,
+				properties: prop && iconImage ? { ...prop, iconImage } : (prop ?? {}),
+				iconImage
+			};
+			showSelectionMarker = false;
 			selectedSearchResultData = result;
 			if (result.id) selectedSearchId = result.id;
 		} else if (result.type === 'address' || result.type === 'coordinate') {
 			featureMenuData = null;
 			selectedSearchResultData = result;
+			highlightMarkerState = {
+				type: 'search',
+				result
+			};
 			if (result.id) selectedSearchId = result.id;
-			selectionMarkerLngLat = new maplibregl.LngLat(result.point[0], result.point[1]);
-			showSelectionMarker = true;
+			showSelectionMarker = false;
 		}
 
 		if (result.type !== 'layer') {
@@ -514,6 +652,7 @@
 				bind:tempLayerEntries
 				bind:showDataEntry
 				bind:featureMenuData
+				bind:highlightMarkerState
 				bind:showSelectionMarker
 				bind:selectionMarkerLngLat
 				bind:showAngleMarker
@@ -596,6 +735,7 @@
 						bind:tempLayerEntries
 						bind:showDataEntry
 						bind:featureMenuData
+						bind:highlightMarkerState
 						bind:showSelectionMarker
 						bind:selectionMarkerLngLat
 						bind:showAngleMarker
@@ -641,14 +781,32 @@
 				{selectedSearchId}
 				{focusFeature}
 			/>
-			<FeatureMenu bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
-			</FeatureMenu>
-			<SearchFeatureMenu bind:selectedSearchResultData bind:selectedSearchId />
+			{#if featurePanelData}
+				<FeaturePanel
+					panelData={featurePanelData}
+					{layerEntries}
+					bind:showSelectionMarker
+					onClose={closeFeaturePanel}
+				/>
+			{/if}
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				<FeatureMenuContents bind:featureMenuData {layerEntries} bind:showSelectionMarker />
+				{#await mobileLayerFeatureSummaryPromise}
+					<FeaturePanelLoading
+						containerClass="flex w-full flex-col items-center justify-center gap-4 px-4 py-8"
+					/>
+				{:then summary}
+					<FeaturePanelLayerContent
+						bind:featureMenuData
+						{layerEntries}
+						bind:showSelectionMarker
+						showSummaryTab={summary ? hasFeaturePanelSummaryContent(summary) : false}
+						hasAttributeTab={mobileHasAttributeTab}
+						resetKey={mobileFeaturePanelResetKey}
+						{summary}
+					/>
+				{/await}
 			</MobileFeatureMenuCard>
 
 			<PreviewMenu bind:showDataEntry />
@@ -750,8 +908,8 @@
 				document.activeElement.blur();
 			}
 
-			if (featureMenuData) {
-				featureMenuData = null;
+			if (featurePanelData) {
+				closeFeaturePanel();
 				return;
 			}
 

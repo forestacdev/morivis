@@ -5,14 +5,14 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
-	import StyleColorMapPulldownBox from '$routes/map/components/layer_style_menu/extension_menu/StyleColorMapPulldownBox.svelte';
+	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import TiffStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/TiffStyleModePulldownBox.svelte';
 	import {
 		COLOR_MAP_TYPE,
 		type RasterEntry,
 		type RasterTiffStyle
 	} from '$routes/map/data/types/raster';
-	import { GeoTiffCache } from '$routes/map/utils/formats/geotiff';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
 	interface Props {
@@ -77,14 +77,14 @@
 				</select>
 			</div>
 		{/if}
-		<StyleColorMapPulldownBox
+		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['single'].colorMap}
 			mutableColorMapType={[...COLOR_MAP_TYPE]}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap} />
 			{/snippet}
-		</StyleColorMapPulldownBox>
+		</ColorMapSelect>
 		<RangeSliderDouble
 			label="数値範囲"
 			bind:lowerValue={layerEntry.style.visualization.uniformsData['single'].min}

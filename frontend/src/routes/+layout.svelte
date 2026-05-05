@@ -6,7 +6,6 @@
 	// @ts-expect-error - virtual module provided by @vite-pwa/sveltekit
 	import { pwaInfo } from 'virtual:pwa-info';
 
-	import { MOBILE_WIDTH } from './constants';
 	import GoogleAnalytics from './GoogleAnalytics.svelte';
 	import { setDeferredPrompt, type BeforeInstallPromptEvent } from './map/utils/platform/pwa';
 
@@ -18,16 +17,8 @@
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
 	import { ICONS } from '$lib/icons';
-	import WebGLScreen from '$routes/map/components/effect/screen/WebGLScreen.svelte';
-	import { checkMobile, checkMobileWidth, checkPc } from '$routes/map/utils/platform/viewport';
-	import { transitionPageScreen } from '$routes/stores/effect';
-	import {
-		isBlocked,
-		isMobile,
-		showDataMenu,
-		showLayerMenu,
-		showOtherMenu
-	} from '$routes/stores/ui';
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
+	import { isBlocked, isMobile } from '$routes/stores/ui';
 
 	let { children } = $props();
 
@@ -44,13 +35,13 @@
 
 		// 	isBlocked.set(true);
 		// 	// ページ遷移のアニメーションを制御
-		// 	transitionPageScreen.set(1);
+		// 	transitionPageScreenWebgl.set(1);
 		// 	delay(1000).then(() => {
 		// 		resolve();
 		// 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		// 		navigation.complete;
 		// 		delay(300).then(() => {
-		// 			transitionPageScreen.set(-1);
+		// 			transitionPageScreenWebgl.set(-1);
 
 		// 			delay(1000).then(() => {
 		// 				isBlocked.set(false);
@@ -75,7 +66,12 @@
 		});
 	});
 
-	let isInitialized = $state<boolean>(false);
+	let isInitialized = $state<boolean>(true);
+
+	// NOTE: 画面遷移のアニメーションは一旦保留
+	const initialized = () => {
+		isInitialized = true;
+	};
 
 	const onNextPage = async (toPage: string | null) => {
 		if (!toPage) return;
@@ -109,10 +105,6 @@
 		});
 	});
 
-	const initialized = () => {
-		isInitialized = true;
-	};
-
 	const deviceType = checkMobile() ? 'mobile' : 'pc';
 </script>
 
@@ -120,7 +112,6 @@
 <GoogleAnalytics id={PUBLIC_GA_UA} />
 
 <svelte:head>
-	<!-- <link rel="icon" href={faviconHref} /> -->
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html webManifestLink}
 </svelte:head>
@@ -137,6 +128,6 @@
 
 <TermsOfServiceDialog />
 <InfoDialog />
-<WebGLScreen {initialized} />
+
 <ScreenGuard />
 <PwaManualDialog />

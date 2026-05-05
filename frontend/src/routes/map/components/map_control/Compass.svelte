@@ -307,17 +307,17 @@
 	});
 </script>
 
-<!-- PC -->
+<!-- TODO:ズーム中の処理 -->
 
 <div
-	class="relative grid h-[90px] w-[90px] place-items-center"
+	class="relative grid h-[75px] w-[75px] place-items-center"
 	role="group"
 	aria-label="コンパスコントロール"
 	onmouseenter={() => (isHover = true)}
 	onmouseleave={() => (isHover = false)}
 >
 	<!-- 周回する小さい円 -->
-	<button
+	<!-- <button
 		type="button"
 		bind:this={orbitA}
 		class="absolute grid cursor-pointer rounded-full border border-white/30 text-[10px] font-semibold text-black shadow-[0_0_18px_rgba(0,0,0,0.28)] transition-[box-shadow,border-color,background-color,color] duration-200
@@ -344,13 +344,13 @@
 		onclick={upPitch}
 	>
 		{#if showOrbitButtons}<Icon icon={ICONS.arrowDown} class="h-6 w-6 translate-y-0.5" />{/if}
-	</button>
+	</button> -->
 	<!-- コンパス本体 -->
 	<div
 		bind:this={element}
 		class="pointer-events-auto grid h-[65px] w-[65px] shrink-0 cursor-grab place-items-center overflow-hidden rounded-full border-3 transition-colors duration-150 {isHover
 			? 'bg-black'
-			: 'bg-black/60 backdrop-blur-[1px]'}"
+			: 'bg-black/60'}"
 		style="perspective: 200px;"
 	>
 		<svg

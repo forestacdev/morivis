@@ -1,7 +1,29 @@
 import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
-import type { FeatureProp } from '$routes/map/types/properties';
+import type {
+	ResultAddressData,
+	ResultCoordinateData,
+	ResultPoiData
+} from '$routes/map/utils/data/search-result';
+export type {
+	FeatureMenuData,
+	FeaturePanelData,
+	FeaturePanelImageSource,
+	FeaturePanelImageMedia,
+	FeaturePanelMedia,
+	FeaturePanelVideoMedia,
+	FeaturePanelAudioMedia,
+	FeaturePanelSummary,
+	LayerFeaturePanelData,
+	SearchAddressPanelData,
+	SearchCoordinatePanelData,
+	SearchPoiPanelData
+} from '$routes/map/types/feature-panel';
+export {
+	createLayerFeaturePanelData,
+	createSearchFeaturePanelData
+} from '$routes/map/types/feature-panel';
 
 export type CSSCursor =
 	// 基本カーソル
@@ -126,13 +148,20 @@ export const SUPPORTED_FILE_ACCEPT = [
 export interface ClickedLayerFeaturesData {
 	layerEntry: GeoDataEntry;
 	feature: MapGeoJSONFeature;
-	featureId: number;
+	featureId: string | number;
 }
 
-// サイドメニューのポップアップデータ
-export interface FeatureMenuData {
+export interface PoiHighlightMarkerState {
+	type: 'poi';
+	featureId: string | number;
 	point: [number, number];
-	properties: FeatureProp | null;
-	featureId: number;
-	layerId: string;
+	properties: { [key: string]: any };
+	iconImage?: string | null;
 }
+
+export interface SearchHighlightMarkerState {
+	type: 'search';
+	result: ResultPoiData | ResultAddressData | ResultCoordinateData;
+}
+
+export type HighlightMarkerState = PoiHighlightMarkerState | SearchHighlightMarkerState;

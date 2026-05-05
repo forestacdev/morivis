@@ -2,7 +2,7 @@
 	import { slide } from 'svelte/transition';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
-	import ExpressionsPulldownBox from '$routes/map/components/atoms/ExpressionsPulldownBox.svelte';
+	import ExpressionSelect from '$routes/map/components/atoms/select/ExpressionSelect.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type { ColorsStyle, VectorLayerType } from '$routes/map/data/types/vector/style';
 	interface Props {
@@ -18,7 +18,7 @@
 	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
 	{#if colorStyle.show}
 		<div transition:slide={{ duration: 300 }}>
-			<ExpressionsPulldownBox bind:style={colorStyle} expressionType={'color'} {layerType} />
+			<ExpressionSelect bind:style={colorStyle} expressionType={'color'} {layerType} />
 		</div>
 	{/if}
 </Accordion>

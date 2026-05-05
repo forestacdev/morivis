@@ -19,11 +19,10 @@
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
-		GeoTiffCache,
 		encodeAllBandsToTerrarium,
 		getMinMax,
-		type BandDataRange,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';

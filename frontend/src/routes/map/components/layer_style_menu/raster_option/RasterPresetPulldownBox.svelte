@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
 	import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
@@ -48,64 +49,87 @@
 			document.removeEventListener('click', handleClickOutside);
 		};
 	});
-</script>
 
-<!-- <div class="mt-4 flex gap-1 text-base">
-	<Icon icon={'mdi:magic'} width={20} /><span>描画モード</span>
-</div> -->
+	let hoveredName = $state<string>(
+		presetOptions.find((option) => option.key === preset)?.name || ''
+	);
+
+	$effect(() => {
+		if (showPullDown) {
+			const currentOption = presetOptions.find((option) => option.key === preset);
+			hoveredName = currentOption ? currentOption.name : '';
+		} else {
+			hoveredName = '';
+		}
+	});
+</script>
 
 <div bind:this={containerRef} class="relative py-2">
 	<button
 		{disabled}
 		onclick={() => (showPullDown = !showPullDown)}
-		class="border-sub flex w-full items-center justify-between gap-2 rounded-md border-1 bg-black p-2 px-4 text-base {disabled
+		class="bg-main-accent flex w-full items-center justify-between gap-2 rounded-full p-1 text-base transition-colors duration-150 lg:hover:bg-white lg:hover:text-black {disabled
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>
-		<span>{presetOptions.find((option) => option.key === preset)?.name}</span>
-		<img
-			{src}
-			alt={presetOptions.find((option) => option.key === preset)?.name}
-			class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
-			style="filter:{getPresetCSSStyle(preset).filter};"
-		/>
+		<div class="flex items-center gap-2">
+			<img
+				{src}
+				alt={presetOptions.find((option) => option.key === preset)?.name}
+				class="c-no-drag-icon aspect-square h-16 rounded-full bg-black object-cover"
+				style="filter:{getPresetCSSStyle(preset).filter};"
+			/>
+			<span>{presetOptions.find((option) => option.key === preset)?.name}</span>
+		</div>
+		<Icon icon="iconamoon:arrow-down-2-duotone" class="mr-2 h-8 w-8 shrink-0" />
 	</button>
 
 	{#if showPullDown}
 		<div
 			transition:fly={{ duration: 200, y: -20 }}
-			class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+			class="pointer-events-none absolute top-[90px] left-0 z-10 flex flex-col gap-2"
 		>
-			{#each presetOptions as { key, name } (key)}
-				<label
-					class="group flex w-full cursor-pointer flex-col items-center justify-between gap-2 p-2 text-white transition-colors duration-100 {preset ===
-					key
-						? ''
-						: ''}"
-				>
-					<input
-						type="radio"
-						bind:group={preset}
-						value={key}
-						class="hidden"
-						onchange={() => (showPullDown = false)}
-					/>
-
-					<div
-						class="overflow-hidden rounded-md border-3 {preset === key
-							? 'border-accent'
-							: 'border-transparent'}"
+			<div
+				class="bg-sub pointer-events-auto grid w-full grid-cols-5 overflow-hidden rounded-[35px] p-1 shadow-md"
+			>
+				{#each presetOptions as { key, name } (key)}
+					<label
+						class="group flex w-full cursor-pointer flex-col items-center justify-between text-white transition-colors duration-100 {preset ===
+						key
+							? ''
+							: ''}"
+						onmouseenter={() => (hoveredName = name)}
 					>
-						<img
-							{src}
-							alt={name}
-							class="c-no-drag-icon aspect-square w-full bg-black object-cover"
-							style="filter:{getPresetCSSStyle(key).filter};"
+						<input
+							type="radio"
+							bind:group={preset}
+							value={key}
+							class="hidden"
+							onchange={() => (showPullDown = false)}
+							onclick={() => (showPullDown = false)}
 						/>
-					</div>
-					<span class="text-sm select-none">{name}</span>
-				</label>
-			{/each}
+
+						<div
+							class="lg:hover:border-base overflow-hidden rounded-full border-3 {preset === key
+								? 'border-accent'
+								: 'border-transparent'}"
+						>
+							<img
+								{src}
+								alt={name}
+								class="c-no-drag-icon aspect-square w-full bg-black object-cover"
+								style="filter:{getPresetCSSStyle(key).filter};"
+							/>
+						</div>
+						<!-- <span class="text-sm select-none">{name}</span> -->
+					</label>
+				{/each}
+			</div>
+			<div class="flex items-center justify-center">
+				<span class="bg-sub w-full max-w-[200px] rounded-full p-1 text-center text-base select-none"
+					>{hoveredName}</span
+				>
+			</div>
 		</div>
 	{/if}
 </div>

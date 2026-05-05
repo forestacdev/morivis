@@ -1,5 +1,3 @@
-import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-
 import type {
 	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
@@ -9,8 +7,7 @@ import type {
 import type {
 	ColorsStyle,
 	ColorMatchExpression,
-	ColorStepExpression,
-	IconsStyle
+	ColorStepExpression
 } from '$routes/map/data/types/vector/style';
 
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
@@ -157,15 +154,15 @@ export const getPatternExpression = (colors: ColorsStyle) => {
 };
 
 /**
- * ポイントアイコン用のicon-image式を返す（IconsStyleから取得）
+ * ポイントアイコン用のicon-image式を返す
  * single: アイコンID文字列を返す
  * match: ['match', ['get', key], category, iconId, ...] 式を返す
  */
 export const getIconExpression = (
-	icons: IconsStyle
+	colors: ColorsStyle
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> | null => {
-	const key = icons.key;
-	const expressionData = icons.expressions.find((expression) => expression.key === key);
+	const key = colors.key;
+	const expressionData = colors.expressions.find((expression) => expression.key === key);
 	if (!expressionData) return null;
 
 	switch (expressionData.type) {
@@ -191,15 +188,4 @@ export const getIconExpression = (
 		default:
 			return null;
 	}
-};
-
-export const getSelectedColorExpression = (
-	colorExpression: DataDrivenPropertyValueSpecification<ColorSpecification>
-): DataDrivenPropertyValueSpecification<ColorSpecification> => {
-	return [
-		'case',
-		['boolean', ['feature-state', 'selected'], false],
-		HIGHLIGHT_LAYER_COLOR,
-		colorExpression
-	] as DataDrivenPropertyValueSpecification<ColorSpecification>;
 };

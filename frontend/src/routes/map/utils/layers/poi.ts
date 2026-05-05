@@ -1,5 +1,6 @@
 import type { SymbolLayerSpecification, SourceSpecification } from 'maplibre-gl';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, ICON_IMAGE_BASE_PATH } from '$routes/constants';
+import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
 
 export const poiSources: Record<string, SourceSpecification> = {
 	fac_poi: {
@@ -32,14 +33,21 @@ export const poiSources: Record<string, SourceSpecification> = {
 };
 export const poiLayers = [
 	{
-		id: 'fac_poi',
+		id: '@fac_poi',
 		'source-layer': 'fac_poi',
 		source: 'fac_poi',
 		type: 'symbol',
 		minzoom: 11,
 		layout: {
-			'icon-image': 'poi-icon', // アイコンの画像名
-			'icon-size': 3, // アイコンのサイズ
+			'icon-image': buildGeneratedPoiIconExpression({
+				imageIdKey: '_prop_id',
+				type: 'relative',
+				urlKey: '_prop_id',
+				baseUrl: ICON_IMAGE_BASE_PATH + '/',
+				suffix: '.webp'
+			}),
+			'icon-size': 0.5,
+			'icon-anchor': 'bottom', // アイコンのアンカー位置
 			// 'symbol-sort-key': [
 			// 	'case',
 			// 	// 特定の1つのfeature_idを最優先
@@ -68,14 +76,14 @@ export const poiLayers = [
 		paint: {}
 	} as SymbolLayerSpecification,
 	{
-		id: 'poi_top',
+		id: '@poi_top',
 		type: 'symbol',
 		source: 'fac_top',
 		maxzoom: 12,
 		minzoom: 4,
 		layout: {
-			'icon-image': 'poi-icon',
-			'icon-size': 3
+			'icon-image': 'poi_top',
+			'icon-size': 0.8
 		}
 	} as SymbolLayerSpecification
 ];

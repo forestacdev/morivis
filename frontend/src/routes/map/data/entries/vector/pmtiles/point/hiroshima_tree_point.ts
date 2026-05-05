@@ -12,7 +12,7 @@ const entry: VectorEntry<TileMetaData> = {
 	},
 	metaData: {
 		name: '広島県 単木データ',
-		sourceDataName: '広島県の単木データ',
+		sourceDataName: '航空レーザ計測に基づく森林資源データ（単木ポイントデータ）',
 		description: '',
 		attribution: 'DoboX',
 		tags: ['街路樹', '単木'],
@@ -142,7 +142,6 @@ const entry: VectorEntry<TileMetaData> = {
 		type: 'circle',
 		opacity: 0.7,
 		minZoom: 13,
-		markerType: 'circle',
 		colors: {
 			key: '樹種',
 			show: true,
@@ -152,7 +151,8 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '単色',
 					name: '単色',
 					mapping: {
-						value: '#33a02c'
+						value: '#33a02c',
+						pattern: null
 					}
 				},
 				{
@@ -161,7 +161,8 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '樹種ごとの色分け',
 					mapping: {
 						categories: ['スギ', 'ヒノキ'],
-						values: ['#33a02c', '#b2df8a']
+						values: ['#33a02c', '#b2df8a'],
+						patterns: [null, null]
 					}
 				},
 				{
