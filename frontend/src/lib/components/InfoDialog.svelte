@@ -183,22 +183,22 @@
 					</div>
 				</div>
 				<div class="pb-6">
-					<div class="pb-4 text-lg font-bold">利用データ / Data Sources</div>
+					<div class="pb-4 text-lg font-bold">Data Sources / 利用データ</div>
 
 					<div class="flex flex-col gap-2">
 						{#each dataProviders as provider (provider.key)}
-							<details class="rounded-md border-1 border-gray-500 bg-black/60 p-3">
-								<summary class="cursor-pointer list-none">
+							<div class="bg-sub rounded-md p-3">
+								<div class="">
 									<div class="flex items-center justify-between gap-4">
 										<div class="min-w-0">
 											<div class="truncate font-bold">{provider.name}</div>
-											<div class="text-sm text-gray-400">
+											<!-- <div class="text-sm text-gray-400">
 												{provider.datasets.length}件のデータを利用
-											</div>
+											</div> -->
 										</div>
 										{#if provider.url}
 											<a
-												class="text-accent shrink-0 text-sm"
+												class="bg-main-accent shrink-0 rounded-full p-2 px-3 text-base text-sm"
 												href={provider.url}
 												target="_blank"
 												rel="noopener noreferrer"
@@ -208,13 +208,13 @@
 											</a>
 										{/if}
 									</div>
-								</summary>
+								</div>
 
 								<div class="mt-3 flex flex-col gap-1 text-sm text-gray-200">
 									{#each provider.datasets as dataset}
 										{#if dataset.downloadUrl}
 											<a
-												class="text-accent underline-offset-2 hover:underline"
+												class="self-start underline underline-offset-2"
 												href={dataset.downloadUrl}
 												target="_blank"
 												rel="noopener noreferrer"
@@ -226,7 +226,7 @@
 										{/if}
 									{/each}
 								</div>
-							</details>
+							</div>
 						{/each}
 					</div>
 				</div>
